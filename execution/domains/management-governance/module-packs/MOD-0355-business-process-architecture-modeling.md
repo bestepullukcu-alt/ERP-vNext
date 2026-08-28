@@ -121,7 +121,8 @@ promotion.
 
 - Activity, control-point or relationship classification.
 - Classification integration.
-- KPI or Metric integration.
+- Process KPI binding and process-improvement runtime behavior; the Blueprint 8.1 ownership amendment in
+  §19 is governance-only, non-executable and default-off.
 - Binary artifact storage.
 - Approval-policy evaluation.
 - ApprovalOutcome runtime binding.
@@ -151,7 +152,7 @@ promotion.
 | SOP/work instruction | `MOD-0029` | Optional later typed reference |
 | Evidence and binary artifacts | `MOD-0031` and approved storage owner | Optional later typed reference; no binary storage |
 | Canonical classification/reference data | `MOD-0048` or allocated canonical owner | Optional later typed reference |
-| KPI/Metric definition | `MOD-0059` / `MOD-0060` | Optional later certified typed binding |
+| KPI/Metric definition | `MOD-0059` / `MOD-0060` | Definitions, calculations and certified metric truth stay external; MOD-0355 owns only the exact process-version binding record declared by the Blueprint 8.1 amendment in §19 |
 | Dashboard/scorecard projection | `MOD-0061` | No dashboard truth |
 | Person/position/organization | `MOD-0288` | Optional typed owner reference |
 | Portfolio/project context | `MOD-0117` | Optional typed reference |
@@ -172,6 +173,18 @@ promotion.
 - `ProcessActivity`
 - `ProcessControlPoint`
 - `ProcessRelationship`
+
+### Blueprint 8.1 bounded amendment owned objects
+
+The following canonical objects are owned by MOD-0355, not by a new module or FU identity:
+
+- `Process KPI Binding` (`ProcessKPIBindingID`)
+- `Process Improvement Opportunity` (`ProcessImprovementOpportunityID`)
+- `Process Improvement Outcome` (`ProcessImprovementOutcomeID`)
+
+This ownership declaration does not add them to Minimal Core v1 entity, request, persistence, permission,
+operation, audit or runtime schemas. Their bounded governance contract is defined in §19 and remains
+NON-PRODUCTION / NON-EXECUTABLE / DEFAULT-OFF until its explicit readiness blockers close.
 
 ### Governance-only later-slice reference shapes
 
@@ -1696,13 +1709,22 @@ Frontend and runtime activation tests become mandatory only in their separately 
 - [ ] **B-07c:** Production signing/key provisioning, executable consumer/publisher composition, delivery,
       inbox/outbox atomicity, retry/DLQ/alarm/replay and live evidence.
 - [ ] **B-08:** Classification producer contract.
-- [ ] **B-09:** KPI/Metric producer contracts.
+- [x] **B-09a — BLUEPRINT OWNERSHIP CLOSED / NON-EXECUTABLE:** MOD-0355 owns `Process KPI Binding` and
+      MOD-0059/MOD-0060 retain metric-definition, calculation and certified-value truth. No executable
+      producer contract, permission, operation, collection, route or event mapping is authorized.
+- [ ] **B-09b:** Exact certified metric/calculation reference contract, binding fields/lifecycle,
+      compatibility fixtures and authoritative provider adapter.
 - [ ] **B-10:** Owner-reference producer contract and adapter.
 - [ ] **B-11:** Interface-reference producer contract and adapter.
 - [ ] **B-12:** Binary artifact/evidence storage and reference contracts.
 - [ ] **B-13:** Frontend route, UX, localization and legacy-parity approval.
 - [ ] **B-14:** Runtime credentials, observability, deployment and rollback evidence.
 - [ ] **B-15:** Explicit runtime activation and production authority.
+- [x] **B-16a — BLUEPRINT OWNERSHIP CLOSED / NON-EXECUTABLE:** MOD-0355 owns lightweight
+      `Process Improvement Opportunity` and `Process Improvement Outcome` governance records without owning
+      decisions, projects, tasks, experiments, evidence payloads or workflow execution.
+- [ ] **B-16b:** Exact opportunity/outcome fields, lifecycle, decision/execution/evidence reference contracts,
+      permissions, operations, persistence, audit mappings and bilateral fixtures.
 
 B-class items do not block Minimal Core v1 Core Model & Contract-Test `ready-for-dev`. They block only their
 named later slice or runtime activation.
@@ -1953,6 +1975,57 @@ of the local identity, mutation expected-red runs with byte-identical restore, a
 ManagementGovernance/Auth/Platform Eventing regressions. Gateway, frontend, WorkCenter, live broker,
 deployment, appsettings, launch profiles and legacy mutation remain outside this amendment.
 
+### Blueprint 8.1 performance and improvement ownership amendment — NON-PRODUCTION / NON-EXECUTABLE / DEFAULT-OFF
+
+Canonical Master 8.1 evidence is binding and keeps this scope inside `MOD-0355`:
+
+- `Blueprint_Data` row 355 assigns process KPI bindings and lightweight improvement
+  opportunities/outcomes to Business Process Architecture & Modeling.
+- `Module Pages` rows 3398–3400 define `Process KPI Binding`, `Improvement Opportunity Register` and
+  `Improvement Detail & Outcome Review`.
+- `Enterprise Object Catalog` rows 123–125 assign `ProcessKPIBindingID`,
+  `ProcessImprovementOpportunityID` and `ProcessImprovementOutcomeID` to MOD-0355.
+
+No new MOD, FU or candidate identity may be minted for these records. The bounded ownership semantics are:
+
+- `Process KPI Binding` links an exact MOD-0355 process-model version to external certified metric and
+  calculation-contract references. It never owns metric definition, formula, calculation execution,
+  certified value, scorecard or dashboard truth owned by MOD-0059/MOD-0060 and MOD-0061.
+- `Process Improvement Opportunity` is a lightweight process-governance record that may later reference
+  authoritative decisions and execution objects. It does not create or execute a project, task, experiment,
+  workflow run or approval.
+- `Process Improvement Outcome` is a lightweight realized-outcome record that may later reference evidence and
+  authoritative decision/execution records. It does not copy evidence payloads or become decision, project,
+  task, workflow, metric or audit truth.
+
+Master 8.1 does not define the exact field set, lifecycle, operation names, permission keys, producer contract
+names/versions or audit entity/mutation mapping for these objects. Those values therefore cannot be inferred
+or invented by this amendment. Until a later owner-approved executable amendment closes them:
+
+- the exact existing sixteen-value permission set in §3 remains unchanged;
+- the exact existing twenty command-to-permission mappings in §14 remain unchanged;
+- the FU16 sixteen-operation/sixteen-permission manifest remains unchanged and grants no access to these
+  three objects;
+- the MOD-0355 producer fixture and MOD-0021 `20/34` admission matrix remain unchanged and admit no event for
+  these three objects;
+- executable commands, queries, routes, controllers, entities, collections, indexes, handlers, provider
+  adapters, audit events and frontend surfaces for these objects are exactly zero;
+- reusing a Core permission or operation by analogy is forbidden because it would create unapproved
+  authority;
+- cache, last-known-good, free-text reference, copied upstream payload and local fallback truth are forbidden.
+
+The later executable amendment must atomically reconcile four contracts in one review: exact object
+fields/lifecycle and tenant/concurrency rules; exact operation-to-permission mappings; the additive FU16
+manifest/entitlement fixtures; and additive producer plus MOD-0021 bilateral audit mappings. It must also pin
+the MOD-0059/MOD-0060 metric/calculation reference contract and the canonical decision, PPM/task and evidence
+reference contracts it actually consumes. Partial activation is forbidden. Missing or indeterminate
+authority remains `503` with zero mutation; malformed/unsupported contract remains `400`; cross-tenant or
+non-disclosable authoritative reference remains `404`; stale version/reference conflict remains `409`.
+
+This amendment grants governance reconciliation only. It creates no service, runtime code, persistence,
+fixture, endpoint, listener, broker, key, secret, deployment, frontend, Gateway, WorkCenter, migration or
+production authority. `production_authority: none` remains binding.
+
 ### Core transaction boundary
 
 Every successful Core mutation has exactly four atomic local Mongo transaction participants:
@@ -2027,8 +2100,11 @@ Governance availability cannot become local fallback, hard-coded truth or inferr
   governance onboarding checkpoint is not provisioning or runtime evidence.
 - Preserve the closed MOD-0021 governance admission and add executable delivery only after production signing,
   transport and operational evidence exist.
-- Add classification, KPI/Metric, owner, interface, document, evidence and artifact references through
-  separately approved producer contracts.
+- Preserve the Blueprint-owned Process KPI Binding and lightweight Improvement Opportunity/Outcome amendment
+  as default-off until its exact schema, lifecycle, permission/operation, FU16, producer and MOD-0021
+  bilateral contracts are approved together.
+- Add classification, owner, interface, document, evidence and artifact references through separately
+  approved producer contracts.
 - Define and approve tenant frontend and seven-language resources.
 - Complete the read-only legacy parity inventory and owner-approved disposition.
 - Allocate service port and Gateway route only during separately authorized runtime activation.
@@ -2041,6 +2117,7 @@ Governance availability cannot become local fallback, hard-coded truth or inferr
 - Exact numbered headings: `20`
 - Heading sequence: `## 1.` through `## 20.`
 - Exact unique permissions: `16`
+- Blueprint amendment owned objects: exact `3`; executable operations: `0`
 - Markdown fences: balanced
 - ActivityKind occurrence: deferred/future-amendment explanation only
 - ControlKind occurrence: deferred/future-amendment explanation only
