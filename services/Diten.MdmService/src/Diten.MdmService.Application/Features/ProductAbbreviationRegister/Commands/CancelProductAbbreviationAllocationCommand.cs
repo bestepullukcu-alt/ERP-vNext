@@ -8,4 +8,4 @@ public sealed record CancelProductAbbreviationAllocationCommand(
     int ExpectedVersion,
     string IdempotencyKey,
     string? Reason = null)
-    : IRequest<Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>>;
+    : IRequest<Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>>, global::Diten.MdmService.Application.Features.ProductLegalEntityScopes.IProductLegalEntityScopeInventoryMutation;

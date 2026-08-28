@@ -16,12 +16,12 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     {
         Assert.Equal("product-item-sku-master", Manifest.ModuleCode);
         Assert.Equal("ProductItemSkuMaster", Manifest.ModuleName);
-        Assert.Equal("MasterDataManagement", Manifest.Domain);
+        Assert.Equal("MASTER-DATA-MANAGEMENT", Manifest.Domain);
         Assert.Equal("DitenMdmService", Manifest.Service);
         Assert.True(Manifest.IsTenantAssignable);
         Assert.False(Manifest.IsBaseline);
 
-        Assert.Equal(5, Manifest.Pages.Count);
+        Assert.Equal(6, Manifest.Pages.Count);
         var globalProducts = Assert.Single(Manifest.Pages, page => page.PageCode == "GLOBAL_PRODUCTS");
         Assert.Equal("/MasterDataManagement/GlobalProducts", globalProducts.RoutePath);
         Assert.Equal("mdm.global-products.read", globalProducts.RequiredPermission);
@@ -40,6 +40,10 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.Equal("/MDM/ProductAbbreviationRegister", productAbbreviations.RoutePath);
         Assert.Equal("mdm.product-abbreviations.read", productAbbreviations.RequiredPermission);
         Assert.False(productAbbreviations.IsNavigationVisible);
+        var productScopes = Assert.Single(Manifest.Pages, page => page.PageCode == "PRODUCT_LEGAL_ENTITY_SCOPES");
+        Assert.Equal("/MasterDataManagement/ProductLegalEntityScopes", productScopes.RoutePath);
+        Assert.Equal("mdm.product-legal-entity-scopes.read", productScopes.RequiredPermission);
+        Assert.False(productScopes.IsNavigationVisible);
     }
 
     [Fact]
@@ -47,7 +51,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     {
         const string prefix = "Permission:";
         var policyProperty = typeof(HasPermissionAttribute).GetProperty("Policy");
-        var enforced = new[] { typeof(GlobalProductsController), typeof(FinishedGoodsController), typeof(GskusController), typeof(LskusController), typeof(ProductAbbreviationsController) }
+        var enforced = new[] { typeof(GlobalProductsController), typeof(FinishedGoodsController), typeof(GskusController), typeof(LskusController), typeof(ProductAbbreviationsController), typeof(ProductLegalEntityScopesController) }
             .SelectMany(controller => controller
                 .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
             .SelectMany(method => method.GetCustomAttributes<HasPermissionAttribute>())
@@ -78,17 +82,28 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.product-abbreviations.read",
                 "mdm.product-abbreviations.reject",
                 "mdm.product-abbreviations.request",
-                "mdm.product-abbreviations.retire"
+                "mdm.product-abbreviations.retire",
+                "mdm.product-legal-entity-scope-rollout.activate",
+                "mdm.product-legal-entity-scope-rollout.rollback",
+                "mdm.product-legal-entity-scopes.configure",
+                "mdm.product-legal-entity-scopes.end",
+                "mdm.product-legal-entity-scopes.read",
+                "mdm.product-legal-entity-scopes.replace"
             },
             declared.OrderBy(value => value, StringComparer.Ordinal));
-        Assert.Equal(16, declared.Count);
-        Assert.True(declared.SetEquals(enforced));
+        Assert.Equal(22, declared.Count);
+        var operatorOnly = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "mdm.product-legal-entity-scope-rollout.activate",
+            "mdm.product-legal-entity-scope-rollout.rollback"
+        };
+        Assert.True(declared.Where(permission => !operatorOnly.Contains(permission)).ToHashSet(StringComparer.Ordinal).SetEquals(enforced));
     }
 
     [Fact]
     public void Existing_product_pages_keep_exact_create_and_quick_view_actions()
     {
-        var productPages = Manifest.Pages.Where(page => page.PageCode != "PRODUCT_ABBREVIATIONS").ToList();
+        var productPages = Manifest.Pages.Where(page => page.PageCode is "GLOBAL_PRODUCTS" or "FINISHED_GOODS" or "GSKUS" or "LSKUS").ToList();
         Assert.Equal(4, productPages.Count);
         foreach (var page in productPages)
         {
@@ -115,6 +130,26 @@ public sealed class ProductItemSkuMasterManifestProviderTests
             Assert.False(details.IsToolbarAction);
             Assert.False(details.IsDangerous);
         }
+    }
+
+    [Fact]
+    public void Product_scope_page_is_navigation_hidden_and_declares_exact_six_permissions()
+    {
+        var page = Assert.Single(Manifest.Pages, item => item.PageCode == "PRODUCT_LEGAL_ENTITY_SCOPES");
+        Assert.False(page.IsNavigationVisible);
+        Assert.Equal(6, page.Actions.Count);
+        Assert.Equal(
+            [
+                "mdm.product-legal-entity-scope-rollout.activate",
+                "mdm.product-legal-entity-scope-rollout.rollback",
+                "mdm.product-legal-entity-scopes.configure",
+                "mdm.product-legal-entity-scopes.end",
+                "mdm.product-legal-entity-scopes.read",
+                "mdm.product-legal-entity-scopes.replace"
+            ],
+            page.Actions.Select(action => action.PermissionKey).OrderBy(value => value, StringComparer.Ordinal));
+        Assert.DoesNotContain(page.Actions, action => action.ActionCode.Contains("DELETE", StringComparison.Ordinal));
+        Assert.DoesNotContain(page.Actions, action => action.ActionCode.Contains("WORKFLOW", StringComparison.Ordinal));
     }
 
     [Fact]

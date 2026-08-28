@@ -79,6 +79,46 @@ public sealed class LegalEntityReferenceValidationTests
         Assert.Equal(404, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Bounded_batch_returns_only_active_same_tenant_non_deleted_requested_entities()
+    {
+        var tenant = Guid.NewGuid();
+        var active = CreateEntity(tenant, LegalEntityOperationalStatus.Active);
+        var archived = CreateEntity(tenant, LegalEntityOperationalStatus.Archived);
+        var deleted = CreateEntity(tenant, LegalEntityOperationalStatus.Active); deleted.IsDeleted = true;
+        var crossTenant = CreateEntity(Guid.NewGuid(), LegalEntityOperationalStatus.Active);
+        var repository = new InMemoryLegalEntityRepository(tenant, [active, archived, deleted, crossTenant]);
+
+        var result = await repository.GetReferenceableByIdsAsync(
+            new[] { active.Id, archived.Id, deleted.Id, crossTenant.Id }
+                .OrderBy(id => id.ToString("D"), StringComparer.Ordinal).ToArray());
+
+        Assert.Equal([active.Id], result.Select(item => item.Id));
+    }
+
+    [Fact]
+    public async Task Bounded_batch_rejects_noncanonical_input_and_propagates_cancellation()
+    {
+        var repository = new InMemoryLegalEntityRepository(Guid.NewGuid(), []);
+        var id = Guid.NewGuid();
+        await Assert.ThrowsAsync<ArgumentException>(() => repository.GetReferenceableByIdsAsync([id, id]));
+        await Assert.ThrowsAsync<ArgumentException>(() => repository.GetReferenceableByIdsAsync([Guid.Empty]));
+        await Assert.ThrowsAsync<ArgumentException>(() => repository.GetReferenceableByIdsAsync(
+            Enumerable.Range(0, 201).Select(_ => Guid.NewGuid()).ToArray()));
+        using var cancellation = new CancellationTokenSource(); cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            repository.GetReferenceableByIdsAsync([], cancellation.Token));
+    }
+
+    [Fact]
+    public async Task In_memory_empty_batch_honors_pre_cancelled_token()
+    {
+        var repository = new InMemoryLegalEntityRepository(Guid.NewGuid(), []);
+        using var cancellation = new CancellationTokenSource(); cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            repository.GetReferenceableByIdsAsync(Array.Empty<Guid>(), cancellation.Token));
+    }
+
     private static LegalEntity CreateEntity(Guid tenantId, LegalEntityOperationalStatus operationalStatus)
         => new()
         {

@@ -6,4 +6,4 @@ namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Commands;
 
 public sealed record CreateGlobalProductDraftCommand(
     ProductItemSkuMasterModels.CreateGlobalProductDraftRequest Request)
-    : IRequest<Response<ProductItemSkuMasterModels.GlobalProductDraftDto>>;
+    : IRequest<Response<ProductItemSkuMasterModels.GlobalProductDraftDto>>, global::Diten.MdmService.Application.Features.ProductLegalEntityScopes.IProductLegalEntityScopeInventoryMutation;
