@@ -52,18 +52,75 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
             IsBaseline: false, // HARD: CRM is a licensed module — tenant entitlement required (never entitlement-free).
             Pages:
             [
-                new ModuleManifestPage("ACCOUNTS", "Accounts", "/CRM/Accounts", AccountsRead, null, true, "List", 10, []),
-                new ModuleManifestPage("CONTACTS", "Contacts", "/CRM/Contacts", ContactsRead, null, true, "List", 20, []),
-                new ModuleManifestPage("TERRITORY_MANAGEMENT", "Territory Management", "/CRM/TerritoryManagement", TerritoryRead, null, true, "List", 30, []),
-                new ModuleManifestPage("SEGMENTS", "Segments", "/CRM/Segments", SegmentsRead, null, true, "List", 40, []),
-                new ModuleManifestPage("STRATEGY_TEMPLATES", "Strategy Templates", "/CRM/StrategyTemplates", StrategyTemplatesRead, null, true, "List", 50, []),
-                new ModuleManifestPage("CAMPAIGNS", "Campaigns", "/CRM/Campaigns", CampaignsRead, null, true, "List", 60, []),
-                new ModuleManifestPage("CYCLE_PERIODS", "Cycle Periods", "/CRM/CyclePeriods", CyclePeriodsRead, null, true, "List", 70, []),
-                new ModuleManifestPage("CYCLE_CAPACITIES", "Cycle Capacity", "/CRM/CycleCapacities", CycleCapacityRead, null, true, "List", 80, []),
-                new ModuleManifestPage("CONSENT_PREFERENCES", "Consent & Preferences", "/CRM/ConsentPreferences", ConsentRead, null, true, "List", 90, []),
-                new ModuleManifestPage("KNOWLEDGE", "Knowledge", "/CRM/Knowledge", KnowledgeRead, null, true, "List", 100, []),
-                new ModuleManifestPage("KNOWLEDGE_CONCEPTS", "Concepts", "/CRM/KnowledgeConcepts", KnowledgeConceptRead, null, true, "List", 110, []),
-                new ModuleManifestPage("KNOWLEDGE_PATHS", "Knowledge Paths", "/CRM/KnowledgePaths", KnowledgePathRead, null, true, "List", 120, []),
-                new ModuleManifestPage("CONTENT_ENGAGEMENT_JOURNEYS", "Content Engagement Journeys", "/CRM/ContentEngagementJourneys", ContentEngagementJourneyRead, null, true, "List", 130, [])
+                // Each page's Actions declare the granular write operations (with the verbatim permission the CRM
+                // controller + CrmService [HasPermission] enforce) so the module catalogue carries page-action
+                // descriptors an RBAC admin can grant — not just the read gate on the page itself.
+                new ModuleManifestPage("ACCOUNTS", "Accounts", "/CRM/Accounts", AccountsRead, null, true, "List", 10,
+                [
+                    new ModuleManifestAction("CREATE", "New Account", "crm.account.create", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("EDIT", "Edit Account", "crm.account.update", "RowAction", 20, false, false, true)
+                ]),
+                new ModuleManifestPage("CONTACTS", "Contacts", "/CRM/Contacts", ContactsRead, null, true, "List", 20,
+                [
+                    new ModuleManifestAction("CREATE", "New Contact", "crm.contact.create", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("IMPORT", "Import Contacts", "crm.contact.import", "Toolbar", 20, false, true, false),
+                    new ModuleManifestAction("EXPORT", "Export Contacts", "crm.contact.export", "Toolbar", 30, false, true, false),
+                    new ModuleManifestAction("EDIT", "Edit Contact", "crm.contact.update", "RowAction", 40, false, false, true)
+                ]),
+                new ModuleManifestPage("TERRITORY_MANAGEMENT", "Territory Management", "/CRM/TerritoryManagement", TerritoryRead, null, true, "List", 30,
+                [
+                    new ModuleManifestAction("MANAGE_MODEL", "Manage Model", "crm.territory.model.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("MANAGE_NODE", "Manage Node", "crm.territory.node.manage", "RowAction", 20, false, false, true)
+                ]),
+                new ModuleManifestPage("SEGMENTS", "Segments", "/CRM/Segments", SegmentsRead, null, true, "List", 40,
+                [
+                    new ModuleManifestAction("MANAGE", "New Segment", "crm.segment.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("ACTIVATE", "Activate", "crm.segment.activate", "RowAction", 20, false, false, true)
+                ]),
+                new ModuleManifestPage("STRATEGY_TEMPLATES", "Strategy Templates", "/CRM/StrategyTemplates", StrategyTemplatesRead, null, true, "List", 50,
+                [
+                    new ModuleManifestAction("MANAGE", "New Strategy Template", "crm.strategy-template.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("ACTIVATE", "Activate", "crm.strategy-template.activate", "RowAction", 20, false, false, true)
+                ]),
+                new ModuleManifestPage("CAMPAIGNS", "Campaigns", "/CRM/Campaigns", CampaignsRead, null, true, "List", 60,
+                [
+                    new ModuleManifestAction("MANAGE", "New Campaign", "crm.campaign.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("MANAGE_TARGETS", "Manage Targets", "crm.campaign.target.manage", "RowAction", 20, false, false, true),
+                    new ModuleManifestAction("SNAPSHOT", "Take Snapshot", "crm.campaign.snapshot.create", "RowAction", 30, false, false, true)
+                ]),
+                new ModuleManifestPage("CYCLE_PERIODS", "Cycle Periods", "/CRM/CyclePeriods", CyclePeriodsRead, null, true, "List", 70,
+                [
+                    new ModuleManifestAction("MANAGE", "New Cycle Period", "crm.cycle-period.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("ACTIVATE", "Activate", "crm.cycle-period.activate", "RowAction", 20, false, false, true)
+                ]),
+                new ModuleManifestPage("CYCLE_CAPACITIES", "Cycle Capacity", "/CRM/CycleCapacities", CycleCapacityRead, null, true, "List", 80,
+                [
+                    new ModuleManifestAction("MANAGE", "New Cycle Capacity", "crm.cycle-capacity.manage", "Toolbar", 10, false, true, false)
+                ]),
+                new ModuleManifestPage("CONSENT_PREFERENCES", "Consent & Preferences", "/CRM/ConsentPreferences", ConsentRead, null, true, "List", 90,
+                [
+                    new ModuleManifestAction("MANAGE_CONSENT", "Manage Consent", "crm.consent.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("MANAGE_PREFERENCE", "Manage Preferences", "crm.preference.manage", "Toolbar", 20, false, true, false),
+                    new ModuleManifestAction("EVALUATE", "Evaluate", "crm.consent.evaluate", "RowAction", 30, false, false, true)
+                ]),
+                new ModuleManifestPage("KNOWLEDGE", "Knowledge", "/CRM/Knowledge", KnowledgeRead, null, true, "List", 100,
+                [
+                    new ModuleManifestAction("MANAGE", "New Content", "crm.knowledge.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("MANAGE_SUBJECT", "Manage Subjects", "crm.knowledge.subject.manage", "Toolbar", 20, false, true, false)
+                ]),
+                new ModuleManifestPage("KNOWLEDGE_CONCEPTS", "Concepts", "/CRM/KnowledgeConcepts", KnowledgeConceptRead, null, true, "List", 110,
+                [
+                    new ModuleManifestAction("MANAGE", "New Concept", "crm.knowledge.concept.manage", "Toolbar", 10, false, true, false)
+                ]),
+                new ModuleManifestPage("KNOWLEDGE_PATHS", "Knowledge Paths", "/CRM/KnowledgePaths", KnowledgePathRead, null, true, "List", 120,
+                [
+                    new ModuleManifestAction("MANAGE", "New Knowledge Path", "crm.knowledge.path.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("PUBLISH", "Publish", "crm.knowledge.path.publish", "RowAction", 20, false, false, true)
+                ]),
+                new ModuleManifestPage("CONTENT_ENGAGEMENT_JOURNEYS", "Content Engagement Journeys", "/CRM/ContentEngagementJourneys", ContentEngagementJourneyRead, null, true, "List", 130,
+                [
+                    new ModuleManifestAction("MANAGE", "New Journey", "crm.knowledge.content-engagement-journey.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("PUBLISH", "Publish", "crm.knowledge.content-engagement-journey.publish", "RowAction", 20, false, false, true)
+                ])
             ]);
 }
