@@ -2,8 +2,10 @@ using System.Net;
 using System.Text;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Infrastructure.Services.Auth;
+using Diten.Platform.Infrastructure.Services.Http;
 using Diten.Platform.Infrastructure.Settings;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -292,7 +294,8 @@ public sealed class AuthServiceUserReferenceValidatorTests
             stubOnly,
             Options.Create(new AuthServiceOptions { BaseUrl = "http://auth.local" }),
             accessor,
-            TenantContextResolvedFor(TenantId));
+            TenantContextResolvedFor(TenantId),
+            new RecordingLogger<AuthServiceUserReferenceValidator>());
 
         await validator.ValidateAsync(UserId);
 
@@ -301,6 +304,69 @@ public sealed class AuthServiceUserReferenceValidatorTests
 
         // The HUMAN's token travels with it: the module authorises the person, not Platform.
         Assert.Equal("caller-token", captured.Headers.Authorization?.Parameter);
+    }
+
+
+    /// <summary>
+    /// (e) The refusal says WHICH refusal it is. "We could not name a tenant" and "the module did not answer"
+    /// were the same 404 with the same sentence until 2026-08-28, so an operator asking "why was it not found?"
+    /// got no answer from any log. The reader's sentence is deliberately unchanged — this is an operator signal,
+    /// not a new user string, and it is kept OFF Response.ReasonCode precisely so it does not become one
+    /// (reason_code feeds the frontend resx bridge and would owe seven translations).
+    /// </summary>
+    [Theory]
+    [InlineData(false, "tenant-context-unresolved")]
+    [InlineData(true, "platform-context-without-target-tenant")]
+    public async Task A_call_skipped_for_want_of_a_tenant_names_its_own_reason(bool platformWithoutTarget, string expectedReason)
+    {
+        var called = false;
+        var logger = new RecordingLogger<AuthServiceUserReferenceValidator>();
+        ITenantContext context = platformWithoutTarget
+            ? new PlatformActingForTenant(PlatformSentinelTenantId, Guid.Empty)
+            : new TenantContext();
+
+        var validator = CreateValidator(
+            (_, _) =>
+            {
+                called = true;
+                return Task.FromResult(JsonResponse($$"""
+                    {"data":{"userId":"{{UserId}}","referenceable":true},"statusCode":200,"isSuccessful":true,"errors":[]}
+                    """));
+            },
+            context,
+            logger);
+
+        var response = await validator.ValidateAsync(UserId);
+
+        Assert.False(called);
+        Assert.False(response.IsSuccessful);
+
+        var line = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Warning, line.Level);
+        Assert.Contains(expectedReason, line.Message, StringComparison.Ordinal);
+
+        // The user-facing sentence is untouched: this is an operator signal only, and carries no reason_code
+        // that the frontend resx bridge would then owe a translation for.
+        Assert.Equal("User is not referenceable.", Assert.Single(response.Errors));
+        Assert.Null(response.ReasonCode);
+    }
+
+    /// <summary>Captures what an operator would actually see, message already formatted.</summary>
+    private sealed class RecordingLogger<T> : ILogger<T>
+    {
+        public List<(LogLevel Level, string Message)> Entries { get; } = [];
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter)
+            => Entries.Add((logLevel, formatter(state, exception)));
     }
 
     private static AuthServiceUserReferenceValidator CreateValidator(HttpResponseMessage response) =>
@@ -314,7 +380,8 @@ public sealed class AuthServiceUserReferenceValidatorTests
 
     private static AuthServiceUserReferenceValidator CreateValidator(
         Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> responseFactory,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILogger<AuthServiceUserReferenceValidator>? logger = null)
     {
         var httpClient = new HttpClient(new StubHttpMessageHandler(responseFactory));
         var options = Options.Create(new AuthServiceOptions { BaseUrl = "http://auth.local" });
@@ -324,7 +391,9 @@ public sealed class AuthServiceUserReferenceValidatorTests
         };
         accessor.HttpContext.Request.Headers.Authorization = "Bearer token";
 
-        return new AuthServiceUserReferenceValidator(httpClient, options, accessor, tenantContext);
+        return new AuthServiceUserReferenceValidator(
+            httpClient, options, accessor, tenantContext,
+            logger ?? new RecordingLogger<AuthServiceUserReferenceValidator>());
     }
 
     private static ITenantContext TenantContextResolvedFor(Guid tenantId)

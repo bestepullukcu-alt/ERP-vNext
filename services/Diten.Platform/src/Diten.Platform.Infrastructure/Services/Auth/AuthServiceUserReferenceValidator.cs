@@ -7,6 +7,7 @@ using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Infrastructure.Services.Http;
 using Diten.Platform.Infrastructure.Settings;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Diten.Platform.Infrastructure.Services.Auth;
@@ -42,16 +43,19 @@ public sealed class AuthServiceUserReferenceValidator : IUserReferenceValidator
     private readonly HttpClient _httpClient;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ITenantContext _tenantContext;
+    private readonly ILogger<AuthServiceUserReferenceValidator> _logger;
 
     public AuthServiceUserReferenceValidator(
         HttpClient httpClient,
         IOptions<AuthServiceOptions> options,
         IHttpContextAccessor httpContextAccessor,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILogger<AuthServiceUserReferenceValidator> logger)
     {
         _httpClient = httpClient;
         _httpContextAccessor = httpContextAccessor;
         _tenantContext = tenantContext;
+        _logger = logger;
 
         if (string.IsNullOrWhiteSpace(options.Value.BaseUrl))
         {
@@ -65,9 +69,17 @@ public sealed class AuthServiceUserReferenceValidator : IUserReferenceValidator
     {
         // Fail-closed BEFORE the wire: with no tenant we cannot say who the answer would be about, and a user
         // confirmed against the wrong tenant is exactly the reference this contract exists to refuse.
-        var tenantId = TenantOnTheWire.Resolve(_tenantContext);
+        var tenantId = TenantOnTheWire.Resolve(_tenantContext, out var skipReason);
         if (tenantId is null)
         {
+            // Say WHICH fail-closed this is. Before 2026-08-28 this collapsed into the same 404 as "AuthService did not
+            // answer", so "why was it not found?" had no answer in any log. The reader's sentence is unchanged;
+            // this line is for the operator.
+            _logger.LogWarning(
+                "User reference check not attempted: no tenant could be named. Reason={SkipReason} UserId={UserId}",
+                skipReason,
+                userId);
+
             return FailClosed();
         }
 

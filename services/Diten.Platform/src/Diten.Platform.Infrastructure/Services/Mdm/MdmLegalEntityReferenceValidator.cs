@@ -7,6 +7,7 @@ using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Infrastructure.Services.Http;
 using Diten.Platform.Infrastructure.Settings;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Diten.Platform.Infrastructure.Services.Mdm;
@@ -41,16 +42,19 @@ public sealed class MdmLegalEntityReferenceValidator : ILegalEntityReferenceVali
     private readonly HttpClient _httpClient;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ITenantContext _tenantContext;
+    private readonly ILogger<MdmLegalEntityReferenceValidator> _logger;
 
     public MdmLegalEntityReferenceValidator(
         HttpClient httpClient,
         IOptions<MdmServiceOptions> options,
         IHttpContextAccessor httpContextAccessor,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILogger<MdmLegalEntityReferenceValidator> logger)
     {
         _httpClient = httpClient;
         _httpContextAccessor = httpContextAccessor;
         _tenantContext = tenantContext;
+        _logger = logger;
 
         if (string.IsNullOrWhiteSpace(options.Value.BaseUrl))
         {
@@ -64,9 +68,17 @@ public sealed class MdmLegalEntityReferenceValidator : ILegalEntityReferenceVali
     {
         // Fail-closed BEFORE the wire: without a tenant we cannot state who the answer would be about, and an
         // answer about the wrong tenant is the silent wrong "not found" this class exists to prevent.
-        var tenantId = TenantOnTheWire.Resolve(_tenantContext);
+        var tenantId = TenantOnTheWire.Resolve(_tenantContext, out var skipReason);
         if (tenantId is null)
         {
+            // Say WHICH fail-closed this is. Before 2026-08-28 this collapsed into the same 404 as "MDM did not
+            // answer", so "why was it not found?" had no answer in any log. The reader's sentence is unchanged;
+            // this line is for the operator.
+            _logger.LogWarning(
+                "Legal Entity reference check not attempted: no tenant could be named. Reason={SkipReason} LegalEntityId={LegalEntityId}",
+                skipReason,
+                legalEntityId);
+
             return FailClosed();
         }
 
