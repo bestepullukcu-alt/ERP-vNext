@@ -8,7 +8,7 @@ namespace Diten.ManagementGovernanceService.ArchitectureTests.Modules.Dws;
 public sealed class DwsLocalTestMutationEvidenceTests
 {
     [Fact]
-    public void Ten_physical_mutants_are_expected_red_hash_restored_and_test_bound()
+    public void Nine_physical_mutants_and_one_forbidden_disposition_are_hash_restored_and_test_bound()
     {
         var root=FindRoot();
         var path=Path.Combine(root,"services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Modules/Dws/dws-local-test-mutation-evidence-v1.json");
@@ -17,11 +17,17 @@ public sealed class DwsLocalTestMutationEvidenceTests
         var entries=json.RootElement.GetProperty("mutations").EnumerateArray().ToArray();
         Assert.Equal(10,entries.Length);
         Assert.Equal(10,entries.Select(x=>x.GetProperty("id").GetString()).Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(9,entries.Count(x=>x.GetProperty("disposition").GetString()=="expected-red"));
+        Assert.Single(entries,x=>x.GetProperty("disposition").GetString()=="security-policy-forbidden");
         var configuration=new DirectoryInfo(AppContext.BaseDirectory).Parent?.Name??throw new InvalidOperationException("configuration_not_found");
         foreach(var entry in entries)
         {
-            Assert.Equal(0,entry.GetProperty("compileExit").GetInt32());
-            Assert.NotEqual(0,entry.GetProperty("targetedExit").GetInt32());
+            if(entry.GetProperty("disposition").GetString()=="expected-red")
+            {
+                Assert.False(string.IsNullOrWhiteSpace(entry.GetProperty("runId").GetString()));
+                Assert.Equal(0,entry.GetProperty("compileExit").GetInt32());
+                Assert.NotEqual(0,entry.GetProperty("targetedExit").GetInt32());
+            }
             Assert.False(string.IsNullOrWhiteSpace(entry.GetProperty("failureText").GetString()));
             var source=Path.Combine(root,entry.GetProperty("sourcePath").GetString()!);
             Assert.Equal(entry.GetProperty("restoredSha256").GetString(),Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(source))).ToLowerInvariant());

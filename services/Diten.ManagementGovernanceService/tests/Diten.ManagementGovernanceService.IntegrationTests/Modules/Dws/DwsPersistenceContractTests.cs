@@ -58,6 +58,9 @@ public sealed class DwsPersistenceContractTests
 
     [Fact] public void Atomic_persistence_seam_applies_all_participants_with_CAS_or_rolls_back()
     {
+        Assert.Equal(["receipts", "audit-intents", "outbox"], DwsTransactionFamily.TechnicalParticipants);
+        Assert.All(DwsPersistenceOwnershipManifest.Transactions, family =>
+            Assert.Equal(family.BusinessCollections.Count + 3, family.BusinessCollections.Count + DwsTransactionFamily.TechnicalParticipants.Count));
         var tenant = Guid.NewGuid(); var store = new DwsContractAtomicPersistence();
         store.Seed("revision", new(tenant, 1, "working"));
         var participants = new[] { new DwsAtomicParticipant("revision", tenant, 1, "sealed"), new DwsAtomicParticipant("baseline", tenant, 0, "hash"), new DwsAtomicParticipant("receipt", tenant, 0, "ok"), new DwsAtomicParticipant("audit", tenant, 0, "intent"), new DwsAtomicParticipant("outbox", tenant, 0, "pending") };

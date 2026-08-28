@@ -43,7 +43,7 @@ public sealed class DwsDomainContractTests
     {
         var nodes=new[]{Node(A,null,"A",0),Node(B,A,"B",0),Node(Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc"),A,"C",1)};var c=nodes[2].LogicalNodeId;
         Assert.Throws<DwsNotFoundException>(()=>DwsStructuralValidator.ValidateDependencies(Tenant,Revision,nodes,[Dep(A,Guid.NewGuid())]));
-        Assert.Equal(DwsErrors.DependencyCycle,Assert.Throws<DwsConflictException>(()=>DwsStructuralValidator.ValidateDependencies(Tenant,Revision,nodes,[Dep(A,B),Dep(A,B)])).Code);
+        Assert.Equal(DwsErrors.DuplicateDependency,Assert.Throws<DwsConflictException>(()=>DwsStructuralValidator.ValidateDependencies(Tenant,Revision,nodes,[Dep(A,B),Dep(A,B)])).Code);
         Assert.Equal(DwsErrors.DependencyCycle,Assert.Throws<DwsConflictException>(()=>DwsStructuralValidator.ValidateDependencies(Tenant,Revision,nodes,[Dep(A,B),Dep(B,c),Dep(c,A)])).Code);
         Assert.Throws<DwsNotFoundException>(()=>DwsStructuralValidator.ValidateDependencies(Tenant,Revision,nodes,[StructuralDependency.Create(Guid.NewGuid(),Revision,A,B,Utc)]));
         Assert.Throws<DwsNotFoundException>(()=>DwsStructuralValidator.ValidateDependencies(Tenant,Revision,nodes,[StructuralDependency.Create(Tenant,Guid.NewGuid(),A,B,Utc)]));
