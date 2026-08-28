@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using System.Text.RegularExpressions;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
@@ -11,7 +12,7 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 public sealed class FeatureDefinitionRepository : GlobalRepository<FeatureDefinition>, IFeatureDefinitionRepository
 {
     public FeatureDefinitionRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "platform_subscription_features")
+        : base(dbContext.Database, tenantContext, PlatformCollections.SubscriptionFeatures)
     {
     }
 

@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities;
@@ -12,9 +13,9 @@ public sealed class ModulePageDescriptorRepository : TenantRepository<ModulePage
     private readonly IMongoCollection<ModuleCatalogItem> _moduleCatalogCollection;
 
     public ModulePageDescriptorRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "platform_module_page_descriptors")
+        : base(dbContext.Database, tenantContext, PlatformCollections.ModulePageDescriptors)
     {
-        _moduleCatalogCollection = dbContext.GetCollection<ModuleCatalogItem>("platform_module_catalog");
+        _moduleCatalogCollection = dbContext.GetCollection<ModuleCatalogItem>(PlatformCollections.ModuleCatalog);
     }
 
     public async Task<bool> ModuleExistsAsync(string moduleCode, CancellationToken ct = default)

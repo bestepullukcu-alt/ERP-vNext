@@ -76,6 +76,10 @@
   <data name="ViewLabel" xml:space="preserve">
     <value>Вид</value>
   </data>
+  <data name="RowsPerPage" xml:space="preserve"><value>Строки</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Видимость столбцов</value></data>
+  <data name="PreviousPage" xml:space="preserve"><value>Предыдущая страница</value></data>
+  <data name="NextPage" xml:space="preserve"><value>Следующая страница</value></data>
   <data name="ViewList" xml:space="preserve">
     <value>Список</value>
   </data>
@@ -89,7 +93,7 @@
     <value>Сегодня</value>
   </data>
   <data name="SearchPlaceholder" xml:space="preserve">
-    <value>Поиск рабочих элементов…</value>
+    <value>Поиск…</value>
   </data>
   <data name="FilterAllModules" xml:space="preserve">
     <value>Все модули</value>
@@ -102,6 +106,9 @@
   </data>
   <data name="FilterType" xml:space="preserve">
     <value>Фильтр по типу</value>
+  </data>
+  <data name="FiltersLabel" xml:space="preserve">
+    <value>Фильтры</value>
   </data>
   <data name="KeyboardHint" xml:space="preserve">
     <value>j / k — переход · a — согласовать/принять · r — отклонить/вернуть · Enter — открыть</value>
@@ -132,6 +139,15 @@
   </data>
   <data name="SlaOverdueByDays" xml:space="preserve">
     <value>Просрочено на {0} дн.</value>
+  </data>
+  <data name="SlaClosedLateByDays" xml:space="preserve">
+    <value>Закрыто с опозданием на {0} дн.</value>
+  </data>
+  <data name="SlaClosedLate" xml:space="preserve">
+    <value>Закрыто с опозданием</value>
+  </data>
+  <data name="SlaClosedOnTime" xml:space="preserve">
+    <value>Закрыто вовремя</value>
   </data>
   <data name="StatusPending" xml:space="preserve">
     <value>Ожидает</value>
@@ -220,11 +236,104 @@
   <data name="ActAct" xml:space="preserve">
     <value>Действовать</value>
   </data>
+  <data name="RowView" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>Назначить встречу для согласования</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>Встреча для согласования назначена: {0}</value></data>
+  <data name="IsTitleElimination" xml:space="preserve"><value>Подготовить таблицу внутригрупповых исключений</value></data>
+  <data name="IsSummaryElimination" xml:space="preserve"><value>Исключить внутригрупповые остатки перед консолидацией.</value></data>
+  <data name="IsTitlePricingRegression" xml:space="preserve"><value>Расследовать регрессию правила ценообразования</value></data>
+  <data name="IsSummaryPricingRegression" xml:space="preserve"><value>Найти и устранить первопричину отклонения цены после патча.</value></data>
+  <data name="IsTitleOnboardingChecklist" xml:space="preserve"><value>Заполнить чек-лист руководителя по адаптации нового сотрудника</value></data>
+  <data name="IsSummaryOnboardingChecklist" xml:space="preserve"><value>Нельзя начать, пока не завершён предшественник «подписанный трудовой договор».</value></data>
+  <data name="IsTitleVendorPrequal" xml:space="preserve"><value>Завершить предквалификационную оценку поставщика</value></data>
+  <data name="IsSummaryVendorPrequal" xml:space="preserve"><value>От имени Aylin Ersoy: проверить и оценить документы кандидата-поставщика.</value></data>
+  <data name="IsTitleRackAudit" xml:space="preserve"><value>Провести аудит расположения стеллажей в проходе D</value></data>
+  <data name="IsSummaryRackAudit" xml:space="preserve"><value>Проверить точность расположения стеллажей после подсчёта.</value></data>
+  <data name="IsTitleCapaEvidence" xml:space="preserve"><value>Закрыть отклонение по получении пакета доказательств CAPA</value></data>
+  <data name="IsSummaryCapaEvidence" xml:space="preserve"><value>Ожидается доказательство корректирующего действия; подготовить закрытие по получении.</value></data>
+  <data name="IsTitleNdaReview" xml:space="preserve"><value>Проверка соглашения о неразглашении — встреча по согласованию</value></data>
+  <data name="IsSummaryNdaReview" xml:space="preserve"><value>Назначена встреча по проверке; утвердить после её проведения.</value></data>
+  <data name="IsTitleDepreciation" xml:space="preserve"><value>Подготовить график амортизации</value></data>
+  <data name="IsSummaryDepreciation" xml:space="preserve"><value>В запланированную дату рассчитать амортизацию за период и подготовить график.</value></data>
+  <data name="IsChkMatchBalances" xml:space="preserve"><value>Сопоставить остатки</value></data>
+  <data name="IsChkEliminate" xml:space="preserve"><value>Устранить расхождения</value></data>
+  <data name="IsChkClose" xml:space="preserve"><value>Закрыть таблицу</value></data>
+  <data name="IsDepSignedContract" xml:space="preserve"><value>Подписанный трудовой договор</value></data>
+  <data name="BusinessContextLabel" xml:space="preserve"><value>Бизнес-контекст</value></data>
+  <data name="FilterSlaStatus" xml:space="preserve"><value>Статус SLA</value></data>
+  <data name="FilterPinned" xml:space="preserve"><value>Только закреплённые</value></data>
+  <data name="IsChkReconcileFx" xml:space="preserve"><value>Сверить курсовые разницы</value></data>
+  <data name="IsDepLedgerClose" xml:space="preserve"><value>Закрытие вспомогательной книги</value></data>
+  <data name="IsDepConsolidation" xml:space="preserve"><value>Прогон консолидации</value></data>
+  <data name="IsAttachTrialBalance" xml:space="preserve"><value>Оборотная ведомость</value></data>
+  <data name="IsAttachEliminationTemplate" xml:space="preserve"><value>Шаблон исключений</value></data>
+  <data name="IsCtxFinancials" xml:space="preserve"><value>Финансовый контекст</value></data>
+  <data name="IsFactAmount" xml:space="preserve"><value>Сумма</value></data>
+  <data name="IsFactCurrency" xml:space="preserve"><value>Валюта</value></data>
+  <data name="IsFactCostCenter" xml:space="preserve"><value>Центр затрат</value></data>
+  <data name="IsFactPeriod" xml:space="preserve"><value>Период</value></data>
   <data name="ActionsLabel" xml:space="preserve">
     <value>Действия</value>
   </data>
   <data name="DetailSummary" xml:space="preserve">
     <value>Сводка</value>
+  </data>
+  <data name="SummaryCardLabel" xml:space="preserve">
+    <value>Сводка</value>
+  </data>
+  <data name="DetailDescription" xml:space="preserve">
+    <value>Описание</value>
+  </data>
+  <data name="SummaryUnassigned" xml:space="preserve">
+    <value>Не назначена</value>
+  </data>
+  <data name="PersonalCardLabel" xml:space="preserve">
+    <value>Личное</value>
+  </data>
+  <data name="StatusCardLabel" xml:space="preserve">
+    <value>Текущее состояние</value>
+  </data>
+  <data name="TechnicalDetailsLabel" xml:space="preserve">
+    <value>Технические данные</value>
+  </data>
+  <data name="SourceCardLabel" xml:space="preserve">
+    <value>Источник</value>
+  </data>
+  <data name="DetailNativeStatusInSource" xml:space="preserve">
+    <value>Статус в источнике</value>
+  </data>
+  <data name="ActionCompleteInSource" xml:space="preserve">
+    <value>Завершить в {0}</value>
+  </data>
+  <data name="ActionDisabledWithName" xml:space="preserve">
+    <value>{0} — {1}</value>
+  </data>
+  <data name="ActionCompleteInSourceHint" xml:space="preserve">
+    <value>Эту работу нельзя завершить здесь — она закрывается в {0}</value>
+  </data>
+  <data name="TechVersionValue" xml:space="preserve">
+    <value>Версия {0}</value>
+  </data>
+  <data name="DetailStartAt" xml:space="preserve">
+    <value>Дата начала</value>
+  </data>
+  <data name="DetailEstimate" xml:space="preserve">
+    <value>Оценка</value>
+  </data>
+  <data name="DetailTags" xml:space="preserve">
+    <value>Теги</value>
+  </data>
+  <data name="DetailPriority" xml:space="preserve">
+    <value>Приоритет</value>
+  </data>
+  <data name="EstimateHoursValue" xml:space="preserve">
+    <value>{0} ч</value>
+  </data>
+  <data name="ShowAllCount" xml:space="preserve">
+    <value>Показать все ({0})</value>
+  </data>
+  <data name="ShowLess" xml:space="preserve">
+    <value>Показать меньше</value>
   </data>
   <data name="DetailContext" xml:space="preserve">
     <value>Контекст источника</value>
@@ -267,6 +376,9 @@
   </data>
   <data name="ColPriority" xml:space="preserve">
     <value>Приоритет</value>
+  </data>
+  <data name="SortLabel" xml:space="preserve">
+    <value>Сортировка</value>
   </data>
   <data name="ColSla" xml:space="preserve">
     <value>SLA</value>
@@ -374,11 +486,14 @@
     <value>Обработано элементов: {0} (демо)</value>
   </data>
   <data name="ToastOpenSource" xml:space="preserve">
-    <value>Открыло бы {0} · {1} (демо-ссылка)</value>
+    <value>{0} · {1} открыт в новой вкладке</value>
   </data>
   <data name="TabsLabel" xml:space="preserve">
     <value>Вкладки</value>
   </data>
+  <data name="ScopeTeam" xml:space="preserve"><value>Моя команда</value></data>
+  <data name="ScopeTeamCount" xml:space="preserve"><value>{0} чел.</value></data>
+  <data name="ScopeTeamEmpty" xml:space="preserve"><value>Вам никто не подчиняется, поэтому команду показать нельзя.</value></data>
   <data name="TabInbox" xml:space="preserve">
     <value>Входящие</value>
   </data>
@@ -412,14 +527,23 @@
   <data name="ActResume" xml:space="preserve">
     <value>Продолжить</value>
   </data>
-  <data name="ActPause" xml:space="preserve">
-    <value>Пауза</value>
-  </data>
   <data name="ActLogTime" xml:space="preserve">
     <value>Учесть время</value>
   </data>
   <data name="StepBarLabel" xml:space="preserve">
     <value>Жизненный цикл</value>
+  </data>
+  <data name="StepStateDone" xml:space="preserve">
+    <value>завершён</value>
+  </data>
+  <data name="StepStateCurrent" xml:space="preserve">
+    <value>текущий шаг</value>
+  </data>
+  <data name="StepStateUpcoming" xml:space="preserve">
+    <value>предстоит</value>
+  </data>
+  <data name="StepClosedOn" xml:space="preserve">
+    <value>Закрыто {0}</value>
   </data>
   <data name="StepAccepted" xml:space="preserve">
     <value>Принято</value>
@@ -469,11 +593,11 @@
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · запланировано на {1} (макет)</value>
   </data>
+  <data name="ToastPlanSaved" xml:space="preserve">
+    <value>План сохранён на {0}</value>
+  </data>
   <data name="ToastTimerStarted" xml:space="preserve">
     <value>{0} · таймер запущен (макет)</value>
-  </data>
-  <data name="ToastTimerPaused" xml:space="preserve">
-    <value>Таймер на паузе · учтено {0} (макет)</value>
   </data>
   <data name="ToastTimeLogged" xml:space="preserve">
     <value>учтено {0} (макет)</value>
@@ -512,7 +636,7 @@
     <value>Нельзя начать, пока не откроется окно заморозки.</value>
   </data>
   <data name="ConfirmBody" xml:space="preserve">
-    <value>Вы собираетесь применить это действие к «{0}». Продолжить?</value>
+    <value>Вы собираетесь выполнить это действие. Подтверждаете?</value>
   </data>
   <data name="ConfirmBulkBody" xml:space="preserve">
     <value>Вы собираетесь применить это действие сразу к {0} элементам. Продолжить?</value>
@@ -581,7 +705,7 @@
     <value>Отложить</value>
   </data>
   <data name="SnoozeFuture" xml:space="preserve">
-    <value>Выберите будущую дату.</value>
+    <value>Прошедшую дату выбрать нельзя.</value>
   </data>
   <data name="WaitingOn" xml:space="preserve">
     <value>Ожидание: {0}</value>
@@ -598,14 +722,19 @@
   <data name="SourceDueLabel" xml:space="preserve">
     <value>Срок (источник)</value>
   </data>
+  <!-- DEAD (WC-1, 2026-08-14): the planned date left the Personal card for the Summary (BL-141) — it is a
+       SHARED field on TaskItem, not a private one, so "Kişisel plan" was a false statement about who can
+       see it. `DetailPlannedDate` replaces it. `PlannedDateNone` went with it: the Summary prints a row
+       only for a fact that exists, and "Planla" is already offered as an action on exactly those tasks.
+       Kept rather than deleted — a removed key is invisible to the next reader. -->
   <data name="PlannedDateLabel" xml:space="preserve">
     <value>Личный план</value>
   </data>
   <data name="PlanConflict" xml:space="preserve">
-    <value>Ваш личный план позже срока источника — риск просрочки.</value>
+    <value>Планируемая дата позже срока источника — риск просрочки.</value>
   </data>
   <data name="ConfirmBodyOnBehalf" xml:space="preserve">
-    <value>Вы собираетесь применить это действие к «{0}» от имени {1}. Продолжить?</value>
+    <value>Вы собираетесь выполнить это действие от имени {0}. Подтверждаете?</value>
   </data>
   <data name="ToastReleased" xml:space="preserve">
     <value>{0} · возвращено в пул (макет)</value>
@@ -617,10 +746,10 @@
     <value>{0} · откреплено</value>
   </data>
   <data name="ToastSnoozed" xml:space="preserve">
-    <value>{0} · отложено до {1} (макет)</value>
+    <value>{0} · отложено до {1}</value>
   </data>
   <data name="ToastUnsnoozed" xml:space="preserve">
-    <value>{0} · возвращено (макет)</value>
+    <value>{0} · возвращено</value>
   </data>
   <data name="BulkResultTitle" xml:space="preserve">
     <value>Результат массового действия</value>
@@ -670,8 +799,32 @@
   <data name="SubtasksLabel" xml:space="preserve">
     <value>Подзадачи</value>
   </data>
+  <data name="SubtaskDoneCount" xml:space="preserve">
+    <value>{0} готово</value>
+  </data>
+  <data name="SubtaskProgressCount" xml:space="preserve">
+    <value>{0} / {1} готово</value>
+  </data>
+  <data name="SubtaskInheritsHint" xml:space="preserve">
+    <value>Срок, приоритет и исполнитель наследуются от родительской задачи.</value>
+  </data>
+  <data name="SubtaskOpen" xml:space="preserve">
+    <value>Открыть</value>
+  </data>
+  <data name="SubtaskCheckDoneReason" xml:space="preserve">
+    <value>Уже выполнена.</value>
+  </data>
+  <data name="SubtaskCheckCancelledReason" xml:space="preserve">
+    <value>Отменённую работу нельзя завершить.</value>
+  </data>
+  <data name="SubtaskCheckAria" xml:space="preserve">
+    <value>Завершить подзадачу</value>
+  </data>
+  <data name="SubtaskRowMenuAria" xml:space="preserve">
+    <value>Действия для {0}</value>
+  </data>
   <data name="SubtaskAddPlaceholder" xml:space="preserve">
-    <value>Новая подзадача…</value>
+    <value>Добавьте подзадачу и нажмите Enter</value>
   </data>
   <data name="SubtaskAdd" xml:space="preserve">
     <value>Добавить</value>
@@ -688,6 +841,75 @@
   <data name="DepSuccessor" xml:space="preserve">
     <value>Последующ.</value>
   </data>
+  <data name="DepSentencePredFS" xml:space="preserve">
+    <value>Вы не можете начать, пока не завершится {0}</value>
+  </data>
+  <data name="DepSentencePredFF" xml:space="preserve">
+    <value>Вы не можете завершить, пока не завершится {0}</value>
+  </data>
+  <data name="DepSentencePredSS" xml:space="preserve">
+    <value>Вы не можете начать, пока не начнётся {0}</value>
+  </data>
+  <data name="DepSentencePredSF" xml:space="preserve">
+    <value>Вы не можете завершить, пока не начнётся {0}</value>
+  </data>
+  <data name="DepSentenceSuccFS" xml:space="preserve">
+    <value>{0} не может начаться, пока вы не завершите</value>
+  </data>
+  <data name="DepSentenceSuccFF" xml:space="preserve">
+    <value>{0} не может завершиться, пока вы не завершите</value>
+  </data>
+  <data name="DepSentenceSuccSS" xml:space="preserve">
+    <value>{0} не может начаться, пока вы не начнёте</value>
+  </data>
+  <data name="DepSentenceSuccSF" xml:space="preserve">
+    <value>{0} не может завершиться, пока вы не начнёте</value>
+  </data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>ГГГГ-ММ-ДД</value>
+  </data>
+  <data name="DateTimePlaceholder" xml:space="preserve">
+    <value>ГГГГ-ММ-ДД ЧЧ:ММ</value>
+  </data>
+  <data name="MeetingWhenLabel" xml:space="preserve">
+    <value>Дата и время встречи</value>
+  </data>
+  <data name="MeetingTitlePlaceholder" xml:space="preserve">
+    <value>Обзор закрытия III квартала</value>
+  </data>
+  <data name="MeetingLocationPlaceholder" xml:space="preserve">
+    <value>Teams / Переговорная 2</value>
+  </data>
+  <data name="NewPickModuleLabel" xml:space="preserve">
+    <value>Какой модуль?</value>
+  </data>
+  <data name="LogTimeSubtext" xml:space="preserve">
+    <value>Добавляется к уже учтённому времени по этой задаче; таймер не запускается и не останавливается.</value>
+  </data>
+  <data name="MeetingWhenSubtext" xml:space="preserve">
+    <value>Связь с календарём ещё не настроена: эта запись видна только на этом экране и исчезнет при закрытии страницы. Срок не меняется.</value>
+  </data>
+  <data name="NewInSourceSubtext" xml:space="preserve">
+    <value>Запись создаётся в этом модуле и остаётся там; Центр задач копию не хранит.</value>
+  </data>
+  <data name="ConfirmProceedNamed" xml:space="preserve">
+    <value>Да, {0}</value>
+  </data>
+  <data name="SubtaskCreateAllFields" xml:space="preserve">
+    <value>Все поля</value>
+  </data>
+  <data name="TimerStateRunning" xml:space="preserve">
+    <value>В работе</value>
+  </data>
+  <data name="TimerStatePaused" xml:space="preserve">
+    <value>Приостановлено</value>
+  </data>
+  <data name="TimerFollowsStatusHint" xml:space="preserve">
+    <value>Затраченное время не записывается — вводите его вручную.</value>
+  </data>
+  <data name="SubtaskStartedNotCompleted" xml:space="preserve">
+    <value>Подзадача запущена, но завершить её не удалось: {0}</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Финиш-Старт (FS)</value>
   </data>
@@ -701,13 +923,40 @@
     <value>Старт-Финиш (SF)</value>
   </data>
   <data name="DepDone" xml:space="preserve">
-    <value>готово</value>
+    <value>Готово</value>
   </data>
   <data name="DepInProgress" xml:space="preserve">
-    <value>в работе</value>
+    <value>В работе</value>
   </data>
   <data name="DepNotStarted" xml:space="preserve">
-    <value>не начато</value>
+    <value>Не начато</value>
+  </data>
+  <data name="DepCancelled" xml:space="preserve">
+    <value>Отменена</value>
+  </data>
+  <data name="BlockedBannerCount" xml:space="preserve">
+    <value>{0} проблем(ы) мешают продвижению</value>
+  </data>
+  <data name="BlockerFinishToStart" xml:space="preserve">
+    <value>Нельзя начать, пока не закрыта «{0}»</value>
+  </data>
+  <data name="BlockerFinishToFinish" xml:space="preserve">
+    <value>Нельзя завершить, пока не закрыта «{0}»</value>
+  </data>
+  <data name="BlockerStartToStart" xml:space="preserve">
+    <value>Нельзя начать, пока не начата «{0}»</value>
+  </data>
+  <data name="BlockerStartToFinish" xml:space="preserve">
+    <value>Нельзя завершить, пока не начата «{0}»</value>
+  </data>
+  <data name="BlockedAffectsStart" xml:space="preserve">
+    <value>блокирует начало</value>
+  </data>
+  <data name="BlockedAffectsComplete" xml:space="preserve">
+    <value>блокирует завершение</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_DependencyBlocked" xml:space="preserve">
+    <value>Зависимость ещё не выполнена</value>
   </data>
   <data name="DepsReadonlyHint" xml:space="preserve">
     <value>Связи зависимостей управляются в источнике</value>
@@ -721,20 +970,38 @@
   <data name="NotePlaceholder" xml:space="preserve">
     <value>Заметка, видимая только вам…</value>
   </data>
+  <!-- DEAD (WC-1, 2026-08-14): the personal note became a LIST with an add row, so "Save" no longer
+       names a control on any surface. Kept rather than deleted — a removed key is invisible to the
+       next reader, who cannot tell it was retired from it never having existed. -->
   <data name="NoteSave" xml:space="preserve">
     <value>Сохранить</value>
   </data>
   <data name="ToastNoteSaved" xml:space="preserve">
-    <value>Личная заметка сохранена (макет)</value>
+    <value>Личная заметка сохранена</value>
   </data>
   <data name="ActivityLabel" xml:space="preserve">
     <value>Активность и комментарии</value>
   </data>
+  <data name="DetailTabGeneral" xml:space="preserve">
+    <value>Общее</value>
+  </data>
+  <data name="DetailTabActivity" xml:space="preserve">
+    <value>Активность</value>
+  </data>
   <data name="CommentPlaceholder" xml:space="preserve">
-    <value>Написать комментарий… (также в источник)</value>
+    <value>Написать комментарий…</value>
   </data>
   <data name="CommentPost" xml:space="preserve">
     <value>Отправить</value>
+  </data>
+  <data name="CommentTextRequired" xml:space="preserve">
+    <value>Напишите что-нибудь перед отправкой</value>
+  </data>
+  <data name="CommentTooLong" xml:space="preserve">
+    <value>Комментарий может содержать не более {0} символов</value>
+  </data>
+  <data name="CommentAuthorUnknown" xml:space="preserve">
+    <value>Имя недоступно</value>
   </data>
   <data name="ToastCommentPosted" xml:space="preserve">
     <value>Комментарий отправлен (макет)</value>
@@ -751,6 +1018,21 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>Только чтение — статус меняется в источнике; здесь только личный план/закрепление.</value>
   </data>
+  <data name="CalPrevMonth" xml:space="preserve">
+    <value>Предыдущий месяц</value>
+  </data>
+  <data name="CalNextMonth" xml:space="preserve">
+    <value>Следующий месяц</value>
+  </data>
+  <data name="CalToday" xml:space="preserve">
+    <value>Сегодня</value>
+  </data>
+  <data name="CalOutside" xml:space="preserve">
+    <value>Ещё {0} задач в других месяцах.</value>
+  </data>
+  <data name="CalOutsideAndUndated" xml:space="preserve">
+    <value>Ещё {0} задач в других месяцах; у {1} нет даты, и они никогда не появятся в календаре.</value>
+  </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>Срок источника</value>
   </data>
@@ -761,16 +1043,16 @@
     <value>Создать</value>
   </data>
   <data name="NewSelfTask" xml:space="preserve">
-    <value>Задача себе</value>
+    <value>Создать задачу</value>
   </data>
   <data name="NewSelfTaskDesc" xml:space="preserve">
     <value>Личное дело — живёт в WorkCenter</value>
   </data>
   <data name="NewInSource" xml:space="preserve">
-    <value>Создать в источнике</value>
+    <value>Создать в исходном модуле</value>
   </data>
   <data name="NewInSourceDesc" xml:space="preserve">
-    <value>Выберите модуль, создайте в его экране</value>
+    <value>Запись самого модуля — живёт в этом модуле</value>
   </data>
   <data name="NewTaskTitlePlaceholder" xml:space="preserve">
     <value>Название задачи…</value>
@@ -781,8 +1063,8 @@
   <data name="NewPickModule" xml:space="preserve">
     <value>Выберите модуль</value>
   </data>
-  <data name="NewOpenSource" xml:space="preserve">
-    <value>Открыть в источнике</value>
+  <data name="NewCreateInSource" xml:space="preserve">
+    <value>Создать в источнике</value>
   </data>
   <data name="SelfSource" xml:space="preserve">
     <value>Личное</value>
@@ -795,6 +1077,12 @@
   </data>
   <data name="ToastSelfTaskCreated" xml:space="preserve">
     <value>{0} · добавлено в «Мои задачи» (макет)</value>
+  </data>
+  <data name="ToastCommentPostedReal" xml:space="preserve">
+    <value>Комментарий отправлен</value>
+  </data>
+  <data name="ToastSelfTaskCreatedReal" xml:space="preserve">
+    <value>{0} · добавлено в «Мои задачи»</value>
   </data>
   <data name="ToastCreateInSource" xml:space="preserve">
     <value>Создание открылось бы в модуле {0} (макет)</value>
@@ -813,6 +1101,72 @@
   </data>
   <data name="GroupAll" xml:space="preserve">
     <value>Все группы</value>
+  </data>
+  <data name="GroupUnnamed" xml:space="preserve">
+    <value>Очередь без названия</value>
+  </data>
+  <data name="PoolUnassigned" xml:space="preserve">
+    <value>Не назначено — в пуле</value>
+  </data>
+  <data name="ModuleFinance" xml:space="preserve">
+    <value>Финансы</value>
+  </data>
+  <data name="ModuleTax" xml:space="preserve">
+    <value>Налоги</value>
+  </data>
+  <data name="ModuleQuality" xml:space="preserve">
+    <value>Качество</value>
+  </data>
+  <data name="ModuleMasterData" xml:space="preserve">
+    <value>Мастер-данные</value>
+  </data>
+  <data name="ModuleIntegrationMonitoring" xml:space="preserve">
+    <value>Мониторинг интеграций</value>
+  </data>
+  <data name="ModuleProjectGovernance" xml:space="preserve">
+    <value>Управление проектами</value>
+  </data>
+  <data name="ModuleWorkflow" xml:space="preserve">
+    <value>Рабочий процесс</value>
+  </data>
+  <data name="ModuleIncident" xml:space="preserve">
+    <value>Управление инцидентами</value>
+  </data>
+  <data name="ModuleWorkcenter" xml:space="preserve">
+    <value>Центр задач</value>
+  </data>
+  <data name="ModuleTasks" xml:space="preserve">
+    <value>Задачи</value>
+  </data>
+  <data name="ModuleEnterpriseStrategy" xml:space="preserve">
+    <value>Корпоративная стратегия</value>
+  </data>
+  <data name="ModuleDocumentation" xml:space="preserve">
+    <value>Управление документами</value>
+  </data>
+  <data name="ModuleControlledDocuments" xml:space="preserve">
+    <value>Контролируемые документы</value>
+  </data>
+  <data name="ModuleProcurement" xml:space="preserve">
+    <value>Закупки</value>
+  </data>
+  <data name="ModuleSales" xml:space="preserve">
+    <value>Продажи</value>
+  </data>
+  <data name="ModuleTreasury" xml:space="preserve">
+    <value>Казначейство</value>
+  </data>
+  <data name="ModuleHr" xml:space="preserve">
+    <value>Кадры</value>
+  </data>
+  <data name="ModuleLegal" xml:space="preserve">
+    <value>Юридический отдел</value>
+  </data>
+  <data name="ModuleCalendar" xml:space="preserve">
+    <value>Календарь</value>
+  </data>
+  <data name="ModuleLegacyAdapter" xml:space="preserve">
+    <value>Адаптер устаревшей системы</value>
   </data>
   <data name="FilterPriority" xml:space="preserve">
     <value>Фильтр приоритета</value>
@@ -900,4 +1254,931 @@
   <data name="ErrorTitle" xml:space="preserve"><value>Не удалось загрузить Рабочий центр</value></data>
   <data name="ErrorDesc" xml:space="preserve"><value>Ваши фильтры сохранены. Повторите загрузку рабочего пространства.</value></data>
   <data name="Retry" xml:space="preserve"><value>Повторить</value></data>
+  <data name="NewNote" xml:space="preserve">
+    <value>Быстрая заметка</value>
+  </data>
+  <data name="NewMeeting" xml:space="preserve">
+    <value>Запланировать встречу</value>
+  </data>
+  <data name="ChipAll" xml:space="preserve">
+    <value>Все</value>
+  </data>
+  <data name="ChipPendingAccept" xml:space="preserve">
+    <value>Ожидает принятия</value>
+  </data>
+  <data name="ChipMeetingInvite" xml:space="preserve">
+    <value>Приглашение на встречу</value>
+  </data>
+  <data name="EmptyMeetingInviteTitle" xml:space="preserve">
+    <value>У вас нет ожидающих приглашений на встречу.</value>
+  </data>
+  <data name="EmptyMeetingInviteDesc" xml:space="preserve">
+    <value>Новые приглашения появятся здесь.</value>
+  </data>
+  <data name="FilterWorkType" xml:space="preserve">
+    <value>Тип работы</value>
+  </data>
+  <data name="FilterAllWorkTypes" xml:space="preserve">
+    <value>Все типы работ</value>
+  </data>
+  <data name="SearchClear" xml:space="preserve">
+    <value>Очистить поиск</value>
+  </data>
+  <data name="Apply" xml:space="preserve"><value>Применить</value></data>
+  <data name="Reset" xml:space="preserve"><value>Сбросить</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Сохранить представление</value></data>
+  <data name="DefaultViewName" xml:space="preserve"><value>По умолчанию</value></data>
+  <data name="ViewSaved" xml:space="preserve"><value>Представление сохранено.</value></data>
+  <data name="ErrorOccurred" xml:space="preserve"><value>Произошла ошибка.</value></data>
+  <data name="ExportLabel" xml:space="preserve">
+    <value>Экспорт</value>
+  </data>
+  <data name="ApprovalContextTitle" xml:space="preserve"><value>Контекст согласования</value></data>
+  <data name="ApprovalAmount" xml:space="preserve"><value>Сумма</value></data>
+  <data name="ApprovalThreshold" xml:space="preserve"><value>Порог согласования</value></data>
+  <data name="BudgetImpact" xml:space="preserve"><value>Влияние на бюджет</value></data>
+  <data name="LineItemsTitle" xml:space="preserve"><value>Позиции</value></data>
+  <data name="LineDescription" xml:space="preserve"><value>Описание / счёт</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Кол-во</value></data>
+  <data name="LineUnitPrice" xml:space="preserve"><value>Цена за единицу</value></data>
+  <data name="ReviewContextTitle" xml:space="preserve"><value>Пакет проверки</value></data>
+  <data name="ReviewVersion" xml:space="preserve"><value>Версия</value></data>
+  <data name="ReviewChecklistTitle" xml:space="preserve"><value>Контрольный список</value></data>
+  <data name="ReviewCheckComplete" xml:space="preserve"><value>Выполнено</value></data>
+  <data name="ReviewCheckPending" xml:space="preserve"><value>Ожидает</value></data>
+  <data name="SignatureHistoryTitle" xml:space="preserve"><value>История подписей</value></data>
+  <data name="SignatureSigned" xml:space="preserve"><value>Подписано</value></data>
+  <data name="SignaturePending" xml:space="preserve"><value>Ожидает подписи</value></data>
+  <data name="ExceptionContextTitle" xml:space="preserve"><value>Анализ исключения</value></data>
+  <data name="DiscrepancyField" xml:space="preserve"><value>Поле расхождения</value></data>
+  <data name="ExpectedValue" xml:space="preserve"><value>Ожидалось</value></data>
+  <data name="ActualValue" xml:space="preserve"><value>Фактически</value></data>
+  <data name="DeltaPercent" xml:space="preserve"><value>Отклонение</value></data>
+  <data name="RootCause" xml:space="preserve"><value>Коренная причина</value></data>
+  <data name="ResolutionOptions" xml:space="preserve"><value>Варианты решения</value></data>
+  <data name="TaskContextTitle" xml:space="preserve"><value>Выполнение работы</value></data>
+  <data name="EffortSpent" xml:space="preserve"><value>Затрачено</value></data>
+  <data name="HoursShort" xml:space="preserve"><value>ч</value></data>
+  <data name="AssignmentHistoryTitle" xml:space="preserve"><value>История назначений</value></data>
+  <data name="MeetingContextTitle" xml:space="preserve"><value>Сведения о встрече</value></data>
+  <data name="MeetingAgendaTitle" xml:space="preserve"><value>Повестка</value></data>
+  <data name="MeetingParticipantsTitle" xml:space="preserve"><value>Участники</value></data>
+  <data name="AttendanceAccepted" xml:space="preserve"><value>Принято</value></data>
+  <data name="AttendancePending" xml:space="preserve"><value>Ожидается ответ</value></data>
+  <data name="AttendanceDeclined" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="ParticipantOrganizer" xml:space="preserve"><value>Организатор</value></data>
+  <data name="ParticipantRequired" xml:space="preserve"><value>Обязательный</value></data>
+  <data name="ParticipantOptional" xml:space="preserve"><value>Необязательный</value></data>
+  <data name="ApprovalChainTitle" xml:space="preserve"><value>Маршрут согласования</value></data>
+  <data name="ApprovalLevelValue" xml:space="preserve"><value>Уровень {0}</value></data>
+  <data name="ApprovalStatusApproved" xml:space="preserve"><value>Согласовано</value></data>
+  <data name="ApprovalStatusPending" xml:space="preserve"><value>Ожидает</value></data>
+  <data name="ApprovalStatusRejected" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="ConversationTitle" xml:space="preserve"><value>Обсуждение</value></data>
+  <data name="RelatedRecordsTitle" xml:space="preserve"><value>Связанные записи</value></data>
+  <data name="RelatedTypeParent" xml:space="preserve"><value>Родительская</value></data>
+  <data name="RelatedTypeChild" xml:space="preserve"><value>Дочерняя</value></data>
+  <data name="RelatedTypeTransaction" xml:space="preserve"><value>Операция</value></data>
+  <data name="RelatedTypeDocument" xml:space="preserve"><value>Документ</value></data>
+  <data name="ComplianceTitle" xml:space="preserve"><value>Соответствие и контроль</value></data>
+  <data name="CompliancePolicy" xml:space="preserve"><value>Политика</value></data>
+  <data name="ComplianceLimit" xml:space="preserve"><value>Лимит согласования</value></data>
+  <data name="ComplianceSoD" xml:space="preserve"><value>Разделение обязанностей</value></data>
+  <data name="DelegationTitle" xml:space="preserve"><value>Делегирование</value></data>
+  <data name="DelegationOnBehalf" xml:space="preserve"><value>От имени {0}</value></data>
+  <data name="DelegationDelegate" xml:space="preserve"><value>Делегат</value></data>
+  <data name="DetailTabsLabel" xml:space="preserve"><value>Разделы сведений о рабочем элементе</value></data>
+  <data name="DetailTabOverview" xml:space="preserve"><value>Сведения</value></data>
+  <data name="DetailTabProcess" xml:space="preserve"><value>Процесс</value></data>
+  <data name="DetailTabCollaboration" xml:space="preserve"><value>Совместная работа и записи</value></data>
+  <data name="DetailPageTitle" xml:space="preserve"><value>Сведения о рабочем элементе</value></data>
+  <data name="DetailItemNotFound" xml:space="preserve"><value>Запрошенный рабочий элемент не найден.</value></data>
+  <data name="DetailBackToList" xml:space="preserve"><value>Вернуться в рабочий центр</value></data>
+  <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>Ваши полномочия по этому элементу завершены.</value></data>
+  <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>Обязательная зависимость не завершена.</value></data>
+  <data name="ActionDisabledEvidenceIncomplete" xml:space="preserve"><value>Обязательные доказательства неполны.</value></data>
+  <data name="ActionDisabledReconciliationRequired" xml:space="preserve"><value>Требуется сверка с источником.</value></data>
+  <data name="ActionDisabledSourceUnavailable" xml:space="preserve"><value>Система-источник недоступна.</value></data>
+  <data name="ActionDisabledStaleProjection" xml:space="preserve"><value>Сначала обновите изменённую запись источника.</value></data>
+  <data name="ContextControlledDocument" xml:space="preserve"><value>Управляемый документ</value></data>
+  <data name="ContextDecomposition" xml:space="preserve"><value>Декомпозиция стратегии</value></data>
+  <data name="ContextDemandIdea" xml:space="preserve"><value>Идея запроса</value></data>
+  <data name="ContextObjective" xml:space="preserve"><value>Цель</value></data>
+  <data name="ContextPeriodicReview" xml:space="preserve"><value>Периодический обзор</value></data>
+  <data name="DetailLifecycleOwner" xml:space="preserve"><value>Владелец жизненного цикла</value></data>
+  <data name="EmptyBusinessContext" xml:space="preserve"><value>Бизнес-контекст не предоставлен.</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>Доказательства отсутствуют</value></data>
+  <data name="FixtureChecklistVerify" xml:space="preserve"><value>Проверить обязательную информацию</value></data>
+  <data name="FixtureDependencyContract" xml:space="preserve"><value>Зависимость договора</value></data>
+  <data name="FixtureDependencyValidation" xml:space="preserve"><value>Зависимость проверки</value></data>
+  <data name="FixtureInvalidDesc" xml:space="preserve"><value>Эти тестовые данные не соответствуют каноническому контракту.</value></data>
+  <data name="FixtureInvalidTitle" xml:space="preserve"><value>Недопустимые данные рабочего элемента</value></data>
+  <data name="LifecycleOpen" xml:space="preserve"><value>Открыто</value></data>
+  <data name="LifecyclePlanned" xml:space="preserve"><value>Запланировано</value></data>
+  <data name="MigrationAdaptedNotice" xml:space="preserve"><value>Этот устаревший пример адаптирован для тестирования миграции.</value></data>
+  <data name="MigrationLegacyBlocker" xml:space="preserve"><value>Устаревшая блокировка</value></data>
+  <data name="MigrationLegacyInformationRequest" xml:space="preserve"><value>Устаревший запрос информации</value></data>
+  <data name="MigrationLegacyPendingApproval" xml:space="preserve"><value>Устаревшее ожидающее согласование</value></data>
+  <data name="NoticeChecklistNonBlocking" xml:space="preserve"><value>В контрольном списке есть неблокирующая проблема.</value></data>
+  <data name="NoticeDueSoon" xml:space="preserve"><value>Срок этого элемента скоро наступит.</value></data>
+  <data name="NoticePendingReview" xml:space="preserve"><value>Этот элемент ожидает проверки.</value></data>
+  <data name="NoticePlanConflict" xml:space="preserve"><value>Личный план конфликтует со сроком источника.</value></data>
+  <data name="NoticeSnoozed" xml:space="preserve"><value>Вы отложили этот элемент.</value></data>
+  <data name="NoticeWaiting" xml:space="preserve"><value>Этот элемент ожидает внешних данных.</value></data>
+  <data name="NoticeWaitingExternal" xml:space="preserve"><value>Эта задача ожидает информации от другого человека.</value></data>
+  <data name="NoticeWaitingApproval" xml:space="preserve"><value>Эта задача ожидает решения по согласованию.</value></data>
+  <data name="NoticeWaitingReview" xml:space="preserve"><value>Эта задача ожидает проверки.</value></data>
+  <data name="NoticeWaitingMeeting" xml:space="preserve"><value>Эта задача ожидает встречи.</value></data>
+  <data name="ProviderCommandRequired" xml:space="preserve"><value>Это изменение должно выполняться поставщиком источника.</value></data>
+  <data name="RedactedValue" xml:space="preserve"><value>Ограничено</value></data>
+  <data name="RelatedRecordOpen" xml:space="preserve"><value>Открыть связанную запись</value></data>
+  <data name="SourceProjectionRequested" xml:space="preserve"><value>Запрошена свежая проекция источника.</value></data>
+  <data name="TriggerOnlyLabel" xml:space="preserve"><value>Требуется ответ</value></data>
+  <data name="TriggerResponsesLabel" xml:space="preserve"><value>Запросы ответа</value></data>
+  <data name="WaitingExpectedUntil" xml:space="preserve"><value>Ожидается до</value></data>
+  <data name="ActionDisabledReviewMeetingRequired" xml:space="preserve"><value>Перед утверждением требуется встреча для проверки.</value></data>
+  <data name="InboxTitleTaskVendorVerification" xml:space="preserve"><value>Проверить основные данные поставщика Arven Medical</value></data>
+  <data name="InboxTitleTaskVendorVerificationSummary" xml:space="preserve"><value>Проверьте налоговые, банковские и контактные данные.</value></data>
+  <data name="InboxTitleApprovalBudgetRevision" xml:space="preserve"><value>Утвердить корректировку бюджета продаж за 3 квартал</value></data>
+  <data name="InboxTitleApprovalBudgetRevisionSummary" xml:space="preserve"><value>Рассмотрите запрос на дополнительные 1,8 млн турецких лир.</value></data>
+  <data name="InboxTitleReviewOptionalMeeting" xml:space="preserve"><value>Проверка завершения CAPA-2231</value></data>
+  <data name="InboxTitleReviewOptionalMeetingSummary" xml:space="preserve"><value>Утвердите напрямую или назначьте встречу с владельцем задачи.</value></data>
+  <data name="InboxTitleReviewRequiredMeeting" xml:space="preserve"><value>Утверждение закрытия задачи трансформации Atlas</value></data>
+  <data name="InboxTitleReviewRequiredMeetingSummary" xml:space="preserve"><value>Задачу можно утвердить только после обязательной встречи.</value></data>
+  <data name="InboxTitleIssueIntegrationFailure" xml:space="preserve"><value>Устранить сбой передачи клиентов SAP</value></data>
+  <data name="InboxTitleIssueIntegrationFailureSummary" xml:space="preserve"><value>47 клиентских записей не прошли проверку при передаче.</value></data>
+  <data name="InboxTitleExceptionVatMismatch" xml:space="preserve"><value>Проверить расхождение сверки НДС за июль</value></data>
+  <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>Обнаружено расхождение 84 750 лир с главной книгой.</value></data>
+  <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>Встреча по корректировке бюджета за 3 квартал</value></data>
+  <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 июля 2026, 14:00–15:00 · Teams · Организатор: Deniz Koç</value></data>
+  <data name="WorkAggregation_Title_Approval" xml:space="preserve">
+    <value>Согласование: {objectType} {objectId}</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
+    <value>Ожидает согласования</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_WaitingEvidence" xml:space="preserve">
+    <value>Ожидает подтверждения</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Escalated" xml:space="preserve">
+    <value>Эскалировано</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Approved" xml:space="preserve">
+    <value>Согласовано</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Rejected" xml:space="preserve">
+    <value>Отклонено</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Cancelled" xml:space="preserve">
+    <value>Отменено</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_TimedOut" xml:space="preserve">
+    <value>Истёк срок</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Delegated" xml:space="preserve">
+    <value>Делегировано</value>
+  </data>
+  <data name="WorkAggregation_Action_Approve" xml:space="preserve">
+    <value>Согласовать</value>
+  </data>
+  <data name="WorkAggregation_Action_Reject" xml:space="preserve">
+    <value>Отклонить</value>
+  </data>
+  <data name="WorkAggregation_Action_RequestInfo" xml:space="preserve">
+    <value>Запросить информацию</value>
+  </data>
+  <data name="WorkAggregation_Action_Delegate" xml:space="preserve">
+    <value>Делегировать</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_PermissionDenied" xml:space="preserve">
+    <value>У вас нет прав на это действие.</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
+    <value>Отсутствует обязательное подтверждение.</value>
+  </data>
+  <data name="NoAccessTitle" xml:space="preserve">
+    <value>У вас нет доступа к Центру задач</value>
+  </data>
+  <data name="NoAccessDesc" xml:space="preserve">
+    <value>Обратитесь к администратору за доступом к этому модулю.</value>
+  </data>
+  <data name="SessionExpiredTitle" xml:space="preserve">
+    <value>Сеанс завершён</value>
+  </data>
+  <data name="SessionExpiredDesc" xml:space="preserve">
+    <value>Войдите снова, чтобы продолжить.</value>
+  </data>
+  <data name="UnavailableTitle" xml:space="preserve">
+    <value>Центр задач временно недоступен</value>
+  </data>
+  <data name="UnavailableDesc" xml:space="preserve">
+    <value>Служба недоступна. Фильтры сохранены — повторите попытку.</value>
+  </data>
+  <data name="WorkAggregation_Action_Accept" xml:space="preserve">
+    <value>Принять</value>
+  </data>
+  <data name="WorkAggregation_Action_Claim" xml:space="preserve">
+    <value>Взять себе</value>
+  </data>
+  <data name="WorkAggregation_Action_Start" xml:space="preserve">
+    <value>Начать</value>
+  </data>
+  <data name="WorkAggregation_Action_Complete" xml:space="preserve">
+    <value>Завершить</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ApprovalPending" xml:space="preserve">
+    <value>Ожидает утверждения — начать пока нельзя.</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Open" xml:space="preserve">
+    <value>Открыта</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Planned" xml:space="preserve">
+    <value>Запланирована</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_InProgress" xml:space="preserve">
+    <value>В работе</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Waiting" xml:space="preserve">
+    <value>Ожидает</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_PendingReview" xml:space="preserve">
+    <value>На проверке</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Done" xml:space="preserve">
+    <value>Выполнена</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Cancelled" xml:space="preserve">
+    <value>Отменена</value>
+  </data>
+  <data name="WorkAggregation_Action_Plan" xml:space="preserve">
+    <value>Запланировать</value>
+  </data>
+  <data name="WorkAggregation_Action_Release" xml:space="preserve">
+    <value>Освободить</value>
+  </data>
+  <data name="WorkAggregation_Action_Resume" xml:space="preserve">
+    <value>Продолжить</value>
+  </data>
+  <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
+    <value>Ожидание…</value>
+  </data>
+  <data name="WorkAggregation_Action_Return" xml:space="preserve">
+    <value>Вернуть</value>
+  </data>
+  <data name="WorkAggregation_Action_Reassign" xml:space="preserve">
+    <value>Переназначить</value>
+  </data>
+  <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
+    <value>Отменить задачу</value>
+  </data>
+  <data name="ToastActionApplied" xml:space="preserve">
+    <value>{1} — «{0}» выполнено</value>
+  </data>
+  <data name="ErrorConcurrencyRefreshed" xml:space="preserve">
+    <value>Эта задача изменилась, пока вы с ней работали. Список обновлён — попробуйте ещё раз.</value>
+  </data>
+  <data name="PersonSelf" xml:space="preserve">
+    <value>Я</value>
+  </data>
+  <data name="PersonNameUnavailable" xml:space="preserve">
+    <value>Имя недоступно</value>
+  </data>
+  <data name="PlannedDateNone" xml:space="preserve">
+    <value>Не запланировано</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ChecklistIncomplete" xml:space="preserve">
+    <value>Остался незавершённый обязательный пункт чек-листа.</value>
+  </data>
+  <data name="WorkAggregation_BusinessContext_Unfiled" xml:space="preserve">
+    <value>Прочие сведения</value>
+  </data>
+  <data name="WorkAggregation_BusinessContext_UnknownField" xml:space="preserve">
+    <value>Отозванное поле</value>
+  </data>
+  <data name="WorkAggregation_Action_SubmitReview" xml:space="preserve">
+    <value>Отправить на проверку</value>
+  </data>
+  <data name="WorkAggregation_ReviewError_StartFailed" xml:space="preserve">
+    <value>Не удалось начать проверку. Никто не ожидает — попробуйте снова.</value>
+  </data>
+  <data name="WorkAggregation_ReviewError_ReviewerRequired" xml:space="preserve">
+    <value>При запросе проверки необходимо указать проверяющего.</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewPending" xml:space="preserve">
+    <value>У проверяющего — завершить пока нельзя.</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ApprovalPendingComplete" xml:space="preserve">
+    <value>Ожидает утверждения — завершить пока нельзя.</value>
+  </data>
+  <data name="WorkAggregation_ApprovalError_StartFailed" xml:space="preserve">
+    <value>Не удалось запустить согласование.</value>
+  </data>
+  <data name="ChecklistEmpty" xml:space="preserve">
+    <value>Пунктов чек-листа пока нет.</value>
+  </data>
+  <data name="ChecklistAddPlaceholder" xml:space="preserve">
+    <value>Введите пункт и нажмите Enter</value>
+  </data>
+  <data name="ChecklistLevelOptional" xml:space="preserve">
+    <value>Необязательно</value>
+  </data>
+  <data name="ChecklistLevelRequired" xml:space="preserve">
+    <value>Ожидается</value>
+  </data>
+  <data name="ChecklistLevelBlocking" xml:space="preserve">
+    <value>Блокирующий</value>
+  </data>
+  <data name="ChecklistRequiredOpen" xml:space="preserve">
+    <value>Открытых ожидаемых пунктов: {0}</value>
+  </data>
+  <data name="ConfirmRequiredOpen" xml:space="preserve">
+    <value>Не отмечено обязательных пунктов: {0}. Задача всё равно будет закрыта.</value>
+  </data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve">
+    <value>Требуется подтверждающий документ. Привязка документа заработает после подключения модуля документов.</value>
+  </data>
+  <data name="ChecklistLevelHint" xml:space="preserve">
+    <value>Изменить уровень: Необязательно → Ожидается → Блокирующий</value>
+  </data>
+  <data name="ChecklistLevelReadOnly" xml:space="preserve">
+    <value>Уровень — изменить может только тот, кто добавил этот пункт</value>
+  </data>
+  <data name="ChecklistEvidenceMark" xml:space="preserve">
+    <value>Требуется подтверждение</value>
+  </data>
+  <data name="ToastChecklistItemAdded" xml:space="preserve">
+    <value>Пункт добавлен</value>
+  </data>
+  <data name="GuidancePendingAcceptance" xml:space="preserve">
+    <value>Эта задача ждёт вашего принятия. Возьмите её или переназначьте, если она не ваша.</value>
+  </data>
+  <data name="GuidanceChildrenRunning" xml:space="preserve">
+    <value>{0} подзадач уже выполняются.</value>
+  </data>
+  <data name="GuidancePendingClaim" xml:space="preserve">
+    <value>Эта задача в пуле. Возьмите её, чтобы она стала вашей.</value>
+  </data>
+  <data name="GuidanceApprovalPending" xml:space="preserve">
+    <value>Ожидается решение по согласованию; начать пока нельзя.</value>
+  </data>
+  <data name="GuidanceReviewPending" xml:space="preserve">
+    <value>Задача у проверяющего; до его ответа делать нечего.</value>
+  </data>
+  <data name="GuidanceWaiting" xml:space="preserve">
+    <value>Задача приостановлена и ожидает другого человека.</value>
+  </data>
+  <data name="GuidanceWaitingBecause" xml:space="preserve">
+    <value>Задача приостановлена: {0}</value>
+  </data>
+  <data name="SubtaskAddDetailed" xml:space="preserve">
+    <value>+ Добавить задачу подробно</value>
+  </data>
+  <data name="SubtaskCreateTitle" xml:space="preserve">
+    <value>Новая подзадача</value>
+  </data>
+  <data name="SubtaskCreateSubmit" xml:space="preserve">
+    <value>Создать подзадачу</value>
+  </data>
+  <data name="SubtaskCreateParentFixed" xml:space="preserve">
+    <value>Будет создана внутри задачи, которую вы просматриваете.</value>
+  </data>
+  <data name="SubtaskAssignToMe" xml:space="preserve">
+    <value>Мне</value>
+  </data>
+  <data name="SubtaskFieldPriority" xml:space="preserve">
+    <value>Приоритет</value>
+  </data>
+  <data name="SubtaskFieldDescription" xml:space="preserve">
+    <value>Описание</value>
+  </data>
+  <data name="SubtaskCancel" xml:space="preserve">
+    <value>Отменить подзадачу</value>
+  </data>
+  <data name="SubtaskCancelAria" xml:space="preserve">
+    <value>Отменить подзадачу: {0}</value>
+  </data>
+  <data name="SubtaskCancelConfirm" xml:space="preserve">
+    <value>Отменить подзадачу «{0}»? Она останется в истории и перестанет быть работой.</value>
+  </data>
+  <data name="SubtaskCancelConfirmYes" xml:space="preserve">
+    <value>Отменить</value>
+  </data>
+  <data name="ToastSubtaskCompleted" xml:space="preserve">
+    <value>Подзадача завершена: {0}</value>
+  </data>
+  <data name="ToastSubtaskCancelled" xml:space="preserve">
+    <value>Подзадача отменена: {0}</value>
+  </data>
+  <data name="SubtaskSave" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="SubtaskSaved" xml:space="preserve">
+    <value>Подзадача сохранена.</value>
+  </data>
+  <data name="SubtaskQuickEditTitle" xml:space="preserve">
+    <value>Быстрое редактирование</value>
+  </data>
+  <data name="SubtaskFieldTitle" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="SubtaskFieldDue" xml:space="preserve">
+    <value>Срок</value>
+  </data>
+  <data name="SubtaskFieldAssignee" xml:space="preserve">
+    <value>Исполнитель</value>
+  </data>
+  <data name="SubtaskFieldStatus" xml:space="preserve">
+    <value>Статус</value>
+  </data>
+  <data name="SubtaskNoAssignee" xml:space="preserve">
+    <value>Пока никто</value>
+  </data>
+  <data name="SubtaskOpenFullDetail" xml:space="preserve">
+    <value>Открыть полную карточку</value>
+  </data>
+  <data name="SubtaskQuickEditScope" xml:space="preserve">
+    <value>Исполнитель и статус меняются в полной карточке, где действуют их правила.</value>
+  </data>
+  <data name="ActionsAvailable" xml:space="preserve">
+    <value>Доступные действия</value>
+  </data>
+  <data name="ActionSubmitting" xml:space="preserve">
+    <value>Выполняется…</value>
+  </data>
+  <data name="ActionsNoneClosed" xml:space="preserve">
+    <value>Задача закрыта — здесь больше нечего делать.</value>
+  </data>
+  <data name="ActionsNoneNotYours" xml:space="preserve">
+    <value>Сейчас у вас нет доступных действий по этой задаче.</value>
+  </data>
+  <data name="ActionsOther" xml:space="preserve">
+    <value>Другие действия</value>
+  </data>
+  <data name="StepApproval" xml:space="preserve">
+    <value>Согласование</value>
+  </data>
+  <data name="StepOpen" xml:space="preserve">
+    <value>Открыта</value>
+  </data>
+  <data name="StepPaused" xml:space="preserve">
+    <value>Сейчас приостановлено</value>
+  </data>
+  <data name="StepPausedBecause" xml:space="preserve">
+    <value>Сейчас приостановлено: {0}</value>
+  </data>
+  <data name="OutcomeAccept" xml:space="preserve">
+    <value>Берёт задачу и переводит её в «Открыта»</value>
+  </data>
+  <data name="OutcomeClaim" xml:space="preserve">
+    <value>Забирает задачу из пула и назначает вам</value>
+  </data>
+  <data name="OutcomeRelease" xml:space="preserve">
+    <value>Возвращает задачу в пул</value>
+  </data>
+  <data name="OutcomePlan" xml:space="preserve">
+    <value>Задаёт вашу плановую дату; срок не меняется</value>
+  </data>
+  <data name="OutcomeStart" xml:space="preserve">
+    <value>Переводит задачу в «В работе»</value>
+  </data>
+  <data name="OutcomeInquire" xml:space="preserve">
+    <value>Приостанавливает задачу и переводит её в «Ожидание»</value>
+  </data>
+  <data name="OutcomeReturn" xml:space="preserve">
+    <value>Возвращает задачу её заказчику</value>
+  </data>
+  <data name="OutcomeReassign" xml:space="preserve">
+    <value>Передаёт задачу другому, непринятой</value>
+  </data>
+  <data name="OutcomeComplete" xml:space="preserve">
+    <value>Завершает задачу и переводит её в «Завершена»</value>
+  </data>
+  <data name="OutcomeCancel" xml:space="preserve">
+    <value>Полностью отменяет задачу; открытые подзадачи тоже отменяются</value>
+  </data>
+  <data name="GatesLabel" xml:space="preserve">
+    <value>Контроли</value>
+  </data>
+  <data name="GateApproval" xml:space="preserve">
+    <value>Согласование</value>
+  </data>
+  <data name="GateReview" xml:space="preserve">
+    <value>Проверка</value>
+  </data>
+  <data name="GateStatusNotRequired" xml:space="preserve">
+    <value>Не требуется</value>
+  </data>
+  <data name="GateStatusRequired" xml:space="preserve">
+    <value>Требуется</value>
+  </data>
+  <data name="GateStatusPending" xml:space="preserve">
+    <value>Ожидает решения</value>
+  </data>
+  <data name="GateStatusApproved" xml:space="preserve">
+    <value>Согласовано</value>
+  </data>
+  <data name="GateStatusRejected" xml:space="preserve">
+    <value>Отклонено</value>
+  </data>
+  <data name="SubtaskStatusCancelled" xml:space="preserve">
+    <value>Отменено</value>
+  </data>
+  <data name="BreadcrumbLabel" xml:space="preserve">
+    <value>Навигационная цепочка</value>
+  </data>
+  <data name="SubtaskStatusDone" xml:space="preserve">
+    <value>Готово</value>
+  </data>
+  <data name="SubtaskStatusInProgress" xml:space="preserve">
+    <value>В работе</value>
+  </data>
+  <data name="SubtaskStatusNotStarted" xml:space="preserve">
+    <value>Не начато</value>
+  </data>
+  <data name="ChecklistBlocksCompletion" xml:space="preserve">
+    <value>Этот список нужно завершить, прежде чем закрывать задачу.</value>
+  </data>
+  <data name="ChecklistDoesNotBlock" xml:space="preserve">
+    <value>Список носит рекомендательный характер и не блокирует завершение.</value>
+  </data>
+  <data name="ActivityEmpty" xml:space="preserve">
+    <value>Активности пока нет.</value>
+  </data>
+  <data name="AuditEventCreated" xml:space="preserve">
+    <value>Задача создана</value>
+  </data>
+  <data name="AuditEventAccepted" xml:space="preserve">
+    <value>Задача принята</value>
+  </data>
+  <data name="AuditEventPlanned" xml:space="preserve">
+    <value>Задача запланирована</value>
+  </data>
+  <data name="AuditEventStarted" xml:space="preserve">
+    <value>Работа начата</value>
+  </data>
+  <data name="AuditEventResumed" xml:space="preserve">
+    <value>Работа возобновлена</value>
+  </data>
+  <data name="AuditEventWaiting" xml:space="preserve">
+    <value>Поставлена на ожидание</value>
+  </data>
+  <data name="AuditEventSubmittedForReview" xml:space="preserve">
+    <value>Отправлена на проверку</value>
+  </data>
+  <data name="AuditEventReviewCancelled" xml:space="preserve">
+    <value>Требование проверки снято</value>
+  </data>
+  <data name="AuditEventCompleted" xml:space="preserve">
+    <value>Завершена</value>
+  </data>
+  <data name="AuditEventCancelled" xml:space="preserve">
+    <value>Отменена</value>
+  </data>
+  <data name="AuditEventClaimed" xml:space="preserve">
+    <value>Взята из пула</value>
+  </data>
+  <data name="AuditEventReleased" xml:space="preserve">
+    <value>Возвращена в пул</value>
+  </data>
+  <data name="AuditEventReassigned" xml:space="preserve">
+    <value>Переназначена</value>
+  </data>
+  <data name="AuditEventReturned" xml:space="preserve">
+    <value>Возвращена заказчику</value>
+  </data>
+  <data name="AuditEventUnknown" xml:space="preserve">
+    <value>Задача обновлена</value>
+  </data>
+  <data name="ActivityFilterLabel" xml:space="preserve">
+    <value>Фильтр активности</value>
+  </data>
+  <data name="ActivityFilterAll" xml:space="preserve">
+    <value>Все</value>
+  </data>
+  <data name="ActivityFilterCommentsOnly" xml:space="preserve">
+    <value>Только комментарии</value>
+  </data>
+  <data name="ActivityNoComments" xml:space="preserve">
+    <value>В этой задаче пока нет комментариев.</value>
+  </data>
+  <data name="ActivityHistoryStartsHere" xml:space="preserve">
+    <value>Шаги, которые задача прошла до начала ведения журнала, не записаны.</value>
+  </data>
+  <data name="SubtasksEmpty" xml:space="preserve">
+    <value>Подзадач пока нет.</value>
+  </data>
+  <data name="SubtasksBlockingNotice" xml:space="preserve">
+    <value>Прежде чем завершить эту задачу, нужно закрыть {0} открытых подзадач</value>
+  </data>
+  <data name="BlockerSubtaskOpen" xml:space="preserve">
+    <value>Нельзя завершить, пока не закрыта подзадача «{0}»</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
+    <value>Подзадача ещё открыта</value>
+  </data>
+  <data name="ToastChecklistUpdated" xml:space="preserve">
+    <value>Чек-лист обновлён.</value>
+  </data>
+  <data name="ToastSubtaskAdded" xml:space="preserve">
+    <value>Подзадача «{0}» добавлена.</value>
+  </data>
+  <data name="SubtaskTitleRequired" xml:space="preserve">
+    <value>Введите название подзадачи.</value>
+  </data>
+  <!-- DEAD (2026-08-14): the parent-task notice became a Summary FIELD, whose label is `DetailParentTask`
+       and whose value is the parent's own title as a link. "{0} görevinin alt görevi" wrapped the title in
+       a sentence, which a labelled field does not need. Kept rather than deleted — a removed key is
+       invisible to the next reader. `SubtaskOfUnnamed` is still live: it is the honest fallback when the
+       reader cannot see the parent. -->
+  <data name="SubtaskOfNamed" xml:space="preserve">
+    <value>Подзадача задачи «{0}»</value>
+  </data>
+  <data name="SubtaskOfUnnamed" xml:space="preserve">
+    <value>Подзадача другой задачи</value>
+  </data>
+  <data name="SubtaskOpenAria" xml:space="preserve">
+    <value>Открыть подзадачу «{0}»</value>
+  </data>
+  <data name="HavuzTitleInvoiceMatch" xml:space="preserve">
+    <value>Сопоставить входящий счёт</value>
+  </data>
+  <data name="HavuzTitleInvoiceMatchSummary" xml:space="preserve">
+    <value>Сопоставьте несверённый счёт поставщика из бухгалтерской очереди с заказом на закупку.</value>
+  </data>
+  <data name="HavuzTitlePrReview" xml:space="preserve">
+    <value>Предварительная проверка заявки на закупку</value>
+  </data>
+  <data name="HavuzTitlePrReviewSummary" xml:space="preserve">
+    <value>Предварительно проверьте заявку на закупку из очереди на соответствие бюджету и поставщику.</value>
+  </data>
+  <data name="HavuzTitleAuditFinding" xml:space="preserve">
+    <value>Проверка результата аудита</value>
+  </data>
+  <data name="HavuzTitleAuditFindingSummary" xml:space="preserve">
+    <value>Вам предложен результат аудита качества для проверки.</value>
+  </data>
+  <data name="GecmisTitleQ1Close" xml:space="preserve">
+    <value>Закрытие периода Q1 2026</value>
+  </data>
+  <data name="GecmisTitleQ1CloseSummary" xml:space="preserve">
+    <value>Консолидационное закрытие первого квартала 2026 — все сверки по подразделениям завершены.</value>
+  </data>
+  <data name="GecmisTitleSupplierContract" xml:space="preserve">
+    <value>Утверждение рамочного договора с поставщиком</value>
+  </data>
+  <data name="GecmisTitleSupplierContractSummary" xml:space="preserve">
+    <value>Условия рамочного договора с поставщиком утверждены и переданы в закупки.</value>
+  </data>
+  <data name="GecmisTitleReportTemplate" xml:space="preserve">
+    <value>Пересмотр устаревшего шаблона отчётности</value>
+  </data>
+  <data name="GecmisTitleReportTemplateSummary" xml:space="preserve">
+    <value>Пересмотр устаревшего шаблона отменён после запуска нового модуля отчётности.</value>
+  </data>
+  <data name="GecmisChkReconcile" xml:space="preserve">
+    <value>Завершить сверки по подразделениям</value>
+  </data>
+  <data name="GecmisChkReview" xml:space="preserve">
+    <value>Проверить пакет закрытия</value>
+  </data>
+  <data name="GecmisChkPublish" xml:space="preserve">
+    <value>Опубликовать результаты</value>
+  </data>
+  <data name="ReassignAssigneeLabel" xml:space="preserve">
+    <value>Новый исполнитель</value>
+  </data>
+  <data name="ReassignAssigneePlaceholder" xml:space="preserve">
+    <value>Выберите человека</value>
+  </data>
+  <data name="ReassignAssigneeRequired" xml:space="preserve">
+    <value>Выберите, кому передаётся эта задача.</value>
+  </data>
+  <data name="ReassignNoAssignableUsers" xml:space="preserve">
+    <value>Некому передать эту задачу.</value>
+  </data>
+  <data name="CopyReference" xml:space="preserve">
+    <value>Копировать ссылку</value>
+  </data>
+  <data name="ReferenceCopied" xml:space="preserve">
+    <value>Ссылка скопирована</value>
+  </data>
+  <data name="ReferenceCopyFailed" xml:space="preserve">
+    <value>Не удалось скопировать ссылку</value>
+  </data>
+  <data name="ChecklistMoveUp" xml:space="preserve">
+    <value>Вверх</value>
+  </data>
+  <data name="ChecklistMoveDown" xml:space="preserve">
+    <value>Вниз</value>
+  </data>
+  <data name="ChecklistEvidenceToggle" xml:space="preserve">
+    <value>Требовать подтверждение</value>
+  </data>
+  <data name="ChecklistRemove" xml:space="preserve">
+    <value>Удалить пункт</value>
+  </data>
+  <data name="ChecklistAddButton" xml:space="preserve">
+    <value>Добавить</value>
+  </data>
+  <data name="ChecklistAddHint" xml:space="preserve">
+    <value>Нажмите на метку, чтобы изменить уровень. Списка шаблонов пока нет.</value>
+  </data>
+  <data name="NoteAddButton" xml:space="preserve">
+    <value>Добавить</value>
+  </data>
+  <data name="NoteAddHint" xml:space="preserve">
+    <value>Эти заметки видите только вы.</value>
+  </data>
+  <data name="NoteRemove" xml:space="preserve">
+    <value>Удалить заметку</value>
+  </data>
+  <data name="ToastNoteRemoved" xml:space="preserve">
+    <value>Личная заметка удалена</value>
+  </data>
+  <data name="DetailPlannedDate" xml:space="preserve">
+    <value>Планируемая дата</value>
+  </data>
+  <data name="SnoozedLabel" xml:space="preserve">
+    <value>Отложено</value>
+  </data>
+  <data name="SnoozeClear" xml:space="preserve">
+    <value>Убрать</value>
+  </data>
+  <data name="NoteWrittenAt" xml:space="preserve">
+    <value>Написано {0}</value>
+  </data>
+  <data name="DetailParentTask" xml:space="preserve">
+    <value>Родительская задача</value>
+  </data>
+  <data name="CommentEdited" xml:space="preserve">
+    <value>изменено</value>
+  </data>
+  <data name="CommentWithdrawn" xml:space="preserve">
+    <value>Этот комментарий отозван автором.</value>
+  </data>
+  <data name="CommentEdit" xml:space="preserve">
+    <value>Изменить комментарий</value>
+  </data>
+  <data name="CommentEditSave" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="CommentEditLabel" xml:space="preserve">
+    <value>Комментарий</value>
+  </data>
+  <data name="CommentWithdraw" xml:space="preserve">
+    <value>Отозвать комментарий</value>
+  </data>
+  <data name="CommentWithdrawConfirm" xml:space="preserve">
+    <value>Текст удаляется; на его месте остаётся отметка об отзыве.</value>
+  </data>
+  <data name="ToastCommentEdited" xml:space="preserve">
+    <value>Комментарий изменён</value>
+  </data>
+  <data name="ToastCommentWithdrawn" xml:space="preserve">
+    <value>Комментарий отозван</value>
+  </data>
+  <data name="WaitingOnWithReason" xml:space="preserve">
+    <value>Ожидание: {0} — {1}</value>
+  </data>
+  <data name="WaitingOnLabel" xml:space="preserve">
+    <value>Кого ожидаем? (необязательно)</value>
+  </data>
+  <data name="WaitingOnNobody" xml:space="preserve">
+    <value>Никого конкретно</value>
+  </data>
+  <data name="AuditEventEdited" xml:space="preserve">
+    <value>Поля изменены</value>
+  </data>
+  <data name="AuditFieldChangeValued" xml:space="preserve">
+    <value>{0}: {1} → {2}</value>
+  </data>
+  <data name="AuditFieldChangeNamed" xml:space="preserve">
+    <value>Изменено: {0}</value>
+  </data>
+  <data name="AuditFieldHidden" xml:space="preserve">
+    <value>поле</value>
+  </data>
+  <data name="AuditFieldEmpty" xml:space="preserve">
+    <value>пусто</value>
+  </data>
+  <data name="AuditFieldDueAt" xml:space="preserve">
+    <value>Срок</value>
+  </data>
+  <data name="AuditFieldStartAt" xml:space="preserve">
+    <value>Дата начала</value>
+  </data>
+  <data name="AuditFieldPlannedDate" xml:space="preserve">
+    <value>Планируемая дата</value>
+  </data>
+  <data name="AuditFieldPriority" xml:space="preserve">
+    <value>Приоритет</value>
+  </data>
+  <data name="AuditFieldAssignee" xml:space="preserve">
+    <value>Исполнитель</value>
+  </data>
+  <data name="AuditFieldTitle" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="AuditFieldDescription" xml:space="preserve">
+    <value>Описание</value>
+  </data>
+  <data name="AuditFieldEstimateHours" xml:space="preserve">
+    <value>Оценка</value>
+  </data>
+  <data name="AuditFieldTags" xml:space="preserve">
+    <value>Метки</value>
+  </data>
+  <data name="DetailWatchers" xml:space="preserve">
+    <value>Наблюдатели</value>
+  </data>
+  <data name="WatcherRoleConsultant" xml:space="preserve">
+    <value>консультант</value>
+  </data>
+  <data name="DetailNotifications" xml:space="preserve">
+    <value>Уведомления</value>
+  </data>
+  <data name="NotificationsOff" xml:space="preserve">
+    <value>Почта отключена</value>
+  </data>
+  <data name="NotificationsOn" xml:space="preserve">
+    <value>Почта включена · {0}</value>
+  </data>
+  <data name="NotificationsOnWithReminder" xml:space="preserve">
+    <value>Почта включена · {0} · напомнит за {1} дн. до срока</value>
+  </data>
+  <data name="NotificationsAllEvents" xml:space="preserve">
+    <value>для всех событий</value>
+  </data>
+  <data name="NotificationsNoEvents" xml:space="preserve">
+    <value>события не выбраны</value>
+  </data>
+  <data name="NotificationsSomeEvents" xml:space="preserve">
+    <value>для {0} событий</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_DelegationNotAllowed" xml:space="preserve">
+    <value>Эту задачу нельзя делегировать.</value>
+  </data>
+  <data name="SnoozeTitle" xml:space="preserve">
+    <value>Отложить задачу</value>
+  </data>
+  <data name="SnoozeSubtext" xml:space="preserve">
+    <value>Статус задачи не меняется, срок не сдвигается, и заказчик ничего не увидит. Откладывание — пометка только для вас.</value>
+  </data>
+  <data name="SnoozeUntilLabel" xml:space="preserve">
+    <value>До какой даты</value>
+  </data>
+  <data name="DialogDismiss" xml:space="preserve">
+    <value>Отмена действия</value>
+  </data>
+  <data name="SnoozeDatePlaceholder" xml:space="preserve">
+    <value>YYYY-MM-DD</value>
+  </data>
+  <data name="SignalSnoozed" xml:space="preserve">
+    <value>Отложенные</value>
+  </data>
+  <data name="PartialBoardBanner" xml:space="preserve">
+    <value>Некоторые источники не ответили — список может быть неполным.</value>
+  </data>
+  <data name="PartialCountHint" xml:space="preserve">
+    <value>Некоторые источники не ответили, поэтому это число может быть неполным.</value>
+  </data>
+  <data name="SourceUnavailableTimeout" xml:space="preserve">
+    <value>не ответил вовремя</value>
+  </data>
+  <data name="SourceUnavailableError" xml:space="preserve">
+    <value>вернул ошибку</value>
+  </data>
+  <data name="SourceUnavailableUnsupportedVersion" xml:space="preserve">
+    <value>сообщает о неподдерживаемой версии контракта</value>
+  </data>
+  <data name="SourceUnavailableUnknown" xml:space="preserve">
+    <value>недоступен, причина неизвестна</value>
+  </data>
+  <data name="EmptyPartialBoardTitle" xml:space="preserve">
+    <value>Этот список не удалось загрузить полностью</value>
+  </data>
+  <data name="EmptyPartialBoardDesc" xml:space="preserve">
+    <value>Хотя бы один источник не ответил, поэтому показанное здесь — не полная картина. Повторите попытку чуть позже.</value>
+  </data>
+  <data name="ErrorCommentTextInvalid" xml:space="preserve">
+    <value>Комментарий не может быть пустым.</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Да</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="BannerStale" xml:space="preserve">
+    <value>Исходная запись изменилась после последнего чтения.</value>
+  </data>
+  <data name="BannerSourceUnavailable" xml:space="preserve">
+    <value>Исходный модуль сейчас недоступен.</value>
+  </data>
+  <data name="BannerAuthorityEnded" xml:space="preserve">
+    <value>Ваши полномочия по этой записи закончились.</value>
+  </data>
+  <data name="BannerReconciliationRequired" xml:space="preserve">
+    <value>Требуется сверка с источником.</value>
+  </data>
 </root>

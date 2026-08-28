@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -12,7 +13,7 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 public sealed class ControlledDocumentRepository : TenantRepository<ControlledDocument>, IControlledDocumentRepository
 {
     public ControlledDocumentRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_controlled_documents") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementControlledDocuments) { }
 
     public new Task<ControlledDocument> CreateAsync(ControlledDocument document, CancellationToken ct = default) =>
         base.CreateAsync(document, ct);
@@ -46,7 +47,7 @@ public sealed class ControlledDocumentRepository : TenantRepository<ControlledDo
 public sealed class DocumentFavoriteRepository : TenantRepository<DocumentFavorite>, IDocumentFavoriteRepository
 {
     public DocumentFavoriteRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_document_favorites") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementDocumentFavorites) { }
 
     public async Task ToggleAsync(Guid userId, Guid documentId, bool favorite, CancellationToken ct = default)
     {
@@ -92,7 +93,7 @@ public sealed class DocumentFavoriteRepository : TenantRepository<DocumentFavori
 public sealed class ControlledDocumentVersionRepository : TenantRepository<ControlledDocumentVersion>, IControlledDocumentVersionRepository
 {
     public ControlledDocumentVersionRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_controlled_document_versions") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementControlledDocumentVersions) { }
 
     public new Task<ControlledDocumentVersion> CreateAsync(ControlledDocumentVersion version, CancellationToken ct = default) =>
         base.CreateAsync(version, ct);
@@ -130,7 +131,7 @@ public sealed class ControlledDocumentVersionRepository : TenantRepository<Contr
 public sealed class TemplateDocumentRepository : TenantRepository<TemplateDocument>, ITemplateDocumentRepository
 {
     public TemplateDocumentRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_template_documents") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementTemplateDocuments) { }
 
     public new Task<TemplateDocument> CreateAsync(TemplateDocument template, CancellationToken ct = default) =>
         base.CreateAsync(template, ct);
@@ -163,7 +164,7 @@ public sealed class TemplateDocumentRepository : TenantRepository<TemplateDocume
 public sealed class TemplateVersionRepository : TenantRepository<TemplateVersion>, ITemplateVersionRepository
 {
     public TemplateVersionRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_template_versions") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementTemplateVersions) { }
 
     public new Task<TemplateVersion> CreateAsync(TemplateVersion version, CancellationToken ct = default) =>
         base.CreateAsync(version, ct);
@@ -201,7 +202,7 @@ public sealed class TemplateVersionRepository : TenantRepository<TemplateVersion
 public sealed class TemplateMasterRepository : TenantRepository<TemplateMaster>, ITemplateMasterRepository
 {
     public TemplateMasterRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_template_masters") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementTemplateMasters) { }
 
     public new Task<TemplateMaster> CreateAsync(TemplateMaster master, CancellationToken ct = default) =>
         base.CreateAsync(master, ct);
@@ -290,7 +291,7 @@ public sealed class TemplateMasterRepository : TenantRepository<TemplateMaster>,
 public sealed class TemplateMasterVersionRepository : TenantRepository<TemplateMasterVersion>, ITemplateMasterVersionRepository
 {
     public TemplateMasterVersionRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_template_master_versions") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementTemplateMasterVersions) { }
 
     public new Task<TemplateMasterVersion> CreateAsync(TemplateMasterVersion version, CancellationToken ct = default) =>
         base.CreateAsync(version, ct);
@@ -333,7 +334,7 @@ public sealed class TemplateMasterVersionRepository : TenantRepository<TemplateM
 public sealed class TemplateVariantRepository : TenantRepository<TemplateVariant>, ITemplateVariantRepository
 {
     public TemplateVariantRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_template_variants") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementTemplateVariants) { }
 
     public new Task<TemplateVariant> CreateAsync(TemplateVariant variant, CancellationToken ct = default) =>
         base.CreateAsync(variant, ct);
@@ -405,7 +406,7 @@ public sealed class TemplateVariantRepository : TenantRepository<TemplateVariant
 public sealed class FolderDocumentAccessPolicyRepository : TenantRepository<FolderDocumentAccessPolicy>, IFolderDocumentAccessPolicyRepository
 {
     public FolderDocumentAccessPolicyRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_folder_document_access_policies") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementFolderDocumentAccessPolicies) { }
 
     public async Task<FolderDocumentAccessPolicy> UpsertAsync(FolderDocumentAccessPolicy policy, CancellationToken ct = default)
     {
@@ -437,7 +438,7 @@ public sealed class FolderDocumentAccessPolicyRepository : TenantRepository<Fold
 public sealed class DocumentShareRecordRepository : TenantRepository<DocumentShareRecord>, IDocumentShareRecordRepository
 {
     public DocumentShareRecordRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_document_shares") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementDocumentShares) { }
 
     public new Task<DocumentShareRecord> CreateAsync(DocumentShareRecord share, CancellationToken ct = default) =>
         base.CreateAsync(share, ct);
@@ -482,7 +483,7 @@ public sealed class DocumentShareRecordRepository : TenantRepository<DocumentSha
 public sealed class FolderShareOperationRepository : TenantRepository<FolderShareOperation>, IFolderShareOperationRepository
 {
     public FolderShareOperationRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_folder_share_operations") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementFolderShareOperations) { }
 
     public new Task<FolderShareOperation> CreateAsync(FolderShareOperation operation, CancellationToken ct = default) =>
         base.CreateAsync(operation, ct);
@@ -495,7 +496,7 @@ public sealed class FolderShareOperationRepository : TenantRepository<FolderShar
 public sealed class FolderShareOutcomeRepository : TenantRepository<FolderShareOutcome>, IFolderShareOutcomeRepository
 {
     public FolderShareOutcomeRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_folder_share_outcomes") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementFolderShareOutcomes) { }
 
     public async Task<IReadOnlyList<FolderShareOutcome>> CreateManyAsync(IReadOnlyList<FolderShareOutcome> outcomes, CancellationToken ct = default)
     {

@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Application.Features.Notifications;
 using Diten.Platform.Application.Features.Notifications.Services;
 using Diten.Platform.Domain.Entities.Notifications;
@@ -26,8 +27,8 @@ public static class NotificationEventSeed
             return; // bridge: no seed content yet (FU04A scope).
         }
 
-        var events = database.GetCollection<NotificationEventDefinition>("notification_event_definitions");
-        var templates = database.GetCollection<NotificationTemplate>("notification_templates");
+        var events = database.GetCollection<NotificationEventDefinition>(PlatformCollections.NotificationEventDefinitions);
+        var templates = database.GetCollection<NotificationTemplate>(PlatformCollections.NotificationTemplates);
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var def in definitions)

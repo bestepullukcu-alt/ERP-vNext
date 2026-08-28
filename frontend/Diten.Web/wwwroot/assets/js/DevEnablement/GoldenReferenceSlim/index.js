@@ -633,9 +633,22 @@ const GoldenReferenceSlimList = (function () {
         if (!window.jQuery || !$.fn.select2) return;
         const $el = $('#slimReferenceType');
         if ($el.hasClass('select2-hidden-accessible')) $el.select2('destroy');
+        /*
+         * THE PLACEHOLDER COMES FROM THE EMPTY OPTION, which is the only place it is localized.
+         *
+         * Measured on the running page: this read `$el.data('placeholder') || ''` and the markup carries no
+         * data-placeholder, so select2 was handed an EMPTY placeholder — and an empty placeholder is not "no
+         * placeholder". select2 then renders `<span class="select2-selection__placeholder"></span>` INSTEAD of
+         * the option's own text, so the localized "Seçiniz..." sitting in `<option value="">` never reached the
+         * screen and the field read as a blank box with an arrow.
+         *
+         * The full-page reference never had this because it does not override the placeholder at all. Reading
+         * the option's text keeps ONE localized source for the string — the resx behind the markup — instead of
+         * a second copy in a data- attribute that no language file would ever update.
+         */
         $el.select2({
             dropdownParent: $('#offcanvasCreateEdit'),
-            placeholder: $el.data('placeholder') || '',
+            placeholder: $el.data('placeholder') || $el.find('option[value=""]').text() || '',
             allowClear: true,
             width: '100%'
         });

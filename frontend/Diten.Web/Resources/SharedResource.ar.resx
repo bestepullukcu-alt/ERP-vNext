@@ -381,6 +381,9 @@
   <data name="ProductMaster" xml:space="preserve">
     <value>سجل المنتجات</value>
   </data>
+  <data name="Edit" xml:space="preserve">
+    <value>تعديل</value>
+  </data>
   <data name="Delete" xml:space="preserve">
     <value>حذف</value>
   </data>
@@ -419,6 +422,9 @@
   </data>
   <data name="Notification" xml:space="preserve">
     <value>إشعار</value>
+  </data>
+  <data name="NoNotifications" xml:space="preserve">
+    <value>لا توجد إشعارات</value>
   </data>
   <data name="NewNotifications" xml:space="preserve">
     <value>{0} جديد</value>
@@ -520,6 +526,7 @@
   <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>كيان قانوني</value></data>
   <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>البيانات المرجعية</value></data>
   <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>المؤسسة</value></data>
+  <data name="Nav.Module.TASKS" xml:space="preserve"><value>المهام</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>سير العمل</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>المستخدمون</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>الأدوار</value></data>
@@ -571,5 +578,62 @@
   </data>
   <data name="CycleCapacitiesMenu" xml:space="preserve">
     <value>سعة الدورة</value>
+  </data>
+  <data name="Nav.Domain.WORKSPACE" xml:space="preserve">
+    <value>مساحة العمل</value>
+  </data>
+  <data name="Nav.Module.WORKAGGREGATION" xml:space="preserve">
+    <value>مركز المهام</value>
+  </data>
+  <data name="Nav.Page.WORKCENTER" xml:space="preserve">
+    <value>مركز المهام</value>
+  </data>
+  <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
+    <value>قواعد المهام المتكررة</value>
+  </data>
+  <data name="Nav.Page.TASKS" xml:space="preserve">
+    <value>المهام</value>
+  </data>
+  <data name="Nav.Page.TASKCREATE" xml:space="preserve">
+    <value>مهمة جديدة</value>
+  </data>
+  <data name="Nav.Page.TASKDETAIL" xml:space="preserve">
+    <value>تفاصيل المهمة</value>
+  </data>
+  <data name="Nav.Page.TASKEDIT" xml:space="preserve">
+    <value>تحرير المهمة</value>
+  </data>
+  <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
+    <value>البيانات الرئيسية للمنتج / الصنف / وحدة حفظ المخزون</value>
+  </data>
+  <data name="Nav.Page.GLOBALPRODUCTS" xml:space="preserve">
+    <value>المنتجات العالمية</value>
+  </data>
+  <data name="Nav.Page.GSKUS" xml:space="preserve">
+    <value>GSKU</value>
+  </data>
+  <data name="Nav.Page.TASKTYPES" xml:space="preserve">
+    <value>أنواع المهام</value>
+  </data>
+  <data name="Nav.Page.TASKDOCUMENTLIST" xml:space="preserve">
+    <value>الوثائق الخاضعة للرقابة</value>
+  </data>
+  <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
+    <value>تعريفات الحقول</value>
+  </data>
+  <data name="TagsPlaceholder" xml:space="preserve">
+    <value>اكتب وسمًا ثم اضغط Enter</value>
+  </data>
+  <data name="TagsCount" xml:space="preserve">
+    <value>{0} وسم</value>
+  </data>
+  <data name="TagsRemove" xml:space="preserve">
+    <value>إزالة {0}</value>
+  </data>
+  <data name="NavigationLoadFailed" xml:space="preserve">
+    <value>تعذّر تحميل القائمة</value>
+  </data>
+  <data name="NavigationLoadFailedHint" xml:space="preserve">
+    <value>حدّث الصفحة للمحاولة مرة أخرى.</value>
   </data>
 </root>

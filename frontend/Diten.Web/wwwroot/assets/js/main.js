@@ -252,6 +252,12 @@ function loadSearchData() {
         }
 
         console.error('[Layout] Error loading search JSON:', error);
+
+        // BL-294/nav — the palette used to open completely blank when its data could not be fetched, with the
+        // only trace in the console. Mark it degraded and still initialise, so the user is TOLD rather than left
+        // staring at an empty box wondering whether they have no modules or the app is broken.
+        searchData = { degraded: true };
+        initializeAutocomplete();
       });
   };
 
@@ -303,6 +309,33 @@ function matchesSearchItem(item, query, section) {
   return searchableText.includes(normalizedQuery);
 }
 
+/*
+ * BL-294/nav — the Ctrl+K palette's degraded notice.
+ *
+ * The text is never invented here: it comes from the server (TenantSearch/data, localized per request) or from
+ * the shell layout's data attributes, both of which carry all seven languages. If neither is present we render
+ * NOTHING rather than an English string a Turkish or Arabic user should not be shown.
+ */
+function renderSearchDegradedNotice(html) {
+  const root = document.documentElement.dataset;
+  const message = searchData.degradedMessage || root.navLoadFailed;
+  const hint = searchData.degradedHint || root.navLoadFailedHint;
+
+  if (!message) return null;
+
+  return html`
+    <div class="search-degraded-wrapper" data-search-degraded="true" role="status" aria-live="polite">
+      <div class="d-flex justify-content-center align-items-center h-100">
+        <div class="text-center text-heading">
+          <i class="icon-base bx bx-error-circle text-warning icon-48px mb-4"></i>
+          <h5 class="mb-1">${message}</h5>
+          ${hint ? html`<p class="text-body-secondary mb-0">${hint}</p>` : null}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function initializeAutocomplete() {
   const searchElement = document.getElementById('autocomplete');
   if (!searchElement || typeof autocomplete !== 'function') return;
@@ -338,6 +371,16 @@ function initializeAutocomplete() {
     },
     render(args, root) {
       const { render, html, children, state } = args;
+
+      // A degraded palette says so BEFORE anything else — whether or not the user has typed. Without this the
+      // outage renders as "you have no modules" and then as "No results found", both of which are untrue.
+      if (searchData.degraded) {
+        const notice = renderSearchDegradedNotice(html);
+        if (notice) {
+          render(notice, root);
+          return;
+        }
+      }
 
       if (!state.query) {
         // FIX-CTRLK-PLATFORM-SUGGESTIONS-LAYOUT — a single-section palette (Platform) fills the full

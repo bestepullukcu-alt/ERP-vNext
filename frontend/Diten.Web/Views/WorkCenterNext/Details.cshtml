@@ -1,0 +1,57 @@
+@using Diten.Web.Views.WorkCenterNext
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkCenterNextIndex> Localizer
+@{
+    var workItemId = ViewData["WorkItemId"]?.ToString() ?? string.Empty;
+    ViewData["Title"] = Localizer["DetailPageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@* The page header is rendered by app.js, not here.
+   It has to carry the TASK'S OWN NAME, and the server knows only the id — so a static header could say nothing
+   but "Task detail", which is what it used to do: the page type twice (heading and breadcrumb) and the task's
+   name nowhere. There was also a Back button AND a breadcrumb, two controls for one destination, and neither
+   remembered which tab/segment/filter the list was on. *@
+<div class="wcn-full-detail-page">
+    @* DEC-1 — showcase fixtures are opt-in and DEVELOPMENT-ONLY (server-decided; no client-only switch). *@
+    <div id="wcnApp" class="wcn-app wcn-full-detail-app" data-wcn-page="detail" data-wcn-item-id="@workItemId"
+         data-wcn-fixtures="@((ViewData["FixturesToggleAllowed"] as bool? == true && Context.Request.Query["fixtures"] == "showcase") ? "showcase" : "")"></div>
+</div>
+
+@section Scripts {
+    <partial name="_L10n" />
+    @* app.js performs the SAME writes here as on the list page — transitions, checklist ticks, subtask creation —
+       and every one of them goes through TasksApi/TaskForm. Omitting these made each write throw on an undefined
+       global inside an async click handler, which surfaces as nothing at all: no request, no toast, no warning.
+       The page looked like its buttons were not wired. Whatever the list page needs to WRITE, this page needs. *@
+    <partial name="~/Views/Tasks/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Tasks/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-tags.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-checkitem.js" asp-append-version="true"></script>
+    @* The checklist row can be DRAGGED here now, as it always could on the create form. The LOCAL copy, exactly
+       as Views/Tasks/Create.cshtml loads it — this page's layout is _LayoutTenantShell, which never carried the
+       CDN tag in _Layout.cshtml at all, so there was nothing here to reuse. Measured: `window.Sortable` was
+       undefined on this page. Loading the vendored file rather than adding a second CDN consumer keeps BL-081 a
+       single-line change about _Layout instead of a widening one. *@
+    <script src="~/assets/vendor/libs/sortablejs/sortable.js"></script>
+    <script src="~/assets/js/Tasks/form.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixture-contract.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/canonical-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/islerim-showcase-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/havuz-showcase-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/gecmis-showcase-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/inbox-showcase-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/edge-case-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/provider-examples/enterprise-strategy-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/provider-examples/documentation-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/trigger-only-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/migration-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/migration-fixture-adapter.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/task-detail-resolver.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/trigger-response-resolver.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/mock-data.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/work-items-api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/app.js" asp-append-version="true"></script>
+}

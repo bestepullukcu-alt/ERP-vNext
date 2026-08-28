@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -13,8 +14,8 @@ public static class PlatformAdministratorSeed
 {
     public static async Task EnsureSeededAsync(IMongoDatabase database, CancellationToken ct = default)
     {
-        var collection = database.GetCollection<PlatformAdministrator>("platform_administrators");
-        var rawCollection = database.GetCollection<BsonDocument>("platform_administrators");
+        var collection = database.GetCollection<PlatformAdministrator>(PlatformCollections.PlatformAdministrators);
+        var rawCollection = database.GetCollection<BsonDocument>(PlatformCollections.PlatformAdministrators);
 
         var staticAdminId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         var email = "admin@diten.com";

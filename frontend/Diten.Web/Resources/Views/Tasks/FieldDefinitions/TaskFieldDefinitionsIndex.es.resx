@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="FieldDefinitionsTitle" xml:space="preserve"><value>Definiciones de campos de tarea</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Campos configurables que ofrece el motor de tareas. Una definición nunca es una columna: añadir una no cambia ningún esquema.</value></data>
+  <data name="AddNewFieldDefinitions" xml:space="preserve"><value>Añadir definición</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Editar definición</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Añadir definición</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar definición</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Ver</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Code" xml:space="preserve"><value>Código</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>p. ej. regulatory.phase</value></data>
+  <data name="CodeImmutableHint" xml:space="preserve"><value>El código no se puede cambiar: cada valor ya almacenado está vinculado a esta definición por él.</value></data>
+  <data name="Label" xml:space="preserve"><value>Etiqueta</value></data>
+  <data name="LabelText" xml:space="preserve"><value>Etiqueta (sus propias palabras)</value></data>
+  <data name="LabelTextPlaceholder" xml:space="preserve"><value>p. ej. Fase regulatoria</value></data>
+  <data name="LabelTextHint" xml:space="preserve"><value>Para los campos que usted define. En un solo idioma, se muestra tal cual.</value></data>
+  <data name="LabelResourceKey" xml:space="preserve"><value>Clave de recurso de la etiqueta</value></data>
+  <data name="LabelResourceKeyPlaceholder" xml:space="preserve"><value>p. ej. Tasks_Field_RegulatoryPhase</value></data>
+  <data name="LabelResourceKeyHint" xml:space="preserve"><value>Para campos del sistema cuyas traducciones proporcionamos. Déjelo vacío para sus propios campos.</value></data>
+  <data name="LabelSourceSystem" xml:space="preserve"><value>Campo del sistema</value></data>
+  <data name="LabelSourceTenant" xml:space="preserve"><value>Su campo</value></data>
+  <data name="ValueType" xml:space="preserve"><value>Tipo de valor</value></data>
+  <data name="Section" xml:space="preserve"><value>Sección</value></data>
+  <data name="SectionPlaceholder" xml:space="preserve"><value>p. ej. Cumplimiento</value></data>
+  <data name="SectionLimitHint" xml:space="preserve"><value>Una tarea puede mostrar como máximo seis secciones.</value></data>
+  <data name="Required" xml:space="preserve"><value>Obligatorio</value></data>
+  <data name="Optional" xml:space="preserve"><value>Opcional</value></data>
+  <data name="Importance" xml:space="preserve"><value>Importancia</value></data>
+  <data name="ImportanceSecondary" xml:space="preserve"><value>Secundaria</value></data>
+  <data name="ImportancePrimary" xml:space="preserve"><value>Principal</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Orden</value></data>
+  <data name="OptionsSourceKind" xml:space="preserve"><value>Origen de opciones</value></data>
+  <data name="OptionsSourceNone" xml:space="preserve"><value>Ninguno</value></data>
+  <data name="OptionsSourcePlatformLookup" xml:space="preserve"><value>Catálogo de la plataforma</value></data>
+  <data name="OptionsSourceBusinessReferenceData" xml:space="preserve"><value>Datos maestros de negocio</value></data>
+  <data name="OptionsSourceHint" xml:space="preserve"><value>De dónde procede la lista de opciones. Una lista fija en el código nunca se admite.</value></data>
+  <data name="OptionsSourceKey" xml:space="preserve"><value>Clave del origen de opciones</value></data>
+  <data name="OptionsSourceKeyPlaceholder" xml:space="preserve"><value>p. ej. REGULATORY_PHASES</value></data>
+  <data name="AppliesToModuleCode" xml:space="preserve"><value>Limitado al módulo</value></data>
+  <data name="AppliesToModuleCodePlaceholder" xml:space="preserve"><value>p. ej. MOD-0220</value></data>
+  <data name="AppliesToModuleCodeHint" xml:space="preserve"><value>Déjelo vacío para que el campo esté disponible en todos los módulos.</value></data>
+  <data name="Classification" xml:space="preserve"><value>Clasificación</value></data>
+  <data name="ClassificationNormal" xml:space="preserve"><value>Normal</value></data>
+  <data name="ClassificationInternal" xml:space="preserve"><value>Interno</value></data>
+  <data name="ClassificationConfidential" xml:space="preserve"><value>Confidencial</value></data>
+  <data name="ClassificationRestricted" xml:space="preserve"><value>Restringido</value></data>
+  <data name="ClassificationNotEnforcedHint" xml:space="preserve"><value>Se registra para más adelante. Hoy no se toma ninguna decisión de acceso a partir de esto.</value></data>
+  <data name="DefaultAccessState" xml:space="preserve"><value>Estado de acceso predeterminado</value></data>
+  <data name="AccessStateVisible" xml:space="preserve"><value>Visible</value></data>
+  <data name="AccessStateMasked" xml:space="preserve"><value>Enmascarado</value></data>
+  <data name="AccessStateHidden" xml:space="preserve"><value>Oculto</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identidad</value></data>
+  <data name="ValueSection" xml:space="preserve"><value>Valor</value></data>
+  <data name="PresentationSection" xml:space="preserve"><value>Presentación</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Clasificación</value></data>
+  <data name="ValueTypeText" xml:space="preserve"><value>Texto</value></data>
+  <data name="ValueTypeNumber" xml:space="preserve"><value>Número</value></data>
+  <data name="ValueTypeCurrency" xml:space="preserve"><value>Moneda</value></data>
+  <data name="ValueTypePercentage" xml:space="preserve"><value>Porcentaje</value></data>
+  <data name="ValueTypeDate" xml:space="preserve"><value>Fecha</value></data>
+  <data name="ValueTypeDateTime" xml:space="preserve"><value>Fecha y hora</value></data>
+  <data name="ValueTypeBoolean" xml:space="preserve"><value>Sí / No</value></data>
+  <data name="ValueTypeStatus" xml:space="preserve"><value>Estado</value></data>
+  <data name="ValueTypePerson" xml:space="preserve"><value>Persona</value></data>
+  <data name="ValueTypeReference" xml:space="preserve"><value>Referencia</value></data>
+  <data name="ValueTypeLink" xml:space="preserve"><value>Enlace</value></data>
+  <data name="EditBtn" xml:space="preserve">
+    <value>Editar</value>
+  </data>
+  <data name="OptionsSourceModuleRecord" xml:space="preserve"><value>Registros de otro módulo</value></data>
+  <data name="OptionsSourceKeyHint" xml:space="preserve"><value>Elija una fuente. La lista depende del tipo anterior; cambiar el tipo borra la elección.</value></data>
+  <data name="OptionsSourceKeySelect" xml:space="preserve"><value>Elegir una fuente…</value></data>
+  <data name="OptionsSourceKeyNone" xml:space="preserve"><value>Este tipo no ofrece ninguna fuente en este inquilino.</value></data>
+  <data name="OptionsSourceKeyLoadFailed" xml:space="preserve"><value>No se pudo leer la lista de fuentes.</value></data>
+  <data name="OptionSource.organization-unit" xml:space="preserve"><value>Unidades organizativas</value></data>
+  <data name="OptionSource.position" xml:space="preserve"><value>Puestos</value></data>
+  <data name="OptionSource.countries" xml:space="preserve"><value>Países</value></data>
+  <data name="OptionSource.currencies" xml:space="preserve"><value>Monedas</value></data>
+  <data name="OptionSource.languages" xml:space="preserve"><value>Idiomas</value></data>
+  <data name="OptionSource.timezones" xml:space="preserve"><value>Zonas horarias</value></data>
+</root>

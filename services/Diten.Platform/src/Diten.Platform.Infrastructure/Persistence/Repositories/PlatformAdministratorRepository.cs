@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities;
@@ -12,7 +13,7 @@ public sealed class PlatformAdministratorRepository
     : GlobalRepository<PlatformAdministrator>, IPlatformAdministratorRepository
 {
     public PlatformAdministratorRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "platform_administrators")
+        : base(dbContext.Database, tenantContext, PlatformCollections.PlatformAdministrators)
     {
     }
 

@@ -16,6 +16,25 @@ namespace Diten.Platform.Application.Features.Notifications.Handlers.CommandHand
 public sealed class QueueEmailNotificationHandler
     : IRequestHandler<QueueEmailNotificationCommand, Response<NotificationDispatchDto>>
 {
+    /*
+     * Failure reason codes. NotificationEventDispatchAdapter has carried these since MOD-0027-FU04B; this handler
+     * did not, and every one of its six refusals came back with ReasonCode=null.
+     *
+     * That is not a cosmetic gap. A producer sees "not dispatched, reason null" and cannot tell a missing template
+     * from missing messaging settings from a provider it cannot resolve — three completely different operator
+     * actions. WC-4 spent a whole round in exactly that state: the code-less refusal below (no platform-default
+     * messaging settings row existed) was indistinguishable from the template problem everyone was looking for,
+     * while the templates were fine and had never been consulted.
+     *
+     * The codes are the diagnosis. The Fail() message stays as it was.
+     */
+    public const string ReasonMessagingSettingsUnavailable = "MESSAGING_SETTINGS_UNAVAILABLE";
+    public const string ReasonProviderCodeInvalid = "PROVIDER_CODE_INVALID";
+    public const string ReasonProviderUnavailable = "PROVIDER_UNAVAILABLE";
+    public const string ReasonTemplateNotFound = "TEMPLATE_NOT_FOUND";
+    public const string ReasonRenderFailed = "TEMPLATE_RENDER_FAILED";
+    public const string ReasonProviderRejected = "PROVIDER_REJECTED";
+
     private readonly ITenantMessagingSettingsResolver _settingsResolver;
     private readonly INotificationTemplateRepository _templateRepository;
     private readonly IEmailTemplateRenderer _renderer;
@@ -47,18 +66,21 @@ public sealed class QueueEmailNotificationHandler
         var settingsResponse = await _settingsResolver.ResolveAsync(request.TenantId, ct);
         if (!settingsResponse.IsSuccessful || settingsResponse.Data is null)
         {
-            return Response<NotificationDispatchDto>.Fail(settingsResponse.Errors, settingsResponse.StatusCode);
+            return Response<NotificationDispatchDto>.Fail(
+                settingsResponse.Errors, settingsResponse.StatusCode, ReasonMessagingSettingsUnavailable);
         }
 
         if (!Enum.TryParse<MessagingProviderCode>(settingsResponse.Data.ProviderCode, ignoreCase: true, out var providerCode))
         {
-            return Response<NotificationDispatchDto>.Fail("Resolved provider code is invalid.", 400);
+            return Response<NotificationDispatchDto>.Fail(
+                "Resolved provider code is invalid.", 400, ReasonProviderCodeInvalid);
         }
 
         var providerResponse = _providerResolver.Resolve(providerCode);
         if (!providerResponse.IsSuccessful || providerResponse.Data is null)
         {
-            return Response<NotificationDispatchDto>.Fail(providerResponse.Errors, providerResponse.StatusCode);
+            return Response<NotificationDispatchDto>.Fail(
+                providerResponse.Errors, providerResponse.StatusCode, ReasonProviderUnavailable);
         }
 
         var template = await _templateRepository.GetBestActiveByKeyAsync(
@@ -69,13 +91,15 @@ public sealed class QueueEmailNotificationHandler
             ct);
         if (template is null)
         {
-            return Response<NotificationDispatchDto>.Fail("Notification template not found.", 404);
+            return Response<NotificationDispatchDto>.Fail(
+                "Notification template not found.", 404, ReasonTemplateNotFound);
         }
 
         var renderResponse = _renderer.Render(template, request.Request.Variables);
         if (!renderResponse.IsSuccessful || renderResponse.Data is null)
         {
-            return Response<NotificationDispatchDto>.Fail(renderResponse.Errors, renderResponse.StatusCode);
+            return Response<NotificationDispatchDto>.Fail(
+                renderResponse.Errors, renderResponse.StatusCode, ReasonRenderFailed);
         }
 
         var correlationId = string.IsNullOrWhiteSpace(request.CorrelationId)
@@ -179,7 +203,8 @@ public sealed class QueueEmailNotificationHandler
             new EventPublishOptions { TenantId = dispatch.TenantId, CausationId = dispatch.CausationId },
             ct);
         _logger.LogWarning("Notification dispatch failed. DispatchId={DispatchId} TenantId={TenantId} Status={Status} CorrelationId={CorrelationId} ErrorCode={ErrorCode}", dispatch.Id, dispatch.TenantId, dispatch.Status, dispatch.CorrelationId, dispatch.ErrorCode);
-        return Response<NotificationDispatchDto>.Fail("Messaging provider rejected the message.", 400);
+        return Response<NotificationDispatchDto>.Fail(
+            "Messaging provider rejected the message.", 400, ReasonProviderRejected);
     }
 
     private static List<EmailRecipient> MapRecipients(IReadOnlyList<EmailRecipientDto> recipients) =>

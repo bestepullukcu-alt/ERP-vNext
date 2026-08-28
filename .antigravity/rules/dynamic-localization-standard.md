@@ -75,6 +75,46 @@ const label = window.L10n?.MyNewKey;
 
 ---
 
+## 🔀 İKİ KÖPRÜ MEKANİZMASI — hangisini seçtiğini BİLEREK seç
+
+Bu depoda köprü iki farklı şekilde kuruluyor ve ikisi arasındaki fark **sessiz bir kusur sınıfı**
+üretiyor. Yeni bir yüzey açan herkes hangi deseni izlediğini bilmek zorunda.
+
+| | **A — Otomatik sayım** | **B — Elle tutulan liste** |
+|---|---|---|
+| Örnek | `Views/WorkCenterNext/_L10n.cshtml` | `Views/Tasks/_IndexL10n.cshtml` |
+| Nasıl | `Localizer.GetAllStrings(true)` — tüm resx'i tarar | Her anahtar için bir satır (bugün 157 satır) |
+| Anahtar biçimi | resx'teki hâli (PascalCase) | `@Json.Serialize` camelCase'e çevirir |
+| resx'e anahtar eklendi, köprüye eklenmedi | **imkânsız** — otomatik gelir | **sessizce düşer** — okuyucu ham anahtarı görür |
+
+⚠ **B deseninde köprü, resx'i saymaz.** `api.js`'in kendi yorumu bunu üç kez yazıyor:
+*"a code mapped in api.js without a line here reaches the reader as the generic error."*
+Yani B'de bir anahtarın çalışması için **iki** yerde olması gerekir: resx'te **ve** partial'da.
+
+**YENİ YÜZEY AÇIYORSAN A DESENİNİ KULLAN.** Tek satır (`GetAllStrings(true)`), kayma imkânsız.
+SharedResource'tan anahtar gerekiyorsa A deseni de onları **tek tek** kopyalar
+(WorkCenterNext yalnız altı `Dt*` anahtarını alıyor) — yani "SharedResource'ta var" bir cevap
+değildir; o sayfanın yükünde var mı, ona bakılır.
+
+**MEVCUT B YÜZEYLERİNİ BU TURDA ÇEVİRME.** Davranış değişikliğidir (yük büyür, çakışan
+anahtarların önceliği değişir) ve ayrı bir karardır — bkz. BL-308.
+
+### Muhafız: anahtar sorulduysa var olmalı
+
+`frontend/Diten.Web/tests/workcenter-next-l10n-key-guard.test.js` bu sınıfı elle ölçülmek
+zorunda olmaktan çıkarır. Yeni bir yüzey için aynısını yazarken **üç tuzağı** bilmek şart:
+
+1. **YORUMLAR.** Yorum içinde geçen `t('X')` bir çağrı değildir. Ölçüm yorumları ayıklanmış
+   kaynak üzerinde yapılmalı; ayıklayıcının kendi testi olmalı.
+2. **AİLELER.** `t('AuditEvent' + code)` bir anahtar değil, bir alan adıdır. Ailenin alanı
+   **kaynağından** okunmalı (yürütülebilir sözleşme ya da C# enum'u) ve **bildirilmemiş bir aile
+   testi kırmalı** — yoksa muhafız tam da riskin yüksek olduğu yerde susar.
+3. **AYNI KLASÖR, İKİ KÖPRÜ.** `WorkCenterNext/quick-create.js` bu klasörde durur ama TASKS
+   yükünden okur (camelCase). Her dosya, **bağlandığı köprü okunarak** sınıflandırılmalı;
+   sınıflandırılamayan dosya testi kırmalı.
+
+---
+
 ## 🚨 Operasyonel Kurallar
 
 ### 1. XML Güvenliği
@@ -84,6 +124,10 @@ const label = window.L10n?.MyNewKey;
 ### 2. Yeniden Derleme Protokolü
 .resx değişikliği sonrası şu sırayı izleyin:
 1. Süreçleri durdur: lsof -ti :5000,5001,5050 | xargs kill -9
+   ⚠ **ÖNCE PORTU KİMİN TUTTUĞUNU ÖLÇ.** Bu makinede başka geliştiricilerin worktree'leri var ve
+   servisleri koşuyor olabilir. `lsof -p <PID> -a -d cwd -Fn` hangi dizinden koştuğunu söyler;
+   **başka bir dizinden koşan servisi durdurma** — sahibinin haberi olmaz. Körlemesine
+   `kill -9` bir kez böyle bir servisi düşürdü.
 2. Cache temizle: rm -rf frontend/Diten.Web/bin frontend/Diten.Web/obj
 3. Rebuild: ./run_all.sh
 4. Tarayıcıda Hard Refresh (Ctrl+F5) yapın.

@@ -60,7 +60,9 @@ public sealed class NavNameLocalizer : INavNameLocalizer
     //   "access-governance" / "ACCESS-GOVERNANCE" / "Access Governance" → "ACCESSGOVERNANCE"
     //   "PlatformSharedServices" / "PLATFORM-SHARED-SERVICES"           → "PLATFORMSHAREDSERVICES"
     //   "ROLE_PERMISSIONS"                                              → "ROLEPERMISSIONS"
-    // Must stay identical to the normalize() the guard test (NavL10nContractTests) applies to its expected codes.
+    // This is the ONE implementation of the transform. The guard test (Diten.Web.Tests
+    // NavManifestL10nGuardTests) calls THIS method to derive the resx keys it expects from the manifest sources —
+    // it deliberately keeps no copy, so the test can never pass against a transform the runtime no longer uses.
     public static string Normalize(string code)
     {
         var buffer = new char[code.Length];

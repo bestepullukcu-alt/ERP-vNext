@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities;
@@ -29,17 +30,17 @@ public sealed class BusinessReferenceDataStewardshipRepository : TenantRepositor
         IPlatformDbContext dbContext,
         ITenantContext tenantContext,
         IOptions<BusinessReferenceDataProviderOptions>? providerOptions = null)
-        : base(dbContext.Database, tenantContext, "business_reference_data_sets")
+        : base(dbContext.Database, tenantContext, PlatformCollections.BusinessReferenceDataSets)
     {
-        _setDocuments = dbContext.Database.GetCollection<BsonDocument>("business_reference_data_sets");
-        _versionDocuments = dbContext.Database.GetCollection<BsonDocument>("business_reference_data_versions");
-        _versions = dbContext.GetCollection<BusinessReferenceDataVersion>("business_reference_data_versions");
-        _validationResults = dbContext.GetCollection<BusinessReferenceDataValidationResult>("business_reference_data_validation_results");
-        _integrationEvents = dbContext.GetCollection<BusinessReferenceDataIntegrationEvent>("business_reference_data_integration_events");
-        _usageRegistrations = dbContext.GetCollection<BusinessReferenceDataUsageRegistration>("business_reference_data_usage_registrations");
-        _importPreviews = dbContext.GetCollection<BusinessReferenceDataImportPreview>("business_reference_data_import_previews");
-        _tenantAssignments = dbContext.GetCollection<BusinessReferenceDataTenantAssignment>("business_reference_data_tenant_assignments");
-        _publishOperations = dbContext.GetCollection<BusinessReferenceDataPublishOperation>("business_reference_data_publish_operations");
+        _setDocuments = dbContext.Database.GetCollection<BsonDocument>(PlatformCollections.BusinessReferenceDataSets);
+        _versionDocuments = dbContext.Database.GetCollection<BsonDocument>(PlatformCollections.BusinessReferenceDataVersions);
+        _versions = dbContext.GetCollection<BusinessReferenceDataVersion>(PlatformCollections.BusinessReferenceDataVersions);
+        _validationResults = dbContext.GetCollection<BusinessReferenceDataValidationResult>(PlatformCollections.BusinessReferenceDataValidationResults);
+        _integrationEvents = dbContext.GetCollection<BusinessReferenceDataIntegrationEvent>(PlatformCollections.BusinessReferenceDataIntegrationEvents);
+        _usageRegistrations = dbContext.GetCollection<BusinessReferenceDataUsageRegistration>(PlatformCollections.BusinessReferenceDataUsageRegistrations);
+        _importPreviews = dbContext.GetCollection<BusinessReferenceDataImportPreview>(PlatformCollections.BusinessReferenceDataImportPreviews);
+        _tenantAssignments = dbContext.GetCollection<BusinessReferenceDataTenantAssignment>(PlatformCollections.BusinessReferenceDataTenantAssignments);
+        _publishOperations = dbContext.GetCollection<BusinessReferenceDataPublishOperation>(PlatformCollections.BusinessReferenceDataPublishOperations);
         // Deliberately retain the options wrapper. Invalid configuration is classified at request time so
         // constructing the repository cannot escape an OptionsValidationException and take down host liveness.
         _providerOptions = providerOptions;
@@ -590,11 +591,20 @@ public sealed class BusinessReferenceDataStewardshipRepository : TenantRepositor
             Builders<BusinessReferenceDataUsageRegistration>.Filter.Eq(x => x.IsDeleted, false),
             Builders<BusinessReferenceDataUsageRegistration>.Filter.Eq(x => x.IsActive, true));
 
-        return await _usageRegistrations
-            .Find(filter)
-            .SortByDescending(x => x.UpdatedAt)
+        // Ordered in memory, not by the server, for the same reason as
+        // WorkflowInstanceRepository.GetLatestByObjectRefAsync: with no DateTimeOffsetSerializer registered
+        // (BL-030) every DateTimeOffset is stored as a BSON array [ticks, offsetMinutes], and sorting on two
+        // of them makes MongoDB reject the query with "cannot sort with keys that are parallel arrays". This
+        // was verified broken against a real server, not inferred — a registration with a non-null UpdatedAt
+        // was enough to kill the whole listing. Do NOT restore the server-side sort until BL-030 lands.
+        // Ordering intent is unchanged (UpdatedAt desc, then CreatedAt desc); a never-updated registration
+        // has a null UpdatedAt and sorts LAST, which is where MongoDB put it too.
+        var rows = await _usageRegistrations.Find(filter).ToListAsync(ct);
+        return rows
+            .OrderByDescending(x => x.UpdatedAt.HasValue)
+            .ThenByDescending(x => x.UpdatedAt ?? DateTimeOffset.MinValue)
             .ThenByDescending(x => x.CreatedAt)
-            .ToListAsync(ct);
+            .ToList();
     }
 
     public async Task<BusinessReferenceDataUsageRegistration?> GetUsageRegistrationByIdAsync(Guid usageRegistrationId, CancellationToken ct = default)

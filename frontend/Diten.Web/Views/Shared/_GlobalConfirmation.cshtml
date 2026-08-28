@@ -1,48 +1,13 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
-<!-- MOD-0013: Premium SweetAlert2 Styling (Native & Bootstrap 5 Classes) -->
-<style>
-    /* Sadece özel ikon bileşeni için gerekli CSS (Layout ve boşluklar SweetAlert parametreleriyle yönetilmektedir) */
-    /* Sadece özel ikon bileşeni için gerekli CSS */
-    .swal-icon-circle {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background: rgba(255, 76, 81, 0.12);
-        border: 2px solid rgba(255, 76, 81, 0.25);
-        margin: 0 auto !important;
-        /* Force center */
-    }
-
-    .swal-icon-circle i {
-        font-size: 2.5rem;
-        /* Colour comes from the per-type text-* utility class on the <i> so the icon
-           matches its circle (warning=amber, success=green, etc.), not a hardcoded red. */
-    }
-
-    .swal2-title {
-        width: 100%;
-        text-align: center;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-    }
-
-    /* Force Icon Centering */
-    .swal2-icon {
-        display: flex !important;
-        justify-content: center !important;
-        width: 100% !important;
-        border: none !important;
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
-    }
-</style>
+@*
+    THE STYLING FOR THIS COMPONENT LIVES IN `wwwroot/assets/css/backbone-custom.css`, under
+    "THE SHARED CONFIRM". It used to be an inline <style> block here, which put four rules that paint EVERY
+    modal in the product outside the file this project keeps its CSS in (FG-003) — and one of them, an
+    unconditional `display: flex !important` on `.swal2-icon`, was strong enough to overrule the library's own
+    `display: none` on an icon that had been suppressed, which is why an icon nobody drew still reserved 80px.
+*@
 
 <script>
     // SweetAlert2: navbar shift fix. The default scrollbarPadding adds padding-right to <body>
@@ -61,6 +26,150 @@
         };
         window.Swal.__navbarFixApplied = true;
     })();
+
+    /**
+     * ── THE PRODUCT'S DIALOG APPEARANCE, PUBLISHED (2026-08-24, owner decision A3-b) ──────────────────────────
+     *
+     * ⚠ THIS IS THE ONLY PLACE THESE CLASSES ARE WRITTEN. If you are about to copy one of them into a
+     * `Swal.fire` somewhere, stop: two copies of a look agree on the day they are written and drift within a
+     * fortnight. Call this instead. A test asserts the definition appears exactly once in the codebase.
+     *
+     * WHY IT HAD TO COME OUT. The look lived INSIDE `showConfirm`, so a raw `Swal.fire` — which is what every
+     * dialog with more than one field has to be — inherited none of it. Measured side by side with the snooze
+     * dialog, a raw dialog rendered its title at 38px against 18px, its description at 18px against 13px, its
+     * popup at 512px against 400px, and its dismiss button in RED, because this theme's global default is
+     * `btn-label-danger` and the package above is what was overruling it.
+     *
+     * WHY NOT THE OTHER WAY (rejected alternative (a)): growing `showConfirm` a "custom fields" seam. Six
+     * parameters were added to it this session and all fifteen call sites were re-measured each time; a seventh
+     * turns a confirmation into a form builder.
+     *
+     * OPTIONS — `confirmVariant` names the confirm button's Bootstrap colour, the caller's ONLY influence, and
+     * `showConfirm` derives it from `type` rather than accepting it from outside; `width` is the one geometry a
+     * caller may widen. Everything else is fixed on purpose: a dialog that can choose its own look is a dialog
+     * that will. RETURNS a FRESH `Swal.fire` fragment — spread it over a config, never mutate it in place.
+     *
+     * (No JSDoc at-tags in this file: it is a Razor view, and the at-sign opens a C# expression.)
+     */
+    window.DitenDialogAppearance = function (options) {
+        options = options || {};
+        return {
+            width: options.width || '400px',
+            /*
+             * ⚠ 1.5rem ON ALL FOUR SIDES (2026-08-24, owner's option B). It was `2.5rem 1.5rem 2rem` — a top
+             * inset sized for an 80px icon block that no longer exists. The icon rides the title now, so the
+             * dialog opens at the same inset it closes at.
+             */
+            padding: '1.5rem',
+            buttonsStyling: false,
+            reverseButtons: true,
+            customClass: {
+                popup: 'rounded-4 shadow-lg',
+                /*
+                 * ── OPTION B, AS THE OWNER CHOSE IT (2026-08-24) ──────────────────────────────────────────
+                 *
+                 * The title is LEFT-ALIGNED and CARRIES THE ICON on its own line (see `showConfirm`, which
+                 * composes the two into this slot). Measured before: a centred 80px circle, a centred title and
+                 * a centred description stacked to 436px for a dialog whose whole content was one sentence.
+                 *
+                 * ⚠ WHY THE ICON MOVED INTO THE TITLE RATHER THAN BESIDE IT. SweetAlert lays the popup out as
+                 * a GRID with one slot per row — icon, title, html, actions. Putting two of them on one visual
+                 * row means overriding that grid, which is the library's own layout contract and the thing
+                 * that broke twice already this session (the label that computed `display: block` and still
+                 * rendered 58px wide). Composing both into ONE slot needs no grid surgery at all.
+                 *
+                 * fs-5 = 18px in this theme (its own h5), the size a page titles itself with. `fs-4` was
+                 * 24px — a dialog shouting louder than the screen behind it. An unclassed title is 38px.
+                 */
+                title: 'fs-5 fw-bold text-heading d-flex align-items-center gap-2 w-100 text-start dt-dialog-title',
+                htmlContainer: 'd-block w-100 text-start dt-dialog-body',
+                /*
+                 * ⚠ BOTH ENDS, NOT THE MIDDLE — copied from the create-task offcanvas footer, which is the
+                 * shape the owner named: `d-flex justify-content-between gap-2`, dismiss left, commit right.
+                 * `px-5` is gone with it: measured, the offcanvas's buttons carry the theme's own 20px inset.
+                 */
+                actions: 'd-flex justify-content-between mt-3 w-100 gap-2',
+                confirmButton: 'btn ' + (options.confirmVariant || 'btn-primary') + ' waves-effect waves-light',
+                // ⚠ NEUTRAL, and this is the line that stops a dismiss button being red: the theme's global
+                // default for `.swal2-cancel` is `btn-label-danger`, so a dialog that does not say otherwise
+                // ships a "Vazgeç" that looks like the dangerous answer.
+                cancelButton: 'btn btn-label-secondary waves-effect',
+                // The icon slot stays empty now; the picture rides the title. Kept so a caller that still
+                // passes `iconHtml` (a raw dialog) gets a sane box rather than the library's 80px reservation.
+                icon: 'border-0 m-0 p-0 d-flex w-100 dt-dialog-iconslot',
+                /*
+                 * The box's label is a FORM label, so it wears the product's form label — 13px, the same
+                 * one every field on every create form uses. SweetAlert's own default was 16px.
+                 *
+                 * ⚠ `d-block text-start`, ADDED 2026-08-24 — A LABEL BELONGS TO ITS FIELD, NOT TO THE DIALOG.
+                 *
+                 * MEASURED: the popup centres everything, so "Bir tarih seçin", "Dakika", "Toplantı tarihi ve
+                 * saati" and "Hangi modül?" all floated in the middle above a full-width box whose text starts
+                 * at the left edge. The owner reported all four; they are ONE defect, on this line.
+                 *
+                 * The product already had the answer on screen: the hand-written labels in the "Bilgi bekle"
+                 * dialog carry exactly `form-label d-block text-start` and sit correctly. Nothing was designed
+                 * here — the two classes already in use were copied, and now the generated label and the
+                 * hand-written ones cannot drift.
+                 *
+                 * ⚠ TITLE AND DESCRIPTION STAY CENTRED, on purpose. They address the DIALOG ("Süre gir", and
+                 * what it will do); the label addresses the BOX under it. A centred title above a
+                 * left-aligned field label is the same arrangement every create form in this product uses.
+                 */
+                /*
+                 * ⚠ `w-100` IS NOT DECORATION — MEASURED. With `d-block text-start` alone the label computed
+                 * `display: block` and still rendered 58px wide, starting 94px to the RIGHT of its own box
+                 * (label x=691, input x=597): SweetAlert lays the popup out as a GRID and an auto-width item
+                 * lands centred in its track. `text-start` then aligns text inside a box that is itself in the
+                 * middle — the class was doing its job on a box that was the wrong size.
+                 *
+                 * `d-block w-100 text-*` is the trio the TITLE in this same package already uses, for the same
+                 * reason. Nothing new was invented; the existing idiom was completed.
+                 */
+                inputLabel: 'form-label d-block w-100 text-start'
+            }
+        };
+    };
+
+    /**
+     * The class a dialog's DESCRIPTION wears — 13px, the product's secondary copy. `showConfirm` wraps its own
+     * subtext in this; a multi-field dialog that writes its own body markup asks for it by name rather than
+     * re-typing three utility classes and getting one of them wrong.
+     */
+    window.DitenDialogAppearance.description = 'mb-2 text-muted-500 small';
+
+    /**
+     * ── THE ICON, AS A THING A RAW DIALOG CAN ALSO HAVE (2026-08-24) ──────────────────────────────────────
+     *
+     * The circle, its tint and its glyph were built INSIDE `showConfirm` from `type`, so a multi-field dialog —
+     * which cannot be a confirmation — could take the whole appearance and still open with a bare gap where
+     * every other dialog has a picture. That is what the owner photographed on "Bilgi bekle".
+     *
+     * So the same builder is published. It takes the SAME two inputs `showConfirm` uses (`type` decides the
+     * circle and its colour, `icon` may name the glyph) and hands back the `iconHtml` string. One builder, two
+     * consumers; no second look, and no new parameter — `options.icon` is the seam opened for the snooze moon
+     * and it is what every caller uses.
+     *
+     * `null` is a real answer: a dialog with nothing to say about its own gravity draws nothing at all.
+     */
+    window.DitenDialogAppearance.iconHtml = function (type, glyph) {
+        var circle = 'swal-icon-circle bg-label-primary border-primary border-opacity-25';
+        var text = 'text-primary';
+        var picture = 'bx-help-circle';
+        if (type === 'delete') { circle = 'swal-icon-circle'; text = 'text-danger'; picture = 'bx-trash'; }
+        else if (type === 'danger' || type === 'error') {
+            circle = 'swal-icon-circle bg-label-danger border-danger border-opacity-25';
+            text = 'text-danger'; picture = 'bx-error-circle';
+        } else if (type === 'success') {
+            circle = 'swal-icon-circle bg-label-success border-success border-opacity-25';
+            text = 'text-success'; picture = 'bx-check-circle';
+        } else if (type === 'warning') {
+            circle = 'swal-icon-circle bg-label-warning border-warning border-opacity-25';
+            text = 'text-warning'; picture = 'bx-error';
+        }
+        if (glyph) { picture = glyph; }
+        return '<div class="' + circle + '"><i class="bx ' + picture + ' ' + text + '"></i></div>';
+    };
 
     /**
      * MOD-0013: Platform Standards - Global Confirmation System
@@ -85,65 +194,162 @@
         const isDeleteAction = normalizedKey.includes('delete') || normalizedKey.includes('sil') || options.type === 'danger';
 
         const title = confirmations[keyOrTitle + 'Title'] || confirmations[keyOrTitle] || keyOrTitle || confirmations['AreYouSure'];
-        const subtext = confirmations[keyOrTitle + 'SubText'] || options.subtext || confirmations['ConfirmAction'];
+        /*
+         * ⚠ AN EXPLICIT EMPTY SUBTEXT IS AN ANSWER, NOT A MISSING ONE (2026-08-24).
+         *
+         * `options.subtext || default` treated '' as "the caller said nothing", so a dialog that deliberately
+         * has no sentence got the generic confirmation one instead: "Devam etmek istediğinize emin misiniz?"
+         * printed over a box asking "kaç dakika?". Four dialogs wore it, and it told the reader nothing in any
+         * of them.
+         *
+         * `undefined` still means "not supplied" and still takes the default, so EVERY existing caller is
+         * unchanged — measured: of the 15 call sites, none passes an empty string today.
+         */
+        const subtext = confirmations[keyOrTitle + 'SubText']
+            || (options.subtext !== undefined ? options.subtext : confirmations['ConfirmAction']);
         const yesBtn = confirmations[keyOrTitle + 'YesBtn'] || options.confirmButtonText || (isDeleteAction ? confirmations['DeleteConfirmationYesBtn'] : confirmations['Apply']);
         const noBtn = options.cancelButtonText || confirmations['DeleteConfirmationCancelBtn'];
 
         // Build HTML for description with entity name badge
-        let htmlContent = `<div class="mb-2 text-muted-500">${subtext}</div>`;
+        /*
+         * ── THE MODAL'S TYPE SCALE IS THE PRODUCT'S, NOT SweetAlert's (2026-08-23) ───────────────────────────
+         *
+         * MEASURED on a rendered page: this product writes its body copy at 13px and its secondary copy at 12px
+         * (a census of the detail page's 134 text nodes: 41 at 13px, 46 at 12px). The dialog was printing its
+         * description at 18px — larger than the page TITLE it opened over (18px) and 40% larger than the
+         * sentence beside it. Nothing in this file chose 18px; it is the browser's default for an unstyled
+         * block, which is what "no class" means.
+         *
+         * `small` is the theme's OWN 13px utility — the same size `.form-label` and `.backbone-preview-description`
+         * already use. No new scale is introduced here and no number is written: the class already existed.
+         *
+         * ⚠ THIS FILE IS EVERY MODAL IN THE PRODUCT. The change is a reduction to the scale the rest of the
+         * product already uses, verified on three different screens before and after.
+         */
+        // No sentence, no box: an empty description div still costs a margin and reads as a gap.
+        let htmlContent = subtext ? `<div class="${window.DitenDialogAppearance.description}">${subtext}</div>` : '';
         if (options.entityName) {
-            htmlContent += `<div class="badge bg-label-primary fs-6 mt-1 py-2 px-3 fw-medium">${options.entityName}</div>`;
+            /*
+             * ⚠ SECONDARY, NOT PRIMARY (2026-08-24, owner). Measured: this badge rendered `rgb(105,108,255)` —
+             * the theme's PURPLE — inside a red destructive dialog, because the class was `bg-label-primary`
+             * regardless of `type`. The owner spotted it in a screenshot.
+             *
+             * It stays neutral rather than following `type`, and that is the decision: the badge carries the
+             * record's NAME, not the action's gravity. Colouring a name red says the name is dangerous.
+             *
+             * Full width and truncated: a long title used to wrap into a three-line purple block that outweighed
+             * the sentence above it.
+             */
+            htmlContent += `<div class="badge bg-label-secondary fs-6 py-2 px-3 fw-medium d-block text-start text-truncate dt-dialog-entity">${options.entityName}</div>`;
         }
 
+        /*
+         * ── WHAT THE DIALOG LOOKS LIKE, decided by `type` ────────────────────────────────────────────────────
+         *
+         * Three things come out of this chain and they are INDEPENDENT of each other: the button's colour, the
+         * circle behind the glyph, and the glyph itself. They were three whole strings before; they are three
+         * variables now, so a caller can name a different GLYPH without touching the other two.
+         *
+         * ⚠ `confirmBtnClass` is not readable from outside and does not move. A dialog's colour says how serious
+         * it is — that is the type's business, never the caller's.
+         */
         var type = options.type || (isDeleteAction ? 'delete' : 'info');
+        // The BUTTON's colour is the only thing this chain still decides; the picture comes from the published
+        // builder above, so the module dialogs and this wrapper cannot end up with two different circles.
         var confirmBtnClass = 'btn-primary';
-        var iconHtml = '<div class="swal-icon-circle bg-label-primary border-primary border-opacity-25"><i class="bx bx-help-circle text-primary"></i></div>';
+        if (type === 'delete' || type === 'danger' || type === 'error') { confirmBtnClass = 'btn-danger'; }
+        else if (type === 'success') { confirmBtnClass = 'btn-success'; }
+        else if (type === 'warning') { confirmBtnClass = 'btn-warning'; }
 
-        if (type === 'delete') {
-            confirmBtnClass = 'btn-danger';
-            iconHtml = '<div class="swal-icon-circle"><i class="bx bx-trash text-danger"></i></div>';
-        } else if (type === 'danger' || type === 'error') {
-            confirmBtnClass = 'btn-danger';
-            iconHtml = '<div class="swal-icon-circle bg-label-danger border-danger border-opacity-25"><i class="bx bx-error-circle text-danger"></i></div>';
-        } else if (type === 'success') {
-            confirmBtnClass = 'btn-success';
-            iconHtml = '<div class="swal-icon-circle bg-label-success border-success border-opacity-25"><i class="bx bx-check-circle text-success"></i></div>';
-        } else if (type === 'warning') {
-            confirmBtnClass = 'btn-warning';
-            iconHtml = '<div class="swal-icon-circle bg-label-warning border-warning border-opacity-25"><i class="bx bx-error text-warning"></i></div>';
-        }
+        /*
+         * THE GLYPH, and ONLY the glyph, may be named by the caller.
+         *
+         * A dialog's picture and a dialog's gravity are different questions. The snooze dialog is a plain
+         * primary-blue confirmation — its colour is right — but "?" says "are you sure?" while the dialog asks
+         * "until when?". A moon says the second thing and changes nothing about the first.
+         *
+         * ⚠ Default is unchanged: no caller passes `icon`, so every dialog keeps the glyph its type gives it.
+         * The circle, its colour and its size are still the type's, so a caller cannot invent a new look — only
+         * swap the picture inside the one this component already draws.
+         */
+        var iconHtml = window.DitenDialogAppearance.iconHtml(type, options.icon);
 
         try {
             if (typeof Swal !== 'undefined') {
-                var swalConfig = {
-                    title: title,
+                // The look is READ, not restated — see `window.DitenDialogAppearance` above. `type` still decides
+                // the confirm button's colour; it is the one thing the package takes from its caller.
+                /*
+                 * ⚠ THE ICON IS COMPOSED INTO THE TITLE (2026-08-24, option B), not given to the icon slot.
+                 * See the appearance package for why: the popup is a grid with one slot per row, so two things
+                 * on one visual row means either grid surgery or one slot. This is the one slot.
+                 *
+                 * `title` is `aria-labelledby` for the dialog. The glyph is an empty `<i>` painted by a CSS
+                 * mask — no text, no label — so the accessible name is the title's own words, unchanged.
+                 */
+                var titleHtml = options.hideIcon ? title : (iconHtml + '<span>' + title + '</span>');
+                var swalConfig = Object.assign({
+                    title: titleHtml,
                     html: htmlContent,
-                    iconHtml: iconHtml,
                     showCancelButton: true,
                     confirmButtonText: yesBtn,
-                    cancelButtonText: noBtn,
-                    width: options.width || '400px',
-                    padding: '2.5rem 1.5rem 2rem',
-                    customClass: {
-                        popup: 'rounded-4 shadow-lg',
-                        title: 'fs-4 fw-bold text-heading mt-4 mb-2 d-block w-100 text-center',
-                        htmlContainer: 'mb-1 d-block w-100 text-center',
-                        actions: 'd-flex justify-content-center mt-4 w-100 gap-2',
-                        confirmButton: 'btn ' + confirmBtnClass + ' waves-effect waves-light px-5',
-                        cancelButton: 'btn btn-label-secondary waves-effect px-5',
-                        icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100'
-                    },
-                    buttonsStyling: false,
-                    reverseButtons: true
-                };
+                    cancelButtonText: noBtn
+                }, window.DitenDialogAppearance({ confirmVariant: confirmBtnClass, width: options.width }));
+
+                /*
+                 * ── THE ICON IS OPTIONAL (2026-08-23) ────────────────────────────────────────────────────────
+                 *
+                 * An icon on a confirmation carries WEIGHT: the red bin says "this cannot be undone", the amber
+                 * exclamation says "be careful". A dialog with no such weight is misdescribed by any of them, and
+                 * the default "?" is worse than neutral — it asks "are you sure?" over a dialog whose actual
+                 * question is "until when?".
+                 *
+                 * ⚠ DEFAULT IS UNCHANGED: no caller passes `hideIcon`, so every existing dialog keeps the icon it
+                 * has today. This is the THIRD parameter this shared file has grown (inputType, cancelButtonText,
+                 * now this) and each one has been measured for backwards compatibility the same way.
+                 *
+                 * ⚠ THE BUTTON COLOUR IS NOT TOUCHED. `confirmBtnClass` is decided by the SAME if-chain above
+                 * that decides the glyph; this gate sits AFTER the chain and reads its result without altering
+                 * it, so a `delete` dialog that hides its icon still gets `btn-danger`.
+                 *
+                 * ⚠ NOTHING IS LOST TO A SCREEN READER. Measured on a live dialog: the icon carries no
+                 * `aria-label`, no `role` and no text — it is an empty `<i>` whose glyph comes from a CSS
+                 * pseudo-element. The dialog is named by `aria-labelledby="swal2-title"`, which is untouched.
+                 */
+                /*
+                 * ⚠ NO `iconHtml` ANY MORE — the picture is in the title above. Setting it too would draw the
+                 * circle twice, once in the title and once in the slot the library reserves for it.
+                 * `hideIcon` still works: it simply leaves the title without a glyph.
+                 */
 
                 // Add textarea support if requested
                 if (options.showInput) {
-                    swalConfig.input = 'textarea';
+                    // A CONSTANT BECOMES A PARAMETER. Nothing new is offered here: `inputType` is the type this
+                    // block already hard-coded, and its default is exactly what every existing caller gets today.
+                    // The arbitrary part was the assumption that every confirmation that asks for something asks
+                    // for prose — which is why the dialogs needing a date could not use this component at all
+                    // (BL-146). The label, the validator and the didOpen seam are untouched.
+                    swalConfig.input = options.inputType || 'textarea';
                     if (options.inputLabel) {
                         swalConfig.inputLabel = options.inputLabel;
                     }
                     swalConfig.inputPlaceholder = options.inputPlaceholder || '';
+                    /*
+                     * ⚠ THE SEVENTH PARAMETER, AND THE LAST (owner, 2026-08-24).
+                     *
+                     * A `select` is useless without its options, so `inputType: 'select'` was reachable but not
+                     * usable — the one dialog that needed it stayed a raw `Swal.fire` and therefore stayed
+                     * unstyled. This is the missing half of a parameter that already exists, not a new capability.
+                     *
+                     * BACKWARDS COMPATIBILITY, COUNTED: `showConfirm` has 15 call sites across 12 files. None
+                     * passes `inputOptions`, so `undefined` is what every one of them evaluates to and the key is
+                     * never written onto the config — the same no-op shape the six parameters before it use.
+                     *
+                     * Anything beyond this belongs in a form, not in a confirmation. The next dialog that needs
+                     * more takes `DitenDialogAppearance` and builds its own body.
+                     */
+                    if (options.inputOptions) {
+                        swalConfig.inputOptions = options.inputOptions;
+                    }
                     swalConfig.inputAttributes = Object.assign({
                         'rows': 3,
                         'class': 'form-control mt-3 px-3 py-2 rounded-3 border-light-subtle shadow-none'

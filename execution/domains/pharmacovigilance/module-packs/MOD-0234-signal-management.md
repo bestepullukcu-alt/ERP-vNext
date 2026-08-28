@@ -2,13 +2,15 @@
 id: MOD-0234
 name: Signal Management
 domain: pharmacovigilance
-service: TBD
+service: Diten.PvgService
 shell: none
 golden_reference: none
 entity_base: TBD
-status: draft
+status: ready-for-dev
+build_gate: open
+operational_runtime_gate: closed
 owner: TBD
-branch: feature/pvg/mod-0234-signal-management
+branch: feature/pvg/mod-0234-build-test-governance
 started: 2026-08-04
 target: TBD
 form_field_count: TBD
@@ -16,20 +18,26 @@ form_field_count: TBD
 
 # MOD-0234 - Signal Management
 
-> Draft planning artifact only. This module pack does not authorize runtime work. DCP-004 remains `draft`;
-> production implementation stays blocked until DCP-004 is `approved` / `ready-for-execution`, this module pack
-> is `approved` / `ready-for-dev`, upstream MOD-0230 / MOD-0231 / MOD-0232 contracts are approved, W-3A0 blockers
-> are resolved or accepted through production-grade external contracts, and Signal MVP data-product / metric gates
-> are closed.
+> **Status change 2026-08-11.** DCP-004 is `approved` and this pack is `ready-for-dev` for the
+> **local/dev/CI build-test gate only**. The gate authorizes non-operational class-library contracts/tests under
+> `services/Diten.PvgService/**` for MOD-0234 Signal Management only, after a separate work package. It does
+> **not** authorize operational runtime, API host, Program.cs, controllers, Gateway, frontend, appsettings,
+> persistence, Mongo, collections, seeds, jobs, migrations, partner integration, AI, dictionary import/search/cache,
+> export, delete, bulk-delete, shell, placeholder dashboard, fake signal, fake metric, fake cohort, menu entry, or
+> runtime endpoint.
+>
+> **Operational runtime gate remains closed.** Upstream MOD-0230 / MOD-0231 / MOD-0232 contracts, W-3A0 blockers,
+> MOD-0004 semantic metric contracts, MOD-0063 data-product/cohort/lineage contracts, and Signal MVP
+> data-product / metric gates remain operational blockers.
 
 > DCP-002 gate (2026-08-04): `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0234 --name "Signal Management"` -> `OK  MOD-0234: proven against Blueprint/registry.`
 
 ## Module Summary
 
-MOD-0234 Signal Management is the canonical Pharmacovigilance signal-management module. Under DCP-004, this draft
-is limited to Signal MVP contract, workflow boundary, object model, and interface gates only. It explicitly does
-not create a Signal Management runtime shell, placeholder dashboard, endpoint, menu entry, fake data surface,
-service scaffold, frontend page, gateway route, seed, job, collection, or test.
+MOD-0234 Signal Management is the canonical Pharmacovigilance signal-management module. Under DCP-004, this
+build/test artifact is limited to Signal MVP contract, workflow boundary, object model, and interface gates only.
+It explicitly does not create a Signal Management runtime shell, placeholder dashboard, endpoint, menu entry, fake
+data surface, service scaffold, frontend page, gateway route, seed, job, collection, or runtime test.
 
 Signal MVP planning defines the minimum contract for consuming upstream case intake, signal-minimum case
 processing, and MedDRA-coded terms, then shaping a signal hypothesis / evaluation / review decision boundary that
@@ -51,7 +59,7 @@ Blueprint / DCP-004 context:
 
 ## Ownership and Boundaries
 
-In scope for this draft:
+In scope for this build/test artifact:
 
 - Signal MVP contract boundary for downstream Signal Management planning.
 - Signal hypothesis, evaluation, review decision, linked evidence, and traceability object model planning.
@@ -59,15 +67,16 @@ In scope for this draft:
 - Workflow boundary for signal review, triage, evaluation, decision, and closure planning.
 - Data-product and semantic metric gates for MOD-0063 and MOD-0004.
 - W-3A0, masking, evidence, audit, workflow, TRACE-BUNDLE, and regulated error-model blocker map.
-- Open decisions required before any future `ready-for-dev` transition.
+- Open decisions required before any operational runtime transition.
 
-Out of scope for this draft:
+Out of scope for this build/test artifact:
 
-- Runtime implementation of MOD-0234.
+- Operational runtime implementation of MOD-0234.
 - Runtime shell, placeholder dashboard, placeholder endpoint, menu entry, seed, fake dashboard, fake data, or
   route shell.
-- Frontend screens, Razor views, JavaScript, localization, gateway routes, service scaffold, database collections,
-  migrations, jobs, tests, permission seeds, module catalog entries, appsettings changes, or runtime config.
+- Frontend screens, Razor views, JavaScript, localization, gateway routes, operational service scaffold, database
+  collections, migrations, jobs, runtime/integration tests outside the non-operational class-library boundary,
+  permission seeds, module catalog entries, appsettings changes, or runtime config.
 - Full W-4 Signal Management workbench or production signal operations runtime.
 - Data warehouse/lakehouse implementation, semantic metric registry implementation, workflow engine, evidence-link
   implementation, masking implementation, audit implementation, or governed-AI implementation.
@@ -91,8 +100,8 @@ Planned logical objects for Signal MVP planning, not runtime classes yet:
 | Upstream Case Handoff | MOD-0234 consumes MOD-0231 signal-minimum handoff and MOD-0232 coded-term summary | Planned only |
 | Signal Audit / Trace Contract | MOD-0234 defines auditable operation boundaries; MOD-0021 and TRACE-BUNDLE own platform behavior | Planned only |
 
-Future runtime objects, repositories, commands, queries, DTOs, endpoints, frontend routes, and permissions are not
-authorized by this draft. They must be finalized only after open decisions close.
+Future operational runtime objects, repositories, commands, queries, DTOs, endpoints, frontend routes, and
+permissions are not authorized by this build/test artifact. They must be finalized only after open decisions close.
 
 ## Entity Fields
 
@@ -237,33 +246,49 @@ Minimum MOD-0063 concepts and metadata required for Signal MVP runtime:
 
 ## Repo Scope
 
-Authorized by this draft:
+Authorized by the build/test gate:
 
 - `execution/domains/pharmacovigilance/module-packs/MOD-0234-signal-management.md`
+- `services/Diten.PvgService/**` - non-operational MOD-0234 class-library contracts/tests only, after a separate
+  work package. No API host, Program.cs, controllers, appsettings, persistence, Mongo, collections, seeds, jobs,
+  migrations, dictionary import/search/cache, data-product stub, fake metric, fake cohort, partner integration,
+  AI, export, delete, or bulk-delete.
 
-Future only, blocked until DCP-004 and this module pack pass approval gates:
+Future operational/runtime scope, still blocked until the operational runtime gate is approved:
 
-- PVG runtime service path - TBD.
+- PVG runtime service behavior under `Diten.PvgService`; frontmatter names the class-library build/test boundary
+  only and does not authorize an API host, port listener, appsettings, persistence, or runtime endpoint.
 - PVG frontend paths - not authorized for this no-shell first-stage pack.
 - PVG gateway route paths - not authorized for this no-shell first-stage pack.
 - Signal data product / metric contract paths - TBD by MOD-0063 and MOD-0004 owners.
-- PVG tests - TBD only after runtime scope is approved.
+- PVG tests - allowed only for non-operational class-library build/test contracts in this gate.
 
 ## Protected Paths
 
 - `.antigravity/**`.
-- `services/**` - no PVG runtime service scaffold is authorized by this draft.
+- `services/**` except `services/Diten.PvgService/**` for MOD-0234 non-operational class-library contracts/tests.
+  Runtime service behavior, API host, Program.cs, controllers, appsettings, Mongo, DbContext, repositories,
+  collections, seeds, jobs, migrations, dictionary import/search/cache, partner integration, AI, export, delete,
+  and bulk-delete remain protected.
 - `frontend/**` - no Signal Management UI, shell, dashboard, page, menu entry, or fake data is authorized.
 - `gateway/**` - no gateway route or placeholder endpoint is authorized.
 - `gateway/Diten.ApiGateway/**/ocelot.json` - integration-agent owned if a future route is approved.
 - `frontend/Diten.Web/Views/Shared/_Layout.cshtml`.
 - `frontend/Diten.Web/Controllers/Archive/**`.
 - `frontend/Diten.Web/Views/Archive/**`.
-- Runtime appsettings, seed files, tests, menu/module catalog files, and service configuration files.
+- Runtime appsettings, seed files, runtime/integration tests outside the non-operational class-library boundary,
+  menu/module catalog files, and service configuration files.
 - `execution/portfolio/delivery-capability-packs/DCP-004-pvg-urgent-w3-development-block.md` - status remains unchanged.
-- `execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md` - consumed as upstream draft, not edited by this pack.
-- `execution/domains/pharmacovigilance/module-packs/MOD-0231-case-processing.md` - consumed as upstream draft, not edited by this pack.
-- `execution/domains/pharmacovigilance/module-packs/MOD-0232-meddra-coding.md` - consumed as upstream draft, not edited by this pack.
+- `execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md` - consumed as upstream
+  build/test-gated intake/handoff planning and non-operational scaffold evidence; operational handoff remains
+  blocked until owner-approved contracts. Not edited by this pack.
+- `execution/domains/pharmacovigilance/module-packs/MOD-0231-case-processing.md` - consumed as upstream
+  build/test-gated Signal Minimum Scope planning and non-operational scaffold evidence; operational source-term /
+  lifecycle handoff remains blocked until owner-approved contracts. Not edited by this pack.
+- `execution/domains/pharmacovigilance/module-packs/MOD-0232-meddra-coding.md` - consumed as upstream
+  build/test-gated MedDRA Coding planning and non-operational scaffold evidence; operational coded-output handoff,
+  CODESET, and MedDRA source/license/version/import gates remain blocked until owner-approved contracts. Not edited
+  by this pack.
 - Other domain module packs and runtime internals unless explicitly authorized by the user.
 
 ## Dependencies
@@ -273,7 +298,7 @@ blockers, not waived:
 
 | Dependency | Owning module / source | Status for MOD-0234 Signal MVP |
 |---|---|---|
-| DCP-004 | PVG Urgent W-3 Development Block | BLOCKER - currently `draft`; execution not authorized |
+| DCP-004 | PVG Urgent W-3 Development Block | Approved; build/test gate open for MOD-0234 only by this pack; operational runtime remains closed |
 | W-3A0 REG-PV-BASE | PVG foundation remediation | BLOCKER |
 | W-3A0 REG-SIGNAL-BASE | Signal foundation remediation | BLOCKER |
 | MOD-0230 Case Intake & Triage | intake baseline, triage/routing, evidence boundary | BLOCKER - must be approved and compatible |
@@ -293,7 +318,7 @@ MOD-0004 and MOD-0063 are direct MOD-0234 Signal MVP runtime gates. Unlike MOD-0
 Signal Management cannot treat them as downstream-only unless the approved scope removes signal analytics,
 semantic metric IDs, cohorts, aggregates, and data-product outputs entirely.
 
-### Required Interface Contracts Before `ready-for-dev`
+### Required Interface Contracts Before Operational Runtime
 
 | Owner | Required contract for MOD-0234 | Required MOD-0234 decision | Status |
 |---|---|---|---|
@@ -320,18 +345,19 @@ semantic metric IDs, cohorts, aggregates, and data-product outputs entirely.
 
 ## Runtime Constraints
 
-- No runtime service scaffold is authorized.
-- No service port is reserved.
+- No operational runtime service scaffold or API host is authorized.
+- No additional MOD-0234 service port is reserved, and no `Diten.PvgService` port listener is authorized by this
+  pack.
 - No gateway route is authorized.
 - No database collection, index, migration, seed, job, data-product publication, or metric registration is authorized.
 - No runtime shell, frontend page, placeholder dashboard, placeholder endpoint, menu entry, or fake data is authorized.
 - `shell: none` is intentional for this DCP-004 first-stage pack.
 - `golden_reference: none` is intentional for this no-shell contract/object-model/interface-gate stage.
-- `Diten.PvgService` cannot be created until DCP-004 is `approved` / `ready-for-execution` and the active member
-  module pack is `approved` / `ready-for-dev`.
-- Future runtime, if approved, is expected to use a dedicated `Diten.PvgService` boundary, but `service` remains
-  `TBD` until explicit scaffold approval.
-- `entity_base` remains `TBD` because this draft authorizes no runtime entity. Future recommendation:
+- `Diten.PvgService` is authorized here only as the non-operational class-library boundary for MOD-0234 contracts
+  and tests. This does not authorize an API host, port listener, appsettings, persistence, or runtime endpoint.
+- Future operational runtime, if approved, is expected to use the dedicated `Diten.PvgService` boundary, but this
+  build/test artifact does not approve an operational service scaffold.
+- `entity_base` remains `TBD` because this build/test artifact authorizes no runtime entity. Future recommendation:
   `EntityBase` only if later Diten-owned tenant signal runtime records are approved; data-product records and
   aggregates may instead be governed by MOD-0063 contracts.
 - Tenant-owned runtime data, if approved, must carry server-resolved `TenantId`; client payloads must not accept
@@ -365,10 +391,11 @@ DataTable verifier expectations.
 
 ## Backend File Convention
 
-`service: TBD`
+`service: Diten.PvgService`
 
-No backend implementation is authorized by this draft. The section below is a future convention only if MOD-0234
-is later approved for runtime implementation:
+No operational backend implementation is authorized by this build/test artifact. Non-operational class-library
+contracts/tests under `services/Diten.PvgService/**` may be added only through a separate approved work package.
+The section below is a future convention only if MOD-0234 is later approved for runtime implementation:
 
 ```text
 Features/SignalManagement/
@@ -396,8 +423,8 @@ Possible future naming rules, not implementation authorization:
 
 `golden_reference: none`
 
-No frontend implementation is authorized by this draft. No Signal Management UI shell exists in this first-stage
-scope.
+No frontend implementation is authorized by this build/test artifact. No Signal Management UI shell exists in this
+first-stage scope.
 
 Future rules if runtime UI is later approved:
 
@@ -411,7 +438,7 @@ semantics are approved, no frontend files may be created.
 ## Validation Rules
 
 Field-level validation is blocked until Signal MVP fields and data-product/metric contracts are approved. Minimum
-validation topics that must be resolved before any future `ready-for-dev`:
+validation topics that must be resolved before operational runtime:
 
 | Field / rule area | Required | Rule | DB-level | Pre-check | Sensitivity / fail-closed requirement |
 |---|---|---|---|---|---|
@@ -529,13 +556,14 @@ Open authorization decisions:
 - Export is masked-only unless a later approved field and data-product policy permits more.
 - PHI/PII, licensed-dictionary, semantic-metric, and data-product field-level authorization must align with
   MOD-0019, MOD-0004, and MOD-0063 before runtime.
-- Permission seed/grant ownership must remain with MOD-0018 / AuthService; this draft authorizes no seed.
+- Permission seed/grant ownership must remain with MOD-0018 / AuthService; this build/test artifact authorizes no
+  seed.
 
-No permission seed is authorized by this draft.
+No permission seed is authorized by this build/test artifact.
 
 ## Gateway / API Routing Decision
 
-Decision: no gateway route is authorized by this draft.
+Decision: no gateway route is authorized by this build/test artifact.
 
 DCP-004 first-stage MOD-0234 is no-shell contract/object-model/interface-gate planning only. It must not create:
 
@@ -555,22 +583,28 @@ Direct service-port calls from frontend remain forbidden.
 
 ## Acceptance Criteria
 
-Acceptance criteria for this draft pack:
+Acceptance criteria for this build/test gate pack:
 
 - [x] Pack exists at `execution/domains/pharmacovigilance/module-packs/MOD-0234-signal-management.md`.
-- [x] Status is `draft`.
+- [x] Status is `ready-for-dev` for local/dev/CI build-test only.
+- [x] `build_gate: open`.
+- [x] `operational_runtime_gate: closed`.
 - [x] Canonical name is exactly `Signal Management`.
 - [x] DCP-002 preflight passed for MOD-0234.
-- [x] DCP-004 remains `draft`; no execution is authorized.
+- [x] DCP-004 is `approved`; MOD-0234 execution is limited to non-operational class-library contracts/tests.
 - [x] MOD-0234 is recorded as Signal MVP contract, workflow boundary, object model, and interface gates only.
 - [x] No runtime shell, frontend page, service scaffold, gateway route, menu entry, seed, fake dashboard,
-      placeholder endpoint, appsettings change, or test is authorized.
+      placeholder endpoint, appsettings change, or runtime/integration test outside the non-operational
+      class-library boundary is authorized.
 - [x] W-3A0, MOD-0230, MOD-0231, MOD-0232, MOD-0004, MOD-0063, MOD-0019, MOD-0031, workflow, audit,
       TRACE-BUNDLE, and evidence dependencies are recorded as blockers.
 - [x] MOD-0004 and MOD-0063 are recorded as hard Signal MVP runtime gates.
 - [x] `shell` is `none` for this no-shell first-stage pack.
 - [x] `golden_reference` is `none` because this first-stage pack has no DataTable/runtime UI.
 - [x] `form_field_count` remains `TBD`; future Slim/Compact choice is an open decision, not guessed.
+- [x] `entity_base` remains `TBD`; future `EntityBase` use is limited to later approved Diten-owned tenant signal
+      runtime records.
+- [x] Service boundary recorded as `Diten.PvgService` for non-operational build/test class-library contracts/tests only.
 - [x] Signal MVP object model fields are recorded for planning, with required/optional status, source type, and
       sensitivity class.
 - [x] Exact upstream input lists are recorded for MOD-0231 Signal Minimum Scope, MOD-0232 MedDRA Coding, and
@@ -583,10 +617,10 @@ Acceptance criteria for this draft pack:
 - [x] Archive remains blocked until retention/legal-hold approval.
 - [x] MOD-0040 / TRACE-BUNDLE vs MOD-0288 identity distinction is recorded.
 
-Acceptance criteria before any future implementation can start:
+Acceptance criteria before operational runtime can start:
 
-- [ ] DCP-004 is `approved` / `ready-for-execution`.
-- [ ] This module pack is `approved` / `ready-for-dev`.
+- [x] DCP-004 is `approved` / `ready-for-execution` for sequencing.
+- [x] This module pack is `ready-for-dev` for the build/test gate only.
 - [ ] MOD-0230 intake, triage, routing, and evidence boundary contract is approved and compatible.
 - [ ] MOD-0231 Signal Minimum Scope handoff contract is approved and compatible.
 - [ ] MOD-0232 coded-term, dictionary-version, and coding diff/export contract is approved and compatible.
@@ -602,7 +636,10 @@ Acceptance criteria before any future implementation can start:
 
 ## Test Expectations
 
-No runtime tests are expected for this draft because no runtime files are authorized.
+Only non-operational class-library build/tests under `services/Diten.PvgService/**` are expected for this gate.
+No runtime, API, persistence, Gateway, frontend, dictionary import/search/cache, data-product stub, fake metric,
+fake cohort, seed, job, collection, migration, partner integration, AI, export, delete, or bulk-delete test surface
+is authorized.
 
 Future implementation test expectations must include:
 
@@ -628,9 +665,9 @@ Future implementation test expectations must include:
 - [x] Required governance files read.
 - [x] Golden Reference Slim and Compact module packs read.
 - [x] DCP-002 preflight passed.
-- [x] Pack status is `draft`.
+- [x] Pack status is `ready-for-dev` for the build/test gate only.
 - [x] No-shell first-stage posture recorded.
-- [ ] DCP-004 promoted to `approved` / `ready-for-execution`.
+- [x] DCP-004 promoted to `approved` / `ready-for-execution`.
 - [ ] MOD-0230 contract approved.
 - [ ] MOD-0231 Signal Minimum Scope handoff contract approved.
 - [ ] MOD-0232 coded-term / dictionary-version / diff-export contract approved.
@@ -653,9 +690,12 @@ Future implementation test expectations must include:
 - [x] Delete and bulk-delete exclusions recorded.
 - [x] Archive/legal-hold blocker recorded.
 - [x] MOD-0040 / TRACE-BUNDLE vs MOD-0288 distinction recorded.
-- [ ] Runtime/no-runtime decision after DCP-004 first stage approved.
-- [ ] `service`, deployment boundary, `entity_base`, future `shell`, route surface, `form_field_count`, and
-      `golden_reference` resolved if runtime is added.
+- [x] `service` resolved as `Diten.PvgService` for non-operational build/test class-library work only.
+- [x] Future service/deployment boundary recorded as dedicated `Diten.PvgService`; operational runtime approval still
+      required before API host, port listener, appsettings, persistence, Gateway, frontend, or runtime endpoint.
+- [ ] Operational runtime/no-runtime decision after DCP-004 first-stage contracts are reviewed.
+- [ ] Deployment boundary, runtime `entity_base`, future `shell`, route surface, `form_field_count`, and
+      `golden_reference` resolved if operational runtime is added.
 - [ ] Create/edit fields, required/optional classification, validation rules, workflow rules, data-product rules,
       semantic metric rules, and field-level tests approved if runtime is added.
 - [ ] Delete/retention/legal-hold policy approved.
@@ -664,11 +704,14 @@ Future implementation test expectations must include:
 ## Implementation Notes
 
 - Use canonical name exactly: `Signal Management`.
-- Treat DCP-004 W-3D as delivery planning context only; it does not authorize runtime work.
+- Treat DCP-004 W-3D as delivery planning context only; it authorizes build/test class-library contracts/tests but
+  does not authorize operational runtime work.
 - Treat this pack as no-shell contract/object-model/interface-gate only. A shell, menu entry, dashboard, endpoint,
   fake data, or service scaffold would violate DCP-004.
-- Frontmatter decisions preserved after Signal MVP planning reconciliation: `service: TBD`, `shell: none`,
-  `golden_reference: none`, `entity_base: TBD`, `status: draft`, and `form_field_count: TBD`.
+- Frontmatter service/status decision reconciled 2026-08-11: `service: Diten.PvgService` for non-operational
+  build/test class-library contracts/tests only, `status: ready-for-dev`, `build_gate: open`, and
+  `operational_runtime_gate: closed`. `shell: none`, `golden_reference: none`, `entity_base: TBD`, and
+  `form_field_count: TBD` remain unchanged.
 - Entity-base recommendation recorded: use `EntityBase` only if later Diten-owned tenant signal runtime records are
   approved; data-product records and aggregates remain governed by MOD-0063 contracts.
 - Signal MVP object model fields, upstream input lists, MOD-0004 metric/threshold concepts, MOD-0063 data-product /
@@ -685,8 +728,8 @@ Future implementation test expectations must include:
   organization/person/position data. Do not use legacy deprecated repo MOD-0040 as the organization/person source.
 - Keep AI signal detection, AI summarization, AI recommendation, and automated scoring out of scope until governed-AI
   controls are explicitly available and accepted.
-- No service, frontend, gateway, runtime, appsettings, seed, menu, fake dashboard, placeholder endpoint, or test file
-  is in scope for this draft.
+- No service runtime, frontend, gateway, operational runtime, appsettings, seed, menu, fake dashboard, placeholder
+  endpoint, or runtime/integration test file is in scope for this build/test gate.
 
 ## Follow-up Items
 

@@ -1,0 +1,35 @@
+@using Diten.Web.Views.Tasks.TaskTypes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskTypesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-tasktypes" data-dt-standard="v2" class="datatables-tasktypes table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    @* ⚠ The select-all box stays: DataTables' column indices are positional and the
+                       script addresses columns by number. What was removed is the BULK BAR — with no
+                       bar there is no bulk action, because a task type is retired and never deleted. *@
+                    <th class="cell-fit"><input type="checkbox" class="dt-checkboxes-select-all form-check-input"></th>
+                    <th>@Localizer["Code"]</th>
+                    <th class="all">@Localizer["Name"]</th>
+                    <th>@Localizer["RecordClass"]</th>
+                    <th>@Localizer["GqmsDomain"]</th>
+                    <th>@Localizer["QualityEvent"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

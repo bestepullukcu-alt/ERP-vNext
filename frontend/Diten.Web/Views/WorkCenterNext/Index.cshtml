@@ -6,16 +6,50 @@
     Layout = "_LayoutTenantShell";
 }
 
-@* WorkCenterNext — isolated mock-driven rebuild. The whole UI is rendered by
-   app.js into #wcnApp so every label resolves from a single source (the resx
-   via window.WCN.t). No backend / API calls. *@
-<div class="container-fluid wcn-container">
-    <div id="wcnApp" class="wcn-app"></div>
-</div>
+@* WorkCenterNext — the whole UI is rendered by app.js into #wcnApp so every label resolves from a single
+   source (the resx via window.WCN.t). WC-1b: data comes from the REAL work-item projection through the
+   same-origin proxy. No own container: the tenant shell already wraps @RenderBody in
+   `container-xxl container-p-y` (matches golden pages).
+   DEC-1: the showcase fixture catalog is opt-in and DEVELOPMENT-ONLY — the attribute below is emitted only
+   when the server allows it, so production has no client-reachable path to fixture data. *@
+<div id="wcnApp" class="wcn-app"
+     data-wcn-fixtures="@((ViewData["FixturesToggleAllowed"] as bool? == true && Context.Request.Query["fixtures"] == "showcase") ? "showcase" : "")"></div>
+
+@* MOD-0024 — the app's ONLY quick task creation surface, opened by "+ Yeni ▸ Görev". It lives on the Task
+   Center because that is the single personal entry point; /Tasks deliberately has no second one. *@
+<partial name="~/Views/Tasks/_QuickCreateOffcanvas.cshtml" />
 
 @section Scripts {
     <partial name="_L10n" />
+    @* Tasks strings + engine client, needed by the quick-create offcanvas above. *@
+    <partial name="~/Views/Tasks/_IndexL10n.cshtml" />
+    <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-tags.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-checkitem.js" asp-append-version="true"></script>
+    @* Same reason as Details.cshtml: this page renders the very same checklist card in its detail pane, from the
+       same component and the same app.js. Loading it on one of the two would make the row draggable on one
+       surface and not the other — the exact split this round exists to close. *@
+    <script src="~/assets/vendor/libs/sortablejs/sortable.js"></script>
+    <script src="~/assets/js/Tasks/form.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixture-contract.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/canonical-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/inbox-showcase-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/islerim-showcase-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/havuz-showcase-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/gecmis-showcase-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/edge-case-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/provider-examples/enterprise-strategy-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/provider-examples/documentation-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/trigger-only-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/fixtures/migration-fixtures.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/migration-fixture-adapter.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/task-detail-resolver.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/trigger-response-resolver.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/mock-data.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/work-items-api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkCenterNext/quick-create.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/app.js" asp-append-version="true"></script>
 }

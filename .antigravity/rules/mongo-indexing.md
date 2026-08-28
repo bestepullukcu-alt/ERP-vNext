@@ -39,3 +39,42 @@ Diten ERP vNext "Siloed Data" mantığıyla çalıştığı için, tenant-owned 
 ## 🚨 Yasaklar ve Kısıtlamalar
 
 - **Sınırsız Regex Yasaktır:** `^...` ile başlamayan (wildcard start) regex aramaları indeksi kullanamaz. Büyük
+
+---
+
+## 🧪 Test Veritabanları (DB-010)
+
+- **Bir Mongo testi koşu başına yeni bir veritabanı YARATMAZ.** İzolasyon veritabanı adıyla değil,
+  **kiracı kimliğiyle** sağlanır — üretimde nasıl sağlanıyorsa aynen öyle.
+- **Bir test `MongoDbIndexConfigurations.EnsureIndexesAsync` ÇAĞIRMAZ.** O, üretim açılış yoludur ve
+  platformun **tüm** şemasını kurar. Test yalnız ihtiyacı olan profili ister:
+  ```csharp
+  await PlatformSchemaManifest.ApplyAsync(database, new[] { SchemaProfile.BusinessReferenceData });
+  ```
+- **Doğru desen:** paylaşılan bir veritabanı + test başına yeni `TenantId`.
+  Konusu kiracıya bağlı OLMAYAN bir test (veritabanı-geneli bir kural, idempotent olması gereken bir
+  tohum) kendi veritabanını **sabit bir son ekle** alır — GUID ile değil.
+
+### Neden — mekanizma, sayı değil
+
+Her koleksiyon ve her indeks, işletim sisteminde **açık bir dosyadır**. Test sınıfı başına bir veritabanı
+× platformun tam şeması = süreç başına dosya limiti. Limit aşılınca `mongod` `fassert` ile kendini öldürür;
+ölünce `DisposeAsync` **hiç çalışmaz**, atılacak veritabanları birikir ve sonraki koşu enkazın üstüne başlar.
+
+⚠ **Testler yeşilken düzenek çöker.** Hata testte değil, altyapıda görünür — ve `Connection refused` diye
+okunur, "çok fazla dosya" diye değil. Teşhisi pahalı yapan budur.
+
+### Yasak
+
+⚠ **Kırmızıyı, muhafızın bilinen-ihlal listesine satır ekleyerek yeşile çevirmek YASAKTIR.**
+O liste yalnız **küçülebilir**. Bir dosya düzeltildiğinde listeden düşmesini ikinci bir test zorunlu kılar;
+bayat bir istisna bir deliktir — dosya düzelir, ruhsat kalır, sonraki ihlal bedava girer.
+
+### Muhafız
+
+`tests/architecture/TenantArchitecture.ArchitectureTests` — her push ve her PR'da CI koşuyor
+(`scripts/run_phase1_gates.sh`). Yerelde:
+
+```bash
+dotnet test tests/architecture/TenantArchitecture.ArchitectureTests
+```

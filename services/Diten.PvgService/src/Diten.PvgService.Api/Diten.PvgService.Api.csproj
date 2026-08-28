@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Diten.PvgService.Application\Diten.PvgService.Application.csproj" />
+    <ProjectReference Include="..\Diten.PvgService.Domain\Diten.PvgService.Domain.csproj" />
+    <ProjectReference Include="..\Diten.PvgService.Infrastructure\Diten.PvgService.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

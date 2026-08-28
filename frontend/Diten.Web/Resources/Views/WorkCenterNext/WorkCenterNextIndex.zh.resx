@@ -76,6 +76,10 @@
   <data name="ViewLabel" xml:space="preserve">
     <value>视图</value>
   </data>
+  <data name="RowsPerPage" xml:space="preserve"><value>行数</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>列可见性</value></data>
+  <data name="PreviousPage" xml:space="preserve"><value>上一页</value></data>
+  <data name="NextPage" xml:space="preserve"><value>下一页</value></data>
   <data name="ViewList" xml:space="preserve">
     <value>列表</value>
   </data>
@@ -89,7 +93,7 @@
     <value>今天</value>
   </data>
   <data name="SearchPlaceholder" xml:space="preserve">
-    <value>搜索工作项…</value>
+    <value>搜索…</value>
   </data>
   <data name="FilterAllModules" xml:space="preserve">
     <value>所有模块</value>
@@ -102,6 +106,9 @@
   </data>
   <data name="FilterType" xml:space="preserve">
     <value>类型筛选</value>
+  </data>
+  <data name="FiltersLabel" xml:space="preserve">
+    <value>筛选</value>
   </data>
   <data name="KeyboardHint" xml:space="preserve">
     <value>j / k 移动 · a 审批/接受 · r 拒绝/退回 · Enter 打开</value>
@@ -132,6 +139,15 @@
   </data>
   <data name="SlaOverdueByDays" xml:space="preserve">
     <value>逾期 {0} 天</value>
+  </data>
+  <data name="SlaClosedLateByDays" xml:space="preserve">
+    <value>逾期 {0} 天关闭</value>
+  </data>
+  <data name="SlaClosedLate" xml:space="preserve">
+    <value>逾期关闭</value>
+  </data>
+  <data name="SlaClosedOnTime" xml:space="preserve">
+    <value>按时关闭</value>
   </data>
   <data name="StatusPending" xml:space="preserve">
     <value>待处理</value>
@@ -220,11 +236,104 @@
   <data name="ActAct" xml:space="preserve">
     <value>处理</value>
   </data>
+  <data name="RowView" xml:space="preserve"><value>查看</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>安排审批会议</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>审批会议已安排：{0}</value></data>
+  <data name="IsTitleElimination" xml:space="preserve"><value>编制公司间抵销表</value></data>
+  <data name="IsSummaryElimination" xml:space="preserve"><value>合并前抵销公司间余额。</value></data>
+  <data name="IsTitlePricingRegression" xml:space="preserve"><value>排查定价规则回归问题</value></data>
+  <data name="IsSummaryPricingRegression" xml:space="preserve"><value>查明并解决补丁后价格偏差的根本原因。</value></data>
+  <data name="IsTitleOnboardingChecklist" xml:space="preserve"><value>为新员工完成经理入职清单</value></data>
+  <data name="IsSummaryOnboardingChecklist" xml:space="preserve"><value>在“已签署劳动合同”前置任务完成前无法开始。</value></data>
+  <data name="IsTitleVendorPrequal" xml:space="preserve"><value>完成供应商资格预审评估</value></data>
+  <data name="IsSummaryVendorPrequal" xml:space="preserve"><value>代表 Aylin Ersoy：审阅并评分候选供应商的文件。</value></data>
+  <data name="IsTitleRackAudit" xml:space="preserve"><value>执行 D 通道货架库位审计</value></data>
+  <data name="IsSummaryRackAudit" xml:space="preserve"><value>盘点后审计货架库位的准确性。</value></data>
+  <data name="IsTitleCapaEvidence" xml:space="preserve"><value>CAPA 证据包到达后关闭偏差</value></data>
+  <data name="IsSummaryCapaEvidence" xml:space="preserve"><value>等待纠正措施证据；到达后准备关闭。</value></data>
+  <data name="IsTitleNdaReview" xml:space="preserve"><value>保密协议审查 — 审批会议</value></data>
+  <data name="IsSummaryNdaReview" xml:space="preserve"><value>已安排评审会议；会议结束后签核。</value></data>
+  <data name="IsTitleDepreciation" xml:space="preserve"><value>编制折旧表</value></data>
+  <data name="IsSummaryDepreciation" xml:space="preserve"><value>在计划日期计算当期折旧并编制折旧表。</value></data>
+  <data name="IsChkMatchBalances" xml:space="preserve"><value>匹配余额</value></data>
+  <data name="IsChkEliminate" xml:space="preserve"><value>抵销差异</value></data>
+  <data name="IsChkClose" xml:space="preserve"><value>关闭表单</value></data>
+  <data name="IsDepSignedContract" xml:space="preserve"><value>已签署的劳动合同</value></data>
+  <data name="BusinessContextLabel" xml:space="preserve"><value>业务背景</value></data>
+  <data name="FilterSlaStatus" xml:space="preserve"><value>SLA 状态</value></data>
+  <data name="FilterPinned" xml:space="preserve"><value>仅置顶</value></data>
+  <data name="IsChkReconcileFx" xml:space="preserve"><value>核对汇兑差异</value></data>
+  <data name="IsDepLedgerClose" xml:space="preserve"><value>子分类账关闭</value></data>
+  <data name="IsDepConsolidation" xml:space="preserve"><value>合并运行</value></data>
+  <data name="IsAttachTrialBalance" xml:space="preserve"><value>试算平衡表</value></data>
+  <data name="IsAttachEliminationTemplate" xml:space="preserve"><value>抵销模板</value></data>
+  <data name="IsCtxFinancials" xml:space="preserve"><value>财务背景</value></data>
+  <data name="IsFactAmount" xml:space="preserve"><value>金额</value></data>
+  <data name="IsFactCurrency" xml:space="preserve"><value>货币</value></data>
+  <data name="IsFactCostCenter" xml:space="preserve"><value>成本中心</value></data>
+  <data name="IsFactPeriod" xml:space="preserve"><value>期间</value></data>
   <data name="ActionsLabel" xml:space="preserve">
     <value>操作</value>
   </data>
   <data name="DetailSummary" xml:space="preserve">
     <value>摘要</value>
+  </data>
+  <data name="SummaryCardLabel" xml:space="preserve">
+    <value>摘要</value>
+  </data>
+  <data name="DetailDescription" xml:space="preserve">
+    <value>说明</value>
+  </data>
+  <data name="SummaryUnassigned" xml:space="preserve">
+    <value>未分配</value>
+  </data>
+  <data name="PersonalCardLabel" xml:space="preserve">
+    <value>个人</value>
+  </data>
+  <data name="StatusCardLabel" xml:space="preserve">
+    <value>当前状态</value>
+  </data>
+  <data name="TechnicalDetailsLabel" xml:space="preserve">
+    <value>技术信息</value>
+  </data>
+  <data name="SourceCardLabel" xml:space="preserve">
+    <value>来源</value>
+  </data>
+  <data name="DetailNativeStatusInSource" xml:space="preserve">
+    <value>来源系统中的状态</value>
+  </data>
+  <data name="ActionCompleteInSource" xml:space="preserve">
+    <value>在 {0} 中完成</value>
+  </data>
+  <data name="ActionDisabledWithName" xml:space="preserve">
+    <value>{0}——{1}</value>
+  </data>
+  <data name="ActionCompleteInSourceHint" xml:space="preserve">
+    <value>此工作无法在此处完成，需在 {0} 中结束</value>
+  </data>
+  <data name="TechVersionValue" xml:space="preserve">
+    <value>第 {0} 版</value>
+  </data>
+  <data name="DetailStartAt" xml:space="preserve">
+    <value>开始日期</value>
+  </data>
+  <data name="DetailEstimate" xml:space="preserve">
+    <value>预估</value>
+  </data>
+  <data name="DetailTags" xml:space="preserve">
+    <value>标签</value>
+  </data>
+  <data name="DetailPriority" xml:space="preserve">
+    <value>优先级</value>
+  </data>
+  <data name="EstimateHoursValue" xml:space="preserve">
+    <value>{0} 小时</value>
+  </data>
+  <data name="ShowAllCount" xml:space="preserve">
+    <value>查看全部（{0}）</value>
+  </data>
+  <data name="ShowLess" xml:space="preserve">
+    <value>收起</value>
   </data>
   <data name="DetailContext" xml:space="preserve">
     <value>来源上下文</value>
@@ -267,6 +376,9 @@
   </data>
   <data name="ColPriority" xml:space="preserve">
     <value>优先级</value>
+  </data>
+  <data name="SortLabel" xml:space="preserve">
+    <value>排序</value>
   </data>
   <data name="ColSla" xml:space="preserve">
     <value>SLA</value>
@@ -374,11 +486,14 @@
     <value>已处理 {0} 项（模拟）</value>
   </data>
   <data name="ToastOpenSource" xml:space="preserve">
-    <value>将打开 {0} · {1}（模拟深链接）</value>
+    <value>已在新标签页打开 {0} · {1}</value>
   </data>
   <data name="TabsLabel" xml:space="preserve">
     <value>标签页</value>
   </data>
+  <data name="ScopeTeam" xml:space="preserve"><value>我的团队</value></data>
+  <data name="ScopeTeamCount" xml:space="preserve"><value>{0} 人</value></data>
+  <data name="ScopeTeamEmpty" xml:space="preserve"><value>没有人向您汇报，因此没有可显示的团队。</value></data>
   <data name="TabInbox" xml:space="preserve">
     <value>收件箱</value>
   </data>
@@ -412,14 +527,23 @@
   <data name="ActResume" xml:space="preserve">
     <value>继续</value>
   </data>
-  <data name="ActPause" xml:space="preserve">
-    <value>暂停</value>
-  </data>
   <data name="ActLogTime" xml:space="preserve">
     <value>记录时间</value>
   </data>
   <data name="StepBarLabel" xml:space="preserve">
     <value>生命周期</value>
+  </data>
+  <data name="StepStateDone" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="StepStateCurrent" xml:space="preserve">
+    <value>当前步骤</value>
+  </data>
+  <data name="StepStateUpcoming" xml:space="preserve">
+    <value>待进行</value>
+  </data>
+  <data name="StepClosedOn" xml:space="preserve">
+    <value>于 {0} 关闭</value>
   </data>
   <data name="StepAccepted" xml:space="preserve">
     <value>已接受</value>
@@ -469,11 +593,11 @@
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · 已计划于 {1}（模拟）</value>
   </data>
+  <data name="ToastPlanSaved" xml:space="preserve">
+    <value>已为 {0} 保存计划</value>
+  </data>
   <data name="ToastTimerStarted" xml:space="preserve">
     <value>{0} · 计时已开始（模拟）</value>
-  </data>
-  <data name="ToastTimerPaused" xml:space="preserve">
-    <value>计时已暂停 · 已记录 {0}（模拟）</value>
   </data>
   <data name="ToastTimeLogged" xml:space="preserve">
     <value>已记录 {0}（模拟）</value>
@@ -512,7 +636,7 @@
     <value>在冻结窗口开启前无法开始。</value>
   </data>
   <data name="ConfirmBody" xml:space="preserve">
-    <value>您即将对“{0}”执行此操作。是否继续？</value>
+    <value>您即将执行此操作。确认吗？</value>
   </data>
   <data name="ConfirmBulkBody" xml:space="preserve">
     <value>您即将对 {0} 个项目批量执行此操作。是否继续？</value>
@@ -581,7 +705,7 @@
     <value>延后</value>
   </data>
   <data name="SnoozeFuture" xml:space="preserve">
-    <value>请选择将来的日期。</value>
+    <value>不能选择过去的日期。</value>
   </data>
   <data name="WaitingOn" xml:space="preserve">
     <value>等待 {0}</value>
@@ -598,14 +722,19 @@
   <data name="SourceDueLabel" xml:space="preserve">
     <value>来源截止日期</value>
   </data>
+  <!-- DEAD (WC-1, 2026-08-14): the planned date left the Personal card for the Summary (BL-141) — it is a
+       SHARED field on TaskItem, not a private one, so "Kişisel plan" was a false statement about who can
+       see it. `DetailPlannedDate` replaces it. `PlannedDateNone` went with it: the Summary prints a row
+       only for a fact that exists, and "Planla" is already offered as an action on exactly those tasks.
+       Kept rather than deleted — a removed key is invisible to the next reader. -->
   <data name="PlannedDateLabel" xml:space="preserve">
     <value>个人计划</value>
   </data>
   <data name="PlanConflict" xml:space="preserve">
-    <value>您的个人计划晚于来源截止日期——有逾期风险。</value>
+    <value>计划日期晚于来源截止日期——有逾期风险。</value>
   </data>
   <data name="ConfirmBodyOnBehalf" xml:space="preserve">
-    <value>您即将代表 {1} 对“{0}”执行此操作。是否继续？</value>
+    <value>您即将代表 {0} 执行此操作。确认吗？</value>
   </data>
   <data name="ToastReleased" xml:space="preserve">
     <value>{0} · 已释放到任务池（模拟）</value>
@@ -617,10 +746,10 @@
     <value>{0} · 已取消置顶</value>
   </data>
   <data name="ToastSnoozed" xml:space="preserve">
-    <value>{0} · 已延后至 {1}（模拟）</value>
+    <value>{0} · 已延后至 {1}</value>
   </data>
   <data name="ToastUnsnoozed" xml:space="preserve">
-    <value>{0} · 已取消延后（模拟）</value>
+    <value>{0} · 已取消延后</value>
   </data>
   <data name="BulkResultTitle" xml:space="preserve">
     <value>批量操作结果</value>
@@ -670,8 +799,32 @@
   <data name="SubtasksLabel" xml:space="preserve">
     <value>子任务</value>
   </data>
+  <data name="SubtaskDoneCount" xml:space="preserve">
+    <value>{0} 已完成</value>
+  </data>
+  <data name="SubtaskProgressCount" xml:space="preserve">
+    <value>{0} / {1} 已完成</value>
+  </data>
+  <data name="SubtaskInheritsHint" xml:space="preserve">
+    <value>截止日期、优先级和负责人继承自父任务。</value>
+  </data>
+  <data name="SubtaskOpen" xml:space="preserve">
+    <value>打开</value>
+  </data>
+  <data name="SubtaskCheckDoneReason" xml:space="preserve">
+    <value>已完成。</value>
+  </data>
+  <data name="SubtaskCheckCancelledReason" xml:space="preserve">
+    <value>已取消的工作无法完成。</value>
+  </data>
+  <data name="SubtaskCheckAria" xml:space="preserve">
+    <value>完成此子任务</value>
+  </data>
+  <data name="SubtaskRowMenuAria" xml:space="preserve">
+    <value>{0} 的操作</value>
+  </data>
   <data name="SubtaskAddPlaceholder" xml:space="preserve">
-    <value>新建子任务…</value>
+    <value>输入子任务后按 Enter</value>
   </data>
   <data name="SubtaskAdd" xml:space="preserve">
     <value>添加</value>
@@ -688,6 +841,75 @@
   <data name="DepSuccessor" xml:space="preserve">
     <value>后续</value>
   </data>
+  <data name="DepSentencePredFS" xml:space="preserve">
+    <value>{0} 完成前你无法开始</value>
+  </data>
+  <data name="DepSentencePredFF" xml:space="preserve">
+    <value>{0} 完成前你无法完成</value>
+  </data>
+  <data name="DepSentencePredSS" xml:space="preserve">
+    <value>{0} 开始前你无法开始</value>
+  </data>
+  <data name="DepSentencePredSF" xml:space="preserve">
+    <value>{0} 开始前你无法完成</value>
+  </data>
+  <data name="DepSentenceSuccFS" xml:space="preserve">
+    <value>你完成前 {0} 无法开始</value>
+  </data>
+  <data name="DepSentenceSuccFF" xml:space="preserve">
+    <value>你完成前 {0} 无法完成</value>
+  </data>
+  <data name="DepSentenceSuccSS" xml:space="preserve">
+    <value>你开始前 {0} 无法开始</value>
+  </data>
+  <data name="DepSentenceSuccSF" xml:space="preserve">
+    <value>你开始前 {0} 无法完成</value>
+  </data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>YYYY-MM-DD</value>
+  </data>
+  <data name="DateTimePlaceholder" xml:space="preserve">
+    <value>YYYY-MM-DD HH:MM</value>
+  </data>
+  <data name="MeetingWhenLabel" xml:space="preserve">
+    <value>会议日期和时间</value>
+  </data>
+  <data name="MeetingTitlePlaceholder" xml:space="preserve">
+    <value>第三季度结账复核</value>
+  </data>
+  <data name="MeetingLocationPlaceholder" xml:space="preserve">
+    <value>Teams / 会议室 2</value>
+  </data>
+  <data name="NewPickModuleLabel" xml:space="preserve">
+    <value>哪个模块？</value>
+  </data>
+  <data name="LogTimeSubtext" xml:space="preserve">
+    <value>累加到该任务已记录的工时上；不会启动或停止计时器。</value>
+  </data>
+  <data name="MeetingWhenSubtext" xml:space="preserve">
+    <value>日历连接尚未建立：此记录仅显示在本页面上，关闭页面后即消失。截止日期不变。</value>
+  </data>
+  <data name="NewInSourceSubtext" xml:space="preserve">
+    <value>记录将在该模块中创建并保留在那里；任务中心不保存副本。</value>
+  </data>
+  <data name="ConfirmProceedNamed" xml:space="preserve">
+    <value>确定，{0}</value>
+  </data>
+  <data name="SubtaskCreateAllFields" xml:space="preserve">
+    <value>全部字段</value>
+  </data>
+  <data name="TimerStateRunning" xml:space="preserve">
+    <value>进行中</value>
+  </data>
+  <data name="TimerStatePaused" xml:space="preserve">
+    <value>已暂停</value>
+  </data>
+  <data name="TimerFollowsStatusHint" xml:space="preserve">
+    <value>系统不记录经过的时间 — 请手动填写您花费的时间。</value>
+  </data>
+  <data name="SubtaskStartedNotCompleted" xml:space="preserve">
+    <value>子任务已启动但无法完成：{0}</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>完成-开始 (FS)</value>
   </data>
@@ -701,13 +923,40 @@
     <value>开始-完成 (SF)</value>
   </data>
   <data name="DepDone" xml:space="preserve">
-    <value>完成</value>
+    <value>已完成</value>
   </data>
   <data name="DepInProgress" xml:space="preserve">
     <value>进行中</value>
   </data>
   <data name="DepNotStarted" xml:space="preserve">
     <value>未开始</value>
+  </data>
+  <data name="DepCancelled" xml:space="preserve">
+    <value>已取消</value>
+  </data>
+  <data name="BlockedBannerCount" xml:space="preserve">
+    <value>{0} 个问题阻碍了进展</value>
+  </data>
+  <data name="BlockerFinishToStart" xml:space="preserve">
+    <value>在“{0}”关闭之前无法开始</value>
+  </data>
+  <data name="BlockerFinishToFinish" xml:space="preserve">
+    <value>在“{0}”关闭之前无法完成</value>
+  </data>
+  <data name="BlockerStartToStart" xml:space="preserve">
+    <value>在“{0}”开始之前无法开始</value>
+  </data>
+  <data name="BlockerStartToFinish" xml:space="preserve">
+    <value>在“{0}”开始之前无法完成</value>
+  </data>
+  <data name="BlockedAffectsStart" xml:space="preserve">
+    <value>阻止开始</value>
+  </data>
+  <data name="BlockedAffectsComplete" xml:space="preserve">
+    <value>阻止完成</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_DependencyBlocked" xml:space="preserve">
+    <value>某项依赖尚未满足</value>
   </data>
   <data name="DepsReadonlyHint" xml:space="preserve">
     <value>依赖关系在来源中管理</value>
@@ -721,20 +970,38 @@
   <data name="NotePlaceholder" xml:space="preserve">
     <value>仅您可见的笔记…</value>
   </data>
+  <!-- DEAD (WC-1, 2026-08-14): the personal note became a LIST with an add row, so "Save" no longer
+       names a control on any surface. Kept rather than deleted — a removed key is invisible to the
+       next reader, who cannot tell it was retired from it never having existed. -->
   <data name="NoteSave" xml:space="preserve">
     <value>保存</value>
   </data>
   <data name="ToastNoteSaved" xml:space="preserve">
-    <value>个人笔记已保存（模拟）</value>
+    <value>个人笔记已保存</value>
   </data>
   <data name="ActivityLabel" xml:space="preserve">
     <value>活动与评论</value>
   </data>
+  <data name="DetailTabGeneral" xml:space="preserve">
+    <value>概览</value>
+  </data>
+  <data name="DetailTabActivity" xml:space="preserve">
+    <value>动态</value>
+  </data>
   <data name="CommentPlaceholder" xml:space="preserve">
-    <value>写评论…（同时发到来源）</value>
+    <value>写评论…</value>
   </data>
   <data name="CommentPost" xml:space="preserve">
     <value>发送</value>
+  </data>
+  <data name="CommentTextRequired" xml:space="preserve">
+    <value>发布前请输入内容</value>
+  </data>
+  <data name="CommentTooLong" xml:space="preserve">
+    <value>评论最多 {0} 个字符</value>
+  </data>
+  <data name="CommentAuthorUnknown" xml:space="preserve">
+    <value>姓名不可用</value>
   </data>
   <data name="ToastCommentPosted" xml:space="preserve">
     <value>评论已发送（模拟）</value>
@@ -751,6 +1018,21 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>只读——状态在来源中更改；此处仅设置个人计划/置顶。</value>
   </data>
+  <data name="CalPrevMonth" xml:space="preserve">
+    <value>上个月</value>
+  </data>
+  <data name="CalNextMonth" xml:space="preserve">
+    <value>下个月</value>
+  </data>
+  <data name="CalToday" xml:space="preserve">
+    <value>今天</value>
+  </data>
+  <data name="CalOutside" xml:space="preserve">
+    <value>另有 {0} 项在其他月份。</value>
+  </data>
+  <data name="CalOutsideAndUndated" xml:space="preserve">
+    <value>另有 {0} 项在其他月份；{1} 项没有日期，永远不会出现在日历中。</value>
+  </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>来源截止</value>
   </data>
@@ -761,16 +1043,16 @@
     <value>新建</value>
   </data>
   <data name="NewSelfTask" xml:space="preserve">
-    <value>给自己的任务</value>
+    <value>创建任务</value>
   </data>
   <data name="NewSelfTaskDesc" xml:space="preserve">
     <value>个人待办——存于工作中心</value>
   </data>
   <data name="NewInSource" xml:space="preserve">
-    <value>在来源中创建</value>
+    <value>在源模块中创建</value>
   </data>
   <data name="NewInSourceDesc" xml:space="preserve">
-    <value>选择模块，在其界面创建</value>
+    <value>模块自身的记录——存于该模块</value>
   </data>
   <data name="NewTaskTitlePlaceholder" xml:space="preserve">
     <value>任务标题…</value>
@@ -781,8 +1063,8 @@
   <data name="NewPickModule" xml:space="preserve">
     <value>选择模块</value>
   </data>
-  <data name="NewOpenSource" xml:space="preserve">
-    <value>在来源打开</value>
+  <data name="NewCreateInSource" xml:space="preserve">
+    <value>在来源中创建</value>
   </data>
   <data name="SelfSource" xml:space="preserve">
     <value>个人</value>
@@ -795,6 +1077,12 @@
   </data>
   <data name="ToastSelfTaskCreated" xml:space="preserve">
     <value>{0} · 已加入我的工作（模拟）</value>
+  </data>
+  <data name="ToastCommentPostedReal" xml:space="preserve">
+    <value>评论已发送</value>
+  </data>
+  <data name="ToastSelfTaskCreatedReal" xml:space="preserve">
+    <value>{0} · 已加入我的工作</value>
   </data>
   <data name="ToastCreateInSource" xml:space="preserve">
     <value>将在 {0} 模块中打开创建（模拟）</value>
@@ -813,6 +1101,72 @@
   </data>
   <data name="GroupAll" xml:space="preserve">
     <value>所有群组</value>
+  </data>
+  <data name="GroupUnnamed" xml:space="preserve">
+    <value>队列未命名</value>
+  </data>
+  <data name="PoolUnassigned" xml:space="preserve">
+    <value>未分配 — 在任务池中</value>
+  </data>
+  <data name="ModuleFinance" xml:space="preserve">
+    <value>财务</value>
+  </data>
+  <data name="ModuleTax" xml:space="preserve">
+    <value>税务</value>
+  </data>
+  <data name="ModuleQuality" xml:space="preserve">
+    <value>质量</value>
+  </data>
+  <data name="ModuleMasterData" xml:space="preserve">
+    <value>主数据</value>
+  </data>
+  <data name="ModuleIntegrationMonitoring" xml:space="preserve">
+    <value>集成监控</value>
+  </data>
+  <data name="ModuleProjectGovernance" xml:space="preserve">
+    <value>项目治理</value>
+  </data>
+  <data name="ModuleWorkflow" xml:space="preserve">
+    <value>工作流</value>
+  </data>
+  <data name="ModuleIncident" xml:space="preserve">
+    <value>事件管理</value>
+  </data>
+  <data name="ModuleWorkcenter" xml:space="preserve">
+    <value>任务中心</value>
+  </data>
+  <data name="ModuleTasks" xml:space="preserve">
+    <value>任务</value>
+  </data>
+  <data name="ModuleEnterpriseStrategy" xml:space="preserve">
+    <value>企业战略</value>
+  </data>
+  <data name="ModuleDocumentation" xml:space="preserve">
+    <value>文档管理</value>
+  </data>
+  <data name="ModuleControlledDocuments" xml:space="preserve">
+    <value>受控文件</value>
+  </data>
+  <data name="ModuleProcurement" xml:space="preserve">
+    <value>采购</value>
+  </data>
+  <data name="ModuleSales" xml:space="preserve">
+    <value>销售</value>
+  </data>
+  <data name="ModuleTreasury" xml:space="preserve">
+    <value>资金管理</value>
+  </data>
+  <data name="ModuleHr" xml:space="preserve">
+    <value>人力资源</value>
+  </data>
+  <data name="ModuleLegal" xml:space="preserve">
+    <value>法务</value>
+  </data>
+  <data name="ModuleCalendar" xml:space="preserve">
+    <value>日历</value>
+  </data>
+  <data name="ModuleLegacyAdapter" xml:space="preserve">
+    <value>旧系统适配器</value>
   </data>
   <data name="FilterPriority" xml:space="preserve">
     <value>优先级筛选</value>
@@ -900,4 +1254,931 @@
   <data name="ErrorTitle" xml:space="preserve"><value>无法加载工作中心</value></data>
   <data name="ErrorDesc" xml:space="preserve"><value>您的筛选条件已保留。请重试加载工作区。</value></data>
   <data name="Retry" xml:space="preserve"><value>重试</value></data>
+  <data name="NewNote" xml:space="preserve">
+    <value>快速笔记</value>
+  </data>
+  <data name="NewMeeting" xml:space="preserve">
+    <value>安排会议</value>
+  </data>
+  <data name="ChipAll" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="ChipPendingAccept" xml:space="preserve">
+    <value>待接受</value>
+  </data>
+  <data name="ChipMeetingInvite" xml:space="preserve">
+    <value>会议邀请</value>
+  </data>
+  <data name="EmptyMeetingInviteTitle" xml:space="preserve">
+    <value>您没有待处理的会议邀请。</value>
+  </data>
+  <data name="EmptyMeetingInviteDesc" xml:space="preserve">
+    <value>新的会议邀请将显示在这里。</value>
+  </data>
+  <data name="FilterWorkType" xml:space="preserve">
+    <value>工作类型</value>
+  </data>
+  <data name="FilterAllWorkTypes" xml:space="preserve">
+    <value>所有工作类型</value>
+  </data>
+  <data name="SearchClear" xml:space="preserve">
+    <value>清除搜索</value>
+  </data>
+  <data name="Apply" xml:space="preserve"><value>应用</value></data>
+  <data name="Reset" xml:space="preserve"><value>重置</value></data>
+  <data name="SaveView" xml:space="preserve"><value>保存视图</value></data>
+  <data name="DefaultViewName" xml:space="preserve"><value>默认</value></data>
+  <data name="ViewSaved" xml:space="preserve"><value>视图已保存。</value></data>
+  <data name="ErrorOccurred" xml:space="preserve"><value>发生错误。</value></data>
+  <data name="ExportLabel" xml:space="preserve">
+    <value>导出</value>
+  </data>
+  <data name="ApprovalContextTitle" xml:space="preserve"><value>审批上下文</value></data>
+  <data name="ApprovalAmount" xml:space="preserve"><value>金额</value></data>
+  <data name="ApprovalThreshold" xml:space="preserve"><value>审批阈值</value></data>
+  <data name="BudgetImpact" xml:space="preserve"><value>预算影响</value></data>
+  <data name="LineItemsTitle" xml:space="preserve"><value>明细项目</value></data>
+  <data name="LineDescription" xml:space="preserve"><value>说明 / 科目</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>数量</value></data>
+  <data name="LineUnitPrice" xml:space="preserve"><value>单价</value></data>
+  <data name="ReviewContextTitle" xml:space="preserve"><value>审核资料包</value></data>
+  <data name="ReviewVersion" xml:space="preserve"><value>版本</value></data>
+  <data name="ReviewChecklistTitle" xml:space="preserve"><value>审核清单</value></data>
+  <data name="ReviewCheckComplete" xml:space="preserve"><value>已完成</value></data>
+  <data name="ReviewCheckPending" xml:space="preserve"><value>待处理</value></data>
+  <data name="SignatureHistoryTitle" xml:space="preserve"><value>签署历史</value></data>
+  <data name="SignatureSigned" xml:space="preserve"><value>已签署</value></data>
+  <data name="SignaturePending" xml:space="preserve"><value>待签署</value></data>
+  <data name="ExceptionContextTitle" xml:space="preserve"><value>异常分析</value></data>
+  <data name="DiscrepancyField" xml:space="preserve"><value>差异字段</value></data>
+  <data name="ExpectedValue" xml:space="preserve"><value>预期值</value></data>
+  <data name="ActualValue" xml:space="preserve"><value>实际值</value></data>
+  <data name="DeltaPercent" xml:space="preserve"><value>偏差</value></data>
+  <data name="RootCause" xml:space="preserve"><value>根本原因</value></data>
+  <data name="ResolutionOptions" xml:space="preserve"><value>解决方案</value></data>
+  <data name="TaskContextTitle" xml:space="preserve"><value>工作执行</value></data>
+  <data name="EffortSpent" xml:space="preserve"><value>已用工时</value></data>
+  <data name="HoursShort" xml:space="preserve"><value>小时</value></data>
+  <data name="AssignmentHistoryTitle" xml:space="preserve"><value>分配历史</value></data>
+  <data name="MeetingContextTitle" xml:space="preserve"><value>会议详情</value></data>
+  <data name="MeetingAgendaTitle" xml:space="preserve"><value>议程</value></data>
+  <data name="MeetingParticipantsTitle" xml:space="preserve"><value>参与者</value></data>
+  <data name="AttendanceAccepted" xml:space="preserve"><value>已接受</value></data>
+  <data name="AttendancePending" xml:space="preserve"><value>等待回复</value></data>
+  <data name="AttendanceDeclined" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="ParticipantOrganizer" xml:space="preserve"><value>组织者</value></data>
+  <data name="ParticipantRequired" xml:space="preserve"><value>必需</value></data>
+  <data name="ParticipantOptional" xml:space="preserve"><value>可选</value></data>
+  <data name="ApprovalChainTitle" xml:space="preserve"><value>审批路径</value></data>
+  <data name="ApprovalLevelValue" xml:space="preserve"><value>第 {0} 级</value></data>
+  <data name="ApprovalStatusApproved" xml:space="preserve"><value>已批准</value></data>
+  <data name="ApprovalStatusPending" xml:space="preserve"><value>待审批</value></data>
+  <data name="ApprovalStatusRejected" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="ConversationTitle" xml:space="preserve"><value>对话</value></data>
+  <data name="RelatedRecordsTitle" xml:space="preserve"><value>相关记录</value></data>
+  <data name="RelatedTypeParent" xml:space="preserve"><value>父级</value></data>
+  <data name="RelatedTypeChild" xml:space="preserve"><value>子级</value></data>
+  <data name="RelatedTypeTransaction" xml:space="preserve"><value>交易</value></data>
+  <data name="RelatedTypeDocument" xml:space="preserve"><value>文档</value></data>
+  <data name="ComplianceTitle" xml:space="preserve"><value>合规与控制</value></data>
+  <data name="CompliancePolicy" xml:space="preserve"><value>政策</value></data>
+  <data name="ComplianceLimit" xml:space="preserve"><value>审批限额</value></data>
+  <data name="ComplianceSoD" xml:space="preserve"><value>职责分离</value></data>
+  <data name="DelegationTitle" xml:space="preserve"><value>委托</value></data>
+  <data name="DelegationOnBehalf" xml:space="preserve"><value>代表 {0}</value></data>
+  <data name="DelegationDelegate" xml:space="preserve"><value>受托人</value></data>
+  <data name="DetailTabsLabel" xml:space="preserve"><value>工作项详细信息分区</value></data>
+  <data name="DetailTabOverview" xml:space="preserve"><value>详情</value></data>
+  <data name="DetailTabProcess" xml:space="preserve"><value>流程</value></data>
+  <data name="DetailTabCollaboration" xml:space="preserve"><value>协作与记录</value></data>
+  <data name="DetailPageTitle" xml:space="preserve"><value>工作项详情</value></data>
+  <data name="DetailItemNotFound" xml:space="preserve"><value>找不到请求的工作项。</value></data>
+  <data name="DetailBackToList" xml:space="preserve"><value>返回工作中心</value></data>
+  <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>您对此项目的权限已结束。</value></data>
+  <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>必需的依赖项尚未完成。</value></data>
+  <data name="ActionDisabledEvidenceIncomplete" xml:space="preserve"><value>所需证据不完整。</value></data>
+  <data name="ActionDisabledReconciliationRequired" xml:space="preserve"><value>需要与源系统进行核对。</value></data>
+  <data name="ActionDisabledSourceUnavailable" xml:space="preserve"><value>源系统不可用。</value></data>
+  <data name="ActionDisabledStaleProjection" xml:space="preserve"><value>请先刷新已更改的源记录。</value></data>
+  <data name="ContextControlledDocument" xml:space="preserve"><value>受控文档</value></data>
+  <data name="ContextDecomposition" xml:space="preserve"><value>战略分解</value></data>
+  <data name="ContextDemandIdea" xml:space="preserve"><value>需求构想</value></data>
+  <data name="ContextObjective" xml:space="preserve"><value>目标</value></data>
+  <data name="ContextPeriodicReview" xml:space="preserve"><value>定期审查</value></data>
+  <data name="DetailLifecycleOwner" xml:space="preserve"><value>生命周期负责人</value></data>
+  <data name="EmptyBusinessContext" xml:space="preserve"><value>未提供业务上下文。</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>缺少证据</value></data>
+  <data name="FixtureChecklistVerify" xml:space="preserve"><value>验证必需信息</value></data>
+  <data name="FixtureDependencyContract" xml:space="preserve"><value>合同依赖项</value></data>
+  <data name="FixtureDependencyValidation" xml:space="preserve"><value>验证依赖项</value></data>
+  <data name="FixtureInvalidDesc" xml:space="preserve"><value>此测试数据不符合规范合同。</value></data>
+  <data name="FixtureInvalidTitle" xml:space="preserve"><value>无效的工作项测试数据</value></data>
+  <data name="LifecycleOpen" xml:space="preserve"><value>开放</value></data>
+  <data name="LifecyclePlanned" xml:space="preserve"><value>已计划</value></data>
+  <data name="MigrationAdaptedNotice" xml:space="preserve"><value>此旧版示例已适配用于迁移测试。</value></data>
+  <data name="MigrationLegacyBlocker" xml:space="preserve"><value>旧版阻塞项</value></data>
+  <data name="MigrationLegacyInformationRequest" xml:space="preserve"><value>旧版信息请求</value></data>
+  <data name="MigrationLegacyPendingApproval" xml:space="preserve"><value>旧版待审批</value></data>
+  <data name="NoticeChecklistNonBlocking" xml:space="preserve"><value>检查清单存在非阻塞问题。</value></data>
+  <data name="NoticeDueSoon" xml:space="preserve"><value>此项目即将到期。</value></data>
+  <data name="NoticePendingReview" xml:space="preserve"><value>此项目正在等待审查。</value></data>
+  <data name="NoticePlanConflict" xml:space="preserve"><value>个人计划与源截止日期冲突。</value></data>
+  <data name="NoticeSnoozed" xml:space="preserve"><value>您已暂缓此项目。</value></data>
+  <data name="NoticeWaiting" xml:space="preserve"><value>此项目正在等待外部输入。</value></data>
+  <data name="NoticeWaitingExternal" xml:space="preserve"><value>该任务正在等待他人提供信息。</value></data>
+  <data name="NoticeWaitingApproval" xml:space="preserve"><value>该任务正在等待审批决定。</value></data>
+  <data name="NoticeWaitingReview" xml:space="preserve"><value>该任务正在等待评审。</value></data>
+  <data name="NoticeWaitingMeeting" xml:space="preserve"><value>该任务正在等待一次会议。</value></data>
+  <data name="ProviderCommandRequired" xml:space="preserve"><value>此更改必须由源提供方执行。</value></data>
+  <data name="RedactedValue" xml:space="preserve"><value>受限</value></data>
+  <data name="RelatedRecordOpen" xml:space="preserve"><value>打开相关记录</value></data>
+  <data name="SourceProjectionRequested" xml:space="preserve"><value>已请求最新源投影。</value></data>
+  <data name="TriggerOnlyLabel" xml:space="preserve"><value>需要响应</value></data>
+  <data name="TriggerResponsesLabel" xml:space="preserve"><value>响应请求</value></data>
+  <data name="WaitingExpectedUntil" xml:space="preserve"><value>预计截止</value></data>
+  <data name="ActionDisabledReviewMeetingRequired" xml:space="preserve"><value>批准前必须召开评审会议。</value></data>
+  <data name="InboxTitleTaskVendorVerification" xml:space="preserve"><value>验证 Arven Medical 供应商主数据</value></data>
+  <data name="InboxTitleTaskVendorVerificationSummary" xml:space="preserve"><value>检查税务、银行和联系信息的准确性。</value></data>
+  <data name="InboxTitleApprovalBudgetRevision" xml:space="preserve"><value>批准第三季度销售预算修订</value></data>
+  <data name="InboxTitleApprovalBudgetRevisionSummary" xml:space="preserve"><value>审核销售团队追加 180 万里拉预算的申请。</value></data>
+  <data name="InboxTitleReviewOptionalMeeting" xml:space="preserve"><value>CAPA-2231 完成评审</value></data>
+  <data name="InboxTitleReviewOptionalMeetingSummary" xml:space="preserve"><value>可直接批准，或与任务负责人安排评审会议。</value></data>
+  <data name="InboxTitleReviewRequiredMeeting" xml:space="preserve"><value>Atlas 转型任务关闭审批</value></data>
+  <data name="InboxTitleReviewRequiredMeetingSummary" xml:space="preserve"><value>此任务仅能在完成强制评审会议后批准。</value></data>
+  <data name="InboxTitleIssueIntegrationFailure" xml:space="preserve"><value>解决 SAP 客户传输故障</value></data>
+  <data name="InboxTitleIssueIntegrationFailureSummary" xml:space="preserve"><value>47 条客户记录在传输验证时失败。</value></data>
+  <data name="InboxTitleExceptionVatMismatch" xml:space="preserve"><value>检查七月增值税对账差异</value></data>
+  <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>申报表与总账之间发现 84,750 里拉差异。</value></data>
+  <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>第三季度预算修订评审会议</value></data>
+  <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>2026年7月28日 14:00–15:00 · Teams · 组织者：Deniz Koç</value></data>
+  <data name="WorkAggregation_Title_Approval" xml:space="preserve">
+    <value>审批：{objectType} {objectId}</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
+    <value>等待审批</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_WaitingEvidence" xml:space="preserve">
+    <value>等待证明材料</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Escalated" xml:space="preserve">
+    <value>已升级</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Approved" xml:space="preserve">
+    <value>已批准</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Rejected" xml:space="preserve">
+    <value>已拒绝</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Cancelled" xml:space="preserve">
+    <value>已取消</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_TimedOut" xml:space="preserve">
+    <value>已超时</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Delegated" xml:space="preserve">
+    <value>已委派</value>
+  </data>
+  <data name="WorkAggregation_Action_Approve" xml:space="preserve">
+    <value>批准</value>
+  </data>
+  <data name="WorkAggregation_Action_Reject" xml:space="preserve">
+    <value>拒绝</value>
+  </data>
+  <data name="WorkAggregation_Action_RequestInfo" xml:space="preserve">
+    <value>请求信息</value>
+  </data>
+  <data name="WorkAggregation_Action_Delegate" xml:space="preserve">
+    <value>委派</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_PermissionDenied" xml:space="preserve">
+    <value>您没有执行此操作的权限。</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
+    <value>缺少必需的证明材料。</value>
+  </data>
+  <data name="NoAccessTitle" xml:space="preserve">
+    <value>您无权访问任务中心</value>
+  </data>
+  <data name="NoAccessDesc" xml:space="preserve">
+    <value>请联系管理员为您开通该模块的访问权限。</value>
+  </data>
+  <data name="SessionExpiredTitle" xml:space="preserve">
+    <value>您的会话已过期</value>
+  </data>
+  <data name="SessionExpiredDesc" xml:space="preserve">
+    <value>请重新登录以继续。</value>
+  </data>
+  <data name="UnavailableTitle" xml:space="preserve">
+    <value>任务中心暂时不可用</value>
+  </data>
+  <data name="UnavailableDesc" xml:space="preserve">
+    <value>无法连接到服务。已保留您的筛选条件，请重试。</value>
+  </data>
+  <data name="WorkAggregation_Action_Accept" xml:space="preserve">
+    <value>接受</value>
+  </data>
+  <data name="WorkAggregation_Action_Claim" xml:space="preserve">
+    <value>领取</value>
+  </data>
+  <data name="WorkAggregation_Action_Start" xml:space="preserve">
+    <value>开始</value>
+  </data>
+  <data name="WorkAggregation_Action_Complete" xml:space="preserve">
+    <value>完成</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ApprovalPending" xml:space="preserve">
+    <value>等待审批 — 目前无法开始。</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Open" xml:space="preserve">
+    <value>待处理</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Planned" xml:space="preserve">
+    <value>已计划</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_InProgress" xml:space="preserve">
+    <value>进行中</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Waiting" xml:space="preserve">
+    <value>等待中</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_PendingReview" xml:space="preserve">
+    <value>待审核</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Done" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Cancelled" xml:space="preserve">
+    <value>已取消</value>
+  </data>
+  <data name="WorkAggregation_Action_Plan" xml:space="preserve">
+    <value>计划</value>
+  </data>
+  <data name="WorkAggregation_Action_Release" xml:space="preserve">
+    <value>释放</value>
+  </data>
+  <data name="WorkAggregation_Action_Resume" xml:space="preserve">
+    <value>继续</value>
+  </data>
+  <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
+    <value>等待中…</value>
+  </data>
+  <data name="WorkAggregation_Action_Return" xml:space="preserve">
+    <value>退回</value>
+  </data>
+  <data name="WorkAggregation_Action_Reassign" xml:space="preserve">
+    <value>重新分配</value>
+  </data>
+  <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
+    <value>取消任务</value>
+  </data>
+  <data name="ToastActionApplied" xml:space="preserve">
+    <value>{1} — 已完成“{0}”</value>
+  </data>
+  <data name="ErrorConcurrencyRefreshed" xml:space="preserve">
+    <value>此任务在您操作期间已被更改。列表已刷新 — 请重试。</value>
+  </data>
+  <data name="PersonSelf" xml:space="preserve">
+    <value>我</value>
+  </data>
+  <data name="PersonNameUnavailable" xml:space="preserve">
+    <value>姓名不可用</value>
+  </data>
+  <data name="PlannedDateNone" xml:space="preserve">
+    <value>未计划</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ChecklistIncomplete" xml:space="preserve">
+    <value>仍有未完成的必办清单项。</value>
+  </data>
+  <data name="WorkAggregation_BusinessContext_Unfiled" xml:space="preserve">
+    <value>其他信息</value>
+  </data>
+  <data name="WorkAggregation_BusinessContext_UnknownField" xml:space="preserve">
+    <value>已撤销的字段</value>
+  </data>
+  <data name="WorkAggregation_Action_SubmitReview" xml:space="preserve">
+    <value>提交审核</value>
+  </data>
+  <data name="WorkAggregation_ReviewError_StartFailed" xml:space="preserve">
+    <value>无法发起审核。当前无人等待 — 请重试。</value>
+  </data>
+  <data name="WorkAggregation_ReviewError_ReviewerRequired" xml:space="preserve">
+    <value>请求审核时必须指定审核人。</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewPending" xml:space="preserve">
+    <value>在审核人处 — 尚不能完成。</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ApprovalPendingComplete" xml:space="preserve">
+    <value>等待审批 — 目前无法完成。</value>
+  </data>
+  <data name="WorkAggregation_ApprovalError_StartFailed" xml:space="preserve">
+    <value>无法启动审批流程。</value>
+  </data>
+  <data name="ChecklistEmpty" xml:space="preserve">
+    <value>暂无清单项。</value>
+  </data>
+  <data name="ChecklistAddPlaceholder" xml:space="preserve">
+    <value>输入条目后按 Enter</value>
+  </data>
+  <data name="ChecklistLevelOptional" xml:space="preserve">
+    <value>可选</value>
+  </data>
+  <data name="ChecklistLevelRequired" xml:space="preserve">
+    <value>应完成</value>
+  </data>
+  <data name="ChecklistLevelBlocking" xml:space="preserve">
+    <value>阻断</value>
+  </data>
+  <data name="ChecklistRequiredOpen" xml:space="preserve">
+    <value>尚有 {0} 个应完成条目未勾选</value>
+  </data>
+  <data name="ConfirmRequiredOpen" xml:space="preserve">
+    <value>有 {0} 个必填条目未勾选。任务仍将关闭。</value>
+  </data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve">
+    <value>需要证明文件。文档模块接入后即可关联文档。</value>
+  </data>
+  <data name="ChecklistLevelHint" xml:space="preserve">
+    <value>更改级别：可选 → 应完成 → 阻断</value>
+  </data>
+  <data name="ChecklistLevelReadOnly" xml:space="preserve">
+    <value>级别 — 只有添加此项的人才能更改</value>
+  </data>
+  <data name="ChecklistEvidenceMark" xml:space="preserve">
+    <value>此项需要证据</value>
+  </data>
+  <data name="ToastChecklistItemAdded" xml:space="preserve">
+    <value>已添加条目</value>
+  </data>
+  <data name="GuidancePendingAcceptance" xml:space="preserve">
+    <value>该任务正在等待你接受。接手它，或者如果不属于你，请重新分配。</value>
+  </data>
+  <data name="GuidanceChildrenRunning" xml:space="preserve">
+    <value>已有 {0} 个子任务在进行中。</value>
+  </data>
+  <data name="GuidancePendingClaim" xml:space="preserve">
+    <value>该任务在任务池中。认领它即可归你负责。</value>
+  </data>
+  <data name="GuidanceApprovalPending" xml:space="preserve">
+    <value>审批决定尚未做出，暂时无法开始。</value>
+  </data>
+  <data name="GuidanceReviewPending" xml:space="preserve">
+    <value>该任务正在评审人手中，在其答复前无需操作。</value>
+  </data>
+  <data name="GuidanceWaiting" xml:space="preserve">
+    <value>该任务已暂停，正在等待他人。</value>
+  </data>
+  <data name="GuidanceWaitingBecause" xml:space="preserve">
+    <value>该任务已暂停：{0}</value>
+  </data>
+  <data name="SubtaskAddDetailed" xml:space="preserve">
+    <value>+ 添加详细任务</value>
+  </data>
+  <data name="SubtaskCreateTitle" xml:space="preserve">
+    <value>新建子任务</value>
+  </data>
+  <data name="SubtaskCreateSubmit" xml:space="preserve">
+    <value>创建子任务</value>
+  </data>
+  <data name="SubtaskCreateParentFixed" xml:space="preserve">
+    <value>将在你当前查看的任务下创建。</value>
+  </data>
+  <data name="SubtaskAssignToMe" xml:space="preserve">
+    <value>我</value>
+  </data>
+  <data name="SubtaskFieldPriority" xml:space="preserve">
+    <value>优先级</value>
+  </data>
+  <data name="SubtaskFieldDescription" xml:space="preserve">
+    <value>描述</value>
+  </data>
+  <data name="SubtaskCancel" xml:space="preserve">
+    <value>取消子任务</value>
+  </data>
+  <data name="SubtaskCancelAria" xml:space="preserve">
+    <value>取消子任务：{0}</value>
+  </data>
+  <data name="SubtaskCancelConfirm" xml:space="preserve">
+    <value>取消子任务“{0}”？它会保留在历史记录中，并不再是待办工作。</value>
+  </data>
+  <data name="SubtaskCancelConfirmYes" xml:space="preserve">
+    <value>取消它</value>
+  </data>
+  <data name="ToastSubtaskCompleted" xml:space="preserve">
+    <value>子任务已完成：{0}</value>
+  </data>
+  <data name="ToastSubtaskCancelled" xml:space="preserve">
+    <value>子任务已取消：{0}</value>
+  </data>
+  <data name="SubtaskSave" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="SubtaskSaved" xml:space="preserve">
+    <value>子任务已保存。</value>
+  </data>
+  <data name="SubtaskQuickEditTitle" xml:space="preserve">
+    <value>快速编辑</value>
+  </data>
+  <data name="SubtaskFieldTitle" xml:space="preserve">
+    <value>标题</value>
+  </data>
+  <data name="SubtaskFieldDue" xml:space="preserve">
+    <value>截止日期</value>
+  </data>
+  <data name="SubtaskFieldAssignee" xml:space="preserve">
+    <value>负责人</value>
+  </data>
+  <data name="SubtaskFieldStatus" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="SubtaskNoAssignee" xml:space="preserve">
+    <value>尚无负责人</value>
+  </data>
+  <data name="SubtaskOpenFullDetail" xml:space="preserve">
+    <value>打开完整详情</value>
+  </data>
+  <data name="SubtaskQuickEditScope" xml:space="preserve">
+    <value>负责人和状态需在完整详情页中修改，那里会应用相应规则。</value>
+  </data>
+  <data name="ActionsAvailable" xml:space="preserve">
+    <value>可用操作</value>
+  </data>
+  <data name="ActionSubmitting" xml:space="preserve">
+    <value>正在执行…</value>
+  </data>
+  <data name="ActionsNoneClosed" xml:space="preserve">
+    <value>该任务已关闭，这里没有可执行的操作。</value>
+  </data>
+  <data name="ActionsNoneNotYours" xml:space="preserve">
+    <value>您当前对该任务没有可执行的操作。</value>
+  </data>
+  <data name="ActionsOther" xml:space="preserve">
+    <value>其他操作</value>
+  </data>
+  <data name="StepApproval" xml:space="preserve">
+    <value>审批</value>
+  </data>
+  <data name="StepOpen" xml:space="preserve">
+    <value>待处理</value>
+  </data>
+  <data name="StepPaused" xml:space="preserve">
+    <value>当前已暂停</value>
+  </data>
+  <data name="StepPausedBecause" xml:space="preserve">
+    <value>当前已暂停：{0}</value>
+  </data>
+  <data name="OutcomeAccept" xml:space="preserve">
+    <value>接手该任务并将其转为“待处理”</value>
+  </data>
+  <data name="OutcomeClaim" xml:space="preserve">
+    <value>将任务从任务池中取出并分配给你</value>
+  </data>
+  <data name="OutcomeRelease" xml:space="preserve">
+    <value>将任务退回任务池</value>
+  </data>
+  <data name="OutcomePlan" xml:space="preserve">
+    <value>设置你的计划日期；截止日期不变</value>
+  </data>
+  <data name="OutcomeStart" xml:space="preserve">
+    <value>将任务转为“进行中”</value>
+  </data>
+  <data name="OutcomeInquire" xml:space="preserve">
+    <value>暂停该任务并转为“等待中”</value>
+  </data>
+  <data name="OutcomeReturn" xml:space="preserve">
+    <value>将任务退回给提出请求的人</value>
+  </data>
+  <data name="OutcomeReassign" xml:space="preserve">
+    <value>将任务交给他人，处于未接受状态</value>
+  </data>
+  <data name="OutcomeComplete" xml:space="preserve">
+    <value>完成该任务并转为“已完成”</value>
+  </data>
+  <data name="OutcomeCancel" xml:space="preserve">
+    <value>完全取消该任务；未完成的子任务一并取消</value>
+  </data>
+  <data name="GatesLabel" xml:space="preserve">
+    <value>审批关卡</value>
+  </data>
+  <data name="GateApproval" xml:space="preserve">
+    <value>审批</value>
+  </data>
+  <data name="GateReview" xml:space="preserve">
+    <value>评审</value>
+  </data>
+  <data name="GateStatusNotRequired" xml:space="preserve">
+    <value>不需要</value>
+  </data>
+  <data name="GateStatusRequired" xml:space="preserve">
+    <value>需要</value>
+  </data>
+  <data name="GateStatusPending" xml:space="preserve">
+    <value>等待决定</value>
+  </data>
+  <data name="GateStatusApproved" xml:space="preserve">
+    <value>已批准</value>
+  </data>
+  <data name="GateStatusRejected" xml:space="preserve">
+    <value>已拒绝</value>
+  </data>
+  <data name="SubtaskStatusCancelled" xml:space="preserve">
+    <value>已取消</value>
+  </data>
+  <data name="BreadcrumbLabel" xml:space="preserve">
+    <value>面包屑导航</value>
+  </data>
+  <data name="SubtaskStatusDone" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="SubtaskStatusInProgress" xml:space="preserve">
+    <value>进行中</value>
+  </data>
+  <data name="SubtaskStatusNotStarted" xml:space="preserve">
+    <value>未开始</value>
+  </data>
+  <data name="ChecklistBlocksCompletion" xml:space="preserve">
+    <value>必须先完成此清单，才能完成该任务。</value>
+  </data>
+  <data name="ChecklistDoesNotBlock" xml:space="preserve">
+    <value>此清单仅供参考，不会阻止任务完成。</value>
+  </data>
+  <data name="ActivityEmpty" xml:space="preserve">
+    <value>尚无活动记录。</value>
+  </data>
+  <data name="AuditEventCreated" xml:space="preserve">
+    <value>任务已创建</value>
+  </data>
+  <data name="AuditEventAccepted" xml:space="preserve">
+    <value>任务已接受</value>
+  </data>
+  <data name="AuditEventPlanned" xml:space="preserve">
+    <value>任务已计划</value>
+  </data>
+  <data name="AuditEventStarted" xml:space="preserve">
+    <value>工作已开始</value>
+  </data>
+  <data name="AuditEventResumed" xml:space="preserve">
+    <value>工作已恢复</value>
+  </data>
+  <data name="AuditEventWaiting" xml:space="preserve">
+    <value>已置为等待</value>
+  </data>
+  <data name="AuditEventSubmittedForReview" xml:space="preserve">
+    <value>已提交评审</value>
+  </data>
+  <data name="AuditEventReviewCancelled" xml:space="preserve">
+    <value>评审要求已取消</value>
+  </data>
+  <data name="AuditEventCompleted" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="AuditEventCancelled" xml:space="preserve">
+    <value>已取消</value>
+  </data>
+  <data name="AuditEventClaimed" xml:space="preserve">
+    <value>已从任务池领取</value>
+  </data>
+  <data name="AuditEventReleased" xml:space="preserve">
+    <value>已退回任务池</value>
+  </data>
+  <data name="AuditEventReassigned" xml:space="preserve">
+    <value>已改派</value>
+  </data>
+  <data name="AuditEventReturned" xml:space="preserve">
+    <value>已退回给请求人</value>
+  </data>
+  <data name="AuditEventUnknown" xml:space="preserve">
+    <value>任务已更新</value>
+  </data>
+  <data name="ActivityFilterLabel" xml:space="preserve">
+    <value>活动筛选</value>
+  </data>
+  <data name="ActivityFilterAll" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="ActivityFilterCommentsOnly" xml:space="preserve">
+    <value>仅评论</value>
+  </data>
+  <data name="ActivityNoComments" xml:space="preserve">
+    <value>此任务暂无评论。</value>
+  </data>
+  <data name="ActivityHistoryStartsHere" xml:space="preserve">
+    <value>本任务在开始记录之前经历的步骤未被记录。</value>
+  </data>
+  <data name="SubtasksEmpty" xml:space="preserve">
+    <value>暂无子任务。</value>
+  </data>
+  <data name="SubtasksBlockingNotice" xml:space="preserve">
+    <value>完成此任务前，还有 {0} 个未完成的子任务需要关闭</value>
+  </data>
+  <data name="BlockerSubtaskOpen" xml:space="preserve">
+    <value>在子任务“{0}”关闭之前无法完成</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
+    <value>仍有子任务未完成</value>
+  </data>
+  <data name="ToastChecklistUpdated" xml:space="preserve">
+    <value>清单已更新。</value>
+  </data>
+  <data name="ToastSubtaskAdded" xml:space="preserve">
+    <value>已添加子任务“{0}”。</value>
+  </data>
+  <data name="SubtaskTitleRequired" xml:space="preserve">
+    <value>请输入子任务标题。</value>
+  </data>
+  <!-- DEAD (2026-08-14): the parent-task notice became a Summary FIELD, whose label is `DetailParentTask`
+       and whose value is the parent's own title as a link. "{0} görevinin alt görevi" wrapped the title in
+       a sentence, which a labelled field does not need. Kept rather than deleted — a removed key is
+       invisible to the next reader. `SubtaskOfUnnamed` is still live: it is the honest fallback when the
+       reader cannot see the parent. -->
+  <data name="SubtaskOfNamed" xml:space="preserve">
+    <value>“{0}”的子任务</value>
+  </data>
+  <data name="SubtaskOfUnnamed" xml:space="preserve">
+    <value>另一任务的子任务</value>
+  </data>
+  <data name="SubtaskOpenAria" xml:space="preserve">
+    <value>打开子任务“{0}”</value>
+  </data>
+  <data name="HavuzTitleInvoiceMatch" xml:space="preserve">
+    <value>匹配收到的发票</value>
+  </data>
+  <data name="HavuzTitleInvoiceMatchSummary" xml:space="preserve">
+    <value>将会计队列中未核对的供应商发票与其采购订单匹配。</value>
+  </data>
+  <data name="HavuzTitlePrReview" xml:space="preserve">
+    <value>采购申请初审</value>
+  </data>
+  <data name="HavuzTitlePrReviewSummary" xml:space="preserve">
+    <value>对审核队列中的采购申请进行预算和供应商资格初审。</value>
+  </data>
+  <data name="HavuzTitleAuditFinding" xml:space="preserve">
+    <value>审计发现审查</value>
+  </data>
+  <data name="HavuzTitleAuditFindingSummary" xml:space="preserve">
+    <value>一项质量审计发现已提供给你审查。</value>
+  </data>
+  <data name="GecmisTitleQ1Close" xml:space="preserve">
+    <value>2026 年第一季度期末结账</value>
+  </data>
+  <data name="GecmisTitleQ1CloseSummary" xml:space="preserve">
+    <value>2026 年第一季度合并结账——所有单位对账已完成。</value>
+  </data>
+  <data name="GecmisTitleSupplierContract" xml:space="preserve">
+    <value>供应商框架合同审批</value>
+  </data>
+  <data name="GecmisTitleSupplierContractSummary" xml:space="preserve">
+    <value>供应商框架合同条款已获批准并移交采购部门。</value>
+  </data>
+  <data name="GecmisTitleReportTemplate" xml:space="preserve">
+    <value>旧报表模板修订</value>
+  </data>
+  <data name="GecmisTitleReportTemplateSummary" xml:space="preserve">
+    <value>新报表模块上线后，旧模板修订已取消。</value>
+  </data>
+  <data name="GecmisChkReconcile" xml:space="preserve">
+    <value>完成单位对账</value>
+  </data>
+  <data name="GecmisChkReview" xml:space="preserve">
+    <value>审阅结账资料包</value>
+  </data>
+  <data name="GecmisChkPublish" xml:space="preserve">
+    <value>发布结果</value>
+  </data>
+  <data name="ReassignAssigneeLabel" xml:space="preserve">
+    <value>新负责人</value>
+  </data>
+  <data name="ReassignAssigneePlaceholder" xml:space="preserve">
+    <value>请选择人员</value>
+  </data>
+  <data name="ReassignAssigneeRequired" xml:space="preserve">
+    <value>请选择此任务移交给谁。</value>
+  </data>
+  <data name="ReassignNoAssignableUsers" xml:space="preserve">
+    <value>没有可以移交此任务的人员。</value>
+  </data>
+  <data name="CopyReference" xml:space="preserve">
+    <value>复制引用</value>
+  </data>
+  <data name="ReferenceCopied" xml:space="preserve">
+    <value>引用已复制</value>
+  </data>
+  <data name="ReferenceCopyFailed" xml:space="preserve">
+    <value>无法复制引用</value>
+  </data>
+  <data name="ChecklistMoveUp" xml:space="preserve">
+    <value>上移</value>
+  </data>
+  <data name="ChecklistMoveDown" xml:space="preserve">
+    <value>下移</value>
+  </data>
+  <data name="ChecklistEvidenceToggle" xml:space="preserve">
+    <value>需要证据</value>
+  </data>
+  <data name="ChecklistRemove" xml:space="preserve">
+    <value>移除条目</value>
+  </data>
+  <data name="ChecklistAddButton" xml:space="preserve">
+    <value>添加</value>
+  </data>
+  <data name="ChecklistAddHint" xml:space="preserve">
+    <value>点击标签可更改级别。目前还没有模板列表。</value>
+  </data>
+  <data name="NoteAddButton" xml:space="preserve">
+    <value>添加</value>
+  </data>
+  <data name="NoteAddHint" xml:space="preserve">
+    <value>这些笔记仅您可见。</value>
+  </data>
+  <data name="NoteRemove" xml:space="preserve">
+    <value>删除笔记</value>
+  </data>
+  <data name="ToastNoteRemoved" xml:space="preserve">
+    <value>个人笔记已删除</value>
+  </data>
+  <data name="DetailPlannedDate" xml:space="preserve">
+    <value>计划日期</value>
+  </data>
+  <data name="SnoozedLabel" xml:space="preserve">
+    <value>已延后</value>
+  </data>
+  <data name="SnoozeClear" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="NoteWrittenAt" xml:space="preserve">
+    <value>写于 {0}</value>
+  </data>
+  <data name="DetailParentTask" xml:space="preserve">
+    <value>父任务</value>
+  </data>
+  <data name="CommentEdited" xml:space="preserve">
+    <value>已编辑</value>
+  </data>
+  <data name="CommentWithdrawn" xml:space="preserve">
+    <value>此评论已被作者撤回。</value>
+  </data>
+  <data name="CommentEdit" xml:space="preserve">
+    <value>编辑评论</value>
+  </data>
+  <data name="CommentEditSave" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="CommentEditLabel" xml:space="preserve">
+    <value>评论</value>
+  </data>
+  <data name="CommentWithdraw" xml:space="preserve">
+    <value>撤回评论</value>
+  </data>
+  <data name="CommentWithdrawConfirm" xml:space="preserve">
+    <value>文字将被删除；原处保留一条说明已撤回的标记。</value>
+  </data>
+  <data name="ToastCommentEdited" xml:space="preserve">
+    <value>评论已编辑</value>
+  </data>
+  <data name="ToastCommentWithdrawn" xml:space="preserve">
+    <value>评论已撤回</value>
+  </data>
+  <data name="WaitingOnWithReason" xml:space="preserve">
+    <value>等待 {0} — {1}</value>
+  </data>
+  <data name="WaitingOnLabel" xml:space="preserve">
+    <value>在等谁？（可选）</value>
+  </data>
+  <data name="WaitingOnNobody" xml:space="preserve">
+    <value>没有特定的人</value>
+  </data>
+  <data name="AuditEventEdited" xml:space="preserve">
+    <value>字段已更改</value>
+  </data>
+  <data name="AuditFieldChangeValued" xml:space="preserve">
+    <value>{0}：{1} → {2}</value>
+  </data>
+  <data name="AuditFieldChangeNamed" xml:space="preserve">
+    <value>{0}已更改</value>
+  </data>
+  <data name="AuditFieldHidden" xml:space="preserve">
+    <value>某个字段</value>
+  </data>
+  <data name="AuditFieldEmpty" xml:space="preserve">
+    <value>空</value>
+  </data>
+  <data name="AuditFieldDueAt" xml:space="preserve">
+    <value>截止日期</value>
+  </data>
+  <data name="AuditFieldStartAt" xml:space="preserve">
+    <value>开始日期</value>
+  </data>
+  <data name="AuditFieldPlannedDate" xml:space="preserve">
+    <value>计划日期</value>
+  </data>
+  <data name="AuditFieldPriority" xml:space="preserve">
+    <value>优先级</value>
+  </data>
+  <data name="AuditFieldAssignee" xml:space="preserve">
+    <value>负责人</value>
+  </data>
+  <data name="AuditFieldTitle" xml:space="preserve">
+    <value>标题</value>
+  </data>
+  <data name="AuditFieldDescription" xml:space="preserve">
+    <value>描述</value>
+  </data>
+  <data name="AuditFieldEstimateHours" xml:space="preserve">
+    <value>预计工时</value>
+  </data>
+  <data name="AuditFieldTags" xml:space="preserve">
+    <value>标签</value>
+  </data>
+  <data name="DetailWatchers" xml:space="preserve">
+    <value>关注者</value>
+  </data>
+  <data name="WatcherRoleConsultant" xml:space="preserve">
+    <value>顾问</value>
+  </data>
+  <data name="DetailNotifications" xml:space="preserve">
+    <value>通知</value>
+  </data>
+  <data name="NotificationsOff" xml:space="preserve">
+    <value>邮件已关闭</value>
+  </data>
+  <data name="NotificationsOn" xml:space="preserve">
+    <value>邮件已开启 · {0}</value>
+  </data>
+  <data name="NotificationsOnWithReminder" xml:space="preserve">
+    <value>邮件已开启 · {0} · 截止日期前 {1} 天提醒</value>
+  </data>
+  <data name="NotificationsAllEvents" xml:space="preserve">
+    <value>针对所有事件</value>
+  </data>
+  <data name="NotificationsNoEvents" xml:space="preserve">
+    <value>未选择事件</value>
+  </data>
+  <data name="NotificationsSomeEvents" xml:space="preserve">
+    <value>针对 {0} 个事件</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_DelegationNotAllowed" xml:space="preserve">
+    <value>此任务不可转派。</value>
+  </data>
+  <data name="SnoozeTitle" xml:space="preserve">
+    <value>稍后处理此任务</value>
+  </data>
+  <data name="SnoozeSubtext" xml:space="preserve">
+    <value>任务状态不变，截止日期不动，请求人也看不到任何变化。稍后处理只是给你自己的标记。</value>
+  </data>
+  <data name="SnoozeUntilLabel" xml:space="preserve">
+    <value>推迟到哪一天</value>
+  </data>
+  <data name="DialogDismiss" xml:space="preserve">
+    <value>算了</value>
+  </data>
+  <data name="SnoozeDatePlaceholder" xml:space="preserve">
+    <value>YYYY-MM-DD</value>
+  </data>
+  <data name="SignalSnoozed" xml:space="preserve">
+    <value>已稍后处理</value>
+  </data>
+  <data name="PartialBoardBanner" xml:space="preserve">
+    <value>部分数据源未响应——此列表可能不完整。</value>
+  </data>
+  <data name="PartialCountHint" xml:space="preserve">
+    <value>部分数据源未响应，因此该计数可能不完整。</value>
+  </data>
+  <data name="SourceUnavailableTimeout" xml:space="preserve">
+    <value>未在规定时间内响应</value>
+  </data>
+  <data name="SourceUnavailableError" xml:space="preserve">
+    <value>返回了错误</value>
+  </data>
+  <data name="SourceUnavailableUnsupportedVersion" xml:space="preserve">
+    <value>声明了不受支持的契约版本</value>
+  </data>
+  <data name="SourceUnavailableUnknown" xml:space="preserve">
+    <value>不可用，原因未知</value>
+  </data>
+  <data name="EmptyPartialBoardTitle" xml:space="preserve">
+    <value>此列表无法完整加载</value>
+  </data>
+  <data name="EmptyPartialBoardDesc" xml:space="preserve">
+    <value>至少有一个数据源未响应，因此此处显示的内容并不完整。请稍后重试。</value>
+  </data>
+  <data name="ErrorCommentTextInvalid" xml:space="preserve">
+    <value>评论不能为空。</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>是</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>否</value>
+  </data>
+  <data name="BannerStale" xml:space="preserve">
+    <value>自上次读取后，来源记录已发生变更。</value>
+  </data>
+  <data name="BannerSourceUnavailable" xml:space="preserve">
+    <value>当前无法访问来源模块。</value>
+  </data>
+  <data name="BannerAuthorityEnded" xml:space="preserve">
+    <value>您对该条目的权限已结束。</value>
+  </data>
+  <data name="BannerReconciliationRequired" xml:space="preserve">
+    <value>需要与来源进行核对。</value>
+  </data>
 </root>

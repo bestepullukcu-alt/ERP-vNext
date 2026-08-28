@@ -76,6 +76,10 @@
   <data name="ViewLabel" xml:space="preserve">
     <value>العرض</value>
   </data>
+  <data name="RowsPerPage" xml:space="preserve"><value>الصفوف</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>إظهار الأعمدة</value></data>
+  <data name="PreviousPage" xml:space="preserve"><value>الصفحة السابقة</value></data>
+  <data name="NextPage" xml:space="preserve"><value>الصفحة التالية</value></data>
   <data name="ViewList" xml:space="preserve">
     <value>قائمة</value>
   </data>
@@ -89,7 +93,7 @@
     <value>اليوم</value>
   </data>
   <data name="SearchPlaceholder" xml:space="preserve">
-    <value>ابحث في عناصر العمل…</value>
+    <value>بحث…</value>
   </data>
   <data name="FilterAllModules" xml:space="preserve">
     <value>كل الوحدات</value>
@@ -102,6 +106,9 @@
   </data>
   <data name="FilterType" xml:space="preserve">
     <value>تصفية النوع</value>
+  </data>
+  <data name="FiltersLabel" xml:space="preserve">
+    <value>عوامل التصفية</value>
   </data>
   <data name="KeyboardHint" xml:space="preserve">
     <value>j / k للتنقّل · a للموافقة/القبول · r للرفض/الإرجاع · Enter للفتح</value>
@@ -132,6 +139,15 @@
   </data>
   <data name="SlaOverdueByDays" xml:space="preserve">
     <value>متأخر {0} يوم</value>
+  </data>
+  <data name="SlaClosedLateByDays" xml:space="preserve">
+    <value>أُغلق متأخرًا {0} يوم</value>
+  </data>
+  <data name="SlaClosedLate" xml:space="preserve">
+    <value>أُغلق متأخرًا</value>
+  </data>
+  <data name="SlaClosedOnTime" xml:space="preserve">
+    <value>أُغلق في الموعد</value>
   </data>
   <data name="StatusPending" xml:space="preserve">
     <value>قيد الانتظار</value>
@@ -220,11 +236,104 @@
   <data name="ActAct" xml:space="preserve">
     <value>اتخاذ إجراء</value>
   </data>
+  <data name="RowView" xml:space="preserve"><value>عرض</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>جدولة اجتماع الموافقة</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>تم جدولة اجتماع الموافقة: {0}</value></data>
+  <data name="IsTitleElimination" xml:space="preserve"><value>إعداد جدول الاستبعاد بين الشركات</value></data>
+  <data name="IsSummaryElimination" xml:space="preserve"><value>استبعاد الأرصدة بين الشركات قبل التوحيد.</value></data>
+  <data name="IsTitlePricingRegression" xml:space="preserve"><value>التحقيق في تراجع قاعدة التسعير</value></data>
+  <data name="IsSummaryPricingRegression" xml:space="preserve"><value>إيجاد ومعالجة السبب الجذري لانحراف السعر بعد التصحيح.</value></data>
+  <data name="IsTitleOnboardingChecklist" xml:space="preserve"><value>إكمال قائمة تحقق المدير لتعيين الموظف الجديد</value></data>
+  <data name="IsSummaryOnboardingChecklist" xml:space="preserve"><value>لا يمكن البدء حتى اكتمال المهمة السابقة «عقد العمل الموقَّع».</value></data>
+  <data name="IsTitleVendorPrequal" xml:space="preserve"><value>إكمال تقييم التأهيل المسبق للمورّد</value></data>
+  <data name="IsSummaryVendorPrequal" xml:space="preserve"><value>نيابةً عن Aylin Ersoy: مراجعة وتقييم مستندات المورّد المرشّح.</value></data>
+  <data name="IsTitleRackAudit" xml:space="preserve"><value>تنفيذ تدقيق مواقع رفوف الممر D</value></data>
+  <data name="IsSummaryRackAudit" xml:space="preserve"><value>تدقيق دقة مواقع الرفوف بعد الجرد.</value></data>
+  <data name="IsTitleCapaEvidence" xml:space="preserve"><value>إغلاق الانحراف عند وصول حزمة أدلة CAPA</value></data>
+  <data name="IsSummaryCapaEvidence" xml:space="preserve"><value>بانتظار دليل الإجراء التصحيحي؛ التحضير للإغلاق عند وصوله.</value></data>
+  <data name="IsTitleNdaReview" xml:space="preserve"><value>مراجعة اتفاقية السرية — اجتماع الموافقة</value></data>
+  <data name="IsSummaryNdaReview" xml:space="preserve"><value>تم جدولة اجتماع مراجعة؛ الاعتماد بعد عقد الاجتماع.</value></data>
+  <data name="IsTitleDepreciation" xml:space="preserve"><value>إعداد جدول الإهلاك</value></data>
+  <data name="IsSummaryDepreciation" xml:space="preserve"><value>في التاريخ المخطط، احسب إهلاك الفترة وأعدّ الجدول.</value></data>
+  <data name="IsChkMatchBalances" xml:space="preserve"><value>مطابقة الأرصدة</value></data>
+  <data name="IsChkEliminate" xml:space="preserve"><value>استبعاد الفروقات</value></data>
+  <data name="IsChkClose" xml:space="preserve"><value>إغلاق الجدول</value></data>
+  <data name="IsDepSignedContract" xml:space="preserve"><value>عقد العمل الموقَّع</value></data>
+  <data name="BusinessContextLabel" xml:space="preserve"><value>السياق التجاري</value></data>
+  <data name="FilterSlaStatus" xml:space="preserve"><value>حالة SLA</value></data>
+  <data name="FilterPinned" xml:space="preserve"><value>المثبّتة فقط</value></data>
+  <data name="IsChkReconcileFx" xml:space="preserve"><value>تسوية فروق الصرف</value></data>
+  <data name="IsDepLedgerClose" xml:space="preserve"><value>إغلاق دفتر الأستاذ المساعد</value></data>
+  <data name="IsDepConsolidation" xml:space="preserve"><value>تشغيل التوحيد</value></data>
+  <data name="IsAttachTrialBalance" xml:space="preserve"><value>ميزان المراجعة</value></data>
+  <data name="IsAttachEliminationTemplate" xml:space="preserve"><value>قالب الاستبعاد</value></data>
+  <data name="IsCtxFinancials" xml:space="preserve"><value>السياق المالي</value></data>
+  <data name="IsFactAmount" xml:space="preserve"><value>المبلغ</value></data>
+  <data name="IsFactCurrency" xml:space="preserve"><value>العملة</value></data>
+  <data name="IsFactCostCenter" xml:space="preserve"><value>مركز التكلفة</value></data>
+  <data name="IsFactPeriod" xml:space="preserve"><value>الفترة</value></data>
   <data name="ActionsLabel" xml:space="preserve">
     <value>الإجراءات</value>
   </data>
   <data name="DetailSummary" xml:space="preserve">
     <value>الملخص</value>
+  </data>
+  <data name="SummaryCardLabel" xml:space="preserve">
+    <value>الملخص</value>
+  </data>
+  <data name="DetailDescription" xml:space="preserve">
+    <value>الوصف</value>
+  </data>
+  <data name="SummaryUnassigned" xml:space="preserve">
+    <value>غير مُسندة</value>
+  </data>
+  <data name="PersonalCardLabel" xml:space="preserve">
+    <value>شخصي</value>
+  </data>
+  <data name="StatusCardLabel" xml:space="preserve">
+    <value>الحالة</value>
+  </data>
+  <data name="TechnicalDetailsLabel" xml:space="preserve">
+    <value>تفاصيل تقنية</value>
+  </data>
+  <data name="SourceCardLabel" xml:space="preserve">
+    <value>المصدر</value>
+  </data>
+  <data name="DetailNativeStatusInSource" xml:space="preserve">
+    <value>الحالة في المصدر</value>
+  </data>
+  <data name="ActionCompleteInSource" xml:space="preserve">
+    <value>الإكمال في {0}</value>
+  </data>
+  <data name="ActionDisabledWithName" xml:space="preserve">
+    <value>{0} — {1}</value>
+  </data>
+  <data name="ActionCompleteInSourceHint" xml:space="preserve">
+    <value>لا يمكن إنهاء هذا العمل هنا؛ يكتمل في {0}</value>
+  </data>
+  <data name="TechVersionValue" xml:space="preserve">
+    <value>الإصدار {0}</value>
+  </data>
+  <data name="DetailStartAt" xml:space="preserve">
+    <value>تاريخ البدء</value>
+  </data>
+  <data name="DetailEstimate" xml:space="preserve">
+    <value>التقدير</value>
+  </data>
+  <data name="DetailTags" xml:space="preserve">
+    <value>الوسوم</value>
+  </data>
+  <data name="DetailPriority" xml:space="preserve">
+    <value>الأولوية</value>
+  </data>
+  <data name="EstimateHoursValue" xml:space="preserve">
+    <value>{0} ساعة</value>
+  </data>
+  <data name="ShowAllCount" xml:space="preserve">
+    <value>عرض الكل ({0})</value>
+  </data>
+  <data name="ShowLess" xml:space="preserve">
+    <value>عرض أقل</value>
   </data>
   <data name="DetailContext" xml:space="preserve">
     <value>سياق المصدر</value>
@@ -267,6 +376,9 @@
   </data>
   <data name="ColPriority" xml:space="preserve">
     <value>الأولوية</value>
+  </data>
+  <data name="SortLabel" xml:space="preserve">
+    <value>ترتيب</value>
   </data>
   <data name="ColSla" xml:space="preserve">
     <value>الاتفاقية</value>
@@ -374,11 +486,14 @@
     <value>تمت معالجة {0} عنصر (تجريبي)</value>
   </data>
   <data name="ToastOpenSource" xml:space="preserve">
-    <value>سيفتح {0} · {1} (رابط تجريبي)</value>
+    <value>تم فتح {0} · {1} في تبويب جديد</value>
   </data>
   <data name="TabsLabel" xml:space="preserve">
     <value>علامات التبويب</value>
   </data>
+  <data name="ScopeTeam" xml:space="preserve"><value>فريقي</value></data>
+  <data name="ScopeTeamCount" xml:space="preserve"><value>{0} أشخاص</value></data>
+  <data name="ScopeTeamEmpty" xml:space="preserve"><value>لا أحد يتبعك في التسلسل الإداري، لذا لا يوجد فريق لعرضه.</value></data>
   <data name="TabInbox" xml:space="preserve">
     <value>صندوق الوارد</value>
   </data>
@@ -412,14 +527,23 @@
   <data name="ActResume" xml:space="preserve">
     <value>استئناف</value>
   </data>
-  <data name="ActPause" xml:space="preserve">
-    <value>إيقاف مؤقت</value>
-  </data>
   <data name="ActLogTime" xml:space="preserve">
     <value>تسجيل الوقت</value>
   </data>
   <data name="StepBarLabel" xml:space="preserve">
     <value>دورة الحياة</value>
+  </data>
+  <data name="StepStateDone" xml:space="preserve">
+    <value>مكتملة</value>
+  </data>
+  <data name="StepStateCurrent" xml:space="preserve">
+    <value>الخطوة الحالية</value>
+  </data>
+  <data name="StepStateUpcoming" xml:space="preserve">
+    <value>قادمة</value>
+  </data>
+  <data name="StepClosedOn" xml:space="preserve">
+    <value>أُغلق في {0}</value>
   </data>
   <data name="StepAccepted" xml:space="preserve">
     <value>مقبول</value>
@@ -469,11 +593,11 @@
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · مجدول ليوم {1} (تجريبي)</value>
   </data>
+  <data name="ToastPlanSaved" xml:space="preserve">
+    <value>تم حفظ الخطة لـ {0}</value>
+  </data>
   <data name="ToastTimerStarted" xml:space="preserve">
     <value>{0} · بدأ المؤقّت (تجريبي)</value>
-  </data>
-  <data name="ToastTimerPaused" xml:space="preserve">
-    <value>أُوقف المؤقّت · تم تسجيل {0} (تجريبي)</value>
   </data>
   <data name="ToastTimeLogged" xml:space="preserve">
     <value>تم تسجيل {0} (تجريبي)</value>
@@ -512,7 +636,7 @@
     <value>لا يمكن البدء حتى تُفتح نافذة التجميد.</value>
   </data>
   <data name="ConfirmBody" xml:space="preserve">
-    <value>أنت على وشك تطبيق هذا الإجراء على “{0}”. هل تريد المتابعة؟</value>
+    <value>أنت على وشك تنفيذ هذا الإجراء. هل تؤكد؟</value>
   </data>
   <data name="ConfirmBulkBody" xml:space="preserve">
     <value>أنت على وشك تطبيق هذا الإجراء على {0} عنصرًا دفعة واحدة. هل تريد المتابعة؟</value>
@@ -581,7 +705,7 @@
     <value>تأجيل</value>
   </data>
   <data name="SnoozeFuture" xml:space="preserve">
-    <value>اختر تاريخًا مستقبليًا.</value>
+    <value>لا يمكن اختيار تاريخ ماضٍ.</value>
   </data>
   <data name="WaitingOn" xml:space="preserve">
     <value>بانتظار {0}</value>
@@ -598,14 +722,19 @@
   <data name="SourceDueLabel" xml:space="preserve">
     <value>تاريخ الاستحقاق (المصدر)</value>
   </data>
+  <!-- DEAD (WC-1, 2026-08-14): the planned date left the Personal card for the Summary (BL-141) — it is a
+       SHARED field on TaskItem, not a private one, so "Kişisel plan" was a false statement about who can
+       see it. `DetailPlannedDate` replaces it. `PlannedDateNone` went with it: the Summary prints a row
+       only for a fact that exists, and "Planla" is already offered as an action on exactly those tasks.
+       Kept rather than deleted — a removed key is invisible to the next reader. -->
   <data name="PlannedDateLabel" xml:space="preserve">
     <value>الخطة الشخصية</value>
   </data>
   <data name="PlanConflict" xml:space="preserve">
-    <value>خطتك الشخصية بعد تاريخ الاستحقاق المصدري — خطر التأخر.</value>
+    <value>التاريخ المخطط بعد تاريخ الاستحقاق المصدري — خطر التأخر.</value>
   </data>
   <data name="ConfirmBodyOnBehalf" xml:space="preserve">
-    <value>أنت على وشك تطبيق هذا الإجراء على “{0}” بالنيابة عن {1}. هل تريد المتابعة؟</value>
+    <value>أنت على وشك تنفيذ هذا الإجراء نيابةً عن {0}. هل تؤكد؟</value>
   </data>
   <data name="ToastReleased" xml:space="preserve">
     <value>{0} · أُعيد إلى القائمة (تجريبي)</value>
@@ -617,10 +746,10 @@
     <value>{0} · أُلغي التثبيت</value>
   </data>
   <data name="ToastSnoozed" xml:space="preserve">
-    <value>{0} · مؤجل حتى {1} (تجريبي)</value>
+    <value>{0} · مؤجل حتى {1}</value>
   </data>
   <data name="ToastUnsnoozed" xml:space="preserve">
-    <value>{0} · أُلغي التأجيل (تجريبي)</value>
+    <value>{0} · أُلغي التأجيل</value>
   </data>
   <data name="BulkResultTitle" xml:space="preserve">
     <value>نتيجة الإجراء المجمّع</value>
@@ -670,8 +799,32 @@
   <data name="SubtasksLabel" xml:space="preserve">
     <value>المهام الفرعية</value>
   </data>
+  <data name="SubtaskDoneCount" xml:space="preserve">
+    <value>{0} مكتملة</value>
+  </data>
+  <data name="SubtaskProgressCount" xml:space="preserve">
+    <value>{0} / {1} مكتملة</value>
+  </data>
+  <data name="SubtaskInheritsHint" xml:space="preserve">
+    <value>يُورَث تاريخ الاستحقاق والأولوية والمسند إليه من المهمة الأصل.</value>
+  </data>
+  <data name="SubtaskOpen" xml:space="preserve">
+    <value>فتح</value>
+  </data>
+  <data name="SubtaskCheckDoneReason" xml:space="preserve">
+    <value>مكتملة بالفعل.</value>
+  </data>
+  <data name="SubtaskCheckCancelledReason" xml:space="preserve">
+    <value>لا يمكن إكمال عمل مُلغى.</value>
+  </data>
+  <data name="SubtaskCheckAria" xml:space="preserve">
+    <value>إكمال هذه المهمة الفرعية</value>
+  </data>
+  <data name="SubtaskRowMenuAria" xml:space="preserve">
+    <value>إجراءات {0}</value>
+  </data>
   <data name="SubtaskAddPlaceholder" xml:space="preserve">
-    <value>مهمة فرعية جديدة…</value>
+    <value>أضف مهمة فرعية واضغط Enter</value>
   </data>
   <data name="SubtaskAdd" xml:space="preserve">
     <value>إضافة</value>
@@ -688,6 +841,75 @@
   <data name="DepSuccessor" xml:space="preserve">
     <value>لاحقة</value>
   </data>
+  <data name="DepSentencePredFS" xml:space="preserve">
+    <value>لا يمكنك البدء قبل انتهاء {0}</value>
+  </data>
+  <data name="DepSentencePredFF" xml:space="preserve">
+    <value>لا يمكنك الإنهاء قبل انتهاء {0}</value>
+  </data>
+  <data name="DepSentencePredSS" xml:space="preserve">
+    <value>لا يمكنك البدء قبل بدء {0}</value>
+  </data>
+  <data name="DepSentencePredSF" xml:space="preserve">
+    <value>لا يمكنك الإنهاء قبل بدء {0}</value>
+  </data>
+  <data name="DepSentenceSuccFS" xml:space="preserve">
+    <value>لا يمكن أن يبدأ {0} قبل أن تنتهي</value>
+  </data>
+  <data name="DepSentenceSuccFF" xml:space="preserve">
+    <value>لا يمكن أن ينتهي {0} قبل أن تنتهي</value>
+  </data>
+  <data name="DepSentenceSuccSS" xml:space="preserve">
+    <value>لا يمكن أن يبدأ {0} قبل أن تبدأ</value>
+  </data>
+  <data name="DepSentenceSuccSF" xml:space="preserve">
+    <value>لا يمكن أن ينتهي {0} قبل أن تبدأ</value>
+  </data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>YYYY-MM-DD</value>
+  </data>
+  <data name="DateTimePlaceholder" xml:space="preserve">
+    <value>YYYY-MM-DD HH:MM</value>
+  </data>
+  <data name="MeetingWhenLabel" xml:space="preserve">
+    <value>تاريخ الاجتماع ووقته</value>
+  </data>
+  <data name="MeetingTitlePlaceholder" xml:space="preserve">
+    <value>مراجعة إقفال الربع الثالث</value>
+  </data>
+  <data name="MeetingLocationPlaceholder" xml:space="preserve">
+    <value>Teams / قاعة الاجتماعات 2</value>
+  </data>
+  <data name="NewPickModuleLabel" xml:space="preserve">
+    <value>أي وحدة؟</value>
+  </data>
+  <data name="LogTimeSubtext" xml:space="preserve">
+    <value>يُضاف إلى الوقت المسجَّل مسبقًا على هذه المهمة؛ ولا يبدأ المؤقّت أو يوقفه.</value>
+  </data>
+  <data name="MeetingWhenSubtext" xml:space="preserve">
+    <value>لم يتم بعد إعداد الاتصال بالتقويم: يظهر هذا السجل على هذه الشاشة فقط ويُفقد عند إغلاق الصفحة. لا يتغيّر تاريخ الاستحقاق.</value>
+  </data>
+  <data name="NewInSourceSubtext" xml:space="preserve">
+    <value>يُنشأ السجل في تلك الوحدة ويبقى فيها؛ ولا يحتفظ مركز المهام بنسخة منه.</value>
+  </data>
+  <data name="ConfirmProceedNamed" xml:space="preserve">
+    <value>نعم، {0}</value>
+  </data>
+  <data name="SubtaskCreateAllFields" xml:space="preserve">
+    <value>كل الحقول</value>
+  </data>
+  <data name="TimerStateRunning" xml:space="preserve">
+    <value>قيد التنفيذ</value>
+  </data>
+  <data name="TimerStatePaused" xml:space="preserve">
+    <value>موقوف مؤقتًا</value>
+  </data>
+  <data name="TimerFollowsStatusHint" xml:space="preserve">
+    <value>لا يُسجَّل الوقت المنقضي — أدخل الوقت الذي قضيته يدويًا.</value>
+  </data>
+  <data name="SubtaskStartedNotCompleted" xml:space="preserve">
+    <value>بدأت المهمة الفرعية لكن تعذّر إكمالها: {0}</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>إنهاء-بدء (FS)</value>
   </data>
@@ -701,13 +923,40 @@
     <value>بدء-إنهاء (SF)</value>
   </data>
   <data name="DepDone" xml:space="preserve">
-    <value>تم</value>
+    <value>مكتملة</value>
   </data>
   <data name="DepInProgress" xml:space="preserve">
-    <value>جارٍ</value>
+    <value>قيد التنفيذ</value>
   </data>
   <data name="DepNotStarted" xml:space="preserve">
-    <value>لم يبدأ</value>
+    <value>لم تبدأ</value>
+  </data>
+  <data name="DepCancelled" xml:space="preserve">
+    <value>أُلغيت</value>
+  </data>
+  <data name="BlockedBannerCount" xml:space="preserve">
+    <value>{0} مشكلة تعيق التقدم</value>
+  </data>
+  <data name="BlockerFinishToStart" xml:space="preserve">
+    <value>لا يمكن البدء قبل إغلاق «{0}»</value>
+  </data>
+  <data name="BlockerFinishToFinish" xml:space="preserve">
+    <value>لا يمكن الإكمال قبل إغلاق «{0}»</value>
+  </data>
+  <data name="BlockerStartToStart" xml:space="preserve">
+    <value>لا يمكن البدء قبل أن تبدأ «{0}»</value>
+  </data>
+  <data name="BlockerStartToFinish" xml:space="preserve">
+    <value>لا يمكن الإكمال قبل أن تبدأ «{0}»</value>
+  </data>
+  <data name="BlockedAffectsStart" xml:space="preserve">
+    <value>يمنع البدء</value>
+  </data>
+  <data name="BlockedAffectsComplete" xml:space="preserve">
+    <value>يمنع الإكمال</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_DependencyBlocked" xml:space="preserve">
+    <value>لم يتم استيفاء أحد الاعتمادات بعد</value>
   </data>
   <data name="DepsReadonlyHint" xml:space="preserve">
     <value>تُدار روابط الاعتمادية في المصدر</value>
@@ -721,20 +970,38 @@
   <data name="NotePlaceholder" xml:space="preserve">
     <value>ملاحظة تراها أنت فقط…</value>
   </data>
+  <!-- DEAD (WC-1, 2026-08-14): the personal note became a LIST with an add row, so "Save" no longer
+       names a control on any surface. Kept rather than deleted — a removed key is invisible to the
+       next reader, who cannot tell it was retired from it never having existed. -->
   <data name="NoteSave" xml:space="preserve">
     <value>حفظ</value>
   </data>
   <data name="ToastNoteSaved" xml:space="preserve">
-    <value>حُفظت الملاحظة الشخصية (تجريبي)</value>
+    <value>حُفظت الملاحظة الشخصية</value>
   </data>
   <data name="ActivityLabel" xml:space="preserve">
     <value>النشاط والتعليقات</value>
   </data>
+  <data name="DetailTabGeneral" xml:space="preserve">
+    <value>عام</value>
+  </data>
+  <data name="DetailTabActivity" xml:space="preserve">
+    <value>النشاط</value>
+  </data>
   <data name="CommentPlaceholder" xml:space="preserve">
-    <value>اكتب تعليقًا… (يُنشر أيضًا في المصدر)</value>
+    <value>اكتب تعليقًا…</value>
   </data>
   <data name="CommentPost" xml:space="preserve">
     <value>نشر</value>
+  </data>
+  <data name="CommentTextRequired" xml:space="preserve">
+    <value>اكتب شيئًا قبل النشر</value>
+  </data>
+  <data name="CommentTooLong" xml:space="preserve">
+    <value>يمكن أن يبلغ التعليق {0} حرفًا كحد أقصى</value>
+  </data>
+  <data name="CommentAuthorUnknown" xml:space="preserve">
+    <value>الاسم غير متاح</value>
   </data>
   <data name="ToastCommentPosted" xml:space="preserve">
     <value>نُشر التعليق (تجريبي)</value>
@@ -751,6 +1018,21 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>للقراءة فقط — تتغيّر الحالة في المصدر؛ هنا فقط الخطة/التثبيت الشخصي.</value>
   </data>
+  <data name="CalPrevMonth" xml:space="preserve">
+    <value>الشهر السابق</value>
+  </data>
+  <data name="CalNextMonth" xml:space="preserve">
+    <value>الشهر التالي</value>
+  </data>
+  <data name="CalToday" xml:space="preserve">
+    <value>اليوم</value>
+  </data>
+  <data name="CalOutside" xml:space="preserve">
+    <value>{0} عنصرًا في أشهر أخرى.</value>
+  </data>
+  <data name="CalOutsideAndUndated" xml:space="preserve">
+    <value>{0} عنصرًا في أشهر أخرى؛ و{1} بلا تاريخ ولا تظهر في التقويم أبدًا.</value>
+  </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>استحقاق المصدر</value>
   </data>
@@ -761,16 +1043,16 @@
     <value>جديد</value>
   </data>
   <data name="NewSelfTask" xml:space="preserve">
-    <value>مهمة لنفسي</value>
+    <value>إنشاء مهمة</value>
   </data>
   <data name="NewSelfTaskDesc" xml:space="preserve">
     <value>مهمة شخصية — تعيش في مركز العمل</value>
   </data>
   <data name="NewInSource" xml:space="preserve">
-    <value>إنشاء في مصدر</value>
+    <value>إنشاء في الوحدة المصدر</value>
   </data>
   <data name="NewInSourceDesc" xml:space="preserve">
-    <value>اختر وحدة، أنشئ في شاشتها</value>
+    <value>سجل خاص بالوحدة — يعيش في تلك الوحدة</value>
   </data>
   <data name="NewTaskTitlePlaceholder" xml:space="preserve">
     <value>عنوان المهمة…</value>
@@ -781,8 +1063,8 @@
   <data name="NewPickModule" xml:space="preserve">
     <value>اختر وحدة</value>
   </data>
-  <data name="NewOpenSource" xml:space="preserve">
-    <value>افتح في المصدر</value>
+  <data name="NewCreateInSource" xml:space="preserve">
+    <value>إنشاء في المصدر</value>
   </data>
   <data name="SelfSource" xml:space="preserve">
     <value>شخصي</value>
@@ -795,6 +1077,12 @@
   </data>
   <data name="ToastSelfTaskCreated" xml:space="preserve">
     <value>{0} · أُضيف إلى مهامي (تجريبي)</value>
+  </data>
+  <data name="ToastCommentPostedReal" xml:space="preserve">
+    <value>نُشر التعليق</value>
+  </data>
+  <data name="ToastSelfTaskCreatedReal" xml:space="preserve">
+    <value>{0} · أُضيف إلى مهامي</value>
   </data>
   <data name="ToastCreateInSource" xml:space="preserve">
     <value>سيُفتح الإنشاء في وحدة {0} (تجريبي)</value>
@@ -813,6 +1101,72 @@
   </data>
   <data name="GroupAll" xml:space="preserve">
     <value>كل المجموعات</value>
+  </data>
+  <data name="GroupUnnamed" xml:space="preserve">
+    <value>الطابور بلا اسم</value>
+  </data>
+  <data name="PoolUnassigned" xml:space="preserve">
+    <value>غير مُسند — في قائمة الانتظار</value>
+  </data>
+  <data name="ModuleFinance" xml:space="preserve">
+    <value>المالية</value>
+  </data>
+  <data name="ModuleTax" xml:space="preserve">
+    <value>الضرائب</value>
+  </data>
+  <data name="ModuleQuality" xml:space="preserve">
+    <value>الجودة</value>
+  </data>
+  <data name="ModuleMasterData" xml:space="preserve">
+    <value>البيانات الرئيسية</value>
+  </data>
+  <data name="ModuleIntegrationMonitoring" xml:space="preserve">
+    <value>مراقبة التكامل</value>
+  </data>
+  <data name="ModuleProjectGovernance" xml:space="preserve">
+    <value>حوكمة المشاريع</value>
+  </data>
+  <data name="ModuleWorkflow" xml:space="preserve">
+    <value>سير العمل</value>
+  </data>
+  <data name="ModuleIncident" xml:space="preserve">
+    <value>إدارة الحوادث</value>
+  </data>
+  <data name="ModuleWorkcenter" xml:space="preserve">
+    <value>مركز المهام</value>
+  </data>
+  <data name="ModuleTasks" xml:space="preserve">
+    <value>المهام</value>
+  </data>
+  <data name="ModuleEnterpriseStrategy" xml:space="preserve">
+    <value>الاستراتيجية المؤسسية</value>
+  </data>
+  <data name="ModuleDocumentation" xml:space="preserve">
+    <value>إدارة المستندات</value>
+  </data>
+  <data name="ModuleControlledDocuments" xml:space="preserve">
+    <value>المستندات الخاضعة للرقابة</value>
+  </data>
+  <data name="ModuleProcurement" xml:space="preserve">
+    <value>المشتريات</value>
+  </data>
+  <data name="ModuleSales" xml:space="preserve">
+    <value>المبيعات</value>
+  </data>
+  <data name="ModuleTreasury" xml:space="preserve">
+    <value>الخزينة</value>
+  </data>
+  <data name="ModuleHr" xml:space="preserve">
+    <value>الموارد البشرية</value>
+  </data>
+  <data name="ModuleLegal" xml:space="preserve">
+    <value>الشؤون القانونية</value>
+  </data>
+  <data name="ModuleCalendar" xml:space="preserve">
+    <value>التقويم</value>
+  </data>
+  <data name="ModuleLegacyAdapter" xml:space="preserve">
+    <value>محول الأنظمة القديمة</value>
   </data>
   <data name="FilterPriority" xml:space="preserve">
     <value>مرشح الأولوية</value>
@@ -900,4 +1254,931 @@
   <data name="ErrorTitle" xml:space="preserve"><value>تعذر تحميل مركز العمل</value></data>
   <data name="ErrorDesc" xml:space="preserve"><value>تم الاحتفاظ بعوامل التصفية. أعد المحاولة لتحميل مساحة العمل.</value></data>
   <data name="Retry" xml:space="preserve"><value>إعادة المحاولة</value></data>
+  <data name="NewNote" xml:space="preserve">
+    <value>ملاحظة سريعة</value>
+  </data>
+  <data name="NewMeeting" xml:space="preserve">
+    <value>جدولة اجتماع</value>
+  </data>
+  <data name="ChipAll" xml:space="preserve">
+    <value>الكل</value>
+  </data>
+  <data name="ChipPendingAccept" xml:space="preserve">
+    <value>في انتظار القبول</value>
+  </data>
+  <data name="ChipMeetingInvite" xml:space="preserve">
+    <value>دعوة اجتماع</value>
+  </data>
+  <data name="EmptyMeetingInviteTitle" xml:space="preserve">
+    <value>ليس لديك دعوات اجتماعات معلقة.</value>
+  </data>
+  <data name="EmptyMeetingInviteDesc" xml:space="preserve">
+    <value>ستظهر دعوات الاجتماعات الجديدة هنا.</value>
+  </data>
+  <data name="FilterWorkType" xml:space="preserve">
+    <value>نوع العمل</value>
+  </data>
+  <data name="FilterAllWorkTypes" xml:space="preserve">
+    <value>كل أنواع العمل</value>
+  </data>
+  <data name="SearchClear" xml:space="preserve">
+    <value>مسح البحث</value>
+  </data>
+  <data name="Apply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="Reset" xml:space="preserve"><value>إعادة تعيين</value></data>
+  <data name="SaveView" xml:space="preserve"><value>حفظ العرض</value></data>
+  <data name="DefaultViewName" xml:space="preserve"><value>افتراضي</value></data>
+  <data name="ViewSaved" xml:space="preserve"><value>تم حفظ العرض.</value></data>
+  <data name="ErrorOccurred" xml:space="preserve"><value>حدث خطأ.</value></data>
+  <data name="ExportLabel" xml:space="preserve">
+    <value>تصدير</value>
+  </data>
+  <data name="ApprovalContextTitle" xml:space="preserve"><value>سياق الموافقة</value></data>
+  <data name="ApprovalAmount" xml:space="preserve"><value>المبلغ</value></data>
+  <data name="ApprovalThreshold" xml:space="preserve"><value>حد الموافقة</value></data>
+  <data name="BudgetImpact" xml:space="preserve"><value>أثر الميزانية</value></data>
+  <data name="LineItemsTitle" xml:space="preserve"><value>بنود الطلب</value></data>
+  <data name="LineDescription" xml:space="preserve"><value>الوصف / الحساب</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="LineUnitPrice" xml:space="preserve"><value>سعر الوحدة</value></data>
+  <data name="ReviewContextTitle" xml:space="preserve"><value>حزمة المراجعة</value></data>
+  <data name="ReviewVersion" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="ReviewChecklistTitle" xml:space="preserve"><value>قائمة المراجعة</value></data>
+  <data name="ReviewCheckComplete" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="ReviewCheckPending" xml:space="preserve"><value>معلّق</value></data>
+  <data name="SignatureHistoryTitle" xml:space="preserve"><value>سجل التوقيع</value></data>
+  <data name="SignatureSigned" xml:space="preserve"><value>تم التوقيع</value></data>
+  <data name="SignaturePending" xml:space="preserve"><value>بانتظار التوقيع</value></data>
+  <data name="ExceptionContextTitle" xml:space="preserve"><value>تحليل الاستثناء</value></data>
+  <data name="DiscrepancyField" xml:space="preserve"><value>حقل الاختلاف</value></data>
+  <data name="ExpectedValue" xml:space="preserve"><value>المتوقع</value></data>
+  <data name="ActualValue" xml:space="preserve"><value>الفعلي</value></data>
+  <data name="DeltaPercent" xml:space="preserve"><value>الانحراف</value></data>
+  <data name="RootCause" xml:space="preserve"><value>السبب الجذري</value></data>
+  <data name="ResolutionOptions" xml:space="preserve"><value>خيارات الحل</value></data>
+  <data name="TaskContextTitle" xml:space="preserve"><value>تنفيذ العمل</value></data>
+  <data name="EffortSpent" xml:space="preserve"><value>الجهد المستخدم</value></data>
+  <data name="HoursShort" xml:space="preserve"><value>س</value></data>
+  <data name="AssignmentHistoryTitle" xml:space="preserve"><value>سجل الإسناد</value></data>
+  <data name="MeetingContextTitle" xml:space="preserve"><value>تفاصيل الاجتماع</value></data>
+  <data name="MeetingAgendaTitle" xml:space="preserve"><value>جدول الأعمال</value></data>
+  <data name="MeetingParticipantsTitle" xml:space="preserve"><value>المشاركون</value></data>
+  <data name="AttendanceAccepted" xml:space="preserve"><value>مقبول</value></data>
+  <data name="AttendancePending" xml:space="preserve"><value>بانتظار الرد</value></data>
+  <data name="AttendanceDeclined" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="ParticipantOrganizer" xml:space="preserve"><value>المنظّم</value></data>
+  <data name="ParticipantRequired" xml:space="preserve"><value>مطلوب</value></data>
+  <data name="ParticipantOptional" xml:space="preserve"><value>اختياري</value></data>
+  <data name="ApprovalChainTitle" xml:space="preserve"><value>مسار الموافقة</value></data>
+  <data name="ApprovalLevelValue" xml:space="preserve"><value>المستوى {0}</value></data>
+  <data name="ApprovalStatusApproved" xml:space="preserve"><value>تمت الموافقة</value></data>
+  <data name="ApprovalStatusPending" xml:space="preserve"><value>معلّق</value></data>
+  <data name="ApprovalStatusRejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="ConversationTitle" xml:space="preserve"><value>المحادثة</value></data>
+  <data name="RelatedRecordsTitle" xml:space="preserve"><value>السجلات المرتبطة</value></data>
+  <data name="RelatedTypeParent" xml:space="preserve"><value>أصل</value></data>
+  <data name="RelatedTypeChild" xml:space="preserve"><value>فرع</value></data>
+  <data name="RelatedTypeTransaction" xml:space="preserve"><value>معاملة</value></data>
+  <data name="RelatedTypeDocument" xml:space="preserve"><value>مستند</value></data>
+  <data name="ComplianceTitle" xml:space="preserve"><value>الامتثال والضوابط</value></data>
+  <data name="CompliancePolicy" xml:space="preserve"><value>السياسة</value></data>
+  <data name="ComplianceLimit" xml:space="preserve"><value>حد الموافقة</value></data>
+  <data name="ComplianceSoD" xml:space="preserve"><value>فصل المهام</value></data>
+  <data name="DelegationTitle" xml:space="preserve"><value>التفويض</value></data>
+  <data name="DelegationOnBehalf" xml:space="preserve"><value>نيابةً عن {0}</value></data>
+  <data name="DelegationDelegate" xml:space="preserve"><value>المفوّض إليه</value></data>
+  <data name="DetailTabsLabel" xml:space="preserve"><value>أقسام تفاصيل عنصر العمل</value></data>
+  <data name="DetailTabOverview" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="DetailTabProcess" xml:space="preserve"><value>العملية</value></data>
+  <data name="DetailTabCollaboration" xml:space="preserve"><value>التعاون والسجلات</value></data>
+  <data name="DetailPageTitle" xml:space="preserve"><value>تفاصيل عنصر العمل</value></data>
+  <data name="DetailItemNotFound" xml:space="preserve"><value>تعذر العثور على عنصر العمل المطلوب.</value></data>
+  <data name="DetailBackToList" xml:space="preserve"><value>العودة إلى مركز العمل</value></data>
+  <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>انتهت صلاحيتك على هذا العنصر.</value></data>
+  <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>لم يكتمل أحد الاعتماديات المطلوبة.</value></data>
+  <data name="ActionDisabledEvidenceIncomplete" xml:space="preserve"><value>الأدلة المطلوبة غير مكتملة.</value></data>
+  <data name="ActionDisabledReconciliationRequired" xml:space="preserve"><value>يلزم إجراء مطابقة مع المصدر.</value></data>
+  <data name="ActionDisabledSourceUnavailable" xml:space="preserve"><value>نظام المصدر غير متاح.</value></data>
+  <data name="ActionDisabledStaleProjection" xml:space="preserve"><value>حدّث سجل المصدر المتغير أولاً.</value></data>
+  <data name="ContextControlledDocument" xml:space="preserve"><value>مستند خاضع للرقابة</value></data>
+  <data name="ContextDecomposition" xml:space="preserve"><value>تفكيك الاستراتيجية</value></data>
+  <data name="ContextDemandIdea" xml:space="preserve"><value>فكرة طلب</value></data>
+  <data name="ContextObjective" xml:space="preserve"><value>هدف</value></data>
+  <data name="ContextPeriodicReview" xml:space="preserve"><value>مراجعة دورية</value></data>
+  <data name="DetailLifecycleOwner" xml:space="preserve"><value>مالك دورة الحياة</value></data>
+  <data name="EmptyBusinessContext" xml:space="preserve"><value>لم يتم توفير سياق أعمال.</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>الأدلة مفقودة</value></data>
+  <data name="FixtureChecklistVerify" xml:space="preserve"><value>تحقق من المعلومات المطلوبة</value></data>
+  <data name="FixtureDependencyContract" xml:space="preserve"><value>اعتمادية العقد</value></data>
+  <data name="FixtureDependencyValidation" xml:space="preserve"><value>اعتمادية التحقق</value></data>
+  <data name="FixtureInvalidDesc" xml:space="preserve"><value>بيانات الاختبار هذه لا تستوفي العقد القياسي.</value></data>
+  <data name="FixtureInvalidTitle" xml:space="preserve"><value>بيانات عنصر عمل غير صالحة</value></data>
+  <data name="LifecycleOpen" xml:space="preserve"><value>مفتوح</value></data>
+  <data name="LifecyclePlanned" xml:space="preserve"><value>مخطط</value></data>
+  <data name="MigrationAdaptedNotice" xml:space="preserve"><value>تم تكييف هذا المثال القديم لاختبار الترحيل.</value></data>
+  <data name="MigrationLegacyBlocker" xml:space="preserve"><value>عائق قديم</value></data>
+  <data name="MigrationLegacyInformationRequest" xml:space="preserve"><value>طلب معلومات قديم</value></data>
+  <data name="MigrationLegacyPendingApproval" xml:space="preserve"><value>موافقة قديمة معلقة</value></data>
+  <data name="NoticeChecklistNonBlocking" xml:space="preserve"><value>تحتوي قائمة التحقق على مشكلة غير مانعة.</value></data>
+  <data name="NoticeDueSoon" xml:space="preserve"><value>سيحين موعد هذا العنصر قريباً.</value></data>
+  <data name="NoticePendingReview" xml:space="preserve"><value>هذا العنصر بانتظار المراجعة.</value></data>
+  <data name="NoticePlanConflict" xml:space="preserve"><value>تتعارض الخطة الشخصية مع موعد المصدر.</value></data>
+  <data name="NoticeSnoozed" xml:space="preserve"><value>لقد أجّلت هذا العنصر.</value></data>
+  <data name="NoticeWaiting" xml:space="preserve"><value>هذا العنصر ينتظر مدخلات خارجية.</value></data>
+  <data name="NoticeWaitingExternal" xml:space="preserve"><value>تنتظر هذه المهمة معلومات من شخص آخر.</value></data>
+  <data name="NoticeWaitingApproval" xml:space="preserve"><value>تنتظر هذه المهمة قرار الموافقة.</value></data>
+  <data name="NoticeWaitingReview" xml:space="preserve"><value>تنتظر هذه المهمة المراجعة.</value></data>
+  <data name="NoticeWaitingMeeting" xml:space="preserve"><value>تنتظر هذه المهمة اجتماعًا.</value></data>
+  <data name="ProviderCommandRequired" xml:space="preserve"><value>يجب تنفيذ هذا التغيير لدى مزود المصدر.</value></data>
+  <data name="RedactedValue" xml:space="preserve"><value>مقيّد</value></data>
+  <data name="RelatedRecordOpen" xml:space="preserve"><value>فتح السجل المرتبط</value></data>
+  <data name="SourceProjectionRequested" xml:space="preserve"><value>تم طلب عرض مصدر محدث.</value></data>
+  <data name="TriggerOnlyLabel" xml:space="preserve"><value>الرد مطلوب</value></data>
+  <data name="TriggerResponsesLabel" xml:space="preserve"><value>طلبات الرد</value></data>
+  <data name="WaitingExpectedUntil" xml:space="preserve"><value>متوقع حتى</value></data>
+  <data name="ActionDisabledReviewMeetingRequired" xml:space="preserve"><value>يلزم عقد اجتماع مراجعة قبل الموافقة.</value></data>
+  <data name="InboxTitleTaskVendorVerification" xml:space="preserve"><value>تحقق من البيانات الرئيسية لمورد Arven Medical</value></data>
+  <data name="InboxTitleTaskVendorVerificationSummary" xml:space="preserve"><value>تحقق من صحة المعلومات الضريبية والمصرفية ومعلومات الاتصال.</value></data>
+  <data name="InboxTitleApprovalBudgetRevision" xml:space="preserve"><value>اعتماد مراجعة ميزانية مبيعات الربع الثالث</value></data>
+  <data name="InboxTitleApprovalBudgetRevisionSummary" xml:space="preserve"><value>راجع طلب ميزانية إضافية بقيمة 1.8 مليون ليرة.</value></data>
+  <data name="InboxTitleReviewOptionalMeeting" xml:space="preserve"><value>مراجعة إكمال CAPA-2231</value></data>
+  <data name="InboxTitleReviewOptionalMeetingSummary" xml:space="preserve"><value>وافق مباشرة أو حدد اجتماع مراجعة مع مسؤول المهمة.</value></data>
+  <data name="InboxTitleReviewRequiredMeeting" xml:space="preserve"><value>اعتماد إغلاق مهمة تحول Atlas</value></data>
+  <data name="InboxTitleReviewRequiredMeetingSummary" xml:space="preserve"><value>لا يمكن اعتماد هذه المهمة إلا بعد اجتماع المراجعة الإلزامي.</value></data>
+  <data name="InboxTitleIssueIntegrationFailure" xml:space="preserve"><value>عالج فشل نقل عملاء SAP</value></data>
+  <data name="InboxTitleIssueIntegrationFailureSummary" xml:space="preserve"><value>فشل التحقق من 47 سجل عميل أثناء النقل.</value></data>
+  <data name="InboxTitleExceptionVatMismatch" xml:space="preserve"><value>راجع فرق تسوية ضريبة القيمة المضافة لشهر يوليو</value></data>
+  <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>تم العثور على فرق قدره 84,750 ليرة مع دفتر الأستاذ العام.</value></data>
+  <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>اجتماع مراجعة ميزانية الربع الثالث</value></data>
+  <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 يوليو 2026، 14:00–15:00 · Teams · المنظم: Deniz Koç</value></data>
+  <data name="WorkAggregation_Title_Approval" xml:space="preserve">
+    <value>موافقة: {objectType} {objectId}</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
+    <value>بانتظار الموافقة</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_WaitingEvidence" xml:space="preserve">
+    <value>بانتظار الإثبات</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Escalated" xml:space="preserve">
+    <value>تمت التصعيد</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Approved" xml:space="preserve">
+    <value>تمت الموافقة</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Rejected" xml:space="preserve">
+    <value>مرفوض</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Cancelled" xml:space="preserve">
+    <value>ملغى</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_TimedOut" xml:space="preserve">
+    <value>انتهت المهلة</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Delegated" xml:space="preserve">
+    <value>تم التفويض</value>
+  </data>
+  <data name="WorkAggregation_Action_Approve" xml:space="preserve">
+    <value>موافقة</value>
+  </data>
+  <data name="WorkAggregation_Action_Reject" xml:space="preserve">
+    <value>رفض</value>
+  </data>
+  <data name="WorkAggregation_Action_RequestInfo" xml:space="preserve">
+    <value>طلب معلومات</value>
+  </data>
+  <data name="WorkAggregation_Action_Delegate" xml:space="preserve">
+    <value>تفويض</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_PermissionDenied" xml:space="preserve">
+    <value>ليس لديك إذن لتنفيذ هذا الإجراء.</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
+    <value>الإثبات المطلوب غير متوفر.</value>
+  </data>
+  <data name="NoAccessTitle" xml:space="preserve">
+    <value>ليس لديك حق الوصول إلى مركز المهام</value>
+  </data>
+  <data name="NoAccessDesc" xml:space="preserve">
+    <value>اطلب من المسؤول منحك حق الوصول إلى هذه الوحدة.</value>
+  </data>
+  <data name="SessionExpiredTitle" xml:space="preserve">
+    <value>انتهت صلاحية جلستك</value>
+  </data>
+  <data name="SessionExpiredDesc" xml:space="preserve">
+    <value>يرجى تسجيل الدخول مرة أخرى للمتابعة.</value>
+  </data>
+  <data name="UnavailableTitle" xml:space="preserve">
+    <value>مركز المهام غير متاح مؤقتًا</value>
+  </data>
+  <data name="UnavailableDesc" xml:space="preserve">
+    <value>تعذّر الوصول إلى الخدمة. تم الاحتفاظ بعوامل التصفية — حاول مرة أخرى.</value>
+  </data>
+  <data name="WorkAggregation_Action_Accept" xml:space="preserve">
+    <value>قبول</value>
+  </data>
+  <data name="WorkAggregation_Action_Claim" xml:space="preserve">
+    <value>استلام</value>
+  </data>
+  <data name="WorkAggregation_Action_Start" xml:space="preserve">
+    <value>بدء</value>
+  </data>
+  <data name="WorkAggregation_Action_Complete" xml:space="preserve">
+    <value>إكمال</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ApprovalPending" xml:space="preserve">
+    <value>في انتظار الموافقة — لا يمكن البدء بعد.</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Open" xml:space="preserve">
+    <value>مفتوح</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Planned" xml:space="preserve">
+    <value>مُخطط</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_InProgress" xml:space="preserve">
+    <value>قيد التنفيذ</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Waiting" xml:space="preserve">
+    <value>في الانتظار</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_PendingReview" xml:space="preserve">
+    <value>في انتظار المراجعة</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Done" xml:space="preserve">
+    <value>مكتمل</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Cancelled" xml:space="preserve">
+    <value>ملغى</value>
+  </data>
+  <data name="WorkAggregation_Action_Plan" xml:space="preserve">
+    <value>جدولة</value>
+  </data>
+  <data name="WorkAggregation_Action_Release" xml:space="preserve">
+    <value>إطلاق</value>
+  </data>
+  <data name="WorkAggregation_Action_Resume" xml:space="preserve">
+    <value>استئناف</value>
+  </data>
+  <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
+    <value>في انتظار…</value>
+  </data>
+  <data name="WorkAggregation_Action_Return" xml:space="preserve">
+    <value>إعادة</value>
+  </data>
+  <data name="WorkAggregation_Action_Reassign" xml:space="preserve">
+    <value>إعادة إسناد</value>
+  </data>
+  <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
+    <value>إلغاء المهمة</value>
+  </data>
+  <data name="ToastActionApplied" xml:space="preserve">
+    <value>{1} — تم تنفيذ «{0}»</value>
+  </data>
+  <data name="ErrorConcurrencyRefreshed" xml:space="preserve">
+    <value>تغيّرت هذه المهمة أثناء عملك عليها. تم تحديث القائمة — يرجى المحاولة مرة أخرى.</value>
+  </data>
+  <data name="PersonSelf" xml:space="preserve">
+    <value>أنا</value>
+  </data>
+  <data name="PersonNameUnavailable" xml:space="preserve">
+    <value>الاسم غير متوفر</value>
+  </data>
+  <data name="PlannedDateNone" xml:space="preserve">
+    <value>غير مُخطط</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ChecklistIncomplete" xml:space="preserve">
+    <value>لا يزال هناك عنصر إلزامي في قائمة التحقق غير مكتمل.</value>
+  </data>
+  <data name="WorkAggregation_BusinessContext_Unfiled" xml:space="preserve">
+    <value>معلومات أخرى</value>
+  </data>
+  <data name="WorkAggregation_BusinessContext_UnknownField" xml:space="preserve">
+    <value>حقل مسحوب</value>
+  </data>
+  <data name="WorkAggregation_Action_SubmitReview" xml:space="preserve">
+    <value>إرسال للمراجعة</value>
+  </data>
+  <data name="WorkAggregation_ReviewError_StartFailed" xml:space="preserve">
+    <value>تعذّر بدء المراجعة. لا أحد في الانتظار — أعد المحاولة.</value>
+  </data>
+  <data name="WorkAggregation_ReviewError_ReviewerRequired" xml:space="preserve">
+    <value>يجب تحديد مراجع عند طلب مراجعة.</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewPending" xml:space="preserve">
+    <value>لدى المراجع — لا يمكن إكمالها بعد.</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ApprovalPendingComplete" xml:space="preserve">
+    <value>في انتظار الموافقة — لا يمكن الإكمال بعد.</value>
+  </data>
+  <data name="WorkAggregation_ApprovalError_StartFailed" xml:space="preserve">
+    <value>تعذّر بدء عملية الموافقة.</value>
+  </data>
+  <data name="ChecklistEmpty" xml:space="preserve">
+    <value>لا توجد عناصر في قائمة التحقق بعد.</value>
+  </data>
+  <data name="ChecklistAddPlaceholder" xml:space="preserve">
+    <value>اكتب بندًا واضغط Enter</value>
+  </data>
+  <data name="ChecklistLevelOptional" xml:space="preserve">
+    <value>اختياري</value>
+  </data>
+  <data name="ChecklistLevelRequired" xml:space="preserve">
+    <value>متوقَّع</value>
+  </data>
+  <data name="ChecklistLevelBlocking" xml:space="preserve">
+    <value>مانع</value>
+  </data>
+  <data name="ChecklistRequiredOpen" xml:space="preserve">
+    <value>{0} بند متوقَّع ما زال مفتوحًا</value>
+  </data>
+  <data name="ConfirmRequiredOpen" xml:space="preserve">
+    <value>{0} بند إلزامي غير مُعلَّم. ستُغلق المهمة على أي حال.</value>
+  </data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve">
+    <value>يلزم مستند إثبات. سيصبح ربط المستند فعّالًا عند توصيل وحدة المستندات.</value>
+  </data>
+  <data name="ChecklistLevelHint" xml:space="preserve">
+    <value>تغيير المستوى: اختياري ← متوقَّع ← مانع</value>
+  </data>
+  <data name="ChecklistLevelReadOnly" xml:space="preserve">
+    <value>المستوى — لا يمكن تغييره إلا لمن أضاف هذا البند</value>
+  </data>
+  <data name="ChecklistEvidenceMark" xml:space="preserve">
+    <value>مطلوب إثبات</value>
+  </data>
+  <data name="ToastChecklistItemAdded" xml:space="preserve">
+    <value>أُضيف البند</value>
+  </data>
+  <data name="GuidancePendingAcceptance" xml:space="preserve">
+    <value>تنتظر هذه المهمة قبولك. تولَّها، أو أعد إسنادها إن لم تكن لك.</value>
+  </data>
+  <data name="GuidanceChildrenRunning" xml:space="preserve">
+    <value>‏{0} مهام فرعية قيد التنفيذ بالفعل.</value>
+  </data>
+  <data name="GuidancePendingClaim" xml:space="preserve">
+    <value>هذه المهمة في التجمّع. تولَّها لتصبح لك.</value>
+  </data>
+  <data name="GuidanceApprovalPending" xml:space="preserve">
+    <value>قرار الموافقة معلّق؛ لا يمكن البدء بعد.</value>
+  </data>
+  <data name="GuidanceReviewPending" xml:space="preserve">
+    <value>المهمة لدى المراجع؛ لا شيء لفعله حتى يردّ.</value>
+  </data>
+  <data name="GuidanceWaiting" xml:space="preserve">
+    <value>هذه المهمة متوقفة مؤقتًا، في انتظار شخص آخر.</value>
+  </data>
+  <data name="GuidanceWaitingBecause" xml:space="preserve">
+    <value>هذه المهمة متوقفة مؤقتًا: {0}</value>
+  </data>
+  <data name="SubtaskAddDetailed" xml:space="preserve">
+    <value>+ إضافة مهمة بالتفصيل</value>
+  </data>
+  <data name="SubtaskCreateTitle" xml:space="preserve">
+    <value>مهمة فرعية جديدة</value>
+  </data>
+  <data name="SubtaskCreateSubmit" xml:space="preserve">
+    <value>إنشاء المهمة الفرعية</value>
+  </data>
+  <data name="SubtaskCreateParentFixed" xml:space="preserve">
+    <value>ستُنشأ ضمن المهمة التي تعرضها.</value>
+  </data>
+  <data name="SubtaskAssignToMe" xml:space="preserve">
+    <value>أنا</value>
+  </data>
+  <data name="SubtaskFieldPriority" xml:space="preserve">
+    <value>الأولوية</value>
+  </data>
+  <data name="SubtaskFieldDescription" xml:space="preserve">
+    <value>الوصف</value>
+  </data>
+  <data name="SubtaskCancel" xml:space="preserve">
+    <value>إلغاء المهمة الفرعية</value>
+  </data>
+  <data name="SubtaskCancelAria" xml:space="preserve">
+    <value>إلغاء المهمة الفرعية: {0}</value>
+  </data>
+  <data name="SubtaskCancelConfirm" xml:space="preserve">
+    <value>إلغاء المهمة الفرعية «{0}»؟ ستبقى في السجل ولن تعود عملًا مطلوبًا.</value>
+  </data>
+  <data name="SubtaskCancelConfirmYes" xml:space="preserve">
+    <value>ألغِها</value>
+  </data>
+  <data name="ToastSubtaskCompleted" xml:space="preserve">
+    <value>اكتملت المهمة الفرعية: {0}</value>
+  </data>
+  <data name="ToastSubtaskCancelled" xml:space="preserve">
+    <value>أُلغيت المهمة الفرعية: {0}</value>
+  </data>
+  <data name="SubtaskSave" xml:space="preserve">
+    <value>حفظ</value>
+  </data>
+  <data name="SubtaskSaved" xml:space="preserve">
+    <value>تم حفظ المهمة الفرعية.</value>
+  </data>
+  <data name="SubtaskQuickEditTitle" xml:space="preserve">
+    <value>تحرير سريع</value>
+  </data>
+  <data name="SubtaskFieldTitle" xml:space="preserve">
+    <value>العنوان</value>
+  </data>
+  <data name="SubtaskFieldDue" xml:space="preserve">
+    <value>تاريخ الاستحقاق</value>
+  </data>
+  <data name="SubtaskFieldAssignee" xml:space="preserve">
+    <value>المُسنَدة إليه</value>
+  </data>
+  <data name="SubtaskFieldStatus" xml:space="preserve">
+    <value>الحالة</value>
+  </data>
+  <data name="SubtaskNoAssignee" xml:space="preserve">
+    <value>لا أحد بعد</value>
+  </data>
+  <data name="SubtaskOpenFullDetail" xml:space="preserve">
+    <value>فتح التفاصيل الكاملة</value>
+  </data>
+  <data name="SubtaskQuickEditScope" xml:space="preserve">
+    <value>يُغيَّر المُسنَد إليه والحالة من التفاصيل الكاملة، حيث تُطبَّق قواعدهما.</value>
+  </data>
+  <data name="ActionsAvailable" xml:space="preserve">
+    <value>الإجراءات المتاحة</value>
+  </data>
+  <data name="ActionSubmitting" xml:space="preserve">
+    <value>جارٍ التنفيذ…</value>
+  </data>
+  <data name="ActionsNoneClosed" xml:space="preserve">
+    <value>أُغلقت هذه المهمة؛ لم يعد هناك ما يمكن فعله هنا.</value>
+  </data>
+  <data name="ActionsNoneNotYours" xml:space="preserve">
+    <value>لا توجد لديك إجراءات على هذه المهمة حاليًا.</value>
+  </data>
+  <data name="ActionsOther" xml:space="preserve">
+    <value>إجراءات أخرى</value>
+  </data>
+  <data name="StepApproval" xml:space="preserve">
+    <value>الموافقة</value>
+  </data>
+  <data name="StepOpen" xml:space="preserve">
+    <value>مفتوحة</value>
+  </data>
+  <data name="StepPaused" xml:space="preserve">
+    <value>متوقفة مؤقتًا حاليًا</value>
+  </data>
+  <data name="StepPausedBecause" xml:space="preserve">
+    <value>متوقفة مؤقتًا حاليًا: {0}</value>
+  </data>
+  <data name="OutcomeAccept" xml:space="preserve">
+    <value>تتولّى المهمة وتنقلها إلى «مفتوحة»</value>
+  </data>
+  <data name="OutcomeClaim" xml:space="preserve">
+    <value>تُخرج المهمة من التجمّع وتُسندها إليك</value>
+  </data>
+  <data name="OutcomeRelease" xml:space="preserve">
+    <value>تُعيد المهمة إلى التجمّع</value>
+  </data>
+  <data name="OutcomePlan" xml:space="preserve">
+    <value>تحدّد تاريخك المخطط؛ ولا يتغير الموعد النهائي</value>
+  </data>
+  <data name="OutcomeStart" xml:space="preserve">
+    <value>تنقل المهمة إلى «قيد التنفيذ»</value>
+  </data>
+  <data name="OutcomeInquire" xml:space="preserve">
+    <value>توقف المهمة مؤقتًا وتنقلها إلى «قيد الانتظار»</value>
+  </data>
+  <data name="OutcomeReturn" xml:space="preserve">
+    <value>تُعيد المهمة إلى مَن طلبها</value>
+  </data>
+  <data name="OutcomeReassign" xml:space="preserve">
+    <value>تُسلّم المهمة إلى شخص آخر دون قبول</value>
+  </data>
+  <data name="OutcomeComplete" xml:space="preserve">
+    <value>تُنهي المهمة وتنقلها إلى «مكتملة»</value>
+  </data>
+  <data name="OutcomeCancel" xml:space="preserve">
+    <value>تُلغي المهمة بالكامل، وتُلغى معها المهام الفرعية المفتوحة</value>
+  </data>
+  <data name="GatesLabel" xml:space="preserve">
+    <value>البوابات</value>
+  </data>
+  <data name="GateApproval" xml:space="preserve">
+    <value>الموافقة</value>
+  </data>
+  <data name="GateReview" xml:space="preserve">
+    <value>المراجعة</value>
+  </data>
+  <data name="GateStatusNotRequired" xml:space="preserve">
+    <value>غير مطلوبة</value>
+  </data>
+  <data name="GateStatusRequired" xml:space="preserve">
+    <value>مطلوبة</value>
+  </data>
+  <data name="GateStatusPending" xml:space="preserve">
+    <value>في انتظار القرار</value>
+  </data>
+  <data name="GateStatusApproved" xml:space="preserve">
+    <value>تمت الموافقة</value>
+  </data>
+  <data name="GateStatusRejected" xml:space="preserve">
+    <value>مرفوضة</value>
+  </data>
+  <data name="SubtaskStatusCancelled" xml:space="preserve">
+    <value>مُلغاة</value>
+  </data>
+  <data name="BreadcrumbLabel" xml:space="preserve">
+    <value>مسار التنقل</value>
+  </data>
+  <data name="SubtaskStatusDone" xml:space="preserve">
+    <value>مكتملة</value>
+  </data>
+  <data name="SubtaskStatusInProgress" xml:space="preserve">
+    <value>قيد التنفيذ</value>
+  </data>
+  <data name="SubtaskStatusNotStarted" xml:space="preserve">
+    <value>لم تبدأ</value>
+  </data>
+  <data name="ChecklistBlocksCompletion" xml:space="preserve">
+    <value>يجب إنهاء هذه القائمة قبل إتمام المهمة.</value>
+  </data>
+  <data name="ChecklistDoesNotBlock" xml:space="preserve">
+    <value>هذه القائمة إرشادية ولا تمنع إتمام المهمة.</value>
+  </data>
+  <data name="ActivityEmpty" xml:space="preserve">
+    <value>لا يوجد نشاط مسجَّل بعد.</value>
+  </data>
+  <data name="AuditEventCreated" xml:space="preserve">
+    <value>أُنشئت المهمة</value>
+  </data>
+  <data name="AuditEventAccepted" xml:space="preserve">
+    <value>قُبلت المهمة</value>
+  </data>
+  <data name="AuditEventPlanned" xml:space="preserve">
+    <value>خُطِّطت المهمة</value>
+  </data>
+  <data name="AuditEventStarted" xml:space="preserve">
+    <value>بدأ العمل</value>
+  </data>
+  <data name="AuditEventResumed" xml:space="preserve">
+    <value>استُؤنف العمل</value>
+  </data>
+  <data name="AuditEventWaiting" xml:space="preserve">
+    <value>وُضعت قيد الانتظار</value>
+  </data>
+  <data name="AuditEventSubmittedForReview" xml:space="preserve">
+    <value>أُرسلت للمراجعة</value>
+  </data>
+  <data name="AuditEventReviewCancelled" xml:space="preserve">
+    <value>أُلغي شرط المراجعة</value>
+  </data>
+  <data name="AuditEventCompleted" xml:space="preserve">
+    <value>اكتملت</value>
+  </data>
+  <data name="AuditEventCancelled" xml:space="preserve">
+    <value>أُلغيت</value>
+  </data>
+  <data name="AuditEventClaimed" xml:space="preserve">
+    <value>أُخذت من المجمّع</value>
+  </data>
+  <data name="AuditEventReleased" xml:space="preserve">
+    <value>أُعيدت إلى المجمّع</value>
+  </data>
+  <data name="AuditEventReassigned" xml:space="preserve">
+    <value>أُعيد إسنادها</value>
+  </data>
+  <data name="AuditEventReturned" xml:space="preserve">
+    <value>أُعيدت إلى طالبها</value>
+  </data>
+  <data name="AuditEventUnknown" xml:space="preserve">
+    <value>حُدِّثت المهمة</value>
+  </data>
+  <data name="ActivityFilterLabel" xml:space="preserve">
+    <value>تصفية النشاط</value>
+  </data>
+  <data name="ActivityFilterAll" xml:space="preserve">
+    <value>الكل</value>
+  </data>
+  <data name="ActivityFilterCommentsOnly" xml:space="preserve">
+    <value>التعليقات فقط</value>
+  </data>
+  <data name="ActivityNoComments" xml:space="preserve">
+    <value>لا توجد تعليقات على هذه المهمة بعد.</value>
+  </data>
+  <data name="ActivityHistoryStartsHere" xml:space="preserve">
+    <value>الخطوات التي مرّت بها هذه المهمة قبل بدء التسجيل غير مسجّلة.</value>
+  </data>
+  <data name="SubtasksEmpty" xml:space="preserve">
+    <value>لا توجد مهام فرعية بعد.</value>
+  </data>
+  <data name="SubtasksBlockingNotice" xml:space="preserve">
+    <value>يجب إغلاق {0} مهمة فرعية مفتوحة قبل إكمال هذه المهمة</value>
+  </data>
+  <data name="BlockerSubtaskOpen" xml:space="preserve">
+    <value>لا يمكن الإكمال قبل إغلاق المهمة الفرعية «{0}»</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
+    <value>ما تزال إحدى المهام الفرعية مفتوحة</value>
+  </data>
+  <data name="ToastChecklistUpdated" xml:space="preserve">
+    <value>تم تحديث قائمة التحقق.</value>
+  </data>
+  <data name="ToastSubtaskAdded" xml:space="preserve">
+    <value>تمت إضافة المهمة الفرعية «{0}».</value>
+  </data>
+  <data name="SubtaskTitleRequired" xml:space="preserve">
+    <value>أدخل عنوانًا للمهمة الفرعية.</value>
+  </data>
+  <!-- DEAD (2026-08-14): the parent-task notice became a Summary FIELD, whose label is `DetailParentTask`
+       and whose value is the parent's own title as a link. "{0} görevinin alt görevi" wrapped the title in
+       a sentence, which a labelled field does not need. Kept rather than deleted — a removed key is
+       invisible to the next reader. `SubtaskOfUnnamed` is still live: it is the honest fallback when the
+       reader cannot see the parent. -->
+  <data name="SubtaskOfNamed" xml:space="preserve">
+    <value>مهمة فرعية لـ «{0}»</value>
+  </data>
+  <data name="SubtaskOfUnnamed" xml:space="preserve">
+    <value>مهمة فرعية لمهمة أخرى</value>
+  </data>
+  <data name="SubtaskOpenAria" xml:space="preserve">
+    <value>فتح المهمة الفرعية «{0}»</value>
+  </data>
+  <data name="HavuzTitleInvoiceMatch" xml:space="preserve">
+    <value>مطابقة الفاتورة الواردة</value>
+  </data>
+  <data name="HavuzTitleInvoiceMatchSummary" xml:space="preserve">
+    <value>طابق فاتورة مورد غير مسواة في قائمة المحاسبة مع أمر الشراء الخاص بها.</value>
+  </data>
+  <data name="HavuzTitlePrReview" xml:space="preserve">
+    <value>مراجعة أولية لطلب الشراء</value>
+  </data>
+  <data name="HavuzTitlePrReviewSummary" xml:space="preserve">
+    <value>راجع مبدئيًا طلب شراء في قائمة المراجعة من حيث الميزانية وأهلية المورد.</value>
+  </data>
+  <data name="HavuzTitleAuditFinding" xml:space="preserve">
+    <value>مراجعة نتيجة التدقيق</value>
+  </data>
+  <data name="HavuzTitleAuditFindingSummary" xml:space="preserve">
+    <value>عُرضت عليك نتيجة تدقيق جودة لمراجعتها.</value>
+  </data>
+  <data name="GecmisTitleQ1Close" xml:space="preserve">
+    <value>إقفال فترة الربع الأول 2026</value>
+  </data>
+  <data name="GecmisTitleQ1CloseSummary" xml:space="preserve">
+    <value>إقفال التوحيد للربع الأول 2026 — اكتملت جميع تسويات الوحدات.</value>
+  </data>
+  <data name="GecmisTitleSupplierContract" xml:space="preserve">
+    <value>الموافقة على العقد الإطاري للمورد</value>
+  </data>
+  <data name="GecmisTitleSupplierContractSummary" xml:space="preserve">
+    <value>تمت الموافقة على شروط العقد الإطاري للمورد وأُحيلت إلى المشتريات.</value>
+  </data>
+  <data name="GecmisTitleReportTemplate" xml:space="preserve">
+    <value>مراجعة قالب التقارير القديم</value>
+  </data>
+  <data name="GecmisTitleReportTemplateSummary" xml:space="preserve">
+    <value>أُلغيت مراجعة القالب القديم بعد إطلاق وحدة التقارير الجديدة.</value>
+  </data>
+  <data name="GecmisChkReconcile" xml:space="preserve">
+    <value>إكمال تسويات الوحدات</value>
+  </data>
+  <data name="GecmisChkReview" xml:space="preserve">
+    <value>مراجعة حزمة الإقفال</value>
+  </data>
+  <data name="GecmisChkPublish" xml:space="preserve">
+    <value>نشر النتائج</value>
+  </data>
+  <data name="ReassignAssigneeLabel" xml:space="preserve">
+    <value>المكلَّف الجديد</value>
+  </data>
+  <data name="ReassignAssigneePlaceholder" xml:space="preserve">
+    <value>اختر شخصًا</value>
+  </data>
+  <data name="ReassignAssigneeRequired" xml:space="preserve">
+    <value>اختر الشخص الذي ستُسلَّم إليه هذه المهمة.</value>
+  </data>
+  <data name="ReassignNoAssignableUsers" xml:space="preserve">
+    <value>لا يوجد شخص يمكن تسليم هذه المهمة إليه.</value>
+  </data>
+  <data name="CopyReference" xml:space="preserve">
+    <value>نسخ المرجع</value>
+  </data>
+  <data name="ReferenceCopied" xml:space="preserve">
+    <value>تم نسخ المرجع</value>
+  </data>
+  <data name="ReferenceCopyFailed" xml:space="preserve">
+    <value>تعذّر نسخ المرجع</value>
+  </data>
+  <data name="ChecklistMoveUp" xml:space="preserve">
+    <value>تحريك لأعلى</value>
+  </data>
+  <data name="ChecklistMoveDown" xml:space="preserve">
+    <value>تحريك لأسفل</value>
+  </data>
+  <data name="ChecklistEvidenceToggle" xml:space="preserve">
+    <value>يتطلب إثباتًا</value>
+  </data>
+  <data name="ChecklistRemove" xml:space="preserve">
+    <value>إزالة البند</value>
+  </data>
+  <data name="ChecklistAddButton" xml:space="preserve">
+    <value>إضافة</value>
+  </data>
+  <data name="ChecklistAddHint" xml:space="preserve">
+    <value>انقر على الوسم لتغيير المستوى. لا توجد قائمة قوالب بعد.</value>
+  </data>
+  <data name="NoteAddButton" xml:space="preserve">
+    <value>إضافة</value>
+  </data>
+  <data name="NoteAddHint" xml:space="preserve">
+    <value>هذه الملاحظات تراها أنت فقط.</value>
+  </data>
+  <data name="NoteRemove" xml:space="preserve">
+    <value>حذف الملاحظة</value>
+  </data>
+  <data name="ToastNoteRemoved" xml:space="preserve">
+    <value>حُذفت الملاحظة الشخصية</value>
+  </data>
+  <data name="DetailPlannedDate" xml:space="preserve">
+    <value>التاريخ المخطط</value>
+  </data>
+  <data name="SnoozedLabel" xml:space="preserve">
+    <value>مؤجل</value>
+  </data>
+  <data name="SnoozeClear" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+  <data name="NoteWrittenAt" xml:space="preserve">
+    <value>كُتبت في {0}</value>
+  </data>
+  <data name="DetailParentTask" xml:space="preserve">
+    <value>المهمة الأصل</value>
+  </data>
+  <data name="CommentEdited" xml:space="preserve">
+    <value>مُعدّل</value>
+  </data>
+  <data name="CommentWithdrawn" xml:space="preserve">
+    <value>سحب الكاتب هذا التعليق.</value>
+  </data>
+  <data name="CommentEdit" xml:space="preserve">
+    <value>تعديل التعليق</value>
+  </data>
+  <data name="CommentEditSave" xml:space="preserve">
+    <value>حفظ</value>
+  </data>
+  <data name="CommentEditLabel" xml:space="preserve">
+    <value>التعليق</value>
+  </data>
+  <data name="CommentWithdraw" xml:space="preserve">
+    <value>سحب التعليق</value>
+  </data>
+  <data name="CommentWithdrawConfirm" xml:space="preserve">
+    <value>يُحذف النص؛ وتبقى مكانه علامة تفيد بأنه سُحب.</value>
+  </data>
+  <data name="ToastCommentEdited" xml:space="preserve">
+    <value>عُدّل التعليق</value>
+  </data>
+  <data name="ToastCommentWithdrawn" xml:space="preserve">
+    <value>سُحب التعليق</value>
+  </data>
+  <data name="WaitingOnWithReason" xml:space="preserve">
+    <value>بانتظار {0} — {1}</value>
+  </data>
+  <data name="WaitingOnLabel" xml:space="preserve">
+    <value>مَن يُنتظَر؟ (اختياري)</value>
+  </data>
+  <data name="WaitingOnNobody" xml:space="preserve">
+    <value>لا أحد بعينه</value>
+  </data>
+  <data name="AuditEventEdited" xml:space="preserve">
+    <value>تغيّرت الحقول</value>
+  </data>
+  <data name="AuditFieldChangeValued" xml:space="preserve">
+    <value>{0}: {1} ← {2}</value>
+  </data>
+  <data name="AuditFieldChangeNamed" xml:space="preserve">
+    <value>تغيّر {0}</value>
+  </data>
+  <data name="AuditFieldHidden" xml:space="preserve">
+    <value>أحد الحقول</value>
+  </data>
+  <data name="AuditFieldEmpty" xml:space="preserve">
+    <value>فارغ</value>
+  </data>
+  <data name="AuditFieldDueAt" xml:space="preserve">
+    <value>تاريخ الاستحقاق</value>
+  </data>
+  <data name="AuditFieldStartAt" xml:space="preserve">
+    <value>تاريخ البدء</value>
+  </data>
+  <data name="AuditFieldPlannedDate" xml:space="preserve">
+    <value>التاريخ المخطط</value>
+  </data>
+  <data name="AuditFieldPriority" xml:space="preserve">
+    <value>الأولوية</value>
+  </data>
+  <data name="AuditFieldAssignee" xml:space="preserve">
+    <value>المسؤول</value>
+  </data>
+  <data name="AuditFieldTitle" xml:space="preserve">
+    <value>العنوان</value>
+  </data>
+  <data name="AuditFieldDescription" xml:space="preserve">
+    <value>الوصف</value>
+  </data>
+  <data name="AuditFieldEstimateHours" xml:space="preserve">
+    <value>المدة التقديرية</value>
+  </data>
+  <data name="AuditFieldTags" xml:space="preserve">
+    <value>الوسوم</value>
+  </data>
+  <data name="DetailWatchers" xml:space="preserve">
+    <value>المتابعون</value>
+  </data>
+  <data name="WatcherRoleConsultant" xml:space="preserve">
+    <value>مستشار</value>
+  </data>
+  <data name="DetailNotifications" xml:space="preserve">
+    <value>الإشعارات</value>
+  </data>
+  <data name="NotificationsOff" xml:space="preserve">
+    <value>البريد متوقف</value>
+  </data>
+  <data name="NotificationsOn" xml:space="preserve">
+    <value>البريد مفعّل · {0}</value>
+  </data>
+  <data name="NotificationsOnWithReminder" xml:space="preserve">
+    <value>البريد مفعّل · {0} · يذكّر قبل {1} أيام من تاريخ الاستحقاق</value>
+  </data>
+  <data name="NotificationsAllEvents" xml:space="preserve">
+    <value>لكل الأحداث</value>
+  </data>
+  <data name="NotificationsNoEvents" xml:space="preserve">
+    <value>لا أحداث محددة</value>
+  </data>
+  <data name="NotificationsSomeEvents" xml:space="preserve">
+    <value>لـ {0} أحداث</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_DelegationNotAllowed" xml:space="preserve">
+    <value>لا يمكن تفويض هذه المهمة.</value>
+  </data>
+  <data name="SnoozeTitle" xml:space="preserve">
+    <value>تأجيل هذه المهمة</value>
+  </data>
+  <data name="SnoozeSubtext" xml:space="preserve">
+    <value>تحتفظ المهمة بحالتها، ولا يتغيّر تاريخ استحقاقها، ولا يرى مقدّم الطلب أي شيء. التأجيل علامة لك وحدك.</value>
+  </data>
+  <data name="SnoozeUntilLabel" xml:space="preserve">
+    <value>حتى أي تاريخ</value>
+  </data>
+  <data name="DialogDismiss" xml:space="preserve">
+    <value>تراجع</value>
+  </data>
+  <data name="SnoozeDatePlaceholder" xml:space="preserve">
+    <value>YYYY-MM-DD</value>
+  </data>
+  <data name="SignalSnoozed" xml:space="preserve">
+    <value>مؤجَّلة</value>
+  </data>
+  <data name="PartialBoardBanner" xml:space="preserve">
+    <value>لم تستجب بعض المصادر — قد تكون هذه القائمة غير مكتملة.</value>
+  </data>
+  <data name="PartialCountHint" xml:space="preserve">
+    <value>لم تستجب بعض المصادر، لذا قد يكون هذا العدد غير مكتمل.</value>
+  </data>
+  <data name="SourceUnavailableTimeout" xml:space="preserve">
+    <value>لم يستجب في الوقت المحدد</value>
+  </data>
+  <data name="SourceUnavailableError" xml:space="preserve">
+    <value>أرجع خطأ</value>
+  </data>
+  <data name="SourceUnavailableUnsupportedVersion" xml:space="preserve">
+    <value>يعلن عن إصدار عقد غير مدعوم</value>
+  </data>
+  <data name="SourceUnavailableUnknown" xml:space="preserve">
+    <value>غير متاح، والسبب غير معروف</value>
+  </data>
+  <data name="EmptyPartialBoardTitle" xml:space="preserve">
+    <value>تعذّر استكمال هذه القائمة</value>
+  </data>
+  <data name="EmptyPartialBoardDesc" xml:space="preserve">
+    <value>لم يستجب مصدر واحد على الأقل، لذا فإن ما يظهر هنا ليس الصورة الكاملة. أعد المحاولة بعد قليل.</value>
+  </data>
+  <data name="ErrorCommentTextInvalid" xml:space="preserve">
+    <value>لا يمكن أن يكون التعليق فارغًا.</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>نعم</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>لا</value>
+  </data>
+  <data name="BannerStale" xml:space="preserve">
+    <value>تغيّر السجل المصدر بعد آخر قراءة لهذا العنصر.</value>
+  </data>
+  <data name="BannerSourceUnavailable" xml:space="preserve">
+    <value>تعذّر الوصول إلى الوحدة المصدر في الوقت الحالي.</value>
+  </data>
+  <data name="BannerAuthorityEnded" xml:space="preserve">
+    <value>انتهت صلاحيتك على هذا العنصر.</value>
+  </data>
+  <data name="BannerReconciliationRequired" xml:space="preserve">
+    <value>مطلوب تسوية مع المصدر.</value>
+  </data>
 </root>

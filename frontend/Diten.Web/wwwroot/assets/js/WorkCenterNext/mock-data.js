@@ -1,512 +1,637 @@
 'use strict';
 
 /*
- * WorkCenterNext ("Görev Merkezi") — mock data + SOURCE-AGNOSTIC work-item
- * contract (spec v3). Frontend-only, zero backend.
- *
- * v3 CLEAN REBUILD — the axis law (Fable/ChatGPT/Gemini convergence):
- *   OWNERSHIP → tab · STATUS → segment (in-tab) · TYPE → filter chip.
- *
- *   tabFor() keys ONLY off ownership (accepted/claimed/done) — a status change
- *   (snooze / waiting-on / blocked) keeps the item in the SAME tab and just moves
- *   its segment. Tabs change only on ownership change (accept→İşlerim,
- *   complete→Geçmiş, release→Havuz). No cross-tab teleporting.
- *
- * Depth restored (old WorkCenter's strength) as capability-declared data:
- *   stages · planning · execution · timeTracking · checklist · subtasks(full|
- *   readonly) · dependencies(typed FS/FF/SS/SF, readonly) · activity · attachments.
- *   Rule: do-the-work in the aggregator, define-the-work in the source (deep-link).
- *   Typed dependencies are readonly AND feed blockedState (FS+unfinished →
- *   hard-block; SS+not-started → block).
+ * WorkCenterNext mock catalog facade.
+ * Canonical truth lives in fixtures/*. This file only supplies collection/list
+ * presentation fields required by the existing WorkCenterNext shell.
  */
 (function (global) {
-    const TODAY_ISO = '2026-07-11';
-    const TODAY = new Date(TODAY_ISO + 'T09:00:00');
-
-    const CURRENT_USER = { name: 'Selin Aras', title: 'Operations PMO Lead' };
-    const ON_BEHALF_OF = { name: 'Deniz Koç', title: 'Finance Controller' };
-    // N-way scoped delegation (spec v3 §6) — Selin covers two people while they're out.
+    // The day the SHOWCASE fixtures are authored against. Their due dates are written relative to it, so the demo
+    // catalogue only reads correctly when measured from here. It is NOT the clock for real work — see referenceDate.
+    const SHOWCASE_TODAY_ISO = '2026-07-24';
+    const SHOWCASE_TODAY = new Date(SHOWCASE_TODAY_ISO + 'T09:00:00+03:00');
+    /*
+     * The clock, split by provenance.
+     *
+     * Real items must be measured from the REAL today. Measuring them from the fixture reference day is what made
+     * every real due date read two days optimistic — an item due in 4 days showed "6g kaldı" — with the error
+     * growing by one day every day, and an already-late item reported as merely due soon.
+     *
+     * `nowProvider` is the injection seam: a test pins "now" so it asserts a fixed answer instead of starting to
+     * fail tomorrow. Production never sets it and reads the wall clock.
+     */
+    let nowProvider = () => new Date();
+    const setNowProvider = (provider) => {
+        nowProvider = typeof provider === 'function' ? provider : () => new Date();
+    };
+    const localIsoDate = (date) => {
+        const pad = (value) => String(value).padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    };
+    const referenceDate = (provenance) => (provenance === 'fixture' ? SHOWCASE_TODAY : nowProvider());
+    /*
+     * Showcase-only identities. The real session user comes from the SERVER (window.CurrentUser, rendered by the
+     * tenant shell from the JWT claims) — see sessionUser. Handing these to a real user showed them someone else's
+     * name and job title in the scope selector.
+     */
+    const CURRENT_USER = { id: 'USR-OWN', name: 'Selin Aras', title: 'Operasyon PMO Lideri' };
     const DELEGATORS = [
-        { name: 'Deniz Koç', title: 'Finance Controller' },
-        { name: 'Aylin Ersoy', title: 'Procurement Lead' }
+        { id: 'USR-103', name: 'Deniz Koç', title: 'Finans Kontrolörü' },
+        { id: 'USR-104', name: 'Aylin Ersoy', title: 'Satınalma Lideri' }
     ];
-
-    // Meetings are agenda context, not work items. They can produce a normal
-    // follow-up task/review, keeping the WorkCenter intent model unambiguous.
+    /*
+     * The signed-in user, from the claims the shell already serialized — no new endpoint, no invented data.
+     * `title` is deliberately null: there is NO source for a position/title on the client today, and an absent
+     * title renders as nothing at all, which is the honest answer. Do not substitute a role, an email or a
+     * placeholder here — that is exactly the habit this slice removes.
+     */
+    const sessionUser = () => {
+        const claims = global.CurrentUser || {};
+        const name = [claims.firstName, claims.lastName].filter(Boolean).join(' ').trim()
+            || claims.email
+            || '';
+        return { id: claims.id || null, name, title: null };
+    };
     const MEETINGS = [
-        { id: 'MTG-1001', title: 'Weekly Operations Sync', start: '14:00', end: '15:00', location: 'Teams', owner: 'Selin Aras' },
-        { id: 'MTG-1002', title: 'Architecture Review', start: '16:30', end: '17:30', location: 'Atlas Room', owner: 'Mert Aksoy' }
+        { id: 'MTG-1001', title: 'Haftalık Operasyon Toplantısı', start: '14:00', end: '15:00', location: 'Teams', owner: 'Selin Aras' }
     ];
-    const NOTES = [
-        { id: 'NOTE-1001', text: 'Collect department approvals for the Q3 budget revisions.', ageKey: 'TimeToday', converted: false },
-        { id: 'NOTE-1002', text: 'Confirm the server migration calendar with the infrastructure team.', ageKey: 'TimeYesterday', converted: false }
-    ];
-
-    const STATUS = {
-        PENDING: 'Pending', IN_PROGRESS: 'In Progress', WAITING: 'Waiting',
-        DONE: 'Done', CANCELLED: 'Cancelled'
+    const TYPE_ICON = { approval: 'bx-check-shield', task: 'bx-task', review: 'bx-search-alt', issue: 'bx-error-circle', exception: 'bx-error-alt' };
+    /*
+     * Friendly module name for a provider code — ONE implementation, in l10n.js (WCN.moduleLabel).
+     *
+     * The rule used to live here, and moduleLabel is called for REAL items too (see toPresentation: sourceModule
+     * / sourceModuleName). When the partial-board banner needed the same answer, a second implementation appeared
+     * in the localization bridge and the two drifted apart at once — the banner's name resolved through one
+     * function and the source chip's through another. So the bridge's is now the only one and this file consumes
+     * it. That is not an import of a fixture module by the shell; it is this module reading the shared global the
+     * host already installs (Index.cshtml loads l10n.js at 36, mock-data.js at 51).
+     *
+     * If the bridge is somehow absent, fall back to the raw code rather than throwing: a missing name is a
+     * labelling gap, and it must never cost the reader the row.
+     */
+    const moduleLabel = (code) => {
+        if (!code) { return ''; }
+        return (global.WCN && global.WCN.moduleLabel ? global.WCN.moduleLabel(code) : code) || code;
     };
-    const LIFECYCLE_STATUS = {
-        PendingApproval: STATUS.PENDING, PendingAcceptance: STATUS.PENDING,
-        Open: STATUS.IN_PROGRESS, Planned: STATUS.IN_PROGRESS, InProgress: STATUS.IN_PROGRESS,
-        Waiting: STATUS.WAITING, PendingReview: STATUS.IN_PROGRESS, Done: STATUS.DONE, Cancelled: STATUS.CANCELLED
-    };
-    const statusFor = (lifecycle) => LIFECYCLE_STATUS[lifecycle] || STATUS.IN_PROGRESS;
-
+    /*
+     * Curation for the DEVELOPMENT showcase catalog only: which demo fixtures are "in the catalogue" and which are
+     * parked. It is an allowlist of FIXTURE IDS, so it can only ever be applied to fixtures — a real work item has
+     * a GUID that is by definition absent here, and gating real items on it hides every one of them.
+     * See toPresentation: provenance decides whether this list is consulted at all.
+     */
+    const VISIBLE_CATALOG_IDS = new Set([
+        'INBOX-TASK-01', 'INBOX-APPROVAL-01', 'INBOX-REVIEW-OPTIONAL-MEETING',
+        'INBOX-REVIEW-REQUIRED-MEETING', 'INBOX-ISSUE-01', 'INBOX-EXCEPTION-01',
+        // İşlerim showcase (real, varied) replaces the placeholder WC-TASK-* variants.
+        'ISLERIM-WORK-ACTIVE', 'ISLERIM-WORK-ISSUE', 'ISLERIM-WORK-BLOCKED',
+        'ISLERIM-WORK-DELEGATED', 'ISLERIM-WORK-SNOOZED', 'ISLERIM-WORK-WAITING',
+        'ISLERIM-WORK-REVIEW-MEETING', 'ISLERIM-WORK-PLANNED',
+        // Havuz showcase — group-queue (claim) + offered (accept/decline).
+        'HAVUZ-CLAIM-01', 'HAVUZ-CLAIM-02', 'HAVUZ-OFFER-01',
+        // Geçmiş showcase — real Done/Cancelled archive (replaces WC-TASK-DONE placeholder).
+        'GECMIS-TASK-DONE-01', 'GECMIS-APPROVAL-DONE-01', 'GECMIS-TASK-CANCELLED-01',
+        'WC-TASK-DONE'   // legacy Geçmiş placeholder (kept until showcase locked)
+    ]);
     const clone = (value) => (typeof global.structuredClone === 'function')
-        ? global.structuredClone(value) : JSON.parse(JSON.stringify(value));
+        ? global.structuredClone(value)
+        : JSON.parse(JSON.stringify(value));
+    /*
+     * Resolve a contract label to text.
+     *   { kind: 'resource', key, args? } → looked up in the WorkCenterNext resx
+     *   { kind: 'display',  text, locale } → already final; used for content a user typed
+     *
+     * A resource key with no resx entry falls back to the key itself, which renders as visible gibberish
+     * ("WorkAggregation_Title_Task"). That fallback is now announced, once per key, so the next provider to
+     * introduce a label without a translation finds out immediately instead of shipping it.
+     */
+    const reportedMissingLabelKeys = new Set();
+    const resolveLabel = (label) => {
+        if (!label) { return ''; }
+        if (label.kind === 'resource') {
+            // WC-1b DEC-3 — a backend label carries NAMED args ({objectType}/{objectId}); render them through
+            // the named-token helper so the title never shows literal placeholders. Mock labels have no args
+            // and fall through to the plain lookup unchanged.
+            const resolved = (label.args && global.WCN?.tn)
+                ? global.WCN.tn(label.key, label.args)
+                : global.WCN?.t?.(label.key);
 
-    const addDays = (days) => {
-        const d = new Date(TODAY); d.setDate(d.getDate() + days);
-        return d.toISOString().slice(0, 10);
+            if (!resolved || resolved === label.key) {
+                if (!reportedMissingLabelKeys.has(label.key)) {
+                    reportedMissingLabelKeys.add(label.key);
+                    console.warn(
+                        `[WorkCenterNext] Missing resource label "${label.key}" — rendering the raw key. `
+                        + 'Add it to the WorkCenterNext resx (7 languages), or have the provider send '
+                        + '{ kind: "display", text, locale } if the text is user-entered and needs no translation.');
+                }
+                return label.key;
+            }
+
+            return resolved;
+        }
+        return label.text || '';
+    };
+    const personName = (person) => {
+        if (!person) { return ''; }
+        if (person.displayName) { return person.displayName; }
+        if (person.isCurrentUser) { return global.WCN?.t?.('PersonSelf') || ''; }
+        // An id is not a name: showing the GUID would be worse than admitting the name is unknown.
+        return global.WCN?.t?.('PersonNameUnavailable') || '';
     };
 
-    const computeSla = (dueAt) => {
+    /*
+     * SHOWCASE ONLY (WC-2). The SLA state of REAL work is decided by the server, through IWorkingTimeCalculator,
+     * and arrives as `slaState` on the projection.
+     *
+     * This used to decide it for everything, which inverted the surface's own law — the browser renders
+     * decisions, it does not make them — and left the working calendar (BL: Calendar) with nothing on the server
+     * to arrive at. It survives because the showcase catalogue has no server behind it: its fixtures are authored
+     * against a fixed reference day and must keep reading correctly. Its `<= 2` is a DEMO threshold; the real one
+     * is a server policy (WorkAggregation:Sla:DueSoonWithinWorkingDays) and is not mirrored here on purpose —
+     * two copies of a threshold is how the copies start disagreeing.
+     */
+    const computeShowcaseSla = (dueAt, closedAt) => {
         if (!dueAt) { return { state: 'no-sla', diffDays: null }; }
-        const due = new Date(dueAt + 'T00:00:00');
-        const base = new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate());
+        const due = new Date(`${dueAt}T00:00:00`);
+        /*
+         * BL-046, in the showcase's own terms. The catalogue plays the part of a server, so it has to answer this
+         * question the way one does: FINISHED work is measured from the day it closed, not from the demo's today.
+         * Without this, a History fixture whose own activity log says it was closed on time would still be
+         * painted late — the demo contradicting itself where the real surface no longer does.
+         */
+        const reference = closedAt ? new Date(`${dateOnly(closedAt)}T00:00:00`) : referenceDate('fixture');
+        const base = new Date(reference.getFullYear(), reference.getMonth(), reference.getDate());
         const diffDays = Math.round((due - base) / 86400000);
-        let state = 'on-track';
-        if (diffDays < 0) { state = 'overdue'; } else if (diffDays <= 2) { state = 'due-soon'; }
-        return { state, diffDays };
+        return { state: diffDays < 0 ? 'overdue' : diffDays <= 2 ? 'due-soon' : 'on-track', diffDays };
     };
 
-    // Typed dependencies → blockedState (spec v3). A predecessor that must finish
-    // first (FS) and isn't done — or must start first (SS) and hasn't — blocks us.
-    const computeBlocked = (deps) => {
-        if (!Array.isArray(deps)) { return null; }
-        const blockers = deps.filter((d) => d.direction === 'pred' && (
-            (d.type === 'FS' && d.state !== 'done') ||
-            (d.type === 'SS' && d.state === 'not-started')));
-        if (!blockers.length) { return null; }
-        return {
-            blocked: true,
-            blockedBy: blockers.map((b) => ({ title: b.title, id: b.id, type: b.type })),
-            reasonKey: 'BlockedByDependency'
-        };
+    /*
+     * How many days away a deadline is, measured AT RENDER TIME from the absolute due date.
+     *
+     * Only the WORDING uses this — "3 gün kaldı". The STATE is the server's. That split is the cure for the
+     * frozen-count defect this project already shipped once (`ago`): a day count computed on the server is a lie
+     * the moment the tab outlives it, so the count is derived late here from the absolute date the projection
+     * already carries, and the count never decides anything.
+     */
+    const daysUntil = (dueAt, provenance) => {
+        if (!dueAt) { return null; }
+        const due = new Date(`${dueAt}T00:00:00`);
+        const reference = referenceDate(provenance);
+        const base = new Date(reference.getFullYear(), reference.getMonth(), reference.getDate());
+        return Math.round((due - base) / 86400000);
     };
 
-    // ── OWNERSHIP → tab (Fable's law: status never changes the tab) ────────────
+    /*
+     * The DAY part of an absolute value, whether it arrived as a date ('2026-07-20') or as a full instant
+     * ('2026-07-20T16:30:00+00:00'). Deadlines are a whole-day question — "closed two days late" — so the clock
+     * time is dropped rather than allowed to turn a two-day overrun into 1.8.
+     */
+    const dateOnly = (value) => {
+        const match = /^(\d{4}-\d{2}-\d{2})/.exec(String(value || ''));
+        return match ? match[1] : null;
+    };
+
+    /*
+     * BL-046 — how late FINISHED work was, measured between its own two absolute dates and nothing else.
+     *
+     * The sign follows daysUntil deliberately (negative = past the deadline), so the label's arithmetic reads the
+     * same whichever branch produced the number.
+     *
+     * This is the half that makes the badge stop lying. `daysUntil` is right for live work — an open deadline
+     * genuinely IS a day nearer tomorrow — and catastrophic for closed work: History read "11 days late" one
+     * morning and "12 days late" the next about a task nobody had touched. Today is not part of this answer.
+     */
+    const daysLateAtClose = (dueAt, closedAt) => {
+        const due = dateOnly(dueAt);
+        const closed = dateOnly(closedAt);
+        if (!due || !closed) { return null; }
+        const dueDay = new Date(`${due}T00:00:00`);
+        const closedDay = new Date(`${closed}T00:00:00`);
+        if (Number.isNaN(dueDay.getTime()) || Number.isNaN(closedDay.getTime())) { return null; }
+        return Math.round((dueDay - closedDay) / 86400000);
+    };
     const tabFor = (item) => {
-        if ((item.assignmentMode === 'groupQueue' || item.assignmentMode === 'offered') && !item.claimed) { return 'havuz'; }
-        if ((item.assignmentMode === 'direct' || item.assignmentMode === 'approval') && !item.accepted) { return 'inbox'; }
+        if (['Done', 'Cancelled'].includes(item.normalizedStatus)) { return 'history'; }
+        if (item.admissionState === 'pendingClaim' || item.admissionState === 'pendingOffer') { return 'havuz'; }
+        if (item.admissionState === 'pendingAcceptance') { return 'inbox'; }
+        // Act-directly intents (approval/review/issue/exception) awaiting the viewer's
+        // first decision live in the Inbox even though they are 'admitted' (no accept
+        // gate) — they are resolved on the spot (approve/signoff/resolve), not owned work.
+        if (['approval', 'review', 'issue', 'exception'].includes(item.workIntent) && item.normalizedStatus === 'Pending') { return 'inbox'; }
         return 'islerim';
     };
-
-    // ── STATUS → segment (only within İşlerim) ────────────────────────────────
-    // Aktif = actively workable · Bekleyen = waiting-on / snoozed · Planlı = has a
-    // future personal plan and not yet started. Status moves the segment, not the tab.
     const segmentFor = (item) => {
-        if (item.status === STATUS.WAITING || (item.snoozedUntil && item.snoozedUntil > TODAY_ISO) || item.waitingOn) { return 'bekleyen'; }
-        if (item.lifecycle === 'Planned' || (item.plannedDate && !item.startedOnce)) { return 'planli'; }
+        if (item.normalizedStatus === 'Waiting') { return 'bekleyen'; }
+        if (item.taskLifecycle === 'Planned' || (item.personal?.plannedDate && item.executionState === 'notStarted')) { return 'planli'; }
         return 'aktif';
     };
-
-    // ── Action catalogue (spec v3 §6 — action safety metadata) ────────────────
-    const ACT = {
-        accept:      { key: 'accept',      labelKey: 'ActAccept',      kind: 'primary',   semanticType: 'accept',   primary: true, role: 'accept' },
-        claim:       { key: 'claim',       labelKey: 'ActClaim',       kind: 'primary',   semanticType: 'claim',    primary: true, role: 'accept' },
-        release:     { key: 'release',     labelKey: 'ActRelease',     kind: 'secondary', semanticType: 'release',  reason: true },
-        acceptOffer: { key: 'acceptOffer', labelKey: 'ActAccept',      kind: 'primary',   semanticType: 'accept',   primary: true, role: 'accept' },
-        decline:     { key: 'decline',     labelKey: 'ActReject',      kind: 'danger',    semanticType: 'decline',  role: 'reject', reason: true },
-        approve:     { key: 'approve',     labelKey: 'ActApprove',     kind: 'success',   semanticType: 'approve',  primary: true, role: 'accept', confirm: true, bulk: true },
-        reject:      { key: 'reject',      labelKey: 'ActReject',      kind: 'danger',    semanticType: 'reject',   role: 'reject', reason: true, bulk: true },
-        inquire:     { key: 'inquire',     labelKey: 'ActRequestInfo', kind: 'warning',   semanticType: 'inquire',  reason: true },
-        returnItem:  { key: 'return',      labelKey: 'ActReturn',      kind: 'warning',   semanticType: 'return',   role: 'reject', reason: true, bulk: true },
-        delegate:    { key: 'delegate',    labelKey: 'ActDelegate',    kind: 'secondary', semanticType: 'delegate', reason: true },
-        dispute:     { key: 'dispute',     labelKey: 'ActDispute',     kind: 'secondary', semanticType: 'dispute',  reason: true },
-        reassign:    { key: 'reassign',    labelKey: 'ActReassign',    kind: 'secondary', semanticType: 'reassign', reason: true },
-        signoff:     { key: 'signoff',     labelKey: 'ActSignOff',     kind: 'success',   semanticType: 'signoff',  primary: true, role: 'accept', confirm: true, bulk: true },
-        resolve:     { key: 'resolve',     labelKey: 'ActResolve',     kind: 'success',   semanticType: 'resolve',  primary: true, role: 'accept', confirm: true, bulk: true },
-        plan:        { key: 'plan',        labelKey: 'ActPlan',        kind: 'primary',   semanticType: 'plan',   input: 'date' },
-        replan:      { key: 'replan',      labelKey: 'ActReplan',      kind: 'secondary', semanticType: 'plan',   input: 'date' },
-        start:       { key: 'start',       labelKey: 'ActStart',       kind: 'primary',   semanticType: 'start',  primary: true, role: 'accept' },
-        resume:      { key: 'resume',      labelKey: 'ActResume',      kind: 'primary',   semanticType: 'start',  primary: true, role: 'accept' },
-        pause:       { key: 'pause',       labelKey: 'ActPause',       kind: 'warning',   semanticType: 'pause' },
-        logTime:     { key: 'logTime',     labelKey: 'ActLogTime',     kind: 'info',      semanticType: 'logTime', input: 'minutes' },
-        complete:    { key: 'complete',    labelKey: 'ActComplete',    kind: 'success',   semanticType: 'complete', primary: true, role: 'accept', confirm: true, bulk: true }
-    };
-
-    const has = (item, cap) => Array.isArray(item.capabilities) && item.capabilities.indexOf(cap) >= 0;
-
-    // getActions(item) — assignmentMode + capabilities + lifecycle → action set.
-    const getActions = (item) => {
-        const { itemType, lifecycle, assignmentMode } = item;
-        if (lifecycle === 'Done' || lifecycle === 'Cancelled') { return []; }
-
-        if (assignmentMode === 'groupQueue' && !item.claimed) { return clone([ACT.claim]); }
-        if (assignmentMode === 'offered' && !item.claimed) { return clone([ACT.acceptOffer, ACT.decline]); }
-
-        if (itemType === 'approval') {
-            return clone([ACT.approve, ACT.reject, ACT.inquire, ACT.returnItem, ACT.delegate]);
-        }
-        // Triage-inbox gate — a directly-assigned item I haven't taken on yet.
-        if (assignmentMode === 'direct' && !item.accepted) {
-            const gate = [ACT.accept];
-            if (itemType === 'task' && has(item, 'planning')) { gate.push(ACT.plan); }
-            gate.push(ACT.dispute, ACT.reassign);
-            return clone(gate);
-        }
-        if (itemType === 'review') { return clone([ACT.signoff, ACT.returnItem, ACT.inquire]); }
-        if (itemType === 'issue' || itemType === 'exception') { return clone([ACT.resolve, ACT.inquire, ACT.reassign]); }
-
-        // TASK — capability-driven per lifecycle stage.
-        const running = item.timesheet && item.timesheet.running;
-        const blocked = item.blockedState && item.blockedState.blocked;
-        let acts;
-        switch (lifecycle) {
-            case 'Open':
-                acts = [has(item, 'planning') && ACT.plan, has(item, 'execution') && ACT.start, ACT.dispute, ACT.reassign]; break;
-            case 'Planned':
-                acts = [has(item, 'execution') && ACT.start, has(item, 'planning') && ACT.replan, ACT.dispute, ACT.reassign]; break;
-            case 'InProgress':
-                acts = [running ? ACT.pause : ACT.resume, has(item, 'timeTracking') && ACT.logTime,
-                    has(item, 'execution') && ACT.complete, ACT.inquire, ACT.reassign]; break;
-            case 'Waiting':
-                acts = [has(item, 'execution') && ACT.resume, has(item, 'timeTracking') && ACT.logTime,
-                    has(item, 'execution') && ACT.complete, ACT.inquire, ACT.reassign]; break;
-            case 'PendingReview':
-                acts = [ACT.signoff, ACT.returnItem]; break;
-            default:
-                acts = [ACT.reassign];
-        }
-        if (assignmentMode === 'groupQueue' && item.claimed) { acts.push(ACT.release); }
-        const out = clone(acts.filter(Boolean));
-        if (blocked) {
-            out.forEach((a) => { if (a.semanticType === 'start') { a.disabled = true; a.disabledReasonKey = item.blockedState.reasonKey || 'BlockedBanner'; } });
-        }
-        return out;
-    };
-
-    const TYPE_ICON = { approval: 'bx-check-shield', task: 'bx-task', review: 'bx-search-alt', issue: 'bx-error-circle', exception: 'bx-error-alt' };
-
-    // Reusable capability packs.
-    const TASK_FULL = ['stages', 'planning', 'execution', 'timeTracking', 'checklist', 'subtasks', 'dependencies', 'activity', 'attachments', 'informationRequest'];
-
-    // Blueprint-verified provider identities. The mock uses sourceType as its
-    // adapter key so a friendly label can never silently masquerade as a
-    // canonical MOD identity.
-    const SOURCE_PROVIDERS = {
-        MasterDataReview:  { moduleId: 'MOD-0049', moduleName: 'Master Data Management (MDM)' },
-        ChecklistTask:     { moduleId: 'MOD-0181', moduleName: 'Cycle Counting' },
-        ReconException:    { moduleId: 'MOD-0121', moduleName: 'Bank Reconciliation' },
-        JournalApproval:   { moduleId: 'MOD-0118', moduleName: 'General Ledger (GL)' },
-        PurchaseApproval:  { moduleId: 'MOD-0141', moduleName: 'Requisition & Purchase Orders' },
-        DiscountApproval:  { moduleId: 'MOD-0156', moduleName: 'Price Lists & Discount Guardrails' },
-        PaymentApproval:   { moduleId: 'MOD-0126', moduleName: 'Payments & Approvals' },
-        CloseTask:         { moduleId: 'MOD-0122', moduleName: 'Period Close & Consolidation' },
-        OnboardingTask:    { moduleId: 'MOD-0303', moduleName: 'Employee Onboarding' },
-        Exception:         { moduleId: 'MOD-0128', moduleName: 'VAT/GST & Withholding' },
-        DeviationTask:     { moduleId: 'MOD-0208', moduleName: 'CAPA' },
-        FixReview:         { moduleId: 'MOD-0037', moduleName: 'Integration Monitoring & Reconciliation' },
-        IncidentIssue:     { moduleId: 'MOD-0221', moduleName: 'Incident Management' },
-        CountTask:         { moduleId: 'MOD-0181', moduleName: 'Cycle Counting' },
-        SourcingTask:      { moduleId: 'MOD-0145', moduleName: 'Sourcing (RFQ/RFP)' },
-        ContractReview:    { moduleId: 'MOD-0217', moduleName: 'Contract Lifecycle Management (CLM)', actionDepth: 'deeplink' },
-        DecommTask:        { moduleId: 'MOD-0224', moduleName: 'Change Management (ITIL)', actionDepth: 'deeplink' },
-        NormalizationTask: { moduleId: 'MOD-0049', moduleName: 'Master Data Management (MDM)' },
-        PersonalTask:      { moduleId: 'MOD-0024', moduleName: 'Task & Checklist Engine' }
-    };
-
-    // Depth-data builders (keep mock items readable).
-    const checklist = (arr) => ({ items: arr.map((c, i) => ({ id: 'C' + (i + 1), text: c[0], done: c[1] })) });
-    const subtasks = (mode, arr) => ({ mode, items: arr.map((s, i) => ({ id: 'S' + (i + 1), title: s[0], status: s[1] })) });
-    // Activity = single stream of events (l10n eventKey) + comments (literal text).
-    const activity = (arr) => arr.map((a) => a[1] === 'comment'
-        ? { actor: a[0], kind: 'comment', text: a[2], ago: a[3] }
-        : { actor: a[0], kind: 'event', eventKey: a[2], ago: a[3] });
-
-    // ── Mock items ────────────────────────────────────────────────────────────
-    const rawItems = [
-        // ── HAVUZ (claimable — groupQueue / offered) ──────────────────────────
-        {
-            id: 'WC-1002', sourceModule: 'MDM', sourceType: 'MasterDataReview', sourceId: 'VEND-58821',
-            itemType: 'review', assignmentMode: 'offered', claimed: false, group: 'Veri Yönetimi',
-            lifecycle: 'PendingAcceptance', nativeStatus: 'Offered — Data Steward',
-            capabilities: ['reviewFlow', 'activity', 'attachments', 'informationRequest'],
-            title: 'Review new vendor master record — Kavi Logistics',
-            summary: 'Bank details and tax jurisdiction changed on a golden vendor record; accept to take the review.',
-            priority: 'high', requester: 'Aylin Ersoy', assignee: null, viewerRole: 'Reviewer',
-            dueAt: addDays(1), scope: 'mine', isUnread: true, pinned: true,
-            attachments: [{ name: 'bank-letter.pdf', size: '210 KB' }, { name: 'tax-cert.pdf', size: '88 KB' }],
-            activity: activity([['Aylin Ersoy', 'event', 'AuditReviewRequested', 2], ['System', 'event', 'AuditOffered', 2]])
-        },
-        {
-            id: 'WC-1003', sourceModule: 'Warehouse Ops', sourceType: 'ChecklistTask', sourceId: 'CYC-3390',
-            itemType: 'task', assignmentMode: 'groupQueue', claimed: false, group: 'Depo Ops',
-            lifecycle: 'PendingAcceptance', nativeStatus: 'Unassigned — Ops Queue',
-            capabilities: ['stages', 'planning', 'execution', 'checklist', 'activity'],
-            title: 'Q3 cycle-count pilot kickoff checklist',
-            summary: 'Group queue item for the Ops team: claim to own the warehouse cycle-count pilot kickoff.',
-            priority: 'medium', requester: 'Levent Demir', assignee: null, viewerRole: 'Owner',
-            dueAt: addDays(2), scope: 'mine', isUnread: false, pinned: false,
-            checklist: checklist([['Confirm freeze window', false], ['Assign counters', false], ['Print count sheets', false]]),
-            activity: activity([['Levent Demir', 'event', 'AuditSubmitted', 1], ['System', 'event', 'AuditQueued', 1]])
-        },
-        {
-            id: 'WC-1012', sourceModule: 'Finance', sourceType: 'ReconException', sourceId: 'REC-2205',
-            itemType: 'exception', assignmentMode: 'offered', claimed: false, group: 'Finans Ekibi',
-            lifecycle: 'PendingAcceptance', nativeStatus: 'Offered — Open Exception',
-            capabilities: ['activity', 'informationRequest', 'attachments'],
-            title: 'Bank reconciliation break — main operating account',
-            summary: 'Unmatched receipt of $9,140 on the operating account; accept to take ownership and action it.',
-            priority: 'medium', requester: 'System', assignee: null, viewerRole: 'Owner',
-            dueAt: addDays(2), scope: 'onBehalf', delegator: 'Deniz Koç', isUnread: false, pinned: false,
-            activity: activity([['System', 'event', 'AuditSubmitted', 2], ['System', 'event', 'AuditOffered', 2]])
-        },
-
-        // ── GELEN KUTUSU — APPROVAL (decide in place) ─────────────────────────
-        {
-            id: 'WC-1001', sourceModule: 'Finance', sourceType: 'JournalApproval', sourceId: 'JE-2026-0442',
-            itemType: 'approval', assignmentMode: 'approval', claimed: true,
-            lifecycle: 'PendingApproval', nativeStatus: 'Awaiting Approver',
-            capabilities: ['activity', 'attachments', 'informationRequest'],
-            title: 'Approve month-end accrual journal (freight)',
-            summary: 'Manual accrual of $184,200 for in-transit freight awaiting your sign-off before the close cut-off.',
-            priority: 'high', requester: 'Emre Güneş', assignee: 'Selin Aras', viewerRole: 'Approver',
-            dueAt: addDays(-1), scope: 'mine', isUnread: true, pinned: false, escalated: true,
-            attachments: [{ name: 'accrual-detail.xlsx', size: '44 KB' }],
-            activity: activity([['Emre Güneş', 'event', 'AuditSubmitted', 3], ['System', 'event', 'AuditRoutedTo', 3], ['System', 'event', 'AuditEscalated', 0]])
-        },
-        {
-            id: 'WC-1005', sourceModule: 'Procurement', sourceType: 'PurchaseApproval', sourceId: 'PR-90514',
-            itemType: 'approval', assignmentMode: 'approval', claimed: true, systemState: 'record-changed',
-            lifecycle: 'PendingApproval', nativeStatus: 'Awaiting Approver',
-            capabilities: ['activity', 'informationRequest'],
-            title: 'Approve purchase requisition — IT hardware refresh',
-            summary: 'Requisition of $46,900 for laptop refresh exceeds the auto-approval threshold.',
-            priority: 'medium', requester: 'Burak Şahin', assignee: 'Selin Aras', viewerRole: 'Approver',
-            dueAt: addDays(1), scope: 'mine', isUnread: false, pinned: false,
-            activity: activity([['Burak Şahin', 'event', 'AuditSubmitted', 1], ['System', 'event', 'AuditRoutedTo', 1]])
-        },
-        {
-            id: 'WC-1008', sourceModule: 'Sales', sourceType: 'DiscountApproval', sourceId: 'QUO-33218',
-            itemType: 'approval', assignmentMode: 'approval', claimed: true,
-            lifecycle: 'PendingApproval', nativeStatus: 'Awaiting Approver', bulkConflict: true,
-            capabilities: ['activity', 'informationRequest'],
-            title: 'Approve regional campaign discount release',
-            summary: 'Discount of 18% on the EMEA campaign needs release approval before quotes go out.',
-            priority: 'medium', requester: 'Can Yıldız', assignee: 'Selin Aras', viewerRole: 'Approver',
-            dueAt: addDays(4), scope: 'mine', isUnread: false, pinned: false,
-            activity: activity([['Can Yıldız', 'event', 'AuditSubmitted', 1]])
-        },
-        {
-            id: 'WC-1011', sourceModule: 'Treasury', sourceType: 'PaymentApproval', sourceId: 'PAY-71190',
-            itemType: 'approval', assignmentMode: 'approval', claimed: true,
-            lifecycle: 'PendingApproval', nativeStatus: 'Awaiting Approver',
-            capabilities: ['activity', 'attachments', 'informationRequest'],
-            title: 'Approve outbound payment run — EU suppliers',
-            summary: 'Batch of 42 supplier payments totalling €512,000 queued for the daily payment run.',
-            priority: 'high', requester: 'Deniz Koç', assignee: 'Deniz Koç', viewerRole: 'Approver',
-            dueAt: addDays(0), scope: 'onBehalf', delegator: 'Deniz Koç', isUnread: true, pinned: false,
-            activity: activity([['System', 'event', 'AuditSubmitted', 1], ['System', 'event', 'AuditRoutedTo', 1]])
-        },
-
-        // ── GELEN KUTUSU — direct, freshly arrived (not yet accepted) ──────────
-        {
-            id: 'WC-1020', sourceModule: 'Finance', sourceType: 'CloseTask', sourceId: 'FIN-7790',
-            itemType: 'task', assignmentMode: 'direct', claimed: true,
-            lifecycle: 'Open', nativeStatus: 'Assigned — awaiting acceptance',
-            capabilities: TASK_FULL.slice(),
-            title: 'Reconcile prepaid expenses schedule',
-            summary: 'Newly assigned close task; accept to take it on, then plan or start.',
-            priority: 'medium', requester: 'Emre Güneş', assignee: 'Selin Aras', viewerRole: 'Owner',
-            dueAt: addDays(2), scope: 'mine', isUnread: true, pinned: false,
-            stages: [{ key: 'Assigned', label: 'Atandı' }, { key: 'InProgress', label: 'Devam' }, { key: 'Review', label: 'İnceleme' }, { key: 'Closed', label: 'Kapandı' }],
-            checklist: checklist([['Pull prepaid GL balances', false], ['Match to amortization schedule', false], ['Post adjustment', false]]),
-            subtasks: subtasks('full', [['Export prepaid ledger', 'not-started'], ['Reconcile variances', 'not-started']]),
-            activity: activity([['Emre Güneş', 'event', 'AuditSubmitted', 0], ['System', 'event', 'AuditRoutedTo', 0]])
-        },
-        {
-            id: 'WC-1010', sourceModule: 'HR', sourceType: 'OnboardingTask', sourceId: 'ONB-5521',
-            itemType: 'task', assignmentMode: 'direct', claimed: true,
-            lifecycle: 'Open', nativeStatus: 'Blocked — awaiting predecessor', reviewRequired: true,
-            capabilities: ['stages', 'planning', 'execution', 'checklist', 'subtasks', 'dependencies', 'activity'],
-            dependencies: [{ id: 'ONB-5519', title: 'Signed employment contract', type: 'FS', direction: 'pred', state: 'in-progress' }],
-            title: 'Complete manager checklist for new joiner',
-            summary: 'Provisioning, buddy assignment and first-week plan for the new operations analyst.',
-            priority: 'low', requester: 'İdil Arı', assignee: 'Selin Aras', viewerRole: 'Owner',
-            dueAt: addDays(6), scope: 'mine', isUnread: false, pinned: false,
-            checklist: checklist([['Order laptop', false], ['Assign buddy', false], ['Book first-week 1:1', false]]),
-            subtasks: subtasks('readonly', [['IT account provisioning', 'not-started'], ['Access badge', 'not-started']]),
-            activity: activity([['İdil Arı', 'event', 'AuditSubmitted', 2], ['System', 'event', 'AuditBlocked', 2]])
-        },
-
-        // ── İŞLERİM — accepted/owned (direct) ─────────────────────────────────
-        {
-            id: 'WC-1004', sourceModule: 'Tax', sourceType: 'Exception', sourceId: 'VAT-7781',
-            itemType: 'exception', assignmentMode: 'direct', claimed: true, accepted: true,
-            lifecycle: 'InProgress', nativeStatus: 'In Progress',
-            capabilities: ['execution', 'activity', 'attachments', 'informationRequest'],
-            title: 'Export VAT mismatch on SAP handoff',
-            summary: 'Automated reconciliation flagged a €12,430 VAT variance between the ERP and the customs filing.',
-            priority: 'high', requester: 'System', assignee: 'Selin Aras', viewerRole: 'Owner',
-            dueAt: addDays(-3), scope: 'mine', isUnread: true, pinned: false, escalated: true,
-            activity: activity([['System', 'event', 'AuditSubmitted', 5], ['Selin Aras', 'comment', 'Checked customs export — variance is on line 7.', 2], ['System', 'event', 'AuditEscalated', 0]])
-        },
-        {
-            id: 'WC-1006', sourceModule: 'Quality', sourceType: 'DeviationTask', sourceId: 'CAPA-2231',
-            itemType: 'task', assignmentMode: 'direct', claimed: true, accepted: true,
-            lifecycle: 'Waiting', nativeStatus: 'Waiting for Information', reviewRequired: true,
-            capabilities: TASK_FULL.concat(['reviewFlow']), loggedMinutes: 30, waitingOn: 'QA Lab (Melis Yalçın)',
-            title: 'Close deviation CAPA once evidence pack lands',
-            summary: 'Waiting on QA to upload the signed lab report before the corrective action can be completed.',
-            priority: 'high', requester: 'Melis Yalçın', assignee: 'Selin Aras', viewerRole: 'Owner',
-            dueAt: addDays(-7), scope: 'mine', isUnread: false, pinned: false,
-            stages: [{ key: 'Open', label: 'Açık' }, { key: 'InProgress', label: 'Devam' }, { key: 'Waiting', label: 'Bekliyor' }, { key: 'Review', label: 'İnceleme' }, { key: 'Closed', label: 'Kapandı' }],
-            checklist: checklist([['Root-cause analysis', true], ['Corrective action defined', true], ['Evidence uploaded', false], ['Effectiveness check', false]]),
-            attachments: [{ name: 'rca-report.docx', size: '120 KB' }],
-            activity: activity([['Melis Yalçın', 'event', 'AuditSubmitted', 12], ['System', 'event', 'AuditReminderSent', 1]])
-        },
-        {
-            id: 'WC-1007', sourceModule: 'Payroll Integrations', sourceType: 'FixReview', sourceId: 'INT-4471',
-            itemType: 'review', assignmentMode: 'direct', claimed: true, accepted: true,
-            lifecycle: 'PendingReview', nativeStatus: 'Pending Review',
-            capabilities: ['reviewFlow', 'activity', 'attachments', 'informationRequest'],
-            title: 'Sign off payroll interface timeout fix',
-            summary: 'Load-test evidence attached; complete the review before the release window closes.',
-            priority: 'high', requester: 'Mert Aksoy', assignee: 'Selin Aras', viewerRole: 'Reviewer',
-            dueAt: addDays(0), scope: 'mine', isUnread: true, pinned: false,
-            attachments: [{ name: 'load-test.html', size: '2.1 MB' }],
-            activity: activity([['Mert Aksoy', 'event', 'AuditReviewRequested', 2], ['System', 'event', 'AuditRoutedTo', 2]])
-        },
-        {
-            id: 'WC-1009', sourceModule: 'IT Service', sourceType: 'IncidentIssue', sourceId: 'INC-88120',
-            itemType: 'issue', assignmentMode: 'direct', claimed: true, accepted: true, systemState: 'source-unreachable',
-            lifecycle: 'InProgress', nativeStatus: 'In Progress',
-            capabilities: ['execution', 'activity', 'informationRequest', 'attachments'],
-            title: 'Investigate pricing rule hotfix regression',
-            summary: 'Post-deploy monitoring flagged an approval-matrix regression on the pricing engine.',
-            priority: 'high', requester: 'Burcu Korkmaz', assignee: 'Selin Aras', viewerRole: 'Owner',
-            dueAt: addDays(1), scope: 'mine', isUnread: false, pinned: false,
-            activity: activity([['Burcu Korkmaz', 'event', 'AuditSubmitted', 3], ['Selin Aras', 'comment', 'Reproduced on staging; bisecting the rule set.', 1]])
-        },
-        {
-            id: 'WC-1016', sourceModule: 'Warehouse Ops', sourceType: 'CountTask', sourceId: 'CYC-3402',
-            itemType: 'task', assignmentMode: 'direct', claimed: true, accepted: true,
-            lifecycle: 'Planned', nativeStatus: 'Planned', plannedDate: addDays(3),
-            capabilities: TASK_FULL.slice(),
-            dependencies: [{ id: 'CYC-3402-F', title: 'Aisle D freeze window', type: 'SS', direction: 'pred', state: 'not-started' }],
-            title: 'Run bin-location audit for aisle D',
-            summary: 'Scheduled stock audit; can start only once the aisle freeze window opens.',
-            priority: 'medium', requester: 'Levent Demir', assignee: 'Selin Aras', viewerRole: 'Owner',
-            dueAt: addDays(3), scope: 'mine', isUnread: false, pinned: false,
-            stages: [{ key: 'Planned', label: 'Planlandı' }, { key: 'InProgress', label: 'Devam' }, { key: 'Closed', label: 'Kapandı' }],
-            checklist: checklist([['Confirm freeze window', false], ['Scan bins A–M', false], ['Scan bins N–Z', false]]),
-            activity: activity([['Levent Demir', 'event', 'AuditSubmitted', 2], ['System', 'event', 'AuditBlocked', 1]])
-        },
-        {
-            id: 'WC-1017', sourceModule: 'Finance', sourceType: 'CloseTask', sourceId: 'FIN-7781',
-            itemType: 'task', assignmentMode: 'direct', claimed: true, accepted: true, startedOnce: true,
-            lifecycle: 'InProgress', nativeStatus: 'In Progress', reviewRequired: true,
-            capabilities: TASK_FULL.concat(['reviewFlow']), loggedMinutes: 45, plannedDate: addDays(3),
-            dependencies: [{ id: 'FIN-7770', title: 'Sub-ledger close', type: 'FS', direction: 'pred', state: 'done' }, { id: 'FIN-7800', title: 'Consolidation run', type: 'FS', direction: 'succ', state: 'not-started' }],
-            title: 'Prepare intercompany elimination schedule',
-            summary: 'Build the elimination worksheet for the month-end close; partly done, timer paused.',
-            priority: 'high', requester: 'Emre Güneş', assignee: 'Selin Aras', viewerRole: 'Owner',
-            dueAt: addDays(1), scope: 'mine', isUnread: true, pinned: false,
-            stages: [{ key: 'Open', label: 'Açık' }, { key: 'InProgress', label: 'Devam' }, { key: 'Review', label: 'İnceleme' }, { key: 'Closed', label: 'Kapandı' }],
-            checklist: checklist([['Gather IC balances', true], ['Match pairs', false], ['Post eliminations', false]]),
-            subtasks: subtasks('full', [['Collect IC confirmations', 'done'], ['Reconcile mismatches', 'in-progress']]),
-            activity: activity([['Emre Güneş', 'event', 'AuditSubmitted', 2], ['Selin Aras', 'comment', 'IC confirmations in; two mismatches to chase.', 0]])
-        },
-        {
-            id: 'WC-1018', sourceModule: 'Procurement', sourceType: 'SourcingTask', sourceId: 'SRC-2290',
-            itemType: 'task', assignmentMode: 'direct', claimed: true, accepted: true, startedOnce: true,
-            lifecycle: 'PendingReview', nativeStatus: 'Pending Review', reviewRequired: true,
-            capabilities: TASK_FULL.concat(['reviewFlow']), loggedMinutes: 120,
-            title: 'Finalize supplier scorecard refresh',
-            summary: 'Work is complete and submitted; awaiting review sign-off before it closes.',
-            priority: 'medium', requester: 'Burak Şahin', assignee: 'Selin Aras', viewerRole: 'Owner',
-            dueAt: addDays(2), scope: 'mine', isUnread: false, pinned: false,
-            stages: [{ key: 'Open', label: 'Açık' }, { key: 'InProgress', label: 'Devam' }, { key: 'Review', label: 'İnceleme' }, { key: 'Closed', label: 'Kapandı' }],
-            checklist: checklist([['Collect KPIs', true], ['Score suppliers', true], ['Submit for review', true]]),
-            activity: activity([['Burak Şahin', 'event', 'AuditSubmitted', 4], ['Selin Aras', 'comment', 'Submitted for sign-off.', 1]])
-        },
-        {
-            id: 'WC-1013', sourceModule: 'Legal', sourceType: 'ContractReview', sourceId: 'CTR-1180',
-            itemType: 'review', assignmentMode: 'direct', claimed: true, accepted: true,
-            lifecycle: 'PendingReview', nativeStatus: 'Pending Review',
-            capabilities: ['reviewFlow', 'activity', 'attachments', 'informationRequest'],
-            title: 'Review NDA redlines — strategic partner',
-            summary: 'Counterparty returned redlines on liability clauses; review before counsel finalizes.',
-            priority: 'low', requester: 'Selin Aras', assignee: 'Deniz Koç', viewerRole: 'Reviewer',
-            dueAt: null, scope: 'onBehalf', delegator: 'Aylin Ersoy', isUnread: false, pinned: false,
-            attachments: [{ name: 'nda-redline.docx', size: '96 KB' }],
-            activity: activity([['Selin Aras', 'event', 'AuditReviewRequested', 4]])
-        },
-
-        // ── GEÇMİŞ (Done / Cancelled) ─────────────────────────────────────────
-        {
-            id: 'WC-1014', sourceModule: 'Warehouse IT', sourceType: 'DecommTask', sourceId: 'WMS-0099',
-            itemType: 'task', assignmentMode: 'direct', claimed: true, accepted: true,
-            lifecycle: 'Cancelled', nativeStatus: 'Cancelled', capabilities: TASK_FULL.slice(),
-            title: 'Legacy WMS decommission checklist',
-            summary: 'Superseded by the WMS-Next migration workstream; retained for audit continuity.',
-            priority: 'low', requester: 'Aylin Ersoy', assignee: 'Selin Aras', viewerRole: 'Owner',
-            dueAt: null, scope: 'mine', isUnread: false, pinned: false,
-            activity: activity([['Aylin Ersoy', 'event', 'AuditSubmitted', 9], ['System', 'event', 'AuditCommentAdded', 5]])
-        },
-        {
-            id: 'WC-1015', sourceModule: 'Tax Master Data', sourceType: 'NormalizationTask', sourceId: 'TAX-5540',
-            itemType: 'task', assignmentMode: 'direct', claimed: true, accepted: true,
-            lifecycle: 'Done', nativeStatus: 'Closed', capabilities: TASK_FULL.slice(),
-            title: 'Supplier tax-code normalization follow-up',
-            summary: 'Completed after the tax-engine patch; kept visible for the closing evidence trail.',
-            priority: 'low', requester: 'Levent Demir', assignee: 'Selin Aras', viewerRole: 'Owner',
-            dueAt: addDays(-1), scope: 'mine', isUnread: false, pinned: false,
-            activity: activity([['Levent Demir', 'event', 'AuditSubmitted', 6], ['Selin Aras', 'event', 'AuditCommentAdded', 1]])
-        }
-    ];
-
-    const buildItems = () => rawItems.map((item) => {
-        const sla = computeSla(item.dueAt);
-        const depBlocked = computeBlocked(item.dependencies);
-        const provider = SOURCE_PROVIDERS[item.sourceType] || null;
-        const built = clone({
-            ...item,
-            sourceModuleId: provider ? provider.moduleId : null,
-            sourceModuleName: provider ? provider.moduleName : item.sourceModule,
-            sourceObjectType: item.sourceType,
-            actionDepth: item.actionDepth || (provider && provider.actionDepth) || 'inline',
-            sourceVersion: item.sourceVersion || 'v1',
-            etag: item.etag || `mock-${item.id}`,
-            claimed: item.claimed !== false,
-            accepted: item.accepted !== undefined ? item.accepted
-                : (item.assignmentMode === 'approval' ? false
-                    : item.assignmentMode === 'direct' ? (item.lifecycle !== 'Open') : true),
-            startedOnce: item.startedOnce || false,
-            delegator: item.delegator || null,       // N-way scope: whose work (null = own)
-            group: item.group || null,               // Havuz group queue
-            systemState: item.systemState || null,   // stale/system signal (record-changed…)
-            plannedDate: item.plannedDate || null,
-            snoozedUntil: item.snoozedUntil || null,
-            waitingOn: item.waitingOn || null,
-            note: item.note || null,
-            status: LIFECYCLE_STATUS[item.lifecycle] || STATUS.IN_PROGRESS,
-            slaState: sla.state, slaDiffDays: sla.diffDays,
-            typeIcon: TYPE_ICON[item.itemType] || 'bx-circle',
-            deepLink: `/WorkCenterNext#source=${encodeURIComponent(item.sourceModule)}&id=${encodeURIComponent(item.sourceId)}`,
-            dismissed: false,
-            escalated: item.escalated || false,
-            reviewRequired: item.reviewRequired || false,
-            blockedState: depBlocked || item.blockedState || null,
-            dependencies: item.dependencies || null,
-            checklist: item.checklist || null,
-            subtasks: item.subtasks || null,
-            stages: item.stages || null,
-            attachments: item.attachments || null,
-            activity: item.activity || [],
-            timesheet: item.itemType === 'task'
-                ? { running: false, startedAt: null, loggedMinutes: item.loggedMinutes || 0 } : null
-        });
-        built.tab = tabFor(built);
-        return built;
+    const actionForPresentation = (action) => ({
+        key: action.code,
+        code: action.code,
+        labelKey: action.label?.kind === 'resource' ? action.label.key : null,
+        displayLabel: resolveLabel(action.label),
+        semanticType: action.semanticType || action.code,
+        /*
+         * Whether this action destroys or calls off work. The engine says "destructive" (and "elevated" for
+         * raised-risk); this file only ever tested for "danger", a value no provider emits — so cancel arrived
+         * marked destructive and was styled and treated as an ordinary next step. The shell uses this to keep a
+         * destructive action from ever LEADING a row.
+         */
+        destructive: ['danger', 'destructive'].includes(action.riskLevel),
+        kind: ['danger', 'destructive'].includes(action.riskLevel) ? 'danger'
+            : ['approve', 'complete', 'resolve', 'signoff', 'submitReview'].includes(action.code) ? 'success'
+                : action.code === 'requestInfo' ? 'warning'
+                    : action.code === 'accept' || action.code === 'claim' || action.code === 'start' || action.code === 'resume' ? 'primary'
+                        : 'secondary',
+        primary: false,
+        enabled: action.enabled,
+        disabled: action.enabled === false,
+        disabledReasonKey: action.disabledReason?.kind === 'resource' ? action.disabledReason.key : null,
+        disabledReason: resolveLabel(action.disabledReason),
+        confirm: action.requiresConfirmation,
+        reason: action.requiresReason,
+        evidence: action.requiresEvidence,
+        bulk: action.supportsBulk,
+        /*
+         * `plan` ALWAYS wants a date picker, on every provenance — derived from the CODE rather than trusted from
+         * the wire, the same way `kind` and `role` above are. The engine's WorkItemActionDto carries no `input`
+         * field at all, so a real `plan` action would otherwise never open the picker; only a raw fixture that
+         * happened to set `input: 'date'` would, and none ever did. This is what actually wires the picker up.
+         */
+        input: action.input || (action.code === 'plan' ? 'date' : null),
+        /*
+         * Where the action HAPPENS: 'inline' acts here, 'deeplink' sends the reader to the source. Carried
+         * through because getActions needs it — a closed item may still offer "open in source" while offering
+         * nothing to press here (BL-038). Left unresolved (null, not 'inline') so getActions can apply the
+         * item-level `actionDepth` default itself, exactly the way the contract resolves it.
+         */
+        depth: action.depth || null,
+        role: ['reject', 'return', 'declineMeeting'].includes(action.code) ? 'reject'
+            : ['approve', 'accept', 'claim', 'complete', 'resolve', 'signoff', 'start', 'resume', 'acceptMeeting', 'submitReview'].includes(action.code) ? 'accept'
+                : null
     });
-
-    global.WorkCenterNextData = {
-        todayIso: TODAY_ISO, currentUser: CURRENT_USER, onBehalfOf: ON_BEHALF_OF, delegators: DELEGATORS,
-        status: STATUS, statusFor, tabFor, segmentFor, computeSla, computeBlocked, getActions, buildItems,
-        buildMeetings: () => clone(MEETINGS), buildNotes: () => clone(NOTES), sourceProviders: SOURCE_PROVIDERS
+    const allFixtureGroups = () => {
+        const fixtures = global.WorkCenterNextFixtures || {};
+        const migrationAdapter = global.WorkCenterNextMigrationAdapter?.adaptLegacyFixture;
+        const adaptedMigration = (fixtures.migration || []).map((fixture) => migrationAdapter?.(fixture)).filter(Boolean);
+        return [
+            ...(fixtures.inboxShowcase || []),
+            ...(fixtures.islerimShowcase || []),
+            ...(fixtures.havuzShowcase || []),
+            ...(fixtures.gecmisShowcase || []),
+            ...(fixtures.canonical || []),
+            ...(fixtures.edgeCases || []),
+            ...(fixtures.enterpriseStrategy || []),
+            ...(fixtures.documentation || []),
+            ...adaptedMigration
+        ];
     };
-})(window);
+    /*
+     * Map a contract-shaped work item to the shape the shell renders.
+     *
+     * `options.provenance` says where the item came from: 'fixture' for the Development showcase catalog, 'api'
+     * for the real projection. It defaults to 'api' ON PURPOSE — the failure mode of guessing wrong in that
+     * direction is a parked demo fixture appearing, whereas guessing 'fixture' hides genuine work, which is
+     * exactly the bug this argument fixes.
+     */
+    const toPresentation = (fixture, options) => {
+        const provenance = (options && options.provenance) || 'api';
+        // Re-projecting an already-presented item must not RE-STAMP its origin. The default above is right for a
+        // raw contract item but wrong for one that already knows what it is, and a silent 'fixture' → 'api' slide
+        // turns the showcase catalogue's own curation off for that item. Callers pass provenance explicitly; this
+        // says so out loud if one ever stops.
+        if (fixture && fixture.provenance && fixture.provenance !== provenance) {
+            console.warn(
+                `[WorkCenterNext] Work item "${fixture.id}" is being re-projected as provenance="${provenance}" `
+                + `but it was "${fixture.provenance}". Pass { provenance } explicitly at the call site — an item `
+                + 'that changes origin also changes which guards apply to it.');
+        }
+        const item = clone(fixture);
+        const showcaseSla = provenance === 'fixture'
+            ? computeShowcaseSla(item.dueAt, isTerminal(item) ? item.closedAt : null)
+            : null;
+        item.itemType = item.workIntent;
+        item.lifecycle = item.taskLifecycle;
+        item.status = item.normalizedStatus === 'InProgress' ? 'In Progress' : item.normalizedStatus;
+        item.nativeStatusText = resolveLabel(item.nativeStatus?.label);
+        item.titleText = resolveLabel(item.title);
+        item.summaryText = resolveLabel(item.summary);
+        item.title = item.titleText;
+        item.summary = item.summaryText;
+        item.sourceModule = moduleLabel(item.source?.providerCode);
+        item.sourceModuleName = moduleLabel(item.source?.sourceSystem) || item.sourceModule;
+        item.sourceModuleId = item.source?.moduleId || null;
+        item.sourceType = item.source?.objectType || '';
+        item.sourceId = item.source?.objectId || '';
+        item.sourceObjectType = item.sourceType;
+        item.deepLink = item.source?.deepLink || null;
+        item.typeIcon = TYPE_ICON[item.workIntent] || 'bx-circle';
+        item.accepted = item.admissionState === 'admitted';
+        item.claimed = item.ownershipState === 'owned';
+        item.startedOnce = item.executionState === 'active' || item.executionState === 'paused';
+        /*
+         * WHICH SEAT THE READER IS IN — derived here, BEFORE the person objects are flattened to names.
+         *
+         * The detail page showed a role chip with no text on every real task, because `viewerRole` is a fixture
+         * field and the projection has never carried one. It does carry `isCurrentUser` on assignee/requester —
+         * the one thing the server can state for certain — so the role is read from that. A fixture that
+         * declares its own role keeps it; when neither person is the caller nothing is claimed and the chip
+         * does not render at all.
+         */
+        if (!item.viewerRole) {
+            if (item.assignee?.isCurrentUser) { item.viewerRole = 'Owner'; }
+            else if (item.requester?.isCurrentUser) { item.viewerRole = 'Creator'; }
+        }
+        // A person is { id, displayName } — fixtures carry the name, the real projection cannot yet resolve it
+        // (no user-directory seam in Platform), so fall back to "Me" for the caller and to a plain
+        // name-unavailable label for anyone else. Never render a raw user GUID.
+        item.requester = personName(item.requester);
+        item.assignee = personName(item.assignee);
+        item.scope = item.delegationContext ? 'onBehalf' : 'mine';
+        item.delegator = item.delegationContext?.displayName || null;
+        // A group is shown only when something actually NAMES one. The projection carries no pool identity — a
+        // real item says only assignmentMode:"groupQueue", never WHICH queue — so deriving a name from that flag
+        // meant labelling genuine CFO-pool work "Operasyon Kuyruğu", a queue that does not exist. Nothing is
+        // synthesized any more: buildGroupSelector then renders nothing, and the Havuz tab stops asserting a team
+        // it cannot know. Giving the provider a pool-identity field is WC-3 contract work (BL-031 a/b), NOT this
+        // slice. A showcase fixture may still declare its own `group` and keep it; none does today.
+        /*
+         * WHICH queue this work waits in. It now comes from the projection (WC-3 / BL-031): `pool.label` is the
+         * position joined to its organization unit, resolved server-side.
+         *
+         * Still NOTHING is synthesized. A pool whose position could not be read arrives with an id and no label,
+         * and an unlabelled queue shows no group — the same silence that replaced the fabricated "Operasyon
+         * Kuyruğu", which named a team that does not exist for every pooled item. A showcase fixture may still
+         * declare its own `group` and keep it.
+         */
+        item.group = provenance === 'fixture'
+            ? (item.group || item.pool?.label?.text || null)
+            : (item.pool?.label?.text || null);
+        item.isUnread = item.personal?.seen === false;
+        item.pinned = !!item.personal?.pinned;
+        item.snoozedUntil = item.personal?.snoozedUntil || null;
+        // A REAL item's plan date arrives on the wire (item.plannedDate, normalized by adaptProjection) and must
+        // WIN here — this used to overwrite it unconditionally with `personal?.plannedDate`, which real work
+        // never carries, silently discarding a plan the moment it left the write path: stored on the server,
+        // invisible on every screen that reads it back. Fixtures still set theirs via `personal`.
+        item.plannedDate = item.plannedDate || item.personal?.plannedDate || null;
+        // Two different questions, two different fields. `waitingOn` is WHO (a typed identity, so a name can be
+        // rendered); `reason` is WHY, in the holder's own words. The reason text used to be sent inside
+        // waitingOn, where this line reads `.displayName` off a string — so the sentence the user typed was on
+        // the wire and rendered as nothing at all.
+        item.waitingOn = item.waitingContext?.waitingOn?.displayName || null;
+        item.waitingReason = resolveLabel(item.waitingContext?.reason) || null;
+        /*
+         * WC-1 — the personal NOTES, a list now and stored on the server. `personal.notes` is what the projection
+         * emits (id · text · createdAt), and the array is normalised here so every reader downstream can map over
+         * it without asking whether the container arrived: a task nobody has written on carries no `personal` at
+         * all, deliberately, so an unguarded `.notes.map` would throw on the ordinary case.
+         *
+         * The single `personal.note` string this replaced was never on the wire — nothing wrote it and no fixture
+         * declared it. It read a field that only the browser's own unsaved assignment ever set.
+         */
+        item.notes = Array.isArray(item.personal?.notes) ? item.personal.notes : [];
+        /*
+         * WC-2. The state comes from the PROJECTION for real work and is never re-derived here; a real item whose
+         * provider said nothing reads `no-sla`, which is the honest answer — "this provider does not track
+         * deadlines" — rather than a number this file invented.
+         *
+         * The showcase catalogue keeps its own answer because it has no server behind it.
+         */
+        item.slaState = showcaseSla ? (item.slaState || showcaseSla.state) : (item.slaState || 'no-sla');
+        // Absent for every provider that cannot say when its work closed (MOD-0023 today) — null, never invented.
+        item.closedAt = item.closedAt || null;
+        /*
+         * Derived late, for the LABEL only — see daysUntil. EXCEPT once the work is closed (BL-046): a finished
+         * item is measured between its deadline and its closing day, so the count is a fact about that task
+         * rather than a fact about today, and it reads the same tomorrow.
+         *
+         * A closed item whose provider sent no closing instant falls back to the live count. That keeps sorting
+         * sensible, and the label never prints it — slaLabel says "closed late" without a number rather than
+         * quoting one that would drift, which is the original defect wearing a new word.
+         */
+        const frozenDiff = isTerminal(item) ? daysLateAtClose(item.dueAt, item.closedAt) : null;
+        item.slaDiffDays = frozenDiff === null ? daysUntil(item.dueAt, provenance) : frozenDiff;
+        item.actions = item.actions.map((candidate) => {
+            const mapped = actionForPresentation(candidate);
+            mapped.primary = candidate.code === item.primaryActionCode;
+            return mapped;
+        });
+        item.tab = tabFor(item);
+        item.dismissed = false;
+        // Showcase curation applies to showcase fixtures ONLY. A real projection item is visible because the
+        // backend already decided the actor may see it — re-filtering it here against a list of demo ids removed
+        // every genuinely created task from the surface.
+        item.provenance = provenance;   // real vs showcase — decides whether ACTIONS hit the server
+        item.catalogVisible = provenance === 'fixture' ? VISIBLE_CATALOG_IDS.has(item.id) : true;
+        if (item.catalogVisible === false) {
+            // NEVER filter silently: this exact hidden exclusion turned a working backend into an invisible one
+            // and cost hours of diagnosis.
+            console.warn(
+                `[WorkCenterNext] Work item "${item.id}" hidden by the showcase catalog filter `
+                + `(sourceModule="${item.sourceModule || item.source?.providerCode || 'unknown'}", `
+                + `provenance="${provenance}"): its id is not in VISIBLE_CATALOG_IDS. `
+                + 'Real projection items must never reach this branch — if this is one, its provenance is wrong.');
+        }
+        // WC-1b DEC-2 — the projection's additive `escalation` object (unmodelled by the contract) folds onto the
+        // boolean signal the shell already renders as the "Eskale" chip. No contract/backend change.
+        item.escalated = !!(item.escalated || item.escalation?.escalated);
+        item.reviewRequired = item.taskLifecycle === 'PendingReview';
+        item.checklist = item.checklist ? {
+            ...item.checklist,
+            items: (item.checklist.items || []).map((entry) => ({
+                ...entry,
+                text: resolveLabel(entry.label) || entry.text || '',
+                done: entry.completed === true || entry.done === true,
+                /*
+                 * The level arrives as TWO booleans and the screen needs ONE name. Derived here, beside `text`
+                 * and `done`, rather than at each of the four places that ask: the write path has to send a
+                 * level back, and a second derivation is how the chip and the request start disagreeing.
+                 *
+                 * `blocking` wins — an item that stops completion is not merely expected.
+                 */
+                requirement: entry.blocking ? 'Blocking' : (entry.required ? 'Required' : 'Optional'),
+                // A template item's words are the template's; the server refuses to reword one. The projection
+                // says so through the label's KIND, which is the only place that fact is carried.
+                templateOwned: entry.label?.kind === 'resource' || !!entry.label?.key,
+                /*
+                 * The SERVER'S answer to "may this reader change this row", carried through unchanged.
+                 *
+                 * Not re-derived here from an author id, and the projection deliberately does not send one: the
+                 * rule then exists once, on the side that enforces it, rather than twice with a chance to
+                 * disagree. Defaulted true so a provider that has no concept of authorship keeps behaving as it
+                 * did — a missing field must not silently take controls away.
+                 */
+                editable: entry.editable !== false
+            }))
+        } : null;
+        /*
+         * ⚠ THE EFFORT CARD'S DATA, ASSEMBLED HERE (2026-08-24, Tur B). The wire carries two flat numbers
+         * (`estimateHours`, `spentHours`) because that is how `TaskItem` stores them; the card wants one
+         * object. Building it here rather than reshaping the DTO keeps the wire shaped like the record.
+         *
+         * A fixture may hand `effort` in directly — it is a declared data capability — so an existing object
+         * wins over the flat pair.
+         */
+        if (!item.effort && (item.estimateHours != null || item.spentHours != null)) {
+            item.effort = { estimate: item.estimateHours ?? 0, spent: item.spentHours ?? 0 };
+        }
+        item.subtasks = item.subtasks || null;
+        item.dependencies = item.dependencies ? item.dependencies.map((entry) => ({
+            ...entry,
+            title: resolveLabel(entry.title) || entry.title || ''
+        })) : null;
+        // A blocker's label is a contract label like any other. Left unresolved it reached the banner as an
+        // object and rendered as "[object Object]" — the same failure the dependency titles above already had.
+        item.blockedState = item.blockedState
+            ? {
+                ...item.blockedState,
+                blockers: (item.blockedState.blockers || []).map((blocker) => ({
+                    ...blocker,
+                    labelText: resolveLabel(blocker.label) || ''
+                }))
+            }
+            : item.blockedState;
+        item.attachments = item.attachments ? item.attachments.map((entry) => ({
+            ...entry,
+            name: resolveLabel(entry.label) || entry.name || entry.id,
+            size: entry.version ? `v${entry.version}` : ''
+        })) : null;
+        /*
+         * Activity carries an ABSOLUTE `at`; "3 days ago" is computed where it is rendered.
+         *
+         * It used to be derived here, once, into a day count. That is the frozen-date class of bug: a projection
+         * held in memory while a tab stays open — or served from a cache — keeps saying "today" tomorrow. The
+         * server does not send a day count either, for the same reason.
+         *
+         * Parsed once here (fixtures write "2026-07-24 09:10", not ISO) and left as a timestamp.
+         */
+        item.activity = (item.activity || []).map((entry) => {
+            const stamp = (value) => {
+                const parsed = value ? new Date(String(value).replace(' ', 'T')) : null;
+                return (parsed && !isNaN(parsed)) ? parsed.getTime() : null;
+            };
+            // `editedAt` gets the SAME treatment as `at`, and for the same reason: it is an absolute instant on
+            // the wire and the words beside it ("edited", plus the date on hover) are derived where they render.
+            return { ...entry, atMs: stamp(entry.at), editedAtMs: stamp(entry.editedAt) };
+        });
+        item.stages = item.processStages || null;
+        item.timesheet = item.workItemCapabilities.includes('timeTracking')
+            // A running timer needs a real start anchor, else the live tick renders
+            // `Date.now() - null` (epoch millis) as a nonsense elapsed value.
+            ? {
+                running: item.timerState === 'running',
+                startedAt: item.timerState === 'running' ? Date.now() - (37 * 60000) : null,
+                loggedMinutes: item.loggedMinutes || 0
+            }
+            : null;
+        item._fixture = fixture;
+        return item;
+    };
+    /*
+     * WC-1b DEC-1 — FIXTURE SOURCE vs PRESENTATION MAPPER.
+     * The mapper (toPresentation + tabFor/segmentFor/computeBlocked/getActions/resolveLabel) is NOT
+     * mock-specific: the real API path maps canonical work items through exactly the same code.
+     *
+     * `computeShowcaseSla` is the one part that is NOT shared (WC-2): a real item's slaState is decided by the
+     * server and only read here, so the two paths deliberately diverge at that one point. Only the fixture
+     * SOURCE below is showcase data, and it is reachable ONLY when the server says so.
+     *
+     * The switch is decided SERVER-side (IWebHostEnvironment → data-wcn-fixtures on #wcnApp) and re-read on each
+     * call, so production has no client-reachable path to fixture data — a hand-typed query string alone does
+     * nothing because the attribute is only emitted in Development.
+     */
+    const showcaseFixturesEnabled = () => {
+        const host = global.document?.getElementById('wcnApp');
+        return host?.dataset?.wcnFixtures === 'showcase';
+    };
+    const buildItems = () => (showcaseFixturesEnabled()
+        // Showcase fixtures declare their provenance so the curated allowlist applies to them alone.
+        ? allFixtureGroups().map((fixture) => toPresentation(fixture, { provenance: 'fixture' }))
+        : []);
+    /*
+     * Is this work finished? Terminal means Done or Cancelled, read from EITHER the normalized status or the task
+     * lifecycle, because the two can disagree on the wire and "finished" is the stronger claim.
+     *
+     * Exported so app.js reads the same definition instead of keeping a second copy: two definitions of "closed"
+     * would drift, and the tab routing, the read-only rules and the action filter below all depend on it agreeing.
+     */
+    const isTerminal = (item) => ['Done', 'Cancelled'].includes(item?.normalizedStatus)
+        || item?.lifecycle === 'Done' || item?.lifecycle === 'Cancelled';
+
+    /*
+     * The actions a surface may offer for an item.
+     *
+     * This is the ONE place both surfaces read from — app.js's `itemActions` wraps it, and the list rows, the
+     * table, the bulk bar and the detail rail all go through that — so a rule written here reaches every surface
+     * at once and no surface can forget it.
+     *
+     * BL-038: a CLOSED item offers no INLINE action. History is meant to be read-only, and until now that held
+     * only because TaskWorkItemProvider happens to send an empty action set for terminal work — the surface
+     * itself would happily render a disabled button if one ever arrived. This makes the rule the surface's own.
+     *
+     * `deeplink` actions survive deliberately: opening the SOURCE record of a finished task is a legitimate
+     * thing to want, and the depth axis already means exactly "acts here / goes elsewhere". The default is
+     * `inline` (resolved against the item, then the action, the same order the contract uses), so an action that
+     * declares no depth is filtered.
+     *
+     * Why here and NOT in fixture-contract.js: validateItems DROPS an item that fails validation
+     * (work-items-api.js), so a contract rule would make a mis-projected task VANISH from History. A lost task is
+     * worse than a leaked disabled button — and this codebase has already lost real items that way once, to
+     * `catalogVisible`.
+     */
+    const getActions = (item) => {
+        const actions = clone(item?.actions || []);
+        if (!isTerminal(item)) { return actions; }
+        const itemDepth = item?.actionDepth || 'inline';
+        return actions.filter((action) => (action.depth || itemDepth) === 'deeplink');
+    };
+    const buildTriggers = () => (showcaseFixturesEnabled()
+        ? clone(global.WorkCenterNextFixtures?.triggerOnly || [])
+        : []);
+
+    /*
+     * `onBehalfOf`, `status`, the old `computeSla` and `computeBlocked` used to be exported here and were read from
+     * nowhere (0 references in app.js and in the tests). They are gone rather than kept "just in case": a mock
+     * export nobody consumes is a standing invitation to consume it.
+     *
+     * The three getters below are evaluated per access, not frozen at load, because each answers "what is real
+     * right now" — the showcase flag is a runtime attribute and the clock moves.
+     */
+    global.WorkCenterNextData = {
+        // Snooze bounds and the calendar's today-highlight are about the USER's clock, so outside the showcase
+        // they must read the real day, not the day the fixtures were written against.
+        get todayIso() {
+            return showcaseFixturesEnabled() ? SHOWCASE_TODAY_ISO : localIsoDate(nowProvider());
+        },
+        // Showcase keeps its demo persona so the catalogue stays coherent; real sessions get the real user, with
+        // no title, because there is no source for one.
+        get currentUser() {
+            return showcaseFixturesEnabled() ? CURRENT_USER : sessionUser();
+        },
+        /*
+         * Delegation scopes. There is NO delegation data for a real session — Platform exposes no "who delegated
+         * to me" seam yet — so outside the showcase this is empty and the scope selector collapses to "Kendim".
+         * The code path is intentionally left intact: the day a real provider lands, it fills this array and the
+         * selector comes back on its own. Listing the showcase's people to a real user offered them delegation
+         * from colleagues who do not exist.
+         */
+        get delegators() {
+            return showcaseFixturesEnabled() ? DELEGATORS : [];
+        },
+        tabFor,
+        segmentFor,
+        // One definition of "closed", shared with app.js — see isTerminal for why it must not be duplicated.
+        isTerminal,
+        // Exposed so the RENDER can measure "how long ago" against the same clock the rest of the surface uses:
+        // the showcase's frozen date for fixtures, the real one for real work.
+        referenceDate,
+        getActions,
+        setNowProvider,
+        toPresentation,
+        buildItems,
+        buildTriggers,
+        showcaseFixturesEnabled,
+        buildMeetings: () => (showcaseFixturesEnabled() ? clone(MEETINGS) : []),
+        resolveLabel
+    };
+})(typeof window !== 'undefined' ? window : globalThis);

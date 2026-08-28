@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Domain.Entities.Notifications;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
@@ -6,14 +7,21 @@ using MongoDB.Driver;
 namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 
 // MOD-0027-FU03 — Notification Event Catalog Mongo repository. EventCode is the unique business key (write-path guard
-// via GetByEventCode + sync upsert); a unique index on EventCode is created best-effort at construction.
+// via GetByEventCode + sync upsert).
+//
+// ⚠ THE UNIQUE INDEX IS DECLARED IN THE MANIFEST, NOT HERE. This comment used to claim a unique index on EventCode
+// was "created best-effort at construction"; no such code existed, so the business key was protected only by a
+// read-then-write check that two concurrent callers both pass. It now lives in PlatformSchemaManifest.Notification
+// as ux_notification_event_definitions_event_code_active (unique, partial on IsDeleted:false) — one declaration,
+// built on the production startup path and verified against a real Mongo by PlatformSchemaContractMongoTests.
+// See BL-279.
 public sealed class NotificationEventDefinitionRepository : INotificationEventDefinitionRepository
 {
     private readonly IMongoCollection<NotificationEventDefinition> _collection;
 
     public NotificationEventDefinitionRepository(IPlatformDbContext dbContext)
     {
-        _collection = dbContext.GetCollection<NotificationEventDefinition>("notification_event_definitions");
+        _collection = dbContext.GetCollection<NotificationEventDefinition>(PlatformCollections.NotificationEventDefinitions);
     }
 
     public async Task<NotificationEventDefinition> CreateAsync(NotificationEventDefinition definition, CancellationToken ct = default)

@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using System.Text.Json;
 using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Common;
@@ -43,12 +44,27 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
         var rabbitMq = RabbitMqTestSettings.FromEnvironment();
         var mongo = MongoTestSettings.FromEnvironment();
         var mongoClient = new MongoClient(mongo.ConnectionString);
-        var databaseName = mongo.DatabaseName + "_" + Guid.NewGuid().ToString("N");
+        /*
+         * ⚠ A FIXED NAME, AND ONLY THE PROFILES THIS TEST USES. This used to be
+         * `mongo.DatabaseName + "_" + Guid.NewGuid()` followed by MongoDbIndexConfigurations.EnsureIndexesAsync,
+         * which built all 82 collections and 218 indexes to reach the two this test reads. A fixed name cannot
+         * accumulate one database per run, and it is dropped in the finally below either way.
+         */
+        var databaseName = mongo.DatabaseName + "_tenant_lifecycle";
         var database = mongoClient.GetDatabase(databaseName);
 
         try
         {
-            await MongoDbIndexConfigurations.EnsureIndexesAsync(database);
+            await mongoClient.DropDatabaseAsync(databaseName);
+            await PlatformSchemaManifest.ApplyAsync(
+                database,
+                new[]
+                {
+                    SchemaProfile.Eventing,
+                    SchemaProfile.Core,
+                    SchemaProfile.Notification,
+                    SchemaProfile.AccessGovernance
+                });
 
             var tenantContext = new TenantContext();
             tenantContext.SetPlatformContext(Guid.NewGuid());
@@ -492,7 +508,9 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
             _handler = handler;
             _targetCount = targetCount;
             _adapter = new Diten.Platform.Application.Features.Notifications.Services.NotificationEventDispatchAdapter(
-                new SeededEventRepository(), this);
+                new SeededEventRepository(), this, new PassThroughLocaleResolver(),
+                Microsoft.Extensions.Logging.Abstractions.NullLogger<
+                    Diten.Platform.Application.Features.Notifications.Services.NotificationEventDispatchAdapter>.Instance);
         }
 
         public List<QueueEmailNotificationCommand> Commands { get; } = [];
@@ -586,4 +604,15 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
         public string ContentRootPath { get; set; } = AppContext.BaseDirectory;
         public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
     }
+}
+
+/// <summary>
+/// The tenant-lifecycle mappers supply a locale of their own, so this double only has to prove the adapter still
+/// forwards it untouched — the behaviour WC-4's locale change had to leave alone.
+/// </summary>
+internal sealed class PassThroughLocaleResolver
+    : Diten.Platform.Application.Features.Notifications.Services.INotificationLocaleResolver
+{
+    public Task<string> ResolveAsync(Guid tenantId, string? requested, CancellationToken ct = default)
+        => Task.FromResult(string.IsNullOrWhiteSpace(requested) ? "en" : requested.Trim().ToLowerInvariant());
 }

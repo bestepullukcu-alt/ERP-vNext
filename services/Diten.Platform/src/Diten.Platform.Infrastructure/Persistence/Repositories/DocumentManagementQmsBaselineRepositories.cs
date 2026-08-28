@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -13,7 +14,7 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 public sealed class BaselineReleaseRepository : TenantRepository<BaselineRelease>, IBaselineReleaseRepository
 {
     public BaselineReleaseRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_baseline_releases")
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementBaselineReleases)
     {
     }
 
@@ -35,7 +36,7 @@ public sealed class BaselineReleaseRepository : TenantRepository<BaselineRelease
 public sealed class CollectionDefinitionRepository : TenantRepository<CollectionDefinition>, ICollectionDefinitionRepository
 {
     public CollectionDefinitionRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_collection_definitions")
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementCollectionDefinitions)
     {
     }
 
@@ -113,7 +114,7 @@ public sealed class CollectionDefinitionRepository : TenantRepository<Collection
 public sealed class BaselineSnapshotManifestRepository : TenantRepository<BaselineSnapshotManifest>, IBaselineSnapshotManifestRepository
 {
     public BaselineSnapshotManifestRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_baseline_snapshot_manifests")
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementBaselineSnapshotManifests)
     {
     }
 

@@ -1,0 +1,56 @@
+@using Diten.Web.Views.Tasks
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TasksIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleCreate"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "create";
+}
+
+@* The title, the breadcrumb and the actions all live in _Form.cshtml, like the golden reference — one header for
+   both Create and Edit. The description sentence that used to sit here was dropped: "Yeni Görev" already says
+   what the page is, so the sentence restated the title in longer words. If a title ever needs explaining, the
+   title is what should be fixed. *@
+@* ⚠ THE THIRD CREATE GATE'S CARRIER (2026-08-24). The subtask panel can send a reader here for the FULL form —
+   the only gate that renders `#taskCustomFields`, i.e. the only one that can collect a tenant-defined required
+   field. Two facts have to survive the trip: which task this becomes a child of, and where the reader came
+   from. Both are read back by `form-page.js`.
+
+   ⚠ `ReturnUrl` HAS ALREADY BEEN THROUGH `Url.IsLocalUrl` in the controller — it is null here if it pointed
+   off-site. Nothing downstream re-checks it, so nothing downstream may widen it. *@
+<div id="taskCreateContext"
+     data-parent-task-id="@(ViewData["ParentTaskId"] as string ?? string.Empty)"
+     data-return-url="@(ViewData["ReturnUrl"] as string ?? string.Empty)"></div>
+
+<partial name="~/Views/Tasks/_Form.cshtml" />
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+    <link rel="stylesheet" href="~/assets/vendor/libs/tagify/tagify.css" />
+}
+
+@section Scripts {
+    @* The dates are flatpickr fields, like the golden reference: a native <input type="date"> takes its format
+       from the OPERATING SYSTEM's locale, so an Arabic page still rendered gg.aa.yyyy. *@
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    @* Tags are chips, using the same library as the tenant-security screen's IP/country lists. *@
+    <script src="~/assets/vendor/libs/tagify/tagify.js"></script>
+    <partial name="~/Views/Tasks/_IndexL10n.cshtml" />
+    @* form-page.js announces every save and every refusal through DitenModal, and this page never loaded it:
+       a successful create THREW before it could navigate, so the user saw nothing, clicked again, and made a
+       second task. Found by running the page, not by a test — 1500 of those were green. *@
+    <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-tags.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-datefield.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-checkitem.js" asp-append-version="true"></script>
+    @* Checklist row dragging. The LOCAL vendor copy, deliberately — _Layout.cshtml pulls Sortable from a CDN,
+       which breaks silently on an air-gapped install and is a supply-chain surface besides (raised as its own
+       backlog item). Create only: the checklist card is removed on the edit page, so Edit would be loading a
+       library with nothing to bind. *@
+    <script src="~/assets/vendor/libs/sortablejs/sortable.js"></script>
+    <script src="~/assets/js/Tasks/form.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/document-references.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/form-page.js" asp-append-version="true"></script>
+}

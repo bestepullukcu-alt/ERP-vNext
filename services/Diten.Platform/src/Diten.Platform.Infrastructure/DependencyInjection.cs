@@ -22,6 +22,7 @@ using Diten.Platform.Infrastructure.Persistence.Settings;
 using Diten.Platform.Infrastructure.Services;
 using Diten.Platform.Infrastructure.Services.Audit;
 using Diten.Platform.Infrastructure.Services.Http;
+using Diten.Platform.Infrastructure.Services.WorkAggregation;
 using Diten.Platform.Infrastructure.Services.Mdm;
 using Diten.Platform.Infrastructure.Services.WorkingCalendarImport;
 using Diten.Platform.Infrastructure.Services.Notifications;
@@ -125,6 +126,28 @@ public static class DependencyInjection
         services.AddSingleton<IValidateOptions<BusinessReferenceDataProviderOptions>, BusinessReferenceDataProviderOptionsValidator>();
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
         services.Configure<AuthServiceOptions>(configuration.GetSection(AuthServiceOptions.SectionName));
+        // MOD-0024 §12 K2 — which workflow template task approval starts. A tenant that designs its own flow in
+        // the Workflow Designer overrides Tasks:Approval:TemplateCode; the built-in default is only a fallback.
+        services.Configure<Diten.Platform.Application.Features.Tasks.Services.TaskApprovalOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.Tasks.Services.TaskApprovalOptions.SectionName));
+        // Faz 3b — which workflow template task REVIEW starts. Same override story as approval above, under its
+        // own section so a tenant can point review and approval at different flows.
+        services.Configure<Diten.Platform.Application.Features.Tasks.Services.TaskReviewOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.Tasks.Services.TaskReviewOptions.SectionName));
+        // BL-023 Part B — the upward work-request template code, on the same terms as the two above.
+        services.Configure<Diten.Platform.Application.Features.Tasks.Services.TaskUpwardRequestOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.Tasks.Services.TaskUpwardRequestOptions.SectionName));
+        // WC-2 — how far ahead of a deadline the warning window opens. A POLICY a tenant may tune, which is why
+        // it is here and not declared in the executable contract (the contract declares the state VOCABULARY).
+        services.Configure<Diten.Platform.Application.Features.WorkAggregation.Services.WorkItemSlaOptions>(
+            configuration.GetSection(
+                Diten.Platform.Application.Features.WorkAggregation.Services.WorkItemSlaOptions.SectionName));
+        // WC-D3 (DCP-004 §2 D3) — the per-provider timeout the aggregation handler enforces. Bound here on the
+        // same terms as the SLA window above: an operator's judgement about how long a reader waits for ONE
+        // source, which differs between an in-process Mongo read and the first network-backed provider.
+        services.Configure<Diten.Platform.Application.Features.WorkAggregation.Services.WorkAggregationResilienceOptions>(
+            configuration.GetSection(
+                Diten.Platform.Application.Features.WorkAggregation.Services.WorkAggregationResilienceOptions.SectionName));
         services.Configure<MdmServiceOptions>(configuration.GetSection(MdmServiceOptions.SectionName));
         services.Configure<FakeMessagingProviderOptions>(configuration.GetSection(FakeMessagingProviderOptions.SectionName));
         services.AddOptions<SmtpProviderOptions>()
@@ -178,6 +201,8 @@ public static class DependencyInjection
         services.AddScoped<ITenantActivationNotifier, AuthServiceTenantActivationNotifier>();
         services.AddScoped<ICatalogPermissionSyncService, CatalogPermissionSyncService>();
         services.AddScoped<IAuthPermissionModulesClient, AuthPermissionModulesClient>();
+        // MOD-0024 §K6.4 — display-name resolution for task assignees/requesters (best-effort S2S).
+        services.AddScoped<IUserDisplayNameResolver, AuthUserDisplayNameClient>();
         services.AddScoped<IPlatformLookupCache, PlatformLookupMemoryCache>();
         services.AddScoped<IPlatformAdministratorProvisioningService, PlatformAdministratorProvisioningService>();
         services.AddScoped<IPlatformAdministratorInvitationEmailService, PlatformAdministratorInvitationEmailService>();
@@ -209,6 +234,20 @@ public static class DependencyInjection
         services.AddHttpClient<
             Diten.Platform.Application.Features.DocumentManagementApproval.Services.IApprovalRoleDirectory,
             Diten.Platform.Infrastructure.Services.Auth.AuthServiceApprovalRoleDirectory>();
+
+        /*
+         * WC-D1 (DCP-004 §2 D1) — THE GENERAL BRIDGE to modules that live in their own service.
+         *
+         * ONE provider class and ONE dispatcher class, multiplied by the rows in
+         * 'WorkAggregation:RemoteProviders'. Adding a module is adding a row; it is deliberately NOT adding a
+         * class, because N teams' bridge classes would mean N error-handling policies and N timeouts, and the
+         * first slow module would slow the whole board with nobody able to say which one.
+         *
+         * The ADDRESS is the operator's, written in configuration beside MdmService:BaseUrl. It is not read from
+         * the self-registration manifest: a manifest is client-supplied, and an address inside it is the party
+         * being called telling Platform where to send a caller's JWT.
+         */
+        services.AddRemoteWorkItemProviders(configuration);
 
         BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
         BsonSerializer.RegisterSerializer(new DecimalSerializer(BsonType.Decimal128));
@@ -281,6 +320,35 @@ public static class DependencyInjection
         services.AddScoped<IRuntimeAssignmentSnapshotRepository, RuntimeAssignmentSnapshotRepository>();
         services.AddScoped<IWorkflowTransitionLogRepository, WorkflowTransitionLogRepository>();
         services.AddScoped<ISlaEscalationRuleRepository, SlaEscalationRuleRepository>();
+
+        // MOD-0024 Task Engine Repositories (Phase 1 uses the first five; the rest exist so Phases 2–5 are additive)
+        // The transition log is registered BEFORE the task repository that writes to it — not that the order
+        // matters to the container, but the dependency direction is worth reading in one glance: every task write
+        // goes through TaskItemRepository, and TaskItemRepository is what records the history (WC-1).
+        services.AddScoped<ITaskTransitionRepository, TaskTransitionRepository>();
+        services.AddScoped<ITaskItemRepository, TaskItemRepository>();
+        services.AddScoped<ITaskAssignmentRepository, TaskAssignmentRepository>();
+        services.AddScoped<ITaskDependencyRepository, TaskDependencyRepository>();
+        services.AddScoped<ITaskWatcherRepository, TaskWatcherRepository>();
+        services.AddScoped<ITaskCommentRepository, TaskCommentRepository>();
+        services.AddScoped<ITaskPersonalOverlayRepository, TaskPersonalOverlayRepository>();
+        services.AddScoped<ITaskTypeRepository, TaskTypeRepository>();
+        services.AddScoped<IDocumentReferenceListRepository, DocumentReferenceListRepository>();
+        services.AddScoped<ITaskFieldDefinitionRepository, TaskFieldDefinitionRepository>();
+        services.AddScoped<IChecklistTemplateRepository, ChecklistTemplateRepository>();
+        services.AddScoped<IChecklistRunRepository, ChecklistRunRepository>();
+        services.AddScoped<ITaskTemplateRepository, TaskTemplateRepository>();
+        services.AddScoped<ITaskRecurrenceRuleRepository, TaskRecurrenceRuleRepository>();
+
+        /*
+         * WC-4 — task notification recipients, resolved from AuthService.
+         *
+         * THIS LINE is the seam: swap the implementation and every task notification is addressed differently.
+         * Before it existed, MOD-0024 put the recipient's user GUID into the email field, so no task
+         * notification had ever been deliverable.
+         */
+        services.AddScoped<Diten.Platform.Application.Contracts.ITaskNotificationRecipientResolver,
+            Services.AuthTaskNotificationRecipientClient>();
 
         // Document Management Repositories
         services.AddScoped<IBaselineReleaseRepository, BaselineReleaseRepository>();
@@ -426,6 +494,18 @@ public static class DependencyInjection
         PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        // WC-4 — the platform-default messaging settings row. Without it QueueEmailNotificationHandler refuses at its
+        // FIRST line and no producer's notification ever reaches a template, a locale or a provider. Derived from the
+        // Smtp section so that block finally configures what it appears to configure. Idempotent; never overrides a
+        // row an operator created.
+        NotificationMessagingSettingsSeed.EnsureSeededAsync(
+                database,
+                configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions())
+            .GetAwaiter().GetResult();
+        // BL-042 — stamp AcceptedByUserId on tasks accepted under the OLD inferred rule. Without this every
+        // already-accepted task reverts to pendingAcceptance on deploy and the tenant's My Work empties into the
+        // Inbox. Idempotent: only unstamped rows are touched.
+        TaskAcceptanceBackfillMigration.MigrateAsync(database).GetAwaiter().GetResult();
         // MOD-0027-FU03A (Bridge) — PlatformSeed/SystemSeed notification events; runs after templates exist. No-op
         // until FU04A adds seed content.
         NotificationEventSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
@@ -435,6 +515,10 @@ public static class DependencyInjection
         // FIX-DOMAIN-SERVICE-CANONICAL — must run AFTER the domain/service lookups are seeded: pins catalog
         // Domain/Service to canonical Codes and fixes the 'Servicec' DisplayName typo. Marker-gated + idempotent.
         ModuleCatalogTaxonomyCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+        // FIX-DOMAIN-NORMALIZATION — runs AFTER the marker-gated canonicalization above and is itself NOT
+        // marker-gated: re-runnable and idempotent, so catalog rows that drifted after that one-shot ran
+        // (two spellings of one domain → the sidebar heading rendered twice) are healed on every startup.
+        ModuleCatalogDomainCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
         PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
 
@@ -484,7 +568,10 @@ public static class DependencyInjection
 
         services.AddHostedService<OutboxPublisherWorker>();
 
-        RunMongoStartupInitialization(database, mongoSettings);
+        RunMongoStartupInitialization(
+            database,
+            mongoSettings,
+            configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions());
 
         return services;
     }
@@ -516,7 +603,10 @@ public static class DependencyInjection
             });
     }
 
-    private static void RunMongoStartupInitialization(IMongoDatabase database, MongoDbSettings mongoSettings)
+    private static void RunMongoStartupInitialization(
+        IMongoDatabase database,
+        MongoDbSettings mongoSettings,
+        SmtpOptions smtpOptions)
     {
         try
         {
@@ -531,6 +621,15 @@ public static class DependencyInjection
             PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            // WC-4 — the platform-default messaging settings row. Without it QueueEmailNotificationHandler refuses at its
+            // FIRST line and no producer's notification ever reaches a template, a locale or a provider. Derived from the
+            // Smtp section so that block finally configures what it appears to configure. Idempotent; never overrides a
+            // row an operator created.
+            NotificationMessagingSettingsSeed.EnsureSeededAsync(database, smtpOptions).GetAwaiter().GetResult();
+            // BL-042 — stamp AcceptedByUserId on tasks accepted under the OLD inferred rule. Without this every
+            // already-accepted task reverts to pendingAcceptance on deploy and the tenant's My Work empties into the
+            // Inbox. Idempotent: only unstamped rows are touched.
+            TaskAcceptanceBackfillMigration.MigrateAsync(database).GetAwaiter().GetResult();
             // MOD-0027-FU03A (Bridge) — PlatformSeed/SystemSeed notification events; runs after templates exist. No-op
             // until FU04A adds seed content.
             NotificationEventSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
@@ -540,6 +639,10 @@ public static class DependencyInjection
             // FIX-DOMAIN-SERVICE-CANONICAL — after the lookups are seeded: canonicalize catalog Domain/Service and
             // fix the 'Servicec' DisplayName typo. Marker-gated + idempotent.
             ModuleCatalogTaxonomyCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+            // FIX-DOMAIN-NORMALIZATION — runs AFTER the marker-gated canonicalization above and is itself NOT
+            // marker-gated: re-runnable and idempotent, so catalog rows that drifted after that one-shot ran
+            // (two spellings of one domain → the sidebar heading rendered twice) are healed on every startup.
+            ModuleCatalogDomainCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
             PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         }

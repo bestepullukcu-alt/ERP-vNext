@@ -1,0 +1,32 @@
+task_type_code,task_type_name,record_class,gqms_domain,function_code,is_quality_event,governing_documents_group,governing_documents_local,governing_doc_uids,status,note
+DOC-REVIEW,Controlled document periodic review,GXP_QUALITY_RECORD,QMS,QUA,no,GMG-QMS-SOP-0001,,UID-0000001,PROPOSED — QA adoption required,
+DOC-CHANGE,Document request / revision / retirement,GXP_QUALITY_RECORD,QMS,QUA,no,GMG-QMS-SOP-0001,,UID-0000001,PROPOSED — QA adoption required,
+TRN-ASSIGN,Training assignment and completion,GXP_QUALITY_RECORD,QMS,HR,no,GMG-QMS-SOP-0003,,UID-0000102,PROPOSED — QA adoption required,
+TRN-EFFECT,Training effectiveness verification,GXP_QUALITY_RECORD,QMS,HR,no,GMG-QMS-SOP-0003,,UID-0000102,PROPOSED — QA adoption required,
+RISK-ASSESS,Quality risk assessment,GXP_QUALITY_RECORD,QMS,QUA,no,GMG-QMS-SOP-0004,,UID-0000103,PROPOSED — QA adoption required,
+DEV-QMS,Deviation / incident — quality system,GXP_QUALITY_RECORD,QMS,QUA,yes,GMG-QMS-SOP-0005,,UID-0000104,PROPOSED — QA adoption required,
+DEV-GMP,Deviation / incident — manufacturing,GXP_QUALITY_RECORD,GMP,MFG,yes,GMG-QMS-SOP-0005;GMG-GMP-SOP-0001,,UID-0000104;UID-0000110,PROPOSED — QA adoption required,Governing SOP not registered in LOG-0001: GMG-GMP-SOP-0001
+DEV-GDP,Deviation / incident — distribution,GXP_QUALITY_RECORD,GDP,SCM,yes,GMG-QMS-SOP-0005;GMG-GDP-SOP-0001,,UID-0000104;UID-0000115,PROPOSED — QA adoption required,Governing SOP not registered in LOG-0001: GMG-GDP-SOP-0001
+DEV-PV,Deviation / incident — pharmacovigilance,GXP_QUALITY_RECORD,PV,PV,yes,GMG-QMS-SOP-0005;GMG-PV-SOP-0002,,UID-0000104;UID-0000112,PROPOSED — QA adoption required,
+CAPA,Corrective and preventive action,GXP_QUALITY_RECORD,QMS,QUA,yes,GMG-QMS-SOP-0006,,UID-0000105,PROPOSED — QA adoption required,
+CHG-CONTROL,Change control,GXP_QUALITY_RECORD,QMS,QUA,yes,GMG-QMS-SOP-0007,,UID-0000106,PROPOSED — QA adoption required,
+DI-REVIEW,Data integrity / audit trail review,GXP_QUALITY_RECORD,QMS,QUA,no,GMG-QMS-SOP-0014,,UID-0000107,PROPOSED — QA adoption required,
+COMPLAINT,Product complaint handling,GXP_QUALITY_RECORD,QMS,QUA,yes,GMG-QMS-SOP-0008,,UID-0000108,PROPOSED — QA adoption required,
+RECALL,Recall / field action,GXP_QUALITY_RECORD,QMS,QUA,yes,GMG-QMS-SOP-0009,,UID-0000109,PROPOSED — QA adoption required,
+BATCH-RELEASE,Batch release / product disposition,GXP_QUALITY_RECORD,GMP,MFG,no,GMG-GMP-SOP-0001,,UID-0000110,PROPOSED — QA adoption required,Governing SOP not registered in LOG-0001: GMG-GMP-SOP-0001
+SPEC-CONTROL,Specification and formulation control,GXP_QUALITY_RECORD,GMP,MFG,no,GMG-GMP-SOP-0002,,UID-0000116,PROPOSED — QA adoption required,Governing SOP not registered in LOG-0001: GMG-GMP-SOP-0002
+VAL-QUAL,Validation / qualification activity,GXP_QUALITY_RECORD,GMP,MFG,no,GMG-GMP-SOP-0003,,UID-0000120,PROPOSED — QA adoption required,Governing SOP not registered in LOG-0001: GMG-GMP-SOP-0003
+PQR,Product quality review (PQR / APR),GXP_QUALITY_RECORD,GMP,MFG,no,GMG-GMP-SOP-0004,,UID-0000121,PROPOSED — QA adoption required,Governing SOP not registered in LOG-0001: GMG-GMP-SOP-0004
+GDP-OPS,"Storage, distribution, transport and returns",GXP_QUALITY_RECORD,GDP,SCM,no,GMG-GDP-SOP-0001,,UID-0000115,PROPOSED — QA adoption required,Governing SOP not registered in LOG-0001: GMG-GDP-SOP-0001
+PV-CASE,ICSR / safety case processing,GXP_QUALITY_RECORD,PV,PV,no,GMG-PV-SOP-0001,,UID-0000111,PROPOSED — QA adoption required,
+PV-PERIODIC,PSUR / periodic safety reporting,GXP_QUALITY_RECORD,PV,PV,no,GMG-PV-SOP-0001,,UID-0000111,PROPOSED — QA adoption required,
+PV-QUALITY-IF,PV-quality interface activity,GXP_QUALITY_RECORD,PV,PV,no,GMG-PV-SOP-0002,,UID-0000112,PROPOSED — QA adoption required,
+REG-VARIATION,Regulatory variation,GXP_QUALITY_RECORD,RAF,RA,no,GMG-RAF-SOP-0001,,UID-0000117,PROPOSED — QA adoption required,Governing SOP not registered in LOG-0001: GMG-RAF-SOP-0001
+ARTWORK,Artwork and labelling control,GXP_QUALITY_RECORD,RAF,RA,no,GMG-RAF-SOP-0001,,UID-0000117,PROPOSED — QA adoption required,Governing SOP not registered in LOG-0001: GMG-RAF-SOP-0001
+SUP-QUAL,Supplier / third-party qualification,GXP_QUALITY_RECORD,QMS,PRC,no,GMG-QMS-SOP-0010,,UID-0000113,PROPOSED — QA adoption required,
+QAG,Quality / technical agreement management,GXP_QUALITY_RECORD,QMS,QUA,no,GMG-QMS-SOP-0011,,UID-0000114,PROPOSED — QA adoption required,
+AUDIT-INTERNAL,Audit / self-inspection,GXP_QUALITY_RECORD,QMS,QUA,yes,GMG-QMS-SOP-0012,,UID-0000118,PROPOSED — QA adoption required,
+MGMT-REVIEW,Management review,GXP_QUALITY_RECORD,QMS,QUA,no,GMG-QMS-SOP-0013,,UID-0000119,PROPOSED — QA adoption required,
+RND-DEV,Product / API development activity,GXP_QUALITY_RECORD,RND,RND,no,GMG-RND-SOP-0001,,UID-0000140,PROPOSED — QA adoption required,
+SCM-MASTERDATA,Product and material master data coding,OPERATIONAL_RECORD,,SCM,no,GMG-SCM-SOP-0001,,UID-0000150,PROPOSED — QA adoption required,
+GEN-ADMIN,General administrative task (unclassified),NOT_A_RECORD,,,no,,,,PROPOSED — QA adoption required,

@@ -1,0 +1,149 @@
+const { loadScript } = require("./load-script");
+
+/*
+ * The shared WorkCenterNext boot harness (BL-033).
+ *
+ * app.js renders BOTH surfaces — the list and the full-page detail — from one bundle, choosing between them on
+ * `root.dataset.wcnPage`. The two test harnesses therefore differ in exactly two things: the attributes on
+ * #wcnApp, and how many items the projection answers with. Everything else (module load order, the network seam,
+ * the TasksApi stub) is identical, so it lives here rather than being copied — a copied harness gets fixed on one
+ * side and left stale on the other, which is the very drift this file exists to prevent.
+ *
+ * What is deliberately REAL: the module load order, the contract validation, mock-data's presentation mapping,
+ * and app.js itself. The ONLY stub is the network, pinned at the `fetchWorkItems` seam. A harness that mocked
+ * further in would stop proving anything about the code that actually ships.
+ */
+const SCRIPT_ROOT = "wwwroot/assets/js/WorkCenterNext/";
+
+/**
+ * Loads the WorkCenterNext modules in the order the host views use (Index.cshtml / Details.cshtml).
+ *
+ * `task-detail-resolver` is not optional even for the list: detailHtml bails to an "invalid" placeholder without
+ * it, which would make every "this thing is absent" assertion pass for the wrong reason.
+ */
+const loadModules = () => {
+  // The shared checklist row, loaded exactly as Views/WorkCenterNext/*.cshtml loads it. app.js delegates every
+  // checklist row to it, so a harness without it boots an app that could not render one.
+  loadScript("wwwroot/assets/js/shared/diten-checkitem.js");
+  loadScript(SCRIPT_ROOT + "fixture-contract.js");
+  loadScript(SCRIPT_ROOT + "task-detail-resolver.js");
+  loadScript(SCRIPT_ROOT + "trigger-response-resolver.js");
+  loadScript(SCRIPT_ROOT + "mock-data.js");
+  loadScript(SCRIPT_ROOT + "work-items-api.js");
+};
+
+/**
+ * Boots the real app.js against jsdom on one surface.
+ *
+ * @param {object}   config
+ * @param {string}   config.rootAttrs          Extra attributes for #wcnApp — this is what selects the surface.
+ * @param {object[]} config.items              Projection items the stubbed network answers with.
+ * @param {boolean} [config.neverResolve]      Leave the fetch pending, so the loading state can be observed.
+ * @param {boolean} [config.withoutTasksScripts] Reproduce a host view that forgot to load Tasks/api.js + form.js.
+ * @param {object}  [config.wcn]              Translator override — see the default below.
+ * @param {Function} [config.now]             "Today", for surfaces whose wording is measured against it.
+ * @param {object[]} [config.unavailableSources] Providers the board is missing — WC-D3's partial-board answer.
+ * @returns {Promise<{created: object[], posted: object[], checklistAdds: object[]}>} What the write stubs recorded.
+ */
+const bootSurface = ({
+  rootAttrs = "", items = [], neverResolve = false, withoutTasksScripts = false, wcn = null, now = null,
+  unavailableSources = []
+} = {}) => {
+  // A previous boot leaves its modules on `global`; app.js would then read the OLD data module and the new DOM.
+  ["WorkCenterNextData", "WorkCenterNextApi", "WorkCenterNextContract", "WorkCenterNextFixtures"]
+    .forEach((key) => { delete global[key]; });
+
+  /*
+   * Reset the URL. app.js mirrors its state into the query string (syncUrl → history.replaceState) and reads it
+   * back on boot (hydrateStateFromUrl), so without this a test that switched to "Mine" leaves `?tab=islerim`
+   * behind and the NEXT test boots onto a different tab than it asked for. jsdom keeps one location per file, so
+   * that leak is invisible when a test is run alone and only appears in a full run — which is the worst kind.
+   */
+  if (global.history && global.history.replaceState) {
+    global.history.replaceState(null, "", "/WorkCenterNext");
+  }
+
+  /*
+   * t/tf/tn echo the key back, so an assertion naming a resource key is asserting the key the code chose — not a
+   * translation that could drift independently.
+   *
+   * A caller may pass its own (BL-046): when the ARGUMENT is the thing under test — a day count that must stop
+   * moving — the key alone cannot tell a frozen sentence from a drifting one.
+   */
+  /*
+   * The REAL localization bridge is loaded, then the test translator is layered on top of it.
+   *
+   * Loading it matters because l10n.js owns more than t/tf/tn now — WCN.moduleLabel, the provider-code → module
+   * name rule the partial-board banner renders through. A harness that hand-built the whole WCN object would boot
+   * an app.js missing that function, and the banner test would be asserting against a shell no host ever serves.
+   *
+   * Object.assign, not reassignment: l10n.js's own t reads an empty store here (there is no #workcenternext-l10n
+   * element in jsdom) and the caller's translator must win.
+   */
+  delete global.WCN;
+  loadScript(SCRIPT_ROOT + "l10n.js");
+  Object.assign(global.WCN, wcn || { t: (key) => key, tf: (key) => key, tn: (key) => key });
+  document.body.innerHTML = `<div id="wcnApp" class="wcn-app" ${rootAttrs} data-wcn-fixtures=""></div>`;
+
+  loadModules();
+
+  /*
+   * "Today", pinned BEFORE the payload is mapped, because the mapper is where date wording is derived. A test
+   * that pinned it afterwards would be asserting against the real wall clock and would rot on its own.
+   */
+  if (now) { global.WorkCenterNextData.setNowProvider(now); }
+
+  const mapped = global.WorkCenterNextApi.mapPayload(items);
+  // The fixtures these harnesses hand in must satisfy the executable contract, or the test is describing an item
+  // no provider could ever send.
+  expect(mapped.errors).toEqual([]);
+  // The network, and ONLY the network, is stubbed — at the module seam. Everything downstream is real code.
+  global.WorkCenterNextApi.fetchWorkItems = neverResolve
+    ? () => new Promise(() => { /* a request that never settles — the page must stay in its loading state */ })
+    // A partial board is still STATUS.OK with rows; the missing providers ride alongside (work-items-api §WC-D3).
+    : () => Promise.resolve({ status: "ok", httpStatus: 200, items: mapped.items, errors: [], unavailableSources });
+
+  const created = [];
+  const posted = [];
+  // Checklist adds, recorded like comments are: the detail page grew this write when the create form grew the
+  // card, and "what exactly went on the wire" is the half worth asserting (the expectedVersion in particular).
+  const checklistAdds = [];
+
+  if (withoutTasksScripts) {
+    delete global.TasksApi;
+    delete global.TaskForm;
+    loadScript(SCRIPT_ROOT + "app.js");
+    return new Promise((resolve) => setTimeout(() => resolve({ created, posted, checklistAdds }), 0));
+  }
+
+  global.TasksApi = {
+    /*
+     * The live endpoint answers with the new id AS THE BODY — `data: "f8536220-…"`, not `{ id }`. This stub
+     * said `{ id: "new" }`, and that lie hid a real defect: the code read `data.id`, got undefined, and the
+     * just-added row was never marked. A double that is kinder than the server proves nothing.
+     */
+    create: (payload) => { created.push(payload); return Promise.resolve({ ok: true, status: 201, data: "new-subtask-id" }); },
+    get: () => Promise.resolve({ ok: true, status: 200, data: {} }),
+    transition: () => Promise.resolve({ ok: true, status: 204 }),
+    addComment: (taskId, payload) => { posted.push({ taskId, payload }); return Promise.resolve({ ok: true, status: 201, data: { id: "c1" } }); },
+    addChecklistItem: (taskId, body) => {
+        checklistAdds.push({ taskId, body });
+        return Promise.resolve({ ok: true, status: 204 });
+    },
+    setChecklistItemState: () => Promise.resolve({ ok: true, status: 204 }),
+    // Individual tests override this to assert the exact call, or to simulate a refusal.
+    plan: () => Promise.resolve({ ok: true, status: 204 }),
+    isConcurrencyConflict: () => false,
+    isTransitionBlocked: () => false,
+    failureMessage: () => "error"
+  };
+  global.TaskForm = { buildCreatePayload: (draft) => Object.assign({}, draft) };
+
+  loadScript(SCRIPT_ROOT + "app.js");
+  // boot() is async (it awaits loadWorkItems); let its microtasks drain before anyone asserts on the DOM.
+  return new Promise((resolve) => setTimeout(() => resolve({ created, posted, checklistAdds }), 0));
+};
+
+const app = () => document.getElementById("wcnApp");
+
+module.exports = { SCRIPT_ROOT, bootSurface, app };

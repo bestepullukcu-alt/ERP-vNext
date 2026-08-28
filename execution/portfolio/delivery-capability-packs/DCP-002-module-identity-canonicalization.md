@@ -9,7 +9,7 @@ owner_domain: platform-shared-services
 owner: enterprise-architect / platform-team
 branch: feature/governance/blueprint-module-id-reconciliation
 created: 2026-06-04
-canonical_source: "docs/System Capability & Implementation Blueprint - master 7.xlsx#Blueprint_Data"
+canonical_source: "docs/System Capability & Implementation Blueprint - master 8.1.xlsx#Blueprint_Data"
 inputs:
   - "docs/audits/blueprint-module-id-reconciliation-2026-06-03.md"
 status_note: "Promoted draft → approved by AG-STEP-002 after read-only verification (verify_module_id.py --check-all exit 0, 0 hard violations; deprecated-alias chains resolve; CAND-CAP-0001…0005 recorded)."
@@ -140,7 +140,15 @@ None at runtime. Documentation consumers (master plan, DCP-001, domain configs) 
 ## 20. Audit and reconciliation notes
 Grounded in `docs/audits/blueprint-module-id-reconciliation-2026-06-03.md` and a read-only backend-architect architecture analysis. This pass is documentation-only; the No-Change proof for runtime paths is recorded in the executing handoff report.
 
-**Workbook supersession (user decision).** The prior planning workbook `execution/modules_pages_planning_v3.xlsx` is **intentionally retired** by explicit user decision and removed from the repository. `docs/System Capability & Implementation Blueprint - master 7.xlsx` (`Blueprint_Data`) is the authoritative canonical enterprise module-ID source going forward. This is a deliberate supersession of authority; it does **not** assert a one-to-one migration of every legacy sheet from the old workbook.
+**Workbook supersession (Enterprise Architect decision, 2026-07-28).** `docs/System Capability & Implementation Blueprint - master 8.1.xlsx` (`Blueprint_Data`) is the authoritative canonical enterprise module-ID source. Its immutable external provenance record is SHA-256 `f37120b0b0edfefe97a8baf6232da6a6bb47629ca7d285097d26993f1ee2c98c`; the workbook-internal abbreviated checksum is not authoritative. Master 7 remains historical predecessor evidence only. The earlier retirement of `execution/modules_pages_planning_v3.xlsx` remains unchanged.
+
+`verify_module_id.py` enforces this external SHA-256 before opening the workbook and fails closed on a missing, unreadable or checksum-mismatched canonical source.
+
+Master 8.1 resolves the former base candidates `CAND-CAP-0007`, `CAND-CAP-0008` and
+`CAND-CAP-0009` to `MOD-0352`, `MOD-0354` and `MOD-0355`, respectively. The historical
+“Enterprise Strategy & Performance Management” name is an Enterprise Architect-approved alias to
+the canonical `MOD-0352 — Enterprise Strategy Management`. `CAND-CAP-0007-FU01` remains a
+temporary candidate pending a separate exact FU allocation.
 
 ## Prevention gate design (transition rules)
 

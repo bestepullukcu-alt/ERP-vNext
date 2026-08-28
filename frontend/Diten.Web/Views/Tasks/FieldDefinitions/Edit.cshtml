@@ -1,0 +1,18 @@
+@model Diten.Web.Models.TaskFieldDefinitions.TaskFieldDefinitionEditViewModel
+@using Diten.Web.Views.Tasks.FieldDefinitions
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskFieldDefinitionsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleEdit"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "edit";
+}
+
+<partial name="~/Views/Tasks/FieldDefinitions/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    @* The form asks the server which sources exist, so it needs the same API client the task form uses. *@
+    <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/FieldDefinitions/form.js" asp-append-version="true"></script>
+}

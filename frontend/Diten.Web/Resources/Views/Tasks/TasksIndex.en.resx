@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="TasksTitle" xml:space="preserve"><value>Tasks</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Create and track tasks for yourself, a colleague, or a position-based pool.</value></data>
+  <data name="AddNewTask" xml:space="preserve"><value>New Task</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>New Task</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit Task</value></data>
+  <data name="FieldTitle" xml:space="preserve"><value>Task title</value></data>
+  <data name="FieldTitlePlaceholder" xml:space="preserve"><value>e.g. Prepare the quarterly filing</value></data>
+  <data name="FieldDescription" xml:space="preserve"><value>Description</value></data>
+  <data name="FieldGoverningDocuments" xml:space="preserve"><value>Governing documents</value></data>
+  <data name="FieldGoverningDocumentsPlaceholder" xml:space="preserve"><value>Search by code or title…</value></data>
+  <data name="DocRefSuggestedByType" xml:space="preserve"><value>Suggested by this task type. Remove any that do not apply.</value></data>
+  <data name="DocRefNoneNamed" xml:space="preserve"><value>This task type names no governing document.</value></data>
+  <data name="DocRefNotInRegister" xml:space="preserve"><value>This task type names {0} document(s) the current register does not list.</value></data>
+  <data name="DocRefAllBlocked" xml:space="preserve"><value>This task type names {0} document(s) the register does not allow citing.</value></data>
+  <data name="DocRefBlocked" xml:space="preserve"><value>Cannot be cited</value></data>
+  <data name="DocRefRemove" xml:space="preserve"><value>Remove</value></data>
+  <data name="DocRefNoResults" xml:space="preserve"><value>No document matches that search.</value></data>
+  <data name="DocRefSectionTitle" xml:space="preserve"><value>According to</value></data>
+  <data name="DocRefReferencedAt" xml:space="preserve"><value>Cited on</value></data>
+  <data name="DocRefUnavailable" xml:space="preserve"><value>The document register could not be read.</value></data>
+  <data name="FieldTaskType" xml:space="preserve"><value>Task type</value></data>
+  <data name="FieldTaskTypeNone" xml:space="preserve"><value>No type</value></data>
+  <data name="FieldPriority" xml:space="preserve"><value>Priority</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Low</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Medium</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>High</value></data>
+  <data name="FieldAssignmentTarget" xml:space="preserve"><value>Assign to</value></data>
+  <data name="TargetSelf" xml:space="preserve"><value>Myself</value></data>
+  <data name="TargetPerson" xml:space="preserve"><value>A person</value></data>
+  <data name="TargetPool" xml:space="preserve"><value>A position pool</value></data>
+  <data name="FieldAssignee" xml:space="preserve"><value>Assignee</value></data>
+  <data name="FieldPoolPosition" xml:space="preserve"><value>Position</value></data>
+  <data name="PoolPositionHint" xml:space="preserve"><value>The unit is shown next to each position so work is never pooled to the wrong facility.</value></data>
+  <data name="FieldDueAt" xml:space="preserve"><value>Due date</value></data>
+  <data name="FieldDueAtPlaceholder" xml:space="preserve"><value>YYYY-MM-DD</value></data>
+  <data name="FieldStartAt" xml:space="preserve"><value>Start date</value></data>
+  <data name="FieldEstimateHours" xml:space="preserve"><value>Estimate (hours)</value></data>
+  <data name="FieldEstimateHoursPlaceholder" xml:space="preserve"><value>e.g. 8</value></data>
+  <data name="FieldRemainingHours" xml:space="preserve"><value>Remaining (hours)</value></data>
+  <data name="FieldSpentHours" xml:space="preserve"><value>Spent (hours)</value></data>
+  <data name="SpentHoursReadOnlyHint" xml:space="preserve"><value>Logged while the work is done — it is always zero on a new task.</value></data>
+  <data name="FieldTags" xml:space="preserve"><value>Tags</value></data>
+  <data name="FieldReviewRequired" xml:space="preserve"><value>Review required</value></data>
+  <data name="ReviewRequiredHint" xml:space="preserve"><value>When set, the task goes to a reviewer before it can be completed.</value></data>
+  <data name="FieldReviewer" xml:space="preserve"><value>Reviewer</value></data>
+  <data name="ReviewerHint" xml:space="preserve"><value>Required when a review is requested — the review cannot be opened without someone to send it to. Who may actually review is decided by the workflow.</value></data>
+  <data name="FieldApprovalRequired" xml:space="preserve"><value>Manager approval required</value></data>
+  <data name="FieldApprovalManager" xml:space="preserve"><value>Approval manager</value></data>
+  <data name="ApprovalHint" xml:space="preserve"><value>Approval runs in the workflow engine; the task cannot start until it is granted.</value></data>
+  <data name="FieldEmailNotifications" xml:space="preserve"><value>Email notifications</value></data>
+  <data name="FieldDelegationAllowed" xml:space="preserve"><value>Allow delegation</value></data>
+  <data name="FieldWatchers" xml:space="preserve"><value>Watchers</value></data>
+  <data name="WatchersHint" xml:space="preserve"><value>Watchers can see the task but take no action on it.</value></data>
+  <data name="SectionBasics" xml:space="preserve"><value>Basics</value></data>
+  <data name="SectionAssignment" xml:space="preserve"><value>Assignment</value></data>
+  <data name="SectionPlanning" xml:space="preserve"><value>Planning</value></data>
+  <data name="SectionGovernance" xml:space="preserve"><value>Governance</value></data>
+  <data name="SectionCustomFields" xml:space="preserve"><value>Additional fields</value></data>
+  <data name="ColumnTitle" xml:space="preserve"><value>Title</value></data>
+  <data name="ColumnStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="ColumnPriority" xml:space="preserve"><value>Priority</value></data>
+  <data name="ColumnAssignment" xml:space="preserve"><value>Assignment</value></data>
+  <data name="ColumnDueAt" xml:space="preserve"><value>Due</value></data>
+  <data name="ColumnActions" xml:space="preserve"><value>Actions</value></data>
+  <data name="LifecycleOpen" xml:space="preserve"><value>Open</value></data>
+  <data name="LifecyclePlanned" xml:space="preserve"><value>Planned</value></data>
+  <data name="LifecycleInProgress" xml:space="preserve"><value>In progress</value></data>
+  <data name="LifecycleWaiting" xml:space="preserve"><value>Waiting</value></data>
+  <data name="LifecyclePendingReview" xml:space="preserve"><value>Pending review</value></data>
+  <data name="LifecycleDone" xml:space="preserve"><value>Done</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="ActionCreate" xml:space="preserve"><value>Create</value></data>
+  <data name="ActionSave" xml:space="preserve"><value>Save</value></data>
+  <data name="ActionCancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="ActionOpenDetailed" xml:space="preserve"><value>More options</value></data>
+  <data name="ActionClaim" xml:space="preserve"><value>Take it</value></data>
+  <data name="ActionAccept" xml:space="preserve"><value>Accept</value></data>
+  <data name="ActionStart" xml:space="preserve"><value>Start</value></data>
+  <data name="ActionComplete" xml:space="preserve"><value>Complete</value></data>
+  <data name="QuickCreateTitle" xml:space="preserve"><value>Quick task</value></data>
+  <data name="ToastCreated" xml:space="preserve"><value>Task created.</value></data>
+  <data name="ToastSaved" xml:space="preserve"><value>Task saved.</value></data>
+  <data name="ToastClaimed" xml:space="preserve"><value>The task is yours.</value></data>
+  <data name="ErrorAlreadyClaimed" xml:space="preserve"><value>Someone else took this task first.</value></data>
+  <data name="ErrorNoAccess" xml:space="preserve"><value>You do not have permission to do this.</value></data>
+  <data name="ErrorUnavailable" xml:space="preserve"><value>The task service could not be reached. Try again.</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>No tasks yet</value></data>
+  <data name="EmptyDescription" xml:space="preserve"><value>Create your first task to see it here and in the Task Center.</value></data>
+  <data name="CustomFieldOptionPlaceholder" xml:space="preserve"><value>Select…</value></data>
+  <data name="CustomFieldBooleanYes" xml:space="preserve"><value>Yes</value></data>
+  <data name="CustomFieldBooleanNo" xml:space="preserve"><value>No</value></data>
+  <data name="ErrorFieldValueInvalid" xml:space="preserve"><value>One of the additional fields is missing or holds a value the field does not accept.</value></data>
+  <data name="ErrorFieldDefinitionUnknown" xml:space="preserve"><value>This form offers a field that is no longer defined. Reload the page and try again.</value></data>
+  <data name="ErrorFieldLimitExceeded" xml:space="preserve"><value>The additional fields exceed a limit: too many sections, too many fields in one section, or a value that is too long.</value></data>
+  <data name="RequiredFieldHint" xml:space="preserve"><value>Required</value></data>
+  <data name="RequiredFieldsMissing" xml:space="preserve"><value>Please fill in the required fields:</value></data>
+  <data name="ErrorOccurred" xml:space="preserve"><value>An error occurred while processing your request.</value></data>
+  <data name="ActionOk" xml:space="preserve"><value>OK</value></data>
+  <data name="ErrorOrganizationUnitUnresolved" xml:space="preserve"><value>No organization unit could be determined for this task. Ask an administrator to assign you a position or define a root organization unit.</value></data>
+  <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>The selected position cannot receive tasks. Choose an active position.</value></data>
+  <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Someone else changed this task first. The screen now shows the current state.</value></data>
+  <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>A required checklist item is still unticked, so the task cannot be completed.</value></data>
+  <data name="ErrorDependencyBlocked" xml:space="preserve"><value>A task this one depends on is not finished yet, so it cannot move forward.</value></data>
+  <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>A subtask is still open, so this task cannot be completed yet.</value></data>
+  <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>This task is closed, so it can no longer be commented on.</value></data>
+  <data name="ErrorCommentTextInvalid" xml:space="preserve"><value>A comment cannot be empty and must be at most 2000 characters.</value></data>
+  <data name="ErrorPlanDateRequired" xml:space="preserve"><value>A planned date is required to set your personal plan.</value></data>
+  <data name="ErrorDueDateRequired" xml:space="preserve"><value>A due date is required.</value></data>
+  <data name="ErrorApprovalPending" xml:space="preserve"><value>The task is waiting for the approver's decision.</value></data>
+  <data name="ErrorReviewPending" xml:space="preserve"><value>The task is waiting for the reviewer to respond.</value></data>
+  <data name="ErrorTaskInvalidState" xml:space="preserve"><value>This task cannot be completed while it is in this state. Start it first.</value></data>
+  <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Only the person who requested this task can cancel it. If you do not want the work, return it instead.</value></data>
+  <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Say what the task is waiting for.</value></data>
+  <data name="ErrorTitleRequired" xml:space="preserve"><value>A title is required.</value></data>
+  <data name="ErrorTitleTooLong" xml:space="preserve"><value>The title may be at most 200 characters.</value></data>
+  <data name="ErrorHandoverReasonRequired" xml:space="preserve"><value>Say why you are handing this task on.</value></data>
+  <data name="ErrorReturnNotAssignee" xml:space="preserve"><value>Only the person the task is assigned to can return it.</value></data>
+  <data name="ErrorReassignNotPermitted" xml:space="preserve"><value>Only the current assignee or the requester can reassign this task.</value></data>
+  <data name="ErrorAssigneeNotAssignable" xml:space="preserve"><value>That person cannot be assigned work. Choose someone from the list.</value></data>
+  <data name="ErrorApprovalWaitingEvidence" xml:space="preserve"><value>The approver has asked for supporting information before deciding.</value></data>
+  <data name="ErrorApprovalRejected" xml:space="preserve"><value>The approval was rejected, so this task cannot continue.</value></data>
+  <data name="ErrorApprovalCancelled" xml:space="preserve"><value>The approval was cancelled, so this task cannot continue.</value></data>
+  <data name="ErrorApprovalNotApproved" xml:space="preserve"><value>The approval is not complete yet, so this step is not allowed.</value></data>
+  <data name="ErrorApprovalGateUnavailable" xml:space="preserve"><value>The approval could not be checked just now, so nothing was changed. Try again shortly.</value></data>
+  <data name="AssigneeHint" xml:space="preserve"><value>Only people who currently hold a position can be assigned work.</value></data>
+  <data name="ActionSendRequest" xml:space="preserve"><value>Send request</value></data>
+  <data name="UpwardRequestHint" xml:space="preserve"><value>This person is above you in the reporting line, so the work is SENT AS A REQUEST rather than assigned. They decide whether to accept it.</value></data>
+  <data name="ExcludedHint" xml:space="preserve"><value>{0} people are not listed:</value></data>
+  <data name="ExcludedNoActivePosition" xml:space="preserve"><value>{0} hold no active position</value></data>
+  <data name="ExcludedPositionNotActive" xml:space="preserve"><value>{0} are on a position that is not active</value></data>
+  <data name="ExcludedOutOfScope" xml:space="preserve"><value>{0} are outside your scope</value></data>
+  <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>Select a person…</value></data>
+  <data name="AssigneeEmpty" xml:space="preserve"><value>No one holds a position yet, so there is nobody to assign to. Ask an administrator to assign positions first.</value></data>
+  <data name="PersonNameUnavailable" xml:space="preserve"><value>Name unavailable</value></data>
+  <data name="PickerHolderCount" xml:space="preserve"><value>{0} person(s)</value></data>
+  <data name="CustomFieldRecordSearchPlaceholder" xml:space="preserve"><value>Type to search…</value></data>
+  <data name="CustomFieldRecordUnavailable" xml:space="preserve"><value>Record unavailable</value></data>
+  <data name="ErrorFieldOptionSourceInvalid" xml:space="preserve"><value>This field points at a source no module offers. Ask an administrator to correct its definition.</value></data>
+  <data name="CardReviewTitle" xml:space="preserve"><value>Review settings</value></data>
+  <data name="CardApprovalTitle" xml:space="preserve"><value>Approval manager</value></data>
+  <data name="CardApprovalDescription" xml:space="preserve"><value>Choose the manager who approves this task before work starts. An approval request is sent to them once the task is created.</value></data>
+  <data name="CardWatchersTitle" xml:space="preserve"><value>Watchers</value></data>
+  <data name="CardChecklistTitle" xml:space="preserve"><value>Checklist</value></data>
+  <data name="CardChecklistDescription" xml:space="preserve"><value>The steps of this task. Items are ticked after the task is created; a blocking item keeps the task from closing.</value></data>
+  <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>Type an item and press Enter</value></data>
+  <data name="ChecklistAddButton" xml:space="preserve"><value>Add</value></data>
+  <data name="ChecklistAddHint" xml:space="preserve"><value>Click the label to change the level. There is no template list yet.</value></data>
+  <data name="ChecklistLevelOptional" xml:space="preserve"><value>Optional</value></data>
+  <data name="ChecklistLevelRequired" xml:space="preserve"><value>Expected</value></data>
+  <data name="ChecklistLevelBlocking" xml:space="preserve"><value>Blocking</value></data>
+  <data name="ChecklistLevelHint" xml:space="preserve"><value>Change the level: Optional → Expected → Blocking</value></data>
+  <data name="ChecklistEvidenceToggle" xml:space="preserve"><value>Require evidence</value></data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Evidence is required. Attaching a document becomes possible once the document module is connected.</value></data>
+  <data name="ChecklistRemove" xml:space="preserve"><value>Remove item</value></data>
+  <data name="ChecklistMoveUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="ChecklistMoveDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="CardEmailTitle" xml:space="preserve"><value>Email notifications</value></data>
+  <data name="CardEmailDescription" xml:space="preserve"><value>When on, the people involved are emailed as the task is assigned, updated and completed.</value></data>
+  <data name="CardDelegationTitle" xml:space="preserve"><value>Delegation settings</value></data>
+  <data name="CardDelegationDescription" xml:space="preserve"><value>When on, the assignee may hand this task to someone else without asking you first.</value></data>
+  <data name="ReviewTypeQuick" xml:space="preserve"><value>Quick review</value></data>
+  <data name="ReviewTypeQuickHint" xml:space="preserve"><value>The reviewer approves the work directly.</value></data>
+  <data name="ReviewTypeMeeting" xml:space="preserve"><value>Review meeting</value></data>
+  <data name="ReviewTypeMeetingHint" xml:space="preserve"><value>The work is assessed in a meeting.</value></data>
+  <data name="ReviewTypeMeetingDisabledReason" xml:space="preserve"><value>Not available yet: the meeting module has not been built. Quick review is used in the meantime.</value></data>
+  <data name="NotifyEventsLabel" xml:space="preserve"><value>Notify me when</value></data>
+  <data name="NotifyEventAssigned" xml:space="preserve"><value>The task is assigned</value></data>
+  <data name="NotifyEventClaimed" xml:space="preserve"><value>A pool task is taken</value></data>
+  <data name="NotifyEventDueSoon" xml:space="preserve"><value>The due date is approaching</value></data>
+  <data name="NotifyEventCompleted" xml:space="preserve"><value>The task is completed</value></data>
+  <data name="NotifyEventApprovalRequested" xml:space="preserve"><value>Approval is requested</value></data>
+  <data name="ReminderLeadLabel" xml:space="preserve"><value>Remind me before the due date</value></data>
+  <data name="ReminderLeadNone" xml:space="preserve"><value>No reminder</value></data>
+  <data name="ReminderLeadSameDay" xml:space="preserve"><value>On the day</value></data>
+  <data name="ReminderLead1" xml:space="preserve"><value>1 day before</value></data>
+  <data name="ReminderLead3" xml:space="preserve"><value>3 days before</value></data>
+  <data name="ReminderLead7" xml:space="preserve"><value>1 week before</value></data>
+  <data name="ReminderLead14" xml:space="preserve"><value>2 weeks before</value></data>
+  <data name="FieldReviewTypeLabel" xml:space="preserve"><value>Review type</value></data>
+  <data name="FieldDescriptionPlaceholder" xml:space="preserve"><value>What needs doing, and anything the assignee should know before starting.</value></data>
+  <data name="ErrorNoteTextInvalid" xml:space="preserve">
+    <value>A note cannot be empty and cannot exceed 2000 characters.</value>
+  </data>
+  <data name="ErrorNoteNotFound" xml:space="preserve">
+    <value>Note not found.</value>
+  </data>
+  <data name="ErrorSnoozeDateInvalid" xml:space="preserve">
+    <value>The snooze date must be in the future.</value>
+  </data>
+  <data name="ErrorCommentNotAuthor" xml:space="preserve">
+    <value>Only the author may edit or withdraw a comment.</value>
+  </data>
+  <data name="ErrorCommentWithdrawn" xml:space="preserve">
+    <value>This comment has already been withdrawn.</value>
+  </data>
+  <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
+    <value>That person cannot be named here.</value>
+  </data>
+  <data name="ErrorWorkItemProviderUnknown" xml:space="preserve"><value>This item's source is not connected to the Task Center, so the action could not be carried out.</value></data>
+  <data name="ErrorWorkItemProviderNotDispatchable" xml:space="preserve"><value>This item's source shows actions but cannot carry them out yet. Please contact your administrator.</value></data>
+  <data name="ErrorWorkItemActionUnknown" xml:space="preserve"><value>This action is no longer offered for this item. Refresh the page to see the current options.</value></data>
+  <data name="ErrorWorkItemActionForbidden" xml:space="preserve"><value>You do not have permission to carry out this action.</value></data>
+  <data name="ErrorWorkItemActionPayloadInvalid" xml:space="preserve"><value>This action needs more information than was provided. Please fill in the required fields.</value></data>
+  <data name="ErrorWorkItemRemoteUnavailable" xml:space="preserve"><value>The system that owns this item did not respond, so it is not known whether the action was carried out. Refresh the list to see its current state, then try again.</value></data>
+</root>

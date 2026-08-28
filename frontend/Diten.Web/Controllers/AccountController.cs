@@ -50,11 +50,11 @@ public class AccountController : Controller
     {
         if (HasValidActor("tenant_user"))
         {
-            return Redirect(returnUrl ?? "/WorkCenter");
+            return Redirect(returnUrl ?? "/WorkCenterNext");
         }
 
         ViewBag.AuthMode = "tenant";
-        ViewBag.PostLoginDefault = "/WorkCenter";
+        ViewBag.PostLoginDefault = "/WorkCenterNext";
         ViewBag.ReturnUrl = returnUrl;
 
         // FIX-LOGIN-TENANT-FALLBACK — in Development only, expose the DefaultTenant id to the page so a plain
@@ -130,7 +130,7 @@ public class AccountController : Controller
 
         // FIX-TENANT-MUSTCHANGEPW — a temp-password tenant user must change it before anything else (mirrors platform).
         return Ok(new LoginBridgeResponse(
-            result.RequiresPasswordChange ? "/account/change-password" : ResolveReturnUrl(request.ReturnUrl, "/WorkCenter"),
+            result.RequiresPasswordChange ? "/account/change-password" : ResolveReturnUrl(request.ReturnUrl, "/WorkCenterNext"),
             result.User,
             RequiresPasswordChange: result.RequiresPasswordChange));
     }
@@ -151,7 +151,7 @@ public class AccountController : Controller
 
         _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
         return Ok(new LoginBridgeResponse(
-            ResolveReturnUrl(request.ReturnUrl, "/WorkCenter"),
+            ResolveReturnUrl(request.ReturnUrl, "/WorkCenterNext"),
             result.User));
     }
 
@@ -359,7 +359,7 @@ public class AccountController : Controller
 
         _authCookieService.ClearTokens(Response);
         _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
-        return Ok(new { success = true, redirectUrl = "/WorkCenter" });
+        return Ok(new { success = true, redirectUrl = "/WorkCenterNext" });
     }
 
     [HttpPost("/account/refresh")]

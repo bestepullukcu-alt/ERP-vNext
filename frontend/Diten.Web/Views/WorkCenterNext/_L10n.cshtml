@@ -2,6 +2,7 @@
 @using Diten.Web.Views.WorkCenterNext
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<WorkCenterNextIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @*
     Emit the ENTIRE resx (current culture, merged with parents) as a JSON blob.
     Auto-enumerating keeps the client l10n dictionary in lock-step with the resx —
@@ -9,6 +10,24 @@
     \uXXXX escapes so Cyrillic / Arabic / CJK decode correctly in the browser.
 *@
 <script id="workcenternext-l10n" type="application/json">
-    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-        Localizer.GetAllStrings(true).ToDictionary(s => s.Name, s => s.Value)))
+    @{
+        /*
+         * BL-047 — the DataTable chrome ("Showing 1 to 9 of 9 entries", the pager, the empty-table text) comes
+         * from the vendor's own defaults, so it stays ENGLISH on a Turkish page unless something overrides it.
+         *
+         * dt-defaults.js:462-466 already reads Dt* keys off this payload and feeds them to DataTables, and
+         * SharedResource already carries all six in all seven languages. The only missing link was this file:
+         * it enumerated the MODULE resx alone, so the Dt* keys never reached the client and the central
+         * mechanism had nothing to work with.
+         *
+         * Module keys still win on a collision — a page that wants its own wording keeps it.
+         */
+        var dtKeys = new[] { "DtInfo", "DtInfoEmpty", "DtInfoFiltered", "DtEmptyTable", "DtNoRecords", "DtZeroRecords" };
+        var payload = dtKeys.ToDictionary(k => k, k => SharedLocalizer[k].Value);
+        foreach (var entry in Localizer.GetAllStrings(true))
+        {
+            payload[entry.Name] = entry.Value;
+        }
+    }
+    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(payload))
 </script>

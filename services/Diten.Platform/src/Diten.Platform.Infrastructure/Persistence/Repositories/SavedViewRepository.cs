@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities;
@@ -9,7 +10,7 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 public sealed class SavedViewRepository : RepositoryBase<SavedView>, ISavedViewRepository
 {
     public SavedViewRepository(IPlatformDbContext platformDbContext, ITenantContext tenantContext)
-        : base(platformDbContext, tenantContext, "saved_views")
+        : base(platformDbContext, tenantContext, PlatformCollections.SavedViews)
     {
     }
 

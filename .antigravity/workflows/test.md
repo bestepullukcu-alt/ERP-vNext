@@ -43,3 +43,16 @@ public async Task CreateCity_WithDifferentTenant_ShouldThrowSecurityException()
     // Act: Handler'ı çağır
     // Assert: UnauthorizedAccessException fırlatıldığını doğrula
 }
+---
+
+## 🍃 Gerçek Mongo'ya Bağlanan Testler
+
+Yukarıdaki taklit (mock) kuralı birim testler içindir. **Gerçek Mongo'ya bağlanan** bir test yazıyorsan
+([DB-010](../rules/mongo-indexing.md#-test-veritabanları-db-010)):
+
+- Koşu başına **yeni veritabanı yaratma** — izolasyon `TenantId` ile sağlanır.
+- `MongoDbIndexConfigurations.EnsureIndexesAsync` **çağırma** — o üretim açılış yoludur, tüm şemayı kurar.
+  Yalnız ihtiyacın olan profili iste: `PlatformSchemaManifest.ApplyAsync(db, new[]{ SchemaProfile.X })`.
+
+⚠ İhlal, testi kırmızıya döndürmez — **`mongod`'u öldürür** ve hata `Connection refused` diye okunur.
+Muhafız: `dotnet test tests/architecture/TenantArchitecture.ArchitectureTests`

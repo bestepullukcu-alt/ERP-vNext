@@ -76,6 +76,10 @@
   <data name="ViewLabel" xml:space="preserve">
     <value>Vista</value>
   </data>
+  <data name="RowsPerPage" xml:space="preserve"><value>Filas</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Visibilidad de columnas</value></data>
+  <data name="PreviousPage" xml:space="preserve"><value>Página anterior</value></data>
+  <data name="NextPage" xml:space="preserve"><value>Página siguiente</value></data>
   <data name="ViewList" xml:space="preserve">
     <value>Lista</value>
   </data>
@@ -89,7 +93,7 @@
     <value>Hoy</value>
   </data>
   <data name="SearchPlaceholder" xml:space="preserve">
-    <value>Buscar elementos de trabajo…</value>
+    <value>Buscar…</value>
   </data>
   <data name="FilterAllModules" xml:space="preserve">
     <value>Todos los módulos</value>
@@ -102,6 +106,9 @@
   </data>
   <data name="FilterType" xml:space="preserve">
     <value>Filtro de tipo</value>
+  </data>
+  <data name="FiltersLabel" xml:space="preserve">
+    <value>Filtros</value>
   </data>
   <data name="KeyboardHint" xml:space="preserve">
     <value>j / k para moverse · a para aprobar/aceptar · r para rechazar/devolver · Enter para abrir</value>
@@ -132,6 +139,15 @@
   </data>
   <data name="SlaOverdueByDays" xml:space="preserve">
     <value>{0}d vencido</value>
+  </data>
+  <data name="SlaClosedLateByDays" xml:space="preserve">
+    <value>Cerrado con {0}d de retraso</value>
+  </data>
+  <data name="SlaClosedLate" xml:space="preserve">
+    <value>Cerrado con retraso</value>
+  </data>
+  <data name="SlaClosedOnTime" xml:space="preserve">
+    <value>Cerrado a tiempo</value>
   </data>
   <data name="StatusPending" xml:space="preserve">
     <value>Pendiente</value>
@@ -220,11 +236,104 @@
   <data name="ActAct" xml:space="preserve">
     <value>Actuar</value>
   </data>
+  <data name="RowView" xml:space="preserve"><value>Ver</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>Programar reunión de aprobación</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>Reunión de aprobación programada: {0}</value></data>
+  <data name="IsTitleElimination" xml:space="preserve"><value>Preparar la cédula de eliminación intercompañía</value></data>
+  <data name="IsSummaryElimination" xml:space="preserve"><value>Eliminar los saldos intercompañía antes de la consolidación.</value></data>
+  <data name="IsTitlePricingRegression" xml:space="preserve"><value>Investigar la regresión de la regla de precios</value></data>
+  <data name="IsSummaryPricingRegression" xml:space="preserve"><value>Encontrar y resolver la causa raíz de la desviación de precios tras el parche.</value></data>
+  <data name="IsTitleOnboardingChecklist" xml:space="preserve"><value>Completar la lista de verificación de incorporación del gerente para el nuevo empleado</value></data>
+  <data name="IsSummaryOnboardingChecklist" xml:space="preserve"><value>No se puede iniciar hasta que se complete el predecesor «contrato de trabajo firmado».</value></data>
+  <data name="IsTitleVendorPrequal" xml:space="preserve"><value>Completar la evaluación de precalificación del proveedor</value></data>
+  <data name="IsSummaryVendorPrequal" xml:space="preserve"><value>En nombre de Aylin Ersoy: revisar y puntuar los documentos del proveedor candidato.</value></data>
+  <data name="IsTitleRackAudit" xml:space="preserve"><value>Ejecutar la auditoría de ubicación de estanterías del pasillo D</value></data>
+  <data name="IsSummaryRackAudit" xml:space="preserve"><value>Auditar la exactitud de la ubicación de estanterías tras el conteo.</value></data>
+  <data name="IsTitleCapaEvidence" xml:space="preserve"><value>Cerrar la desviación cuando llegue el paquete de evidencias CAPA</value></data>
+  <data name="IsSummaryCapaEvidence" xml:space="preserve"><value>A la espera de la evidencia de la acción correctiva; preparar el cierre cuando llegue.</value></data>
+  <data name="IsTitleNdaReview" xml:space="preserve"><value>Revisión del acuerdo de confidencialidad — reunión de aprobación</value></data>
+  <data name="IsSummaryNdaReview" xml:space="preserve"><value>Hay una reunión de revisión programada; aprobar tras celebrar la reunión.</value></data>
+  <data name="IsTitleDepreciation" xml:space="preserve"><value>Preparar la cédula de depreciación</value></data>
+  <data name="IsSummaryDepreciation" xml:space="preserve"><value>En la fecha planificada, calcular la depreciación del período y preparar la cédula.</value></data>
+  <data name="IsChkMatchBalances" xml:space="preserve"><value>Conciliar saldos</value></data>
+  <data name="IsChkEliminate" xml:space="preserve"><value>Eliminar diferencias</value></data>
+  <data name="IsChkClose" xml:space="preserve"><value>Cerrar la cédula</value></data>
+  <data name="IsDepSignedContract" xml:space="preserve"><value>Contrato de trabajo firmado</value></data>
+  <data name="BusinessContextLabel" xml:space="preserve"><value>Contexto de negocio</value></data>
+  <data name="FilterSlaStatus" xml:space="preserve"><value>Estado SLA</value></data>
+  <data name="FilterPinned" xml:space="preserve"><value>Solo fijados</value></data>
+  <data name="IsChkReconcileFx" xml:space="preserve"><value>Conciliar diferencias de cambio</value></data>
+  <data name="IsDepLedgerClose" xml:space="preserve"><value>Cierre del libro auxiliar</value></data>
+  <data name="IsDepConsolidation" xml:space="preserve"><value>Ejecución de consolidación</value></data>
+  <data name="IsAttachTrialBalance" xml:space="preserve"><value>Balance de comprobación</value></data>
+  <data name="IsAttachEliminationTemplate" xml:space="preserve"><value>Plantilla de eliminación</value></data>
+  <data name="IsCtxFinancials" xml:space="preserve"><value>Contexto financiero</value></data>
+  <data name="IsFactAmount" xml:space="preserve"><value>Importe</value></data>
+  <data name="IsFactCurrency" xml:space="preserve"><value>Moneda</value></data>
+  <data name="IsFactCostCenter" xml:space="preserve"><value>Centro de costos</value></data>
+  <data name="IsFactPeriod" xml:space="preserve"><value>Período</value></data>
   <data name="ActionsLabel" xml:space="preserve">
     <value>Acciones</value>
   </data>
   <data name="DetailSummary" xml:space="preserve">
     <value>Resumen</value>
+  </data>
+  <data name="SummaryCardLabel" xml:space="preserve">
+    <value>Resumen</value>
+  </data>
+  <data name="DetailDescription" xml:space="preserve">
+    <value>Descripción</value>
+  </data>
+  <data name="SummaryUnassigned" xml:space="preserve">
+    <value>Sin asignar</value>
+  </data>
+  <data name="PersonalCardLabel" xml:space="preserve">
+    <value>Personal</value>
+  </data>
+  <data name="StatusCardLabel" xml:space="preserve">
+    <value>Situación</value>
+  </data>
+  <data name="TechnicalDetailsLabel" xml:space="preserve">
+    <value>Detalles técnicos</value>
+  </data>
+  <data name="SourceCardLabel" xml:space="preserve">
+    <value>Origen</value>
+  </data>
+  <data name="DetailNativeStatusInSource" xml:space="preserve">
+    <value>Estado en el origen</value>
+  </data>
+  <data name="ActionCompleteInSource" xml:space="preserve">
+    <value>Completar en {0}</value>
+  </data>
+  <data name="ActionDisabledWithName" xml:space="preserve">
+    <value>{0} — {1}</value>
+  </data>
+  <data name="ActionCompleteInSourceHint" xml:space="preserve">
+    <value>Este trabajo no puede finalizarse aquí; se completa en {0}</value>
+  </data>
+  <data name="TechVersionValue" xml:space="preserve">
+    <value>Versión {0}</value>
+  </data>
+  <data name="DetailStartAt" xml:space="preserve">
+    <value>Fecha de inicio</value>
+  </data>
+  <data name="DetailEstimate" xml:space="preserve">
+    <value>Estimación</value>
+  </data>
+  <data name="DetailTags" xml:space="preserve">
+    <value>Etiquetas</value>
+  </data>
+  <data name="DetailPriority" xml:space="preserve">
+    <value>Prioridad</value>
+  </data>
+  <data name="EstimateHoursValue" xml:space="preserve">
+    <value>{0} h</value>
+  </data>
+  <data name="ShowAllCount" xml:space="preserve">
+    <value>Ver todo ({0})</value>
+  </data>
+  <data name="ShowLess" xml:space="preserve">
+    <value>Mostrar menos</value>
   </data>
   <data name="DetailContext" xml:space="preserve">
     <value>Contexto de origen</value>
@@ -267,6 +376,9 @@
   </data>
   <data name="ColPriority" xml:space="preserve">
     <value>Prioridad</value>
+  </data>
+  <data name="SortLabel" xml:space="preserve">
+    <value>Ordenar</value>
   </data>
   <data name="ColSla" xml:space="preserve">
     <value>SLA</value>
@@ -374,11 +486,14 @@
     <value>{0} elementos procesados (simulación)</value>
   </data>
   <data name="ToastOpenSource" xml:space="preserve">
-    <value>Abriría {0} · {1} (enlace simulado)</value>
+    <value>{0} · {1} abierto en una pestaña nueva</value>
   </data>
   <data name="TabsLabel" xml:space="preserve">
     <value>Pestañas</value>
   </data>
+  <data name="ScopeTeam" xml:space="preserve"><value>Mi equipo</value></data>
+  <data name="ScopeTeamCount" xml:space="preserve"><value>{0} personas</value></data>
+  <data name="ScopeTeamEmpty" xml:space="preserve"><value>Nadie le reporta, así que no hay ningún equipo que mostrar.</value></data>
   <data name="TabInbox" xml:space="preserve">
     <value>Bandeja de entrada</value>
   </data>
@@ -412,14 +527,23 @@
   <data name="ActResume" xml:space="preserve">
     <value>Reanudar</value>
   </data>
-  <data name="ActPause" xml:space="preserve">
-    <value>Pausar</value>
-  </data>
   <data name="ActLogTime" xml:space="preserve">
     <value>Registrar tiempo</value>
   </data>
   <data name="StepBarLabel" xml:space="preserve">
     <value>Ciclo de vida</value>
+  </data>
+  <data name="StepStateDone" xml:space="preserve">
+    <value>completado</value>
+  </data>
+  <data name="StepStateCurrent" xml:space="preserve">
+    <value>paso actual</value>
+  </data>
+  <data name="StepStateUpcoming" xml:space="preserve">
+    <value>pendiente</value>
+  </data>
+  <data name="StepClosedOn" xml:space="preserve">
+    <value>Cerrado el {0}</value>
   </data>
   <data name="StepAccepted" xml:space="preserve">
     <value>Aceptado</value>
@@ -469,11 +593,11 @@
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · planificado para {1} (mock)</value>
   </data>
+  <data name="ToastPlanSaved" xml:space="preserve">
+    <value>Plan guardado para el {0}</value>
+  </data>
   <data name="ToastTimerStarted" xml:space="preserve">
     <value>{0} · temporizador iniciado (mock)</value>
-  </data>
-  <data name="ToastTimerPaused" xml:space="preserve">
-    <value>Temporizador en pausa · {0} registrado (mock)</value>
   </data>
   <data name="ToastTimeLogged" xml:space="preserve">
     <value>{0} registrado (mock)</value>
@@ -512,7 +636,7 @@
     <value>No puede iniciar hasta que se abra la ventana de congelación.</value>
   </data>
   <data name="ConfirmBody" xml:space="preserve">
-    <value>Está a punto de aplicar esta acción a «{0}». ¿Continuar?</value>
+    <value>Está a punto de aplicar esta acción. ¿Confirma?</value>
   </data>
   <data name="ConfirmBulkBody" xml:space="preserve">
     <value>Está a punto de aplicar esta acción a {0} elementos a la vez. ¿Continuar?</value>
@@ -581,7 +705,7 @@
     <value>Posponer</value>
   </data>
   <data name="SnoozeFuture" xml:space="preserve">
-    <value>Elige una fecha futura.</value>
+    <value>No se puede elegir una fecha pasada.</value>
   </data>
   <data name="WaitingOn" xml:space="preserve">
     <value>Esperando a {0}</value>
@@ -598,14 +722,19 @@
   <data name="SourceDueLabel" xml:space="preserve">
     <value>Fecha límite (origen)</value>
   </data>
+  <!-- DEAD (WC-1, 2026-08-14): the planned date left the Personal card for the Summary (BL-141) — it is a
+       SHARED field on TaskItem, not a private one, so "Kişisel plan" was a false statement about who can
+       see it. `DetailPlannedDate` replaces it. `PlannedDateNone` went with it: the Summary prints a row
+       only for a fact that exists, and "Planla" is already offered as an action on exactly those tasks.
+       Kept rather than deleted — a removed key is invisible to the next reader. -->
   <data name="PlannedDateLabel" xml:space="preserve">
     <value>Plan personal</value>
   </data>
   <data name="PlanConflict" xml:space="preserve">
-    <value>Tu plan personal es posterior a la fecha límite de origen — riesgo de incumplimiento.</value>
+    <value>La fecha planificada es posterior a la fecha límite de origen — riesgo de incumplimiento.</value>
   </data>
   <data name="ConfirmBodyOnBehalf" xml:space="preserve">
-    <value>Está a punto de aplicar esta acción a «{0}» en nombre de {1}. ¿Continuar?</value>
+    <value>Está a punto de aplicar esta acción en nombre de {0}. ¿Confirma?</value>
   </data>
   <data name="ToastReleased" xml:space="preserve">
     <value>{0} · liberado a la bandeja (mock)</value>
@@ -617,10 +746,10 @@
     <value>{0} · fijado quitado</value>
   </data>
   <data name="ToastSnoozed" xml:space="preserve">
-    <value>{0} · pospuesto hasta {1} (mock)</value>
+    <value>{0} · pospuesto hasta {1}</value>
   </data>
   <data name="ToastUnsnoozed" xml:space="preserve">
-    <value>{0} · posposición cancelada (mock)</value>
+    <value>{0} · posposición cancelada</value>
   </data>
   <data name="BulkResultTitle" xml:space="preserve">
     <value>Resultado de la acción masiva</value>
@@ -670,8 +799,32 @@
   <data name="SubtasksLabel" xml:space="preserve">
     <value>Subtareas</value>
   </data>
+  <data name="SubtaskDoneCount" xml:space="preserve">
+    <value>{0} hechas</value>
+  </data>
+  <data name="SubtaskProgressCount" xml:space="preserve">
+    <value>{0} / {1} hechas</value>
+  </data>
+  <data name="SubtaskInheritsHint" xml:space="preserve">
+    <value>La fecha límite, la prioridad y el responsable se heredan de la tarea principal.</value>
+  </data>
+  <data name="SubtaskOpen" xml:space="preserve">
+    <value>Abrir</value>
+  </data>
+  <data name="SubtaskCheckDoneReason" xml:space="preserve">
+    <value>Ya completada.</value>
+  </data>
+  <data name="SubtaskCheckCancelledReason" xml:space="preserve">
+    <value>El trabajo cancelado no se puede completar.</value>
+  </data>
+  <data name="SubtaskCheckAria" xml:space="preserve">
+    <value>Completar esta subtarea</value>
+  </data>
+  <data name="SubtaskRowMenuAria" xml:space="preserve">
+    <value>Acciones para {0}</value>
+  </data>
   <data name="SubtaskAddPlaceholder" xml:space="preserve">
-    <value>Nueva subtarea…</value>
+    <value>Añade una subtarea y pulsa Intro</value>
   </data>
   <data name="SubtaskAdd" xml:space="preserve">
     <value>Añadir</value>
@@ -688,6 +841,75 @@
   <data name="DepSuccessor" xml:space="preserve">
     <value>Sucesora</value>
   </data>
+  <data name="DepSentencePredFS" xml:space="preserve">
+    <value>No puedes empezar hasta que {0} termine</value>
+  </data>
+  <data name="DepSentencePredFF" xml:space="preserve">
+    <value>No puedes terminar hasta que {0} termine</value>
+  </data>
+  <data name="DepSentencePredSS" xml:space="preserve">
+    <value>No puedes empezar hasta que {0} empiece</value>
+  </data>
+  <data name="DepSentencePredSF" xml:space="preserve">
+    <value>No puedes terminar hasta que {0} empiece</value>
+  </data>
+  <data name="DepSentenceSuccFS" xml:space="preserve">
+    <value>{0} no puede empezar hasta que termines</value>
+  </data>
+  <data name="DepSentenceSuccFF" xml:space="preserve">
+    <value>{0} no puede terminar hasta que termines</value>
+  </data>
+  <data name="DepSentenceSuccSS" xml:space="preserve">
+    <value>{0} no puede empezar hasta que empieces</value>
+  </data>
+  <data name="DepSentenceSuccSF" xml:space="preserve">
+    <value>{0} no puede terminar hasta que empieces</value>
+  </data>
+  <data name="DatePlaceholder" xml:space="preserve">
+    <value>AAAA-MM-DD</value>
+  </data>
+  <data name="DateTimePlaceholder" xml:space="preserve">
+    <value>AAAA-MM-DD HH:MM</value>
+  </data>
+  <data name="MeetingWhenLabel" xml:space="preserve">
+    <value>Fecha y hora de la reunión</value>
+  </data>
+  <data name="MeetingTitlePlaceholder" xml:space="preserve">
+    <value>Revisión de cierre del T3</value>
+  </data>
+  <data name="MeetingLocationPlaceholder" xml:space="preserve">
+    <value>Teams / Sala de reuniones 2</value>
+  </data>
+  <data name="NewPickModuleLabel" xml:space="preserve">
+    <value>¿Qué módulo?</value>
+  </data>
+  <data name="LogTimeSubtext" xml:space="preserve">
+    <value>Se suma al tiempo ya registrado en esta tarea; no inicia ni detiene el cronómetro.</value>
+  </data>
+  <data name="MeetingWhenSubtext" xml:space="preserve">
+    <value>La conexión con el calendario aún no existe: este registro solo aparece en esta pantalla y se pierde al cerrar la página. La fecha límite no cambia.</value>
+  </data>
+  <data name="NewInSourceSubtext" xml:space="preserve">
+    <value>El registro se crea en ese módulo y allí permanece; el Centro de tareas no guarda copia.</value>
+  </data>
+  <data name="ConfirmProceedNamed" xml:space="preserve">
+    <value>Sí, {0}</value>
+  </data>
+  <data name="SubtaskCreateAllFields" xml:space="preserve">
+    <value>Todos los campos</value>
+  </data>
+  <data name="TimerStateRunning" xml:space="preserve">
+    <value>En curso</value>
+  </data>
+  <data name="TimerStatePaused" xml:space="preserve">
+    <value>En pausa</value>
+  </data>
+  <data name="TimerFollowsStatusHint" xml:space="preserve">
+    <value>El tiempo transcurrido no se registra: introduce manualmente el tiempo dedicado.</value>
+  </data>
+  <data name="SubtaskStartedNotCompleted" xml:space="preserve">
+    <value>La subtarea se inició pero no se pudo completar: {0}</value>
+  </data>
   <data name="DepTypeFS" xml:space="preserve">
     <value>Fin a Inicio (FS)</value>
   </data>
@@ -701,13 +923,40 @@
     <value>Inicio a Fin (SF)</value>
   </data>
   <data name="DepDone" xml:space="preserve">
-    <value>hecho</value>
+    <value>Completado</value>
   </data>
   <data name="DepInProgress" xml:space="preserve">
-    <value>en curso</value>
+    <value>En curso</value>
   </data>
   <data name="DepNotStarted" xml:space="preserve">
-    <value>sin iniciar</value>
+    <value>Sin empezar</value>
+  </data>
+  <data name="DepCancelled" xml:space="preserve">
+    <value>Cancelada</value>
+  </data>
+  <data name="BlockedBannerCount" xml:space="preserve">
+    <value>{0} problema(s) impiden avanzar</value>
+  </data>
+  <data name="BlockerFinishToStart" xml:space="preserve">
+    <value>No se puede iniciar hasta que se cierre «{0}»</value>
+  </data>
+  <data name="BlockerFinishToFinish" xml:space="preserve">
+    <value>No se puede completar hasta que se cierre «{0}»</value>
+  </data>
+  <data name="BlockerStartToStart" xml:space="preserve">
+    <value>No se puede iniciar hasta que «{0}» haya empezado</value>
+  </data>
+  <data name="BlockerStartToFinish" xml:space="preserve">
+    <value>No se puede completar hasta que «{0}» haya empezado</value>
+  </data>
+  <data name="BlockedAffectsStart" xml:space="preserve">
+    <value>impide iniciar</value>
+  </data>
+  <data name="BlockedAffectsComplete" xml:space="preserve">
+    <value>impide completar</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_DependencyBlocked" xml:space="preserve">
+    <value>Una dependencia aún no se cumple</value>
   </data>
   <data name="DepsReadonlyHint" xml:space="preserve">
     <value>Los vínculos de dependencia se gestionan en el origen</value>
@@ -721,20 +970,38 @@
   <data name="NotePlaceholder" xml:space="preserve">
     <value>Una nota que solo tú ves…</value>
   </data>
+  <!-- DEAD (WC-1, 2026-08-14): the personal note became a LIST with an add row, so "Save" no longer
+       names a control on any surface. Kept rather than deleted — a removed key is invisible to the
+       next reader, who cannot tell it was retired from it never having existed. -->
   <data name="NoteSave" xml:space="preserve">
     <value>Guardar</value>
   </data>
   <data name="ToastNoteSaved" xml:space="preserve">
-    <value>Nota personal guardada (mock)</value>
+    <value>Nota personal guardada</value>
   </data>
   <data name="ActivityLabel" xml:space="preserve">
     <value>Actividad y comentarios</value>
   </data>
+  <data name="DetailTabGeneral" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="DetailTabActivity" xml:space="preserve">
+    <value>Actividad</value>
+  </data>
   <data name="CommentPlaceholder" xml:space="preserve">
-    <value>Escribe un comentario… (también en el origen)</value>
+    <value>Escribe un comentario…</value>
   </data>
   <data name="CommentPost" xml:space="preserve">
     <value>Enviar</value>
+  </data>
+  <data name="CommentTextRequired" xml:space="preserve">
+    <value>Escribe algo antes de publicar</value>
+  </data>
+  <data name="CommentTooLong" xml:space="preserve">
+    <value>Un comentario puede tener como máximo {0} caracteres</value>
+  </data>
+  <data name="CommentAuthorUnknown" xml:space="preserve">
+    <value>Nombre no disponible</value>
   </data>
   <data name="ToastCommentPosted" xml:space="preserve">
     <value>Comentario enviado (mock)</value>
@@ -751,6 +1018,21 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>Solo lectura — el estado cambia en el origen; aquí solo plan/fijado personal.</value>
   </data>
+  <data name="CalPrevMonth" xml:space="preserve">
+    <value>Mes anterior</value>
+  </data>
+  <data name="CalNextMonth" xml:space="preserve">
+    <value>Mes siguiente</value>
+  </data>
+  <data name="CalToday" xml:space="preserve">
+    <value>Hoy</value>
+  </data>
+  <data name="CalOutside" xml:space="preserve">
+    <value>{0} elementos están en otros meses.</value>
+  </data>
+  <data name="CalOutsideAndUndated" xml:space="preserve">
+    <value>{0} elementos están en otros meses; {1} no tienen fecha y nunca aparecen en el calendario.</value>
+  </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>Vencim. origen</value>
   </data>
@@ -761,16 +1043,16 @@
     <value>Nuevo</value>
   </data>
   <data name="NewSelfTask" xml:space="preserve">
-    <value>Tarea para mí</value>
+    <value>Crear tarea</value>
   </data>
   <data name="NewSelfTaskDesc" xml:space="preserve">
     <value>Un pendiente personal — vive en WorkCenter</value>
   </data>
   <data name="NewInSource" xml:space="preserve">
-    <value>Crear en un origen</value>
+    <value>Crear en el módulo de origen</value>
   </data>
   <data name="NewInSourceDesc" xml:space="preserve">
-    <value>Elige un módulo, crea en su pantalla</value>
+    <value>Un registro del módulo — vive en ese módulo</value>
   </data>
   <data name="NewTaskTitlePlaceholder" xml:space="preserve">
     <value>Título de la tarea…</value>
@@ -781,8 +1063,8 @@
   <data name="NewPickModule" xml:space="preserve">
     <value>Elegir módulo</value>
   </data>
-  <data name="NewOpenSource" xml:space="preserve">
-    <value>Abrir en origen</value>
+  <data name="NewCreateInSource" xml:space="preserve">
+    <value>Crear en el origen</value>
   </data>
   <data name="SelfSource" xml:space="preserve">
     <value>Personal</value>
@@ -795,6 +1077,12 @@
   </data>
   <data name="ToastSelfTaskCreated" xml:space="preserve">
     <value>{0} · añadido a Mi trabajo (mock)</value>
+  </data>
+  <data name="ToastCommentPostedReal" xml:space="preserve">
+    <value>Comentario enviado</value>
+  </data>
+  <data name="ToastSelfTaskCreatedReal" xml:space="preserve">
+    <value>{0} · añadido a Mi trabajo</value>
   </data>
   <data name="ToastCreateInSource" xml:space="preserve">
     <value>La creación se abriría en el módulo {0} (mock)</value>
@@ -813,6 +1101,72 @@
   </data>
   <data name="GroupAll" xml:space="preserve">
     <value>Todos los grupos</value>
+  </data>
+  <data name="GroupUnnamed" xml:space="preserve">
+    <value>Cola sin nombre</value>
+  </data>
+  <data name="PoolUnassigned" xml:space="preserve">
+    <value>Sin asignar — en la bandeja común</value>
+  </data>
+  <data name="ModuleFinance" xml:space="preserve">
+    <value>Finanzas</value>
+  </data>
+  <data name="ModuleTax" xml:space="preserve">
+    <value>Impuestos</value>
+  </data>
+  <data name="ModuleQuality" xml:space="preserve">
+    <value>Calidad</value>
+  </data>
+  <data name="ModuleMasterData" xml:space="preserve">
+    <value>Datos maestros</value>
+  </data>
+  <data name="ModuleIntegrationMonitoring" xml:space="preserve">
+    <value>Monitorización de integraciones</value>
+  </data>
+  <data name="ModuleProjectGovernance" xml:space="preserve">
+    <value>Gobernanza de proyectos</value>
+  </data>
+  <data name="ModuleWorkflow" xml:space="preserve">
+    <value>Flujo de trabajo</value>
+  </data>
+  <data name="ModuleIncident" xml:space="preserve">
+    <value>Gestión de incidencias</value>
+  </data>
+  <data name="ModuleWorkcenter" xml:space="preserve">
+    <value>Centro de tareas</value>
+  </data>
+  <data name="ModuleTasks" xml:space="preserve">
+    <value>Tareas</value>
+  </data>
+  <data name="ModuleEnterpriseStrategy" xml:space="preserve">
+    <value>Estrategia corporativa</value>
+  </data>
+  <data name="ModuleDocumentation" xml:space="preserve">
+    <value>Gestión documental</value>
+  </data>
+  <data name="ModuleControlledDocuments" xml:space="preserve">
+    <value>Documentos controlados</value>
+  </data>
+  <data name="ModuleProcurement" xml:space="preserve">
+    <value>Compras</value>
+  </data>
+  <data name="ModuleSales" xml:space="preserve">
+    <value>Ventas</value>
+  </data>
+  <data name="ModuleTreasury" xml:space="preserve">
+    <value>Tesorería</value>
+  </data>
+  <data name="ModuleHr" xml:space="preserve">
+    <value>Recursos humanos</value>
+  </data>
+  <data name="ModuleLegal" xml:space="preserve">
+    <value>Jurídico</value>
+  </data>
+  <data name="ModuleCalendar" xml:space="preserve">
+    <value>Calendario</value>
+  </data>
+  <data name="ModuleLegacyAdapter" xml:space="preserve">
+    <value>Adaptador heredado</value>
   </data>
   <data name="FilterPriority" xml:space="preserve">
     <value>Filtro de prioridad</value>
@@ -900,4 +1254,931 @@
   <data name="ErrorTitle" xml:space="preserve"><value>No se pudo cargar el Centro de trabajo</value></data>
   <data name="ErrorDesc" xml:space="preserve"><value>Sus filtros se conservaron. Vuelva a intentarlo para cargar el espacio de trabajo.</value></data>
   <data name="Retry" xml:space="preserve"><value>Reintentar</value></data>
+  <data name="NewNote" xml:space="preserve">
+    <value>Nota rápida</value>
+  </data>
+  <data name="NewMeeting" xml:space="preserve">
+    <value>Programar reunión</value>
+  </data>
+  <data name="ChipAll" xml:space="preserve">
+    <value>Todos</value>
+  </data>
+  <data name="ChipPendingAccept" xml:space="preserve">
+    <value>Pendiente de aceptación</value>
+  </data>
+  <data name="ChipMeetingInvite" xml:space="preserve">
+    <value>Invitación a reunión</value>
+  </data>
+  <data name="EmptyMeetingInviteTitle" xml:space="preserve">
+    <value>No tienes invitaciones a reuniones pendientes.</value>
+  </data>
+  <data name="EmptyMeetingInviteDesc" xml:space="preserve">
+    <value>Las nuevas invitaciones aparecerán aquí.</value>
+  </data>
+  <data name="FilterWorkType" xml:space="preserve">
+    <value>Tipo de trabajo</value>
+  </data>
+  <data name="FilterAllWorkTypes" xml:space="preserve">
+    <value>Todos los tipos</value>
+  </data>
+  <data name="SearchClear" xml:space="preserve">
+    <value>Borrar búsqueda</value>
+  </data>
+  <data name="Apply" xml:space="preserve"><value>Aplicar</value></data>
+  <data name="Reset" xml:space="preserve"><value>Restablecer</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Guardar vista</value></data>
+  <data name="DefaultViewName" xml:space="preserve"><value>Predeterminada</value></data>
+  <data name="ViewSaved" xml:space="preserve"><value>Vista guardada.</value></data>
+  <data name="ErrorOccurred" xml:space="preserve"><value>Se produjo un error.</value></data>
+  <data name="ExportLabel" xml:space="preserve">
+    <value>Exportar</value>
+  </data>
+  <data name="ApprovalContextTitle" xml:space="preserve"><value>Contexto de aprobación</value></data>
+  <data name="ApprovalAmount" xml:space="preserve"><value>Importe</value></data>
+  <data name="ApprovalThreshold" xml:space="preserve"><value>Umbral de aprobación</value></data>
+  <data name="BudgetImpact" xml:space="preserve"><value>Impacto presupuestario</value></data>
+  <data name="LineItemsTitle" xml:space="preserve"><value>Partidas</value></data>
+  <data name="LineDescription" xml:space="preserve"><value>Descripción / cuenta</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Cant.</value></data>
+  <data name="LineUnitPrice" xml:space="preserve"><value>Precio unitario</value></data>
+  <data name="ReviewContextTitle" xml:space="preserve"><value>Paquete de revisión</value></data>
+  <data name="ReviewVersion" xml:space="preserve"><value>Versión</value></data>
+  <data name="ReviewChecklistTitle" xml:space="preserve"><value>Lista de revisión</value></data>
+  <data name="ReviewCheckComplete" xml:space="preserve"><value>Completado</value></data>
+  <data name="ReviewCheckPending" xml:space="preserve"><value>Pendiente</value></data>
+  <data name="SignatureHistoryTitle" xml:space="preserve"><value>Historial de firmas</value></data>
+  <data name="SignatureSigned" xml:space="preserve"><value>Firmado</value></data>
+  <data name="SignaturePending" xml:space="preserve"><value>Firma pendiente</value></data>
+  <data name="ExceptionContextTitle" xml:space="preserve"><value>Análisis de excepción</value></data>
+  <data name="DiscrepancyField" xml:space="preserve"><value>Campo discrepante</value></data>
+  <data name="ExpectedValue" xml:space="preserve"><value>Esperado</value></data>
+  <data name="ActualValue" xml:space="preserve"><value>Real</value></data>
+  <data name="DeltaPercent" xml:space="preserve"><value>Variación</value></data>
+  <data name="RootCause" xml:space="preserve"><value>Causa raíz</value></data>
+  <data name="ResolutionOptions" xml:space="preserve"><value>Opciones de resolución</value></data>
+  <data name="TaskContextTitle" xml:space="preserve"><value>Ejecución del trabajo</value></data>
+  <data name="EffortSpent" xml:space="preserve"><value>Esfuerzo consumido</value></data>
+  <data name="HoursShort" xml:space="preserve"><value>h</value></data>
+  <data name="AssignmentHistoryTitle" xml:space="preserve"><value>Historial de asignaciones</value></data>
+  <data name="MeetingContextTitle" xml:space="preserve"><value>Detalles de la reunión</value></data>
+  <data name="MeetingAgendaTitle" xml:space="preserve"><value>Agenda</value></data>
+  <data name="MeetingParticipantsTitle" xml:space="preserve"><value>Participantes</value></data>
+  <data name="AttendanceAccepted" xml:space="preserve"><value>Aceptada</value></data>
+  <data name="AttendancePending" xml:space="preserve"><value>Esperando respuesta</value></data>
+  <data name="AttendanceDeclined" xml:space="preserve"><value>Rechazada</value></data>
+  <data name="ParticipantOrganizer" xml:space="preserve"><value>Organizador</value></data>
+  <data name="ParticipantRequired" xml:space="preserve"><value>Obligatorio</value></data>
+  <data name="ParticipantOptional" xml:space="preserve"><value>Opcional</value></data>
+  <data name="ApprovalChainTitle" xml:space="preserve"><value>Ruta de aprobación</value></data>
+  <data name="ApprovalLevelValue" xml:space="preserve"><value>Nivel {0}</value></data>
+  <data name="ApprovalStatusApproved" xml:space="preserve"><value>Aprobado</value></data>
+  <data name="ApprovalStatusPending" xml:space="preserve"><value>Pendiente</value></data>
+  <data name="ApprovalStatusRejected" xml:space="preserve"><value>Rechazado</value></data>
+  <data name="ConversationTitle" xml:space="preserve"><value>Conversación</value></data>
+  <data name="RelatedRecordsTitle" xml:space="preserve"><value>Registros relacionados</value></data>
+  <data name="RelatedTypeParent" xml:space="preserve"><value>Principal</value></data>
+  <data name="RelatedTypeChild" xml:space="preserve"><value>Secundario</value></data>
+  <data name="RelatedTypeTransaction" xml:space="preserve"><value>Transacción</value></data>
+  <data name="RelatedTypeDocument" xml:space="preserve"><value>Documento</value></data>
+  <data name="ComplianceTitle" xml:space="preserve"><value>Cumplimiento y controles</value></data>
+  <data name="CompliancePolicy" xml:space="preserve"><value>Política</value></data>
+  <data name="ComplianceLimit" xml:space="preserve"><value>Límite de aprobación</value></data>
+  <data name="ComplianceSoD" xml:space="preserve"><value>Segregación de funciones</value></data>
+  <data name="DelegationTitle" xml:space="preserve"><value>Delegación</value></data>
+  <data name="DelegationOnBehalf" xml:space="preserve"><value>En nombre de {0}</value></data>
+  <data name="DelegationDelegate" xml:space="preserve"><value>Delegado</value></data>
+  <data name="DetailTabsLabel" xml:space="preserve"><value>Secciones de detalle del elemento de trabajo</value></data>
+  <data name="DetailTabOverview" xml:space="preserve"><value>Detalles</value></data>
+  <data name="DetailTabProcess" xml:space="preserve"><value>Proceso</value></data>
+  <data name="DetailTabCollaboration" xml:space="preserve"><value>Colaboración y registros</value></data>
+  <data name="DetailPageTitle" xml:space="preserve"><value>Detalles del elemento de trabajo</value></data>
+  <data name="DetailItemNotFound" xml:space="preserve"><value>No se encontró el elemento de trabajo solicitado.</value></data>
+  <data name="DetailBackToList" xml:space="preserve"><value>Volver al centro de trabajo</value></data>
+  <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>Su autoridad sobre este elemento ha finalizado.</value></data>
+  <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>Una dependencia requerida está incompleta.</value></data>
+  <data name="ActionDisabledEvidenceIncomplete" xml:space="preserve"><value>La evidencia requerida está incompleta.</value></data>
+  <data name="ActionDisabledReconciliationRequired" xml:space="preserve"><value>Se requiere conciliación con el origen.</value></data>
+  <data name="ActionDisabledSourceUnavailable" xml:space="preserve"><value>El sistema de origen no está disponible.</value></data>
+  <data name="ActionDisabledStaleProjection" xml:space="preserve"><value>Actualice primero el registro de origen modificado.</value></data>
+  <data name="ContextControlledDocument" xml:space="preserve"><value>Documento controlado</value></data>
+  <data name="ContextDecomposition" xml:space="preserve"><value>Descomposición estratégica</value></data>
+  <data name="ContextDemandIdea" xml:space="preserve"><value>Idea de demanda</value></data>
+  <data name="ContextObjective" xml:space="preserve"><value>Objetivo</value></data>
+  <data name="ContextPeriodicReview" xml:space="preserve"><value>Revisión periódica</value></data>
+  <data name="DetailLifecycleOwner" xml:space="preserve"><value>Responsable del ciclo de vida</value></data>
+  <data name="EmptyBusinessContext" xml:space="preserve"><value>No se proporcionó contexto de negocio.</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>Falta evidencia</value></data>
+  <data name="FixtureChecklistVerify" xml:space="preserve"><value>Verificar la información requerida</value></data>
+  <data name="FixtureDependencyContract" xml:space="preserve"><value>Dependencia contractual</value></data>
+  <data name="FixtureDependencyValidation" xml:space="preserve"><value>Dependencia de validación</value></data>
+  <data name="FixtureInvalidDesc" xml:space="preserve"><value>Este conjunto de prueba no cumple el contrato canónico.</value></data>
+  <data name="FixtureInvalidTitle" xml:space="preserve"><value>Conjunto de prueba no válido</value></data>
+  <data name="LifecycleOpen" xml:space="preserve"><value>Abierto</value></data>
+  <data name="LifecyclePlanned" xml:space="preserve"><value>Planificado</value></data>
+  <data name="MigrationAdaptedNotice" xml:space="preserve"><value>Este ejemplo heredado se adaptó para pruebas de migración.</value></data>
+  <data name="MigrationLegacyBlocker" xml:space="preserve"><value>Bloqueo heredado</value></data>
+  <data name="MigrationLegacyInformationRequest" xml:space="preserve"><value>Solicitud de información heredada</value></data>
+  <data name="MigrationLegacyPendingApproval" xml:space="preserve"><value>Aprobación heredada pendiente</value></data>
+  <data name="NoticeChecklistNonBlocking" xml:space="preserve"><value>La lista tiene un problema no bloqueante.</value></data>
+  <data name="NoticeDueSoon" xml:space="preserve"><value>Este elemento vence pronto.</value></data>
+  <data name="NoticePendingReview" xml:space="preserve"><value>Este elemento espera revisión.</value></data>
+  <data name="NoticePlanConflict" xml:space="preserve"><value>El plan personal entra en conflicto con la fecha de origen.</value></data>
+  <data name="NoticeSnoozed" xml:space="preserve"><value>Ha pospuesto este elemento.</value></data>
+  <data name="NoticeWaiting" xml:space="preserve"><value>Este elemento espera información externa.</value></data>
+  <data name="NoticeWaitingExternal" xml:space="preserve"><value>Esta tarea espera información de otra persona.</value></data>
+  <data name="NoticeWaitingApproval" xml:space="preserve"><value>Esta tarea espera una decisión de aprobación.</value></data>
+  <data name="NoticeWaitingReview" xml:space="preserve"><value>Esta tarea espera revisión.</value></data>
+  <data name="NoticeWaitingMeeting" xml:space="preserve"><value>Esta tarea espera una reunión.</value></data>
+  <data name="ProviderCommandRequired" xml:space="preserve"><value>Este cambio debe ejecutarse en el proveedor de origen.</value></data>
+  <data name="RedactedValue" xml:space="preserve"><value>Restringido</value></data>
+  <data name="RelatedRecordOpen" xml:space="preserve"><value>Abrir registro relacionado</value></data>
+  <data name="SourceProjectionRequested" xml:space="preserve"><value>Se solicitó una proyección de origen actualizada.</value></data>
+  <data name="TriggerOnlyLabel" xml:space="preserve"><value>Respuesta requerida</value></data>
+  <data name="TriggerResponsesLabel" xml:space="preserve"><value>Solicitudes de respuesta</value></data>
+  <data name="WaitingExpectedUntil" xml:space="preserve"><value>Previsto hasta</value></data>
+  <data name="ActionDisabledReviewMeetingRequired" xml:space="preserve"><value>Se requiere una reunión de revisión antes de aprobar.</value></data>
+  <data name="InboxTitleTaskVendorVerification" xml:space="preserve"><value>Verificar los datos maestros del proveedor Arven Medical</value></data>
+  <data name="InboxTitleTaskVendorVerificationSummary" xml:space="preserve"><value>Compruebe la información fiscal, bancaria y de contacto.</value></data>
+  <data name="InboxTitleApprovalBudgetRevision" xml:space="preserve"><value>Aprobar la revisión del presupuesto de ventas del T3</value></data>
+  <data name="InboxTitleApprovalBudgetRevisionSummary" xml:space="preserve"><value>Evalúe la solicitud adicional de 1,8 millones de TRY.</value></data>
+  <data name="InboxTitleReviewOptionalMeeting" xml:space="preserve"><value>Revisión de finalización CAPA-2231</value></data>
+  <data name="InboxTitleReviewOptionalMeetingSummary" xml:space="preserve"><value>Apruebe directamente o programe una reunión con el responsable.</value></data>
+  <data name="InboxTitleReviewRequiredMeeting" xml:space="preserve"><value>Aprobación de cierre de la transformación Atlas</value></data>
+  <data name="InboxTitleReviewRequiredMeetingSummary" xml:space="preserve"><value>Esta tarea solo puede aprobarse después de la reunión obligatoria.</value></data>
+  <data name="InboxTitleIssueIntegrationFailure" xml:space="preserve"><value>Resolver el fallo de transferencia de clientes SAP</value></data>
+  <data name="InboxTitleIssueIntegrationFailureSummary" xml:space="preserve"><value>47 registros de clientes fallaron durante la validación.</value></data>
+  <data name="InboxTitleExceptionVatMismatch" xml:space="preserve"><value>Revisar la diferencia de conciliación de IVA de julio</value></data>
+  <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>Se detectó una diferencia de 84.750 TRY con el libro mayor.</value></data>
+  <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>Reunión de revisión del presupuesto del T3</value></data>
+  <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 de julio de 2026, 14:00–15:00 · Teams · Organiza: Deniz Koç</value></data>
+  <data name="WorkAggregation_Title_Approval" xml:space="preserve">
+    <value>Aprobación: {objectType} {objectId}</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
+    <value>Pendiente de aprobación</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_WaitingEvidence" xml:space="preserve">
+    <value>Pendiente de evidencia</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Escalated" xml:space="preserve">
+    <value>Escalado</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Approved" xml:space="preserve">
+    <value>Aprobado</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Rejected" xml:space="preserve">
+    <value>Rechazado</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Cancelled" xml:space="preserve">
+    <value>Cancelado</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_TimedOut" xml:space="preserve">
+    <value>Tiempo agotado</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Delegated" xml:space="preserve">
+    <value>Delegado</value>
+  </data>
+  <data name="WorkAggregation_Action_Approve" xml:space="preserve">
+    <value>Aprobar</value>
+  </data>
+  <data name="WorkAggregation_Action_Reject" xml:space="preserve">
+    <value>Rechazar</value>
+  </data>
+  <data name="WorkAggregation_Action_RequestInfo" xml:space="preserve">
+    <value>Solicitar información</value>
+  </data>
+  <data name="WorkAggregation_Action_Delegate" xml:space="preserve">
+    <value>Delegar</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_PermissionDenied" xml:space="preserve">
+    <value>No tiene permiso para esta acción.</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
+    <value>Falta la evidencia requerida.</value>
+  </data>
+  <data name="NoAccessTitle" xml:space="preserve">
+    <value>No tiene acceso al Centro de tareas</value>
+  </data>
+  <data name="NoAccessDesc" xml:space="preserve">
+    <value>Solicite a su administrador acceso a este módulo.</value>
+  </data>
+  <data name="SessionExpiredTitle" xml:space="preserve">
+    <value>Su sesión ha expirado</value>
+  </data>
+  <data name="SessionExpiredDesc" xml:space="preserve">
+    <value>Inicie sesión de nuevo para continuar.</value>
+  </data>
+  <data name="UnavailableTitle" xml:space="preserve">
+    <value>El Centro de tareas no está disponible temporalmente</value>
+  </data>
+  <data name="UnavailableDesc" xml:space="preserve">
+    <value>No se pudo contactar con el servicio. Sus filtros se conservan: inténtelo de nuevo.</value>
+  </data>
+  <data name="WorkAggregation_Action_Accept" xml:space="preserve">
+    <value>Aceptar</value>
+  </data>
+  <data name="WorkAggregation_Action_Claim" xml:space="preserve">
+    <value>Asignarme</value>
+  </data>
+  <data name="WorkAggregation_Action_Start" xml:space="preserve">
+    <value>Iniciar</value>
+  </data>
+  <data name="WorkAggregation_Action_Complete" xml:space="preserve">
+    <value>Completar</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ApprovalPending" xml:space="preserve">
+    <value>Pendiente de aprobación: aún no se puede iniciar.</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Open" xml:space="preserve">
+    <value>Abierto</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Planned" xml:space="preserve">
+    <value>Planificado</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_InProgress" xml:space="preserve">
+    <value>En curso</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Waiting" xml:space="preserve">
+    <value>En espera</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_PendingReview" xml:space="preserve">
+    <value>Pendiente de revisión</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Done" xml:space="preserve">
+    <value>Completado</value>
+  </data>
+  <data name="WorkAggregation_TaskStatus_Cancelled" xml:space="preserve">
+    <value>Cancelado</value>
+  </data>
+  <data name="WorkAggregation_Action_Plan" xml:space="preserve">
+    <value>Planificar</value>
+  </data>
+  <data name="WorkAggregation_Action_Release" xml:space="preserve">
+    <value>Liberar</value>
+  </data>
+  <data name="WorkAggregation_Action_Resume" xml:space="preserve">
+    <value>Reanudar</value>
+  </data>
+  <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
+    <value>A la espera de…</value>
+  </data>
+  <data name="WorkAggregation_Action_Return" xml:space="preserve">
+    <value>Devolver</value>
+  </data>
+  <data name="WorkAggregation_Action_Reassign" xml:space="preserve">
+    <value>Reasignar</value>
+  </data>
+  <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
+    <value>Cancelar tarea</value>
+  </data>
+  <data name="ToastActionApplied" xml:space="preserve">
+    <value>{1} — '{0}' completado</value>
+  </data>
+  <data name="ErrorConcurrencyRefreshed" xml:space="preserve">
+    <value>Esta tarea cambió mientras trabajaba en ella. La lista se ha actualizado: inténtelo de nuevo.</value>
+  </data>
+  <data name="PersonSelf" xml:space="preserve">
+    <value>Yo</value>
+  </data>
+  <data name="PersonNameUnavailable" xml:space="preserve">
+    <value>Nombre no disponible</value>
+  </data>
+  <data name="PlannedDateNone" xml:space="preserve">
+    <value>Sin planificar</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ChecklistIncomplete" xml:space="preserve">
+    <value>Queda un elemento bloqueante de la lista de verificación.</value>
+  </data>
+  <data name="WorkAggregation_BusinessContext_Unfiled" xml:space="preserve">
+    <value>Otros datos</value>
+  </data>
+  <data name="WorkAggregation_BusinessContext_UnknownField" xml:space="preserve">
+    <value>Campo retirado</value>
+  </data>
+  <data name="WorkAggregation_Action_SubmitReview" xml:space="preserve">
+    <value>Enviar a revisión</value>
+  </data>
+  <data name="WorkAggregation_ReviewError_StartFailed" xml:space="preserve">
+    <value>No se pudo iniciar la revisión. Nadie está esperando: inténtelo de nuevo.</value>
+  </data>
+  <data name="WorkAggregation_ReviewError_ReviewerRequired" xml:space="preserve">
+    <value>Se requiere un revisor cuando se solicita una revisión.</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewPending" xml:space="preserve">
+    <value>En manos del revisor: aún no se puede completar.</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ApprovalPendingComplete" xml:space="preserve">
+    <value>Pendiente de aprobación: aún no se puede completar.</value>
+  </data>
+  <data name="WorkAggregation_ApprovalError_StartFailed" xml:space="preserve">
+    <value>No se pudo iniciar la aprobación.</value>
+  </data>
+  <data name="ChecklistEmpty" xml:space="preserve">
+    <value>Aún no hay elementos de verificación.</value>
+  </data>
+  <data name="ChecklistAddPlaceholder" xml:space="preserve">
+    <value>Escriba un elemento y pulse Intro</value>
+  </data>
+  <data name="ChecklistLevelOptional" xml:space="preserve">
+    <value>Opcional</value>
+  </data>
+  <data name="ChecklistLevelRequired" xml:space="preserve">
+    <value>Esperado</value>
+  </data>
+  <data name="ChecklistLevelBlocking" xml:space="preserve">
+    <value>Bloqueante</value>
+  </data>
+  <data name="ChecklistRequiredOpen" xml:space="preserve">
+    <value>{0} elemento(s) esperado(s) sin cerrar</value>
+  </data>
+  <data name="ConfirmRequiredOpen" xml:space="preserve">
+    <value>{0} elemento(s) obligatorio(s) sin marcar. La tarea se cerrará de todos modos.</value>
+  </data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve">
+    <value>Se requiere evidencia. El enlace a un documento se activará cuando se conecte el módulo documental.</value>
+  </data>
+  <data name="ChecklistLevelHint" xml:space="preserve">
+    <value>Cambiar el nivel: Opcional → Esperado → Bloqueante</value>
+  </data>
+  <data name="ChecklistLevelReadOnly" xml:space="preserve">
+    <value>Nivel: solo la persona que añadió este elemento puede cambiarlo</value>
+  </data>
+  <data name="ChecklistEvidenceMark" xml:space="preserve">
+    <value>Se requiere evidencia</value>
+  </data>
+  <data name="ToastChecklistItemAdded" xml:space="preserve">
+    <value>Elemento añadido</value>
+  </data>
+  <data name="GuidancePendingAcceptance" xml:space="preserve">
+    <value>Esta tarea espera que la aceptes. Asúmela o reasígnala si no te corresponde.</value>
+  </data>
+  <data name="GuidanceChildrenRunning" xml:space="preserve">
+    <value>{0} subtareas ya están en curso.</value>
+  </data>
+  <data name="GuidancePendingClaim" xml:space="preserve">
+    <value>Esta tarea está en el grupo. Recláma­la para que sea tuya.</value>
+  </data>
+  <data name="GuidanceApprovalPending" xml:space="preserve">
+    <value>Hay una decisión de aprobación pendiente; todavía no se puede iniciar.</value>
+  </data>
+  <data name="GuidanceReviewPending" xml:space="preserve">
+    <value>La tarea está con quien la revisa; no hay nada que hacer hasta que responda.</value>
+  </data>
+  <data name="GuidanceWaiting" xml:space="preserve">
+    <value>Esta tarea está en pausa, a la espera de otra persona.</value>
+  </data>
+  <data name="GuidanceWaitingBecause" xml:space="preserve">
+    <value>Esta tarea está en pausa: {0}</value>
+  </data>
+  <data name="SubtaskAddDetailed" xml:space="preserve">
+    <value>+ Añadir tarea detallada</value>
+  </data>
+  <data name="SubtaskCreateTitle" xml:space="preserve">
+    <value>Nueva subtarea</value>
+  </data>
+  <data name="SubtaskCreateSubmit" xml:space="preserve">
+    <value>Crear subtarea</value>
+  </data>
+  <data name="SubtaskCreateParentFixed" xml:space="preserve">
+    <value>Se creará bajo la tarea que estás viendo.</value>
+  </data>
+  <data name="SubtaskAssignToMe" xml:space="preserve">
+    <value>Yo</value>
+  </data>
+  <data name="SubtaskFieldPriority" xml:space="preserve">
+    <value>Prioridad</value>
+  </data>
+  <data name="SubtaskFieldDescription" xml:space="preserve">
+    <value>Descripción</value>
+  </data>
+  <data name="SubtaskCancel" xml:space="preserve">
+    <value>Cancelar subtarea</value>
+  </data>
+  <data name="SubtaskCancelAria" xml:space="preserve">
+    <value>Cancelar subtarea: {0}</value>
+  </data>
+  <data name="SubtaskCancelConfirm" xml:space="preserve">
+    <value>¿Cancelar la subtarea «{0}»? Permanece en el historial y deja de ser trabajo pendiente.</value>
+  </data>
+  <data name="SubtaskCancelConfirmYes" xml:space="preserve">
+    <value>Cancelarla</value>
+  </data>
+  <data name="ToastSubtaskCompleted" xml:space="preserve">
+    <value>Subtarea completada: {0}</value>
+  </data>
+  <data name="ToastSubtaskCancelled" xml:space="preserve">
+    <value>Subtarea cancelada: {0}</value>
+  </data>
+  <data name="SubtaskSave" xml:space="preserve">
+    <value>Guardar</value>
+  </data>
+  <data name="SubtaskSaved" xml:space="preserve">
+    <value>Subtarea guardada.</value>
+  </data>
+  <data name="SubtaskQuickEditTitle" xml:space="preserve">
+    <value>Edición rápida</value>
+  </data>
+  <data name="SubtaskFieldTitle" xml:space="preserve">
+    <value>Título</value>
+  </data>
+  <data name="SubtaskFieldDue" xml:space="preserve">
+    <value>Fecha límite</value>
+  </data>
+  <data name="SubtaskFieldAssignee" xml:space="preserve">
+    <value>Asignada a</value>
+  </data>
+  <data name="SubtaskFieldStatus" xml:space="preserve">
+    <value>Estado</value>
+  </data>
+  <data name="SubtaskNoAssignee" xml:space="preserve">
+    <value>Todavía nadie</value>
+  </data>
+  <data name="SubtaskOpenFullDetail" xml:space="preserve">
+    <value>Abrir el detalle completo</value>
+  </data>
+  <data name="SubtaskQuickEditScope" xml:space="preserve">
+    <value>La persona asignada y el estado se cambian desde el detalle completo, donde se aplican sus reglas.</value>
+  </data>
+  <data name="ActionsAvailable" xml:space="preserve">
+    <value>Acciones disponibles</value>
+  </data>
+  <data name="ActionSubmitting" xml:space="preserve">
+    <value>Aplicando…</value>
+  </data>
+  <data name="ActionsNoneClosed" xml:space="preserve">
+    <value>Esta tarea está cerrada; aquí ya no queda nada por hacer.</value>
+  </data>
+  <data name="ActionsNoneNotYours" xml:space="preserve">
+    <value>Ahora mismo no tiene ninguna acción sobre esta tarea.</value>
+  </data>
+  <data name="ActionsOther" xml:space="preserve">
+    <value>Otras acciones</value>
+  </data>
+  <data name="StepApproval" xml:space="preserve">
+    <value>Aprobación</value>
+  </data>
+  <data name="StepOpen" xml:space="preserve">
+    <value>Abierta</value>
+  </data>
+  <data name="StepPaused" xml:space="preserve">
+    <value>Actualmente en pausa</value>
+  </data>
+  <data name="StepPausedBecause" xml:space="preserve">
+    <value>Actualmente en pausa: {0}</value>
+  </data>
+  <data name="OutcomeAccept" xml:space="preserve">
+    <value>Asume la tarea y la pasa a Abierta</value>
+  </data>
+  <data name="OutcomeClaim" xml:space="preserve">
+    <value>Saca la tarea del grupo y te la asigna</value>
+  </data>
+  <data name="OutcomeRelease" xml:space="preserve">
+    <value>Devuelve la tarea al grupo</value>
+  </data>
+  <data name="OutcomePlan" xml:space="preserve">
+    <value>Fija tu fecha planificada; la fecha límite no cambia</value>
+  </data>
+  <data name="OutcomeStart" xml:space="preserve">
+    <value>Pasa la tarea a En curso</value>
+  </data>
+  <data name="OutcomeInquire" xml:space="preserve">
+    <value>Pausa la tarea y la pasa a En espera</value>
+  </data>
+  <data name="OutcomeReturn" xml:space="preserve">
+    <value>Devuelve la tarea a quien la solicitó</value>
+  </data>
+  <data name="OutcomeReassign" xml:space="preserve">
+    <value>Entrega la tarea a otra persona, sin aceptar</value>
+  </data>
+  <data name="OutcomeComplete" xml:space="preserve">
+    <value>Finaliza la tarea y la pasa a Completada</value>
+  </data>
+  <data name="OutcomeCancel" xml:space="preserve">
+    <value>Cancela la tarea por completo; las subtareas abiertas también</value>
+  </data>
+  <data name="GatesLabel" xml:space="preserve">
+    <value>Controles</value>
+  </data>
+  <data name="GateApproval" xml:space="preserve">
+    <value>Aprobación</value>
+  </data>
+  <data name="GateReview" xml:space="preserve">
+    <value>Revisión</value>
+  </data>
+  <data name="GateStatusNotRequired" xml:space="preserve">
+    <value>No necesario</value>
+  </data>
+  <data name="GateStatusRequired" xml:space="preserve">
+    <value>Necesario</value>
+  </data>
+  <data name="GateStatusPending" xml:space="preserve">
+    <value>Esperando una decisión</value>
+  </data>
+  <data name="GateStatusApproved" xml:space="preserve">
+    <value>Aprobado</value>
+  </data>
+  <data name="GateStatusRejected" xml:space="preserve">
+    <value>Rechazado</value>
+  </data>
+  <data name="SubtaskStatusCancelled" xml:space="preserve">
+    <value>Cancelado</value>
+  </data>
+  <data name="BreadcrumbLabel" xml:space="preserve">
+    <value>Ruta de navegación</value>
+  </data>
+  <data name="SubtaskStatusDone" xml:space="preserve">
+    <value>Completado</value>
+  </data>
+  <data name="SubtaskStatusInProgress" xml:space="preserve">
+    <value>En curso</value>
+  </data>
+  <data name="SubtaskStatusNotStarted" xml:space="preserve">
+    <value>Sin empezar</value>
+  </data>
+  <data name="ChecklistBlocksCompletion" xml:space="preserve">
+    <value>Esta lista debe completarse antes de poder finalizar la tarea.</value>
+  </data>
+  <data name="ChecklistDoesNotBlock" xml:space="preserve">
+    <value>Esta lista es orientativa; no impide finalizar.</value>
+  </data>
+  <data name="ActivityEmpty" xml:space="preserve">
+    <value>Todavía no hay actividad registrada.</value>
+  </data>
+  <data name="AuditEventCreated" xml:space="preserve">
+    <value>Tarea creada</value>
+  </data>
+  <data name="AuditEventAccepted" xml:space="preserve">
+    <value>Tarea aceptada</value>
+  </data>
+  <data name="AuditEventPlanned" xml:space="preserve">
+    <value>Tarea planificada</value>
+  </data>
+  <data name="AuditEventStarted" xml:space="preserve">
+    <value>Trabajo iniciado</value>
+  </data>
+  <data name="AuditEventResumed" xml:space="preserve">
+    <value>Trabajo reanudado</value>
+  </data>
+  <data name="AuditEventWaiting" xml:space="preserve">
+    <value>Puesta en espera</value>
+  </data>
+  <data name="AuditEventSubmittedForReview" xml:space="preserve">
+    <value>Enviada a revisión</value>
+  </data>
+  <data name="AuditEventReviewCancelled" xml:space="preserve">
+    <value>Requisito de revisión retirado</value>
+  </data>
+  <data name="AuditEventCompleted" xml:space="preserve">
+    <value>Completada</value>
+  </data>
+  <data name="AuditEventCancelled" xml:space="preserve">
+    <value>Cancelada</value>
+  </data>
+  <data name="AuditEventClaimed" xml:space="preserve">
+    <value>Tomada del grupo</value>
+  </data>
+  <data name="AuditEventReleased" xml:space="preserve">
+    <value>Devuelta al grupo</value>
+  </data>
+  <data name="AuditEventReassigned" xml:space="preserve">
+    <value>Reasignada</value>
+  </data>
+  <data name="AuditEventReturned" xml:space="preserve">
+    <value>Devuelta al solicitante</value>
+  </data>
+  <data name="AuditEventUnknown" xml:space="preserve">
+    <value>Tarea actualizada</value>
+  </data>
+  <data name="ActivityFilterLabel" xml:space="preserve">
+    <value>Filtro de actividad</value>
+  </data>
+  <data name="ActivityFilterAll" xml:space="preserve">
+    <value>Todo</value>
+  </data>
+  <data name="ActivityFilterCommentsOnly" xml:space="preserve">
+    <value>Solo comentarios</value>
+  </data>
+  <data name="ActivityNoComments" xml:space="preserve">
+    <value>Aún no hay comentarios en esta tarea.</value>
+  </data>
+  <data name="ActivityHistoryStartsHere" xml:space="preserve">
+    <value>Los pasos que dio esta tarea antes de que empezara el registro no están registrados.</value>
+  </data>
+  <data name="SubtasksEmpty" xml:space="preserve">
+    <value>Aún no hay subtareas.</value>
+  </data>
+  <data name="SubtasksBlockingNotice" xml:space="preserve">
+    <value>Hay {0} subtarea(s) abierta(s) que deben cerrarse antes de completar esta tarea</value>
+  </data>
+  <data name="BlockerSubtaskOpen" xml:space="preserve">
+    <value>No se puede completar hasta que se cierre la subtarea «{0}»</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
+    <value>Una subtarea sigue abierta</value>
+  </data>
+  <data name="ToastChecklistUpdated" xml:space="preserve">
+    <value>Lista de verificación actualizada.</value>
+  </data>
+  <data name="ToastSubtaskAdded" xml:space="preserve">
+    <value>Subtarea '{0}' añadida.</value>
+  </data>
+  <data name="SubtaskTitleRequired" xml:space="preserve">
+    <value>Introduzca un título para la subtarea.</value>
+  </data>
+  <!-- DEAD (2026-08-14): the parent-task notice became a Summary FIELD, whose label is `DetailParentTask`
+       and whose value is the parent's own title as a link. "{0} görevinin alt görevi" wrapped the title in
+       a sentence, which a labelled field does not need. Kept rather than deleted — a removed key is
+       invisible to the next reader. `SubtaskOfUnnamed` is still live: it is the honest fallback when the
+       reader cannot see the parent. -->
+  <data name="SubtaskOfNamed" xml:space="preserve">
+    <value>Subtarea de '{0}'</value>
+  </data>
+  <data name="SubtaskOfUnnamed" xml:space="preserve">
+    <value>Subtarea de otra tarea</value>
+  </data>
+  <data name="SubtaskOpenAria" xml:space="preserve">
+    <value>Abrir la subtarea '{0}'</value>
+  </data>
+  <data name="HavuzTitleInvoiceMatch" xml:space="preserve">
+    <value>Conciliar factura entrante</value>
+  </data>
+  <data name="HavuzTitleInvoiceMatchSummary" xml:space="preserve">
+    <value>Concilia una factura de proveedor pendiente en la cola de contabilidad con su orden de compra.</value>
+  </data>
+  <data name="HavuzTitlePrReview" xml:space="preserve">
+    <value>Prerrevisión de solicitud de compra</value>
+  </data>
+  <data name="HavuzTitlePrReviewSummary" xml:space="preserve">
+    <value>Prerrevisa una solicitud de compra en la cola de revisión por presupuesto y elegibilidad del proveedor.</value>
+  </data>
+  <data name="HavuzTitleAuditFinding" xml:space="preserve">
+    <value>Revisión de hallazgo de auditoría</value>
+  </data>
+  <data name="HavuzTitleAuditFindingSummary" xml:space="preserve">
+    <value>Se te ha ofrecido un hallazgo de auditoría de calidad para su revisión.</value>
+  </data>
+  <data name="GecmisTitleQ1Close" xml:space="preserve">
+    <value>Cierre del período Q1 2026</value>
+  </data>
+  <data name="GecmisTitleQ1CloseSummary" xml:space="preserve">
+    <value>Cierre de consolidación del primer trimestre de 2026: todas las conciliaciones de unidad completadas.</value>
+  </data>
+  <data name="GecmisTitleSupplierContract" xml:space="preserve">
+    <value>Aprobación de contrato marco de proveedor</value>
+  </data>
+  <data name="GecmisTitleSupplierContractSummary" xml:space="preserve">
+    <value>Los términos del contrato marco de proveedor se aprobaron y se remitieron a compras.</value>
+  </data>
+  <data name="GecmisTitleReportTemplate" xml:space="preserve">
+    <value>Revisión de plantilla de informes heredada</value>
+  </data>
+  <data name="GecmisTitleReportTemplateSummary" xml:space="preserve">
+    <value>La revisión de la plantilla heredada se canceló tras la puesta en marcha del nuevo módulo de informes.</value>
+  </data>
+  <data name="GecmisChkReconcile" xml:space="preserve">
+    <value>Completar conciliaciones de unidad</value>
+  </data>
+  <data name="GecmisChkReview" xml:space="preserve">
+    <value>Revisar el paquete de cierre</value>
+  </data>
+  <data name="GecmisChkPublish" xml:space="preserve">
+    <value>Publicar los resultados</value>
+  </data>
+  <data name="ReassignAssigneeLabel" xml:space="preserve">
+    <value>Nuevo responsable</value>
+  </data>
+  <data name="ReassignAssigneePlaceholder" xml:space="preserve">
+    <value>Seleccione una persona</value>
+  </data>
+  <data name="ReassignAssigneeRequired" xml:space="preserve">
+    <value>Elija a quién se entrega esta tarea.</value>
+  </data>
+  <data name="ReassignNoAssignableUsers" xml:space="preserve">
+    <value>No hay nadie a quien entregar esta tarea.</value>
+  </data>
+  <data name="CopyReference" xml:space="preserve">
+    <value>Copiar referencia</value>
+  </data>
+  <data name="ReferenceCopied" xml:space="preserve">
+    <value>Referencia copiada</value>
+  </data>
+  <data name="ReferenceCopyFailed" xml:space="preserve">
+    <value>No se pudo copiar la referencia</value>
+  </data>
+  <data name="ChecklistMoveUp" xml:space="preserve">
+    <value>Subir</value>
+  </data>
+  <data name="ChecklistMoveDown" xml:space="preserve">
+    <value>Bajar</value>
+  </data>
+  <data name="ChecklistEvidenceToggle" xml:space="preserve">
+    <value>Exigir evidencia</value>
+  </data>
+  <data name="ChecklistRemove" xml:space="preserve">
+    <value>Quitar elemento</value>
+  </data>
+  <data name="ChecklistAddButton" xml:space="preserve">
+    <value>Añadir</value>
+  </data>
+  <data name="ChecklistAddHint" xml:space="preserve">
+    <value>Haga clic en la etiqueta para cambiar el nivel. Todavía no hay lista de plantillas.</value>
+  </data>
+  <data name="NoteAddButton" xml:space="preserve">
+    <value>Añadir</value>
+  </data>
+  <data name="NoteAddHint" xml:space="preserve">
+    <value>Solo tú ves estas notas.</value>
+  </data>
+  <data name="NoteRemove" xml:space="preserve">
+    <value>Eliminar nota</value>
+  </data>
+  <data name="ToastNoteRemoved" xml:space="preserve">
+    <value>Nota personal eliminada</value>
+  </data>
+  <data name="DetailPlannedDate" xml:space="preserve">
+    <value>Fecha planificada</value>
+  </data>
+  <data name="SnoozedLabel" xml:space="preserve">
+    <value>Pospuesto</value>
+  </data>
+  <data name="SnoozeClear" xml:space="preserve">
+    <value>Quitar</value>
+  </data>
+  <data name="NoteWrittenAt" xml:space="preserve">
+    <value>Escrito el {0}</value>
+  </data>
+  <data name="DetailParentTask" xml:space="preserve">
+    <value>Tarea principal</value>
+  </data>
+  <data name="CommentEdited" xml:space="preserve">
+    <value>editado</value>
+  </data>
+  <data name="CommentWithdrawn" xml:space="preserve">
+    <value>Este comentario fue retirado por su autor.</value>
+  </data>
+  <data name="CommentEdit" xml:space="preserve">
+    <value>Editar comentario</value>
+  </data>
+  <data name="CommentEditSave" xml:space="preserve">
+    <value>Guardar</value>
+  </data>
+  <data name="CommentEditLabel" xml:space="preserve">
+    <value>Comentario</value>
+  </data>
+  <data name="CommentWithdraw" xml:space="preserve">
+    <value>Retirar comentario</value>
+  </data>
+  <data name="CommentWithdrawConfirm" xml:space="preserve">
+    <value>El texto se elimina; en su lugar queda una marca que indica el retiro.</value>
+  </data>
+  <data name="ToastCommentEdited" xml:space="preserve">
+    <value>Comentario editado</value>
+  </data>
+  <data name="ToastCommentWithdrawn" xml:space="preserve">
+    <value>Comentario retirado</value>
+  </data>
+  <data name="WaitingOnWithReason" xml:space="preserve">
+    <value>Esperando a {0} — {1}</value>
+  </data>
+  <data name="WaitingOnLabel" xml:space="preserve">
+    <value>¿A quién se espera? (opcional)</value>
+  </data>
+  <data name="WaitingOnNobody" xml:space="preserve">
+    <value>Nadie en particular</value>
+  </data>
+  <data name="AuditEventEdited" xml:space="preserve">
+    <value>Campos modificados</value>
+  </data>
+  <data name="AuditFieldChangeValued" xml:space="preserve">
+    <value>{0}: {1} → {2}</value>
+  </data>
+  <data name="AuditFieldChangeNamed" xml:space="preserve">
+    <value>{0} se modificó</value>
+  </data>
+  <data name="AuditFieldHidden" xml:space="preserve">
+    <value>un campo</value>
+  </data>
+  <data name="AuditFieldEmpty" xml:space="preserve">
+    <value>vacío</value>
+  </data>
+  <data name="AuditFieldDueAt" xml:space="preserve">
+    <value>Fecha límite</value>
+  </data>
+  <data name="AuditFieldStartAt" xml:space="preserve">
+    <value>Fecha de inicio</value>
+  </data>
+  <data name="AuditFieldPlannedDate" xml:space="preserve">
+    <value>Fecha planificada</value>
+  </data>
+  <data name="AuditFieldPriority" xml:space="preserve">
+    <value>Prioridad</value>
+  </data>
+  <data name="AuditFieldAssignee" xml:space="preserve">
+    <value>Asignado a</value>
+  </data>
+  <data name="AuditFieldTitle" xml:space="preserve">
+    <value>Título</value>
+  </data>
+  <data name="AuditFieldDescription" xml:space="preserve">
+    <value>Descripción</value>
+  </data>
+  <data name="AuditFieldEstimateHours" xml:space="preserve">
+    <value>Estimación</value>
+  </data>
+  <data name="AuditFieldTags" xml:space="preserve">
+    <value>Etiquetas</value>
+  </data>
+  <data name="DetailWatchers" xml:space="preserve">
+    <value>Observadores</value>
+  </data>
+  <data name="WatcherRoleConsultant" xml:space="preserve">
+    <value>consultor</value>
+  </data>
+  <data name="DetailNotifications" xml:space="preserve">
+    <value>Notificaciones</value>
+  </data>
+  <data name="NotificationsOff" xml:space="preserve">
+    <value>Correo desactivado</value>
+  </data>
+  <data name="NotificationsOn" xml:space="preserve">
+    <value>Correo activado · {0}</value>
+  </data>
+  <data name="NotificationsOnWithReminder" xml:space="preserve">
+    <value>Correo activado · {0} · avisa {1} días antes de la fecha límite</value>
+  </data>
+  <data name="NotificationsAllEvents" xml:space="preserve">
+    <value>para todos los eventos</value>
+  </data>
+  <data name="NotificationsNoEvents" xml:space="preserve">
+    <value>sin eventos seleccionados</value>
+  </data>
+  <data name="NotificationsSomeEvents" xml:space="preserve">
+    <value>para {0} eventos</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_DelegationNotAllowed" xml:space="preserve">
+    <value>Esta tarea no se puede delegar.</value>
+  </data>
+  <data name="SnoozeTitle" xml:space="preserve">
+    <value>Posponer esta tarea</value>
+  </data>
+  <data name="SnoozeSubtext" xml:space="preserve">
+    <value>La tarea mantiene su estado, su fecha límite no cambia y el solicitante no ve nada. Posponer es una marca solo para ti.</value>
+  </data>
+  <data name="SnoozeUntilLabel" xml:space="preserve">
+    <value>Hasta qué fecha</value>
+  </data>
+  <data name="DialogDismiss" xml:space="preserve">
+    <value>Descartar</value>
+  </data>
+  <data name="SnoozeDatePlaceholder" xml:space="preserve">
+    <value>YYYY-MM-DD</value>
+  </data>
+  <data name="SignalSnoozed" xml:space="preserve">
+    <value>Pospuestos</value>
+  </data>
+  <data name="PartialBoardBanner" xml:space="preserve">
+    <value>Algunas fuentes no respondieron: esta lista puede estar incompleta.</value>
+  </data>
+  <data name="PartialCountHint" xml:space="preserve">
+    <value>Algunas fuentes no respondieron, por lo que este recuento puede estar incompleto.</value>
+  </data>
+  <data name="SourceUnavailableTimeout" xml:space="preserve">
+    <value>no respondió a tiempo</value>
+  </data>
+  <data name="SourceUnavailableError" xml:space="preserve">
+    <value>devolvió un error</value>
+  </data>
+  <data name="SourceUnavailableUnsupportedVersion" xml:space="preserve">
+    <value>declara una versión de contrato no admitida</value>
+  </data>
+  <data name="SourceUnavailableUnknown" xml:space="preserve">
+    <value>no disponible, motivo desconocido</value>
+  </data>
+  <data name="EmptyPartialBoardTitle" xml:space="preserve">
+    <value>No se pudo completar esta lista</value>
+  </data>
+  <data name="EmptyPartialBoardDesc" xml:space="preserve">
+    <value>Al menos una fuente no respondió, así que lo que se muestra aquí no es el panorama completo. Inténtalo de nuevo en un momento.</value>
+  </data>
+  <data name="ErrorCommentTextInvalid" xml:space="preserve">
+    <value>Un comentario no puede estar vacío.</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Sí</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="BannerStale" xml:space="preserve">
+    <value>El registro de origen cambió después de la última lectura.</value>
+  </data>
+  <data name="BannerSourceUnavailable" xml:space="preserve">
+    <value>No se puede acceder al módulo de origen en este momento.</value>
+  </data>
+  <data name="BannerAuthorityEnded" xml:space="preserve">
+    <value>Su autoridad sobre este elemento ha finalizado.</value>
+  </data>
+  <data name="BannerReconciliationRequired" xml:space="preserve">
+    <value>Es necesaria una conciliación con el origen.</value>
+  </data>
 </root>

@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,8 +25,8 @@ public static class PositionAssignmentSeed
 
     public static async Task EnsureSeededAsync(IMongoDatabase database, CancellationToken ct = default)
     {
-        var positions = database.GetCollection<Position>("positions");
-        var assignments = database.GetCollection<PositionAssignment>("position_assignments");
+        var positions = database.GetCollection<Position>(PlatformCollections.Positions);
+        var assignments = database.GetCollection<PositionAssignment>(PlatformCollections.PositionAssignments);
 
         // 1) Resolve the CEO position for tenant-97c5 (Platform DB).
         var ceo = await positions

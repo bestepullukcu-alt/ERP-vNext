@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="RecurrenceRulesTitle" xml:space="preserve"><value>Règles de tâches récurrentes</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Des règles qui créent du travail selon un calendrier. La règle dit QUAND et SOUS QUELLE FORME ; le balayage horaire crée chaque période exactement une fois.</value></data>
+  <data name="AddNewRule" xml:space="preserve"><value>Ajouter une règle</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Modifier la règle</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Ajouter une règle</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Modifier la règle</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Afficher</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>p. ex. Clôture de fin de mois</value></data>
+  <data name="NameHint" xml:space="preserve"><value>Sans modèle, les tâches générées portent ce nom.</value></data>
+  <data name="Frequency" xml:space="preserve"><value>Fréquence</value></data>
+  <data name="FrequencyDaily" xml:space="preserve"><value>Quotidienne</value></data>
+  <data name="FrequencyWeekly" xml:space="preserve"><value>Hebdomadaire</value></data>
+  <data name="FrequencyMonthly" xml:space="preserve"><value>Mensuelle</value></data>
+  <data name="FrequencyQuarterly" xml:space="preserve"><value>Trimestrielle</value></data>
+  <data name="FrequencyYearly" xml:space="preserve"><value>Annuelle</value></data>
+  <data name="Interval" xml:space="preserve"><value>Tous les</value></data>
+  <data name="IntervalHint" xml:space="preserve"><value>2 + Hebdomadaire signifie toutes les deux semaines.</value></data>
+  <data name="ScheduleSection" xml:space="preserve"><value>Calendrier</value></data>
+  <data name="WindowSection" xml:space="preserve"><value>Période</value></data>
+  <data name="AssignmentSection" xml:space="preserve"><value>Affectation</value></data>
+  <data name="TemplateSection" xml:space="preserve"><value>Modèle</value></data>
+  <data name="StartsAt" xml:space="preserve"><value>Date de début</value></data>
+  <data name="EndsAt" xml:space="preserve"><value>Date de fin</value></data>
+  <data name="EndsAtHint" xml:space="preserve"><value>Laissez vide pour une règle sans fin.</value></data>
+  <data name="OpenEnded" xml:space="preserve"><value>Sans fin</value></data>
+  <data name="AssignmentTarget" xml:space="preserve"><value>Affecter à</value></data>
+  <data name="AssignmentPerson" xml:space="preserve"><value>Une personne</value></data>
+  <data name="AssignmentPool" xml:space="preserve"><value>Un vivier (poste)</value></data>
+  <data name="Assignee" xml:space="preserve"><value>Personne</value></data>
+  <data name="AssigneeHint" xml:space="preserve"><value>Chaque tâche générée attend dans la boîte de cette personne jusqu'à acceptation.</value></data>
+  <data name="PoolPosition" xml:space="preserve"><value>Poste</value></data>
+  <data name="PoolPositionHint" xml:space="preserve"><value>Le travail généré est proposé aux titulaires de ce poste.</value></data>
+  <data name="AssignmentNoSelfHint" xml:space="preserve"><value>Une règle ne peut pas être affectée à « moi-même » : le balayage s'exécute en arrière-plan et n'a pas de « soi » ; un tel travail n'atteindrait personne tout en consommant sa période.</value></data>
+  <data name="TaskTemplate" xml:space="preserve"><value>Modèle</value></data>
+  <data name="TaskTemplateHint" xml:space="preserve"><value>Facultatif. Avec un modèle, chaque tâche est générée avec sa liste de contrôle ; sans, c'est un simple rappel.</value></data>
+  <data name="TemplateNone" xml:space="preserve"><value>Aucun modèle</value></data>
+  <data name="LastGeneratedAt" xml:space="preserve"><value>Dernière génération</value></data>
+  <data name="NeverGenerated" xml:space="preserve"><value>Pas encore</value></data>
+  <data name="GeneratedByRule" xml:space="preserve"><value>Créée par une règle de récurrence</value></data>
+  <data name="RecurrenceFrequencyInvalid" xml:space="preserve"><value>Choisissez l'une des fréquences proposées.</value></data>
+  <data name="RecurrenceAssignmentTargetInvalid" xml:space="preserve"><value>Choisissez une personne ou un vivier.</value></data>
+  <data name="RecurrenceAssigneeRequired" xml:space="preserve"><value>Sélectionnez la personne à qui appartient le travail généré.</value></data>
+  <data name="RecurrencePoolRequired" xml:space="preserve"><value>Sélectionnez le poste auquel le travail généré est proposé.</value></data>
+  <data name="RecurrenceWindowInvalid" xml:space="preserve"><value>La date de fin doit être postérieure à la date de début.</value></data>
+</root>

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="TaskTypesTitle" xml:space="preserve"><value>Tipos de tarea</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Los tipos que clasifican el trabajo y llevan sus documentos rectores.</value></data>
+  <data name="Code" xml:space="preserve"><value>Código</value></data>
+  <data name="Name" xml:space="preserve"><value>Nombre</value></data>
+  <data name="Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="RecordClass" xml:space="preserve"><value>Clase de registro</value></data>
+  <data name="GqmsDomain" xml:space="preserve"><value>Dominio de calidad</value></data>
+  <data name="FunctionCode" xml:space="preserve"><value>Función</value></data>
+  <data name="QualityEvent" xml:space="preserve"><value>Evento de calidad</value></data>
+  <data name="QualityEventYes" xml:space="preserve"><value>Evento de calidad</value></data>
+  <data name="QualityEventNo" xml:space="preserve"><value>No es un evento de calidad</value></data>
+  <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>No es un registro</value></data>
+  <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>Registro operativo</value></data>
+  <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>Registro de calidad GxP</value></data>
+  <data name="GqmsDomainNone" xml:space="preserve"><value>Fuera de todo dominio de calidad</value></data>
+  <data name="GqmsDomainHint" xml:space="preserve"><value>Un dominio, nunca varios: la ruta de archivo se calcula a partir de él.</value></data>
+  <data name="RecordClassHint" xml:space="preserve"><value>Un registro de calidad GxP debe nombrar su dominio de calidad.</value></data>
+  <data name="FunctionCodeHint" xml:space="preserve"><value>Texto libre por ahora: la lista cerrada de funciones aún no se ha facilitado.</value></data>
+  <data name="GroupDocuments" xml:space="preserve"><value>Documentos rectores</value></data>
+  <data name="GroupDocumentsPlaceholder" xml:space="preserve"><value>Un UID de documento por línea</value></data>
+  <data name="GroupDocumentsHint" xml:space="preserve"><value>Se aplica en todas las organizaciones. El selector llega con la lista de documentos.</value></data>
+  <data name="GroupDocumentsEmpty" xml:space="preserve"><value>Ningún documento rector registrado</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identidad</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Clasificación</value></data>
+  <data name="DocumentsSection" xml:space="preserve"><value>Documentos</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nuevo tipo de tarea</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar tipo de tarea</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>p. ej. DEV-QMS</value></data>
+  <data name="CodeImmutableHint" xml:space="preserve"><value>El código no puede cambiarse: las tareas abiertas con este tipo lo llevan como identidad.</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Desactivar</value></data>
+  <data name="Activate" xml:space="preserve"><value>Reactivar</value></data>
+  <data name="DeactivateConfirm" xml:space="preserve"><value>Este tipo ya no se ofrecerá en tareas nuevas. Las tareas que ya lo usan no cambian.</value></data>
+  <data name="RecordDeactivated" xml:space="preserve"><value>Tipo de tarea desactivado.</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>Tipo de tarea reactivado.</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>Editar</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Detalles</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Todavía no hay tipos de tarea.</value></data>
+  <data name="CodeRequired" xml:space="preserve"><value>Un tipo de tarea necesita un código.</value></data>
+  <data name="NameRequired" xml:space="preserve"><value>Un tipo de tarea necesita un nombre.</value></data>
+  <data name="CodeTooLong" xml:space="preserve"><value>El código es demasiado largo.</value></data>
+  <data name="NameTooLong" xml:space="preserve"><value>El nombre es demasiado largo.</value></data>
+  <data name="FunctionCodeTooLong" xml:space="preserve"><value>El código de función es demasiado largo.</value></data>
+  <data name="TaskTypeLabel" xml:space="preserve"><value>Tipo de tarea</value></data>
+  <data name="TaskTypeNone" xml:space="preserve"><value>Sin tipo</value></data>
+  <data name="AddNewTaskType" xml:space="preserve"><value>Nuevo tipo</value></data>
+  <data name="ErrorCodeImmutable" xml:space="preserve"><value>El código no puede cambiarse tras crear el tipo: las tareas abiertas con él lo llevan como identidad.</value></data>
+  <data name="ErrorCodeTaken" xml:space="preserve"><value>Otro tipo de tarea ya usa este código.</value></data>
+  <data name="ErrorClassificationInvalid" xml:space="preserve"><value>Un registro de calidad GxP debe nombrar su dominio, y un tipo con dominio no puede ser «no es un registro».</value></data>
+  <data name="FunctionCodeNone" xml:space="preserve"><value>Sin función</value></data>
+  <data name="FunctionCodeQUA" xml:space="preserve"><value>Administración de calidad</value></data>
+  <data name="FunctionCodeRA" xml:space="preserve"><value>Asuntos regulatorios (operativo)</value></data>
+  <data name="FunctionCodePV" xml:space="preserve"><value>Farmacovigilancia (operativo)</value></data>
+  <data name="FunctionCodeMFG" xml:space="preserve"><value>Operaciones de fabricación</value></data>
+  <data name="FunctionCodeSCM" xml:space="preserve"><value>Cadena de suministro</value></data>
+  <data name="FunctionCodeRND" xml:space="preserve"><value>Investigación y desarrollo</value></data>
+  <data name="FunctionCodeCOM" xml:space="preserve"><value>Comercial y marketing</value></data>
+  <data name="FunctionCodeFIN" xml:space="preserve"><value>Finanzas y contabilidad</value></data>
+  <data name="FunctionCodeHR" xml:space="preserve"><value>Recursos humanos</value></data>
+  <data name="FunctionCodeLEG" xml:space="preserve"><value>Legal y contratos</value></data>
+  <data name="FunctionCodePRC" xml:space="preserve"><value>Compras</value></data>
+  <data name="FunctionCodeITG" xml:space="preserve"><value>Tecnología de la información</value></data>
+  <data name="FunctionCodeISM" xml:space="preserve"><value>Seguridad de la información</value></data>
+  <data name="FunctionCodeFAC" xml:space="preserve"><value>Instalaciones y activos</value></data>
+  <data name="FunctionCodeEHS" xml:space="preserve"><value>Medio ambiente, salud y seguridad</value></data>
+  <data name="FunctionCodePPM" xml:space="preserve"><value>Proyectos y carteras</value></data>
+  <data name="FunctionCodeCORP" xml:space="preserve"><value>Comunicación corporativa</value></data>
+  <data name="FunctionCodeCTY" xml:space="preserve"><value>Operaciones de país (residual)</value></data>
+  <data name="FunctionCodeMED" xml:space="preserve"><value>Asuntos médicos</value></data>
+  <data name="ErrorFunctionCodeInvalid" xml:space="preserve"><value>Ese no es uno de los códigos de función que usa esta organización.</value></data>
+  <data name="DocListTitle" xml:space="preserve"><value>Documentos controlados</value></data>
+  <data name="DocListDescription" xml:space="preserve"><value>La lista de referencia de documentos controlados que una tarea puede citar. Una lista, no un registro editable.</value></data>
+  <data name="DocListImportSection" xml:space="preserve"><value>Importar</value></data>
+  <data name="DocListVersionsSection" xml:space="preserve"><value>Versiones importadas</value></data>
+  <data name="DocListSearchSection" xml:space="preserve"><value>Buscar</value></data>
+  <data name="DocListFile" xml:space="preserve"><value>Archivo del registro (CSV)</value></data>
+  <data name="DocListSourceKey" xml:space="preserve"><value>Clave de origen</value></data>
+  <data name="DocListVersion" xml:space="preserve"><value>Versión de la lista</value></data>
+  <data name="DocListFileName" xml:space="preserve"><value>Archivo</value></data>
+  <data name="DocListImportedAt" xml:space="preserve"><value>Importado</value></data>
+  <data name="DocListEntries" xml:space="preserve"><value>entradas</value></data>
+  <data name="DocListLinkable" xml:space="preserve"><value>citables</value></data>
+  <data name="DocListBlocked" xml:space="preserve"><value>bloqueadas</value></data>
+  <data name="DocListUnreadColumns" xml:space="preserve"><value>Columnas no leídas</value></data>
+  <data name="DocListMissingColumns" xml:space="preserve"><value>Columnas ausentes</value></data>
+  <data name="DocListNone" xml:space="preserve"><value>ninguna</value></data>
+  <data name="DocListHash" xml:space="preserve"><value>Contenido</value></data>
+  <data name="DocListCopyHash" xml:space="preserve"><value>Copiar el hash completo</value></data>
+  <data name="DocListDryRun" xml:space="preserve"><value>Comprobar archivo</value></data>
+  <data name="DocListImport" xml:space="preserve"><value>Importar</value></data>
+  <data name="DocListDryRunFirst" xml:space="preserve"><value>Compruebe el archivo antes de importar.</value></data>
+  <data name="DocListFileChanged" xml:space="preserve"><value>El archivo cambió: compruébelo otra vez.</value></data>
+  <data name="DocListVersionRequired" xml:space="preserve"><value>La importación necesita una versión de lista.</value></data>
+  <data name="DocListFileRequired" xml:space="preserve"><value>Elija un archivo de registro.</value></data>
+  <data name="DocListImported" xml:space="preserve"><value>La lista se importó.</value></data>
+  <data name="DocListAlreadyImported" xml:space="preserve"><value>Este archivo ya está almacenado como versión {0}. No se añadió nada.</value></data>
+  <data name="DocListNotLinkable" xml:space="preserve"><value>No se puede citar</value></data>
+  <data name="DocListNoVersions" xml:space="preserve"><value>Todavía no se importó ninguna lista.</value></data>
+  <data name="DocListNoResults" xml:space="preserve"><value>Ningún documento coincide.</value></data>
+  <data name="DocListSearchPlaceholder" xml:space="preserve"><value>Buscar por código, título o UID…</value></data>
+  <data name="DocListDocTitle" xml:space="preserve"><value>Título</value></data>
+  <data name="DocListDocVersion" xml:space="preserve"><value>Versión</value></data>
+  <data name="DocListActions" xml:space="preserve">
+    <value>Acciones</value>
+  </data>
+  <data name="DocListWithdraw" xml:space="preserve"><value>Retirar</value></data>
+  <data name="DocListWithdrawn" xml:space="preserve"><value>Retirada</value></data>
+  <data name="DocListWithdrawReason" xml:space="preserve"><value>¿Por qué se retira?</value></data>
+  <data name="DocListWithdrawReasonRequired" xml:space="preserve"><value>Una retirada necesita un motivo.</value></data>
+  <data name="DocListWithdrawSubtext" xml:space="preserve"><value>La versión {0} deja de ser la lista citable. Se conserva y se marca, para que las referencias anteriores sigan siendo legibles.</value></data>
+  <data name="DocListImportDenied" xml:space="preserve"><value>Puede consultar esta lista pero no importarla.</value></data>
+</root>

@@ -381,6 +381,9 @@
   <data name="ProductMaster" xml:space="preserve">
     <value>Référentiel des produits</value>
   </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Modifier</value>
+  </data>
   <data name="Delete" xml:space="preserve">
     <value>Supprimer</value>
   </data>
@@ -419,6 +422,9 @@
   </data>
   <data name="Notification" xml:space="preserve">
     <value>Notification</value>
+  </data>
+  <data name="NoNotifications" xml:space="preserve">
+    <value>Aucune notification</value>
   </data>
   <data name="NewNotifications" xml:space="preserve">
     <value>{0} nouveau</value>
@@ -520,6 +526,7 @@
   <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>Entité juridique</value></data>
   <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>Données de référence</value></data>
   <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>Organisation</value></data>
+  <data name="Nav.Module.TASKS" xml:space="preserve"><value>Tâches</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>Flux de travail</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Utilisateurs</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Rôles</value></data>
@@ -572,5 +579,62 @@
   </data>
   <data name="CycleCapacitiesMenu" xml:space="preserve">
     <value>Capacité de cycle</value>
+  </data>
+  <data name="Nav.Domain.WORKSPACE" xml:space="preserve">
+    <value>Espace de travail</value>
+  </data>
+  <data name="Nav.Module.WORKAGGREGATION" xml:space="preserve">
+    <value>Centre des tâches</value>
+  </data>
+  <data name="Nav.Page.WORKCENTER" xml:space="preserve">
+    <value>Centre des tâches</value>
+  </data>
+  <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
+    <value>Règles de tâches récurrentes</value>
+  </data>
+  <data name="Nav.Page.TASKS" xml:space="preserve">
+    <value>Tâches</value>
+  </data>
+  <data name="Nav.Page.TASKCREATE" xml:space="preserve">
+    <value>Nouvelle tâche</value>
+  </data>
+  <data name="Nav.Page.TASKDETAIL" xml:space="preserve">
+    <value>Détail de la tâche</value>
+  </data>
+  <data name="Nav.Page.TASKEDIT" xml:space="preserve">
+    <value>Modifier la tâche</value>
+  </data>
+  <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
+    <value>Référentiel Produit / Article / SKU</value>
+  </data>
+  <data name="Nav.Page.GLOBALPRODUCTS" xml:space="preserve">
+    <value>Produits globaux</value>
+  </data>
+  <data name="Nav.Page.GSKUS" xml:space="preserve">
+    <value>GSKU</value>
+  </data>
+  <data name="Nav.Page.TASKTYPES" xml:space="preserve">
+    <value>Types de tâche</value>
+  </data>
+  <data name="Nav.Page.TASKDOCUMENTLIST" xml:space="preserve">
+    <value>Documents contrôlés</value>
+  </data>
+  <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
+    <value>Définitions de champs</value>
+  </data>
+  <data name="TagsPlaceholder" xml:space="preserve">
+    <value>Saisissez une étiquette et appuyez sur Entrée</value>
+  </data>
+  <data name="TagsCount" xml:space="preserve">
+    <value>{0} étiquettes</value>
+  </data>
+  <data name="TagsRemove" xml:space="preserve">
+    <value>Supprimer {0}</value>
+  </data>
+  <data name="NavigationLoadFailed" xml:space="preserve">
+    <value>Le menu n'a pas pu être chargé</value>
+  </data>
+  <data name="NavigationLoadFailedHint" xml:space="preserve">
+    <value>Actualisez la page pour réessayer.</value>
   </data>
 </root>

@@ -103,7 +103,10 @@ Below is the macro status catalog.
 | **MOD-0002** | Interface Registry | W3-E | Medium | in-progress | 80% | API routes mapping. |
 | **MOD-0003** | Data Contract Registry | W3-E | Medium | planned | 0% | Payload contracts schemas. |
 | **PSS-XCUT-SV** | SavedViews / Personalization | Cross-cutting | Medium | partial | 55% | User grid saving options. |
-| **MOD-0117** | Project & Portfolio Management (PPM) | — | Medium | planned / reserved | 0% | portfolio-delivery domain; reserved via DCP-003; ilk dilim "PPM Work Records Core"; wave ataması yapılmadı. FU çocukları henüz numaralanmadı. |
+| **MOD-0117** | Project & Portfolio Management (PPM) | — | Medium | approved / Phase 2A authorized | 0% | portfolio-delivery; DCP-006 Slice 2. User approved `Diten.PpmService` scaffold and Phase 2A backend/frontend on 2026-07-29; port `5061`, browser Gateway `5000`. Implementation has not started. ExternalContextReference provider/DWS runtime, Phase 2B and WorkCenter hazards remain blocked; OD-04 OPEN/PARTIAL. DCP-003 deferred/non-executable. |
+| **MOD-0352** | Enterprise Strategy Management | — | High | planned | 0% | Blueprint 8.1 canonical; historical `CAND-CAP-0007` name is an approved alias. Subdomain 1.1, outside active DCP-006 1.3/1.4/1.6 implementation scope. `CAND-CAP-0007-FU01` remains pending exact FU allocation. |
+| **MOD-0354** | Decomposition & Work Structuring Engine | — | High | draft / blocked | 0% | management-governance; DCP-006 structural Wave 1. Pure structural dependency is not Gate 2; task/execution hazards require Gate 2. Draft module pack exists; approval still required. |
+| **MOD-0355** | Business Process Architecture & Modeling | — | High | planned | 0% | management-governance; DCP-006 process model/version only. MOD-0023 remains workflow/approval runtime SoR. Module pack does not yet exist. |
 
 ### Commercial Suite (CRM + O2C) — Reserved Inventory
 

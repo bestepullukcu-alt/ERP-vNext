@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -10,7 +11,7 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 public sealed class CollectionInstanceRepository : TenantRepository<CollectionInstance>, ICollectionInstanceRepository
 {
     public CollectionInstanceRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_collection_instances")
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementCollectionInstances)
     {
     }
 
@@ -223,7 +224,7 @@ public sealed class CorporateCollectionProvisioningOperationRepository
 public sealed class InstantiationOperationRepository : TenantRepository<InstantiationOperation>, IInstantiationOperationRepository
 {
     public InstantiationOperationRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_instantiation_operations")
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementInstantiationOperations)
     {
     }
 
@@ -239,7 +240,7 @@ public sealed class InstantiationOperationRepository : TenantRepository<Instanti
 public sealed class InstantiationOutcomeRepository : TenantRepository<InstantiationOutcome>, IInstantiationOutcomeRepository
 {
     public InstantiationOutcomeRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_instantiation_outcomes")
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementInstantiationOutcomes)
     {
     }
 

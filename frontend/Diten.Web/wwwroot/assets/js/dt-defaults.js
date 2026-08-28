@@ -6,6 +6,52 @@
 
 window.DtDefaults = (function () {
     var L = function () { return window.L10n || {}; };
+
+    /*
+     * BL-047b — the DataTable chrome ("Showing 1 to 9 of 9 entries", the pager, the empty-table sentence) in the
+     * reader's language, on EVERY table, from ONE place.
+     *
+     * The six strings have been in SharedResource in all seven languages the whole time. What was missing was
+     * the delivery path: BL-047 seeded them onto `window.L10n` from the WorkCenterNext payload alone, so every
+     * OTHER screen — each with its own page and its own l10n payload — went on rendering the vendor's English.
+     * A Turkish /Tasks/FieldDefinitions read "No data available in table" on 2026-08-10.
+     *
+     * WHY HERE, and not a partial each management page includes. "Every page must remember to include it" IS the
+     * defect: WorkCenterNext remembered, the field-definition screen did not, and this repository has 61 files
+     * that build a DataTable. A per-page fix leaves the next screen to be born English — which is exactly why
+     * the recurrence screen in this same slice could not be built before this landed. One consumer reads one
+     * payload; a page that wants its own wording still wins, below.
+     *
+     * Read LATE and cached, never at load time: this file is a <script> in the layout and the payload is another
+     * tag beside it. Reading on first use means the order of two tags cannot silently take the translations away.
+     */
+    var SHARED_L10N_ELEMENT_ID = 'datatable-l10n';
+    var _sharedL10n = null;
+    var sharedL10n = function () {
+        if (_sharedL10n) { return _sharedL10n; }
+        var el = document.getElementById(SHARED_L10N_ELEMENT_ID);
+        if (!el) { return {}; }   // not cached: the tag may simply not have been parsed yet
+        try {
+            _sharedL10n = JSON.parse(el.textContent || '{}') || {};
+        } catch (e) {
+            // A broken payload costs the page its translations, never its table.
+            console.error('[DtDefaults] Shared DataTable localization payload could not be parsed.', e);
+            _sharedL10n = {};
+        }
+        return _sharedL10n;
+    };
+
+    /*
+     * One key, from the page's own dictionary first and the shared payload second.
+     *
+     * The precedence is BL-047's and is kept deliberately: a screen that chose its own sentence keeps it. The
+     * fallback is per KEY, not per dictionary — a page that overrides one string must not lose the other five.
+     */
+    var dtText = function (key) {
+        var own = L()[key];
+        return own || sharedL10n()[key];
+    };
+
     var _authRefreshInFlight = null;
     var _buttonRadiusResizeBound = false;
     var _buttonRadiusResizeTimer = null;
@@ -456,15 +502,22 @@ window.DtDefaults = (function () {
     function create(userConfig) {
         var merged = $.extend(true, {}, baseConfig, userConfig);
         var l = L();
-        merged.language.searchPlaceholder = merged.language.searchPlaceholder || l.Search || 'Search...';
+        merged.language.searchPlaceholder = merged.language.searchPlaceholder || l.Search || sharedL10n().Search || 'Search...';
 
-        // DataTables i18n mapping
-        if (l.DtNoRecords) merged.language.zeroRecords = l.DtNoRecords;
-        if (l.DtInfo) merged.language.info = l.DtInfo;
-        if (l.DtInfoEmpty) merged.language.infoEmpty = l.DtInfoEmpty;
-        if (l.DtInfoFiltered) merged.language.infoFiltered = l.DtInfoFiltered;
-        if (l.DtZeroRecords) merged.language.zeroRecords = l.DtZeroRecords;
-        if (l.DtEmptyTable) merged.language.emptyTable = l.DtEmptyTable;
+        // DataTables i18n mapping. Each slot left undefined is a slot DataTables fills with its own English —
+        // which is precisely what a Turkish page was showing before these had a delivery path (BL-047b).
+        var noRecords = dtText('DtNoRecords');
+        var zeroRecords = dtText('DtZeroRecords');
+        var info = dtText('DtInfo');
+        var infoEmpty = dtText('DtInfoEmpty');
+        var infoFiltered = dtText('DtInfoFiltered');
+        var emptyTable = dtText('DtEmptyTable');
+        if (noRecords) merged.language.zeroRecords = noRecords;
+        if (info) merged.language.info = info;
+        if (infoEmpty) merged.language.infoEmpty = infoEmpty;
+        if (infoFiltered) merged.language.infoFiltered = infoFiltered;
+        if (zeroRecords) merged.language.zeroRecords = zeroRecords;
+        if (emptyTable) merged.language.emptyTable = emptyTable;
 
         if (!merged.layout) {
             merged.layout = buildLayout(); // Don't pass buttons yet

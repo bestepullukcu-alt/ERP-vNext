@@ -1,0 +1,53 @@
+@using Diten.Web.Views.Tasks.FieldDefinitions
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskFieldDefinitionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["FieldDefinitionsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var bulkActionBar = new DataTableBulkActionBarViewModel
+    {
+        SelectedText = SharedLocalizer["SelectedCount"].Value,
+        ClearSelectionText = SharedLocalizer["ClearSelection"].Value,
+        Actions =
+        [
+            new DataTableActionItemViewModel
+            {
+                Key = "delete",
+                Text = SharedLocalizer["BulkDelete"].Value,
+                Icon = "bx bx-trash",
+                ButtonClass = "btn btn-label-danger",
+                ConfirmKey = "BulkDeleteConfirm",
+                // Kept in step with the script's own fetch — POST + envelope, matching this module's existing
+                // bulk-delete rather than the reference's bare-array DELETE.
+                Endpoint = "/Tasks/api/field-definitions/bulk-delete",
+                Method = "POST"
+            }
+        ]
+    };
+}
+
+@* ① Inline Filter partial *@
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/Tasks/FieldDefinitions/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["FieldDefinitionsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* ② Bulk Action Bar *@
+<partial name="~/Views/Shared/Components/DataTable/_BulkActionBar.cshtml" model="bulkActionBar" />
+
+@* ③ DataTable Card *@
+@* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-taskfielddefinitions" data-dt-standard="v2"> *@
+<partial name="~/Views/Tasks/FieldDefinitions/_DataTable.cshtml" />
+
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Tasks/FieldDefinitions/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Tasks/FieldDefinitions/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/FieldDefinitions/index.js" asp-append-version="true"></script>
+}

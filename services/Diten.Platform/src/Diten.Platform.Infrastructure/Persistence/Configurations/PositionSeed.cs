@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ public static class PositionSeed
     public static async Task EnsureSeededAsync(IMongoDatabase database, CancellationToken ct = default)
     {
         var orgCol = database.GetCollection<OrganizationUnit>("organizationUnits");
-        var posCol = database.GetCollection<Position>("positions");
+        var posCol = database.GetCollection<Position>(PlatformCollections.Positions);
 
         // Seed for DefaultTenantId and Tenant97c5Id
         await SeedForTenantAsync(orgCol, posCol, DefaultTenantId, ct);

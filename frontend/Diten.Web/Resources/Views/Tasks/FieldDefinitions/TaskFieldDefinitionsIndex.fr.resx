@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="FieldDefinitionsTitle" xml:space="preserve"><value>Définitions de champs de tâche</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Champs configurables proposés par le moteur de tâches. Une définition n'est jamais une colonne : en ajouter une ne change aucun schéma.</value></data>
+  <data name="AddNewFieldDefinitions" xml:space="preserve"><value>Ajouter une définition</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Modifier la définition</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Ajouter une définition</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Modifier la définition</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Afficher</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>ex. regulatory.phase</value></data>
+  <data name="CodeImmutableHint" xml:space="preserve"><value>Le code ne peut pas être modifié : chaque valeur déjà enregistrée y est rattachée.</value></data>
+  <data name="Label" xml:space="preserve"><value>Libellé</value></data>
+  <data name="LabelText" xml:space="preserve"><value>Libellé (vos propres mots)</value></data>
+  <data name="LabelTextPlaceholder" xml:space="preserve"><value>ex. Phase réglementaire</value></data>
+  <data name="LabelTextHint" xml:space="preserve"><value>Pour les champs que vous définissez. Une seule langue, affiché tel quel.</value></data>
+  <data name="LabelResourceKey" xml:space="preserve"><value>Clé de ressource du libellé</value></data>
+  <data name="LabelResourceKeyPlaceholder" xml:space="preserve"><value>ex. Tasks_Field_RegulatoryPhase</value></data>
+  <data name="LabelResourceKeyHint" xml:space="preserve"><value>Pour les champs système dont nous fournissons les traductions. Laissez vide pour vos propres champs.</value></data>
+  <data name="LabelSourceSystem" xml:space="preserve"><value>Champ système</value></data>
+  <data name="LabelSourceTenant" xml:space="preserve"><value>Votre champ</value></data>
+  <data name="ValueType" xml:space="preserve"><value>Type de valeur</value></data>
+  <data name="Section" xml:space="preserve"><value>Section</value></data>
+  <data name="SectionPlaceholder" xml:space="preserve"><value>ex. Conformité</value></data>
+  <data name="SectionLimitHint" xml:space="preserve"><value>Une tâche peut afficher au maximum six sections.</value></data>
+  <data name="Required" xml:space="preserve"><value>Obligatoire</value></data>
+  <data name="Optional" xml:space="preserve"><value>Facultatif</value></data>
+  <data name="Importance" xml:space="preserve"><value>Importance</value></data>
+  <data name="ImportanceSecondary" xml:space="preserve"><value>Secondaire</value></data>
+  <data name="ImportancePrimary" xml:space="preserve"><value>Principale</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Ordre de tri</value></data>
+  <data name="OptionsSourceKind" xml:space="preserve"><value>Source des options</value></data>
+  <data name="OptionsSourceNone" xml:space="preserve"><value>Aucune</value></data>
+  <data name="OptionsSourcePlatformLookup" xml:space="preserve"><value>Référentiel de la plateforme</value></data>
+  <data name="OptionsSourceBusinessReferenceData" xml:space="preserve"><value>Données de référence métier</value></data>
+  <data name="OptionsSourceHint" xml:space="preserve"><value>D'où vient la liste d'options. Une liste codée en dur n'est jamais admise.</value></data>
+  <data name="OptionsSourceKey" xml:space="preserve"><value>Clé de la source d'options</value></data>
+  <data name="OptionsSourceKeyPlaceholder" xml:space="preserve"><value>ex. REGULATORY_PHASES</value></data>
+  <data name="AppliesToModuleCode" xml:space="preserve"><value>Limité au module</value></data>
+  <data name="AppliesToModuleCodePlaceholder" xml:space="preserve"><value>ex. MOD-0220</value></data>
+  <data name="AppliesToModuleCodeHint" xml:space="preserve"><value>Laissez vide pour rendre le champ disponible à tous les modules.</value></data>
+  <data name="Classification" xml:space="preserve"><value>Classification</value></data>
+  <data name="ClassificationNormal" xml:space="preserve"><value>Normal</value></data>
+  <data name="ClassificationInternal" xml:space="preserve"><value>Interne</value></data>
+  <data name="ClassificationConfidential" xml:space="preserve"><value>Confidentiel</value></data>
+  <data name="ClassificationRestricted" xml:space="preserve"><value>Restreint</value></data>
+  <data name="ClassificationNotEnforcedHint" xml:space="preserve"><value>Enregistré pour plus tard. Aucune décision d'accès n'en découle aujourd'hui.</value></data>
+  <data name="DefaultAccessState" xml:space="preserve"><value>État d'accès par défaut</value></data>
+  <data name="AccessStateVisible" xml:space="preserve"><value>Visible</value></data>
+  <data name="AccessStateMasked" xml:space="preserve"><value>Masqué</value></data>
+  <data name="AccessStateHidden" xml:space="preserve"><value>Caché</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identité</value></data>
+  <data name="ValueSection" xml:space="preserve"><value>Valeur</value></data>
+  <data name="PresentationSection" xml:space="preserve"><value>Présentation</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Classification</value></data>
+  <data name="ValueTypeText" xml:space="preserve"><value>Texte</value></data>
+  <data name="ValueTypeNumber" xml:space="preserve"><value>Nombre</value></data>
+  <data name="ValueTypeCurrency" xml:space="preserve"><value>Devise</value></data>
+  <data name="ValueTypePercentage" xml:space="preserve"><value>Pourcentage</value></data>
+  <data name="ValueTypeDate" xml:space="preserve"><value>Date</value></data>
+  <data name="ValueTypeDateTime" xml:space="preserve"><value>Date et heure</value></data>
+  <data name="ValueTypeBoolean" xml:space="preserve"><value>Oui / Non</value></data>
+  <data name="ValueTypeStatus" xml:space="preserve"><value>Statut</value></data>
+  <data name="ValueTypePerson" xml:space="preserve"><value>Personne</value></data>
+  <data name="ValueTypeReference" xml:space="preserve"><value>Référence</value></data>
+  <data name="ValueTypeLink" xml:space="preserve"><value>Lien</value></data>
+  <data name="EditBtn" xml:space="preserve">
+    <value>Modifier</value>
+  </data>
+  <data name="OptionsSourceModuleRecord" xml:space="preserve"><value>Enregistrements d'un autre module</value></data>
+  <data name="OptionsSourceKeyHint" xml:space="preserve"><value>Choisissez une source. La liste dépend du type ci-dessus ; changer de type efface le choix.</value></data>
+  <data name="OptionsSourceKeySelect" xml:space="preserve"><value>Choisir une source…</value></data>
+  <data name="OptionsSourceKeyNone" xml:space="preserve"><value>Ce type n'offre aucune source dans ce locataire.</value></data>
+  <data name="OptionsSourceKeyLoadFailed" xml:space="preserve"><value>La liste des sources n'a pas pu être lue.</value></data>
+  <data name="OptionSource.organization-unit" xml:space="preserve"><value>Unités organisationnelles</value></data>
+  <data name="OptionSource.position" xml:space="preserve"><value>Postes</value></data>
+  <data name="OptionSource.countries" xml:space="preserve"><value>Pays</value></data>
+  <data name="OptionSource.currencies" xml:space="preserve"><value>Devises</value></data>
+  <data name="OptionSource.languages" xml:space="preserve"><value>Langues</value></data>
+  <data name="OptionSource.timezones" xml:space="preserve"><value>Fuseaux horaires</value></data>
+</root>

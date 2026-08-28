@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using Diten.Platform.Domain.Entities;
@@ -26,7 +27,7 @@ public static class ModuleServiceSeed
             return;
         }
 
-        var collection = database.GetCollection<ModuleService>("platform_module_services");
+        var collection = database.GetCollection<ModuleService>(PlatformCollections.ModuleServices);
         var hasLive = await collection.Find(x => x.IsDeleted == false).AnyAsync(ct);
 
         if (BootstrapSeedPolicy.Decide(markerExists: false, hasLiveRecords: hasLive) == SeedDecision.SeedAndMark)

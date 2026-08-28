@@ -1,0 +1,59 @@
+@using Diten.Web.Views.Tasks.TaskTypes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskTypesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="tasktypes-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Actions = Localizer["Actions"].Value,
+        // ⚠ NO Delete KEY — a task type is retired, never deleted. A label for an act the product refuses
+        // would be the first half of somebody re-adding the act.
+        Deactivate = Localizer["Deactivate"].Value,
+        Activate = Localizer["Activate"].Value,
+        DeactivateConfirm = Localizer["DeactivateConfirm"].Value,
+        RecordDeactivated = Localizer["RecordDeactivated"].Value,
+        RecordActivated = Localizer["RecordActivated"].Value,
+        QualityEventYes = Localizer["QualityEventYes"].Value,
+        QualityEventNo = Localizer["QualityEventNo"].Value,
+        RecordClassNOT_A_RECORD = Localizer["RecordClassNOT_A_RECORD"].Value,
+        RecordClassOPERATIONAL_RECORD = Localizer["RecordClassOPERATIONAL_RECORD"].Value,
+        RecordClassGXP_QUALITY_RECORD = Localizer["RecordClassGXP_QUALITY_RECORD"].Value,
+        Edit = Localizer["EditBtn"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Details = SharedLocalizer["Details"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        ComingSoon = SharedLocalizer["ComingSoon"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        Description = SharedLocalizer["Description"].Value,
+        LevelPrefix = SharedLocalizer["LevelPrefix"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        AddNew = Localizer["AddNewTaskType"].Value,
+        Code = Localizer["Code"].Value,
+        RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
+        RecordCreated = SharedLocalizer["RecordCreated"].Value,
+        RecordUpdated = SharedLocalizer["RecordUpdated"].Value,
+        BulkDeleteSuccess = SharedLocalizer["BulkDeleteSuccess"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        Update = SharedLocalizer["Update"].Value,
+        FormTitleCreate = Localizer["FormTitleCreate"].Value,
+        FormTitleEdit = Localizer["FormTitleEdit"].Value,
+        FormValidationError = SharedLocalizer["ValidationFailed"].Value
+    })
+</script>
