@@ -202,4 +202,9 @@
   <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
     <value>此处无法指定该人员。</value>
   </data>
+  <data name="ErrorWorkItemProviderUnknown" xml:space="preserve"><value>该条目的来源未接入任务中心，因此无法执行此操作。</value></data>
+  <data name="ErrorWorkItemProviderNotDispatchable" xml:space="preserve"><value>该条目的来源显示了操作，但尚不能执行。请联系管理员。</value></data>
+  <data name="ErrorWorkItemActionUnknown" xml:space="preserve"><value>该条目已不再提供此操作。请刷新页面查看当前可用选项。</value></data>
+  <data name="ErrorWorkItemActionForbidden" xml:space="preserve"><value>您没有执行此操作的权限。</value></data>
+  <data name="ErrorWorkItemActionPayloadInvalid" xml:space="preserve"><value>此操作所需的信息不完整。请填写必填字段。</value></data>
 </root>

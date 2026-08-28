@@ -275,6 +275,58 @@
         }
     };
 
+    /*
+     * ══ WC-D2 — THE ONE ADDRESS AN ACTION IS WRITTEN TO ═══════════════════════════════════════════════════════
+     *
+     * THE DEFECT (DCP-004 §2 D2). The projection's actions[] carries a code, a label and an enabled flag, and
+     * says NOTHING about where the write goes. So the shell had to know each provider's endpoint itself, and it
+     * knew exactly one — `providerCode === 'tasks'`. Every other provider's button ran a browser-side animation
+     * and logged "no backend owns it", MOD-0023's four live approval endpoints included.
+     *
+     * THE FIX IS AN ADDRESS, NOT A CASE. One URL for every provider:
+     *
+     *     POST /WorkCenterNext/api/work-items/{itemId}/actions/{actionCode}
+     *
+     * Platform resolves which module carries it out. The browser names the provider only so the SERVER can look
+     * the item up — item ids are per-module and nothing in a GUID says which table it came from. That is
+     * addressing, never authority: the permission is evaluated from the caller's claims server-side, and naming
+     * the wrong provider buys a 404 from a module that has never heard of the id.
+     *
+     * THE RESULT SHAPE IS TasksApi's ON PURPOSE — { ok, status, reasonCode, data, errors }. The surface already
+     * turns a reason code into a sentence in seven languages through TasksApi.failureMessage /
+     * isConcurrencyConflict / isTransitionBlocked, and a second result shape would mean a second copy of that
+     * bridge — which is how a code goes unmapped and the reader is shown "an error occurred".
+     */
+    const actionEndpoint = (itemId, actionCode) =>
+        `${ENDPOINT}/${encodeURIComponent(itemId)}/actions/${encodeURIComponent(actionCode)}`;
+
+    const dispatchAction = async (itemId, actionCode, providerCode, payload) => {
+        let response;
+        try {
+            response = await global.fetch(actionEndpoint(itemId, actionCode), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ providerCode: providerCode, payload: payload || {} })
+            });
+        } catch (_) {
+            // Same code TasksApi uses for a network-level failure, so failureMessage() answers "unavailable"
+            // rather than the generic error.
+            return { ok: false, status: 0, reasonCode: 'UNAVAILABLE', data: null, errors: [] };
+        }
+
+        let body = null;
+        try { body = await response.json(); } catch (_) { /* 204 and empty bodies are fine */ }
+
+        return {
+            ok: response.ok,
+            status: response.status,
+            reasonCode: body?.reason_code ?? body?.reasonCode ?? null,
+            data: body?.data ?? null,
+            errors: body?.errors ?? []
+        };
+    };
+
     global.WorkCenterNextApi = {
         ENDPOINT,
         TEAM_AVAILABILITY_ENDPOINT,
@@ -288,6 +340,8 @@
         unwrap,
         unwrapUnavailable,
         classify,
-        fetchWorkItems
+        fetchWorkItems,
+        actionEndpoint,
+        dispatchAction
     };
 })(typeof window !== 'undefined' ? window : globalThis);

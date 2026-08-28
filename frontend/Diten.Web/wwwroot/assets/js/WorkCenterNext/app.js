@@ -6406,12 +6406,33 @@
     };
 
     /*
-     * A REAL work item owned by MOD-0024. Its actions must go to the engine; the browser-side transitions below
-     * are a fixture-era demonstration and would otherwise change the screen while the database keeps the old
-     * state — exactly what happened when "Başlat" moved a row to "Devam ediyor" while GET still returned Open.
+     * ══ WC-D2 — THE PROVIDER TEST IS GONE, AND THAT IS THE POINT ══════════════════════════════════════════════
+     *
+     * This predicate used to read:
+     *
+     *     const isRealTaskItem = (item) =>
+     *         item && item.provenance !== 'fixture' && item.source?.providerCode === 'tasks';
+     *
+     * The second clause was an ADDRESS BOOK with one entry. Actions on a `tasks` item went to the engine;
+     * everything else fell through to the browser-side transition below, which changes the screen and nothing
+     * else. MOD-0023's approval items have had four live endpoints behind them since WC-1 and not one button
+     * ever reached them — the console said "no backend owns it" while the backend sat there owning it.
+     *
+     * Since WC-D2 the browser writes every action to ONE address and Platform resolves the destination, so
+     * there is nothing left for a provider name to decide here. The clause did not need deleting so much as it
+     * stopped having a job.
+     *
+     * WHAT REMAINS IS PROVENANCE, and it is a different question with a different answer: a SHOWCASE fixture has
+     * no record anywhere, so writing one to the server would 404 on an id that was never stored. The
+     * demonstration transitions below exist for exactly those rows and for nothing else.
      */
-    const isRealTaskItem = (item) =>
-        item && item.provenance !== 'fixture' && item.source?.providerCode === 'tasks';
+    const isFixtureShowcase = (item) => !item || item.provenance === 'fixture';
+
+    /*
+     * A real item, from ANY provider. Its actions are the server's to carry out and its refusals are the
+     * server's to state — this shell decides neither.
+     */
+    const isDispatchableItem = (item) => !isFixtureShowcase(item);
 
     /*
      * Send the transition to the engine and re-read the projection. Nothing is applied optimistically: the server
@@ -6420,6 +6441,11 @@
     /*
      * ══ TRANSITION BODY VOCABULARY (BL-043) ═══════════════════════════════════════════════════════════════
      * The shape of the body each action sends, declared ONCE, here.
+     *
+     * ⚠ SINCE WC-D2 THIS MAP FILLS THE DISPATCH PAYLOAD, not a per-endpoint body. The browser posts one shape to
+     * one address and Platform builds the module's own DTO from it. The FIELD NAMES are deliberately unchanged —
+     * `reason`, `assigneeUserId`, `waitingOnUserId` are what the server's union payload calls them too, so the
+     * guard below still compares this map against the C# records it must agree with, one hop further away.
      *
      * THE DEFECT. Every transition used to post the same generic body — {expectedVersion, reasonCode, note} —
      * while three endpoints ask for something else entirely: InquireTaskItemRequest(ExpectedVersion, Reason),
@@ -6485,10 +6511,19 @@
 
         // The concurrency token from the projection — an expected-version write, so a stale screen loses cleanly.
         const expectedVersion = Number(item.concurrency?.token ?? 0);
-        // The body's shape comes from the vocabulary above, never from a guess at this call site.
-        const result = await global.TasksApi.transition(
+        /*
+         * WC-D2 — ONE ADDRESS, EVERY PROVIDER. This used to be TasksApi.transition(), which posts to
+         * /Tasks/api/{id}/{verb} — MOD-0024's own route, and the reason only MOD-0024's items could be acted on.
+         * The dispatch endpoint takes the item, the action and the provider that owns it, and Platform routes it
+         * to the module's existing command; MOD-0024 items reach exactly the handlers they always did.
+         *
+         * The body's shape still comes from the vocabulary above, never from a guess at this call site — the
+         * server now reads those same field names off one payload and builds the module's DTO itself.
+         */
+        const result = await global.WorkCenterNextApi.dispatchAction(
             item.id,
             action.code,
+            item.source?.providerCode,
             buildTransitionBody(action.code, { expectedVersion, reason, assigneeUserId, waitingOnUserId }));
 
         state.submittingItemId = null;
@@ -6559,7 +6594,7 @@
         const entry = (item?.activity || []).find((candidate) => String(candidate.id) === String(commentId));
         if (!item || !entry) { return; }
 
-        if (!isRealTaskItem(item)) {
+        if (!isDispatchableItem(item)) {
             console.warn(`[WorkCenterNext] Comment edit ignored for non-engine item ${taskId} `
                 + `(provider="${item.source?.providerCode || 'unknown'}") — no backend owns it.`);
             return;
@@ -6587,7 +6622,7 @@
 
     const withdrawComment = async (taskId, commentId) => {
         const item = itemById(taskId);
-        if (!isRealTaskItem(item)) {
+        if (!isDispatchableItem(item)) {
             console.warn(`[WorkCenterNext] Comment withdrawal ignored for non-engine item ${taskId} `
                 + `(provider="${item?.source?.providerCode || 'unknown'}") — no backend owns it.`);
             return;
@@ -6662,7 +6697,7 @@
 
     const toggleChecklistItem = async (taskId, itemCode, completed) => {
         const item = itemById(taskId);
-        if (!isRealTaskItem(item)) {
+        if (!isDispatchableItem(item)) {
             console.warn(`[WorkCenterNext] Checklist toggle ignored for non-engine item ${taskId} `
                 + `(provider="${item?.source?.providerCode || 'unknown'}") — no backend owns it.`);
             return;
@@ -6691,7 +6726,7 @@
         if (!trimmed) { return; }
 
         const item = itemById(taskId);
-        if (!isRealTaskItem(item)) {
+        if (!isDispatchableItem(item)) {
             console.warn(`[WorkCenterNext] Checklist add ignored for non-engine item ${taskId} `
                 + `(provider="${item?.source?.providerCode || 'unknown'}") — no backend owns it.`);
             return;
@@ -6725,7 +6760,7 @@
 
     const checklistWrite = async (taskId, run, toast) => {
         const item = itemById(taskId);
-        if (!isRealTaskItem(item)) {
+        if (!isDispatchableItem(item)) {
             console.warn(`[WorkCenterNext] Checklist write ignored for non-engine item ${taskId} `
                 + `(provider="${item?.source?.providerCode || 'unknown'}") — no backend owns it.`);
             return;
@@ -6925,7 +6960,7 @@
         if (value.length > COMMENT_MAX_LENGTH) { toast(tf('CommentTooLong', COMMENT_MAX_LENGTH), 'error'); return; }
 
         const item = itemById(taskId);
-        if (!isRealTaskItem(item)) {
+        if (!isDispatchableItem(item)) {
             /*
              * Showcase items have no engine behind them, so a comment on one is a demonstration and stays local.
              * Real items go to the server and nothing is applied optimistically — the refreshed projection is the
@@ -6955,7 +6990,7 @@
         if (!text) { toast(t('SubtaskTitleRequired'), 'error'); return; }
 
         const parent = itemById(parentId);
-        if (!isRealTaskItem(parent)) {
+        if (!isDispatchableItem(parent)) {
             console.warn(`[WorkCenterNext] Subtask add ignored for non-engine item ${parentId}.`);
             return;
         }
@@ -7026,13 +7061,16 @@
     };
 
     const applyAction = (item, action, reason, assigneeUserId, waitingOnUserId) => {
-        if (isRealTaskItem(item)) {
+        if (isDispatchableItem(item)) {
             submitRealTransition(item, action, reason, assigneeUserId, waitingOnUserId);
             return;
         }
 
-        // Everything below only ever simulates. Real items from other providers still land here (their engines
-        // are not wired yet) — say so rather than letting a fake transition look real.
+        /*
+         * Everything below only ever simulates, and since WC-D2 only SHOWCASE FIXTURES reach it: a real item from
+         * any provider is dispatched above. The warning stays because the branch is still reachable if a fixture
+         * is ever mis-marked, and a fake transition that looks real is the defect this whole slice removes.
+         */
         if (item && item.provenance !== 'fixture') {
             console.warn(`[WorkCenterNext] "${action.code}" on item ${item.id} `
                 + `(provider="${item.source?.providerCode || 'unknown'}") is a MOCK transition — no backend call is `
@@ -7085,7 +7123,9 @@
      * must leave the screen exactly as it was, or a rejected write would look identical to an accepted one.
      */
     const submitPlan = async (item, dateStr) => {
-        const result = await global.TasksApi.plan(item.id, {
+        // Through the SAME single address as every other action (WC-D2). `plan` is a projected action code like
+        // the rest; its own client method existed only because /Tasks/api was the only door.
+        const result = await global.WorkCenterNextApi.dispatchAction(item.id, 'plan', item.source?.providerCode, {
             expectedVersion: Number(item.concurrency?.token ?? 0),
             plannedDate: dateStr
         });
@@ -7094,7 +7134,7 @@
 
     const openDatePicker = (item, action) => {
         const label = actionLabel(action);
-        const real = isRealTaskItem(item);
+        const real = isDispatchableItem(item);
         if (!global.Swal) {
             if (real) { submitPlan(item, item.dueAt || data.todayIso).catch(reportSwalFailure); return; }
             applyPlan(item, item.dueAt || data.todayIso, label);
@@ -7516,7 +7556,7 @@
         if (!trimmed) { return; }
 
         const item = itemById(taskId);
-        if (!isRealTaskItem(item)) {
+        if (!isDispatchableItem(item)) {
             // The showcase keeps working, and it keeps working HONESTLY: the note is added to the fixture's own
             // list with a real instant, so it renders exactly as a stored one does.
             if (item) {
@@ -7541,7 +7581,7 @@
 
     const removePersonalNote = async (taskId, noteId) => {
         const item = itemById(taskId);
-        if (!isRealTaskItem(item)) {
+        if (!isDispatchableItem(item)) {
             if (item) {
                 item.notes = (item.notes || []).filter((note) => String(note.id) !== String(noteId));
                 render();
@@ -7572,7 +7612,7 @@
     const togglePin = async (item) => {
         if (!item) { return; }
         const next = !item.pinned;
-        if (isRealTaskItem(item)) {
+        if (isDispatchableItem(item)) {
             await afterPhase2Write(
                 await global.TasksApi.setPinned(item.id, { pinned: next }),
                 next ? 'ToastPinned' : 'ToastUnpinned',
@@ -7588,7 +7628,7 @@
 
     const toggleSnooze = async (item) => {
         if (!item) { return; }
-        const real = isRealTaskItem(item);
+        const real = isDispatchableItem(item);
 
         if (isSnoozed(item)) {
             if (real) {

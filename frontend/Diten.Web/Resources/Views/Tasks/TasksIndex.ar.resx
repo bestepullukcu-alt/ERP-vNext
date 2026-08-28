@@ -202,4 +202,9 @@
   <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
     <value>لا يمكن ذكر هذا الشخص هنا.</value>
   </data>
+  <data name="ErrorWorkItemProviderUnknown" xml:space="preserve"><value>مصدر هذا العنصر غير متصل بمركز المهام، لذا تعذّر تنفيذ الإجراء.</value></data>
+  <data name="ErrorWorkItemProviderNotDispatchable" xml:space="preserve"><value>يعرض مصدر هذا العنصر إجراءات لكنه لا يستطيع تنفيذها بعد. يرجى التواصل مع المسؤول.</value></data>
+  <data name="ErrorWorkItemActionUnknown" xml:space="preserve"><value>لم يعد هذا الإجراء متاحًا لهذا العنصر. حدِّث الصفحة لعرض الخيارات الحالية.</value></data>
+  <data name="ErrorWorkItemActionForbidden" xml:space="preserve"><value>ليس لديك إذن لتنفيذ هذا الإجراء.</value></data>
+  <data name="ErrorWorkItemActionPayloadInvalid" xml:space="preserve"><value>يحتاج هذا الإجراء إلى معلومات أكثر مما تم إرساله. يرجى تعبئة الحقول المطلوبة.</value></data>
 </root>
