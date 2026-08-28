@@ -187,7 +187,7 @@ describe("③ a pin that survives a reload", () => {
     // `afterPhase2Write` is the shared path: refresh, then say what happened — never assume the write landed.
     const fn = APP.split("const togglePin = ")[1].split("\n    const ")[0];
     expect(fn).toContain("afterPhase2Write");
-    expect(fn, "a real item took the fixture branch").toContain("isRealTaskItem(item)");
+    expect(fn, "a real item took the fixture branch").toContain("isDispatchableItem(item)");
   });
 
   it("keeps a showcase branch, because a fixture has no engine behind it", () => {

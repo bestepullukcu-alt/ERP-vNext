@@ -6803,3 +6803,49 @@ doğrulama yardımcıları, ayrı değerlendirilmeli).
 - **Gelecek regresyon riski: 🟢** — eklemeli. Bugünkü davranış (sıralı) zaten mevcut davranıştı; bu tur yalnız
   tavanı **ölçülebilir** hâle getirdi. Sessiz yanlış üretmiyor: aşan sağlayıcı `UnavailableSources`'ta
   `TIMEOUT` olarak görünür.
+
+### BL-304 — manifest aksiyon sözlüğü ile projeksiyon aksiyon kodları arasında eşleme YOK (2026-08-28, ölçüldü, ertelendi)
+- Modül manifestosu `CREATE · UPDATE · ASSIGN · CLAIM · COMPLETE · CANCEL · DELETE · BULK_DELETE` diyor;
+  projeksiyon `claim · accept · start · plan · inquire · submitReview · return · reassign · complete ·
+  cancel · release` yayınlıyor. **Aralarında hiçbir eşleme yok**, ve Görev Merkezi'nin kendi manifestosu
+  `Actions: []` bildiriyor.
+- WC-D2 bunu kapatmadı, kapatmak zorunda da değildi: dispatch, manifestoyu değil **sağlayıcının kendi
+  gönderici kaydını** okur. Ama iki sözlük yan yana durduğu sürece, birini okuyan bir okuyucu diğerinin
+  var olduğunu bilmez.
+- **Yeniden bakılacak eşik:** kataloğa dayalı bir yetkilendirme (entitlement) aksiyon düzeyine indiğinde.
+- **Gelecek regresyon riski: 🟢** — bugün hiçbir yol manifest aksiyonlarını okumuyor; eklemeli.
+
+### BL-305 — aksiyonun teldeki hâli hâlâ uç/metot/izin TAŞIMIYOR; üç kopya elle senkron (2026-08-28, ölçüldü, bilinçli)
+- `WorkItemActionDto` WC-D2'den sonra da yalnız kodu, etiketi ve etkinliği taşıyor. Uç, metot ve izin anahtarı
+  **sunucuda** çözülüyor (`IWorkItemActionDispatcher`), telde değil.
+- Yani bir aksiyonun üç tanımı hâlâ yan yana: sağlayıcının `BuildActions`'ı, göndericinin `Permissions`
+  haritası, ve `RequiredActionPermissions`. Bu tur bunları **muhafız testiyle** bağladı (her gönderici
+  anahtarı, eşleşen sağlayıcının bildirdiği kümede olmak zorunda) — ama tek bir bildirim hâline getirmedi.
+- **Neden bu tur yapılmadı:** teli genişletmek, projeksiyonu tüketen yürütülebilir sözleşmeyi (fixture-contract.js)
+  ve yedi dildeki fixture'ları da değiştirir. Ayrı bir karar, ayrı bir tur.
+- **Gelecek regresyon riski: 🟡** — muhafız testi kaymayı yakalar, ama yalnız *izin* boyutunda. Bir sağlayıcı
+  yeni bir aksiyon kodu yayınlayıp göndericiye eklemezse test kırmızı olur; kodu yayınlayıp **yanlış komuta**
+  bağlarsa hiçbir test bunu söylemez.
+
+### BL-306 — MOD-0023 dispatch'inde idempotency anahtarı sunucuda üretiliyor (2026-08-28, bilinçli, riski yazıldı)
+- MOD-0023'ün onay/ret/bilgi-isteme uçları `IdempotencyKey` zorunlu tutuyor. Görev Merkezi bugün bir anahtar
+  göndermiyor, bu yüzden `WorkflowApprovalWorkItemActionDispatcher` her çağrıda **yeni bir GUID** üretiyor.
+- **Sonuç:** aynı düğmeye iki kez basmak (yavaş ağ, sabırsız kullanıcı) MOD-0023 için iki AYRI karar denemesidir.
+  İkincisi bugün `WORKFLOW_TASK_INVALID_STATE` ile reddedilir — yani zarar görünmez, ama koruma **durum
+  makinesinden** geliyor, idempotency'den değil.
+- **Neden şimdi yapılmadı:** doğru anahtar istemcide üretilip aynı kullanıcı jestine bağlanmalı (aynı tıklama =
+  aynı anahtar). Bu, dialog/onay akışının kendi turudur; sunucuda uydurmak sorunu gizlerdi.
+- **Gelecek regresyon riski: 🟡** — MOD-0023 bir gün aynı durumdan iki geçişe izin verirse (örn. `requestInfo`
+  tekrarlanabilir hâle gelirse) koruma sessizce kaybolur.
+
+### BL-307 — /Tasks ve Görev Merkezi iki ayrı YAZMA yolu (2026-08-28, bilinçli, göç edilmedi)
+- WC-D2 tek bir adres ekledi: `POST /api/v1/work-items/{id}/actions/{code}`. `/Tasks` ekranları kendi
+  `/Tasks/api/{id}/{verb}` yolunu ve `TaskTransitionRoutes.cs` kısıtını **aynen** korudu.
+- Bu bir eksiklik değil, tur kuralıydı: çalışan bir yolu yenisi için bozmak takas değil kayıptır. Ama sonuç,
+  aynı geçişin iki kapısı olmasıdır ve ikisi de aynı komuta iner.
+- **Ölçülmüş bedel:** `TaskTransitionRoutes` regex'i hâlâ elle tutuluyor. Bir aksiyon kodu eklenip oraya
+  yazılmazsa `/Tasks` ekranlarında düğme çizilir, basılır, vekil 404 verir (dosyanın kendi yorumu bunu anlatıyor).
+  Görev Merkezi bu tuzağa artık düşmüyor; `/Tasks` düşüyor.
+- **Yeniden bakılacak eşik:** `/Tasks` ekranları Görev Merkezi bileşenlerine geçtiğinde ya da üçüncü bir
+  yazma yüzeyi çıktığında.
+- **Gelecek regresyon riski: 🟡** — sessiz değil (404 görünür), ama tek yönlü: yalnız `/Tasks` tarafında.

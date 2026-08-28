@@ -202,4 +202,9 @@
   <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
     <value>Cette personne ne peut pas être nommée ici.</value>
   </data>
+  <data name="ErrorWorkItemProviderUnknown" xml:space="preserve"><value>La source de cet élément n'est pas connectée au Centre de tâches ; l'action n'a pas pu être exécutée.</value></data>
+  <data name="ErrorWorkItemProviderNotDispatchable" xml:space="preserve"><value>La source de cet élément affiche des actions mais ne peut pas encore les exécuter. Contactez votre administrateur.</value></data>
+  <data name="ErrorWorkItemActionUnknown" xml:space="preserve"><value>Cette action n'est plus proposée pour cet élément. Actualisez la page pour voir les options actuelles.</value></data>
+  <data name="ErrorWorkItemActionForbidden" xml:space="preserve"><value>Vous n'avez pas l'autorisation d'exécuter cette action.</value></data>
+  <data name="ErrorWorkItemActionPayloadInvalid" xml:space="preserve"><value>Cette action nécessite plus d'informations que celles fournies. Veuillez remplir les champs obligatoires.</value></data>
 </root>

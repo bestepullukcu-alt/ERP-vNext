@@ -187,6 +187,13 @@
         // Create with no due date — the SAME rule on the main form and the subtask panel (measured on both:
         // 400 VALIDATION_REQUEST_DUE_AT_NOT_NULL). Unmapped, it reached the reader as "an error occurred".
         ErrorDueDateRequired = Localizer["ErrorDueDateRequired"].Value,
+        // WC-D2 — the single work-item action endpoint's own refusals. This bridge does NOT auto-enumerate its
+        // resx, so a code mapped in api.js without a line here reaches the reader as the generic message.
+        ErrorWorkItemProviderUnknown = Localizer["ErrorWorkItemProviderUnknown"].Value,
+        ErrorWorkItemProviderNotDispatchable = Localizer["ErrorWorkItemProviderNotDispatchable"].Value,
+        ErrorWorkItemActionUnknown = Localizer["ErrorWorkItemActionUnknown"].Value,
+        ErrorWorkItemActionForbidden = Localizer["ErrorWorkItemActionForbidden"].Value,
+        ErrorWorkItemActionPayloadInvalid = Localizer["ErrorWorkItemActionPayloadInvalid"].Value,
         ErrorApprovalPending = Localizer["ErrorApprovalPending"].Value,
         // 409 REVIEW_PENDING — the OTHER gate. Cleared by the reviewer, not the approver.
         ErrorReviewPending = Localizer["ErrorReviewPending"].Value,

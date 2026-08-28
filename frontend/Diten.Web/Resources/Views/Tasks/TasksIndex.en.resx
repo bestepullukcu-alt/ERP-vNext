@@ -202,4 +202,9 @@
   <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
     <value>That person cannot be named here.</value>
   </data>
+  <data name="ErrorWorkItemProviderUnknown" xml:space="preserve"><value>This item's source is not connected to the Task Center, so the action could not be carried out.</value></data>
+  <data name="ErrorWorkItemProviderNotDispatchable" xml:space="preserve"><value>This item's source shows actions but cannot carry them out yet. Please contact your administrator.</value></data>
+  <data name="ErrorWorkItemActionUnknown" xml:space="preserve"><value>This action is no longer offered for this item. Refresh the page to see the current options.</value></data>
+  <data name="ErrorWorkItemActionForbidden" xml:space="preserve"><value>You do not have permission to carry out this action.</value></data>
+  <data name="ErrorWorkItemActionPayloadInvalid" xml:space="preserve"><value>This action needs more information than was provided. Please fill in the required fields.</value></data>
 </root>

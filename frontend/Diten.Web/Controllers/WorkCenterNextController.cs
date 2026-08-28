@@ -1,4 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using System.Text.Json;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
@@ -74,6 +76,70 @@ public class WorkCenterNextController : Controller
     [HttpGet("/WorkCenterNext/api/team-availability")]
     public Task<IActionResult> TeamAvailability()
         => ProxyGetAsync($"{_gatewayUrl}/api/v1/work-items/team-availability");
+
+    /// <summary>
+    /// WC-D2 — the ONE address the Task Center writes an action to, proxied same-origin exactly like the read.
+    /// </summary>
+    /// <remarks>
+    /// <para>The browser names an item, an action and the provider that owns the item; it never names a module's
+    /// endpoint, and it never sees a token or a tenant id — those are attached here from the HTTP-only cookie,
+    /// the same <see cref="TryCreateTenantRequest"/> the read path uses.</para>
+    ///
+    /// <para><b>The upstream status and body pass through verbatim</b>, reason code included. The Task Center
+    /// resolves its messages from stable codes in seven languages, so a proxy that flattened a 409
+    /// TASK_CONCURRENCY_CONFLICT into its own error shape would leave every refusal reading "an error occurred".</para>
+    ///
+    /// <para><b>/Tasks/api is untouched.</b> The Tasks screens keep their own proxy and their own routes; this
+    /// slice adds an address rather than migrating one.</para>
+    /// </remarks>
+    [HttpPost("/WorkCenterNext/api/work-items/{itemId}/actions/{actionCode}")]
+    public async Task<IActionResult> DispatchWorkItemAction(
+        string itemId,
+        string actionCode,
+        [FromBody] JsonElement body)
+    {
+        var target = $"{_gatewayUrl}/api/v1/work-items/{Uri.EscapeDataString(itemId ?? string.Empty)}"
+                     + $"/actions/{Uri.EscapeDataString(actionCode ?? string.Empty)}";
+
+        if (!TryCreateTenantRequest(HttpMethod.Post, target, out var request))
+        {
+            return Unauthorized(new { message = "Unauthorized" });
+        }
+
+        try
+        {
+            using (request)
+            {
+                request.Content = new StringContent(
+                    body.ValueKind == JsonValueKind.Undefined ? "{}" : body.GetRawText(),
+                    Encoding.UTF8,
+                    "application/json");
+
+                var client = _httpClientFactory.CreateClient();
+                using var response = await client.SendAsync(
+                    request, HttpCompletionOption.ResponseHeadersRead, HttpContext.RequestAborted);
+                var content = await response.Content.ReadAsStringAsync(HttpContext.RequestAborted);
+
+                return new ContentResult
+                {
+                    Content = content,
+                    ContentType = response.Content.Headers.ContentType?.ToString() ?? "application/json",
+                    StatusCode = (int)response.StatusCode
+                };
+            }
+        }
+        catch (OperationCanceledException) when (HttpContext.RequestAborted.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Work-item action dispatch proxy failed for {TargetUrl}.", target);
+            return StatusCode(
+                StatusCodes.Status503ServiceUnavailable,
+                new { message = "Work aggregation dependency unavailable." });
+        }
+    }
 
     private async Task<IActionResult> ProxyGetAsync(string targetUrl)
     {

@@ -63,7 +63,7 @@ tell Platform "call me here" — a redirect written by the party being called.
 There is no precedent for that in this repo, and adding one is a security
 decision, not a plumbing one.
 
-### D2 — How is an action described on the wire?
+### D2 — How is an action described on the wire? — **CLOSED 2026-08-28**
 
 Three descriptions of one action exist today and none of them travels:
 
@@ -82,6 +82,79 @@ user pressed it, and the proxy answered 404."*
 against the projection's `claim · accept · start · plan · inquire · submitReview
 · return · reassign · complete · cancel · release`. No mapping exists between
 them, and the Task Center's own manifest declares `Actions: []`.
+
+**HOW IT CLOSED.** Not by teaching the wire to carry an address — that is D1 and
+it stays open. By taking the address book away from the browser entirely.
+
+```
+POST /api/v1/work-items/{itemId}/actions/{actionCode}     ← the ONLY write address
+body: { providerCode, payload }
+```
+
+Platform resolves the destination through a new seam, `IWorkItemActionDispatcher`
+— a **sibling** of `IWorkItemProvider`, not an addition to it. The read seam says
+of itself *"READ-ONLY: a provider must never write business state"*, and the
+aggregation handler's per-provider isolation (D3) is argued from that sentence
+staying true; a Dispatch method hung off it would have made both false. A guard
+test asserts `IWorkItemProvider` has no write method.
+
+Two dispatchers are bound, and the second one is the point:
+
+| Dispatcher | Forwards to | Action codes |
+|---|---|---|
+| `TaskWorkItemActionDispatcher` | the MOD-0024 commands `TasksController` already sends | accept · claim · release · plan · start · submitReview · complete · inquire · return · reassign · cancel |
+| `WorkflowApprovalWorkItemActionDispatcher` | the MOD-0023 commands `WorkflowDefinitionsController` already sends | approve · reject · requestInfo · delegate |
+
+Neither carries a business rule. A dispatcher translates one wire shape into the
+module's existing command and returns what the module answered, refusal code and
+all — so a 409 `TASK_CONCURRENCY_CONFLICT` still reaches the reader as a sentence
+in their own language. MOD-0024's approval boundary is unchanged: it forwards and
+reports, it never decides (charter Binding A).
+
+**PERMISSION IS DECIDED ON THE SERVER.** Each dispatcher names the key its
+underlying endpoint requires, and a guard test asserts every such key is already
+declared by the matching provider's `RequiredActionPermissions` — so no private
+permission list can grow at this seam (the defect the controller's own header
+records). `WorkItemsController` evaluates it against the caller's claims through
+the same `PermissionClaimEvaluator` the enforcement filter uses; the module's
+handler re-checks its own rules underneath.
+
+**SILENT SUCCESS IS FORBIDDEN**, because silent success is the defect. Four
+refusals, each with a stable code and a sentence in all seven tenant languages:
+
+| Situation | HTTP | Code |
+|---|---|---|
+| provider not bound at all | 404 | `WORK_ITEM_PROVIDER_UNKNOWN` |
+| provider bound, publishes actions, no dispatcher | 501 | `WORK_ITEM_PROVIDER_NOT_DISPATCHABLE` |
+| action the provider does not publish | 400 | `WORK_ITEM_ACTION_UNKNOWN` |
+| caller lacks the permission | 403 | `WORK_ITEM_ACTION_FORBIDDEN` |
+| a required field is missing | 400 | `WORK_ITEM_ACTION_PAYLOAD_INVALID` |
+
+**THE BROWSER-SIDE ADDRESS BOOK IS GONE.** `isRealTaskItem` — whose second
+clause was `providerCode === 'tasks'` — is now `isDispatchableItem`, which asks
+only whether the item is a showcase fixture. A fixture has no record on any
+server; every real item, from any provider, is dispatched.
+
+⚠ **What D2 does NOT close.** The three descriptions of an action still exist and
+are still kept in step by hand plus a guard test; the wire still does not carry a
+permission key or a method, and `TaskTransitionRoutes` is untouched (the /Tasks
+screens keep their own path — this slice ADDS an address, it does not migrate
+one). The manifest's action vocabulary is still a different vocabulary with no
+mapping — recorded as BL-304.
+
+**MEASURED LIVE 2026-08-28**, not inferred from green tests:
+
+- `accept` pressed in the browser on a real MOD-0024 item → the request left as
+  `POST /WorkCenterNext/api/work-items/{id}/actions/accept`, the task moved
+  `Open → InProgress` (version 1 → 2) in the database, and the row was still
+  "Devam ediyor" after a full page reload. No "MOCK transition" in the console.
+- `approve` on a MOD-0023 approval item through the SAME endpoint reached
+  `WorkflowTaskTransitionSupport` and came back `403 WORKFLOW_ACTOR_DENIED` — the
+  module's own rule, refusing a caller who is not the assigned approver. That is
+  the sentence this pack said was false ("not one of its buttons ever reached
+  them") being true. A *state-changing* approval could not be pressed in the
+  browser: no approval in the dev database is assigned to a user whose
+  credentials are available, and editing the database to create one was refused.
 
 ### D3 — How is aggregation protected? — **CLOSED 2026-08-28**
 
@@ -150,19 +223,38 @@ board-envelope guards in `workcenter-next-work-items-api.test.js`.
 ⚠ What D3 does NOT close: there is still no timeout at the API, gateway or web-proxy
 layer. The budget enforced here is the provider call's, inside the handler.
 
-### D4 — Does the gateway allow writes?
+### D4 — Does the gateway allow writes? — **CLOSED 2026-08-28**
+
+**Was:**
 
 ```
 /api/v1/work-items/{everything} → ["GET", "OPTIONS"]
 ```
 
 A command endpoint added to Platform would answer 404 at the gateway. And
-`WorkItemsController` has two GETs and says why in its own header: *"No command
+`WorkItemsController` had two GETs and said why in its own header: *"No command
 endpoint lives here — approve/reject/delegate stay on MOD-0023's existing
 endpoints."*
 
-⚠ That comment is a design position, not an oversight. Whoever changes it is
+⚠ That comment was a design position, not an oversight. Whoever changes it is
 reversing a decision, and should say so.
+
+**HOW IT CLOSED, and the reversal said out loud.** The catch-all was NOT widened.
+It still reads `["GET", "OPTIONS"]`, because adding POST to it would open the
+whole read surface to writes — a much larger decision than the one taken here.
+The write path got its own route, listed before it:
+
+```
+/api/v1/work-items/{itemId}/actions/{actionCode} → ["POST", "OPTIONS"]
+```
+
+Measured live: `POST /api/v1/work-items/mine` through the gateway still answers
+404, and the action path answers the endpoint.
+
+The controller's header comment was rewritten rather than deleted. It now quotes
+the sentence it reverses and says why: the endpoints stayed where they were and
+**nothing routed to them**. What moved into this controller is the address book,
+not approval logic.
 
 ---
 
@@ -194,21 +286,31 @@ months after the change that caused it.
 
 ```
 1. D3  protect aggregation      — DONE (2026-08-28)
-2. D1  address                  — a security decision, not plumbing
-3. D2  action on the wire       — endpoint + method + permission
-4. D4  gateway                  — reverses a written position; say so
+2. D1  address                  — OPEN. A security decision, not plumbing.
+3. D2  action on the wire       — DONE (2026-08-28)
+4. D4  gateway                  — DONE (2026-08-28); reversed a written position, said so
 ```
 
-⚠ Doing 2 and 3 without 1 buys a working button and an unexplainable page.
+⚠ **D1 IS STILL OPEN, AND D2 DID NOT SOLVE IT.** D2 removed the *browser's* need
+for an address by giving Platform one endpoint to route from — Platform then
+reaches each module through an in-process MediatR command, because MOD-0023 and
+MOD-0024 both live inside Platform. The moment a provider lives in a DIFFERENT
+SERVICE, D1's question returns unchanged: Platform still holds no way back to a
+module that registered itself, and taking an address from a client-supplied
+manifest is still a security decision nobody has taken.
 
 ---
 
 ## 5. What a module can do while this is open
 
-Nothing here blocks the read side. A module can write its provider, project its
-items, and see them in the list today. What it cannot do is act on them there —
-so its own screens remain the place where work is done, and the Task Center
-remains where work is found.
+**UPDATED 2026-08-28 (D2/D4).** A module inside Platform can now write its
+provider AND its dispatcher, and its buttons work in the Task Center on the day
+they are projected — a guard test refuses a provider that publishes actions with
+no dispatcher behind it, so the "inert button" wall cannot be walked into again.
+
+What is still true: a provider in ANOTHER SERVICE can be read from but not
+dispatched to, because D1 (the address) is open. Its own screens remain the place
+where that work is done, and the Task Center remains where it is found.
 
 ⚠ Tell that to the module's author explicitly. Both developers who hit this wall
 had already written the provider before discovering the buttons were inert.

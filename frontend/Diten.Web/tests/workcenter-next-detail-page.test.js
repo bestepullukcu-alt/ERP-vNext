@@ -1803,8 +1803,14 @@ describe("the plan date picker writes to the engine for a real task", () => {
     // decisive even though the same click also reaches every other "plan"-capable instance booted so far (see
     // the "content, not count" note used throughout this file for the same accumulated-listener reason).
     await bootDetailPage(projectionItem({ actions: [planAction()], concurrency: { kind: "version", token: "424242" } }));
-    global.TasksApi.plan = (taskId, payload) => {
-      planCalls.push({ taskId, payload });
+    /*
+     * WC-D2 — `plan` goes through the SINGLE dispatch address now, like every other projected action, instead of
+     * TasksApi.plan (which posts to MOD-0024's own /Tasks/api route and was the reason only MOD-0024's items
+     * could be planned). The RULE under test is unchanged: the chosen date reaches the server with the
+     * projection's concurrency token, and nothing is applied locally.
+     */
+    global.WorkCenterNextApi.dispatchAction = (taskId, actionCode, providerCode, payload) => {
+      planCalls.push({ taskId, actionCode, providerCode, payload });
       return Promise.resolve({ ok: true, status: 204 });
     };
 
@@ -1812,7 +1818,9 @@ describe("the plan date picker writes to the engine for a real task", () => {
 
     const mine = planCalls.filter((call) => call.payload.expectedVersion === 424242);
     expect(mine).toHaveLength(1);
-    expect(mine[0]).toEqual({ taskId: TASK_ID, payload: { expectedVersion: 424242, plannedDate: "2026-08-20" } });
+    expect(mine[0].taskId).toBe(TASK_ID);
+    expect(mine[0].actionCode).toBe("plan");
+    expect(mine[0].payload).toEqual({ expectedVersion: 424242, plannedDate: "2026-08-20" });
   });
 
   it("shows no plan date at all when the write is refused", async () => {
@@ -1824,7 +1832,7 @@ describe("the plan date picker writes to the engine for a real task", () => {
       plannedDate: null,
       dueAt: null
     }));
-    global.TasksApi.plan = () => Promise.resolve({
+    global.WorkCenterNextApi.dispatchAction = () => Promise.resolve({
       ok: false, status: 400, reasonCode: "TASK_PLAN_DATE_REQUIRED"
     });
 

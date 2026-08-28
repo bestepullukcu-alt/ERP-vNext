@@ -209,6 +209,22 @@ public static class DependencyInjection
         services.AddScoped<Features.WorkAggregation.Providers.IWorkItemProvider,
             Features.Tasks.Providers.TaskWorkItemProvider>();
 
+        /*
+         * WC-D2 (DCP-004 §2 D2) — the WRITE half, registered as its own IEnumerable beside the read providers.
+         *
+         * A SIBLING COLLECTION, not extra methods on IWorkItemProvider: that seam declares itself read-only and
+         * the aggregation handler's per-provider isolation depends on the claim staying true. A provider that
+         * also accepts writes registers here as well; one that does not simply is not in this list, and its
+         * actions are refused with WORK_ITEM_PROVIDER_NOT_DISPATCHABLE rather than silently succeeding.
+         *
+         * BOTH bound providers are dispatchable from the first day of the seam, on purpose: a dispatcher proven
+         * on the one provider that already worked would prove nothing.
+         */
+        services.AddScoped<Features.WorkAggregation.Dispatch.IWorkItemActionDispatcher,
+            Features.WorkAggregation.Providers.WorkflowApprovalWorkItemActionDispatcher>();
+        services.AddScoped<Features.WorkAggregation.Dispatch.IWorkItemActionDispatcher,
+            Features.Tasks.Providers.TaskWorkItemActionDispatcher>();
+
         // MOD-0024 Task Engine services. The lifecycle service is the SINGLE owner of the lifecycle→normalized
         // map, so the API and the Task Center projection can never disagree.
         services.AddScoped<Features.Tasks.Services.ITaskLifecycleService, Features.Tasks.Services.TaskLifecycleService>();
