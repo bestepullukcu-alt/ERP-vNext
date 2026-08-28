@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -12,7 +13,7 @@ public sealed class DocumentLifecycleTransitionRecordRepository
     : TenantRepository<DocumentLifecycleTransitionRecord>, IDocumentLifecycleTransitionRecordRepository
 {
     public DocumentLifecycleTransitionRecordRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_lifecycle_transitions") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementLifecycleTransitions) { }
 
     public new Task<DocumentLifecycleTransitionRecord> CreateAsync(DocumentLifecycleTransitionRecord record, CancellationToken ct = default) =>
         base.CreateAsync(record, ct);

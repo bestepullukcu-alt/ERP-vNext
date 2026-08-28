@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -14,7 +15,7 @@ public sealed class DocumentSuspensionCaseRepository
     : TenantRepository<DocumentSuspensionCase>, IDocumentSuspensionCaseRepository
 {
     public DocumentSuspensionCaseRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_suspension_cases") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementSuspensionCases) { }
 
     public new Task<DocumentSuspensionCase> CreateAsync(DocumentSuspensionCase suspensionCase, CancellationToken ct = default) =>
         base.CreateAsync(suspensionCase, ct);
@@ -45,7 +46,7 @@ public sealed class DocumentRetirementCaseRepository
     : TenantRepository<DocumentRetirementCase>, IDocumentRetirementCaseRepository
 {
     public DocumentRetirementCaseRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_retirement_cases") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementRetirementCases) { }
 
     public new Task<DocumentRetirementCase> CreateAsync(DocumentRetirementCase retirementCase, CancellationToken ct = default) =>
         base.CreateAsync(retirementCase, ct);
@@ -69,7 +70,7 @@ public sealed class TemporaryInstructionControlRepository
     : TenantRepository<TemporaryInstructionControl>, ITemporaryInstructionControlRepository
 {
     public TemporaryInstructionControlRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_temporary_instruction_controls") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementTemporaryInstructionControls) { }
 
     public new Task<TemporaryInstructionControl> CreateAsync(TemporaryInstructionControl control, CancellationToken ct = default) =>
         base.CreateAsync(control, ct);

@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -11,7 +12,7 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 public sealed class DocumentMasterRegisterRepository : TenantRepository<DocumentMasterRegisterEntry>, IDocumentMasterRegisterRepository
 {
     public DocumentMasterRegisterRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_master_register") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementMasterRegister) { }
 
     public new Task<DocumentMasterRegisterEntry> CreateAsync(DocumentMasterRegisterEntry entry, CancellationToken ct = default) =>
         base.CreateAsync(entry, ct);

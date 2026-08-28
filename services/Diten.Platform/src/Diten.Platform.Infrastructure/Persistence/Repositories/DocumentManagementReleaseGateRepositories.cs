@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -13,7 +14,7 @@ public sealed class DocumentReleaseGateEvaluationRepository
     : TenantRepository<DocumentReleaseGateEvaluation>, IDocumentReleaseGateEvaluationRepository
 {
     public DocumentReleaseGateEvaluationRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_release_gate_evaluations") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementReleaseGateEvaluations) { }
 
     public new Task<DocumentReleaseGateEvaluation> CreateAsync(DocumentReleaseGateEvaluation evaluation, CancellationToken ct = default) =>
         base.CreateAsync(evaluation, ct);
@@ -34,7 +35,7 @@ public sealed class DocumentReleaseGateResultRepository
     : TenantRepository<DocumentReleaseGateResult>, IDocumentReleaseGateResultRepository
 {
     public DocumentReleaseGateResultRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_release_gate_results") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementReleaseGateResults) { }
 
     public new Task<DocumentReleaseGateResult> CreateAsync(DocumentReleaseGateResult result, CancellationToken ct = default) =>
         base.CreateAsync(result, ct);
@@ -49,7 +50,7 @@ public sealed class DocumentReleaseGateEvidenceRepository
     : TenantRepository<DocumentReleaseGateEvidence>, IDocumentReleaseGateEvidenceRepository
 {
     public DocumentReleaseGateEvidenceRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_release_gate_evidence") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementReleaseGateEvidence) { }
 
     public new Task<DocumentReleaseGateEvidence> CreateAsync(DocumentReleaseGateEvidence evidence, CancellationToken ct = default) =>
         base.CreateAsync(evidence, ct);

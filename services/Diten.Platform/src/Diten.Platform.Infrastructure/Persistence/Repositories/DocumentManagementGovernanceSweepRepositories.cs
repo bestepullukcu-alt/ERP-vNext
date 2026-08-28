@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -14,7 +15,7 @@ public sealed class DocumentGovernanceSweepRunRepository
     : TenantRepository<DocumentGovernanceSweepRun>, IDocumentGovernanceSweepRunRepository
 {
     public DocumentGovernanceSweepRunRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_governance_sweep_runs") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementGovernanceSweepRuns) { }
 
     public new Task<DocumentGovernanceSweepRun> CreateAsync(DocumentGovernanceSweepRun run, CancellationToken ct = default) =>
         base.CreateAsync(run, ct);

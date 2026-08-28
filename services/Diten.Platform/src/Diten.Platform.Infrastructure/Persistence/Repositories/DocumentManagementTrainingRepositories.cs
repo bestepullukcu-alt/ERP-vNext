@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -12,7 +13,7 @@ public sealed class DocumentTrainingMatrixRequirementRepository
     : TenantRepository<DocumentTrainingMatrixRequirement>, IDocumentTrainingMatrixRequirementRepository
 {
     public DocumentTrainingMatrixRequirementRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_training_requirements") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementTrainingRequirements) { }
 
     public new Task<DocumentTrainingMatrixRequirement> CreateAsync(DocumentTrainingMatrixRequirement requirement, CancellationToken ct = default) =>
         base.CreateAsync(requirement, ct);
@@ -36,7 +37,7 @@ public sealed class DocumentTrainingAssignmentRepository
     : TenantRepository<DocumentTrainingAssignment>, IDocumentTrainingAssignmentRepository
 {
     public DocumentTrainingAssignmentRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_training_assignments") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementTrainingAssignments) { }
 
     public new Task<DocumentTrainingAssignment> CreateAsync(DocumentTrainingAssignment assignment, CancellationToken ct = default) =>
         base.CreateAsync(assignment, ct);

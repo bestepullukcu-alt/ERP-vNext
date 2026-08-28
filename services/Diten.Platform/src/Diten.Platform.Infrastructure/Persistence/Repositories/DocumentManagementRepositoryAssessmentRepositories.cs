@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -12,7 +13,7 @@ public sealed class DocumentRepositoryAssessmentRepository
     : TenantRepository<DocumentRepositoryAssessment>, IDocumentRepositoryAssessmentRepository
 {
     public DocumentRepositoryAssessmentRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_repository_assessments") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementRepositoryAssessments) { }
 
     public new Task<DocumentRepositoryAssessment> CreateAsync(DocumentRepositoryAssessment assessment, CancellationToken ct = default) =>
         base.CreateAsync(assessment, ct);
@@ -34,7 +35,7 @@ public sealed class DocumentRepositoryAssessmentFindingRepository
     : TenantRepository<DocumentRepositoryAssessmentFinding>, IDocumentRepositoryAssessmentFindingRepository
 {
     public DocumentRepositoryAssessmentFindingRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_repository_assessment_findings") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementRepositoryAssessmentFindings) { }
 
     public new Task<DocumentRepositoryAssessmentFinding> CreateAsync(DocumentRepositoryAssessmentFinding finding, CancellationToken ct = default) =>
         base.CreateAsync(finding, ct);

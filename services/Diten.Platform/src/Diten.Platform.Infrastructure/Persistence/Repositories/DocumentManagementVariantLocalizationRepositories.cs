@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -13,7 +14,7 @@ public sealed class TemplateVariantLocalizationProfileRepository
     : TenantRepository<TemplateVariantLocalizationProfile>, ITemplateVariantLocalizationProfileRepository
 {
     public TemplateVariantLocalizationProfileRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_variant_localization_profiles") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementVariantLocalizationProfiles) { }
 
     public new Task<TemplateVariantLocalizationProfile> CreateAsync(TemplateVariantLocalizationProfile profile, CancellationToken ct = default) =>
         base.CreateAsync(profile, ct);
@@ -47,7 +48,7 @@ public sealed class TemplateVariantReviewEvidenceRepository
     : TenantRepository<TemplateVariantReviewEvidence>, ITemplateVariantReviewEvidenceRepository
 {
     public TemplateVariantReviewEvidenceRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_variant_review_evidence") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementVariantReviewEvidence) { }
 
     public new Task<TemplateVariantReviewEvidence> CreateAsync(TemplateVariantReviewEvidence evidence, CancellationToken ct = default) =>
         base.CreateAsync(evidence, ct);
@@ -63,7 +64,7 @@ public sealed class TemplateVariantParentChangeAssessmentRepository
     : TenantRepository<TemplateVariantParentChangeAssessment>, ITemplateVariantParentChangeAssessmentRepository
 {
     public TemplateVariantParentChangeAssessmentRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_variant_parent_change_assessments") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementVariantParentChangeAssessments) { }
 
     public new Task<TemplateVariantParentChangeAssessment> CreateAsync(TemplateVariantParentChangeAssessment assessment, CancellationToken ct = default) =>
         base.CreateAsync(assessment, ct);

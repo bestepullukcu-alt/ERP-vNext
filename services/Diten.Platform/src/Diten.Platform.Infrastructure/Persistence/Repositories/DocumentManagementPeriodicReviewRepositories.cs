@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -13,7 +14,7 @@ public sealed class DocumentPeriodicReviewRepository
     : TenantRepository<DocumentPeriodicReview>, IDocumentPeriodicReviewRepository
 {
     public DocumentPeriodicReviewRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_periodic_reviews") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementPeriodicReviews) { }
 
     public new Task<DocumentPeriodicReview> CreateAsync(DocumentPeriodicReview review, CancellationToken ct = default) =>
         base.CreateAsync(review, ct);
@@ -44,7 +45,7 @@ public sealed class DocumentPeriodicReviewExtensionRepository
     : TenantRepository<DocumentPeriodicReviewExtension>, IDocumentPeriodicReviewExtensionRepository
 {
     public DocumentPeriodicReviewExtensionRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_periodic_review_extensions") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementPeriodicReviewExtensions) { }
 
     public new Task<DocumentPeriodicReviewExtension> CreateAsync(DocumentPeriodicReviewExtension extension, CancellationToken ct = default) =>
         base.CreateAsync(extension, ct);
@@ -68,7 +69,7 @@ public sealed class DocumentPeriodicReviewEscalationRepository
     : TenantRepository<DocumentPeriodicReviewEscalation>, IDocumentPeriodicReviewEscalationRepository
 {
     public DocumentPeriodicReviewEscalationRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_periodic_review_escalations") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementPeriodicReviewEscalations) { }
 
     public new Task<DocumentPeriodicReviewEscalation> CreateAsync(DocumentPeriodicReviewEscalation escalation, CancellationToken ct = default) =>
         base.CreateAsync(escalation, ct);

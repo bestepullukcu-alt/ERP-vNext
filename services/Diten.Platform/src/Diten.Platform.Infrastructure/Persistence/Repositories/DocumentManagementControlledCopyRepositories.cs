@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -14,7 +15,7 @@ public sealed class DocumentControlledCopyRepository
     : TenantRepository<DocumentControlledCopy>, IDocumentControlledCopyRepository
 {
     public DocumentControlledCopyRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_controlled_copies") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementControlledCopies) { }
 
     public new Task<DocumentControlledCopy> CreateAsync(DocumentControlledCopy copy, CancellationToken ct = default) =>
         base.CreateAsync(copy, ct);
@@ -42,7 +43,7 @@ public sealed class DocumentCopyWithdrawalPlanRepository
     : TenantRepository<DocumentCopyWithdrawalPlan>, IDocumentCopyWithdrawalPlanRepository
 {
     public DocumentCopyWithdrawalPlanRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_copy_withdrawal_plans") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementCopyWithdrawalPlans) { }
 
     public new Task<DocumentCopyWithdrawalPlan> CreateAsync(DocumentCopyWithdrawalPlan plan, CancellationToken ct = default) =>
         base.CreateAsync(plan, ct);
@@ -72,7 +73,7 @@ public sealed class DocumentObsoleteCopyFindingRepository
     : TenantRepository<DocumentObsoleteCopyFinding>, IDocumentObsoleteCopyFindingRepository
 {
     public DocumentObsoleteCopyFindingRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_obsolete_copy_findings") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementObsoleteCopyFindings) { }
 
     public new Task<DocumentObsoleteCopyFinding> CreateAsync(DocumentObsoleteCopyFinding finding, CancellationToken ct = default) =>
         base.CreateAsync(finding, ct);

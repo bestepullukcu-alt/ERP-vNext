@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -15,7 +16,7 @@ public sealed class DocumentGDocPCorrectionRecordRepository
     : TenantRepository<DocumentGDocPCorrectionRecord>, IDocumentGDocPCorrectionRecordRepository
 {
     public DocumentGDocPCorrectionRecordRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_gdocp_correction_records") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementGdocpCorrectionRecords) { }
 
     public new Task<DocumentGDocPCorrectionRecord> CreateAsync(DocumentGDocPCorrectionRecord record, CancellationToken ct = default) =>
         base.CreateAsync(record, ct);
@@ -65,7 +66,7 @@ public sealed class DocumentGDocPCorrectionPolicyRepository
     : TenantRepository<DocumentGDocPCorrectionPolicy>, IDocumentGDocPCorrectionPolicyRepository
 {
     public DocumentGDocPCorrectionPolicyRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_gdocp_correction_policies") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementGdocpCorrectionPolicies) { }
 
     public new Task<DocumentGDocPCorrectionPolicy> CreateAsync(DocumentGDocPCorrectionPolicy policy, CancellationToken ct = default) =>
         base.CreateAsync(policy, ct);
@@ -100,7 +101,7 @@ public sealed class DocumentGDocPCorrectionReviewRepository
     : TenantRepository<DocumentGDocPCorrectionReview>, IDocumentGDocPCorrectionReviewRepository
 {
     public DocumentGDocPCorrectionReviewRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_gdocp_correction_reviews") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementGdocpCorrectionReviews) { }
 
     public new Task<DocumentGDocPCorrectionReview> CreateAsync(DocumentGDocPCorrectionReview review, CancellationToken ct = default) =>
         base.CreateAsync(review, ct);

@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -15,7 +16,7 @@ public sealed class DocumentSignaturePolicyRepository
     : TenantRepository<DocumentSignaturePolicy>, IDocumentSignaturePolicyRepository
 {
     public DocumentSignaturePolicyRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_signature_policies") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementSignaturePolicies) { }
 
     public new Task<DocumentSignaturePolicy> CreateAsync(DocumentSignaturePolicy p, CancellationToken ct = default) =>
         base.CreateAsync(p, ct);
@@ -50,7 +51,7 @@ public sealed class DocumentSignatureRequestRepository
     : TenantRepository<DocumentSignatureRequest>, IDocumentSignatureRequestRepository
 {
     public DocumentSignatureRequestRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_signature_requests") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementSignatureRequests) { }
 
     public new Task<DocumentSignatureRequest> CreateAsync(DocumentSignatureRequest r, CancellationToken ct = default) =>
         base.CreateAsync(r, ct);
@@ -80,7 +81,7 @@ public sealed class DocumentSignatureRecordRepository
     : TenantRepository<DocumentSignatureRecord>, IDocumentSignatureRecordRepository
 {
     public DocumentSignatureRecordRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_signature_records") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementSignatureRecords) { }
 
     public new Task<DocumentSignatureRecord> CreateAsync(DocumentSignatureRecord s, CancellationToken ct = default) =>
         base.CreateAsync(s, ct);
@@ -117,7 +118,7 @@ public sealed class DocumentSignedObjectFingerprintRepository
     : TenantRepository<DocumentSignedObjectFingerprint>, IDocumentSignedObjectFingerprintRepository
 {
     public DocumentSignedObjectFingerprintRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_signed_object_fingerprints") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementSignedObjectFingerprints) { }
 
     public new Task<DocumentSignedObjectFingerprint> CreateAsync(
         DocumentSignedObjectFingerprint f, CancellationToken ct = default) => base.CreateAsync(f, ct);

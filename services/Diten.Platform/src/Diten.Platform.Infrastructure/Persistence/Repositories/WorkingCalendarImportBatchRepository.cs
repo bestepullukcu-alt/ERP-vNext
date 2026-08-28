@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Domain.Entities.WorkingCalendar;
 using Diten.Platform.Domain.Repositories;
@@ -10,7 +11,7 @@ public sealed class WorkingCalendarImportBatchRepository : IWorkingCalendarImpor
     private readonly IMongoCollection<WorkingCalendarImportBatch> _collection;
 
     public WorkingCalendarImportBatchRepository(IPlatformDbContext dbContext)
-        => _collection = dbContext.Database.GetCollection<WorkingCalendarImportBatch>("working_calendar_import_batches");
+        => _collection = dbContext.Database.GetCollection<WorkingCalendarImportBatch>(PlatformCollections.WorkingCalendarImportBatches);
 
     private static FilterDefinition<WorkingCalendarImportBatch> Live =>
         Builders<WorkingCalendarImportBatch>.Filter.Eq(x => x.IsDeleted, false);

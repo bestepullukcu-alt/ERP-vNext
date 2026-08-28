@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -16,7 +17,7 @@ public sealed class DocumentRetentionPolicyRepository
     : TenantRepository<DocumentRetentionPolicy>, IDocumentRetentionPolicyRepository
 {
     public DocumentRetentionPolicyRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_retention_policies") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementRetentionPolicies) { }
 
     public new Task<DocumentRetentionPolicy> CreateAsync(DocumentRetentionPolicy policy, CancellationToken ct = default) =>
         base.CreateAsync(policy, ct);
@@ -50,7 +51,7 @@ public sealed class DocumentRetentionSubjectRepository
     : TenantRepository<DocumentRetentionSubject>, IDocumentRetentionSubjectRepository
 {
     public DocumentRetentionSubjectRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_retention_subjects") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementRetentionSubjects) { }
 
     public new Task<DocumentRetentionSubject> CreateAsync(DocumentRetentionSubject subject, CancellationToken ct = default) =>
         base.CreateAsync(subject, ct);
@@ -91,7 +92,7 @@ public sealed class DocumentLegalHoldRepository
     : TenantRepository<DocumentLegalHold>, IDocumentLegalHoldRepository
 {
     public DocumentLegalHoldRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_legal_holds") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementLegalHolds) { }
 
     public new Task<DocumentLegalHold> CreateAsync(DocumentLegalHold hold, CancellationToken ct = default) =>
         base.CreateAsync(hold, ct);
@@ -118,7 +119,7 @@ public sealed class DocumentLegalHoldSubjectRepository
     : TenantRepository<DocumentLegalHoldSubject>, IDocumentLegalHoldSubjectRepository
 {
     public DocumentLegalHoldSubjectRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_legal_hold_subjects") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementLegalHoldSubjects) { }
 
     public new Task<DocumentLegalHoldSubject> CreateAsync(DocumentLegalHoldSubject subject, CancellationToken ct = default) =>
         base.CreateAsync(subject, ct);
@@ -149,7 +150,7 @@ public sealed class DocumentDispositionRequestRepository
     : TenantRepository<DocumentDispositionRequest>, IDocumentDispositionRequestRepository
 {
     public DocumentDispositionRequestRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_disposition_requests") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementDispositionRequests) { }
 
     public new Task<DocumentDispositionRequest> CreateAsync(DocumentDispositionRequest request, CancellationToken ct = default) =>
         base.CreateAsync(request, ct);

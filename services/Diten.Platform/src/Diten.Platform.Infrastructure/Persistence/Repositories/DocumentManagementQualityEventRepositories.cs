@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -14,7 +15,7 @@ public sealed class DocumentQualityEventRepository
     : TenantRepository<DocumentQualityEvent>, IDocumentQualityEventRepository
 {
     public DocumentQualityEventRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_quality_events") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementQualityEvents) { }
 
     public new Task<DocumentQualityEvent> CreateAsync(DocumentQualityEvent e, CancellationToken ct = default) =>
         base.CreateAsync(e, ct);
@@ -48,7 +49,7 @@ public sealed class DocumentDeviationRepository
     : TenantRepository<DocumentDeviation>, IDocumentDeviationRepository
 {
     public DocumentDeviationRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_quality_deviations") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementQualityDeviations) { }
 
     public new Task<DocumentDeviation> CreateAsync(DocumentDeviation d, CancellationToken ct = default) =>
         base.CreateAsync(d, ct);
@@ -75,7 +76,7 @@ public sealed class DocumentCAPAActionRepository
     : TenantRepository<DocumentCAPAAction>, IDocumentCAPAActionRepository
 {
     public DocumentCAPAActionRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_capa_actions") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementCapaActions) { }
 
     public new Task<DocumentCAPAAction> CreateAsync(DocumentCAPAAction a, CancellationToken ct = default) =>
         base.CreateAsync(a, ct);
@@ -107,7 +108,7 @@ public sealed class DocumentQualityEventSourceLinkRepository
     : TenantRepository<DocumentQualityEventSourceLink>, IDocumentQualityEventSourceLinkRepository
 {
     public DocumentQualityEventSourceLinkRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_quality_event_source_links") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementQualityEventSourceLinks) { }
 
     public new Task<DocumentQualityEventSourceLink> CreateAsync(DocumentQualityEventSourceLink l, CancellationToken ct = default) =>
         base.CreateAsync(l, ct);

@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -14,7 +15,7 @@ public sealed class ExternalDocumentRegisterRepository
     : TenantRepository<ExternalDocumentRegisterEntry>, IExternalDocumentRegisterRepository
 {
     public ExternalDocumentRegisterRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_external_documents") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementExternalDocuments) { }
 
     public new Task<ExternalDocumentRegisterEntry> CreateAsync(ExternalDocumentRegisterEntry entry, CancellationToken ct = default) =>
         base.CreateAsync(entry, ct);
@@ -69,7 +70,7 @@ public sealed class ExternalDocumentMonitoringCheckRepository
     : TenantRepository<ExternalDocumentMonitoringCheck>, IExternalDocumentMonitoringCheckRepository
 {
     public ExternalDocumentMonitoringCheckRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_external_document_monitoring_checks") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementExternalDocumentMonitoringChecks) { }
 
     public new Task<ExternalDocumentMonitoringCheck> CreateAsync(ExternalDocumentMonitoringCheck check, CancellationToken ct = default) =>
         base.CreateAsync(check, ct);
@@ -85,7 +86,7 @@ public sealed class ExternalDocumentImpactAssessmentRepository
     : TenantRepository<ExternalDocumentImpactAssessment>, IExternalDocumentImpactAssessmentRepository
 {
     public ExternalDocumentImpactAssessmentRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_external_document_impact_assessments") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementExternalDocumentImpactAssessments) { }
 
     public new Task<ExternalDocumentImpactAssessment> CreateAsync(ExternalDocumentImpactAssessment assessment, CancellationToken ct = default) =>
         base.CreateAsync(assessment, ct);
@@ -113,7 +114,7 @@ public sealed class ExternalDocumentInternalLinkRepository
     : TenantRepository<ExternalDocumentInternalLink>, IExternalDocumentInternalLinkRepository
 {
     public ExternalDocumentInternalLinkRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_external_document_internal_links") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementExternalDocumentInternalLinks) { }
 
     public new Task<ExternalDocumentInternalLink> CreateAsync(ExternalDocumentInternalLink link, CancellationToken ct = default) =>
         base.CreateAsync(link, ct);

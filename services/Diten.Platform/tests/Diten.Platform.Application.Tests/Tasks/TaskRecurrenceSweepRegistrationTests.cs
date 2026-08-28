@@ -1,6 +1,7 @@
 using Diten.BuildingBlocks.BackgroundJobs;
 using Diten.Platform.Application.BackgroundJobs;
 using Diten.Platform.Application.Features.Tasks.BackgroundJobs;
+using Diten.Platform.Application.Features.WorkingCalendarImport;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -71,7 +72,7 @@ public sealed class TaskRecurrenceSweepRegistrationTests
         // The default state of a fresh deployment: EnabledJobs is empty, so an unlisted job is off rather than
         // implicitly on. This is the case an operator hits first.
         var options = new BackgroundJobSchedulerOptions { RegisterStandardJobs = true };
-        var registration = Find(new PlatformRecurringJobRegistrar(Options.Create(options)).GetRecurringJobs());
+        var registration = Find(new PlatformRecurringJobRegistrar(Options.Create(options), Options.Create(new WorkingCalendarImportOptions())).GetRecurringJobs());
 
         Assert.False(registration.Descriptor.IsEnabled);
     }
@@ -106,7 +107,7 @@ public sealed class TaskRecurrenceSweepRegistrationTests
             EnabledJobs = new Dictionary<string, bool> { [JobId] = enabled }
         };
 
-        return new PlatformRecurringJobRegistrar(Options.Create(options)).GetRecurringJobs();
+        return new PlatformRecurringJobRegistrar(Options.Create(options), Options.Create(new WorkingCalendarImportOptions())).GetRecurringJobs();
     }
 
     private static RecurringJobRegistration Find(IReadOnlyCollection<RecurringJobRegistration> registrations)

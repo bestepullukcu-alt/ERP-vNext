@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -15,7 +16,7 @@ public sealed class DocumentRepositoryDowntimeEventRepository
     : TenantRepository<DocumentRepositoryDowntimeEvent>, IDocumentRepositoryDowntimeEventRepository
 {
     public DocumentRepositoryDowntimeEventRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_repository_downtime_events") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementRepositoryDowntimeEvents) { }
 
     public new Task<DocumentRepositoryDowntimeEvent> CreateAsync(DocumentRepositoryDowntimeEvent e, CancellationToken ct = default) =>
         base.CreateAsync(e, ct);
@@ -42,7 +43,7 @@ public sealed class DocumentTemporaryControlledIssueRepository
     : TenantRepository<DocumentTemporaryControlledIssue>, IDocumentTemporaryControlledIssueRepository
 {
     public DocumentTemporaryControlledIssueRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_temporary_controlled_issues") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementTemporaryControlledIssues) { }
 
     public new Task<DocumentTemporaryControlledIssue> CreateAsync(DocumentTemporaryControlledIssue issue, CancellationToken ct = default) =>
         base.CreateAsync(issue, ct);
@@ -78,7 +79,7 @@ public sealed class DocumentDowntimeEscalationRepository
     : TenantRepository<DocumentDowntimeEscalation>, IDocumentDowntimeEscalationRepository
 {
     public DocumentDowntimeEscalationRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_downtime_escalations") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementDowntimeEscalations) { }
 
     public new Task<DocumentDowntimeEscalation> CreateAsync(DocumentDowntimeEscalation escalation, CancellationToken ct = default) =>
         base.CreateAsync(escalation, ct);

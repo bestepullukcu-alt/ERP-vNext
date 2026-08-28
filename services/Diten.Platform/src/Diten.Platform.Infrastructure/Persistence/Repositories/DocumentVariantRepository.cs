@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -11,7 +12,7 @@ public sealed class DocumentVariantRepository
     : TenantRepository<DocumentVariant>, IDocumentVariantRepository
 {
     public DocumentVariantRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_document_variants") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementDocumentVariants) { }
 
     public new Task<DocumentVariant> CreateAsync(DocumentVariant variant, CancellationToken ct = default) =>
         base.CreateAsync(variant, ct);

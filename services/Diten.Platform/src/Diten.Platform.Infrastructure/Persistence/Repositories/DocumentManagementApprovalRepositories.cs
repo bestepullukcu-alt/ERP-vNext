@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -12,7 +13,7 @@ public sealed class DocumentApprovalRequirementRepository
     : TenantRepository<DocumentApprovalRequirement>, IDocumentApprovalRequirementRepository
 {
     public DocumentApprovalRequirementRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_approval_requirements") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementApprovalRequirements) { }
 
     public new Task<DocumentApprovalRequirement> CreateAsync(DocumentApprovalRequirement requirement, CancellationToken ct = default) =>
         base.CreateAsync(requirement, ct);
@@ -36,7 +37,7 @@ public sealed class DocumentApprovalEvidenceRepository
     : TenantRepository<DocumentApprovalEvidence>, IDocumentApprovalEvidenceRepository
 {
     public DocumentApprovalEvidenceRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_approval_evidence") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementApprovalEvidence) { }
 
     public new Task<DocumentApprovalEvidence> CreateAsync(DocumentApprovalEvidence evidence, CancellationToken ct = default) =>
         base.CreateAsync(evidence, ct);

@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -13,7 +14,7 @@ public sealed class DocumentIdentifierAllocationRepository
     : TenantRepository<DocumentIdentifierAllocation>, IDocumentIdentifierAllocationRepository
 {
     public DocumentIdentifierAllocationRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_identifier_allocations") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementIdentifierAllocations) { }
 
     public new Task<DocumentIdentifierAllocation> CreateAsync(DocumentIdentifierAllocation allocation, CancellationToken ct = default) =>
         base.CreateAsync(allocation, ct);
@@ -52,7 +53,7 @@ public sealed class DocumentIdentifierSequenceCounterRepository
     : TenantRepository<DocumentIdentifierSequenceCounter>, IDocumentIdentifierSequenceCounterRepository
 {
     public DocumentIdentifierSequenceCounterRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_identifier_sequence_counters") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementIdentifierSequenceCounters) { }
 
     public async Task<long> NextAsync(DocumentIdentifierType type, string? prefix, string? domainCode, string? typeCode, string createdBy, CancellationToken ct = default)
     {

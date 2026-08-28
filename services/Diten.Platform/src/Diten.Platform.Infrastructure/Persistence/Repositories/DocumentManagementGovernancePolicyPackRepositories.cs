@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -14,7 +15,7 @@ public sealed class DocumentGovernancePolicyPackApplicationRepository
     : TenantRepository<DocumentGovernancePolicyPackApplication>, IDocumentGovernancePolicyPackApplicationRepository
 {
     public DocumentGovernancePolicyPackApplicationRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_governance_policy_pack_applications") { }
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementGovernancePolicyPackApplications) { }
 
     public new Task<DocumentGovernancePolicyPackApplication> CreateAsync(
         DocumentGovernancePolicyPackApplication application, CancellationToken ct = default) =>

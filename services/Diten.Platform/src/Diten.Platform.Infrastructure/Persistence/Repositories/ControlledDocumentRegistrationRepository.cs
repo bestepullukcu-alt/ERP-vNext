@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
@@ -10,7 +11,7 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 public sealed class ControlledDocumentRegistrationRepository
     : TenantRepository<ControlledDocumentRegistrationOperation>, IControlledDocumentRegistrationRepository
 {
-    public const string CollectionName = "document_management_controlled_document_registration_operations";
+    public const string CollectionName = PlatformCollections.DocumentManagementControlledDocumentRegistrationOperations;
 
     public ControlledDocumentRegistrationRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
         : base(dbContext.Database, tenantContext, CollectionName) { }

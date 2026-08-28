@@ -1,3 +1,4 @@
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.WorkingCalendar;
@@ -19,7 +20,7 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 /// </summary>
 public sealed class WorkingCalendarRepository : HybridRepository<Wc>, IWorkingCalendarRepository
 {
-    private const string CollectionName = "working_calendars";
+    private const string CollectionName = PlatformCollections.WorkingCalendars;
 
     public WorkingCalendarRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
         : base(dbContext.Database, tenantContext, CollectionName)

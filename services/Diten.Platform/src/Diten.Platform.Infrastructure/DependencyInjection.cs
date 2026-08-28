@@ -479,11 +479,11 @@ public static class DependencyInjection
         // partial index (ux_platform_module_domains_code_key) is (re)created, else the index build would fail.
         ModuleDomainDeduplicationMigration.MigrateAsync(database).GetAwaiter().GetResult();
 
-        if (environment.IsDevelopment())
-        {
-            MongoDbIndexConfigurations.ReconcileDevelopmentIndexesAsync(database).GetAwaiter().GetResult();
-        }
-
+        // NOTE (2026-08-28 main-sync): the pre-refactor MongoDbIndexConfigurations.ReconcileDevelopmentIndexesAsync
+        // dev-only drop was removed here — main's refactor folded drop-before-rebuild into PlatformSchemaMigrations
+        // (run first by EnsureIndexesAsync). The one index it dropped, "ux_dm_collection_instances_corporate_owner_
+        // baseline_node_active", is not a name main's manifest recreates, so it can never raise IndexOptionsConflict;
+        // any lingering copy in an old dev DB is a harmless orphan.
         MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
         var auditRetentionSeedOptions = configuration
             .GetSection(AuditRetentionSeedOptions.SectionName)

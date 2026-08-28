@@ -155,7 +155,7 @@ public sealed class CorporateCollectionProvisioningOperationRepository
     : TenantRepository<CorporateCollectionInstanceProvisioningOperation>, ICorporateCollectionProvisioningOperationRepository
 {
     public CorporateCollectionProvisioningOperationRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
-        : base(dbContext.Database, tenantContext, "document_management_corporate_collection_provisioning_operations")
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentManagementCorporateCollectionProvisioningOperations)
     {
     }
 
