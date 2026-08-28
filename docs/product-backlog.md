@@ -6925,3 +6925,60 @@ doğrulama yardımcıları, ayrı değerlendirilmeli).
   onayı kuyruğu? sabit host allow-list?). Bu soru cevaplanmadan otomatikleştirme yapılmamalı.
 - **Bugünkü bedel:** modül başına bir satır, elle. Yedi mevcut servis-arası adres zaten böyle duruyor.
 - **Gelecek regresyon riski: 🟢** — bugün hiçbir şey kırılmıyor; yalnızca bir kolaylık eksik.
+
+### BL-313 — 🔴 ACİL · üretimde olay taşıyıcısı yok; mesajlar SESSİZCE SİLİNİYOR ve "gönderildi" işaretleniyor (2026-08-28, ölçüldü)
+
+> **SAHİP ATAMASI: Beste Pullukçu — ACİL.** Sahip kararı 2026-08-28.
+> Görev Merkezi ekibini **engellemiyor** (ölçüldü: WorkAggregation ve köprü
+> `IEventTransportPublisher`/`OutboxMessage`'ı hiç kullanmıyor, tamamı düz HTTP).
+
+- **Ölçüm — üretim ayarında `Eventing` bloğu YOK.** `appsettings.Development.json`
+  içinde var, `appsettings.json` içinde yok. Kod `Eventing:Transport` okuyor
+  (`Program.cs:98`) ve şu dala giriyor:
+
+  ```csharp
+  // DependencyInjection.cs:428 vs :433
+  if (Transport == "RabbitMQ")  → MassTransitRabbitMqEventPublisher
+  else                          → InMemoryEventBus
+  ```
+
+- **`InMemoryEventBus` ne yapıyor:** mesajı süreç-içi bir `ConcurrentQueue`'ya
+  ekliyor ve **başarılı dönüyor**. O kuyruğu kimse boşaltmıyor; süreç kapanınca
+  kuyruk yok oluyor.
+
+- **⚠ ASIL SORUN — mesaj beklemiyor, KAYBOLUYOR:**
+
+  ```
+  OutboxPublisherProcessor.cs:45   await _publisher.PublishAsync(...)   ← başarılı döner
+                            :46   outboxEvent.MarkPublished();          ← "teslim edildi"
+                            :47   await _outboxRepository.UpdateAsync() ← kalıcı yazılır
+  ```
+
+  Outbox kaydı kalıcı olarak kapatılıyor. **RabbitMQ'yu sonradan açmak geçmiş
+  mesajları geri getirmez.**
+
+- **⚠ Sağlık kontrolü de sessiz:** RabbitMQ sağlık kontrolü yalnız
+  `Transport == "RabbitMQ"` iken ekleniyor (`Program.cs:97-102`). Yani bugünkü
+  hâlde sistem **"sağlıklı"** raporluyor, hiçbir mesaj teslim edilmezken.
+
+- **Somut etki:** `Diten.AuthService` Platform'dan gelen yetki/abonelik
+  senkronizasyonunu dinliyor (`EntitlementSyncConsumer`). Bellek-içi taşıyıcıda
+  o mesaj AuthService'e **hiç ulaşmaz** → abonelikten doğan yetkiler kullanıcıya
+  yansımaz, hiçbir yerde hata görünmez.
+  ⚠ AuthService'te bir HTTP yolu da var (`internal/events`: `tenant-activated`,
+  `tenant-admin-invited`). Üretimde hangi akışın hangi yolu kullandığı
+  **ölçülmedi** — yapan kişi önce bunu ölçmeli.
+
+- **Taşıyıcı seçeneği tek:** pakette yalnız `MassTransit.RabbitMQ` var. Azure
+  Service Bus / AWS / Kafka paketi yok, kodda üçüncü dal yok. Başka bir broker
+  seçmek = yeni taşıyıcı adaptörü yazmak, ayrı bir iş.
+
+- **Yapılacak (Beste Pullukçu):**
+  1. Üretimde RabbitMQ sunucusu kurulsun; kimlik bilgileri sır yönetiminden gelsin
+  2. `Eventing:Transport = "RabbitMQ"` üretim ayarına yazılsın
+     (bu yazıldığı an sağlık kontrolü kendiliğinden devreye girer)
+  3. **Muhafız:** üretim profilinde `Transport` boşsa uygulama AÇILMASIN.
+     Sessizce bellek-içine düşmek bu kaydın sebebidir; ayar unutulunca
+     yine sessiz kalmamalı
+  4. Bugüne kadar "gönderildi" işaretlenmiş outbox kayıtlarının kaybı
+     **ölçülsün ve raporlansın** — telafi gerekiyorsa ayrı iş olarak açılsın
