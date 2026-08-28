@@ -1,4 +1,5 @@
 using Diten.Persistence.Context;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Diten.WebAPI.Controllers;
@@ -6,6 +7,7 @@ namespace Diten.WebAPI.Controllers;
 /// <summary>Readiness-style check: verifies MongoDB is reachable.</summary>
 [ApiController]
 [Route("health")]
+[AllowAnonymous]
 public sealed class HealthController : ControllerBase
 {
     private readonly MongoDbContext _mongo;
