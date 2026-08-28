@@ -131,7 +131,7 @@ public sealed class EsbpSecurityPerimeterTests
     }
 
     [Fact]
-    public void All_147_actions_are_classified_and_only_health_is_anonymous()
+    public void All_148_actions_are_classified_and_only_health_is_anonymous()
     {
         var actions = typeof(HealthController).Assembly
             .GetTypes()
@@ -143,10 +143,10 @@ public sealed class EsbpSecurityPerimeterTests
         var anonymous = actions.Where(HasAllowAnonymous).ToArray();
         var permissionMapped = actions.Where(HasPermissionMetadata).ToArray();
 
-        Assert.Equal(147, actions.Length);
+        Assert.Equal(148, actions.Length);
         Assert.Single(anonymous);
         Assert.Equal(nameof(HealthController), anonymous[0].DeclaringType?.Name);
-        Assert.Equal(80, permissionMapped.Length);
+        Assert.Equal(81, permissionMapped.Length);
         Assert.Equal(67, actions.Length - permissionMapped.Length);
         Assert.All(actions.Where(action => !HasAllowAnonymous(action)), action =>
             Assert.True(HasPermissionMetadata(action) || IsExplicitlyDefaultDenied(action)));

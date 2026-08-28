@@ -5,11 +5,14 @@ using Diten.Infrastructure;
 using Diten.WebAPI.Health;
 using Diten.WebAPI.Middleware;
 using Diten.WebAPI.Security;
+using Diten.Application.WorkCenter;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddSingleton(new EnterpriseStrategyWorkItemProjectionService(
+    builder.Configuration.GetValue("WorkCenterRemoteRead:Enabled", false)));
 builder.Services.AddEsbpSecurityPerimeter(builder.Configuration);
 builder.Services.AddHealthChecks()
     .AddCheck<DeliveryExecutionManagementDependencyHealthCheck>("delivery_execution_management_ppm_dependency");
