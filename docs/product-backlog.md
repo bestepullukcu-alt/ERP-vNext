@@ -6936,7 +6936,11 @@ handler'ın denendiğini ve ölçümle reddedildiğini yazıyor.
 **Etki alanı:** handler üç serviste kayıtlı (Platform, Auth, DevEnablement); Platform'da
 üç istemciye takılı — `TenantAwareClient` + iki referans doğrulayıcı.
 
-### BL-311-ESKI — `TenantPropagationHandler` istek kapsamını GÖREMİYOR; MDM ve Auth istemcileri kiracı başlığını sessizce düşürüyor olabilir (2026-08-28, ÖLÇÜLDÜ)
+**İlk kaydın metni (2026-08-28, ÖLÇÜLDÜ) — yukarıdaki düzeltmenin neyi düzelttiği görünsün diye korunuyor.**
+
+> ⚠ Bu bir KAYIT DEĞİL, yukarıdaki BL-311'in ilk hâlidir. Ayrı bir `###` başlığı
+> olarak durursa aynı koda iki blok düşer ve biri "kapandı" diğeri "açık" görünür —
+> bu dosyada bunun 10 örneği ölçüldü. O yüzden başlık değil, alıntı.
 - **Ölçüm:** WC-D1 köprüsünün ilk hâli bu paylaşılan handler'ı yeniden kullandı ve uzak servise **hiç kiracı
   başlığı göndermedi**. Birim testi yeşildi. Uzak servis aldığı kiracıyı ekrana geri yazdığı için görüldü:
   "(no tenant header)".
