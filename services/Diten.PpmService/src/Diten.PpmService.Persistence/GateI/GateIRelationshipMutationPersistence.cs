@@ -35,6 +35,9 @@ public sealed class GateIRelationshipMutationPersistence(
             if (receipt is null) return new GateIReceiptResult(GateIReceiptDisposition.Missing);
             if (!string.Equals(receipt.RequestHash, scope.RequestHash, StringComparison.Ordinal))
                 return new GateIReceiptResult(GateIReceiptDisposition.Conflict);
+            if (!string.IsNullOrEmpty(scope.ProvenanceHash)
+                && !string.Equals(receipt.ProvenanceHash, scope.ProvenanceHash, StringComparison.Ordinal))
+                return new GateIReceiptResult(GateIReceiptDisposition.Conflict);
             return new GateIReceiptResult(
                 GateIReceiptDisposition.Matching,
                 new GateIRelationshipMutationResult(
@@ -158,6 +161,8 @@ public sealed class GateIRelationshipMutationPersistence(
                 await session.AbortTransactionAsync(cancellationToken);
                 if (!string.Equals(existing.RequestHash, scope.RequestHash, StringComparison.Ordinal))
                     throw new GateIRelationshipConflictException("Idempotency key payload conflict.");
+                if (!string.Equals(existing.ProvenanceHash, scope.ProvenanceHash, StringComparison.Ordinal))
+                    throw new GateIRelationshipConflictException("Idempotency key provenance conflict.");
                 return new GateIRelationshipMutationResult(
                     existing.AggregateId, existing.AggregateVersion, existing.StableCode, true);
             }
