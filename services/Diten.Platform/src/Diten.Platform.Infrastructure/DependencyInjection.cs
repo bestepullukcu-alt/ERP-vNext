@@ -138,6 +138,12 @@ public static class DependencyInjection
         services.Configure<Diten.Platform.Application.Features.WorkAggregation.Services.WorkItemSlaOptions>(
             configuration.GetSection(
                 Diten.Platform.Application.Features.WorkAggregation.Services.WorkItemSlaOptions.SectionName));
+        // WC-D3 (DCP-004 §2 D3) — the per-provider timeout the aggregation handler enforces. Bound here on the
+        // same terms as the SLA window above: an operator's judgement about how long a reader waits for ONE
+        // source, which differs between an in-process Mongo read and the first network-backed provider.
+        services.Configure<Diten.Platform.Application.Features.WorkAggregation.Services.WorkAggregationResilienceOptions>(
+            configuration.GetSection(
+                Diten.Platform.Application.Features.WorkAggregation.Services.WorkAggregationResilienceOptions.SectionName));
         services.Configure<MdmServiceOptions>(configuration.GetSection(MdmServiceOptions.SectionName));
         services.Configure<FakeMessagingProviderOptions>(configuration.GetSection(FakeMessagingProviderOptions.SectionName));
         services.AddOptions<SmtpProviderOptions>()

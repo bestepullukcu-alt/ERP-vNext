@@ -6269,6 +6269,21 @@ tags.diten-tags .tagify__input {
     background: color-mix(in sRGB, var(--bs-primary) 12%, var(--bs-card-bg));
     color: color-mix(in sRGB, var(--bs-primary) 85%, var(--bs-body-color)); }
 
+/* WC-D3 partial-board banner ------------------------------------------------
+   The board is missing at least one source. Warning-toned like .wcn-delegation (same visual family, same
+   inline-start rule) but distinct: delegation says WHOSE work this is, this says the list is INCOMPLETE. */
+.wcn-partial-board {
+    display: flex; align-items: flex-start; gap: .5rem; margin-block-end: 1rem; padding: .625rem .875rem;
+    border-radius: .5rem; border-inline-start: 3px solid var(--bs-warning); font-size: .875rem;
+    background: color-mix(in sRGB, var(--bs-warning) 15%, var(--bs-card-bg));
+    color: color-mix(in sRGB, var(--bs-warning) 80%, #000);
+}
+.wcn-partial-board > i { font-size: 1.25rem; flex: 0 0 auto; }
+.wcn-partial-board-text { display: flex; flex-direction: column; gap: .125rem; }
+.wcn-partial-board-detail { font-size: .75rem; opacity: .85; }
+/* The tab badge over a partial board: a floor, not a total. Muted so it cannot be read as an urgency count. */
+.wcn-tab-count-partial { font-weight: 600; }
+
 /* System/stale-state banner ------------------------------------------------ */
 .wcn-sysstate { display: flex; align-items: center; gap: .5rem; margin-block: .75rem 0; padding: .5rem .75rem;
     border-radius: .375rem; font-size: .8125rem; border-inline-start: 3px solid; }

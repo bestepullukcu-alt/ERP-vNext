@@ -2136,4 +2136,28 @@
   <data name="SignalSnoozed" xml:space="preserve">
     <value>Отложенные</value>
   </data>
+  <data name="PartialBoardBanner" xml:space="preserve">
+    <value>Некоторые источники не ответили — список может быть неполным.</value>
+  </data>
+  <data name="PartialCountHint" xml:space="preserve">
+    <value>Некоторые источники не ответили, поэтому это число может быть неполным.</value>
+  </data>
+  <data name="SourceUnavailableTimeout" xml:space="preserve">
+    <value>не ответил вовремя</value>
+  </data>
+  <data name="SourceUnavailableError" xml:space="preserve">
+    <value>вернул ошибку</value>
+  </data>
+  <data name="SourceUnavailableUnsupportedVersion" xml:space="preserve">
+    <value>сообщает о неподдерживаемой версии контракта</value>
+  </data>
+  <data name="SourceUnavailableUnknown" xml:space="preserve">
+    <value>недоступен, причина неизвестна</value>
+  </data>
+  <data name="EmptyPartialBoardTitle" xml:space="preserve">
+    <value>Этот список не удалось загрузить полностью</value>
+  </data>
+  <data name="EmptyPartialBoardDesc" xml:space="preserve">
+    <value>Хотя бы один источник не ответил, поэтому показанное здесь — не полная картина. Повторите попытку чуть позже.</value>
+  </data>
 </root>

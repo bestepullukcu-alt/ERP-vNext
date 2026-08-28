@@ -57,34 +57,21 @@
     ];
     const TYPE_ICON = { approval: 'bx-check-shield', task: 'bx-task', review: 'bx-search-alt', issue: 'bx-error-circle', exception: 'bx-error-alt' };
     /*
-     * Friendly module name for a provider code, from the resx (7 languages).
+     * Friendly module name for a provider code — ONE implementation, in l10n.js (WCN.moduleLabel).
      *
-     * This used to be a hardcoded Turkish map, and moduleLabel is called for REAL items too — so the "Görevler"
-     * chip on genuine work was single-language presentation data invented on the client. The key is derived from
-     * the code (master-data → ModuleMasterData) so adding a provider means adding one resx entry, not editing JS.
+     * The rule used to live here, and moduleLabel is called for REAL items too (see toPresentation: sourceModule
+     * / sourceModuleName). When the partial-board banner needed the same answer, a second implementation appeared
+     * in the localization bridge and the two drifted apart at once — the banner's name resolved through one
+     * function and the source chip's through another. So the bridge's is now the only one and this file consumes
+     * it. That is not an import of a fixture module by the shell; it is this module reading the shared global the
+     * host already installs (Index.cshtml loads l10n.js at 36, mock-data.js at 51).
      *
-     * An unmapped code renders as the raw code and warns once: a new provider shows up as a visible, explained
-     * gap instead of silently borrowing someone else's name.
+     * If the bridge is somehow absent, fall back to the raw code rather than throwing: a missing name is a
+     * labelling gap, and it must never cost the reader the row.
      */
-    const reportedMissingModuleCodes = new Set();
-    const moduleResourceKey = (code) => 'Module' + String(code).split(/[-_]/)
-        .filter(Boolean)
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('');
     const moduleLabel = (code) => {
         if (!code) { return ''; }
-        const key = moduleResourceKey(code);
-        const resolved = global.WCN?.t?.(key);
-        if (!resolved || resolved === key) {
-            if (!reportedMissingModuleCodes.has(code)) {
-                reportedMissingModuleCodes.add(code);
-                console.warn(
-                    `[WorkCenterNext] No module name for provider code "${code}" — rendering the raw code. `
-                    + `Add "${key}" to the WorkCenterNext resx (7 languages).`);
-            }
-            return code;
-        }
-        return resolved;
+        return (global.WCN && global.WCN.moduleLabel ? global.WCN.moduleLabel(code) : code) || code;
     };
     /*
      * Curation for the DEVELOPMENT showcase catalog only: which demo fixtures are "in the catalogue" and which are

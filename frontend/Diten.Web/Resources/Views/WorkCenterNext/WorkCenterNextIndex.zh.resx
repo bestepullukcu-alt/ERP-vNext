@@ -2136,4 +2136,28 @@
   <data name="SignalSnoozed" xml:space="preserve">
     <value>已稍后处理</value>
   </data>
+  <data name="PartialBoardBanner" xml:space="preserve">
+    <value>部分数据源未响应——此列表可能不完整。</value>
+  </data>
+  <data name="PartialCountHint" xml:space="preserve">
+    <value>部分数据源未响应，因此该计数可能不完整。</value>
+  </data>
+  <data name="SourceUnavailableTimeout" xml:space="preserve">
+    <value>未在规定时间内响应</value>
+  </data>
+  <data name="SourceUnavailableError" xml:space="preserve">
+    <value>返回了错误</value>
+  </data>
+  <data name="SourceUnavailableUnsupportedVersion" xml:space="preserve">
+    <value>声明了不受支持的契约版本</value>
+  </data>
+  <data name="SourceUnavailableUnknown" xml:space="preserve">
+    <value>不可用，原因未知</value>
+  </data>
+  <data name="EmptyPartialBoardTitle" xml:space="preserve">
+    <value>此列表无法完整加载</value>
+  </data>
+  <data name="EmptyPartialBoardDesc" xml:space="preserve">
+    <value>至少有一个数据源未响应，因此此处显示的内容并不完整。请稍后重试。</value>
+  </data>
 </root>

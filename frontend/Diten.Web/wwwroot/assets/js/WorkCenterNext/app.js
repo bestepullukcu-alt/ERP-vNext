@@ -104,6 +104,14 @@
         scope: 'mine',
         // Answered by the server at boot (org chart), never inferred from an empty list — see loadTeamAvailability.
         team: { hasTeam: false, memberCount: 0 },
+        /*
+         * WC-D3 — the sources that did NOT answer this read: [{ providerCode, reasonCode }].
+         *
+         * Empty is the load-bearing state and means the list is COMPLETE. Non-empty means every number on this
+         * screen is a floor, not a total — which is why it is read by the banner AND by the tab counts. A
+         * confident zero over a half-answered board has already been misread in this repo once.
+         */
+        unavailableSources: [],
         group: 'all',            // Havuz group-queue filter
         priorityFilter: 'all',
         modeFilter: 'all',
@@ -973,6 +981,56 @@
 
     // Prominent banner while in a delegation scope (spec v3 §6) — scoped grant, not
     // impersonation; every action is stamped "X adına". Combined view = lighter note.
+    /*
+     * WC-D3 (DCP-004 §2 D3) — THE BOARD SAYS WHAT IT IS MISSING.
+     *
+     * The server now answers a BOARD (`{ items, unavailableSources }`) instead of a bare list, because a provider
+     * that failed or timed out used to leave no trace: the reader saw a shorter list, drawn with exactly the same
+     * confidence as a complete one, and nothing on the page to suggest otherwise.
+     *
+     * ⚠ The reason arrives as a stable CODE and the sentence is resolved HERE, from the 7-language resx. The
+     * server never composes this text (project rule: the error-code bridge). An unknown code still names its
+     * source and falls back to the generic reason — "a source is missing and we cannot say why" is a worse
+     * answer than a specific one, but it is a far better answer than silence.
+     *
+     * ⚠ The SOURCE is named in the reader's language too. The banner used to print the raw provider code next
+     * to a translated reason, so an Arabic or Chinese screen read "workflow — <translated sentence>" — half the
+     * sentence in English. The name is resolved through WCN.moduleLabel (l10n.js), the same derived-key rule the
+     * source chips use, so one provider cannot be called two different things on one page. A code with no resx
+     * entry still falls back to the raw code — an identifier a reader can quote to whoever fixes it beats an
+     * invented name — and the board still draws.
+     */
+    const UNAVAILABLE_REASON_KEY = {
+        TIMEOUT: 'SourceUnavailableTimeout',
+        ERROR: 'SourceUnavailableError',
+        UNSUPPORTED_VERSION: 'SourceUnavailableUnsupportedVersion'
+    };
+
+    const hasUnavailableSources = () =>
+        Array.isArray(state.unavailableSources) && state.unavailableSources.length > 0;
+
+    const unavailableReasonText = (reasonCode) =>
+        t(UNAVAILABLE_REASON_KEY[reasonCode] || 'SourceUnavailableUnknown');
+
+    // Resolved at CALL time, not at module load: l10n.js installs it on WCN, and reading it lazily keeps the
+    // banner working on a host that swaps the translator after boot. Absent bridge → the raw code, never a throw.
+    const unavailableSourceName = (providerCode) =>
+        (global.WCN && global.WCN.moduleLabel ? global.WCN.moduleLabel(providerCode) : providerCode) || providerCode;
+
+    const buildPartialBoardBanner = () => {
+        if (!hasUnavailableSources()) { return ''; }
+        const detail = state.unavailableSources
+            .map((src) => `${unavailableSourceName(src.providerCode)} — ${unavailableReasonText(src.reasonCode)}`)
+            .join(' · ');
+        return `<div class="wcn-partial-board" role="status" aria-live="polite">
+            <i class="bx bx-cloud-snow"></i>
+            <span class="wcn-partial-board-text">
+                <strong>${esc(t('PartialBoardBanner'))}</strong>
+                <span class="wcn-partial-board-detail">${esc(detail)}</span>
+            </span>
+        </div>`;
+    };
+
     const buildDelegationBanner = () => {
         if (state.scope === 'mine') { return ''; }
         if (state.scope === 'all') {
@@ -1058,8 +1116,17 @@
         const tab = (key) => {
             const active = state.tab === key;
             const cnt = tabCount(key);
-            const countBadge = cnt > 0
-                ? `<span class="badge rounded-pill bg-danger wcn-tab-count position-absolute top-0 start-100 translate-middle">${cnt}</span>`
+            /*
+             * WC-D3 — A COUNT OVER A PARTIAL BOARD IS A FLOOR, AND SAYS SO.
+             *
+             * The banner alone was not enough: the badge is the number a reader actually acts on, and "0" next to
+             * a warning strip still reads as "nothing for me". While a source is missing the badge carries a "+"
+             * and is drawn EVEN AT ZERO — a zero that might not be a zero is the one number on this page that
+             * must never be printed confidently.
+             */
+            const partial = hasUnavailableSources();
+            const countBadge = (cnt > 0 || partial)
+                ? `<span class="badge rounded-pill ${partial ? 'bg-secondary wcn-tab-count-partial' : 'bg-danger'} wcn-tab-count position-absolute top-0 start-100 translate-middle" title="${partial ? esc(t('PartialCountHint')) : ''}">${cnt}${partial ? '+' : ''}</span>`
                 : '';
             return `<li class="nav-item" role="presentation">
                 <button type="button" id="wcn-tab-${key}" class="nav-link border shadow-none wc-tab-compact d-inline-flex align-items-center${active ? ' active' : ''}" data-wcn-tab="${key}" role="tab" aria-selected="${active}" aria-controls="wcn-main-panel" tabindex="${active ? '0' : '-1'}">
@@ -5807,6 +5874,24 @@
                 <button type="button" class="btn btn-sm btn-label-primary" data-wcn-clear-filters>${esc(t('EmptyClearFilters'))}</button>
             </div>`;
         }
+        /*
+         * WC-D3 — AN EMPTY LIST OVER A PARTIAL BOARD IS NOT "ALL CLEAR".
+         *
+         * MEASURED LIVE (2026-08-28, tasks provider deliberately broken): the strip said "Bazı kaynaklar yanıt
+         * vermedi" and the panel underneath it said "Her şey tamam · Şu anda ilgilenmeniz gereken bir iş öğesi
+         * yok" — a green tick, in the largest type on the page, over a board that had just lost a source. The
+         * banner and the tab badges were honest and the one element the reader actually looks at was not.
+         *
+         * So the "nothing here" states are answered BEFORE the per-tab ones while a source is missing: what is
+         * true is that this list could not be completed, not that there is nothing in it.
+         */
+        if (hasUnavailableSources()) {
+            return `<div class="wcn-empty">
+                <i class="bx bx-cloud-snow"></i>
+                <h5>${esc(t('EmptyPartialBoardTitle'))}</h5>
+                <p>${esc(t('EmptyPartialBoardDesc'))}</p>
+            </div>`;
+        }
         const byTab = {
             inbox: ['EmptyInboxZeroTitle', 'EmptyInboxZeroDesc', 'bx-check-circle'],
             havuz: ['EmptyPoolTitle', 'EmptyPoolDesc', 'bx-time'],
@@ -6104,8 +6189,8 @@
         const workspace = workspaceToolbar
             + `<div class="wcn-layout-wrap">${mainPanel}${sidePanel}</div>`;
 
-        root.innerHTML = buildHeader() + buildDelegationBanner() + buildTabs() + buildFilterRow()
-            + workspace;
+        root.innerHTML = buildHeader() + buildPartialBoardBanner() + buildDelegationBanner() + buildTabs()
+            + buildFilterRow() + workspace;
         setupTimerTick();
         mountPanelSelect2();
         if (state.view === 'table') { mountWorkCenterDataTable(renderedItems); }
@@ -8927,6 +9012,10 @@
         if (isStale()) { return; }
         if (result.status === api.STATUS.OK) {
             state.items = result.items;
+            // WC-D3 — a PARTIAL board is a success with rows on it, not an error state. The list is kept and the
+            // gap is stated; collapsing this into loadError would throw away rows that did arrive, which is the
+            // very failure the backend change stopped doing.
+            state.unavailableSources = result.unavailableSources || [];
             // Triggers/meetings/notes have no provider yet — they stay empty until one lands (DEC-1).
             state.triggers = [];
             state.meetings = [];
@@ -8934,6 +9023,9 @@
             state.loadState = 'ready';
         } else {
             state.items = [];
+            // Nothing arrived at all, so there is no partial board to qualify — the error state speaks for the
+            // whole read. A stale banner from the previous load would be describing data that is no longer here.
+            state.unavailableSources = [];
             state.loadState = 'error';
             state.loadError = result.status; // forbidden | unauthorized | unavailable | error
         }

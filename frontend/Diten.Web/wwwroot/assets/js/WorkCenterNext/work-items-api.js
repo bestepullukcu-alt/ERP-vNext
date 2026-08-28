@@ -25,11 +25,22 @@
      */
     const SCOPE = { SELF: 'self', TEAM: 'team' };
 
+    /*
+     * The outcome of the REQUEST. One axis, and deliberately only one.
+     *
+     * ⚠ WC-D3 DID NOT ADD A STATUS, AND THAT IS THE DECISION. "The request failed" (UNAVAILABLE) and "the
+     * request succeeded but the board is missing a source" are different facts about different things, and
+     * folding the second into the first would tell the reader "no data" when there IS data — the opposite
+     * mistake to the one being fixed, and just as wrong on screen.
+     *
+     * So a partial board stays STATUS.OK, with rows, and carries `unavailableSources` ALONGSIDE the status.
+     * Completeness is a property of the ANSWER; these five are properties of the CALL.
+     */
     const STATUS = {
         OK: 'ok',
         UNAUTHORIZED: 'unauthorized',   // 401 — no/expired session
         FORBIDDEN: 'forbidden',         // 403 — permission not granted (expected until the MOD-0018 grant)
-        UNAVAILABLE: 'unavailable',     // 503 / network — gateway or Platform down
+        UNAVAILABLE: 'unavailable',     // 503 / network — gateway or Platform down; NOTHING arrived
         ERROR: 'error'
     };
 
@@ -136,11 +147,44 @@
         return { items, errors };
     };
 
-    /* Unwrap the Response<T> envelope the Platform API returns. */
+    /*
+     * Unwrap the Response<T> envelope the Platform API returns.
+     *
+     * ⚠ THE ENVELOPE'S `data` IS NO LONGER THE LIST. Since WC-D3 it is a BOARD — `{ items, unavailableSources }`
+     * — because a board that is missing a source has to be able to say so, and Response<T> carries no warning
+     * field (widening the shared envelope to fix one endpoint was the rejected alternative).
+     *
+     * The older shapes are still read: a bare array, and `data` as an array. Not defensive decoration — the
+     * fixture path and this module's own tests feed raw arrays, and a proxy answering an older Platform must not
+     * render an empty page.
+     */
     const unwrap = (payload) => {
         if (Array.isArray(payload)) { return payload; }
         if (payload && Array.isArray(payload.data)) { return payload.data; }
+        if (payload && payload.data && Array.isArray(payload.data.items)) { return payload.data.items; }
         return [];
+    };
+
+    /*
+     * WC-D3 — WHICH SOURCES ARE MISSING FROM THIS ANSWER, and why.
+     *
+     * Codes only on the wire (`{ providerCode, reasonCode }`); the sentence is resolved from the 7-language resx
+     * at the render site. An empty list is the load-bearing state: it means every bound provider answered.
+     *
+     * An entry without a `providerCode` is dropped rather than rendered as a blank name — but an entry with an
+     * unrecognised `reasonCode` is KEPT, because "a source is missing and we cannot say why" is still true and
+     * still worth showing. Dropping it would restore the silence this whole slice removes.
+     */
+    const unwrapUnavailable = (payload) => {
+        const raw = payload && payload.data && Array.isArray(payload.data.unavailableSources)
+            ? payload.data.unavailableSources
+            : [];
+        return raw
+            .filter((entry) => entry && entry.providerCode)
+            .map((entry) => ({
+                providerCode: String(entry.providerCode),
+                reasonCode: entry.reasonCode ? String(entry.reasonCode) : null
+            }));
     };
 
     const classify = (httpStatus) => {
@@ -170,22 +214,36 @@
             });
         } catch (_) {
             // Network-level failure: treat as dependency-unavailable so the shell shows Retry, not a crash.
-            return { status: STATUS.UNAVAILABLE, httpStatus: 0, items: [], errors: [] };
+            return { status: STATUS.UNAVAILABLE, httpStatus: 0, items: [], errors: [], unavailableSources: [] };
         }
 
         if (!response.ok) {
-            return { status: classify(response.status), httpStatus: response.status, items: [], errors: [] };
+            return {
+                status: classify(response.status), httpStatus: response.status,
+                items: [], errors: [], unavailableSources: []
+            };
         }
 
         let payload = null;
         try {
             payload = await response.json();
         } catch (_) {
-            return { status: STATUS.ERROR, httpStatus: response.status, items: [], errors: [] };
+            return {
+                status: STATUS.ERROR, httpStatus: response.status,
+                items: [], errors: [], unavailableSources: []
+            };
         }
 
         const mapped = mapPayload(unwrap(payload));
-        return { status: STATUS.OK, httpStatus: response.status, items: mapped.items, errors: mapped.errors };
+        return {
+            status: STATUS.OK,
+            httpStatus: response.status,
+            items: mapped.items,
+            errors: mapped.errors,
+            // Carried on the SUCCESS path on purpose: a partial board is a 200 with rows on it, not an error
+            // state. The shell keeps the list AND says what is missing from it.
+            unavailableSources: unwrapUnavailable(payload)
+        };
     };
 
     /*
@@ -228,6 +286,7 @@
         adaptProjection,
         mapPayload,
         unwrap,
+        unwrapUnavailable,
         classify,
         fetchWorkItems
     };

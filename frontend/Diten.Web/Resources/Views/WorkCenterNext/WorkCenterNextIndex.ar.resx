@@ -2136,4 +2136,28 @@
   <data name="SignalSnoozed" xml:space="preserve">
     <value>مؤجَّلة</value>
   </data>
+  <data name="PartialBoardBanner" xml:space="preserve">
+    <value>لم تستجب بعض المصادر — قد تكون هذه القائمة غير مكتملة.</value>
+  </data>
+  <data name="PartialCountHint" xml:space="preserve">
+    <value>لم تستجب بعض المصادر، لذا قد يكون هذا العدد غير مكتمل.</value>
+  </data>
+  <data name="SourceUnavailableTimeout" xml:space="preserve">
+    <value>لم يستجب في الوقت المحدد</value>
+  </data>
+  <data name="SourceUnavailableError" xml:space="preserve">
+    <value>أرجع خطأ</value>
+  </data>
+  <data name="SourceUnavailableUnsupportedVersion" xml:space="preserve">
+    <value>يعلن عن إصدار عقد غير مدعوم</value>
+  </data>
+  <data name="SourceUnavailableUnknown" xml:space="preserve">
+    <value>غير متاح، والسبب غير معروف</value>
+  </data>
+  <data name="EmptyPartialBoardTitle" xml:space="preserve">
+    <value>تعذّر استكمال هذه القائمة</value>
+  </data>
+  <data name="EmptyPartialBoardDesc" xml:space="preserve">
+    <value>لم يستجب مصدر واحد على الأقل، لذا فإن ما يظهر هنا ليس الصورة الكاملة. أعد المحاولة بعد قليل.</value>
+  </data>
 </root>

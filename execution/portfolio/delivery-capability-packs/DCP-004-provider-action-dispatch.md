@@ -83,7 +83,9 @@ against the projection's `claim · accept · start · plan · inquire · submitR
 · return · reassign · complete · cancel · release`. No mapping exists between
 them, and the Task Center's own manifest declares `Actions: []`.
 
-### D3 — How is aggregation protected?
+### D3 — How is aggregation protected? — **CLOSED 2026-08-28**
+
+**Was:**
 
 ```csharp
 // GetMyWorkItemsHandler.cs:45
@@ -94,20 +96,59 @@ foreach (var provider in _providers)
 }
 ```
 
-**Sequential. No `try`. No timeout. No partial result.**
+**Sequential. No `try`. No timeout. No partial result.** One provider throwing
+propagated out of the handler, so the reader got an error page instead of the rows
+the other provider already had in hand; one provider hanging hung the request,
+because nothing on the path imposes a deadline (Platform API: no request timeout;
+gateway: no `QoSOptions` on any of its 110 routes; the web proxy uses the unnamed
+default client). Both providers are in-process Mongo reads, so none of it showed.
 
-- Platform API: no request timeout configured
-- Gateway: no `QoSOptions` on any of its 110 routes
-- The web proxy uses an unnamed default client — the five-second timeouts in
-  `Program.cs` belong to other typed clients and do not touch this path
+**How it was closed — three pieces, all measurable:**
 
-Both providers today are in-process and read Mongo, so none of this shows. **The
-first network-backed provider is the first one that can be slow or absent**, and
-on that day a delay is added directly to page load, and a failure empties the
-whole board rather than its own rows.
+1. **Per-provider isolation.** Each call now runs inside its own `try` and its own
+   `CancellationTokenSource.CreateLinkedTokenSource(ct)` with a budget from
+   `WorkAggregation:Resilience:ProviderTimeout` (`WorkAggregationResilienceOptions`,
+   default 10 s, bound in `Diten.Platform.Infrastructure/DependencyInjection.cs`).
+   A failure or timeout in one provider cannot reach another. The caller's OWN
+   cancellation still propagates — a reader who navigated away must not produce a
+   "the tasks source failed" report about a request nobody is waiting for.
 
-⚠ There is one skip, and it is not error tolerance: an unsupported contract
-version is skipped silently. No test covers failure or timeout.
+   ⚠ **Still sequential, deliberately.** Providers are registered `Scoped`;
+   calling them concurrently would share one DI scope and its Mongo session across
+   threads — a separate decision with a separate hazard. The cost is that the worst
+   case is N × the budget, recorded as **BL-303** and to be revisited when the
+   provider count grows.
+
+2. **The result is honest.** The handler returns
+   `Response<WorkItemBoardDto>` where `WorkItemBoardDto = { Items,
+   UnavailableSources[] }`, and each entry is `{ providerCode, reasonCode }` with
+   `reasonCode ∈ TIMEOUT | ERROR | UNSUPPORTED_VERSION`. Codes only — the sentence
+   comes from the 7-language resx on the frontend (the error-code bridge rule).
+   `Response<T>` itself was NOT widened: it is shared by every feature in the
+   service, and the completeness of one read is a property of that read.
+
+   ⚠ **The version skip is no longer silent.** The bare `continue` on an
+   unsupported `ProviderContractVersion` was the small version of this same defect —
+   a source leaving the board while the board looked whole. It is still not
+   projected (a mis-projected item is worse than a missing one), but it is now
+   reported as `UNSUPPORTED_VERSION`.
+
+3. **The screen says it.** `WorkCenterNext/app.js` draws a warning strip above the
+   board when `unavailableSources` is non-empty, naming each source and its reason,
+   and the tab count badges carry a `+` and are drawn EVEN AT ZERO while a source is
+   missing — a count over a partial board is a floor, not a total, and a confident
+   zero has been misread on this surface before.
+
+**Guards (tests, not sentences)** — `GetMyWorkItemsHandlerTests`:
+one provider throws → the other's items still return, source listed as `ERROR` ·
+one provider times out → same, listed as `TIMEOUT` (proved with an already-spent
+budget and a token-respecting provider, so the test costs no wall-clock time) ·
+unsupported version → listed as `UNSUPPORTED_VERSION`, never silent · both
+providers healthy → `UnavailableSources` empty and no strip drawn. Plus the
+board-envelope guards in `workcenter-next-work-items-api.test.js`.
+
+⚠ What D3 does NOT close: there is still no timeout at the API, gateway or web-proxy
+layer. The budget enforced here is the provider call's, inside the handler.
 
 ### D4 — Does the gateway allow writes?
 
@@ -152,7 +193,7 @@ D3 is not last. It is the one that fails silently, on someone else's screen,
 months after the change that caused it.
 
 ```
-1. D3  protect aggregation      — before any network provider exists
+1. D3  protect aggregation      — DONE (2026-08-28)
 2. D1  address                  — a security decision, not plumbing
 3. D2  action on the wire       — endpoint + method + permission
 4. D4  gateway                  — reverses a written position; say so
