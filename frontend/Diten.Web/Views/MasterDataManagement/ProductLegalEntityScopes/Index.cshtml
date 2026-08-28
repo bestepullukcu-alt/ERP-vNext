@@ -1,0 +1,29 @@
+@using Diten.Web.Views.MasterDataManagement.ProductLegalEntityScopes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProductLegalEntityScopesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["ProductLegalEntityScopesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canConfigure = ViewData["CanConfigureProductScope"] as bool? == true;
+    var canReplace = ViewData["CanReplaceProductScope"] as bool? == true;
+    var canEnd = ViewData["CanEndProductScope"] as bool? == true;
+}
+@* <partial name="_Filter" /> *@
+<partial name="~/Views/MasterDataManagement/ProductLegalEntityScopes/_Filter.cshtml" />
+<div class="mb-3" data-can-configure="@canConfigure.ToString().ToLowerInvariant()" data-can-replace="@canReplace.ToString().ToLowerInvariant()" data-can-end="@canEnd.ToString().ToLowerInvariant()">
+    <h5 class="mb-0">@Localizer["ProductLegalEntityScopesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+<partial name="~/Views/MasterDataManagement/ProductLegalEntityScopes/_DataTable.cshtml" />
+@* id="offcanvasDetailsPreview" is rendered by the real details partial. *@
+<partial name="~/Views/MasterDataManagement/ProductLegalEntityScopes/_DetailsQuickView.cshtml" />
+@if (canConfigure || canReplace || canEnd)
+{
+    <partial name="~/Views/MasterDataManagement/ProductLegalEntityScopes/_CreateEditOffcanvas.cshtml" />
+}
+@section Scripts {
+    @* <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/MasterDataManagement/ProductLegalEntityScopes/_IndexL10n.cshtml" />
+    <script src="~/assets/js/MasterDataManagement/ProductLegalEntityScopes/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/MasterDataManagement/ProductLegalEntityScopes/index.js" asp-append-version="true"></script>
+}

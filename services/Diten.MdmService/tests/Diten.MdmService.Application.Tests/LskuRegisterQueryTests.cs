@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts.ReferenceData;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
@@ -36,7 +37,9 @@ public sealed class LskuRegisterQueryTests
     [Fact]
     public async Task List_uses_one_lsku_page_and_one_gsku_batch_with_exact_projection()
     {
-        var gsku = Gsku("GS-001");
+        var product = Product();
+        var revision = Revision(product.Id);
+        var gsku = Gsku("GS-001", revision.Id);
         var lskus = new LskuRepositoryStub(
             new Lsku
             {
@@ -59,7 +62,18 @@ public sealed class LskuRegisterQueryTests
                 CreatedAt = DateTimeOffset.UtcNow
             });
         var gskus = new GskuRepositoryStub(gsku);
-        var handler = new GetLskusHandler(lskus, gskus);
+        var tenantContext = new TenantContext();
+        tenantContext.SetTenant(Guid.NewGuid());
+        var access = ProductLegalEntityScopeTestFixture.Preparation(tenantContext);
+        var handler = new GetLskusHandler(
+            lskus,
+            gskus,
+            new RevisionRepositoryStub(revision),
+            new ProductRepositoryStub(product),
+            access.Rollouts,
+            access.Policies,
+            access.Candidates,
+            tenantContext);
 
         var response = await handler.Handle(new GetLskusQuery
         {
@@ -83,7 +97,18 @@ public sealed class LskuRegisterQueryTests
     public async Task Missing_detail_returns_non_disclosing_404_without_parent_lookup()
     {
         var gskus = new GskuRepositoryStub();
-        var response = await new GetLskuByIdHandler(new LskuRepositoryStub(), gskus)
+        var tenantContext = new TenantContext();
+        tenantContext.SetTenant(Guid.NewGuid());
+        var access = ProductLegalEntityScopeTestFixture.Preparation(tenantContext);
+        var response = await new GetLskuByIdHandler(
+                new LskuRepositoryStub(),
+                gskus,
+                new RevisionRepositoryStub(),
+                new ProductRepositoryStub(),
+                access.Rollouts,
+                access.Policies,
+                access.Candidates,
+                tenantContext)
             .Handle(new GetLskuByIdQuery(Guid.NewGuid()), CancellationToken.None);
 
         Assert.False(response.IsSuccessful);

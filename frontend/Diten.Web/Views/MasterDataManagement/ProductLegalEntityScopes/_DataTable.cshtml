@@ -1,0 +1,22 @@
+@using Diten.Web.Views.MasterDataManagement.ProductLegalEntityScopes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProductLegalEntityScopesIndex> Localizer
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+    <div class="card-datatable table-responsive">
+        <table id="dt-product-legal-entity-scopes" class="datatables-product-legal-entity-scopes table border-top" data-dt-standard="v2">
+            <thead><tr>
+                <th></th>
+                <th>@Localizer["CanonicalCode"]</th>
+                <th class="all">@Localizer["GlobalProduct"]</th>
+                <th>@Localizer["LifecycleStatus"]</th>
+                <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+            </tr></thead>
+        </table>
+    </div>
+</div>

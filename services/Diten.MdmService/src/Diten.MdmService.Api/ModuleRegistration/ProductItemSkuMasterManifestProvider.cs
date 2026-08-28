@@ -24,13 +24,19 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
     private const string ProductAbbreviationsCorrect = "mdm.product-abbreviations.correct";
     private const string ProductAbbreviationsRetire = "mdm.product-abbreviations.retire";
     private const string ProductAbbreviationsAudit = "mdm.product-abbreviations.audit";
+    private const string ProductScopesRead = "mdm.product-legal-entity-scopes.read";
+    private const string ProductScopesConfigure = "mdm.product-legal-entity-scopes.configure";
+    private const string ProductScopesReplace = "mdm.product-legal-entity-scopes.replace";
+    private const string ProductScopesEnd = "mdm.product-legal-entity-scopes.end";
+    private const string ProductScopeRolloutActivate = "mdm.product-legal-entity-scope-rollout.activate";
+    private const string ProductScopeRolloutRollback = "mdm.product-legal-entity-scope-rollout.rollback";
 
     public ModuleManifestDocument GetManifest() =>
         new(
             ModuleCode: "product-item-sku-master",
             ModuleName: "ProductItemSkuMaster",
             DisplayName: "Product / Item / SKU Master",
-            Domain: "MasterDataManagement",
+            Domain: "MASTER-DATA-MANAGEMENT",
             Service: "DitenMdmService",
             ModuleVersion: "1.0.0",
             IsTenantAssignable: true,
@@ -112,6 +118,24 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                         new ModuleManifestAction("CORRECT", "Correct", ProductAbbreviationsCorrect, "RowAction", 60, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("RETIRE", "Retire", ProductAbbreviationsRetire, "RowAction", 70, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("VIEW_AUDIT", "View Audit", ProductAbbreviationsAudit, "RowAction", 80, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
+                    ]),
+                new ModuleManifestPage(
+                    PageCode: "PRODUCT_LEGAL_ENTITY_SCOPES",
+                    DisplayName: "Product Legal Entity Scopes",
+                    RoutePath: "/MasterDataManagement/ProductLegalEntityScopes",
+                    RequiredPermission: ProductScopesRead,
+                    ParentPageCode: null,
+                    IsNavigationVisible: false,
+                    PageType: "List",
+                    SortOrder: 60,
+                    Actions:
+                    [
+                        new ModuleManifestAction("VIEW_DETAILS", "View Details", ProductScopesRead, "RowAction", 10, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("CONFIGURE", "Configure", ProductScopesConfigure, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("REPLACE", "Replace", ProductScopesReplace, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("END", "End", ProductScopesEnd, "RowAction", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("ACTIVATE_ROLLOUT", "Activate Rollout", ProductScopeRolloutActivate, "Operator", 50, IsDangerous: true, IsToolbarAction: false, IsRowAction: false),
+                        new ModuleManifestAction("ROLLBACK_ROLLOUT", "Rollback Rollout", ProductScopeRolloutRollback, "Operator", 60, IsDangerous: true, IsToolbarAction: false, IsRowAction: false)
                     ])
             ],
             Icon: "bx-package",

@@ -3,6 +3,7 @@ using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
 namespace Diten.MdmService.Persistence.Repositories;
@@ -10,12 +11,14 @@ namespace Diten.MdmService.Persistence.Repositories;
 public sealed class GskuRepository : IGskuRepository
 {
     private readonly IMongoCollection<Gsku> _gskus;
+    private readonly IMongoCollection<BsonDocument> _documents;
     private readonly IMongoCollection<CodeReservation> _reservations;
     private readonly Guid _tenantId;
 
     public GskuRepository(IMongoDatabase database, ITenantContext tenantContext)
     {
         _gskus = database.GetCollection<Gsku>("mdm_gskus");
+        _documents = database.GetCollection<BsonDocument>("mdm_gskus");
         _reservations = database.GetCollection<CodeReservation>("mdm_code_reservations");
         _tenantId = tenantContext.TenantId;
         EnsureIndexes();
@@ -64,6 +67,104 @@ public sealed class GskuRepository : IGskuRepository
             .Limit(pageSize)
             .ToListAsync(cancellationToken);
         return new(items, totalCount);
+    }
+
+    public async Task<GskuPage> GetEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string? canonicalCodeSearch,
+        bool referenceableOnly,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var match = new BsonDocument
+        {
+            { nameof(Gsku.TenantId), ProductLegalEntityScopeAggregation.GuidBson(_tenantId) },
+            { nameof(Gsku.IsDeleted), false }
+        };
+        if (referenceableOnly)
+        {
+            match[nameof(Gsku.LifecycleStatus)] = new BsonDocument("$in", new BsonArray
+            {
+                (int)ProductIdentityLifecycleStatus.Draft,
+                (int)ProductIdentityLifecycleStatus.IdentityApproved
+            });
+        }
+        if (!string.IsNullOrWhiteSpace(canonicalCodeSearch))
+        {
+            match[nameof(Gsku.CanonicalCode)] = new BsonRegularExpression(
+                "^" + System.Text.RegularExpressions.Regex.Escape(canonicalCodeSearch));
+        }
+
+        var pipeline = new List<BsonDocument>
+        {
+            new("$match", match),
+            new("$lookup", new BsonDocument
+            {
+                { "from", "mdm_product_definition_revisions" },
+                { "let", new BsonDocument("revisionId", "$" + nameof(Gsku.ProductDefinitionRevisionId)) },
+                { "pipeline", new BsonArray
+                    {
+                        new BsonDocument("$match", new BsonDocument("$expr", new BsonDocument("$and", new BsonArray
+                        {
+                            new BsonDocument("$eq", new BsonArray
+                            {
+                                "$" + nameof(ProductDefinitionRevision.TenantId),
+                                ProductLegalEntityScopeAggregation.GuidBson(_tenantId)
+                            }),
+                            new BsonDocument("$eq", new BsonArray
+                            {
+                                "$" + nameof(ProductDefinitionRevision.IsDeleted),
+                                false
+                            }),
+                            new BsonDocument("$eq", new BsonArray { "$_id", "$$revisionId" })
+                        })))
+                    }
+                },
+                { "as", "ScopeRevisions" }
+            }),
+            new("$match", new BsonDocument("$expr", new BsonDocument("$eq", new BsonArray
+            {
+                new BsonDocument("$size", "$ScopeRevisions"),
+                1
+            }))),
+            new("$set", new BsonDocument(
+                ProductLegalEntityScopeAggregation.ResolvedGlobalProductIdField,
+                new BsonDocument("$getField", new BsonDocument
+                {
+                    { "field", nameof(ProductDefinitionRevision.GlobalProductId) },
+                    { "input", new BsonDocument("$arrayElemAt", new BsonArray { "$ScopeRevisions", 0 }) }
+                })))
+        };
+        pipeline.AddRange(ProductLegalEntityScopeAggregation.CreateAccessStages(
+            _tenantId,
+            effectiveCandidateLegalEntityIds,
+            serverNowUtc));
+        pipeline.Add(ProductLegalEntityScopeAggregation.CleanupStage("ScopeRevisions"));
+        pipeline.Add(new BsonDocument("$sort", new BsonDocument
+        {
+            { nameof(Gsku.CanonicalCode), 1 },
+            { "_id", 1 }
+        }));
+        pipeline.Add(new BsonDocument("$facet", new BsonDocument
+        {
+            { "items", new BsonArray
+                {
+                    new BsonDocument("$skip", (pageNumber - 1) * pageSize),
+                    new BsonDocument("$limit", pageSize)
+                }
+            },
+            { "summary", new BsonArray { new BsonDocument("$count", "total") } }
+        }));
+
+        var result = await _documents.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync(cancellationToken);
+        var items = result?["items"].AsBsonArray
+            .Select(item => BsonSerializer.Deserialize<Gsku>(item.AsBsonDocument))
+            .ToArray() ?? [];
+        var total = result?["summary"].AsBsonArray.FirstOrDefault()?.AsBsonDocument["total"].ToInt64() ?? 0;
+        return new(items, total);
     }
 
     public async Task<GskuPage> GetPageAsync(

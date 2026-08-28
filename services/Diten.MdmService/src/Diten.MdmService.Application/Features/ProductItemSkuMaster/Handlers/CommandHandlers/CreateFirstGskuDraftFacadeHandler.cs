@@ -1,6 +1,9 @@
+using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Contracts.ReferenceData;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Commands;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
@@ -19,6 +22,7 @@ public sealed class CreateFirstGskuDraftFacadeHandler
     private readonly IVerifiedGskuReferenceResolver _resolver;
     private readonly IProductIdentityActorContext _actorContext;
     private readonly IMediator _mediator;
+    private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
 
     public CreateFirstGskuDraftFacadeHandler(
         IGlobalProductRepository globalProducts,
@@ -27,7 +31,11 @@ public sealed class CreateFirstGskuDraftFacadeHandler
         IGskuRepository gskus,
         IVerifiedGskuReferenceResolver resolver,
         IProductIdentityActorContext actorContext,
-        IMediator mediator)
+        IMediator mediator,
+        IProductLegalEntityScopeRolloutStateRepository rolloutStates,
+        IProductLegalEntityScopePolicyRepository policies,
+        ProductLegalEntityScopeCandidateFacade candidates,
+        ITenantContext tenantContext)
     {
         _globalProducts = globalProducts;
         _reservations = reservations;
@@ -36,6 +44,7 @@ public sealed class CreateFirstGskuDraftFacadeHandler
         _resolver = resolver;
         _actorContext = actorContext;
         _mediator = mediator;
+        _scopeGuard = new(rolloutStates, policies, candidates, tenantContext);
     }
 
     public async Task<Response<ProductItemSkuMasterModels.GskuDraftResponse>> Handle(
@@ -45,6 +54,18 @@ public sealed class CreateFirstGskuDraftFacadeHandler
         var input = request.Request;
         var operationId = request.OperationId.Trim().ToUpperInvariant();
         var commandId = $"GSKU:{operationId}";
+        var scope = await _scopeGuard.ResolveContextAsync("mdm.gskus.create", cancellationToken);
+        if (!scope.IsSuccessful)
+        {
+            return Fail(scope.FailureCode!, scope.StatusCode);
+        }
+
+        var decision = await _scopeGuard.EvaluateAsync(scope.Context!, input.GlobalProductId, cancellationToken);
+        if (!decision.Allowed)
+        {
+            return Fail("PARENT_NOT_FOUND", 404);
+        }
+
         var parent = await _globalProducts.GetByIdAsync(input.GlobalProductId, cancellationToken);
         if (parent is null)
         {
@@ -55,6 +76,15 @@ public sealed class CreateFirstGskuDraftFacadeHandler
             and not ProductIdentityLifecycleStatus.IdentityApproved)
         {
             return Fail("PARENT_NOT_REFERENCEABLE", 409);
+        }
+
+        var existingScopeFailure = await PreflightExistingCommandScopeAsync(
+            commandId,
+            scope.Context!,
+            cancellationToken);
+        if (existingScopeFailure is not null)
+        {
+            return existingScopeFailure;
         }
 
         var enumeration = await _resolver.EnumerateUomsAsync(cancellationToken);
@@ -151,6 +181,12 @@ public sealed class CreateFirstGskuDraftFacadeHandler
         Guid reservationId,
         CancellationToken cancellationToken)
     {
+        var scopeFailure = await EvaluateParentScopeAsync(input.GlobalProductId, cancellationToken);
+        if (scopeFailure is not null)
+        {
+            return scopeFailure;
+        }
+
         var revision = await _revisions.GetByCreationCommandIdAsync(commandId, cancellationToken);
         var gsku = await _gskus.GetByCreationCommandIdAsync(commandId, cancellationToken);
         var reservation = await _reservations.GetByIdAsync(reservationId, cancellationToken);
@@ -189,6 +225,93 @@ public sealed class CreateFirstGskuDraftFacadeHandler
                 Map(revision, gsku),
                 201)
             : null;
+    }
+
+    private async Task<Response<ProductItemSkuMasterModels.GskuDraftResponse>?> EvaluateParentScopeAsync(
+        Guid globalProductId,
+        CancellationToken cancellationToken)
+    {
+        var scope = await _scopeGuard.ResolveContextAsync("mdm.gskus.create", cancellationToken);
+        if (!scope.IsSuccessful)
+        {
+            return Fail(scope.FailureCode!, scope.StatusCode);
+        }
+
+        var decision = await _scopeGuard.EvaluateAsync(scope.Context!, globalProductId, cancellationToken);
+        return decision.Allowed ? null : Fail("PARENT_NOT_FOUND", 404);
+    }
+
+    private async Task<Response<ProductItemSkuMasterModels.GskuDraftResponse>?> PreflightExistingCommandScopeAsync(
+        string commandId,
+        ProductLegalEntityScopeConsumerContext scopeContext,
+        CancellationToken cancellationToken)
+    {
+        var revision = await _revisions.GetByCreationCommandIdAsync(commandId, cancellationToken);
+        var gsku = await _gskus.GetByCreationCommandIdAsync(commandId, cancellationToken);
+        if (revision is null && gsku is null)
+        {
+            return null;
+        }
+
+        if (revision?.IsDeleted == true || gsku?.IsDeleted == true)
+        {
+            return Fail("PARENT_NOT_FOUND", 404);
+        }
+
+        if (revision is not null)
+        {
+            var revisionScopeFailure = await EvaluateExistingRevisionScopeAsync(
+                revision,
+                scopeContext,
+                cancellationToken);
+            if (revisionScopeFailure is not null)
+            {
+                return revisionScopeFailure;
+            }
+        }
+
+        ProductDefinitionRevision? gskuRevision = null;
+        if (gsku is not null)
+        {
+            gskuRevision = await _revisions.GetByIdAsync(gsku.ProductDefinitionRevisionId, cancellationToken);
+            if (gskuRevision is null)
+            {
+                return Fail("PARENT_NOT_FOUND", 404);
+            }
+
+            var gskuScopeFailure = await EvaluateExistingRevisionScopeAsync(
+                gskuRevision,
+                scopeContext,
+                cancellationToken);
+            if (gskuScopeFailure is not null)
+            {
+                return gskuScopeFailure;
+            }
+        }
+
+        return revision is not null && gskuRevision is not null && revision.Id != gskuRevision.Id
+            ? Fail("CREATION_COMMAND_PAIR_CONFLICT", 409)
+            : null;
+    }
+
+    private async Task<Response<ProductItemSkuMasterModels.GskuDraftResponse>?> EvaluateExistingRevisionScopeAsync(
+        ProductDefinitionRevision revision,
+        ProductLegalEntityScopeConsumerContext scopeContext,
+        CancellationToken cancellationToken)
+    {
+        if (revision.IsDeleted)
+        {
+            return Fail("PARENT_NOT_FOUND", 404);
+        }
+
+        var product = await _globalProducts.GetByIdAsync(revision.GlobalProductId, cancellationToken);
+        if (product is null)
+        {
+            return Fail("PARENT_NOT_FOUND", 404);
+        }
+
+        var decision = await _scopeGuard.EvaluateAsync(scopeContext, product.Id, cancellationToken);
+        return decision.Allowed ? null : Fail("PARENT_NOT_FOUND", 404);
     }
 
     private static ProductItemSkuMasterModels.GskuDraftResponse Map(

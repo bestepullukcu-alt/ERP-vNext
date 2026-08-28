@@ -17,6 +17,10 @@ public interface IAuditIntentDeliveryRepository
         TimeSpan leaseDuration,
         CancellationToken cancellationToken = default);
 
+    Task<AuditIntentClaimedPayload?> ReadClaimedPayloadAsync(
+        AuditIntentClaim claim,
+        CancellationToken cancellationToken = default);
+
     Task<bool> MarkRetryableFailureAsync(
         AuditIntentClaim claim,
         TimeSpan retryDelay,
@@ -31,6 +35,12 @@ public interface IAuditIntentDeliveryRepository
     Task<bool> MarkDeliveredAsync(
         AuditIntentClaim claim,
         AuditIntentAcknowledgement acknowledgement,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> AcknowledgeAndCompactAsync(
+        AuditIntentClaim claim,
+        AuditIntentAcknowledgement acknowledgement,
+        string compactReceiptReference,
         CancellationToken cancellationToken = default);
 
     Task<bool> CompactDeliveredAsync(
