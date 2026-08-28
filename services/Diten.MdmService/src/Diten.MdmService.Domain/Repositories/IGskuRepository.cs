@@ -14,6 +14,15 @@ public interface IGskuRepository
         int pageSize,
         string? canonicalCodeSearch,
         CancellationToken cancellationToken = default);
+    Task<GskuPage> GetEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string? canonicalCodeSearch,
+        bool referenceableOnly,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("GSKU_LEGAL_ENTITY_SCOPE_READ_CONTRACT_NOT_IMPLEMENTED");
     Task<GskuPage> GetPageAsync(
         int pageNumber,
         int pageSize,

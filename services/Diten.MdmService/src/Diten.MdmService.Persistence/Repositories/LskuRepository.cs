@@ -4,6 +4,7 @@ using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Domain.ValueObjects;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
 namespace Diten.MdmService.Persistence.Repositories;
@@ -12,6 +13,7 @@ public sealed class LskuRepository : ILskuRepository
 {
     private const string CollectionName = "mdm_lskus";
     private readonly IMongoCollection<Lsku> _lskus;
+    private readonly IMongoCollection<BsonDocument> _documents;
     private readonly IMongoCollection<Gsku> _gskus;
     private readonly IMongoCollection<CodeReservation> _reservations;
     private readonly Guid _tenantId;
@@ -19,6 +21,7 @@ public sealed class LskuRepository : ILskuRepository
     public LskuRepository(IMongoDatabase database, ITenantContext tenantContext)
     {
         _lskus = database.GetCollection<Lsku>(CollectionName);
+        _documents = database.GetCollection<BsonDocument>(CollectionName);
         _gskus = database.GetCollection<Gsku>("mdm_gskus");
         _reservations = database.GetCollection<CodeReservation>("mdm_code_reservations");
         _tenantId = tenantContext.TenantId;
@@ -59,6 +62,63 @@ public sealed class LskuRepository : ILskuRepository
             .Limit(pageSize)
             .ToListAsync(cancellationToken);
         return new(items, totalCount);
+    }
+
+    public async Task<LskuPage> GetEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string? search,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var match = new BsonDocument
+        {
+            { nameof(Lsku.TenantId), ProductLegalEntityScopeAggregation.GuidBson(_tenantId) },
+            { nameof(Lsku.IsDeleted), false }
+        };
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var escaped = System.Text.RegularExpressions.Regex.Escape(search);
+            match["$or"] = new BsonArray
+            {
+                new BsonDocument(nameof(Lsku.CanonicalCode), new BsonRegularExpression("^" + escaped)),
+                new BsonDocument(nameof(Lsku.MarketCode), new BsonRegularExpression("^" + escaped))
+            };
+        }
+
+        var pipeline = new List<BsonDocument> { new("$match", match) };
+        pipeline.AddRange(ProductLegalEntityScopeAggregation.CreateGskuRevisionResolutionStages(
+            _tenantId,
+            "$" + nameof(Lsku.GskuId)));
+        pipeline.AddRange(ProductLegalEntityScopeAggregation.CreateAccessStages(
+            _tenantId,
+            effectiveCandidateLegalEntityIds,
+            serverNowUtc));
+        pipeline.Add(ProductLegalEntityScopeAggregation.CleanupStage("ScopeGskus", "ScopeRevisions"));
+        pipeline.Add(new BsonDocument("$sort", new BsonDocument
+        {
+            { nameof(Lsku.CanonicalCode), 1 },
+            { nameof(Lsku.MarketCode), 1 },
+            { "_id", 1 }
+        }));
+        pipeline.Add(new BsonDocument("$facet", new BsonDocument
+        {
+            { "items", new BsonArray
+                {
+                    new BsonDocument("$skip", (pageNumber - 1) * pageSize),
+                    new BsonDocument("$limit", pageSize)
+                }
+            },
+            { "summary", new BsonArray { new BsonDocument("$count", "total") } }
+        }));
+
+        var result = await _documents.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync(cancellationToken);
+        var items = result?["items"].AsBsonArray
+            .Select(item => BsonSerializer.Deserialize<Lsku>(item.AsBsonDocument))
+            .ToArray() ?? [];
+        var total = result?["summary"].AsBsonArray.FirstOrDefault()?.AsBsonDocument["total"].ToInt64() ?? 0;
+        return new(items, total);
     }
 
     public async Task<Lsku?> GetByCreationCommandIdAsync(

@@ -11,5 +11,10 @@ public enum ProductAuditOperation
     GskuDraftCreated = 7,
     GskuDraftUpdated = 8,
     FinishedGoodDraftCreated = 9,
-    LskuDraftCreated = 10
+    LskuDraftCreated = 10,
+    ProductLegalEntityScopePolicyCreated = 11,
+    ProductLegalEntityScopePolicyReplaced = 12,
+    ProductLegalEntityScopePolicyEnded = 13,
+    ProductLegalEntityScopeEnforcementActivated = 14,
+    ProductLegalEntityScopeEnforcementSuspended = 15
 }

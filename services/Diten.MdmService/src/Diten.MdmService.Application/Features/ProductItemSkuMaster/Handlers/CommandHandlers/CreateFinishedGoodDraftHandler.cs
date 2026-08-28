@@ -2,7 +2,9 @@ using System.Security.Cryptography;
 using System.Text;
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Commands;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
@@ -17,21 +19,32 @@ public sealed class CreateFinishedGoodDraftHandler
     private readonly ICodeReservationRepository _reservations;
     private readonly IFinishedGoodRepository _finishedGoods;
     private readonly IGskuRepository _gskus;
+    private readonly IProductDefinitionRevisionRepository _revisions;
+    private readonly IGlobalProductRepository _globalProducts;
     private readonly ITenantContext _tenantContext;
     private readonly IProductIdentityActorContext _actorContext;
+    private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
 
     public CreateFinishedGoodDraftHandler(
         ICodeReservationRepository reservations,
         IFinishedGoodRepository finishedGoods,
         IGskuRepository gskus,
+        IProductDefinitionRevisionRepository revisions,
+        IGlobalProductRepository globalProducts,
         ITenantContext tenantContext,
-        IProductIdentityActorContext actorContext)
+        IProductIdentityActorContext actorContext,
+        IProductLegalEntityScopeRolloutStateRepository rolloutStates,
+        IProductLegalEntityScopePolicyRepository policies,
+        ProductLegalEntityScopeCandidateFacade candidates)
     {
         _reservations = reservations;
         _finishedGoods = finishedGoods;
         _gskus = gskus;
+        _revisions = revisions;
+        _globalProducts = globalProducts;
         _tenantContext = tenantContext;
         _actorContext = actorContext;
+        _scopeGuard = new(rolloutStates, policies, candidates, tenantContext);
     }
 
     public async Task<Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>> Handle(
@@ -42,9 +55,26 @@ public sealed class CreateFinishedGoodDraftHandler
         ArgumentNullException.ThrowIfNull(request.Request);
         var command = request.Request;
         var commandId = command.IdempotencyKey.Trim().ToUpperInvariant();
+        var scope = await _scopeGuard.ResolveContextAsync("mdm.finished-goods.create", cancellationToken);
+        if (!scope.IsSuccessful)
+        {
+            return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail(
+                scope.FailureCode!,
+                scope.StatusCode);
+        }
+
         var replay = await _finishedGoods.GetByCreationCommandIdAsync(commandId, cancellationToken);
         if (replay is not null)
         {
+            var replayScopeFailure = await EvaluateGskuScopeAsync(
+                replay.GskuId,
+                scope.Context!,
+                cancellationToken);
+            if (replayScopeFailure is not null)
+            {
+                return replayScopeFailure;
+            }
+
             if (replay.IsDeleted)
             {
                 return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail(
@@ -83,6 +113,12 @@ public sealed class CreateFinishedGoodDraftHandler
                     replayReservation.BindingState,
                     replayReservation.BindingState == CodeReservationBindingState.PendingIdentityWrite),
                 replayReservation.BindingState == CodeReservationBindingState.Confirmed ? 201 : 202);
+        }
+
+        var scopeFailure = await EvaluateGskuScopeAsync(command.GskuId, scope.Context!, cancellationToken);
+        if (scopeFailure is not null)
+        {
+            return scopeFailure;
         }
 
         var gsku = await _gskus.GetReferenceableByIdAsync(command.GskuId, cancellationToken);
@@ -179,6 +215,11 @@ public sealed class CreateFinishedGoodDraftHandler
 
             if (actual.BindingState == CodeReservationBindingState.Confirmed)
             {
+                scopeFailure = await EvaluateGskuScopeAsync(gsku.Id, cancellationToken);
+                if (scopeFailure is not null)
+                {
+                    return scopeFailure;
+                }
                 return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Success(
                     BuildDto(createResult.FinishedGood, gsku.CanonicalCode, actual.BindingState, false),
                     201);
@@ -186,6 +227,11 @@ public sealed class CreateFinishedGoodDraftHandler
 
             if (actual.BindingState == CodeReservationBindingState.PendingIdentityWrite)
             {
+                scopeFailure = await EvaluateGskuScopeAsync(gsku.Id, cancellationToken);
+                if (scopeFailure is not null)
+                {
+                    return scopeFailure;
+                }
                 return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Success(
                     BuildDto(createResult.FinishedGood, gsku.CanonicalCode, actual.BindingState, true),
                     202);
@@ -196,9 +242,51 @@ public sealed class CreateFinishedGoodDraftHandler
                 500);
         }
 
+        scopeFailure = await EvaluateGskuScopeAsync(gsku.Id, cancellationToken);
+        if (scopeFailure is not null)
+        {
+            return scopeFailure;
+        }
+
         return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Success(
             BuildDto(createResult.FinishedGood, gsku.CanonicalCode, CodeReservationBindingState.Confirmed, false),
             201);
+    }
+
+    private async Task<Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>?> EvaluateGskuScopeAsync(
+        Guid gskuId,
+        ProductLegalEntityScopeConsumerContext scopeContext,
+        CancellationToken cancellationToken)
+    {
+        var gsku = await _gskus.GetByIdAsync(gskuId, cancellationToken);
+        var revision = gsku is null
+            ? null
+            : await _revisions.GetByIdAsync(gsku.ProductDefinitionRevisionId, cancellationToken);
+        var product = revision is null
+            ? null
+            : await _globalProducts.GetByIdAsync(revision.GlobalProductId, cancellationToken);
+        if (gsku is null || revision is null || product is null)
+        {
+            return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail(
+                "GSKU_NOT_REFERENCEABLE",
+                404);
+        }
+        var decision = await _scopeGuard.EvaluateAsync(scopeContext, product.Id, cancellationToken);
+        return decision.Allowed
+            ? null
+            : Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail("GSKU_NOT_REFERENCEABLE", 404);
+    }
+
+    private async Task<Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>?> EvaluateGskuScopeAsync(
+        Guid gskuId,
+        CancellationToken cancellationToken)
+    {
+        var scope = await _scopeGuard.ResolveContextAsync("mdm.finished-goods.create", cancellationToken);
+        return scope.IsSuccessful
+            ? await EvaluateGskuScopeAsync(gskuId, scope.Context!, cancellationToken)
+            : Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail(
+                scope.FailureCode!,
+                scope.StatusCode);
     }
 
     private FinishedGood BuildFinishedGood(Guid gskuId, CodeReservation reservation, Guid identityId, string commandId)
@@ -220,6 +308,8 @@ public sealed class CreateFinishedGoodDraftHandler
             CommandId = commandId,
             Sequence = 1,
             TimestampUtc = timestamp,
+            TimestampUtcTicksV1 = timestamp.UtcTicks,
+            TemporalStorageVersion = AuditIntentTemporalStorage.CurrentVersion,
             EvidenceHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(evidence))),
             SnapshotReference = $"FinishedGood/{identityId:N}/0",
             DeliveryState = AuditIntentDeliveryState.Pending,

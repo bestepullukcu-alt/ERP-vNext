@@ -410,6 +410,372 @@ No wildcard expansion from the full-module scope is implied. In particular, `Dit
 `Diten.MdmService.Infrastructure/**`, provider-domain code, configuration, hosted-service registration, workflow,
 frontend and gateway paths are not in this named-step allow-list.
 
+### Named G4 delivery step — `Trusted Durable Audit Intent Delivery Consumer Foundation`
+
+This is the smallest MOD-0290-owned Class C closure for DCP-004 G4. It does not create a new MOD/FU/DCP and does
+not replace the provider-owned `MOD-0021-FU01 Trusted Durable Source Audit Intent Ingestion` contract. It connects
+the already persisted embedded MDM intents to that exact provider contract by reusing
+`IAuditIntentDeliveryRepository` for discover/claim/retry/dead-letter/mark-delivered/compact transitions.
+
+The frozen delivery algorithm is:
+
+1. A read-only partition discovery seam returns a bounded, deterministic page of tenant IDs that currently have an
+   eligible embedded intent in one of the eight already supported aggregate collections. Discovery may not enumerate
+   all tenants or collections without a limit/cursor and may not create a tenant authority.
+2. The worker creates and disposes a fresh DI scope per tenant partition, sets that exact tenant once, resolves the
+   existing tenant-bound `IAuditIntentDeliveryRepository`, and never reuses tenant state across partitions. Scope
+   disposal is the restoration boundary; ambient request tenant state is never overwritten.
+3. The existing repository discovers and atomically claims one intent with its opaque claim token, generation and
+   lease. No parallel claim state or delivery collection is introduced.
+4. The same repository reads the exact immutable claimed payload only when tenant, aggregate locator, intent ID,
+   claim token and claim generation still match. A locator-only work item or claim is not sufficient to build the
+   wire envelope, and an expired/stale claim cannot read payload for delivery.
+5. A dedicated typed client sends the exact `mod-0290.audit-intent.v1` envelope to
+   `POST /api/internal/v1/audit/source-intents/accept`. Its sole Platform authority is the Auth-issued RS256 bearer
+   token required by `MOD-0021-FU01`; it never sends `X-Audit-Source-Credential-Id`,
+   `X-Audit-Source-Credential`, `X-Audit-Source-Audience`, `X-Tenant-Id`, a browser/user JWT or body-derived
+   authority. Those legacy authority headers are forbidden and produce fail-closed `403` before body parsing or
+   repository access.
+6. Only an exact durable-central-`audit_outbox` receipt is success: `201` means new acceptance and `200` means exact
+   replay. Neither response proves final `audit_events` persistence. A same-key payload drift is terminal
+   `409 AUDIT_SOURCE_INTENT_IDEMPOTENCY_CONFLICT`.
+7. A validated `201/200` receipt is projected to the existing `AuditIntentAcknowledgement`, followed by the separately
+   proven fenced `AcknowledgeAndCompactAsync` one-document CAS. The worker may not use the legacy two-call
+   `MarkDeliveredAsync` then `CompactDeliveredAsync` path and may not fabricate, infer or locally mint a central
+   acknowledgement. Claim loss or receipt mismatch fails closed.
+8. Retryable transport/`503`/`504` failures use the existing bounded retry transition; terminal contract/security/
+   mapping/drift failures use the existing dead-letter transition. Cancellation propagates without rewriting state.
+
+Worker activation is default-disabled. When disabled, no tenant discovery, Mongo claim or HTTP call occurs. When
+enabled, configuration validation must fail before the first mutation unless the bounded batch/lease/retry settings,
+Auth and Platform base addresses, exact contract version, Auth client-credential references and approved
+service-identity provider are complete. The Auth client credential is used only to obtain the tenant-bound service
+token; it is never forwarded to Platform and is not a second Platform authority. Secrets and bearer material are
+environment/secret-provider values only and are never committed or logged. The client may not mint a JWT, copy an
+Auth signing secret or reuse an interactive/delegated user token. This planning reconciliation does not enable the
+worker and changes no configuration, secret, process or data.
+
+#### Reconciled service-identity contract — provider code truth, MDM planning boundary
+
+The Phase 1.5 architecture was approved on 2026-08-28 and the provider-side contract is now implemented by
+`MOD-0033-FU02 Service Identity Token Issuance Foundation` plus the `MOD-0021-FU01` R1 integration. This subsection
+still authorizes planning only for the MDM consumer. The service identity is an Auth-issued, tenant-bound, short-lived
+JWT obtained by a dedicated MDM client identity. It carries exactly one `actor_type=service`, one
+`service_name=Diten.MDM`, one non-empty `tenant_id`, and exact
+audience `TRUSTED_AUDIT_SOURCE_INGEST`, plus standard `sub`, `jti`, `iat`, `nbf` and `exp` claims. It has no refresh
+token. TTL is exactly 300 seconds with `iat == nbf`, `exp - nbf == 300` and zero validator clock skew. MDM refreshes
+before expiry and caches only by exact tenant plus audience with single-flight acquisition; bearer material is
+memory-only and is never persisted or logged. Revoking the Auth client or its tenant/audience grant blocks new token
+issuance immediately, while a token already issued before revocation may remain valid only until its fixed expiry;
+the maximum bounded revocation lag is therefore 300 seconds. No refresh-token or online-introspection fallback may
+extend that window.
+
+Auth validates the requested tenant and audience against the dedicated MDM service principal's persisted server-side
+grant before issuing the token. Platform validates only the signed token through the named `TrustedServiceToken`
+scheme using the exact issuer, audience, claims, RS256 algorithm and current/previous public keys. Platform stores no
+second source credential, static MDM tenant allow-list or duplicated tenant grant. Wildcards, default tenants,
+request-body/header authority, interactive user tokens, legacy `X-Audit-*` credential headers and an MDM copy of
+`JwtSettings:Secret` are prohibited.
+
+Master 8.1 assigns API consumer/app registration, credential issuance metadata, quotas and subscriptions to
+`MOD-0033 API Consumer & Credential Management`; AuthService is the token-signing runtime provider. The implemented
+owner contract exposes only `POST /api/internal/v1/auth/service-tokens/issue`, with exact
+`X-Service-Client-Id`/`X-Service-Client-Secret` acquisition headers and a strict body containing only `tenantId` and
+`audience`. Neither body field grants authority. Client identity and tenant/audience grant remain Auth-owned
+persisted facts; MDM only consumes the issued token and never copies their authorization state.
+
+Service JWT signing is asymmetric: Auth holds an RS256 private key and emits `kid`; Platform validates only the
+approved current/previous public keys and exact algorithm. MDM receives neither private nor shared signing material.
+Client-secret rotation and signing-key rotation are independent: active client credential is accepted; previous is
+accepted only strictly before its configured expiry; a revoked client is rejected under both. The integrated
+`MOD-0021-FU01` path uses the separate named `TrustedServiceToken` RS256 validator and leaves the human/default auth
+scheme unchanged. Unknown/expired `kid`, HS256, `none`, algorithm confusion, duplicate/missing claims and wrong
+issuer/audience/service/tenant fail closed. The old symmetric `JwtSecretRotationResolver` and any legacy audit-source
+credential are not authorities for this endpoint.
+
+The MDM identity provider performs at most one forced reacquisition after an authentication failure; it never loops.
+Auth `400/401/403/409/413`, wrong tenant/audience/claims, malformed success or revoked credential fails closed and
+becomes a terminal security outcome after that single attempt. Auth `503`, `504`, `429` and network failure are
+retryable. No Platform request occurs without a validated tenant-bound token. Platform `401` permits the same single
+fresh-token retry; Platform `400/403/404/409/413` or malformed/mismatched receipt is terminal. Provider/validator
+unavailability is exact `503 AUDIT_SOURCE_INTENT_UNAVAILABLE`; expiry of the provider-owned two-second budget is exact
+`504 AUDIT_SOURCE_INTENT_TIMEOUT`; `408/429/5xx` transport outcomes remain retryable. Caller cancellation propagates
+unchanged and does not rewrite delivery state.
+
+The provider integration base must be the verified successor that contains both `MOD-0033-FU02` issuance/RS256
+validation and `MOD-0021-FU01` R1 acceptance integration. Before worker activation, real-Mongo tests must also
+prove `LocalAuditIntent.NextRetryAt` and `LeaseUntil` eligibility/lease queries with their current `DateTimeOffset`
+BSON representation. This step may not silently add a serializer, index or data migration; an unsafe result creates
+a separately owner-approved temporal-storage blocker.
+
+#### G4 measured blocker addendum — atomic acknowledgement/compaction
+
+The 2026-08-28 code-truth measurement proved a crash-recovery hole in the current two-call success path.
+`MarkDeliveredAsync` changes the embedded intent to `Delivered` and clears its lease; `DiscoverEligibleAsync` finds
+only eligible `Pending` or stale `Processing` intents. If the process stops after `MarkDeliveredAsync` and before
+`CompactDeliveredAsync`, a new worker cannot rediscover the delivered intent or reconstruct its opaque claim. The
+original in-memory claim can compact it, but that is not durable crash recovery. G4 runtime activation is therefore
+blocked until the following narrow prerequisite is implemented and proven:
+
+- add one repository operation `AcknowledgeAndCompactAsync` that, in one aggregate-document CAS, validates the exact
+  tenant/aggregate/intent/token/generation/unexpired lease, validates the provider acknowledgement and central
+  idempotency key, removes the claimed embedded intent and appends its immutable receipt;
+- exact replay succeeds only when one matching receipt exists and no matching embedded intent remains; a mismatched
+  receipt, stale claim, duplicate intent/receipt or document-size overflow fails closed without partial mutation;
+- claim token/generation and unexpired lease fence the first mutation. After that mutation has removed the intent,
+  exact replay is bound to the immutable acknowledgement, central idempotency key and receipt reference; it does not
+  persist or revalidate the opaque claim token because replay performs no mutation. A forged/stale claim with any
+  acknowledgement or receipt drift still fails closed;
+- the G4 processor uses only this atomic success operation. Existing retry/dead-letter behavior remains unchanged;
+  the old two-call transition may remain only for regression compatibility and is not used by the worker;
+- no new collection, transaction requirement, parallel receipt state machine or fabricated acknowledgement is
+  introduced. Atomicity is the existing single Mongo aggregate document boundary.
+
+Exact prerequisite runtime allow-list:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IAuditIntentDeliveryRepository.cs` — existing,
+  additive atomic acknowledgement/compaction contract.
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/AuditIntentDeliveryRepository.cs` —
+  existing, one-document fenced CAS and exact replay only.
+
+Exact prerequisite test allow-list:
+
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/AuditIntentDeliveryMongoTests.cs`
+
+This narrow prerequisite does not create the processor or worker. Their exact files and tests remain in the main G4
+allow-list below, where the processor must prove that it calls only `AcknowledgeAndCompactAsync` on successful provider
+acceptance. The prerequisite real `localhost:27017` evidence must prove one-document success and exact replay, one
+receipt, zero remaining intent, no business-version change, stale/expired claim fencing, tenant isolation, receipt
+mismatch and duplicate-intent/receipt rejection, document-budget rejection without partial mutation, and the absence
+of any durable `Delivered`-but-uncompacted intermediate state across all eight aggregate families.
+
+Implementation evidence (2026-08-28): this narrow prerequisite is implemented in its exact two runtime files and one
+test file. The first mutation requires exactly one matching intent identity, `Processing` state, current tenant,
+bound locator, opaque token, generation, unexpired lease, no existing receipt and the complete-document size fence;
+one Mongo update pulls that intent and appends the immutable receipt. Exact replay requires zero matching intents and
+one receipt matching the acknowledgement, central idempotency key, contract version/time and receipt reference.
+Real-Mongo evidence covers all eight aggregate families, concurrent calls, response-loss replay, reclaim fencing,
+duplicate intent/receipt, acknowledgement drift, exact/over-budget documents and tenant isolation. Focused atomic
+tests passed `15/15`; the complete audit-delivery class passed `41/41`; the full MDM suite passed `612/612`, all with
+zero skipped. Persistence Release build passed with zero errors and five pre-existing warnings. This closes only the
+atomic prerequisite; no processor, worker, client, configuration or operation was enabled.
+
+#### G4 measured blocker addendum — temporal scalar-shadow migration and cutover
+
+The same 2026-08-28 real-Mongo diagnostic proved that the default driver stores `DateTimeOffset` values as BSON
+arrays. With `now=2026-08-28T12:00:00Z`, a future retry instant represented as
+`2026-08-28T01:00:00-12:00` matched the raw Mongo `NextRetryAt <= now` predicate even though its actual UTC instant
+was later. The repository's current in-memory second check happened to suppress that returned work item, but the
+database predicate and multikey index are not a correct temporal authority and may over-scan or become unsafe when
+used directly by claim/lease paths. No global/member `DateTimeOffset` serializer may be registered and the existing
+BSON representation may not be rewritten in place without a separately controlled migration.
+
+The required foundation is an additive scalar-shadow cutover. The exact embedded v1 fields are nullable
+`NextRetryAtUtcTicksV1`, nullable `LeaseUntilUtcTicksV1`, nullable `TimestampUtcTicksV1` and nullable
+`TemporalStorageVersion`; a complete current intent has exact version `1`. The version property may not use a CLR
+initializer that would make a legacy BSON document with an absent field deserialize as current. `null` retry/lease is
+itself an exact dual-written state under version 1; `TimestampUtcTicksV1` is always non-null for a current intent.
+
+- `LocalAuditIntent` gains those three versioned UTC-tick shadows; a strict helper recognizes only legacy-only or an
+  exact version-1 triple and rejects half-shadow, mismatch, unknown/newer version, overflow and malformed BSON;
+- every new/changed retry and lease value is dual-written atomically with its scalar shadow. Null is also dual-written;
+  no writer may create a half-shadow row. Every existing producer of a new embedded intent must explicitly create the
+  complete version-1 representation; changing only the delivery repository is insufficient;
+- a default-disabled, explicit one-shot migration scans bounded stable pages across the same eight aggregate
+  collections using a stable collection-ordinal + aggregate `_id` + `IntentId` cursor. Each embedded array element is
+  inspected and updated through an exact-source, tenant-bound optimistic CAS/array-filter or update-pipeline mutation;
+  whole-document `ReplaceOne` is forbidden. Lease/generation/checkpoint/counters live in one dedicated migration-state
+  document. A stale runner may not mutate an aggregate after lease loss, so migration-state fencing and aggregate
+  mutation use the same transaction; the operational runner therefore requires a transaction-capable replica set and
+  rejects unsupported topology before mutation. Normal MDM operation remains supported without running migration;
+- migration completion is not activation. Cutover requires exact read-back, zero legacy/inconsistent rows, the exact
+  scalar index shape/options on every applicable aggregate collection and a separately recorded
+  `CompletionVerified` activation fence. Before that fence, legacy reads remain compatibility-only; after it, worker
+  discovery/claim uses only validated version-1 scalar values and any malformed row fails closed;
+- post-cutover discovery must be bounded in Mongo and ordered by `TimestampUtcTicksV1`, then ordinal `IntentId`.
+  Fetching all matching aggregates from each collection and applying `Take(limit)` only in memory does not satisfy the
+  bounded contract;
+- operational migration invocation, environment facts, rollback and final index activation require a later explicit
+  Local Development approval. Rollback uses the retained legacy fields and compatible dual-written documents; reverse
+  migration and legacy-field/index removal are later stabilization work. Production/Staging remain separately
+  prohibited.
+
+Exact temporal-foundation runtime allow-list:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/LocalAuditIntent.cs` — additive shadow/version fields.
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/AuditIntentTemporalStorage.cs` — strict conversion
+  and compatibility invariants.
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/CodeReservationRepository.cs` — existing
+  embedded-intent producer; exact v1 initialization only.
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/CommandHandlers/CreateGlobalProductDraftHandler.cs` — existing embedded-intent producer; exact v1 initialization only.
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/CommandHandlers/CreateFirstGskuDraftHandler.cs` — existing embedded-intent producer; exact v1 initialization only.
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/CommandHandlers/UpdateGskuDraftHandler.cs` — existing embedded-intent producer; exact v1 initialization only.
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/CommandHandlers/CreateFinishedGoodDraftHandler.cs` — existing embedded-intent producer; exact v1 initialization only.
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/CommandHandlers/CreateLskuDraftHandler.cs` — existing embedded-intent producer; exact v1 initialization only.
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductLegalEntityScopes/ProductLegalEntityScopeAuditIntentFactory.cs` — existing policy/rollout embedded-intent producer; exact v1 initialization only.
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/AuditIntentTemporalMigrationState.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IAuditIntentTemporalMigrationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/AuditIntentTemporalMigrationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/AuditIntentTemporalMigrationRunner.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/AuditIntentDeliveryRepository.cs` —
+  atomic dual-write, compatibility validation, activation fence and scalar query cutover only.
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/DependencyInjection.cs` — narrow registrations only.
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/AuditIntentTemporalMigrationOptions.cs` —
+  Development-only, default-disabled immutable run facts.
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Program.cs` — explicit one-shot CLI seam only; never hosted.
+
+Exact temporal-foundation test allow-list:
+
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/AuditIntentTemporalStorageTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/AuditIntentTemporalMigrationMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/AuditIntentDeliveryMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/DependencyInjectionSmokeTests.cs`
+
+The real-Mongo matrix must cover mixed `+14/UTC/-12` offsets, raw BSON shape, legacy/exact/half/mismatch/newer-version
+rows, every producer above, bounded oldest-first paging with ordinal `IntentId` ties, concurrent dual-write producers,
+per-element CAS preservation of sibling intents and business fields, stale generation fencing, every checkpoint crash
+and replay, zero-loss counters, completion/read-back separation, rollback-compatible reads, wrong same-name index
+rejection, scalar discovery/claim/reclaim query explain evidence, default-disabled/non-hosted DI, standalone-topology
+reject-before-mutation and existing 1 MB policy/rollout document-budget preservation.
+
+MDM retains its distributed repository-owned index model; no Platform schema-profile copy is introduced. The legacy
+delivery index remains throughout rollback stabilization. Candidate v1 index shapes must be measured against the exact
+pending and stale-processing repository predicates on every aggregate collection. One selected v1 index per collection
+temporarily adds eight logical indexes; two branch-specific indexes temporarily add sixteen. Neither shape nor budget
+increase is authorized until keys/documents examined, blocking sort, multikey behavior and wrong-offset correctness are
+recorded and the MDM owner explicitly approves the measured result. Legacy-index removal is a later follow-up.
+
+Implementation evidence (2026-08-28): the temporal foundation is implemented inside the exact runtime/test
+allow-list and is code-ready only; no migration or cutover operation was invoked. Every producer explicitly emits
+the complete version-1 timestamp/retry/lease shadow shape, and repository transitions dual-write legacy and scalar
+values atomically. Raw compatibility checks distinguish absent fields, BSON null, half-shadow, mismatch and
+unknown/newer versions. Preflight and completion inspect every document where `AuditIntents` exists, accept an empty
+array, and fail closed on a non-array container or non-document element before activation.
+
+The migration uses a durable collection/aggregate/intent cursor, bounded intent pages, generation-fenced leases and
+same-transaction aggregate mutation plus checkpoint on a transaction-capable replica set. Standalone topology is
+rejected before state or aggregate mutation, while normal audit-intent enqueue/delivery remains standalone-compatible.
+Five injected crash boundaries replay without loss; policy/rollout documents preserve the existing 1 MB fence; all
+eight aggregate families preserve sibling intents and business fields/version. Completion, exact index read-back and
+`CutoverActive` remain distinct durable phases. The CLI is Development-only, default-disabled, explicit one-shot and
+is not a hosted service.
+
+The MDM owner accepts the measured single-index trade-off for this code-ready Local Development foundation only. The
+selected exact ascending key is `TenantId`, `AuditIntents.TemporalStorageVersion`,
+`AuditIntents.DeliveryState`, `AuditIntents.NextRetryAtUtcTicksV1`,
+`AuditIntents.LeaseUntilUtcTicksV1`, `AuditIntents.TimestampUtcTicksV1`, then `AuditIntents.IntentId`. A representative
+120-row exact pending-or-stale-processing explain with mixed `+14/UTC/-12` offsets proved the selected named `IXSCAN`,
+an exact seven-row result window, keys/documents examined within that bounded fixture, expected `multikey=true` only
+for `AuditIntents.*` paths, an empty `TenantId` multikey path and correct exclusion/inclusion by UTC scalar truth. It
+also proved that a blocking `$sort` remains for deterministic oldest-first ordering; that cost is explicit and is not
+reported as covered sorting. Exact index key/options/name read-back is proven on all eight collections. The alternative
+two-branch `+16` index expansion was not selected; only one v1 index per collection (`+8`) is present in the explicit
+runner path, and all legacy indexes remain.
+
+Final verification passed: exact focused temporal/atomic/DI tests `68/68`, complete MDM suite `639/639`, all with zero
+skipped. The earlier concurrent exact-acknowledgement race was reproduced once as `[true,false]`; the losing path now
+performs one bounded immutable-receipt replay read when the winner removes the intent between reads. Post-fix stress
+passed `50/50`, preserves one receipt and returns exact replay success without weakening drift rejection. MDM API
+Release build passed with zero errors and five pre-existing persistence warnings. Diff/whitespace/conflict/final-LF
+checks passed. This owner acceptance does not authorize an operational migration, index activation against Local
+Development data, configuration mutation, or Production/Staging cutover; those remain separately gated.
+
+Exact runtime allow-list (new unless marked existing):
+
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IAuditIntentTenantPartitionDiscovery.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IAuditIntentDeliveryRepository.cs` — existing,
+  additive exact claimed-payload read contract only.
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/AuditIntentClaimedPayload.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Audit/ITrustedSourceAuditIntentClient.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Audit/ITrustedSourceAuditServiceIdentityProvider.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Audit/TrustedSourceAuditServiceIdentity.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Audit/TrustedSourceAuditIntentEnvelope.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Audit/TrustedSourceAuditIntentAcceptanceReceipt.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Audit/TrustedSourceAuditIntentDeliveryResult.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Audit/AuditIntentDeliveryProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/AuditIntentTenantPartitionDiscoveryRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/AuditIntentDeliveryRepository.cs` — existing,
+  exact tenant/locator/token/generation-fenced claimed-payload read plus the already-proven atomic success transition;
+  retry/dead-letter behavior unchanged.
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/DependencyInjection.cs` — existing, narrow registration only.
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Audit/TrustedSourceAuditIntentClientOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Audit/AuthTrustedSourceAuditServiceIdentityProviderOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Audit/AuthTrustedSourceAuditServiceIdentityProvider.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Audit/PlatformTrustedSourceAuditIntentClient.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/DependencyInjection.cs` — existing, Auth token client,
+  Platform bearer-only typed client and options registration only; no legacy Platform credential handler.
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/AuditIntentDeliveryWorkerOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/Audit/AuditIntentDeliveryWorker.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Program.cs` — existing, default-disabled worker registration only.
+
+Reuse-only protected runtime contracts for the main worker step after the separately gated temporal foundation:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/LocalAuditIntent.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/LocalAuditIntentReceipt.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/AuditIntentContract.cs`
+
+Exact test allow-list:
+
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/TrustedSourceAuditIntentContractTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/TrustedSourceAuditServiceIdentityContractTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/AuthTrustedSourceAuditServiceIdentityProviderTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/PlatformTrustedSourceAuditIntentClientTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/AuditIntentDeliveryProcessorTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/AuditIntentDeliveryWorkerTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/AuditIntentDeliveryWorkerMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/TrustedSourceAuditIntentTwoServiceContractTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/AuditIntentDeliveryMongoTests.cs` — existing,
+  claimed-payload token/generation/tenant fencing plus delivery-state regression.
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/DependencyInjectionSmokeTests.cs` — new,
+  registration/default-disabled proof only.
+
+Acceptance evidence must cover bounded/cursor tenant discovery, sequential tenant-scope non-bleed, single-winner claim,
+lease reclaim, `201` new acceptance, `200` exact replay, `409` drift, response loss followed by exact replay,
+retry/dead-letter classification, stale-token fencing, atomic acknowledgement/compaction idempotency, cancellation, disabled and
+invalid-config zero-mutation behavior, and real `localhost:27017` persistence. The two-service test must use the exact
+provider fixture and prove that the receipt is durable central outbox acceptance rather than final `audit_events`.
+Identity tests additionally prove exact tenant/audience claims, tenant-and-audience cache isolation, expiry-skew
+refresh, active/previous credential overlap, revocation, concurrent single-flight acquisition, one-reacquisition
+maximum, no refresh token, maximum 300-second already-issued-token revocation lag, and secret/JWT redaction. Contract
+tests also prove bearer-only Platform traffic, forbidden legacy `X-Audit-*`/tenant headers, absence of a static
+Platform tenant grant, exact `503/504` classification and caller-cancellation propagation. The full matrix covers all
+eight embedded-intent aggregate families, including Product Legal Entity Scope Policy and Rollout State operations
+14/15.
+
+Main-worker implementation evidence (2026-08-28): the default-disabled consumer foundation is implemented inside
+the exact runtime/test allow-list. Tenant discovery is bounded, cursor-stable and deduplicated across all eight
+aggregate collections. Every tenant iteration owns and disposes a fresh scope; real-Mongo paging plus sequential
+`A -> B -> A`, exception and cancellation evidence proves that tenant state does not bleed. Claimed payload reads
+remain tenant/locator/token/generation/lease fenced and the processor acknowledges only through the atomic
+`AcknowledgeAndCompactAsync` success path. Response loss replays the same immutable envelope and central
+idempotency key; `201` accepted and `200` exact duplicate converge to one immutable receipt.
+
+The MDM client obtains only the Auth-issued, tenant/audience-bound RS256 bearer through the exact service-token
+endpoint. Strict envelope/JWT/receipt parsing rejects malformed, oversized, duplicate, unknown or case-drift facts.
+Platform traffic carries no `X-Tenant-Id`, legacy `X-Audit-*`, browser token or second Platform credential. Both
+`401` and `403` permit exactly one forced token reacquisition and one replay; all later rejection is terminal.
+Per-key single-flight coordination uses one CAS-combined retired-bit/reference-count state, so expiry cleanup cannot
+remove a borrowed coordinator or create a second concurrent issuance gate. Deterministic borrow/cleanup and
+zero-observation/rent/retirement regressions cover both prior TOCTOU windows; expired tenant cache/coordinator entries
+are bounded and pruned.
+
+Final evidence passed: exact G4 focused tests `41/41`, full MDM suite `678/678`, all with zero skipped. MDM API
+Release build passed with zero errors and five pre-existing persistence warnings. Independent final review reported
+no remaining P0/P1/P2. `git diff --check` passed. The worker remains default-disabled and no configuration, secret,
+process, audit delivery, business data or operational migration/cutover was changed or invoked. Live Local
+Development enablement and Production/Staging remain separate operational gates.
+
+Protected for the main G4 worker step: new Mongo collection/entity/index except the exact separately gated temporal
+migration-state artifact above, direct Mongo write, a second retry/dead-letter/receipt
+state machine, fabricated acknowledgement, final-audit polling, automatic dead-letter requeue, WorkCenter, Workflow,
+Gateway, frontend, Auth, Platform runtime, appsettings, committed secrets, data mutation and Git delivery operations.
+The provider prerequisites are code-complete under their owner artifacts; this planning reconciliation does not
+authorize live delivery. The atomic acknowledgement/compaction prerequisite, temporal scalar-shadow foundation and
+reconciled main G4 runtime allow-list have received code-start, implementation and green evidence. Worker enablement
+and any live delivery remain a later operational gate that names the
+environment, enabled tenants, Auth client/grant and key provisioning, rollback and observability plan. Production and
+Staging remain separately prohibited.
+
 ## 6. Protected Paths
 
 - `.antigravity/**`

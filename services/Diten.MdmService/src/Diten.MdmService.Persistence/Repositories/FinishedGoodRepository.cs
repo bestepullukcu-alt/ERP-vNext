@@ -3,6 +3,7 @@ using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
 namespace Diten.MdmService.Persistence.Repositories;
@@ -11,6 +12,7 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
 {
     private const string CollectionName = "mdm_finished_goods";
     private readonly IMongoCollection<FinishedGood> _finishedGoods;
+    private readonly IMongoCollection<BsonDocument> _documents;
     private readonly IMongoCollection<Gsku> _gskus;
     private readonly IMongoCollection<CodeReservation> _reservations;
     private readonly Guid _tenantId;
@@ -18,6 +20,7 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
     public FinishedGoodRepository(IMongoDatabase database, ITenantContext tenantContext)
     {
         _finishedGoods = database.GetCollection<FinishedGood>(CollectionName);
+        _documents = database.GetCollection<BsonDocument>(CollectionName);
         _gskus = database.GetCollection<Gsku>("mdm_gskus");
         _reservations = database.GetCollection<CodeReservation>("mdm_code_reservations");
         _tenantId = tenantContext.TenantId;
@@ -72,6 +75,69 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
             .Limit(pageSize)
             .ToListAsync(cancellationToken);
         return new(items, totalCount);
+    }
+
+    public async Task<FinishedGoodPage> GetEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string? canonicalCodeSearch,
+        IReadOnlyCollection<Guid>? matchingGskuIds,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var match = new BsonDocument
+        {
+            { nameof(FinishedGood.TenantId), ProductLegalEntityScopeAggregation.GuidBson(_tenantId) },
+            { nameof(FinishedGood.IsDeleted), false }
+        };
+        if (!string.IsNullOrWhiteSpace(canonicalCodeSearch))
+        {
+            var code = new BsonDocument(
+                nameof(FinishedGood.CanonicalCode),
+                new BsonRegularExpression(
+                    "^" + System.Text.RegularExpressions.Regex.Escape(canonicalCodeSearch)));
+            match["$or"] = matchingGskuIds is { Count: > 0 }
+                ? new BsonArray
+                {
+                    code,
+                    new BsonDocument(nameof(FinishedGood.GskuId), new BsonDocument("$in",
+                        new BsonArray(matchingGskuIds.Select(ProductLegalEntityScopeAggregation.GuidBson))))
+                }
+                : new BsonArray { code };
+        }
+
+        var pipeline = new List<BsonDocument> { new("$match", match) };
+        pipeline.AddRange(ProductLegalEntityScopeAggregation.CreateGskuRevisionResolutionStages(
+            _tenantId,
+            "$" + nameof(FinishedGood.GskuId)));
+        pipeline.AddRange(ProductLegalEntityScopeAggregation.CreateAccessStages(
+            _tenantId,
+            effectiveCandidateLegalEntityIds,
+            serverNowUtc));
+        pipeline.Add(ProductLegalEntityScopeAggregation.CleanupStage("ScopeGskus", "ScopeRevisions"));
+        pipeline.Add(new BsonDocument("$sort", new BsonDocument
+        {
+            { nameof(FinishedGood.CanonicalCode), 1 },
+            { "_id", 1 }
+        }));
+        pipeline.Add(new BsonDocument("$facet", new BsonDocument
+        {
+            { "items", new BsonArray
+                {
+                    new BsonDocument("$skip", (pageNumber - 1) * pageSize),
+                    new BsonDocument("$limit", pageSize)
+                }
+            },
+            { "summary", new BsonArray { new BsonDocument("$count", "total") } }
+        }));
+
+        var result = await _documents.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync(cancellationToken);
+        var items = result?["items"].AsBsonArray
+            .Select(item => BsonSerializer.Deserialize<FinishedGood>(item.AsBsonDocument))
+            .ToArray() ?? [];
+        var total = result?["summary"].AsBsonArray.FirstOrDefault()?.AsBsonDocument["total"].ToInt64() ?? 0;
+        return new(items, total);
     }
 
     public async Task<FinishedGoodCreateResult> CreateDraftAsync(

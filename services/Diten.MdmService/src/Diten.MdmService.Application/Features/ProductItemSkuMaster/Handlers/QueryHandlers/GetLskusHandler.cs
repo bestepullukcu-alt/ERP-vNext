@@ -1,4 +1,7 @@
+using Diten.MdmService.Application.Common;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Queries;
+using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.Shared.Core;
 using MediatR;
@@ -11,11 +14,25 @@ public sealed class GetLskusHandler
 {
     private readonly ILskuRepository _lskus;
     private readonly IGskuRepository _gskus;
+    private readonly IProductDefinitionRevisionRepository _revisions;
+    private readonly IGlobalProductRepository _globalProducts;
+    private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
 
-    public GetLskusHandler(ILskuRepository lskus, IGskuRepository gskus)
+    public GetLskusHandler(
+        ILskuRepository lskus,
+        IGskuRepository gskus,
+        IProductDefinitionRevisionRepository revisions,
+        IGlobalProductRepository globalProducts,
+        IProductLegalEntityScopeRolloutStateRepository rolloutStates,
+        IProductLegalEntityScopePolicyRepository policies,
+        ProductLegalEntityScopeCandidateFacade candidates,
+        ITenantContext tenantContext)
     {
         _lskus = lskus;
         _gskus = gskus;
+        _revisions = revisions;
+        _globalProducts = globalProducts;
+        _scopeGuard = new(rolloutStates, policies, candidates, tenantContext);
     }
 
     public async Task<Response<ProductItemSkuMasterModels.PagedResult<ProductItemSkuMasterModels.LskuListItemDto>>> Handle(
@@ -26,11 +43,21 @@ public sealed class GetLskusHandler
         var search = string.IsNullOrWhiteSpace(request.Search)
             ? null
             : request.Search.Trim().ToUpperInvariant();
-        var page = await _lskus.GetPageAsync(
-            request.PageNumber,
-            request.PageSize,
-            search,
-            cancellationToken);
+        var scope = await _scopeGuard.ResolveContextAsync("mdm.lskus.read", cancellationToken);
+        if (!scope.IsSuccessful)
+        {
+            return Response<ProductItemSkuMasterModels.PagedResult<ProductItemSkuMasterModels.LskuListItemDto>>
+                .Fail(scope.FailureCode!, scope.StatusCode);
+        }
+        var page = scope.Context!.RolloutMode == ProductLegalEntityScopeRolloutMode.Preparation
+            ? await _lskus.GetPageAsync(request.PageNumber, request.PageSize, search, cancellationToken)
+            : await _lskus.GetEnforcedLegalEntityScopePageAsync(
+                request.PageNumber,
+                request.PageSize,
+                search,
+                scope.Context.EffectiveCandidateLegalEntityIds,
+                scope.Context.ServerNowUtc,
+                cancellationToken);
         var gskus = await _gskus.GetByIdsAsync(
             page.Items.Select(x => x.GskuId).Distinct().ToArray(),
             cancellationToken);

@@ -26,8 +26,8 @@ public sealed class ModuleRegistrationHostedServiceTests
 
         await service.RunRegistrationsAsync((_, _) => Task.CompletedTask, CancellationToken.None);
 
-        Assert.Equal(5, handler.Requests.Count(request => request.Body.Contains("product-item-sku-master", StringComparison.Ordinal)));
-        Assert.Single(handler.Requests, request => request.Body.Contains("legal-entity", StringComparison.Ordinal));
+        Assert.Equal(5, handler.Requests.Count(request => request.Body.Contains("\"moduleCode\":\"product-item-sku-master\"", StringComparison.Ordinal)));
+        Assert.Single(handler.Requests, request => request.Body.Contains("\"moduleCode\":\"legal-entity\"", StringComparison.Ordinal));
     }
 
     [Fact]
