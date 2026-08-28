@@ -786,6 +786,58 @@ cancellation propagation; and expected-red mutations for every binding dimension
 scheme fallback, cache/retry, status reclassification and producer-profile substitution. This closes a local
 evidence seam only; it does not make Gate I production-issuance or activation ready.
 
+#### 4.9.5 Gate I-A local evidence closure R4 — TEST-OWNED / NON-PRODUCTION / NON-ACTIVATING
+
+The Control Tower authorizes only the test-owned infrastructure needed to execute the remaining Gate I-A
+local evidence without relying on developer-managed Mongo ports or a long-running PPM host. This amendment
+does not change production source, committed runtime configuration, activation flags, credentials, secrets,
+deployment, Gateway, frontend or WorkCenter. It grants no production or browser authority and does not make
+Gate I-A, Gate I or MOD-0117 complete.
+
+The real-Mongo evidence harness is exact:
+
+- new test-only file
+  `services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/GateI/DecisionTrace/GateIDisposableMongoReplicaSet.cs`;
+- the executable is exact `/opt/homebrew/bin/mongod`; download, Docker and a repository-owned Mongo binary are
+  forbidden;
+- the operating system selects a free loopback port and the harness rejects `27017`, `27018`, `27019` and
+  `27021` before process start; the selected port must be `>=27022`;
+- every run uses a unique database and private temporary data/log/pid paths, initializes a single-node replica
+  set, serializes only this disposable lifecycle and proves process, listener, database and directory cleanup;
+- an occupied or forbidden port is never killed, reused or reconfigured;
+- the existing
+  `services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/GateI/DecisionTrace/GateIRelationshipMutationMongoTests.cs`
+  may be changed only to obtain its Mongo URI/database/lifecycle from this harness. It cannot fall back to
+  `PPM_GATE_I_TEST_MONGO_URI`, `27017`, `27018`, `27019` or `27021`.
+
+The local API smoke is test-owned and exact:
+
+- new test-only file
+  `services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/GateI/DecisionTrace/GateILocalApiSmokeTests.cs`;
+- the IntegrationTests project may add only one project reference to
+  `services/Diten.PpmService/src/Diten.PpmService.Api/Diten.PpmService.Api.csproj`;
+- the test launches the already compiled PPM API as a child process bound to exact `127.0.0.1:5061`; it first
+  proves the port is free and fails closed without killing or reusing any listener when occupied;
+- all test configuration is process-environment-only and ephemeral. The smoke verifies `/health`, an
+  authenticated Gate I route, the default-off `503` boundary and complete child-process/temp cleanup;
+- production `Program.cs`, controllers, application settings, launch profiles, DI, endpoint and route files
+  cannot be edited by this amendment. No Gateway or browser traffic is involved.
+
+Mutation evidence remains limited to the existing
+`services/Diten.PpmService/tests/Diten.PpmService.Tests/GateI/DecisionTrace/verify_mutation_evidence.py` and
+`decision-trace-mutation-evidence.json`. The verifier must rerun against the current
+`DecisionTraceValidation.cs`, apply only transient test-owned mutations, compile and obtain the expected-red
+targeted failure for every declared non-equivalent mutant, then restore the exact source bytes and SHA-256.
+It may update stale evidence identities/hashes only from the fresh executable run. No mutant, marker, backup,
+generated source or test artifact may remain.
+
+R4 evidence is accepted only when the focused Gate I-A unit/contract suite, disposable real-Mongo suite,
+local API smoke, mutation verifier, MOD-0117 preflight, repository architecture guard, build, diff/scope,
+secret/artifact scan and cleanup checks all pass. Any occupied `5061`, missing `/opt/homebrew/bin/mongod`,
+forbidden-port selection, cleanup residue, stale mutation restore or protected-path diff is one fail-closed
+blocker. Implementation changes remain unstaged until review and require a separate checkpoint authorization;
+this governance checkpoint alone performs no activation.
+
 ### 4.10 ExternalContextReference validation projection
 
 This is the authorized provider contract for the internal endpoint
