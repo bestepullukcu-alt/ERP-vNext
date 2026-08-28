@@ -1,4 +1,6 @@
 using Diten.Platform.Domain.Enums;
+using Diten.Platform.Infrastructure.Persistence.Migrations;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace Diten.Platform.Infrastructure.Persistence.Models;
 
@@ -21,6 +23,16 @@ internal sealed class AuditOutboxMessage
     public int Attempts { get; set; }
     public DateTimeOffset NextAttemptAtUtc { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset CreatedAtUtc { get; init; } = DateTimeOffset.UtcNow;
+
+    [BsonIgnoreIfNull]
+    public long? NextAttemptAtUtcTicksV1 { get; set; }
+
+    [BsonIgnoreIfNull]
+    public long? CreatedAtUtcTicksV1 { get; set; }
+
+    [BsonIgnoreIfNull]
+    public int? TemporalStorageVersion { get; set; }
+
     public string? LastError { get; set; }
 
     public void ValidateForInsert()
@@ -84,5 +96,7 @@ internal sealed class AuditOutboxMessage
         {
             throw new InvalidOperationException($"Audit outbox last error cannot exceed {MaxLastErrorLength} characters.");
         }
+
+        AuditOutboxTemporalStorageCompatibility.ValidateForPersistence(this);
     }
 }
