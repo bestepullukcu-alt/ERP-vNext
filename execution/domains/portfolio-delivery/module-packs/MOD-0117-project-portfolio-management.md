@@ -122,6 +122,98 @@ This authoring task is governance-only and does not call Gate 2. If a later pack
 touches one of those hazards, Claude WorkCenter Control Tower Gate 2 is mandatory before the first dangerous
 production change.
 
+### DCP-004 Gate-2 WorkCenter disposition — GOVERNANCE-ONLY / DEFAULT-OFF / NON-PRODUCTION
+
+The Control Tower has completed the current-state Gate-2 disposition against the authoritative DCP-004
+provider contract and current MOD-0117 code. **The current eligible MOD-0117 WorkCenter item-type count is
+exactly `0`, and the current WorkCenter action map is empty.** This is a deliberate fail-closed result, not a
+missing implementation claim: none of the six MOD-0117-owned business types currently has the authoritative
+assignment, admission, normalized-lifecycle and due-date semantics required to project a truthful work item.
+No lifecycle endpoint below is therefore a WorkCenter action endpoint.
+
+| MOD-0117-owned type | Current disposition | Exact reason |
+|---|---|---|
+| `Portfolio` | `Unsupported` | Governance context only; no assignee, admission or deadline authority. |
+| `Initiative` | `Unsupported` | Governance context only; no assignee, admission or deadline authority. |
+| `Program` | `Unsupported` | Governance context only; no assignee, admission or deadline authority. |
+| `Project` | `Unsupported` | Delivery context is not task ownership; no assignee, admission or deadline authority. |
+| `InvestmentCase` | `ConditionalFutureCandidate` | Title, lifecycle, planning dates and technical `Version` exist, but assignee, admission and priority semantics require an explicit business-owner decision. |
+| `BenefitCommitment` | `ConditionalFutureCandidate` | Title, lifecycle, target date and technical `Version` exist, but assignee, admission and priority semantics require an explicit business-owner decision. |
+
+The required DCP-004 31-field projection inventory is fixed as follows. `Unsupported` means the field must be
+omitted or the item must not be projected; it does not authorize a placeholder, inferred value or browser-only
+fallback.
+
+| # | DCP-004 projection field | Current MOD-0117 disposition |
+|---:|---|---|
+| 1 | `FixtureKind` | Shape-supported only as fixed `workItem` after a future type becomes eligible. |
+| 2 | `Id` | Supported from the authoritative aggregate GUID. |
+| 3 | `WorkIntent` | `Unsupported` and mandatory; no authoritative mapping exists. |
+| 4 | `AssignmentMode` | `Unsupported` and mandatory; no authoritative mapping exists. |
+| 5 | `OwnershipState` | `Unsupported` and mandatory; no authoritative mapping exists. |
+| 6 | `AdmissionState` | `Unsupported` and mandatory; no authoritative mapping exists. |
+| 7 | `NormalizedStatus` | `Unsupported` pending explicit per-type lifecycle normalization approval. |
+| 8 | `TaskLifecycle` | `Unsupported`; blocked by the missing `WorkIntent` contract. |
+| 9 | `ExecutionState` | `notApplicable`; MOD-0117 aggregates are not task execution records. |
+| 10 | `TimerState` | `notApplicable`; MOD-0117 owns no task timer. |
+| 11 | `SystemState` | Future projection may use `fresh` only from an authoritative current read; cache/LKG inference is forbidden. |
+| 12 | `ActionDepth` | `inline` only while the action set is empty; no deep link is authorized. |
+| 13 | `Title` | Supported from `Name` or `Title`; locale remains `und` until an authoritative localization source exists. |
+| 14 | `NativeStatus` | Supported from the exact owner lifecycle value. |
+| 15 | `Source` | `Unsupported` and mandatory until provider code/version identity is approved. |
+| 16 | `LifecycleOwner` | `Unsupported` and mandatory until the owner mapping is approved. |
+| 17 | `WorkItemCapabilities` | Exact empty set. |
+| 18 | `Actions` | Exact empty set. |
+| 19 | `Concurrency` | Technical `Version` can supply a future version token; no WorkCenter action consumer is authorized. |
+| 20 | `WaitingContext` | Omitted; no authoritative waiting state exists. |
+| 21 | `Escalation` | Omitted; MOD-0023 owns escalation semantics. |
+| 22 | `DueAt` | Omitted; planning `DateTime`/`DateOnly` values are not an approved work deadline and timezone policy is open. |
+| 23 | `PrimaryActionCode` | Omitted; the action map is empty. |
+| 24 | `OverflowActionCodes` | Omitted; the action map is empty. |
+| 25 | `Assignee` | `Unsupported` and blocking; `CreatedBy` is not assignment. |
+| 26 | `Requester` | Omitted until a canonical person-reference contract is approved. |
+| 27 | `Checklist` | Omitted; MOD-0024 owns checklist templates and state. |
+| 28 | `Subtasks` | Omitted; MOD-0117 owns no task/subtask aggregate. |
+| 29 | `ParentTaskItemId` | Omitted; PPM hierarchy is not task parentage. |
+| 30 | `Gates` | Omitted; Gate-I references are not WorkCenter gates and MOD-0023 remains `ExcludedV1`. |
+| 31 | `Priority` | Omitted; no authoritative MOD-0117 work-priority field exists. |
+
+The observed owner lifecycle mutation surface remains ordinary MOD-0117 API evidence only:
+
+| Type | Existing lifecycle behavior | Existing permission | WorkCenter action disposition |
+|---|---|---|---|
+| `Portfolio` | `Draft -> Active|Archived`; `Active -> Archived` | `ppm.portfolios.change-lifecycle` | None |
+| `Initiative` | `Proposed -> Active|Cancelled`; `Active|OnHold ->` allowed owner transitions | `ppm.initiatives.change-lifecycle` | None |
+| `Program` | `Draft -> Active|Cancelled`; `Active|OnHold ->` allowed owner transitions | `ppm.programs.change-lifecycle` | None |
+| `Project` | `Draft -> Planned|Cancelled`; `Planned|Active|OnHold ->` allowed owner transitions | `ppm.projects.change-lifecycle` | None |
+| `InvestmentCase` | `Draft -> UnderAnalysis|Withdrawn`; `UnderAnalysis -> Closed|Withdrawn` | `ppm.investment-cases.change-lifecycle` | None; enabled Gate-I close guard may require a governing-decision reference. |
+| `BenefitCommitment` | `Draft -> Planned|Cancelled`; `Planned -> Active|Cancelled`; `Active -> Closed|Cancelled` | `ppm.benefit-commitments.change-lifecycle` | None |
+
+The existing refusal classes remain module API semantics: entitlement/permission denial `403`, dependency
+authority unavailable `503`, missing/cross-tenant `404`, and invalid/stale transition `409`. They are not a
+DCP-004 stable WorkCenter reason-code dictionary. A later action map cannot be created until exact stable
+reason codes are owner-approved and executable against the real module endpoints.
+
+This amendment grants **no** provider class, projection/action endpoint, configuration row, Platform source,
+frontend, Gateway, credential, secret, activation, deployment or migration authority and does not imply
+WorkCenter readiness, browser readiness, parity or completion. A future bounded implementation amendment must
+close all of these gates before any provider code is written:
+
+1. choose the exact eligible owned type or types;
+2. approve assignment and admission semantics for each chosen type;
+3. approve exact native-to-normalized lifecycle mappings;
+4. reserve one stable provider code;
+5. bind the exact DCP-004 contract version;
+6. authorize exact module-owned GET/POST paths without adding a Platform bridge class;
+7. approve a stable refusal/reason-code matrix;
+8. bind the exact action request payload and concurrency token;
+9. decide `self|team` query semantics;
+10. approve an exact source/test/config allowlist; and
+11. hand-project and accept one real item end to end before implementation promotion.
+
+Until all eleven gates close and Gate-2 is explicitly accepted, MOD-0117 remains default-off for WorkCenter,
+projects zero items, exposes zero WorkCenter actions and has no remote-provider configuration row.
+
 ## 3. Owned Objects
 
 | Object | Phase | Ownership purpose | Required owner decision before promotion |
@@ -1529,6 +1621,7 @@ Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separat
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-08-30 | Recorded the DCP-004 Gate-2 current-state disposition as governance-only, default-off and non-production: exact eligible type count `0`, empty action map, six owned-type dispositions, all 31 projection fields and eleven future decision gates. No provider/endpoint/configuration/runtime/activation authority or WorkCenter completion claim was created. | User / Enterprise Strategy Control Tower |
 | 2026-08-29 | Reconciled the canonical local PPM port to `5062`, superseding the earlier `5061` allocation while preserving CRM on `5061`. The integration-agent-owned Gateway authority remains exactly `/api/v1/ppm` plus `/api/v1/ppm/{everything}`; no production activation, deployment or broader route authority was granted. | User / Enterprise Strategy Control Tower |
 | 2026-08-29 | Reconciled the current-main semantic checkpoint chain: PPM base/contracts `a22a872f`, parent MOD-0018 governance `457edbdd`, neutral S2S request binding `92eb29ea`, and PPM-owned default-off Gate I relationship/outbox composition `8c659594`. Recorded build `0/0`, unit `286/286`, dynamic-Mongo integration `82/82` with zero skips, architecture `11/11`, mutation `6/6`, and restore SHA-256 `61e79023258a6086db98f52378a7c86bf611f309d71a83979f7368b056d68170`. This closes only backend/default-off evidence; `review`, MOD-0023 `ExcludedV1`, and full 1.3/browser/live-provider/bilateral/WorkCenter/production gates remain unchanged and open. | Enterprise Strategy Control Tower — current-main evidence reconciliation |
 | 2026-08-26 | Authorized the bounded, internal-only, default-off Gate I runtime-composition implementation handoff after exact I-A/I-B/I-C contract checkpoints were composed. Recorded dependency checkpoint order, exact source/config/test allowlist and provider ownership. MOD-0023 is `ExcludedV1`: no DTO/provider/positive fixture, and every ApprovalOutcome-required path remains zero-residue `503`. This grants no activation, secret/key, deployment, broker/live, frontend, Gateway or WorkCenter authority. | User / Enterprise Strategy Control Tower |
