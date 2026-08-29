@@ -506,7 +506,9 @@ Gateway route degisikligi gerekli degildir.
       `RabbitMqEventingIntegrationTests.cs`; behavior and live RabbitMQ execution remain unauthorized.
 - [x] Current MOD-0018-FU16 through FU20 identities and files are protected unchanged.
 - [x] Default-off/non-production authority and production activation exclusions are explicit.
-- [ ] Current-main semantic implementation and the Section 17 evidence matrix pass before an implementation checkpoint.
+- [x] Current-main S2S foundation implementation and the bounded Section 17 evidence matrix passed through the local
+      checkpoint chain ending at `9dc89983924926637ddda4dab730a9c981812bda` (2026-08-29). This closes only the
+      default-off/non-production foundation; it grants no production activation or live-delivery authority.
 
 ## 19. Implementation Notes
 
@@ -570,6 +572,51 @@ audit-intake evidence can use the current canonical Platform schema system. The 
 reuse the existing Eventing schema profile and single collection-name registry; it may not introduce a parallel index
 initializer, a direct collection-name literal, a per-test database, production DI wiring or any listener/broker
 activation. This is governance authority for bounded local evidence, not production authority.
+
+### Current-main S2S foundation evidence closure — 2026-08-29
+
+The bounded parent-MOD-0018 foundation was reconstructed against current main through these ordered local checkpoints:
+
+| Slice | Checkpoint |
+|---|---|
+| Parent governance authority | `856a960d51f19ebf62b924a81cc5cdc1e66d2b8f` |
+| BuildingBlocks Eventing and Platform.Common security contracts | `276868d0c3dd3a665ac818c2163fd88db1fa2503` |
+| AuthService S2S contracts and cryptography | `0f24f49e41822b3e50782d10e4f88d1ff87bc841` |
+| AuthService S2S persistence, manifests and explicit grants | `7f0ddd7d72aa3beb8dfcce9401cd4e45097b5282` |
+| AuthService entitlement-attestation enforcement | `116c102157cadf5ef52a2324c0e549d036f445bf` |
+| AuthService default-off composition | `e42b411c395cf4b65792729016036a0bb1d98a4f` |
+| Gate-I schema evidence authority | `3d827a4c2d73e60496c9280cf30172b37352dbbe` |
+| Eventing test-alias authority | `3c39f2a61a3ac6a7cf7dfc2dc7d45ef87e70cafe` |
+| Platform Gate-I audit evidence | `9dc89983924926637ddda4dab730a9c981812bda` |
+
+Verified evidence at closure:
+
+- AuthService entitlement-attestation focused tests: 34/34 PASS; final full AuthService: 496/496 PASS; AuthService API
+  build: 0 warnings and 0 errors.
+- BuildingBlocks Eventing: 49/49 PASS; Platform.Common: 30/30 PASS; repository architecture gate: 7/7 PASS.
+- Platform Gate-I focused evidence: 23/23 PASS; full Platform Application: 2747/2747 PASS; Platform API build: 0
+  warnings and 0 errors.
+- Platform Eventing: 56 PASS and exactly three environment/activation-dependent live-RabbitMQ tests SKIP. The skips are
+  allowed evidence of non-activation, not live-broker or production-delivery evidence.
+- The safe adapter-mapping-removal mutant compiled and produced the expected red result (expected mapping count 5,
+  actual 4). Restore was byte-identical with SHA-256
+  `847f1d192f21fa68c1fbfc7bd722724ddf778ef9038250a855cd8b7de2b835e8`.
+- Two unsafe mutants have explicit `SECURITY-POLICY-FORBIDDEN` disposition: weakening/removing the unique index could
+  permit duplicate authoritative acceptance writes; hardcoding a protected Mongo port could collide with a developer
+  Mongo instance even if the mutant were not executed. Neither mutant was materialized or run.
+- Current `MOD-0018-FU16` through `MOD-0018-FU20` files remained byte-identical to the amendment baseline.
+
+This evidence does not authorize or claim a public endpoint, authentication scheme, JWKS, production key/secret,
+broker/listener/worker activation, live RabbitMQ delivery, deployment, Gateway, frontend or WorkCenter change. Those
+remain separate production/runtime gates.
+
+### Changelog — 2026-08-29
+
+- Closed the bounded current-main S2S foundation evidence checklist after the nine-checkpoint reconstruction.
+- Recorded the exact green test/build matrix, the three allowed live-RabbitMQ skips, one restored expected-red mutant
+  and two security-policy-forbidden mutation dispositions.
+- Preserved `ready-for-dev`, the default-off/non-production boundary and all production-activation exclusions; no FU
+  identity, production authority or live-delivery claim was added.
 
 ## 20. Follow-up Items
 
