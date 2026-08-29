@@ -8,6 +8,8 @@ using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Diten.Platform.API.Services.BusinessReferenceData;
 using Microsoft.Extensions.Hosting;
+using Diten.Platform.API.Security;
+using Diten.Platform.Application.Authorization;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests;
@@ -56,6 +58,29 @@ public sealed class DependencyInjectionSmokeTests
         Assert.Contains("AddScoped<VerifiedMarketOperationalProvisioningRunner>()", program, StringComparison.Ordinal);
         Assert.DoesNotContain("AddHostedService<VerifiedMarketOperationalProvisioningRunner", program, StringComparison.Ordinal);
         Assert.False(typeof(IHostedService).IsAssignableFrom(typeof(VerifiedMarketOperationalProvisioningRunner)));
+    }
+
+    [Fact]
+    public void Program_registers_FU21_services_without_hosted_service_or_MDM_callback()
+    {
+        var root = FindRepositoryRoot();
+        var program = File.ReadAllText(Path.Combine(root, "services", "Diten.Platform", "src", "Diten.Platform.API", "Program.cs"));
+
+        Assert.Contains("AddSingleton<ITrustedLegalEntityScopeCredentialAuthenticator", program, StringComparison.Ordinal);
+        Assert.Contains("AddScoped<ITrustedLegalEntityScopeJwtContext", program, StringComparison.Ordinal);
+        Assert.Contains("AddScoped<ITrustedLegalEntityScopeRequestExecutor", program, StringComparison.Ordinal);
+        Assert.Contains("AddSingleton<IOrgDataScopeCandidateAvailabilityClassifier", program, StringComparison.Ordinal);
+        Assert.DoesNotContain("AddHostedService<TrustedLegalEntityScope", program, StringComparison.Ordinal);
+        Assert.DoesNotContain("Diten.MdmService", program, StringComparison.Ordinal);
+
+        var infrastructure = File.ReadAllText(Path.Combine(
+            root, "services", "Diten.Platform", "src", "Diten.Platform.Infrastructure", "DependencyInjection.cs"));
+        Assert.Contains("AddScoped<IOrgDataScopeCandidateFactReader, OrgDataScopeCandidateFactReader>()", infrastructure, StringComparison.Ordinal);
+
+        var services = new ServiceCollection();
+        services.AddApplication();
+        var descriptor = Assert.Single(services.Where(x => x.ServiceType == typeof(IOrgDataScopeCandidateResolver)));
+        Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
     }
 
     private static string FindRepositoryRoot()

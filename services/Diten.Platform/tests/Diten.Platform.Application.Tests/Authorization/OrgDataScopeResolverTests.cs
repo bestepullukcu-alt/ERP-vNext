@@ -23,7 +23,11 @@ public sealed class OrgDataScopeResolverTests
     private OrgDataScopeResolver CreateResolver() => CreateResolver(FakeLegalEntityReferenceValidator.Referenceable());
 
     private OrgDataScopeResolver CreateResolver(ILegalEntityReferenceValidator legalEntityValidator) =>
-        new(_orgUnits, _positions, _assignments, legalEntityValidator);
+        new(_orgUnits, _positions, _assignments, legalEntityValidator,
+            new OrgDataScopeCandidateResolver(
+                new InMemoryCandidateFactReader(_orgUnits, _positions, _assignments),
+                TimeProvider.System,
+                new NeverUnavailableClassifier()));
 
     [Fact]
     public async Task Valid_assignment_hydrates_org_position_managerchain_and_legalentity_scopes()
@@ -413,5 +417,45 @@ public sealed class OrgDataScopeResolverTests
 
         public static FakeLegalEntityReferenceValidator Throwing() =>
             new(_ => throw new HttpRequestException("simulated network failure"));
+    }
+
+    private sealed class NeverUnavailableClassifier : IOrgDataScopeCandidateAvailabilityClassifier
+    {
+        public bool IsUnavailable(Exception exception) => false;
+    }
+
+    private sealed class InMemoryCandidateFactReader(
+        InMemoryOrganizationUnitRepository units,
+        InMemoryPositionRepository positions,
+        InMemoryPositionAssignmentRepository assignments) : IOrgDataScopeCandidateFactReader
+    {
+        public async Task<IReadOnlyList<Guid>> ResolveLegalEntityIdsAsync(
+            Guid tenantId,
+            Guid userId,
+            DateTimeOffset effectiveAtUtc,
+            int maxCandidates,
+            CancellationToken cancellationToken)
+        {
+            var positionIds = (await assignments.GetAllAsync(cancellationToken))
+                .Where(x => x.TenantId == tenantId && x.UserId == userId && !x.IsDeleted && !x.IsCancelled
+                    && x.EffectiveFrom <= effectiveAtUtc && (x.EffectiveTo is null || x.EffectiveTo > effectiveAtUtc))
+                .Select(x => x.PositionId)
+                .Distinct()
+                .Take(maxCandidates + 1)
+                .ToHashSet();
+            var organizationUnitIds = (await positions.GetAllAsync(cancellationToken))
+                .Where(x => positionIds.Contains(x.Id) && !x.IsDeleted && !x.IsArchived)
+                .Select(x => x.OrganizationUnitId)
+                .Distinct()
+                .Take(maxCandidates + 1)
+                .ToHashSet();
+            return (await units.GetAllAsync(cancellationToken))
+                .Where(x => organizationUnitIds.Contains(x.Id) && !x.IsDeleted && !x.IsArchived)
+                .Select(x => x.LegalEntityId)
+                .Where(x => x != Guid.Empty)
+                .Distinct()
+                .Take(maxCandidates + 1)
+                .ToArray();
+        }
     }
 }

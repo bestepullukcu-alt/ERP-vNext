@@ -47,6 +47,25 @@ public sealed class TenantAuthorizationContextDataScopeIntegrationTests
     }
 
     [Fact]
+    public async Task Existing_singular_context_preserves_first_legal_entity_without_claim_expansion()
+    {
+        var first = Guid.Parse("33333333-4444-5555-6666-777777777777");
+        var second = Guid.Parse("99999999-4444-5555-6666-777777777777");
+        var resolver = new Mock<IDataScopeResolver>();
+        resolver.Setup(x => x.ResolveAsync(TenantId, UserId, string.Empty, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[]
+            {
+                new EntitlementDataScope(EntitlementDataScopeKind.LegalEntity, first, "LE-1"),
+                new EntitlementDataScope(EntitlementDataScopeKind.LegalEntity, second, "LE-2")
+            });
+        var context = CreateContext(resolver.Object);
+
+        await context.InitializeAsync();
+
+        Assert.Equal(first, context.LegalEntityId);
+    }
+
+    [Fact]
     public async Task InitializeAsync_keeps_defaults_when_data_scope_resolver_throws()
     {
         var resolver = new Mock<IDataScopeResolver>();

@@ -57,6 +57,7 @@ public static class DependencyInjection
         services.AddScoped<IPlatformCatalogContract, PlatformCatalogContract>();
         services.AddSingleton<ITemporaryAccessProvider, NoOpTemporaryAccessProvider>();
         services.AddScoped<IDataScopeResolver, OrgDataScopeResolver>();
+        services.AddScoped<IOrgDataScopeCandidateResolver, OrgDataScopeCandidateResolver>();
         /*
          * The ONE surface MOD-0024 asks "who sits in which seat" through. Nine files used to inject the
          * assignment repository directly and each re-wrote the active-window rule; BL-071 moves that fact to

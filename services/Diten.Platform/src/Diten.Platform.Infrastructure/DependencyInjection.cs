@@ -2,6 +2,7 @@ using System.Text;
 using Diten.BuildingBlocks.BackgroundJobs;
 using Diten.BuildingBlocks.Security.Secrets;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Authorization;
 using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Application.Features.Lookups.Services;
 using Diten.Platform.Application.Features.EntitlementAttestations;
@@ -327,6 +328,7 @@ public static class DependencyInjection
         services.AddScoped<IOrganizationUnitRepository, OrganizationUnitRepository>();
         services.AddScoped<IPositionRepository, PositionRepository>();
         services.AddScoped<IPositionAssignmentRepository, PositionAssignmentRepository>();
+        services.AddScoped<IOrgDataScopeCandidateFactReader, OrgDataScopeCandidateFactReader>();
         services.AddScoped<IPersonReferenceRepository, PersonReferenceRepository>();
 
         // Working Calendar & Public Holidays — first production consumer of HybridRepository (country rows with
