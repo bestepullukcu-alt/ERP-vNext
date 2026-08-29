@@ -21,6 +21,10 @@
     <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
 </div>
 
+@* FIX-ROLEPERMS-MODULE-LABEL — the (optional, non-blocking) source of tenant module-name overrides for the
+   group headers / module filter. Same proxy the sidebar editor reads; the screen renders without it. *@
+<div id="raRoot" data-menu-url="/TenantNavigation/api/menu"></div>
+
 <form id="raAntiForgery">@Html.AntiForgeryToken()</form>
 
 <div class="row g-4">
@@ -227,6 +231,7 @@
     <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
     <partial name="~/Views/Governance/RoleAssignments/_IndexL10n.cshtml" />
     <script src="~/assets/js/Governance/RoleAssignments/grant-state.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Governance/RoleAssignments/module-label.js" asp-append-version="true"></script>
     <script src="~/assets/js/Governance/RoleAssignments/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/Governance/RoleAssignments/index.js" asp-append-version="true"></script>
 }
