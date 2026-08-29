@@ -4657,3 +4657,46 @@ kurtardı; geriye handler'ın **kendisi** kaldı. Silme üç servise yayıldığ
   backlog commit'ine süpürüldü (`c527ff35`). Kayıp olmadı, ama commit yanlış mesaj altında
   duruyordu. Ayrıldı; iki commit'in dosya kümesi eskisiyle birebir doğrulandı.
   Aynı hata bu oturumda ikinci kez oldu.
+
+### BL-323 — köprüde cross-tenant davranışı TANIMSIZ; iki farklı cevap zaten depoda (2026-08-29, ölçüldü, KARAR BEKLİYOR)
+
+> **DURUM:** AÇIK · **SAHİP:** CONTROL TOWER
+
+⚠ **Bu kayıt bir öneri taşır, karar SAHİBİNDE.** Enterprise Strategy'yi geliştiren
+Codex sordu, cevabı yoktu; ölçüm de göstermiştir ki cevapsızlık zaten iki farklı
+uygulamaya yol açmış.
+
+- **Soru:** Bir modülden BAŞKA kiracının işi istenirse ne dönecek?
+
+- **Köprü kural DAYATMIYOR — ölçüldü.** `RemoteWorkItemGateway:167-176`: modülün
+  kendi kararı taşıma durumunu yener (200 + `isSuccessful=false` bir REDDİR),
+  zarf olmayan gövde "ulaşılmadı" sayılır, durum kodu olduğu gibi geçer.
+  Yani cevabı **modül** verir, köprü yalnız taşır.
+
+- **Onboarding notu §7 (satır 269) yalnız yarısını söylüyor:**
+  *"Hangi kiracı → `X-Tenant-Id`, Platform istek kapsamından yazar → kendi kiracı
+  middleware'in her zamanki gibi okur."* Okumayı söylüyor, **yabancı kiracı
+  istendiğinde ne cevaplanacağını söylemiyor.**
+
+- **DEPODA ZATEN İKİ CEVAP VAR — ve aslında iki AYRI soruyu cevaplıyorlar:**
+
+  | Durum | Bugünkü cevap | Nerede |
+  |---|---|---|
+  | Başlık kiracı A der, JWT kiracı B der (çelişki) | **400** "Tenant mismatch" | `Diten.MdmService/.../TenantResolutionMiddleware.cs` |
+  | Başlık ve JWT aynı kiracıda anlaşır, ama İSTENEN KAYIT başka kiracının | **404** | `ReferenceWorkItemProviderController:104` → `REFERENCE_ITEM_NOT_FOUND` |
+
+  ⚠ Bunlar çelişmiyor: ilki **bozuk istek**, ikincisi **yetkisiz kayıt**. Ama
+  hiçbir yerde yazılı olmadığı için bir sonraki modül ikisini karıştırabilir.
+
+- **CONTROL TOWER ÖNERİSİ (onay bekliyor):**
+  1. Çelişkili başlık/JWT → **400**. Bu bir bozuk istektir, gizlenecek bir şey yok.
+  2. Yabancı kiracının kaydı → **404**, "yok" gibi. **403 DEĞİL** — 403 kaydın
+     var olduğunu söyler, yani varlığını sızdırır. Çok kiracılı sistemlerde
+     görmemen gereken kayıt senin için yoktur; SAP ve Oracle worklist'lerinde de
+     desen budur.
+  3. Bu iki satır onboarding notu §7'ye yazılır ve **bir muhafıza bağlanır** —
+     cümle olarak kalırsa bir sonraki modül yine kendi cevabını uydurur.
+
+- **Karar verilmeden yapılmayacak:** hiçbir modül sözleşmesi (MOD-0117, MOD-0355
+  dahil) bu satırı varsayarak yazılmamalı. Codex'e "Control Tower kararı bekliyor"
+  denmesi istendi.
