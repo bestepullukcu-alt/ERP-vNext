@@ -82,6 +82,7 @@ public sealed class ServiceIdentityTokenSecurityContractTests
     [Theory]
     [InlineData("TRUSTED_AUDIT_SOURCE_INGEST")]
     [InlineData("TRUSTED_WORKFLOW_CONSUMER")]
+    [InlineData("TRUSTED_REFERENCE_DATA_CONSUMER")]
     public void Validator_accepts_only_each_exact_bounded_audience(string audience)
     {
         var result = new IssueServiceIdentityTokenValidator().Validate(new IssueServiceIdentityTokenCommand(
@@ -94,6 +95,9 @@ public sealed class ServiceIdentityTokenSecurityContractTests
     [InlineData("trusted_workflow_consumer")]
     [InlineData("TRUSTED_WORKFLOW_CONSUMER ")]
     [InlineData("TRUSTED_WORKFLOW_CONSUMER,TRUSTED_AUDIT_SOURCE_INGEST")]
+    [InlineData("trusted_reference_data_consumer")]
+    [InlineData("TRUSTED_REFERENCE_DATA_CONSUMER ")]
+    [InlineData("TRUSTED_REFERENCE_DATA_CONSUMER,TRUSTED_WORKFLOW_CONSUMER")]
     public void Validator_rejects_case_trim_and_multi_audience_drift(string audience)
     {
         var result = new IssueServiceIdentityTokenValidator().Validate(new IssueServiceIdentityTokenCommand(

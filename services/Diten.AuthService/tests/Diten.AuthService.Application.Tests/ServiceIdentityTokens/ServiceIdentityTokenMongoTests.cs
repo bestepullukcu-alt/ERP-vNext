@@ -45,11 +45,20 @@ public sealed class ServiceIdentityTokenMongoTests
             ActiveCredentialHash = new ServiceClientCredentialVerifier().Hash("workflow-secret"),
             ActiveCredentialVersion = "v1"
         };
+        var referenceDataIdentity = new ServiceClientIdentity
+        {
+            ClientCode = "mdm-reference-data-" + marker,
+            ServiceName = "Diten.MDM",
+            AllowedAudience = ServiceIdentityTokenAudiencePolicy.TrustedReferenceDataConsumer,
+            ActiveCredentialHash = new ServiceClientCredentialVerifier().Hash("reference-data-secret"),
+            ActiveCredentialVersion = "v1"
+        };
 
         try
         {
             await identities.InsertOneAsync(identity);
             await identities.InsertOneAsync(workflowIdentity);
+            await identities.InsertOneAsync(referenceDataIdentity);
             await Assert.ThrowsAsync<MongoWriteException>(() => identities.InsertOneAsync(new ServiceClientIdentity
             {
                 ClientCode = identity.ClientCode,
@@ -64,7 +73,11 @@ public sealed class ServiceIdentityTokenMongoTests
                 new ServiceClientTenantGrant { TenantId = tenantA, ServiceClientIdentityId = identity.Id, Audience = "TRUSTED_WORKFLOW_CONSUMER", IsEnabled = true },
                 new ServiceClientTenantGrant { TenantId = tenantA, ServiceClientIdentityId = workflowIdentity.Id, Audience = "TRUSTED_WORKFLOW_CONSUMER", IsEnabled = true },
                 new ServiceClientTenantGrant { TenantId = tenantB, ServiceClientIdentityId = workflowIdentity.Id, Audience = "TRUSTED_WORKFLOW_CONSUMER", IsEnabled = false },
-                new ServiceClientTenantGrant { TenantId = tenantA, ServiceClientIdentityId = workflowIdentity.Id, Audience = "TRUSTED_AUDIT_SOURCE_INGEST", IsEnabled = true }
+                new ServiceClientTenantGrant { TenantId = tenantA, ServiceClientIdentityId = workflowIdentity.Id, Audience = "TRUSTED_AUDIT_SOURCE_INGEST", IsEnabled = true },
+                new ServiceClientTenantGrant { TenantId = tenantA, ServiceClientIdentityId = identity.Id, Audience = "TRUSTED_REFERENCE_DATA_CONSUMER", IsEnabled = true },
+                new ServiceClientTenantGrant { TenantId = tenantA, ServiceClientIdentityId = referenceDataIdentity.Id, Audience = "TRUSTED_REFERENCE_DATA_CONSUMER", IsEnabled = true },
+                new ServiceClientTenantGrant { TenantId = tenantB, ServiceClientIdentityId = referenceDataIdentity.Id, Audience = "TRUSTED_REFERENCE_DATA_CONSUMER", IsEnabled = false },
+                new ServiceClientTenantGrant { TenantId = tenantA, ServiceClientIdentityId = referenceDataIdentity.Id, Audience = "TRUSTED_WORKFLOW_CONSUMER", IsEnabled = true }
             ]);
 
             var identityRepository = new ServiceClientIdentityRepository(database);
@@ -77,6 +90,11 @@ public sealed class ServiceIdentityTokenMongoTests
             Assert.False(await grantRepository.HasEnabledGrantAsync(tenantB, workflowIdentity.Id, "TRUSTED_WORKFLOW_CONSUMER", CancellationToken.None));
             Assert.True(await grantRepository.HasEnabledGrantAsync(tenantA, identity.Id, "TRUSTED_WORKFLOW_CONSUMER", CancellationToken.None));
             Assert.True(await grantRepository.HasEnabledGrantAsync(tenantA, workflowIdentity.Id, "TRUSTED_AUDIT_SOURCE_INGEST", CancellationToken.None));
+            Assert.True(await grantRepository.HasEnabledGrantAsync(tenantA, referenceDataIdentity.Id, "TRUSTED_REFERENCE_DATA_CONSUMER", CancellationToken.None));
+            Assert.False(await grantRepository.HasEnabledGrantAsync(tenantB, referenceDataIdentity.Id, "TRUSTED_REFERENCE_DATA_CONSUMER", CancellationToken.None));
+            Assert.False(await grantRepository.HasEnabledGrantAsync(Guid.NewGuid(), referenceDataIdentity.Id, "TRUSTED_REFERENCE_DATA_CONSUMER", CancellationToken.None));
+            Assert.True(await grantRepository.HasEnabledGrantAsync(tenantA, identity.Id, "TRUSTED_REFERENCE_DATA_CONSUMER", CancellationToken.None));
+            Assert.True(await grantRepository.HasEnabledGrantAsync(tenantA, referenceDataIdentity.Id, "TRUSTED_WORKFLOW_CONSUMER", CancellationToken.None));
 
             var verifier = new ServiceClientCredentialVerifier();
             var auditHandler = new IssueServiceIdentityTokenHandler(
@@ -93,12 +111,38 @@ public sealed class ServiceIdentityTokenMongoTests
                 workflowIdentity.ClientCode, "workflow-secret", tenantA, ServiceIdentityTokenAudiencePolicy.TrustedAuditSourceIngest), CancellationToken.None);
             var wrongWorkflowCredential = await workflowHandler.Handle(new IssueServiceIdentityTokenCommand(
                 workflowIdentity.ClientCode, "audit-secret", tenantA, ServiceIdentityTokenAudiencePolicy.TrustedWorkflowConsumer), CancellationToken.None);
+            var referenceDataHandler = new IssueServiceIdentityTokenHandler(
+                identityRepository, grantRepository, verifier, new StubIssuer(), TimeProvider.System);
+            var referenceDataSuccess = await referenceDataHandler.Handle(new IssueServiceIdentityTokenCommand(
+                referenceDataIdentity.ClientCode, "reference-data-secret", tenantA,
+                ServiceIdentityTokenAudiencePolicy.TrustedReferenceDataConsumer), CancellationToken.None);
+            var referenceDataFromAuditIdentity = await auditHandler.Handle(new IssueServiceIdentityTokenCommand(
+                identity.ClientCode, "audit-secret", tenantA,
+                ServiceIdentityTokenAudiencePolicy.TrustedReferenceDataConsumer), CancellationToken.None);
+            var workflowFromReferenceDataIdentity = await referenceDataHandler.Handle(new IssueServiceIdentityTokenCommand(
+                referenceDataIdentity.ClientCode, "reference-data-secret", tenantA,
+                ServiceIdentityTokenAudiencePolicy.TrustedWorkflowConsumer), CancellationToken.None);
+            var wrongReferenceDataCredential = await referenceDataHandler.Handle(new IssueServiceIdentityTokenCommand(
+                referenceDataIdentity.ClientCode, "workflow-secret", tenantA,
+                ServiceIdentityTokenAudiencePolicy.TrustedReferenceDataConsumer), CancellationToken.None);
+            var disabledReferenceDataGrant = await referenceDataHandler.Handle(new IssueServiceIdentityTokenCommand(
+                referenceDataIdentity.ClientCode, "reference-data-secret", tenantB,
+                ServiceIdentityTokenAudiencePolicy.TrustedReferenceDataConsumer), CancellationToken.None);
+            var missingReferenceDataGrant = await referenceDataHandler.Handle(new IssueServiceIdentityTokenCommand(
+                referenceDataIdentity.ClientCode, "reference-data-secret", Guid.NewGuid(),
+                ServiceIdentityTokenAudiencePolicy.TrustedReferenceDataConsumer), CancellationToken.None);
 
             Assert.True(auditSuccess.IsSuccessful);
             Assert.True(workflowSuccess.IsSuccessful);
             Assert.Equal(403, workflowFromAuditIdentity.StatusCode);
             Assert.Equal(403, auditFromWorkflowIdentity.StatusCode);
             Assert.Equal(401, wrongWorkflowCredential.StatusCode);
+            Assert.True(referenceDataSuccess.IsSuccessful);
+            Assert.Equal(403, referenceDataFromAuditIdentity.StatusCode);
+            Assert.Equal(403, workflowFromReferenceDataIdentity.StatusCode);
+            Assert.Equal(401, wrongReferenceDataCredential.StatusCode);
+            Assert.Equal(403, disabledReferenceDataGrant.StatusCode);
+            Assert.Equal(403, missingReferenceDataGrant.StatusCode);
 
             await Assert.ThrowsAsync<MongoBulkWriteException<ServiceClientTenantGrant>>(() => grants.InsertManyAsync([
                 new ServiceClientTenantGrant
@@ -167,7 +211,10 @@ public sealed class ServiceIdentityTokenMongoTests
         {
             await identities.DeleteManyAsync(x => x.ClientCode == identity.ClientCode);
             await identities.DeleteManyAsync(x => x.ClientCode == workflowIdentity.ClientCode);
-            await grants.DeleteManyAsync(x => x.ServiceClientIdentityId == identity.Id || x.ServiceClientIdentityId == workflowIdentity.Id);
+            await identities.DeleteManyAsync(x => x.ClientCode == referenceDataIdentity.ClientCode);
+            await grants.DeleteManyAsync(x => x.ServiceClientIdentityId == identity.Id
+                || x.ServiceClientIdentityId == workflowIdentity.Id
+                || x.ServiceClientIdentityId == referenceDataIdentity.Id);
         }
     }
 
