@@ -1,5 +1,13 @@
 const { loadScript } = require("./load-script");
 
+function fetchResponse(body, { ok = true, status = 200 } = {}) {
+  return {
+    ok,
+    status,
+    text: async () => JSON.stringify(body)
+  };
+}
+
 describe("strategy-apis", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
@@ -14,10 +22,9 @@ describe("strategy-apis", () => {
   });
 
   it("caches GET list calls", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ success: true, data: { items: [{ id: "g1" }] } }),
-    });
+    const fetchMock = vi.fn().mockResolvedValue(
+      fetchResponse({ success: true, data: { items: [{ id: "g1" }] } })
+    );
     global.fetch = fetchMock;
     loadScript("wwwroot/assets/js/pages/enterprise-strategy/strategy-apis.js");
 
@@ -32,9 +39,9 @@ describe("strategy-apis", () => {
   it("invalidates cache on mutation", async () => {
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ success: true, data: { items: [{ id: "g1" }] } }) })
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ success: true, data: { id: "g2" } }) })
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ success: true, data: { items: [{ id: "g1" }, { id: "g2" }] } }) });
+      .mockResolvedValueOnce(fetchResponse({ success: true, data: { items: [{ id: "g1" }] } }))
+      .mockResolvedValueOnce(fetchResponse({ success: true, data: { id: "g2" } }))
+      .mockResolvedValueOnce(fetchResponse({ success: true, data: { items: [{ id: "g1" }, { id: "g2" }] } }));
     global.fetch = fetchMock;
     loadScript("wwwroot/assets/js/pages/enterprise-strategy/strategy-apis.js");
 
@@ -47,10 +54,9 @@ describe("strategy-apis", () => {
   });
 
   it("uses APP_CONFIG enterprise-strategy API base", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ success: true, data: { items: [] } }),
-    });
+    const fetchMock = vi.fn().mockResolvedValue(
+      fetchResponse({ success: true, data: { items: [] } })
+    );
     global.fetch = fetchMock;
     window.APP_CONFIG = { API_BASE_URL: "http://127.0.0.1:5003" };
     loadScript("wwwroot/assets/js/pages/enterprise-strategy/strategy-apis.js");
@@ -67,9 +73,9 @@ describe("strategy-apis", () => {
   it("refreshes strategy library catalog after template-affecting mutations", async () => {
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ success: true, data: { items: [] } }) })
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ success: true, data: { batchId: "b1" } }) })
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ success: true, data: { items: [{ id: "GT-1" }] } }) });
+      .mockResolvedValueOnce(fetchResponse({ success: true, data: { items: [] } }))
+      .mockResolvedValueOnce(fetchResponse({ success: true, data: { batchId: "b1" } }))
+      .mockResolvedValueOnce(fetchResponse({ success: true, data: { items: [{ id: "GT-1" }] } }));
     global.fetch = fetchMock;
     loadScript("wwwroot/assets/js/pages/enterprise-strategy/strategy-apis.js");
 

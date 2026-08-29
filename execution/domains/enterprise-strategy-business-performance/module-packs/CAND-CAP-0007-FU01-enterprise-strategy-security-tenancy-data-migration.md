@@ -42,6 +42,13 @@ authorized_slice: security-perimeter-and-read-only-inventory
 > activation, frontend, Gateway, deployment, credential or secret authority. An inventory run is evidence,
 > not a tenant-ownership decision and not permission to produce a WorkCenter row.
 
+> **Bounded amendment — FRONTEND-TEST-RECONCILIATION / TEST-ONLY / NON-RUNTIME / NO-PRODUCTION-JS
+> (2026-08-29):** authority is limited to reconciling the six exact Vitest files listed in §5 with the
+> already-authoritative browser production contracts. The slice may correct stale Fetch response mocks,
+> DataTable/async harnesses, current DOM identifiers and invalid fixture combinations. It grants no authority
+> to change a production JavaScript asset, Razor/controller surface, route, localization resource, frontend
+> behavior, WorkCenter, Gateway, Platform, database, activation, deployment, credential or secret.
+
 ## 1. Module Summary
 
 This backend-only foundation makes the existing `Diten.EnterpriseStrategyService` fail-closed, tenant-aware
@@ -231,6 +238,21 @@ reader. The contract test is offline and may validate evidence/schema invariants
 MongoDB. The generated JSON/Markdown evidence files are absent until a successful manual run; placeholders
 must not be presented as measured evidence.
 
+### Bounded FRONTEND-TEST-RECONCILIATION scope
+
+Only these exact test files are writable in this test-only slice:
+
+- `frontend/Diten.Web/tests/strategy-apis.test.js`
+- `frontend/Diten.Web/tests/planning-cycles-owner-position.test.js`
+- `frontend/Diten.Web/tests/planning-cycles-register.test.js`
+- `frontend/Diten.Web/tests/strategy-periods-owner-position.test.js`
+- `frontend/Diten.Web/tests/strategy-periods-register.test.js`
+- `frontend/Diten.Web/tests/objectives-edit-hydration.test.js`
+
+The six tests must exercise the current production assets without changing them. A production frontend
+defect discovered during reconciliation stops this slice and requires a separate amendment; it is not fixed
+under this authority.
+
 ### Future implementation scope
 
 An approved implementation may authorize only the following concrete ES-owned paths:
@@ -271,7 +293,7 @@ directory.
 - `services/Diten.Platform.Common/**`
 - `services/Diten.DevEnablementService/**`
 - all other domain service paths
-- `frontend/**`
+- `frontend/**`, except the six exact test files in the bounded FRONTEND-TEST-RECONCILIATION scope
 - `gateway/**`, including `gateway/Diten.ApiGateway/ocelot.json`
 - other domains' `execution/domains/**`
 - `execution/portfolio/**` and `execution/registries/**`
@@ -449,7 +471,8 @@ Gateway work requires a separate, explicitly approved `integration-agent` task a
 18. Authenticated HTTP tests cover `401`, `403`, tenant errors, cross-tenant `404`, stale write and replay.
 19. Gate 2 blocked objects remain unchanged until written Gate 2 PASS.
 20. `CAND-CAP-0007-FU01` has zero runtime literal hits.
-21. No frontend, gateway, Platform/Auth service or other-domain file changes occur in this slice.
+21. No production frontend, gateway, Platform/Auth service or other-domain file changes occur in this slice;
+    only the six exact frontend test files in §5 may change under the test-only amendment.
 22. All scoped regression is green before the slice closes; failures are not deferred.
 23. All 148 HTTP actions are inventoried by executable tests; only health actions may be anonymous.
 24. Existing 81 permission-decorated actions deny without an exact ordinal permission claim; configuration
@@ -473,6 +496,10 @@ Gateway work requires a separate, explicitly approved `integration-agent` task a
     `shared` remain non-migratable until a named mapping owner/data steward records a disposition.
 34. A generated inventory artifact contains no Mongo URI, host, credential, raw document, sampled business
     value or candidate runtime identity.
+35. The six exact frontend tests execute 11 focused cases against current production contracts; stale mocks,
+    harnesses, identifiers and invalid fixture combinations are corrected without any production frontend
+    diff, and the complete ES-relevant frontend Vitest suite remains green. The repository-wide frontend
+    suite is also run; unrelated baseline failures are reported explicitly and are not attributed to this slice.
 35. Completing this inventory does not change the exact WorkCenter `TENANT_SAFETY_NOT_READY` 503/zero-read
     boundary and grants no successful projection authority.
 

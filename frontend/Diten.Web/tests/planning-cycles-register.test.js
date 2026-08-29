@@ -13,7 +13,7 @@ function setupDom() {
       <select id="planning-cycle-owner-filter"><option value="">All</option></select>
       <button id="planning-cycle-reset" type="button"></button>
       <button id="planning-cycle-refresh" type="button"></button>
-      <table id="planning-cycles-table"><tbody></tbody></table>
+      <table id="planning-cycles-table" class="planning-cycles-table"><tbody></tbody></table>
 
       <div id="planning-cycle-readiness-indicator"></div>
       <div id="planning-cycle-readiness-text"></div>
@@ -36,11 +36,57 @@ function setupDom() {
   `;
 }
 
+let dataTableLoad;
+
+function installDataTableHarness() {
+  class TestDataTable {
+    constructor(tableEl, config) {
+      dataTableLoad = new Promise((resolve) => {
+        void config.ajax({}, ({ data }) => {
+          const actionDefinition = config.columnDefs.find((definition) => definition.targets === -1);
+          const tbody = tableEl.querySelector("tbody");
+          tbody.innerHTML = (data || []).map((row) => `
+            <tr>
+              <td>${row.name}</td>
+              <td>${actionDefinition.render(null, "display", row)}</td>
+            </tr>`).join("");
+          resolve();
+        });
+      });
+    }
+
+    destroy() {}
+  }
+
+  TestDataTable.Responsive = { display: { modal: () => () => {} } };
+  global.DataTable = window.DataTable = TestDataTable;
+}
+
+function installJQueryHarness() {
+  const jquery = (target) => {
+    const elements = typeof target === "string"
+      ? Array.from(document.querySelectorAll(target))
+      : (target ? [target] : []);
+    const api = {
+      length: elements.length,
+      empty() { elements.forEach((element) => { element.innerHTML = ""; }); return api; },
+      append(value) { elements.forEach((element) => element.insertAdjacentHTML("beforeend", String(value))); return api; },
+      hasClass(className) { return Boolean(elements[0]?.classList.contains(className)); },
+      removeAttr(name) { elements.forEach((element) => element.removeAttribute(name)); return api; }
+    };
+    return api;
+  };
+  jquery.fn = {};
+  global.$ = window.$ = jquery;
+}
+
 async function boot() {
   setupDom();
   global.bootstrap = {
     Modal: function () { return { show() { }, hide() { } }; }
   };
+  installDataTableHarness();
+  installJQueryHarness();
   window.enterpriseStrategyUi = {
     notify: vi.fn(),
     getErrorMessage: (err, fallback) => err?.message || fallback
@@ -48,6 +94,7 @@ async function boot() {
   window.enterpriseWorkbookOptions = {
     ensureLookupsLoaded: vi.fn().mockResolvedValue(undefined),
     ensureUsersLoaded: vi.fn().mockResolvedValue(undefined),
+    ensureCompaniesLoaded: vi.fn().mockResolvedValue(undefined),
     ensurePositionsLoaded: vi.fn().mockResolvedValue(undefined),
     fillSelect: (el, items, options = {}) => {
       if (!el) return;
@@ -73,7 +120,8 @@ async function boot() {
       planningLifecycleStatuses: ["Draft", "Active", "Archived"],
       planningCycleTypes: ["Annual Plan"],
       ownerReferences: [{ ownerId: "owner-1", displayName: "Beste Pullukcu" }]
-    })
+    }),
+    getUsersByTenantId: vi.fn().mockResolvedValue({ data: [] })
   };
   window.strategyPlanningApi = {
     listCycles: vi.fn().mockResolvedValue([
@@ -111,6 +159,7 @@ async function boot() {
         updatedOn: "2024-12-31"
       }
     ]),
+    getAllPositions: vi.fn().mockResolvedValue([]),
     getCycle: vi.fn(),
     updateCycle: vi.fn(),
     createCycle: vi.fn(),
@@ -120,7 +169,8 @@ async function boot() {
 
   loadScript("wwwroot/assets/js/pages/enterprise-strategy/row-actions-menu.js");
   loadScript("wwwroot/assets/js/pages/enterprise-strategy/planning-cycles.js");
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  await window.planningCyclesApp.initPage();
+  await dataTableLoad;
 }
 
 describe("planning cycles register actions", () => {
@@ -137,13 +187,13 @@ describe("planning cycles register actions", () => {
     const archivedRow = rows.find((row) => row.textContent.includes("Archived Cycle"));
     const actionLabels = (row) => Array.from(row.querySelectorAll(".dropdown-item")).map((item) => item.textContent.trim());
 
-    expect(draftRow.querySelector(".bx-dots-vertical-rounded")).not.toBeNull();
-    expect(activeRow.querySelector(".bx-dots-vertical-rounded")).not.toBeNull();
-    expect(archivedRow.querySelector(".bx-dots-vertical-rounded")).not.toBeNull();
+    expect(draftRow.querySelector(".bx-show")).not.toBeNull();
+    expect(activeRow.querySelector(".bx-show")).not.toBeNull();
+    expect(archivedRow.querySelector(".bx-show")).not.toBeNull();
 
-    expect(actionLabels(draftRow)).toEqual(expect.arrayContaining(["View", "Edit", "Activate", "Archive / Delete"]));
-    expect(actionLabels(activeRow)).toEqual(expect.arrayContaining(["View", "Archive / Delete"]));
+    expect(actionLabels(draftRow)).toEqual(["Edit", "Activate", "Archive / Delete"]);
+    expect(actionLabels(activeRow)).toEqual(["Archive / Delete"]);
     expect(actionLabels(activeRow)).not.toContain("Edit");
-    expect(actionLabels(archivedRow)).toEqual(["View"]);
+    expect(actionLabels(archivedRow)).toEqual(["Archive / Delete"]);
   });
 });

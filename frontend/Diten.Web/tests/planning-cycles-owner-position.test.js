@@ -32,8 +32,43 @@ function buildDom() {
     <select id="planning-cycle-status-filter"></select>
     <select id="planning-cycle-type-filter"></select>
     <select id="planning-cycle-owner-filter"></select>
-    <table id="planning-cycles-table"><tbody></tbody></table>
+    <table id="planning-cycles-table" class="planning-cycles-table"><tbody></tbody></table>
   `;
+}
+
+let dataTableLoad;
+
+function installDataTableHarness() {
+  class TestDataTable {
+    constructor(_tableEl, config) {
+      dataTableLoad = new Promise((resolve) => {
+        void config.ajax({}, () => resolve());
+      });
+    }
+
+    destroy() {}
+  }
+
+  TestDataTable.Responsive = { display: { modal: () => () => {} } };
+  global.DataTable = window.DataTable = TestDataTable;
+}
+
+function installJQueryHarness() {
+  const jquery = (target) => {
+    const elements = typeof target === "string"
+      ? Array.from(document.querySelectorAll(target))
+      : (target ? [target] : []);
+    const api = {
+      length: elements.length,
+      empty() { elements.forEach((element) => { element.innerHTML = ""; }); return api; },
+      append(value) { elements.forEach((element) => element.insertAdjacentHTML("beforeend", String(value))); return api; },
+      hasClass(className) { return Boolean(elements[0]?.classList.contains(className)); },
+      removeAttr(name) { elements.forEach((element) => element.removeAttribute(name)); return api; }
+    };
+    return api;
+  };
+  jquery.fn = {};
+  global.$ = window.$ = jquery;
 }
 
 function fillSelect(el, items, options = {}) {
@@ -57,6 +92,8 @@ function fillSelect(el, items, options = {}) {
 async function boot() {
   buildDom();
   global.bootstrap = { Modal: function () { return { show() {}, hide() {} }; } };
+  installDataTableHarness();
+  installJQueryHarness();
   window.planningCycleEditorMode = "create-page";
   window.enterpriseStrategyUi = { notify: vi.fn(), getErrorMessage: (err, fallback) => err?.message || fallback };
   window.enterpriseWorkbookOptions = {
@@ -77,17 +114,21 @@ async function boot() {
   };
   window.strategyPlanningApi = {
     listCycles: vi.fn().mockResolvedValue([]),
+    getAllPositions: vi.fn().mockResolvedValue([{ PositionId: "3", PositionName: "HEAD OF COUNTRY" }]),
     createCycle: vi.fn().mockResolvedValue({}),
     updateCycle: vi.fn().mockResolvedValue({}),
     getCycle: vi.fn().mockResolvedValue({}),
     activateCycle: vi.fn().mockResolvedValue({}),
     archiveCycle: vi.fn().mockResolvedValue({})
   };
-  window.strategyEnterpriseMetaApi = { lookups: vi.fn().mockResolvedValue({ planningCycleTypes: ["Annual Plan"], planningLifecycleStatuses: ["Draft"] }) };
+  window.strategyEnterpriseMetaApi = {
+    lookups: vi.fn().mockResolvedValue({ planningCycleTypes: ["Annual Plan"], planningLifecycleStatuses: ["Draft"] }),
+    getUsersByTenantId: vi.fn().mockResolvedValue({ data: [] })
+  };
 
   loadScript("wwwroot/assets/js/pages/enterprise-strategy/planning-cycles.js");
-  await new Promise((resolve) => setTimeout(resolve, 0));
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  await window.planningCyclesApp.initPage();
+  await dataTableLoad;
 }
 
 describe("planning cycle owner position", () => {
@@ -103,7 +144,7 @@ describe("planning cycle owner position", () => {
 
     const positionEl = document.getElementById("planning-cycle-owner-position");
     expect(Array.from(positionEl.options).some((opt) => opt.value === "3")).toBe(true);
-    expect(document.getElementById("planning-cycle-owner-position-help").textContent).toContain("Showing API position list");
+    expect(window.strategyPlanningApi.getAllPositions).toHaveBeenCalledTimes(1);
     expect(positionEl.disabled).toBe(false);
   });
 });

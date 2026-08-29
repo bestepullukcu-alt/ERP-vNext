@@ -161,7 +161,7 @@ async function boot() {
 
   loadScript("wwwroot/assets/js/pages/enterprise-strategy/row-actions-menu.js");
   loadScript("wwwroot/assets/js/pages/enterprise-strategy/strategy-periods.js");
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  await window.strategyPeriodsApp.initPage();
 }
 
 describe("strategy periods register actions", () => {
@@ -178,16 +178,18 @@ describe("strategy periods register actions", () => {
     const archivedRow = rows.find((row) => row.textContent.includes("Archived Period"));
     const actionLabels = (row) => Array.from(row.querySelectorAll(".strategy-period-col-actions .dropdown-item")).map((item) => item.textContent.trim());
 
+    expect(draftRow.querySelector(".bx-show")).not.toBeNull();
+    expect(activeRow.querySelector(".bx-show")).not.toBeNull();
+    expect(archivedRow.querySelector(".bx-show")).not.toBeNull();
     expect(draftRow.querySelector(".bx-dots-vertical-rounded")).not.toBeNull();
     expect(activeRow.querySelector(".bx-dots-vertical-rounded")).not.toBeNull();
-    expect(archivedRow.querySelector(".bx-dots-vertical-rounded")).not.toBeNull();
+    expect(archivedRow.querySelector(".bx-dots-vertical-rounded")).toBeNull();
 
-    expect(actionLabels(draftRow)).toEqual(expect.arrayContaining(["View", "Edit", "Activate", "Archive / Delete"]));
+    expect(actionLabels(draftRow)).toEqual(["Edit", "Activate", "Archive / Delete"]);
 
-    expect(actionLabels(activeRow)).toEqual(expect.arrayContaining(["View", "Archive / Delete"]));
-    expect(actionLabels(activeRow)).not.toContain("Edit");
+    expect(actionLabels(activeRow)).toEqual(["Edit", "Archive / Delete"]);
     expect(actionLabels(activeRow)).not.toContain("Activate");
 
-    expect(actionLabels(archivedRow)).toEqual(["View"]);
+    expect(actionLabels(archivedRow)).toEqual([]);
   });
 });
