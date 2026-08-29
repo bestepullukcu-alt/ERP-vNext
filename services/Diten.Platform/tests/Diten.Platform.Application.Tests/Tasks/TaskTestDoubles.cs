@@ -327,6 +327,20 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
             .Where(x => x.TenantId == TaskTestData.Tenant && !x.IsDeleted && x.AssigneeUserId == userId)
             .ToList());
 
+    /// <summary>
+    /// BL-016 — mirrors <c>TaskItemRepository.ListByCreatorAsync</c>, terminal exclusion included. The exclusion
+    /// is copied deliberately: a double that returned finished work too would let a guard about the Outbox pass
+    /// against behaviour production does not have.
+    /// </summary>
+    public Task<IReadOnlyList<TaskItem>> ListByCreatorAsync(Guid creatorUserId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<TaskItem>>(_items
+            .Where(x => x.TenantId == TaskTestData.Tenant
+                        && !x.IsDeleted
+                        && x.CreatedByUserId == creatorUserId
+                        && x.Lifecycle != Domain.Enums.Tasks.TaskLifecycle.Done
+                        && x.Lifecycle != Domain.Enums.Tasks.TaskLifecycle.Cancelled)
+            .ToList());
+
     public Task<IReadOnlyList<TaskItem>> ListByParentAsync(Guid parentTaskItemId, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<TaskItem>>(_items
             .Where(x => x.TenantId == TaskTestData.Tenant && !x.IsDeleted && x.ParentTaskItemId == parentTaskItemId)

@@ -38,6 +38,25 @@ public interface ITaskItemRepository
         CancellationToken ct = default);
 
     /// <summary>
+    /// BL-016 — tasks this user OPENED, whoever is carrying them now.
+    ///
+    /// <para>The third ownership question, and the one nothing here could answer: <see cref="ListByAssigneeAsync"/>
+    /// asks what the user holds and <see cref="ListUnclaimedByPositionsAsync"/> asks what their pools are offering.
+    /// Work a user created and handed to somebody else was in NEITHER, so "where is the task I gave Ahmet" had no
+    /// query behind it at all.</para>
+    ///
+    /// <para>⚠ <c>CreatedByUserId</c>, never <c>CreatedBy</c>. <c>CreatedBy</c> is the audit stamp; the task's
+    /// requester — the person the projection puts on <c>Requester</c> and whose right it is to cancel — is
+    /// <c>CreatedByUserId</c>. Asking the audit field returns nothing useful and reads as "there is no data".</para>
+    ///
+    /// <para>TERMINAL WORK IS EXCLUDED, like the pool read above and for the same reason: this answers "what did I
+    /// start that is still out there". A finished task the user never held is not their history — the History tab
+    /// is what was once on their own board — and claiming it would be a second, unannounced meaning for that tab.
+    /// </para>
+    /// </summary>
+    Task<IReadOnlyList<TaskItem>> ListByCreatorAsync(Guid creatorUserId, CancellationToken ct = default);
+
+    /// <summary>
     /// Optimistic-concurrency update. Returns false when the expected version no longer matches — the caller
     /// turns that into a controlled 409 rather than silently overwriting (pack §13).
     /// </summary>

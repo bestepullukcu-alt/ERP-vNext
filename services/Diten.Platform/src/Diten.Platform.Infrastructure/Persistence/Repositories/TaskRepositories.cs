@@ -100,6 +100,21 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
     }
 
     /// <summary>
+    /// BL-016 — what this user STARTED and is still out there. See the interface for why the field is
+    /// <c>CreatedByUserId</c> and why terminal work is excluded.
+    /// </summary>
+    public async Task<IReadOnlyList<TaskItem>> ListByCreatorAsync(
+        Guid creatorUserId,
+        CancellationToken ct = default)
+    {
+        var filter = Builders<TaskItem>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskItem>.Filter.Eq(x => x.CreatedByUserId, creatorUserId),
+            Builders<TaskItem>.Filter.Nin(x => x.Lifecycle, new[] { TaskLifecycle.Done, TaskLifecycle.Cancelled }));
+        return await Collection.Find(filter).SortBy(x => x.DueAt).ToListAsync(ct);
+    }
+
+    /// <summary>
     /// A new task, with the <see cref="TaskTransitionKind.Created"/> entry that opens its history.
     ///
     /// <para>The entry is what makes "this task has no history" ANSWERABLE rather than ambiguous. Every task
