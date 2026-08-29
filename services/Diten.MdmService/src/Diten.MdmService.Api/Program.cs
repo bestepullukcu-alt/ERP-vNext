@@ -25,11 +25,14 @@ var runFirstGskuIdentityWorkflowRecovery =
     FirstGskuIdentityWorkflowRecoveryCommandLine.IsRequested(args);
 var runLskuIdentityWorkflowRecovery =
     LskuIdentityWorkflowRecoveryCommandLine.IsRequested(args);
+var runFinishedGoodIdentityWorkflowRecovery =
+    FinishedGoodIdentityWorkflowRecoveryCommandLine.IsRequested(args);
 if ((runProductLegalEntityScopeOperational ? 1 : 0)
     + (runAuditIntentTemporalMigration ? 1 : 0)
     + (runProductIdentityWorkflowRecovery ? 1 : 0)
     + (runFirstGskuIdentityWorkflowRecovery ? 1 : 0)
-    + (runLskuIdentityWorkflowRecovery ? 1 : 0) > 1)
+    + (runLskuIdentityWorkflowRecovery ? 1 : 0)
+    + (runFinishedGoodIdentityWorkflowRecovery ? 1 : 0) > 1)
 {
     throw new InvalidOperationException("MDM_OPERATIONAL_COMMAND_AMBIGUOUS");
 }
@@ -138,12 +141,39 @@ builder.Services.AddScoped(sp =>
 builder.Services.AddScoped<LskuIdentityWorkflowProcessor>();
 builder.Services.AddSingleton<LskuIdentityWorkflowRecoveryRunner>();
 builder.Services.AddHostedService<LskuIdentityWorkflowRecoveryWorker>();
+builder.Services.AddOptions<FinishedGoodIdentityWorkflowOptions>()
+    .Bind(builder.Configuration.GetSection(FinishedGoodIdentityWorkflowOptions.SectionName))
+    .Validate(options => options.IsValid(), "FINISHED_GOOD_IDENTITY_WORKFLOW_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddOptions<FinishedGoodIdentityWorkflowWorkerOptions>()
+    .Bind(builder.Configuration.GetSection(FinishedGoodIdentityWorkflowWorkerOptions.SectionName))
+    .Validate(IsValidFinishedGoodIdentityWorkflowWorkerOptions,
+        "FINISHED_GOOD_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<FinishedGoodIdentityWorkflowOptions>>().Value;
+    var configuration = options.Enabled ? options.ToStartConfiguration()
+        : new FinishedGoodIdentityWorkflowStartConfiguration(null, null, [], string.Empty, false, false, null);
+    return new FinishedGoodIdentityWorkflowStartRequestFactory(configuration,
+        sp.GetRequiredService<TimeProvider>());
+});
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<FinishedGoodIdentityWorkflowWorkerOptions>>().Value;
+    return new FinishedGoodIdentityWorkflowExecutionConfiguration(
+        TimeSpan.FromSeconds(options.LeaseSeconds), TimeSpan.FromSeconds(options.RetryDelaySeconds));
+});
+builder.Services.AddScoped<FinishedGoodIdentityWorkflowProcessor>();
+builder.Services.AddSingleton<FinishedGoodIdentityWorkflowRecoveryRunner>();
+builder.Services.AddHostedService<FinishedGoodIdentityWorkflowRecoveryWorker>();
 
 if (!runProductLegalEntityScopeOperational
     && !runAuditIntentTemporalMigration
     && !runProductIdentityWorkflowRecovery
     && !runFirstGskuIdentityWorkflowRecovery
-    && !runLskuIdentityWorkflowRecovery)
+    && !runLskuIdentityWorkflowRecovery
+    && !runFinishedGoodIdentityWorkflowRecovery)
 {
     var jwtSecret = builder.Configuration["JwtSettings:Secret"];
     var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
@@ -295,6 +325,18 @@ if (runLskuIdentityWorkflowRecovery)
     return;
 }
 
+if (runFinishedGoodIdentityWorkflowRecovery)
+{
+    var runner = app.Services.GetRequiredService<FinishedGoodIdentityWorkflowRecoveryRunner>();
+    var result = await FinishedGoodIdentityWorkflowRecoveryCommandLine.RunAsync(
+        runner, app.Lifetime.ApplicationStopping);
+    app.Logger.LogInformation(
+        "Finished Good identity workflow recovery completed; tenants {TenantCount}, operations {OperationCount}, completed {CompletedCount}, deferred {DeferredCount}, failed {FailedCount}.",
+        result.TenantCount, result.OperationCount, result.CompletedCount,
+        result.DeferredCount, result.FailedCount);
+    return;
+}
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -401,6 +443,12 @@ static bool IsValidFirstGskuIdentityWorkflowWorkerOptions(
 }
 
 static bool IsValidLskuIdentityWorkflowWorkerOptions(LskuIdentityWorkflowWorkerOptions options)
+{
+    try { options.EnsureValidWhenEnabled(); return true; }
+    catch (InvalidOperationException) { return false; }
+}
+
+static bool IsValidFinishedGoodIdentityWorkflowWorkerOptions(FinishedGoodIdentityWorkflowWorkerOptions options)
 {
     try { options.EnsureValidWhenEnabled(); return true; }
     catch (InvalidOperationException) { return false; }

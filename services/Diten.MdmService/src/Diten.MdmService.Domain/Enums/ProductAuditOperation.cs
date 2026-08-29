@@ -32,5 +32,9 @@ public enum ProductAuditOperation
     LskuIdentitySubmitted = 28,
     LskuIdentityApproved = 29,
     LskuIdentityRejected = 30,
-    LskuIdentityRetired = 31
+    LskuIdentityRetired = 31,
+    FinishedGoodIdentitySubmitted = 32,
+    FinishedGoodIdentityApproved = 33,
+    FinishedGoodIdentityRejected = 34,
+    FinishedGoodIdentityRetired = 35
 }
