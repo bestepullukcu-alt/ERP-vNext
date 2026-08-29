@@ -12,6 +12,10 @@ public sealed record ProductAbbreviationRegisterWriteResult(
 
 public interface IProductAbbreviationRegisterRepository
 {
+    Task<IReadOnlyList<ProductAbbreviationRegisterEntry>> GetInitialPendingWorkItemsAsync(
+        int limit,
+        CancellationToken cancellationToken = default)
+        => throw new NotSupportedException("Pending work-item projection is not supported by this repository.");
     Task<ProductAbbreviationRegisterEntry?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<ProductAbbreviationRegisterEntry?> GetByAllocationIdempotencyKeyAsync(string idempotencyKey, CancellationToken cancellationToken = default);
     Task<ProductAbbreviationRegisterEntry?> GetActiveByGlobalProductIdAsync(Guid globalProductId, CancellationToken cancellationToken = default);

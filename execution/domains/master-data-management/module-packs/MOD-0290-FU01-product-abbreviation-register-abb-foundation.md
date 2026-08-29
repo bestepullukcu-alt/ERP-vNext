@@ -861,7 +861,7 @@ the behavior when the ABB source fact is absent. Optional properties are omitted
 | `LifecycleOwner` | Constant `mdm-product-abbreviations`; ABB remains authoritative. | Contract defect; fail the provider response. |
 | `WorkItemCapabilities` | Empty list. ABB supplies no complete WorkCenter capability container in this step. | Empty remains empty; no placeholder card is declared. |
 | `Actions` | Exact domain-eligible subset of `approve`, `reject`, `cancel`, as frozen below. | Empty list is valid when the actor has no domain-eligible action; no fake disabled action is invented. |
-| `Concurrency` | `{ kind: "version", token: entry.Version.ToString(InvariantCulture) }`. | Missing/non-positive version is invalid source evidence; fail the provider response. |
+| `Concurrency` | `{ kind: "version", token: entry.Version.ToString(InvariantCulture) }`; initial ABB requests legitimately start at version `0`. | Missing/negative version is invalid source evidence; fail the provider response. |
 | `WaitingContext` | Omitted; ABB records no typed waiting context. | Omitted. Never synthesize a requester or approver wait. |
 | `Escalation` | Omitted; ABB records no escalation fact. | Omitted. Never emit `false` as an asserted tracked state. |
 | `DueAt` | Omitted; ABB allocation has no approved deadline/SLA field. | Omitted. Never use request time as a due date. |
@@ -882,8 +882,9 @@ field contract in this slice. ABB audit evidence remains on the audit-permission
 #### Projection eligibility and FU03 scope filter
 
 The pending-work repository query reads at most `101` entries per call, tenant-scoped and
-`IsDeleted == false`, filtered by `REQUESTED && ReplacesEntryId == null`, ordered by `RequestedAtUtc` ascending and
-then `Id` ordinal. The 101st row is an overflow sentinel, not a projectable item. If it exists, the provider returns
+`IsDeleted == false`, filtered by `REQUESTED && ReplacesEntryId == null`, ordered only by `Id` ascending. It must not
+sort on `RequestedAtUtc` or another `DateTimeOffset` member: BL-030 proves the current BSON array representation can
+silently misorder a single ascending temporal key. The 101st row is an overflow sentinel, not a projectable item. If it exists, the provider returns
 `503 ABBREVIATION_WORK_ITEM_BOUND_EXCEEDED`; it must not scope-filter the first 100 and incorrectly claim that this is
 the complete visible set. It never returns ACTIVE/REJECTED/CANCELLED/RETIRED, correction replacements or retirement
 requests. This fail-closed foundation may later gain a separately designed continuation contract; it may not add an
@@ -938,8 +939,8 @@ gating never replaces those checks.
 
 #### Expected version, idempotency and response contract
 
-`payload.expectedVersion` is mandatory and must equal the integer projection token; absent, zero, negative or overflow
-values return `400 WORK_ITEM_ACTION_PAYLOAD_INVALID` before MediatR dispatch. The endpoint does not accept tenant,
+`payload.expectedVersion` is mandatory and must equal the integer projection token; zero is valid for a newly
+requested ABB, while absent, negative or overflow values return `400 WORK_ITEM_ACTION_PAYLOAD_INVALID` before MediatR dispatch. The endpoint does not accept tenant,
 actor, permission, target lifecycle or Global Product identity from the body.
 
 The generic browser currently does not mint an action idempotency key. MDM therefore derives the stable key
@@ -951,15 +952,27 @@ identity and, after the first durable decision advanced the version/state, deter
 reconciliation instead of replaying a different payload as success. Correlation ID is never operation identity and
 the browser cannot supply or override the derived key.
 
-Request body is the shared union only:
+Request body is the shared WorkCenter union. The ABB endpoint consumes only `expectedVersion`, `reason` and `note`,
+but must recognize the complete canonical union because the generic dispatcher may serialize its other known members
+as null. Unknown properties and a non-null/non-empty unsupported member return `400`; known null members are accepted.
+In particular a caller-supplied non-empty `idempotencyKey` is rejected because ABB's operation identity is
+server-owned and cannot be overridden.
 
 ```json
 {
   "providerCode": "mdm-product-abbreviations",
   "payload": {
-    "expectedVersion": 1,
+    "expectedVersion": 0,
     "reason": "optional-or-required-by-action",
-    "note": "generic WorkCenter fallback field"
+    "reasonCode": null,
+    "note": "generic WorkCenter fallback field",
+    "plannedDate": null,
+    "assigneeUserId": null,
+    "waitingOnUserId": null,
+    "comment": null,
+    "evidenceRef": null,
+    "targetPrincipalId": null,
+    "idempotencyKey": null
   }
 }
 ```
@@ -988,8 +1001,8 @@ Runtime code-start, if separately approved after blockers close, is limited to:
 - `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/ProductAbbreviationWorkItemsController.cs` — new;
   exact remote GET/POST controller only.
 - `services/Diten.MdmService/src/Diten.MdmService.Api/Contracts/ProductAbbreviationWorkItems/ProductAbbreviationWorkItemRequests.cs`
-  — new; strict shared action request plus dedicated five-member response envelope/parser contract with
-  `reason_code` and unmapped-field rejection.
+  — new; exact shared-union action request plus dedicated five-member response envelope/parser contract with
+  `reason_code`, unknown-field rejection, known-null compatibility and non-null unsupported-field rejection.
 - `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/ProductAbbreviationWorkItemModels.cs`
   — new; the canonical 31-field wire projection and response models, without a Platform project reference.
 - `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Queries/GetProductAbbreviationWorkItemsQuery.cs`
@@ -1036,32 +1049,50 @@ Global Product batch repository and shared `Response<T>` without changing them.
 
 #### Runtime acceptance and test matrix
 
-- [ ] WC-ABB-01 — The GET endpoint returns the exact `1.0` object envelope and contract-valid 31-field items; optional
+- [x] WC-ABB-01 — The GET endpoint returns the exact `1.0` object envelope and contract-valid 31-field items; optional
   values are omitted, capability list is empty and no empty capability card can render.
-- [ ] WC-ABB-02 — Only bounded, same-tenant, non-deleted, initial `REQUESTED` allocations are projected in deterministic
+- [x] WC-ABB-02 — Only bounded, same-tenant, non-deleted, initial `REQUESTED` allocations are projected in deterministic
   order; correction, retirement and every terminal status are absent.
-- [ ] WC-ABB-03 — The Global Product join is one bounded batch and a missing/inconsistent product cannot yield a
+- [x] WC-ABB-03 — The Global Product join is one bounded batch and a missing/inconsistent product cannot yield a
   confident partial board.
-- [ ] WC-ABB-04 — FU03 Preparation/Enforced/FailClosedSuspended, GroupWide/Scoped, legacy-unclassified and candidate
+- [x] WC-ABB-04 — FU03 Preparation/Enforced/FailClosedSuspended, GroupWide/Scoped, legacy-unclassified and candidate
   failure cases filter exactly like the existing product consumers; no scope algorithm is copied.
-- [ ] WC-ABB-05 — Every item claims `mdm-product-abbreviations`/`1.0` and the stable object/deep-link contract; foreign
+- [x] WC-ABB-05 — Every item claims `mdm-product-abbreviations`/`1.0` and the stable object/deep-link contract; foreign
   provider, tenant or object identity is rejected.
-- [ ] WC-ABB-06 — Approve/reject is absent for the requester; cancel is present only for the exact requester. Platform
+- [x] WC-ABB-06 — Approve/reject is absent for the requester; cancel is present only for the exact requester. Platform
   config permission gating and MDM command authorization both remain effective.
-- [ ] WC-ABB-07 — Approve, reject and cancel dispatch exactly one existing ABB command with exact expected version,
+- [x] WC-ABB-07 — Approve, reject and cancel dispatch exactly one existing ABB command with exact expected version,
   reason mapping and deterministic operation identity; no new ABB write path exists.
-- [ ] WC-ABB-08 — Same-key retry/replay returns the durable first outcome without a second lifecycle/history write;
+- [x] WC-ABB-08 — Same-key retry/replay returns the durable first outcome without a second lifecycle/history write;
   stale version, double click, changed reason and timeout-then-retry are real-Mongo covered.
-- [ ] WC-ABB-09 — `400/401/403/404/409/202/503/504` and cancellation behavior match the matrix, preserve stable
+- [x] WC-ABB-09 — `400/401/403/404/409/202/503/504` and cancellation behavior match the matrix, preserve stable
   `reason_code` and never translate failure into 2xx success.
-- [ ] WC-ABB-10 — Tenant A/B, mismatched tenant header, deleted entry/product, direct-human SoD, permission and FU03
+- [x] WC-ABB-10 — Tenant A/B, mismatched tenant header, deleted entry/product, direct-human SoD, permission and FU03
   scope tests prove non-disclosure and fail-closed behavior on real `localhost:27017` Mongo.
-- [ ] WC-ABB-11 — Contract tests pin exact GET/POST route, controller auth, two allowed request fields, three action
+- [x] WC-ABB-11 — Contract tests pin exact GET/POST route, controller auth, two allowed request fields, three action
   codes, three permission keys, 31 mapping fields and absence of Platform/frontend/config dependencies.
-- [ ] WC-ABB-12 — Existing ABB focused tests, FU03 consumer/security tests and the full non-skipped MDM suite remain
+- [x] WC-ABB-12 — Existing ABB focused tests, FU03 consumer/security tests and the full non-skipped MDM suite remain
   green; MDM API Release build has zero errors.
-- [ ] WC-ABB-13 — Architecture/guard scan proves no second `IWorkItemProvider`, `IWorkItemActionDispatcher` or remote
+- [x] WC-ABB-13 — Architecture/guard scan proves no second `IWorkItemProvider`, `IWorkItemActionDispatcher` or remote
   gateway implementation and no Platform-specific ABB bridge class.
+
+Runtime/test evidence recorded on 2026-08-29:
+
+- MDM API Release build completed with zero errors; the five reported persistence warnings predate this named step.
+- Exact `ProductAbbreviationWorkItem*` tests passed `13/13`; the broader ABB regression passed `72/72`; the complete
+  non-skipped MDM application/real-Mongo suite passed `720/720` against `localhost:27017`.
+- The WorkCenter generic remote bridge, manifest-address prohibition and singleton implementation guard passed
+  `24/24`. No ABB-specific Platform provider, dispatcher or gateway implementation was added.
+- The WorkItem tests pin the five-member envelope and stable `reason_code`, exact routes/identity/actions, 31-field
+  shape, optional omission, the complete shared action union, caller-idempotency rejection, version-zero support,
+  101-row overflow sentinel, scalar-ID ordering, one batch Global Product join, exact requester/checker actions,
+  deterministic payload-bound operation identity and preservation of non-success `202` reconciliation.
+- Existing ABB and FU03 tests supply the compositional real-Mongo evidence for tenant/soft-delete isolation,
+  maker-checker and own-cancel enforcement, stale-version/replay cardinality, Preparation/Enforced/Suspended scope
+  decisions and provider/candidate failure behavior. The WorkItem-specific guard test proves both new handlers consume
+  that single accepted FU03 guard instead of copying its algorithm.
+- `git diff --check` and the protected-path/architecture scans completed cleanly. No config, credential, process,
+  business-data, Platform, Gateway, frontend or Production/Staging mutation was performed.
 
 #### Separate operator configuration and live-acceptance gate
 
@@ -1108,7 +1139,7 @@ Production/Staging provider configuration and enablement remain separate approva
 - [x] Existing ABB entity, repository, controller, commands, permissions, SoD/own-cancel and failure codes measured.
 - [x] Exact provider identity/version, endpoint pair, 31-field mapping, capabilities, eligibility, actions, deterministic
   idempotency, failure matrix, runtime/test allow-list and protected paths are frozen by this named step.
-- [ ] FU03 accepted implementation, including `ProductLegalEntityScopeConsumerGuard`, is integrated into and re-verified on
+- [x] FU03 accepted implementation, including `ProductLegalEntityScopeConsumerGuard`, is integrated into and re-verified on
   the eventual runtime code-start base. It is absent from this planning worktree's current main base.
 - [x] Product Data Owner decision is frozen under the user's 2026-08-29 standing approval: only initial allocation
   requests are projected; correction and retirement remain
