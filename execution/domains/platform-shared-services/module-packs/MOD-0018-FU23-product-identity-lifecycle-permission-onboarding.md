@@ -97,8 +97,9 @@ specific actor may approve their own request or retire a record with active chil
 | Role membership | Explicit operator-owned assignment through existing Auth flows; FU23 creates none |
 | Entitlement revoke/restore | Matching `GrantSource.Module` and `SourceModuleCode=product-item-sku-master` only; manual/system/other-module grants preserved |
 
-No new persisted entity, collection or index is introduced. Existing `Permission`, `Role`, `RolePermission` and
-entitlement synchronization contracts are reused.
+No new collection or index is introduced. Existing `Permission`, `Role` and `RolePermission` contracts are reused.
+The existing `ProcessedIntegrationEvent` document gains a completion-protocol marker so repository/profile failures
+cannot poison an EventId as falsely complete. Legacy documents without the marker are unconfirmed and lazily replayed.
 
 ## 4. Entity Fields
 
@@ -115,6 +116,8 @@ entitlement synchronization contracts are reused.
 | `RolePermission.GrantSource` | `Module` for profile-created grants |
 | `RolePermission.SourceModuleCode` | Exactly `product-item-sku-master` |
 | User-role link | Not created by this profile; zero automatic assignments |
+| `ProcessedIntegrationEvent.CompletionProtocolVersion` | Nullable integer; exact value `1` proves completed reconciliation. Missing/other value is unconfirmed and replayable |
+| Inbox fact identity | Existing exact `EventId + EventName + TenantId`; any same-EventId fact drift fails closed before grant/revoke |
 
 The lifecycle profile validates three explicit dependency groups from the authoritative catalog: the eight FU23-owned
 submit/retire keys, the existing eight Product Identity read/create keys and the three existing shared dependencies
@@ -131,14 +134,20 @@ is restricted to the exact list below; no directory wildcard or adjacent runtime
 **Runtime allow-list:**
 
 - `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/DefaultRolePermissionTemplate.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Domain/Entities/ProcessedIntegrationEvent.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/IIntegrationEventInboxRepository.cs`
 - `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/ProductIdentityLifecycleEntitlementGrantProfile.cs` (new)
 - `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/EntitlementPermissionSyncService.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Infrastructure/Eventing/EntitlementSyncConsumer.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/IntegrationEventInboxRepository.cs`
 
 **Test allow-list:**
 
 - `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/DefaultRolePermissionTemplateTests.cs`
 - `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductIdentityLifecycleEntitlementGrantProfileTests.cs` (new)
 - `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/EntitlementPermissionSyncServiceTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/EntitlementSyncConsumerTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/IntegrationEventInboxRepositoryMongoTests.cs` (new)
 - `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductIdentityLifecyclePermissionOnboardingMongoTests.cs` (new)
 
 `EntitlementPermissionSyncService` may be changed only to compose the lifecycle profile with the existing ABB profile
@@ -152,7 +161,8 @@ other is forbidden.
 - `services/Diten.Platform.Common/**`
 - `gateway/**`
 - `frontend/**`
-- every Auth file not listed in Section 5, including seeders, controllers, token services and role-assignment handlers
+- every Auth file not listed in Section 5, including index configuration, seeders, controllers, token services and
+  role-assignment handlers
 - appsettings, environment files, secrets, data migrations and operational helpers
 - FU16-FU20 pack files and implementation tracker
 - `.antigravity/**`, DCPs, Blueprint and backlog
@@ -171,8 +181,8 @@ The MOD-0290 manifest and lifecycle controllers are evidence dependencies only; 
 | MOD-0023 / WorkCenter | Existing inbox/approve/reject definitions and native provider/actions; Workflow template candidate assignment remains authoritative |
 | MDM enforcement | Consumer later enforces submit/retire plus record-level maker-checker/parent/version reconciliation rules |
 
-Runtime code-start is blocked until Auth and Product Data owners approve the exact key/role matrices and the pack is
-promoted from `draft`.
+Auth and Product Data decisions, `ready-for-dev` promotion and the exact Section 5 code-start are approved under the
+user's standing no-push authorization. Operational tenant reconciliation and Production/Staging remain separate.
 
 ## 8. Runtime Constraints
 
@@ -196,7 +206,10 @@ promoted from `draft`.
 - Missing, disabled or expired entitlement results in zero `product-item-sku-master` module-sourced grants for Admin,
   Viewer and all dedicated Product Identity/ABB roles through the existing authoritative revoke path. Restore produces
   the exact complete matrices again without duplicate role/grant rows.
-- Entitlement transport uncertainty mutates nothing and cannot return completion.
+- Entitlement transport uncertainty and profile preflight failure mutate nothing. A repository failure may leave a
+  bounded partial role/grant reconciliation, but it never writes a completion marker or returns consumer success. The
+  same authoritative event remains replayable and converges the tenant to the exact desired matrices. Best-effort
+  per-module processing may continue, but any accumulated failure is surfaced after the pass.
 - Cancellation propagates; it is never swallowed by best-effort reconciliation logging.
 - Tokens remain bounded by the existing refresh/staleness contract; FU23 adds no token mechanism.
 
@@ -251,7 +264,10 @@ WorkCenter buttons, navigation and browser permission rendering are not FU23 acc
 - Active entitlement replay: same role IDs and grant cardinality; no duplicate or automatic user assignment.
 - An actor holds `ProductIdentityApprover` but is not a MOD-0023 candidate/assignee: Workflow/MDM record decision remains denied.
 - Disabled/expired/missing entitlement: matching module grants are absent; manual/system/other-source grants survive.
-- Entitlement uncertainty or repository failure: no grant/revoke and no false-success completion.
+- Entitlement uncertainty/profile preflight failure: no mutation or completion marker. Repository failure after a
+  bounded partial write: no completion marker or false success; exact EventId replay converges the same desired state.
+- Exact completed EventId replay skips reconciliation; same EventId with different tenant/event facts fails closed.
+- Legacy inbox row without completion protocol is replayed and lazily upgraded after a successful reconciliation.
 - Lifecycle profile plus ABB profile in the same declared module: both exact matrices survive in one reconciliation.
 - Tenant A grant/revoke/restore never creates, removes or discloses Tenant B roles/grants.
 - Cancellation during grant/revoke propagates and does not continue best-effort mutation.
@@ -290,6 +306,7 @@ WorkCenter routes belong to the separately gated MOD-0290 Phase 1.5 steps.
 - [ ] Manual, system and other-module grants are preserved during stale/revoke reconciliation.
 - [ ] Partial/extra/Revision key sets and non-system role collision fail before mutation.
 - [ ] Tenant isolation, cancellation propagation and entitlement uncertainty fail-closed behavior pass.
+- [ ] Completion-only inbox replay, exact-facts conflict, partial-failure retry and legacy lazy-upgrade tests pass.
 - [ ] FU16-FU20 permission/grant behavior remains green.
 - [ ] MDM, Platform, Gateway, frontend, config/data and Production/Staging remain unchanged.
 
@@ -308,8 +325,10 @@ WorkCenter routes belong to the separately gated MOD-0290 Phase 1.5 steps.
 | Replay | Same roles, grants and assignments after repeated reconciliation |
 | Tenant | Tenant A/B isolation for role creation, grants, revoke and read-back |
 | Cancellation | Grant/revoke cancellation propagates; no swallowed continuation |
+| Consumer completion | Marker only after the whole pass succeeds; accumulated module failures throw; marker failure remains replayable |
+| Consumer replay | Exact completed replay skips; legacy/unconfirmed replay upgrades; EventId fact drift fails closed |
 | Regression | FU16-FU20 focused tests and generic non-special module behavior |
-| Real Mongo | `localhost:27017`, isolated disposable Auth test database; no fake/in-memory/skip |
+| Real Mongo | `localhost:27017`, fixed shared Auth integration database + per-test fresh TenantId; no per-run database, production-wide index bootstrap, fake/in-memory or skip |
 
 Runtime delivery must run focused profile/sync/Mongo tests, the full AuthService suite and Auth API Release build. No
 MDM/Platform source test is authorized; their manifests/controllers may be inspected read-only for contract evidence.
@@ -325,9 +344,9 @@ MDM/Platform source test is authorized; their manifests/controllers may be inspe
 - [x] No automatic user assignment and non-system collision behavior are explicit.
 - [x] Active/disabled/expired/uncertain replay/revoke contracts are explicit.
 - [x] Exact runtime/test allow-list and protected paths are documented.
-- [ ] Auth and Product Data owners approve the draft and role names.
-- [ ] User promotes the pack to `approved` or `ready-for-dev`.
-- [ ] User separately authorizes Section 5 code-start.
+- [x] Auth and Product Data owner decisions are accepted under the user's standing authorization.
+- [x] Pack is promoted to `ready-for-dev`.
+- [x] Section 5 code-start is authorized under the user's standing no-push instruction.
 - [ ] Local Development and Production/Staging operational runs remain separate gates.
 
 ## 19. Implementation Notes
