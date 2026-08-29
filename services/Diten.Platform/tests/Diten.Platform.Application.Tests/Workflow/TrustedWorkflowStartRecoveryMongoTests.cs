@@ -1,14 +1,19 @@
 using Diten.Platform.Application.Features.Workflow;
+using Diten.Platform.Application.Features.Workflow.Commands;
 using Diten.Platform.Application.Features.Workflow.Services;
+using Diten.Platform.Application.Features.Workflow.Handlers.CommandHandlers;
 using Diten.Platform.Application.Features.Workflow.Handlers.QueryHandlers;
 using Diten.Platform.Application.Features.Workflow.Queries;
 using Diten.Platform.Application.Tests.Persistence;
+using Diten.Platform.API.Configuration;
+using Diten.Platform.API.Security;
 using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Enums.Workflow;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
 using Diten.Platform.Infrastructure.Persistence.Schema;
 using MongoDB.Driver;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.Workflow;
@@ -59,6 +64,49 @@ public sealed class TrustedWorkflowStartRecoveryMongoTests : IAsyncLifetime
     }
 
     public async Task DisposeAsync() => await _harness.DisposeAsync();
+
+    [Fact]
+    public async Task Exact_authorized_handler_replays_one_graph_and_denied_tuple_writes_nothing()
+    {
+        var options = new TrustedWorkflowStartAuthorizationOptions
+        {
+            Entries =
+            [
+                new TrustedWorkflowStartAuthorizationEntry
+                {
+                    ClientId = ClientId,
+                    ServiceName = "Diten.MDM",
+                    Audience = "TRUSTED_WORKFLOW_CONSUMER",
+                    ObjectType = "GlobalProduct",
+                    TemplateId = _templateId
+                }
+            ]
+        };
+        var policy = new ConfiguredTrustedWorkflowStartAuthorizationPolicy(Options.Create(options));
+        var handler = new StartTrustedWorkflowInstanceHandler(Coordinator(), policy);
+        var denied = Command("trusted-policy-denied") with { ServiceClientId = Guid.NewGuid() };
+
+        var forbidden = await handler.Handle(denied, default);
+
+        Assert.False(forbidden.IsSuccessful);
+        Assert.Equal(403, forbidden.StatusCode);
+        Assert.Empty(await _instances.GetAllForTenantAsync());
+
+        var command = Command("trusted-policy-replay");
+        var first = await handler.Handle(command, default);
+        var replay = await handler.Handle(command with { CorrelationId = "corr-replay" }, default);
+
+        Assert.True(first.IsSuccessful);
+        Assert.Equal(201, first.StatusCode);
+        Assert.True(replay.IsSuccessful);
+        Assert.Equal(200, replay.StatusCode);
+        Assert.True(replay.Data!.IsReplay);
+        Assert.Equal(first.Data!.WorkflowInstanceId, replay.Data.WorkflowInstanceId);
+        Assert.Single(await _instances.GetAllForTenantAsync());
+        Assert.Single(await _tasks.ListByInstanceIdAsync(first.Data.WorkflowInstanceId));
+        Assert.Single(await _snapshots.ListByInstanceIdAsync(first.Data.WorkflowInstanceId));
+        Assert.Single(await _logs.ListByInstanceIdAsync(first.Data.WorkflowInstanceId));
+    }
 
     [Fact]
     public async Task Exact_replay_returns_same_completed_graph_without_duplicates()
@@ -317,6 +365,14 @@ public sealed class TrustedWorkflowStartRecoveryMongoTests : IAsyncLifetime
             true,
             false,
             DateTimeOffset.UtcNow.AddHours(1));
+
+    private StartTrustedWorkflowInstanceCommand Command(string key) => new(
+        Request(key),
+        ClientId,
+        "Diten.MDM",
+        "TRUSTED_WORKFLOW_CONSUMER",
+        MakerId,
+        "corr-start");
 
     private static readonly Guid ClientId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid MakerId = Guid.Parse("22222222-2222-2222-2222-222222222222");
