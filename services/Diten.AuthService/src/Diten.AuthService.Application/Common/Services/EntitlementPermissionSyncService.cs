@@ -29,7 +29,10 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         ProductAbbreviationEntitlementGrantProfile.AuditorRole,
         ProductLegalEntityScopeEntitlementGrantProfile.StewardRole,
         ProductLegalEntityScopeEntitlementGrantProfile.AuditorRole,
-        ProductLegalEntityScopeEntitlementGrantProfile.RolloutOperatorRole
+        ProductLegalEntityScopeEntitlementGrantProfile.RolloutOperatorRole,
+        ProductIdentityLifecycleEntitlementGrantProfile.StewardRole,
+        ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole,
+        ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole
     ];
 
     private readonly IPermissionRepository _permissions;
@@ -60,7 +63,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         var catalog = await _permissions.GetAllAsync(ct);
         var modulePermissions = ModulePermissionResolver.ResolvePermissions(moduleCode, catalog);
         // unmatched / platform module → no-op (resolver already excludes platform)
-        await GrantPermissionsToRolesAsync(tenantId, code, modulePermissions, actor, ct);
+        await GrantPermissionsToRolesAsync(tenantId, code, modulePermissions, catalog.ToList(), actor, ct);
     }
 
     public async Task GrantModuleWithKeysAsync(
@@ -87,7 +90,9 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             ProductAbbreviationEntitlementGrantProfile.AppliesTo(code, keySet);
         var isProductLegalEntityScopeProfile =
             ProductLegalEntityScopeEntitlementGrantProfile.AppliesTo(code, keySet);
-        if ((isProductAbbreviationProfile || isProductLegalEntityScopeProfile)
+        var isProductIdentityLifecycleProfile =
+            ProductIdentityLifecycleEntitlementGrantProfile.AppliesTo(code, keySet);
+        if ((isProductAbbreviationProfile || isProductLegalEntityScopeProfile || isProductIdentityLifecycleProfile)
             && (normalizedKeys.Count != suppliedKeys.Count || keySet.Count != normalizedKeys.Count))
         {
             throw new InvalidOperationException(
@@ -101,6 +106,10 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         if (isProductLegalEntityScopeProfile)
         {
             ProductLegalEntityScopeEntitlementGrantProfile.ValidateExactPermissionSet(keySet);
+        }
+        if (isProductIdentityLifecycleProfile)
+        {
+            ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet(keySet);
         }
 
         // No declared keys (module ships no descriptors yet, or the catalog pull failed) → fall back to the
@@ -128,8 +137,12 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         {
             ProductLegalEntityScopeEntitlementGrantProfile.ValidateExactPermissionDefinitions(modulePermissions);
         }
+        if (isProductIdentityLifecycleProfile)
+        {
+            ProductIdentityLifecycleEntitlementGrantProfile.ValidateAndResolveDefinitions(modulePermissions, catalog);
+        }
 
-        await GrantPermissionsToRolesAsync(tenantId, code, modulePermissions, actor, ct);
+        await GrantPermissionsToRolesAsync(tenantId, code, modulePermissions, catalog.ToList(), actor, ct);
     }
 
     // Shared role-grant body: assigns the resolved module permissions to the target roles as Module-grants
@@ -138,6 +151,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         Guid tenantId,
         string code,
         IReadOnlyList<Permission> modulePermissions,
+        IReadOnlyList<Permission> globalCatalog,
         string actor,
         CancellationToken ct)
     {
@@ -155,6 +169,8 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             ProductAbbreviationEntitlementGrantProfile.AppliesTo(code, permissionKeys);
         var hasProductLegalEntityScopeProfile =
             ProductLegalEntityScopeEntitlementGrantProfile.AppliesTo(code, permissionKeys);
+        var hasProductIdentityLifecycleProfile =
+            ProductIdentityLifecycleEntitlementGrantProfile.AppliesTo(code, permissionKeys);
         if (isCompositeProductModule)
         {
             if (hasProductAbbreviationProfile)
@@ -165,13 +181,19 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             {
                 ProductLegalEntityScopeEntitlementGrantProfile.ValidateExactPermissionSet(permissionKeys);
             }
+            if (hasProductIdentityLifecycleProfile)
+            {
+                ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet(permissionKeys);
+            }
 
             await ReconcileSpecialProfilesAsync(
                 tenantId,
                 code,
                 modulePermissions,
+                globalCatalog,
                 hasProductAbbreviationProfile,
                 hasProductLegalEntityScopeProfile,
+                hasProductIdentityLifecycleProfile,
                 actor,
                 ct);
             return;
@@ -230,6 +252,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
                 tenantId,
                 includeProductAbbreviation: false,
                 includeProductLegalEntityScope: false,
+                includeProductIdentityLifecycle: false,
                 createMissing: false,
                 ct);
         }
@@ -317,8 +340,9 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             .Where(c => c.Length > 0)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        // 1) Grant every entitled module from its DECLARED catalog key set (per-module convention fallback when a
-        //    module declares no keys). Best-effort PER module: one module's failure must not abort the rest.
+        // 1) Grant every entitled module from its DECLARED catalog key set. Continue the pass so independent modules
+        //    can converge, but retain every failure: the caller must not mark the integration event complete.
+        var failures = new List<Exception>();
         foreach (var module in list)
         {
             try
@@ -333,12 +357,20 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             {
                 _logger.LogError(ex,
                     "entitlement.sync.grant_failed TenantId={TenantId} ModuleCode={ModuleCode}", tenantId, module.ModuleCode);
+                failures.Add(new InvalidOperationException(
+                    $"Entitlement grant reconciliation failed for module '{module.ModuleCode}'.",
+                    ex));
             }
         }
 
         // 2) Revoke Module-grants whose source module is no longer entitled. Identical semantics to the
         //    convention-based sync — System/Manual grants are never touched.
-        await RevokeStaleModulesAsync(tenantId, entitled, actor, ct);
+        await RevokeStaleModulesAsync(tenantId, entitled, actor, ct, failures);
+
+        if (failures.Count > 0)
+        {
+            throw new AggregateException("One or more entitlement module reconciliations failed.", failures);
+        }
     }
 
     // Drops Module-grants whose source module is no longer in the entitled set. System (baseline) and Manual
@@ -347,7 +379,8 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         Guid tenantId,
         IReadOnlySet<string> entitled,
         string actor,
-        CancellationToken ct)
+        CancellationToken ct,
+        ICollection<Exception>? failures = null)
     {
         foreach (var roleName in ReconciliationRoleNames)
         {
@@ -379,6 +412,9 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
                 {
                     _logger.LogError(ex,
                         "entitlement.sync.revoke_failed TenantId={TenantId} ModuleCode={ModuleCode}", tenantId, stale);
+                    failures?.Add(new InvalidOperationException(
+                        $"Entitlement revoke reconciliation failed for module '{stale}'.",
+                        ex));
                 }
             }
         }
@@ -398,8 +434,10 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         Guid tenantId,
         string code,
         IReadOnlyList<Permission> modulePermissions,
+        IReadOnlyList<Permission> globalCatalog,
         bool includeProductAbbreviation,
         bool includeProductLegalEntityScope,
+        bool includeProductIdentityLifecycle,
         string actor,
         CancellationToken ct)
     {
@@ -409,9 +447,14 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         var legalEntityScopePermissions = modulePermissions
             .Where(permission => ProductLegalEntityScopeEntitlementGrantProfile.IsProductLegalEntityScopeKey(permission.Key))
             .ToDictionary(permission => permission.Key, StringComparer.OrdinalIgnoreCase);
+        var productIdentityPermissions = modulePermissions
+            .Where(permission => ProductIdentityLifecycleEntitlementGrantProfile.IsBasePermissionKey(permission.Key)
+                                 || ProductIdentityLifecycleEntitlementGrantProfile.IsOwnedPermissionKey(permission.Key))
+            .ToDictionary(permission => permission.Key, StringComparer.Ordinal);
         var genericPermissions = modulePermissions
             .Where(permission => !ProductAbbreviationEntitlementGrantProfile.IsProductAbbreviationKey(permission.Key)
-                                 && !ProductLegalEntityScopeEntitlementGrantProfile.IsProductLegalEntityScopeKey(permission.Key))
+                                 && !ProductLegalEntityScopeEntitlementGrantProfile.IsProductLegalEntityScopeKey(permission.Key)
+                                 && !ProductIdentityLifecycleEntitlementGrantProfile.IsOwnedPermissionKey(permission.Key))
             .ToList();
 
         if (includeProductAbbreviation)
@@ -423,6 +466,14 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             ProductLegalEntityScopeEntitlementGrantProfile.ValidateExactPermissionDefinitions(
                 legalEntityScopePermissions.Values);
         }
+        IReadOnlyDictionary<string, Permission> workflowDependencies =
+            new Dictionary<string, Permission>(StringComparer.Ordinal);
+        if (includeProductIdentityLifecycle)
+        {
+            workflowDependencies = ProductIdentityLifecycleEntitlementGrantProfile.ValidateAndResolveDefinitions(
+                modulePermissions,
+                globalCatalog);
+        }
 
         // Active profile role names are preflighted before the first role or grant mutation. Inactive profiles are
         // resolved only for stale module-grant cleanup: they never create roles and an unrelated operator-owned role
@@ -431,6 +482,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             tenantId,
             includeProductAbbreviation,
             includeProductLegalEntityScope,
+            includeProductIdentityLifecycle,
             createMissing: true,
             ct);
         var plans = new List<(Role Role, IReadOnlyList<Permission> Permissions)>();
@@ -482,11 +534,27 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             }
 
             var scopeTemplate = ProductLegalEntityScopeEntitlementGrantProfile.DedicatedRoles
+                .SingleOrDefault(item => string.Equals(item.RoleName, role.Name, StringComparison.Ordinal));
+            if (scopeTemplate is not null)
+            {
+                plans.Add((
+                    role,
+                    includeProductLegalEntityScope
+                        ? scopeTemplate.PermissionKeys.Select(key => legalEntityScopePermissions[key]).ToList()
+                        : Array.Empty<Permission>()));
+                continue;
+            }
+
+            var lifecycleTemplate = ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles
                 .Single(item => string.Equals(item.RoleName, role.Name, StringComparison.Ordinal));
             plans.Add((
                 role,
-                includeProductLegalEntityScope
-                    ? scopeTemplate.PermissionKeys.Select(key => legalEntityScopePermissions[key]).ToList()
+                includeProductIdentityLifecycle
+                    ? lifecycleTemplate.PermissionKeys.Select(key =>
+                            workflowDependencies.TryGetValue(key, out var dependency)
+                                ? dependency
+                                : productIdentityPermissions[key])
+                        .ToList()
                     : Array.Empty<Permission>()));
         }
 
@@ -527,6 +595,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         Guid tenantId,
         bool includeProductAbbreviation,
         bool includeProductLegalEntityScope,
+        bool includeProductIdentityLifecycle,
         bool createMissing,
         CancellationToken ct)
     {
@@ -542,6 +611,12 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
                     template.DisplayName,
                     template.Description,
                     includeProductLegalEntityScope)))
+            .Concat(ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles.Select(template =>
+                new DedicatedRoleTemplate(
+                    template.RoleName,
+                    template.DisplayName,
+                    template.Description,
+                    includeProductIdentityLifecycle)))
             .ToList();
 
         var existing = new Dictionary<string, Role?>(StringComparer.Ordinal);

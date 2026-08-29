@@ -2,6 +2,8 @@ namespace Diten.AuthService.Domain.Entities;
 
 public sealed class ProcessedIntegrationEvent : GlobalEntityBase
 {
+    public const int CurrentCompletionProtocolVersion = 1;
+
     private ProcessedIntegrationEvent() { }
 
     public ProcessedIntegrationEvent(Guid eventId, string eventName, Guid tenantId)
@@ -17,4 +19,5 @@ public sealed class ProcessedIntegrationEvent : GlobalEntityBase
     public string EventName { get; private set; } = string.Empty;
     public Guid TenantId { get; private set; }
     public DateTimeOffset ProcessedAt { get; private set; }
+    public int? CompletionProtocolVersion { get; private set; }
 }

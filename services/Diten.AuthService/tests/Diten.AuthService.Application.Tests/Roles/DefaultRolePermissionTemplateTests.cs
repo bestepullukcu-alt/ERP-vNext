@@ -70,6 +70,22 @@ public sealed class DefaultRolePermissionTemplateTests
                 moduleOverride: "product-item-sku-master"),
             new("mdm", "lskus", "create", "Create LSKUs", null,
                 moduleOverride: "product-item-sku-master"),
+            new("mdm", "global-products", "submit", "Submit Global Products", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "global-products", "retire", "Retire Global Products", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "finished-goods", "submit", "Submit Finished Goods", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "finished-goods", "retire", "Retire Finished Goods", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "gskus", "submit", "Submit GSKUs", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "gskus", "retire", "Retire GSKUs", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "lskus", "submit", "Submit LSKUs", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "lskus", "retire", "Retire LSKUs", null,
+                moduleOverride: "product-item-sku-master"),
             new("mdm", "product-abbreviations", "read", "Read Product Abbreviations", null,
                 moduleOverride: "product-item-sku-master"),
             new("mdm", "product-abbreviations", "request", "Request Product Abbreviations", null,
@@ -113,6 +129,8 @@ public sealed class DefaultRolePermissionTemplateTests
         Assert.DoesNotContain("mdm.lskus.read", viewerKeys);
         Assert.DoesNotContain("mdm.lskus.create", viewerKeys);
         Assert.DoesNotContain("mdm.lskus.create", adminKeys);
+        Assert.DoesNotContain("mdm.global-products.submit", adminKeys);
+        Assert.DoesNotContain("mdm.finished-goods.retire", viewerKeys);
         Assert.DoesNotContain("mdm.product-abbreviations.read", viewerKeys);
         Assert.DoesNotContain("mdm.product-abbreviations.read", adminKeys);
         Assert.DoesNotContain("mdm.product-legal-entity-scopes.read", viewerKeys);
@@ -121,12 +139,20 @@ public sealed class DefaultRolePermissionTemplateTests
             [
                 "mdm.finished-goods.create",
                 "mdm.finished-goods.read",
+                "mdm.finished-goods.retire",
+                "mdm.finished-goods.submit",
                 "mdm.global-products.create",
                 "mdm.global-products.read",
+                "mdm.global-products.retire",
+                "mdm.global-products.submit",
                 "mdm.gskus.create",
                 "mdm.gskus.read",
+                "mdm.gskus.retire",
+                "mdm.gskus.submit",
                 "mdm.lskus.create",
                 "mdm.lskus.read",
+                "mdm.lskus.retire",
+                "mdm.lskus.submit",
                 "mdm.product-abbreviations.approve",
                 "mdm.product-abbreviations.audit",
                 "mdm.product-abbreviations.cancel",

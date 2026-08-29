@@ -1,5 +1,6 @@
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Common.Services;
+using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -1038,6 +1039,190 @@ public sealed class EntitlementPermissionSyncServiceTests
         Assert.Empty(rolePerms.Rows);
         Assert.False(roles.Exists(TenantA, ProductLegalEntityScopeEntitlementGrantProfile.StewardRole));
     }
+
+    [Fact]
+    public async Task Product_identity_lifecycle_profile_composes_exact_twelve_seven_eight_roles_with_ABB_and_scope()
+    {
+        var catalog = ProductIdentityLifecycleCompositeCatalog();
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        var declaredKeys = catalog
+            .Where(permission => permission.Module == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode)
+            .Select(permission => permission.Key)
+            .ToArray();
+
+        await svc.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            declaredKeys,
+            Actor);
+
+        Assert.Equal(12, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole).Count);
+        Assert.Equal(7, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole).Count);
+        Assert.Equal(8, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole).Count);
+
+        var admin = ProductRoleKeys(roles, rolePerms, catalog, DefaultRolePermissionTemplate.AdminRole);
+        var viewer = ProductRoleKeys(roles, rolePerms, catalog, DefaultRolePermissionTemplate.ViewerRole);
+        Assert.DoesNotContain(admin, ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys.Contains);
+        Assert.DoesNotContain(viewer, ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys.Contains);
+        Assert.DoesNotContain(admin, ProductIdentityLifecycleEntitlementGrantProfile.SharedDependencyKeys.Contains);
+        Assert.DoesNotContain(viewer, ProductIdentityLifecycleEntitlementGrantProfile.SharedDependencyKeys.Contains);
+        Assert.Equal(8 + 1 + 1, admin.Count);
+        Assert.Equal(4 + 1, viewer.Count);
+
+        Assert.All(ProductAbbreviationEntitlementGrantProfile.DedicatedRoles,
+            template => Assert.Equal(
+                template.PermissionKeys.OrderBy(key => key, StringComparer.Ordinal),
+                ProductRoleKeys(roles, rolePerms, catalog, template.RoleName).OrderBy(key => key, StringComparer.Ordinal)));
+        Assert.All(ProductLegalEntityScopeEntitlementGrantProfile.DedicatedRoles,
+            template => Assert.Equal(
+                template.PermissionKeys.OrderBy(key => key, StringComparer.Ordinal),
+                ProductRoleKeys(roles, rolePerms, catalog, template.RoleName).OrderBy(key => key, StringComparer.Ordinal)));
+    }
+
+    [Fact]
+    public async Task Product_identity_profile_dependency_drift_and_collision_fail_before_mutation()
+    {
+        var missingDependencyCatalog = ProductIdentityLifecycleCompositeCatalog()
+            .Where(permission => permission.Key != ProductIdentityLifecycleEntitlementGrantProfile.WorkflowTasksReject)
+            .ToList();
+        var declaredKeys = missingDependencyCatalog
+            .Where(permission => permission.Module == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode)
+            .Select(permission => permission.Key)
+            .ToArray();
+        var (missingService, missingRoles, missingGrants) = BuildWith(missingDependencyCatalog);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => missingService.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            declaredKeys,
+            Actor));
+        Assert.Empty(missingGrants.Rows);
+        Assert.False(missingRoles.Exists(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole));
+
+        var collisionCatalog = ProductIdentityLifecycleCompositeCatalog();
+        var (collisionService, collisionRoles, collisionGrants) = BuildWith(collisionCatalog);
+        collisionRoles.SeedNonSystem(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => collisionService.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            collisionCatalog.Where(permission => permission.Module == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode)
+                .Select(permission => permission.Key).ToArray(),
+            Actor));
+        Assert.Empty(collisionGrants.Rows);
+        Assert.False(collisionRoles.Exists(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole));
+    }
+
+    [Theory]
+    [InlineData(ProductIdentityLifecycleEntitlementGrantProfile.StewardRole)]
+    [InlineData(ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole)]
+    [InlineData(ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole)]
+    public async Task Every_product_identity_role_name_collision_fails_before_any_profile_mutation(string roleName)
+    {
+        var catalog = ProductIdentityLifecycleCompositeCatalog();
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        roles.SeedNonSystem(TenantA, roleName);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => svc.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            catalog.Where(permission => permission.Module == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode)
+                .Select(permission => permission.Key).ToArray(),
+            Actor));
+
+        Assert.Empty(rolePerms.Rows);
+        Assert.DoesNotContain(
+            ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles,
+            template => template.RoleName != roleName && roles.Exists(TenantA, template.RoleName));
+    }
+
+    [Fact]
+    public async Task Inactive_lifecycle_profile_cleans_only_matching_module_grants_without_recreating_roles()
+    {
+        var catalog = ProductIdentityLifecycleCompositeCatalog();
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        var allDeclared = catalog
+            .Where(permission => permission.Module == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode)
+            .Select(permission => permission.Key).ToArray();
+        await svc.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            allDeclared,
+            Actor);
+
+        var approverId = roles.IdOf(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole);
+        var manualPermission = catalog.Single(permission =>
+            permission.Key == ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsRead);
+        rolePerms.Seed(RolePermission.ManualGrant(approverId, manualPermission.Id, TenantA, "operator"));
+
+        var withoutLifecycle = allDeclared
+            .Where(key => !ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys.Contains(key))
+            .ToArray();
+        await svc.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            withoutLifecycle,
+            Actor);
+
+        Assert.DoesNotContain(rolePerms.Rows, grant => grant.RoleId == approverId
+                                                       && grant.GrantSource == GrantSource.Module
+                                                       && grant.SourceModuleCode == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode);
+        Assert.Contains(rolePerms.Rows, grant => grant.RoleId == approverId && grant.GrantSource == GrantSource.Manual);
+    }
+
+    [Fact]
+    public async Task Sync_with_keys_continues_independent_modules_but_throws_accumulated_failure()
+    {
+        var catalog = ProductIdentityLifecycleCompositeCatalog();
+        catalog.Add(new Permission("goldenslim", "records", "read", "Read", null));
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        var invalidProductKeys = catalog
+            .Where(permission => permission.Module == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode)
+            .Select(permission => permission.Key)
+            .Where(key => key != ProductIdentityLifecycleEntitlementGrantProfile.GskusSubmit)
+            .ToArray();
+
+        var failure = await Assert.ThrowsAsync<AggregateException>(() => svc.SyncTenantModulesWithKeysAsync(
+            TenantA,
+            [
+                new EntitledModulePermissionKeys(ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode, invalidProductKeys),
+                new EntitledModulePermissionKeys("goldenslim", ["goldenslim.records.read"])
+            ],
+            Actor));
+
+        Assert.Single(failure.InnerExceptions);
+        var adminId = roles.IdOf(TenantA, DefaultRolePermissionTemplate.AdminRole);
+        Assert.Contains(rolePerms.KeysFor(adminId, catalog), key => key == "goldenslim.records.read");
+        Assert.False(roles.Exists(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole));
+    }
+
+    private static IReadOnlyList<string> ProductRoleKeys(
+        FakeRoleRepository roles,
+        FakeRolePermissionRepository rolePerms,
+        List<Permission> catalog,
+        string roleName)
+    {
+        var roleId = roles.IdOf(TenantA, roleName);
+        return rolePerms.Rows
+            .Where(grant => grant.RoleId == roleId
+                            && grant.GrantSource == GrantSource.Module
+                            && grant.SourceModuleCode == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode)
+            .Select(grant => catalog.Single(permission => permission.Id == grant.PermissionId).Key)
+            .ToList();
+    }
+
+    private static List<Permission> ProductIdentityLifecycleCompositeCatalog() =>
+    [
+        .. ProductIdentityLifecycleEntitlementGrantProfile.BasePermissionKeys.Select(PermissionFor),
+        .. ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys.Select(PermissionFor),
+        .. ProductAbbreviationEntitlementGrantProfile.PermissionKeys.Select(PermissionFor),
+        .. ProductLegalEntityScopeEntitlementGrantProfile.PermissionKeys.Select(PermissionFor),
+        new("platform", "work-aggregation.inbox", "view", "Inbox", null,
+            moduleOverride: "work-aggregation", scope: PermissionScope.Tenant),
+        new("platform", "workflow.tasks", "approve", "Approve", null,
+            moduleOverride: "workflow", scope: PermissionScope.Tenant),
+        new("platform", "workflow.tasks", "reject", "Reject", null,
+            moduleOverride: "workflow", scope: PermissionScope.Tenant)
+    ];
 
     private static List<Permission> ProductItemSkuMasterCompositeCatalog() =>
     [
