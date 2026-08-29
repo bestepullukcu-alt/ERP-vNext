@@ -275,6 +275,243 @@ public sealed class LskuRepository : ILskuRepository
         return await CreateDraftAsync(lsku, cancellationToken);
     }
 
+    public Task<LskuLifecycleWriteResult> SubmitIdentityAsync(
+        Guid id,
+        int expectedVersion,
+        ProductIdentityWorkflowBinding workflowBinding,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        ApplyLifecycleAsync(
+            id,
+            expectedVersion,
+            ProductIdentityLifecycleStatus.Draft,
+            ProductIdentityLifecycleStatus.PendingIdentityApproval,
+            ProductAuditOperation.LskuIdentitySubmitted,
+            auditIntent,
+            workflowBinding,
+            null,
+            cancellationToken);
+
+    public Task<LskuLifecycleWriteResult> ReconcileIdentityDecisionAsync(
+        Guid id,
+        int expectedVersion,
+        ProductIdentityWorkflowDecisionEvidence decisionEvidence,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(decisionEvidence);
+        var operation = decisionEvidence.Decision switch
+        {
+            ProductIdentityDecisionKind.Approved => ProductAuditOperation.LskuIdentityApproved,
+            ProductIdentityDecisionKind.Rejected => ProductAuditOperation.LskuIdentityRejected,
+            _ => (ProductAuditOperation?)null
+        };
+        if (operation is null || !ValidDecision(id, decisionEvidence))
+        {
+            return Task.FromResult(new LskuLifecycleWriteResult(
+                false, null, "LSKU_IDENTITY_DECISION_INVALID"));
+        }
+
+        return ApplyLifecycleAsync(
+            id,
+            expectedVersion,
+            ProductIdentityLifecycleStatus.PendingIdentityApproval,
+            decisionEvidence.Decision == ProductIdentityDecisionKind.Approved
+                ? ProductIdentityLifecycleStatus.IdentityApproved
+                : ProductIdentityLifecycleStatus.Draft,
+            operation.Value,
+            auditIntent,
+            null,
+            decisionEvidence,
+            cancellationToken);
+    }
+
+    public Task<LskuLifecycleWriteResult> RetireIdentityAsync(
+        Guid id,
+        int expectedVersion,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        ApplyLifecycleAsync(
+            id,
+            expectedVersion,
+            ProductIdentityLifecycleStatus.IdentityApproved,
+            ProductIdentityLifecycleStatus.Retired,
+            ProductAuditOperation.LskuIdentityRetired,
+            auditIntent,
+            null,
+            null,
+            cancellationToken);
+
+    private async Task<LskuLifecycleWriteResult> ApplyLifecycleAsync(
+        Guid id,
+        int expectedVersion,
+        ProductIdentityLifecycleStatus sourceStatus,
+        ProductIdentityLifecycleStatus targetStatus,
+        ProductAuditOperation operation,
+        LocalAuditIntent auditIntent,
+        ProductIdentityWorkflowBinding? workflowBinding,
+        ProductIdentityWorkflowDecisionEvidence? decisionEvidence,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(auditIntent);
+        cancellationToken.ThrowIfCancellationRequested();
+        if (id == Guid.Empty || expectedVersion < 0
+            || !ValidAudit(id, expectedVersion, operation, auditIntent)
+            || workflowBinding is not null && !ValidBinding(id, workflowBinding))
+        {
+            return new(false, null, "LSKU_IDENTITY_LIFECYCLE_CONTRACT_INVALID");
+        }
+
+        var replay = await FindLifecycleReplayAsync(id, auditIntent, cancellationToken);
+        if (replay is not null)
+        {
+            if (workflowBinding is not null
+                && !SameBinding(replay.Lsku?.IdentityWorkflowBinding, workflowBinding)
+                || decisionEvidence is not null
+                && !SameDecision(replay.Lsku?.IdentityWorkflowBinding?.TerminalDecision, decisionEvidence))
+            {
+                return new(false, replay.Lsku, "LSKU_IDENTITY_IDEMPOTENCY_CONFLICT");
+            }
+            return replay;
+        }
+
+        var filter = ActiveFilter
+                     & Builders<Lsku>.Filter.Eq(x => x.Id, id)
+                     & Builders<Lsku>.Filter.Eq(x => x.Version, expectedVersion)
+                     & Builders<Lsku>.Filter.Eq(x => x.LifecycleStatus, sourceStatus)
+                     & Builders<Lsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate)
+                     & new BsonDocumentFilterDefinition<Lsku>(new BsonDocument(
+                         "$expr",
+                         new BsonDocument("$lt", new BsonArray
+                         {
+                             new BsonDocument("$bsonSize", "$$ROOT"),
+                             1024 * 1024 - 4096
+                         })));
+        if (decisionEvidence is not null)
+        {
+            filter &= Builders<Lsku>.Filter.Eq(
+                          x => x.IdentityWorkflowBinding!.WorkflowInstanceId,
+                          decisionEvidence.WorkflowInstanceId)
+                      & Builders<Lsku>.Filter.Eq(
+                          x => x.IdentityWorkflowBinding!.ApprovalTaskId,
+                          decisionEvidence.ApprovalTaskId)
+                      & Builders<Lsku>.Filter.Eq(
+                          x => x.IdentityWorkflowBinding!.WorkflowTemplateId,
+                          decisionEvidence.WorkflowTemplateId)
+                      & Builders<Lsku>.Filter.Eq(
+                          x => x.IdentityWorkflowBinding!.WorkflowTemplateVersionId,
+                          decisionEvidence.WorkflowTemplateVersionId)
+                      & Builders<Lsku>.Filter.Eq(
+                          x => x.IdentityWorkflowBinding!.ObjectType,
+                          decisionEvidence.ObjectType)
+                      & Builders<Lsku>.Filter.Eq(
+                          x => x.IdentityWorkflowBinding!.ObjectId,
+                          decisionEvidence.ObjectId)
+                      & Builders<Lsku>.Filter.Eq(
+                          x => x.IdentityWorkflowBinding!.TerminalDecision,
+                          null)
+                      & Builders<Lsku>.Filter.Ne(
+                          x => x.IdentityWorkflowBinding!.SubmitterSubjectId,
+                          decisionEvidence.DecisionActorSubjectId);
+        }
+
+        var update = Builders<Lsku>.Update
+            .Set(x => x.LifecycleStatus, targetStatus)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+            .Inc(x => x.Version, 1)
+            .Push(x => x.AuditIntents, auditIntent);
+        if (workflowBinding is not null)
+        {
+            update = update.Set(x => x.IdentityWorkflowBinding, workflowBinding);
+        }
+        if (decisionEvidence is not null)
+        {
+            update = update.Set(x => x.IdentityWorkflowBinding!.TerminalDecision, decisionEvidence);
+        }
+
+        var updated = await _lskus.FindOneAndUpdateAsync(
+            filter,
+            update,
+            new FindOneAndUpdateOptions<Lsku> { ReturnDocument = ReturnDocument.After },
+            cancellationToken);
+        if (updated is not null)
+        {
+            return new(true, updated);
+        }
+
+        var current = await GetByIdAsync(id, cancellationToken);
+        if (current is null)
+        {
+            return new(false, null, "LSKU_IDENTITY_NOT_FOUND");
+        }
+        if (current.Version != expectedVersion)
+        {
+            return new(false, current, "LSKU_IDENTITY_VERSION_CONFLICT");
+        }
+        if (current.AuditIntents.Count >= AuditIntentLimits.MaxPerAggregate)
+        {
+            return new(false, current, "AUDIT_INTENT_CAPACITY_EXCEEDED");
+        }
+        if (current.ToBson().Length >= 1024 * 1024 - 4096)
+        {
+            return new(false, current, "LSKU_DOCUMENT_SIZE_LIMIT_EXCEEDED");
+        }
+        return new(false, current,
+            decisionEvidence is not null
+            && current.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval
+                ? "WORKFLOW_BINDING_CONFLICT"
+                : "LSKU_IDENTITY_LIFECYCLE_CONFLICT");
+    }
+
+    private async Task<LskuLifecycleWriteResult?> FindLifecycleReplayAsync(
+        Guid id,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken)
+    {
+        var current = await _lskus.Find(
+                ActiveFilter
+                & Builders<Lsku>.Filter.Eq(x => x.Id, id)
+                & Builders<Lsku>.Filter.Or(
+                    Builders<Lsku>.Filter.ElemMatch(
+                        x => x.AuditIntents,
+                        intent => intent.IntentId == auditIntent.IntentId),
+                    Builders<Lsku>.Filter.ElemMatch(
+                        x => x.AuditIntentReceipts,
+                        receipt => receipt.IntentId == auditIntent.IntentId)))
+            .FirstOrDefaultAsync(cancellationToken);
+        if (current is null)
+        {
+            return null;
+        }
+        var stored = current.AuditIntents.Where(x => x.IntentId == auditIntent.IntentId).Take(2).ToArray();
+        var receipts = current.AuditIntentReceipts
+            .Where(x => x.IntentId == auditIntent.IntentId).Take(2).ToArray();
+        var exactIntent = stored.Length == 1 && receipts.Length == 0 && SameAudit(stored[0], auditIntent);
+        var exactReceipt = stored.Length == 0 && receipts.Length == 1
+            && receipts[0].TenantId == auditIntent.TenantId
+            && receipts[0].SourceService == auditIntent.SourceService
+            && receipts[0].IdempotencyKey == auditIntent.IdempotencyKey
+            && receipts[0].EvidenceHash == auditIntent.EvidenceHash
+            && ExpectedReplayStatus(auditIntent.Operation) == current.LifecycleStatus;
+        return exactIntent || exactReceipt
+            ? new(true, current, IsReplay: true)
+            : new(false, current, "LSKU_IDENTITY_IDEMPOTENCY_CONFLICT");
+    }
+
+    private static ProductIdentityLifecycleStatus ExpectedReplayStatus(ProductAuditOperation operation) =>
+        operation switch
+        {
+            ProductAuditOperation.LskuIdentitySubmitted =>
+                ProductIdentityLifecycleStatus.PendingIdentityApproval,
+            ProductAuditOperation.LskuIdentityApproved =>
+                ProductIdentityLifecycleStatus.IdentityApproved,
+            ProductAuditOperation.LskuIdentityRejected =>
+                ProductIdentityLifecycleStatus.Draft,
+            ProductAuditOperation.LskuIdentityRetired =>
+                ProductIdentityLifecycleStatus.Retired,
+            _ => (ProductIdentityLifecycleStatus)(-1)
+        };
+
     private static LskuCreateResult ExistingResult(Lsku existing, Lsku requested)
     {
         if (existing.IsDeleted)
@@ -330,6 +567,168 @@ public sealed class LskuRepository : ILskuRepository
         && left.CatalogVersionNumber == right.CatalogVersionNumber
         && left.ResolutionMode == right.ResolutionMode
         && left.ResolvedAtUtc == right.ResolvedAtUtc;
+
+    private bool ValidAudit(
+        Guid id,
+        int expectedVersion,
+        ProductAuditOperation operation,
+        LocalAuditIntent intent) =>
+        intent.IntentId != Guid.Empty
+        && intent.TenantId == _tenantId
+        && intent.AggregateType == AuditAggregateType.Lsku
+        && intent.AggregateId == id
+        && intent.PreVersion == expectedVersion
+        && intent.PostVersion == expectedVersion + 1
+        && intent.Operation == operation
+        && intent.Sequence == expectedVersion + 1
+        && intent.TimestampUtc != default
+        && intent.TimestampUtc.Offset == TimeSpan.Zero
+        && intent.TimestampUtcTicksV1 == intent.TimestampUtc.UtcTicks
+        && intent.TemporalStorageVersion == AuditIntentTemporalStorage.CurrentVersion
+        && intent.SourceService == AuditIntentContract.SourceService
+        && intent.SchemaVersion == 1
+        && intent.ContractVersion is null
+        && intent.DeliveryState == AuditIntentDeliveryState.Pending
+        && intent.AttemptCount == 0
+        && intent.LastAttemptAt is null
+        && intent.NextRetryAt is null
+        && intent.NextRetryAtUtcTicksV1 is null
+        && intent.CentralAcknowledgement is null
+        && intent.CentralIdempotencyKey is null
+        && intent.AcknowledgedContractVersion is null
+        && intent.AcknowledgedAt is null
+        && intent.LastError is null
+        && intent.LeaseOwner is null
+        && intent.ClaimToken is null
+        && intent.ClaimGeneration == 0
+        && intent.ClaimedAt is null
+        && intent.LeaseUntil is null
+        && intent.LeaseUntilUtcTicksV1 is null
+        && intent.DeliveredAt is null
+        && intent.DeadLetteredAt is null
+        && intent.CompactedAt is null
+        && intent.CompactReceiptReference is null
+        && intent.FailureClass == AuditIntentFailureClass.None
+        && intent.FailureReason is null
+        && ExactBounded(intent.ActorId, 128)
+        && ExactBounded(intent.CorrelationId, 256)
+        && ExactBounded(intent.CausationId, 256)
+        && ExactBounded(intent.CommandId, 256)
+        && ExactBounded(intent.EvidenceHash, 128)
+        && ExactBounded(intent.SnapshotReference, 256)
+        && ExactBounded(intent.IdempotencyKey, 256);
+
+    private static bool ValidBinding(Guid id, ProductIdentityWorkflowBinding binding) =>
+        binding.WorkflowInstanceId != Guid.Empty
+        && binding.WorkflowTemplateId != Guid.Empty
+        && binding.WorkflowTemplateVersionId != Guid.Empty
+        && binding.ApprovalTaskId != Guid.Empty
+        && binding.AssignmentSnapshotId != Guid.Empty
+        && binding.StartTransitionLogId != Guid.Empty
+        && binding.ObjectType == "lsku"
+        && binding.ObjectId == id
+        && ExactBounded(binding.ObjectRef, 256)
+        && binding.SubmitterSubjectId != Guid.Empty
+        && ExactBounded(binding.StartIdempotencyKey, 256)
+        && IsLowerHex(binding.StartRequestFingerprint, 64)
+        && binding.SubmittedAtUtc != default
+        && binding.SubmittedAtUtc.Offset == TimeSpan.Zero
+        && (!binding.DueAtUtc.HasValue || binding.DueAtUtc.Value.Offset == TimeSpan.Zero)
+        && binding.TerminalDecision is null;
+
+    private static bool ValidDecision(Guid id, ProductIdentityWorkflowDecisionEvidence evidence) =>
+        evidence.WorkflowInstanceId != Guid.Empty
+        && evidence.ApprovalTaskId != Guid.Empty
+        && evidence.WorkflowTemplateId != Guid.Empty
+        && evidence.WorkflowTemplateVersionId != Guid.Empty
+        && evidence.ObjectType == "lsku"
+        && evidence.ObjectId == id
+        && ExactBounded(evidence.ObjectRef, 256)
+        && evidence.DecisionActorSubjectId != Guid.Empty
+        && evidence.DecisionAtUtc != default
+        && evidence.DecisionAtUtc.Offset == TimeSpan.Zero
+        && evidence.TransitionSequence > 0
+        && ExactBounded(evidence.TaskStatus, 64)
+        && ExactBounded(evidence.InstanceStatus, 64)
+        && (evidence.Decision == ProductIdentityDecisionKind.Approved
+            && evidence.TaskStatus == "Approved"
+            && evidence.InstanceStatus == "Completed"
+            || evidence.Decision == ProductIdentityDecisionKind.Rejected
+            && evidence.TaskStatus == "Rejected"
+            && evidence.InstanceStatus == "Rejected"
+            && ExactBounded(evidence.ReasonCode, 128));
+
+    private static bool SameBinding(
+        ProductIdentityWorkflowBinding? left,
+        ProductIdentityWorkflowBinding right) =>
+        left is not null
+        && left.WorkflowInstanceId == right.WorkflowInstanceId
+        && left.WorkflowTemplateId == right.WorkflowTemplateId
+        && left.WorkflowTemplateVersionId == right.WorkflowTemplateVersionId
+        && left.ApprovalTaskId == right.ApprovalTaskId
+        && left.AssignmentSnapshotId == right.AssignmentSnapshotId
+        && left.StartTransitionLogId == right.StartTransitionLogId
+        && left.ObjectType == right.ObjectType
+        && left.ObjectId == right.ObjectId
+        && left.ObjectRef == right.ObjectRef
+        && left.SubmitterSubjectId == right.SubmitterSubjectId
+        && left.StartIdempotencyKey == right.StartIdempotencyKey
+        && left.StartRequestFingerprint == right.StartRequestFingerprint
+        && left.SubmittedAtUtc == right.SubmittedAtUtc
+        && left.DueAtUtc == right.DueAtUtc;
+
+    private static bool SameDecision(
+        ProductIdentityWorkflowDecisionEvidence? left,
+        ProductIdentityWorkflowDecisionEvidence right) =>
+        left is not null
+        && left.Decision == right.Decision
+        && left.WorkflowInstanceId == right.WorkflowInstanceId
+        && left.ApprovalTaskId == right.ApprovalTaskId
+        && left.WorkflowTemplateId == right.WorkflowTemplateId
+        && left.WorkflowTemplateVersionId == right.WorkflowTemplateVersionId
+        && left.ObjectType == right.ObjectType
+        && left.ObjectId == right.ObjectId
+        && left.ObjectRef == right.ObjectRef
+        && left.DecisionActorSubjectId == right.DecisionActorSubjectId
+        && left.ReasonCode == right.ReasonCode
+        && left.DecisionAtUtc == right.DecisionAtUtc
+        && left.TransitionSequence == right.TransitionSequence
+        && left.TaskStatus == right.TaskStatus
+        && left.InstanceStatus == right.InstanceStatus;
+
+    private static bool SameAudit(LocalAuditIntent left, LocalAuditIntent right) =>
+        left.SourceService == right.SourceService
+        && left.SchemaVersion == right.SchemaVersion
+        && left.ContractVersion == right.ContractVersion
+        && left.IntentId == right.IntentId
+        && left.TenantId == right.TenantId
+        && left.AggregateType == right.AggregateType
+        && left.AggregateId == right.AggregateId
+        && left.PreVersion == right.PreVersion
+        && left.PostVersion == right.PostVersion
+        && left.Operation == right.Operation
+        && left.ActorId == right.ActorId
+        && left.CorrelationId == right.CorrelationId
+        && left.CausationId == right.CausationId
+        && left.CommandId == right.CommandId
+        && left.Sequence == right.Sequence
+        && left.TimestampUtc == right.TimestampUtc
+        && left.TimestampUtcTicksV1 == right.TimestampUtcTicksV1
+        && left.TemporalStorageVersion == right.TemporalStorageVersion
+        && left.EvidenceHash == right.EvidenceHash
+        && left.SnapshotReference == right.SnapshotReference
+        && left.IdempotencyKey == right.IdempotencyKey;
+
+    private static bool ExactBounded(string? value, int maximumLength) =>
+        value is { Length: > 0 }
+        && value.Length <= maximumLength
+        && string.Equals(value, value.Trim(), StringComparison.Ordinal)
+        && !value.Any(char.IsControl);
+
+    private static bool IsLowerHex(string? value, int exactLength) =>
+        value is not null
+        && value.Length == exactLength
+        && value.All(character => character is >= '0' and <= '9' or >= 'a' and <= 'f');
 
     private void EnsureIndexes()
     {

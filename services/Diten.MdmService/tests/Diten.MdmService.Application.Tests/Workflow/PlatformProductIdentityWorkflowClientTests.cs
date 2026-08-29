@@ -31,16 +31,21 @@ public sealed class PlatformProductIdentityWorkflowClientTests
         Assert.DoesNotContain("tenant", sent.Body, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
-    public async Task Exact_lowercase_gsku_profile_is_allowed_for_start_and_machine_reads()
+    [Theory]
+    [InlineData("gsku", "GSKU-IDENTITY", "GS-000000000001|REV-001")]
+    [InlineData("lsku", "LSKU-IDENTITY", "LS-000000000001")]
+    public async Task Exact_lowercase_product_identity_profiles_are_allowed_for_start_and_machine_reads(
+        string objectType,
+        string templateCode,
+        string objectRef)
     {
         var gskuId = Guid.NewGuid().ToString("D");
         var startRequest = StartRequest() with
         {
-            TemplateCode = "GSKU-IDENTITY",
-            ObjectType = "gsku",
+            TemplateCode = templateCode,
+            ObjectType = objectType,
             ObjectId = gskuId,
-            ObjectRef = "GS-000000000001|REV-001"
+            ObjectRef = objectRef
         };
         var handler = new CaptureHandler(request =>
             request.RequestUri!.AbsolutePath.EndsWith("start", StringComparison.Ordinal)
@@ -52,9 +57,9 @@ public sealed class PlatformProductIdentityWorkflowClientTests
 
         var start = await client.StartAsync(Guid.NewGuid(), startRequest, "human.jwt");
         var lookup = await client.GetStartResultAsync(Guid.NewGuid(), new(
-            "gsku", gskuId, Guid.NewGuid(), startRequest.IdempotencyKey));
+            objectType, gskuId, Guid.NewGuid(), startRequest.IdempotencyKey));
         var evidence = await client.GetTerminalEvidenceAsync(Guid.NewGuid(), new(
-            Guid.NewGuid(), "gsku", gskuId));
+            Guid.NewGuid(), objectType, gskuId));
 
         Assert.Equal(ProductIdentityWorkflowTransportOutcome.Success, start.Outcome);
         Assert.Equal(ProductIdentityWorkflowTransportOutcome.Incomplete, lookup.Outcome);

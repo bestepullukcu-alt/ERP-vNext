@@ -47,6 +47,25 @@ public sealed class FirstGskuIdentityRetirementUnitTests
     }
 
     [Fact]
+    public async Task Lsku_child_blocker_clears_only_after_child_is_retired_then_same_operation_recovers()
+    {
+        var harness = new Harness { ChildBlocker = "LSKU_ACTIVE" };
+        var blocked = await harness.Processor.StartAsync(
+            GskuId, 2, OperationId, ActorId, "OBSOLETE", "test", TimeSpan.FromMinutes(1));
+
+        Assert.False(blocked.Succeeded);
+        Assert.Equal("FIRST_GSKU_RETIREMENT_CHILD_BLOCKED", blocked.ErrorCode);
+        harness.ChildBlocker = null; // repository projection now represents the LSKU as Retired.
+
+        var recovered = await harness.Processor.RecoverAsync(
+            harness.Operations.Current!, "recovery", TimeSpan.FromMinutes(1));
+
+        Assert.True(recovered.Succeeded);
+        Assert.Equal(ProductIdentityLifecycleStatus.Retired, harness.Gsku.LifecycleStatus);
+        Assert.Equal(ProductIdentityLifecycleStatus.Retired, harness.Revision.LifecycleStatus);
+    }
+
+    [Fact]
     public async Task Sibling_race_after_gsku_retirement_blocks_revision_retirement()
     {
         var harness = new Harness { SiblingOnRevisionCheck = true };

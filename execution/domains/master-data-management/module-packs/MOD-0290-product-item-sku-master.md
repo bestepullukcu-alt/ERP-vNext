@@ -3891,6 +3891,19 @@ navigation, bulk lifecycle and push remain separate gates.
   independent review reporting no remaining P0/P1/P2; browser/runtime acceptance remains H.
 - [x] E2/E3 code truth rejects unsupported “later GSKU” assumptions and freezes the LSKU -> Finished Good -> combined
   API/manifest order and exact bounded current-code allow-lists on 2026-08-29.
+- [x] E2A LSKU lifecycle backend/workflow is implemented locally on 2026-08-29. It provides the strongly typed durable
+  operation/checkpoint/lease/recovery model, tenant-first Mongo persistence, atomic lifecycle CAS plus append-only audit
+  intent/receipt replay, exact lowercase `lsku` Workflow transport, default-disabled worker and fail-closed explicit
+  one-shot CLI. Reject restores Draft without GSKU/Revision/Market calls. Approve validates the approved GSKU and
+  Revision plus the current exact verified Market three times, freezes a separate immutable `ApprovalValidated` proof,
+  and leaves the create-time `Lsku.MarketSelection` unchanged. Direct retire is parent/provider-free and the existing
+  GSKU retirement blocker clears only after the LSKU is Retired. E2A-focused tests pass **33/33**, including the
+  **8/8** fixed-shared-database real-Mongo subset and every durable checkpoint/crash resume seam; the extended
+  LSKU/client/GSKU targeted regression passes **58/58**. The full MDM Release suite passes **978/978**, zero skipped.
+  MDM API Release build passes with zero errors and five
+  pre-existing Persistence warnings. Independent processor/security and persistence reviews report no remaining
+  P0/P1; the only P2 is duplicated approval-fingerprint computation retained inside the exact allow-list. No runtime
+  config, credential, data, operational execution or push occurred. E2B activation remains closed until E3A is green.
 - [ ] Additional-GSKU cardinality/ownership receives a separate owner decision before any implementation.
 - [ ] G2 and H receive exact current-code allow-lists and predecessor evidence before mutation/operation.
 
