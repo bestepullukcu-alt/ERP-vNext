@@ -35,4 +35,21 @@
   <data name="ErrorProviderTimeout"><value>Reference provider timed out.</value></data>
   <data name="ErrorForbidden"><value>You do not have permission.</value></data>
   <data name="ErrorGateway"><value>Request could not be completed.</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="LifecycleIdentityApproved" xml:space="preserve"><value>Identity Approved</value></data>
+  <data name="LifecyclePendingIdentityApproval" xml:space="preserve"><value>Pending Identity Approval</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>Retired</value></data>
+  <data name="SubmitIdentity" xml:space="preserve"><value>Submit for Approval</value></data>
+  <data name="RetireIdentity" xml:space="preserve"><value>Retire Identity</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>Submit this LSKU identity for approval?</value></data>
+  <data name="RetireConfirmation" xml:space="preserve"><value>Retire this approved LSKU identity?</value></data>
+  <data name="RetirementReasonLabel" xml:space="preserve"><value>Retirement reason</value></data>
+  <data name="RetirementReasonRequired" xml:space="preserve"><value>A retirement reason is required.</value></data>
+  <data name="RetirementReasonTooLong" xml:space="preserve"><value>The retirement reason cannot exceed 128 characters.</value></data>
+  <data name="SubmitPendingSuccess" xml:space="preserve"><value>The LSKU identity was submitted and is pending approval.</value></data>
+  <data name="RetireSuccess" xml:space="preserve"><value>The LSKU identity was retired.</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>The lifecycle state changed. The latest record has been loaded.</value></data>
+  <data name="ErrorUnauthorized" xml:space="preserve"><value>Your session has expired. Please sign in again.</value></data>
+  <data name="ErrorServiceUnavailable" xml:space="preserve"><value>The lifecycle service is unavailable. Try again later.</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>The lifecycle request timed out. Try again.</value></data>
 </root>
