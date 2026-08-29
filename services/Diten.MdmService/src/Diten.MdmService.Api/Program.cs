@@ -21,9 +21,12 @@ var runAuditIntentTemporalMigration =
     AuditIntentTemporalMigrationCommandLine.IsRequested(args);
 var runProductIdentityWorkflowRecovery =
     ProductIdentityWorkflowRecoveryCommandLine.IsRequested(args);
+var runFirstGskuIdentityWorkflowRecovery =
+    FirstGskuIdentityWorkflowRecoveryCommandLine.IsRequested(args);
 if ((runProductLegalEntityScopeOperational ? 1 : 0)
     + (runAuditIntentTemporalMigration ? 1 : 0)
-    + (runProductIdentityWorkflowRecovery ? 1 : 0) > 1)
+    + (runProductIdentityWorkflowRecovery ? 1 : 0)
+    + (runFirstGskuIdentityWorkflowRecovery ? 1 : 0) > 1)
 {
     throw new InvalidOperationException("MDM_OPERATIONAL_COMMAND_AMBIGUOUS");
 }
@@ -75,10 +78,42 @@ builder.Services.AddScoped(sp =>
 builder.Services.AddScoped<GlobalProductIdentityWorkflowProcessor>();
 builder.Services.AddSingleton<ProductIdentityWorkflowRecoveryRunner>();
 builder.Services.AddHostedService<ProductIdentityWorkflowRecoveryWorker>();
+builder.Services.AddOptions<FirstGskuIdentityWorkflowOptions>()
+    .Bind(builder.Configuration.GetSection(FirstGskuIdentityWorkflowOptions.SectionName))
+    .Validate(options => !options.Enabled || IsValidFirstGskuIdentityWorkflowOptions(options),
+        "FIRST_GSKU_IDENTITY_WORKFLOW_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddOptions<FirstGskuIdentityWorkflowWorkerOptions>()
+    .Bind(builder.Configuration.GetSection(FirstGskuIdentityWorkflowWorkerOptions.SectionName))
+    .Validate(IsValidFirstGskuIdentityWorkflowWorkerOptions,
+        "FIRST_GSKU_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<FirstGskuIdentityWorkflowOptions>>().Value;
+    var configuration = options.Enabled
+        ? options.ToStartConfiguration()
+        : new FirstGskuIdentityWorkflowStartConfiguration(
+            null, null, [], string.Empty, false, false, null);
+    return new FirstGskuIdentityWorkflowStartRequestFactory(
+        configuration,
+        sp.GetRequiredService<TimeProvider>());
+});
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<FirstGskuIdentityWorkflowWorkerOptions>>().Value;
+    return new FirstGskuIdentityWorkflowExecutionConfiguration(
+        TimeSpan.FromSeconds(options.LeaseSeconds),
+        TimeSpan.FromSeconds(options.RetryDelaySeconds));
+});
+builder.Services.AddScoped<FirstGskuIdentityWorkflowProcessor>();
+builder.Services.AddSingleton<FirstGskuIdentityWorkflowRecoveryRunner>();
+builder.Services.AddHostedService<FirstGskuIdentityWorkflowRecoveryWorker>();
 
 if (!runProductLegalEntityScopeOperational
     && !runAuditIntentTemporalMigration
-    && !runProductIdentityWorkflowRecovery)
+    && !runProductIdentityWorkflowRecovery
+    && !runFirstGskuIdentityWorkflowRecovery)
 {
     var jwtSecret = builder.Configuration["JwtSettings:Secret"];
     var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
@@ -202,6 +237,22 @@ if (runProductIdentityWorkflowRecovery)
     return;
 }
 
+if (runFirstGskuIdentityWorkflowRecovery)
+{
+    var runner = app.Services.GetRequiredService<FirstGskuIdentityWorkflowRecoveryRunner>();
+    var result = await FirstGskuIdentityWorkflowRecoveryCommandLine.RunAsync(
+        runner,
+        app.Lifetime.ApplicationStopping);
+    app.Logger.LogInformation(
+        "First GSKU identity workflow recovery completed; tenants {TenantCount}, operations {OperationCount}, completed {CompletedCount}, deferred {DeferredCount}, failed {FailedCount}.",
+        result.TenantCount,
+        result.OperationCount,
+        result.CompletedCount,
+        result.DeferredCount,
+        result.FailedCount);
+    return;
+}
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -246,6 +297,44 @@ static bool IsValidProductIdentityWorkflowOptions(ProductIdentityWorkflowOptions
 }
 
 static bool IsValidProductIdentityWorkflowWorkerOptions(ProductIdentityWorkflowWorkerOptions options)
+{
+    if (options.LeaseSeconds is < 10 or > 900
+        || options.RetryDelaySeconds is < 1 or > 3_600)
+    {
+        return false;
+    }
+
+    if (!options.Enabled)
+    {
+        return true;
+    }
+
+    try
+    {
+        options.EnsureValidWhenEnabled();
+        return true;
+    }
+    catch (InvalidOperationException)
+    {
+        return false;
+    }
+}
+
+static bool IsValidFirstGskuIdentityWorkflowOptions(FirstGskuIdentityWorkflowOptions options)
+{
+    try
+    {
+        _ = options.ToStartConfiguration();
+        return true;
+    }
+    catch (InvalidOperationException)
+    {
+        return false;
+    }
+}
+
+static bool IsValidFirstGskuIdentityWorkflowWorkerOptions(
+    FirstGskuIdentityWorkflowWorkerOptions options)
 {
     if (options.LeaseSeconds is < 10 or > 900
         || options.RetryDelaySeconds is < 1 or > 3_600)
