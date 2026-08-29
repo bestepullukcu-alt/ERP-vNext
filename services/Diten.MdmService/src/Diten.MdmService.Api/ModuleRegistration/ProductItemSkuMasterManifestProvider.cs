@@ -16,6 +16,8 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
     private const string FinishedGoodsCreate = "mdm.finished-goods.create";
     private const string GskusRead = "mdm.gskus.read";
     private const string GskusCreate = "mdm.gskus.create";
+    private const string GskusSubmit = "mdm.gskus.submit";
+    private const string GskusRetire = "mdm.gskus.retire";
     private const string LskusRead = "mdm.lskus.read";
     private const string LskusCreate = "mdm.lskus.create";
     private const string ProductAbbreviationsRead = "mdm.product-abbreviations.read";
@@ -87,7 +89,9 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                     Actions:
                     [
                         new ModuleManifestAction("ADD_NEW", "Add New", GskusCreate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
-                        new ModuleManifestAction("VIEW_DETAILS", "View Details", GskusRead, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
+                        new ModuleManifestAction("VIEW_DETAILS", "View Details", GskusRead, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("SUBMIT", "Submit", GskusSubmit, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("RETIRE", "Retire", GskusRetire, "RowAction", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
                     ]),
                 new ModuleManifestPage(
                     PageCode: "LSKUS",
