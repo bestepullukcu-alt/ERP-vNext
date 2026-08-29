@@ -6,7 +6,7 @@ service: Diten.AuthService
 shell: none
 golden_reference: none
 entity_base: GlobalEntityBase
-status: ready-for-dev
+status: review
 owner: auth-owner / product-data-owner
 branch: feature/pss/mod-0018-fu23-product-identity-lifecycle-permissions
 started: 2026-08-29
@@ -18,9 +18,10 @@ consumer_module: MOD-0290
 
 # MOD-0018-FU23 — Product Identity Lifecycle Permission Onboarding
 
-> **Code-start guard.** This pack is ready for development under the user's standing no-push authorization. Runtime
-> work remains restricted to the exact Section 5 allow-list; tenant grant/assignment, credential, operational data,
-> Production/Staging and push remain separate operations.
+> **Implementation state.** The Section 5 Auth runtime/test slice is implemented and under review on the current
+> `origin/main` base. Tenant grant/assignment, credential, operational data, Production/Staging and push remain
+> separate operations. Completion is deliberately not claimed until the owning MDM manifest publishes the exact
+> eight lifecycle definitions and the resulting catalog/profile path is verified.
 >
 > **Identity proof.** Master 8.1 `Blueprint_Data!A19:AG19` assigns roles, entitlements and policies to canonical parent
 > `MOD-0018 — RBAC / ABAC Authorization`. Registry inspection found no `MOD-0018-FU23` collision. The fail-closed DCP-002
@@ -350,6 +351,35 @@ MDM/Platform source test is authorized; their manifests/controllers may be inspe
 - [ ] Local Development and Production/Staging operational runs remain separate gates.
 
 ## 19. Implementation Notes
+
+### 2026-08-29 implementation evidence
+
+- The exact eight submit/retire keys and the `12/7/8` Steward/Approver/Retirement role matrices are implemented.
+- ABB, Product Legal Entity Scope and Product Identity lifecycle profiles compose under the same module; inactive
+  profile cleanup is source-safe and does not create missing roles.
+- Entitlement reconciliation accumulates module failures and throws after the bounded pass, preventing a false
+  integration-event completion marker.
+- The inbox now reserves globally unique EventId with exact `EventName + TenantId` facts before reconciliation,
+  reads only through a tenant-bound exact filter and publishes `CompletionProtocolVersion=1` only after successful
+  reconciliation. Transport tenant is authoritative; payload/envelope mismatch fails before reservation or mutation.
+- Focused profile/sync/inbox plus real-Mongo tests after rebase: `120/120` passed, zero skipped.
+- Auth API Release build after rebase: zero errors and zero warnings.
+- Full Auth suite after rebase: `589/591` passed. The two failures are the current `origin/main` User Lookup contract
+  tests expecting only `UserId/Referenceable` while the byte-identical current DTO also exposes privacy-masked
+  `MaskedName/MaskedEmail`; neither failing file is changed by FU23.
+- MDM API Release build after resolving the `origin/main` Brand-page/JWT integration conflicts: zero errors, five
+  pre-existing persistence warnings. Focused manifest/DI tests passed `8/8` and the full MDM suite passed `773/773`,
+  zero skipped. Both Brand and Product Legal Entity Scope manifest pages are retained.
+- Repo architecture guard remains `5/7`; both failures are pre-existing MDM DB-010 inventory drift and no Auth FU23
+  test is reported as an offender.
+- No push, operational reconciliation, user assignment, credential, configuration or business-data mutation ran.
+
+**Open completion dependency:** code-truth inspection found no production MDM manifest declaration for the eight
+submit/retire keys yet. `DefaultRolePermissionTemplate` only prevents default Viewer leakage; it does not create
+catalog entries. FU23 therefore remains `review` until the separately governed MDM lifecycle delivery publishes the
+exact definitions and live catalog/grant reconciliation is proven. Concurrent delivery is covered by consumer unit
+tests and atomic real-Mongo completion-upsert tests; full consumer-plus-role-repository concurrent delivery remains a
+live integration acceptance item rather than an overclaimed real-Mongo proof.
 
 FU23 is separate because submit and retirement authorization are not a fourth simple read/create onboarding. Reusing
 generic Admin-full reconciliation would silently combine maker and retirement authority. Approval/rejection remains on
