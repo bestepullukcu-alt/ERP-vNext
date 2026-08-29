@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Domain.Entities;
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Contracts.Events;
 using MassTransit;
@@ -69,13 +70,16 @@ public sealed class EntitlementSyncConsumer : IConsumer<EventTransportMessage>
             return; // malformed payload → fail-safe no-op
         }
 
-        var tenantId = payload.TenantId != Guid.Empty
-            ? payload.TenantId
-            : message.TenantId ?? Guid.Empty;
-
+        var tenantId = message.TenantId ?? Guid.Empty;
         if (tenantId == Guid.Empty)
         {
-            return; // nothing actionable
+            return; // no server-bound tenant context
+        }
+
+        if (payload.TenantId != Guid.Empty && payload.TenantId != tenantId)
+        {
+            throw new InvalidOperationException(
+                $"Integration event '{message.EventId}' payload tenant conflicts with its transport tenant.");
         }
 
         // Grant/Revoke target one module; Reconcile (subscription change) needs only the tenant.
@@ -84,8 +88,45 @@ public sealed class EntitlementSyncConsumer : IConsumer<EventTransportMessage>
             return;
         }
 
-        // Idempotency — reuse the internal-events inbox; the sync operations are themselves idempotent,
-        // so this primarily suppresses redundant work on re-delivery.
+        var inboxEntry = await _inbox.GetAsync(message.EventId, message.EventName, tenantId, ct);
+        if (inboxEntry is null)
+        {
+            var reserved = await _inbox.TryInsertAsync(message.EventId, message.EventName, tenantId, ct);
+            if (!reserved)
+            {
+                // EventId is globally unique. A failed exact reservation followed by no tenant-bound exact row is
+                // therefore fact drift; reject it before any authoritative read or grant/revoke mutation.
+                inboxEntry = await _inbox.GetAsync(message.EventId, message.EventName, tenantId, ct);
+                if (inboxEntry is null)
+                {
+                    throw new InvalidOperationException(
+                        $"Integration event '{message.EventId}' conflicts with previously recorded event facts.");
+                }
+            }
+            else
+            {
+                inboxEntry = new IntegrationEventInboxEntry(
+                    message.EventId,
+                    message.EventName,
+                    tenantId,
+                    CompletionProtocolVersion: null);
+            }
+        }
+
+        if (inboxEntry is not null)
+        {
+            EnsureExactInboxFacts(inboxEntry, message.EventName, tenantId);
+            if (inboxEntry.CompletionProtocolVersion == ProcessedIntegrationEvent.CurrentCompletionProtocolVersion)
+            {
+                _logger.LogInformation(
+                    "entitlement.sync.duplicate_ignored EventId={EventId} EventName={EventName} TenantId={TenantId}",
+                    message.EventId, message.EventName, tenantId);
+                return;
+            }
+        }
+
+        // The inbox is completion-only. Authoritative reads and reconciliation happen before the atomic completion
+        // upsert, so unavailable reads and partial repository failures remain replayable under the same EventId.
         TenantEntitlementReadResult? entitlementRead = null;
         if (operation is EntitlementOperation.Grant or EntitlementOperation.Reconcile)
         {
@@ -96,15 +137,6 @@ public sealed class EntitlementSyncConsumer : IConsumer<EventTransportMessage>
                 LogUnavailable(message, tenantId);
                 return;
             }
-        }
-
-        var firstDelivery = await _inbox.TryInsertAsync(message.EventId, message.EventName, tenantId, ct);
-        if (!firstDelivery)
-        {
-            _logger.LogInformation(
-                "entitlement.sync.duplicate_ignored EventId={EventId} EventName={EventName} TenantId={TenantId}",
-                message.EventId, message.EventName, tenantId);
-            return;
         }
 
         switch (operation)
@@ -134,9 +166,24 @@ public sealed class EntitlementSyncConsumer : IConsumer<EventTransportMessage>
                 break;
         }
 
+        await _inbox.MarkCompletedAsync(message.EventId, message.EventName, tenantId, ct);
+
         _logger.LogInformation(
             "entitlement.sync.applied EventId={EventId} EventName={EventName} TenantId={TenantId} ModuleCode={ModuleCode}",
             message.EventId, message.EventName, tenantId, payload.ModuleCode);
+    }
+
+    private static void EnsureExactInboxFacts(
+        IntegrationEventInboxEntry existing,
+        string eventName,
+        Guid tenantId)
+    {
+        if (existing.TenantId != tenantId
+            || !string.Equals(existing.EventName, eventName, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"Integration event '{existing.EventId}' conflicts with previously recorded event facts.");
+        }
     }
 
     private void LogUnavailable(EventTransportMessage message, Guid tenantId)
