@@ -4,8 +4,10 @@ using Diten.MdmService.Api.Controllers;
 using Diten.MdmService.Application.Behaviors;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Commands;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.Commands;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Queries;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Validators;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.Commands;
 using Diten.MdmService.Domain.Enums;
 using Diten.Shared.Core;
 using MediatR;
@@ -36,6 +38,8 @@ public sealed class FinishedGoodApiContractTests
     [InlineData(nameof(FinishedGoodsController.GetById), "GET", "{id:guid}")]
     [InlineData(nameof(FinishedGoodsController.GetGskuSelector), "GET", "gsku-selector")]
     [InlineData(nameof(FinishedGoodsController.CreateDraft), "POST", "drafts")]
+    [InlineData(nameof(FinishedGoodsController.SubmitIdentity), "POST", "{id:guid}/submit")]
+    [InlineData(nameof(FinishedGoodsController.RetireIdentity), "POST", "{id:guid}/retire")]
     public void Endpoint_route_and_verb_are_exact(string methodName, string verb, string? route)
     {
         var method = typeof(FinishedGoodsController).GetMethod(methodName)!;
@@ -46,7 +50,7 @@ public sealed class FinishedGoodApiContractTests
     }
 
     [Fact]
-    public void Surface_has_no_reservation_update_delete_bulk_or_lifecycle_endpoint()
+    public void Surface_has_only_foundation_submit_and_retire_without_approve_or_reject()
     {
         var actions = typeof(FinishedGoodsController)
             .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
@@ -54,14 +58,15 @@ public sealed class FinishedGoodApiContractTests
             .SelectMany(method => method.GetCustomAttributes<HttpMethodAttribute>())
             .ToArray();
 
-        Assert.Equal(4, actions.Length);
-        Assert.Equal(4, routes.Length);
+        Assert.Equal(6, actions.Length);
+        Assert.Equal(6, routes.Length);
         Assert.DoesNotContain(routes, route => route.HttpMethods.Any(method =>
             method is "PUT" or "PATCH" or "DELETE"));
         Assert.DoesNotContain(routes, route =>
             (route.Template ?? string.Empty).Contains("reservation", StringComparison.OrdinalIgnoreCase)
             || (route.Template ?? string.Empty).Contains("bulk", StringComparison.OrdinalIgnoreCase)
-            || (route.Template ?? string.Empty).Contains("lifecycle", StringComparison.OrdinalIgnoreCase));
+            || (route.Template ?? string.Empty).Contains("approve", StringComparison.OrdinalIgnoreCase)
+            || (route.Template ?? string.Empty).Contains("reject", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -85,6 +90,34 @@ public sealed class FinishedGoodApiContractTests
             request => Assert.IsType<GetFinishedGoodGskuSelectorQuery>(request));
         await CaptureAsync(() => controller.CreateDraft(create, default), capture,
             request => Assert.Same(create, Assert.IsType<CreateFinishedGoodDraftCommand>(request).Request));
+        var operationId = Guid.Parse("f47ac10b-58cc-4372-a567-0e02b2c3d479");
+        await CaptureAsync(
+            () => controller.SubmitIdentity(id, new() { ExpectedVersion = 3 }, operationId.ToString("D").ToUpperInvariant(), default),
+            capture,
+            request =>
+            {
+                var command = Assert.IsType<StartFinishedGoodIdentityWorkflowCommand>(request);
+                Assert.Equal(id, command.Request.FinishedGoodId);
+                Assert.Equal(3, command.Request.ExpectedVersion);
+                Assert.Equal(operationId, command.Request.OperationId);
+            });
+        await CaptureAsync(
+            () => controller.RetireIdentity(id, new()
+            {
+                ExpectedVersion = 5,
+                ReasonCode = "IDENTITY_RETIRED",
+                Comment = "obsolete"
+            }, operationId.ToString("D"), default),
+            capture,
+            request =>
+            {
+                var command = Assert.IsType<RetireFinishedGoodIdentityCommand>(request);
+                Assert.Equal(id, command.Request.FinishedGoodId);
+                Assert.Equal(5, command.Request.ExpectedVersion);
+                Assert.Equal(operationId, command.Request.OperationId);
+                Assert.Equal("IDENTITY_RETIRED", command.Request.ReasonCode);
+                Assert.Equal("obsolete", command.Request.Comment);
+            });
     }
 
     [Theory]
@@ -185,6 +218,86 @@ public sealed class FinishedGoodApiContractTests
         var objectResult = Assert.IsAssignableFrom<ObjectResult>(result);
         Assert.Equal(statusCode, objectResult.StatusCode);
         Assert.Same(response, objectResult.Value);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("not-a-guid")]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
+    [InlineData("{f47ac10b-58cc-4372-a567-0e02b2c3d479}")]
+    [InlineData(" f47ac10b-58cc-4372-a567-0e02b2c3d479")]
+    [InlineData("f47ac10b-58cc-4372-a567-0e02b2c3d479 ")]
+    [InlineData("f47ac10b-58cc-4372-a567-0e02b2c3d479x")]
+    public async Task Lifecycle_missing_non_D_or_empty_idempotency_key_fails_before_dispatch(string? key)
+    {
+        var mediator = DispatchProxy.Create<IMediator, CapturingMediatorProxy>();
+        var capture = (CapturingMediatorProxy)(object)mediator;
+        var controller = new FinishedGoodsController(mediator);
+
+        var submit = await controller.SubmitIdentity(Guid.NewGuid(), new() { ExpectedVersion = 0 }, key, default);
+        var retire = await controller.RetireIdentity(Guid.NewGuid(), new()
+        {
+            ExpectedVersion = 0,
+            ReasonCode = "IDENTITY_RETIRED"
+        }, key, default);
+
+        Assert.Equal(400, Assert.IsAssignableFrom<ObjectResult>(submit).StatusCode);
+        Assert.Equal(400, Assert.IsAssignableFrom<ObjectResult>(retire).StatusCode);
+        Assert.Null(capture.Request);
+    }
+
+    [Fact]
+    public async Task Lifecycle_missing_version_or_unknown_field_fails_before_dispatch()
+    {
+        var mediator = DispatchProxy.Create<IMediator, CapturingMediatorProxy>();
+        var capture = (CapturingMediatorProxy)(object)mediator;
+        var controller = new FinishedGoodsController(mediator);
+        var unknown = new Dictionary<string, JsonElement>
+        {
+            ["tenantId"] = JsonSerializer.SerializeToElement("forbidden")
+        };
+        var key = Guid.NewGuid().ToString("D");
+
+        var missingSubmit = await controller.SubmitIdentity(Guid.NewGuid(), new(), key, default);
+        var missingRetire = await controller.RetireIdentity(Guid.NewGuid(), new()
+        {
+            ReasonCode = "IDENTITY_RETIRED"
+        }, key, default);
+        var unknownRetire = await controller.RetireIdentity(Guid.NewGuid(), new()
+        {
+            ExpectedVersion = 0,
+            ReasonCode = "IDENTITY_RETIRED",
+            UnmappedFields = unknown
+        }, key, default);
+
+        Assert.All([missingSubmit, missingRetire, unknownRetire], result =>
+            Assert.Equal(400, Assert.IsAssignableFrom<ObjectResult>(result).StatusCode));
+        Assert.Null(capture.Request);
+    }
+
+    [Fact]
+    public void Lifecycle_bodies_are_strict_and_do_not_accept_actor_tenant_or_operation_fields()
+    {
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        var submit = JsonSerializer.SerializeToElement(
+            new FinishedGoodsController.SubmitFinishedGoodIdentityApiRequest { ExpectedVersion = 2 }, options);
+        var retire = JsonSerializer.SerializeToElement(
+            new FinishedGoodsController.RetireFinishedGoodIdentityApiRequest
+            {
+                ExpectedVersion = 4,
+                ReasonCode = "IDENTITY_RETIRED",
+                Comment = "obsolete"
+            }, options);
+        var forbidden = JsonSerializer.Deserialize<FinishedGoodsController.SubmitFinishedGoodIdentityApiRequest>(
+            "{\"expectedVersion\":2,\"actorId\":\"forbidden\"}",
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+
+        Assert.Equal(["expectedVersion"], submit.EnumerateObject().Select(x => x.Name));
+        Assert.Equal(["expectedVersion", "reasonCode", "comment"], retire.EnumerateObject().Select(x => x.Name));
+        Assert.Equal(["actorId"], forbidden.UnmappedFields!.Keys);
+        Assert.DoesNotContain("tenant", retire.ToString(), StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("operation", retire.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
     private static async Task CaptureAsync(
