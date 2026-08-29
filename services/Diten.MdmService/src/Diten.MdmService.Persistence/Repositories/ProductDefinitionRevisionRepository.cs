@@ -173,6 +173,51 @@ public sealed class ProductDefinitionRevisionRepository : IProductDefinitionRevi
             ProductIdentityLifecycleStatus.Draft, binding, auditIntent,
             ProductAuditOperation.ProductDefinitionRevisionIdentityRejected, cancellationToken);
 
+    public async Task<FirstGskuIdentityRetirementWriteResult<ProductDefinitionRevision>> RetireIdentityAsync(
+        Guid id, int expectedVersion, Guid operationId, string operationFingerprint,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(auditIntent);
+        var current = await GetByIdAsync(id, cancellationToken);
+        var replay = current?.AuditIntents.SingleOrDefault(x => x.IdempotencyKey == auditIntent.IdempotencyKey);
+        if (replay is not null)
+            return replay.Operation == ProductAuditOperation.ProductDefinitionRevisionIdentityRetired
+                   && replay.EvidenceHash == auditIntent.EvidenceHash
+                   && current!.LifecycleStatus == ProductIdentityLifecycleStatus.Retired
+                   && current.RetirementOperationId == operationId
+                   && current.RetirementOperationFingerprint == operationFingerprint
+                ? new(true, true, current, null)
+                : new(false, false, current, "FIRST_GSKU_RETIREMENT_IDEMPOTENCY_CONFLICT");
+        if (_tenantId == Guid.Empty || id == Guid.Empty || operationId == Guid.Empty || expectedVersion < 0
+            || string.IsNullOrWhiteSpace(operationFingerprint)
+            || auditIntent.TenantId != _tenantId || auditIntent.AggregateId != id
+            || auditIntent.PreVersion != expectedVersion || auditIntent.PostVersion != expectedVersion + 1
+            || auditIntent.Operation != ProductAuditOperation.ProductDefinitionRevisionIdentityRetired
+            || string.IsNullOrWhiteSpace(auditIntent.IdempotencyKey)
+            || string.IsNullOrWhiteSpace(auditIntent.EvidenceHash))
+            return new(false, false, current, "FIRST_GSKU_RETIREMENT_CONTRACT_INVALID");
+
+        var filter = ActiveFilter & Builders<ProductDefinitionRevision>.Filter.Eq(x => x.Id, id)
+            & Builders<ProductDefinitionRevision>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<ProductDefinitionRevision>.Filter.Eq(
+                x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved)
+            & Builders<ProductDefinitionRevision>.Filter.Eq(x => x.RetirementOperationId, null)
+            & Builders<ProductDefinitionRevision>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        var updated = await _revisions.FindOneAndUpdateAsync(filter,
+            Builders<ProductDefinitionRevision>.Update
+                .Set(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Retired)
+                .Set(x => x.RetirementOperationId, operationId)
+                .Set(x => x.RetirementOperationFingerprint, operationFingerprint)
+                .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow).Inc(x => x.Version, 1)
+                .Push(x => x.AuditIntents, auditIntent),
+            new FindOneAndUpdateOptions<ProductDefinitionRevision> { ReturnDocument = ReturnDocument.After },
+            cancellationToken);
+        return updated is not null ? new(true, false, updated, null)
+            : new(false, false, current, current is null
+                ? "FIRST_GSKU_REVISION_NOT_FOUND"
+                : "FIRST_GSKU_REVISION_RETIREMENT_CONFLICT");
+    }
+
     private async Task<FirstGskuIdentityLifecycleMutationResult<ProductDefinitionRevision>> MutateLifecycleAsync(
         Guid id, int expectedVersion, ProductIdentityLifecycleStatus sourceStatus,
         ProductIdentityLifecycleStatus targetStatus, FirstGskuIdentityWorkflowBinding binding,

@@ -121,7 +121,7 @@ public sealed class LskuRegisterMongoTests
             scope.TenantA,
             "GS-002",
             draftRevision.Id,
-            ProductIdentityLifecycleStatus.Draft);
+            ProductIdentityLifecycleStatus.IdentityApproved);
         await scope.InsertGskuAsync(
             scope.TenantA,
             "GS-003",
@@ -224,7 +224,7 @@ public sealed class LskuRegisterMongoTests
                 CanonicalCode = canonicalCode,
                 GlobalProductName = name,
                 GlobalProductNameNormalized = name.ToUpperInvariant(),
-                LifecycleStatus = ProductIdentityLifecycleStatus.Draft,
+                LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved,
                 IsDeleted = false
             };
             await Database.GetCollection<GlobalProduct>("mdm_global_products").InsertOneAsync(product);
@@ -243,7 +243,7 @@ public sealed class LskuRegisterMongoTests
                 GlobalProductId = productId,
                 RevisionIdentifier = identifier,
                 CreationCommandId = "REV:" + Guid.NewGuid().ToString("N"),
-                LifecycleStatus = ProductIdentityLifecycleStatus.Draft,
+                LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved,
                 IsDeleted = false
             };
             await Database.GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions")

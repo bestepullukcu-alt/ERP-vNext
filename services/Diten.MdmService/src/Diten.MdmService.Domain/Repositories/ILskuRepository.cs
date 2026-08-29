@@ -41,6 +41,10 @@ public interface ILskuRepository
     Task<LskuCreateResult> CreateDraftAsync(
         Lsku lsku,
         CancellationToken cancellationToken = default);
+    Task<LskuCreateResult> CreateDraftWithAdmissionAsync(
+        Lsku lsku, string admissionFingerprint,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("GSKU_CHILD_ADMISSION_NOT_IMPLEMENTED");
 }
 
 public sealed record LskuPage(

@@ -27,6 +27,10 @@ public interface IFinishedGoodRepository
     Task<FinishedGoodCreateResult> CreateDraftAsync(
         FinishedGood finishedGood,
         CancellationToken cancellationToken = default);
+    Task<FinishedGoodCreateResult> CreateDraftWithAdmissionAsync(
+        FinishedGood finishedGood, string admissionFingerprint,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("GSKU_CHILD_ADMISSION_NOT_IMPLEMENTED");
 }
 
 public sealed record FinishedGoodPage(IReadOnlyList<FinishedGood> Items, long TotalCount);

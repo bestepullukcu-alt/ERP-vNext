@@ -69,6 +69,8 @@ public static class DependencyInjection
             GlobalProductIdentityWorkflowTenantPartitionDiscoveryRepository>();
         services.AddScoped<IFirstGskuIdentityWorkflowOperationRepository,
             FirstGskuIdentityWorkflowOperationRepository>();
+        services.AddScoped<IFirstGskuIdentityRetirementOperationRepository,
+            FirstGskuIdentityRetirementOperationRepository>();
         services.AddScoped<IFirstGskuIdentityWorkflowTenantPartitionDiscovery,
             FirstGskuIdentityWorkflowTenantPartitionDiscoveryRepository>();
 

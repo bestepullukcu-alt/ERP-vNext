@@ -48,6 +48,30 @@ public interface IGskuRepository
         Guid id, int expectedVersion, FirstGskuIdentityWorkflowBinding binding, LocalAuditIntent auditIntent,
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("FIRST_GSKU_IDENTITY_LIFECYCLE_NOT_IMPLEMENTED");
+    Task<GskuChildCreationAdmissionResult> AcquireChildCreationAdmissionAsync(
+        Guid id, GskuChildIdentityKind childKind, string creationCommandId,
+        string requestFingerprint, DateTimeOffset acquiredAtUtc,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("GSKU_CHILD_ADMISSION_NOT_IMPLEMENTED");
+    Task<GskuChildCreationAdmissionResult> CompleteChildCreationAdmissionAsync(
+        Guid id, GskuChildIdentityKind childKind, string creationCommandId,
+        string requestFingerprint, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("GSKU_CHILD_ADMISSION_NOT_IMPLEMENTED");
+    Task<FirstGskuIdentityRetirementWriteResult<Gsku>> CloseChildAdmissionFenceAsync(
+        Guid id, int expectedVersion, Guid operationId, string operationFingerprint,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("FIRST_GSKU_RETIREMENT_NOT_IMPLEMENTED");
+    Task<string?> FindRetirementBlockerAsync(
+        Guid id, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("FIRST_GSKU_RETIREMENT_NOT_IMPLEMENTED");
+    Task<bool> HasNonRetiredSiblingAsync(
+        Guid productDefinitionRevisionId, Guid excludingGskuId,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("FIRST_GSKU_RETIREMENT_NOT_IMPLEMENTED");
+    Task<FirstGskuIdentityRetirementWriteResult<Gsku>> RetireIdentityAsync(
+        Guid id, int expectedVersion, Guid operationId, string operationFingerprint,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("FIRST_GSKU_RETIREMENT_NOT_IMPLEMENTED");
 }
 
 public sealed record GskuCreateResult(bool Succeeded, Gsku? Gsku, string? ErrorCode = null);

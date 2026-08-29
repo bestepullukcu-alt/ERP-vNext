@@ -3571,12 +3571,31 @@ Workflow transport/security tests only for an additive exact `gsku` profile asse
 **E1B — downstream admission and direct pair retirement.** Runtime allow-list is `Gsku.cs`, a new bounded
 `GskuChildCreationAdmission.cs`, `IGskuRepository.cs`, `GskuRepository.cs`, `ILskuRepository.cs`, `LskuRepository.cs`,
 `IFinishedGoodRepository.cs`, `FinishedGoodRepository.cs`, `CreateLskuDraftHandler.cs`,
-`CreateFinishedGoodDraftHandler.cs`, the pair-retirement command/handler/validator and exact unit/real-Mongo tests.
+`CreateFinishedGoodDraftHandler.cs`, `ProductDefinitionRevision.cs`, `IProductDefinitionRevisionRepository.cs`,
+`ProductDefinitionRevisionRepository.cs`, `ProductAuditOperation.cs`, Persistence `DependencyInjection.cs`, new
+`FirstGskuIdentityRetirementOperation.cs`, `FirstGskuIdentityRetirementCheckpoint.cs`,
+`FirstGskuIdentityRetirementResults.cs`, `IFirstGskuIdentityRetirementOperationRepository.cs`,
+`FirstGskuIdentityRetirementOperationRepository.cs`, `GskuPairRetirementModels.cs`,
+`FirstGskuIdentityRetirementAuditIntentFactory.cs`, `FirstGskuIdentityRetirementProcessor.cs`,
+`FirstGskuIdentityRetirementRecoveryRunner.cs`, `RetireGskuIdentityPairCommand.cs`, its handler/validator, new
+`FirstGskuIdentityRetirementUnitTests.cs` and `GskuChildAdmissionRetirementMongoTests.cs`. Narrow compatibility edits
+are permitted only in `FinishedGoodDraftFoundationUnitTests.cs`, `FinishedGoodDraftFoundationMongoTests.cs`,
+`LskuDraftFoundationMongoTests.cs` and `LskuRegisterMongoTests.cs` to establish the newly required approved pair and
+admission-aware fake contracts; unrelated assertions remain protected.
 Capacity is the existing non-tenant-configurable bound of 32 active admissions shared by LSKU and Finished Good.
 Create acquires before allocation and completes after durable binding. Retirement fences new admission first, blocks
 on any non-retired child, applies GSKU retired before Revision retired, never cascades, and recovers every checkpoint.
 Referenceable queries require both Revision and GSKU `IdentityApproved`; Draft is no longer referenceable. Existing
 Development records require separate preflight/backfill/approval and are not silently grandfathered.
+
+**E1B implementation evidence — 2026-08-29:** LSKU and Finished Good creates share one exact-kind/fingerprint fenced,
+maximum-32 GSKU admission pool. Completion proves the same-tenant, non-deleted child and consumed/confirmed reservation.
+A separate durable retirement operation fences admission, blocks active children and non-retired sibling GSKUs, retires
+GSKU before Revision, recovers each checkpoint and never cascades. Referenceability now requires both halves approved
+through a bounded Mongo aggregation; ordinary non-referenceable list behavior remains unchanged. Independent review
+reports no remaining P0/P1/P2. Focused E1B is **12/12**, expanded affected tests are **78/78**, full MDM is **907/907**
+with zero skips, API Release build is zero warning/error, and `git diff --check` is clean. No API/manifest, operational
+config/data, Production/Staging or push occurred.
 
 **E1C — GSKU API/manifest enablement.** Exact allow-list is `GskusController.cs`,
 `ProductItemSkuMasterManifestProvider.cs`, `GskuApiContractTests.cs`, `GskuAuthorizationTests.cs` and
