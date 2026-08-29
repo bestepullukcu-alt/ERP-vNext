@@ -1,4 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
 using Diten.Platform.API.Controllers.Common;
+using Diten.Platform.API.Models.Workflow;
 using Diten.Platform.API.Observability;
 using Diten.Platform.API.Security;
 using Diten.Platform.Application.Features.TenantOrganization.Queries;
@@ -172,10 +174,23 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
     [HasPermission(WorkflowPermissions.TasksApprove)]
     public async Task<IActionResult> ApproveTask(
         Guid taskId,
-        [FromBody] ApproveWorkflowTaskRequest request,
+        [FromBody] ApproveWorkflowTaskTransportRequest request,
         CancellationToken ct)
     {
-        var response = await _mediator.Send(new ApproveWorkflowTaskCommand(taskId, request, CorrelationId), ct);
+        if (!TryResolveAuthenticatedActor(out var actorId))
+        {
+            return AuthenticationFailure();
+        }
+
+        var response = await _mediator.Send(new ApproveWorkflowTaskCommand(
+            taskId,
+            new ApproveWorkflowTaskRequest(
+                actorId,
+                request.ReasonCode,
+                request.IdempotencyKey,
+                request.Comment,
+                request.EvidenceRef),
+            CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -183,10 +198,23 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
     [HasPermission(WorkflowPermissions.TasksReject)]
     public async Task<IActionResult> RejectTask(
         Guid taskId,
-        [FromBody] RejectWorkflowTaskRequest request,
+        [FromBody] RejectWorkflowTaskTransportRequest request,
         CancellationToken ct)
     {
-        var response = await _mediator.Send(new RejectWorkflowTaskCommand(taskId, request, CorrelationId), ct);
+        if (!TryResolveAuthenticatedActor(out var actorId))
+        {
+            return AuthenticationFailure();
+        }
+
+        var response = await _mediator.Send(new RejectWorkflowTaskCommand(
+            taskId,
+            new RejectWorkflowTaskRequest(
+                actorId,
+                request.ReasonCode,
+                request.IdempotencyKey,
+                request.Comment,
+                request.EvidenceRef),
+            CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -227,4 +255,34 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         string.IsNullOrWhiteSpace(_correlationContext.CorrelationId)
             ? HttpContext.TraceIdentifier
             : _correlationContext.CorrelationId!;
+
+    private bool TryResolveAuthenticatedActor(out string actorId)
+    {
+        actorId = string.Empty;
+        if (User.Identity?.IsAuthenticated != true)
+        {
+            return false;
+        }
+
+        var subjects = User.Claims
+            .Where(claim => string.Equals(claim.Type, JwtRegisteredClaimNames.Sub, StringComparison.Ordinal))
+            .Select(claim => claim.Value)
+            .ToArray();
+        if (subjects.Length != 1
+            || !Guid.TryParseExact(subjects[0], "D", out var userId)
+            || userId == Guid.Empty)
+        {
+            return false;
+        }
+
+        actorId = userId.ToString("D");
+        return true;
+    }
+
+    private IActionResult AuthenticationFailure() => CreateActionResultInstance(
+        Diten.Platform.Application.Common.Response<WorkflowTaskTransitionResponse>.Fail(
+            "WORKFLOW_ACTOR_UNAUTHENTICATED",
+            StatusCodes.Status401Unauthorized,
+            "WORKFLOW_ACTOR_UNAUTHENTICATED",
+            CorrelationId));
 }

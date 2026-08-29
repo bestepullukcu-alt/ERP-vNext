@@ -153,6 +153,8 @@ builder.Services.AddSingleton<IOrgDataScopeCandidateAvailabilityClassifier, Mong
 builder.Services.AddScoped<ITrustedSourceAuditIntentServiceIdentity, TrustedSourceAuditIntentServiceIdentity>();
 builder.Services.AddSingleton<Diten.Platform.API.Models.Audit.TrustedSourceAuditIntentRequestParser>();
 builder.Services.AddScoped<ITrustedSourceAuditIntentRequestExecutor, TrustedSourceAuditIntentRequestExecutor>();
+builder.Services.AddSingleton<Diten.Platform.API.Models.Workflow.TrustedWorkflowConsumerRequestParser>();
+builder.Services.AddScoped<ITrustedWorkflowConsumerRequestExecutor, TrustedWorkflowConsumerRequestExecutor>();
 
 // AG-STEP-011 / MOD-0018-FU14 Group B — self-explain observer (API-layer; reuses the API-layer PermissionClaimEvaluator).
 builder.Services.AddScoped<Diten.Platform.API.Observability.ICorrelationContext, Diten.Platform.API.Observability.CorrelationContext>();
