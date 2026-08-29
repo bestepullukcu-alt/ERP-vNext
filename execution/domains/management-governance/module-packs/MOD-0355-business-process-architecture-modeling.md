@@ -7,7 +7,7 @@ service: Diten.ManagementGovernanceService
 internal_module: Modules/ProcessModeling
 module_code: MOD-0355
 shell: tenant
-golden_reference: none
+golden_reference: slim
 entity_base: EntityBase
 status: ready-for-dev
 owner: ali.tufanoglu / enterprise-architect-interim
@@ -17,9 +17,10 @@ legacy_parity_owner: ali.tufanoglu / business-process-governance-owner-interim
 branch: feature/mg/mod-0355-business-process-architecture-modeling
 started: 2026-08-25
 target: 2026-09-15
-form_field_count: 0
+form_field_count: 4
 port: 5017
 implementation_authority: explicit-user-control-tower-bounded-core-local-api-test-and-performance-improvement-contract-test
+frontend_legacy_parity_authority: explicit-user-control-tower-bounded-default-off-non-production
 production_authority: none
 ---
 
@@ -41,6 +42,12 @@ production_authority: none
 > internal module.
 
 > **Planning boundary:** `target` is provisional planning metadata, not a delivery commitment or authority.
+
+> **Frontend & Legacy-Parity amendment:** The explicit Control Tower decision dated 2026-08-29 authorizes
+> governance preparation for the bounded tenant UI slice defined in §19. This is a default-off,
+> non-production and non-migrating authority. It supersedes earlier blanket frontend exclusions only for the
+> exact allowlist in that amendment. It grants no Gateway route, direct browser-to-`5017` access, production
+> activation, deployment, WorkCenter integration, legacy mutation or shared-shell modification.
 
 ## 1. Module Summary
 
@@ -65,8 +72,11 @@ generic definition-time activity nodes, definition-time control points and direc
 Minimal Core v1 does not execute a process and does not define classification vocabularies for activity,
 control-point or relationship records.
 
-This is not a conventional DataTable CRUD module. `golden_reference: none` and `form_field_count: 0` are
-intentional. Frontend delivery is a separately authorized later slice.
+The Core remains backend-first. For the separately authorized Frontend & Legacy-Parity slice, only the
+four user-entered `ProcessModel` identity fields (`ProcessDefinitionId`, `ModelCode`, `Name`, `Description`)
+participate in create/edit form counting; therefore the list/create surface uses
+`golden_reference: slim` and `form_field_count: 4`. The version graph/editor remains a specialized workspace
+outside DataTable form counting.
 
 Historical `CAND-CAP-0009` is a deprecated governance alias only. It must never appear in runtime literals,
 permissions, routes, collections, events, jobs, configuration or persisted module identity.
@@ -1098,16 +1108,17 @@ The compile/test-only `Program.cs` cannot call `Run`, `RunAsync`, `Start`, `Star
 activation; it cannot bind a port, expose an endpoint, start a listener/worker or load runtime configuration.
 No `appsettings*`, `launchSettings.json`, controller, endpoint, worker, broker or deployment file is authorized.
 
-Later slices require separate explicit scope activation:
+Later slices require separate explicit scope activation except for the bounded Frontend & Legacy-Parity
+authority now recorded in §19:
 
 - Approval/Auth/Audit adapters.
 - Optional reference adapters.
-- Frontend ProcessModeling surface.
+- Frontend ProcessModeling surface — authorized only by the exact §19 allowlist; not activated.
 - Gateway routing.
 - Runtime deployment and configuration.
 
-The exact Core paths above grant present bounded write authority only; every later-slice path remains
-unauthorized.
+The exact Core paths above grant bounded Core write authority only. The §19 frontend paths have their own
+separate bounded authority; every other later-slice path remains unauthorized.
 
 ### Approval Policy & Publish Authorization Contract-Test scope
 
@@ -1239,14 +1250,16 @@ Contract-Test `ready-for-dev`.
 
 - `shell: tenant`.
 - Minimal Core v1 has no frontend.
-- A future frontend must use `_LayoutTenantShell` explicitly on every Razor page.
+- The separately authorized §19 frontend must use `_LayoutTenantShell` explicitly on every Razor page.
 - `_Layout.cshtml` and `_ViewStart.cshtml` remain unchanged.
-- The future route family is not allocated by this draft.
+- Minimal Core allocated no route; the exact default-off tenant route family is now fixed only by the §19
+  amendment.
 - Existing legacy/prototype screens are evidence for parity review only.
 - No legacy page is an implementation template or production authority.
-- A future frontend requires seven-language localization:
+- The §19 frontend requires seven-language localization:
   `en`, `fr`, `es`, `zh`, `ar`, `ru`, `tr`.
-- A process graph/modeling workspace may be used; DataTable is not required.
+- The process-model catalog uses DataTable v2 and GoldenReferenceSlim; the graph/editor remains a specialized
+  non-DataTable workspace.
 - WorkCenter embedding or projection is outside this pack.
 
 ## 10. Backend File Convention
@@ -1301,9 +1314,9 @@ Rules:
 
 ## 11. Frontend File Contract
 
-Frontend is excluded from Minimal Core v1.
+Frontend is excluded from Minimal Core v1. The separate §19 amendment is the only bounded frontend authority.
 
-A later Frontend & Legacy Parity amendment must define:
+The Frontend & Legacy Parity amendment in §19 defines:
 
 - Exact tenant route.
 - Controller boundary.
@@ -1317,7 +1330,7 @@ A later Frontend & Legacy Parity amendment must define:
 - Approval-pending presentation without local approval truth.
 - Legacy parity inventory and disposition.
 
-The future frontend must not expose:
+The authorized frontend must not expose:
 
 - Workflow execution controls.
 - Approval task ownership.
@@ -2310,6 +2323,104 @@ Before Frontend & Legacy Parity implementation:
 6. Use a separate approved migration/deprecation scope for any legacy change.
 
 Passing the parity gate authorizes comparison and planning only. It does not authorize legacy mutation.
+
+### Frontend & Legacy Parity / READY-FOR-DEV / DEFAULT-OFF / NON-PRODUCTION amendment
+
+This amendment authorizes a later bounded frontend implementation and its evidence; it does not declare the
+frontend implemented. The exact tenant route family is:
+
+- `GET /management-governance/process-modeling/models` — process-model catalog;
+- `GET /management-governance/process-modeling/models/{id}` — model/version editor;
+- same-origin proxy paths below `/management-governance/process-modeling/api/**`, default-off until a
+  separately approved Gateway `5000` route exists.
+
+The generic `/management-governance` shell, its business-process subdomain placeholders, ES/Delivery routes,
+`/DecompositionTreeBuilder`, WorkCenter/WorkCenterNext and all shared layouts remain byte-preserved. No
+existing route is redirected or claimed as MOD-0355 runtime truth.
+
+Until the Gateway/port integration gate closes, every same-origin proxy request returns typed
+`503 process_modeling_frontend_gateway_not_ready` with zero service reads. Browser JavaScript cannot call
+loopback `5017`, embed bearer tokens, read HttpOnly cookies or synthesize tenant/actor/permission data.
+Production activation and enabling write calls are separate gates.
+
+#### Exact frontend allowlist
+
+Only the following paths may be created or changed by this slice:
+
+- `frontend/Diten.Web/Controllers/ProcessModelingFrontendController.cs`
+- `frontend/Diten.Web/Models/ManagementGovernance/ProcessModeling/**`
+- `frontend/Diten.Web/Services/ManagementGovernance/ProcessModeling/**`
+- `frontend/Diten.Web/Views/ManagementGovernance/ProcessModeling/**`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/ProcessModeling/ProcessModelingIndex.en.resx`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/ProcessModeling/ProcessModelingIndex.fr.resx`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/ProcessModeling/ProcessModelingIndex.es.resx`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/ProcessModeling/ProcessModelingIndex.zh.resx`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/ProcessModeling/ProcessModelingIndex.ar.resx`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/ProcessModeling/ProcessModelingIndex.ru.resx`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/ProcessModeling/ProcessModelingIndex.tr.resx`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/ProcessModeling/ProcessModelingEditor.en.resx`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/ProcessModeling/ProcessModelingEditor.fr.resx`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/ProcessModeling/ProcessModelingEditor.es.resx`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/ProcessModeling/ProcessModelingEditor.zh.resx`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/ProcessModeling/ProcessModelingEditor.ar.resx`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/ProcessModeling/ProcessModelingEditor.ru.resx`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/ProcessModeling/ProcessModelingEditor.tr.resx`
+- `frontend/Diten.Web/wwwroot/assets/js/pages/management-governance/process-modeling/index.js`
+- `frontend/Diten.Web/wwwroot/assets/js/pages/management-governance/process-modeling/index.l10n.js`
+- `frontend/Diten.Web/wwwroot/assets/js/pages/management-governance/process-modeling/editor.js`
+- `frontend/Diten.Web/wwwroot/assets/js/pages/management-governance/process-modeling/editor.l10n.js`
+- `frontend/Diten.Web/wwwroot/assets/css/pages/management-governance/process-modeling.css`
+- `frontend/Diten.Web/tests/mg-process-modeling-datatable-v2.test.js`
+- `frontend/Diten.Web/tests/mg-process-modeling-editor.test.js`
+- `frontend/Diten.Web/tests/mg-process-modeling-legacy-parity.test.js`
+- `execution/domains/management-governance/evidence/MOD-0355-legacy-parity.md`
+
+No wildcard above reaches existing generic ManagementGovernance controller/model/adapter/registry files,
+DeliveryExecutionManagement, EnterpriseStrategyBusinessPerformance, DecompositionTreeBuilder, WorkCenter,
+WorkCenterNext, shared layouts/resources, Gateway, service runtime or another internal module.
+
+#### List/editor, permissions and localization
+
+- Every Razor page explicitly uses `_LayoutTenantShell`; `_Layout.cshtml` and `_ViewStart.cshtml` remain
+  unchanged.
+- The catalog uses DataTables v2 with `data-dt-standard="v2"`. The four-field create/edit identity form uses
+  the GoldenReferenceSlim offcanvas pattern. The version graph/editor is a separate details workspace and
+  does not place a large form inside a DataTable row or modal.
+- The list is read-first and uses only
+  `management-governance.process-modeling.models.read`. Visible actions map ordinally to the existing exact
+  model permissions: `models.create`, `models.update`, `models.request-review`, `models.return-to-draft`,
+  `models.publish`, `models.retire` and `models.create-revision`. The API re-enforces every permission; UI
+  visibility never grants authority.
+- Published and Retired versions are read-only. Editing published content requires the explicit new-revision
+  interaction. Review/approval presentation is server-derived and cannot create local approval truth.
+- No process execution/start/complete/token/route-selection, task assignment, SLA, escalation, WorkCenter
+  control, local KPI/Metric editor, classification editor or artifact upload is exposed.
+- All module strings come from the exact fourteen RESX files. Shared actions use existing `SharedResource`
+  keys; English fallback, inline translation dictionaries and hardcoded user-facing JavaScript strings are
+  forbidden. Arabic RTL, focus order, keyboard graph navigation and accessible validation summaries are
+  acceptance requirements.
+- Loading, empty, validation, `401`, `403`, non-disclosing `404`, `409`, `503` and offline states are distinct;
+  stale/LKG data is never rendered as current authority.
+
+#### Legacy parity and browser evidence gate
+
+The parity inventory covers the existing generic ManagementGovernance business-process subdomain/module
+placeholder URLs and any discoverable process-model prototype. For each page it records old URL, old
+entities, fields, commands/actions, lifecycle, permissions, integrations, new owner/module, new URL, field
+mapping, `Same|Replaced|Missing|Intentionally Removed|Out of Scope`, migration requirement and browser
+evidence. Absence of a real legacy process editor is recorded as evidence, not silently treated as parity.
+
+Users must be able to open old and new routes on different ports and compare them page-by-page. Until the
+matrix and explicit user acceptance are complete, no legacy retirement, delete, redirect or `full parity
+complete` claim is permitted. Placeholder approve/assign/escalate/work-queue behavior is not copied into
+MOD-0355 and remains quarantined under the domain contract.
+
+Required executable evidence is DataTable v2 verification, Slim form contract, route ownership, tenant-shell
+use, fourteen-file localization key parity, no hardcoded strings, no direct-service/token access, zero-read
+default-off behavior, exact permission/control mapping, lifecycle editor matrix, keyboard/RTL/accessibility
+checks, protected-path diff zero, and browser screenshots/network logs for loading, empty, populated-read,
+Draft, Review, Published, Retired, `403`, `404`, `409` and `503`. Gateway, write activation and production
+evidence remain open after frontend tests pass.
 
 ### Governance availability versus runtime availability
 
