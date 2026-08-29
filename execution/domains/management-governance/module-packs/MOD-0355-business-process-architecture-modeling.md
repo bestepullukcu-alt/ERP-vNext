@@ -2627,6 +2627,7 @@ The slice may change only:
 - this pack;
 - `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs`;
 - `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Controllers/PerformanceImprovementLocalTestController.cs`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/LocalTestSecurity/LocalTestAuthenticationHandler.cs`, limited to accepting the exact nine owner-declared Performance/Improvement permissions in the existing non-production scheme;
 - the three root `DependencyInjection.cs` files under Application, Persistence and Infrastructure, additive only;
 - existing `services/Diten.ManagementGovernanceService/**/Modules/ProcessModeling/PerformanceImprovement/**` source and test roots;
 - `frontend/Diten.Web/Controllers/ProcessModelingFrontendController.cs`;
