@@ -5305,3 +5305,23 @@ kurtardı; geriye handler'ın **kendisi** kaldı. Silme üç servise yayıldığ
   `docs/product-backlog-closed.md`'ye taşınacak. "Sonra toplu temizleriz" bu dosyayı 6927 satıra çıkaran şeydir.
 - **Gelecek regresyon riski: 🟡** — bugün hiçbir şey kırılmıyor (canlı yol yok). Risk tamamen
   **yanlış okumada**: birinin "kiracılık hallediliyor" sanıp yeni bir istemciyi bu handler'a takması.
+
+### BL-317 — Başlık kimlik/vekâlet çipi tasarımı bir stash'te bekliyor, bir aydır (2026-08-29, ölçüldü)
+
+> **DURUM:** AÇIK · **SAHİP:** Ali Tufanoğlu
+
+- **Ölçüm:** `stash@{0}` (`7cb7a895`), 2026-07-20'de `feature/workcenter` dalında alınmış,
+  mesajı *"wip-idpill-idmenu-experiment (Codex, yarim)"*. İki dosya, 49 ekleme / 22 silme:
+  `backbone-custom.css` + `WorkCenterNext/app.js`.
+- **İçindeki iş İNMEMİŞ.** main'de ölçüldü:
+  `.wcn-header-actions` ✅ var — ama `.wcn-idpill` · `.wcn-idmenu` · `.wcn-idpill-active` ·
+  `.wcn-idpill-caret` · `.wcn-idpill-warn` · `.wcn-idpill:hover` → **hiçbiri yok.**
+- **Bugün yerini ne dolduruyor:** başlıktaki "Myself ▾" seçici Bootstrap'ın genel
+  `btn btn-label-secondary dropdown-toggle` sınıflarıyla çiziliyor. Yani özel çip
+  tasarımı hiç uygulanmamış, genel bir dropdown'a düşülmüş.
+- ⚠ **Bu kayıt bir iş talebi değil, bir HATIRLATMADIR.** Stash bir aydır bekliyor ve
+  hiçbir yerde yazılı değildi; kaybolmasının tek sebebi kimsenin bilmemesi olurdu.
+- **Karar sahibinde:** (a) `git stash branch feature/wcn-idpill stash@{0}` ile kendi dalına
+  çıkarıp bitir · (b) tasarım artık istenmiyorsa stash'i düşür ve bu kaydı kapat.
+- ⚠ **Nasıl olursa olsun `pop` KULLANMA, `apply`/`branch` kullan** — 2026-08-29'da bu depoda
+  çözülmemiş bir `pop` iki dosyayı çakışma işaretleriyle bıraktı ve dal değiştirmeyi engelledi.
