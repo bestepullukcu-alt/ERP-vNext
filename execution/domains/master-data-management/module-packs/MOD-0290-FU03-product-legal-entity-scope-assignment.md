@@ -1209,13 +1209,20 @@ Code truth reconciled on 2026-08-26:
   the command-owned hash and therefore cannot create a permanent false delta. Canonical snapshot parsing rejects
   missing/extra/reordered facts, CR, internal/extra blank lines, drifted headers and incoherent type 7/8 facts.
 - H1b verification after the nested execution-context and independent-acceptance findings were closed: focused
-  ProductLegalEntityScope domain/runner/DI/real-Mongo tests are `166/166`; the full MDM suite is `702/702`; all have
+  ProductLegalEntityScope domain/runner/DI/real-Mongo tests are `167/167`; the current integrated full MDM suite is
+  `727/727`; all have
   zero skipped. Persisted malformed rollout state, full/stable hash recomputation, sample-independent 201+ inventory
   hashing, marker-independent writer discovery and real-Mongo commit-before-response reconciliation are covered. Crash/replay is
   proven after fence acquisition, first and second snapshot, quiesced snapshot binding and commit-before-response.
   Exact facade-to-inner reuse is installed synchronously around the MediatR `next` delegate and disposed on every
   outcome; direct inner and unrelated nested commands cannot inherit it. MDM API isolated Release build succeeds
   with zero errors and five existing persistence warnings.
+- A 2026-08-29 Local Development ABB acceptance run exposed and closed a pre-H1b persisted-document compatibility
+  defect without an operational migration: a physically missing `WriterLeaseGeneration` field now matches only the
+  exact generation-zero acquire CAS and is atomically materialized as generation one. Missing writer/fence fields do
+  not weaken the no-takeover rule, and every positive-generation document still requires an exact generation match.
+  The new real-Mongo regression passes inside the `167/167` focused and `727/727` full results. The pilot rollout was
+  left in `Preparation`, with no active writer lease and no activation/suspension action invoked.
 - H1b remains `BLOCKED_OPERATIONAL_PREREQUISITES`, not code-blocked. The default-disabled G4 provider/consumer
   prerequisites remain implemented with `68/68` + `639/639` Platform and `41/41` + `678/678` MDM evidence. No H1b
   action, operation 14/15 data mutation, credential/grant provisioning or live receipt run occurred; Production-

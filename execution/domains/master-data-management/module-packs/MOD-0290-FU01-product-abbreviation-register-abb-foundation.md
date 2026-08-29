@@ -1079,8 +1079,8 @@ Global Product batch repository and shared `Response<T>` without changing them.
 Runtime/test evidence recorded on 2026-08-29:
 
 - MDM API Release build completed with zero errors; the five reported persistence warnings predate this named step.
-- Exact `ProductAbbreviationWorkItem*` tests passed `13/13`; the broader ABB regression passed `72/72`; the complete
-  non-skipped MDM application/real-Mongo suite passed `720/720` against `localhost:27017`.
+- Exact `ProductAbbreviationWorkItem*` tests passed `24/24`; the complete non-skipped MDM application/real-Mongo
+  suite passed `727/727` against `localhost:27017`.
 - The WorkCenter generic remote bridge, manifest-address prohibition and singleton implementation guard passed
   `24/24`. No ABB-specific Platform provider, dispatcher or gateway implementation was added.
 - The WorkItem tests pin the five-member envelope and stable `reason_code`, exact routes/identity/actions, 31-field
@@ -1093,6 +1093,36 @@ Runtime/test evidence recorded on 2026-08-29:
   that single accepted FU03 guard instead of copying its algorithm.
 - `git diff --check` and the protected-path/architecture scans completed cleanly. No config, credential, process,
   business-data, Platform, Gateway, frontend or Production/Staging mutation was performed.
+
+Local Development backend live-acceptance evidence recorded on 2026-08-29:
+
+- The secret-free `mdm-product-abbreviations`/`1.0` operator row was supplied only in process memory. Auth, Platform,
+  MDM, Gateway and Frontend health returned `200`; no appsettings or Production/Staging configuration was written.
+- One approved initial `WCT` request for `GP-000000000001` returned `201`. Recovery reused the same request identity
+  and returned `200`; final register/ledger/history cardinality is exactly `3/3/6`, with `WCT` `ACTIVE`, version `1`,
+  one register row and one durable allocation. No second request, ledger allocation or decision history was created.
+- The requester projection exposed only `cancel`; the distinct approver projection exposed only `approve/reject`.
+  Same-subject approve and non-owner cancel returned `403`; authorized approve returned `200`; exact terminal replay
+  returned `200`; changed-payload replay returned `409 CONCURRENCY_CONFLICT`; the terminal item disappeared.
+- With MDM intentionally stopped, the board remained `200` and named `mdm-product-abbreviations` exactly once with
+  `ERROR`; a permitted `cancel` dispatch failed closed with `504 WORK_ITEM_REMOTE_UNAVAILABLE`. MDM was restarted and
+  all five HTTP services plus Mongo were left healthy.
+- The live run exposed one pre-H1b compatibility defect: a rollout document physically missing
+  `WriterLeaseGeneration` deserialized to zero but could not match the zero-generation CAS. The repository now treats
+  only a missing generation on an otherwise exact generation-zero rollout as zero, materializes generation one on
+  acquisition, and retains every later no-ABA/fencing rule. The real-Mongo regression passes `6/6`; the complete
+  ProductLegalEntityScope group passes `167/167` and the full MDM suite passes `727/727`, all with zero skipped.
+- Terminal replay is pinned by a real-Mongo handler-to-workflow regression for `approve`, `reject` and `cancel`:
+  first transition and exact replay both return `200`, entry identity/status/version and the single history record stay
+  unchanged, while reason/action/version drift returns `409 CONCURRENCY_CONFLICT` with zero additional mutation.
+- Temporary responsibility memberships and temporary WorkCenter inbox grants were created only through supported
+  Auth APIs and removed afterward. Final counts are zero; the rollout has no active writer lease. Credentials remained
+  process-only. A final elevated local restart removed the sandbox-only Data Protection key-ring errors from fresh logs.
+
+The live gate is not yet claimed complete. Its remaining evidence is (a) FU03 Enforced in-scope/out-of-scope behavior
+against an operationally activated pilot rollout, which is intentionally still `Preparation`, and (b) authenticated
+browser console/network evidence. No existing signed-in browser tab was available and no credential was typed without
+the user's immediate browser confirmation. These are operational/user-acceptance gates, not runtime-code defects.
 
 #### Separate operator configuration and live-acceptance gate
 

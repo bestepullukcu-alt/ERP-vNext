@@ -95,7 +95,7 @@ public sealed class ProductAbbreviationWorkItemActionTests
     }
 
     [Fact]
-    public async Task Adapter_rejects_correction_or_terminal_source_before_dispatch()
+    public async Task Adapter_rejects_correction_source_before_dispatch()
     {
         var tenantId = Guid.NewGuid();
         var itemId = Guid.NewGuid();
@@ -118,6 +118,52 @@ public sealed class ProductAbbreviationWorkItemActionTests
         Assert.False(result.IsSuccessful);
         Assert.Equal(409, result.StatusCode);
         Assert.Equal("CONCURRENCY_CONFLICT", result.ReasonCode);
+    }
+
+    [Theory]
+    [InlineData("approve", ProductAbbreviationLifecycleStatus.ACTIVE, typeof(ApproveProductAbbreviationAllocationCommand))]
+    [InlineData("reject", ProductAbbreviationLifecycleStatus.REJECTED, typeof(RejectProductAbbreviationAllocationCommand))]
+    [InlineData("cancel", ProductAbbreviationLifecycleStatus.CANCELLED, typeof(CancelProductAbbreviationAllocationCommand))]
+    public async Task Terminal_source_reaches_existing_command_adapter_for_durable_replay(
+        string actionCode,
+        ProductAbbreviationLifecycleStatus terminalStatus,
+        Type expectedCommandType)
+    {
+        var tenantId = Guid.NewGuid();
+        var itemId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+        var entry = new ProductAbbreviationRegisterEntry
+        {
+            Id = itemId,
+            GlobalProductId = productId,
+            NormalizedAbbreviation = "ABC",
+            RequestedByCanonicalSubjectId = Guid.NewGuid().ToString("D"),
+            LifecycleStatus = terminalStatus,
+            Version = 1
+        };
+        object? dispatched = null;
+        var mediator = Stub<IMediator>((method, args) =>
+        {
+            if (method.Name != nameof(IMediator.Send))
+            {
+                throw new InvalidOperationException(method.Name);
+            }
+
+            dispatched = args![0];
+            return Task.FromResult(Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>.Success(
+                new(itemId, productId, "ABC", terminalStatus, 1, null, false)));
+        });
+        var reason = actionCode == "reject" ? "required" : null;
+
+        var result = await Handler(mediator, tenantId, entry).Handle(
+            new(itemId, actionCode, "mdm-product-abbreviations", 0, reason, null, false),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.IsType(expectedCommandType, dispatched);
+        Assert.Equal(
+            DispatchProductAbbreviationWorkItemActionHandler.BuildOperationKey(itemId, actionCode, 0, reason),
+            expectedCommandType.GetProperty("IdempotencyKey")!.GetValue(dispatched));
     }
 
     [Fact]

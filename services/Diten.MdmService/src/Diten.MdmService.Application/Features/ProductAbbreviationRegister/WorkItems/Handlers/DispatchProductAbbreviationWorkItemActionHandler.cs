@@ -69,8 +69,7 @@ public sealed class DispatchProductAbbreviationWorkItemActionHandler
         {
             return Fail(404, "ABBREVIATION_NOT_FOUND");
         }
-        if (entry.ReplacesEntryId is not null
-            || entry.LifecycleStatus != ProductAbbreviationLifecycleStatus.REQUESTED)
+        if (entry.ReplacesEntryId is not null)
         {
             return Fail(409, "CONCURRENCY_CONFLICT");
         }
