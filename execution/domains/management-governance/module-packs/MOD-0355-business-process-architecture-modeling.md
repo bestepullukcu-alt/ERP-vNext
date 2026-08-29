@@ -2533,6 +2533,44 @@ Existing stable module failures are authoritative: `400 process_model_bad_reques
 authorization retains the existing `process_model_publish_*` stable codes. The shared bridge must forward
 these codes unchanged; this amendment invents no success fallback.
 
+#### Owner disposition — approval-item ownership, tenant boundary and localization
+
+For an approval-required publish, the future WorkCenter review item is owned exclusively by MOD-0023 through
+its tenant-scoped `ApprovalTask` plus immutable `RuntimeAssignmentSnapshot`. The workflow object reference
+must bind to `MOD-0355|ProcessModelVersion|{versionId}`. MOD-0355 must not emit a second remote-provider item
+for the same approval work. Permission possession, `ModelAuthorActorId`, publisher/requester provenance and
+the set of users holding `models.publish` are not assignment sources and must never be converted into a
+reviewer, assignee or queue.
+
+Until the MOD-0023 workflow/assignment runtime is separately activated and its bilateral binding is proven,
+the MOD-0355 WorkCenter provider remains disabled and returns exact
+`503 process_model_workcenter_provider_unavailable` with zero model, permission, assignment and action reads,
+zero writes and no projected action. This governance clarification does not activate MOD-0023, create a
+workflow instance or authorize a Platform provider registration.
+
+The future module endpoint must enforce this owner-approved tenant failure order without claiming that a
+central DCP-004 guard already exists:
+
+1. A validated JWT tenant and exact `X-Tenant-Id` that disagree return `400 process_model_bad_request` before
+   any business lookup.
+2. After trusted tenant resolution, every lookup filters by exact tenant, object identity and non-deleted
+   state. Missing and foreign-tenant records are indistinguishable and return the ordinary
+   `404 process_model_not_found` reason.
+3. Only an existing, visible own-tenant record may reach authorization evaluation; denial there returns
+   `403 process_model_permission_denied`.
+
+A global lookup followed by a `TenantId` comparison is forbidden because it discloses cross-tenant existence.
+The tests for a future implementation must prove the order and zero-read/zero-write behavior above directly
+at the MOD-0355 boundary; this pack makes no statement that the shared bridge already enforces it.
+
+The `publish` action also remains absent until WorkCenter owns an exact seven-language shared resource key.
+Module-local ProcessModeling RESX files cannot satisfy this gate: DCP-004 resolves resource labels from the
+WorkCenter localization catalog, and the remote bridge does not provide a module-local localization bundle.
+The recommended key is `ActPublish`; adding its seven translations is a separate, explicitly authorized
+shared-WorkCenter localization change. Reusing `ActApprove` or `ActSignOff` would change the command's user-
+visible meaning and is forbidden without a named product-owner decision. No shared localization file is
+authorized by this amendment.
+
 #### Remaining connection gates and future exact module-side allowlist
 
 No remote-provider implementation is ready until all of the following close with executable evidence:
