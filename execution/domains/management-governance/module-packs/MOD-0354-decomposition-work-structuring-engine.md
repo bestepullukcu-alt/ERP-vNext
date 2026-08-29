@@ -1119,90 +1119,92 @@ This table is a local-test contract only. It does not reserve a Gateway path or 
 
 ## 16. Acceptance Criteria
 
-- [ ] A tenant actor with `management-governance.dws.create` can create one structure whose tenant is taken
+- [x] A tenant actor with `management-governance.dws.create` can create one structure whose tenant is taken
   only from server context, creates mutable Working Revision #1 and stores a validated
   immutable `ExternalContextReference`; definition pointers are both 1.
-- [ ] Structure `Name` and `Description` exist only in revision metadata; definition holds no duplicate
+- [x] Structure `Name` and `Description` exist only in revision metadata; definition holds no duplicate
   truth.
-- [ ] `UpdateStructureMetadataCommand` updates only the current unsealed revision metadata.
-- [ ] External context accepts only the exact versioned MOD-0117 contract and
+- [x] `UpdateStructureMetadataCommand` updates only the current unsealed revision metadata.
+- [x] External context accepts only the exact versioned MOD-0117 contract and
   Portfolio/Initiative/Program/Project; arbitrary discriminators and Demand are rejected.
-- [ ] Node add/move/reorder/remove preserves a valid parent/child tree and applies mutation atomically.
-- [ ] Functional local API uses ten action-specific command request/result pairs and five typed query
+- [x] Node add/move/reorder/remove preserves a valid parent/child tree and applies mutation atomically.
+- [x] Functional local API uses ten action-specific command request/result pairs and five typed query
   projections; no generic operation dispatch/result or generic persistence `Value` remains on its call graph.
-- [ ] Metadata, move and reorder exact same-state requests return typed no-op with zero version, receipt,
+- [x] Metadata, move and reorder exact same-state requests return typed no-op with zero version, receipt,
   audit-intent, outbox or business-document delta; no other failure is silently reclassified as no-op.
-- [ ] Node removal is leaf-only: an active child returns `409 dws_node_has_children` with zero residue, while
+- [x] Node removal is leaf-only: an active child returns `409 dws_node_has_children` with zero residue, while
   successful leaf removal deletes its incident structural dependency edges in the same transaction and does
   not cascade to descendants.
-- [ ] Each new node receives a server-generated `LogicalNodeId`; next-revision copy regenerates row `Id`,
+- [x] Each new node receives a server-generated `LogicalNodeId`; next-revision copy regenerates row `Id`,
   preserves logical identity and rewrites no parent/dependency/snapshot/comparison contract to persistence ID.
-- [ ] Comparison joins by `LogicalNodeId` and deterministically reports added/removed/moved/reordered,
+- [x] Comparison joins by `LogicalNodeId` and deterministically reports added/removed/moved/reordered,
   structural metadata changes and logical dependency set differences.
-- [ ] Validation identifies self-parent, cycle, missing parent and duplicate sibling order without inventing
+- [x] Validation identifies self-parent, cycle, missing parent and duplicate sibling order without inventing
   task/execution state.
-- [ ] Pure structural dependency accepts only same-tenant/same-revision node pairs and contains no
+- [x] Pure structural dependency accepts only same-tenant/same-revision node pairs and contains no
   self/duplicate/cyclic edges, FS/SS/FF/SF, lag, critical-path or scheduling semantics. DAG validation
   grants no scheduling authority.
-- [ ] `CreateStructureBaselineCommand` atomically validates all structural rules, seals the current revision
+- [x] `CreateStructureBaselineCommand` atomically validates all structural rules, seals the current revision
   creates the immutable baseline, and clears the working pointer; any mutation of the sealed revision
   returns 409.
-- [ ] `CreateNextStructureRevisionCommand` copies a selected sealed revision/baseline into the next mutable
+- [x] `CreateNextStructureRevisionCommand` copies a selected sealed revision/baseline into the next mutable
   revision only when no working revision exists, then atomically advances both definition pointers.
-- [ ] Exactly one unsealed working revision exists at a time; a second attempt returns 409.
-- [ ] External context is immutable; changing MOD-0117 context requires a new definition.
-- [ ] Revision comparison accepts sealed revisions only; working revisions are preview-validation inputs,
+- [x] Exactly one unsealed working revision exists at a time; a second attempt returns 409.
+- [x] External context is immutable; changing MOD-0117 context requires a new definition.
+- [x] Revision comparison accepts sealed revisions only; working revisions are preview-validation inputs,
   not historical evidence.
-- [ ] `dws.structural-baseline.v1` produces deterministic SHA-256 lowercase 64 hex over canonical structural
+- [x] `dws.structural-baseline.v1` produces deterministic SHA-256 lowercase 64 hex over canonical structural
   content; definition/revision/row IDs are excluded, unchanged copied content hashes identically, and a
   future version cannot invalidate or reinterpret existing hashes.
-- [ ] Revision and baseline comparison reports only structural changes.
-- [ ] Stale technical versions return 409 and cannot overwrite newer state.
-- [ ] Idempotent replay produces exactly one mutation; payload or subject mismatch on the same tenant-scoped
+- [x] Revision and baseline comparison reports only structural changes.
+- [x] Stale technical versions return 409 and cannot overwrite newer state.
+- [x] Idempotent replay produces exactly one mutation; payload or subject mismatch on the same tenant-scoped
   key returns generic 409 without outcome disclosure.
-- [ ] Receipt stores server-bound Guid `SecuritySubjectId`, closed `CommandFamily`,
+- [x] Receipt stores server-bound Guid `SecuritySubjectId`, closed `CommandFamily`,
   tenant+command-family+key, request hash, lowercase `succeeded|no-op` `OutcomeKind`, stable ASCII
   `DomainCode` and canonical `StableOutcomeJson` atomically with the mutation; it has no `ExpiresAtUtc`/TTL
   and is not a DWS business aggregate.
-- [ ] `StableOutcomeJson` matches the `dws.idempotency-outcome.v1` envelope, uses only command allowlist
+- [x] `StableOutcomeJson` matches the `dws.idempotency-outcome.v1` envelope, uses only command allowlist
   result fields, is BOM-less/minified/canonical and at most 4096 UTF-8 bytes; failures write no receipt.
-- [ ] Missing, empty, `Guid.Empty` or unparseable JWT `sub`/fallback NameIdentifier fails authentication
+- [x] Missing, empty, `Guid.Empty` or unparseable JWT `sub`/fallback NameIdentifier fails authentication
   before command execution or receipt lookup.
-- [ ] Request hashing uses exact command-specific `dws.request-canonical-json.v1` projections, excludes
+- [x] Request hashing uses exact command-specific `dws.request-canonical-json.v1` projections, excludes
   server context and rejects arbitrary DTO serialization, unsupported types and unknown versions.
-- [ ] Strict decode, Trim → NFC, normalized validation/uniqueness/persistence and normalized-property
+- [x] Strict decode, Trim → NFC, normalized validation/uniqueness/persistence and normalized-property
   collision rejection are identical across validation, indexes, storage and canonical projection.
-- [ ] The approved Mongo atomicity design leaves no partial state after persistence failure or process crash.
-- [ ] Required tenant-first partial unique indexes exist and enforce uniqueness in real Mongo.
-- [ ] Cross-tenant structure, parent, node, dependency, revision and baseline access returns 404 without
+- [x] The approved Mongo atomicity design leaves no partial state after persistence failure or process crash.
+- [x] Required tenant-first partial unique indexes exist and enforce uniqueness in real Mongo.
+- [x] Cross-tenant structure, parent, node, dependency, revision and baseline access returns 404 without
   disclosing existence.
-- [ ] DWS code has no `TaskAggregate`, task/approval/workflow helper, task-like field/action or BPM domain
+- [x] DWS code has no `TaskAggregate`, task/approval/workflow helper, task-like field/action or BPM domain
   type/repository/collection reference.
-- [ ] DWS and `ProcessModeling` use separate repositories, Mongo collections and domain models.
-- [ ] Runtime literal scan finds no deprecated alias `CAND-CAP-0008`.
-- [ ] Permissions use only `management-governance.dws.*` and consume MOD-0018 evaluation.
-- [ ] Trusted context keeps `SecuritySubjectId`, `EffectiveActorId` and optional `DelegatedActorId` separate,
+- [x] DWS and `ProcessModeling` use separate repositories, Mongo collections and domain models.
+- [x] Runtime literal scan finds no deprecated alias `CAND-CAP-0008`.
+- [x] Permissions use only `management-governance.dws.*`; the B-11B test-owned enforcement port consumes a
+  fail-closed MOD-0018-shaped result, while live MOD-0018 enforcement remains the separate B-01 gate.
+- [x] Trusted context keeps `SecuritySubjectId`, `EffectiveActorId` and optional `DelegatedActorId` separate,
   binds all three fail closed and never synthesizes one identity from another.
-- [ ] Local MOD-0117 fixtures prove exact tenant/actor/reference/fence binding and 400/404/409/503 zero-residue
+- [x] Local MOD-0117 fixtures prove exact tenant/actor/reference/fence binding and 400/404/409/503 zero-residue
   dispositions; local FU16 fixtures prove exact entitlement/grant/freshness binding and 401/403/503
   zero-residue dispositions.
-- [ ] Functional local audit outbox remains explicitly non-deliverable test evidence and makes no MOD-0021
+- [x] Functional local audit outbox remains explicitly non-deliverable test evidence and makes no MOD-0021
   live-acceptance claim; self-registration remains contract-only with no cross-service write or activation.
-- [ ] Every required audited mutation persists a producer-local technical audit intent in the same
-  transaction; failure rolls back the mutation, while post-commit delivery failure uses
-  retry/dead-letter/alarm/authorized replay without reverting the baseline.
+- [x] Every required audited mutation persists a producer-local technical audit intent in the same
+  transaction; an insert failure rolls back the mutation.
+- [ ] Post-commit live delivery failure uses retry/dead-letter/alarm/authorized replay without reverting the
+  baseline.
 - [ ] Versioned asynchronous MOD-0021 delivery is duplicate-safe, uses server-bound publisher/tenant/actor
   identity and emits only the approved minimal bounded payload.
-- [ ] DWS neither accesses Platform audit collections nor uses the shared-key internal audit endpoint as its
+- [x] DWS neither accesses Platform audit collections nor uses the shared-key internal audit endpoint as its
   authoritative integration.
-- [ ] `AuditIntentPersisted` and `AuditEventAcceptedByMOD0021` remain technical observability only and do not
+- [x] `AuditIntentPersisted` and `AuditEventAcceptedByMOD0021` remain technical observability only and do not
   create DWS aggregate/revision business status, task lifecycle, workflow or approval state.
-- [ ] Every Razor page explicitly uses `Layout = "_LayoutTenantShell"`; FROZEN `_Layout.cshtml` and
+- [x] Every Razor page explicitly uses `Layout = "_LayoutTenantShell"`; FROZEN `_Layout.cshtml` and
   `_ViewStart.cshtml` remain unchanged.
-- [ ] Tenant UI contains no approve/assign/escalate or task lifecycle controls and has seven-language RESX
+- [x] Tenant UI contains no approve/assign/escalate or task lifecycle controls and has seven-language RESX
   parity.
 - [ ] Browser requests travel through Gateway `5000`; no direct service-port URL exists.
-- [ ] Existing `/DecompositionTreeBuilder`, Management Governance prototype and legacy DWS persistence are
+- [x] Existing `/DecompositionTreeBuilder`, Management Governance prototype and legacy DWS persistence are
   unchanged.
 
 ## 17. Test Expectations
@@ -1399,9 +1401,15 @@ This table is a local-test contract only. It does not reserve a Gateway path or 
   `ModuleCode=MOD-0354` and `ModuleEntitlementCode=MOD-0354`. Neither `management-governance` nor
   `decomposition-work-structuring-engine` is an allowed entitlement alias. The correction grants no catalog
   registration, tenant grant, entitlement creation or activation authority.
-- [ ] **B-11B evidence:** Exact ten-command/five-query typed functional implementation, leaf-only removal,
-  three-family zero-write no-op matrix, trusted actor split, MOD-0117/FU16 fixture matrices, typed persistence
-  and full functional/mutation/regression evidence in §19 are implemented and proven.
+- [x] **B-11B evidence:** Exact ten-command/five-query typed functional implementation, leaf-only removal,
+  three-family zero-write no-op matrix, trusted actor split, MOD-0117/FU16 fixture matrices and typed
+  persistence are implemented by `1ab588cfe3c5b93d89f3ffc4abd9295fde822769`; executable functional,
+  isolation, real-Mongo, HTTP and mutation evidence is recorded by
+  `07a0013a4c9e0460f74990c4678591a3599ab9e8`. Reconciliation on 2026-08-29 reran build with zero
+  warnings/errors and `135/135` tests (`40` unit, `53` architecture, `42` integration); the evidence manifest
+  contains `23` physically killed/restored expected-red mutants and `3` SECURITY-POLICY-FORBIDDEN
+  dispositions with executable invariant coverage. This closes only B-11B non-production/default-off
+  evidence.
 - [ ] **B-12:** Integration-agent approves and owns the gateway route task.
 - [x] Exact bounded Core repo scope is recorded in §5; later runtime/frontend paths require revalidation.
 - [x] Gate 2 is not triggered by the isolated structural-only Core. A future implementation that touches,
@@ -1420,10 +1428,10 @@ implementation and activation remain forbidden while `production_authority: none
 | Core Scaffold & Contract-Test | Structural domain/application contracts, deterministic canonicalization, exact permission/persistence manifests, local transaction seams and architecture/contract tests | Present `ready-for-dev` authority |
 | B-02 Mongo Persistence & Integration Evidence | Dws-owned Mongo documents/repositories, index initialization, same-session transaction execution and disposable real-Mongo evidence under the exact §5 paths | Closed by `6dfbaa5b1218a1d236360830db1e8c5db71bba87`; non-runtime only, no activation authority |
 | Backend Local-Testability | Exact 15 action/query endpoints, MediatR and four behaviors, response envelope/base controller, loopback health host, existing Dws Mongo composition, typed default-off MOD-0117/FU16 adapters, test-only audit simulator and module self-registration contract | Explicitly authorized non-production/default-off implementation slice; no Gateway or production activation |
-| Functional Local DWS API | Exact ten typed command and five typed query handlers/projections, functional Mongo persistence, leaf-only removal, exact no-op semantics, split trusted actor identities and executable local MOD-0117/FU16 fixtures | Explicitly authorized B-11B non-production/default-off implementation slice; generic B-11A dispatch/storage remains smoke-only until replacement passes; evidence unchecked |
+| Functional Local DWS API | Exact ten typed command and five typed query handlers/projections, functional Mongo persistence, leaf-only removal, exact no-op semantics, split trusted actor identities and executable local MOD-0117/FU16 fixtures | Closed by `1ab588cfe3c5b93d89f3ffc4abd9295fde822769` plus `07a0013a4c9e0460f74990c4678591a3599ab9e8`; non-production/default-off only. Live provider, audit delivery, frontend, Gateway and activation gates remain open. |
 | Security & MOD-0117 Provider Integration | Live context validator, S2S/delegated actor, MOD-0018 enforcement and permission provisioning | Separate later gate |
 | Audit Delivery | Signed/versioned event contract, MOD-0035 adapter, MOD-0021 consumer compatibility, retry/DLQ/alarm/replay | Separate later gate |
-| Frontend & Legacy Parity | Tenant UI, seven-language resources, page-by-page legacy matrix and user acceptance | Separate later gate |
+| Frontend & Legacy Parity | Tenant UI, seven-language resources, page-by-page legacy matrix and user acceptance | Static/default-off implementation checkpoint `00fd2efe14358c00baef757899b1b75f2c568881` passes frontend build and `11/11` focused contract/parity tests. Gateway route, populated browser/network evidence and user parity acceptance remain open. |
 | Runtime Activation | Port, Gateway, configuration, credentials, deployment, observability and production authority | Final separate gate |
 
 - Core `Program.cs` remains inactive by default; only exact `--local-test` starts the loopback `5017` host.
