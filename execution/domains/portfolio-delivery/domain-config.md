@@ -1,10 +1,10 @@
 # Portfolio Delivery (PPM) — Domain Config
 
-> Bu dosya domain'in **sınırlarını ve kararlarını** tanımlar. Engineering NASIL kuralları [.antigravity/rules/](../../../.antigravity/rules/)'da; modül envanteri [execution/portfolio/master-development-plan.md](../../portfolio/master-development-plan.md)'de; capability-level sözleşme [DCP-003](../../portfolio/delivery-capability-packs/DCP-003-ppm-work-management.md)'tedir.
+> Bu dosya domain'in **sınırlarını ve kararlarını** tanımlar. Engineering NASIL kuralları [.antigravity/rules/](../../../.antigravity/rules/)'da; modül envanteri [execution/portfolio/master-development-plan.md](../../portfolio/master-development-plan.md)'de; aktif 1.3/MOD-0117 orchestration sözleşmesi [DCP-006](../../portfolio/delivery-capability-packs/DCP-006-portfolio-delivery-process-core.md)'dadır. [DCP-003](../../portfolio/delivery-capability-packs/DCP-003-ppm-work-management.md) yalnız deferred/non-executable legacy-parity planning kaynağıdır.
 
 ## Purpose
 
-Portfolio Delivery (PPM) domain'i; Work Records (proje/iş kayıtları), PPM Task instance'ları, workstream hiyerarşisi, proje takvim planlaması, Project Effort Log ve Meeting / Status Reports yeteneklerini sahiplenir. Blueprint-kanonik kimliği `MOD-0117 — Project & Portfolio Management (PPM)`'dir. Eski `DitenPPM` sisteminin paritesinin güvenli alt kümesi hedeflenir; Blueprint'in tam MOD-0117 kapsamı (demand intake, benefits, capacity planning vb.) bu domain'in aktif kapsamı değildir.
+Portfolio Delivery (PPM) domain'inin Blueprint-kanonik kimliği `MOD-0117 — Project & Portfolio Management (PPM)`'dir. DCP-006'nın aktif 1.3 dilimi Portfolio, Initiative, Program, Project, PPM-owned InvestmentCase ve planned-benefit BenefitCommitment kayıtlarını kapsar. DCP-003 Work Records/Task/Workstream/Calendar/Effort/Meeting özellikleri deferred, non-executable legacy backlog olarak kalır. Current main üzerinde `Diten.PpmService` henüz materialize edilmemiştir; ayrı kanıt zincirindeki runtime varlığı bu governance reconciliation ile current-main runtime iddiasına dönüşmez.
 
 ## In-Scope Modules
 
@@ -53,6 +53,11 @@ Portfolio Delivery (PPM) domain'i; Work Records (proje/iş kayıtları), PPM Tas
 - **MOD-0280 (Time, Attendance & Leave) — ASSUMPTION-1:** PPM, "Project Effort Log" nesnesini MOD-0117 altında **geçici olarak** sahiplenir; MOD-0280 hayata geçtiğinde Time Entry SoR'u ile resmi kontrat kurulur ve gerekiyorsa sahiplik devri yapılır. **Kesin karar değildir; EA-TBD.** PPM tarafında "Time Entry" terimi ve `ppm.time-entries.*` permission adı kullanılamaz — doğru ad: `ppm.effort-logs.*`.
 - **MOD-0288 (Organization Directory):** FunctionalDomain/SubDomain benzeri organizasyon referansları geçici PPM-yerel snapshot olabilir; kalıcı kaynak MOD-0288'dir, besleme kontratı follow-up'tır.
 - **MOD-0007 (Decision & Rationale Log):** Meeting/Status Report içindeki Decision kayıtlarının kalıcı SoR'u MOD-0007'dir; ilk fazlarda PPM-yerel tutulur, link kontratı follow-up'tır.
+- **Gate I consumer boundary:** MOD-0117 yalnız producer-owned exact typed references ve PPM-local relationships tutar.
+  Parent `MOD-0018` S2S authority'sini PPM-local, FU-neutral Trusted Context Model A adapter'ı üzerinden tüketir;
+  Platform.Common içinde yeni FU-named/shared authentication ailesi açmaz. MOD-0023 ilk runtime release için
+  `ExcludedV1` kalır: approval-required yol provider/transaction öncesinde typed `503` ve zero relationship,
+  receipt, audit-intent ve outbox residue ile kapanır.
 - Eski `DitenPPM` kodu yalnızca **iş kuralı referansıdır**; dosya/kod kopyalanmaz.
 
 ## Runtime Decisions
