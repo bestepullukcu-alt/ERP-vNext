@@ -1,0 +1,154 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>同意与偏好</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>管理主体的同意、偏好以及只读的资格评估。</value></data>
+  <data name="ConsentsTab" xml:space="preserve"><value>同意</value></data>
+  <data name="PreferencesTab" xml:space="preserve"><value>偏好</value></data>
+  <data name="EvaluateTab" xml:space="preserve"><value>评估</value></data>
+  <data name="SubjectTab" xml:space="preserve"><value>主体</value></data>
+  <data name="ConsentsTitle" xml:space="preserve"><value>同意</value></data>
+  <data name="ConsentsSubtitle" xml:space="preserve"><value>同意始终是 主体×渠道×目的×范围×时间，绝非通用许可标志。</value></data>
+  <data name="PreferencesTitle" xml:space="preserve"><value>偏好</value></data>
+  <data name="CreateConsent" xml:space="preserve"><value>创建同意</value></data>
+  <data name="CreatePreference" xml:space="preserve"><value>创建偏好</value></data>
+  <data name="EditConsent" xml:space="preserve"><value>编辑同意</value></data>
+  <data name="EditPreference" xml:space="preserve"><value>编辑偏好</value></data>
+  <data name="ArchiveConsent" xml:space="preserve"><value>归档同意</value></data>
+  <data name="ArchivePreference" xml:space="preserve"><value>归档偏好</value></data>
+  <data name="ArchiveConsentConfirm" xml:space="preserve"><value>归档此同意？不会删除——仍可读取，但从评估中排除。</value></data>
+  <data name="ArchivePreferenceConfirm" xml:space="preserve"><value>归档此偏好？不会删除——仍可读取，但从评估中排除。</value></data>
+  <data name="ConsentDetail" xml:space="preserve"><value>同意详情</value></data>
+  <data name="PreferenceDetail" xml:space="preserve"><value>偏好详情</value></data>
+  <data name="BackToList" xml:space="preserve"><value>返回列表</value></data>
+  <data name="Save" xml:space="preserve"><value>保存</value></data>
+  <data name="Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>请选择…</value></data>
+  <data name="NoScope" xml:space="preserve"><value>无范围</value></data>
+  <data name="NoEvidence" xml:space="preserve"><value>无证据引用</value></data>
+  <data name="NoExternalReferences" xml:space="preserve"><value>无外部引用</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>包含已归档</value></data>
+  <data name="UnsupportedFiltersNote" xml:space="preserve"><value>部分筛选不受后端支持，已有意省略（不做伪造的客户端筛选）：</value></data>
+  <data name="ConsentUnsupportedFilters" xml:space="preserve"><value>搜索、ScopeType、ScopeId、LegalBasis、Source、日期范围。</value></data>
+  <data name="PreferenceUnsupportedFilters" xml:space="preserve"><value>搜索、ScopeType、ScopeId、IsRestrictive。</value></data>
+  <data name="Apply" xml:space="preserve"><value>应用</value></data>
+  <data name="Reset" xml:space="preserve"><value>重置</value></data>
+  <data name="Filter" xml:space="preserve"><value>筛选</value></data>
+  <data name="SubjectType" xml:space="preserve"><value>主体类型</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>主体 ID</value></data>
+  <data name="Channel" xml:space="preserve"><value>渠道</value></data>
+  <data name="Purpose" xml:space="preserve"><value>目的</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>范围类型</value></data>
+  <data name="ScopeId" xml:space="preserve"><value>范围 ID</value></data>
+  <data name="LegalBasis" xml:space="preserve"><value>法律依据</value></data>
+  <data name="ConsentStatus" xml:space="preserve"><value>同意状态</value></data>
+  <data name="Source" xml:space="preserve"><value>来源</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>生效起始</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>生效截止</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>生效时刻</value></data>
+  <data name="WithdrawalReason" xml:space="preserve"><value>撤回原因</value></data>
+  <data name="Notes" xml:space="preserve"><value>备注</value></data>
+  <data name="EvidenceRefType" xml:space="preserve"><value>证据引用类型</value></data>
+  <data name="EvidenceRefId" xml:space="preserve"><value>证据引用 ID</value></data>
+  <data name="EvidenceSourceModule" xml:space="preserve"><value>证据来源模块</value></data>
+  <data name="EvidenceRefCode" xml:space="preserve"><value>证据引用代码</value></data>
+  <data name="PreferenceType" xml:space="preserve"><value>偏好类型</value></data>
+  <data name="PreferenceValue" xml:space="preserve"><value>偏好值</value></data>
+  <data name="Priority" xml:space="preserve"><value>优先级</value></data>
+  <data name="Restrictive" xml:space="preserve"><value>限制性</value></data>
+  <data name="ConsentId" xml:space="preserve"><value>同意 ID</value></data>
+  <data name="PreferenceId" xml:space="preserve"><value>偏好 ID</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>更新时间</value></data>
+  <data name="Archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>创建时间</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>创建者</value></data>
+  <data name="UpdatedBy" xml:space="preserve"><value>更新者</value></data>
+  <data name="ArchivedAt" xml:space="preserve"><value>归档时间</value></data>
+  <data name="ArchivedBy" xml:space="preserve"><value>归档者</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>来源系统</value></data>
+  <data name="ExternalId" xml:space="preserve"><value>外部 ID</value></data>
+  <data name="ExternalCode" xml:space="preserve"><value>外部代码</value></data>
+  <data name="ExternalName" xml:space="preserve"><value>外部名称</value></data>
+  <data name="Primary" xml:space="preserve"><value>主要</value></data>
+  <data name="Remove" xml:space="preserve"><value>移除</value></data>
+  <data name="AddReference" xml:space="preserve"><value>添加引用</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>标识</value></data>
+  <data name="ConsentStatusSection" xml:space="preserve"><value>法律与状态</value></data>
+  <data name="EvidenceSection" xml:space="preserve"><value>证据指针</value></data>
+  <data name="ExternalReferencesSection" xml:space="preserve"><value>外部引用</value></data>
+  <data name="PreferenceContextSection" xml:space="preserve"><value>偏好上下文</value></data>
+  <data name="AuditSection" xml:space="preserve"><value>审计与来源</value></data>
+  <data name="ProvenanceSection" xml:space="preserve"><value>来源</value></data>
+  <data name="DiagnosticsSection" xml:space="preserve"><value>诊断</value></data>
+  <data name="ImmutableQuestionHelp" xml:space="preserve"><value>同意问题维度（主体、渠道、目的、范围）不可变——不同的问题即不同的记录。</value></data>
+  <data name="ScopeHelp" xml:space="preserve"><value>范围会缩小同意；若设置了范围 ID，则必须提供范围类型。</value></data>
+  <data name="WithdrawalReasonHelp" xml:space="preserve"><value>当状态为 withdrawn 时后端要求填写。</value></data>
+  <data name="EvidencePointerHelp" xml:space="preserve"><value>仅为引用——不呈现文件内容、URL 或证据包。</value></data>
+  <data name="ConsentContextHelp" xml:space="preserve"><value>同意仅回答：此主体是否可在此渠道、为此目的、在此范围与时间被联系？</value></data>
+  <data name="PreferenceCannotGrant" xml:space="preserve"><value>偏好可以限制同意，但不能授予同意。</value></data>
+  <data name="PreferenceChannelAllHelp" xml:space="preserve"><value>渠道 “all” 标记仅对偏好有效（对同意无效）。</value></data>
+  <data name="EvaluateReadOnlyHelp" xml:space="preserve"><value>评估为只读：不写入任何内容，也不会生成已存储的同意。</value></data>
+  <data name="UnknownNotAllowed" xml:space="preserve"><value>Unknown 并不等于允许——没有同意回答此问题，也不会臆造默认值。</value></data>
+  <data name="EvaluateThisContext" xml:space="preserve"><value>评估此主体/上下文</value></data>
+  <data name="EvaluateTitle" xml:space="preserve"><value>评估测试面板</value></data>
+  <data name="RunEvaluate" xml:space="preserve"><value>运行评估</value></data>
+  <data name="EvaluatorVersion" xml:space="preserve"><value>评估器版本</value></data>
+  <data name="EvaluatedAt" xml:space="preserve"><value>评估时间</value></data>
+  <data name="MatchedConsentId" xml:space="preserve"><value>匹配的同意 ID</value></data>
+  <data name="MatchedPreferenceIds" xml:space="preserve"><value>匹配的偏好 ID</value></data>
+  <data name="ReasonCodes" xml:space="preserve"><value>原因代码</value></data>
+  <data name="CandidateConsents" xml:space="preserve"><value>候选同意</value></data>
+  <data name="CandidatePreferences" xml:space="preserve"><value>候选偏好</value></data>
+  <data name="Selected" xml:space="preserve"><value>已选</value></data>
+  <data name="Reason" xml:space="preserve"><value>原因</value></data>
+  <data name="ToggleDiagnostics" xml:space="preserve"><value>切换诊断</value></data>
+  <data name="SubjectPanelTitle" xml:space="preserve"><value>主体同意与偏好面板</value></data>
+  <data name="SubjectPanelHelp" xml:space="preserve"><value>输入主体以查看其同意与偏好。此可复用面板绝不会向 Contact/AccountContactLink 写入扁平状态。</value></data>
+  <data name="Load" xml:space="preserve"><value>加载</value></data>
+  <data name="SubjectPickerPlaceholder" xml:space="preserve"><value>搜索或粘贴主体 ID…</value></data>
+  <data name="SubjectPickerHelp" xml:space="preserve"><value>请先选择主体类型；contact/account 可按名称搜索，其他类型接受 GUID。</value></data>
+  <data name="ExternalReferencesOptionalHelp" xml:space="preserve"><value>可选 — 将此记录关联到外部/遗留系统。从面板中逐条添加引用。</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>搜索或输入来源系统…</value></data>
+  <data name="Allowed" xml:space="preserve"><value>允许</value></data>
+  <data name="Blocked" xml:space="preserve"><value>阻止</value></data>
+  <data name="NotApplicable" xml:space="preserve"><value>不适用</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>未找到记录。</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>出现错误，请重试。</value></data>
+  <data name="Loading" xml:space="preserve"><value>加载中…</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="No" xml:space="preserve"><value>否</value></data>
+  <data name="View" xml:space="preserve"><value>查看</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>记录已归档。</value></data>
+  <data name="ConsentContractUnavailable" xml:space="preserve"><value>同意能力契约不可用，操作已禁用。</value></data>
+  <data name="ArchivedRecordReadOnly" xml:space="preserve"><value>此记录已归档，为只读。</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>请填写必填字段。</value></data>
+  <data name="EffectiveToBeforeFrom" xml:space="preserve"><value>生效截止不能早于生效起始。</value></data>
+  <data name="Active" xml:space="preserve"><value>活动</value></data>
+  <data name="Passive" xml:space="preserve"><value>被动</value></data>
+  <data name="Unknown" xml:space="preserve"><value>未知</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="Edit" xml:space="preserve"><value>编辑</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>查看详情</value></data>
+  <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>批量删除</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>删除所选记录？</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>确定吗？</value></data>
+  <data name="Search" xml:space="preserve"><value>搜索</value></data>
+  <data name="Export" xml:space="preserve"><value>导出</value></data>
+  <data name="Import" xml:space="preserve"><value>导入</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>显示全部</value></data>
+  <data name="SaveView" xml:space="preserve"><value>保存视图</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>列</value></data>
+  <data name="Status" xml:space="preserve"><value>状态</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>高</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>中</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>低</value></data>
+  <data name="PriorityCustom" xml:space="preserve"><value>自定义</value></data>
+  <data name="PriorityHelp" xml:space="preserve"><value>当偏好冲突时，优先级高的先被评估。</value></data>
+  <data name="ValueTrue" xml:space="preserve"><value>True</value></data>
+  <data name="ValueFalse" xml:space="preserve"><value>False</value></data>
+  <data name="PreferenceValueBoolHelp" xml:space="preserve"><value>对于此偏好类型，True 表示应用该限制。</value></data>
+</root>

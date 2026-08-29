@@ -1,0 +1,154 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>الموافقة والتفضيلات</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>إدارة موافقات الأشخاص وتفضيلاتهم وتقييم الأهلية للقراءة فقط.</value></data>
+  <data name="ConsentsTab" xml:space="preserve"><value>الموافقات</value></data>
+  <data name="PreferencesTab" xml:space="preserve"><value>التفضيلات</value></data>
+  <data name="EvaluateTab" xml:space="preserve"><value>تقييم</value></data>
+  <data name="SubjectTab" xml:space="preserve"><value>الشخص</value></data>
+  <data name="ConsentsTitle" xml:space="preserve"><value>الموافقات</value></data>
+  <data name="ConsentsSubtitle" xml:space="preserve"><value>الموافقة دائمًا شخص × قناة × غرض × نطاق × وقت، وليست علامة إذن عامة.</value></data>
+  <data name="PreferencesTitle" xml:space="preserve"><value>التفضيلات</value></data>
+  <data name="CreateConsent" xml:space="preserve"><value>إنشاء موافقة</value></data>
+  <data name="CreatePreference" xml:space="preserve"><value>إنشاء تفضيل</value></data>
+  <data name="EditConsent" xml:space="preserve"><value>تعديل الموافقة</value></data>
+  <data name="EditPreference" xml:space="preserve"><value>تعديل التفضيل</value></data>
+  <data name="ArchiveConsent" xml:space="preserve"><value>أرشفة الموافقة</value></data>
+  <data name="ArchivePreference" xml:space="preserve"><value>أرشفة التفضيل</value></data>
+  <data name="ArchiveConsentConfirm" xml:space="preserve"><value>أرشفة هذه الموافقة؟ لا يتم حذفها — تبقى قابلة للقراءة لكن تُستبعد من التقييم.</value></data>
+  <data name="ArchivePreferenceConfirm" xml:space="preserve"><value>أرشفة هذا التفضيل؟ لا يتم حذفه — يبقى قابلاً للقراءة لكن يُستبعد من التقييم.</value></data>
+  <data name="ConsentDetail" xml:space="preserve"><value>تفاصيل الموافقة</value></data>
+  <data name="PreferenceDetail" xml:space="preserve"><value>تفاصيل التفضيل</value></data>
+  <data name="BackToList" xml:space="preserve"><value>العودة إلى القائمة</value></data>
+  <data name="Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>اختر…</value></data>
+  <data name="NoScope" xml:space="preserve"><value>بدون نطاق</value></data>
+  <data name="NoEvidence" xml:space="preserve"><value>لا يوجد مرجع دليل</value></data>
+  <data name="NoExternalReferences" xml:space="preserve"><value>لا توجد مراجع خارجية</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>تضمين المؤرشفة</value></data>
+  <data name="UnsupportedFiltersNote" xml:space="preserve"><value>بعض عوامل التصفية غير مدعومة من الخادم وتم حذفها عمدًا (بدون تصفية زائفة على العميل):</value></data>
+  <data name="ConsentUnsupportedFilters" xml:space="preserve"><value>بحث، ScopeType، ScopeId، LegalBasis، Source، نطاق التاريخ.</value></data>
+  <data name="PreferenceUnsupportedFilters" xml:space="preserve"><value>بحث، ScopeType، ScopeId، IsRestrictive.</value></data>
+  <data name="Apply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="Reset" xml:space="preserve"><value>إعادة تعيين</value></data>
+  <data name="Filter" xml:space="preserve"><value>تصفية</value></data>
+  <data name="SubjectType" xml:space="preserve"><value>نوع الشخص</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>معرّف الشخص</value></data>
+  <data name="Channel" xml:space="preserve"><value>القناة</value></data>
+  <data name="Purpose" xml:space="preserve"><value>الغرض</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>نوع النطاق</value></data>
+  <data name="ScopeId" xml:space="preserve"><value>معرّف النطاق</value></data>
+  <data name="LegalBasis" xml:space="preserve"><value>الأساس القانوني</value></data>
+  <data name="ConsentStatus" xml:space="preserve"><value>حالة الموافقة</value></data>
+  <data name="Source" xml:space="preserve"><value>المصدر</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>ساري من</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>ساري حتى</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>ساري في</value></data>
+  <data name="WithdrawalReason" xml:space="preserve"><value>سبب السحب</value></data>
+  <data name="Notes" xml:space="preserve"><value>ملاحظات</value></data>
+  <data name="EvidenceRefType" xml:space="preserve"><value>نوع مرجع الدليل</value></data>
+  <data name="EvidenceRefId" xml:space="preserve"><value>معرّف مرجع الدليل</value></data>
+  <data name="EvidenceSourceModule" xml:space="preserve"><value>وحدة مصدر الدليل</value></data>
+  <data name="EvidenceRefCode" xml:space="preserve"><value>رمز مرجع الدليل</value></data>
+  <data name="PreferenceType" xml:space="preserve"><value>نوع التفضيل</value></data>
+  <data name="PreferenceValue" xml:space="preserve"><value>قيمة التفضيل</value></data>
+  <data name="Priority" xml:space="preserve"><value>الأولوية</value></data>
+  <data name="Restrictive" xml:space="preserve"><value>تقييدي</value></data>
+  <data name="ConsentId" xml:space="preserve"><value>معرّف الموافقة</value></data>
+  <data name="PreferenceId" xml:space="preserve"><value>معرّف التفضيل</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>تاريخ التحديث</value></data>
+  <data name="Archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>أنشئ بواسطة</value></data>
+  <data name="UpdatedBy" xml:space="preserve"><value>حُدّث بواسطة</value></data>
+  <data name="ArchivedAt" xml:space="preserve"><value>تاريخ الأرشفة</value></data>
+  <data name="ArchivedBy" xml:space="preserve"><value>أُرشف بواسطة</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>النظام المصدر</value></data>
+  <data name="ExternalId" xml:space="preserve"><value>المعرّف الخارجي</value></data>
+  <data name="ExternalCode" xml:space="preserve"><value>الرمز الخارجي</value></data>
+  <data name="ExternalName" xml:space="preserve"><value>الاسم الخارجي</value></data>
+  <data name="Primary" xml:space="preserve"><value>أساسي</value></data>
+  <data name="Remove" xml:space="preserve"><value>إزالة</value></data>
+  <data name="AddReference" xml:space="preserve"><value>إضافة مرجع</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>الهوية</value></data>
+  <data name="ConsentStatusSection" xml:space="preserve"><value>القانون والحالة</value></data>
+  <data name="EvidenceSection" xml:space="preserve"><value>مؤشر الدليل</value></data>
+  <data name="ExternalReferencesSection" xml:space="preserve"><value>المراجع الخارجية</value></data>
+  <data name="PreferenceContextSection" xml:space="preserve"><value>سياق التفضيل</value></data>
+  <data name="AuditSection" xml:space="preserve"><value>التدقيق والمصدر</value></data>
+  <data name="ProvenanceSection" xml:space="preserve"><value>المصدر</value></data>
+  <data name="DiagnosticsSection" xml:space="preserve"><value>التشخيصات</value></data>
+  <data name="ImmutableQuestionHelp" xml:space="preserve"><value>أبعاد سؤال الموافقة (الشخص، القناة، الغرض، النطاق) غير قابلة للتغيير — السؤال المختلف سجل مختلف.</value></data>
+  <data name="ScopeHelp" xml:space="preserve"><value>النطاق يضيّق الموافقة؛ إذا حُدّد معرّف نطاق فيجب تحديد نوع النطاق.</value></data>
+  <data name="WithdrawalReasonHelp" xml:space="preserve"><value>مطلوب من الخادم عندما تكون الحالة withdrawn.</value></data>
+  <data name="EvidencePointerHelp" xml:space="preserve"><value>مرجع فقط — لا يتم عرض محتوى ملف أو رابط أو حزمة أدلة.</value></data>
+  <data name="ConsentContextHelp" xml:space="preserve"><value>تجيب الموافقة فقط: هل يمكن الوصول إلى هذا الشخص عبر هذه القناة لهذا الغرض ضمن هذا النطاق في هذا الوقت؟</value></data>
+  <data name="PreferenceCannotGrant" xml:space="preserve"><value>يمكن للتفضيل أن يقيّد الموافقة لكنه لا يمنحها.</value></data>
+  <data name="PreferenceChannelAllHelp" xml:space="preserve"><value>قيمة القناة "all" صالحة للتفضيلات فقط (وليست للموافقة).</value></data>
+  <data name="EvaluateReadOnlyHelp" xml:space="preserve"><value>التقييم للقراءة فقط: لا يكتب شيئًا ولا يُنشئ موافقة مخزنة.</value></data>
+  <data name="UnknownNotAllowed" xml:space="preserve"><value>Unknown لا يعني مسموحًا — لا توجد موافقة تجيب ولا يتم اختراع قيمة افتراضية.</value></data>
+  <data name="EvaluateThisContext" xml:space="preserve"><value>قيّم هذا الشخص/السياق</value></data>
+  <data name="EvaluateTitle" xml:space="preserve"><value>لوحة اختبار التقييم</value></data>
+  <data name="RunEvaluate" xml:space="preserve"><value>تشغيل التقييم</value></data>
+  <data name="EvaluatorVersion" xml:space="preserve"><value>إصدار المقيّم</value></data>
+  <data name="EvaluatedAt" xml:space="preserve"><value>وقت التقييم</value></data>
+  <data name="MatchedConsentId" xml:space="preserve"><value>معرّف الموافقة المطابقة</value></data>
+  <data name="MatchedPreferenceIds" xml:space="preserve"><value>معرّفات التفضيلات المطابقة</value></data>
+  <data name="ReasonCodes" xml:space="preserve"><value>رموز السبب</value></data>
+  <data name="CandidateConsents" xml:space="preserve"><value>الموافقات المرشحة</value></data>
+  <data name="CandidatePreferences" xml:space="preserve"><value>التفضيلات المرشحة</value></data>
+  <data name="Selected" xml:space="preserve"><value>مختار</value></data>
+  <data name="Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="ToggleDiagnostics" xml:space="preserve"><value>تبديل التشخيصات</value></data>
+  <data name="SubjectPanelTitle" xml:space="preserve"><value>لوحة موافقة وتفضيل الشخص</value></data>
+  <data name="SubjectPanelHelp" xml:space="preserve"><value>أدخل شخصًا لعرض موافقاته وتفضيلاته. لا تكتب هذه اللوحة القابلة لإعادة الاستخدام حالة مسطحة على Contact/AccountContactLink.</value></data>
+  <data name="Load" xml:space="preserve"><value>تحميل</value></data>
+  <data name="SubjectPickerPlaceholder" xml:space="preserve"><value>ابحث أو الصق معرّف الشخص…</value></data>
+  <data name="SubjectPickerHelp" xml:space="preserve"><value>اختر نوع الشخص أولاً؛ يمكن البحث عن contact/account بالاسم، وتقبل الأنواع الأخرى معرّف GUID.</value></data>
+  <data name="ExternalReferencesOptionalHelp" xml:space="preserve"><value>اختياري — اربط هذا السجل بأنظمة خارجية/قديمة. أضف كل مرجع من اللوحة.</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>ابحث أو اكتب النظام المصدر…</value></data>
+  <data name="Allowed" xml:space="preserve"><value>مسموح</value></data>
+  <data name="Blocked" xml:space="preserve"><value>محظور</value></data>
+  <data name="NotApplicable" xml:space="preserve"><value>لا ينطبق</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>لا توجد سجلات.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>حدث خطأ ما. حاول مرة أخرى.</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل…</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <data name="View" xml:space="preserve"><value>عرض</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>تمت أرشفة السجل.</value></data>
+  <data name="ConsentContractUnavailable" xml:space="preserve"><value>عقد قدرة الموافقة غير متاح. الإجراءات معطلة.</value></data>
+  <data name="ArchivedRecordReadOnly" xml:space="preserve"><value>هذا السجل مؤرشف وللقراءة فقط.</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>يرجى إكمال الحقول المطلوبة.</value></data>
+  <data name="EffectiveToBeforeFrom" xml:space="preserve"><value>لا يمكن أن يكون "ساري حتى" قبل "ساري من".</value></data>
+  <data name="Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="Passive" xml:space="preserve"><value>خامل</value></data>
+  <data name="Unknown" xml:space="preserve"><value>غير معروف</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>عرض التفاصيل</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>حذف جماعي</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>حذف السجلات المحددة؟</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>هل أنت متأكد؟</value></data>
+  <data name="Search" xml:space="preserve"><value>بحث</value></data>
+  <data name="Export" xml:space="preserve"><value>تصدير</value></data>
+  <data name="Import" xml:space="preserve"><value>استيراد</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>عرض الكل</value></data>
+  <data name="SaveView" xml:space="preserve"><value>حفظ العرض</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>الأعمدة</value></data>
+  <data name="Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>عالية</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>متوسطة</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>منخفضة</value></data>
+  <data name="PriorityCustom" xml:space="preserve"><value>مخصصة</value></data>
+  <data name="PriorityHelp" xml:space="preserve"><value>تُقيَّم الأولوية الأعلى أولاً عند تعارض التفضيلات.</value></data>
+  <data name="ValueTrue" xml:space="preserve"><value>True</value></data>
+  <data name="ValueFalse" xml:space="preserve"><value>False</value></data>
+  <data name="PreferenceValueBoolHelp" xml:space="preserve"><value>بالنسبة لهذا النوع من التفضيل، True يعني أن التقييد مطبَّق.</value></data>
+</root>

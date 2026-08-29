@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="KnowledgeMenu" xml:space="preserve"><value>Bilgi Bankası</value></data>
+  <data name="KnowledgeTitle" xml:space="preserve"><value>Bilgi İçeriği</value></data>
+  <data name="TaxonomyTitle" xml:space="preserve"><value>Bilgi Taksonomisi</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Bilgi içeriğini ve subject / topic / audience taksonomisini yönetin.</value></data>
+  <data name="ManageTaxonomy" xml:space="preserve"><value>Taksonomiyi Yönet</value></data>
+  <data name="CreateContent" xml:space="preserve"><value>İçerik Oluştur</value></data>
+  <data name="EditContent" xml:space="preserve"><value>İçeriği Düzenle</value></data>
+  <data name="ContentDetail" xml:space="preserve"><value>İçerik Detayı</value></data>
+  <data name="ArchiveContent" xml:space="preserve"><value>İçeriği Arşivle</value></data>
+  <data name="ArchiveContentConfirm" xml:space="preserve"><value>Bu içerik arşivlensin mi? Bu yumuşak bir yaşam döngüsü işlemidir; geçmiş okunabilir kalır.</value></data>
+  <data name="ArchivedContentReadOnly" xml:space="preserve"><value>Bu içerik arşivlenmiş ve salt okunurdur.</value></data>
+  <data name="KnowledgeContractUnavailable" xml:space="preserve"><value>Bilgi yetenek sözleşmesi kullanılamıyor. İşlemler devre dışı.</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Listeye dön</value></data>
+  <data name="Cancel" xml:space="preserve"><value>İptal</value></data>
+  <data name="Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="RequiredProgress" xml:space="preserve"><value>* ile işaretli alanlar zorunludur.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seçin…</value></data>
+  <data name="ContentCode" xml:space="preserve"><value>İçerik Kodu</value></data>
+  <data name="ContentTitle" xml:space="preserve"><value>İçerik Başlığı</value></data>
+  <data name="ContentType" xml:space="preserve"><value>İçerik Türü</value></data>
+  <data name="ContentStatus" xml:space="preserve"><value>İçerik Durumu</value></data>
+  <data name="Source" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="LanguageCode" xml:space="preserve"><value>Dil</value></data>
+  <data name="ContentVersion" xml:space="preserve"><value>İçerik Sürümü</value></data>
+  <data name="Summary" xml:space="preserve"><value>Özet</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>Subject</value></data>
+  <data name="TopicId" xml:space="preserve"><value>Topic</value></data>
+  <data name="AudienceProfileId" xml:space="preserve"><value>Audience Profile</value></data>
+  <data name="ConceptNodeId" xml:space="preserve"><value>Concept Node</value></data>
+  <data name="BrandId" xml:space="preserve"><value>Marka</value></data>
+  <data name="ProductId" xml:space="preserve"><value>Ürün</value></data>
+  <data name="CampaignId" xml:space="preserve"><value>Kampanya</value></data>
+  <data name="SegmentId" xml:space="preserve"><value>Segment</value></data>
+  <data name="Url" xml:space="preserve"><value>URL</value></data>
+  <data name="FileRef" xml:space="preserve"><value>Doküman Referansı</value></data>
+  <data name="ContentBodyRef" xml:space="preserve"><value>Gövde Referansı</value></data>
+  <data name="ContentAssetRef" xml:space="preserve"><value>Varlık Referansı</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Geçerlilik Başlangıcı</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Geçerlilik Bitişi</value></data>
+  <data name="Tags" xml:space="preserve"><value>Etiketler</value></data>
+  <data name="TagsHelp" xml:space="preserve"><value>Virgülle ayrılmış etiketler</value></data>
+  <data name="ContentPointerHelp" xml:space="preserve"><value>URL / Doküman Referansı / Gövde Referansı / Varlık Referansı alanlarından en az biri zorunludur. Burada dosya saklanmaz; doküman referansı Doküman Yönetimine işaret eder.</value></data>
+  <data name="ReferenceIdsOnlyHelp" xml:space="preserve"><value>Referanslar yalnızca ID olarak gösterilir; master veri araması yapılmaz.</value></data>
+  <data name="SummarySection" xml:space="preserve"><value>Özet</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Sınıflandırma</value></data>
+  <data name="ReferencesSection" xml:space="preserve"><value>Referanslar</value></data>
+  <data name="ContentPointersSection" xml:space="preserve"><value>İçerik İşaretçileri</value></data>
+  <data name="EffectiveSection" xml:space="preserve"><value>Geçerlilik Penceresi</value></data>
+  <data name="ExternalReferencesSection" xml:space="preserve"><value>Dış Referanslar</value></data>
+  <data name="AddReference" xml:space="preserve"><value>Referans Ekle</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Kaynak Sistem</value></data>
+  <data name="ExternalId" xml:space="preserve"><value>Dış ID</value></data>
+  <data name="ExternalCode" xml:space="preserve"><value>Dış Kod</value></data>
+  <data name="ExternalName" xml:space="preserve"><value>Dış Ad</value></data>
+  <data name="Primary" xml:space="preserve"><value>Birincil</value></data>
+  <data name="Remove" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="NoExternalReferences" xml:space="preserve"><value>Dış referans yok.</value></data>
+  <data name="Archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncellendi</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Search" xml:space="preserve"><value>Ara</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Arşivlenenleri dahil et</value></data>
+  <data name="Apply" xml:space="preserve"><value>Uygula</value></data>
+  <data name="Reset" xml:space="preserve"><value>Sıfırla</value></data>
+  <data name="View" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Kayıt arşivlendi.</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>Kayıt oluşturuldu.</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>Kayıt güncellendi.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>İçerik bulunamadı.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Bir şeyler ters gitti.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtrele</value></data>
+  <data name="EffectiveToBeforeFrom" xml:space="preserve"><value>Geçerlilik bitişi başlangıçtan önce olamaz.</value></data>
+  <data name="ContentPointerRequired" xml:space="preserve"><value>En az bir içerik işaretçisi zorunludur.</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>Bu alan zorunludur.</value></data>
+  <data name="TaxonomyTab" xml:space="preserve"><value>Taksonomi</value></data>
+  <data name="SubjectsTab" xml:space="preserve"><value>Subjects</value></data>
+  <data name="TopicsTab" xml:space="preserve"><value>Topics</value></data>
+  <data name="ProfilesTab" xml:space="preserve"><value>Audience Profiles</value></data>
+  <data name="CreateSubject" xml:space="preserve"><value>Subject Oluştur</value></data>
+  <data name="CreateTopic" xml:space="preserve"><value>Topic Oluştur</value></data>
+  <data name="CreateProfile" xml:space="preserve"><value>Profil Oluştur</value></data>
+  <data name="EditSubject" xml:space="preserve"><value>Subject Düzenle</value></data>
+  <data name="EditTopic" xml:space="preserve"><value>Topic Düzenle</value></data>
+  <data name="EditProfile" xml:space="preserve"><value>Profil Düzenle</value></data>
+  <data name="ArchiveSubject" xml:space="preserve"><value>Subject Arşivle</value></data>
+  <data name="ArchiveTopic" xml:space="preserve"><value>Topic Arşivle</value></data>
+  <data name="ArchiveProfile" xml:space="preserve"><value>Profil Arşivle</value></data>
+  <data name="ArchiveTaxonomyConfirm" xml:space="preserve"><value>Bu satır arşivlensin mi? Mevcut içerik sınıflandırmasını korur; yalnızca yeni bağlama engellenir.</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Sıra</value></data>
+  <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="ProfileType" xml:space="preserve"><value>Profil Türü</value></data>
+  <data name="ParentTopicId" xml:space="preserve"><value>Üst Topic ID</value></data>
+  <data name="Active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="Passive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Detayları Gör</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı Görünüm</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Toplu Sil</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Seçili satırlar silinsin mi?</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Emin misiniz?</value></data>
+  <data name="Export" xml:space="preserve"><value>Dışa Aktar</value></data>
+  <data name="Import" xml:space="preserve"><value>İçe Aktar</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Tümünü göster</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Görünümü kaydet</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Sütunlar</value></data>
+  <data name="AddRow" xml:space="preserve"><value>Satır ekle</value></data>
+  <data name="CodeAutoGenerated" xml:space="preserve"><value>Otomatik oluşturuldu — değiştirebilirsiniz.</value></data>
+  <data name="Activate" xml:space="preserve"><value>Etkinleştir</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Devre dışı bırak</value></data>
+  <data name="Restore" xml:space="preserve"><value>Geri Yükle</value></data>
+  <data name="RestoredAsInactive" xml:space="preserve"><value>Pasif olarak geri yüklendi.</value></data>
+  <data name="ParentSubjectId" xml:space="preserve"><value>Üst Konu</value></data>
+  <data name="ConceptTypeId" xml:space="preserve"><value>Kavram Tipi</value></data>
+  <data name="ConceptNodeSubjectNote" xml:space="preserve"><value>Dugum listesi yukarida secilen Konu ve Kavram Tipi'ne gore daralir.</value></data>
+  <data name="ConceptNodePickerUnavailable" xml:space="preserve"><value>Kavram dugumu listesi yuklenemedi; mevcut deger oldugu gibi korunuyor.</value></data>
+</root>

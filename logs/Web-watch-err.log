@@ -1,0 +1,65 @@
+dotnet watch 🔥 Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload.
+dotnet watch 💡 Press Ctrl+R to restart.
+dotnet watch 🔨 Building C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Diten.Web.csproj ...
+dotnet watch 🔨 Build succeeded: C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\Diten.Web.csproj
+dotnet watch ⌚ Files updated: .\wwwroot\assets\js\CRM\TerritoryManagement\index.js, .\Views\CRM\TerritoryManagement\Details.cshtml, .\wwwroot\assets\js\CRM\TerritoryManagement\hierarchy.js
+dotnet watch 🔥 Hot reload of static assets succeeded.
+dotnet watch ⚠ [Diten.Web (net8.0)] Expected to find a static method 'ClearCache', 'UpdateApplication' or 'UpdateContent' on type 'Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlAttributePropertyHelper, Microsoft.AspNetCore.Mvc.ViewFeatures, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60' but neither exists.
+dotnet watch 🔥 [Diten.Web (net8.0)] Hot reload succeeded.
+dotnet watch ⌚ Files updated: .\wwwroot\assets\js\CRM\TerritoryManagement\index.js, .\wwwroot\assets\js\CRM\TerritoryManagement\hierarchy.js
+dotnet watch 🔥 Hot reload of static assets succeeded.
+dotnet watch ⌚ No C# changes to apply.
+dotnet watch ⌚ File updated: .\Controllers\DocumentManagementMasterRegisterController.cs
+dotnet watch 🔥 [Diten.Web (net8.0)] Hot reload succeeded.
+dotnet watch ⌚ Files updated: .\wwwroot\assets\js\CRM\TerritoryManagement\index.js, .\Views\CRM\TerritoryManagement\Details.cshtml, .\wwwroot\assets\js\CRM\TerritoryManagement\hierarchy.js
+dotnet watch 🔥 Hot reload of static assets succeeded.
+dotnet watch ⚠ [Diten.Web (net8.0)] Failed to load type 0x020014B6: A BadImageFormatException has been thrown while parsing the signature. This is likely due to lack of a generic context. Ensure genericTypeArguments and genericMethodArguments are provided and contain enough context.
+dotnet watch ⚠ [Diten.Web (net8.0)] Failed to load type 0x020014B7: Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+dotnet watch ⚠ [Diten.Web (net8.0)] Failed to load type 0x020014B8: Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+dotnet watch ⚠ [Diten.Web (net8.0)] Failed to load type 0x020014B9: Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+dotnet watch ⚠ [Diten.Web (net8.0)] Failed to load type 0x020014BA: Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+dotnet watch ⚠ [Diten.Web (net8.0)] Failed to load type 0x020014BB: Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+dotnet watch ⚠ [Diten.Web (net8.0)] Failed to load type 0x020014BC: Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+dotnet watch ⚠ [Diten.Web (net8.0)] Exception from 'Microsoft.AspNetCore.Mvc.HotReload.HotReloadService.UpdateApplication': System.AggregateException: One or more errors occurred. (Unable to load one or more of the requested types.
+The signature is incorrect. The format of the file 'C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\bin\Debug\net8.0\Diten.Web.dll' is invalid.
+Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.)
+ ---> System.Reflection.ReflectionTypeLoadException: Unable to load one or more of the requested types.
+The signature is incorrect. The format of the file 'C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\bin\Debug\net8.0\Diten.Web.dll' is invalid.
+Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+   at System.Reflection.RuntimeModule.GetTypes(RuntimeModule module)
+   at Microsoft.AspNetCore.Mvc.Controllers.ControllerFeatureProvider.PopulateFeature(IEnumerable`1 parts, ControllerFeature feature)
+   at Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartManager.PopulateFeature[TFeature](TFeature feature)
+   at Microsoft.AspNetCore.Mvc.ApplicationModels.ControllerActionDescriptorProvider.GetControllerTypes()
+   at Microsoft.AspNetCore.Mvc.ApplicationModels.ControllerActionDescriptorProvider.GetDescriptors()
+   at Microsoft.AspNetCore.Mvc.ApplicationModels.ControllerActionDescriptorProvider.OnProvidersExecuting(ActionDescriptorProviderContext context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.DefaultActionDescriptorCollectionProvider.UpdateCollection()
+   at Microsoft.Extensions.Primitives.ChangeToken.ChangeTokenRegistration`1.OnChangeTokenFired()
+   at System.Threading.CancellationTokenSource.Invoke(Delegate d, Object state, CancellationTokenSource source)
+   at System.Threading.CancellationTokenSource.ExecuteCallbackHandlers(Boolean throwOnFirstException)
+System.BadImageFormatException: The signature is incorrect. The format of the file 'C:\Users\user\Desktop\ERP-vNext\frontend\Diten.Web\bin\Debug\net8.0\Diten.Web.dll' is invalid.
+System.TypeLoadException: Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+System.TypeLoadException: Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+System.TypeLoadException: Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+System.TypeLoadException: Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+System.TypeLoadException: Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+System.TypeLoadException: Could not load type 'ateAttribute.NetCore.Mvc.Razor' from assembly 'System.Runtime, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.
+   --- End of inner exception stack trace ---
+   at System.Threading.CancellationTokenSource.ExecuteCallbackHandlers(Boolean throwOnFirstException)
+   at Microsoft.DotNet.HotReload.MetadataUpdateHandlerInvoker.<>c__DisplayClass19_0.<GetUpdateHandlerActions>b__6(Type[] types)
+dotnet watch 🔥 [Diten.Web (net8.0)] Hot reload succeeded.
+dotnet watch ⌚ Files updated: .\wwwroot\assets\js\CRM\TerritoryManagement\index.js, .\wwwroot\assets\js\CRM\TerritoryManagement\hierarchy.js
+dotnet watch 🔥 Hot reload of static assets succeeded.
+dotnet watch ⌚ No C# changes to apply.
+dotnet watch ⌚ File updated: .\wwwroot\assets\js\CRM\TerritoryManagement\hierarchy.js
+dotnet watch 🔥 Hot reload of static assets succeeded.
+dotnet watch ⌚ No C# changes to apply.

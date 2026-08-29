@@ -1,0 +1,25 @@
+@using Diten.Web.Views.MasterData.Brands
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<BrandsIndex> Localizer
+
+@* Every control here maps to a server-side filter on GET /api/mdm/brands — no client-side fake filtering. *@
+<div id="inlineFilterHost" class="px-3">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form id="brandFilterForm" class="m-0" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-2">
+                    <input id="filterSearch" class="form-control form-control-sm filter-chip" type="text" placeholder="@Localizer["SearchPlaceholder"]" />
+                    <select id="filterBrandStatus" class="form-select form-select-sm filter-chip" aria-label="@Localizer["BrandStatus"]"></select>
+                    <input id="filterBusinessUnitId" class="form-control form-control-sm filter-chip" type="text" placeholder="@Localizer["BusinessUnitId"]" />
+                    <input id="filterTherapeuticAreaId" class="form-control form-control-sm filter-chip" type="text" placeholder="@Localizer["TherapeuticAreaId"]" />
+                    <div class="form-check form-switch ms-1">
+                        <input id="filterIncludeArchived" class="form-check-input" type="checkbox" />
+                        <label class="form-check-label" for="filterIncludeArchived">@Localizer["IncludeArchived"]</label>
+                    </div>
+                    <button type="button" id="btnFilterApply" class="btn btn-sm btn-primary">@Localizer["Apply"]</button>
+                    <button type="reset" id="btnFilterReset" class="btn btn-sm btn-label-secondary">@Localizer["Reset"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

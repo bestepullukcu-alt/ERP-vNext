@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="ActivateSegment" xml:space="preserve"><value>Активировать</value></data>
+  <data name="ActivateSegmentConfirm" xml:space="preserve"><value>Активировать сегмент? Его критерии будут заморожены; изменение правила потребует новой версии.</value></data>
+  <data name="ActivatedAt" xml:space="preserve"><value>Активирован</value></data>
+  <data name="Active" xml:space="preserve"><value>Активные</value></data>
+  <data name="AddGroup" xml:space="preserve"><value>Добавить группу</value></data>
+  <data name="AddGroupAtRoot" xml:space="preserve"><value>Добавить группу</value></data>
+  <data name="AddGroupInside" xml:space="preserve"><value>Группа внутри</value></data>
+  <data name="AddMember" xml:space="preserve"><value>Добавить участника</value></data>
+  <data name="AddPredicate" xml:space="preserve"><value>Добавить предикат</value></data>
+  <data name="AddPredicateAtRoot" xml:space="preserve"><value>Добавить условие</value></data>
+  <data name="AddPredicateInside" xml:space="preserve"><value>Условие внутри</value></data>
+  <data name="Apply" xml:space="preserve"><value>Применить</value></data>
+  <data name="ArchiveSegment" xml:space="preserve"><value>Архивировать сегмент</value></data>
+  <data name="ArchiveSegmentConfirm" xml:space="preserve"><value>Архивировать сегмент? Ничего не удаляется; он становится доступным только для чтения и остаётся объяснимым.</value></data>
+  <data name="Archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="ArchivedSegmentReadOnly" xml:space="preserve"><value>Этот сегмент в архиве и доступен только для чтения.</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Вы уверены?</value></data>
+  <data name="Attribute" xml:space="preserve"><value>Атрибут</value></data>
+  <data name="BackToList" xml:space="preserve"><value>К списку</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Массовое удаление</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Удалить выбранные записи?</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>Бизнес-подразделение</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="CandidateCount" xml:space="preserve"><value>Кандидаты</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Классификация</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Столбцы</value></data>
+  <data name="CommaSeparated" xml:space="preserve"><value>Значения через запятую</value></data>
+  <data name="CreateSegment" xml:space="preserve"><value>Создать сегмент</value></data>
+  <data name="CriteriaHelp" xml:space="preserve"><value>Правило — типизированное дерево предикатов, хранимое вместе с сегментом. Атрибуты, операторы и параметры берутся из опубликованного каталога.</value></data>
+  <data name="CriteriaSection" xml:space="preserve"><value>Критерии</value></data>
+  <data name="CriteriaState" xml:space="preserve"><value>Критерии</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="DynamicForbidsManualHelp" xml:space="preserve"><value>Динамический сегмент не принимает ручные строки. Переключите его в гибридный, если нужно ручное исключение, чтобы метка не вводила в заблуждение об источнике участника.</value></data>
+  <data name="Edit" xml:space="preserve"><value>Изменить</value></data>
+  <data name="EditSegment" xml:space="preserve"><value>Изменить сегмент</value></data>
+  <data name="Editable" xml:space="preserve"><value>Изменяемо</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Действует до</value></data>
+  <data name="EmptyGroupHelp" xml:space="preserve"><value>В этой группе пока нет условий. Добавьте условие или удалите группу — пустая группа не сохраняется.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Сегменты не найдены.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Произошла ошибка.</value></data>
+  <data name="ExcludedCount" xml:space="preserve"><value>Отсеяно</value></data>
+  <data name="Export" xml:space="preserve"><value>Экспорт</value></data>
+  <data name="Filter" xml:space="preserve"><value>Фильтр</value></data>
+  <data name="From" xml:space="preserve"><value>От</value></data>
+  <data name="Frozen" xml:space="preserve"><value>Заморожено</value></data>
+  <data name="FrozenCriteriaHelp" xml:space="preserve"><value>Эта версия активна, её критерии заморожены. Создайте новую версию, чтобы изменить правило — тогда прошлые выборки останутся объяснимыми.</value></data>
+  <data name="GroupHelp" xml:space="preserve"><value>Группа объединяет дочерние узлы; группа NOT принимает ровно один узел.</value></data>
+  <data name="GroupNode" xml:space="preserve"><value>Группа</value></data>
+  <data name="GroupOperator" xml:space="preserve"><value>Оператор группы</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="Import" xml:space="preserve"><value>Импорт</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Включая архив</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Жизненный цикл</value></data>
+  <data name="LimitReached" xml:space="preserve"><value>Достигнут предел</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка...</value></data>
+  <data name="MatchMode" xml:space="preserve"><value>Режим сопоставления</value></data>
+  <data name="MatchedCount" xml:space="preserve"><value>Участники</value></data>
+  <data name="MembersHelp" xml:space="preserve"><value>Здесь только строки, написанные человеком: включить или исключить. Производное членство никогда не сохраняется.</value></data>
+  <data name="MembersSection" xml:space="preserve"><value>Ручное членство</value></data>
+  <data name="MembershipMode" xml:space="preserve"><value>Режим членства</value></data>
+  <data name="MembershipNeverStoredHelp" xml:space="preserve"><value>Членство никогда не сохраняется: у сегмента нет ни списка участников, ни счётчика, ни отметки последнего вычисления.</value></data>
+  <data name="MembershipSource" xml:space="preserve"><value>Источник</value></data>
+  <data name="Move" xml:space="preserve"><value>Переместить</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Новая версия</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Создать новую черновую версию? Критерии клонируются с новыми идентификаторами узлов, а текущая версия продолжает работать.</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <data name="NoCriteria" xml:space="preserve"><value>Критериев пока нет.</value></data>
+  <data name="NoMembers" xml:space="preserve"><value>Ручных строк членства нет.</value></data>
+  <data name="NoValueNeeded" xml:space="preserve"><value>Значение не требуется</value></data>
+  <data name="NotGroupHelp" xml:space="preserve"><value>NOT принимает ровно одно условие.</value></data>
+  <data name="Notes" xml:space="preserve"><value>Заметки</value></data>
+  <data name="Operator" xml:space="preserve"><value>Оператор</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Сегмент — это ОПРЕДЕЛЕНИЕ того, кто входит в множество, а не сохранённый список. Членство вычисляется при каждом запросе.</value></data>
+  <data name="ParentGroup" xml:space="preserve"><value>Родитель</value></data>
+  <data name="Passive" xml:space="preserve"><value>Пассивный</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>У вас нет прав на просмотр этого списка, поэтому значение нужно ввести по идентификатору.</value></data>
+  <data name="PredicateCount" xml:space="preserve"><value>Предикаты</value></data>
+  <data name="PredicateNode" xml:space="preserve"><value>Условие</value></data>
+  <data name="ProductPickerUnavailable" xml:space="preserve"><value>У вас нет прав на просмотр глобальных продуктов, поэтому значение здесь выбрать нельзя.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="ReasonCodes" xml:space="preserve"><value>Причины</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>Сегмент активирован.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Запись архивирована.</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>Запись создана.</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>Запись обновлена.</value></data>
+  <data name="Remove" xml:space="preserve"><value>Удалить</value></data>
+  <data name="Reset" xml:space="preserve"><value>Сбросить</value></data>
+  <data name="ResolvePreviewHelp" xml:space="preserve"><value>Вычисляется по запросу и нигде не сохраняется. Отсеянные кандидаты перечислены с причиной отсева.</value></data>
+  <data name="ResolvePreviewSection" xml:space="preserve"><value>Предпросмотр членства</value></data>
+  <data name="RootCombinatorHelp" xml:space="preserve"><value>как объединяются узлы верхнего уровня</value></data>
+  <data name="RootLevel" xml:space="preserve"><value>Корневой уровень</value></data>
+  <data name="RunResolve" xml:space="preserve"><value>Выполнить предпросмотр</value></data>
+  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="SaveBeforeMembers" xml:space="preserve"><value>Сначала сохраните сегмент; ручные строки членства добавляются после.</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Сохранить вид</value></data>
+  <data name="Search" xml:space="preserve"><value>Поиск</value></data>
+  <data name="SegmentCode" xml:space="preserve"><value>Код сегмента</value></data>
+  <data name="SegmentCodeHelp" xml:space="preserve"><value>Устойчивый бизнес-ключ. Он не переименовывается — меняйте название.</value></data>
+  <data name="SegmentContractUnavailable" xml:space="preserve"><value>Контракт возможностей сегмента недоступен. Действия отключены.</value></data>
+  <data name="SegmentName" xml:space="preserve"><value>Название сегмента</value></data>
+  <data name="SegmentStatus" xml:space="preserve"><value>Статус</value></data>
+  <data name="SegmentType" xml:space="preserve"><value>Тип сегмента</value></data>
+  <data name="SegmentTypeHelp" xml:space="preserve"><value>static = только ручной список. dynamic = только правило (ручные строки отклоняются). hybrid = правило плюс ручные включения/исключения.</value></data>
+  <data name="SegmentVersion" xml:space="preserve"><value>Версия</value></data>
+  <data name="SegmentsMenu" xml:space="preserve"><value>Сегменты</value></data>
+  <data name="SegmentsTitle" xml:space="preserve"><value>Сегменты</value></data>
+  <data name="SelectAccount" xml:space="preserve"><value>Выберите организацию</value></data>
+  <data name="SelectContact" xml:space="preserve"><value>Выберите контакт</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Выберите...</value></data>
+  <data name="SelectTerritoryModel" xml:space="preserve"><value>Сначала выберите модель территории</value></data>
+  <data name="SelectionReason" xml:space="preserve"><value>Причина выбора</value></data>
+  <data name="SelectionReasonHelp" xml:space="preserve"><value>Обязательно: ручное членство без причины создать нельзя.</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Показать все</value></data>
+  <data name="Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="StatusSeparateEndpointHelp" xml:space="preserve"><value>Статус здесь не меняется: активация и архивация — отдельные действия со своими правами.</value></data>
+  <data name="SubjectDisplayName" xml:space="preserve"><value>Отображаемое имя</value></data>
+  <data name="SubjectDisplayNameHelp" xml:space="preserve"><value>Только для отображения и аудита. Это явно не источник истины.</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>Идентификатор субъекта</value></data>
+  <data name="SubjectIdHelp" xml:space="preserve"><value>Идентификатор принимается как есть; связанный мастер здесь не читается и не изменяется.</value></data>
+  <data name="SubjectPickerHelp" xml:space="preserve"><value>Выбор заполняет идентификатор и отображаемое имя ниже. Идентификатор остаётся основным полем и его можно ввести вручную.</value></data>
+  <data name="SubjectType" xml:space="preserve"><value>Тип субъекта</value></data>
+  <data name="SubjectTypeHelp" xml:space="preserve"><value>Что группирует сегмент. Неизменяемо после создания: сегмент не должен незаметно начать отвечать на другой вопрос.</value></data>
+  <data name="Superseded" xml:space="preserve"><value>Заменено</value></data>
+  <data name="SupersededHelp" xml:space="preserve"><value>Эту версию заменила более новая. Она по-прежнему вычисляется: объяснение прошлой выборки требует действовавшего тогда правила.</value></data>
+  <data name="To" xml:space="preserve"><value>До</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="Verdict" xml:space="preserve"><value>Результат</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Подробнее</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+</root>

@@ -1,0 +1,107 @@
+@model Diten.Web.Models.MasterData.BrandEditViewModel
+@using Diten.Web.Views.MasterData.Brands
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<BrandsIndex> Localizer
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+@if (!string.IsNullOrWhiteSpace(Model.ContractError))
+{
+    <div class="alert alert-danger">@Localizer[Model.ContractError]</div>
+}
+
+<section class="card mb-3">
+    <div class="card-header"><h6 class="mb-0">@Localizer["SummarySection"]</h6></div>
+    <div class="card-body row g-3">
+        @* BrandCode is immutable after create (FU01 §3) — the backend answers code_immutable if it changes. *@
+        <div class="col-md-4">
+            <label asp-for="BrandCode" class="form-label">@Localizer["BrandCode"] <span class="text-danger">*</span></label>
+            <input asp-for="BrandCode" class="form-control" readonly="@(Model.BrandId.HasValue)" required />
+            <span asp-validation-for="BrandCode" class="text-danger"></span>
+            @if (Model.BrandId.HasValue)
+            {
+                <small class="text-muted">@Localizer["BrandCodeImmutableHelp"]</small>
+            }
+        </div>
+        <div class="col-md-8">
+            <label asp-for="BrandName" class="form-label">@Localizer["BrandName"] <span class="text-danger">*</span></label>
+            <input asp-for="BrandName" class="form-control" required />
+            <span asp-validation-for="BrandName" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="BrandStatus" class="form-label">@Localizer["BrandStatus"] <span class="text-danger">*</span></label>
+            <select asp-for="BrandStatus" class="form-select" required>
+                <option value="">@Localizer["SelectOption"]</option>
+                @* Options come from the capability contract — never a hardcoded list. `archived` is filtered
+                   out because it is reachable only through the archive endpoint. *@
+                @foreach (var status in Model.BrandStatuses.Where(x => !string.Equals(x, "archived", StringComparison.OrdinalIgnoreCase)))
+                {
+                    <option value="@status">@Localizer[$"Status_{status}"]</option>
+                }
+            </select>
+            <span asp-validation-for="BrandStatus" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="EffectiveFrom" class="form-label">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
+            <input asp-for="EffectiveFrom" type="date" class="form-control" required />
+            <span asp-validation-for="EffectiveFrom" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="EffectiveTo" class="form-label">@Localizer["EffectiveTo"]</label>
+            <input asp-for="EffectiveTo" type="date" class="form-control" />
+            <span asp-validation-for="EffectiveTo" class="text-danger"></span>
+        </div>
+        <div class="col-12">
+            <label asp-for="Description" class="form-label">@Localizer["Description"]</label>
+            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+        </div>
+    </div>
+</section>
+
+<section class="card mb-3">
+    <div class="card-header"><h6 class="mb-0">@Localizer["ReferencesSection"]</h6></div>
+    <div class="card-body row g-3">
+        <div class="col-md-4">
+            <label asp-for="OwnerCompanyId" class="form-label">@Localizer["OwnerCompanyId"]</label>
+            <input asp-for="OwnerCompanyId" class="form-control" />
+        </div>
+        <div class="col-md-4">
+            <label asp-for="BusinessUnitId" class="form-label">@Localizer["BusinessUnitId"]</label>
+            <input asp-for="BusinessUnitId" class="form-control" />
+        </div>
+        <div class="col-md-4">
+            <label asp-for="TherapeuticAreaId" class="form-label">@Localizer["TherapeuticAreaId"]</label>
+            <input asp-for="TherapeuticAreaId" class="form-control" />
+            <small class="text-muted" id="therapeuticAreaHelp">@Localizer["TherapeuticAreaHelp"]</small>
+        </div>
+        <div class="col-12"><small class="text-muted">@Localizer["ReferenceIdsOnlyHelp"]</small></div>
+    </div>
+</section>
+
+@* FU01 §12 — external references are a legacy TRACE record, never a second master. At most one primary per
+   source system; a second one is refused by the backend with external_reference_primary_conflict. *@
+<section class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <h6 class="mb-0">@Localizer["ExternalReferencesSection"]</h6>
+            <small class="text-muted">@Localizer["ExternalReferencesHelp"]</small>
+        </div>
+        <button type="button" id="addExternalReference" class="btn btn-sm btn-label-primary">@Localizer["AddReference"]</button>
+    </div>
+    <div class="card-body" id="externalReferencesHost">
+        @{ if (Model.ExternalReferences.Count == 0) { Model.ExternalReferences.Add(new()); } }
+        @for (var i = 0; i < Model.ExternalReferences.Count; i++)
+        {
+            <div class="external-reference-row row g-2 mb-2" data-index="@i">
+                <div class="col-md-2"><input asp-for="ExternalReferences[i].SourceSystem" class="form-control" placeholder="@Localizer["SourceSystem"]" /></div>
+                <div class="col-md-2"><input asp-for="ExternalReferences[i].ExternalId" class="form-control" placeholder="@Localizer["ExternalId"]" /></div>
+                <div class="col-md-2"><input asp-for="ExternalReferences[i].ExternalCode" class="form-control" placeholder="@Localizer["ExternalCode"]" /></div>
+                <div class="col-md-3"><input asp-for="ExternalReferences[i].ExternalName" class="form-control" placeholder="@Localizer["ExternalName"]" /></div>
+                <div class="col-md-2 form-check mt-3">
+                    <input asp-for="ExternalReferences[i].IsPrimary" class="form-check-input" />
+                    <label asp-for="ExternalReferences[i].IsPrimary" class="form-check-label">@Localizer["Primary"]</label>
+                </div>
+                <div class="col-md-1"><button type="button" class="btn btn-icon btn-label-danger remove-external-reference" aria-label="@Localizer["Remove"]"><i class="bx bx-x"></i></button></div>
+            </div>
+        }
+    </div>
+</section>

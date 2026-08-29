@@ -518,4 +518,34 @@
   </data>
   <data name="Computing" xml:space="preserve">
     <value>计算中…</value>
-  </data></root>
+  </data>
+  <data name="MasterRegister" xml:space="preserve"><value>主登记册</value></data>
+  <data name="LinkedMasterRegister" xml:space="preserve"><value>受治理的主登记册关系</value></data>
+  <data name="OpenMasterRegister" xml:space="preserve"><value>打开主登记册</value></data>
+  <data name="MasterRegisterEntry" xml:space="preserve"><value>主登记册记录</value></data>
+  <data name="MasterRegisterEntryId" xml:space="preserve"><value>主登记册记录 ID</value></data>
+  <data name="MasterRegisterStatus" xml:space="preserve"><value>登记状态</value></data>
+  <data name="MasterRegisterLinkStatus" xml:space="preserve"><value>关联兼容性</value></data>
+  <data name="DocumentScope" xml:space="preserve"><value>文档范围</value></data>
+  <data name="ScopeOwner" xml:space="preserve"><value>范围所有者</value></data>
+  <data name="DocumentClass" xml:space="preserve"><value>文档类别</value></data>
+  <data name="LifecycleStatus" xml:space="preserve"><value>生命周期状态</value></data>
+  <data name="LinkedAt" xml:space="preserve"><value>关联时间</value></data>
+  <data name="NoLinkedMasterRegisterLegacyHint" xml:space="preserve"><value>未找到关联的主登记册记录。这可能是旧版、迁移或核对记录。</value></data>
+  <data name="ReverseLookupFailed" xml:space="preserve"><value>无法加载主登记册关系。</value></data>
+  <data name="ReverseLookupForbidden" xml:space="preserve"><value>您无权查看关联的主登记册记录。</value></data>
+  <data name="ReadinessFailClosedDueToLink" xml:space="preserve"><value>关联未经验证或不兼容。审批、培训和发布准备状态保持阻止。</value></data>
+  <data name="GovernedRegistrationComplete" xml:space="preserve"><value>受治理的主登记册关系已验证。</value></data>
+  <data name="Loading" xml:space="preserve"><value>正在加载…</value></data>
+  <data name="LifecycleDraftNotForUse" xml:space="preserve"><value>草稿 — 禁止使用</value></data>
+  <data name="LifecycleInReviewNotEffective" xml:space="preserve"><value>审核中 — 尚未生效</value></data>
+  <data name="LifecycleApprovedPendingEffective" xml:space="preserve"><value>已批准 — 等待生效</value></data>
+  <data name="LifecycleEffective" xml:space="preserve"><value>已生效</value></data>
+  <data name="LifecycleSuspendedDoNotUse" xml:space="preserve"><value>已暂停 — 禁止使用</value></data>
+  <data name="LifecycleSuperseded" xml:space="preserve"><value>已被取代</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>已停用</value></data>
+  <data name="LifecycleUnderRevisionNotEffective" xml:space="preserve"><value>修订中 — 尚未生效</value></data>
+  <data name="LegacyUnlinked" xml:space="preserve"><value>旧记录 — 未关联</value></data>
+  <data name="ShowNonEffectiveDocuments" xml:space="preserve"><value>显示草稿/未生效文档</value></data>
+  <data name="ShowNonEffectiveDocumentsHint" xml:space="preserve"><value>仅限治理视图。包含草稿、未生效文档以及未关联的旧记录。</value></data>
+</root>

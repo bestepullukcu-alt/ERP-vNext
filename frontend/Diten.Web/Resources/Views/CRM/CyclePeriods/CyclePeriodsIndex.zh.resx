@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="ActivateCyclePeriod" xml:space="preserve"><value>启用</value></data>
+  <data name="ActivateCyclePeriodConfirm" xml:space="preserve"><value>要启用此周期吗？同一业务单元下的启用周期不能共用同一天，且其日期将变为只读。</value></data>
+  <data name="ActivatedAt" xml:space="preserve"><value>启用时间</value></data>
+  <data name="ActiveEditNotice" xml:space="preserve"><value>该周期已启用：其日期、年份、序号和业务单元均为只读。如需更改，请关闭后新建一个周期。</value></data>
+  <data name="AmbiguousPeriod" xml:space="preserve"><value>有多个启用周期覆盖今天</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>业务单元</value></data>
+  <data name="BusinessUnitIdHint" xml:space="preserve"><value>留空表示租户级日历。不同业务单元可以有重叠的周期。</value></data>
+  <data name="BusinessUnitIdPlaceholder" xml:space="preserve"><value>留空即为租户级</value></data>
+  <data name="CloseCyclePeriod" xml:space="preserve"><value>关闭</value></data>
+  <data name="CloseCyclePeriodConfirm" xml:space="preserve"><value>要关闭此周期吗？不会删除任何内容，但关闭是不可逆的：无法重新打开。</value></data>
+  <data name="ClosedAt" xml:space="preserve"><value>关闭时间</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>周期服务不可用。</value></data>
+  <data name="CreateCyclePeriod" xml:space="preserve"><value>新建周期</value></data>
+  <data name="CurrentPeriod" xml:space="preserve"><value>今天生效的周期</value></data>
+  <data name="CycleCode" xml:space="preserve"><value>编码</value></data>
+  <data name="CycleCodeHint" xml:space="preserve"><value>小写字母、数字、点、下划线和连字符。创建后不可重命名。</value></data>
+  <data name="CycleCodePlaceholder" xml:space="preserve"><value>c-2026-03</value></data>
+  <data name="CycleName" xml:space="preserve"><value>名称</value></data>
+  <data name="CycleNamePlaceholder" xml:space="preserve"><value>2026 / 第 3 周期</value></data>
+  <data name="CyclePeriodsTitle" xml:space="preserve"><value>周期</value></data>
+  <data name="EndDate" xml:space="preserve"><value>结束日期</value></data>
+  <data name="EndDateHint" xml:space="preserve"><value>含当天：周期覆盖该日。</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>新建周期</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑周期</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>基本信息</value></data>
+  <data name="Lifecycle" xml:space="preserve"><value>生命周期</value></data>
+  <data name="NoActivePeriod" xml:space="preserve"><value>今天没有启用的周期</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>具名的计划周期：一个计划属于哪个周期。工作日与节假日属于另一套日历。</value></data>
+  <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>周期已启用。</value></data>
+  <data name="RecordClosed" xml:space="preserve"><value>周期已关闭。</value></data>
+  <data name="SequenceInYear" xml:space="preserve"><value>序号</value></data>
+  <data name="StartDate" xml:space="preserve"><value>开始日期</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>启用</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>已关闭</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="TenantWide" xml:space="preserve"><value>租户级</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>更新时间</value></data>
+  <data name="Window" xml:space="preserve"><value>区间</value></data>
+  <data name="Year" xml:space="preserve"><value>年份</value></data>
+  <data name="YearHint" xml:space="preserve"><value>计划年份。周期可以跨自然年。</value></data>
+  <data name="ActiveWindowImmutableHint" xml:space="preserve"><value>该周期已生效：其日期、年份、序号和范围均为只读。请关闭后新建周期以进行更改。</value></data>
+  <data name="BusinessUnitCountryContext" xml:space="preserve"><value>国家/地区上下文</value></data>
+  <data name="BusinessUnitCountryFilter" xml:space="preserve"><value>国家/地区（筛选）</value></data>
+  <data name="BusinessUnitCountryFirstHint" xml:space="preserve"><value>请先选择国家/地区——业务单元来自在本周期内覆盖该国家/地区的区域计划。</value></data>
+  <data name="BusinessUnitFromTerritory" xml:space="preserve"><value>匹配的区域计划所覆盖的业务单元。</value></data>
+  <data name="BusinessUnitFromVocabulary" xml:space="preserve"><value>全部已发布的业务单元——没有区域计划匹配该国家和日期范围。</value></data>
+  <data name="BusinessUnitNoPlan" xml:space="preserve"><value>没有生效的区域计划覆盖该国家和日期范围。</value></data>
+  <data name="BusinessUnitSourceLabel" xml:space="preserve"><value>业务单元来源</value></data>
+  <data name="BusinessUnitSource_manual" xml:space="preserve"><value>手动输入</value></data>
+  <data name="BusinessUnitSource_territory" xml:space="preserve"><value>来自区域计划</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>国家</value></data>
+  <data name="CountrySetUnavailable" xml:space="preserve"><value>国家参考集尚未发布：</value></data>
+  <data name="CycleStatus_active" xml:space="preserve"><value>生效</value></data>
+  <data name="CycleStatus_closed" xml:space="preserve"><value>已关闭</value></data>
+  <data name="CycleStatus_draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="EndDateInclusiveHint" xml:space="preserve"><value>含当日：该周期包含这一天。</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>标识</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>法律实体</value></data>
+  <data name="LegalEntityListUnavailable" xml:space="preserve"><value>无法加载法律实体列表。</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>生命周期</value></data>
+  <data name="NewCyclePeriod" xml:space="preserve"><value>新建周期</value></data>
+  <data name="Scope" xml:space="preserve"><value>范围</value></data>
+  <data name="ScopeRef" xml:space="preserve"><value>范围引用</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>范围</value></data>
+  <data name="ScopeSectionHint" xml:space="preserve"><value>一个周期只存在于一个地址。所选层级决定适用哪个引用。</value></data>
+  <data name="ScopeTenantHint" xml:space="preserve"><value>该周期适用于整个租户。</value></data>
+  <data name="ScopeTenantWide" xml:space="preserve"><value>租户范围</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>范围层级</value></data>
+  <data name="ScopeTypeImmutableHint" xml:space="preserve"><value>范围属于周期标识的一部分，不能更改。请关闭该周期并新建一个。</value></data>
+  <data name="ScopeType_business-unit" xml:space="preserve"><value>业务单元</value></data>
+  <data name="ScopeType_country" xml:space="preserve"><value>国家</value></data>
+  <data name="ScopeType_legal-entity" xml:space="preserve"><value>法律实体</value></data>
+  <data name="ScopeType_tenant" xml:space="preserve"><value>租户范围</value></data>
+  <data name="Version" xml:space="preserve"><value>版本</value></data>
+  <data name="CycleCapacity" xml:space="preserve"><value>周期产能</value></data>
+</root>

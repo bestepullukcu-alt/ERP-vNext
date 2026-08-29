@@ -267,6 +267,46 @@ public sealed class BusinessReferenceDataProviderReadinessTests
         return services.BuildServiceProvider();
     }
 
+
+    /// <summary>
+    /// No environment ships the pilot's config section, so an entirely blank one must NOT put the whole Platform
+    /// service at /health 503 — that masked real outages behind a feature nobody had enabled.
+    /// </summary>
+    [Fact]
+    public async Task UnconfiguredPilot_IsHealthyWithoutTouchingDurableState()
+    {
+        var repository = new Mock<IBusinessReferenceDataStewardshipRepository>(MockBehavior.Strict);
+        repository.Setup(value => value.GetRequiredReferenceTenantId()).Returns(Guid.NewGuid());
+        using var provider = BuildProvider(repository.Object);
+        var sut = new BusinessReferenceDataProviderReadinessHealthCheck(
+            provider.GetRequiredService<IServiceScopeFactory>(),
+            Options.Create(new VerifiedGskuOperationalProvisioningOptions()));
+
+        var result = await sut.CheckHealthAsync(new HealthCheckContext());
+
+        Assert.Equal(HealthStatus.Healthy, result.Status);
+        repository.Verify(value => value.GetVerifiedPublicationAsync(
+            It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    /// <summary>A HALF-filled section is a real misconfiguration someone meant to enable — it must still fail.</summary>
+    [Fact]
+    public async Task PartiallyConfiguredPilot_IsStillUnhealthy()
+    {
+        var repository = new Mock<IBusinessReferenceDataStewardshipRepository>(MockBehavior.Strict);
+        repository.Setup(value => value.GetRequiredReferenceTenantId()).Returns(Guid.NewGuid());
+        using var provider = BuildProvider(repository.Object);
+        var sut = new BusinessReferenceDataProviderReadinessHealthCheck(
+            provider.GetRequiredService<IServiceScopeFactory>(),
+            Options.Create(new VerifiedGskuOperationalProvisioningOptions
+            {
+                ConsumerTenantId = Guid.NewGuid()
+            }));
+
+        var result = await sut.CheckHealthAsync(new HealthCheckContext());
+
+        Assert.Equal(HealthStatus.Unhealthy, result.Status);
+    }
     private static BusinessReferenceDataProviderReadinessHealthCheck CreateSut(
         ServiceProvider provider,
         bool enabled,

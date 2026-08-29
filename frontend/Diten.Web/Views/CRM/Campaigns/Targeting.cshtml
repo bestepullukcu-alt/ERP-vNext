@@ -1,0 +1,184 @@
+@model Diten.Web.Models.CRM.CampaignTargetingPageViewModel
+@using Diten.Web.Views.CRM.Campaigns
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CampaignIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["TargetingTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var c = Model.Campaign;
+    var isManual = !string.Equals(c.TargetingMode, "segment", StringComparison.OrdinalIgnoreCase);
+}
+
+@*
+    MOD-0165 FU10 - the targeting page. READ-ONLY by construction: it renders what a campaign targets and offers no
+    control that writes. Authoring stays where it belongs - the mode and the segments on the edit form, the manual
+    target rows on Details.
+*@
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["TargetingTitle"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/Campaigns">@Localizer["CampaignsTitle"]</a></li>
+                <li class="breadcrumb-item"><a href="/CRM/Campaigns/Details/@c.CampaignId">@c.CampaignCode</a></li>
+                <li class="breadcrumb-item active text-primary">@Localizer["TargetingTitle"]</li>
+            </ol>
+        </nav>
+    </div>
+    <a href="/CRM/Campaigns/Details/@c.CampaignId" class="btn btn-label-secondary">@Localizer["BackToList"]</a>
+</div>
+
+@* Context: what this campaign is, where it lives and when it runs — so the targets below mean something. *@
+<div class="card mb-4">
+    <div class="card-body p-4">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <div>
+                <div class="text-muted small">@Localizer["CampaignName"]</div>
+                <div class="fw-medium">@c.CampaignName</div>
+            </div>
+            <div>
+                <div class="text-muted small">@Localizer["TargetingMode"]</div>
+                <span class="badge bg-label-primary">@Localizer["TargetingMode_" + (isManual ? "manual" : "segment")]</span>
+            </div>
+            <div>
+                <div class="text-muted small">@Localizer["ScopeSection"]</div>
+                <div class="fw-medium">
+                    @Localizer["ScopeType_" + (string.IsNullOrWhiteSpace(c.ScopeType) ? "tenant" : c.ScopeType)]
+                    @if (!string.IsNullOrWhiteSpace(c.ScopeRef))
+                    {
+                        <span class="text-muted">· @c.ScopeRef</span>
+                    }
+                </div>
+            </div>
+            <div>
+                <div class="text-muted small">@Localizer["CyclePeriod"]</div>
+                <div class="fw-medium">
+                    @(c.CyclePeriod is { } cycle ? $"{cycle.CycleCode} — {cycle.CycleName}" : Localizer["NoCyclePeriod"].Value)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* The ACTIVE mode's targets. *@
+<div class="card mb-4">
+    <div class="card-body p-4">
+        <h6 class="text-uppercase text-heading fw-semibold mb-4">
+            @(isManual ? Localizer["CampaignTargets"] : Localizer["TargetedSegments"])
+        </h6>
+
+        @if (!isManual)
+        {
+            @if (c.TargetedSegments.Count == 0)
+            {
+                <div class="text-muted">@Localizer["NoTargetedSegments"]</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>@Localizer["TargetedSegments"]</th>
+                                <th>@Localizer["SubjectType"]</th>
+                                <th>@Localizer["Status"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in c.TargetedSegments)
+                            {
+                                <tr>
+                                    <td class="text-break">
+                                        @if (s.IsResolvable)
+                                        {
+                                            <a href="/CRM/Segments/Details/@s.SegmentId">@s.SegmentCode — @s.SegmentName</a>
+                                        }
+                                        else
+                                        {
+                                            @* Unresolvable: show the pinned id, never an invented label. *@
+                                            <span class="text-muted">@s.SegmentId</span>
+                                        }
+                                    </td>
+                                    <td>@(s.SubjectType ?? "—")</td>
+                                    <td>
+                                        <span class="badge bg-label-secondary">@(s.SegmentStatus ?? "—")</span>
+                                        @if (s.Superseded)
+                                        {
+                                            <span class="badge bg-label-warning ms-1">@Localizer["SegmentSuperseded"]</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+        else
+        {
+            @if (Model.ManualTargets.Count == 0)
+            {
+                <div class="text-muted">@Localizer["EmptyState"]</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>@Localizer["TargetType"]</th>
+                                <th>@Localizer["TargetId"]</th>
+                                <th>@Localizer["TargetStatus"]</th>
+                                <th>@Localizer["TargetSource"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var t in Model.ManualTargets)
+                            {
+                                <tr>
+                                    <td>@t.TargetType</td>
+                                    <td class="text-break">@(string.IsNullOrWhiteSpace(t.TargetDisplayName) ? t.TargetId.ToString() : t.TargetDisplayName)</td>
+                                    <td><span class="badge bg-label-secondary">@t.TargetStatus</span></td>
+                                    <td>@t.TargetSource</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@*
+    The PASSIVE mode's data. Switching the targeting mode never deletes anything, so a campaign can still be holding
+    work from its previous mode. It is counted here rather than hidden: dormant is not the same as gone, and data
+    nobody can see is data nobody remembers.
+*@
+@if (Model.DormantSegmentCount > 0 || Model.DormantManualTargetCount > 0)
+{
+    <div class="alert alert-secondary" role="alert">
+        <i class="bx bx-archive-in me-1"></i>
+        @Localizer["TargetingDormantData"]
+        @if (Model.DormantSegmentCount > 0)
+        {
+            <span class="badge bg-label-secondary ms-1">@Localizer["TargetedSegments"]: @Model.DormantSegmentCount</span>
+        }
+        @if (Model.DormantManualTargetCount > 0)
+        {
+            <span class="badge bg-label-secondary ms-1">@Localizer["CampaignTargets"]: @Model.DormantManualTargetCount</span>
+        }
+    </div>
+}
+
+@*
+    "What to promote" is NOT answered by a campaign. It varies per targeted segment and belongs to a per-segment model
+    that is not open yet. It is declared closed rather than shown as an empty table, because an empty table reads as
+    "nothing configured" instead of "not available".
+*@
+<div class="card">
+    <div class="card-body p-4">
+        <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["TargetingWhatToPromote"]</h6>
+        <div class="text-muted">@Localizer["TargetingWhatToPromoteClosed"]</div>
+    </div>
+</div>

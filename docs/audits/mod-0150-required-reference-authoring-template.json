@@ -1,0 +1,166 @@
+{
+  "$schema": "mod-0150-required-reference-authoring-template",
+  "module": "MOD-0150",
+  "moduleName": "Contact & Relationship Management",
+  "governance": "MOD-0048 / PSS-012 (Business Reference Data)",
+  "scopeType": "tenant",
+  "scopeKeyNote": "Publish per tenant via scope_key={tenantId}; no global scope, no CRM local seed, no hardcoded fallback.",
+  "sets": [
+    {
+      "setCode": "contact-type",
+      "displayName": "Contact Type",
+      "description": "MOD-0150 contact classification (doctor, pharmacist, decision-maker, …).",
+      "scopeType": "tenant",
+      "required": true,
+      "blocksCreate": true,
+      "blocks": "Contact create/update",
+      "values": [
+        { "valueCode": "doctor", "displayName": { "en": "Doctor", "tr": "Doktor" }, "sortOrder": 10, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "pharmacist", "displayName": { "en": "Pharmacist", "tr": "Eczacı" }, "sortOrder": 20, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "responsible-person", "displayName": { "en": "Responsible Person", "tr": "Sorumlu Kişi" }, "sortOrder": 30, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "department-contact", "displayName": { "en": "Department Contact", "tr": "Departman İletişimi" }, "sortOrder": 40, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "decision-maker", "displayName": { "en": "Decision Maker", "tr": "Karar Verici" }, "sortOrder": 50, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "procurement", "displayName": { "en": "Procurement", "tr": "Satın Alma" }, "sortOrder": 60, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "medical", "displayName": { "en": "Medical", "tr": "Tıbbi" }, "sortOrder": 70, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "administrative", "displayName": { "en": "Administrative", "tr": "İdari" }, "sortOrder": 80, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "other", "displayName": { "en": "Other", "tr": "Diğer" }, "sortOrder": 90, "isDeprecated": false, "metadata": {} }
+      ]
+    },
+    {
+      "setCode": "contact-status",
+      "displayName": "Contact Status",
+      "description": "MOD-0150 contact lifecycle status.",
+      "scopeType": "tenant",
+      "required": true,
+      "blocksCreate": true,
+      "blocks": "Contact create/update",
+      "values": [
+        { "valueCode": "draft", "displayName": { "en": "Draft", "tr": "Taslak" }, "sortOrder": 10, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "active", "displayName": { "en": "Active", "tr": "Aktif" }, "sortOrder": 20, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "inactive", "displayName": { "en": "Inactive", "tr": "Pasif" }, "sortOrder": 30, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "archived", "displayName": { "en": "Archived", "tr": "Arşivlendi" }, "sortOrder": 40, "isDeprecated": false, "metadata": {} }
+      ]
+    },
+    {
+      "setCode": "contact-role",
+      "displayName": "Contact Role",
+      "description": "MOD-0150 role a contact holds at an account (AccountContactLink.RoleCode).",
+      "scopeType": "tenant",
+      "required": true,
+      "blocksCreate": true,
+      "blocks": "AccountContactLink create/update",
+      "values": [
+        { "valueCode": "decision-maker", "displayName": { "en": "Decision Maker", "tr": "Karar Verici" }, "sortOrder": 10, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "procurement", "displayName": { "en": "Procurement", "tr": "Satın Alma" }, "sortOrder": 20, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "medical", "displayName": { "en": "Medical", "tr": "Tıbbi" }, "sortOrder": 30, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "administrative", "displayName": { "en": "Administrative", "tr": "İdari" }, "sortOrder": 40, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "billing", "displayName": { "en": "Billing", "tr": "Faturalama" }, "sortOrder": 50, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "primary", "displayName": { "en": "Primary", "tr": "Birincil" }, "sortOrder": 60, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "other", "displayName": { "en": "Other", "tr": "Diğer" }, "sortOrder": 70, "isDeprecated": false, "metadata": {} }
+      ]
+    },
+    {
+      "setCode": "account-relationship-type",
+      "displayName": "Account Relationship Type",
+      "description": "MOD-0150 typed Account↔Account relationship. Per-value metadata drives direction, inverse-label display and self-link policy.",
+      "scopeType": "tenant",
+      "required": true,
+      "blocksCreate": true,
+      "blocks": "AccountRelationship create/update",
+      "metadataSchema": {
+        "relationshipDirection": "directional | bidirectional",
+        "inverseLabelCode": "valueCode of the inverse label rendered on the target account's 360 (self for symmetric types)",
+        "selfAllowed": "boolean; default false — whether Source==Target is permitted for this type"
+      },
+      "values": [
+        { "valueCode": "associated-with", "displayName": { "en": "Associated With", "tr": "İlişkili" }, "sortOrder": 10, "isDeprecated": false, "metadata": { "relationshipDirection": "bidirectional", "inverseLabelCode": "associated-with", "selfAllowed": false } },
+        { "valueCode": "preferred-pharmacy", "displayName": { "en": "Preferred Pharmacy", "tr": "Tercih Edilen Eczane" }, "sortOrder": 20, "isDeprecated": false, "metadata": { "relationshipDirection": "directional", "inverseLabelCode": "preferred-by", "selfAllowed": false } },
+        { "valueCode": "refers-to", "displayName": { "en": "Refers To", "tr": "Yönlendirir" }, "sortOrder": 30, "isDeprecated": false, "metadata": { "relationshipDirection": "directional", "inverseLabelCode": "referred-by", "selfAllowed": false } },
+        { "valueCode": "served-by", "displayName": { "en": "Served By", "tr": "Hizmet Alır" }, "sortOrder": 40, "isDeprecated": false, "metadata": { "relationshipDirection": "directional", "inverseLabelCode": "serves", "selfAllowed": false } },
+        { "valueCode": "same-network", "displayName": { "en": "Same Network", "tr": "Aynı Ağ" }, "sortOrder": 50, "isDeprecated": false, "metadata": { "relationshipDirection": "bidirectional", "inverseLabelCode": "same-network", "selfAllowed": false } },
+        { "valueCode": "nearby", "displayName": { "en": "Nearby", "tr": "Yakın" }, "sortOrder": 60, "isDeprecated": false, "metadata": { "relationshipDirection": "bidirectional", "inverseLabelCode": "nearby", "selfAllowed": false } }
+      ]
+    },
+    {
+      "setCode": "account-relationship-status",
+      "displayName": "Account Relationship Status",
+      "description": "MOD-0150 Account↔Account relationship lifecycle status.",
+      "scopeType": "tenant",
+      "required": true,
+      "blocksCreate": true,
+      "blocks": "AccountRelationship create/update",
+      "values": [
+        { "valueCode": "pending", "displayName": { "en": "Pending", "tr": "Beklemede" }, "sortOrder": 10, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "active", "displayName": { "en": "Active", "tr": "Aktif" }, "sortOrder": 20, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "inactive", "displayName": { "en": "Inactive", "tr": "Pasif" }, "sortOrder": 30, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "ended", "displayName": { "en": "Ended", "tr": "Sona Erdi" }, "sortOrder": 40, "isDeprecated": false, "metadata": {} }
+      ]
+    },
+    {
+      "setCode": "professional-title",
+      "displayName": "Professional Title",
+      "description": "Optional contact professional title.",
+      "scopeType": "tenant",
+      "required": false,
+      "blocksCreate": false,
+      "blocks": "none (optional field left blank when unpublished)",
+      "values": [
+        { "valueCode": "dr", "displayName": { "en": "Dr.", "tr": "Dr." }, "sortOrder": 10, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "prof", "displayName": { "en": "Prof.", "tr": "Prof." }, "sortOrder": 20, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "assoc-prof", "displayName": { "en": "Assoc. Prof.", "tr": "Doç." }, "sortOrder": 30, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "pharm", "displayName": { "en": "Pharmacist", "tr": "Ecz." }, "sortOrder": 40, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "nurse", "displayName": { "en": "Nurse", "tr": "Hemşire" }, "sortOrder": 50, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "other", "displayName": { "en": "Other", "tr": "Diğer" }, "sortOrder": 60, "isDeprecated": false, "metadata": {} }
+      ]
+    },
+    {
+      "setCode": "medical-specialty",
+      "displayName": "Medical Specialty",
+      "description": "Optional contact medical specialty (starter list; extend via import).",
+      "scopeType": "tenant",
+      "required": false,
+      "blocksCreate": false,
+      "blocks": "none",
+      "values": [
+        { "valueCode": "cardiology", "displayName": { "en": "Cardiology", "tr": "Kardiyoloji" }, "sortOrder": 10, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "oncology", "displayName": { "en": "Oncology", "tr": "Onkoloji" }, "sortOrder": 20, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "pediatrics", "displayName": { "en": "Pediatrics", "tr": "Pediatri" }, "sortOrder": 30, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "internal-medicine", "displayName": { "en": "Internal Medicine", "tr": "İç Hastalıkları" }, "sortOrder": 40, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "surgery", "displayName": { "en": "Surgery", "tr": "Cerrahi" }, "sortOrder": 50, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "other", "displayName": { "en": "Other", "tr": "Diğer" }, "sortOrder": 60, "isDeprecated": false, "metadata": {} }
+      ]
+    },
+    {
+      "setCode": "department-type",
+      "displayName": "Department Type",
+      "description": "Optional contact department classification.",
+      "scopeType": "tenant",
+      "required": false,
+      "blocksCreate": false,
+      "blocks": "none",
+      "values": [
+        { "valueCode": "purchasing", "displayName": { "en": "Purchasing", "tr": "Satın Alma" }, "sortOrder": 10, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "pharmacy", "displayName": { "en": "Pharmacy", "tr": "Eczane" }, "sortOrder": 20, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "admin", "displayName": { "en": "Administration", "tr": "İdare" }, "sortOrder": 30, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "clinical", "displayName": { "en": "Clinical", "tr": "Klinik" }, "sortOrder": 40, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "other", "displayName": { "en": "Other", "tr": "Diğer" }, "sortOrder": 50, "isDeprecated": false, "metadata": {} }
+      ]
+    },
+    {
+      "setCode": "communication-preference-type",
+      "displayName": "Communication Preference Type",
+      "description": "Optional interaction/communication preference. NOTE: when MOD-0164 lands, preference values become an authoritative MOD-0164 reference; MOD-0150 consumes it read-only via the consent/preference seam. Until then this optional set is a placeholder — do not build a consent engine here.",
+      "scopeType": "tenant",
+      "required": false,
+      "blocksCreate": false,
+      "blocks": "none",
+      "mod0164Seam": true,
+      "values": [
+        { "valueCode": "phone", "displayName": { "en": "Phone", "tr": "Telefon" }, "sortOrder": 10, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "email", "displayName": { "en": "Email", "tr": "E-posta" }, "sortOrder": 20, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "sms", "displayName": { "en": "SMS", "tr": "SMS" }, "sortOrder": 30, "isDeprecated": false, "metadata": {} },
+        { "valueCode": "none", "displayName": { "en": "None", "tr": "Yok" }, "sortOrder": 40, "isDeprecated": false, "metadata": {} }
+      ]
+    }
+  ]
+}

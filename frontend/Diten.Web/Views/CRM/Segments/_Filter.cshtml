@@ -1,0 +1,44 @@
+﻿@using Diten.Web.Views.CRM.Segments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SegmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="segmentFilterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Segment Status (multi-select) *@
+                    <div class="filter-chip">
+                        <select id="filterSegmentStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["SegmentStatus"]"></select>
+                    </div>
+                    @* Segment Type (multi-select) *@
+                    <div class="filter-chip">
+                        <select id="filterSegmentType" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["SegmentType"]"></select>
+                    </div>
+                    @* Subject Type (single-select) *@
+                    <div class="filter-chip">
+                        <select id="filterSubjectType" class="form-select form-select-sm select2" data-placeholder="@Localizer["SubjectType"]"><option value="">@SharedLocalizer["ShowAll"]</option></select>
+                    </div>
+                    @* Business unit (single-select, distinct from the loaded rows) *@
+                    <div class="filter-chip">
+                        <select id="filterBusinessUnitId" class="form-select form-select-sm select2" data-placeholder="@Localizer["BusinessUnitId"]"><option value="">@SharedLocalizer["ShowAll"]</option></select>
+                    </div>
+                    @* Include archived (single-select) *@
+                    <div class="filter-chip">
+                        <select id="filterIncludeArchived" class="form-select form-select-sm select2" data-placeholder="@Localizer["IncludeArchived"]">
+                            <option value="true">@Localizer["IncludeArchived"]</option>
+                            <option value="false">@Localizer["Active"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

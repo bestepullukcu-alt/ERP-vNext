@@ -1,6 +1,7 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.DocumentManagementControlledDocuments.Services;
+using Diten.Platform.Application.Features.DocumentManagementMasterRegister;
 using Diten.Platform.Application.Features.TenantOrganization.Services;
 using Diten.Platform.Domain.Entities.DocumentManagement;
 using Diten.Platform.Domain.Enums.DocumentManagement;
@@ -135,6 +136,34 @@ internal sealed class FakeControlledDocumentRepository : IControlledDocumentRepo
     public Task<IReadOnlyList<ControlledDocument>> GetByCollectionInstanceAsync(Guid id, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<ControlledDocument>>(Items.Where(x => x.CollectionInstanceId == id && !x.IsDeleted).ToList());
     public Task<bool> UpdateAsync(ControlledDocument d, CancellationToken ct = default) { var i = Items.FindIndex(x => x.Id == d.Id); if (i >= 0) Items[i] = d; return Task.FromResult(i >= 0); }
     public Task SoftDeleteAsync(Guid id, CancellationToken ct = default) { var d = Items.FirstOrDefault(x => x.Id == id); if (d is not null) d.IsDeleted = true; return Task.CompletedTask; }
+}
+
+internal sealed class FakeDocumentMasterRegisterRepository : IDocumentMasterRegisterRepository
+{
+    public List<DocumentMasterRegisterEntry> Items { get; } = [];
+    public Task<DocumentMasterRegisterEntry> CreateAsync(DocumentMasterRegisterEntry entry, CancellationToken ct = default)
+    {
+        Items.Add(entry);
+        return Task.FromResult(entry);
+    }
+    public Task<DocumentMasterRegisterEntry?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
+        Task.FromResult(Items.FirstOrDefault(x => x.Id == id && !x.IsDeleted));
+    public Task<DocumentMasterRegisterEntry?> GetByPermanentUidAsync(string permanentUid, CancellationToken ct = default) =>
+        Task.FromResult(Items.FirstOrDefault(x => x.PermanentUid == permanentUid && !x.IsDeleted));
+    public Task<DocumentMasterRegisterEntry?> GetByDocumentCodeAsync(string documentCode, CancellationToken ct = default) =>
+        Task.FromResult(Items.FirstOrDefault(x => x.DocumentCode == documentCode && !x.IsDeleted));
+    public Task<DocumentMasterRegisterEntry?> GetByControlledDocumentIdAsync(Guid controlledDocumentId, CancellationToken ct = default) =>
+        Task.FromResult(Items.FirstOrDefault(x => x.ControlledDocumentId == controlledDocumentId && !x.IsDeleted));
+    public Task<IReadOnlyList<DocumentMasterRegisterEntry>> ListAsync(MasterRegisterListFilter filter, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<DocumentMasterRegisterEntry>>(Items.Where(x => !x.IsDeleted).ToList());
+    public Task<IReadOnlyList<DocumentMasterRegisterEntry>> GetAllForTenantAsync(CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<DocumentMasterRegisterEntry>>(Items.Where(x => !x.IsDeleted).ToList());
+    public Task<bool> UpdateAsync(DocumentMasterRegisterEntry entry, CancellationToken ct = default)
+    {
+        var index = Items.FindIndex(x => x.Id == entry.Id);
+        if (index >= 0) Items[index] = entry;
+        return Task.FromResult(index >= 0);
+    }
 }
 
 internal sealed class FakeDocumentFavoriteRepository : IDocumentFavoriteRepository

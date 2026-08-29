@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="AccountTitle" xml:space="preserve"><value>客户账户</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>管理客户账户及其层级结构和位置信息。</value></data>
+  <data name="AddNew" xml:space="preserve"><value>添加账户</value></data>
+  <data name="EditItem" xml:space="preserve"><value>编辑账户</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>添加账户</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑账户</value></data>
+  <data name="QuickView" xml:space="preserve"><value>查看</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="Back" xml:space="preserve"><value>返回</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>创建时间</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>更新时间</value></data>
+  <data name="ReferenceDataUnavailable" xml:space="preserve"><value>参考数据当前不可用，无法选择账户类型和状态。请稍后重试或联系管理员。</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>标识</value></data>
+  <data name="LogoSection" xml:space="preserve"><value>徽标</value></data>
+  <data name="LogoHelp" xml:space="preserve"><value>PNG、JPG、GIF、WEBP 或 SVG。最大 256 KB。</value></data>
+  <data name="LogoSelect" xml:space="preserve"><value>选择图片</value></data>
+  <data name="LogoRemove" xml:space="preserve"><value>移除</value></data>
+  <data name="LogoInvalidType" xml:space="preserve"><value>文件类型无效。请选择图片（PNG、JPG、GIF、WEBP、SVG）。</value></data>
+  <data name="LogoTooLarge" xml:space="preserve"><value>图片太大。必须小于或等于 256 KB。</value></data>
+  <data name="LocationSection" xml:space="preserve"><value>位置</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>备注</value></data>
+  <data name="StatusSection" xml:space="preserve"><value>状态</value></data>
+  <data name="ContactSection" xml:space="preserve"><value>联系人</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>集成</value></data>
+  <data name="ChildAccountsSection" xml:space="preserve"><value>子账户</value></data>
+  <data name="CoverageSection" xml:space="preserve"><value>覆盖范围</value></data>
+  <data name="CoverageStatus" xml:space="preserve"><value>覆盖状态</value></data>
+  <data name="TerritorySection" xml:space="preserve"><value>区域</value></data>
+  <data name="TerritoryNode" xml:space="preserve"><value>区域节点</value></data>
+  <data name="AssignmentSource" xml:space="preserve"><value>分配来源</value></data>
+  <data name="NoTerritoryAssignment" xml:space="preserve"><value>暂无当前区域分配。</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>国家范围</value></data>
+  <data name="TerritoryNodeCode" xml:space="preserve"><value>节点代码</value></data>
+  <data name="CurrentBadge" xml:space="preserve"><value>当前</value></data>
+  <data name="AccountName" xml:space="preserve"><value>账户名称</value></data>
+  <data name="AccountNamePlaceholder" xml:space="preserve"><value>例如：中心医院</value></data>
+  <data name="AccountCode" xml:space="preserve"><value>账户代码</value></data>
+  <data name="AccountCodePlaceholder" xml:space="preserve"><value>例如：ACC-2026-000001</value></data>
+  <data name="AccountCodeHelp" xml:space="preserve"><value>留空以自动生成。</value></data>
+  <data name="AccountType" xml:space="preserve"><value>账户类型</value></data>
+  <data name="AccountCategory" xml:space="preserve"><value>账户类别</value></data>
+  <data name="ParentAccount" xml:space="preserve"><value>上级账户</value></data>
+  <data name="ParentAccountHelp" xml:space="preserve"><value>选择上级账户以将此账户置于层级结构中。</value></data>
+  <data name="CountryRef" xml:space="preserve"><value>国家</value></data>
+  <data name="CountryRefPlaceholder" xml:space="preserve"><value>例如：土耳其</value></data>
+  <data name="CityRef" xml:space="preserve"><value>城市</value></data>
+  <data name="CityRefPlaceholder" xml:space="preserve"><value>例如：伊斯坦布尔</value></data>
+  <data name="DistrictRef" xml:space="preserve"><value>区</value></data>
+  <data name="DistrictRefPlaceholder" xml:space="preserve"><value>例如：卡德柯伊</value></data>
+  <data name="AddressLine" xml:space="preserve"><value>地址</value></data>
+  <data name="AddressLinePlaceholder" xml:space="preserve"><value>街道、楼栋、楼层</value></data>
+  <data name="Latitude" xml:space="preserve"><value>纬度</value></data>
+  <data name="Longitude" xml:space="preserve"><value>经度</value></data>
+  <data name="ResponsiblePersonName" xml:space="preserve"><value>负责人</value></data>
+  <data name="ResponsiblePersonNamePlaceholder" xml:space="preserve"><value>例如：张伟</value></data>
+  <data name="ResponsiblePersonPhone" xml:space="preserve"><value>电话</value></data>
+  <data name="ResponsiblePersonPhonePlaceholder" xml:space="preserve"><value>例如：+90 555 000 0000</value></data>
+  <data name="ResponsiblePersonEmail" xml:space="preserve"><value>电子邮件</value></data>
+  <data name="ResponsiblePersonEmailPlaceholder" xml:space="preserve"><value>例如：contact@example.com</value></data>
+  <data name="ExternalReference" xml:space="preserve"><value>外部引用</value></data>
+  <data name="ExternalReferencePlaceholder" xml:space="preserve"><value>例如：旧系统标识</value></data>
+  <data name="ExternalReferenceHelp" xml:space="preserve"><value>此账户在源系统中的标识符。</value></data>
+  <data name="MapSearchPlaceholder" xml:space="preserve"><value>搜索街区、街道或地址</value></data>
+  <data name="MapHelp" xml:space="preserve"><value>点击地图或拖动标记以设置位置；地址将自动填写。您也可以手动编辑字段。</value></data>
+  <data name="UseMyLocation" xml:space="preserve"><value>使用我的位置</value></data>
+  <data name="RelatedContacts" xml:space="preserve"><value>相关联系人</value></data>
+  <data name="NoRelatedContacts" xml:space="preserve"><value>暂无相关联系人。</value></data>
+  <data name="RelatedAccounts" xml:space="preserve"><value>相关客户</value></data>
+  <data name="NoRelatedAccounts" xml:space="preserve"><value>暂无相关客户。</value></data>
+  <data name="Primary" xml:space="preserve"><value>主要</value></data>
+  <data name="RelationshipType" xml:space="preserve"><value>关系</value></data>
+  <data name="RelationshipDirection" xml:space="preserve"><value>方向</value></data>
+  <data name="NotAuthorized" xml:space="preserve"><value>您无权查看此部分。</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>此信息暂时不可用。</value></data>
+  <data name="ViewContact" xml:space="preserve"><value>查看联系人</value></data>
+  <data name="ViewAccount" xml:space="preserve"><value>查看客户</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>名称</value></data>
+  <data name="ContactType" xml:space="preserve"><value>联系人类型</value></data>
+  <data name="Role" xml:space="preserve"><value>角色</value></data>
+  <data name="Phone" xml:space="preserve"><value>电话</value></data>
+  <data name="Email" xml:space="preserve"><value>电子邮件</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>生效日期</value></data>
+  <data name="ValidTo" xml:space="preserve"><value>失效日期</value></data>
+  <data name="Notes" xml:space="preserve"><value>备注</value></data>
+  <data name="AddContactLink" xml:space="preserve"><value>添加联系人关联</value></data>
+  <data name="EditContactLink" xml:space="preserve"><value>编辑联系人关联</value></data>
+  <data name="EndContactLink" xml:space="preserve"><value>结束联系人关联</value></data>
+  <data name="AddRelatedAccount" xml:space="preserve"><value>添加相关客户</value></data>
+  <data name="EditRelationship" xml:space="preserve"><value>编辑关系</value></data>
+  <data name="EndRelationship" xml:space="preserve"><value>结束关系</value></data>
+  <data name="SelectContact" xml:space="preserve"><value>选择联系人</value></data>
+  <data name="SelectAccount" xml:space="preserve"><value>选择客户</value></data>
+  <data name="RoleCode" xml:space="preserve"><value>角色</value></data>
+  <data name="RelationshipStatus" xml:space="preserve"><value>关系状态</value></data>
+  <data name="PrimaryContact" xml:space="preserve"><value>主要联系人</value></data>
+  <data name="EndDate" xml:space="preserve"><value>结束日期</value></data>
+  <data name="EndReason" xml:space="preserve"><value>结束原因 / 备注</value></data>
+  <data name="HistoricalLinkNotice" xml:space="preserve"><value>联系人关联是历史记录：结束关联会保留其历史，绝不删除。</value></data>
+  <data name="HistoricalRelationshipNotice" xml:space="preserve"><value>关系是历史记录：结束关系会保留其历史，绝不删除。</value></data>
+  <data name="LinkWillBeEndedNotDeleted" xml:space="preserve"><value>此关联不会从历史中删除，仅会从您指定的日期起变为非活动状态。</value></data>
+  <data name="RelationshipWillBeEndedNotDeleted" xml:space="preserve"><value>此关系不会从历史中删除，仅会从您指定的日期起变为非活动状态。</value></data>
+  <data name="SaveLink" xml:space="preserve"><value>保存关联</value></data>
+  <data name="SaveRelationship" xml:space="preserve"><value>保存关系</value></data>
+  <data name="ConfirmEndLink" xml:space="preserve"><value>确认结束关联</value></data>
+  <data name="ConfirmEndRelationship" xml:space="preserve"><value>确认结束关系</value></data>
+  <data name="ManagedFromSource" xml:space="preserve"><value>由来源客户管理</value></data>
+  <data name="LinkEndedMessage" xml:space="preserve"><value>联系人关联已结束并保留在历史记录中。</value></data>
+  <data name="RelationshipEndedMessage" xml:space="preserve"><value>关系已结束并保留在历史记录中。</value></data>
+  <data name="CrossCountryReason" xml:space="preserve"><value>跨国业务原因</value></data>
+  <data name="CrossCountryHelp" xml:space="preserve"><value>仅当此联系人/客户与关联方位于不同国家时才需要填写。国家代码会被审计；此原因不会写入日志。</value></data>
+  <data name="NotesSafetyNotice" xml:space="preserve"><value>请勿在此字段中输入患者数据、健康数据、诊断、治疗、处方或敏感个人数据。</value></data>
+  <data name="ReportsTo" xml:space="preserve"><value>汇报对象</value></data>
+  <data name="ReportsToNone" xml:space="preserve"><value>— 无（最高层）—</value></data>
+  <data name="ReportsToHelp" xml:space="preserve"><value>选择已关联到此客户的联系人。客户内层级；不允许自我汇报或循环。</value></data>
+  <data name="FormValidationError" xml:space="preserve"><value>请正确填写必填字段。</value></data>
+</root>

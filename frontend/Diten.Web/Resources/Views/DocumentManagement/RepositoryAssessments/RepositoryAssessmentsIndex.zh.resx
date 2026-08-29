@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="RepositoryAssessments" xml:space="preserve"><value>存储库评估</value></data>
+  <data name="RepositoryAssessmentsTitle" xml:space="preserve"><value>存储库评估</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>为受控文件发布关卡 2 提供依据的租户级存储库评估（SOP §11 DMS 边界）。</value></data>
+  <data name="RepositoryAssessmentCreate" xml:space="preserve"><value>新建评估</value></data>
+  <data name="RepositoryAssessmentEdit" xml:space="preserve"><value>编辑评估</value></data>
+  <data name="RepositoryAssessmentDetails" xml:space="preserve"><value>评估详情</value></data>
+  <data name="RepositoryName" xml:space="preserve"><value>存储库名称</value></data>
+  <data name="RepositoryKey" xml:space="preserve"><value>存储库标识</value></data>
+  <data name="RepositoryType" xml:space="preserve"><value>存储库类型</value></data>
+  <data name="AssessmentStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="RepositoryOwner" xml:space="preserve"><value>归属角色</value></data>
+  <data name="RepositoryLocation" xml:space="preserve"><value>位置</value></data>
+  <data name="LocationType" xml:space="preserve"><value>位置类型</value></data>
+  <data name="LocationTypeInHouseSoftware" xml:space="preserve"><value>自研软件</value></data>
+  <data name="LocationTypeGoogleDrive" xml:space="preserve"><value>Google Drive</value></data>
+  <data name="LocationTypeSharePoint" xml:space="preserve"><value>SharePoint</value></data>
+  <data name="LocationTypeNetworkShare" xml:space="preserve"><value>网络共享</value></data>
+  <data name="LocationTypeOther" xml:space="preserve"><value>其他</value></data>
+  <data name="AccessControlModel" xml:space="preserve"><value>访问控制模型</value></data>
+  <data name="AccessReviewFrequency" xml:space="preserve"><value>访问复审频率</value></data>
+  <data name="EffectiveCopyControl" xml:space="preserve"><value>生效副本控制</value></data>
+  <data name="ApprovalMechanism" xml:space="preserve"><value>审批机制</value></data>
+  <data name="BackupPlan" xml:space="preserve"><value>备份方案</value></data>
+  <data name="RestoreTestEvidence" xml:space="preserve"><value>恢复测试频率</value></data>
+  <data name="AuditTrail" xml:space="preserve"><value>审计追踪</value></data>
+  <data name="ChangeControl" xml:space="preserve"><value>变更控制</value></data>
+  <data name="ValidationEvidence" xml:space="preserve"><value>验证证据</value></data>
+  <data name="ValidationEvidenceHint" xml:space="preserve"><value>指向别处保存的验证／确认证据的引用。这不是验证声明；边界由后端分类。</value></data>
+  <data name="MaxInterimPeriodDays" xml:space="preserve"><value>最长临时期限（天）</value></data>
+  <data name="InterimCheckpointDueDate" xml:space="preserve"><value>临时检查点到期</value></data>
+  <data name="MigrationReconciliationRequired" xml:space="preserve"><value>需要迁移核对</value></data>
+  <data name="MigrationReconciliationEvidence" xml:space="preserve"><value>迁移核对证据</value></data>
+  <data name="EvidenceReference" xml:space="preserve"><value>证据引用</value></data>
+  <data name="EvidenceReferenceHint" xml:space="preserve"><value>指向别处保存的证据的引用。此处不上传文件。</value></data>
+  <data name="RepositoryTypeValidatedDms" xml:space="preserve"><value>已验证 DMS</value></data>
+  <data name="RepositoryTypeApprovedInterimRepository" xml:space="preserve"><value>批准的临时存储库</value></data>
+  <data name="RepositoryTypeSeparateApprovalMechanism" xml:space="preserve"><value>独立审批机制</value></data>
+  <data name="RepositoryTypeUnapprovedRepository" xml:space="preserve"><value>未批准存储库</value></data>
+  <data name="RepositoryStatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="RepositoryStatusUnderReview" xml:space="preserve"><value>审核中</value></data>
+  <data name="RepositoryStatusApproved" xml:space="preserve"><value>已批准</value></data>
+  <data name="RepositoryStatusRejected" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="RepositoryStatusExpired" xml:space="preserve"><value>已过期</value></data>
+  <data name="RepositoryStatusSuperseded" xml:space="preserve"><value>已被替代</value></data>
+  <data name="CanSupportReleaseGate" xml:space="preserve"><value>可支持发布关卡</value></data>
+  <data name="CanSupportRegulatedESignature" xml:space="preserve"><value>可支持受监管电子签名</value></data>
+  <data name="BoundaryStatement" xml:space="preserve"><value>边界声明</value></data>
+  <data name="EvaluateToSeeBoundary" xml:space="preserve"><value>运行评估以查看其边界声明。</value></data>
+  <data name="CriticalFindings" xml:space="preserve"><value>关键发现</value></data>
+  <data name="Findings" xml:space="preserve"><value>发现项</value></data>
+  <data name="FindingType" xml:space="preserve"><value>发现项类型</value></data>
+  <data name="FindingSeverity" xml:space="preserve"><value>严重程度</value></data>
+  <data name="FindingStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="FindingMessage" xml:space="preserve"><value>说明</value></data>
+  <data name="BlockingFindings" xml:space="preserve"><value>阻塞性发现项</value></data>
+  <data name="WarningFindings" xml:space="preserve"><value>警告性发现项</value></data>
+  <data name="NoFindingsFound" xml:space="preserve"><value>无发现项</value></data>
+  <data name="FindingTypeMissingOwner" xml:space="preserve"><value>缺少负责人</value></data>
+  <data name="FindingTypeMissingExactLocation" xml:space="preserve"><value>缺少精确位置</value></data>
+  <data name="FindingTypeMissingAccessModel" xml:space="preserve"><value>缺少访问模型</value></data>
+  <data name="FindingTypeMissingAccessReview" xml:space="preserve"><value>缺少访问复审</value></data>
+  <data name="FindingTypeMissingBackup" xml:space="preserve"><value>缺少备份</value></data>
+  <data name="FindingTypeMissingRestoreTest" xml:space="preserve"><value>缺少恢复测试</value></data>
+  <data name="FindingTypeMissingApprovalMechanism" xml:space="preserve"><value>缺少审批机制</value></data>
+  <data name="FindingTypeMissingEffectiveCopyControl" xml:space="preserve"><value>缺少生效副本控制</value></data>
+  <data name="FindingTypeMissingAuditTrail" xml:space="preserve"><value>缺少审计追踪</value></data>
+  <data name="FindingTypeMissingChangeControl" xml:space="preserve"><value>缺少变更控制</value></data>
+  <data name="FindingTypeInterimPeriodExpired" xml:space="preserve"><value>临时期限已过</value></data>
+  <data name="FindingTypeMigrationReconciliationMissing" xml:space="preserve"><value>缺少迁移核对</value></data>
+  <data name="FindingTypeNativeESignatureMisuseRisk" xml:space="preserve"><value>原生电子签名滥用风险</value></data>
+  <data name="FindingTypeOther" xml:space="preserve"><value>其他</value></data>
+  <data name="SeverityWarning" xml:space="preserve"><value>警告</value></data>
+  <data name="SeverityMajor" xml:space="preserve"><value>重要</value></data>
+  <data name="SeverityCritical" xml:space="preserve"><value>严重</value></data>
+  <data name="FindingStatusOpen" xml:space="preserve"><value>未处理</value></data>
+  <data name="FindingStatusResolved" xml:space="preserve"><value>已处置</value></data>
+  <data name="FindingStatusAcceptedAsInterimRisk" xml:space="preserve"><value>作为临时风险接受</value></data>
+  <data name="FindingStatusClosed" xml:space="preserve"><value>已关闭</value></data>
+  <data name="EvaluateRepository" xml:space="preserve"><value>评估</value></data>
+  <data name="ApproveRepository" xml:space="preserve"><value>批准</value></data>
+  <data name="RejectRepository" xml:space="preserve"><value>拒绝</value></data>
+  <data name="ApproverRole" xml:space="preserve"><value>批准角色</value></data>
+  <data name="ApproverRoleHint" xml:space="preserve"><value>SOP §11.2 仅允许集团质量总监、其副手或 IT／CSV 负责人批准评估。</value></data>
+  <data name="RejectionReason" xml:space="preserve"><value>拒绝原因</value></data>
+  <data name="ApprovedAt" xml:space="preserve"><value>批准时间</value></data>
+  <data name="ApprovedBy" xml:space="preserve"><value>批准角色</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>有效起始</value></data>
+  <data name="ValidUntil" xml:space="preserve"><value>有效期至</value></data>
+  <data name="ApprovalRoleGQD" xml:space="preserve"><value>集团质量总监</value></data>
+  <data name="ApprovalRoleGQDDeputy" xml:space="preserve"><value>集团质量副总监</value></data>
+  <data name="ApprovalRoleITCSVOwner" xml:space="preserve"><value>IT／CSV 负责人</value></data>
+  <data name="InterimRepositoryWarning" xml:space="preserve"><value>批准的临时存储库不是已验证的 DMS。不得作为受监管电子签名合规凭据，且带有限期检查点。</value></data>
+  <data name="UnapprovedRepositoryWarning" xml:space="preserve"><value>未批准的存储库无法支持受控文件发布。发布关卡 2 通过前须先评估并批准。</value></data>
+  <data name="SeparateApprovalMechanismNote" xml:space="preserve"><value>此存储库依赖单独的书面审批机制，而非已验证 DMS。边界声明说明其可用范围。</value></data>
+  <data name="ValidatedDmsNote" xml:space="preserve"><value>归类为已验证 DMS 边界。该分类反映所记录的评估内容，并非独立验证证书。</value></data>
+  <data name="NoComplianceClaim" xml:space="preserve"><value>不作合规声明</value></data>
+  <data name="NoValidatedDmsClaim" xml:space="preserve"><value>本界面依据 SOP 边界对存储库进行分类。不作任何系统验证声明、电子签名合规声明或证书断言。</value></data>
+  <data name="RepositoryBoundaryDisclaimer" xml:space="preserve"><value>本界面对存储库治理边界进行分类。不认证系统、不验证 DMS，也不作受监管电子签名合规声明。</value></data>
+  <data name="EvaluateDoesNotApprove" xml:space="preserve"><value>评估会对存储库进行分类并返回其边界。它不会批准评估，也不会改变其状态。</value></data>
+  <data name="ApproveDoesNotValidate" xml:space="preserve"><value>批准仅记录治理决定，不断言系统验证或电子签名合规。关键发现项会阻止批准。</value></data>
+  <data name="RejectDoesNotDelete" xml:space="preserve"><value>拒绝将记录治理决定。原因为必填。评估予以保留，不会删除。</value></data>
+  <data name="ApprovedAssessmentReadOnly" xml:space="preserve"><value>该评估已批准或被替代，无法再编辑。请改为新建评估。</value></data>
+  <data name="ReleaseGate2Note" xml:space="preserve"><value>发布关卡 2（批准的存储库可用）读取此处记录的分类。本界面展示并记录评估，不会通过关卡，也不会使文件生效。</value></data>
+  <data name="EvaluationSucceeded" xml:space="preserve"><value>存储库已评估</value></data>
+  <data name="EvaluationFailed" xml:space="preserve"><value>无法评估存储库</value></data>
+  <data name="ApprovalSucceeded" xml:space="preserve"><value>评估已批准</value></data>
+  <data name="ApprovalFailed" xml:space="preserve"><value>无法批准评估</value></data>
+  <data name="RejectionSucceeded" xml:space="preserve"><value>评估已拒绝</value></data>
+  <data name="RejectionFailed" xml:space="preserve"><value>无法拒绝评估</value></data>
+  <data name="AlreadyDecided" xml:space="preserve"><value>该评估已作出决定</value></data>
+  <data name="ApproverRoleInvalid" xml:space="preserve"><value>该角色无权批准评估（SOP §11.2）</value></data>
+  <data name="LinkStatusInvalid" xml:space="preserve"><value>该评估当前状态不可关联</value></data>
+  <data name="NameAndTypeRequired" xml:space="preserve"><value>必须提供存储库名称与有效类型</value></data>
+  <data name="RequiredFieldsMissing" xml:space="preserve"><value>缺少必需的评估内容；批准前请先处置关键发现项</value></data>
+  <data name="AssessmentNotFound" xml:space="preserve"><value>未找到存储库评估</value></data>
+  <data name="ReasonRequiredError" xml:space="preserve"><value>必须填写原因</value></data>
+  <data name="NoRepositoryAssessmentsFound" xml:space="preserve"><value>尚未记录任何存储库评估</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>无法加载评估</value></data>
+  <data name="SaveSucceeded" xml:space="preserve"><value>评估已保存</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>无法保存评估</value></data>
+  <data name="Forbidden" xml:space="preserve"><value>您无权执行此操作</value></data>
+  <data name="ConflictOccurred" xml:space="preserve"><value>该操作与当前状态冲突</value></data>
+  <data name="ActionNotAvailable" xml:space="preserve"><value>不可用</value></data>
+  <data name="BasicInformation" xml:space="preserve"><value>基本信息</value></data>
+  <data name="AccessAndControl" xml:space="preserve"><value>访问与控制</value></data>
+  <data name="TechnicalControls" xml:space="preserve"><value>技术控制</value></data>
+  <data name="InterimRepositoryFields" xml:space="preserve"><value>临时存储库</value></data>
+  <data name="EvidenceAndNotes" xml:space="preserve"><value>证据</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="No" xml:space="preserve"><value>否</value></data>
+  <data name="AddNew" xml:space="preserve"><value>新增</value></data>
+  <data name="Back" xml:space="preserve"><value>返回</value></data>
+  <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+</root>

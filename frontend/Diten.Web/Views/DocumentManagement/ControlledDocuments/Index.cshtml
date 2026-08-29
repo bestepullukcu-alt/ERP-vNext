@@ -9,6 +9,7 @@
     var canCreate = Perms.Has("platform.document-management.controlled-documents.create");
     var canCreateTemplate = Perms.Has("platform.document-management.templates.create");
     var canFolderShare = Perms.Has("platform.document-management.folder-shares.create");
+    var canViewGovernanceDocuments = Perms.Has("platform.document-management.master-register.view");
 }
 
 
@@ -20,7 +21,7 @@
     <div class="d-flex flex-wrap align-items-center gap-2">
         @if (canCreate)
         {
-            <a href="/DocumentManagementControlledDocuments/Create" class="btn btn-primary add-new-document" id="btnAddDocument">
+            <a href="/DocumentManagementMasterRegister/CreateControlledDocument" class="btn btn-primary add-new-document" id="btnAddDocument">
                 <i class="icon-base bx bx-plus me-1"></i>@Localizer["AddDocument"]
             </a>
         }
@@ -83,6 +84,20 @@
                 </button>
             </div>
             <div class="d-flex flex-wrap align-items-center gap-2 ms-lg-auto">
+                @if (canViewGovernanceDocuments)
+                {
+                    <div class="form-check form-switch mb-0 me-1"
+                         title="@Localizer["ShowNonEffectiveDocumentsHint"]">
+                        <input class="form-check-input" type="checkbox" role="switch"
+                               id="showNonEffectiveDocuments" aria-describedby="showNonEffectiveDocumentsHint" />
+                        <label class="form-check-label small" for="showNonEffectiveDocuments">
+                            @Localizer["ShowNonEffectiveDocuments"]
+                        </label>
+                        <span class="visually-hidden" id="showNonEffectiveDocumentsHint">
+                            @Localizer["ShowNonEffectiveDocumentsHint"]
+                        </span>
+                    </div>
+                }
                 <label class="visually-hidden" for="explorerSearchScope">@Localizer["SearchIn"]</label>
                 <select id="explorerSearchScope" class="form-select form-select-sm explorer-scope-select" disabled>
                     <option value="structure">@Localizer["EntireStructure"]</option>
@@ -180,7 +195,8 @@
     <script>
         window.ControlledDocumentsPerms = {
             canCreate: @Json.Serialize(canCreate),
-            createUrl: '/DocumentManagementControlledDocuments/Create'
+            canViewGovernanceDocuments: @Json.Serialize(canViewGovernanceDocuments),
+            createUrl: '/DocumentManagementMasterRegister/CreateControlledDocument'
         };
     </script>
     @* jsTree must load after jQuery (provided by the layout) and before index.js, which uses window.jQuery.fn.jstree. *@

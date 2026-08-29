@@ -1,0 +1,225 @@
+@model Diten.Web.Models.CRM.PreferenceEditViewModel
+@using System.Text.Json
+@using Diten.Web.Views.CRM.ConsentPreferences
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ConsentPreferencesIndex> Localizer
+@{
+    var isEdit = Model.PreferenceId.HasValue;
+    var title = isEdit ? Localizer["EditPreference"].Value : Localizer["CreatePreference"].Value;
+    var action = isEdit ? "PreferenceEdit" : "PreferenceCreate";
+    // Common source-system suggestions for the external-reference picker. Not a canonical vocabulary — the Select2 is
+    // in tags mode, so any custom value is still allowed; these are just convenience options.
+    var sourceSystemSuggestions = new[]
+    {
+        "Veeva CRM", "Salesforce", "Microsoft Dynamics", "SAP", "Oracle", "IQVIA OneKey",
+        "Reltio MDM", "Informatica MDM", "Legacy CRM", "Excel/CSV Import", "Data Warehouse", "Manual Entry"
+    };
+    // Named priority bands over the backend's integer Priority (lower value = evaluated first when preferences
+    // conflict). Users pick a label; the option value is the stored int. An existing out-of-band value is preserved
+    // as a "Custom (N)" option so editing never silently rewrites it.
+    var priorityBands = new (int Value, string Key)[] { (1, "PriorityHigh"), (50, "PriorityMedium"), (100, "PriorityLow") };
+    var priorityHasBand = priorityBands.Any(b => b.Value == Model.Priority);
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/ConsentPreferences">@Localizer["PageTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/CRM/ConsentPreferences" class="btn btn-label-secondary">@Localizer["Cancel"]</a>
+        <button type="submit" form="preferenceForm" class="btn btn-primary">@Localizer["Save"]</button>
+    </div>
+</div>
+
+<form id="preferenceForm" asp-controller="ConsentPreferences" asp-action="@action" asp-route-preferenceId="@Model.PreferenceId" method="post" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    @if (isEdit) { <input type="hidden" asp-for="PreferenceId" /> }
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+    @if (!string.IsNullOrWhiteSpace(Model.ContractError))
+    {
+        <div class="alert alert-danger">@Localizer[Model.ContractError]</div>
+    }
+    @if (isEdit)
+    {
+        <div class="alert alert-info d-flex align-items-center"><i class="bx bx-lock-alt me-2"></i>@Localizer["ImmutableQuestionHelp"]</div>
+    }
+
+    <div class="row g-4">
+        <!-- Main column -->
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="SubjectType" class="form-label fw-medium">@Localizer["SubjectType"] <span class="text-danger">*</span></label>
+                            <select asp-for="SubjectType" class="select2 form-select" required disabled="@isEdit"><option value="">@Localizer["SelectOption"]</option>@foreach (var x in Model.SubjectTypes) { <option value="@x">@x</option> }</select>
+                            @if (isEdit) { <input type="hidden" asp-for="SubjectType" /> }
+                            <span asp-validation-for="SubjectType" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="SubjectId" class="form-label fw-medium">@Localizer["SubjectId"] <span class="text-danger">*</span></label>
+                            @if (isEdit)
+                            {
+                                @* Immutable on edit — same Select2 look as Create, but disabled and pre-seeded with the
+                                   resolved subject name (falls back to the GUID). The GUID posts via the hidden input. *@
+                                var subjectLabel = string.IsNullOrWhiteSpace(Model.SubjectName) ? Model.SubjectId?.ToString() : Model.SubjectName;
+                                <select class="select2 form-select" disabled aria-label="@Localizer["SubjectId"]">
+                                    <option value="@Model.SubjectId" selected>@subjectLabel</option>
+                                </select>
+                                <input type="hidden" asp-for="SubjectId" />
+                            }
+                            else
+                            {
+                                @* Dependent picker: contact/account resolve by name from the Gateway; other subject types
+                                   (and no-match) fall back to GUID entry. Wired in preference-form.js. *@
+                                <select asp-for="SubjectId" id="SubjectId" class="form-select subject-picker" required
+                                        data-picker-url="/CRM/ConsentPreferences/api/subjects"
+                                        data-placeholder="@Localizer["SubjectPickerPlaceholder"]"></select>
+                            }
+                            <span asp-validation-for="SubjectId" class="text-danger small mt-1"></span>
+                            @if (!isEdit) { <small class="text-muted">@Localizer["SubjectPickerHelp"]</small> }
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Channel" class="form-label fw-medium">@Localizer["Channel"] <span class="text-danger">*</span></label>
+                            <select asp-for="Channel" class="select2 form-select" required disabled="@isEdit"><option value="">@Localizer["SelectOption"]</option>@foreach (var x in Model.PreferenceChannels) { <option value="@x">@x</option> }</select>
+                            @if (isEdit) { <input type="hidden" asp-for="Channel" /> }
+                            <small class="text-muted">@Localizer["PreferenceChannelAllHelp"]</small>
+                            <span asp-validation-for="Channel" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="PreferenceType" class="form-label fw-medium">@Localizer["PreferenceType"] <span class="text-danger">*</span></label>
+                            <select asp-for="PreferenceType" class="select2 form-select" required disabled="@isEdit"><option value="">@Localizer["SelectOption"]</option>@foreach (var x in Model.PreferenceTypes) { <option value="@x">@x</option> }</select>
+                            @if (isEdit) { <input type="hidden" asp-for="PreferenceType" /> }
+                            <span asp-validation-for="PreferenceType" class="text-danger small mt-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* External References — OPTIONAL; Golden Slim DataTable + offcanvas add (same as Consent). *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["ExternalReferencesSection"]</h6>
+                        <small class="text-muted">@Localizer["ExternalReferencesOptionalHelp"]</small>
+                    </div>
+                    <div class="card-datatable table-responsive">
+                        <table id="dt-external-refs" data-dt-standard="v2" class="datatables-external-refs table border-top w-100">
+                            <thead><tr>
+                                <th>@Localizer["SourceSystem"]</th>
+                                <th class="all">@Localizer["ExternalId"]</th>
+                                <th>@Localizer["ExternalCode"]</th>
+                                <th>@Localizer["ExternalName"]</th>
+                                <th>@Localizer["Primary"]</th>
+                                <th class="all text-end">@Localizer["Actions"]</th>
+                            </tr></thead>
+                        </table>
+                    </div>
+                    @* Serialized hidden inputs for model binding — rendered by preference-form.js. *@
+                    <div id="externalReferencesHost" class="d-none"></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar column -->
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["PreferenceContextSection"]</h6>
+                    <div class="alert alert-secondary py-2 small"><i class="bx bx-shield-x me-1"></i>@Localizer["PreferenceCannotGrant"]</div>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="PreferenceValue" class="form-label fw-medium">@Localizer["PreferenceValue"] <span class="text-danger">*</span></label>
+                            @* Boolean-restriction preference types (do-not-contact / do-not-visit) take a true/false answer;
+                               preference-form.js swaps the text input for this select based on the chosen PreferenceType. *@
+                            <input asp-for="PreferenceValue" id="PreferenceValue" class="form-control" required />
+                            <select id="preferenceValueBool" class="form-select d-none" aria-label="@Localizer["PreferenceValue"]">
+                                <option value="true">@Localizer["ValueTrue"]</option>
+                                <option value="false">@Localizer["ValueFalse"]</option>
+                            </select>
+                            <small class="text-muted d-none" id="preferenceValueBoolHelp">@Localizer["PreferenceValueBoolHelp"]</small>
+                            <span asp-validation-for="PreferenceValue" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Priority" class="form-label fw-medium">@Localizer["Priority"] <span class="text-danger">*</span></label>
+                            <select asp-for="Priority" class="select2 form-select" required>
+                                @if (!priorityHasBand && Model.Priority > 0) { <option value="@Model.Priority">@Localizer["PriorityCustom"] (@Model.Priority)</option> }
+                                @foreach (var b in priorityBands) { <option value="@b.Value">@Localizer[b.Key]</option> }
+                            </select>
+                            <small class="text-muted">@Localizer["PriorityHelp"]</small>
+                            <span asp-validation-for="Priority" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Source" class="form-label fw-medium">@Localizer["Source"] <span class="text-danger">*</span></label>
+                            <select asp-for="Source" class="select2 form-select" required><option value="">@Localizer["SelectOption"]</option>@foreach (var x in Model.Sources) { <option value="@x">@x</option> }</select>
+                            <span asp-validation-for="Source" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="EffectiveFrom" class="form-label fw-medium">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
+                            <input asp-for="EffectiveFrom" type="date" asp-format="{0:yyyy-MM-dd}" class="form-control" required />
+                            <span asp-validation-for="EffectiveFrom" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="EffectiveTo" class="form-label fw-medium">@Localizer["EffectiveTo"]</label>
+                            <input asp-for="EffectiveTo" type="date" asp-format="{0:yyyy-MM-dd}" class="form-control" />
+                            <span asp-validation-for="EffectiveTo" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Notes" class="form-label fw-medium">@Localizer["Notes"]</label>
+                            <textarea asp-for="Notes" class="form-control" rows="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>
+
+@* Existing references seed (edit) — read by preference-form.js to hydrate the table. *@
+<script id="externalRefSeed" type="application/json">@Html.Raw(JsonSerializer.Serialize(Model.ExternalReferences, new JsonSerializerOptions(JsonSerializerDefaults.Web)))</script>
+
+@* Golden Slim create canvas for adding one external reference. Kept OUTSIDE the form so its inputs never post;
+   preference-form.js reads the canvas, appends a table row + hidden inputs, then closes the canvas. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="externalRefCanvas" aria-labelledby="externalRefCanvasLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title" id="externalRefCanvasLabel">@Localizer["AddReference"]</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@Localizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="mb-3">
+            <label class="form-label fw-medium" for="erSourceSystem">@Localizer["SourceSystem"] <span class="text-danger">*</span></label>
+            <select id="erSourceSystem" class="form-select" data-placeholder="@Localizer["SourceSystemPlaceholder"]">
+                <option></option>
+                @foreach (var s in sourceSystemSuggestions) { <option value="@s">@s</option> }
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-medium" for="erExternalId">@Localizer["ExternalId"] <span class="text-danger">*</span></label>
+            <input id="erExternalId" class="form-control" maxlength="240" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-medium" for="erExternalCode">@Localizer["ExternalCode"]</label>
+            <input id="erExternalCode" class="form-control" maxlength="240" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-medium" for="erExternalName">@Localizer["ExternalName"]</label>
+            <input id="erExternalName" class="form-control" maxlength="400" />
+        </div>
+        <div class="form-check form-switch mb-4">
+            <input id="erIsPrimary" class="form-check-input" type="checkbox" role="switch" />
+            <label class="form-check-label ms-2" for="erIsPrimary">@Localizer["Primary"]</label>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" id="erSaveBtn" class="btn btn-primary"><i class="bx bx-plus me-1"></i>@Localizer["AddReference"]</button>
+            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["Cancel"]</button>
+        </div>
+    </div>
+</div>

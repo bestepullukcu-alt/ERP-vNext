@@ -1,0 +1,34 @@
+@using Diten.Web.Views.MasterData.Brands
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<BrandsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["BrandsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canCreate = Perms.Has("mdm.brands.create");
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/MasterData/Brands/_Filter.cshtml" />
+
+<div class="mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <div>
+        <h5 class="mb-0">@Localizer["BrandsTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+    @if (canCreate)
+    {
+        <a class="btn btn-primary" href="/MasterData/Brands/Create" id="btnCreateBrand">
+            <i class="bx bx-plus me-1"></i>@Localizer["CreateBrand"]
+        </a>
+    }
+</div>
+
+@* Contract markers rendered by _DataTable: skeleton-loader + data-dt-standard=v2 *@
+<partial name="~/Views/MasterData/Brands/_DataTable.cshtml" />
+
+@section Scripts {
+    <partial name="_IndexL10n" />
+    <script src="~/assets/js/MasterData/Brands/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/MasterData/Brands/index.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,392 @@
+{
+  "$schema": "mod-0151-territory-required-reference-authoring-template",
+  "moduleId": "MOD-0151",
+  "moduleName": "Territory Management",
+  "domain": "commercial-suite",
+  "sourcePack": "execution/domains/commercial-suite/module-packs/MOD-0151-territory-management.md",
+  "governance": "MOD-0048 / PSS-012 (Business Reference Data)",
+  "owner": "module-pack-author",
+  "status": "template-only",
+  "runtimeCodeAllowed": false,
+  "createsReferenceSets": false,
+  "publishesReferenceValues": false,
+  "generatedOn": "2026-07-23",
+  "scopeKeyNote": "Tenant-owned sets are published per tenant and MUST be read with ?scope_key={tenantId}. Global/platform-owned sets MUST be read WITHOUT scope_key (GetPublishedValuesAsync rejects it: scope_key_not_allowed_for_global). Choose the scope per set before authoring; changing it later breaks every consumer call.",
+  "requiredSetCount": 10,
+  "optionalSetCount": 5,
+  "requiredValueCount": 62,
+  "sets": [
+    {
+      "setCode": "territory-level",
+      "displayName": "Territory Level",
+      "description": "MOD-0151 territory hierarchy levels. All levels are TerritoryNode levels - MicroZone is NOT a separate aggregate, permission or reference set.",
+      "required": true,
+      "ownerType": "tenant-owned",
+      "runtimeGate": true,
+      "activationGate": true,
+      "blocks": "TerritoryNode create/update; TerritoryModel activation",
+      "metadataSchema": {
+        "rank": "number|required",
+        "sortOrder": "number|required",
+        "isLeafAllowed": "boolean|optional",
+        "canHaveChildren": "boolean|optional",
+        "description": "string|optional"
+      },
+      "values": [
+        { "valueCode": "division", "displayName": { "en": "Division", "tr": "Bölüm" }, "sortOrder": 10, "isDeprecated": false, "metadata": { "rank": 10, "sortOrder": 10, "isLeafAllowed": false, "canHaveChildren": true } },
+        { "valueCode": "country", "displayName": { "en": "Country", "tr": "Ülke" }, "sortOrder": 20, "isDeprecated": false, "metadata": { "rank": 20, "sortOrder": 20, "isLeafAllowed": false, "canHaveChildren": true } },
+        { "valueCode": "region", "displayName": { "en": "Region", "tr": "Bölge" }, "sortOrder": 30, "isDeprecated": false, "metadata": { "rank": 30, "sortOrder": 30, "isLeafAllowed": false, "canHaveChildren": true } },
+        { "valueCode": "area", "displayName": { "en": "Area", "tr": "Alan" }, "sortOrder": 40, "isDeprecated": false, "metadata": { "rank": 40, "sortOrder": 40, "isLeafAllowed": false, "canHaveChildren": true } },
+        { "valueCode": "zone", "displayName": { "en": "Zone", "tr": "Bölge (Zone)" }, "sortOrder": 50, "isDeprecated": false, "metadata": { "rank": 50, "sortOrder": 50, "isLeafAllowed": true, "canHaveChildren": true } },
+        { "valueCode": "microzone", "displayName": { "en": "MicroZone", "tr": "Mikro Bölge" }, "sortOrder": 60, "isDeprecated": false, "metadata": { "rank": 60, "sortOrder": 60, "isLeafAllowed": true, "canHaveChildren": false } }
+      ]
+    },
+    {
+      "setCode": "territory-model-status",
+      "displayName": "Territory Model Status",
+      "description": "MOD-0151 TerritoryModel lifecycle status. Must match BOTH pack lifecycles exactly: section 22.1 (FU02B manual lifecycle - draft/active/inactive/archived) AND section 13.1 (FU06 approval-governed lifecycle - review/approved/superseded). 'inactive' is FU02B-owned and reversible; 'superseded' is FU06-owned and terminal - they are NOT interchangeable.",
+      "required": true,
+      "ownerType": "platform-owned",
+      "runtimeGate": true,
+      "activationGate": true,
+      "blocks": "TerritoryModel create/update/activate",
+      "metadataSchema": {
+        "lifecycleOrder": "number|optional",
+        "isTerminal": "boolean|optional",
+        "isEditable": "boolean|optional",
+        "requiresApproval": "boolean|optional"
+      },
+      "values": [
+        { "valueCode": "draft", "displayName": { "en": "Draft", "tr": "Taslak" }, "sortOrder": 10, "isDeprecated": false, "metadata": { "lifecycleOrder": 10, "isTerminal": false, "isEditable": true, "requiresApproval": false } },
+        { "valueCode": "review", "displayName": { "en": "In Review", "tr": "İncelemede" }, "sortOrder": 20, "isDeprecated": false, "metadata": { "lifecycleOrder": 20, "isTerminal": false, "isEditable": false, "requiresApproval": true } },
+        { "valueCode": "approved", "displayName": { "en": "Approved", "tr": "Onaylandı" }, "sortOrder": 30, "isDeprecated": false, "metadata": { "lifecycleOrder": 30, "isTerminal": false, "isEditable": false, "requiresApproval": false } },
+        { "valueCode": "active", "displayName": { "en": "Active", "tr": "Aktif" }, "sortOrder": 40, "isDeprecated": false, "metadata": { "lifecycleOrder": 40, "isTerminal": false, "isEditable": false, "requiresApproval": false } },
+        { "valueCode": "inactive", "displayName": { "en": "Inactive", "tr": "Pasif" }, "sortOrder": 45, "isDeprecated": false, "metadata": { "lifecycleOrder": 45, "isTerminal": false, "isEditable": false, "requiresApproval": false } },
+        { "valueCode": "superseded", "displayName": { "en": "Superseded", "tr": "Yerine Geçildi" }, "sortOrder": 50, "isDeprecated": false, "metadata": { "lifecycleOrder": 50, "isTerminal": true, "isEditable": false, "requiresApproval": false } },
+        { "valueCode": "archived", "displayName": { "en": "Archived", "tr": "Arşivlendi" }, "sortOrder": 60, "isDeprecated": false, "metadata": { "lifecycleOrder": 60, "isTerminal": true, "isEditable": false, "requiresApproval": false } }
+      ]
+    },
+    {
+      "setCode": "territory-node-status",
+      "displayName": "Territory Node Status",
+      "description": "MOD-0151 TerritoryNode status. Must cover the FU02B model-driven node lifecycle (pack section 22.1): draft/active/inactive/archived. 'ended' is the FU06/assignment historical end-of-life marker and is NOT a substitute for 'archived'.",
+      "required": true,
+      "ownerType": "platform-owned",
+      "runtimeGate": true,
+      "activationGate": true,
+      "blocks": "TerritoryNode create/update; TerritoryModel activation",
+      "metadataSchema": {
+        "isEditable": "boolean|optional",
+        "isActiveLike": "boolean|optional",
+        "isHistorical": "boolean|optional"
+      },
+      "values": [
+        { "valueCode": "draft", "displayName": { "en": "Draft", "tr": "Taslak" }, "sortOrder": 10, "isDeprecated": false, "metadata": { "isEditable": true, "isActiveLike": false, "isHistorical": false } },
+        { "valueCode": "active", "displayName": { "en": "Active", "tr": "Aktif" }, "sortOrder": 20, "isDeprecated": false, "metadata": { "isEditable": false, "isActiveLike": true, "isHistorical": false } },
+        { "valueCode": "inactive", "displayName": { "en": "Inactive", "tr": "Pasif" }, "sortOrder": 30, "isDeprecated": false, "metadata": { "isEditable": true, "isActiveLike": false, "isHistorical": false } },
+        { "valueCode": "ended", "displayName": { "en": "Ended", "tr": "Sonlandırıldı" }, "sortOrder": 40, "isDeprecated": false, "metadata": { "isEditable": false, "isActiveLike": false, "isHistorical": true } },
+        { "valueCode": "archived", "displayName": { "en": "Archived", "tr": "Arşivlendi" }, "sortOrder": 50, "isDeprecated": false, "metadata": { "isEditable": false, "isActiveLike": false, "isHistorical": true } }
+      ]
+    },
+    {
+      "setCode": "territory-assignment-status",
+      "displayName": "Territory Assignment Status",
+      "description": "MOD-0151 status for AccountTerritoryAssignment and TerritoryResourceAssignment.",
+      "required": true,
+      "ownerType": "platform-owned",
+      "runtimeGate": true,
+      "activationGate": true,
+      "blocks": "Account and resource assignment create/update; TerritoryModel activation",
+      "metadataSchema": {
+        "isActiveLike": "boolean|optional",
+        "isHistorical": "boolean|optional",
+        "allowsMutation": "boolean|optional"
+      },
+      "values": [
+        { "valueCode": "proposed", "displayName": { "en": "Proposed", "tr": "Önerildi" }, "sortOrder": 10, "isDeprecated": false, "metadata": { "isActiveLike": false, "isHistorical": false, "allowsMutation": true } },
+        { "valueCode": "active", "displayName": { "en": "Active", "tr": "Aktif" }, "sortOrder": 20, "isDeprecated": false, "metadata": { "isActiveLike": true, "isHistorical": false, "allowsMutation": false } },
+        { "valueCode": "ended", "displayName": { "en": "Ended", "tr": "Sonlandırıldı" }, "sortOrder": 30, "isDeprecated": false, "metadata": { "isActiveLike": false, "isHistorical": true, "allowsMutation": false } },
+        { "valueCode": "rejected", "displayName": { "en": "Rejected", "tr": "Reddedildi" }, "sortOrder": 40, "isDeprecated": false, "metadata": { "isActiveLike": false, "isHistorical": true, "allowsMutation": false } }
+      ]
+    },
+    {
+      "setCode": "territory-assignment-source",
+      "displayName": "Territory Assignment Source",
+      "description": "MOD-0151 origin of an assignment. Drives the rule re-run overwrite policy and the ChangeReason requirement.",
+      "required": true,
+      "ownerType": "platform-owned",
+      "runtimeGate": true,
+      "activationGate": true,
+      "blocks": "Account and resource assignment create/update; TerritoryModel activation",
+      "metadataSchema": {
+        "requiresReason": "boolean|required",
+        "canBeOverwrittenByRule": "boolean|required"
+      },
+      "values": [
+        { "valueCode": "rule", "displayName": { "en": "Rule", "tr": "Kural" }, "sortOrder": 10, "isDeprecated": false, "metadata": { "requiresReason": false, "canBeOverwrittenByRule": true } },
+        { "valueCode": "manual", "displayName": { "en": "Manual", "tr": "Manuel" }, "sortOrder": 20, "isDeprecated": false, "metadata": { "requiresReason": true, "canBeOverwrittenByRule": false } },
+        { "valueCode": "import", "displayName": { "en": "Import", "tr": "İçe Aktarım" }, "sortOrder": 30, "isDeprecated": false, "metadata": { "requiresReason": false, "canBeOverwrittenByRule": false } },
+        { "valueCode": "override", "displayName": { "en": "Override", "tr": "Geçersiz Kılma" }, "sortOrder": 40, "isDeprecated": false, "metadata": { "requiresReason": true, "canBeOverwrittenByRule": false } }
+      ]
+    },
+    {
+      "setCode": "territory-resource-role",
+      "displayName": "Territory Resource Role",
+      "description": "MOD-0151 resource assignment roles. Role names vary by sector, therefore tenant-owned. MOD-0151 does NOT own employee/person/position master.",
+      "required": true,
+      "ownerType": "tenant-owned",
+      "runtimeGate": true,
+      "activationGate": true,
+      "blocks": "TerritoryResourceAssignment create/update; TerritoryModel activation",
+      "metadataSchema": {
+        "defaultCoverageScope": "string|required",
+        "isSalesRole": "boolean|required",
+        "isManagementRole": "boolean|required",
+        "canBePrimary": "boolean|required",
+        "requiresBusinessScope": "boolean|optional",
+        "description": "string|optional"
+      },
+      "values": [
+        { "valueCode": "medical-representative", "displayName": { "en": "Medical Representative", "tr": "Tıbbi Mümessil" }, "sortOrder": 10, "isDeprecated": false, "metadata": { "defaultCoverageScope": "exact-territory", "isSalesRole": true, "isManagementRole": false, "canBePrimary": true, "requiresBusinessScope": false } },
+        { "valueCode": "area-manager", "displayName": { "en": "Area Manager", "tr": "Alan Müdürü" }, "sortOrder": 20, "isDeprecated": false, "metadata": { "defaultCoverageScope": "territory-subtree", "isSalesRole": true, "isManagementRole": true, "canBePrimary": true, "requiresBusinessScope": false } },
+        { "valueCode": "regional-manager", "displayName": { "en": "Regional Manager", "tr": "Bölge Müdürü" }, "sortOrder": 30, "isDeprecated": false, "metadata": { "defaultCoverageScope": "territory-subtree", "isSalesRole": true, "isManagementRole": true, "canBePrimary": true, "requiresBusinessScope": false } },
+        { "valueCode": "division-manager", "displayName": { "en": "Division Manager", "tr": "Bölüm Müdürü" }, "sortOrder": 40, "isDeprecated": false, "metadata": { "defaultCoverageScope": "territory-subtree", "isSalesRole": true, "isManagementRole": true, "canBePrimary": true, "requiresBusinessScope": false } },
+        { "valueCode": "product-manager", "displayName": { "en": "Product Manager", "tr": "Ürün Müdürü" }, "sortOrder": 50, "isDeprecated": false, "metadata": { "defaultCoverageScope": "product-portfolio", "isSalesRole": true, "isManagementRole": true, "canBePrimary": true, "requiresBusinessScope": true } },
+        { "valueCode": "business-unit-manager", "displayName": { "en": "Business Unit Manager", "tr": "İş Birimi Müdürü" }, "sortOrder": 60, "isDeprecated": false, "metadata": { "defaultCoverageScope": "business-unit", "isSalesRole": true, "isManagementRole": true, "canBePrimary": true, "requiresBusinessScope": true } },
+        { "valueCode": "hoc", "displayName": { "en": "Head of Commercial", "tr": "Ticari Direktör" }, "sortOrder": 70, "isDeprecated": false, "metadata": { "defaultCoverageScope": "all-business-scopes", "isSalesRole": true, "isManagementRole": true, "canBePrimary": false, "requiresBusinessScope": false } },
+        { "valueCode": "commercial-manager", "displayName": { "en": "Commercial Manager", "tr": "Ticari Müdür" }, "sortOrder": 80, "isDeprecated": false, "metadata": { "defaultCoverageScope": "territory-subtree", "isSalesRole": true, "isManagementRole": true, "canBePrimary": true, "requiresBusinessScope": true } },
+        { "valueCode": "admin", "displayName": { "en": "Territory Admin", "tr": "Bölge Yöneticisi" }, "sortOrder": 90, "isDeprecated": false, "metadata": { "defaultCoverageScope": "model-wide", "isSalesRole": false, "isManagementRole": true, "canBePrimary": false, "requiresBusinessScope": false } },
+        { "valueCode": "viewer", "displayName": { "en": "Viewer", "tr": "Görüntüleyici" }, "sortOrder": 100, "isDeprecated": false, "metadata": { "defaultCoverageScope": "model-wide", "isSalesRole": false, "isManagementRole": false, "canBePrimary": false, "requiresBusinessScope": false } },
+        { "valueCode": "operational-resource", "displayName": { "en": "Operational Resource", "tr": "Operasyonel Kaynak" }, "sortOrder": 110, "isDeprecated": false, "metadata": { "defaultCoverageScope": "business-scope", "isSalesRole": false, "isManagementRole": false, "canBePrimary": false, "requiresBusinessScope": true } }
+      ]
+    },
+    {
+      "setCode": "territory-rule-type",
+      "displayName": "Territory Rule Type",
+      "description": "MOD-0151 TerritoryAssignmentRule types.",
+      "required": true,
+      "ownerType": "platform-owned",
+      "runtimeGate": true,
+      "activationGate": true,
+      "activationGateNote": "Activation is blocked only when the model actually contains assignment rules.",
+      "blocks": "TerritoryAssignmentRule create/update",
+      "metadataSchema": {
+        "requiresCriteria": "boolean|optional",
+        "supportsPriority": "boolean|optional",
+        "supportsPreview": "boolean|optional"
+      },
+      "values": [
+        { "valueCode": "geography", "displayName": { "en": "Geography", "tr": "Coğrafya" }, "sortOrder": 10, "isDeprecated": false, "metadata": { "requiresCriteria": true, "supportsPriority": true, "supportsPreview": true } },
+        { "valueCode": "account-list", "displayName": { "en": "Account List", "tr": "Hesap Listesi" }, "sortOrder": 20, "isDeprecated": false, "metadata": { "requiresCriteria": true, "supportsPriority": true, "supportsPreview": true } },
+        { "valueCode": "account-type", "displayName": { "en": "Account Type", "tr": "Hesap Tipi" }, "sortOrder": 30, "isDeprecated": false, "metadata": { "requiresCriteria": true, "supportsPriority": true, "supportsPreview": true } },
+        { "valueCode": "product-portfolio", "displayName": { "en": "Product Portfolio", "tr": "Ürün Portföyü" }, "sortOrder": 40, "isDeprecated": false, "metadata": { "requiresCriteria": true, "supportsPriority": true, "supportsPreview": true } },
+        { "valueCode": "business-scope", "displayName": { "en": "Business Scope", "tr": "İş Kapsamı" }, "sortOrder": 50, "isDeprecated": false, "metadata": { "requiresCriteria": true, "supportsPriority": true, "supportsPreview": true } },
+        { "valueCode": "channel", "displayName": { "en": "Channel", "tr": "Kanal" }, "sortOrder": 60, "isDeprecated": false, "metadata": { "requiresCriteria": true, "supportsPriority": true, "supportsPreview": true } },
+        { "valueCode": "segment", "displayName": { "en": "Segment", "tr": "Segment" }, "sortOrder": 70, "isDeprecated": false, "metadata": { "requiresCriteria": true, "supportsPriority": true, "supportsPreview": true } },
+        { "valueCode": "manual", "displayName": { "en": "Manual", "tr": "Manuel" }, "sortOrder": 80, "isDeprecated": false, "metadata": { "requiresCriteria": false, "supportsPriority": false, "supportsPreview": false } },
+        { "valueCode": "import", "displayName": { "en": "Import", "tr": "İçe Aktarım" }, "sortOrder": 90, "isDeprecated": false, "metadata": { "requiresCriteria": false, "supportsPriority": false, "supportsPreview": true } }
+      ]
+    },
+    {
+      "setCode": "territory-conflict-policy",
+      "displayName": "Territory Conflict Policy",
+      "description": "MOD-0151 conflict handling policy on assignment rules.",
+      "required": true,
+      "ownerType": "platform-owned",
+      "runtimeGate": true,
+      "activationGate": true,
+      "activationGateNote": "Activation is blocked when unresolved conflicts exist under a blocking policy.",
+      "blocks": "TerritoryAssignmentRule create/update",
+      "metadataSchema": {
+        "severity": "string|optional",
+        "blocksActivation": "boolean|optional"
+      },
+      "values": [
+        { "valueCode": "block", "displayName": { "en": "Block", "tr": "Engelle" }, "sortOrder": 10, "isDeprecated": false, "metadata": { "severity": "error", "blocksActivation": true } },
+        { "valueCode": "warn", "displayName": { "en": "Warn", "tr": "Uyar" }, "sortOrder": 20, "isDeprecated": false, "metadata": { "severity": "warning", "blocksActivation": false } },
+        { "valueCode": "priority", "displayName": { "en": "Priority", "tr": "Öncelik" }, "sortOrder": 30, "isDeprecated": false, "metadata": { "severity": "info", "blocksActivation": false } },
+        { "valueCode": "manual-review", "displayName": { "en": "Manual Review", "tr": "Manuel İnceleme" }, "sortOrder": 40, "isDeprecated": false, "metadata": { "severity": "warning", "blocksActivation": true } }
+      ]
+    },
+    {
+      "setCode": "territory-coverage-scope",
+      "displayName": "Territory Coverage Scope",
+      "description": "MOD-0151 coverage scope of a resource assignment. Metadata drives the CoverageScope-to-TerritoryId consistency validation.",
+      "required": true,
+      "ownerType": "platform-owned",
+      "runtimeGate": true,
+      "activationGate": true,
+      "blocks": "TerritoryResourceAssignment create/update; TerritoryModel activation",
+      "metadataSchema": {
+        "requiresTerritoryId": "boolean|required",
+        "requiresBusinessScope": "boolean|required",
+        "allowsTerritoryId": "boolean|required",
+        "allowsBusinessScope": "boolean|required"
+      },
+      "values": [
+        { "valueCode": "exact-territory", "displayName": { "en": "Exact Territory", "tr": "Tam Bölge" }, "sortOrder": 10, "isDeprecated": false, "metadata": { "requiresTerritoryId": true, "requiresBusinessScope": false, "allowsTerritoryId": true, "allowsBusinessScope": true } },
+        { "valueCode": "territory-subtree", "displayName": { "en": "Territory Subtree", "tr": "Bölge Alt Ağacı" }, "sortOrder": 20, "isDeprecated": false, "metadata": { "requiresTerritoryId": true, "requiresBusinessScope": false, "allowsTerritoryId": true, "allowsBusinessScope": true } },
+        { "valueCode": "business-unit", "displayName": { "en": "Business Unit", "tr": "İş Birimi" }, "sortOrder": 30, "isDeprecated": false, "metadata": { "requiresTerritoryId": false, "requiresBusinessScope": true, "allowsTerritoryId": false, "allowsBusinessScope": true } },
+        { "valueCode": "product-portfolio", "displayName": { "en": "Product Portfolio", "tr": "Ürün Portföyü" }, "sortOrder": 40, "isDeprecated": false, "metadata": { "requiresTerritoryId": false, "requiresBusinessScope": true, "allowsTerritoryId": false, "allowsBusinessScope": true } },
+        { "valueCode": "business-scope", "displayName": { "en": "Business Scope", "tr": "İş Kapsamı" }, "sortOrder": 50, "isDeprecated": false, "metadata": { "requiresTerritoryId": false, "requiresBusinessScope": true, "allowsTerritoryId": true, "allowsBusinessScope": true } },
+        { "valueCode": "model-wide", "displayName": { "en": "Model Wide", "tr": "Model Geneli" }, "sortOrder": 60, "isDeprecated": false, "metadata": { "requiresTerritoryId": false, "requiresBusinessScope": false, "allowsTerritoryId": false, "allowsBusinessScope": false } },
+        { "valueCode": "all-business-scopes", "displayName": { "en": "All Business Scopes", "tr": "Tüm İş Kapsamları" }, "sortOrder": 70, "isDeprecated": false, "metadata": { "requiresTerritoryId": false, "requiresBusinessScope": false, "allowsTerritoryId": false, "allowsBusinessScope": false } }
+      ]
+    },
+    {
+      "setCode": "business-scope-type",
+      "displayName": "Business Scope Type",
+      "description": "MOD-0151 TerritoryBusinessScope classification. Business Unit is NOT a territory level - it is a crossing dimension. MOD-0151 does NOT own the business unit or product/brand master.",
+      "required": true,
+      "requiredCondition": "Required when TerritoryBusinessScope is used (Alpha/Beta/Gamma, Production Admin, factory/affiliated-company scopes).",
+      "ownerType": "platform-owned",
+      "runtimeGate": true,
+      "activationGate": true,
+      "activationGateNote": "Activation is blocked only when the model declares business scopes.",
+      "blocks": "TerritoryBusinessScope usage on model, node, account assignment and resource assignment",
+      "metadataSchema": {
+        "isSalesScopeDefault": "boolean|required",
+        "includeInSalesPerformanceDefault": "boolean|required",
+        "ownerModule": "string|required",
+        "temporaryUntil": "string|optional"
+      },
+      "values": [
+        { "valueCode": "business-unit", "displayName": { "en": "Business Unit", "tr": "İş Birimi" }, "sortOrder": 10, "isDeprecated": false, "metadata": { "isSalesScopeDefault": true, "includeInSalesPerformanceDefault": true, "ownerModule": "MOD-0288 (or MOD-0048 temporary until OrganizationUnit.unitType exists)" } },
+        { "valueCode": "product-portfolio", "displayName": { "en": "Product Portfolio", "tr": "Ürün Portföyü" }, "sortOrder": 20, "isDeprecated": false, "metadata": { "isSalesScopeDefault": true, "includeInSalesPerformanceDefault": true, "ownerModule": "MDM/Product future (or MOD-0048 temporary)", "temporaryUntil": "Product/Brand master module" } },
+        { "valueCode": "brand-group", "displayName": { "en": "Brand Group", "tr": "Marka Grubu" }, "sortOrder": 30, "isDeprecated": false, "metadata": { "isSalesScopeDefault": true, "includeInSalesPerformanceDefault": true, "ownerModule": "MDM/Product future (or MOD-0048 temporary)", "temporaryUntil": "Product/Brand master module" } },
+        { "valueCode": "operational-scope", "displayName": { "en": "Operational Scope", "tr": "Operasyonel Kapsam" }, "sortOrder": 40, "isDeprecated": false, "metadata": { "isSalesScopeDefault": false, "includeInSalesPerformanceDefault": false, "ownerModule": "MOD-0288 (or MOD-0048 temporary)" } },
+        { "valueCode": "non-sales-resource-planning", "displayName": { "en": "Non-Sales Resource Planning", "tr": "Satış Dışı Kaynak Planlama" }, "sortOrder": 50, "isDeprecated": false, "metadata": { "isSalesScopeDefault": false, "includeInSalesPerformanceDefault": false, "ownerModule": "MOD-0288 (or MOD-0048 temporary)" } },
+        { "valueCode": "channel", "displayName": { "en": "Channel", "tr": "Kanal" }, "sortOrder": 60, "isDeprecated": false, "metadata": { "isSalesScopeDefault": true, "includeInSalesPerformanceDefault": true, "ownerModule": "MOD-0048 or MOD-0167 depending on usage" } },
+        { "valueCode": "segment", "displayName": { "en": "Segment", "tr": "Segment" }, "sortOrder": 70, "isDeprecated": false, "metadata": { "isSalesScopeDefault": true, "includeInSalesPerformanceDefault": true, "ownerModule": "MOD-0167" } }
+      ]
+    }
+  ],
+  "optionalSets": [
+    {
+      "setCode": "planning-period-type",
+      "displayName": "Planning Period Type",
+      "description": "MOD-0151 PlanningPeriodRef type. Planning-only; does not gate runtime validation.",
+      "required": false,
+      "ownerType": "tenant-owned",
+      "runtimeGate": false,
+      "activationGate": false,
+      "activationGateNote": "Becomes an activation gate only if tenant policy makes PlanningPeriodRef mandatory.",
+      "metadataSchema": {
+        "defaultDurationMonths": "number|optional",
+        "periodCodePattern": "string|optional"
+      },
+      "values": [
+        { "valueCode": "annual", "displayName": { "en": "Annual", "tr": "Yıllık" }, "sortOrder": 10, "isDeprecated": false, "metadata": { "defaultDurationMonths": 12, "periodCodePattern": "YYYY" } },
+        { "valueCode": "quarterly", "displayName": { "en": "Quarterly", "tr": "Çeyreklik" }, "sortOrder": 20, "isDeprecated": false, "metadata": { "defaultDurationMonths": 3, "periodCodePattern": "YYYY-Qn" } },
+        { "valueCode": "monthly", "displayName": { "en": "Monthly", "tr": "Aylık" }, "sortOrder": 30, "isDeprecated": false, "metadata": { "defaultDurationMonths": 1, "periodCodePattern": "YYYY-MM" } },
+        { "valueCode": "custom", "displayName": { "en": "Custom", "tr": "Özel" }, "sortOrder": 40, "isDeprecated": false, "metadata": { "periodCodePattern": "free-text" } }
+      ]
+    },
+    {
+      "setCode": "product-portfolio",
+      "displayName": "Product Portfolio (temporary)",
+      "description": "TEMPORARY tenant reference until a real Product/Brand master module exists. MOD-0151 does NOT own product master. Values below are illustrative only - the operator authors the tenant's real portfolio codes.",
+      "required": false,
+      "ownerType": "temporary-tenant-owned",
+      "runtimeGate": false,
+      "activationGate": false,
+      "temporaryUntil": "Product/Brand master module (CAND-CAP follow-up F6)",
+      "retirementNote": "When the Product/Brand master lands, this set is deprecated or converted into an external reference. TerritoryBusinessScope binds by stable ScopeCode, so retiring the set must not break historical assignments.",
+      "metadataSchema": {
+        "externalRef": "string|optional",
+        "validFrom": "date|optional",
+        "validTo": "date|optional",
+        "temporaryUntil": "string|optional"
+      },
+      "values": [
+        { "valueCode": "alpha", "displayName": { "en": "Alpha", "tr": "Alpha" }, "sortOrder": 10, "isDeprecated": false, "metadata": { "temporaryUntil": "Product/Brand master module" } },
+        { "valueCode": "beta", "displayName": { "en": "Beta", "tr": "Beta" }, "sortOrder": 20, "isDeprecated": false, "metadata": { "temporaryUntil": "Product/Brand master module" } },
+        { "valueCode": "gamma", "displayName": { "en": "Gamma", "tr": "Gamma" }, "sortOrder": 30, "isDeprecated": false, "metadata": { "temporaryUntil": "Product/Brand master module" } }
+      ]
+    },
+    {
+      "setCode": "brand-group",
+      "displayName": "Brand Group (temporary)",
+      "description": "TEMPORARY tenant reference until a real Product/Brand master module exists. Values are tenant-specific and intentionally NOT pre-filled in this template.",
+      "required": false,
+      "ownerType": "temporary-tenant-owned",
+      "runtimeGate": false,
+      "activationGate": false,
+      "temporaryUntil": "Product/Brand master module (CAND-CAP follow-up F6)",
+      "retirementNote": "Portfolio-to-brand mapping is NOT a permanent MOD-0151 responsibility. Keep the binding valid-dated so a brand rename or merge does not detach historical territory assignments.",
+      "metadataSchema": {
+        "externalRef": "string|optional",
+        "validFrom": "date|optional",
+        "validTo": "date|optional",
+        "temporaryUntil": "string|optional"
+      },
+      "values": []
+    },
+    {
+      "setCode": "territory-change-type",
+      "displayName": "Territory Change Type",
+      "description": "MOD-0151 TerritoryChangeRequest change types. Recommended for reporting and approval-trace consistency; not a runtime gate in FU01.",
+      "required": false,
+      "ownerType": "platform-owned",
+      "runtimeGate": false,
+      "activationGate": false,
+      "metadataSchema": {
+        "requiresReason": "boolean|optional",
+        "affectsActiveModel": "boolean|optional"
+      },
+      "values": [
+        { "valueCode": "create-model", "displayName": { "en": "Create Model", "tr": "Model Oluştur" }, "sortOrder": 10, "isDeprecated": false, "metadata": { "requiresReason": true, "affectsActiveModel": false } },
+        { "valueCode": "update-hierarchy", "displayName": { "en": "Update Hierarchy", "tr": "Hiyerarşi Güncelle" }, "sortOrder": 20, "isDeprecated": false, "metadata": { "requiresReason": true, "affectsActiveModel": true } },
+        { "valueCode": "update-assignment-rule", "displayName": { "en": "Update Assignment Rule", "tr": "Atama Kuralı Güncelle" }, "sortOrder": 30, "isDeprecated": false, "metadata": { "requiresReason": true, "affectsActiveModel": true } },
+        { "valueCode": "update-account-assignment", "displayName": { "en": "Update Account Assignment", "tr": "Hesap Ataması Güncelle" }, "sortOrder": 40, "isDeprecated": false, "metadata": { "requiresReason": true, "affectsActiveModel": true } },
+        { "valueCode": "update-resource-assignment", "displayName": { "en": "Update Resource Assignment", "tr": "Kaynak Ataması Güncelle" }, "sortOrder": 50, "isDeprecated": false, "metadata": { "requiresReason": true, "affectsActiveModel": true } },
+        { "valueCode": "activate-model", "displayName": { "en": "Activate Model", "tr": "Modeli Aktive Et" }, "sortOrder": 60, "isDeprecated": false, "metadata": { "requiresReason": true, "affectsActiveModel": true } },
+        { "valueCode": "supersede-model", "displayName": { "en": "Supersede Model", "tr": "Modeli Yerine Geçir" }, "sortOrder": 70, "isDeprecated": false, "metadata": { "requiresReason": true, "affectsActiveModel": true } }
+      ]
+    },
+    {
+      "setCode": "commercial-role-scope-policy",
+      "displayName": "Commercial Role Scope Policy (future)",
+      "description": "FUTURE optional set to externalise the exact HOC and Commercial Manager scope policy (pack follow-up F7). Not required for FU01; values intentionally empty until the policy is defined.",
+      "required": false,
+      "ownerType": "tenant-owned",
+      "runtimeGate": false,
+      "activationGate": false,
+      "metadataSchema": {
+        "appliesToRole": "string|optional",
+        "allowedBusinessScopes": "string[]|optional",
+        "allowedTerritoryLevels": "string[]|optional"
+      },
+      "values": []
+    }
+  ],
+  "operatorChecklist": [
+    "Confirm the target tenant id for tenant-owned sets before authoring anything.",
+    "Decide the scope per set: tenant-owned sets are read with ?scope_key={tenantId}; global/platform-owned sets are read WITHOUT scope_key.",
+    "Create each set with snake_case payload keys (set_code, scope_type, status=Active).",
+    "Create a version per set, then add values with snake_case keys (code, label, is_active, sort_order, metadata).",
+    "Validate the version, then submit as user A.",
+    "Approve with a DIFFERENT user (SoD: approver must not be the submitter).",
+    "Publish the version.",
+    "Smoke each set through the published-values endpoint and verify the value counts.",
+    "Verify territory-level rank metadata is present on all 6 values and strictly increasing.",
+    "Verify business-scope-type isSalesScopeDefault and includeInSalesPerformanceDefault are present on all 7 values.",
+    "Verify territory-coverage-scope requiresTerritoryId and requiresBusinessScope are present on all 7 values.",
+    "Verify territory-resource-role defaultCoverageScope, isSalesRole, isManagementRole and canBePrimary are present on all 11 values.",
+    "Verify every setCode and valueCode is lowercase-kebab with no duplicates and isDeprecated=false.",
+    "Do NOT create UPPER_SNAKE aliases.",
+    "Do NOT hand-edit MongoDB.",
+    "Do NOT create a CRM-local seed or a hardcoded fallback list.",
+    "Confirm required-set readiness PASS before MOD-0151 FU01 create smoke."
+  ],
+  "guardrails": [
+    "Do not publish from this task - this file is template-only.",
+    "Do not create runtime seed, migration, endpoint, controller or UI.",
+    "Hardcoded fallback is forbidden: an unpublished required set must yield a controlled 400/422, never a silent default.",
+    "MicroZone is a territory-level value, not a separate reference set, aggregate or permission.",
+    "MOD-0151 does not own the business unit, product, brand, employee, position or organization master.",
+    "product-portfolio and brand-group are temporary tenant references and must be retired when the Product/Brand master module lands.",
+    "This template must not change the MOD-0018 platform data-scope engine or EntitlementDataScopeKind.",
+    "Value codes are stable identifiers: renaming a published valueCode breaks historical assignments - deprecate and add instead."
+  ]
+}

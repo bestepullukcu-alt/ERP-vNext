@@ -567,3 +567,81 @@ available); RESX parity for tenant languages; `git diff --check`; protected-path
 
 Each follow-up requires its own approved or ready-for-dev scope. FU05 does not authorize any later wave, and does not
 authorize document lifecycle, retention, or evidence export.
+
+## 21. DCP-007 Approved Amendment — Import Completion Visibility and Consumer Guardrails
+
+**Amendment status:** `approved`
+**Approved by user:** `2026-08-27`
+**Runtime authority:** `false`
+
+This amendment is a bounded DCP-007 governance contract approved by the user on 2026-08-27. The parent FU05 pack
+remains `approved`; amendment approval does not authorize implementation.
+
+### Amendment ownership
+
+FU05 owns the completion-guard integration for Company prerequisite/list selection, Company planning/dry-run,
+execute/retry, Company operation/instance side effects, and Company-scoped reconciliation/readiness. It consumes
+FU02's combined completion/evidence guard and FU07's completion evidence; it does not own Corporate behavior, the FU07
+operation/manifest aggregates, or the generic reconciliation engine as a business SoR.
+
+### Mandatory execution order
+
+```text
+tenant + baseline lookup
+→ combined completion/evidence guard
+→ CollectionScopeType == Company
+→ ScopeOwnerId == CompanyId
+→ scope-filtered definition/instance/provider read
+→ planning/reconciliation
+→ side effects
+```
+
+### Required behavior
+
+- A failed guard creates no prerequisite candidate, plan, instantiation operation, outcome, or `CollectionInstance`.
+- Incomplete baselines never enter Company prerequisite or selection results.
+- Company reconciliation/readiness reads only the requested Company owner scope.
+- Every generic reconciliation-engine call supplies explicit `CollectionScopeType.Company + ScopeOwnerId` and validates
+  `ScopeOwnerId == CompanyId` before any scoped read.
+- Corporate instances never enter Company provider, readiness, count, finding, or reconciliation results.
+- Scope-less, owner-mismatched, cross-tenant, or incomplete calls fail closed before planning/reconciliation.
+- Reconciliation side effects begin only after completion and scope-owner validation; a retry re-evaluates both.
+- Existing FU09 annotations are AS-IS drift evidence only, not authority or a business SoR.
+- Company sharing, overlays, local additions, group-node propagation/removal, and template propagation remain outside
+  this amendment and DCP-007.
+
+### Amendment acceptance criteria
+
+- [ ] Prerequisite/list queries omit incomplete baselines without generating a plan or candidate artifact.
+- [ ] Dry-run, execute, and retry enforce the mandatory order and re-evaluate the guard at invocation time.
+- [ ] Failed completion/scope validation produces no operation, outcome, instance, or reconciliation finding write.
+- [ ] Company reconciliation requires explicit Company scope and excludes every Corporate instance sharing the same
+      baseline.
+- [ ] Provider/readiness queries are owner-scoped and cannot aggregate all same-baseline tenant instances.
+- [ ] Generic engine use remains a technical call under FU05 ownership; it becomes no independent canonical owner.
+- [ ] Existing FU05 permission, tenant, idempotency, and concurrency behavior remains intact outside the amendment.
+
+### Amendment test expectations
+
+- Prerequisite/list tests cover Completed, incomplete, integrity-mismatched, legacy-null, and cross-tenant baselines.
+- Dry-run/execute/retry tests instrument planner, operation, outcome, and instance repositories to prove zero calls or
+  writes after guard failure.
+- Scope tests cover missing scope, non-Company scope, mismatched CompanyId/ScopeOwnerId, and cross-tenant owner IDs.
+- Mixed Company/Corporate fixtures sharing a baseline prove Company-only provider/readiness/reconciliation results.
+- Concurrency tests prove a guard/scope change between selection and execute/retry is re-evaluated and fails closed.
+- Failure tests cover guard unavailable, integrity mismatch, stale operation, and owner mismatch without orphan state.
+
+### Amendment governance gates
+
+- DCP-007 remains `under-review`; FU07 remains `draft` with `runtime_code_allowed: false`.
+- This amendment is approved at governance level; runtime implementation remains prohibited until DCP-007 and the
+  active member-pack execution gates close.
+- DCP-007 G2 is resolved because FU02, FU03, FU05, and FU06 amendments received separate user approval on 2026-08-27.
+- This amendment does not close G12, load/lease/heartbeat, retention/audit, FU07 approval, or runtime-evidence gates.
+- It creates no permission seed, MOD/FU identity, Gateway change, Company sharing/overlay, or template-propagation scope.
+
+### Approval note
+
+- Approval covers only this amendment's scope, acceptance criteria, and test governance contract.
+- Code may start only after DCP-007 and the active member pack pass their separate execution gates.
+- This approval is not runtime implementation, deployment, or activation authority.

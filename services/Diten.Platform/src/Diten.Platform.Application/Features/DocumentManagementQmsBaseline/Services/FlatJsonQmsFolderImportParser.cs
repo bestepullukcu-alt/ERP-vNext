@@ -4,7 +4,8 @@ using Diten.Platform.Application.Features.DocumentManagementQmsBaseline;
 namespace Diten.Platform.Application.Features.DocumentManagementQmsBaseline.Services;
 
 /// <summary>
-/// MOD-0028-FU06 — parses the register flat-array JSON package (<c>00_folder_list_flat.json</c>:
+/// QMS register import extension — governance identity pending. Parses the register flat-array JSON package
+/// (<c>00_folder_list_flat.json</c>:
 /// <c>{ "register": "...", "version": "...", "folders": [ … ] }</c>) into raw import rows, mapping the same
 /// governance columns as <see cref="CsvQmsFolderImportParser"/>. Hierarchy is expressed via each folder's
 /// <c>full_path</c>, so the shared <see cref="QmsFolderTreeValidator"/> validates parent-before-child, level, and

@@ -1,0 +1,1084 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="DocumentMasterRegister" xml:space="preserve"><value>Главный реестр документов</value></data>
+  <data name="DocumentMasterRegisterTitle" xml:space="preserve"><value>Главный реестр документов</value></data>
+  <data name="DocumentMasterRegisterCreate" xml:space="preserve"><value>Новая запись реестра</value></data>
+  <data name="DocumentMasterRegisterEdit" xml:space="preserve"><value>Изменить запись реестра</value></data>
+  <data name="DocumentMasterRegisterDetails" xml:space="preserve"><value>Сведения о записи реестра</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Официальный реестр контролируемых документов, идентификаторов и метаданных управления</value></data>
+  <data name="UID" xml:space="preserve"><value>UID</value></data>
+  <data name="DocumentCode" xml:space="preserve"><value>Код документа</value></data>
+  <data name="DocumentTitle" xml:space="preserve"><value>Название документа</value></data>
+  <data name="DocumentClass" xml:space="preserve"><value>Класс документа</value></data>
+  <data name="DocumentType" xml:space="preserve"><value>Тип документа</value></data>
+  <data name="Criticality" xml:space="preserve"><value>Критичность</value></data>
+  <data name="LifecycleStatus" xml:space="preserve"><value>Статус жизненного цикла</value></data>
+  <data name="RegisterStatus" xml:space="preserve"><value>Статус реестра</value></data>
+  <data name="OwnerFunction" xml:space="preserve"><value>Функция владельца</value></data>
+  <data name="OwnerCompany" xml:space="preserve"><value>Компания-владелец</value></data>
+  <data name="ProcessOwnerRole" xml:space="preserve"><value>Роль владельца процесса</value></data>
+  <data name="ProcessOwnerUser" xml:space="preserve"><value>Владелец процесса</value></data>
+  <data name="GoverningLanguage" xml:space="preserve"><value>Основной язык</value></data>
+  <data name="EffectiveDate" xml:space="preserve"><value>Дата вступления в силу</value></data>
+  <data name="NextReviewDueDate" xml:space="preserve"><value>Срок следующего пересмотра</value></data>
+  <data name="LastPeriodicReviewDate" xml:space="preserve"><value>Последний периодический пересмотр</value></data>
+  <data name="IsControlledDocument" xml:space="preserve"><value>Контролируемый документ</value></data>
+  <data name="IsRecord" xml:space="preserve"><value>Запись</value></data>
+  <data name="IsExternalDocument" xml:space="preserve"><value>Внешний документ</value></data>
+  <data name="IsTemplate" xml:space="preserve"><value>Шаблон</value></data>
+  <data name="IsVariant" xml:space="preserve"><value>Вариант</value></data>
+  <data name="ParentDocument" xml:space="preserve"><value>Родительский документ</value></data>
+  <data name="ParentDocumentUid" xml:space="preserve"><value>UID родительского документа</value></data>
+  <data name="ParentDocumentCode" xml:space="preserve"><value>Код родительского документа</value></data>
+  <data name="RetentionClass" xml:space="preserve"><value>Класс хранения</value></data>
+  <data name="ReviewCycleMonths" xml:space="preserve"><value>Цикл пересмотра (мес.)</value></data>
+  <data name="ApprovedRepository" xml:space="preserve"><value>Утверждённое хранилище</value></data>
+  <data name="ApprovedRepositoryId" xml:space="preserve"><value>Идентификатор хранилища</value></data>
+  <data name="ApprovedRepositoryName" xml:space="preserve"><value>Название хранилища</value></data>
+  <data name="ApprovedRepositoryPath" xml:space="preserve"><value>Путь хранилища</value></data>
+  <data name="LegacyCode" xml:space="preserve"><value>Устаревший код</value></data>
+  <data name="PermanentUid" xml:space="preserve"><value>Постоянный UID</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Исходная система</value></data>
+  <data name="SourceLegacyId" xml:space="preserve"><value>Исходный устаревший ID</value></data>
+  <data name="Allocation" xml:space="preserve"><value>Присвоение</value></data>
+  <data name="AllocationSystem" xml:space="preserve"><value>Присвоено системой</value></data>
+  <data name="AllocationManual" xml:space="preserve"><value>Введено вручную</value></data>
+  <data name="AllocationHint" xml:space="preserve"><value>Оставьте пустым, чтобы идентификатор был присвоен движком позже.</value></data>
+  <data name="CurrentVersionLabel" xml:space="preserve"><value>Текущая версия</value></data>
+  <data name="ApprovalEvidenceStatus" xml:space="preserve"><value>Свидетельство утверждения</value></data>
+  <data name="LastReleaseGateEvaluationStatus" xml:space="preserve"><value>Результат последнего релиз-гейта</value></data>
+  <data name="LinkedControlledDocument" xml:space="preserve"><value>Связанный контролируемый документ</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Создано</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>Создал</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="UpdatedBy" xml:space="preserve"><value>Обновил</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Identification" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="Classification" xml:space="preserve"><value>Классификация</value></data>
+  <data name="Ownership" xml:space="preserve"><value>Владение</value></data>
+  <data name="Flags" xml:space="preserve"><value>Признаки</value></data>
+  <data name="GovernanceMetadata" xml:space="preserve"><value>Метаданные управления</value></data>
+  <data name="Provenance" xml:space="preserve"><value>Происхождение</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Действует по</value></data>
+  <data name="NextReviewFrom" xml:space="preserve"><value>Пересмотр с</value></data>
+  <data name="NextReviewTo" xml:space="preserve"><value>Пересмотр по</value></data>
+  <data name="ClassPolicyGovernance" xml:space="preserve"><value>Политика / управление</value></data>
+  <data name="ClassManualSystemDescription" xml:space="preserve"><value>Руководство / описание системы</value></data>
+  <data name="ClassSop" xml:space="preserve"><value>СОП</value></data>
+  <data name="ClassWorkInstruction" xml:space="preserve"><value>Рабочая инструкция</value></data>
+  <data name="ClassFormTemplateRegisterMatrixPlanChecklist" xml:space="preserve"><value>Форма / шаблон / реестр / матрица / план / чек-лист</value></data>
+  <data name="ClassQualityTechnicalAgreementSdea" xml:space="preserve"><value>Соглашение по качеству / техническое (SDEA)</value></data>
+  <data name="ClassUrgentTemporaryInstruction" xml:space="preserve"><value>Срочная временная инструкция</value></data>
+  <data name="ClassOther" xml:space="preserve"><value>Прочее</value></data>
+  <data name="CriticalityCritical" xml:space="preserve"><value>Критический</value></data>
+  <data name="CriticalityMajor" xml:space="preserve"><value>Существенный</value></data>
+  <data name="CriticalityMinor" xml:space="preserve"><value>Незначительный</value></data>
+  <data name="CriticalityUrgentTemporary" xml:space="preserve"><value>Срочный / временный</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="LifecycleInReview" xml:space="preserve"><value>На рассмотрении</value></data>
+  <data name="LifecycleApprovedPendingEffective" xml:space="preserve"><value>Утверждён (ожидает вступления)</value></data>
+  <data name="LifecycleEffective" xml:space="preserve"><value>Действует</value></data>
+  <data name="LifecycleUnderRevision" xml:space="preserve"><value>На доработке</value></data>
+  <data name="LifecycleSuspended" xml:space="preserve"><value>Приостановлен</value></data>
+  <data name="LifecycleSuperseded" xml:space="preserve"><value>Заменён</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>Выведен из обращения</value></data>
+  <data name="LifecycleObsoleteCopy" xml:space="preserve"><value>Устаревшая копия</value></data>
+  <data name="RegisterDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="RegisterActive" xml:space="preserve"><value>Активна</value></data>
+  <data name="RegisterArchived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="RegisterCorrectionPending" xml:space="preserve"><value>Ожидает исправления</value></data>
+  <data name="RegisterSuperseded" xml:space="preserve"><value>Заменена</value></data>
+  <data name="RegisterRetired" xml:space="preserve"><value>Выведена из обращения</value></data>
+  <data name="TypeSop" xml:space="preserve"><value>СОП</value></data>
+  <data name="TypeWorkInstruction" xml:space="preserve"><value>Рабочая инструкция</value></data>
+  <data name="TypePolicy" xml:space="preserve"><value>Политика</value></data>
+  <data name="TypeForm" xml:space="preserve"><value>Форма</value></data>
+  <data name="TypeTemplate" xml:space="preserve"><value>Шаблон</value></data>
+  <data name="TypeOther" xml:space="preserve"><value>Прочее</value></data>
+  <data name="TabGeneral" xml:space="preserve"><value>Общее</value></data>
+  <data name="TabIdentifiers" xml:space="preserve"><value>Идентификаторы</value></data>
+  <data name="TabLifecycle" xml:space="preserve"><value>Жизненный цикл</value></data>
+  <data name="TabApproval" xml:space="preserve"><value>Утверждение</value></data>
+  <data name="TabReleaseGates" xml:space="preserve"><value>Релиз-гейты</value></data>
+  <data name="TabTraining" xml:space="preserve"><value>Обучение</value></data>
+  <data name="TabRepository" xml:space="preserve"><value>Хранилище</value></data>
+  <data name="TabRetention" xml:space="preserve"><value>Хранение</value></data>
+  <data name="TabSignatures" xml:space="preserve"><value>Подписи</value></data>
+  <data name="TabQualityEvents" xml:space="preserve"><value>События качества</value></data>
+  <data name="DeferredSectionMessage" xml:space="preserve"><value>Этот раздел будет реализован в следующем UI-пакете.</value></data>
+  <data name="DeferredActionTooltip" xml:space="preserve"><value>Будет доступно в следующем UI-пакете</value></data>
+  <data name="NoDocumentsFound" xml:space="preserve"><value>Записи реестра не найдены</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Не удалось загрузить реестр</value></data>
+  <data name="SaveSucceeded" xml:space="preserve"><value>Запись реестра сохранена</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>Не удалось сохранить запись реестра</value></data>
+  <data name="Forbidden" xml:space="preserve"><value>У вас нет прав на эту операцию</value></data>
+  <data name="VariantParentRequired" xml:space="preserve"><value>Для варианта требуется ссылка на родительский документ</value></data>
+  <data name="RecordControlledConflict" xml:space="preserve"><value>Запись не может одновременно быть контролируемым документом</value></data>
+  <data name="ProtectedFieldsReadOnly" xml:space="preserve"><value>Поля идентификатора, жизненного цикла и выпуска управляются движком управления и здесь не редактируются.</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <data name="Back" xml:space="preserve"><value>Назад</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Добавить</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="IdentifiersTabTitle" xml:space="preserve"><value>Идентификаторы</value></data>
+  <data name="LifecycleTabTitle" xml:space="preserve"><value>Жизненный цикл</value></data>
+  <data name="IdentifierSummary" xml:space="preserve"><value>Присвоение идентификаторов</value></data>
+  <data name="CurrentIdentity" xml:space="preserve"><value>Текущая идентичность</value></data>
+  <data name="AllocationReadiness" xml:space="preserve"><value>Готовность присвоения</value></data>
+  <data name="IdentifierLedger" xml:space="preserve"><value>Журнал идентификаторов</value></data>
+  <data name="IdentifierType" xml:space="preserve"><value>Тип идентификатора</value></data>
+  <data name="IdentifierValue" xml:space="preserve"><value>Значение идентификатора</value></data>
+  <data name="IdentifierTypePermanentUid" xml:space="preserve"><value>Постоянный UID</value></data>
+  <data name="IdentifierTypeDocumentCode" xml:space="preserve"><value>Код документа</value></data>
+  <data name="AllocationStatus" xml:space="preserve"><value>Статус присвоения</value></data>
+  <data name="AllocationStatusReserved" xml:space="preserve"><value>Зарезервирован</value></data>
+  <data name="AllocationStatusAssigned" xml:space="preserve"><value>Присвоен</value></data>
+  <data name="AllocationStatusCancelled" xml:space="preserve"><value>Отменён</value></data>
+  <data name="AllocationStatusAbandoned" xml:space="preserve"><value>Заброшен</value></data>
+  <data name="AllocationStatusSupersededByCorrection" xml:space="preserve"><value>Заменён исправлением</value></data>
+  <data name="AllocationSource" xml:space="preserve"><value>Источник присвоения</value></data>
+  <data name="SystemAllocated" xml:space="preserve"><value>Присвоено системой</value></data>
+  <data name="ManualReserve" xml:space="preserve"><value>Ручное резервирование</value></data>
+  <data name="MigrationReserve" xml:space="preserve"><value>Резервирование при миграции</value></data>
+  <data name="AllocationReasonLabel" xml:space="preserve"><value>Причина присвоения</value></data>
+  <data name="AllocationReasonNewDocument" xml:space="preserve"><value>Новый документ</value></data>
+  <data name="AllocationReasonMigration" xml:space="preserve"><value>Миграция</value></data>
+  <data name="AllocationReasonManualImport" xml:space="preserve"><value>Ручной импорт</value></data>
+  <data name="AllocationReasonCorrection" xml:space="preserve"><value>Исправление</value></data>
+  <data name="AllocatedAt" xml:space="preserve"><value>Дата присвоения</value></data>
+  <data name="AllocatedBy" xml:space="preserve"><value>Кем присвоено</value></data>
+  <data name="IdentifierOperations" xml:space="preserve"><value>Операции с идентификаторами</value></data>
+  <data name="AllocateUid" xml:space="preserve"><value>Присвоить UID</value></data>
+  <data name="AllocateCode" xml:space="preserve"><value>Присвоить код</value></data>
+  <data name="AllocateBoth" xml:space="preserve"><value>Присвоить оба</value></data>
+  <data name="ReserveIdentifier" xml:space="preserve"><value>Зарезервировать идентификатор</value></data>
+  <data name="ReserveIdentifierHint" xml:space="preserve"><value>Зарезервируйте внешний UID или код (ручной ввод либо миграция). Значение привязывается к этой записи реестра.</value></data>
+  <data name="CancelAllocation" xml:space="preserve"><value>Отменить присвоение</value></data>
+  <data name="CancelAllocationReason" xml:space="preserve"><value>Причина отмены</value></data>
+  <data name="ConfirmCancelAllocation" xml:space="preserve"><value>Отменяется ТОЛЬКО присвоение идентификатора. Ничего не удаляется: значение остаётся в журнале и никогда не используется повторно.</value></data>
+  <data name="IdentifierNeverReusedNote" xml:space="preserve"><value>Журнал идентификаторов только пополняется. Отменённое или заброшенное значение хранится вечно и не используется повторно; пропуски в нумерации допустимы (СОП §6.3).</value></data>
+  <data name="RelatedRegisterEntry" xml:space="preserve"><value>Запись реестра</value></data>
+  <data name="UidAllocated" xml:space="preserve"><value>UID присвоен</value></data>
+  <data name="CodeAllocated" xml:space="preserve"><value>Код присвоен</value></data>
+  <data name="EffectiveReadiness" xml:space="preserve"><value>Готовность к вступлению в силу</value></data>
+  <data name="IdentifiersComplete" xml:space="preserve"><value>UID и код присвоены</value></data>
+  <data name="ActiveAllocations" xml:space="preserve"><value>Действующие присвоения</value></data>
+  <data name="LedgerRowCount" xml:space="preserve"><value>Строк в журнале</value></data>
+  <data name="NoIdentifierLedgerFound" xml:space="preserve"><value>Присвоения идентификаторов ещё не зарегистрированы</value></data>
+  <data name="AllocationSucceeded" xml:space="preserve"><value>Идентификатор присвоен</value></data>
+  <data name="AllocationFailed" xml:space="preserve"><value>Не удалось присвоить идентификатор</value></data>
+  <data name="ReservationSucceeded" xml:space="preserve"><value>Идентификатор зарезервирован</value></data>
+  <data name="ReservationFailed" xml:space="preserve"><value>Не удалось зарезервировать идентификатор</value></data>
+  <data name="CancellationSucceeded" xml:space="preserve"><value>Присвоение отменено</value></data>
+  <data name="CancellationFailed" xml:space="preserve"><value>Не удалось отменить присвоение</value></data>
+  <data name="UidAlreadyAllocated" xml:space="preserve"><value>Постоянный UID уже присвоен</value></data>
+  <data name="CodeAlreadyAllocated" xml:space="preserve"><value>Код документа уже присвоен</value></data>
+  <data name="IdentifiersAlreadyAllocated" xml:space="preserve"><value>Хотя бы один идентификатор уже присвоен</value></data>
+  <data name="DuplicateIdentifier" xml:space="preserve"><value>Такое значение идентификатора уже используется</value></data>
+  <data name="ManualIdentifierExists" xml:space="preserve"><value>Для этой записи уже есть идентификатор, введённый вручную</value></data>
+  <data name="TypeMappingMissing" xml:space="preserve"><value>Для этой комбинации класса и типа нет однозначного кода типа</value></data>
+  <data name="RecordNotEligible" xml:space="preserve"><value>Запись не подлежит присвоению идентификатора</value></data>
+  <data name="ExternalNotEligible" xml:space="preserve"><value>Внешний документ не подлежит присвоению идентификатора</value></data>
+  <data name="VariantInheritsParent" xml:space="preserve"><value>Вариант наследует идентификатор родителя</value></data>
+  <data name="EntryNotAllocatable" xml:space="preserve"><value>Эта запись реестра не в состоянии, допускающем присвоение</value></data>
+  <data name="LifecycleSummary" xml:space="preserve"><value>Состояние жизненного цикла</value></data>
+  <data name="AvailableTransitions" xml:space="preserve"><value>Доступные переходы</value></data>
+  <data name="NoTransitionAvailable" xml:space="preserve"><value>Из текущего статуса переходы недоступны</value></data>
+  <data name="OperationalUseAllowed" xml:space="preserve"><value>Разрешено оперативное использование</value></data>
+  <data name="LastTransition" xml:space="preserve"><value>Последний переход</value></data>
+  <data name="LastTransitionReason" xml:space="preserve"><value>Причина последнего перехода</value></data>
+  <data name="LifecycleHistory" xml:space="preserve"><value>История жизненного цикла</value></data>
+  <data name="NoLifecycleHistoryFound" xml:space="preserve"><value>Переходы жизненного цикла ещё не зарегистрированы</value></data>
+  <data name="FromStatus" xml:space="preserve"><value>Из статуса</value></data>
+  <data name="ToStatus" xml:space="preserve"><value>В статус</value></data>
+  <data name="TransitionedAt" xml:space="preserve"><value>Время перехода</value></data>
+  <data name="TransitionedBy" xml:space="preserve"><value>Кем выполнено</value></data>
+  <data name="TransitionLifecycle" xml:space="preserve"><value>Изменить статус</value></data>
+  <data name="TransitionReason" xml:space="preserve"><value>Причина</value></data>
+  <data name="TransitionComment" xml:space="preserve"><value>Комментарий</value></data>
+  <data name="EvidenceReference" xml:space="preserve"><value>Ссылка на доказательство</value></data>
+  <data name="TargetStatus" xml:space="preserve"><value>Целевой статус</value></data>
+  <data name="MarkEffective" xml:space="preserve"><value>Ввести в действие</value></data>
+  <data name="Supersede" xml:space="preserve"><value>Заменить</value></data>
+  <data name="Retire" xml:space="preserve"><value>Вывести из обращения</value></data>
+  <data name="ReplacementRegisterEntry" xml:space="preserve"><value>Заменяющая запись реестра</value></data>
+  <data name="ReplacementRegisterEntryHint" xml:space="preserve"><value>Необязательно. Выберите предыдущую действующую запись реестра, которую заменяет этот документ.</value></data>
+  <data name="EffectiveDateNotRetroactive" xml:space="preserve"><value>Дата вступления в силу не может быть в прошлом (СОП §4). Оставьте пустым, чтобы использовать сегодняшнюю дату.</value></data>
+  <data name="LifecycleTransitionSucceeded" xml:space="preserve"><value>Статус жизненного цикла обновлён</value></data>
+  <data name="LifecycleTransitionFailed" xml:space="preserve"><value>Не удалось изменить статус жизненного цикла</value></data>
+  <data name="MarkEffectiveWarning" xml:space="preserve"><value>Бэкенд принудительно проверяет наличие UID/кода, доказательства утверждения, релиз-гейты и запрет обратной даты. Этот экран не обходит их.</value></data>
+  <data name="BackendEnforcesReleaseGates" xml:space="preserve"><value>Все правила жизненного цикла применяются движком управления. Кнопки отражают текущие разрешения бэкенда; окончательное решение за ним.</value></data>
+  <data name="BackendWarnings" xml:space="preserve"><value>Предупреждения системы управления</value></data>
+  <data name="ConfirmMarkEffective" xml:space="preserve"><value>Документ вступит в силу. Отменить это редактированием метаданных нельзя.</value></data>
+  <data name="ConfirmSupersede" xml:space="preserve"><value>Документ будет помечен как заменённый новой версией. Причина обязательна.</value></data>
+  <data name="ConfirmRetire" xml:space="preserve"><value>Это завершает эксплуатацию документа. Ничего не удаляется, запись сохраняется. Причина обязательна.</value></data>
+  <data name="InvalidTransition" xml:space="preserve"><value>Такой переход из текущего статуса не разрешён</value></data>
+  <data name="ReasonRequiredError" xml:space="preserve"><value>Для этого изменения статуса требуется причина</value></data>
+  <data name="MissingUidOrCode" xml:space="preserve"><value>Сначала требуются постоянный UID и код документа</value></data>
+  <data name="RetroactiveEffectiveDate" xml:space="preserve"><value>Дата вступления в силу не может быть задним числом</value></data>
+  <data name="ReleaseGateBlocked" xml:space="preserve"><value>Заблокировано обязательными релиз-гейтами</value></data>
+  <data name="ApprovalEvidenceBlocked" xml:space="preserve"><value>Заблокировано: доказательства утверждения неполны</value></data>
+  <data name="TrainingReadinessBlocked" xml:space="preserve"><value>Заблокировано: готовность по обучению не достигнута</value></data>
+  <data name="DuplicateEffective" xml:space="preserve"><value>Другая запись с тем же UID уже действует</value></data>
+  <data name="StaleVersion" xml:space="preserve"><value>Запись изменена другой операцией — обновите и повторите</value></data>
+  <data name="RegisterEntryNotFound" xml:space="preserve"><value>Запись реестра не найдена</value></data>
+  <data name="ConflictOccurred" xml:space="preserve"><value>Операция конфликтует с текущим состоянием</value></data>
+  <data name="ReloadTab" xml:space="preserve"><value>Обновить</value></data>
+  <data name="ActionNotAvailable" xml:space="preserve"><value>Недоступно</value></data>
+  <data name="PermissionRequired" xml:space="preserve"><value>У вас нет прав на это действие</value></data>
+  <data name="OwnerFunctionFallbackHint" xml:space="preserve"><value>Для этого поля нет опубликованного справочника, принимается свободный текст. Соблюдайте единообразие написания.</value></data>
+  <data name="LegacyValue" xml:space="preserve"><value>устаревшее значение</value></data>
+  <data name="ApprovalTabTitle" xml:space="preserve"><value>Утверждение</value></data>
+  <data name="ReleaseGatesTabTitle" xml:space="preserve"><value>Релиз-гейты</value></data>
+  <data name="ApprovalSummary" xml:space="preserve"><value>Маршрут утверждения и доказательства</value></data>
+  <data name="ApprovalRoute" xml:space="preserve"><value>Маршрут утверждения</value></data>
+  <data name="ResolveApprovalRoute" xml:space="preserve"><value>Рассчитать маршрут утверждения</value></data>
+  <data name="ResolveRouteIsNotApproval" xml:space="preserve"><value>Расчёт маршрута лишь определяет, какие утверждения требуются. Он ничего не утверждает и не меняет статус жизненного цикла.</value></data>
+  <data name="ApprovalRouteResolved" xml:space="preserve"><value>Маршрут утверждения рассчитан</value></data>
+  <data name="ApprovalReadiness" xml:space="preserve"><value>Готовность к утверждению</value></data>
+  <data name="ApprovalRequirement" xml:space="preserve"><value>Требование</value></data>
+  <data name="ApprovalRequirements" xml:space="preserve"><value>Требования к утверждению</value></data>
+  <data name="NoApprovalRequirementsFound" xml:space="preserve"><value>Требования к утверждению ещё не рассчитаны</value></data>
+  <data name="RequirementRole" xml:space="preserve"><value>Требуемая роль</value></data>
+  <data name="RequirementType" xml:space="preserve"><value>Тип требования</value></data>
+  <data name="Mandatory" xml:space="preserve"><value>Обязательно</value></data>
+  <data name="Optional" xml:space="preserve"><value>Необязательно</value></data>
+  <data name="NonDelegable" xml:space="preserve"><value>Не делегируется</value></data>
+  <data name="SourceRule" xml:space="preserve"><value>Исходное правило</value></data>
+  <data name="CompletedBy" xml:space="preserve"><value>Кем выполнено</value></data>
+  <data name="CompletedCount" xml:space="preserve"><value>Выполнено</value></data>
+  <data name="PendingCount" xml:space="preserve"><value>В ожидании</value></data>
+  <data name="RejectedCount" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="RequiredApprovers" xml:space="preserve"><value>Требуемые утверждения</value></data>
+  <data name="BlockingIssues" xml:space="preserve"><value>Блокирующие проблемы</value></data>
+  <data name="NoBlockingIssues" xml:space="preserve"><value>Блокирующих проблем нет</value></data>
+  <data name="Ready" xml:space="preserve"><value>Готово</value></data>
+  <data name="NotReady" xml:space="preserve"><value>Не готово</value></data>
+  <data name="EvidenceStatus" xml:space="preserve"><value>Статус доказательства</value></data>
+  <data name="EvidenceAction" xml:space="preserve"><value>Действие</value></data>
+  <data name="RecordEvidence" xml:space="preserve"><value>Записать доказательство</value></data>
+  <data name="RecordEvidenceNote" xml:space="preserve"><value>Записывает решение по этому требованию. Разделение обязанностей проверяется на сервере и может отклонить запись.</value></data>
+  <data name="RejectEvidence" xml:space="preserve"><value>Отклонить</value></data>
+  <data name="RejectEvidenceNote" xml:space="preserve"><value>Отклоняет это требование. Причина обязательна и сохраняется в журнале аудита.</value></data>
+  <data name="RejectionReason" xml:space="preserve"><value>Причина отклонения</value></data>
+  <data name="EvidenceComment" xml:space="preserve"><value>Комментарий</value></data>
+  <data name="EvidenceReferenceHint" xml:space="preserve"><value>Ссылка на доказательство, хранящееся в другом месте (тикет, протокол, подписанная запись). Файл сюда не загружается.</value></data>
+  <data name="PerformedBy" xml:space="preserve"><value>Исполнитель</value></data>
+  <data name="PerformedByRole" xml:space="preserve"><value>Роль исполнителя</value></data>
+  <data name="SegregationCheckedServerSide" xml:space="preserve"><value>Разделение обязанностей обеспечивается бэкендом; запрещённая комбинация будет отклонена.</value></data>
+  <data name="SegregationStatus" xml:space="preserve"><value>Разделение обязанностей</value></data>
+  <data name="SegregationPassed" xml:space="preserve"><value>Разделение обязанностей соблюдено</value></data>
+  <data name="SegregationFailed" xml:space="preserve"><value>Разделение обязанностей нарушено</value></data>
+  <data name="SegregationFailedError" xml:space="preserve"><value>Это действие нарушает разделение обязанностей</value></data>
+  <data name="AuthorSoleApproverBlocked" xml:space="preserve"><value>Автор не может быть единственным утверждающим своего документа (СОП §5).</value></data>
+  <data name="SameUserCannotCompleteAllMandatory" xml:space="preserve"><value>Один пользователь не может выполнить все обязательные утверждения</value></data>
+  <data name="MissingAuthorWarning" xml:space="preserve"><value>Для этой записи не указан автор</value></data>
+  <data name="DocumentAuthor" xml:space="preserve"><value>Автор документа</value></data>
+  <data name="MissingMandatoryEvidence" xml:space="preserve"><value>Отсутствует обязательное утверждение</value></data>
+  <data name="ApprovalEvidenceComplete" xml:space="preserve"><value>Доказательства утверждения полны</value></data>
+  <data name="ApprovalEvidenceIncomplete" xml:space="preserve"><value>Доказательства утверждения неполны</value></data>
+  <data name="RequirementNotFound" xml:space="preserve"><value>Требование к утверждению не найдено</value></data>
+  <data name="WrongApproverRole" xml:space="preserve"><value>У пользователя нет требуемой роли утверждающего</value></data>
+  <data name="RequirementStatusPending" xml:space="preserve"><value>Ожидает</value></data>
+  <data name="RequirementStatusCompleted" xml:space="preserve"><value>Выполнено</value></data>
+  <data name="RequirementStatusRejected" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="RequirementStatusWaived" xml:space="preserve"><value>Отменено</value></data>
+  <data name="RequirementStatusBlocked" xml:space="preserve"><value>Заблокировано</value></data>
+  <data name="ApprovalStateNotRequired" xml:space="preserve"><value>Не требуется</value></data>
+  <data name="ApprovalStatePending" xml:space="preserve"><value>Ожидает</value></data>
+  <data name="ApprovalStateComplete" xml:space="preserve"><value>Завершено</value></data>
+  <data name="ApprovalStateRejected" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="ApprovalStateBlocked" xml:space="preserve"><value>Заблокировано</value></data>
+  <data name="ActionReviewed" xml:space="preserve"><value>Рассмотрено</value></data>
+  <data name="ActionApproved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="ActionEndorsed" xml:space="preserve"><value>Одобрено</value></data>
+  <data name="ActionReturned" xml:space="preserve"><value>Возвращено</value></data>
+  <data name="RequirementTypeApproval" xml:space="preserve"><value>Утверждение</value></data>
+  <data name="RequirementTypeReview" xml:space="preserve"><value>Рассмотрение</value></data>
+  <data name="RequirementTypeEndorsement" xml:space="preserve"><value>Одобрение</value></data>
+  <data name="RequirementTypeTechnicalReview" xml:space="preserve"><value>Техническая экспертиза</value></data>
+  <data name="RequirementTypeQualityConcurrence" xml:space="preserve"><value>Согласование качества</value></data>
+  <data name="RequirementTypeLegalReview" xml:space="preserve"><value>Юридическая экспертиза</value></data>
+  <data name="RequirementTypeTrainingReadinessVerification" xml:space="preserve"><value>Проверка готовности обучения</value></data>
+  <data name="SourceRuleCriticality" xml:space="preserve"><value>Критичность</value></data>
+  <data name="SourceRuleDocumentClass" xml:space="preserve"><value>Класс документа</value></data>
+  <data name="SourceRuleRegulatoryOverlay" xml:space="preserve"><value>Регуляторное наложение</value></data>
+  <data name="SourceRulePVOverlay" xml:space="preserve"><value>Фармаконадзорное наложение</value></data>
+  <data name="SourceRuleBatchReleaseOverlay" xml:space="preserve"><value>Наложение выпуска серии</value></data>
+  <data name="SourceRuleAgreementOverlay" xml:space="preserve"><value>Наложение соглашения</value></data>
+  <data name="SourceRuleDmsCsvOverlay" xml:space="preserve"><value>Наложение DMS / CSV</value></data>
+  <data name="SourceRuleGroupGovernanceOverlay" xml:space="preserve"><value>Наложение групповых правил</value></data>
+  <data name="SourceRuleSegregationOverlay" xml:space="preserve"><value>Наложение разделения обязанностей</value></data>
+  <data name="SourceRuleManualOverride" xml:space="preserve"><value>Ручное переопределение</value></data>
+  <data name="ApprovalRoleGQD" xml:space="preserve"><value>Директор по качеству группы</value></data>
+  <data name="ApprovalRoleGQDDeputy" xml:space="preserve"><value>Заместитель директора по качеству</value></data>
+  <data name="ApprovalRoleGRA" xml:space="preserve"><value>Регуляторные вопросы группы</value></data>
+  <data name="ApprovalRoleQPPV" xml:space="preserve"><value>QPPV</value></data>
+  <data name="ApprovalRoleQP" xml:space="preserve"><value>Уполномоченное лицо</value></data>
+  <data name="ApprovalRoleLegal" xml:space="preserve"><value>Юридический отдел</value></data>
+  <data name="ApprovalRoleITCSVOwner" xml:space="preserve"><value>Владелец ИТ / CSV</value></data>
+  <data name="ApprovalRoleQADocumentation" xml:space="preserve"><value>Документация QA</value></data>
+  <data name="ApprovalRoleDocumentOwner" xml:space="preserve"><value>Владелец документа</value></data>
+  <data name="ApprovalRoleLocalQA" xml:space="preserve"><value>Локальный QA</value></data>
+  <data name="ApprovalRoleCEO" xml:space="preserve"><value>Генеральный директор</value></data>
+  <data name="ApprovalRoleIndependentQASenior" xml:space="preserve"><value>Независимый старший QA</value></data>
+  <data name="ApprovalRoleTrainingCoordinator" xml:space="preserve"><value>Координатор обучения</value></data>
+  <data name="ReleaseGateSummary" xml:space="preserve"><value>Обязательные релиз-гейты</value></data>
+  <data name="NonWaivableExplanation" xml:space="preserve"><value>Все шесть гейтов обязательны. Ни здесь, ни где-либо ещё нет пути обхода, отказа или исключения.</value></data>
+  <data name="EvaluateReleaseGates" xml:space="preserve"><value>Оценить гейты</value></data>
+  <data name="ReleaseGate" xml:space="preserve"><value>Релиз-гейт</value></data>
+  <data name="ReleaseGateResult" xml:space="preserve"><value>Результат</value></data>
+  <data name="NonWaivable" xml:space="preserve"><value>Не подлежит отмене</value></data>
+  <data name="NoWaiverAllowed" xml:space="preserve"><value>Без исключений</value></data>
+  <data name="GatePassed" xml:space="preserve"><value>Пройден</value></data>
+  <data name="GateBlocked" xml:space="preserve"><value>Заблокирован</value></data>
+  <data name="GateWarning" xml:space="preserve"><value>Предупреждение</value></data>
+  <data name="GateNotApplicable" xml:space="preserve"><value>Не применимо</value></data>
+  <data name="GateEvidence" xml:space="preserve"><value>Доказательство гейта</value></data>
+  <data name="RecordGateEvidence" xml:space="preserve"><value>Записать доказательство</value></data>
+  <data name="GateEvidenceDoesNotForcePass" xml:space="preserve"><value>Запись доказательства не заставляет гейт пройти. Движок пересчитывает результат; гейт может остаться заблокированным.</value></data>
+  <data name="BlockingReason" xml:space="preserve"><value>Причина блокировки</value></data>
+  <data name="GateSource" xml:space="preserve"><value>Источник</value></data>
+  <data name="VerifiedBy" xml:space="preserve"><value>Кем проверено</value></data>
+  <data name="VerifiedByRole" xml:space="preserve"><value>Роль проверяющего</value></data>
+  <data name="VerificationDate" xml:space="preserve"><value>Дата проверки</value></data>
+  <data name="GatesPassed" xml:space="preserve"><value>Пройдено гейтов</value></data>
+  <data name="GatesBlocked" xml:space="preserve"><value>Заблокировано гейтов</value></data>
+  <data name="GatesWarning" xml:space="preserve"><value>Предупреждения</value></data>
+  <data name="EvidenceMissingCount" xml:space="preserve"><value>Нет доказательств</value></data>
+  <data name="EvaluatedAt" xml:space="preserve"><value>Время оценки</value></data>
+  <data name="EvaluatedBy" xml:space="preserve"><value>Кем оценено</value></data>
+  <data name="GateEvaluationHistory" xml:space="preserve"><value>История оценок</value></data>
+  <data name="GateEvaluationComplete" xml:space="preserve"><value>Завершено</value></data>
+  <data name="GateEvaluationIncomplete" xml:space="preserve"><value>Не завершено</value></data>
+  <data name="NoGateEvaluationFound" xml:space="preserve"><value>Оценки гейтов ещё не зарегистрированы</value></data>
+  <data name="MasterRegisterGate" xml:space="preserve"><value>Реестр активен и документ зарегистрирован с UID</value></data>
+  <data name="ApprovedRepositoryGate" xml:space="preserve"><value>Утверждённое хранилище или валидированная DMS с авторизованным маршрутом выпуска</value></data>
+  <data name="MandatoryApprovalEvidenceGate" xml:space="preserve"><value>Доказательства от обязательных утверждающих; автор не единственный</value></data>
+  <data name="RequiredExecutionMaterialsGate" xml:space="preserve"><value>Все формы/шаблоны/реестры для исполнения действуют и доступны</value></data>
+  <data name="TrainingReadinessGate" xml:space="preserve"><value>Обучение назначено; пользователи критичных процессов обучены или ограничены</value></data>
+  <data name="SupersededCopyWithdrawalGate" xml:space="preserve"><value>Существует метод изъятия заменённых копий с места использования</value></data>
+  <data name="TrainingDetailsDeferred" xml:space="preserve"><value>Детали обучения появятся в следующем UI-пакете. Причина блокировки выше поступает от движка готовности обучения.</value></data>
+  <data name="RepositoryDetailsDeferred" xml:space="preserve"><value>Детали оценки хранилища появятся в следующем UI-пакете.</value></data>
+  <data name="ControlledCopyDetailsDeferred" xml:space="preserve"><value>Детали сверки контролируемых копий появятся в следующем UI-пакете.</value></data>
+  <data name="GateEvaluationSucceeded" xml:space="preserve"><value>Релиз-гейты оценены</value></data>
+  <data name="GateEvaluationFailed" xml:space="preserve"><value>Не удалось оценить релиз-гейты</value></data>
+  <data name="EvidenceRecordSucceeded" xml:space="preserve"><value>Доказательство записано</value></data>
+  <data name="EvidenceRecordFailed" xml:space="preserve"><value>Не удалось записать доказательство</value></data>
+  <data name="EvidenceRejectSucceeded" xml:space="preserve"><value>Утверждение отклонено</value></data>
+  <data name="EvidenceRejectFailed" xml:space="preserve"><value>Не удалось записать отклонение</value></data>
+  <data name="ReleaseGateIncomplete" xml:space="preserve"><value>Релиз-гейты не завершены</value></data>
+  <data name="InvalidGateKey" xml:space="preserve"><value>Неизвестный релиз-гейт</value></data>
+  <data name="TrainingNotReady" xml:space="preserve"><value>Готовность обучения не достигнута</value></data>
+  <data name="RepositoryNotApproved" xml:space="preserve"><value>Утверждённое хранилище недоступно</value></data>
+  <data name="RequiredExecutionMaterialsMissing" xml:space="preserve"><value>Необходимые материалы исполнения не действуют</value></data>
+  <data name="SupersededCopyWithdrawalMissing" xml:space="preserve"><value>Метод изъятия заменённых копий не зафиксирован</value></data>
+  <data name="MasterRegisterInactive" xml:space="preserve"><value>Запись реестра не активна</value></data>
+  <data name="UidCodeMissing" xml:space="preserve"><value>Требуются постоянный UID и код документа</value></data>
+  <data name="EvidenceReferenceRequired" xml:space="preserve"><value>Требуется ссылка на доказательство</value></data>
+  <data name="GateEvidenceRequired" xml:space="preserve"><value>Этот гейт требует зафиксированного доказательства</value></data>
+  <data name="RefreshApproval" xml:space="preserve"><value>Обновить</value></data>
+  <data name="RefreshReleaseGates" xml:space="preserve"><value>Обновить</value></data>
+  <data name="TrainingTabTitle" xml:space="preserve"><value>Обучение</value></data>
+  <data name="TrainingSummary" xml:space="preserve"><value>Матрица обучения и готовность к выпуску</value></data>
+  <data name="TrainingReadiness" xml:space="preserve"><value>Готовность обучения</value></data>
+  <data name="ReleaseGateTrainingNote" xml:space="preserve"><value>Релиз-гейт 5 использует этот результат готовности обучения. Экран показывает и фиксирует доказательства обучения — он не проходит гейт и не вводит документ в действие.</value></data>
+  <data name="ResolveTrainingMatrix" xml:space="preserve"><value>Рассчитать матрицу обучения</value></data>
+  <data name="TrainingRequirement" xml:space="preserve"><value>Требование к обучению</value></data>
+  <data name="TrainingRequirements" xml:space="preserve"><value>Требования к обучению</value></data>
+  <data name="NoTrainingRequirementsFound" xml:space="preserve"><value>Требования к обучению ещё не рассчитаны</value></data>
+  <data name="TrainingAssignment" xml:space="preserve"><value>Назначение обучения</value></data>
+  <data name="TrainingAssignments" xml:space="preserve"><value>Назначения обучения</value></data>
+  <data name="NoTrainingAssignmentsFound" xml:space="preserve"><value>В этой сессии назначения не создавались и не изменялись</value></data>
+  <data name="AssignmentListNotAvailableNote" xml:space="preserve"><value>Бэкенд пока не предоставляет список назначений обучения, поэтому таблица показывает только назначения, созданные или изменённые в этой сессии. Счётчики выше приходят с сервера и всегда отражают полную картину.</value></data>
+  <data name="TrainingAudience" xml:space="preserve"><value>Аудитория</value></data>
+  <data name="TrainingAudienceRole" xml:space="preserve"><value>Роль</value></data>
+  <data name="TrainingAudienceUser" xml:space="preserve"><value>Пользователь</value></data>
+  <data name="TrainingAudienceDepartment" xml:space="preserve"><value>Подразделение</value></data>
+  <data name="TrainingAudienceThirdParty" xml:space="preserve"><value>Третья сторона</value></data>
+  <data name="TrainingType" xml:space="preserve"><value>Тип обучения</value></data>
+  <data name="TrainingTypeFullSopCompetencyAssessment" xml:space="preserve"><value>Полная оценка компетенции по СОП</value></data>
+  <data name="TrainingTypeScenarioAssessment" xml:space="preserve"><value>Оценка по сценарию</value></data>
+  <data name="TrainingTypeReadAndUnderstand" xml:space="preserve"><value>Прочитать и понять</value></data>
+  <data name="TrainingTypeThirdPartyVerifiedTraining" xml:space="preserve"><value>Обучение, подтверждённое третьей стороной</value></data>
+  <data name="CriticalProcess" xml:space="preserve"><value>Критичный процесс</value></data>
+  <data name="EffectivenessRequired" xml:space="preserve"><value>Требуется проверка результативности</value></data>
+  <data name="EffectivenessStatus" xml:space="preserve"><value>Результативность</value></data>
+  <data name="EffectivenessResult" xml:space="preserve"><value>Результат проверки</value></data>
+  <data name="EffectivenessNotRequired" xml:space="preserve"><value>Не требуется</value></data>
+  <data name="EffectivenessPending" xml:space="preserve"><value>Ожидает</value></data>
+  <data name="EffectivenessPassed" xml:space="preserve"><value>Пройдена</value></data>
+  <data name="EffectivenessFailed" xml:space="preserve"><value>Не пройдена</value></data>
+  <data name="EffectivenessIsRecordedNotComputed" xml:space="preserve"><value>Результат результативности — зафиксированное доказательство, а не расчёт. Отметка «пройдено» сама по себе не делает готовность зелёной.</value></data>
+  <data name="AssignmentStatus" xml:space="preserve"><value>Статус назначения</value></data>
+  <data name="TrainingAssignmentStatusAssigned" xml:space="preserve"><value>Назначено</value></data>
+  <data name="TrainingAssignmentStatusCompleted" xml:space="preserve"><value>Выполнено</value></data>
+  <data name="TrainingAssignmentStatusFailed" xml:space="preserve"><value>Не выполнено</value></data>
+  <data name="TrainingAssignmentStatusRestricted" xml:space="preserve"><value>Ограничено</value></data>
+  <data name="TrainingAssignmentStatusCancelled" xml:space="preserve"><value>Отменено</value></data>
+  <data name="TrainingRequirementStatusPending" xml:space="preserve"><value>Ожидает</value></data>
+  <data name="TrainingRequirementStatusAssigned" xml:space="preserve"><value>Назначено</value></data>
+  <data name="TrainingRequirementStatusCompleted" xml:space="preserve"><value>Выполнено</value></data>
+  <data name="TrainingRequirementStatusRestricted" xml:space="preserve"><value>Ограничено</value></data>
+  <data name="TrainingRequirementStatusWaivedNotAllowed" xml:space="preserve"><value>Попытка отказа — не допускается</value></data>
+  <data name="TrainingRequirementStatusOverdue" xml:space="preserve"><value>Просрочено</value></data>
+  <data name="TrainingRequirementStatusBlocked" xml:space="preserve"><value>Заблокировано</value></data>
+  <data name="TrainingSourceRuleCriticality" xml:space="preserve"><value>Критичность</value></data>
+  <data name="TrainingSourceRuleDocumentClass" xml:space="preserve"><value>Класс документа</value></data>
+  <data name="TrainingSourceRuleManual" xml:space="preserve"><value>Вручную</value></data>
+  <data name="TrainingSourceRuleImpactAssessment" xml:space="preserve"><value>Оценка воздействия</value></data>
+  <data name="TrainingSourceRuleThirdPartyAgreement" xml:space="preserve"><value>Соглашение с третьей стороной</value></data>
+  <data name="AssignTraining" xml:space="preserve"><value>Назначить</value></data>
+  <data name="AssignDoesNotCompleteTraining" xml:space="preserve"><value>Назначение создаёт обязательство по обучению. Оно не завершает обучение и не фиксирует доказательства.</value></data>
+  <data name="AssignTargetHint" xml:space="preserve"><value>Укажите пользователя, роль или подразделение — в зависимости от требования.</value></data>
+  <data name="AssignedUser" xml:space="preserve"><value>Назначенный пользователь</value></data>
+  <data name="AssignedRole" xml:space="preserve"><value>Назначенная роль</value></data>
+  <data name="AssignedDepartment" xml:space="preserve"><value>Назначенное подразделение</value></data>
+  <data name="AssignedTo" xml:space="preserve"><value>Кому назначено</value></data>
+  <data name="TrainingDueDate" xml:space="preserve"><value>Срок выполнения</value></data>
+  <data name="CompleteTraining" xml:space="preserve"><value>Завершить обучение</value></data>
+  <data name="CompletionEvidence" xml:space="preserve"><value>Доказательство выполнения</value></data>
+  <data name="CompletionDoesNotMarkEffective" xml:space="preserve"><value>Я понимаю, что это фиксирует только доказательство прохождения обучения — документ в действие не вводится и релиз-гейт 5 не проходится.</value></data>
+  <data name="RecordEffectiveness" xml:space="preserve"><value>Записать результативность</value></data>
+  <data name="EffectivenessEvidence" xml:space="preserve"><value>Доказательство результативности</value></data>
+  <data name="RestrictTraining" xml:space="preserve"><value>Ограничить</value></data>
+  <data name="RestrictionStatus" xml:space="preserve"><value>Ограничение</value></data>
+  <data name="Restricted" xml:space="preserve"><value>Ограничено</value></data>
+  <data name="NotRestricted" xml:space="preserve"><value>Не ограничено</value></data>
+  <data name="RestrictionDoesNotDelete" xml:space="preserve"><value>Ограничение — это контроль доступа и готовности, а не удаление. Назначение сохраняется и остаётся в журнале аудита.</value></data>
+  <data name="RequiredCount" xml:space="preserve"><value>Требуется</value></data>
+  <data name="AssignedCount" xml:space="preserve"><value>Назначено</value></data>
+  <data name="RestrictedCount" xml:space="preserve"><value>Ограничено</value></data>
+  <data name="EffectivenessPendingCount" xml:space="preserve"><value>Ожидает проверки</value></data>
+  <data name="TrainingReady" xml:space="preserve"><value>Готово</value></data>
+  <data name="TrainingBlocked" xml:space="preserve"><value>Заблокировано</value></data>
+  <data name="TrainingMatrixMissing" xml:space="preserve"><value>Матрица обучения для этого документа не рассчитана</value></data>
+  <data name="MissingTrainingAssignments" xml:space="preserve"><value>Отсутствующие назначения</value></data>
+  <data name="TrainingAssignmentMissing" xml:space="preserve"><value>Назначение обучения не найдено</value></data>
+  <data name="TrainingCompletionRequired" xml:space="preserve"><value>Сначала требуется завершить обучение</value></data>
+  <data name="TrainingEffectivenessRequired" xml:space="preserve"><value>Требуется проверка результативности</value></data>
+  <data name="TrainingEffectivenessFailed" xml:space="preserve"><value>Проверка результативности не пройдена</value></data>
+  <data name="TrainingRestrictionRequired" xml:space="preserve"><value>Для необученных пользователей требуется формальное ограничение</value></data>
+  <data name="InvalidTrainingStatus" xml:space="preserve"><value>Действие недопустимо для текущего статуса обучения</value></data>
+  <data name="TrainingResolveSucceeded" xml:space="preserve"><value>Матрица обучения рассчитана</value></data>
+  <data name="TrainingResolveFailed" xml:space="preserve"><value>Не удалось рассчитать матрицу обучения</value></data>
+  <data name="TrainingAssignSucceeded" xml:space="preserve"><value>Обучение назначено</value></data>
+  <data name="TrainingAssignFailed" xml:space="preserve"><value>Не удалось назначить обучение</value></data>
+  <data name="TrainingCompleteSucceeded" xml:space="preserve"><value>Завершение обучения зафиксировано</value></data>
+  <data name="TrainingCompleteFailed" xml:space="preserve"><value>Не удалось зафиксировать завершение обучения</value></data>
+  <data name="TrainingEffectivenessSucceeded" xml:space="preserve"><value>Результативность зафиксирована</value></data>
+  <data name="TrainingEffectivenessFailedMessage" xml:space="preserve"><value>Не удалось зафиксировать результат</value></data>
+  <data name="TrainingRestrictSucceeded" xml:space="preserve"><value>Ограничение зафиксировано</value></data>
+  <data name="TrainingRestrictFailed" xml:space="preserve"><value>Не удалось зафиксировать ограничение</value></data>
+  <data name="RefreshTraining" xml:space="preserve"><value>Обновить</value></data>
+  <data name="RepositoryTabTitle" xml:space="preserve"><value>Хранилище и копии</value></data>
+  <data name="RepositorySummary" xml:space="preserve"><value>Оценка хранилища и контролируемые копии</value></data>
+  <data name="RefreshRepository" xml:space="preserve"><value>Обновить</value></data>
+  <data name="RepositoryAssessment" xml:space="preserve"><value>Оценка хранилища</value></data>
+  <data name="RepositoryAssessments" xml:space="preserve"><value>Оценки хранилищ</value></data>
+  <data name="NoRepositoryAssessmentsFound" xml:space="preserve"><value>Оценки хранилищ ещё не зарегистрированы</value></data>
+  <data name="RepositoryName" xml:space="preserve"><value>Название хранилища</value></data>
+  <data name="RepositoryStatus" xml:space="preserve"><value>Статус оценки</value></data>
+  <data name="RepositoryStatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="RepositoryStatusUnderReview" xml:space="preserve"><value>На рассмотрении</value></data>
+  <data name="RepositoryStatusApproved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="RepositoryStatusRejected" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="RepositoryStatusExpired" xml:space="preserve"><value>Истёк срок</value></data>
+  <data name="RepositoryStatusSuperseded" xml:space="preserve"><value>Заменено</value></data>
+  <data name="RepositoryTypeValidatedDms" xml:space="preserve"><value>Валидированная DMS</value></data>
+  <data name="RepositoryTypeApprovedInterimRepository" xml:space="preserve"><value>Утверждённое временное хранилище</value></data>
+  <data name="RepositoryTypeSeparateApprovalMechanism" xml:space="preserve"><value>Отдельный механизм утверждения</value></data>
+  <data name="RepositoryTypeUnapprovedRepository" xml:space="preserve"><value>Неутверждённое хранилище</value></data>
+  <data name="LinkedRepository" xml:space="preserve"><value>Связанное хранилище</value></data>
+  <data name="NoRepositoryLinked" xml:space="preserve"><value>С этим документом не связана оценка хранилища</value></data>
+  <data name="NotLinked" xml:space="preserve"><value>Не связано</value></data>
+  <data name="LinkRepository" xml:space="preserve"><value>Связать хранилище</value></data>
+  <data name="LinkDoesNotApproveRepository" xml:space="preserve"><value>Связывание указывает документ на существующую оценку. Оно не утверждает хранилище и не меняет его классификацию.</value></data>
+  <data name="ReleaseGateRepositoryNote" xml:space="preserve"><value>Релиз-гейт 2 использует эту классификацию хранилища. Экран показывает и фиксирует оценку — он не проходит гейт и не вводит документ в действие.</value></data>
+  <data name="NoComplianceClaim" xml:space="preserve"><value>Без заявления о соответствии</value></data>
+  <data name="NoValidatedDmsClaim" xml:space="preserve"><value>Экран классифицирует хранилище по границе СОП. Он не заявляет о валидации системы, о соответствии электронной подписи и не подтверждает никакие сертификаты.</value></data>
+  <data name="InterimRepositoryWarning" xml:space="preserve"><value>Утверждённое временное хранилище не является валидированной DMS. Его нельзя выдавать за соответствие требованиям электронной подписи; у него ограниченный по времени контрольный срок.</value></data>
+  <data name="BoundaryStatement" xml:space="preserve"><value>Заявление о границах</value></data>
+  <data name="EvaluateToSeeBoundary" xml:space="preserve"><value>Выполните оценку, чтобы увидеть заявление о границах</value></data>
+  <data name="CanSupportReleaseGate" xml:space="preserve"><value>Может обеспечить релиз-гейт</value></data>
+  <data name="CanSupportRegulatedESignature" xml:space="preserve"><value>Может обеспечить регулируемую э-подпись</value></data>
+  <data name="RepositoryLocation" xml:space="preserve"><value>Расположение</value></data>
+  <data name="RepositoryOwner" xml:space="preserve"><value>Владелец</value></data>
+  <data name="AccessControlModel" xml:space="preserve"><value>Модель контроля доступа</value></data>
+  <data name="BackupRestorePlan" xml:space="preserve"><value>План резервного копирования</value></data>
+  <data name="ApprovalMechanism" xml:space="preserve"><value>Механизм утверждения</value></data>
+  <data name="EffectiveCopyControl" xml:space="preserve"><value>Контроль действующей копии</value></data>
+  <data name="AuditTrail" xml:space="preserve"><value>Журнал аудита</value></data>
+  <data name="ChangeControl" xml:space="preserve"><value>Управление изменениями</value></data>
+  <data name="ValidationEvidence" xml:space="preserve"><value>Доказательство валидации</value></data>
+  <data name="CriticalFindings" xml:space="preserve"><value>Критические замечания</value></data>
+  <data name="RepositoryFindings" xml:space="preserve"><value>Замечания по хранилищу</value></data>
+  <data name="NoRepositoryFindingsFound" xml:space="preserve"><value>Замечания по хранилищу отсутствуют</value></data>
+  <data name="EvaluateRepository" xml:space="preserve"><value>Оценить</value></data>
+  <data name="ApproveRepository" xml:space="preserve"><value>Утвердить</value></data>
+  <data name="RejectRepository" xml:space="preserve"><value>Отклонить</value></data>
+  <data name="ApproveDoesNotClaimValidation" xml:space="preserve"><value>Утверждение фиксирует управленческое решение по хранилищу. Оно не заявляет о валидации системы и соответствии электронной подписи.</value></data>
+  <data name="RejectRepositoryNote" xml:space="preserve"><value>Отклонение фиксирует управленческое решение. Причина обязательна и сохраняется в журнале аудита.</value></data>
+  <data name="RepositoryApproverRoleHint" xml:space="preserve"><value>Согласно СОП §11.2 оценку хранилища могут утвердить только GQD, заместитель GQD или владелец ИТ/CSV.</value></data>
+  <data name="ApprovedByRole" xml:space="preserve"><value>Утверждающая роль</value></data>
+  <data name="ValidUntil" xml:space="preserve"><value>Действительно до</value></data>
+  <data name="ApprovedRepositoryAvailable" xml:space="preserve"><value>Утверждённое хранилище</value></data>
+  <data name="RepositoryEvaluateSucceeded" xml:space="preserve"><value>Хранилище оценено</value></data>
+  <data name="RepositoryEvaluateFailed" xml:space="preserve"><value>Не удалось оценить хранилище</value></data>
+  <data name="RepositoryApproveSucceeded" xml:space="preserve"><value>Оценка хранилища утверждена</value></data>
+  <data name="RepositoryApproveFailed" xml:space="preserve"><value>Не удалось утвердить оценку</value></data>
+  <data name="RepositoryRejectSucceeded" xml:space="preserve"><value>Оценка хранилища отклонена</value></data>
+  <data name="RepositoryLinkSucceeded" xml:space="preserve"><value>Хранилище связано</value></data>
+  <data name="RepositoryLinkFailed" xml:space="preserve"><value>Не удалось связать хранилище</value></data>
+  <data name="RepositoryAssessmentNotFound" xml:space="preserve"><value>Оценка хранилища не найдена</value></data>
+  <data name="RepositoryNameAndTypeRequired" xml:space="preserve"><value>Требуются название и тип хранилища</value></data>
+  <data name="RepositoryRequiredFieldsMissing" xml:space="preserve"><value>Отсутствуют обязательные поля оценки</value></data>
+  <data name="RepositoryAlreadyDecided" xml:space="preserve"><value>По этой оценке уже принято решение</value></data>
+  <data name="RepositoryApproverRoleInvalid" xml:space="preserve"><value>Эта роль не может утверждать оценку хранилища</value></data>
+  <data name="RepositoryLinkStatusInvalid" xml:space="preserve"><value>Эта оценка не в состоянии, допускающем связывание</value></data>
+  <data name="RepositoryBoundaryBlocked" xml:space="preserve"><value>Границы хранилища блокируют это действие</value></data>
+  <data name="UnapprovedRepositoryError" xml:space="preserve"><value>Это хранилище не утверждено</value></data>
+  <data name="ValidatedDmsEvidenceRequired" xml:space="preserve"><value>Требуется доказательство валидации DMS</value></data>
+  <data name="InterimRepositoryLimitation" xml:space="preserve"><value>Действует ограничение временного хранилища</value></data>
+  <data name="ControlledCopies" xml:space="preserve"><value>Контролируемые копии</value></data>
+  <data name="ControlledCopy" xml:space="preserve"><value>Контролируемая копия</value></data>
+  <data name="ControlledCopyLog" xml:space="preserve"><value>Журнал контролируемых копий</value></data>
+  <data name="NoControlledCopiesFound" xml:space="preserve"><value>Контролируемые копии не зарегистрированы</value></data>
+  <data name="NoControlledCopyDataYet" xml:space="preserve"><value>Для этого документа ещё не зарегистрированы контролируемые копии.</value></data>
+  <data name="CopyWithdrawalReady" xml:space="preserve"><value>Изъятие копий для этого документа завершено.</value></data>
+  <data name="ReleaseGateCopyNote" xml:space="preserve"><value>Релиз-гейт 6 использует эту готовность изъятия копий. Экран показывает и фиксирует доказательства — он не проходит гейт и не вводит документ в действие.</value></data>
+  <data name="CopyNumber" xml:space="preserve"><value>Номер копии</value></data>
+  <data name="CopyType" xml:space="preserve"><value>Тип копии</value></data>
+  <data name="CopyTypeDigitalEffectiveCopy" xml:space="preserve"><value>Цифровая действующая копия</value></data>
+  <data name="CopyTypeDigitalControlledCopy" xml:space="preserve"><value>Цифровая контролируемая копия</value></data>
+  <data name="CopyTypePrintedControlledCopy" xml:space="preserve"><value>Печатная контролируемая копия</value></data>
+  <data name="CopyTypeTrainingCopy" xml:space="preserve"><value>Учебная копия</value></data>
+  <data name="CopyTypeReferenceCopy" xml:space="preserve"><value>Справочная копия</value></data>
+  <data name="CopyTypeExternalSharedCopy" xml:space="preserve"><value>Внешняя переданная копия</value></data>
+  <data name="CopyTypeTemporaryControlledIssue" xml:space="preserve"><value>Временный контролируемый выпуск</value></data>
+  <data name="CopyStatus" xml:space="preserve"><value>Статус копии</value></data>
+  <data name="CopyStatusActive" xml:space="preserve"><value>Действует</value></data>
+  <data name="CopyStatusPendingWithdrawal" xml:space="preserve"><value>Ожидает изъятия</value></data>
+  <data name="CopyStatusWithdrawn" xml:space="preserve"><value>Изъята</value></data>
+  <data name="CopyStatusReconciled" xml:space="preserve"><value>Сверена</value></data>
+  <data name="CopyStatusMissing" xml:space="preserve"><value>Отсутствует</value></data>
+  <data name="CopyStatusObsolete" xml:space="preserve"><value>Устаревшая</value></data>
+  <data name="CopyStatusDestroyed" xml:space="preserve"><value>Уничтожена</value></data>
+  <data name="Holder" xml:space="preserve"><value>Держатель</value></data>
+  <data name="HolderRole" xml:space="preserve"><value>Роль держателя</value></data>
+  <data name="HolderDepartment" xml:space="preserve"><value>Подразделение держателя</value></data>
+  <data name="HolderOrLocationRequiredHint" xml:space="preserve"><value>Укажите держателя или расположение — бэкенд требует хотя бы одно.</value></data>
+  <data name="HolderOrLocationRequired" xml:space="preserve"><value>Требуется держатель или расположение</value></data>
+  <data name="CopyLocation" xml:space="preserve"><value>Расположение</value></data>
+  <data name="IssuedAt" xml:space="preserve"><value>Дата выдачи</value></data>
+  <data name="RegisterCopy" xml:space="preserve"><value>Зарегистрировать копию</value></data>
+  <data name="IssueDoesNotMarkEffective" xml:space="preserve"><value>Регистрация копии заносит её в журнал. Документ в действие не вводится, релиз-гейты не проходятся.</value></data>
+  <data name="WithdrawCopy" xml:space="preserve"><value>Изъять</value></data>
+  <data name="WithdrawalDoesNotDelete" xml:space="preserve"><value>Изъятие меняет статус копии и сохраняет запись журнала. Ничего не удаляется, копия остаётся видимой.</value></data>
+  <data name="ReconcileCopy" xml:space="preserve"><value>Сверить</value></data>
+  <data name="ReconcileDoesNotDelete" xml:space="preserve"><value>Сверка фиксирует, что копия учтена. Запись о копии не удаляется.</value></data>
+  <data name="MarkCopyMissing" xml:space="preserve"><value>Отметить как отсутствующую</value></data>
+  <data name="MarkMissingDoesNotDelete" xml:space="preserve"><value>Отметка «отсутствует» фиксируется для сверки. Запись сохраняется и может потребовать отклонения.</value></data>
+  <data name="MarkCopyObsolete" xml:space="preserve"><value>Отметить устаревшей</value></data>
+  <data name="MarkObsoleteDoesNotDelete" xml:space="preserve"><value>Отметка «устаревшая» создаёт замечание для сверки. Запись сохраняется.</value></data>
+  <data name="ObsoleteReason" xml:space="preserve"><value>Причина устаревания</value></data>
+  <data name="WithdrawnAt" xml:space="preserve"><value>Дата изъятия</value></data>
+  <data name="ReconciledAt" xml:space="preserve"><value>Дата сверки</value></data>
+  <data name="ActiveCopies" xml:space="preserve"><value>Действующие копии</value></data>
+  <data name="PendingWithdrawal" xml:space="preserve"><value>Ожидают изъятия</value></data>
+  <data name="WithdrawnCopies" xml:space="preserve"><value>Изъято</value></data>
+  <data name="CopyRegisterSucceeded" xml:space="preserve"><value>Контролируемая копия зарегистрирована</value></data>
+  <data name="CopyWithdrawSucceeded" xml:space="preserve"><value>Копия изъята</value></data>
+  <data name="CopyReconcileSucceeded" xml:space="preserve"><value>Копия сверена</value></data>
+  <data name="CopyMarkMissingSucceeded" xml:space="preserve"><value>Копия отмечена как отсутствующая</value></data>
+  <data name="CopyMarkObsoleteSucceeded" xml:space="preserve"><value>Копия отмечена устаревшей</value></data>
+  <data name="ControlledCopyNotFound" xml:space="preserve"><value>Контролируемая копия не найдена</value></data>
+  <data name="CopyNotEligible" xml:space="preserve"><value>Копия не в подходящем статусе для действия</value></data>
+  <data name="DuplicateCopyNumber" xml:space="preserve"><value>Такой номер копии уже используется</value></data>
+  <data name="CopyAlreadyWithdrawn" xml:space="preserve"><value>Эта копия уже изъята</value></data>
+  <data name="CopyReconciliationRequired" xml:space="preserve"><value>Требуется сверка копий</value></data>
+  <data name="ControlledCopyWithdrawalRequired" xml:space="preserve"><value>Изъятие копий не завершено</value></data>
+  <data name="WithdrawalPlans" xml:space="preserve"><value>Планы изъятия</value></data>
+  <data name="WithdrawalPlan" xml:space="preserve"><value>План изъятия</value></data>
+  <data name="NoWithdrawalPlansFound" xml:space="preserve"><value>Планы изъятия не созданы</value></data>
+  <data name="GenerateWithdrawalPlan" xml:space="preserve"><value>Создать план</value></data>
+  <data name="CompleteWithdrawalPlan" xml:space="preserve"><value>Завершить план</value></data>
+  <data name="PlanCompleteNote" xml:space="preserve"><value>Завершение плана фиксирует окончание изъятия. Отсутствующая копия может требовать ссылки на отклонение.</value></data>
+  <data name="PlanStatus" xml:space="preserve"><value>Статус плана</value></data>
+  <data name="PlanStatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="PlanStatusActive" xml:space="preserve"><value>Активен</value></data>
+  <data name="PlanStatusCompleted" xml:space="preserve"><value>Завершён</value></data>
+  <data name="PlanStatusBlocked" xml:space="preserve"><value>Заблокирован</value></data>
+  <data name="PlanStatusCancelled" xml:space="preserve"><value>Отменён</value></data>
+  <data name="TriggerType" xml:space="preserve"><value>Триггер</value></data>
+  <data name="RequiredCopies" xml:space="preserve"><value>Требуется</value></data>
+  <data name="WithdrawnCopiesCount" xml:space="preserve"><value>Изъято</value></data>
+  <data name="MissingCopies" xml:space="preserve"><value>Отсутствует</value></data>
+  <data name="PlanGenerateSucceeded" xml:space="preserve"><value>План изъятия создан</value></data>
+  <data name="PlanCompleteSucceeded" xml:space="preserve"><value>План изъятия завершён</value></data>
+  <data name="PlanIncomplete" xml:space="preserve"><value>План изъятия не завершён</value></data>
+  <data name="WithdrawalPlanNotFound" xml:space="preserve"><value>План изъятия не найден</value></data>
+  <data name="ObsoleteCopyFindings" xml:space="preserve"><value>Замечания по устаревшим копиям</value></data>
+  <data name="NoObsoleteFindingsFound" xml:space="preserve"><value>Замечаний по устаревшим копиям нет</value></data>
+  <data name="EvaluateReconciliation" xml:space="preserve"><value>Оценить сверку</value></data>
+  <data name="ReconciliationEvaluateSucceeded" xml:space="preserve"><value>Сверка выполнена</value></data>
+  <data name="ResolveFinding" xml:space="preserve"><value>Устранить</value></data>
+  <data name="ResolveFindingDoesNotDelete" xml:space="preserve"><value>Устранение фиксирует, как замечание было закрыто. Ни замечание, ни запись о копии не удаляются.</value></data>
+  <data name="FindingResolveSucceeded" xml:space="preserve"><value>Замечание устранено</value></data>
+  <data name="FindingNotFound" xml:space="preserve"><value>Замечание не найдено</value></data>
+  <data name="ObsoleteCopyFindingOpen" xml:space="preserve"><value>Есть незакрытое замечание по устаревшей копии</value></data>
+  <data name="FindingStatusOpen" xml:space="preserve"><value>Открыто</value></data>
+  <data name="FindingStatusAcknowledged" xml:space="preserve"><value>Принято к сведению</value></data>
+  <data name="FindingStatusResolved" xml:space="preserve"><value>Устранено</value></data>
+  <data name="FindingStatusClosed" xml:space="preserve"><value>Закрыто</value></data>
+  <data name="SeverityCritical" xml:space="preserve"><value>Критично</value></data>
+  <data name="SeverityMajor" xml:space="preserve"><value>Существенно</value></data>
+  <data name="SeverityMinor" xml:space="preserve"><value>Незначительно</value></data>
+  <data name="CriticalFinding" xml:space="preserve"><value>Критические замечания</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="DeviationReference" xml:space="preserve"><value>Ссылка на отклонение</value></data>
+  <data name="DeviationReferenceHint" xml:space="preserve"><value>Ссылка на отклонение или событие качества, оформленное в другом месте. Этот экран не является модулем CAPA.</value></data>
+  <data name="DeviationRequired" xml:space="preserve"><value>Требуется ссылка на отклонение</value></data>
+  <data name="RetentionTabTitle" xml:space="preserve">
+    <value>Хранение</value>
+  </data>
+  <data name="SignaturesTabTitle" xml:space="preserve">
+    <value>Подписи</value>
+  </data>
+  <data name="QualityEventsTabTitle" xml:space="preserve">
+    <value>События качества</value>
+  </data>
+  <data name="RetentionSummary" xml:space="preserve">
+    <value>Сводка по хранению</value>
+  </data>
+  <data name="RetentionSchedule" xml:space="preserve">
+    <value>График хранения</value>
+  </data>
+  <data name="RetentionPolicyKey" xml:space="preserve">
+    <value>Политика хранения</value>
+  </data>
+  <data name="RetentionTriggerDate" xml:space="preserve">
+    <value>Дата запуска</value>
+  </data>
+  <data name="RetentionDueDate" xml:space="preserve">
+    <value>Срок хранения</value>
+  </data>
+  <data name="RetentionEligibilityDate" xml:space="preserve">
+    <value>Дата права</value>
+  </data>
+  <data name="RetentionPermanent" xml:space="preserve">
+    <value>Постоянное хранение</value>
+  </data>
+  <data name="RetentionActiveHolds" xml:space="preserve">
+    <value>Активные юридические удержания</value>
+  </data>
+  <data name="DispositionReadiness" xml:space="preserve">
+    <value>Готовность к утилизации</value>
+  </data>
+  <data name="DispositionStatus" xml:space="preserve">
+    <value>Статус утилизации</value>
+  </data>
+  <data name="DispositionEligible" xml:space="preserve">
+    <value>Соответствует</value>
+  </data>
+  <data name="DispositionNotEligible" xml:space="preserve">
+    <value>Не соответствует</value>
+  </data>
+  <data name="DispositionBlocked" xml:space="preserve">
+    <value>Утилизация заблокирована</value>
+  </data>
+  <data name="LegalHold" xml:space="preserve">
+    <value>Юридическое удержание</value>
+  </data>
+  <data name="LegalHolds" xml:space="preserve">
+    <value>Юридические удержания</value>
+  </data>
+  <data name="LegalHoldActive" xml:space="preserve">
+    <value>Юридическое удержание активно</value>
+  </data>
+  <data name="LegalHoldNotFound" xml:space="preserve">
+    <value>Юридическое удержание не найдено.</value>
+  </data>
+  <data name="LegalHoldNotActive" xml:space="preserve">
+    <value>Юридическое удержание не активно.</value>
+  </data>
+  <data name="HoldTitle" xml:space="preserve">
+    <value>Название удержания</value>
+  </data>
+  <data name="HoldStatus" xml:space="preserve">
+    <value>Статус удержания</value>
+  </data>
+  <data name="HoldReason" xml:space="preserve">
+    <value>Причина удержания</value>
+  </data>
+  <data name="ReleasedAt" xml:space="preserve">
+    <value>Снято</value>
+  </data>
+  <data name="LegalCaseReference" xml:space="preserve">
+    <value>Юридическая ссылка / дело</value>
+  </data>
+  <data name="HoldReleaseApprovalRequired" xml:space="preserve">
+    <value>Для снятия удержания требуются юридическое одобрение и согласие GQD.</value>
+  </data>
+  <data name="LegalHoldBlocksDisposition" xml:space="preserve">
+    <value>Активное юридическое удержание блокирует утилизацию.</value>
+  </data>
+  <data name="ReleaseHoldDoesNotDispose" xml:space="preserve">
+    <value>Снятие юридического удержания не приводит к утилизации документа.</value>
+  </data>
+  <data name="NoDispositionOverride" xml:space="preserve">
+    <value>Этот экран никогда не отменяет блокировку утилизации.</value>
+  </data>
+  <data name="NoRetentionScheduleFound" xml:space="preserve">
+    <value>График хранения для этой записи ещё не рассчитан.</value>
+  </data>
+  <data name="NoLegalHoldsFound" xml:space="preserve">
+    <value>Юридические удержания не затрагивают эту запись.</value>
+  </data>
+  <data name="EvaluateRetention" xml:space="preserve">
+    <value>Оценить хранение</value>
+  </data>
+  <data name="RetentionEvaluateSucceeded" xml:space="preserve">
+    <value>Хранение оценено.</value>
+  </data>
+  <data name="RetentionEvaluateFailed" xml:space="preserve">
+    <value>Не удалось оценить хранение.</value>
+  </data>
+  <data name="LastEvaluatedAt" xml:space="preserve">
+    <value>Последняя оценка</value>
+  </data>
+  <data name="EvaluationStatus" xml:space="preserve">
+    <value>Статус оценки</value>
+  </data>
+  <data name="EvaluationNote" xml:space="preserve">
+    <value>Примечание оценки</value>
+  </data>
+  <data name="DispositionRequestsTitle" xml:space="preserve">
+    <value>Запросы на утилизацию</value>
+  </data>
+  <data name="DispositionRequestNumber" xml:space="preserve">
+    <value>№ запроса</value>
+  </data>
+  <data name="EligibilityResult" xml:space="preserve">
+    <value>Результат проверки</value>
+  </data>
+  <data name="RequestedAt" xml:space="preserve">
+    <value>Запрошено</value>
+  </data>
+  <data name="ExecutedAt" xml:space="preserve">
+    <value>Выполнено</value>
+  </data>
+  <data name="NoDispositionRequestsForEntry" xml:space="preserve">
+    <value>Нет запросов на утилизацию для этой записи.</value>
+  </data>
+  <data name="SignatureSummary" xml:space="preserve">
+    <value>Сводка подписей</value>
+  </data>
+  <data name="SignaturePolicy" xml:space="preserve">
+    <value>Название политики</value>
+  </data>
+  <data name="SignaturePolicies" xml:space="preserve">
+    <value>Политики подписи</value>
+  </data>
+  <data name="SignaturePolicyCount" xml:space="preserve">
+    <value>Политики подписи</value>
+  </data>
+  <data name="SignatureSubjectType" xml:space="preserve">
+    <value>Тип объекта</value>
+  </data>
+  <data name="SignatureMeaning" xml:space="preserve">
+    <value>Значение подписи</value>
+  </data>
+  <data name="SignatureRequests" xml:space="preserve">
+    <value>Запросы на подпись</value>
+  </data>
+  <data name="SignatureRequestNumber" xml:space="preserve">
+    <value>№ запроса</value>
+  </data>
+  <data name="SignatureRecords" xml:space="preserve">
+    <value>Записи подписей</value>
+  </data>
+  <data name="SignatureFingerprint" xml:space="preserve">
+    <value>Отпечаток</value>
+  </data>
+  <data name="SignerRole" xml:space="preserve">
+    <value>Роль подписанта</value>
+  </data>
+  <data name="SignerUser" xml:space="preserve">
+    <value>Подписант</value>
+  </data>
+  <data name="SignedAt" xml:space="preserve">
+    <value>Подписано</value>
+  </data>
+  <data name="SignatureDueDate" xml:space="preserve">
+    <value>Срок</value>
+  </data>
+  <data name="ReAuthenticationRequired" xml:space="preserve">
+    <value>Повторная аутентификация</value>
+  </data>
+  <data name="TwoFactorRequired" xml:space="preserve">
+    <value>Двухфакторная</value>
+  </data>
+  <data name="TwoFactorNotImplemented" xml:space="preserve">
+    <value>2FA не реализовано</value>
+  </data>
+  <data name="VerifySignature" xml:space="preserve">
+    <value>Проверить</value>
+  </data>
+  <data name="FingerprintValid" xml:space="preserve">
+    <value>Отпечаток действителен — целостность объекта подтверждена.</value>
+  </data>
+  <data name="FingerprintInvalid" xml:space="preserve">
+    <value>Отпечаток не совпадает — подписанный объект изменён.</value>
+  </data>
+  <data name="FingerprintMismatch" xml:space="preserve">
+    <value>Отпечаток не совпадает.</value>
+  </data>
+  <data name="SubjectNotSignable" xml:space="preserve">
+    <value>Объект не может быть подписан.</value>
+  </data>
+  <data name="AuthenticationContextRequired" xml:space="preserve">
+    <value>Требуется контекст аутентификации.</value>
+  </data>
+  <data name="DuplicateSignature" xml:space="preserve">
+    <value>Подпись для этого запроса уже существует.</value>
+  </data>
+  <data name="SignatureNotAllowed" xml:space="preserve">
+    <value>Подпись здесь не разрешена.</value>
+  </data>
+  <data name="SignaturePolicyNotFound" xml:space="preserve">
+    <value>Политика подписи не найдена.</value>
+  </data>
+  <data name="SignatureRequestNotFound" xml:space="preserve">
+    <value>Запрос на подпись не найден.</value>
+  </data>
+  <data name="SignatureNotFound" xml:space="preserve">
+    <value>Подпись не найдена.</value>
+  </data>
+  <data name="MetadataFingerprintOnly" xml:space="preserve">
+    <value>Этот экран проверяет только сохранённую привязку отпечатка метаданных.</value>
+  </data>
+  <data name="NoESignComplianceClaim" xml:space="preserve">
+    <value>Это не регулируемая возможность электронной подписи и не заявляет о соответствии 21 CFR Part 11 / Annex 11.</value>
+  </data>
+  <data name="NoCertificateValidationClaim" xml:space="preserve">
+    <value>Внешний поставщик не вызывается, цепочка сертификатов не проверяется.</value>
+  </data>
+  <data name="OpenSignatureRequests" xml:space="preserve">
+    <value>Открытые запросы</value>
+  </data>
+  <data name="CompletedSignatures" xml:space="preserve">
+    <value>Завершённые подписи</value>
+  </data>
+  <data name="InvalidVerifications" xml:space="preserve">
+    <value>Недействительные / переподпись</value>
+  </data>
+  <data name="NoSignaturePoliciesFound" xml:space="preserve">
+    <value>Политики подписи не найдены.</value>
+  </data>
+  <data name="NoSignatureRequestsFound" xml:space="preserve">
+    <value>Нет запросов на подпись для этой записи.</value>
+  </data>
+  <data name="NoSignatureRecordsFound" xml:space="preserve">
+    <value>Нет записей подписей для этой записи.</value>
+  </data>
+  <data name="QualityEventSummary" xml:space="preserve">
+    <value>Сводка событий качества</value>
+  </data>
+  <data name="QualityEventLinks" xml:space="preserve">
+    <value>Связи событий качества</value>
+  </data>
+  <data name="LinkedQualityEventsCount" xml:space="preserve">
+    <value>Связанные события</value>
+  </data>
+  <data name="EventType" xml:space="preserve">
+    <value>Тип события</value>
+  </data>
+  <data name="EventReference" xml:space="preserve">
+    <value>Ссылка события</value>
+  </data>
+  <data name="EventSeverity" xml:space="preserve">
+    <value>Серьёзность</value>
+  </data>
+  <data name="EventStatus" xml:space="preserve">
+    <value>Статус</value>
+  </data>
+  <data name="QualityBlockingStatus" xml:space="preserve">
+    <value>Блокирует</value>
+  </data>
+  <data name="QualityBlockingYes" xml:space="preserve">
+    <value>Блокирует</value>
+  </data>
+  <data name="QualityBlockingNo" xml:space="preserve">
+    <value>Не блокирует</value>
+  </data>
+  <data name="DetectedAt" xml:space="preserve">
+    <value>Обнаружено</value>
+  </data>
+  <data name="ClosedAt" xml:space="preserve">
+    <value>Закрыто</value>
+  </data>
+  <data name="ReportedBy" xml:space="preserve">
+    <value>Кем сообщено</value>
+  </data>
+  <data name="OpenDeviations" xml:space="preserve">
+    <value>Открытые отклонения</value>
+  </data>
+  <data name="DeviationStatus" xml:space="preserve">
+    <value>Статус отклонения</value>
+  </data>
+  <data name="DeviationOpen" xml:space="preserve">
+    <value>Открытое отклонение блокирует.</value>
+  </data>
+  <data name="DeviationNotFoundError" xml:space="preserve">
+    <value>Отклонение не найдено.</value>
+  </data>
+  <data name="OpenCapas" xml:space="preserve">
+    <value>Открытые CAPA</value>
+  </data>
+  <data name="CapaReference" xml:space="preserve">
+    <value>Ссылка CAPA</value>
+  </data>
+  <data name="CapaStatus" xml:space="preserve">
+    <value>Статус CAPA</value>
+  </data>
+  <data name="CapaOpen" xml:space="preserve">
+    <value>Открытое действие CAPA блокирует.</value>
+  </data>
+  <data name="CapaEffectivenessPending" xml:space="preserve">
+    <value>Ожидается оценка эффективности CAPA.</value>
+  </data>
+  <data name="CapaNotFoundError" xml:space="preserve">
+    <value>Действие CAPA не найдено.</value>
+  </data>
+  <data name="CapaDueDate" xml:space="preserve">
+    <value>Срок</value>
+  </data>
+  <data name="ActionOwner" xml:space="preserve">
+    <value>Ответственный</value>
+  </data>
+  <data name="LinkDoesNotCloseEvent" xml:space="preserve">
+    <value>Просмотр события качества здесь не закрывает и не изменяет его.</value>
+  </data>
+  <data name="RefreshDoesNotCloseEvent" xml:space="preserve">
+    <value>Обновление не закрывает CAPA или отклонение.</value>
+  </data>
+  <data name="NoExternalQmsCall" xml:space="preserve">
+    <value>Внешняя система QMS/CAPA не вызывается.</value>
+  </data>
+  <data name="NoQualityEventsFound" xml:space="preserve">
+    <value>Нет событий качества для этой записи.</value>
+  </data>
+  <data name="NoDeviationsFound" xml:space="preserve">
+    <value>Нет отклонений для этой записи.</value>
+  </data>
+  <data name="NoCapasFound" xml:space="preserve">
+    <value>Нет действий CAPA для этой записи.</value>
+  </data>
+  <data name="QualityEventNotFound" xml:space="preserve">
+    <value>Событие качества не найдено.</value>
+  </data>
+  <data name="QualityEventLinkRequired" xml:space="preserve">
+    <value>Требуется связь с событием качества.</value>
+  </data>
+  <data name="QualityEventBlocking" xml:space="preserve">
+    <value>Открыто блокирующее событие качества.</value>
+  </data>
+  <data name="QualityEventSourceNotFound" xml:space="preserve">
+    <value>Источник события качества не найден.</value>
+  </data>
+  <data name="LinkAlreadyExists" xml:space="preserve">
+    <value>Эта связь уже существует.</value>
+  </data>
+  <data name="LinkedControlledDocumentDescription" xml:space="preserve"><value>Связь управляемой записи с фактическим версионным файлом.</value></data>
+  <data name="ControlledDocumentLoading" xml:space="preserve"><value>Загрузка контролируемого документа…</value></data>
+  <data name="ControlledDocumentNotLinked" xml:space="preserve"><value>Контролируемый документ не связан</value></data>
+  <data name="ControlledDocumentNotLinkedHint" xml:space="preserve"><value>Выберите доступный документ, чтобы связать файл и историю версий с этой записью.</value></data>
+  <data name="LinkControlledDocument" xml:space="preserve"><value>Связать контролируемый документ</value></data>
+  <data name="LinkControlledDocumentHint" xml:space="preserve"><value>Отображаются только доступные документы. После связывания запись нельзя связать с другим документом.</value></data>
+  <data name="SelectControlledDocument" xml:space="preserve"><value>Выберите контролируемый документ</value></data>
+  <data name="OpenControlledDocument" xml:space="preserve"><value>Открыть контролируемый документ</value></data>
+  <data name="ViewVersionHistory" xml:space="preserve"><value>История версий</value></data>
+  <data name="ControlledDocumentLinkSucceeded" xml:space="preserve"><value>Контролируемый документ успешно связан.</value></data>
+  <data name="ControlledDocumentListEmpty" xml:space="preserve"><value>Нет доступных контролируемых документов.</value></data>
+  <data name="ControlledDocumentLoadFailed" xml:space="preserve"><value>Не удалось загрузить сведения о документе.</value></data>
+  <data name="ControlledDocumentStatus" xml:space="preserve"><value>Статус</value></data>
+  <data name="ControlledDocumentFolder" xml:space="preserve"><value>Папка</value></data>
+  <data name="ControlledDocumentVersion" xml:space="preserve"><value>Текущая версия</value></data>
+  <data name="UnifiedCreateTitle" xml:space="preserve"><value>Создать контролируемый документ</value></data>
+  <data name="DocumentKind" xml:space="preserve"><value>Тип документа</value></data>
+  <data name="KindControlledDocument" xml:space="preserve"><value>Контролируемый документ</value></data>
+  <data name="KindRecord" xml:space="preserve"><value>Запись</value></data>
+  <data name="KindVariant" xml:space="preserve"><value>Вариант</value></data>
+  <data name="View" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="Download" xml:space="preserve"><value>Скачать</value></data>
+  <data name="VariantDetails" xml:space="preserve"><value>Детали варианта</value></data>
+  <data name="VariantContentChangeHint" xml:space="preserve"><value>Выберите родительский документ. Содержимое варианта должно отличаться от родителя.</value></data>
+  <data name="VariantType" xml:space="preserve"><value>Тип варианта</value></data>
+  <data name="VariantTypeTranslation" xml:space="preserve"><value>Перевод</value></data>
+  <data name="VariantTypeSiteAdoption" xml:space="preserve"><value>Адаптация для площадки</value></data>
+  <data name="CountryCode" xml:space="preserve"><value>Код страны</value></data>
+  <data name="SiteCode" xml:space="preserve"><value>Код площадки</value></data>
+  <data name="VariantContentUnchanged" xml:space="preserve"><value>Содержимое варианта должно отличаться от родительского документа. Загрузите изменённый файл.</value></data>
+  <data name="VariantParentNotFound" xml:space="preserve"><value>Выбранный родительский контролируемый документ не найден.</value></data>
+  <data name="RecordCode" xml:space="preserve"><value>Код записи</value></data>
+  <data name="RecordCodeHint" xml:space="preserve"><value>Если оставить пустым, создаётся автоматически в стандартном формате. Введите значение, чтобы использовать свой код.</value></data>
+  <data name="KindHint" xml:space="preserve"><value>Контролируемый документ управляется (жизненный цикл, утверждение, шлюзы выпуска). Запись лишь хранит файл и запись реестра — без утверждения и жизненного цикла.</value></data>
+  <data name="CreateAndRegister" xml:space="preserve"><value>Создать и зарегистрировать</value></data>
+  <data name="UnifiedCreatePermissionRequired" xml:space="preserve"><value>У вас нет всех разрешений, необходимых для создания и регистрации контролируемого документа.</value></data>
+  <data name="Tags" xml:space="preserve"><value>Теги</value></data>
+  <data name="TagsHint" xml:space="preserve"><value>Разделяйте теги запятыми</value></data>
+  <data name="InitialFile" xml:space="preserve"><value>Исходный файл</value></data>
+  <data name="InitialFileHint" xml:space="preserve"><value>Этот файл станет первой версией контролируемого документа.</value></data>
+  <data name="RepositoryPlacement" xml:space="preserve"><value>Размещение в репозитории</value></data>
+  <data name="LegalEntityCompany" xml:space="preserve"><value>Юридическое лицо / Компания</value></data>
+  <data name="RegistrationOperation" xml:space="preserve"><value>Операция регистрации</value></data>
+  <data name="RetryRegistration" xml:space="preserve"><value>Повторить регистрацию</value></data>
+  <data name="RegistrationCompleted" xml:space="preserve"><value>Контролируемый документ и запись главного реестра созданы и связаны.</value></data>
+  <data name="RegistrationIncomplete" xml:space="preserve"><value>Регистрация не завершена. Проверьте состояние операции перед повторной попыткой.</value></data>
+  <data name="RegistrationRetryStarted" xml:space="preserve"><value>Повторная попытка обработана, но регистрация ещё не завершена.</value></data>
+  <data name="OperationId" xml:space="preserve"><value>Идентификатор операции</value></data>
+  <data name="CorrelationId" xml:space="preserve"><value>Идентификатор корреляции</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Выбрать</value></data>
+  <data name="NoFolders" xml:space="preserve"><value>Доступные папки не найдены.</value></data>
+  <data name="NewControlledDocument" xml:space="preserve"><value>Новый документ</value></data>
+  <data name="RegistrationSuccessRequiresCompleteRelationship" xml:space="preserve"><value>Успех отображается только после полного создания реестра, документа, первой версии и связи.</value></data>
+  <data name="RegistrationDoesNotAllocateIdentifiers" xml:space="preserve"><value>UID и код документа здесь не назначаются. После создания используйте вкладку «Идентификаторы».</value></data>
+  <data name="RegistrationDoesNotApproveReleaseSignOrEffective" xml:space="preserve"><value>Это действие не утверждает, не подписывает, не публикует и не вводит документ в действие.</value></data>
+  <data name="DocumentScope" xml:space="preserve"><value>Область документа</value></data>
+  <data name="DocumentScopeCompany" xml:space="preserve"><value>Компания</value></data>
+  <data name="DocumentScopeCorporate" xml:space="preserve"><value>Корпоративный</value></data>
+  <data name="CompanyScopeHelp" xml:space="preserve"><value>Документы компании относятся к экземпляру коллекции компании.</value></data>
+  <data name="CorporateScopeHelp" xml:space="preserve"><value>Корпоративные документы используют существующий корпоративный экземпляр без CompanyId.</value></data>
+  <data name="ScopeSwitchClearsSelections" xml:space="preserve"><value>Смена области очищает владельца, экземпляр и папку.</value></data>
+  <data name="CorporateOwner" xml:space="preserve"><value>Корпоративный владелец</value></data>
+  <data name="CorporateCollectionInstance" xml:space="preserve"><value>Корпоративный экземпляр коллекции</value></data>
+  <data name="CompanyCollectionInstance" xml:space="preserve"><value>Экземпляр коллекции компании</value></data>
+  <data name="CorporateFolder" xml:space="preserve"><value>Корпоративная папка</value></data>
+  <data name="CompanyFolder" xml:space="preserve"><value>Папка компании</value></data>
+  <data name="CorporateCollectionInstanceProvisioningRequired" xml:space="preserve"><value>Требуется существующий корпоративный экземпляр. Подготовкой управляет MOD-0028-FU06.</value></data>
+  <data name="NoCorporateCollectionInstancesAvailable" xml:space="preserve"><value>Нет доступных корпоративных экземпляров.</value></data>
+  <data name="SelectCorporateOwner" xml:space="preserve"><value>Выберите корпоративного владельца</value></data>
+  <data name="SelectCorporateCollectionInstance" xml:space="preserve"><value>Выберите корпоративный экземпляр</value></data>
+  <data name="SelectCorporateFolder" xml:space="preserve"><value>Выберите корпоративную папку</value></data>
+  <data name="SelectCompanyCollectionInstance" xml:space="preserve"><value>Выберите экземпляр компании</value></data>
+  <data name="SelectCompanyFolder" xml:space="preserve"><value>Выберите папку компании</value></data>
+  <data name="GovernedRetentionClass" xml:space="preserve"><value>Управляемый класс хранения</value></data>
+  <data name="LanguageSelectionRequired" xml:space="preserve"><value>Выберите управляемый язык.</value></data>
+  <data name="RetentionClassSelectionRequired" xml:space="preserve"><value>Выберите управляемый класс хранения.</value></data>
+  <data name="GovernedLookupUnavailable" xml:space="preserve"><value>Управляемые значения недоступны. Регистрация заблокирована.</value></data>
+  <data name="IdempotencyScopeConflict" xml:space="preserve"><value>Этот ключ уже связан с другой областью или целью.</value></data>
+  <data name="DuplicateDocumentTitle" xml:space="preserve"><value>В выбранной папке уже существует контролируемый документ с таким названием. Используйте другое название или откройте существующий документ.</value></data>
+  <data name="DuplicateRecordCode" xml:space="preserve"><value>Документ или запись с таким кодом уже существует. Используйте другой код.</value></data>
+  <data name="ScopeMismatch" xml:space="preserve"><value>Владелец, экземпляр или папка не соответствует области.</value></data>
+  <data name="CorporateAccessDenied" xml:space="preserve"><value>Нет управляемого доступа к корпоративной папке.</value></data>
+  <data name="CompanyAccessDenied" xml:space="preserve"><value>Нет доступа к созданию в папке компании.</value></data>
+  <data name="ManualLinkReconciliationOnly" xml:space="preserve"><value>Ручная привязка предназначена только для сверки устаревших записей. Область, владелец, коллекция и папка должны точно совпадать.</value></data>
+  <data name="ReconciliationReason" xml:space="preserve"><value>Причина сверки</value></data>
+  <data name="ReconciliationReasonHint" xml:space="preserve"><value>Объясните, почему выполняется сверка этой устаревшей связи.</value></data>
+</root>

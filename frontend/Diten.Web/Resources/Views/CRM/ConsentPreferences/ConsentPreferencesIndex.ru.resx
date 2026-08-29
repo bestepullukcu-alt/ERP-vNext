@@ -1,0 +1,154 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Согласие и предпочтения</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Управление согласиями, предпочтениями субъектов и оценкой права только для чтения.</value></data>
+  <data name="ConsentsTab" xml:space="preserve"><value>Согласия</value></data>
+  <data name="PreferencesTab" xml:space="preserve"><value>Предпочтения</value></data>
+  <data name="EvaluateTab" xml:space="preserve"><value>Оценить</value></data>
+  <data name="SubjectTab" xml:space="preserve"><value>Субъект</value></data>
+  <data name="ConsentsTitle" xml:space="preserve"><value>Согласия</value></data>
+  <data name="ConsentsSubtitle" xml:space="preserve"><value>Согласие — всегда субъект × канал × цель × область × время, а не общий флаг разрешения.</value></data>
+  <data name="PreferencesTitle" xml:space="preserve"><value>Предпочтения</value></data>
+  <data name="CreateConsent" xml:space="preserve"><value>Создать согласие</value></data>
+  <data name="CreatePreference" xml:space="preserve"><value>Создать предпочтение</value></data>
+  <data name="EditConsent" xml:space="preserve"><value>Изменить согласие</value></data>
+  <data name="EditPreference" xml:space="preserve"><value>Изменить предпочтение</value></data>
+  <data name="ArchiveConsent" xml:space="preserve"><value>Архивировать согласие</value></data>
+  <data name="ArchivePreference" xml:space="preserve"><value>Архивировать предпочтение</value></data>
+  <data name="ArchiveConsentConfirm" xml:space="preserve"><value>Архивировать это согласие? Оно не удаляется — остаётся читаемым, но исключается из оценки.</value></data>
+  <data name="ArchivePreferenceConfirm" xml:space="preserve"><value>Архивировать это предпочтение? Оно не удаляется — остаётся читаемым, но исключается из оценки.</value></data>
+  <data name="ConsentDetail" xml:space="preserve"><value>Детали согласия</value></data>
+  <data name="PreferenceDetail" xml:space="preserve"><value>Детали предпочтения</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Назад к списку</value></data>
+  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Выбрать…</value></data>
+  <data name="NoScope" xml:space="preserve"><value>Без области</value></data>
+  <data name="NoEvidence" xml:space="preserve"><value>Нет ссылки на доказательство</value></data>
+  <data name="NoExternalReferences" xml:space="preserve"><value>Нет внешних ссылок</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Включая архивные</value></data>
+  <data name="UnsupportedFiltersNote" xml:space="preserve"><value>Некоторые фильтры не поддерживаются сервером и намеренно опущены (без поддельной клиентской фильтрации):</value></data>
+  <data name="ConsentUnsupportedFilters" xml:space="preserve"><value>Поиск, ScopeType, ScopeId, LegalBasis, Source, диапазон дат.</value></data>
+  <data name="PreferenceUnsupportedFilters" xml:space="preserve"><value>Поиск, ScopeType, ScopeId, IsRestrictive.</value></data>
+  <data name="Apply" xml:space="preserve"><value>Применить</value></data>
+  <data name="Reset" xml:space="preserve"><value>Сбросить</value></data>
+  <data name="Filter" xml:space="preserve"><value>Фильтр</value></data>
+  <data name="SubjectType" xml:space="preserve"><value>Тип субъекта</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>ID субъекта</value></data>
+  <data name="Channel" xml:space="preserve"><value>Канал</value></data>
+  <data name="Purpose" xml:space="preserve"><value>Цель</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Тип области</value></data>
+  <data name="ScopeId" xml:space="preserve"><value>ID области</value></data>
+  <data name="LegalBasis" xml:space="preserve"><value>Правовое основание</value></data>
+  <data name="ConsentStatus" xml:space="preserve"><value>Статус согласия</value></data>
+  <data name="Source" xml:space="preserve"><value>Источник</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Действует до</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>Действует на</value></data>
+  <data name="WithdrawalReason" xml:space="preserve"><value>Причина отзыва</value></data>
+  <data name="Notes" xml:space="preserve"><value>Заметки</value></data>
+  <data name="EvidenceRefType" xml:space="preserve"><value>Тип ссылки доказательства</value></data>
+  <data name="EvidenceRefId" xml:space="preserve"><value>ID ссылки доказательства</value></data>
+  <data name="EvidenceSourceModule" xml:space="preserve"><value>Модуль-источник доказательства</value></data>
+  <data name="EvidenceRefCode" xml:space="preserve"><value>Код ссылки доказательства</value></data>
+  <data name="PreferenceType" xml:space="preserve"><value>Тип предпочтения</value></data>
+  <data name="PreferenceValue" xml:space="preserve"><value>Значение предпочтения</value></data>
+  <data name="Priority" xml:space="preserve"><value>Приоритет</value></data>
+  <data name="Restrictive" xml:space="preserve"><value>Ограничивающее</value></data>
+  <data name="ConsentId" xml:space="preserve"><value>ID согласия</value></data>
+  <data name="PreferenceId" xml:space="preserve"><value>ID предпочтения</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="Archived" xml:space="preserve"><value>Архивировано</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Создано</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>Кем создано</value></data>
+  <data name="UpdatedBy" xml:space="preserve"><value>Кем обновлено</value></data>
+  <data name="ArchivedAt" xml:space="preserve"><value>Архивировано</value></data>
+  <data name="ArchivedBy" xml:space="preserve"><value>Кем архивировано</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Исходная система</value></data>
+  <data name="ExternalId" xml:space="preserve"><value>Внешний ID</value></data>
+  <data name="ExternalCode" xml:space="preserve"><value>Внешний код</value></data>
+  <data name="ExternalName" xml:space="preserve"><value>Внешнее имя</value></data>
+  <data name="Primary" xml:space="preserve"><value>Основной</value></data>
+  <data name="Remove" xml:space="preserve"><value>Удалить</value></data>
+  <data name="AddReference" xml:space="preserve"><value>Добавить ссылку</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="ConsentStatusSection" xml:space="preserve"><value>Правовые данные и статус</value></data>
+  <data name="EvidenceSection" xml:space="preserve"><value>Указатель доказательства</value></data>
+  <data name="ExternalReferencesSection" xml:space="preserve"><value>Внешние ссылки</value></data>
+  <data name="PreferenceContextSection" xml:space="preserve"><value>Контекст предпочтения</value></data>
+  <data name="AuditSection" xml:space="preserve"><value>Аудит и происхождение</value></data>
+  <data name="ProvenanceSection" xml:space="preserve"><value>Происхождение</value></data>
+  <data name="DiagnosticsSection" xml:space="preserve"><value>Диагностика</value></data>
+  <data name="ImmutableQuestionHelp" xml:space="preserve"><value>Измерения вопроса (субъект, канал, цель, область) неизменны — другой вопрос — это другая запись.</value></data>
+  <data name="ScopeHelp" xml:space="preserve"><value>Область сужает согласие; если задан ID области, требуется тип области.</value></data>
+  <data name="WithdrawalReasonHelp" xml:space="preserve"><value>Требуется бэкендом, когда статус — withdrawn.</value></data>
+  <data name="EvidencePointerHelp" xml:space="preserve"><value>Только ссылка — содержимое файла, URL или пакет доказательств не отображаются.</value></data>
+  <data name="ConsentContextHelp" xml:space="preserve"><value>Согласие отвечает только: можно ли обратиться к субъекту по этому каналу, для этой цели, в этой области, в это время?</value></data>
+  <data name="PreferenceCannotGrant" xml:space="preserve"><value>Предпочтение может ограничить согласие, но не может его предоставить.</value></data>
+  <data name="PreferenceChannelAllHelp" xml:space="preserve"><value>Значение канала «all» допустимо только для предпочтений (никогда для согласия).</value></data>
+  <data name="EvaluateReadOnlyHelp" xml:space="preserve"><value>Оценка только для чтения: ничего не записывает и не создаёт сохранённого согласия.</value></data>
+  <data name="UnknownNotAllowed" xml:space="preserve"><value>Unknown izin verilen anlamına GELMEZ — hiçbir onay yanıt vermez ve varsayılan uydurulmaz.</value></data>
+  <data name="EvaluateThisContext" xml:space="preserve"><value>Оценить этот субъект/контекст</value></data>
+  <data name="EvaluateTitle" xml:space="preserve"><value>Панель тестовой оценки</value></data>
+  <data name="RunEvaluate" xml:space="preserve"><value>Запустить оценку</value></data>
+  <data name="EvaluatorVersion" xml:space="preserve"><value>Версия оценщика</value></data>
+  <data name="EvaluatedAt" xml:space="preserve"><value>Оценено</value></data>
+  <data name="MatchedConsentId" xml:space="preserve"><value>ID совпавшего согласия</value></data>
+  <data name="MatchedPreferenceIds" xml:space="preserve"><value>ID совпавших предпочтений</value></data>
+  <data name="ReasonCodes" xml:space="preserve"><value>Коды причин</value></data>
+  <data name="CandidateConsents" xml:space="preserve"><value>Кандидаты-согласия</value></data>
+  <data name="CandidatePreferences" xml:space="preserve"><value>Кандидаты-предпочтения</value></data>
+  <data name="Selected" xml:space="preserve"><value>Выбрано</value></data>
+  <data name="Reason" xml:space="preserve"><value>Причина</value></data>
+  <data name="ToggleDiagnostics" xml:space="preserve"><value>Показать/скрыть диагностику</value></data>
+  <data name="SubjectPanelTitle" xml:space="preserve"><value>Панель согласий и предпочтений субъекта</value></data>
+  <data name="SubjectPanelHelp" xml:space="preserve"><value>Onay ve tercihlerini görmek için bir kişi girin. Bu yeniden kullanılabilir panel Contact/AccountContactLink üzerine düz bir durum yazmaz.</value></data>
+  <data name="Load" xml:space="preserve"><value>Загрузить</value></data>
+  <data name="SubjectPickerPlaceholder" xml:space="preserve"><value>Найдите или вставьте ID субъекта…</value></data>
+  <data name="SubjectPickerHelp" xml:space="preserve"><value>Сначала выберите тип субъекта; contact/account ищутся по имени, остальные принимают GUID.</value></data>
+  <data name="ExternalReferencesOptionalHelp" xml:space="preserve"><value>Необязательно — свяжите эту запись с внешними/устаревшими системами. Добавьте каждую ссылку на панели.</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>Найдите или введите исходную систему…</value></data>
+  <data name="Allowed" xml:space="preserve"><value>Разрешено</value></data>
+  <data name="Blocked" xml:space="preserve"><value>Заблокировано</value></data>
+  <data name="NotApplicable" xml:space="preserve"><value>Не применимо</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Записи не найдены.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Что-то пошло не так. Повторите попытку.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <data name="View" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Запись архивирована.</value></data>
+  <data name="ConsentContractUnavailable" xml:space="preserve"><value>Контракт возможностей согласия недоступен. Действия отключены.</value></data>
+  <data name="ArchivedRecordReadOnly" xml:space="preserve"><value>Эта запись архивирована и доступна только для чтения.</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>Заполните обязательные поля.</value></data>
+  <data name="EffectiveToBeforeFrom" xml:space="preserve"><value>«Действует до» не может быть раньше «Действует с».</value></data>
+  <data name="Active" xml:space="preserve"><value>Активно</value></data>
+  <data name="Passive" xml:space="preserve"><value>Пассивно</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Edit" xml:space="preserve"><value>Изменить</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Подробнее</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Массовое удаление</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Удалить выбранные записи?</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Вы уверены?</value></data>
+  <data name="Search" xml:space="preserve"><value>Поиск</value></data>
+  <data name="Export" xml:space="preserve"><value>Экспорт</value></data>
+  <data name="Import" xml:space="preserve"><value>Импорт</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Показать все</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Сохранить вид</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Столбцы</value></data>
+  <data name="Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>Высокий</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Средний</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Низкий</value></data>
+  <data name="PriorityCustom" xml:space="preserve"><value>Пользовательский</value></data>
+  <data name="PriorityHelp" xml:space="preserve"><value>При конфликте предпочтений сначала оценивается более высокий приоритет.</value></data>
+  <data name="ValueTrue" xml:space="preserve"><value>True</value></data>
+  <data name="ValueFalse" xml:space="preserve"><value>False</value></data>
+  <data name="PreferenceValueBoolHelp" xml:space="preserve"><value>Для этого типа предпочтения True означает, что ограничение применяется.</value></data>
+</root>

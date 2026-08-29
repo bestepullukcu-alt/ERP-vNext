@@ -1,0 +1,236 @@
+@model Diten.Web.Models.CRM.PreferenceDetailPageViewModel
+@using Diten.Web.Views.CRM.ConsentPreferences
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ConsentPreferencesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["PreferenceDetail"].Value;
+    Layout = "_LayoutTenantShell";
+    var p = Model.Preference;
+    string Show(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+    string DateOnly(DateTimeOffset? value) => value?.ToLocalTime().ToString("yyyy-MM-dd") ?? "-";
+    string Stamp(DateTimeOffset? value) => value?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "-";
+    // Named priority bands (must match the Create/Edit form bands); an out-of-band value shows its raw number.
+    string PriorityLabel(int v) => v switch { 1 => Localizer["PriorityHigh"].Value, 50 => Localizer["PriorityMedium"].Value, 100 => Localizer["PriorityLow"].Value, _ => v.ToString() };
+    string PriorityDot(int v) => v <= 1 ? "is-high" : v <= 50 ? "is-medium" : "";
+    // Audit "By" fields resolve to a display name when permitted; otherwise the raw GUID is shown.
+    string ActorName(string? name, string? id) => !string.IsNullOrWhiteSpace(name) ? name! : Show(id);
+}
+
+<div id="preferenceDetailsPage" class="preference-details" data-preference-id="@p.PreferenceId" data-archived="@p.IsArchived.ToString().ToLowerInvariant()">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+            <h5 class="mb-0">@Localizer["PreferenceDetail"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/CRM/ConsentPreferences">@Localizer["PageTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@Localizer["PreferenceDetail"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="/CRM/ConsentPreferences" class="btn btn-label-secondary">@Localizer["BackToList"]</a>
+            @if (Model.CanManage)
+            {
+                <a href="/CRM/ConsentPreferences/Preferences/@p.PreferenceId/Edit" class="btn btn-primary">@Localizer["EditPreference"]</a>
+                <button type="button" id="archivePreference" class="btn btn-label-warning" data-id="@p.PreferenceId">@Localizer["ArchivePreference"]</button>
+            }
+        </div>
+    </div>
+
+    @if (p.IsArchived) { <div class="alert alert-warning py-2"><i class="bx bx-archive me-1"></i>@Localizer["ArchivedRecordReadOnly"]</div> }
+
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                <div class="row g-4">
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-user-pin"></i><div>
+                            <div class="backbone-preview-label">@Localizer["SubjectType"]</div>
+                            <div class="backbone-preview-value mt-1">@Show(p.SubjectType)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-id-card"></i><div>
+                            <div class="backbone-preview-label">@Localizer["SubjectId"]</div>
+                            @if (!string.IsNullOrWhiteSpace(p.SubjectName))
+                            {
+                                <div class="backbone-preview-value mt-1">@p.SubjectName</div>
+                                <div class="text-muted small text-break">@p.SubjectId</div>
+                            }
+                            else
+                            {
+                                <div class="backbone-preview-value mt-1 text-break">@p.SubjectId</div>
+                            }
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-broadcast"></i><div>
+                            <div class="backbone-preview-label">@Localizer["Channel"]</div>
+                            <div class="backbone-preview-value mt-1"><span class="badge bg-label-primary">@Show(p.Channel)</span></div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-slider-alt"></i><div>
+                            <div class="backbone-preview-label">@Localizer["PreferenceType"]</div>
+                            <div class="backbone-preview-value mt-1">@Show(p.PreferenceType)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field"><i class="bx bx-hash"></i><div>
+                            <div class="backbone-preview-label">@Localizer["PreferenceId"]</div>
+                            <div class="backbone-preview-value mt-1 text-break">@p.PreferenceId</div>
+                        </div></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["PreferenceContextSection"]</h6>
+                    <span class="text-muted small"><i class="bx bx-shield-x me-1"></i>@Localizer["PreferenceCannotGrant"]</span>
+                </div>
+                <div class="row g-4">
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-check-square"></i><div>
+                            <div class="backbone-preview-label">@Localizer["PreferenceValue"]</div>
+                            <div class="backbone-preview-value mt-1">@Show(p.PreferenceValue)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-trending-up"></i><div>
+                            <div class="backbone-preview-label">@Localizer["Priority"]</div>
+                            <div class="backbone-preview-value mt-1 d-flex align-items-center gap-2">
+                                <span class="backbone-priority-dot @PriorityDot(p.Priority)"></span>
+                                <span>@PriorityLabel(p.Priority)</span>
+                            </div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-data"></i><div>
+                            <div class="backbone-preview-label">@Localizer["Source"]</div>
+                            <div class="backbone-preview-value mt-1">@Show(p.Source)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-calendar-event"></i><div>
+                            <div class="backbone-preview-label">@Localizer["EffectiveFrom"]</div>
+                            <div class="backbone-preview-value mt-1">@DateOnly(p.EffectiveFrom)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-calendar-x"></i><div>
+                            <div class="backbone-preview-label">@Localizer["EffectiveTo"]</div>
+                            <div class="backbone-preview-value mt-1">@DateOnly(p.EffectiveTo)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field"><i class="bx bx-note"></i><div>
+                            <div class="backbone-preview-label">@Localizer["Notes"]</div>
+                            <div class="backbone-preview-value mt-1 text-break">@Show(p.Notes)</div>
+                        </div></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ExternalReferencesSection"]</h6>
+                @if (p.ExternalReferences.Count == 0)
+                {
+                    <div class="text-muted">@Localizer["NoExternalReferences"]</div>
+                }
+                else
+                {
+                    <div class="table-responsive"><table class="table table-sm mb-0">
+                        <thead><tr>
+                            <th>@Localizer["SourceSystem"]</th><th>@Localizer["ExternalId"]</th>
+                            <th>@Localizer["ExternalCode"]</th><th>@Localizer["ExternalName"]</th><th>@Localizer["Primary"]</th>
+                        </tr></thead>
+                        <tbody>
+                            @foreach (var x in p.ExternalReferences)
+                            {
+                                <tr>
+                                    <td>@Show(x.SourceSystem)</td><td>@Show(x.ExternalId)</td>
+                                    <td>@Show(x.ExternalCode)</td><td>@Show(x.ExternalName)</td>
+                                    <td>@(x.IsPrimary ? Localizer["Yes"] : Localizer["No"])</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table></div>
+                }
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right) -->
+        <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["Status"]</h6>
+                <div class="backbone-preview-field"><i class="bx bx-check-shield"></i><div>
+                    <div class="backbone-preview-label">@Localizer["Status"]</div>
+                    <div class="mt-1">
+                        @if (p.IsArchived)
+                        {
+                            <span class="badge bg-label-warning">@Localizer["Archived"]</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-label-success">@Localizer["Active"]</span>
+                        }
+                    </div>
+                </div></div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["AuditSection"]</h6>
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="backbone-preview-field"><i class="bx bx-calendar-plus"></i><div>
+                            <div class="backbone-preview-label">@Localizer["CreatedAt"]</div>
+                            <div class="backbone-preview-value mt-1">@Stamp(p.CreatedAt)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field"><i class="bx bx-user"></i><div>
+                            <div class="backbone-preview-label">@Localizer["CreatedBy"]</div>
+                            <div class="backbone-preview-value mt-1 text-break">@ActorName(p.CreatedByName, p.CreatedBy)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field"><i class="bx bx-calendar-edit"></i><div>
+                            <div class="backbone-preview-label">@Localizer["UpdatedAt"]</div>
+                            <div class="backbone-preview-value mt-1">@Stamp(p.UpdatedAt)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field"><i class="bx bx-user-check"></i><div>
+                            <div class="backbone-preview-label">@Localizer["UpdatedBy"]</div>
+                            <div class="backbone-preview-value mt-1 text-break">@ActorName(p.UpdatedByName, p.UpdatedBy)</div>
+                        </div></div>
+                    </div>
+                    @if (p.ArchivedAt.HasValue || !string.IsNullOrWhiteSpace(p.ArchivedBy))
+                    {
+                        <div class="col-12">
+                            <div class="backbone-preview-field"><i class="bx bx-archive-in"></i><div>
+                                <div class="backbone-preview-label">@Localizer["ArchivedAt"]</div>
+                                <div class="backbone-preview-value mt-1">@Stamp(p.ArchivedAt)</div>
+                            </div></div>
+                        </div>
+                        <div class="col-12">
+                            <div class="backbone-preview-field"><i class="bx bx-user-x"></i><div>
+                                <div class="backbone-preview-label">@Localizer["ArchivedBy"]</div>
+                                <div class="backbone-preview-value mt-1 text-break">@ActorName(p.ArchivedByName, p.ArchivedBy)</div>
+                            </div></div>
+                        </div>
+                    }
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/CRM/ConsentPreferences/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/ConsentPreferences/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/ConsentPreferences/preference-details.js" asp-append-version="true"></script>
+}

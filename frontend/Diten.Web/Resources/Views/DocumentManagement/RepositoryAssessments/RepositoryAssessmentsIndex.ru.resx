@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="RepositoryAssessments" xml:space="preserve"><value>Оценки хранилищ</value></data>
+  <data name="RepositoryAssessmentsTitle" xml:space="preserve"><value>Оценки хранилищ</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Оценки хранилищ на уровне арендатора, питающие релиз-гейт 2 контролируемых документов (граница DMS, СОП §11).</value></data>
+  <data name="RepositoryAssessmentCreate" xml:space="preserve"><value>Новая оценка</value></data>
+  <data name="RepositoryAssessmentEdit" xml:space="preserve"><value>Изменить оценку</value></data>
+  <data name="RepositoryAssessmentDetails" xml:space="preserve"><value>Сведения об оценке</value></data>
+  <data name="RepositoryName" xml:space="preserve"><value>Название хранилища</value></data>
+  <data name="RepositoryKey" xml:space="preserve"><value>Ключ хранилища</value></data>
+  <data name="RepositoryType" xml:space="preserve"><value>Тип хранилища</value></data>
+  <data name="AssessmentStatus" xml:space="preserve"><value>Статус</value></data>
+  <data name="RepositoryOwner" xml:space="preserve"><value>Роль владельца</value></data>
+  <data name="RepositoryLocation" xml:space="preserve"><value>Расположение</value></data>
+  <data name="LocationType" xml:space="preserve"><value>Тип расположения</value></data>
+  <data name="LocationTypeInHouseSoftware" xml:space="preserve"><value>Внутреннее ПО</value></data>
+  <data name="LocationTypeGoogleDrive" xml:space="preserve"><value>Google Drive</value></data>
+  <data name="LocationTypeSharePoint" xml:space="preserve"><value>SharePoint</value></data>
+  <data name="LocationTypeNetworkShare" xml:space="preserve"><value>Сетевой ресурс</value></data>
+  <data name="LocationTypeOther" xml:space="preserve"><value>Прочее</value></data>
+  <data name="AccessControlModel" xml:space="preserve"><value>Модель контроля доступа</value></data>
+  <data name="AccessReviewFrequency" xml:space="preserve"><value>Периодичность пересмотра доступа</value></data>
+  <data name="EffectiveCopyControl" xml:space="preserve"><value>Контроль действующей копии</value></data>
+  <data name="ApprovalMechanism" xml:space="preserve"><value>Механизм утверждения</value></data>
+  <data name="BackupPlan" xml:space="preserve"><value>План резервного копирования</value></data>
+  <data name="RestoreTestEvidence" xml:space="preserve"><value>Периодичность теста восстановления</value></data>
+  <data name="AuditTrail" xml:space="preserve"><value>Журнал аудита</value></data>
+  <data name="ChangeControl" xml:space="preserve"><value>Управление изменениями</value></data>
+  <data name="ValidationEvidence" xml:space="preserve"><value>Доказательство валидации</value></data>
+  <data name="ValidationEvidenceHint" xml:space="preserve"><value>Ссылка на доказательство валидации/квалификации, хранящееся в другом месте. Это не заявление о валидации; границу классифицирует бэкенд.</value></data>
+  <data name="MaxInterimPeriodDays" xml:space="preserve"><value>Макс. промежуточный период (дни)</value></data>
+  <data name="InterimCheckpointDueDate" xml:space="preserve"><value>Срок промежуточной проверки</value></data>
+  <data name="MigrationReconciliationRequired" xml:space="preserve"><value>Требуется сверка миграции</value></data>
+  <data name="MigrationReconciliationEvidence" xml:space="preserve"><value>Доказательство сверки миграции</value></data>
+  <data name="EvidenceReference" xml:space="preserve"><value>Ссылка на доказательство</value></data>
+  <data name="EvidenceReferenceHint" xml:space="preserve"><value>Ссылка на доказательство, хранящееся в другом месте (тикет, протокол, подписанная запись). Файл сюда не загружается.</value></data>
+  <data name="RepositoryTypeValidatedDms" xml:space="preserve"><value>Валидированная DMS</value></data>
+  <data name="RepositoryTypeApprovedInterimRepository" xml:space="preserve"><value>Утверждённое временное хранилище</value></data>
+  <data name="RepositoryTypeSeparateApprovalMechanism" xml:space="preserve"><value>Отдельный механизм утверждения</value></data>
+  <data name="RepositoryTypeUnapprovedRepository" xml:space="preserve"><value>Неутверждённое хранилище</value></data>
+  <data name="RepositoryStatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="RepositoryStatusUnderReview" xml:space="preserve"><value>На рассмотрении</value></data>
+  <data name="RepositoryStatusApproved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="RepositoryStatusRejected" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="RepositoryStatusExpired" xml:space="preserve"><value>Истёк срок</value></data>
+  <data name="RepositoryStatusSuperseded" xml:space="preserve"><value>Заменено</value></data>
+  <data name="CanSupportReleaseGate" xml:space="preserve"><value>Может обеспечить релиз-гейт</value></data>
+  <data name="CanSupportRegulatedESignature" xml:space="preserve"><value>Может обеспечить регулируемую э-подпись</value></data>
+  <data name="BoundaryStatement" xml:space="preserve"><value>Заявление о границах</value></data>
+  <data name="EvaluateToSeeBoundary" xml:space="preserve"><value>Выполните оценку, чтобы увидеть заявление о границах.</value></data>
+  <data name="CriticalFindings" xml:space="preserve"><value>Критические замечания</value></data>
+  <data name="Findings" xml:space="preserve"><value>Замечания</value></data>
+  <data name="FindingType" xml:space="preserve"><value>Тип замечания</value></data>
+  <data name="FindingSeverity" xml:space="preserve"><value>Важность</value></data>
+  <data name="FindingStatus" xml:space="preserve"><value>Статус</value></data>
+  <data name="FindingMessage" xml:space="preserve"><value>Описание</value></data>
+  <data name="BlockingFindings" xml:space="preserve"><value>Блокирующие замечания</value></data>
+  <data name="WarningFindings" xml:space="preserve"><value>Замечания-предупреждения</value></data>
+  <data name="NoFindingsFound" xml:space="preserve"><value>Замечаний нет</value></data>
+  <data name="FindingTypeMissingOwner" xml:space="preserve"><value>Не указан владелец</value></data>
+  <data name="FindingTypeMissingExactLocation" xml:space="preserve"><value>Не указано точное расположение</value></data>
+  <data name="FindingTypeMissingAccessModel" xml:space="preserve"><value>Не указана модель доступа</value></data>
+  <data name="FindingTypeMissingAccessReview" xml:space="preserve"><value>Не указан пересмотр доступа</value></data>
+  <data name="FindingTypeMissingBackup" xml:space="preserve"><value>Не указано резервное копирование</value></data>
+  <data name="FindingTypeMissingRestoreTest" xml:space="preserve"><value>Не указан тест восстановления</value></data>
+  <data name="FindingTypeMissingApprovalMechanism" xml:space="preserve"><value>Не указан механизм утверждения</value></data>
+  <data name="FindingTypeMissingEffectiveCopyControl" xml:space="preserve"><value>Не указан контроль действующей копии</value></data>
+  <data name="FindingTypeMissingAuditTrail" xml:space="preserve"><value>Не указан журнал аудита</value></data>
+  <data name="FindingTypeMissingChangeControl" xml:space="preserve"><value>Не указано управление изменениями</value></data>
+  <data name="FindingTypeInterimPeriodExpired" xml:space="preserve"><value>Промежуточный период истёк</value></data>
+  <data name="FindingTypeMigrationReconciliationMissing" xml:space="preserve"><value>Отсутствует сверка миграции</value></data>
+  <data name="FindingTypeNativeESignatureMisuseRisk" xml:space="preserve"><value>Риск неправомерного использования встроенной э-подписи</value></data>
+  <data name="FindingTypeOther" xml:space="preserve"><value>Прочее</value></data>
+  <data name="SeverityWarning" xml:space="preserve"><value>Предупреждение</value></data>
+  <data name="SeverityMajor" xml:space="preserve"><value>Существенный</value></data>
+  <data name="SeverityCritical" xml:space="preserve"><value>Критический</value></data>
+  <data name="FindingStatusOpen" xml:space="preserve"><value>Открыто</value></data>
+  <data name="FindingStatusResolved" xml:space="preserve"><value>Устранено</value></data>
+  <data name="FindingStatusAcceptedAsInterimRisk" xml:space="preserve"><value>Принято как временный риск</value></data>
+  <data name="FindingStatusClosed" xml:space="preserve"><value>Закрыто</value></data>
+  <data name="EvaluateRepository" xml:space="preserve"><value>Оценить</value></data>
+  <data name="ApproveRepository" xml:space="preserve"><value>Утвердить</value></data>
+  <data name="RejectRepository" xml:space="preserve"><value>Отклонить</value></data>
+  <data name="ApproverRole" xml:space="preserve"><value>Утверждающая роль</value></data>
+  <data name="ApproverRoleHint" xml:space="preserve"><value>Согласно СОП §11.2 оценку могут утвердить только GQD, заместитель GQD или владелец ИТ/CSV.</value></data>
+  <data name="RejectionReason" xml:space="preserve"><value>Причина отклонения</value></data>
+  <data name="ApprovedAt" xml:space="preserve"><value>Дата утверждения</value></data>
+  <data name="ApprovedBy" xml:space="preserve"><value>Утверждающая роль</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>Действительно с</value></data>
+  <data name="ValidUntil" xml:space="preserve"><value>Действительно до</value></data>
+  <data name="ApprovalRoleGQD" xml:space="preserve"><value>Директор по качеству группы</value></data>
+  <data name="ApprovalRoleGQDDeputy" xml:space="preserve"><value>Заместитель директора по качеству</value></data>
+  <data name="ApprovalRoleITCSVOwner" xml:space="preserve"><value>Владелец ИТ / CSV</value></data>
+  <data name="InterimRepositoryWarning" xml:space="preserve"><value>Утверждённое временное хранилище не является валидированной DMS. Его нельзя выдавать за соответствие требованиям электронной подписи; у него ограниченный по времени контрольный срок.</value></data>
+  <data name="UnapprovedRepositoryWarning" xml:space="preserve"><value>Неутверждённое хранилище не может обеспечить выпуск контролируемого документа. Перед прохождением релиз-гейта 2 его нужно оценить и утвердить.</value></data>
+  <data name="SeparateApprovalMechanismNote" xml:space="preserve"><value>Это хранилище опирается на отдельный документированный механизм утверждения, а не на валидированную DMS. Заявление о границах описывает допустимое применение.</value></data>
+  <data name="ValidatedDmsNote" xml:space="preserve"><value>Классифицировано как граница валидированной DMS. Классификация отражает содержание оценки, а не независимый сертификат валидации.</value></data>
+  <data name="NoComplianceClaim" xml:space="preserve"><value>Без заявления о соответствии</value></data>
+  <data name="NoValidatedDmsClaim" xml:space="preserve"><value>Экран классифицирует хранилище по границе СОП. Он не заявляет о валидации системы, о соответствии электронной подписи и не подтверждает сертификаты.</value></data>
+  <data name="RepositoryBoundaryDisclaimer" xml:space="preserve"><value>Экран классифицирует границы управления хранилищем. Он не сертифицирует систему, не валидирует DMS и не заявляет о соответствии электронной подписи.</value></data>
+  <data name="EvaluateDoesNotApprove" xml:space="preserve"><value>Оценка классифицирует хранилище и возвращает его границу. Она не утверждает оценку и не меняет статус.</value></data>
+  <data name="ApproveDoesNotValidate" xml:space="preserve"><value>Утверждение фиксирует управленческое решение по хранилищу. Оно не заявляет о валидации системы и соответствии э-подписи. Критическое замечание блокирует утверждение.</value></data>
+  <data name="RejectDoesNotDelete" xml:space="preserve"><value>Отклонение фиксирует управленческое решение. Причина обязательна. Оценка сохраняется, а не удаляется.</value></data>
+  <data name="ApprovedAssessmentReadOnly" xml:space="preserve"><value>Эта оценка утверждена или заменена и больше не редактируется. Создайте новую оценку.</value></data>
+  <data name="ReleaseGate2Note" xml:space="preserve"><value>Релиз-гейт 2 (Доступно утверждённое хранилище) читает записанную здесь классификацию. Экран показывает и фиксирует оценку; он не проходит гейт и не вводит документ в действие.</value></data>
+  <data name="EvaluationSucceeded" xml:space="preserve"><value>Хранилище оценено</value></data>
+  <data name="EvaluationFailed" xml:space="preserve"><value>Не удалось оценить хранилище</value></data>
+  <data name="ApprovalSucceeded" xml:space="preserve"><value>Оценка утверждена</value></data>
+  <data name="ApprovalFailed" xml:space="preserve"><value>Не удалось утвердить оценку</value></data>
+  <data name="RejectionSucceeded" xml:space="preserve"><value>Оценка отклонена</value></data>
+  <data name="RejectionFailed" xml:space="preserve"><value>Не удалось отклонить оценку</value></data>
+  <data name="AlreadyDecided" xml:space="preserve"><value>По этой оценке уже принято решение</value></data>
+  <data name="ApproverRoleInvalid" xml:space="preserve"><value>Эта роль не может утверждать оценку (СОП §11.2)</value></data>
+  <data name="LinkStatusInvalid" xml:space="preserve"><value>Эта оценка не в состоянии, допускающем связывание</value></data>
+  <data name="NameAndTypeRequired" xml:space="preserve"><value>Требуются название и корректный тип хранилища</value></data>
+  <data name="RequiredFieldsMissing" xml:space="preserve"><value>Отсутствует обязательное содержание оценки; устраните критические замечания перед утверждением</value></data>
+  <data name="AssessmentNotFound" xml:space="preserve"><value>Оценка хранилища не найдена</value></data>
+  <data name="ReasonRequiredError" xml:space="preserve"><value>Требуется причина</value></data>
+  <data name="NoRepositoryAssessmentsFound" xml:space="preserve"><value>Оценки хранилищ ещё не зарегистрированы</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Не удалось загрузить оценки</value></data>
+  <data name="SaveSucceeded" xml:space="preserve"><value>Оценка сохранена</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>Не удалось сохранить оценку</value></data>
+  <data name="Forbidden" xml:space="preserve"><value>У вас нет прав на эту операцию</value></data>
+  <data name="ConflictOccurred" xml:space="preserve"><value>Операция конфликтует с текущим состоянием</value></data>
+  <data name="ActionNotAvailable" xml:space="preserve"><value>Недоступно</value></data>
+  <data name="BasicInformation" xml:space="preserve"><value>Основная информация</value></data>
+  <data name="AccessAndControl" xml:space="preserve"><value>Доступ и контроль</value></data>
+  <data name="TechnicalControls" xml:space="preserve"><value>Технические средства контроля</value></data>
+  <data name="InterimRepositoryFields" xml:space="preserve"><value>Временное хранилище</value></data>
+  <data name="EvidenceAndNotes" xml:space="preserve"><value>Доказательства</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Добавить</value></data>
+  <data name="Back" xml:space="preserve"><value>Назад</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+</root>

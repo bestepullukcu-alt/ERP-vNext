@@ -1,0 +1,178 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ContactTitle" xml:space="preserve"><value>Контакты</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Управляйте людьми, связанными с вашими клиентами.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Добавить контакт</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Изменить контакт</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Добавить контакт</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить контакт</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Back" xml:space="preserve"><value>Назад</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Создано</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="ReferenceDataUnavailable" xml:space="preserve"><value>Справочные данные сейчас недоступны, поэтому тип и статус контакта выбрать нельзя. Повторите попытку позже или обратитесь к администратору.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>Примечания</value></data>
+  <data name="StatusSection" xml:space="preserve"><value>Статус</value></data>
+  <data name="ProfessionalSection" xml:space="preserve"><value>Профессиональное</value></data>
+  <data name="ContactSection" xml:space="preserve"><value>Контакт</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>Интеграция</value></data>
+  <data name="LinkedAccountsSection" xml:space="preserve"><value>Связанные клиенты</value></data>
+  <data name="TerritorySection" xml:space="preserve"><value>Территория</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>Страновой охват</value></data>
+  <data name="TerritoryNode" xml:space="preserve"><value>Узел территории</value></data>
+  <data name="LinkedAccountsOwner" xml:space="preserve"><value>Владелец: MOD-0150-FU03</value></data>
+  <data name="ConsentSection" xml:space="preserve"><value>Согласие / Предпочтения</value></data>
+  <data name="ConsentOwner" xml:space="preserve"><value>Только для чтения - Владелец: MOD-0164 / FU05</value></data>
+  <data name="ConsentNotAvailableYet" xml:space="preserve"><value>Данные о согласии и предпочтениях пока недоступны.</value></data>
+  <data name="ConsentNotAuthorized" xml:space="preserve"><value>У вас нет прав на просмотр данных о согласии и предпочтениях.</value></data>
+  <data name="ConsentChannel" xml:space="preserve"><value>Канал</value></data>
+  <data name="ConsentState" xml:space="preserve"><value>Согласие</value></data>
+  <data name="PreferenceState" xml:space="preserve"><value>Предпочтение</value></data>
+  <data name="FirstName" xml:space="preserve"><value>Имя</value></data>
+  <data name="FirstNamePlaceholder" xml:space="preserve"><value>напр. Ахмет</value></data>
+  <data name="LastName" xml:space="preserve"><value>Фамилия</value></data>
+  <data name="LastNamePlaceholder" xml:space="preserve"><value>напр. Йылмаз</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Отображаемое имя</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>напр. Д-р Ахмет Йылмаз</value></data>
+  <data name="DisplayNameHelp" xml:space="preserve"><value>Оставьте пустым для формирования из имени и фамилии.</value></data>
+  <data name="ContactType" xml:space="preserve"><value>Тип контакта</value></data>
+  <data name="ProfessionalTitle" xml:space="preserve"><value>Должность</value></data>
+  <data name="ProfessionalTitlePlaceholder" xml:space="preserve"><value>напр. Д-р</value></data>
+  <data name="Specialty" xml:space="preserve"><value>Специальность</value></data>
+  <data name="SpecialtyPlaceholder" xml:space="preserve"><value>напр. Кардиология</value></data>
+  <data name="Department" xml:space="preserve"><value>Отдел</value></data>
+  <data name="DepartmentPlaceholder" xml:space="preserve"><value>напр. Закупки</value></data>
+  <data name="Phone" xml:space="preserve"><value>Телефон</value></data>
+  <data name="PhonePlaceholder" xml:space="preserve"><value>напр. +90 555 000 0000</value></data>
+  <data name="Email" xml:space="preserve"><value>Эл. почта</value></data>
+  <data name="EmailPlaceholder" xml:space="preserve"><value>напр. contact@example.com</value></data>
+  <data name="ExternalReference" xml:space="preserve"><value>Внешняя ссылка</value></data>
+  <data name="ExternalReferencePlaceholder" xml:space="preserve"><value>напр. идентификатор старой системы</value></data>
+  <data name="ExternalReferenceHelp" xml:space="preserve"><value>Идентификатор этого контакта в системе-источнике.</value></data>
+  <data name="AccountName" xml:space="preserve"><value>Клиент</value></data>
+  <data name="AccountCode" xml:space="preserve"><value>Код клиента</value></data>
+  <data name="Role" xml:space="preserve"><value>Роль</value></data>
+  <data name="Primary" xml:space="preserve"><value>Основной</value></data>
+  <data name="LocationSection" xml:space="preserve"><value>Местоположение</value></data>
+  <data name="LocationIncompleteHelp" xml:space="preserve"><value>Справочные данные о местоположении недоступны; выбор страны/города/района может быть ограничен. Местоположение необязательно.</value></data>
+  <data name="Country" xml:space="preserve"><value>Страна</value></data>
+  <data name="City" xml:space="preserve"><value>Город</value></data>
+  <data name="District" xml:space="preserve"><value>Район</value></data>
+  <data name="AddressLine" xml:space="preserve"><value>Адрес</value></data>
+  <data name="AddressLinePlaceholder" xml:space="preserve"><value>Улица, здание, номер</value></data>
+  <data name="PostalCode" xml:space="preserve"><value>Почтовый индекс</value></data>
+  <data name="PhoneCountryCode" xml:space="preserve"><value>Телефонный код страны</value></data>
+  <data name="PreferredLanguage" xml:space="preserve"><value>Предпочитаемый язык</value></data>
+  <data name="PiiKvkkNotice" xml:space="preserve"><value>Имя, телефон, e-mail и адрес — персональные данные (PII/KVKK). Они защищены в журналах, экспортах и записях аудита — вводите только необходимое.</value></data>
+  <data name="NotesSafetyNotice" xml:space="preserve"><value>Не вводите в это поле данные пациентов, медицинские данные, диагнозы, лечение, рецепты или чувствительные персональные данные.</value></data>
+  <data name="LocationIncomplete" xml:space="preserve"><value>Местоположение неполное</value></data>
+  <data name="UseMyLocation" xml:space="preserve"><value>Использовать моё местоположение</value></data>
+  <data name="MapSearchPlaceholder" xml:space="preserve"><value>Поиск района, улицы или адреса</value></data>
+  <data name="MapHelp" xml:space="preserve"><value>Щёлкните по карте или перетащите маркер, чтобы задать местоположение; адрес заполняется автоматически. Поля также можно редактировать вручную.</value></data>
+  <data name="Gender" xml:space="preserve"><value>Пол</value></data>
+  <data name="Photo" xml:space="preserve"><value>Фото</value></data>
+  <data name="PhotoUpload" xml:space="preserve"><value>Загрузить</value></data>
+  <data name="PhotoHelp" xml:space="preserve"><value>Рекомендуется квадратное изображение; масштабируется до 256px. Персональные данные — не попадают в экспорт и журналы аудита.</value></data>
+  <data name="DownloadTemplate" xml:space="preserve"><value>Скачать шаблон импорта</value></data>
+  <data name="DownloadTemplateHint" xml:space="preserve"><value>Загружает пустой шаблон Excel с листами Contacts и AccountLinks и опубликованными справочными значениями.</value></data>
+  <data name="ExportContacts" xml:space="preserve"><value>Экспортировать контакты</value></data>
+  <data name="ExportOptions" xml:space="preserve"><value>Параметры экспорта</value></data>
+  <data name="ExportIncludeLinks" xml:space="preserve"><value>Включить связанные организации (связи контактов)</value></data>
+  <data name="ExportIncludeHistorical" xml:space="preserve"><value>Также включить завершённые (исторические) связи</value></data>
+  <data name="ExportIncludeNotes" xml:space="preserve"><value>Включить заметки и обоснования для трансграничных связей</value></data>
+  <data name="ExportIncludeAccounts" xml:space="preserve"><value>Добавить лист поиска организаций</value></data>
+  <data name="ExportPiiWarning" xml:space="preserve"><value>Этот экспорт может содержать персональные данные. Скачивайте его только при наличии прав, храните файл безопасно и удалите, когда он больше не нужен.</value></data>
+  <data name="ExportNotesWarning" xml:space="preserve"><value>Заметки — это свободный текст, который может содержать чувствительные персональные данные, поэтому они не выгружаются без вашего запроса.</value></data>
+  <data name="ExportStarted" xml:space="preserve"><value>Ваш файл готовится.</value></data>
+  <data name="ImportComingSoon" xml:space="preserve"><value>Загрузка заполненного шаблона появится в следующем выпуске. Сейчас вы уже можете скачать шаблон и выгрузить данные.</value></data>
+  <data name="Download" xml:space="preserve"><value>Скачать</value></data>
+  <data name="ImportTitle" xml:space="preserve"><value>Импорт контактов</value></data>
+  <data name="ImportPageDescription" xml:space="preserve"><value>Загрузите заполненный шаблон или исправленную выгрузку. Вы увидите, что именно изменится, до сохранения.</value></data>
+  <data name="ImportFileLabel" xml:space="preserve"><value>Файл Excel (.xlsx)</value></data>
+  <data name="ImportFileHelp" xml:space="preserve"><value>Используйте шаблон или выгрузку с этого экрана. Максимальный размер 10 МБ. CSV при импорте не поддерживается.</value></data>
+  <data name="ImportStrictMode" xml:space="preserve"><value>Строгий режим</value></data>
+  <data name="ImportStrictModeHelp" xml:space="preserve"><value>Ничего не применять, пока есть строки с ошибками.</value></data>
+  <data name="ImportValidate" xml:space="preserve"><value>Проверить файл</value></data>
+  <data name="ImportValidating" xml:space="preserve"><value>Проверка...</value></data>
+  <data name="ImportApplying" xml:space="preserve"><value>Применение...</value></data>
+  <data name="ImportApply" xml:space="preserve"><value>Применить импорт</value></data>
+  <data name="ImportApplyConfirm" xml:space="preserve"><value>Будут созданы, обновлены и завершены связи контактов. Завершённые связи сохраняются в истории и никогда не удаляются. Строки с ошибками не применяются.</value></data>
+  <data name="ImportApplySuccess" xml:space="preserve"><value>Импорт применён.</value></data>
+  <data name="ImportPreviewTitle" xml:space="preserve"><value>Предпросмотр (ничего ещё не сохранено)</value></data>
+  <data name="ImportResultTitle" xml:space="preserve"><value>Результат импорта</value></data>
+  <data name="ImportSelectFile" xml:space="preserve"><value>Сначала выберите файл .xlsx.</value></data>
+  <data name="ImportOnlyXlsx" xml:space="preserve"><value>Поддерживаются только файлы .xlsx.</value></data>
+  <data name="ImportNothingToApply" xml:space="preserve"><value>Применять нечего.</value></data>
+  <data name="ImportHasErrors" xml:space="preserve"><value>В некоторых строках есть ошибки, они не будут применены.</value></data>
+  <data name="ImportHistoricalNotice" xml:space="preserve"><value>Завершение связи с организацией никогда не удаляет её: запись сохраняется со статусом завершена и датой окончания, поэтому прошлые визиты, заказы и отчёты сохраняют контекст.</value></data>
+  <data name="ImportNoLinkPermission" xml:space="preserve"><value>У вас нет прав на управление связями с организациями, поэтому строки листа AccountLinks будут помечены как недоступные.</value></data>
+  <data name="ImportPiiSafeNotice" xml:space="preserve"><value>Имена показаны в маскированном виде, а сообщения не повторяют ошибочное значение — этот предпросмотр можно безопасно передавать.</value></data>
+  <data name="ImportFilterAll" xml:space="preserve"><value>Все строки</value></data>
+  <data name="ImportSummaryCreates" xml:space="preserve"><value>Создание</value></data>
+  <data name="ImportSummaryUpdates" xml:space="preserve"><value>Обновление</value></data>
+  <data name="ImportSummaryEnds" xml:space="preserve"><value>Завершение</value></data>
+  <data name="ImportSummarySkips" xml:space="preserve"><value>Пропущено</value></data>
+  <data name="ImportSummaryErrors" xml:space="preserve"><value>Ошибки</value></data>
+  <data name="ImportSummaryWarnings" xml:space="preserve"><value>Предупреждения</value></data>
+  <data name="ImportSummaryConflicts" xml:space="preserve"><value>Конфликты</value></data>
+  <data name="ImportColumnSheet" xml:space="preserve"><value>Лист</value></data>
+  <data name="ImportColumnRow" xml:space="preserve"><value>Строка</value></data>
+  <data name="ImportColumnOperation" xml:space="preserve"><value>Операция</value></data>
+  <data name="ImportColumnEntity" xml:space="preserve"><value>Тип записи</value></data>
+  <data name="ImportColumnRecord" xml:space="preserve"><value>Запись</value></data>
+  <data name="ImportColumnChangedFields" xml:space="preserve"><value>Изменённые поля</value></data>
+  <data name="ImportColumnMessage" xml:space="preserve"><value>Сообщение</value></data>
+  <data name="AvailabilitySection" xml:space="preserve"><value>Доступность</value></data>
+  <data name="AvailabilityManage" xml:space="preserve"><value>Управление доступностью</value></data>
+  <data name="AvailabilityLookup" xml:space="preserve"><value>Проверка доступности</value></data>
+  <data name="AvailabilityCheck" xml:space="preserve"><value>Проверить</value></data>
+  <data name="AvailabilityDate" xml:space="preserve"><value>Дата</value></data>
+  <data name="AvailabilityWeekday" xml:space="preserve"><value>День недели</value></data>
+  <data name="AvailabilityWindow" xml:space="preserve"><value>Доступный интервал</value></data>
+  <data name="AvailabilityPreferredWindow" xml:space="preserve"><value>Предпочтительный интервал</value></data>
+  <data name="AvailabilityAvoidWindow" xml:space="preserve"><value>Нежелательный интервал</value></data>
+  <data name="AvailabilityAppointmentRequired" xml:space="preserve"><value>Требуется запись</value></data>
+  <data name="AvailabilityLeadTime" xml:space="preserve"><value>Срок (дней)</value></data>
+  <data name="AvailabilityAverageDuration" xml:space="preserve"><value>Средний визит (мин)</value></data>
+  <data name="AvailabilityType" xml:space="preserve"><value>Тип доступности</value></data>
+  <data name="AvailabilitySource" xml:space="preserve"><value>Источник</value></data>
+  <data name="AvailabilityEffective" xml:space="preserve"><value>Даты действия</value></data>
+  <data name="AvailabilityStart" xml:space="preserve"><value>Начало</value></data>
+  <data name="AvailabilityEnd" xml:space="preserve"><value>Окончание</value></data>
+  <data name="AvailabilityPreferredStart" xml:space="preserve"><value>Предпочт. начало</value></data>
+  <data name="AvailabilityPreferredEnd" xml:space="preserve"><value>Предпочт. окончание</value></data>
+  <data name="AvailabilityAvoidStart" xml:space="preserve"><value>Нежелат. начало</value></data>
+  <data name="AvailabilityAvoidEnd" xml:space="preserve"><value>Нежелат. окончание</value></data>
+  <data name="AvailabilityAdd" xml:space="preserve"><value>Добавить доступность</value></data>
+  <data name="AvailabilityExceptions" xml:space="preserve"><value>Исключения по датам</value></data>
+  <data name="AvailabilityExceptionAdd" xml:space="preserve"><value>Добавить исключение</value></data>
+  <data name="AvailabilityExceptionApplied" xml:space="preserve"><value>Исключение применено</value></data>
+  <data name="AvailabilityIsAvailable" xml:space="preserve"><value>Доступен</value></data>
+  <data name="AvailabilityReason" xml:space="preserve"><value>Причина</value></data>
+  <data name="AvailabilityReasonCodes" xml:space="preserve"><value>Коды причин</value></data>
+  <data name="AvailabilityDeactivate" xml:space="preserve"><value>Деактивировать</value></data>
+  <data name="AvailabilityArchive" xml:space="preserve"><value>Архивировать</value></data>
+  <data name="AvailabilityLinkInactive" xml:space="preserve"><value>Связь неактивна</value></data>
+  <data name="AvailabilityNoLinks" xml:space="preserve"><value>Этот контакт ещё не связан ни с одним аккаунтом, поэтому доступность по локации записать нельзя.</value></data>
+  <data name="AvailabilityUnknownHint" xml:space="preserve"><value>Отсутствие данных отражается как «неизвестно», а не «недоступен».</value></data>
+  <data name="AvailabilityOwnerNote" xml:space="preserve"><value>Владелец: MOD-0150. MOD-0151 и MOD-0155 читают эти данные; маршрут или план визитов здесь не создаётся.</value></data>
+  <data name="AvailabilitySelect" xml:space="preserve"><value>Выберите</value></data>
+  <data name="AvailabilityYes" xml:space="preserve"><value>Да</value></data>
+  <data name="AvailabilityNo" xml:space="preserve"><value>Нет</value></data>
+  <data name="AvailabilityStatus_available" xml:space="preserve"><value>Доступен</value></data>
+  <data name="AvailabilityStatus_unavailable" xml:space="preserve"><value>Недоступен</value></data>
+  <data name="AvailabilityStatus_unknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="Weekday_monday" xml:space="preserve"><value>Понедельник</value></data>
+  <data name="Weekday_tuesday" xml:space="preserve"><value>Вторник</value></data>
+  <data name="Weekday_wednesday" xml:space="preserve"><value>Среда</value></data>
+  <data name="Weekday_thursday" xml:space="preserve"><value>Четверг</value></data>
+  <data name="Weekday_friday" xml:space="preserve"><value>Пятница</value></data>
+  <data name="Weekday_saturday" xml:space="preserve"><value>Суббота</value></data>
+  <data name="Weekday_sunday" xml:space="preserve"><value>Воскресенье</value></data>
+</root>

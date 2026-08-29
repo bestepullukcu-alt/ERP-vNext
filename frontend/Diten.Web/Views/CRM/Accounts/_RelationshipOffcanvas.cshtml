@@ -1,0 +1,113 @@
+@model Diten.Web.Models.CRM.AccountRelationshipEditViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.CRM.Accounts.AccountIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* MOD-0150 FU04 — Golden Reference Slim create/edit canvas for Account↔Account relationships (7 form fields ≤ 8 ⇒
+   Slim: no standalone Create/Edit page). Submits over AJAX to the existing Add/Edit endpoints; the target account
+   select is disabled on edit because the backend never re-points an existing relationship. *@
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRelationship" aria-labelledby="offcanvasRelationshipLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasRelationshipLabel" class="offcanvas-title">@Localizer["AddRelatedAccount"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        @if (!string.IsNullOrWhiteSpace(Model.ReferenceDependencyMessage))
+        {
+            <div class="alert alert-warning">@Model.ReferenceDependencyMessage</div>
+        }
+
+        @* Server-side validation errors (from the gateway) *@
+        <div id="formRelationshipAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="formRelationship" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="relRelationshipId" value="" />
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="relTargetAccountId" class="form-label fw-medium">
+                        @Localizer["SelectAccount"] <span class="text-danger">*</span>
+                    </label>
+                    <select id="relTargetAccountId" name="TargetAccountId" class="form-select select2-offcanvas" required
+                            data-placeholder="@Localizer["SelectAccount"]">
+                        <option value="">@Localizer["SelectAccount"]</option>
+                        @foreach (var a in Model.TargetAccountOptions)
+                        {
+                            <option value="@a.Value">@a.Text</option>
+                        }
+                    </select>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="relRelationshipType" class="form-label fw-medium">
+                        @Localizer["RelationshipType"] <span class="text-danger">*</span>
+                    </label>
+                    <select id="relRelationshipType" name="RelationshipType" class="form-select select2-offcanvas" required
+                            data-placeholder="@Localizer["RelationshipType"]">
+                        <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                        @foreach (var t in Model.RelationshipTypeOptions)
+                        {
+                            <option value="@t.Value">@t.Text</option>
+                        }
+                    </select>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="relStatus" class="form-label fw-medium">
+                        @Localizer["RelationshipStatus"] <span class="text-danger">*</span>
+                    </label>
+                    <select id="relStatus" name="Status" class="form-select select2-offcanvas" required
+                            data-placeholder="@Localizer["RelationshipStatus"]">
+                        <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                        @foreach (var s in Model.RelationshipStatusOptions)
+                        {
+                            <option value="@s.Value">@s.Text</option>
+                        }
+                    </select>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12 col-sm-6">
+                    <label for="relValidFrom" class="form-label fw-medium">@Localizer["ValidFrom"]</label>
+                    <input type="date" id="relValidFrom" name="ValidFrom" class="form-control" />
+                </div>
+
+                <div class="col-12 col-sm-6">
+                    <label for="relValidTo" class="form-label fw-medium">@Localizer["ValidTo"]</label>
+                    <input type="date" id="relValidTo" name="ValidTo" class="form-control" />
+                </div>
+
+                @* MOD-0150 hardening: business reason for a cross-country relationship. The backend requires it only when
+                   both accounts carry a known, different country (e.g. a TR pharmacy ↔ a US hospital). *@
+                <div class="col-12">
+                    <label for="relCrossCountryReason" class="form-label fw-medium">@Localizer["CrossCountryReason"]</label>
+                    <textarea id="relCrossCountryReason" name="CrossCountryReason" class="form-control" rows="2" maxlength="500"></textarea>
+                    <div class="form-text">@Localizer["CrossCountryHelp"]</div>
+                </div>
+
+                <div class="col-12">
+                    <div class="alert alert-warning d-flex align-items-start gap-2 mb-3" role="alert">
+                        <i class="icon-base ti tabler-alert-triangle mt-1"></i>
+                        <div>@Localizer["NotesSafetyNotice"]</div>
+                    </div>
+                    <label for="relNotes" class="form-label fw-medium">@Localizer["Notes"]</label>
+                    <textarea id="relNotes" name="Notes" class="form-control" rows="3" maxlength="2000"></textarea>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+            @SharedLocalizer["Cancel"]
+        </button>
+        <button type="button" id="btnSaveRelationship" class="btn btn-primary">
+            @SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>

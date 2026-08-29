@@ -1,0 +1,145 @@
+@model Diten.Web.Models.CRM.ConceptNodeEditViewModel
+@using Diten.Web.Views.CRM.KnowledgeConcepts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeConceptsIndex> Localizer
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+@if (!string.IsNullOrWhiteSpace(Model.ContractError))
+{
+    <div class="alert alert-danger" role="alert">@Localizer[Model.ContractError]</div>
+}
+
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+
+        @* Card 1 — Identity & Classification (same section map as Details) *@
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label asp-for="SubjectId" class="form-label fw-medium">@Localizer["SubjectId"] <span class="text-danger">*</span></label>
+                        <select asp-for="SubjectId" id="conceptSubjectId" class="select2 form-select" required readonly="@(Model.ConceptNodeId != Guid.Empty)">
+                            <option value="">@Localizer["SelectOption"]</option>
+                            @foreach (var o in Model.SubjectOptions) { <option value="@o.Value" selected="@(o.Value == Model.SubjectId.ToString())">@o.Label</option> }
+                        </select>
+                        <span asp-validation-for="SubjectId" class="text-danger small mt-1"></span>
+                        <small class="text-muted">@Localizer["SubjectMeaningNote"]</small>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ConceptTypeId" class="form-label fw-medium">@Localizer["ConceptTypeId"] <span class="text-danger">*</span></label>
+                        <select asp-for="ConceptTypeId" id="conceptTypeId" class="select2 form-select" required
+                                data-current="@Model.ConceptTypeId" data-subject="@Model.SubjectId">
+                            <option value="">@Localizer["SelectOption"]</option>
+                            @foreach (var o in Model.TypeOptions) { <option value="@o.Value" data-group="@o.Group" selected="@(o.Value == Model.ConceptTypeId.ToString())">@o.Label</option> }
+                        </select>
+                        <span asp-validation-for="ConceptTypeId" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ConceptNodeCode" class="form-label fw-medium">@Localizer["ConceptNodeCode"] <span class="text-danger">*</span></label>
+                        <input asp-for="ConceptNodeCode" class="form-control" readonly="@(Model.ConceptNodeId != Guid.Empty)" maxlength="120" required />
+                        <span asp-validation-for="ConceptNodeCode" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ConceptNodeName" class="form-label fw-medium">@Localizer["ConceptNodeName"] <span class="text-danger">*</span></label>
+                        <input asp-for="ConceptNodeName" class="form-control" maxlength="240" required />
+                        <span asp-validation-for="ConceptNodeName" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="Status" class="form-label fw-medium">@Localizer["Status"]</label>
+                        <select asp-for="Status" class="select2 form-select">
+                            <option value="">@Localizer["SelectOption"]</option>
+                            @foreach (var x in Model.Statuses) { <option value="@x" selected="@(x == Model.Status)">@x</option> }
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label fw-medium">@Localizer["Description"]</label>
+                        <textarea asp-for="Description" class="form-control" rows="2" maxlength="2000"></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-lg-4">
+
+        @* Card 2 — Effective window & external reference (same section map as Details) *@
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ReferenceSection"]</h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label asp-for="EffectiveFrom" class="form-label fw-medium">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
+                        <input asp-for="EffectiveFrom" type="text" class="form-control flatpickr-date" value="@Model.EffectiveFrom.ToString("yyyy-MM-dd")" required />
+                        <span asp-validation-for="EffectiveFrom" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="EffectiveTo" class="form-label fw-medium">@Localizer["EffectiveTo"]</label>
+                        <input asp-for="EffectiveTo" type="text" class="form-control flatpickr-date" value="@(Model.EffectiveTo?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="ExternalRefType" class="form-label fw-medium">@Localizer["ExternalRefType"]</label>
+                        <select asp-for="ExternalRefType" id="conceptExternalRefType" class="select2 form-select">
+                            <option value="">@Localizer["SelectOption"]</option>
+                            @foreach (var x in Model.ExternalRefTypes) { <option value="@x" selected="@(x == Model.ExternalRefType)">@x</option> }
+                        </select>
+                    </div>
+                    @*
+                        AC-UI-2 — the external reference slot has TWO controls and exactly one of them is on screen:
+
+                          ExternalRefType = global-product  →  a visible Select2 picker over the MDM selector
+                          any other type                    →  the free-text id box (document / audience-profile / …)
+
+                        The free-text input is the ONE persisted control: it keeps name="ExternalRefId", stays in the DOM
+                        and is only HIDDEN (never disabled) while the picker drives it, so the stored value always
+                        survives the round-trip. The picker carries no name attribute and is never posted — it mirrors
+                        its selection into the input. The form contract is therefore unchanged: ExternalRefId only.
+
+                        When the MDM selector answers 404/403 the picker renders disabled with the reason — never a
+                        silent empty list. The existing value still posts, because hidden is not disabled.
+                    *@
+                    @{
+                        var isGlobalProduct = string.Equals(Model.ExternalRefType, "global-product", StringComparison.OrdinalIgnoreCase);
+                        var globalProductLabel = Model.GlobalProductSelectedLabel ?? Model.ExternalRefId;
+                    }
+                    <div class="col-12">
+                        <label asp-for="ExternalRefId" id="conceptExternalRefIdLabel" class="form-label fw-medium @(isGlobalProduct ? "d-none" : "")">@Localizer["ExternalRefId"]</label>
+                        <label for="conceptGlobalProductId" id="conceptGlobalProductLabel" class="form-label fw-medium @(isGlobalProduct ? "" : "d-none")">@Localizer["GlobalProduct"]</label>
+
+                        <input asp-for="ExternalRefId" id="conceptExternalRefId" class="form-control @(isGlobalProduct ? "d-none" : "")" maxlength="240" />
+
+                        @* The select is wrapped because Select2 replaces it with a sibling container — hiding the
+                           <select> itself would leave that container on screen. The wrapper is what gets toggled. *@
+                        <div id="conceptGlobalProductWrap" class="position-relative @(isGlobalProduct ? "" : "d-none")">
+                        <select id="conceptGlobalProductId" class="form-select"
+                                data-picker-url="/CRM/KnowledgeConcepts/api/global-product-options"
+                                data-picker-disabled-reason="@(Model.GlobalProductPickerDisabledReason is null ? "" : Localizer[Model.GlobalProductPickerDisabledReason].Value)"
+                                data-placeholder="@Localizer["GlobalProductPick"].Value"
+                                data-msg-searching="@Localizer["GlobalProductSearching"].Value"
+                                data-msg-no-results="@Localizer["GlobalProductNoResults"].Value"
+                                data-msg-unavailable="@Localizer["GlobalProductPickerUnavailable"].Value"
+                                data-msg-endpoint-missing="@Localizer["GlobalProductEndpointMissing"].Value"
+                                data-msg-permission-missing="@Localizer["GlobalProductPermissionMissing"].Value">
+                            <option value=""></option>
+                            @* EnsureSelected: the stored product is pre-resolved server-side, so Edit opens on
+                               "code — name" instead of a GUID and the value is never lost to an unsearched page. *@
+                            @if (isGlobalProduct && !string.IsNullOrWhiteSpace(Model.ExternalRefId))
+                            {
+                                <option value="@Model.ExternalRefId" selected>@globalProductLabel</option>
+                            }
+                        </select>
+                        </div>
+
+                        <div id="conceptExternalRefIdHint" class="form-text @(isGlobalProduct ? "d-none" : "")">@Localizer["ExternalRefIdHint"]</div>
+                        <div id="conceptGlobalProductHint" class="form-text @(isGlobalProduct ? "" : "d-none")">@Localizer["GlobalProductHint"]</div>
+                        <div id="conceptGlobalProductPickerNote" class="form-text text-warning d-none"></div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="MetadataJson" class="form-label fw-medium">@Localizer["MetadataJson"]</label>
+                        <textarea asp-for="MetadataJson" class="form-control font-monospace" rows="3" placeholder="{ }"></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

@@ -1,0 +1,93 @@
+@using Diten.Web.Views.CRM.TerritoryManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TerritoryManagementResources> L
+@inject IHtmlLocalizer<Diten.Web.SharedResource> Shared
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">-</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Shared["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        @* Server-side validation errors (from gateway) *@
+        <div id="formTerritoryModelAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="formTerritoryModel" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="tmId" name="Id" value="" />
+            <input type="hidden" id="tmBasedOnModelId" name="BasedOnModelId" value="" />
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="tmModelCode" class="form-label fw-medium">
+                        @L["ModelCode"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="tmModelCode" name="ModelCode" class="form-control" maxlength="100" placeholder="TM-2027" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="tmName" class="form-label fw-medium">
+                        @L["Name"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" id="tmName" name="Name" class="form-control" maxlength="200" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                @* FU02A: Country Scope — reference-driven single select (MOD-0048 published `country` values). *@
+                <div class="col-md-6">
+                    <label for="tmCountryScope" class="form-label fw-medium">@L["CountryScope"]</label>
+                    <select id="tmCountryScope" name="CountryScope" class="form-select" data-placeholder="@L["SelectCountry"]">
+                        <option value=""></option>
+                    </select>
+                    <div id="tmCountryNotReady" class="form-text text-warning d-none">@L["CountryReferenceNotReady"]</div>
+                </div>
+
+                @* FU02A: Business Unit Scope — reference-driven MULTI select (MOD-0048 published `business-unit` values,
+                   e.g. Alpha / Beta). Replaces the old free-text "Division Scope". No hardcoded fallback. *@
+                <div class="col-md-6">
+                    <label for="tmBusinessUnits" class="form-label fw-medium">@L["BusinessUnitScope"]</label>
+                    <select id="tmBusinessUnits" name="BusinessUnitScopes" class="form-select" multiple data-placeholder="@L["BusinessUnitScope"]">
+                    </select>
+                    <div id="tmBusinessUnitHelp" class="form-text">@L["BusinessUnitScopeHelp"]</div>
+                    <div id="tmBusinessUnitNotReady" class="form-text text-warning d-none">@L["BusinessUnitReferenceNotReady"]</div>
+                </div>
+
+                @* FU02A: Brand Scope is intentionally NOT selectable here — planned for a later Brand/Marketing FU. *@
+                <div class="col-12">
+                    <div class="alert alert-light border mb-0 py-2 px-3 small text-muted">
+                        <i class="bx bx-info-circle me-1"></i>@L["BrandScopePlanned"]
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="tmEffectiveFrom" class="form-label fw-medium">
+                        @L["EffectiveFrom"] <span class="text-danger">*</span>
+                    </label>
+                    <input type="date" id="tmEffectiveFrom" name="EffectiveFrom" class="form-control" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="tmEffectiveTo" class="form-label fw-medium">@L["EffectiveTo"]</label>
+                    <input type="date" id="tmEffectiveTo" name="EffectiveTo" class="form-control" />
+                </div>
+
+                <div class="col-12">
+                    <label for="tmChangeReason" class="form-label fw-medium">@L["ChangeReason"]</label>
+                    <textarea id="tmChangeReason" name="ChangeReason" class="form-control" rows="3" maxlength="1000"></textarea>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+            @Shared["Cancel"]
+        </button>
+        <button type="button" id="btnSaveModel" class="btn btn-primary">
+            @L["Save"]
+        </button>
+    </div>
+</div>

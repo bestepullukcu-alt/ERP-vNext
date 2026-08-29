@@ -46,6 +46,22 @@ public sealed class UserLookupValidationSeedTests
             return repoCandidate;
         }
 
+        // Location-independent fallback: walk up from the (possibly relocated, e.g. -o output) base directory and
+        // probe the known repo-relative seed path so the source-based test runs from any build output directory.
+        var probe = new DirectoryInfo(AppContext.BaseDirectory);
+        var relative = Path.Combine("services", "Diten.AuthService", "src",
+            "Diten.AuthService.Persistence", "Seed", "DataSeeder.cs");
+        while (probe is not null)
+        {
+            var candidate = Path.Combine(probe.FullName, relative);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            probe = probe.Parent;
+        }
+
         throw new FileNotFoundException("DataSeeder.cs could not be found.");
     }
 }

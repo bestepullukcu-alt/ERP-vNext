@@ -1,0 +1,83 @@
+@model Diten.Web.Models.CRM.TerritoryModelDetailPageViewModel
+@using Diten.Web.Views.CRM.TerritoryManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TerritoryManagementResources> L
+@inject IHtmlLocalizer<Diten.Web.SharedResource> Shared
+@{
+    var active = string.Equals(Model.Model.Status, "active", StringComparison.OrdinalIgnoreCase);
+}
+@* Golden compact slim create: the Apply surface is an offcanvas opened from the Matched-Accounts bulk-action bar
+   ("Apply selected"), instead of an inline card. The ticked rows still feed the same hidden fields, so
+   account-assignments.js is untouched — only the container changed. *@
+@if (active && Model.CanManageModel)
+{
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="account-assignment-offcanvas"
+         aria-labelledby="account-assignment-offcanvas-title" data-bs-scroll="true" data-bs-backdrop="true">
+        <div class="offcanvas-header border-bottom flex-column align-items-start">
+            <div class="d-flex align-items-center w-100 gap-2">
+                <h5 class="offcanvas-title mb-0" id="account-assignment-offcanvas-title">
+                    <i class="bx bx-down-arrow-alt me-1"></i>Apply Preview Rows
+                </h5>
+                @* required-fields-tracker.js renders the "Required: x / y" badge here (form points at it via data-required-tracker-target). *@
+                <span id="apply-required-tracker" class="d-flex align-items-center"></span>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <small class="text-muted mt-1">Account coverage is stored separately; Account and Contact masters are not changed.</small>
+        </div>
+        <div class="offcanvas-body d-flex flex-column">
+            <div class="alert alert-info py-2 d-flex align-items-center gap-2" id="apply-selected-summary">
+                <i class="bx bx-check-square"></i>
+                <span><span class="fw-medium" id="apply-selected-count">0</span> row(s) selected for apply</span>
+            </div>
+
+            <form id="account-assignment-apply-form" novalidate
+                  class="d-flex flex-column flex-grow-1"
+                  data-required-tracker-target="#apply-required-tracker"
+                  data-required-tracker-wrapper-class="d-flex align-items-center">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="apply-preview-run-id" name="PreviewRunId" />
+                <input type="hidden" id="apply-selected-rows" name="SelectedRowsJson" value="[]" />
+
+                <div class="alert alert-warning py-2 d-none" id="apply-conflict-warning">@L["Conflicts"] — override requires a reason.</div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">@L["EffectiveFrom"] <span class="text-danger">*</span></label>
+                        <input class="form-control" type="date" name="EffectiveFrom" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">@L["EffectiveTo"]</label>
+                        <input class="form-control" type="date" name="EffectiveTo" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="apply-conflict-policy">@L["ConflictPolicy"] <span class="text-danger">*</span></label>
+                        @* Reference-driven (MOD-0048 territory-conflict-policy), same source as the rule form's rule-policy.
+                           account-assignments.js fills it from /AssignmentRules/lookups and defaults to "block". *@
+                        <select class="form-select" id="apply-conflict-policy" name="ConflictPolicy" required></select>
+                        <div class="alert alert-warning py-2 mt-2 d-none" id="apply-conflict-policy-not-ready">
+                            <i class="bx bx-plug me-1"></i>Conflict policies are not available. Publish the <code>territory-conflict-policy</code> reference set first.
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="apply-override" name="Override" value="true" />
+                            <label class="form-check-label" for="apply-override">Override</label>
+                        </div>
+                    </div>
+                    <div class="col-12 d-none" id="override-reason-wrap">
+                        <label class="form-label">Override reason</label>
+                        <textarea class="form-control" name="OverrideReason" rows="2"></textarea>
+                    </div>
+                </div>
+
+                @* Actions pinned to the bottom of the canvas (mt-auto) and each button fills half the row. *@
+                <div class="d-flex gap-2 mt-auto pt-4">
+                    <button class="btn btn-primary flex-fill" type="submit" id="apply-selected-button" disabled>
+                        <i class="bx bx-check me-1"></i>Apply
+                    </button>
+                    <button type="button" class="btn btn-label-secondary flex-fill" data-bs-dismiss="offcanvas">@L["Cancel"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}

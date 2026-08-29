@@ -1,0 +1,99 @@
+@using Diten.Web.Views.CRM.KnowledgeConcepts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeConceptsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* MOD-0162-FU03 Tab 4 — ConceptChainTemplate create/edit (Golden Slim offcanvas).
+   The centre of this form is the expected TYPE sequence: an ordered list of ConceptType ids, minimum two, each type
+   at most once. V12 (min 2 / foreign subject / repeated type) and V13 (two published versions of one ChainCode with
+   overlapping effective windows) are enforced by the backend; the editor only keeps the sequence honest while it is
+   being built and surfaces the reason the backend gives. ChainVersion is the business version, not the concurrency
+   token. A published chain freezes its sequence — a change needs a new version. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasTemplateCreateEdit" aria-labelledby="offcanvasTemplateCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <div class="d-flex align-items-center flex-wrap gap-2">
+            <h5 id="offcanvasTemplateCreateEditLabel" class="offcanvas-title mb-0">@Localizer["CreateTemplate"]</h5>
+            <span id="conceptTemplateRequiredTracker" class="d-flex align-items-center"></span>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="conceptTemplateFormAlert" class="alert alert-danger d-none" role="alert"></div>
+        <div id="conceptTemplateFrozenNote" class="alert alert-warning d-none" role="status">@Localizer["PublishedSequenceFrozen"]</div>
+
+        <form id="conceptTemplateForm" class="pt-0" novalidate
+              data-required-tracker-target="#conceptTemplateRequiredTracker"
+              data-required-tracker-wrapper-class="d-flex align-items-center"
+              data-required-tracker-badge-class="badge bg-label-danger d-flex align-items-center">
+            <input type="hidden" id="templateFormId" />
+            @* The ordered ConceptType ids, comma separated, kept in sync by the sequence editor below. *@
+            <input type="hidden" id="tplOrderedConceptTypes" />
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="tplSubjectId" class="form-label fw-medium">@Localizer["SubjectId"] <span class="text-danger">*</span></label>
+                    <select id="tplSubjectId" class="form-select concept-form-select2" data-placeholder="@Localizer["SelectOption"]" required></select>
+                    <div class="form-text">@Localizer["NodePickerSubjectFirst"]</div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="tplChainCode" class="form-label fw-medium">@Localizer["ChainCode"] <span class="text-danger">*</span></label>
+                    <input type="text" id="tplChainCode" class="form-control" maxlength="120" required />
+                    <div class="form-text" id="tplChainCodeHint">@Localizer["ImmutableAfterCreate"]</div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="tplChainName" class="form-label fw-medium">@Localizer["ChainName"] <span class="text-danger">*</span></label>
+                    <input type="text" id="tplChainName" class="form-control" maxlength="240" required />
+                </div>
+
+                @* ---- Expected type sequence editor ---- *@
+                <div class="col-12">
+                    <label for="tplTypePicker" class="form-label fw-medium">@Localizer["OrderedConceptTypes"] <span class="text-danger">*</span></label>
+                    <div class="d-flex flex-wrap gap-2 align-items-start">
+                        <div class="flex-grow-1">
+                            <select id="tplTypePicker" class="form-select concept-form-select2" data-placeholder="@Localizer["SelectOption"]"></select>
+                        </div>
+                        <button type="button" id="btnTplAddType" class="btn btn-label-primary">
+                            <i class="bx bx-plus me-1"></i>@Localizer["AddToSequence"]
+                        </button>
+                    </div>
+                    <ol id="tplSequence" class="list-group list-group-numbered mt-3 mb-0"></ol>
+                    <div id="tplSequenceEmpty" class="form-text">@Localizer["SequenceEmpty"]</div>
+                    <div id="tplSequenceError" class="text-danger small mt-1 d-none"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="tplDescription" class="form-label fw-medium">@Localizer["Description"]</label>
+                    <textarea id="tplDescription" class="form-control" rows="3" maxlength="2000"></textarea>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="tplChainVersion" class="form-label fw-medium">@Localizer["ChainVersion"]</label>
+                    <input type="text" id="tplChainVersion" class="form-control" maxlength="40" placeholder="v1" />
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="tplStatus" class="form-label fw-medium">@Localizer["Status"]</label>
+                    <select id="tplStatus" class="form-select concept-form-select2" data-placeholder="@Localizer["SelectOption"]"></select>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="tplEffectiveFrom" class="form-label fw-medium">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
+                    <input type="date" id="tplEffectiveFrom" class="form-control" required />
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="tplEffectiveTo" class="form-label fw-medium">@Localizer["EffectiveTo"]</label>
+                    <input type="date" id="tplEffectiveTo" class="form-control" />
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="submit" form="conceptTemplateForm" id="btnSaveConceptTemplate" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>

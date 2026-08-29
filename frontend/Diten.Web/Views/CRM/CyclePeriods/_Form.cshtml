@@ -1,0 +1,300 @@
+@model Diten.Web.Models.CRM.CyclePeriodEditViewModel
+@using Diten.Web.Views.CRM.CyclePeriods
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CyclePeriodsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var action = isEdit ? "Edit" : "Create";
+    var options = Model.ScopeOptions;
+    // An ACTIVE period accepts only its name and description; a CLOSED one accepts nothing. The runtime enforces this
+    // either way — the form only avoids inviting an edit it knows will be refused.
+    var windowLocked = isEdit && !Model.CanEditWindow;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/CRM/CyclePeriods">@Localizer["CyclePeriodsTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/CRM/CyclePeriods" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        <button type="submit" form="cyclePeriodForm" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>
+
+<form id="cyclePeriodForm" asp-controller="CyclePeriods" asp-action="@action"
+      asp-route-cyclePeriodId="@Model.CyclePeriodId" method="post" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="CyclePeriodId" />
+    <input type="hidden" asp-for="ExpectedVersion" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="CycleCode" class="form-label fw-medium">
+                                @Localizer["CycleCode"] <span class="text-danger">*</span>
+                            </label>
+                            @* The code is the stable business key and is never renamed, so an existing period shows it
+                               read-only rather than offering an edit the runtime would ignore. *@
+                            <input asp-for="CycleCode" class="form-control" maxlength="40"
+                                   placeholder="@Localizer["CycleCodePlaceholder"]" required
+                                   readonly="@(isEdit ? "readonly" : null)" />
+                            <span asp-validation-for="CycleCode" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="CycleName" class="form-label fw-medium">
+                                @Localizer["CycleName"] <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="CycleName" class="form-control" maxlength="200"
+                                   placeholder="@Localizer["CycleNamePlaceholder"]" required />
+                            <span asp-validation-for="CycleName" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Year" class="form-label fw-medium">
+                                @Localizer["Year"] <span class="text-danger">*</span>
+                            </label>
+                            @* Authored, not derived from StartDate: a period may cross a year boundary, and which year
+                               it counts as is a business decision. *@
+                            <input asp-for="Year" type="number" class="form-control" min="2000" max="2100" required
+                                   readonly="@(windowLocked ? "readonly" : null)" />
+                            <span asp-validation-for="Year" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="SequenceInYear" class="form-label fw-medium">
+                                @Localizer["SequenceInYear"] <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="SequenceInYear" type="number" class="form-control" min="1" max="99" required
+                                   readonly="@(windowLocked ? "readonly" : null)" />
+                            <span asp-validation-for="SequenceInYear" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="StartDate" class="form-label fw-medium">
+                                @Localizer["StartDate"] <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="StartDate" type="date" class="form-control" required
+                                   value="@Model.StartDate?.UtcDateTime.ToString("yyyy-MM-dd")"
+                                   readonly="@(windowLocked ? "readonly" : null)" />
+                            <span asp-validation-for="StartDate" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="EndDate" class="form-label fw-medium">
+                                @Localizer["EndDate"] <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="EndDate" type="date" class="form-control" required
+                                   value="@Model.EndDate?.UtcDateTime.ToString("yyyy-MM-dd")"
+                                   readonly="@(windowLocked ? "readonly" : null)" />
+                            <div class="form-text">@Localizer["EndDateInclusiveHint"]</div>
+                            <span asp-validation-for="EndDate" class="text-danger small mt-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@SharedLocalizer["Description"]</h6>
+                    <label asp-for="Description" class="form-label fw-medium">@SharedLocalizer["Description"]</label>
+                    <textarea asp-for="Description" class="form-control" rows="6" maxlength="2000"
+                              placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right) -->
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4" id="scopeSection"
+                     data-scope-options-url="/CRM/CyclePeriods/api/scope-options">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["ScopeSection"]</h6>
+                    <p class="text-muted small mb-4">@Localizer["ScopeSectionHint"]</p>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="ScopeType" class="form-label fw-medium">
+                                @Localizer["ScopeType"] <span class="text-danger">*</span>
+                            </label>
+                            @* The scope is half of the period's identity, so an existing period cannot be moved between
+                               levels — it is closed and a new one is opened. On edit the select therefore offers ONLY
+                               the level the period already has: a disabled control would not be posted at all, and a
+                               hidden twin would bind the same field twice. *@
+                            <select asp-for="ScopeType" id="scopeType" class="form-select" required
+                                    aria-readonly="@(isEdit ? "true" : null)">
+                                @foreach (var scopeType in (isEdit
+                                    ? new[] { Model.ScopeType }
+                                    : options.ScopeTypes.DefaultIfEmpty("tenant").ToArray()))
+                                {
+                                    <option value="@scopeType" selected="@(string.Equals(Model.ScopeType, scopeType, StringComparison.OrdinalIgnoreCase))">
+                                        @Localizer["ScopeType_" + scopeType]
+                                    </option>
+                                }
+                            </select>
+                            @if (isEdit)
+                            {
+                                <div class="form-text">@Localizer["ScopeTypeImmutableHint"]</div>
+                            }
+                        </div>
+
+                        @* Exactly one of the three below is visible at a time, and the hidden ones are CLEARED — a
+                           hidden-but-populated field would reach the runtime and be refused as an ambiguous scope. *@
+                        <div class="col-12 scope-ref" data-scope-ref="tenant">
+                            <div class="alert alert-secondary mb-0 py-2 small">@Localizer["ScopeTenantHint"]</div>
+                        </div>
+
+                        <div class="col-12 scope-ref" data-scope-ref="country">
+                            <label asp-for="CountryScope" class="form-label fw-medium">@Localizer["CountryScope"]</label>
+                            <select asp-for="CountryScope" id="countryScope" class="form-select">
+                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                @foreach (var option in options.Countries)
+                                {
+                                    <option value="@option.Value" selected="@(string.Equals(Model.CountryScope, option.Value, StringComparison.OrdinalIgnoreCase))">
+                                        @option.Label
+                                    </option>
+                                }
+                            </select>
+                            @if (!options.CountryReady)
+                            {
+                                <div class="alert alert-warning mt-2 mb-0 py-2 small">
+                                    @Localizer["CountrySetUnavailable"] <code>@options.CountrySetCode</code>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="col-12 scope-ref" data-scope-ref="legal-entity">
+                            <label asp-for="LegalEntityId" class="form-label fw-medium">@Localizer["LegalEntity"]</label>
+                            <select asp-for="LegalEntityId" id="legalEntityId" class="form-select">
+                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                @foreach (var option in options.LegalEntities)
+                                {
+                                    <option value="@option.Value" selected="@(Model.LegalEntityId?.ToString() == option.Value)">
+                                        @option.Label
+                                    </option>
+                                }
+                            </select>
+                            @if (!options.LegalEntityReady)
+                            {
+                                <div class="alert alert-warning mt-2 mb-0 py-2 small">
+                                    @Localizer["LegalEntityListUnavailable"]
+                                </div>
+                            }
+                        </div>
+
+                        <div class="col-12 scope-ref" data-scope-ref="business-unit">
+                            @* A FILTER that is also kept as CONTEXT. It narrows the unit list (candidates come from the
+                               territory plans covering a country over the period's days) and it is stored alongside the
+                               chosen unit so a reader sees "TR / alpha" instead of a bare code.
+                               It is still NOT a scope: the period is saved as ScopeType=business-unit with the unit as
+                               its only reference, and the runtime ignores this value for uniqueness, the overlap ban and
+                               resolution. It stays a SEPARATE element from #countryScope on purpose — binding both to
+                               one control would make choosing a filter look like choosing a country-scoped period, and
+                               form.js clears it whenever the level is not business-unit so it is never posted alone. *@
+                            <label for="buFilterCountry" class="form-label fw-medium">
+                                @Localizer["BusinessUnitCountryFilter"]
+                            </label>
+                            <select id="buFilterCountry" name="BusinessUnitCountryContext" class="form-select mb-3"
+                                    aria-controls="businessUnitId">
+                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                @foreach (var option in options.Countries)
+                                {
+                                    <option value="@option.Value"
+                                            selected="@(string.Equals(Model.BusinessUnitCountryContext, option.Value, StringComparison.OrdinalIgnoreCase))">
+                                        @option.Label
+                                    </option>
+                                }
+                            </select>
+                            @if (!options.CountryReady)
+                            {
+                                <div class="alert alert-warning mb-3 py-2 small">
+                                    @Localizer["CountrySetUnavailable"] <code>@options.CountrySetCode</code>
+                                </div>
+                            }
+
+                            <label asp-for="BusinessUnitId" class="form-label fw-medium">@Localizer["BusinessUnitId"]</label>
+                            <select asp-for="BusinessUnitId" id="businessUnitId" class="form-select">
+                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                @foreach (var option in options.BusinessUnits)
+                                {
+                                    <option value="@option.Value" title="@option.Hint"
+                                            selected="@(string.Equals(Model.BusinessUnitId, option.Value, StringComparison.OrdinalIgnoreCase))">
+                                        @option.Label
+                                    </option>
+                                }
+                            </select>
+                            @* Shown while the list is still gated behind a country. form.js hides it the moment a
+                               country is chosen; it is rendered here so the reason is visible before any script runs. *@
+                            <div id="businessUnitCountryFirst" class="form-text text-warning">
+                                @Localizer["BusinessUnitCountryFirstHint"]
+                            </div>
+                            <div id="businessUnitHint" class="form-text">
+                                @if (!options.BusinessUnitReady)
+                                {
+                                    @Localizer["BusinessUnitNoPlan"]
+                                }
+                                else if (options.BusinessUnitFromTerritory)
+                                {
+                                    @Localizer["BusinessUnitFromTerritory"]
+                                }
+                                else
+                                {
+                                    @Localizer["BusinessUnitFromVocabulary"]
+                                }
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(Model.BusinessUnitSource))
+                            {
+                                <div class="mt-2">
+                                    <span class="badge bg-label-secondary">
+                                        @Localizer["BusinessUnitSource_" + Model.BusinessUnitSource]
+                                    </span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* The lifecycle is shown but never edited: a period goes live through Activate and ends through Close,
+               each with its own permission and, for Activate, the moment the overlap ban is checked. A status field in
+               this form would suggest an author can put a period live by saving it. *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LifecycleSection"]</h6>
+                    @if (isEdit)
+                    {
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="text-muted">@SharedLocalizer["Status"]</span>
+                            <span class="badge @(Model.IsActive ? "bg-label-success" : Model.IsClosed ? "bg-label-secondary" : "bg-label-warning")">
+                                @Localizer["CycleStatus_" + Model.CycleStatus]
+                            </span>
+                        </div>
+                        @if (!Model.CanEditWindow)
+                        {
+                            <div class="alert alert-info small mb-0">@Localizer["ActiveWindowImmutableHint"]</div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-muted">@SharedLocalizer["Status"]</span>
+                            <span class="badge bg-label-warning">@Localizer["CycleStatus_draft"]</span>
+                        </div>
+                    }
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

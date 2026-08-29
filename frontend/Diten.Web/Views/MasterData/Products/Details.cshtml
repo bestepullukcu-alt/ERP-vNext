@@ -1,0 +1,149 @@
+@model Diten.Web.Models.MasterData.ProductPageViewModel
+@using System.Text.Json
+@using Diten.Web.Views.MasterData.Products
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProductsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["ProductDetail"].Value;
+    Layout = "_LayoutTenantShell";
+    var p = Model.Product;
+    var canUpdate = Model.CanManage && Perms.Has("mdm.products.update");
+    var canArchive = Model.CanManage && Perms.Has("mdm.products.archive");
+    string Show(object? value) => value?.ToString() is { Length: > 0 } text ? text : "—";
+}
+<div id="productDetailsPage" data-product-id="@p.ProductId" data-archived="@p.IsArchived.ToString().ToLowerInvariant()">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h5 class="mb-0">@p.ProductName</h5>
+            <small class="text-muted">@p.ProductCode · @Localizer["ProductDetail"]</small>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/MasterData/Products" class="btn btn-label-secondary">@Localizer["BackToList"]</a>
+            @if (canUpdate) { <a href="/MasterData/Products/@p.ProductId/Edit" class="btn btn-label-primary">@Localizer["EditProduct"]</a> }
+            @if (canArchive) { <button type="button" id="archiveProduct" class="btn btn-label-warning">@Localizer["ArchiveProduct"]</button> }
+        </div>
+    </div>
+
+    @if (p.IsArchived)
+    {
+        <div class="alert alert-warning"><i class="bx bx-archive me-1"></i>@Localizer["ArchivedProductReadOnly"]</div>
+    }
+
+    <div class="row g-3">
+        <div class="col-lg-6"><section class="card h-100">
+            <div class="card-header"><h6 class="mb-0">@Localizer["SummarySection"]</h6></div>
+            <div class="card-body"><dl class="row mb-0">
+                <dt class="col-sm-5">@Localizer["ProductCode"]</dt><dd class="col-sm-7">@p.ProductCode</dd>
+                <dt class="col-sm-5">@Localizer["ProductName"]</dt><dd class="col-sm-7">@p.ProductName</dd>
+                <dt class="col-sm-5">@Localizer["ProductStatus"]</dt><dd class="col-sm-7"><span class="badge bg-label-primary">@Localizer[$"Status_{p.ProductStatus}"]</span></dd>
+                <dt class="col-sm-5">@Localizer["ProductType"]</dt><dd class="col-sm-7">@(string.IsNullOrWhiteSpace(p.ProductType) ? "—" : Localizer[$"ProductType_{p.ProductType}"].Value)</dd>
+                <dt class="col-sm-5">@Localizer["EffectiveFrom"]</dt><dd class="col-sm-7">@p.EffectiveFrom.ToString("yyyy-MM-dd")</dd>
+                <dt class="col-sm-5">@Localizer["EffectiveTo"]</dt><dd class="col-sm-7">@(p.EffectiveTo?.ToString("yyyy-MM-dd") ?? "—")</dd>
+                <dt class="col-sm-5">@Localizer["Description"]</dt><dd class="col-sm-7 text-break">@Show(p.Description)</dd>
+            </dl></div>
+        </section></div>
+
+        <div class="col-lg-6"><section class="card h-100">
+            <div class="card-header"><h6 class="mb-0">@Localizer["BrandReferenceSection"]</h6></div>
+            <div class="card-body">
+                @if (p.BrandId is null)
+                {
+                    @* A brand-less product is fully valid (FU01 §4.1), not an error state. *@
+                    <div class="text-muted">@Localizer["NoBrandLinked"]</div>
+                }
+                else
+                {
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">@Localizer["BrandId"]</dt>
+                        <dd class="col-sm-7 text-break"><a href="/MasterData/Brands/@p.BrandId">@p.BrandId</a></dd>
+                        @if (Model.Brand is { } brand)
+                        {
+                            <dt class="col-sm-5">@Localizer["BrandCode"]</dt><dd class="col-sm-7">@brand.BrandCode</dd>
+                            <dt class="col-sm-5">@Localizer["BrandName"]</dt><dd class="col-sm-7">@brand.BrandName</dd>
+                        }
+                    </dl>
+                    @if (Model.Brand is null)
+                    {
+                        @* The brand could not be read (no permission or not readable) — the raw id is shown
+                           rather than an invented display name. *@
+                        <small class="text-muted d-block mt-2">@Localizer["BrandNotResolvedHelp"]</small>
+                    }
+                }
+            </div>
+        </section></div>
+
+        <div class="col-lg-6"><section class="card h-100">
+            <div class="card-header"><h6 class="mb-0">@Localizer["PharmaMetadataSection"]</h6></div>
+            <div class="card-body"><dl class="row mb-0">
+                <dt class="col-sm-5">@Localizer["DosageForm"]</dt><dd class="col-sm-7">@Show(p.DosageForm)</dd>
+                <dt class="col-sm-5">@Localizer["Strength"]</dt><dd class="col-sm-7">@Show(p.Strength)</dd>
+                <dt class="col-sm-5">@Localizer["PackSize"]</dt><dd class="col-sm-7">@Show(p.PackSize)</dd>
+                <dt class="col-sm-5">@Localizer["UnitOfMeasure"]</dt><dd class="col-sm-7">@Show(p.UnitOfMeasure)</dd>
+                <dt class="col-sm-5">@Localizer["ATCCode"]</dt><dd class="col-sm-7">@Show(p.ATCCode)</dd>
+                <dt class="col-sm-5">@Localizer["TherapeuticAreaId"]</dt><dd class="col-sm-7 text-break">@Show(p.TherapeuticAreaId)</dd>
+                <dt class="col-sm-5">@Localizer["IndicationRefs"]</dt>
+                <dd class="col-sm-7 text-break">@(p.IndicationRefs.Count == 0 ? "—" : string.Join(", ", p.IndicationRefs))</dd>
+            </dl>
+            <small class="text-muted d-block mt-2" id="atcCodeHelp">@Localizer["ATCCodeHelp"]</small>
+            <small class="text-muted d-block" id="therapeuticAreaHelp">@Localizer["TherapeuticAreaHelp"]</small>
+            </div>
+        </section></div>
+
+        <div class="col-lg-6"><section class="card h-100">
+            <div class="card-header"><h6 class="mb-0">@Localizer["ExternalReferencesSection"]</h6></div>
+            <div class="card-body">
+                @if (p.ExternalReferences.Count == 0)
+                {
+                    <div class="text-muted">@Localizer["NoExternalReferences"]</div>
+                }
+                else
+                {
+                    <div class="table-responsive"><table class="table table-sm">
+                        <thead><tr>
+                            <th>@Localizer["SourceSystem"]</th><th>@Localizer["ExternalId"]</th>
+                            <th>@Localizer["ExternalCode"]</th><th>@Localizer["ExternalName"]</th>
+                            <th>@Localizer["ImportedAt"]</th><th>@Localizer["Primary"]</th>
+                        </tr></thead>
+                        <tbody>
+                        @foreach (var x in p.ExternalReferences)
+                        {
+                            <tr>
+                                <td>@x.SourceSystem</td><td class="text-break">@x.ExternalId</td>
+                                <td>@Show(x.ExternalCode)</td><td>@Show(x.ExternalName)</td>
+                                <td>@(x.ImportedAt?.ToString("u") ?? "—")</td>
+                                <td>@(x.IsPrimary ? Localizer["Yes"] : Localizer["No"])</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table></div>
+                }
+            </div>
+        </section></div>
+
+        @* Audit is detail-only, so it is a plain card rather than a form-mirrored <section>. *@
+        <div class="col-lg-6"><div class="card h-100">
+            <div class="card-header"><h6 class="mb-0">@Localizer["AuditSection"]</h6></div>
+            <div class="card-body"><dl class="row mb-0">
+                <dt class="col-sm-5">@Localizer["CreatedAt"]</dt><dd class="col-sm-7">@p.CreatedAt.ToString("u")</dd>
+                <dt class="col-sm-5">@Localizer["CreatedBy"]</dt><dd class="col-sm-7 text-break">@Show(p.CreatedBy)</dd>
+                <dt class="col-sm-5">@Localizer["UpdatedAt"]</dt><dd class="col-sm-7">@(p.UpdatedAt?.ToString("u") ?? "—")</dd>
+                <dt class="col-sm-5">@Localizer["UpdatedBy"]</dt><dd class="col-sm-7 text-break">@Show(p.UpdatedBy)</dd>
+                <dt class="col-sm-5">@Localizer["Archived"]</dt><dd class="col-sm-7">@(p.IsArchived ? Localizer["Yes"] : Localizer["No"])</dd>
+                <dt class="col-sm-5">@Localizer["ArchivedAt"]</dt><dd class="col-sm-7">@(p.ArchivedAt?.ToString("u") ?? "—")</dd>
+                <dt class="col-sm-5">@Localizer["ArchivedBy"]</dt><dd class="col-sm-7 text-break">@Show(p.ArchivedBy)</dd>
+            </dl></div>
+        </div></div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/MasterData/Products/_IndexL10n.cshtml" />
+    <script>window.ProductPage = @Html.Raw(JsonSerializer.Serialize(new {
+        productId = p.ProductId,
+        isArchived = p.IsArchived,
+        canManage = Model.CanManage
+    }, new JsonSerializerOptions(JsonSerializerDefaults.Web)));</script>
+    <script src="~/assets/js/MasterData/Products/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/MasterData/Products/details.js" asp-append-version="true"></script>
+}

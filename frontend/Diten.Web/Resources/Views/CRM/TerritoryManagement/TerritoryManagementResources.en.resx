@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>  <data name="Title" xml:space="preserve"><value>Territory Management</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Manage versioned territory plans and their hierarchy.</value></data>
+  <data name="ContractSection" xml:space="preserve"><value>Contract Readiness</value></data>
+  <data name="ContractReady" xml:space="preserve"><value>Contract Ready</value></data>
+  <data name="ReferenceDataNotReady" xml:space="preserve"><value>Reference data not ready</value></data>
+  <data name="MissingSets" xml:space="preserve"><value>Missing reference sets</value></data>
+  <data name="TerritoryModels" xml:space="preserve"><value>Territory Models</value></data>
+  <data name="TerritoryNodes" xml:space="preserve"><value>Territory Nodes</value></data>
+  <data name="CreateModel" xml:space="preserve"><value>Create Model</value></data>
+  <data name="EditModel" xml:space="preserve"><value>Edit Model</value></data>
+  <data name="NoModels" xml:space="preserve"><value>No territory models yet.</value></data>
+  <data name="ModelCode" xml:space="preserve"><value>Model Code</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Status" xml:space="preserve"><value>Status</value></data>
+  <data name="VersionNumber" xml:space="preserve"><value>Version</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>Country Scope</value></data>
+  <data name="DivisionScope" xml:space="preserve"><value>Division Scope</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Effective From</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Effective To</value></data>
+  <data name="ChangeReason" xml:space="preserve"><value>Change Reason</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="View" xml:space="preserve"><value>View</value></data>
+  <data name="Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Back to list</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="ModelDetails" xml:space="preserve"><value>Model Details</value></data>
+  <data name="TerritoryHierarchy" xml:space="preserve"><value>Territory Hierarchy</value></data>
+  <data name="NoNodes" xml:space="preserve"><value>No nodes in this model yet.</value></data>
+  <data name="CreateNode" xml:space="preserve"><value>Create Territory Node</value></data>
+  <data name="EditNode" xml:space="preserve"><value>Edit Territory Node</value></data>
+  <data name="TerritoryCode" xml:space="preserve"><value>Territory Code</value></data>
+  <data name="TerritoryLevel" xml:space="preserve"><value>Territory Level</value></data>
+  <data name="ParentTerritory" xml:space="preserve"><value>Parent Territory</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Sort Order</value></data>
+  <data name="MicroZoneProfile" xml:space="preserve"><value>MicroZone Profile</value></data>
+  <data name="MicroZoneProfileHelp" xml:space="preserve"><value>Only available when the level is microzone.</value></data>
+  <data name="AnchorAccountId" xml:space="preserve"><value>Anchor Account Id</value></data>
+  <data name="ClusterNotes" xml:space="preserve"><value>Cluster Notes</value></data>
+  <data name="PlanningCenterType" xml:space="preserve"><value>Planning Center Type</value></data>
+  <data name="CountryCode" xml:space="preserve"><value>Country Code</value></data>
+  <data name="DivisionCode" xml:space="preserve"><value>Division Code</value></data>
+  <data name="RegionCode" xml:space="preserve"><value>Region Code</value></data>
+  <data name="AreaCode" xml:space="preserve"><value>Area Code</value></data>
+  <data name="ZoneCode" xml:space="preserve"><value>Zone Code</value></data>
+  <data name="MicroZoneCode" xml:space="preserve"><value>MicroZone Code</value></data>
+  <data name="ReferenceDataUnavailable" xml:space="preserve"><value>Reference data is currently unavailable, so levels cannot be selected. Please try again later.</value></data>
+  <data name="LimitationsSection" xml:space="preserve"><value>FU01 scope — not yet available</value></data>
+  <data name="LimAssignmentRules" xml:space="preserve"><value>Assignment rules are not available in this FU.</value></data>
+  <data name="LimResourceAssignment" xml:space="preserve"><value>Resource assignment is not available in this FU.</value></data>
+  <data name="LimWorkflowActivation" xml:space="preserve"><value>Workflow activation is not available in this FU.</value></data>
+  <data name="LimEvidencePack" xml:space="preserve"><value>Evidence pack is not available in this FU.</value></data>
+  <data name="LimImportExport" xml:space="preserve"><value>Import/export is not available in this FU.</value></data>
+  <data name="SelectLevel" xml:space="preserve"><value>Select a level</value></data>
+  <data name="SelectParent" xml:space="preserve"><value>(root - no parent)</value></data>
+  <data name="LiveSmokeReady" xml:space="preserve"><value>Ready</value></data>
+  <data name="ModuleId" xml:space="preserve"><value>Module</value></data>
+  <data name="RuntimeScope" xml:space="preserve"><value>Runtime Scope</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identity</value></data>
+  <data name="EffectivePeriodSection" xml:space="preserve"><value>Effective Period</value></data>
+  <data name="GeoCodesSection" xml:space="preserve"><value>Geo Codes</value></data>
+  <data name="BusinessUnitScope" xml:space="preserve"><value>Business Unit Scope</value></data>
+  <data name="BusinessUnitScopeHelp" xml:space="preserve"><value>Business units this territory plan applies to (e.g. Alpha, Beta).</value></data>
+  <data name="BrandScopePlanned" xml:space="preserve"><value>Brand scope is planned for a later Brand/Marketing integration.</value></data>
+  <data name="CountryReferenceNotReady" xml:space="preserve"><value>Country reference data is not published yet.</value></data>
+  <data name="BusinessUnitReferenceNotReady" xml:space="preserve"><value>Business unit reference data is not published yet.</value></data>
+  <data name="SelectCountry" xml:space="preserve"><value>Select a country</value></data>
+  <data name="Activate" xml:space="preserve"><value>Activate</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="Archive" xml:space="preserve"><value>Archive</value></data>
+  <data name="DeleteDraft" xml:space="preserve"><value>Delete Draft</value></data>
+  <data name="DeleteDraftNode" xml:space="preserve"><value>Delete Draft Node</value></data>
+  <data name="ExpiredWarning" xml:space="preserve"><value>The effective end date has passed. Stored status is unchanged; this record is computed as expired.</value></data>
+  <data name="ConfirmLifecycleAction" xml:space="preserve"><value>Confirm lifecycle action</value></data>
+  <data name="LifecycleConfirmation" xml:space="preserve"><value>This action changes the operational lifecycle state. Do you want to continue?</value></data>
+  <data name="Confirm" xml:space="preserve"><value>Confirm</value></data>
+  <data name="AssignmentRules" xml:space="preserve"><value>Assignment Rules</value></data>
+  <data name="AssignmentRulesSubtitle" xml:space="preserve"><value>Rules describe how accounts would be matched to a territory node. They never assign anything.</value></data>
+  <data name="RunPreview" xml:space="preserve"><value>Run Preview</value></data>
+  <data name="CreateRule" xml:space="preserve"><value>Create Rule</value></data>
+  <data name="EditRule" xml:space="preserve"><value>Edit Rule</value></data>
+  <data name="DeleteRule" xml:space="preserve"><value>Delete Rule</value></data>
+  <data name="DeleteRuleConfirm" xml:space="preserve"><value>This rule will be soft-deleted (no hard delete):</value></data>
+  <data name="PreviewDoesNotAssign" xml:space="preserve"><value>Preview does not assign accounts.</value></data>
+  <data name="ApplyComesInFu05" xml:space="preserve"><value>Apply and assignment history will come in FU05.</value></data>
+  <data name="ResourceComesInFu04" xml:space="preserve"><value>Resource / MR assignment will come in FU04.</value></data>
+  <data name="RulesEditableOnDraftOnly" xml:space="preserve"><value>Assignment rules can only be changed while the model is a draft.</value></data>
+  <data name="ArchivedReadOnly" xml:space="preserve"><value>This model is archived and read-only.</value></data>
+  <data name="RuleCode" xml:space="preserve"><value>Rule Code</value></data>
+  <data name="TargetNode" xml:space="preserve"><value>Target Node</value></data>
+  <data name="RuleType" xml:space="preserve"><value>Rule Type</value></data>
+  <data name="Criteria" xml:space="preserve"><value>Criteria</value></data>
+  <data name="CriteriaHint" xml:space="preserve"><value>Comma-separated codes. Values in one field are OR-ed; different fields are AND-ed.</value></data>
+  <data name="Priority" xml:space="preserve"><value>Priority</value></data>
+  <data name="PriorityHint" xml:space="preserve"><value>Lower value wins when several rules match the same account.</value></data>
+  <data name="ConflictPolicy" xml:space="preserve"><value>Conflict Policy</value></data>
+  <data name="Enabled" xml:space="preserve"><value>Enabled</value></data>
+  <data name="Disabled" xml:space="preserve"><value>Disabled</value></data>
+  <data name="AssignmentPreview" xml:space="preserve"><value>Assignment Preview</value></data>
+  <data name="NoAssignmentsPersisted" xml:space="preserve"><value>No assignments were persisted.</value></data>
+  <data name="MatchedAccounts" xml:space="preserve"><value>Matched Accounts</value></data>
+  <data name="Conflicts" xml:space="preserve"><value>Conflicts</value></data>
+  <data name="RuleSummary" xml:space="preserve"><value>Rule Summary</value></data>
+  <data name="AccountCode" xml:space="preserve"><value>Account Code</value></data>
+  <data name="AccountName" xml:space="preserve"><value>Account Name</value></data>
+  <data name="MatchReason" xml:space="preserve"><value>Match Reason</value></data>
+  <data name="ConflictStatus" xml:space="preserve"><value>Conflict Status</value></data>
+  <data name="CandidateNodes" xml:space="preserve"><value>Candidate Nodes</value></data>
+  <data name="ResolutionSuggestion" xml:space="preserve"><value>Resolution Suggestion</value></data>
+  <data name="Evaluated" xml:space="preserve"><value>Evaluated</value></data>
+  <data name="Matches" xml:space="preserve"><value>Matches</value></data>
+  <data name="CountryRefs" xml:space="preserve"><value>Country codes</value></data>
+  <data name="CityRefs" xml:space="preserve"><value>City codes</value></data>
+  <data name="DistrictRefs" xml:space="preserve"><value>District codes</value></data>
+  <data name="AccountTypes" xml:space="preserve"><value>Account types</value></data>
+  <data name="AccountCategories" xml:space="preserve"><value>Account categories</value></data>
+  <data name="AccountStatuses" xml:space="preserve"><value>Account statuses</value></data>
+  <data name="NoRules" xml:space="preserve"><value>No assignment rules yet.</value></data>
+  <data name="NoMatches" xml:space="preserve"><value>No account matched the rules.</value></data>
+  <data name="NoConflicts" xml:space="preserve"><value>No conflicts detected.</value></data>
+  <data name="Candidates" xml:space="preserve"><value>Candidates</value></data>
+  <data name="ScannedAccounts" xml:space="preserve"><value>Scanned accounts</value></data>
+  <data name="EvaluatedRules" xml:space="preserve"><value>Evaluated rules</value></data>
+  <data name="GeneratedAt" xml:space="preserve"><value>Generated at</value></data>
+  <data name="ConflictWinner" xml:space="preserve"><value>Winner</value></data>
+  <data name="ConflictLoser" xml:space="preserve"><value>Overridden</value></data>
+  <data name="NoConflict" xml:space="preserve"><value>OK</value></data>
+  <data name="MissingNode" xml:space="preserve"><value>node missing</value></data>
+  <data name="Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="EvaluatedAsOf" xml:space="preserve"><value>evaluated as of</value></data>
+  <data name="ResourceAssignments" xml:space="preserve"><value>Resource Assignments</value></data>
+  <data name="ResourceAssignmentsSubtitle" xml:space="preserve"><value>Who is responsible for this territory node or business scope.</value></data>
+  <data name="ResourceAssignmentsExplainer" xml:space="preserve"><value>These assignments give people responsibility for territories. They do not assign customers.</value></data>
+  <data name="AccountCoverageComesInFu05" xml:space="preserve"><value>Customer (account) coverage will come in FU05.</value></data>
+  <data name="EndingIsNotDeleting" xml:space="preserve"><value>Ending an assignment keeps its history; it is never deleted.</value></data>
+  <data name="ResourcesEditableOnDraftOnly" xml:space="preserve"><value>Resource assignments can only be changed while the model is a draft.</value></data>
+  <data name="AssignResource" xml:space="preserve"><value>Assign Resource</value></data>
+  <data name="EditAssignment" xml:space="preserve"><value>Edit Assignment</value></data>
+  <data name="DeleteAssignment" xml:space="preserve"><value>Delete Assignment</value></data>
+  <data name="EndAssignment" xml:space="preserve"><value>End Assignment</value></data>
+  <data name="EndAssignmentConfirm" xml:space="preserve"><value>This assignment will be ended and kept as history:</value></data>
+  <data name="CheckConflicts" xml:space="preserve"><value>Check Conflicts</value></data>
+  <data name="NoConflictsFound" xml:space="preserve"><value>No conflicts or warnings found.</value></data>
+  <data name="NoAssignments" xml:space="preserve"><value>No resource assignments yet.</value></data>
+  <data name="Resource" xml:space="preserve"><value>Resource</value></data>
+  <data name="Role" xml:space="preserve"><value>Role</value></data>
+  <data name="CoverageScope" xml:space="preserve"><value>Coverage Scope</value></data>
+  <data name="CoverageScopeHint" xml:space="preserve"><value>Leave empty to use the role default. It decides whether a node and a business unit are required.</value></data>
+  <data name="RoleDefaultsCoverage" xml:space="preserve"><value>Leave the coverage scope empty to use this role default.</value></data>
+  <data name="Primary" xml:space="preserve"><value>Primary</value></data>
+  <data name="ValidPeriod" xml:space="preserve"><value>Valid Period</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>Valid From</value></data>
+  <data name="ValidTo" xml:space="preserve"><value>Valid To</value></data>
+  <data name="Expired" xml:space="preserve"><value>Expired</value></data>
+  <data name="ResourceId" xml:space="preserve"><value>Resource Id</value></data>
+  <data name="ResourceType" xml:space="preserve"><value>Resource Type</value></data>
+  <data name="ResourceDisplayName" xml:space="preserve"><value>Display Name</value></data>
+  <data name="ResourceEmail" xml:space="preserve"><value>Email</value></data>
+  <data name="SelectResource" xml:space="preserve"><value>Select a person</value></data>
+  <data name="SelectUser" xml:space="preserve"><value>Select user</value></data>
+  <data name="Employee" xml:space="preserve"><value>Employee</value></data>
+  <data name="ResourceLookupNotReady" xml:space="preserve"><value>The user directory is not available. Employee selection will be enabled after the HR integration is delivered.</value></data>
+  <data name="AssignmentSource" xml:space="preserve"><value>Assignment Source</value></data>
+  <data name="AssignmentSourceHint" xml:space="preserve"><value>Use override to allow an exception; it always requires a reason.</value></data>
+  <data name="ChangeReasonHint" xml:space="preserve"><value>Required for manual and override assignments.</value></data>
+  <data name="BusinessUnitScopeAssignmentHint" xml:space="preserve"><value>Only the business units already in the model scope can be selected.</value></data>
+  <data name="AssignmentHistory" xml:space="preserve"><value>Assignment History</value></data>
+  <data name="RunPreviewHint" xml:space="preserve"><value>No preview has been run yet. Use "Run Preview" on the Assignment Rules tab to see candidate accounts.</value></data>
+  <data name="RuleCodeHint" xml:space="preserve"><value>Filled in automatically — change it if you prefer your own code. It cannot be changed after the rule is created.</value></data>
+  <data name="CriteriaNotReady" xml:space="preserve"><value>These reference sets are not published yet, so their criteria cannot be selected:</value></data>
+  <data name="PreviewThisRule" xml:space="preserve"><value>Preview this rule</value></data>
+  <data name="PreviewScopeAll" xml:space="preserve"><value>All rules of this model were evaluated.</value></data>
+  <data name="PreviewScopeSingle" xml:space="preserve"><value>Only this rule was evaluated:</value></data>
+  <data name="SingleRuleNoConflicts" xml:space="preserve"><value>A single rule always has one target node, so no conflict can appear here. Run all rules to see conflicts.</value></data>
+  <data name="HistoryThisRule" xml:space="preserve"><value>Assignment history of this rule</value></data>
+  <data name="PreviewAllRules" xml:space="preserve"><value>Preview all rules</value></data>
+  <data name="HistoryAllRules" xml:space="preserve"><value>History of all rules</value></data>
+  <data name="PreviewScopeAllShort" xml:space="preserve"><value>All rules</value></data>
+  <data name="HistoryScopeAllShort" xml:space="preserve"><value>All rules</value></data>
+  <data name="HistoryScopeSingle" xml:space="preserve"><value>Showing only the assignments produced by this rule:</value></data>
+  <data name="NoAssignmentHistory" xml:space="preserve"><value>No assignment history yet.</value></data>
+  <data name="RuleHasConflict" xml:space="preserve"><value>This rule competes with another rule for at least one account. Open the all-rules preview to see the details.</value></data>
+  <data name="GoTo" xml:space="preserve"><value>Go to</value></data>
+  <data name="ReplaceAssignment" xml:space="preserve"><value>Replace assignment</value></data>
+  <data name="TransferAssignment" xml:space="preserve"><value>Transfer assignment</value></data>
+  <data name="EffectiveDate" xml:space="preserve"><value>Effective Date</value></data>
+  <data name="ReplaceAssignmentConfirm" xml:space="preserve"><value>This assignment will be replaced by a new resource:</value></data>
+  <data name="TransferAssignmentConfirm" xml:space="preserve"><value>This assignment will be transferred to another node:</value></data>
+  <data name="PlanVsCurrent" xml:space="preserve"><value>Plan vs Current</value></data>
+  <data name="PlanVsCurrentExplainer" xml:space="preserve"><value>Compares the resource assignment plan captured when the model was activated with the responsibilities that are current today.</value></data>
+  <data name="PlanVsCurrentReadOnlyHint" xml:space="preserve"><value>This tab is read-only. Assignments are changed on the Resource Assignments page.</value></data>
+  <data name="PlanCapturedAt" xml:space="preserve"><value>Plan captured at</value></data>
+  <data name="PlanCapturedBy" xml:space="preserve"><value>Plan captured by</value></data>
+  <data name="PlanSnapshotVersion" xml:space="preserve"><value>Plan version</value></data>
+  <data name="CorrelationId" xml:space="preserve"><value>Correlation id</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>Effective at</value></data>
+  <data name="ChangeType" xml:space="preserve"><value>Change type</value></data>
+  <data name="TerritoryNode" xml:space="preserve"><value>Territory node</value></data>
+  <data name="Position" xml:space="preserve"><value>Position</value></data>
+  <data name="PlannedResource" xml:space="preserve"><value>Planned resource</value></data>
+  <data name="CurrentResource" xml:space="preserve"><value>Current resource</value></data>
+  <data name="Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="NoPlanVsCurrentRows" xml:space="preserve"><value>No differences to show.</value></data>
+  <data name="PlanNotYetActivated" xml:space="preserve"><value>This model has not been activated yet, so there is no plan baseline. The Resource Assignments page shows a planning preview.</value></data>
+  <data name="PlanSnapshotNotCaptured" xml:space="preserve"><value>No plan baseline was captured for this model, so a comparison cannot be produced.</value></data>
+  <data name="PlanVsCurrentHistorical" xml:space="preserve"><value>This model is no longer active. The comparison is shown as read-only history.</value></data>
+  <data name="Planned" xml:space="preserve"><value>Planned</value></data>
+  <data name="Current" xml:space="preserve"><value>Current</value></data>
+  <data name="ReplacementLink" xml:space="preserve"><value>Replacement</value></data>
+  <data name="TransferLink" xml:space="preserve"><value>Transfer</value></data>
+  <data name="ChangedAt" xml:space="preserve"><value>Changed at</value></data>
+  <data name="ChangedBy" xml:space="preserve"><value>Changed by</value></data>
+  <data name="ChangedByUnavailable" xml:space="preserve"><value>Not recorded on the assignment</value></data>
+  <data name="AlsoDiffers" xml:space="preserve"><value>Also differs</value></data>
+  <data name="LegacyRoleDisplayOnly" xml:space="preserve"><value>Legacy role (display only)</value></data>
+  <data name="ChangedRows" xml:space="preserve"><value>Changed</value></data>
+  <data name="PlannedCount" xml:space="preserve"><value>Planned</value></data>
+  <data name="CurrentCount" xml:space="preserve"><value>Current</value></data>
+  <data name="DiffUnchanged" xml:space="preserve"><value>Unchanged</value></data>
+  <data name="DiffReplaced" xml:space="preserve"><value>Replaced</value></data>
+  <data name="DiffTransferredOut" xml:space="preserve"><value>Transferred out</value></data>
+  <data name="DiffTransferredIn" xml:space="preserve"><value>Transferred in</value></data>
+  <data name="DiffAddedAfterActivation" xml:space="preserve"><value>Added after activation</value></data>
+  <data name="DiffEndedAfterActivation" xml:space="preserve"><value>Ended after activation</value></data>
+  <data name="DiffMissingCurrent" xml:space="preserve"><value>Missing current</value></data>
+  <data name="DiffDateChanged" xml:space="preserve"><value>Dates changed</value></data>
+  <data name="DiffScopeChanged" xml:space="preserve"><value>Scope changed</value></data>
+  <data name="DiffPositionChanged" xml:space="preserve"><value>Position changed</value></data>
+  <data name="ApplyRequiresActiveModel" xml:space="preserve"><value>Account assignments can only be applied to an active territory model. Activate this model first.</value></data>
+  <data name="ImportExport" xml:space="preserve">
+    <value>Import / Export</value>
+  </data>
+  <data name="ExportXlsx" xml:space="preserve">
+    <value>Export (XLSX)</value>
+  </data>
+  <data name="DownloadImportTemplate" xml:space="preserve">
+    <value>Download import template</value>
+  </data>
+  <data name="ImportDryRunFirstNotice" xml:space="preserve">
+    <value>Import always runs as a dry-run first. A dry-run writes nothing — not a node, not a rule, not an assignment, and no history row. Only the separate Apply action writes.</value>
+  </data>
+  <data name="ImportResourceApplyNotSupported" xml:space="preserve">
+    <value>Resource assignments can be exported, templated and validated, but not applied from a file in this version.</value>
+  </data>
+  <data name="ImportReadModelsNotImportable" xml:space="preserve">
+    <value>Coverage Summary and Plan vs Current are export-only read models and cannot be imported.</value>
+  </data>
+  <data name="UploadWorkbook" xml:space="preserve">
+    <value>Upload workbook</value>
+  </data>
+  <data name="DryRunWritesNothing" xml:space="preserve">
+    <value>Dry-run writes nothing</value>
+  </data>
+  <data name="SelectXlsxFile" xml:space="preserve">
+    <value>Select an .xlsx file</value>
+  </data>
+  <data name="StrictMode" xml:space="preserve">
+    <value>Strict mode</value>
+  </data>
+  <data name="StrictModeHint" xml:space="preserve">
+    <value>One blocking row anywhere stops the whole file.</value>
+  </data>
+  <data name="RunDryRun" xml:space="preserve">
+    <value>Run dry-run</value>
+  </data>
+  <data name="ApplyImport" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="DryRunResult" xml:space="preserve">
+    <value>Dry-run result</value>
+  </data>
+  <data name="ApplyResult" xml:space="preserve">
+    <value>Apply result</value>
+  </data>
+  <data name="Sheet" xml:space="preserve">
+    <value>Sheet</value>
+  </data>
+  <data name="Rows" xml:space="preserve">
+    <value>Rows</value>
+  </data>
+  <data name="Blocking" xml:space="preserve">
+    <value>Blocking</value>
+  </data>
+  <data name="Creates" xml:space="preserve">
+    <value>Creates</value>
+  </data>
+  <data name="Updates" xml:space="preserve">
+    <value>Updates</value>
+  </data>
+  <data name="Ends" xml:space="preserve">
+    <value>Ends</value>
+  </data>
+  <data name="Skips" xml:space="preserve">
+    <value>Skips</value>
+  </data>
+  <data name="Outcome" xml:space="preserve">
+    <value>Outcome</value>
+  </data>
+  <data name="ShowOnlyBlocking" xml:space="preserve">
+    <value>Show only blocking rows</value>
+  </data>
+  <data name="RowNumber" xml:space="preserve">
+    <value>Row</value>
+  </data>
+  <data name="Severity" xml:space="preserve">
+    <value>Severity</value>
+  </data>
+  <data name="Operation" xml:space="preserve">
+    <value>Operation</value>
+  </data>
+  <data name="ResolvedKey" xml:space="preserve">
+    <value>Record</value>
+  </data>
+  <data name="Message" xml:space="preserve">
+    <value>Message</value>
+  </data>
+  <data name="SuggestedFix" xml:space="preserve">
+    <value>Suggested fix</value>
+  </data>
+  <data name="ImportRunHistory" xml:space="preserve">
+    <value>Import run history</value>
+  </data>
+  <data name="AppendOnly" xml:space="preserve">
+    <value>Append-only</value>
+  </data>
+  <data name="UploadedAt" xml:space="preserve">
+    <value>Uploaded at</value>
+  </data>
+  <data name="FileName" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="UploadedBy" xml:space="preserve">
+    <value>Uploaded by</value>
+  </data>
+  <data name="RunStatus" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Errors" xml:space="preserve">
+    <value>Errors</value>
+  </data>
+  <data name="Warnings" xml:space="preserve">
+    <value>Warnings</value>
+  </data>
+  <data name="ImportSelectFile" xml:space="preserve">
+    <value>Select an .xlsx file to import.</value>
+  </data>
+  <data name="ImportXlsxOnly" xml:space="preserve">
+    <value>Only .xlsx files produced by the import template or the export are supported.</value>
+  </data>
+  <data name="Applied" xml:space="preserve">
+    <value>Applied</value>
+  </data>
+  <data name="NotApplied" xml:space="preserve">
+    <value>Not applied</value>
+  </data>
+  <data name="NothingToApply" xml:space="preserve">
+    <value>There is nothing to apply.</value>
+  </data>
+  <data name="ApplyBlocked" xml:space="preserve">
+    <value>Run a dry-run on this file first, then apply it.</value>
+  </data>
+  <data name="ConfirmApply" xml:space="preserve">
+    <value>Apply this import?</value>
+  </data>
+  <data name="NoImportRuns" xml:space="preserve">
+    <value>No import has been applied to this model yet.</value>
+  </data>
+  <data name="FileAlreadyApplied" xml:space="preserve">
+    <value>Previously applied</value>
+  </data>
+  <data name="CreateDraftVersion" xml:space="preserve"><value>Create draft version</value></data>
+</root>

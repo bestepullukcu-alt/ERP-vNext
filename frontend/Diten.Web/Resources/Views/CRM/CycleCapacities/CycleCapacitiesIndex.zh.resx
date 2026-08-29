@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="CycleCapacitiesTitle" xml:space="preserve"><value>周期产能</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>一个周期内可以完成多少次拜访。基于已发布的工作日历和录入的活动预算得出的估算值。</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>周期产能服务不可用。</value></data>
+  <data name="CreateCycleCapacity" xml:space="preserve"><value>新建产能</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>新建周期产能</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑周期产能</value></data>
+  <data name="CyclePeriod" xml:space="preserve"><value>周期</value></data>
+  <data name="CycleCode" xml:space="preserve"><value>周期编码</value></data>
+  <data name="CycleName" xml:space="preserve"><value>周期名称</value></data>
+  <data name="PeriodWindow" xml:space="preserve"><value>周期区间</value></data>
+  <data name="CalendarCountryCode" xml:space="preserve"><value>日历国家</value></data>
+  <data name="DailyWorkMinutes" xml:space="preserve"><value>工作日（分钟）</value></data>
+  <data name="MinutesPerVisit" xml:space="preserve"><value>每次拜访分钟数</value></data>
+  <data name="Fte" xml:space="preserve"><value>FTE</value></data>
+  <data name="MonthCount" xml:space="preserve"><value>月份数</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>更新时间</value></data>
+  <data name="ArchiveCycleCapacity" xml:space="preserve"><value>归档</value></data>
+  <data name="ArchiveCycleCapacityConfirm" xml:space="preserve"><value>归档此产能？不会删除任何内容，该周期将可重新创建产能。</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>产能已归档。</value></data>
+  <data name="ArchivedFilter" xml:space="preserve"><value>归档</value></data>
+  <data name="ArchivedHidden" xml:space="preserve"><value>隐藏归档</value></data>
+  <data name="ArchivedOnly" xml:space="preserve"><value>已归档</value></data>
+  <data name="PeriodClosedLock" xml:space="preserve"><value>周期已关闭</value></data>
+  <data name="EstimateNoticeTitle" xml:space="preserve"><value>这是估算值，不是配额。</value></data>
+  <data name="EstimateNoticeBody" xml:space="preserve"><value>该数字基于平均活动时长和临时配置的 FTE，而非人力资源编制。工作日来自已发布的日历，可能发生变化。</value></data>
+  <data name="BudgetVisitMinutesZero" xml:space="preserve"><value>推广产品时间与非推广产品时间不能同时为零。</value></data>
+  <data name="BudgetDailySpendExceedsDay" xml:space="preserve"><value>路途、报告和测验时间已占满工作日，没有留下拜访时间。</value></data>
+  <data name="PinnedPeriodSection" xml:space="preserve"><value>绑定周期</value></data>
+  <data name="ActivityBudgetSection" xml:space="preserve"><value>活动分钟预算</value></data>
+  <data name="MonthlyPlanSection" xml:space="preserve"><value>月度计划</value></data>
+  <data name="FieldForceSection" xml:space="preserve"><value>现场团队</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>备注</value></data>
+  <data name="EstimateSectionHint" xml:space="preserve"><value>工作日来自平台日历，已排除周末、法定节假日和停工日。此处仅扣减您自己的扣减项。</value></data>
+  <data name="CyclePeriodsBreadcrumb" xml:space="preserve"><value>周期</value></data>
+  <data name="NonWorkingDays" xml:space="preserve"><value>非工作日</value></data>
+  <data name="FteMovedToMonthly" xml:space="preserve"><value>FTE 现在按月设置，见下方的月度计划。</value></data>
+  <data name="NoPeriodsAvailable" xml:space="preserve"><value>尚无可用周期，请先创建一个周期。</value></data>
+  <data name="CalendarCountryHint" xml:space="preserve"><value>仅用于读取工作日历，不会改变周期的适用范围。</value></data>
+  <data name="CalendarCountryDerivedHint" xml:space="preserve"><value>由国家范围的周期推导得出，此处无法修改。</value></data>
+  <data name="CalendarCountryNotReady" xml:space="preserve"><value>暂无可选国家：不存在国家范围的周期。</value></data>
+  <data name="CalendarCountryDerived" xml:space="preserve"><value>推导得出</value></data>
+  <data name="CalendarCountryIsNotScope" xml:space="preserve"><value>这是工作日历参数，不是适用范围。</value></data>
+  <data name="DailyWorkMinutesHint" xml:space="preserve"><value>一个现场工作日的分钟数（8 小时 = 480）。</value></data>
+  <data name="PerVisitHint" xml:space="preserve"><value>每次拜访的分钟数。</value></data>
+  <data name="PerDayHint" xml:space="preserve"><value>每个现场工作日的分钟数。</value></data>
+  <data name="PromoProductTime" xml:space="preserve"><value>推广产品时间</value></data>
+  <data name="NonPromoProductTime" xml:space="preserve"><value>非推广产品时间</value></data>
+  <data name="TravelingTime" xml:space="preserve"><value>路途时间</value></data>
+  <data name="ReportDuration" xml:space="preserve"><value>报告时间</value></data>
+  <data name="QuizDuration" xml:space="preserve"><value>测验时间</value></data>
+  <data name="MonthlyDeductionsHint" xml:space="preserve"><value>月份来自周期区间，不能增删。请勿扣减周末和法定节假日：工作日历已将其排除。</value></data>
+  <data name="MonthsPendingPeriod" xml:space="preserve"><value>请先选择周期；其区间决定显示哪些月份。</value></data>
+  <data name="Month" xml:space="preserve"><value>月份</value></data>
+  <data name="MeetingDays" xml:space="preserve"><value>会议天数</value></data>
+  <data name="TrainingDays" xml:space="preserve"><value>培训天数</value></data>
+  <data name="VacationDays" xml:space="preserve"><value>休假天数</value></data>
+  <data name="MicroTargetingDayCount" xml:space="preserve"><value>微目标天数</value></data>
+  <data name="MicroTargetingDuration" xml:space="preserve"><value>微目标 分钟/天</value></data>
+  <data name="FteInterimHint" xml:space="preserve"><value>临时配置的平均值。人力资源集成上线后，将按业务单元和年度自动获取。</value></data>
+  <data name="CalculationUnavailable" xml:space="preserve"><value>无法读取估算值。</value></data>
+  <data name="CalendarForbiddenTitle" xml:space="preserve"><value>无权读取工作日历</value></data>
+  <data name="CalendarForbiddenBody" xml:space="preserve"><value>日历可能确实存在；该账号缺少平台工作日历权限。请联系管理员授权。</value></data>
+  <data name="CalendarUnresolvedTitle" xml:space="preserve"><value>工作日历未作答</value></data>
+  <data name="CalendarUnresolvedBody" xml:space="preserve"><value>不显示任何估算值，而不是给出猜测值。请为该国家和年度发布工作日历后重试。</value></data>
+  <data name="TotalVisitNumber" xml:space="preserve"><value>拜访次数</value></data>
+  <data name="WorkingDays" xml:space="preserve"><value>工作日</value></data>
+  <data name="DeductedDays" xml:space="preserve"><value>扣减</value></data>
+  <data name="FieldDays" xml:space="preserve"><value>现场天数</value></data>
+  <data name="VisitMinutes" xml:space="preserve"><value>拜访分钟数</value></data>
+  <data name="NoFieldDays" xml:space="preserve"><value>无现场天数</value></data>
+</root>

@@ -1,0 +1,117 @@
+@model Diten.Web.Models.CRM.TerritoryNodeEditViewModel
+@using Diten.Web.Models.CRM
+@using Diten.Web.Views.CRM.TerritoryManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TerritoryManagementResources> L
+@{
+    ViewData["Title"] = Model.IsEdit ? L["EditNode"].Value : L["CreateNode"].Value;
+    Layout = "_LayoutTenantShell";
+    var action = Model.IsEdit
+        ? $"/CRM/TerritoryManagement/Models/{Model.ModelId}/Nodes/{Model.Id}/Edit"
+        : $"/CRM/TerritoryManagement/Models/{Model.ModelId}/Nodes/Create";
+    var backUrl = $"/CRM/TerritoryManagement/Models/{Model.ModelId}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">@(Model.IsEdit ? L["EditNode"] : L["CreateNode"])</h5>
+    <a href="@backUrl" class="btn btn-sm btn-label-secondary"><i class="bx bx-arrow-back me-1"></i>@L["BackToList"]</a>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.ReferenceDependencyMessage))
+{
+    <div class="alert alert-warning">@Model.ReferenceDependencyMessage</div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" action="@action" novalidate>
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <h6 class="text-muted small text-uppercase">@L["IdentitySection"]</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label" asp-for="TerritoryCode">@L["TerritoryCode"] <span class="text-danger">*</span></label>
+                    <input class="form-control" asp-for="TerritoryCode" placeholder="TR-ZONE-01" />
+                    <span asp-validation-for="TerritoryCode" class="text-danger small"></span>
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label" asp-for="Name">@L["Name"] <span class="text-danger">*</span></label>
+                    <input class="form-control" asp-for="Name" />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" asp-for="TerritoryLevel">@L["TerritoryLevel"] <span class="text-danger">*</span></label>
+                    <select class="form-select" asp-for="TerritoryLevel" id="territory-level-select">
+                        <option value="">@L["SelectLevel"]</option>
+                        @foreach (var opt in Model.LevelOptions)
+                        {
+                            <option value="@opt.Value" selected="@(opt.Value == Model.TerritoryLevel)">@opt.Text</option>
+                        }
+                    </select>
+                    <span asp-validation-for="TerritoryLevel" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" asp-for="ParentTerritoryId">@L["ParentTerritory"]</label>
+                    <select class="form-select" asp-for="ParentTerritoryId">
+                        <option value="">@L["SelectParent"]</option>
+                        @foreach (var opt in Model.ParentOptions)
+                        {
+                            <option value="@opt.Value" selected="@(opt.Value == Model.ParentTerritoryId?.ToString())">@opt.Text</option>
+                        }
+                    </select>
+                    <span asp-validation-for="ParentTerritoryId" class="text-danger small"></span>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label" asp-for="SortOrder">@L["SortOrder"]</label>
+                    <input type="number" class="form-control" asp-for="SortOrder" />
+                </div>
+            </div>
+
+            <h6 class="text-muted small text-uppercase">@L["EffectivePeriodSection"]</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <label class="form-label" asp-for="EffectiveFrom">@L["EffectiveFrom"] <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" asp-for="EffectiveFrom" />
+                    <span asp-validation-for="EffectiveFrom" class="text-danger small"></span>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" asp-for="EffectiveTo">@L["EffectiveTo"]</label>
+                    <input type="date" class="form-control" asp-for="EffectiveTo" />
+                    <span asp-validation-for="EffectiveTo" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <h6 class="text-muted small text-uppercase">@L["GeoCodesSection"]</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-2"><label class="form-label" asp-for="CountryCode">@L["CountryCode"]</label><input class="form-control" asp-for="CountryCode" /></div>
+                <div class="col-md-2"><label class="form-label" asp-for="DivisionCode">@L["DivisionCode"]</label><input class="form-control" asp-for="DivisionCode" /></div>
+                <div class="col-md-2"><label class="form-label" asp-for="RegionCode">@L["RegionCode"]</label><input class="form-control" asp-for="RegionCode" /></div>
+                <div class="col-md-2"><label class="form-label" asp-for="AreaCode">@L["AreaCode"]</label><input class="form-control" asp-for="AreaCode" /></div>
+                <div class="col-md-2"><label class="form-label" asp-for="ZoneCode">@L["ZoneCode"]</label><input class="form-control" asp-for="ZoneCode" /></div>
+                <div class="col-md-2"><label class="form-label" asp-for="MicroZoneCode">@L["MicroZoneCode"]</label><input class="form-control" asp-for="MicroZoneCode" /></div>
+            </div>
+
+            @* MicroZoneProfile — ONLY for a microzone-level node (JS toggles; backend rejects it otherwise). *@
+            <div id="microzone-profile-section" style="display:none">
+                <h6 class="text-muted small text-uppercase">@L["MicroZoneProfile"]</h6>
+                <p class="text-muted small">@L["MicroZoneProfileHelp"]</p>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4"><label class="form-label" asp-for="AnchorAccountId">@L["AnchorAccountId"]</label><input class="form-control" asp-for="AnchorAccountId" /></div>
+                    <div class="col-md-8"><label class="form-label" asp-for="ClusterNotes">@L["ClusterNotes"]</label><input class="form-control" asp-for="ClusterNotes" /></div>
+                    <div class="col-md-4"><label class="form-label" asp-for="PlanningCenterType">@L["PlanningCenterType"]</label><input class="form-control" asp-for="PlanningCenterType" /></div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">@L["Save"]</button>
+                <a href="@backUrl" class="btn btn-label-secondary">@L["Cancel"]</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/js/CRM/TerritoryManagement/node-form.js" asp-append-version="true"></script>
+}

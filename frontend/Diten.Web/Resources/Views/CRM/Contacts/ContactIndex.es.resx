@@ -1,0 +1,178 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ContactTitle" xml:space="preserve"><value>Contactos</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gestione las personas relacionadas con sus cuentas.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Agregar contacto</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Editar contacto</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Agregar contacto</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar contacto</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Ver</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Back" xml:space="preserve"><value>Atrás</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Creado el</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Actualizado el</value></data>
+  <data name="ReferenceDataUnavailable" xml:space="preserve"><value>Los datos de referencia no están disponibles; no se pueden seleccionar el tipo y el estado del contacto. Inténtelo más tarde o contacte con su administrador.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identidad</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>Notas</value></data>
+  <data name="StatusSection" xml:space="preserve"><value>Estado</value></data>
+  <data name="ProfessionalSection" xml:space="preserve"><value>Profesional</value></data>
+  <data name="ContactSection" xml:space="preserve"><value>Contacto</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>Integración</value></data>
+  <data name="LinkedAccountsSection" xml:space="preserve"><value>Cuentas vinculadas</value></data>
+  <data name="TerritorySection" xml:space="preserve"><value>Territorio</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>Ámbito de país</value></data>
+  <data name="TerritoryNode" xml:space="preserve"><value>Nodo de territorio</value></data>
+  <data name="LinkedAccountsOwner" xml:space="preserve"><value>Propietario: MOD-0150-FU03</value></data>
+  <data name="ConsentSection" xml:space="preserve"><value>Consentimiento / Preferencias</value></data>
+  <data name="ConsentOwner" xml:space="preserve"><value>Solo lectura - Propietario: MOD-0164 / FU05</value></data>
+  <data name="ConsentNotAvailableYet" xml:space="preserve"><value>Los datos de consentimiento y preferencias aún no están disponibles.</value></data>
+  <data name="ConsentNotAuthorized" xml:space="preserve"><value>No está autorizado para ver los datos de consentimiento y preferencias.</value></data>
+  <data name="ConsentChannel" xml:space="preserve"><value>Canal</value></data>
+  <data name="ConsentState" xml:space="preserve"><value>Consentimiento</value></data>
+  <data name="PreferenceState" xml:space="preserve"><value>Preferencia</value></data>
+  <data name="FirstName" xml:space="preserve"><value>Nombre</value></data>
+  <data name="FirstNamePlaceholder" xml:space="preserve"><value>p. ej. Ahmet</value></data>
+  <data name="LastName" xml:space="preserve"><value>Apellido</value></data>
+  <data name="LastNamePlaceholder" xml:space="preserve"><value>p. ej. Yilmaz</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Nombre visible</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>p. ej. Dr. Ahmet Yilmaz</value></data>
+  <data name="DisplayNameHelp" xml:space="preserve"><value>Dejelo vacio para derivarlo del nombre y apellido.</value></data>
+  <data name="ContactType" xml:space="preserve"><value>Tipo de contacto</value></data>
+  <data name="ProfessionalTitle" xml:space="preserve"><value>Título profesional</value></data>
+  <data name="ProfessionalTitlePlaceholder" xml:space="preserve"><value>p. ej. Dr.</value></data>
+  <data name="Specialty" xml:space="preserve"><value>Especialidad</value></data>
+  <data name="SpecialtyPlaceholder" xml:space="preserve"><value>p. ej. Cardiología</value></data>
+  <data name="Department" xml:space="preserve"><value>Departamento</value></data>
+  <data name="DepartmentPlaceholder" xml:space="preserve"><value>p. ej. Compras</value></data>
+  <data name="Phone" xml:space="preserve"><value>Teléfono</value></data>
+  <data name="PhonePlaceholder" xml:space="preserve"><value>p. ej. +90 555 000 0000</value></data>
+  <data name="Email" xml:space="preserve"><value>Correo electrónico</value></data>
+  <data name="EmailPlaceholder" xml:space="preserve"><value>p. ej. contacto@ejemplo.com</value></data>
+  <data name="ExternalReference" xml:space="preserve"><value>Referencia externa</value></data>
+  <data name="ExternalReferencePlaceholder" xml:space="preserve"><value>p. ej. id heredado</value></data>
+  <data name="ExternalReferenceHelp" xml:space="preserve"><value>Identificador de este contacto en el sistema de origen.</value></data>
+  <data name="AccountName" xml:space="preserve"><value>Cuenta</value></data>
+  <data name="AccountCode" xml:space="preserve"><value>Código de cuenta</value></data>
+  <data name="Role" xml:space="preserve"><value>Rol</value></data>
+  <data name="Primary" xml:space="preserve"><value>Principal</value></data>
+  <data name="LocationSection" xml:space="preserve"><value>Ubicación</value></data>
+  <data name="LocationIncompleteHelp" xml:space="preserve"><value>Los datos de referencia de ubicación no están disponibles; la selección de país/ciudad/distrito puede ser limitada. La ubicación es opcional.</value></data>
+  <data name="Country" xml:space="preserve"><value>País</value></data>
+  <data name="City" xml:space="preserve"><value>Ciudad</value></data>
+  <data name="District" xml:space="preserve"><value>Distrito</value></data>
+  <data name="AddressLine" xml:space="preserve"><value>Dirección</value></data>
+  <data name="AddressLinePlaceholder" xml:space="preserve"><value>Calle, edificio, n.º</value></data>
+  <data name="PostalCode" xml:space="preserve"><value>Código postal</value></data>
+  <data name="PhoneCountryCode" xml:space="preserve"><value>Código de país telefónico</value></data>
+  <data name="PreferredLanguage" xml:space="preserve"><value>Idioma preferido</value></data>
+  <data name="PiiKvkkNotice" xml:space="preserve"><value>El nombre, el teléfono, el correo y la dirección son datos personales (PII/RGPD). Están protegidos en registros, exportaciones y auditorías: introduzca solo lo necesario.</value></data>
+  <data name="NotesSafetyNotice" xml:space="preserve"><value>No introduzca datos de pacientes, de salud, diagnósticos, tratamientos, recetas ni datos personales sensibles en este campo.</value></data>
+  <data name="LocationIncomplete" xml:space="preserve"><value>Ubicación incompleta</value></data>
+  <data name="UseMyLocation" xml:space="preserve"><value>Usar mi ubicación</value></data>
+  <data name="MapSearchPlaceholder" xml:space="preserve"><value>Buscar un barrio, calle o dirección</value></data>
+  <data name="MapHelp" xml:space="preserve"><value>Haga clic en el mapa o arrastre el marcador para fijar la ubicación; la dirección se rellena automáticamente. También puede editar los campos manualmente.</value></data>
+  <data name="Gender" xml:space="preserve"><value>Género</value></data>
+  <data name="Photo" xml:space="preserve"><value>Foto</value></data>
+  <data name="PhotoUpload" xml:space="preserve"><value>Subir</value></data>
+  <data name="PhotoHelp" xml:space="preserve"><value>Se recomienda imagen cuadrada; se redimensiona a 256px. Dato personal — excluido de exportaciones y auditoría.</value></data>
+  <data name="DownloadTemplate" xml:space="preserve"><value>Descargar plantilla de importación</value></data>
+  <data name="DownloadTemplateHint" xml:space="preserve"><value>Descarga una plantilla de Excel vacía con las hojas Contacts y AccountLinks y los valores de referencia publicados.</value></data>
+  <data name="ExportContacts" xml:space="preserve"><value>Exportar contactos</value></data>
+  <data name="ExportOptions" xml:space="preserve"><value>Opciones de exportación</value></data>
+  <data name="ExportIncludeLinks" xml:space="preserve"><value>Incluir cuentas relacionadas (vínculos de contacto)</value></data>
+  <data name="ExportIncludeHistorical" xml:space="preserve"><value>Incluir también los vínculos finalizados (históricos)</value></data>
+  <data name="ExportIncludeNotes" xml:space="preserve"><value>Incluir notas y justificaciones transfronterizas</value></data>
+  <data name="ExportIncludeAccounts" xml:space="preserve"><value>Añadir la hoja de búsqueda de cuentas</value></data>
+  <data name="ExportPiiWarning" xml:space="preserve"><value>Esta exportación puede contener datos personales. Descárguela solo si está autorizado, guarde el archivo de forma segura y elimínelo cuando ya no lo necesite.</value></data>
+  <data name="ExportNotesWarning" xml:space="preserve"><value>Las notas son texto libre y pueden contener datos personales sensibles, por lo que se excluyen salvo que las solicite.</value></data>
+  <data name="ExportStarted" xml:space="preserve"><value>Su archivo se está preparando.</value></data>
+  <data name="ImportComingSoon" xml:space="preserve"><value>La carga de una plantilla completada estará disponible en la próxima versión. Ya puede descargar la plantilla y exportar sus datos.</value></data>
+  <data name="Download" xml:space="preserve"><value>Descargar</value></data>
+  <data name="ImportTitle" xml:space="preserve"><value>Importar contactos</value></data>
+  <data name="ImportPageDescription" xml:space="preserve"><value>Suba una plantilla rellenada o una exportación corregida. Verá exactamente qué cambia antes de guardar nada.</value></data>
+  <data name="ImportFileLabel" xml:space="preserve"><value>Archivo de Excel (.xlsx)</value></data>
+  <data name="ImportFileHelp" xml:space="preserve"><value>Use la plantilla o una exportación de esta pantalla. Tamaño máximo 10 MB. CSV no se admite en la importación.</value></data>
+  <data name="ImportStrictMode" xml:space="preserve"><value>Modo estricto</value></data>
+  <data name="ImportStrictModeHelp" xml:space="preserve"><value>No aplicar nada mientras haya alguna fila con errores.</value></data>
+  <data name="ImportValidate" xml:space="preserve"><value>Validar archivo</value></data>
+  <data name="ImportValidating" xml:space="preserve"><value>Validando...</value></data>
+  <data name="ImportApplying" xml:space="preserve"><value>Aplicando...</value></data>
+  <data name="ImportApply" xml:space="preserve"><value>Aplicar importación</value></data>
+  <data name="ImportApplyConfirm" xml:space="preserve"><value>Esta acción creará, actualizará y finalizará relaciones de contacto. Los vínculos finalizados se conservan como historial, nunca se eliminan. Las filas con errores no se aplican.</value></data>
+  <data name="ImportApplySuccess" xml:space="preserve"><value>La importación se ha aplicado.</value></data>
+  <data name="ImportPreviewTitle" xml:space="preserve"><value>Vista previa (todavía no se ha guardado nada)</value></data>
+  <data name="ImportResultTitle" xml:space="preserve"><value>Resultado de la importación</value></data>
+  <data name="ImportSelectFile" xml:space="preserve"><value>Seleccione primero un archivo .xlsx.</value></data>
+  <data name="ImportOnlyXlsx" xml:space="preserve"><value>Solo se admiten archivos .xlsx.</value></data>
+  <data name="ImportNothingToApply" xml:space="preserve"><value>No hay nada que aplicar.</value></data>
+  <data name="ImportHasErrors" xml:space="preserve"><value>Algunas filas tienen errores y no se aplicarán.</value></data>
+  <data name="ImportHistoricalNotice" xml:space="preserve"><value>Finalizar un vínculo de cuenta nunca lo elimina: el registro se conserva con el estado finalizado y una fecha de fin, para que las visitas, los pedidos y los informes pasados mantengan su contexto.</value></data>
+  <data name="ImportNoLinkPermission" xml:space="preserve"><value>No puede gestionar vínculos de cuenta, por lo que las filas de la hoja AccountLinks se marcarán como no permitidas.</value></data>
+  <data name="ImportPiiSafeNotice" xml:space="preserve"><value>Los nombres se muestran enmascarados y los mensajes nunca repiten el valor erróneo, por lo que esta vista previa puede compartirse con seguridad.</value></data>
+  <data name="ImportFilterAll" xml:space="preserve"><value>Todas las filas</value></data>
+  <data name="ImportSummaryCreates" xml:space="preserve"><value>Crear</value></data>
+  <data name="ImportSummaryUpdates" xml:space="preserve"><value>Actualizar</value></data>
+  <data name="ImportSummaryEnds" xml:space="preserve"><value>Finalizar</value></data>
+  <data name="ImportSummarySkips" xml:space="preserve"><value>Omitidas</value></data>
+  <data name="ImportSummaryErrors" xml:space="preserve"><value>Errores</value></data>
+  <data name="ImportSummaryWarnings" xml:space="preserve"><value>Advertencias</value></data>
+  <data name="ImportSummaryConflicts" xml:space="preserve"><value>Conflictos</value></data>
+  <data name="ImportColumnSheet" xml:space="preserve"><value>Hoja</value></data>
+  <data name="ImportColumnRow" xml:space="preserve"><value>Fila</value></data>
+  <data name="ImportColumnOperation" xml:space="preserve"><value>Operación</value></data>
+  <data name="ImportColumnEntity" xml:space="preserve"><value>Tipo de registro</value></data>
+  <data name="ImportColumnRecord" xml:space="preserve"><value>Registro</value></data>
+  <data name="ImportColumnChangedFields" xml:space="preserve"><value>Campos modificados</value></data>
+  <data name="ImportColumnMessage" xml:space="preserve"><value>Mensaje</value></data>
+  <data name="AvailabilitySection" xml:space="preserve"><value>Disponibilidad</value></data>
+  <data name="AvailabilityManage" xml:space="preserve"><value>Gestionar disponibilidad</value></data>
+  <data name="AvailabilityLookup" xml:space="preserve"><value>Consulta de disponibilidad</value></data>
+  <data name="AvailabilityCheck" xml:space="preserve"><value>Consultar</value></data>
+  <data name="AvailabilityDate" xml:space="preserve"><value>Fecha</value></data>
+  <data name="AvailabilityWeekday" xml:space="preserve"><value>Día</value></data>
+  <data name="AvailabilityWindow" xml:space="preserve"><value>Franja disponible</value></data>
+  <data name="AvailabilityPreferredWindow" xml:space="preserve"><value>Franja preferida</value></data>
+  <data name="AvailabilityAvoidWindow" xml:space="preserve"><value>Franja a evitar</value></data>
+  <data name="AvailabilityAppointmentRequired" xml:space="preserve"><value>Cita requerida</value></data>
+  <data name="AvailabilityLeadTime" xml:space="preserve"><value>Antelación (días)</value></data>
+  <data name="AvailabilityAverageDuration" xml:space="preserve"><value>Visita media (min)</value></data>
+  <data name="AvailabilityType" xml:space="preserve"><value>Tipo de disponibilidad</value></data>
+  <data name="AvailabilitySource" xml:space="preserve"><value>Origen</value></data>
+  <data name="AvailabilityEffective" xml:space="preserve"><value>Fechas de vigencia</value></data>
+  <data name="AvailabilityStart" xml:space="preserve"><value>Inicio</value></data>
+  <data name="AvailabilityEnd" xml:space="preserve"><value>Fin</value></data>
+  <data name="AvailabilityPreferredStart" xml:space="preserve"><value>Inicio preferido</value></data>
+  <data name="AvailabilityPreferredEnd" xml:space="preserve"><value>Fin preferido</value></data>
+  <data name="AvailabilityAvoidStart" xml:space="preserve"><value>Inicio a evitar</value></data>
+  <data name="AvailabilityAvoidEnd" xml:space="preserve"><value>Fin a evitar</value></data>
+  <data name="AvailabilityAdd" xml:space="preserve"><value>Añadir disponibilidad</value></data>
+  <data name="AvailabilityExceptions" xml:space="preserve"><value>Excepciones por fecha</value></data>
+  <data name="AvailabilityExceptionAdd" xml:space="preserve"><value>Añadir excepción de fecha</value></data>
+  <data name="AvailabilityExceptionApplied" xml:space="preserve"><value>Excepción aplicada</value></data>
+  <data name="AvailabilityIsAvailable" xml:space="preserve"><value>Disponible</value></data>
+  <data name="AvailabilityReason" xml:space="preserve"><value>Motivo</value></data>
+  <data name="AvailabilityReasonCodes" xml:space="preserve"><value>Códigos de motivo</value></data>
+  <data name="AvailabilityDeactivate" xml:space="preserve"><value>Desactivar</value></data>
+  <data name="AvailabilityArchive" xml:space="preserve"><value>Archivar</value></data>
+  <data name="AvailabilityLinkInactive" xml:space="preserve"><value>Vínculo inactivo</value></data>
+  <data name="AvailabilityNoLinks" xml:space="preserve"><value>Este contacto aún no está vinculado a ninguna cuenta, por lo que no puede registrarse disponibilidad por ubicación.</value></data>
+  <data name="AvailabilityUnknownHint" xml:space="preserve"><value>La falta de datos se informa como «desconocido», nunca como «no disponible».</value></data>
+  <data name="AvailabilityOwnerNote" xml:space="preserve"><value>Propietario: MOD-0150. MOD-0151 y MOD-0155 lo consumen en solo lectura; aquí no se genera ninguna ruta ni plan de visitas.</value></data>
+  <data name="AvailabilitySelect" xml:space="preserve"><value>Seleccionar</value></data>
+  <data name="AvailabilityYes" xml:space="preserve"><value>Sí</value></data>
+  <data name="AvailabilityNo" xml:space="preserve"><value>No</value></data>
+  <data name="AvailabilityStatus_available" xml:space="preserve"><value>Disponible</value></data>
+  <data name="AvailabilityStatus_unavailable" xml:space="preserve"><value>No disponible</value></data>
+  <data name="AvailabilityStatus_unknown" xml:space="preserve"><value>Desconocido</value></data>
+  <data name="Weekday_monday" xml:space="preserve"><value>Lunes</value></data>
+  <data name="Weekday_tuesday" xml:space="preserve"><value>Martes</value></data>
+  <data name="Weekday_wednesday" xml:space="preserve"><value>Miércoles</value></data>
+  <data name="Weekday_thursday" xml:space="preserve"><value>Jueves</value></data>
+  <data name="Weekday_friday" xml:space="preserve"><value>Viernes</value></data>
+  <data name="Weekday_saturday" xml:space="preserve"><value>Sábado</value></data>
+  <data name="Weekday_sunday" xml:space="preserve"><value>Domingo</value></data>
+</root>

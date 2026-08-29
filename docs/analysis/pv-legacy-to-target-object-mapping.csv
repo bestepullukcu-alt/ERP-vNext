@@ -1,0 +1,26 @@
+LegacyObject,LegacyRepo,LegacyCollectionDb,ProposedSoRModule,ReuseDecision,Difficulty,Confidence,Notes
+SafetyReport,DitenPvOrganization,PvOrganization,New PV Safety domain (SafetyCase aggregate),BUSINESS_RULE_REIMPLEMENT+DATA_MIGRATION_ONLY,XL,High,God-entity; split into Case/Patient/Reporter/Reaction/Assessment/FollowUp/Version
+Patient,DitenPvOrganization,PvOrganization,PV Safety domain (Case sub-entity),BUSINESS_RULE_REIMPLEMENT+DATA_MIGRATION_ONLY,L,Medium,String PatientId link -> proper aggregation
+ConcomitantMedications,DitenPvOrganization,PvOrganization,PV Safety domain,BUSINESS_RULE_REIMPLEMENT,M,Low,List<string> -> structured product involvement
+MarketingAuthorization,DitenPvOrganization,PvOrganization,New Regulatory Affairs domain,BUSINESS_RULE_REIMPLEMENT+DATA_MIGRATION_ONLY,L,Medium,MaStatus 0-5 lifecycle; QPPV/PSMF/ATC preserved
+MaDetail,DitenPvOrganization,PvOrganization,Regulatory Affairs domain,DATA_MIGRATION_ONLY,M,Medium,MA approval/reject dates
+MarketingAuthorizationReRegistration,DitenPvOrganization,PvOrganization,Regulatory Affairs domain,BUSINESS_RULE_REIMPLEMENT,M,Low,Re-registration relationship
+RegulatoryReport,DitenPvOrganization,PvOrganization,Regulatory Affairs + MOD-0024 Task,REFERENCE_ONLY+DATA_MIGRATION_ONLY,M,Medium,Authority publish tracker; tasks -> MOD-0024
+RegulatoryReportTask,DitenPvOrganization,PvOrganization,MOD-0024 Task/Checklist + MOD-0023 Workflow,REFERENCE_ONLY,M,Medium,Ad-hoc task board -> platform engines
+Lcppv,DitenPvOrganization,PvOrganization,PV Safety domain (LCPPV reconciliation process),BUSINESS_RULE_REIMPLEMENT,M,Medium,Monthly questionnaire; NOT db-reconciliation
+Organization,DitenPvOrganization,PvOrganization,PV domain MAH profile + MOD-0288 person,BUSINESS_RULE_REIMPLEMENT+DATA_MIGRATION_ONLY,M,Medium,EMA/FDA/EudraVigilance fields; person -> MOD-0288
+GlobalSku,DitenPvOrganization,PvOrganization,MOD-0290 Product/SKU Master,DATA_MIGRATION_ONLY,M,Medium,Product SoR must be MDM not PV
+Agreement (+sub-entities),DitenPvOrganization,PvOrganization,TBD (Regulatory/Commercial),REFERENCE_ONLY,L,Low,Out of core PV scope; evaluate separately
+Document,DitenPvOrganization,PvOrganization+local disk,MOD-0028 Document/Evidence,DATA_MIGRATION_ONLY,L,Medium,Files on wwwroot/SafetyReport disk; migrate content+metadata
+Tenant,DitenPvTenant,PvTenant,MOD-0009 Tenant + MOD-0018,RETIRE(middleware)+DATA_MIGRATION_ONLY,M,High,Host/Domain based -> JWT tenant-claim
+TenantCountry/Authority/ActiveIngredient/Brand/PharmaceuticalForm,DitenPvTenant,PvTenant,MOD-0048 Reference Data,DATA_MIGRATION_ONLY,M,Medium,Value mapping to canonical reference sets
+User,DitenPvUser,PvUser,AuthService + MOD-0018,RETIRE(auth)+DATA_MIGRATION_ONLY,M,High,PasswordHash NOT migrated; RoleIds -> RBAC
+Auth/JWT infra,DitenPvUser,PvUser,AuthService,RETIRE,S,High,ERP-vNext auth is stronger
+Email/Gmail,DitenPvUser,PvUser,MOD-0027 Notification,RETIRE+REFERENCE_ONLY,M,Medium,Ad-hoc Gmail -> notification service
+Calendar,DitenPvUser,PvUser,portfolio-delivery/PPM,REFERENCE_ONLY,M,Low,Not core PV
+Country,DitenPvLookup,PvLookup,MOD-0048 Reference Data,DATA_MIGRATION_ONLY+RETIRE(service),S,High,Single-entity service; not a bounded context
+Survey/SurveyQuestion/QuestionOption/Schedule,DitenPvSurvey,PvSurvey,PV embedded process OR shared survey,REFERENCE_ONLY,M,Medium,Generic survey engine for LCPPV
+TenantResolutionMiddleware,DitenPvTenant,-,none,RETIRE,S,High,Host-based isolation is a security debt
+SQL Server config,all,-,none,RETIRE,S,High,DatabaseType=MongoDb; dead config
+CORS AllowAll / Flurl sync coupling,all,-,none,RETIRE,S,High,Anti-pattern
+Frontend cshtml + Pagejs,PharmacovigilanceWeb,-,Diten.Web (ERP-vNext),REFERENCE_ONLY,L,High,Terminology/UX reference only

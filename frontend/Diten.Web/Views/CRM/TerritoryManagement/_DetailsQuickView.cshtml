@@ -1,0 +1,65 @@
+@using Diten.Web.Views.CRM.TerritoryManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TerritoryManagementResources> L
+@inject IHtmlLocalizer<Diten.Web.SharedResource> Shared
+
+<div class="offcanvas offcanvas-end backbone-preview-offcanvas" tabindex="-1" id="offcanvasDetailsPreview"
+     aria-labelledby="offcanvasDetailsPreviewLabel">
+    <div class="offcanvas-header p-4">
+        <div class="d-flex align-items-center min-w-0">
+            <div class="backbone-preview-avatar d-flex align-items-center justify-content-center me-3 flex-shrink-0">
+                <i class="bx bx-map-alt fs-4"></i>
+            </div>
+            <div class="min-w-0">
+                <h5 id="tm-details-title" class="offcanvas-title mb-0 text-truncate">-</h5>
+                <small id="tm-details-subtitle" class="text-muted d-block text-truncate">-</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                aria-label="@Shared["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body flex-grow-1 p-4 border-top">
+        <div class="d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@L["ModelDetails"]</h6>
+                <div class="d-flex flex-column gap-4">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-purchase-tag-alt"></i>
+                        <div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@L["ModelCode"]</div><div id="tm-details-code" class="backbone-preview-value mt-1">-</div></div>
+                    </div>
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-check-shield"></i>
+                        <div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@L["Status"]</div><div class="mt-1"><span id="tm-details-status" class="badge bg-label-secondary">-</span></div></div>
+                    </div>
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-git-branch"></i>
+                        <div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@L["VersionNumber"]</div><div id="tm-details-version" class="backbone-preview-value mt-1">-</div></div>
+                    </div>
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-globe"></i>
+                        <div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@L["CountryScope"]</div><div id="tm-details-country" class="backbone-preview-value mt-1">-</div></div>
+                    </div>
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-buildings"></i>
+                        <div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@L["BusinessUnitScope"]</div><div id="tm-details-business-units" class="backbone-preview-value mt-1">-</div></div>
+                    </div>
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-calendar"></i>
+                        <div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@L["EffectiveFrom"] / @L["EffectiveTo"]</div><div id="tm-details-period" class="backbone-preview-value mt-1">-</div></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@L["ChangeReason"]</h6>
+                <div id="tm-details-change-reason" class="backbone-preview-description">-</div>
+            </section>
+        </div>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2 bg-white">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Shared["Cancel"]</button>
+        <button type="button" id="tm-details-hierarchy" class="btn btn-primary">@L["TerritoryHierarchy"]</button>
+    </div>
+</div>

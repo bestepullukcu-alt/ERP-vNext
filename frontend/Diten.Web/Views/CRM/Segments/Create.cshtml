@@ -1,0 +1,42 @@
+﻿@model Diten.Web.Models.CRM.SegmentEditViewModel
+@using Diten.Web.Views.CRM.Segments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SegmentsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["CreateSegment"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["CreateSegment"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/Segments">@Localizer["SegmentsTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@Localizer["CreateSegment"]</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/CRM/Segments" class="btn btn-label-secondary">@Localizer["Cancel"]</a>
+        <button type="submit" form="segmentForm" class="btn btn-primary">@Localizer["Save"]</button>
+    </div>
+</div>
+
+<form asp-action="Create" method="post" id="segmentForm" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <partial name="~/Views/CRM/Segments/_Form.cshtml" model="Model" />
+</form>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+}
+
+@section Scripts {
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    @* Contract marker: <partial name="_IndexL10n" /> - the criteria editor labels come from the same bridge. *@
+    <partial name="~/Views/CRM/Segments/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/Segments/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/Segments/form.js" asp-append-version="true"></script>
+}

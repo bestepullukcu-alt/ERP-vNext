@@ -367,7 +367,11 @@ public sealed class TenantResolutionMiddleware
                // MOD-0285 — runtime navigation menu is the tenant's own entitled-module nav (tenant-scoped).
                || path.StartsWithSegments("/api/platform/navigation", StringComparison.OrdinalIgnoreCase)
                // FU17-FU01 — tenant-admin self-service security settings (tenant manages its OWN login policy).
-               || path.StartsWithSegments("/api/platform/tenant-security", StringComparison.OrdinalIgnoreCase);
+               || path.StartsWithSegments("/api/platform/tenant-security", StringComparison.OrdinalIgnoreCase)
+               // Working Calendar — the OVERRIDE layer is the tenant's own calendar data, authored by tenant
+               // admins. Only this sub-path is tenant-scoped: the parent /api/platform/working-calendars is the COUNTRY
+               // layer and must stay platform-admin-only, so this check is deliberately narrower than the prefixes above.
+               || path.StartsWithSegments("/api/platform/working-calendars/overrides", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsPlatformAuthPath(PathString path)

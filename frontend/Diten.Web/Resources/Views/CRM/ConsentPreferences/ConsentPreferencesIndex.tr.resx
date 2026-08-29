@@ -1,0 +1,154 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Onay ve Tercihler</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Kişi onaylarını, tercihlerini ve salt-okunur uygunluk değerlendirmesini yönetin.</value></data>
+  <data name="ConsentsTab" xml:space="preserve"><value>Onaylar</value></data>
+  <data name="PreferencesTab" xml:space="preserve"><value>Tercihler</value></data>
+  <data name="EvaluateTab" xml:space="preserve"><value>Değerlendir</value></data>
+  <data name="SubjectTab" xml:space="preserve"><value>Kişi</value></data>
+  <data name="ConsentsTitle" xml:space="preserve"><value>Onaylar</value></data>
+  <data name="ConsentsSubtitle" xml:space="preserve"><value>Onay her zaman kişi × kanal × amaç × kapsam × zaman bağlamındadır; asla genel bir izin bayrağı değildir.</value></data>
+  <data name="PreferencesTitle" xml:space="preserve"><value>Tercihler</value></data>
+  <data name="CreateConsent" xml:space="preserve"><value>Onay Oluştur</value></data>
+  <data name="CreatePreference" xml:space="preserve"><value>Tercih Oluştur</value></data>
+  <data name="EditConsent" xml:space="preserve"><value>Onayı Düzenle</value></data>
+  <data name="EditPreference" xml:space="preserve"><value>Tercihi Düzenle</value></data>
+  <data name="ArchiveConsent" xml:space="preserve"><value>Onayı Arşivle</value></data>
+  <data name="ArchivePreference" xml:space="preserve"><value>Tercihi Arşivle</value></data>
+  <data name="ArchiveConsentConfirm" xml:space="preserve"><value>Bu onay arşivlensin mi? Silinmez — okunabilir kalır ancak değerlendirme dışı bırakılır.</value></data>
+  <data name="ArchivePreferenceConfirm" xml:space="preserve"><value>Bu tercih arşivlensin mi? Silinmez — okunabilir kalır ancak değerlendirme dışı bırakılır.</value></data>
+  <data name="ConsentDetail" xml:space="preserve"><value>Onay Detayı</value></data>
+  <data name="PreferenceDetail" xml:space="preserve"><value>Tercih Detayı</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Listeye dön</value></data>
+  <data name="Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="Cancel" xml:space="preserve"><value>İptal</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seçin…</value></data>
+  <data name="NoScope" xml:space="preserve"><value>Kapsam yok</value></data>
+  <data name="NoEvidence" xml:space="preserve"><value>Kanıt referansı yok</value></data>
+  <data name="NoExternalReferences" xml:space="preserve"><value>Dış referans yok</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Arşivlenenleri dahil et</value></data>
+  <data name="UnsupportedFiltersNote" xml:space="preserve"><value>Bazı filtreler backend tarafından desteklenmez ve bilinçli olarak atlanır (sahte istemci filtresi yok):</value></data>
+  <data name="ConsentUnsupportedFilters" xml:space="preserve"><value>Arama, ScopeType, ScopeId, LegalBasis, Source, tarih aralığı.</value></data>
+  <data name="PreferenceUnsupportedFilters" xml:space="preserve"><value>Arama, ScopeType, ScopeId, IsRestrictive.</value></data>
+  <data name="Apply" xml:space="preserve"><value>Uygula</value></data>
+  <data name="Reset" xml:space="preserve"><value>Sıfırla</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtrele</value></data>
+  <data name="SubjectType" xml:space="preserve"><value>Kişi Türü</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>Kişi Kimliği</value></data>
+  <data name="Channel" xml:space="preserve"><value>Kanal</value></data>
+  <data name="Purpose" xml:space="preserve"><value>Amaç</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Kapsam Türü</value></data>
+  <data name="ScopeId" xml:space="preserve"><value>Kapsam Kimliği</value></data>
+  <data name="LegalBasis" xml:space="preserve"><value>Yasal Dayanak</value></data>
+  <data name="ConsentStatus" xml:space="preserve"><value>Onay Durumu</value></data>
+  <data name="Source" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Geçerlilik Başlangıcı</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Geçerlilik Bitişi</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>Geçerlilik Anı</value></data>
+  <data name="WithdrawalReason" xml:space="preserve"><value>Geri Çekme Nedeni</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notlar</value></data>
+  <data name="EvidenceRefType" xml:space="preserve"><value>Kanıt Ref. Türü</value></data>
+  <data name="EvidenceRefId" xml:space="preserve"><value>Kanıt Ref. Kimliği</value></data>
+  <data name="EvidenceSourceModule" xml:space="preserve"><value>Kanıt Kaynak Modülü</value></data>
+  <data name="EvidenceRefCode" xml:space="preserve"><value>Kanıt Ref. Kodu</value></data>
+  <data name="PreferenceType" xml:space="preserve"><value>Tercih Türü</value></data>
+  <data name="PreferenceValue" xml:space="preserve"><value>Tercih Değeri</value></data>
+  <data name="Priority" xml:space="preserve"><value>Öncelik</value></data>
+  <data name="Restrictive" xml:space="preserve"><value>Kısıtlayıcı</value></data>
+  <data name="ConsentId" xml:space="preserve"><value>Onay Kimliği</value></data>
+  <data name="PreferenceId" xml:space="preserve"><value>Tercih Kimliği</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncellenme</value></data>
+  <data name="Archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Oluşturulma</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>Oluşturan</value></data>
+  <data name="UpdatedBy" xml:space="preserve"><value>Güncelleyen</value></data>
+  <data name="ArchivedAt" xml:space="preserve"><value>Arşivlenme</value></data>
+  <data name="ArchivedBy" xml:space="preserve"><value>Arşivleyen</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Kaynak Sistem</value></data>
+  <data name="ExternalId" xml:space="preserve"><value>Dış Kimlik</value></data>
+  <data name="ExternalCode" xml:space="preserve"><value>Dış Kod</value></data>
+  <data name="ExternalName" xml:space="preserve"><value>Dış Ad</value></data>
+  <data name="Primary" xml:space="preserve"><value>Birincil</value></data>
+  <data name="Remove" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="AddReference" xml:space="preserve"><value>Referans Ekle</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="ConsentStatusSection" xml:space="preserve"><value>Yasal ve Durum</value></data>
+  <data name="EvidenceSection" xml:space="preserve"><value>Kanıt İşaretçisi</value></data>
+  <data name="ExternalReferencesSection" xml:space="preserve"><value>Dış Referanslar</value></data>
+  <data name="PreferenceContextSection" xml:space="preserve"><value>Tercih Bağlamı</value></data>
+  <data name="AuditSection" xml:space="preserve"><value>Denetim ve Köken</value></data>
+  <data name="ProvenanceSection" xml:space="preserve"><value>Köken</value></data>
+  <data name="DiagnosticsSection" xml:space="preserve"><value>Tanılama</value></data>
+  <data name="ImmutableQuestionHelp" xml:space="preserve"><value>Onay sorusu boyutları (kişi, kanal, amaç, kapsam) değiştirilemez — farklı bir soru farklı bir kayıttır.</value></data>
+  <data name="ScopeHelp" xml:space="preserve"><value>Kapsam onayı daraltır; Kapsam Kimliği verilirse Kapsam Türü zorunludur.</value></data>
+  <data name="WithdrawalReasonHelp" xml:space="preserve"><value>Durum withdrawn olduğunda backend tarafından zorunludur.</value></data>
+  <data name="EvidencePointerHelp" xml:space="preserve"><value>Yalnızca bir referans — dosya içeriği, URL veya kanıt paketi gösterilmez.</value></data>
+  <data name="ConsentContextHelp" xml:space="preserve"><value>Onay yalnızca şunu yanıtlar: bu kişiye bu kanaldan, bu amaçla, bu kapsamda, bu zamanda ulaşılabilir mi?</value></data>
+  <data name="PreferenceCannotGrant" xml:space="preserve"><value>Bir tercih onayı kısıtlayabilir ancak onay veremez.</value></data>
+  <data name="PreferenceChannelAllHelp" xml:space="preserve"><value>“all” kanal değeri yalnızca tercihler için geçerlidir (onay için asla).</value></data>
+  <data name="EvaluateReadOnlyHelp" xml:space="preserve"><value>Değerlendirme salt-okunurdur: hiçbir şey yazmaz ve saklanan bir onay üretmez.</value></data>
+  <data name="UnknownNotAllowed" xml:space="preserve"><value>Unknown izinli DEĞİLDİR — bu soruya yanıt veren onay yok ve varsayılan uydurulmaz.</value></data>
+  <data name="EvaluateThisContext" xml:space="preserve"><value>Bu kişiyi/bağlamı değerlendir</value></data>
+  <data name="EvaluateTitle" xml:space="preserve"><value>Değerlendirme Test Paneli</value></data>
+  <data name="RunEvaluate" xml:space="preserve"><value>Değerlendirmeyi çalıştır</value></data>
+  <data name="EvaluatorVersion" xml:space="preserve"><value>Değerlendirici Sürümü</value></data>
+  <data name="EvaluatedAt" xml:space="preserve"><value>Değerlendirilme</value></data>
+  <data name="MatchedConsentId" xml:space="preserve"><value>Eşleşen Onay Kimliği</value></data>
+  <data name="MatchedPreferenceIds" xml:space="preserve"><value>Eşleşen Tercih Kimlikleri</value></data>
+  <data name="ReasonCodes" xml:space="preserve"><value>Neden Kodları</value></data>
+  <data name="CandidateConsents" xml:space="preserve"><value>Aday Onaylar</value></data>
+  <data name="CandidatePreferences" xml:space="preserve"><value>Aday Tercihler</value></data>
+  <data name="Selected" xml:space="preserve"><value>Seçili</value></data>
+  <data name="Reason" xml:space="preserve"><value>Neden</value></data>
+  <data name="ToggleDiagnostics" xml:space="preserve"><value>Tanılamayı aç/kapat</value></data>
+  <data name="SubjectPanelTitle" xml:space="preserve"><value>Kişi Onay ve Tercih Paneli</value></data>
+  <data name="SubjectPanelHelp" xml:space="preserve"><value>Onay ve tercihlerini görmek için bir kişi girin. Bu yeniden kullanılabilir panel Contact/AccountContactLink üzerine asla düz bir durum yazmaz.</value></data>
+  <data name="Load" xml:space="preserve"><value>Yükle</value></data>
+  <data name="SubjectPickerPlaceholder" xml:space="preserve"><value>Kişi ara veya kimliği yapıştır…</value></data>
+  <data name="SubjectPickerHelp" xml:space="preserve"><value>Önce kişi türünü seçin; contact/account isimle aranabilir, diğer türler GUID kabul eder.</value></data>
+  <data name="ExternalReferencesOptionalHelp" xml:space="preserve"><value>İsteğe bağlı — bu kaydı dış/eski sistemlere bağlayın. Her referansı panelden ekleyin.</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>Kaynak sistem ara veya yaz…</value></data>
+  <data name="Allowed" xml:space="preserve"><value>İzinli</value></data>
+  <data name="Blocked" xml:space="preserve"><value>Engellendi</value></data>
+  <data name="NotApplicable" xml:space="preserve"><value>Uygulanamaz</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Kayıt bulunamadı.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Bir şeyler ters gitti. Lütfen tekrar deneyin.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="View" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Kayıt arşivlendi.</value></data>
+  <data name="ConsentContractUnavailable" xml:space="preserve"><value>Onay yetenek sözleşmesi kullanılamıyor. İşlemler devre dışı.</value></data>
+  <data name="ArchivedRecordReadOnly" xml:space="preserve"><value>Bu kayıt arşivlenmiştir ve salt-okunurdur.</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>Lütfen zorunlu alanları doldurun.</value></data>
+  <data name="EffectiveToBeforeFrom" xml:space="preserve"><value>Geçerlilik Bitişi, Başlangıcından önce olamaz.</value></data>
+  <data name="Active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="Passive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ayrıntıları Görüntüle</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı Görünüm</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Toplu Sil</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Seçili kayıtlar silinsin mi?</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Emin misiniz?</value></data>
+  <data name="Search" xml:space="preserve"><value>Ara</value></data>
+  <data name="Export" xml:space="preserve"><value>Dışa Aktar</value></data>
+  <data name="Import" xml:space="preserve"><value>İçe Aktar</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Tümünü göster</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Görünümü kaydet</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Sütunlar</value></data>
+  <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>Yüksek</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Orta</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Düşük</value></data>
+  <data name="PriorityCustom" xml:space="preserve"><value>Özel</value></data>
+  <data name="PriorityHelp" xml:space="preserve"><value>Tercihler çakıştığında yüksek öncelik önce değerlendirilir.</value></data>
+  <data name="ValueTrue" xml:space="preserve"><value>True</value></data>
+  <data name="ValueFalse" xml:space="preserve"><value>False</value></data>
+  <data name="PreferenceValueBoolHelp" xml:space="preserve"><value>Bu tercih tipinde True, kısıtlamanın uygulandığı anlamına gelir.</value></data>
+</root>

@@ -1,0 +1,224 @@
+@model Diten.Web.Models.CRM.StrategyTemplateEditViewModel
+@using Diten.Web.Views.CRM.StrategyTemplates
+@using Microsoft.AspNetCore.Mvc.Localization
+@using System.Text.Json
+@inject IHtmlLocalizer<StrategyTemplatesIndex> Localizer
+@{
+    var jsonOpts = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+}
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+@if (!string.IsNullOrWhiteSpace(Model.ContractError))
+{
+    <div class="alert alert-danger" role="alert">@Localizer[Model.ContractError]</div>
+}
+
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <label asp-for="TemplateCode" class="form-label fw-medium">@Localizer["TemplateCode"] <span class="text-danger">*</span></label>
+                        <input asp-for="TemplateCode" class="form-control" readonly="@(Model.TemplateId.HasValue)" maxlength="64" required />
+                        <span asp-validation-for="TemplateCode" class="text-danger small mt-1"></span>
+                        <small class="text-muted">@Localizer["TemplateCodeHelp"]</small>
+                    </div>
+                    <div class="col-12 col-md-8">
+                        <label asp-for="TemplateName" class="form-label fw-medium">@Localizer["TemplateName"] <span class="text-danger">*</span></label>
+                        <input asp-for="TemplateName" class="form-control" maxlength="200" required />
+                        <span asp-validation-for="TemplateName" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label fw-medium">@Localizer["Description"]</label>
+                        <textarea asp-for="Description" class="form-control" rows="3" maxlength="2000"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Notes" class="form-label fw-medium">@Localizer["Notes"]</label>
+                        <textarea asp-for="Notes" class="form-control" rows="2" maxlength="2000"></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        @if (Model.AreBindingsFrozen)
+        {
+            <div class="alert alert-warning" role="alert">
+                <i class="bx bx-lock-alt me-1"></i>@Localizer["FrozenBindingsHelp"]
+                @if (Model.TemplateId.HasValue)
+                {
+                    <button type="button" class="btn btn-sm btn-label-warning ms-2" id="btnNewVersionFromForm" data-id="@Model.TemplateId">@Localizer["NewVersion"]</button>
+                }
+            </div>
+        }
+
+        @* BINDING 1 — "who". Embedded repeater; a play with no segment is not authorable. *@
+        <section class="card mb-4" id="segmentBindingSection">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["SegmentSection"] <span class="text-danger">*</span></h6>
+                    <button type="button" id="btnAddSegmentBinding" class="btn btn-sm btn-primary"><i class="bx bx-plus me-1"></i>@Localizer["AddSegmentBinding"]</button>
+                </div>
+                <small class="text-muted d-block mb-3">@Localizer["SegmentBindingHelp"]</small>
+                <div id="segmentBindingList" class="d-flex flex-column gap-2"></div>
+                <div id="segmentBindingEmpty" class="text-muted d-none">@Localizer["NoSegmentBindings"]</div>
+                <input type="hidden" asp-for="SegmentBindingsJson" id="SegmentBindingsJson" />
+            </div>
+        </section>
+
+        @* BINDING 2 — "how often". Three shapes, none of which writes a MOD-0165 policy. *@
+        <section class="card mb-4" id="frequencySection">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["FrequencySection"]</h6>
+                <small class="text-muted d-block mb-3">@Localizer["FrequencyIntentHelp"]</small>
+                <div class="row g-3" id="frequencyEditor">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label fw-medium" for="frequencyMode">@Localizer["FrequencyIntentMode"] <span class="text-danger">*</span></label>
+                        <select id="frequencyMode" class="form-select"></select>
+                    </div>
+                    <div class="col-12 col-md-8 d-none" id="frequencyPolicyBlock">
+                        <label class="form-label fw-medium" for="frequencyPolicyId">@Localizer["FrequencyPolicy"] <span class="text-danger">*</span></label>
+                        <select id="frequencyPolicyId" class="form-select"></select>
+                    </div>
+                    <div class="col-12 col-md-4 d-none frequency-declared">
+                        <label class="form-label fw-medium" for="frequencyType">@Localizer["FrequencyType"] <span class="text-danger">*</span></label>
+                        <select id="frequencyType" class="form-select"></select>
+                    </div>
+                    <div class="col-6 col-md-2 d-none frequency-declared">
+                        <label class="form-label fw-medium" for="requiredVisitCount">@Localizer["RequiredVisitCount"] <span class="text-danger">*</span></label>
+                        <input type="number" id="requiredVisitCount" class="form-control" min="1" max="365" />
+                    </div>
+                    <div class="col-6 col-md-3 d-none frequency-declared">
+                        <label class="form-label fw-medium" for="periodType">@Localizer["PeriodType"] <span class="text-danger">*</span></label>
+                        <select id="periodType" class="form-select"></select>
+                    </div>
+                    <div class="col-12 d-none frequency-declared">
+                        <div class="alert alert-secondary mb-0 py-2 small">
+                            <i class="bx bx-info-circle me-1"></i>@Localizer["DeclaredIntentNotBindingHelp"]
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-medium" for="intentNote">@Localizer["IntentNote"]</label>
+                        <textarea id="intentNote" class="form-control" rows="2" maxlength="1000"></textarea>
+                    </div>
+                </div>
+                <input type="hidden" asp-for="FrequencyIntentJson" id="FrequencyIntentJson" />
+            </div>
+        </section>
+
+        @* BINDING 3 — "what". Product lines with the SKU split; the live total is a display only, the runtime decides. *@
+        <section class="card mb-4" id="productSection">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["ProductSection"]</h6>
+                    <button type="button" id="btnAddProductLine" class="btn btn-sm btn-primary"><i class="bx bx-plus me-1"></i>@Localizer["AddProductLine"]</button>
+                </div>
+                <small class="text-muted d-block mb-2">@Localizer["TotalMustBe100"]</small>
+                <div class="alert alert-secondary py-2 small" role="alert">
+                    <i class="bx bx-info-circle me-1"></i>@Localizer["ContainmentNotVerifiedHelp"]
+                </div>
+                <div id="productLineList" class="d-flex flex-column gap-3"></div>
+                <div id="productLineEmpty" class="text-muted d-none">@Localizer["NoProductLines"]</div>
+                <input type="hidden" asp-for="ProductLinesJson" id="ProductLinesJson" />
+            </div>
+        </section>
+
+        @* BINDING 4 — "which story". Typed and published-only. *@
+        <section class="card mb-4" id="contentSection">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["ContentSection"]</h6>
+                    <button type="button" id="btnAddContentBinding" class="btn btn-sm btn-primary"><i class="bx bx-plus me-1"></i>@Localizer["AddContentBinding"]</button>
+                </div>
+                <small class="text-muted d-block mb-3">@Localizer["ContentPublishedOnlyHelp"]</small>
+                <div id="contentBindingList" class="d-flex flex-column gap-2"></div>
+                <div id="contentBindingEmpty" class="text-muted d-none">@Localizer["NoContentBindings"]</div>
+                <input type="hidden" asp-for="ContentBindingsJson" id="ContentBindingsJson" />
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ClassificationSection"]</h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label asp-for="SubjectType" class="form-label fw-medium">@Localizer["SubjectType"] <span class="text-danger">*</span></label>
+                        <select asp-for="SubjectType" class="select2 form-select" disabled="@(Model.TemplateId.HasValue)" required>
+                            @foreach (var x in Model.SubjectTypes) { <option value="@x">@x</option> }
+                        </select>
+                        @if (Model.TemplateId.HasValue)
+                        {
+                            @* Immutable after create, so it is posted back as a hidden field rather than silently lost. *@
+                            <input type="hidden" asp-for="SubjectType" />
+                        }
+                        <span asp-validation-for="SubjectType" class="text-danger small mt-1"></span>
+                        <small class="text-muted">@Localizer["SubjectTypeHelp"]</small>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="BusinessUnitId" class="form-label fw-medium">@Localizer["BusinessUnitId"]</label>
+                        <input asp-for="BusinessUnitId" class="form-control" maxlength="64" />
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LifecycleSection"]</h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        @* No required star: the status is DISPLAY-only here. The author never fills it — the lifecycle
+                           moves through Activate / Archive, and the server ignores any status in the payload. *@
+                        <label asp-for="TemplateStatus" class="form-label fw-medium">@Localizer["TemplateStatus"]</label>
+                        <select asp-for="TemplateStatus" class="select2 form-select" disabled>
+                            @foreach (var x in Model.TemplateStatuses) { <option value="@x">@x</option> }
+                        </select>
+                        <input type="hidden" asp-for="TemplateStatus" />
+                        <small class="text-muted">@Localizer["StatusSeparateEndpointHelp"]</small>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="EffectiveFrom" class="form-label fw-medium">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
+                        <input asp-for="EffectiveFrom" type="text" class="form-control flatpickr-date" value="@(Model.EffectiveFrom?.ToString("yyyy-MM-dd"))" placeholder="YYYY-MM-DD" autocomplete="off" required />
+                        <span asp-validation-for="EffectiveFrom" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="EffectiveTo" class="form-label fw-medium">@Localizer["EffectiveTo"]</label>
+                        <input asp-for="EffectiveTo" type="text" class="form-control flatpickr-date" value="@(Model.EffectiveTo?.ToString("yyyy-MM-dd"))" placeholder="YYYY-MM-DD" autocomplete="off" />
+                    </div>
+                    <div class="col-12">
+                        <div class="alert alert-secondary mb-0 py-2 small">
+                            <i class="bx bx-info-circle me-1"></i>@Localizer["ApplyIsMicroTargetHelp"]
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+@* Editor bootstrap. Every vocabulary, limit and picker availability comes from the contract endpoint at runtime -
+   there is no hardcoded status, mode or frequency list anywhere in this page or in form.js. *@
+<script id="strategyTemplateFormBootstrap" type="application/json">@Html.Raw(JsonSerializer.Serialize(new {
+    templateId = Model.TemplateId,
+    subjectType = Model.SubjectType,
+    areBindingsFrozen = Model.AreBindingsFrozen,
+    endpoint = "/CRM/StrategyTemplates/api",
+    bindingRoles = Model.BindingRoles,
+    frequencyIntentModes = Model.FrequencyIntentModes,
+    frequencyTypes = Model.FrequencyTypes,
+    frequencyPeriodTypes = Model.FrequencyPeriodTypes,
+    skuAllocationModes = Model.SkuAllocationModes,
+    contentRefTypes = Model.ContentRefTypes,
+    maxSegmentBindings = Model.MaxSegmentBindings,
+    maxProductLines = Model.MaxProductLines,
+    maxSkuAllocationsPerLine = Model.MaxSkuAllocationsPerLine,
+    maxContentBindings = Model.MaxContentBindings,
+    requiredAllocationTotal = Model.RequiredAllocationTotal,
+    availablePickers = Model.AvailablePickers,
+    canPickGlobalProducts = Model.CanPickGlobalProducts,
+    canPickGskus = Model.CanPickGskus
+}, jsonOpts))</script>

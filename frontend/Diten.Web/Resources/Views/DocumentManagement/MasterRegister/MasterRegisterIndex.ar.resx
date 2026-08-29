@@ -1,0 +1,1084 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="DocumentMasterRegister" xml:space="preserve"><value>سجل الوثائق الرئيسي</value></data>
+  <data name="DocumentMasterRegisterTitle" xml:space="preserve"><value>سجل الوثائق الرئيسي</value></data>
+  <data name="DocumentMasterRegisterCreate" xml:space="preserve"><value>إدخال سجل جديد</value></data>
+  <data name="DocumentMasterRegisterEdit" xml:space="preserve"><value>تعديل إدخال السجل</value></data>
+  <data name="DocumentMasterRegisterDetails" xml:space="preserve"><value>تفاصيل إدخال السجل</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>السجل المعتمد للوثائق الخاضعة للرقابة والمعرّفات وبيانات الحوكمة</value></data>
+  <data name="UID" xml:space="preserve"><value>المعرّف الدائم</value></data>
+  <data name="DocumentCode" xml:space="preserve"><value>رمز الوثيقة</value></data>
+  <data name="DocumentTitle" xml:space="preserve"><value>عنوان الوثيقة</value></data>
+  <data name="DocumentClass" xml:space="preserve"><value>فئة الوثيقة</value></data>
+  <data name="DocumentType" xml:space="preserve"><value>نوع الوثيقة</value></data>
+  <data name="Criticality" xml:space="preserve"><value>درجة الأهمية</value></data>
+  <data name="LifecycleStatus" xml:space="preserve"><value>حالة دورة الحياة</value></data>
+  <data name="RegisterStatus" xml:space="preserve"><value>حالة السجل</value></data>
+  <data name="OwnerFunction" xml:space="preserve"><value>الوظيفة المالكة</value></data>
+  <data name="OwnerCompany" xml:space="preserve"><value>الشركة المالكة</value></data>
+  <data name="ProcessOwnerRole" xml:space="preserve"><value>دور مالك العملية</value></data>
+  <data name="ProcessOwnerUser" xml:space="preserve"><value>مالك العملية</value></data>
+  <data name="GoverningLanguage" xml:space="preserve"><value>اللغة المعتمدة</value></data>
+  <data name="EffectiveDate" xml:space="preserve"><value>تاريخ السريان</value></data>
+  <data name="NextReviewDueDate" xml:space="preserve"><value>موعد المراجعة التالية</value></data>
+  <data name="LastPeriodicReviewDate" xml:space="preserve"><value>آخر مراجعة دورية</value></data>
+  <data name="IsControlledDocument" xml:space="preserve"><value>وثيقة خاضعة للرقابة</value></data>
+  <data name="IsRecord" xml:space="preserve"><value>سجل</value></data>
+  <data name="IsExternalDocument" xml:space="preserve"><value>وثيقة خارجية</value></data>
+  <data name="IsTemplate" xml:space="preserve"><value>قالب</value></data>
+  <data name="IsVariant" xml:space="preserve"><value>نسخة متغيرة</value></data>
+  <data name="ParentDocument" xml:space="preserve"><value>الوثيقة الأصل</value></data>
+  <data name="ParentDocumentUid" xml:space="preserve"><value>معرّف الوثيقة الأصل</value></data>
+  <data name="ParentDocumentCode" xml:space="preserve"><value>رمز الوثيقة الأصل</value></data>
+  <data name="RetentionClass" xml:space="preserve"><value>فئة الاحتفاظ</value></data>
+  <data name="ReviewCycleMonths" xml:space="preserve"><value>دورة المراجعة (بالأشهر)</value></data>
+  <data name="ApprovedRepository" xml:space="preserve"><value>المستودع المعتمد</value></data>
+  <data name="ApprovedRepositoryId" xml:space="preserve"><value>معرّف المستودع</value></data>
+  <data name="ApprovedRepositoryName" xml:space="preserve"><value>اسم المستودع</value></data>
+  <data name="ApprovedRepositoryPath" xml:space="preserve"><value>مسار المستودع</value></data>
+  <data name="LegacyCode" xml:space="preserve"><value>الرمز القديم</value></data>
+  <data name="PermanentUid" xml:space="preserve"><value>المعرّف الدائم</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>النظام المصدر</value></data>
+  <data name="SourceLegacyId" xml:space="preserve"><value>المعرّف القديم للمصدر</value></data>
+  <data name="Allocation" xml:space="preserve"><value>آلية التخصيص</value></data>
+  <data name="AllocationSystem" xml:space="preserve"><value>مخصص بواسطة النظام</value></data>
+  <data name="AllocationManual" xml:space="preserve"><value>مدخل يدويًا</value></data>
+  <data name="AllocationHint" xml:space="preserve"><value>اتركه فارغًا ليقوم محرك التخصيص بتعيين المعرّف لاحقًا.</value></data>
+  <data name="CurrentVersionLabel" xml:space="preserve"><value>الإصدار الحالي</value></data>
+  <data name="ApprovalEvidenceStatus" xml:space="preserve"><value>دليل الاعتماد</value></data>
+  <data name="LastReleaseGateEvaluationStatus" xml:space="preserve"><value>نتيجة بوابة الإصدار الأخيرة</value></data>
+  <data name="LinkedControlledDocument" xml:space="preserve"><value>الوثيقة الخاضعة للرقابة المرتبطة</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>أنشأ بواسطة</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>تاريخ التحديث</value></data>
+  <data name="UpdatedBy" xml:space="preserve"><value>حُدّث بواسطة</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Identification" xml:space="preserve"><value>التعريف</value></data>
+  <data name="Classification" xml:space="preserve"><value>التصنيف</value></data>
+  <data name="Ownership" xml:space="preserve"><value>الملكية</value></data>
+  <data name="Flags" xml:space="preserve"><value>السمات</value></data>
+  <data name="GovernanceMetadata" xml:space="preserve"><value>بيانات الحوكمة</value></data>
+  <data name="Provenance" xml:space="preserve"><value>المصدر</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>ساري من</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>ساري حتى</value></data>
+  <data name="NextReviewFrom" xml:space="preserve"><value>المراجعة من</value></data>
+  <data name="NextReviewTo" xml:space="preserve"><value>المراجعة حتى</value></data>
+  <data name="ClassPolicyGovernance" xml:space="preserve"><value>السياسة / الحوكمة</value></data>
+  <data name="ClassManualSystemDescription" xml:space="preserve"><value>الدليل / وصف النظام</value></data>
+  <data name="ClassSop" xml:space="preserve"><value>إجراء تشغيل قياسي</value></data>
+  <data name="ClassWorkInstruction" xml:space="preserve"><value>تعليمات العمل</value></data>
+  <data name="ClassFormTemplateRegisterMatrixPlanChecklist" xml:space="preserve"><value>نموذج / قالب / سجل / مصفوفة / خطة / قائمة تحقق</value></data>
+  <data name="ClassQualityTechnicalAgreementSdea" xml:space="preserve"><value>اتفاقية الجودة / التقنية (SDEA)</value></data>
+  <data name="ClassUrgentTemporaryInstruction" xml:space="preserve"><value>تعليمات مؤقتة عاجلة</value></data>
+  <data name="ClassOther" xml:space="preserve"><value>أخرى</value></data>
+  <data name="CriticalityCritical" xml:space="preserve"><value>حرج</value></data>
+  <data name="CriticalityMajor" xml:space="preserve"><value>رئيسي</value></data>
+  <data name="CriticalityMinor" xml:space="preserve"><value>طفيف</value></data>
+  <data name="CriticalityUrgentTemporary" xml:space="preserve"><value>عاجل / مؤقت</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="LifecycleInReview" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="LifecycleApprovedPendingEffective" xml:space="preserve"><value>معتمد (بانتظار السريان)</value></data>
+  <data name="LifecycleEffective" xml:space="preserve"><value>ساري</value></data>
+  <data name="LifecycleUnderRevision" xml:space="preserve"><value>قيد التنقيح</value></data>
+  <data name="LifecycleSuspended" xml:space="preserve"><value>موقوف</value></data>
+  <data name="LifecycleSuperseded" xml:space="preserve"><value>مستبدل</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>متقاعد</value></data>
+  <data name="LifecycleObsoleteCopy" xml:space="preserve"><value>نسخة ملغاة</value></data>
+  <data name="RegisterDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="RegisterActive" xml:space="preserve"><value>نشط</value></data>
+  <data name="RegisterArchived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="RegisterCorrectionPending" xml:space="preserve"><value>بانتظار التصحيح</value></data>
+  <data name="RegisterSuperseded" xml:space="preserve"><value>مستبدل</value></data>
+  <data name="RegisterRetired" xml:space="preserve"><value>متقاعد</value></data>
+  <data name="TypeSop" xml:space="preserve"><value>إجراء تشغيل قياسي</value></data>
+  <data name="TypeWorkInstruction" xml:space="preserve"><value>تعليمات العمل</value></data>
+  <data name="TypePolicy" xml:space="preserve"><value>سياسة</value></data>
+  <data name="TypeForm" xml:space="preserve"><value>نموذج</value></data>
+  <data name="TypeTemplate" xml:space="preserve"><value>قالب</value></data>
+  <data name="TypeOther" xml:space="preserve"><value>أخرى</value></data>
+  <data name="TabGeneral" xml:space="preserve"><value>عام</value></data>
+  <data name="TabIdentifiers" xml:space="preserve"><value>المعرّفات</value></data>
+  <data name="TabLifecycle" xml:space="preserve"><value>دورة الحياة</value></data>
+  <data name="TabApproval" xml:space="preserve"><value>الاعتماد</value></data>
+  <data name="TabReleaseGates" xml:space="preserve"><value>بوابات الإصدار</value></data>
+  <data name="TabTraining" xml:space="preserve"><value>التدريب</value></data>
+  <data name="TabRepository" xml:space="preserve"><value>المستودع</value></data>
+  <data name="TabRetention" xml:space="preserve"><value>الاحتفاظ</value></data>
+  <data name="TabSignatures" xml:space="preserve"><value>التوقيعات</value></data>
+  <data name="TabQualityEvents" xml:space="preserve"><value>أحداث الجودة</value></data>
+  <data name="DeferredSectionMessage" xml:space="preserve"><value>سيتم تنفيذ هذا القسم في الحزمة التالية من الواجهة.</value></data>
+  <data name="DeferredActionTooltip" xml:space="preserve"><value>متاح في الحزمة التالية من الواجهة</value></data>
+  <data name="NoDocumentsFound" xml:space="preserve"><value>لم يتم العثور على إدخالات في السجل</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>تعذر تحميل السجل</value></data>
+  <data name="SaveSucceeded" xml:space="preserve"><value>تم حفظ إدخال السجل</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>تعذر حفظ إدخال السجل</value></data>
+  <data name="Forbidden" xml:space="preserve"><value>ليست لديك صلاحية لهذه العملية</value></data>
+  <data name="VariantParentRequired" xml:space="preserve"><value>تتطلب النسخة المتغيرة مرجعًا للوثيقة الأصل</value></data>
+  <data name="RecordControlledConflict" xml:space="preserve"><value>لا يمكن أن يكون السجل وثيقة خاضعة للرقابة في الوقت نفسه</value></data>
+  <data name="ProtectedFieldsReadOnly" xml:space="preserve"><value>تُدار حقول المعرّف ودورة الحياة والإصدار بواسطة محرك الحوكمة ولا يمكن تعديلها هنا.</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <data name="Back" xml:space="preserve"><value>رجوع</value></data>
+  <data name="AddNew" xml:space="preserve"><value>إضافة جديد</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="IdentifiersTabTitle" xml:space="preserve"><value>المعرّفات</value></data>
+  <data name="LifecycleTabTitle" xml:space="preserve"><value>دورة الحياة</value></data>
+  <data name="IdentifierSummary" xml:space="preserve"><value>تخصيص المعرّفات</value></data>
+  <data name="CurrentIdentity" xml:space="preserve"><value>الهوية الحالية</value></data>
+  <data name="AllocationReadiness" xml:space="preserve"><value>جاهزية التخصيص</value></data>
+  <data name="IdentifierLedger" xml:space="preserve"><value>سجل المعرّفات</value></data>
+  <data name="IdentifierType" xml:space="preserve"><value>نوع المعرّف</value></data>
+  <data name="IdentifierValue" xml:space="preserve"><value>قيمة المعرّف</value></data>
+  <data name="IdentifierTypePermanentUid" xml:space="preserve"><value>المعرّف الدائم</value></data>
+  <data name="IdentifierTypeDocumentCode" xml:space="preserve"><value>رمز الوثيقة</value></data>
+  <data name="AllocationStatus" xml:space="preserve"><value>حالة التخصيص</value></data>
+  <data name="AllocationStatusReserved" xml:space="preserve"><value>محجوز</value></data>
+  <data name="AllocationStatusAssigned" xml:space="preserve"><value>مُسند</value></data>
+  <data name="AllocationStatusCancelled" xml:space="preserve"><value>ملغى</value></data>
+  <data name="AllocationStatusAbandoned" xml:space="preserve"><value>متروك</value></data>
+  <data name="AllocationStatusSupersededByCorrection" xml:space="preserve"><value>مستبدل بتصحيح</value></data>
+  <data name="AllocationSource" xml:space="preserve"><value>مصدر التخصيص</value></data>
+  <data name="SystemAllocated" xml:space="preserve"><value>مخصص بواسطة النظام</value></data>
+  <data name="ManualReserve" xml:space="preserve"><value>حجز يدوي</value></data>
+  <data name="MigrationReserve" xml:space="preserve"><value>حجز عند الترحيل</value></data>
+  <data name="AllocationReasonLabel" xml:space="preserve"><value>سبب التخصيص</value></data>
+  <data name="AllocationReasonNewDocument" xml:space="preserve"><value>وثيقة جديدة</value></data>
+  <data name="AllocationReasonMigration" xml:space="preserve"><value>ترحيل</value></data>
+  <data name="AllocationReasonManualImport" xml:space="preserve"><value>استيراد يدوي</value></data>
+  <data name="AllocationReasonCorrection" xml:space="preserve"><value>تصحيح</value></data>
+  <data name="AllocatedAt" xml:space="preserve"><value>وقت التخصيص</value></data>
+  <data name="AllocatedBy" xml:space="preserve"><value>خُصص بواسطة</value></data>
+  <data name="IdentifierOperations" xml:space="preserve"><value>عمليات المعرّفات</value></data>
+  <data name="AllocateUid" xml:space="preserve"><value>تخصيص المعرّف</value></data>
+  <data name="AllocateCode" xml:space="preserve"><value>تخصيص الرمز</value></data>
+  <data name="AllocateBoth" xml:space="preserve"><value>تخصيص كليهما</value></data>
+  <data name="ReserveIdentifier" xml:space="preserve"><value>حجز معرّف</value></data>
+  <data name="ReserveIdentifierHint" xml:space="preserve"><value>احجز معرّفًا أو رمزًا مملوكًا خارجيًا (إدخال يدوي أو ترحيل). ترتبط القيمة بإدخال السجل هذا.</value></data>
+  <data name="CancelAllocation" xml:space="preserve"><value>إلغاء التخصيص</value></data>
+  <data name="CancelAllocationReason" xml:space="preserve"><value>سبب الإلغاء</value></data>
+  <data name="ConfirmCancelAllocation" xml:space="preserve"><value>يؤدي هذا إلى إلغاء تخصيص المعرّف فقط. لا يتم حذف أي شيء — تبقى القيمة في السجل ولا يُعاد استخدامها أبدًا.</value></data>
+  <data name="IdentifierNeverReusedNote" xml:space="preserve"><value>سجل المعرّفات للإضافة فقط. تُحفظ القيمة الملغاة أو المتروكة إلى الأبد ولا يُعاد استخدامها؛ ويُسمح بوجود فجوات في الترقيم (SOP §6.3).</value></data>
+  <data name="RelatedRegisterEntry" xml:space="preserve"><value>إدخال السجل</value></data>
+  <data name="UidAllocated" xml:space="preserve"><value>تم تخصيص المعرّف</value></data>
+  <data name="CodeAllocated" xml:space="preserve"><value>تم تخصيص الرمز</value></data>
+  <data name="EffectiveReadiness" xml:space="preserve"><value>جاهزية السريان</value></data>
+  <data name="IdentifiersComplete" xml:space="preserve"><value>المعرّف والرمز مكتملان</value></data>
+  <data name="ActiveAllocations" xml:space="preserve"><value>التخصيصات النشطة</value></data>
+  <data name="LedgerRowCount" xml:space="preserve"><value>صفوف السجل</value></data>
+  <data name="NoIdentifierLedgerFound" xml:space="preserve"><value>لم يُسجَّل أي تخصيص للمعرّفات بعد</value></data>
+  <data name="AllocationSucceeded" xml:space="preserve"><value>تم تخصيص المعرّف</value></data>
+  <data name="AllocationFailed" xml:space="preserve"><value>تعذر تخصيص المعرّف</value></data>
+  <data name="ReservationSucceeded" xml:space="preserve"><value>تم حجز المعرّف</value></data>
+  <data name="ReservationFailed" xml:space="preserve"><value>تعذر حجز المعرّف</value></data>
+  <data name="CancellationSucceeded" xml:space="preserve"><value>تم إلغاء التخصيص</value></data>
+  <data name="CancellationFailed" xml:space="preserve"><value>تعذر إلغاء التخصيص</value></data>
+  <data name="UidAlreadyAllocated" xml:space="preserve"><value>تم تخصيص معرّف دائم بالفعل</value></data>
+  <data name="CodeAlreadyAllocated" xml:space="preserve"><value>تم تخصيص رمز وثيقة بالفعل</value></data>
+  <data name="IdentifiersAlreadyAllocated" xml:space="preserve"><value>تم تخصيص معرّف واحد على الأقل بالفعل</value></data>
+  <data name="DuplicateIdentifier" xml:space="preserve"><value>قيمة المعرّف هذه مستخدمة بالفعل</value></data>
+  <data name="ManualIdentifierExists" xml:space="preserve"><value>يوجد بالفعل معرّف يدوي لهذا الإدخال</value></data>
+  <data name="TypeMappingMissing" xml:space="preserve"><value>لا يوجد رمز نوع محدد لهذه التركيبة من الفئة والنوع</value></data>
+  <data name="RecordNotEligible" xml:space="preserve"><value>السجل غير مؤهل لتخصيص معرّف</value></data>
+  <data name="ExternalNotEligible" xml:space="preserve"><value>الوثيقة الخارجية غير مؤهلة لتخصيص معرّف</value></data>
+  <data name="VariantInheritsParent" xml:space="preserve"><value>ترث النسخة المتغيرة معرّف الوثيقة الأصل</value></data>
+  <data name="EntryNotAllocatable" xml:space="preserve"><value>إدخال السجل هذا ليس في حالة تسمح بالتخصيص</value></data>
+  <data name="LifecycleSummary" xml:space="preserve"><value>حالة دورة الحياة</value></data>
+  <data name="AvailableTransitions" xml:space="preserve"><value>الانتقالات المتاحة</value></data>
+  <data name="NoTransitionAvailable" xml:space="preserve"><value>لا يوجد انتقال متاح من الحالة الحالية</value></data>
+  <data name="OperationalUseAllowed" xml:space="preserve"><value>الاستخدام التشغيلي مسموح</value></data>
+  <data name="LastTransition" xml:space="preserve"><value>آخر انتقال</value></data>
+  <data name="LastTransitionReason" xml:space="preserve"><value>سبب آخر انتقال</value></data>
+  <data name="LifecycleHistory" xml:space="preserve"><value>سجل دورة الحياة</value></data>
+  <data name="NoLifecycleHistoryFound" xml:space="preserve"><value>لم يُسجَّل أي انتقال في دورة الحياة بعد</value></data>
+  <data name="FromStatus" xml:space="preserve"><value>من حالة</value></data>
+  <data name="ToStatus" xml:space="preserve"><value>إلى حالة</value></data>
+  <data name="TransitionedAt" xml:space="preserve"><value>وقت الانتقال</value></data>
+  <data name="TransitionedBy" xml:space="preserve"><value>نُفذ بواسطة</value></data>
+  <data name="TransitionLifecycle" xml:space="preserve"><value>تغيير الحالة</value></data>
+  <data name="TransitionReason" xml:space="preserve"><value>السبب</value></data>
+  <data name="TransitionComment" xml:space="preserve"><value>تعليق</value></data>
+  <data name="EvidenceReference" xml:space="preserve"><value>مرجع الدليل</value></data>
+  <data name="TargetStatus" xml:space="preserve"><value>الحالة المستهدفة</value></data>
+  <data name="MarkEffective" xml:space="preserve"><value>اعتماد السريان</value></data>
+  <data name="Supersede" xml:space="preserve"><value>استبدال</value></data>
+  <data name="Retire" xml:space="preserve"><value>إحالة إلى التقاعد</value></data>
+  <data name="ReplacementRegisterEntry" xml:space="preserve"><value>إدخال السجل البديل</value></data>
+  <data name="ReplacementRegisterEntryHint" xml:space="preserve"><value>اختياري. حدد إدخال السجل التشغيلي السابق الذي يحل هذا المستند محله.</value></data>
+  <data name="EffectiveDateNotRetroactive" xml:space="preserve"><value>لا يمكن أن يكون تاريخ السريان في الماضي (SOP §4). اتركه فارغًا لاستخدام تاريخ اليوم.</value></data>
+  <data name="LifecycleTransitionSucceeded" xml:space="preserve"><value>تم تحديث حالة دورة الحياة</value></data>
+  <data name="LifecycleTransitionFailed" xml:space="preserve"><value>تعذر تغيير حالة دورة الحياة</value></data>
+  <data name="MarkEffectiveWarning" xml:space="preserve"><value>يفرض الخادم وجود المعرّف/الرمز ودليل الاعتماد وبوابات الإصدار وعدم رجعية تاريخ السريان. لا يمكن لهذه الشاشة تجاوزها ولن تفعل.</value></data>
+  <data name="BackendEnforcesReleaseGates" xml:space="preserve"><value>تُطبَّق جميع قواعد دورة الحياة بواسطة محرك الحوكمة. تعكس الأزرار هنا ما يسمح به الخادم حاليًا، والقرار النهائي له.</value></data>
+  <data name="BackendWarnings" xml:space="preserve"><value>تحذيرات الحوكمة</value></data>
+  <data name="ConfirmMarkEffective" xml:space="preserve"><value>سيؤدي هذا إلى وضع الوثيقة قيد التنفيذ. لا يمكن التراجع عنه بتعديل البيانات الوصفية.</value></data>
+  <data name="ConfirmSupersede" xml:space="preserve"><value>سيتم وضع علامة على الوثيقة بأنها مستبدلة بإصدار أحدث. السبب إلزامي.</value></data>
+  <data name="ConfirmRetire" xml:space="preserve"><value>ينهي هذا العمر التشغيلي للوثيقة. لا يُحذف شيء؛ يُحتفظ بالسجل. السبب إلزامي.</value></data>
+  <data name="InvalidTransition" xml:space="preserve"><value>تغيير الحالة هذا غير مسموح من الحالة الحالية</value></data>
+  <data name="ReasonRequiredError" xml:space="preserve"><value>يلزم ذكر سبب لتغيير الحالة هذا</value></data>
+  <data name="MissingUidOrCode" xml:space="preserve"><value>يلزم أولاً وجود معرّف دائم ورمز وثيقة</value></data>
+  <data name="RetroactiveEffectiveDate" xml:space="preserve"><value>لا يمكن أن يكون تاريخ السريان بأثر رجعي</value></data>
+  <data name="ReleaseGateBlocked" xml:space="preserve"><value>محجوب بواسطة بوابات الإصدار غير القابلة للتنازل</value></data>
+  <data name="ApprovalEvidenceBlocked" xml:space="preserve"><value>محجوب لأن دليل الاعتماد غير مكتمل</value></data>
+  <data name="TrainingReadinessBlocked" xml:space="preserve"><value>محجوب لأن جاهزية التدريب غير مكتملة</value></data>
+  <data name="DuplicateEffective" xml:space="preserve"><value>يوجد إدخال آخر بنفس المعرّف ساري بالفعل</value></data>
+  <data name="StaleVersion" xml:space="preserve"><value>تم تعديل الإدخال بواسطة عملية أخرى — أعد التحميل وحاول مجددًا</value></data>
+  <data name="RegisterEntryNotFound" xml:space="preserve"><value>لم يتم العثور على إدخال السجل</value></data>
+  <data name="ConflictOccurred" xml:space="preserve"><value>تتعارض العملية مع الحالة الحالية</value></data>
+  <data name="ReloadTab" xml:space="preserve"><value>إعادة تحميل</value></data>
+  <data name="ActionNotAvailable" xml:space="preserve"><value>غير متاح</value></data>
+  <data name="PermissionRequired" xml:space="preserve"><value>ليست لديك صلاحية لهذا الإجراء</value></data>
+  <data name="OwnerFunctionFallbackHint" xml:space="preserve"><value>لا تتوفر قائمة مرجعية منشورة لهذا الحقل، لذا يُقبل النص الحر. حافظ على اتساق الكتابة.</value></data>
+  <data name="LegacyValue" xml:space="preserve"><value>قيمة قديمة</value></data>
+  <data name="ApprovalTabTitle" xml:space="preserve"><value>الاعتماد</value></data>
+  <data name="ReleaseGatesTabTitle" xml:space="preserve"><value>بوابات الإصدار</value></data>
+  <data name="ApprovalSummary" xml:space="preserve"><value>مسار الاعتماد والأدلة</value></data>
+  <data name="ApprovalRoute" xml:space="preserve"><value>مسار الاعتماد</value></data>
+  <data name="ResolveApprovalRoute" xml:space="preserve"><value>احتساب مسار الاعتماد</value></data>
+  <data name="ResolveRouteIsNotApproval" xml:space="preserve"><value>احتساب المسار يحدد فقط الاعتمادات المطلوبة. لا يعتمد شيئًا ولا يغيّر حالة دورة الحياة.</value></data>
+  <data name="ApprovalRouteResolved" xml:space="preserve"><value>تم احتساب مسار الاعتماد</value></data>
+  <data name="ApprovalReadiness" xml:space="preserve"><value>جاهزية الاعتماد</value></data>
+  <data name="ApprovalRequirement" xml:space="preserve"><value>المتطلب</value></data>
+  <data name="ApprovalRequirements" xml:space="preserve"><value>متطلبات الاعتماد</value></data>
+  <data name="NoApprovalRequirementsFound" xml:space="preserve"><value>لم يتم احتساب أي متطلب اعتماد بعد</value></data>
+  <data name="RequirementRole" xml:space="preserve"><value>الدور المطلوب</value></data>
+  <data name="RequirementType" xml:space="preserve"><value>نوع المتطلب</value></data>
+  <data name="Mandatory" xml:space="preserve"><value>إلزامي</value></data>
+  <data name="Optional" xml:space="preserve"><value>اختياري</value></data>
+  <data name="NonDelegable" xml:space="preserve"><value>غير قابل للتفويض</value></data>
+  <data name="SourceRule" xml:space="preserve"><value>القاعدة المصدر</value></data>
+  <data name="CompletedBy" xml:space="preserve"><value>أنجزه</value></data>
+  <data name="CompletedCount" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="PendingCount" xml:space="preserve"><value>قيد الانتظار</value></data>
+  <data name="RejectedCount" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="RequiredApprovers" xml:space="preserve"><value>الاعتمادات المطلوبة</value></data>
+  <data name="BlockingIssues" xml:space="preserve"><value>المشكلات المانعة</value></data>
+  <data name="NoBlockingIssues" xml:space="preserve"><value>لا توجد مشكلات مانعة</value></data>
+  <data name="Ready" xml:space="preserve"><value>جاهز</value></data>
+  <data name="NotReady" xml:space="preserve"><value>غير جاهز</value></data>
+  <data name="EvidenceStatus" xml:space="preserve"><value>حالة الدليل</value></data>
+  <data name="EvidenceAction" xml:space="preserve"><value>الإجراء</value></data>
+  <data name="RecordEvidence" xml:space="preserve"><value>تسجيل الدليل</value></data>
+  <data name="RecordEvidenceNote" xml:space="preserve"><value>يسجل قرار اعتماد لهذا المتطلب. يتم فحص فصل المهام على الخادم وقد يرفضه.</value></data>
+  <data name="RejectEvidence" xml:space="preserve"><value>رفض</value></data>
+  <data name="RejectEvidenceNote" xml:space="preserve"><value>يرفض متطلب الاعتماد هذا. السبب إلزامي ويُحفظ في سجل التدقيق.</value></data>
+  <data name="RejectionReason" xml:space="preserve"><value>سبب الرفض</value></data>
+  <data name="EvidenceComment" xml:space="preserve"><value>تعليق</value></data>
+  <data name="EvidenceReferenceHint" xml:space="preserve"><value>مرجع للدليل المحفوظ في مكان آخر (تذكرة، محضر، سجل موقّع). لا يتم رفع ملفات هنا.</value></data>
+  <data name="PerformedBy" xml:space="preserve"><value>نفذه</value></data>
+  <data name="PerformedByRole" xml:space="preserve"><value>دور المنفذ</value></data>
+  <data name="SegregationCheckedServerSide" xml:space="preserve"><value>يفرض الخادم فصل المهام؛ سيتم رفض أي تركيبة ممنوعة.</value></data>
+  <data name="SegregationStatus" xml:space="preserve"><value>فصل المهام</value></data>
+  <data name="SegregationPassed" xml:space="preserve"><value>تم استيفاء فصل المهام</value></data>
+  <data name="SegregationFailed" xml:space="preserve"><value>لم يتم استيفاء فصل المهام</value></data>
+  <data name="SegregationFailedError" xml:space="preserve"><value>هذا الإجراء يخالف فصل المهام</value></data>
+  <data name="AuthorSoleApproverBlocked" xml:space="preserve"><value>لا يمكن أن يكون المؤلف المعتمد الوحيد لوثيقته (SOP §5).</value></data>
+  <data name="SameUserCannotCompleteAllMandatory" xml:space="preserve"><value>لا يمكن لمستخدم واحد إتمام جميع الاعتمادات الإلزامية</value></data>
+  <data name="MissingAuthorWarning" xml:space="preserve"><value>لم يُسجَّل مؤلف لهذا الإدخال</value></data>
+  <data name="DocumentAuthor" xml:space="preserve"><value>مؤلف المستند</value></data>
+  <data name="MissingMandatoryEvidence" xml:space="preserve"><value>اعتماد إلزامي مفقود</value></data>
+  <data name="ApprovalEvidenceComplete" xml:space="preserve"><value>دليل الاعتماد مكتمل</value></data>
+  <data name="ApprovalEvidenceIncomplete" xml:space="preserve"><value>دليل الاعتماد غير مكتمل</value></data>
+  <data name="RequirementNotFound" xml:space="preserve"><value>لم يتم العثور على متطلب الاعتماد</value></data>
+  <data name="WrongApproverRole" xml:space="preserve"><value>لا يملك هذا المستخدم دور المعتمد المطلوب</value></data>
+  <data name="RequirementStatusPending" xml:space="preserve"><value>قيد الانتظار</value></data>
+  <data name="RequirementStatusCompleted" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="RequirementStatusRejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="RequirementStatusWaived" xml:space="preserve"><value>تم التنازل عنه</value></data>
+  <data name="RequirementStatusBlocked" xml:space="preserve"><value>محجوب</value></data>
+  <data name="ApprovalStateNotRequired" xml:space="preserve"><value>غير مطلوب</value></data>
+  <data name="ApprovalStatePending" xml:space="preserve"><value>قيد الانتظار</value></data>
+  <data name="ApprovalStateComplete" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="ApprovalStateRejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="ApprovalStateBlocked" xml:space="preserve"><value>محجوب</value></data>
+  <data name="ActionReviewed" xml:space="preserve"><value>تمت المراجعة</value></data>
+  <data name="ActionApproved" xml:space="preserve"><value>تمت الموافقة</value></data>
+  <data name="ActionEndorsed" xml:space="preserve"><value>تم التصديق</value></data>
+  <data name="ActionReturned" xml:space="preserve"><value>أُعيد</value></data>
+  <data name="RequirementTypeApproval" xml:space="preserve"><value>اعتماد</value></data>
+  <data name="RequirementTypeReview" xml:space="preserve"><value>مراجعة</value></data>
+  <data name="RequirementTypeEndorsement" xml:space="preserve"><value>تصديق</value></data>
+  <data name="RequirementTypeTechnicalReview" xml:space="preserve"><value>مراجعة تقنية</value></data>
+  <data name="RequirementTypeQualityConcurrence" xml:space="preserve"><value>موافقة الجودة</value></data>
+  <data name="RequirementTypeLegalReview" xml:space="preserve"><value>مراجعة قانونية</value></data>
+  <data name="RequirementTypeTrainingReadinessVerification" xml:space="preserve"><value>التحقق من جاهزية التدريب</value></data>
+  <data name="SourceRuleCriticality" xml:space="preserve"><value>درجة الأهمية</value></data>
+  <data name="SourceRuleDocumentClass" xml:space="preserve"><value>فئة الوثيقة</value></data>
+  <data name="SourceRuleRegulatoryOverlay" xml:space="preserve"><value>الطبقة التنظيمية</value></data>
+  <data name="SourceRulePVOverlay" xml:space="preserve"><value>طبقة اليقظة الدوائية</value></data>
+  <data name="SourceRuleBatchReleaseOverlay" xml:space="preserve"><value>طبقة الإفراج عن الدفعة</value></data>
+  <data name="SourceRuleAgreementOverlay" xml:space="preserve"><value>طبقة الاتفاقية</value></data>
+  <data name="SourceRuleDmsCsvOverlay" xml:space="preserve"><value>طبقة DMS / CSV</value></data>
+  <data name="SourceRuleGroupGovernanceOverlay" xml:space="preserve"><value>طبقة حوكمة المجموعة</value></data>
+  <data name="SourceRuleSegregationOverlay" xml:space="preserve"><value>طبقة فصل المهام</value></data>
+  <data name="SourceRuleManualOverride" xml:space="preserve"><value>تجاوز يدوي</value></data>
+  <data name="ApprovalRoleGQD" xml:space="preserve"><value>مدير الجودة للمجموعة</value></data>
+  <data name="ApprovalRoleGQDDeputy" xml:space="preserve"><value>نائب مدير الجودة للمجموعة</value></data>
+  <data name="ApprovalRoleGRA" xml:space="preserve"><value>الشؤون التنظيمية للمجموعة</value></data>
+  <data name="ApprovalRoleQPPV" xml:space="preserve"><value>QPPV</value></data>
+  <data name="ApprovalRoleQP" xml:space="preserve"><value>الشخص المؤهل</value></data>
+  <data name="ApprovalRoleLegal" xml:space="preserve"><value>الشؤون القانونية</value></data>
+  <data name="ApprovalRoleITCSVOwner" xml:space="preserve"><value>مالك تقنية المعلومات / CSV</value></data>
+  <data name="ApprovalRoleQADocumentation" xml:space="preserve"><value>توثيق ضمان الجودة</value></data>
+  <data name="ApprovalRoleDocumentOwner" xml:space="preserve"><value>مالك الوثيقة</value></data>
+  <data name="ApprovalRoleLocalQA" xml:space="preserve"><value>ضمان الجودة المحلي</value></data>
+  <data name="ApprovalRoleCEO" xml:space="preserve"><value>الرئيس التنفيذي</value></data>
+  <data name="ApprovalRoleIndependentQASenior" xml:space="preserve"><value>ضمان جودة أول مستقل</value></data>
+  <data name="ApprovalRoleTrainingCoordinator" xml:space="preserve"><value>منسق التدريب</value></data>
+  <data name="ReleaseGateSummary" xml:space="preserve"><value>بوابات الإصدار غير القابلة للتنازل</value></data>
+  <data name="NonWaivableExplanation" xml:space="preserve"><value>جميع البوابات الست غير قابلة للتنازل. لا يوجد مسار للتجاوز أو الاستثناء، لا هنا ولا في أي مكان آخر.</value></data>
+  <data name="EvaluateReleaseGates" xml:space="preserve"><value>تقييم البوابات</value></data>
+  <data name="ReleaseGate" xml:space="preserve"><value>بوابة الإصدار</value></data>
+  <data name="ReleaseGateResult" xml:space="preserve"><value>النتيجة</value></data>
+  <data name="NonWaivable" xml:space="preserve"><value>غير قابل للتنازل</value></data>
+  <data name="NoWaiverAllowed" xml:space="preserve"><value>لا تنازل</value></data>
+  <data name="GatePassed" xml:space="preserve"><value>مجتاز</value></data>
+  <data name="GateBlocked" xml:space="preserve"><value>محجوب</value></data>
+  <data name="GateWarning" xml:space="preserve"><value>تحذير</value></data>
+  <data name="GateNotApplicable" xml:space="preserve"><value>غير منطبق</value></data>
+  <data name="GateEvidence" xml:space="preserve"><value>دليل البوابة</value></data>
+  <data name="RecordGateEvidence" xml:space="preserve"><value>تسجيل دليل البوابة</value></data>
+  <data name="GateEvidenceDoesNotForcePass" xml:space="preserve"><value>تسجيل الدليل لا يفرض اجتياز البوابة. يعيد المحرك تقييم النتيجة وقد تبقى البوابة محجوبة.</value></data>
+  <data name="BlockingReason" xml:space="preserve"><value>سبب الحجب</value></data>
+  <data name="GateSource" xml:space="preserve"><value>المصدر</value></data>
+  <data name="VerifiedBy" xml:space="preserve"><value>تم التحقق بواسطة</value></data>
+  <data name="VerifiedByRole" xml:space="preserve"><value>دور المتحقق</value></data>
+  <data name="VerificationDate" xml:space="preserve"><value>تاريخ التحقق</value></data>
+  <data name="GatesPassed" xml:space="preserve"><value>البوابات المجتازة</value></data>
+  <data name="GatesBlocked" xml:space="preserve"><value>البوابات المحجوبة</value></data>
+  <data name="GatesWarning" xml:space="preserve"><value>التحذيرات</value></data>
+  <data name="EvidenceMissingCount" xml:space="preserve"><value>أدلة ناقصة</value></data>
+  <data name="EvaluatedAt" xml:space="preserve"><value>وقت التقييم</value></data>
+  <data name="EvaluatedBy" xml:space="preserve"><value>قيّمه</value></data>
+  <data name="GateEvaluationHistory" xml:space="preserve"><value>سجل التقييمات</value></data>
+  <data name="GateEvaluationComplete" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="GateEvaluationIncomplete" xml:space="preserve"><value>غير مكتمل</value></data>
+  <data name="NoGateEvaluationFound" xml:space="preserve"><value>لم يُسجَّل أي تقييم للبوابات بعد</value></data>
+  <data name="MasterRegisterGate" xml:space="preserve"><value>السجل الرئيسي نشط والوثيقة مسجلة بمعرّف</value></data>
+  <data name="ApprovedRepositoryGate" xml:space="preserve"><value>مستودع معتمد أو نظام DMS مؤهل بمسار إصدار مصرح</value></data>
+  <data name="MandatoryApprovalEvidenceGate" xml:space="preserve"><value>دليل اعتماد من المعتمدين الإلزاميين؛ المؤلف ليس المعتمد الوحيد</value></data>
+  <data name="RequiredExecutionMaterialsGate" xml:space="preserve"><value>كل نموذج/قالب/سجل لازم للتنفيذ ساري ومتاح</value></data>
+  <data name="TrainingReadinessGate" xml:space="preserve"><value>تم إسناد التدريب؛ مستخدمو العمليات الحرجة مدربون أو مقيدون رسميًا</value></data>
+  <data name="SupersededCopyWithdrawalGate" xml:space="preserve"><value>توجد طريقة لسحب النسخ المستبدلة من نقطة الاستخدام</value></data>
+  <data name="TrainingDetailsDeferred" xml:space="preserve"><value>ستتوفر تفاصيل التدريب في الحزمة التالية. سبب الحجب أعلاه يأتي من محرك جاهزية التدريب.</value></data>
+  <data name="RepositoryDetailsDeferred" xml:space="preserve"><value>ستتوفر تفاصيل تقييم المستودع في الحزمة التالية.</value></data>
+  <data name="ControlledCopyDetailsDeferred" xml:space="preserve"><value>ستتوفر تفاصيل تسوية النسخ الخاضعة للرقابة في الحزمة التالية.</value></data>
+  <data name="GateEvaluationSucceeded" xml:space="preserve"><value>تم تقييم بوابات الإصدار</value></data>
+  <data name="GateEvaluationFailed" xml:space="preserve"><value>تعذر تقييم بوابات الإصدار</value></data>
+  <data name="EvidenceRecordSucceeded" xml:space="preserve"><value>تم تسجيل الدليل</value></data>
+  <data name="EvidenceRecordFailed" xml:space="preserve"><value>تعذر تسجيل الدليل</value></data>
+  <data name="EvidenceRejectSucceeded" xml:space="preserve"><value>تم رفض الاعتماد</value></data>
+  <data name="EvidenceRejectFailed" xml:space="preserve"><value>تعذر تسجيل الرفض</value></data>
+  <data name="ReleaseGateIncomplete" xml:space="preserve"><value>بوابات الإصدار غير مكتملة</value></data>
+  <data name="InvalidGateKey" xml:space="preserve"><value>بوابة إصدار غير معروفة</value></data>
+  <data name="TrainingNotReady" xml:space="preserve"><value>لم تُستوفَ جاهزية التدريب</value></data>
+  <data name="RepositoryNotApproved" xml:space="preserve"><value>لا يوجد مستودع معتمد متاح</value></data>
+  <data name="RequiredExecutionMaterialsMissing" xml:space="preserve"><value>مواد التنفيذ المطلوبة غير سارية</value></data>
+  <data name="SupersededCopyWithdrawalMissing" xml:space="preserve"><value>لم تُسجَّل طريقة لسحب النسخ المستبدلة</value></data>
+  <data name="MasterRegisterInactive" xml:space="preserve"><value>إدخال السجل الرئيسي غير نشط</value></data>
+  <data name="UidCodeMissing" xml:space="preserve"><value>يلزم معرّف دائم ورمز وثيقة</value></data>
+  <data name="EvidenceReferenceRequired" xml:space="preserve"><value>مرجع الدليل مطلوب</value></data>
+  <data name="GateEvidenceRequired" xml:space="preserve"><value>تتطلب هذه البوابة دليلًا مسجلًا</value></data>
+  <data name="RefreshApproval" xml:space="preserve"><value>تحديث</value></data>
+  <data name="RefreshReleaseGates" xml:space="preserve"><value>تحديث</value></data>
+  <data name="TrainingTabTitle" xml:space="preserve"><value>التدريب</value></data>
+  <data name="TrainingSummary" xml:space="preserve"><value>مصفوفة التدريب وجاهزية الإصدار</value></data>
+  <data name="TrainingReadiness" xml:space="preserve"><value>جاهزية التدريب</value></data>
+  <data name="ReleaseGateTrainingNote" xml:space="preserve"><value>تستخدم بوابة الإصدار 5 نتيجة جاهزية التدريب هذه. تعرض هذه الشاشة أدلة التدريب وتسجلها؛ وهي لا تجتاز البوابة ولا تجعل الوثيقة سارية.</value></data>
+  <data name="ResolveTrainingMatrix" xml:space="preserve"><value>احتساب مصفوفة التدريب</value></data>
+  <data name="TrainingRequirement" xml:space="preserve"><value>متطلب التدريب</value></data>
+  <data name="TrainingRequirements" xml:space="preserve"><value>متطلبات التدريب</value></data>
+  <data name="NoTrainingRequirementsFound" xml:space="preserve"><value>لم يتم احتساب أي متطلب تدريب بعد</value></data>
+  <data name="TrainingAssignment" xml:space="preserve"><value>إسناد التدريب</value></data>
+  <data name="TrainingAssignments" xml:space="preserve"><value>إسنادات التدريب</value></data>
+  <data name="NoTrainingAssignmentsFound" xml:space="preserve"><value>لم يتم إنشاء أو تغيير أي إسناد في هذه الجلسة</value></data>
+  <data name="AssignmentListNotAvailableNote" xml:space="preserve"><value>لا يوفر الخادم بعد قائمة بإسنادات التدريب، لذا يعرض هذا الجدول فقط الإسنادات التي أُنشئت أو تغيّرت في هذه الجلسة. أما العدادات أعلاه فتأتي من الخادم وتعكس الصورة الكاملة دائمًا.</value></data>
+  <data name="TrainingAudience" xml:space="preserve"><value>الجمهور</value></data>
+  <data name="TrainingAudienceRole" xml:space="preserve"><value>الدور</value></data>
+  <data name="TrainingAudienceUser" xml:space="preserve"><value>المستخدم</value></data>
+  <data name="TrainingAudienceDepartment" xml:space="preserve"><value>القسم</value></data>
+  <data name="TrainingAudienceThirdParty" xml:space="preserve"><value>طرف ثالث</value></data>
+  <data name="TrainingType" xml:space="preserve"><value>نوع التدريب</value></data>
+  <data name="TrainingTypeFullSopCompetencyAssessment" xml:space="preserve"><value>تقييم كفاءة كامل للإجراء</value></data>
+  <data name="TrainingTypeScenarioAssessment" xml:space="preserve"><value>تقييم بالسيناريو</value></data>
+  <data name="TrainingTypeReadAndUnderstand" xml:space="preserve"><value>قراءة وفهم</value></data>
+  <data name="TrainingTypeThirdPartyVerifiedTraining" xml:space="preserve"><value>تدريب موثق من طرف ثالث</value></data>
+  <data name="CriticalProcess" xml:space="preserve"><value>عملية حرجة</value></data>
+  <data name="EffectivenessRequired" xml:space="preserve"><value>التحقق من الفعالية مطلوب</value></data>
+  <data name="EffectivenessStatus" xml:space="preserve"><value>الفعالية</value></data>
+  <data name="EffectivenessResult" xml:space="preserve"><value>نتيجة الفعالية</value></data>
+  <data name="EffectivenessNotRequired" xml:space="preserve"><value>غير مطلوب</value></data>
+  <data name="EffectivenessPending" xml:space="preserve"><value>قيد الانتظار</value></data>
+  <data name="EffectivenessPassed" xml:space="preserve"><value>ناجح</value></data>
+  <data name="EffectivenessFailed" xml:space="preserve"><value>فاشل</value></data>
+  <data name="EffectivenessIsRecordedNotComputed" xml:space="preserve"><value>نتيجة الفعالية دليل مسجل وليست حسابًا. تسجيل النجاح وحده لا يجعل جاهزية التدريب خضراء.</value></data>
+  <data name="AssignmentStatus" xml:space="preserve"><value>حالة الإسناد</value></data>
+  <data name="TrainingAssignmentStatusAssigned" xml:space="preserve"><value>مُسند</value></data>
+  <data name="TrainingAssignmentStatusCompleted" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="TrainingAssignmentStatusFailed" xml:space="preserve"><value>فاشل</value></data>
+  <data name="TrainingAssignmentStatusRestricted" xml:space="preserve"><value>مقيّد</value></data>
+  <data name="TrainingAssignmentStatusCancelled" xml:space="preserve"><value>ملغى</value></data>
+  <data name="TrainingRequirementStatusPending" xml:space="preserve"><value>قيد الانتظار</value></data>
+  <data name="TrainingRequirementStatusAssigned" xml:space="preserve"><value>مُسند</value></data>
+  <data name="TrainingRequirementStatusCompleted" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="TrainingRequirementStatusRestricted" xml:space="preserve"><value>مقيّد</value></data>
+  <data name="TrainingRequirementStatusWaivedNotAllowed" xml:space="preserve"><value>محاولة تنازل — غير مسموح</value></data>
+  <data name="TrainingRequirementStatusOverdue" xml:space="preserve"><value>متأخر</value></data>
+  <data name="TrainingRequirementStatusBlocked" xml:space="preserve"><value>محجوب</value></data>
+  <data name="TrainingSourceRuleCriticality" xml:space="preserve"><value>درجة الأهمية</value></data>
+  <data name="TrainingSourceRuleDocumentClass" xml:space="preserve"><value>فئة الوثيقة</value></data>
+  <data name="TrainingSourceRuleManual" xml:space="preserve"><value>يدوي</value></data>
+  <data name="TrainingSourceRuleImpactAssessment" xml:space="preserve"><value>تقييم الأثر</value></data>
+  <data name="TrainingSourceRuleThirdPartyAgreement" xml:space="preserve"><value>اتفاقية طرف ثالث</value></data>
+  <data name="AssignTraining" xml:space="preserve"><value>إسناد</value></data>
+  <data name="AssignDoesNotCompleteTraining" xml:space="preserve"><value>الإسناد ينشئ التزامًا تدريبيًا. وهو لا يُكمل التدريب ولا يسجل أي دليل.</value></data>
+  <data name="AssignTargetHint" xml:space="preserve"><value>أدخل مستخدمًا أو دورًا أو قسمًا بحسب ما يستهدفه المتطلب.</value></data>
+  <data name="AssignedUser" xml:space="preserve"><value>المستخدم المُسند</value></data>
+  <data name="AssignedRole" xml:space="preserve"><value>الدور المُسند</value></data>
+  <data name="AssignedDepartment" xml:space="preserve"><value>القسم المُسند</value></data>
+  <data name="AssignedTo" xml:space="preserve"><value>مُسند إلى</value></data>
+  <data name="TrainingDueDate" xml:space="preserve"><value>تاريخ الاستحقاق</value></data>
+  <data name="CompleteTraining" xml:space="preserve"><value>إكمال التدريب</value></data>
+  <data name="CompletionEvidence" xml:space="preserve"><value>دليل الإكمال</value></data>
+  <data name="CompletionDoesNotMarkEffective" xml:space="preserve"><value>أفهم أن هذا يسجل دليل إكمال التدريب فقط — فهو لا يجعل الوثيقة سارية ولا يجتاز بوابة الإصدار 5.</value></data>
+  <data name="RecordEffectiveness" xml:space="preserve"><value>تسجيل الفعالية</value></data>
+  <data name="EffectivenessEvidence" xml:space="preserve"><value>دليل الفعالية</value></data>
+  <data name="RestrictTraining" xml:space="preserve"><value>تقييد</value></data>
+  <data name="RestrictionStatus" xml:space="preserve"><value>التقييد</value></data>
+  <data name="Restricted" xml:space="preserve"><value>مقيّد</value></data>
+  <data name="NotRestricted" xml:space="preserve"><value>غير مقيّد</value></data>
+  <data name="RestrictionDoesNotDelete" xml:space="preserve"><value>التقييد ضابط للوصول والجاهزية وليس حذفًا. يُحتفظ بالإسناد ويبقى ظاهرًا في سجل التدقيق.</value></data>
+  <data name="RequiredCount" xml:space="preserve"><value>مطلوب</value></data>
+  <data name="AssignedCount" xml:space="preserve"><value>مُسند</value></data>
+  <data name="RestrictedCount" xml:space="preserve"><value>مقيّد</value></data>
+  <data name="EffectivenessPendingCount" xml:space="preserve"><value>الفعالية قيد الانتظار</value></data>
+  <data name="TrainingReady" xml:space="preserve"><value>جاهز</value></data>
+  <data name="TrainingBlocked" xml:space="preserve"><value>محجوب</value></data>
+  <data name="TrainingMatrixMissing" xml:space="preserve"><value>لم يتم احتساب مصفوفة تدريب لهذه الوثيقة</value></data>
+  <data name="MissingTrainingAssignments" xml:space="preserve"><value>إسنادات ناقصة</value></data>
+  <data name="TrainingAssignmentMissing" xml:space="preserve"><value>لم يتم العثور على إسناد التدريب</value></data>
+  <data name="TrainingCompletionRequired" xml:space="preserve"><value>يلزم إكمال التدريب أولاً</value></data>
+  <data name="TrainingEffectivenessRequired" xml:space="preserve"><value>مطلوب التحقق من الفعالية</value></data>
+  <data name="TrainingEffectivenessFailed" xml:space="preserve"><value>فشل التحقق من الفعالية</value></data>
+  <data name="TrainingRestrictionRequired" xml:space="preserve"><value>يلزم تقييد رسمي للمستخدمين غير المدربين</value></data>
+  <data name="InvalidTrainingStatus" xml:space="preserve"><value>هذا الإجراء غير صالح لحالة التدريب الحالية</value></data>
+  <data name="TrainingResolveSucceeded" xml:space="preserve"><value>تم احتساب مصفوفة التدريب</value></data>
+  <data name="TrainingResolveFailed" xml:space="preserve"><value>تعذر احتساب مصفوفة التدريب</value></data>
+  <data name="TrainingAssignSucceeded" xml:space="preserve"><value>تم إسناد التدريب</value></data>
+  <data name="TrainingAssignFailed" xml:space="preserve"><value>تعذر إسناد التدريب</value></data>
+  <data name="TrainingCompleteSucceeded" xml:space="preserve"><value>تم تسجيل إكمال التدريب</value></data>
+  <data name="TrainingCompleteFailed" xml:space="preserve"><value>تعذر تسجيل إكمال التدريب</value></data>
+  <data name="TrainingEffectivenessSucceeded" xml:space="preserve"><value>تم تسجيل الفعالية</value></data>
+  <data name="TrainingEffectivenessFailedMessage" xml:space="preserve"><value>تعذر تسجيل نتيجة الفعالية</value></data>
+  <data name="TrainingRestrictSucceeded" xml:space="preserve"><value>تم تسجيل التقييد</value></data>
+  <data name="TrainingRestrictFailed" xml:space="preserve"><value>تعذر تسجيل التقييد</value></data>
+  <data name="RefreshTraining" xml:space="preserve"><value>تحديث</value></data>
+  <data name="RepositoryTabTitle" xml:space="preserve"><value>المستودع والنسخ</value></data>
+  <data name="RepositorySummary" xml:space="preserve"><value>تقييم المستودع والنسخ الخاضعة للرقابة</value></data>
+  <data name="RefreshRepository" xml:space="preserve"><value>تحديث</value></data>
+  <data name="RepositoryAssessment" xml:space="preserve"><value>تقييم المستودع</value></data>
+  <data name="RepositoryAssessments" xml:space="preserve"><value>تقييمات المستودعات</value></data>
+  <data name="NoRepositoryAssessmentsFound" xml:space="preserve"><value>لم يُسجَّل أي تقييم للمستودعات بعد</value></data>
+  <data name="RepositoryName" xml:space="preserve"><value>اسم المستودع</value></data>
+  <data name="RepositoryStatus" xml:space="preserve"><value>حالة التقييم</value></data>
+  <data name="RepositoryStatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="RepositoryStatusUnderReview" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="RepositoryStatusApproved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="RepositoryStatusRejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="RepositoryStatusExpired" xml:space="preserve"><value>منتهي الصلاحية</value></data>
+  <data name="RepositoryStatusSuperseded" xml:space="preserve"><value>مستبدل</value></data>
+  <data name="RepositoryTypeValidatedDms" xml:space="preserve"><value>نظام DMS مؤهل</value></data>
+  <data name="RepositoryTypeApprovedInterimRepository" xml:space="preserve"><value>مستودع مؤقت معتمد</value></data>
+  <data name="RepositoryTypeSeparateApprovalMechanism" xml:space="preserve"><value>آلية اعتماد منفصلة</value></data>
+  <data name="RepositoryTypeUnapprovedRepository" xml:space="preserve"><value>مستودع غير معتمد</value></data>
+  <data name="LinkedRepository" xml:space="preserve"><value>المستودع المرتبط</value></data>
+  <data name="NoRepositoryLinked" xml:space="preserve"><value>لا يوجد تقييم مستودع مرتبط بهذه الوثيقة</value></data>
+  <data name="NotLinked" xml:space="preserve"><value>غير مرتبط</value></data>
+  <data name="LinkRepository" xml:space="preserve"><value>ربط المستودع</value></data>
+  <data name="LinkDoesNotApproveRepository" xml:space="preserve"><value>الربط يوجّه هذه الوثيقة إلى تقييم قائم. وهو لا يعتمد المستودع ولا يغيّر تصنيفه.</value></data>
+  <data name="ReleaseGateRepositoryNote" xml:space="preserve"><value>تستخدم بوابة الإصدار 2 تصنيف المستودع هذا. تعرض هذه الشاشة التقييم وتسجله؛ وهي لا تجتاز البوابة ولا تجعل الوثيقة سارية.</value></data>
+  <data name="NoComplianceClaim" xml:space="preserve"><value>لا ادعاء بالامتثال</value></data>
+  <data name="NoValidatedDmsClaim" xml:space="preserve"><value>تصنّف هذه الشاشة المستودع وفق حدود الإجراء. وهي لا تدّعي التحقق من صحة النظام ولا الامتثال للتوقيع الإلكتروني ولا أي إثبات لشهادة.</value></data>
+  <data name="InterimRepositoryWarning" xml:space="preserve"><value>المستودع المؤقت المعتمد ليس نظام DMS مؤهلاً. لا يمكن تقديمه كامتثال للتوقيع الإلكتروني المنظم ويخضع لنقطة تحقق محددة زمنياً.</value></data>
+  <data name="BoundaryStatement" xml:space="preserve"><value>بيان الحدود</value></data>
+  <data name="EvaluateToSeeBoundary" xml:space="preserve"><value>قم بتقييم لعرض بيان الحدود</value></data>
+  <data name="CanSupportReleaseGate" xml:space="preserve"><value>يمكنه دعم بوابة الإصدار</value></data>
+  <data name="CanSupportRegulatedESignature" xml:space="preserve"><value>يمكنه دعم التوقيع الإلكتروني المنظم</value></data>
+  <data name="RepositoryLocation" xml:space="preserve"><value>الموقع</value></data>
+  <data name="RepositoryOwner" xml:space="preserve"><value>المالك</value></data>
+  <data name="AccessControlModel" xml:space="preserve"><value>نموذج التحكم في الوصول</value></data>
+  <data name="BackupRestorePlan" xml:space="preserve"><value>خطة النسخ الاحتياطي والاستعادة</value></data>
+  <data name="ApprovalMechanism" xml:space="preserve"><value>آلية الاعتماد</value></data>
+  <data name="EffectiveCopyControl" xml:space="preserve"><value>التحكم في النسخة السارية</value></data>
+  <data name="AuditTrail" xml:space="preserve"><value>سجل التدقيق</value></data>
+  <data name="ChangeControl" xml:space="preserve"><value>ضبط التغيير</value></data>
+  <data name="ValidationEvidence" xml:space="preserve"><value>دليل التأهيل</value></data>
+  <data name="CriticalFindings" xml:space="preserve"><value>الملاحظات الحرجة</value></data>
+  <data name="RepositoryFindings" xml:space="preserve"><value>ملاحظات المستودع</value></data>
+  <data name="NoRepositoryFindingsFound" xml:space="preserve"><value>لم تُسجَّل ملاحظات للمستودع</value></data>
+  <data name="EvaluateRepository" xml:space="preserve"><value>تقييم</value></data>
+  <data name="ApproveRepository" xml:space="preserve"><value>اعتماد</value></data>
+  <data name="RejectRepository" xml:space="preserve"><value>رفض</value></data>
+  <data name="ApproveDoesNotClaimValidation" xml:space="preserve"><value>الاعتماد يسجل قرار حوكمة بشأن هذا المستودع. وهو لا يؤكد تأهيل النظام ولا الامتثال للتوقيع الإلكتروني.</value></data>
+  <data name="RejectRepositoryNote" xml:space="preserve"><value>الرفض يسجل قرار حوكمة. السبب إلزامي ويُحفظ في سجل التدقيق.</value></data>
+  <data name="RepositoryApproverRoleHint" xml:space="preserve"><value>يسمح البند §11.2 فقط لمدير الجودة أو نائبه أو مالك تقنية المعلومات باعتماد تقييم المستودع.</value></data>
+  <data name="ApprovedByRole" xml:space="preserve"><value>الدور المعتمد</value></data>
+  <data name="ValidUntil" xml:space="preserve"><value>صالح حتى</value></data>
+  <data name="ApprovedRepositoryAvailable" xml:space="preserve"><value>مستودع معتمد</value></data>
+  <data name="RepositoryEvaluateSucceeded" xml:space="preserve"><value>تم تقييم المستودع</value></data>
+  <data name="RepositoryEvaluateFailed" xml:space="preserve"><value>تعذر تقييم المستودع</value></data>
+  <data name="RepositoryApproveSucceeded" xml:space="preserve"><value>تم اعتماد تقييم المستودع</value></data>
+  <data name="RepositoryApproveFailed" xml:space="preserve"><value>تعذر اعتماد التقييم</value></data>
+  <data name="RepositoryRejectSucceeded" xml:space="preserve"><value>تم رفض تقييم المستودع</value></data>
+  <data name="RepositoryLinkSucceeded" xml:space="preserve"><value>تم ربط المستودع</value></data>
+  <data name="RepositoryLinkFailed" xml:space="preserve"><value>تعذر ربط المستودع</value></data>
+  <data name="RepositoryAssessmentNotFound" xml:space="preserve"><value>لم يتم العثور على تقييم المستودع</value></data>
+  <data name="RepositoryNameAndTypeRequired" xml:space="preserve"><value>اسم المستودع ونوعه مطلوبان</value></data>
+  <data name="RepositoryRequiredFieldsMissing" xml:space="preserve"><value>حقول التقييم الإلزامية ناقصة</value></data>
+  <data name="RepositoryAlreadyDecided" xml:space="preserve"><value>تم البت في هذا التقييم بالفعل</value></data>
+  <data name="RepositoryApproverRoleInvalid" xml:space="preserve"><value>لا يجوز لهذا الدور اعتماد تقييم المستودع</value></data>
+  <data name="RepositoryLinkStatusInvalid" xml:space="preserve"><value>هذا التقييم ليس في حالة تسمح بالربط</value></data>
+  <data name="RepositoryBoundaryBlocked" xml:space="preserve"><value>حدود المستودع تمنع هذا الإجراء</value></data>
+  <data name="UnapprovedRepositoryError" xml:space="preserve"><value>هذا المستودع غير معتمد</value></data>
+  <data name="ValidatedDmsEvidenceRequired" xml:space="preserve"><value>يلزم دليل تأهيل نظام DMS</value></data>
+  <data name="InterimRepositoryLimitation" xml:space="preserve"><value>ينطبق قيد المستودع المؤقت</value></data>
+  <data name="ControlledCopies" xml:space="preserve"><value>النسخ الخاضعة للرقابة</value></data>
+  <data name="ControlledCopy" xml:space="preserve"><value>نسخة خاضعة للرقابة</value></data>
+  <data name="ControlledCopyLog" xml:space="preserve"><value>سجل النسخ الخاضعة للرقابة</value></data>
+  <data name="NoControlledCopiesFound" xml:space="preserve"><value>لم تُسجَّل نسخ خاضعة للرقابة</value></data>
+  <data name="NoControlledCopyDataYet" xml:space="preserve"><value>لم تُسجَّل بعد أي نسخة خاضعة للرقابة لهذه الوثيقة.</value></data>
+  <data name="CopyWithdrawalReady" xml:space="preserve"><value>اكتمل سحب النسخ لهذه الوثيقة.</value></data>
+  <data name="ReleaseGateCopyNote" xml:space="preserve"><value>تستخدم بوابة الإصدار 6 جاهزية سحب النسخ هذه. تعرض هذه الشاشة أدلة النسخ وتسجلها؛ وهي لا تجتاز البوابة ولا تجعل الوثيقة سارية.</value></data>
+  <data name="CopyNumber" xml:space="preserve"><value>رقم النسخة</value></data>
+  <data name="CopyType" xml:space="preserve"><value>نوع النسخة</value></data>
+  <data name="CopyTypeDigitalEffectiveCopy" xml:space="preserve"><value>نسخة رقمية سارية</value></data>
+  <data name="CopyTypeDigitalControlledCopy" xml:space="preserve"><value>نسخة رقمية خاضعة للرقابة</value></data>
+  <data name="CopyTypePrintedControlledCopy" xml:space="preserve"><value>نسخة مطبوعة خاضعة للرقابة</value></data>
+  <data name="CopyTypeTrainingCopy" xml:space="preserve"><value>نسخة تدريبية</value></data>
+  <data name="CopyTypeReferenceCopy" xml:space="preserve"><value>نسخة مرجعية</value></data>
+  <data name="CopyTypeExternalSharedCopy" xml:space="preserve"><value>نسخة مشتركة خارجية</value></data>
+  <data name="CopyTypeTemporaryControlledIssue" xml:space="preserve"><value>إصدار مؤقت خاضع للرقابة</value></data>
+  <data name="CopyStatus" xml:space="preserve"><value>حالة النسخة</value></data>
+  <data name="CopyStatusActive" xml:space="preserve"><value>نشطة</value></data>
+  <data name="CopyStatusPendingWithdrawal" xml:space="preserve"><value>بانتظار السحب</value></data>
+  <data name="CopyStatusWithdrawn" xml:space="preserve"><value>مسحوبة</value></data>
+  <data name="CopyStatusReconciled" xml:space="preserve"><value>مُسوّاة</value></data>
+  <data name="CopyStatusMissing" xml:space="preserve"><value>مفقودة</value></data>
+  <data name="CopyStatusObsolete" xml:space="preserve"><value>ملغاة</value></data>
+  <data name="CopyStatusDestroyed" xml:space="preserve"><value>مُتلَفة</value></data>
+  <data name="Holder" xml:space="preserve"><value>الحائز</value></data>
+  <data name="HolderRole" xml:space="preserve"><value>دور الحائز</value></data>
+  <data name="HolderDepartment" xml:space="preserve"><value>قسم الحائز</value></data>
+  <data name="HolderOrLocationRequiredHint" xml:space="preserve"><value>أدخل حائزًا أو موقعًا — يتطلب الخادم أحدهما على الأقل.</value></data>
+  <data name="HolderOrLocationRequired" xml:space="preserve"><value>يلزم تحديد حائز أو موقع</value></data>
+  <data name="CopyLocation" xml:space="preserve"><value>الموقع</value></data>
+  <data name="IssuedAt" xml:space="preserve"><value>تاريخ الإصدار</value></data>
+  <data name="RegisterCopy" xml:space="preserve"><value>تسجيل نسخة</value></data>
+  <data name="IssueDoesNotMarkEffective" xml:space="preserve"><value>تسجيل نسخة خاضعة للرقابة يدرجها في السجل. وهو لا يجعل الوثيقة سارية ولا يجتاز أي بوابة إصدار.</value></data>
+  <data name="WithdrawCopy" xml:space="preserve"><value>سحب</value></data>
+  <data name="WithdrawalDoesNotDelete" xml:space="preserve"><value>السحب يغيّر حالة النسخة ويبقي صف السجل. لا يُحذف شيء وتبقى النسخة ظاهرة في السجل.</value></data>
+  <data name="ReconcileCopy" xml:space="preserve"><value>تسوية</value></data>
+  <data name="ReconcileDoesNotDelete" xml:space="preserve"><value>التسوية تسجل أن هذه النسخة تمت مطابقتها. ولا تحذف سجل النسخة.</value></data>
+  <data name="MarkCopyMissing" xml:space="preserve"><value>وضع علامة مفقودة</value></data>
+  <data name="MarkMissingDoesNotDelete" xml:space="preserve"><value>وضع علامة مفقودة يسجل الواقعة للتسوية. يُحتفظ بسجل النسخة وقد يستلزم انحرافًا.</value></data>
+  <data name="MarkCopyObsolete" xml:space="preserve"><value>وضع علامة ملغاة</value></data>
+  <data name="MarkObsoleteDoesNotDelete" xml:space="preserve"><value>وضع علامة ملغاة ينشئ ملاحظة تسوية. يُحتفظ بسجل النسخة.</value></data>
+  <data name="ObsoleteReason" xml:space="preserve"><value>سبب الإلغاء</value></data>
+  <data name="WithdrawnAt" xml:space="preserve"><value>تاريخ السحب</value></data>
+  <data name="ReconciledAt" xml:space="preserve"><value>تاريخ التسوية</value></data>
+  <data name="ActiveCopies" xml:space="preserve"><value>النسخ النشطة</value></data>
+  <data name="PendingWithdrawal" xml:space="preserve"><value>بانتظار السحب</value></data>
+  <data name="WithdrawnCopies" xml:space="preserve"><value>المسحوبة</value></data>
+  <data name="CopyRegisterSucceeded" xml:space="preserve"><value>تم تسجيل النسخة</value></data>
+  <data name="CopyWithdrawSucceeded" xml:space="preserve"><value>تم سحب النسخة</value></data>
+  <data name="CopyReconcileSucceeded" xml:space="preserve"><value>تمت تسوية النسخة</value></data>
+  <data name="CopyMarkMissingSucceeded" xml:space="preserve"><value>تم وضع علامة مفقودة</value></data>
+  <data name="CopyMarkObsoleteSucceeded" xml:space="preserve"><value>تم وضع علامة ملغاة</value></data>
+  <data name="ControlledCopyNotFound" xml:space="preserve"><value>لم يتم العثور على النسخة</value></data>
+  <data name="CopyNotEligible" xml:space="preserve"><value>هذه النسخة ليست في حالة تسمح بالإجراء</value></data>
+  <data name="DuplicateCopyNumber" xml:space="preserve"><value>رقم النسخة هذا مستخدم بالفعل</value></data>
+  <data name="CopyAlreadyWithdrawn" xml:space="preserve"><value>تم سحب هذه النسخة بالفعل</value></data>
+  <data name="CopyReconciliationRequired" xml:space="preserve"><value>مطلوب تسوية النسخ</value></data>
+  <data name="ControlledCopyWithdrawalRequired" xml:space="preserve"><value>سحب النسخ غير مكتمل</value></data>
+  <data name="WithdrawalPlans" xml:space="preserve"><value>خطط السحب</value></data>
+  <data name="WithdrawalPlan" xml:space="preserve"><value>خطة السحب</value></data>
+  <data name="NoWithdrawalPlansFound" xml:space="preserve"><value>لم تُنشأ خطة سحب</value></data>
+  <data name="GenerateWithdrawalPlan" xml:space="preserve"><value>إنشاء خطة</value></data>
+  <data name="CompleteWithdrawalPlan" xml:space="preserve"><value>إكمال الخطة</value></data>
+  <data name="PlanCompleteNote" xml:space="preserve"><value>إكمال الخطة يسجل انتهاء السحب. وقد تستلزم النسخة المفقودة مرجع انحراف.</value></data>
+  <data name="PlanStatus" xml:space="preserve"><value>حالة الخطة</value></data>
+  <data name="PlanStatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="PlanStatusActive" xml:space="preserve"><value>نشطة</value></data>
+  <data name="PlanStatusCompleted" xml:space="preserve"><value>مكتملة</value></data>
+  <data name="PlanStatusBlocked" xml:space="preserve"><value>محجوبة</value></data>
+  <data name="PlanStatusCancelled" xml:space="preserve"><value>ملغاة</value></data>
+  <data name="TriggerType" xml:space="preserve"><value>المُطلِق</value></data>
+  <data name="RequiredCopies" xml:space="preserve"><value>مطلوبة</value></data>
+  <data name="WithdrawnCopiesCount" xml:space="preserve"><value>مسحوبة</value></data>
+  <data name="MissingCopies" xml:space="preserve"><value>مفقودة</value></data>
+  <data name="PlanGenerateSucceeded" xml:space="preserve"><value>تم إنشاء خطة السحب</value></data>
+  <data name="PlanCompleteSucceeded" xml:space="preserve"><value>تم إكمال خطة السحب</value></data>
+  <data name="PlanIncomplete" xml:space="preserve"><value>خطة السحب غير مكتملة</value></data>
+  <data name="WithdrawalPlanNotFound" xml:space="preserve"><value>لم يتم العثور على خطة السحب</value></data>
+  <data name="ObsoleteCopyFindings" xml:space="preserve"><value>ملاحظات النسخ الملغاة</value></data>
+  <data name="NoObsoleteFindingsFound" xml:space="preserve"><value>لا توجد ملاحظات للنسخ الملغاة</value></data>
+  <data name="EvaluateReconciliation" xml:space="preserve"><value>تقييم التسوية</value></data>
+  <data name="ReconciliationEvaluateSucceeded" xml:space="preserve"><value>تم تقييم التسوية</value></data>
+  <data name="ResolveFinding" xml:space="preserve"><value>معالجة</value></data>
+  <data name="ResolveFindingDoesNotDelete" xml:space="preserve"><value>المعالجة تسجل كيفية معالجة الملاحظة. ولا تحذف الملاحظة ولا سجل النسخة.</value></data>
+  <data name="FindingResolveSucceeded" xml:space="preserve"><value>تمت معالجة الملاحظة</value></data>
+  <data name="FindingNotFound" xml:space="preserve"><value>لم يتم العثور على الملاحظة</value></data>
+  <data name="ObsoleteCopyFindingOpen" xml:space="preserve"><value>توجد ملاحظة نسخة ملغاة مفتوحة</value></data>
+  <data name="FindingStatusOpen" xml:space="preserve"><value>مفتوحة</value></data>
+  <data name="FindingStatusAcknowledged" xml:space="preserve"><value>مُقرَّة</value></data>
+  <data name="FindingStatusResolved" xml:space="preserve"><value>مُعالَجة</value></data>
+  <data name="FindingStatusClosed" xml:space="preserve"><value>مغلقة</value></data>
+  <data name="SeverityCritical" xml:space="preserve"><value>حرجة</value></data>
+  <data name="SeverityMajor" xml:space="preserve"><value>رئيسية</value></data>
+  <data name="SeverityMinor" xml:space="preserve"><value>طفيفة</value></data>
+  <data name="CriticalFinding" xml:space="preserve"><value>الملاحظات الحرجة</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="DeviationReference" xml:space="preserve"><value>مرجع الانحراف</value></data>
+  <data name="DeviationReferenceHint" xml:space="preserve"><value>مرجع لانحراف أو حدث جودة مسجل في مكان آخر. هذه الشاشة ليست وحدة CAPA.</value></data>
+  <data name="DeviationRequired" xml:space="preserve"><value>مرجع الانحراف مطلوب</value></data>
+  <data name="RetentionTabTitle" xml:space="preserve">
+    <value>الاحتفاظ</value>
+  </data>
+  <data name="SignaturesTabTitle" xml:space="preserve">
+    <value>التوقيعات</value>
+  </data>
+  <data name="QualityEventsTabTitle" xml:space="preserve">
+    <value>أحداث الجودة</value>
+  </data>
+  <data name="RetentionSummary" xml:space="preserve">
+    <value>ملخص الاحتفاظ</value>
+  </data>
+  <data name="RetentionSchedule" xml:space="preserve">
+    <value>جدول الاحتفاظ</value>
+  </data>
+  <data name="RetentionPolicyKey" xml:space="preserve">
+    <value>سياسة الاحتفاظ</value>
+  </data>
+  <data name="RetentionTriggerDate" xml:space="preserve">
+    <value>تاريخ التفعيل</value>
+  </data>
+  <data name="RetentionDueDate" xml:space="preserve">
+    <value>تاريخ استحقاق الاحتفاظ</value>
+  </data>
+  <data name="RetentionEligibilityDate" xml:space="preserve">
+    <value>تاريخ الأهلية</value>
+  </data>
+  <data name="RetentionPermanent" xml:space="preserve">
+    <value>احتفاظ دائم</value>
+  </data>
+  <data name="RetentionActiveHolds" xml:space="preserve">
+    <value>الحجوزات القانونية النشطة</value>
+  </data>
+  <data name="DispositionReadiness" xml:space="preserve">
+    <value>جاهزية التصرف</value>
+  </data>
+  <data name="DispositionStatus" xml:space="preserve">
+    <value>حالة التصرف</value>
+  </data>
+  <data name="DispositionEligible" xml:space="preserve">
+    <value>مؤهل</value>
+  </data>
+  <data name="DispositionNotEligible" xml:space="preserve">
+    <value>غير مؤهل</value>
+  </data>
+  <data name="DispositionBlocked" xml:space="preserve">
+    <value>التصرف محظور</value>
+  </data>
+  <data name="LegalHold" xml:space="preserve">
+    <value>حجز قانوني</value>
+  </data>
+  <data name="LegalHolds" xml:space="preserve">
+    <value>الحجوزات القانونية</value>
+  </data>
+  <data name="LegalHoldActive" xml:space="preserve">
+    <value>الحجز القانوني نشط</value>
+  </data>
+  <data name="LegalHoldNotFound" xml:space="preserve">
+    <value>لم يُعثر على الحجز القانوني.</value>
+  </data>
+  <data name="LegalHoldNotActive" xml:space="preserve">
+    <value>الحجز القانوني غير نشط.</value>
+  </data>
+  <data name="HoldTitle" xml:space="preserve">
+    <value>عنوان الحجز</value>
+  </data>
+  <data name="HoldStatus" xml:space="preserve">
+    <value>حالة الحجز</value>
+  </data>
+  <data name="HoldReason" xml:space="preserve">
+    <value>سبب الحجز</value>
+  </data>
+  <data name="ReleasedAt" xml:space="preserve">
+    <value>تم الرفع في</value>
+  </data>
+  <data name="LegalCaseReference" xml:space="preserve">
+    <value>مرجع قانوني / قضية</value>
+  </data>
+  <data name="HoldReleaseApprovalRequired" xml:space="preserve">
+    <value>يلزم كل من الموافقة القانونية وموافقة GQD لرفع الحجز.</value>
+  </data>
+  <data name="LegalHoldBlocksDisposition" xml:space="preserve">
+    <value>يمنع الحجز القانوني النشط التصرف.</value>
+  </data>
+  <data name="ReleaseHoldDoesNotDispose" xml:space="preserve">
+    <value>رفع الحجز القانوني لا يتصرف في المستند.</value>
+  </data>
+  <data name="NoDispositionOverride" xml:space="preserve">
+    <value>لا تتجاوز هذه الشاشة أبدًا حظر التصرف.</value>
+  </data>
+  <data name="NoRetentionScheduleFound" xml:space="preserve">
+    <value>لم يُقيَّم بعد أي جدول احتفاظ لهذا السجل.</value>
+  </data>
+  <data name="NoLegalHoldsFound" xml:space="preserve">
+    <value>لا توجد حجوزات قانونية تؤثر على هذا السجل.</value>
+  </data>
+  <data name="EvaluateRetention" xml:space="preserve">
+    <value>تقييم الاحتفاظ</value>
+  </data>
+  <data name="RetentionEvaluateSucceeded" xml:space="preserve">
+    <value>تم تقييم الاحتفاظ.</value>
+  </data>
+  <data name="RetentionEvaluateFailed" xml:space="preserve">
+    <value>فشل تقييم الاحتفاظ.</value>
+  </data>
+  <data name="LastEvaluatedAt" xml:space="preserve">
+    <value>آخر تقييم</value>
+  </data>
+  <data name="EvaluationStatus" xml:space="preserve">
+    <value>حالة التقييم</value>
+  </data>
+  <data name="EvaluationNote" xml:space="preserve">
+    <value>ملاحظة التقييم</value>
+  </data>
+  <data name="DispositionRequestsTitle" xml:space="preserve">
+    <value>طلبات التصرف</value>
+  </data>
+  <data name="DispositionRequestNumber" xml:space="preserve">
+    <value>رقم الطلب</value>
+  </data>
+  <data name="EligibilityResult" xml:space="preserve">
+    <value>نتيجة الأهلية</value>
+  </data>
+  <data name="RequestedAt" xml:space="preserve">
+    <value>طُلب في</value>
+  </data>
+  <data name="ExecutedAt" xml:space="preserve">
+    <value>نُفّذ في</value>
+  </data>
+  <data name="NoDispositionRequestsForEntry" xml:space="preserve">
+    <value>لا توجد طلبات تصرف لهذا السجل.</value>
+  </data>
+  <data name="SignatureSummary" xml:space="preserve">
+    <value>ملخص التوقيعات</value>
+  </data>
+  <data name="SignaturePolicy" xml:space="preserve">
+    <value>اسم السياسة</value>
+  </data>
+  <data name="SignaturePolicies" xml:space="preserve">
+    <value>سياسات التوقيع</value>
+  </data>
+  <data name="SignaturePolicyCount" xml:space="preserve">
+    <value>سياسات التوقيع</value>
+  </data>
+  <data name="SignatureSubjectType" xml:space="preserve">
+    <value>نوع الموضوع</value>
+  </data>
+  <data name="SignatureMeaning" xml:space="preserve">
+    <value>معنى التوقيع</value>
+  </data>
+  <data name="SignatureRequests" xml:space="preserve">
+    <value>طلبات التوقيع</value>
+  </data>
+  <data name="SignatureRequestNumber" xml:space="preserve">
+    <value>رقم الطلب</value>
+  </data>
+  <data name="SignatureRecords" xml:space="preserve">
+    <value>سجلات التوقيع</value>
+  </data>
+  <data name="SignatureFingerprint" xml:space="preserve">
+    <value>البصمة</value>
+  </data>
+  <data name="SignerRole" xml:space="preserve">
+    <value>دور الموقّع</value>
+  </data>
+  <data name="SignerUser" xml:space="preserve">
+    <value>الموقّع</value>
+  </data>
+  <data name="SignedAt" xml:space="preserve">
+    <value>وُقّع في</value>
+  </data>
+  <data name="SignatureDueDate" xml:space="preserve">
+    <value>تاريخ الاستحقاق</value>
+  </data>
+  <data name="ReAuthenticationRequired" xml:space="preserve">
+    <value>إعادة المصادقة</value>
+  </data>
+  <data name="TwoFactorRequired" xml:space="preserve">
+    <value>عاملان</value>
+  </data>
+  <data name="TwoFactorNotImplemented" xml:space="preserve">
+    <value>لم يُطبَّق التحقق بخطوتين</value>
+  </data>
+  <data name="VerifySignature" xml:space="preserve">
+    <value>تحقّق</value>
+  </data>
+  <data name="FingerprintValid" xml:space="preserve">
+    <value>البصمة صالحة — تم تأكيد سلامة الكائن.</value>
+  </data>
+  <data name="FingerprintInvalid" xml:space="preserve">
+    <value>عدم تطابق البصمة — تغيّر الكائن الموقّع.</value>
+  </data>
+  <data name="FingerprintMismatch" xml:space="preserve">
+    <value>عدم تطابق البصمة.</value>
+  </data>
+  <data name="SubjectNotSignable" xml:space="preserve">
+    <value>الموضوع غير قابل للتوقيع.</value>
+  </data>
+  <data name="AuthenticationContextRequired" xml:space="preserve">
+    <value>سياق المصادقة مطلوب.</value>
+  </data>
+  <data name="DuplicateSignature" xml:space="preserve">
+    <value>يوجد توقيع بالفعل لهذا الطلب.</value>
+  </data>
+  <data name="SignatureNotAllowed" xml:space="preserve">
+    <value>التوقيع غير مسموح هنا.</value>
+  </data>
+  <data name="SignaturePolicyNotFound" xml:space="preserve">
+    <value>لم يُعثر على سياسة التوقيع.</value>
+  </data>
+  <data name="SignatureRequestNotFound" xml:space="preserve">
+    <value>لم يُعثر على طلب التوقيع.</value>
+  </data>
+  <data name="SignatureNotFound" xml:space="preserve">
+    <value>لم يُعثر على التوقيع.</value>
+  </data>
+  <data name="MetadataFingerprintOnly" xml:space="preserve">
+    <value>تتحقق هذه الشاشة فقط من ارتباط بصمة بيانات وصفية مخزّنة.</value>
+  </data>
+  <data name="NoESignComplianceClaim" xml:space="preserve">
+    <value>ليست قدرة توقيع إلكتروني منظمة ولا تدّعي الامتثال لـ 21 CFR Part 11 / الملحق 11.</value>
+  </data>
+  <data name="NoCertificateValidationClaim" xml:space="preserve">
+    <value>لا يُستدعى أي مزوّد خارجي ولا يُتحقق من سلسلة الشهادات.</value>
+  </data>
+  <data name="OpenSignatureRequests" xml:space="preserve">
+    <value>الطلبات المفتوحة</value>
+  </data>
+  <data name="CompletedSignatures" xml:space="preserve">
+    <value>التوقيعات المكتملة</value>
+  </data>
+  <data name="InvalidVerifications" xml:space="preserve">
+    <value>غير صالح / إعادة توقيع</value>
+  </data>
+  <data name="NoSignaturePoliciesFound" xml:space="preserve">
+    <value>لم يُعثر على سياسات توقيع.</value>
+  </data>
+  <data name="NoSignatureRequestsFound" xml:space="preserve">
+    <value>لا توجد طلبات توقيع لهذا السجل.</value>
+  </data>
+  <data name="NoSignatureRecordsFound" xml:space="preserve">
+    <value>لا توجد سجلات توقيع لهذا السجل.</value>
+  </data>
+  <data name="QualityEventSummary" xml:space="preserve">
+    <value>ملخص أحداث الجودة</value>
+  </data>
+  <data name="QualityEventLinks" xml:space="preserve">
+    <value>روابط أحداث الجودة</value>
+  </data>
+  <data name="LinkedQualityEventsCount" xml:space="preserve">
+    <value>الأحداث المرتبطة</value>
+  </data>
+  <data name="EventType" xml:space="preserve">
+    <value>نوع الحدث</value>
+  </data>
+  <data name="EventReference" xml:space="preserve">
+    <value>مرجع الحدث</value>
+  </data>
+  <data name="EventSeverity" xml:space="preserve">
+    <value>الخطورة</value>
+  </data>
+  <data name="EventStatus" xml:space="preserve">
+    <value>الحالة</value>
+  </data>
+  <data name="QualityBlockingStatus" xml:space="preserve">
+    <value>يحظر</value>
+  </data>
+  <data name="QualityBlockingYes" xml:space="preserve">
+    <value>يحظر</value>
+  </data>
+  <data name="QualityBlockingNo" xml:space="preserve">
+    <value>لا يحظر</value>
+  </data>
+  <data name="DetectedAt" xml:space="preserve">
+    <value>اكتُشف في</value>
+  </data>
+  <data name="ClosedAt" xml:space="preserve">
+    <value>أُغلق في</value>
+  </data>
+  <data name="ReportedBy" xml:space="preserve">
+    <value>أبلغ بواسطة</value>
+  </data>
+  <data name="OpenDeviations" xml:space="preserve">
+    <value>الانحرافات المفتوحة</value>
+  </data>
+  <data name="DeviationStatus" xml:space="preserve">
+    <value>حالة الانحراف</value>
+  </data>
+  <data name="DeviationOpen" xml:space="preserve">
+    <value>يوجد انحراف مفتوح يحظر.</value>
+  </data>
+  <data name="DeviationNotFoundError" xml:space="preserve">
+    <value>لم يُعثر على الانحراف.</value>
+  </data>
+  <data name="OpenCapas" xml:space="preserve">
+    <value>إجراءات CAPA المفتوحة</value>
+  </data>
+  <data name="CapaReference" xml:space="preserve">
+    <value>مرجع CAPA</value>
+  </data>
+  <data name="CapaStatus" xml:space="preserve">
+    <value>حالة CAPA</value>
+  </data>
+  <data name="CapaOpen" xml:space="preserve">
+    <value>يوجد إجراء CAPA مفتوح يحظر.</value>
+  </data>
+  <data name="CapaEffectivenessPending" xml:space="preserve">
+    <value>فعالية CAPA قيد الانتظار.</value>
+  </data>
+  <data name="CapaNotFoundError" xml:space="preserve">
+    <value>لم يُعثر على إجراء CAPA.</value>
+  </data>
+  <data name="CapaDueDate" xml:space="preserve">
+    <value>تاريخ الاستحقاق</value>
+  </data>
+  <data name="ActionOwner" xml:space="preserve">
+    <value>المالك</value>
+  </data>
+  <data name="LinkDoesNotCloseEvent" xml:space="preserve">
+    <value>عرض حدث الجودة هنا لا يُغلقه أو يعدّله.</value>
+  </data>
+  <data name="RefreshDoesNotCloseEvent" xml:space="preserve">
+    <value>التحديث لا يُغلق CAPA أو انحرافًا.</value>
+  </data>
+  <data name="NoExternalQmsCall" xml:space="preserve">
+    <value>لا يُستدعى أي نظام QMS/CAPA خارجي.</value>
+  </data>
+  <data name="NoQualityEventsFound" xml:space="preserve">
+    <value>لا توجد أحداث جودة لهذا السجل.</value>
+  </data>
+  <data name="NoDeviationsFound" xml:space="preserve">
+    <value>لا توجد انحرافات لهذا السجل.</value>
+  </data>
+  <data name="NoCapasFound" xml:space="preserve">
+    <value>لا توجد إجراءات CAPA لهذا السجل.</value>
+  </data>
+  <data name="QualityEventNotFound" xml:space="preserve">
+    <value>لم يُعثر على حدث الجودة.</value>
+  </data>
+  <data name="QualityEventLinkRequired" xml:space="preserve">
+    <value>يلزم رابط حدث جودة.</value>
+  </data>
+  <data name="QualityEventBlocking" xml:space="preserve">
+    <value>يوجد حدث جودة حاجب مفتوح.</value>
+  </data>
+  <data name="QualityEventSourceNotFound" xml:space="preserve">
+    <value>لم يُعثر على مصدر حدث الجودة.</value>
+  </data>
+  <data name="LinkAlreadyExists" xml:space="preserve">
+    <value>هذا الرابط موجود بالفعل.</value>
+  </data>
+  <data name="LinkedControlledDocumentDescription" xml:space="preserve"><value>العلاقة بين سجل الحوكمة والملف الفعلي ذي الإصدارات.</value></data>
+  <data name="ControlledDocumentLoading" xml:space="preserve"><value>جارٍ تحميل المستند الخاضع للرقابة…</value></data>
+  <data name="ControlledDocumentNotLinked" xml:space="preserve"><value>لا يوجد مستند خاضع للرقابة مرتبط</value></data>
+  <data name="ControlledDocumentNotLinkedHint" xml:space="preserve"><value>حدد مستندًا مصرحًا لربط ملفه وسجل إصداراته بهذا السجل.</value></data>
+  <data name="LinkControlledDocument" xml:space="preserve"><value>ربط مستند خاضع للرقابة</value></data>
+  <data name="LinkControlledDocumentHint" xml:space="preserve"><value>تظهر فقط المستندات المسموح لك بعرضها. بعد الربط لا يمكن ربط السجل بمستند آخر.</value></data>
+  <data name="SelectControlledDocument" xml:space="preserve"><value>حدد مستندًا خاضعًا للرقابة</value></data>
+  <data name="OpenControlledDocument" xml:space="preserve"><value>فتح المستند الخاضع للرقابة</value></data>
+  <data name="ViewVersionHistory" xml:space="preserve"><value>سجل الإصدارات</value></data>
+  <data name="ControlledDocumentLinkSucceeded" xml:space="preserve"><value>تم ربط المستند بنجاح.</value></data>
+  <data name="ControlledDocumentListEmpty" xml:space="preserve"><value>لا توجد مستندات مصرح بها متاحة.</value></data>
+  <data name="ControlledDocumentLoadFailed" xml:space="preserve"><value>تعذر تحميل معلومات المستند.</value></data>
+  <data name="ControlledDocumentStatus" xml:space="preserve"><value>الحالة</value></data>
+  <data name="ControlledDocumentFolder" xml:space="preserve"><value>المجلد</value></data>
+  <data name="ControlledDocumentVersion" xml:space="preserve"><value>الإصدار الحالي</value></data>
+  <data name="UnifiedCreateTitle" xml:space="preserve"><value>إنشاء مستند خاضع للرقابة</value></data>
+  <data name="DocumentKind" xml:space="preserve"><value>نوع المستند</value></data>
+  <data name="KindControlledDocument" xml:space="preserve"><value>مستند خاضع للرقابة</value></data>
+  <data name="KindRecord" xml:space="preserve"><value>سجل</value></data>
+  <data name="KindVariant" xml:space="preserve"><value>نسخة متغايرة</value></data>
+  <data name="View" xml:space="preserve"><value>عرض</value></data>
+  <data name="Download" xml:space="preserve"><value>تنزيل</value></data>
+  <data name="VariantDetails" xml:space="preserve"><value>تفاصيل النسخة</value></data>
+  <data name="VariantContentChangeHint" xml:space="preserve"><value>اختر المستند الأصل. يجب أن يختلف محتوى النسخة عن الأصل.</value></data>
+  <data name="VariantType" xml:space="preserve"><value>نوع النسخة</value></data>
+  <data name="VariantTypeTranslation" xml:space="preserve"><value>ترجمة</value></data>
+  <data name="VariantTypeSiteAdoption" xml:space="preserve"><value>اعتماد موقعي</value></data>
+  <data name="CountryCode" xml:space="preserve"><value>رمز الدولة</value></data>
+  <data name="SiteCode" xml:space="preserve"><value>رمز الموقع</value></data>
+  <data name="VariantContentUnchanged" xml:space="preserve"><value>يجب أن يختلف محتوى النسخة عن المستند الأصل. حمّل ملفًا مُعدّلًا.</value></data>
+  <data name="VariantParentNotFound" xml:space="preserve"><value>المستند الأصل الخاضع للرقابة غير موجود.</value></data>
+  <data name="RecordCode" xml:space="preserve"><value>رمز السجل</value></data>
+  <data name="RecordCodeHint" xml:space="preserve"><value>يُنشأ تلقائيًا بتنسيق الرمز القياسي إذا تُرك فارغًا. أدخل قيمة لاستخدام رمزك الخاص.</value></data>
+  <data name="KindHint" xml:space="preserve"><value>المستند الخاضع للرقابة محكوم (دورة حياة، موافقة، بوابات إصدار). أما السجل فيخزّن ملفًا وقيد تسجيل فقط — بلا موافقة أو دورة حياة.</value></data>
+  <data name="CreateAndRegister" xml:space="preserve"><value>إنشاء وتسجيل</value></data>
+  <data name="UnifiedCreatePermissionRequired" xml:space="preserve"><value>لا تملك جميع الأذونات المطلوبة لإنشاء مستند خاضع للرقابة وتسجيله.</value></data>
+  <data name="Tags" xml:space="preserve"><value>الوسوم</value></data>
+  <data name="TagsHint" xml:space="preserve"><value>افصل الوسوم بفواصل</value></data>
+  <data name="InitialFile" xml:space="preserve"><value>الملف الأولي</value></data>
+  <data name="InitialFileHint" xml:space="preserve"><value>يصبح هذا الملف الإصدار الأول من المستند الخاضع للرقابة.</value></data>
+  <data name="RepositoryPlacement" xml:space="preserve"><value>الموقع في المستودع</value></data>
+  <data name="LegalEntityCompany" xml:space="preserve"><value>الكيان القانوني / الشركة</value></data>
+  <data name="RegistrationOperation" xml:space="preserve"><value>عملية التسجيل</value></data>
+  <data name="RetryRegistration" xml:space="preserve"><value>إعادة محاولة التسجيل</value></data>
+  <data name="RegistrationCompleted" xml:space="preserve"><value>تم إنشاء المستند الخاضع للرقابة وسجل السجل الرئيسي وربطهما.</value></data>
+  <data name="RegistrationIncomplete" xml:space="preserve"><value>لم يكتمل التسجيل. راجع حالة العملية قبل إعادة المحاولة.</value></data>
+  <data name="RegistrationRetryStarted" xml:space="preserve"><value>تمت معالجة إعادة المحاولة، لكن التسجيل لم يكتمل بعد.</value></data>
+  <data name="OperationId" xml:space="preserve"><value>معرّف العملية</value></data>
+  <data name="CorrelationId" xml:space="preserve"><value>معرّف الارتباط</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>اختر</value></data>
+  <data name="NoFolders" xml:space="preserve"><value>لم يتم العثور على مجلدات يمكن الوصول إليها.</value></data>
+  <data name="NewControlledDocument" xml:space="preserve"><value>مستند جديد</value></data>
+  <data name="RegistrationSuccessRequiresCompleteRelationship" xml:space="preserve"><value>لا يظهر النجاح إلا بعد اكتمال السجل والمستند والإصدار الأول والرابط جميعًا.</value></data>
+  <data name="RegistrationDoesNotAllocateIdentifiers" xml:space="preserve"><value>لا يتم تخصيص UID أو رمز المستند هنا. استخدم علامة تبويب المعرّفات بعد الإنشاء.</value></data>
+  <data name="RegistrationDoesNotApproveReleaseSignOrEffective" xml:space="preserve"><value>لا يعتمد هذا الإجراء المستند أو يوقّعه أو ينشره أو يجعله نافذًا.</value></data>
+  <data name="DocumentScope" xml:space="preserve"><value>نطاق المستند</value></data>
+  <data name="DocumentScopeCompany" xml:space="preserve"><value>الشركة</value></data>
+  <data name="DocumentScopeCorporate" xml:space="preserve"><value>المؤسسة</value></data>
+  <data name="CompanyScopeHelp" xml:space="preserve"><value>تنتمي مستندات الشركة إلى مثيل مجموعة الشركة وتستخدم قسم تخزين الشركة.</value></data>
+  <data name="CorporateScopeHelp" xml:space="preserve"><value>تستخدم المستندات المؤسسية مثيل مجموعة مؤسسية موجوداً دون CompanyId.</value></data>
+  <data name="ScopeSwitchClearsSelections" xml:space="preserve"><value>يؤدي تغيير النطاق إلى مسح المالك ومثيل المجموعة والمجلد.</value></data>
+  <data name="CorporateOwner" xml:space="preserve"><value>المالك المؤسسي</value></data>
+  <data name="CorporateCollectionInstance" xml:space="preserve"><value>مثيل المجموعة المؤسسية</value></data>
+  <data name="CompanyCollectionInstance" xml:space="preserve"><value>مثيل مجموعة الشركة</value></data>
+  <data name="CorporateFolder" xml:space="preserve"><value>المجلد المؤسسي</value></data>
+  <data name="CompanyFolder" xml:space="preserve"><value>مجلد الشركة</value></data>
+  <data name="CorporateCollectionInstanceProvisioningRequired" xml:space="preserve"><value>يلزم مثيل مجموعة مؤسسية موجود. تتم إدارة التجهيز بواسطة MOD-0028-FU06.</value></data>
+  <data name="NoCorporateCollectionInstancesAvailable" xml:space="preserve"><value>لا يوجد مثيل مجموعة مؤسسية متاح.</value></data>
+  <data name="SelectCorporateOwner" xml:space="preserve"><value>اختر المالك المؤسسي</value></data>
+  <data name="SelectCorporateCollectionInstance" xml:space="preserve"><value>اختر مثيل المجموعة المؤسسية</value></data>
+  <data name="SelectCorporateFolder" xml:space="preserve"><value>اختر المجلد المؤسسي</value></data>
+  <data name="SelectCompanyCollectionInstance" xml:space="preserve"><value>اختر مثيل مجموعة الشركة</value></data>
+  <data name="SelectCompanyFolder" xml:space="preserve"><value>اختر مجلد الشركة</value></data>
+  <data name="GovernedRetentionClass" xml:space="preserve"><value>فئة الاحتفاظ المحكومة</value></data>
+  <data name="LanguageSelectionRequired" xml:space="preserve"><value>اختر لغة محكومة.</value></data>
+  <data name="RetentionClassSelectionRequired" xml:space="preserve"><value>اختر فئة احتفاظ محكومة.</value></data>
+  <data name="GovernedLookupUnavailable" xml:space="preserve"><value>قيم اللغة أو الاحتفاظ المحكومة غير متاحة. تم منع التسجيل.</value></data>
+  <data name="IdempotencyScopeConflict" xml:space="preserve"><value>مفتاح التسجيل مرتبط مسبقاً بنطاق أو هدف آخر.</value></data>
+  <data name="DuplicateDocumentTitle" xml:space="preserve"><value>يوجد بالفعل مستند خاضع للرقابة بهذا العنوان في المجلد المحدد. استخدم عنواناً مختلفاً أو افتح المستند الحالي.</value></data>
+  <data name="DuplicateRecordCode" xml:space="preserve"><value>يوجد بالفعل مستند أو سجل بهذا الرمز. استخدم رمزًا مختلفًا.</value></data>
+  <data name="ScopeMismatch" xml:space="preserve"><value>المالك أو مثيل المجموعة أو المجلد لا يطابق النطاق.</value></data>
+  <data name="CorporateAccessDenied" xml:space="preserve"><value>ليس لديك وصول محكوم لإنشاء مستند في هذا المجلد المؤسسي.</value></data>
+  <data name="CompanyAccessDenied" xml:space="preserve"><value>ليس لديك صلاحية الإنشاء في مجلد الشركة هذا.</value></data>
+  <data name="ManualLinkReconciliationOnly" xml:space="preserve"><value>الربط اليدوي مخصص فقط لتسوية السجلات القديمة. يجب أن يتطابق النطاق والمالك والمجموعة والمجلد تمامًا.</value></data>
+  <data name="ReconciliationReason" xml:space="preserve"><value>سبب التسوية</value></data>
+  <data name="ReconciliationReasonHint" xml:space="preserve"><value>اشرح سبب تسوية هذه العلاقة القديمة.</value></data>
+</root>

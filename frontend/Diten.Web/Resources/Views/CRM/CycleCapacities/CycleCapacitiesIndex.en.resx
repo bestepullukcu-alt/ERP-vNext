@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Quick view</value></data>
+  <data name="CycleCapacitiesTitle" xml:space="preserve"><value>Cycle Capacity</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>How many visits fit in a cycle period. An estimate built on the published working calendar and an authored activity budget.</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>The cycle capacity service is unavailable.</value></data>
+  <data name="CreateCycleCapacity" xml:space="preserve"><value>New capacity</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>New cycle capacity</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit cycle capacity</value></data>
+  <data name="CyclePeriod" xml:space="preserve"><value>Cycle period</value></data>
+  <data name="CycleCode" xml:space="preserve"><value>Period code</value></data>
+  <data name="CycleName" xml:space="preserve"><value>Period name</value></data>
+  <data name="PeriodWindow" xml:space="preserve"><value>Period window</value></data>
+  <data name="CalendarCountryCode" xml:space="preserve"><value>Calendar country</value></data>
+  <data name="DailyWorkMinutes" xml:space="preserve"><value>Working day (minutes)</value></data>
+  <data name="MinutesPerVisit" xml:space="preserve"><value>Minutes per visit</value></data>
+  <data name="Fte" xml:space="preserve"><value>FTE</value></data>
+  <data name="MonthCount" xml:space="preserve"><value>Months</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Updated at</value></data>
+  <data name="ArchiveCycleCapacity" xml:space="preserve"><value>Archive</value></data>
+  <data name="ArchiveCycleCapacityConfirm" xml:space="preserve"><value>Archive this capacity? Nothing is deleted, and the period becomes free for a new capacity.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Capacity archived.</value></data>
+  <data name="ArchivedFilter" xml:space="preserve"><value>Archived</value></data>
+  <data name="ArchivedHidden" xml:space="preserve"><value>Archived hidden</value></data>
+  <data name="ArchivedOnly" xml:space="preserve"><value>Archived</value></data>
+  <data name="PeriodClosedLock" xml:space="preserve"><value>Period closed</value></data>
+  <data name="EstimateNoticeTitle" xml:space="preserve"><value>This is an estimate, not a quota.</value></data>
+  <data name="EstimateNoticeBody" xml:space="preserve"><value>The figure is built on average activity times and an interim configured FTE, not on an HR establishment. Working days come from the published calendar and can change.</value></data>
+  <data name="BudgetVisitMinutesZero" xml:space="preserve"><value>Promoted and non-promoted product time cannot both be zero.</value></data>
+  <data name="BudgetDailySpendExceedsDay" xml:space="preserve"><value>Travelling, reporting and quiz time leave no room for visits in the working day.</value></data>
+  <data name="PinnedPeriodSection" xml:space="preserve"><value>Pinned period</value></data>
+  <data name="ActivityBudgetSection" xml:space="preserve"><value>Activity minute budget</value></data>
+  <data name="MonthlyPlanSection" xml:space="preserve"><value>Monthly plan</value></data>
+  <data name="FieldForceSection" xml:space="preserve"><value>Field force</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>Notes</value></data>
+  <data name="EstimateSectionHint" xml:space="preserve"><value>Working days come from the platform calendar and already exclude weekends, public holidays and closures. Only your own deductions are subtracted here.</value></data>
+  <data name="CyclePeriodsBreadcrumb" xml:space="preserve"><value>Cycle Periods</value></data>
+  <data name="NonWorkingDays" xml:space="preserve"><value>Non-working days</value></data>
+  <data name="FteMovedToMonthly" xml:space="preserve"><value>FTE is now set per month, in the monthly plan below.</value></data>
+  <data name="NoPeriodsAvailable" xml:space="preserve"><value>No cycle period is available yet. Create one first.</value></data>
+  <data name="CalendarCountryHint" xml:space="preserve"><value>Used only to read the working calendar. It does not change the period's scope.</value></data>
+  <data name="CalendarCountryDerivedHint" xml:space="preserve"><value>Derived from the country-scoped period, so it cannot be changed here.</value></data>
+  <data name="CalendarCountryNotReady" xml:space="preserve"><value>No country is available yet: no country-scoped cycle period exists.</value></data>
+  <data name="CalendarCountryDerived" xml:space="preserve"><value>Derived</value></data>
+  <data name="CalendarCountryIsNotScope" xml:space="preserve"><value>A working-calendar parameter, not a scope.</value></data>
+  <data name="DailyWorkMinutesHint" xml:space="preserve"><value>Minutes in a field working day (8 h = 480).</value></data>
+  <data name="PerVisitHint" xml:space="preserve"><value>Minutes per visit.</value></data>
+  <data name="PerDayHint" xml:space="preserve"><value>Minutes per field day.</value></data>
+  <data name="PromoProductTime" xml:space="preserve"><value>Promoted product time</value></data>
+  <data name="NonPromoProductTime" xml:space="preserve"><value>Non-promoted product time</value></data>
+  <data name="TravelingTime" xml:space="preserve"><value>Travelling time</value></data>
+  <data name="ReportDuration" xml:space="preserve"><value>Reporting time</value></data>
+  <data name="QuizDuration" xml:space="preserve"><value>Quiz time</value></data>
+  <data name="MonthlyDeductionsHint" xml:space="preserve"><value>The months come from the period's window and cannot be added or removed. Do not deduct weekends or public holidays: the working calendar has already excluded them.</value></data>
+  <data name="MonthsPendingPeriod" xml:space="preserve"><value>Choose a cycle period first; its window decides which months appear.</value></data>
+  <data name="Month" xml:space="preserve"><value>Month</value></data>
+  <data name="MeetingDays" xml:space="preserve"><value>Meeting days</value></data>
+  <data name="TrainingDays" xml:space="preserve"><value>Training days</value></data>
+  <data name="VacationDays" xml:space="preserve"><value>Leave days</value></data>
+  <data name="MicroTargetingDayCount" xml:space="preserve"><value>Micro-targeting days</value></data>
+  <data name="MicroTargetingDuration" xml:space="preserve"><value>Micro-targeting minutes/day</value></data>
+  <data name="FteInterimHint" xml:space="preserve"><value>An interim configured average. When HR integration arrives this will come automatically per business unit and year.</value></data>
+  <data name="CalculationUnavailable" xml:space="preserve"><value>The estimate could not be read.</value></data>
+  <data name="CalendarForbiddenTitle" xml:space="preserve"><value>No permission to read the working calendar</value></data>
+  <data name="CalendarForbiddenBody" xml:space="preserve"><value>The calendar may well exist; this account lacks the platform working-calendar permission. Ask an administrator to grant it.</value></data>
+  <data name="CalendarUnresolvedTitle" xml:space="preserve"><value>The working calendar did not answer</value></data>
+  <data name="CalendarUnresolvedBody" xml:space="preserve"><value>No estimate is shown rather than a guessed one. Publish a working calendar for this country and year, then try again.</value></data>
+  <data name="TotalVisitNumber" xml:space="preserve"><value>Visits</value></data>
+  <data name="WorkingDays" xml:space="preserve"><value>Working days</value></data>
+  <data name="DeductedDays" xml:space="preserve"><value>Deducted</value></data>
+  <data name="FieldDays" xml:space="preserve"><value>Field days</value></data>
+  <data name="VisitMinutes" xml:space="preserve"><value>Visit minutes</value></data>
+  <data name="NoFieldDays" xml:space="preserve"><value>No field days</value></data>
+</root>

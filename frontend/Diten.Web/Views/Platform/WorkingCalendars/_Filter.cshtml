@@ -1,0 +1,51 @@
+@using Diten.Web.Views.Platform.WorkingCalendars
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkingCalendarsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            @* This is a filter form, not an entity form: data-no-tracker keeps it out of the required-fields tracker. *@
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Country — options come from the MOD-0048 reference set, never a hardcoded list. *@
+                    <div class="filter-chip filter-country">
+                        <select id="filterCountry" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["CountryCode"]">
+                        </select>
+                    </div>
+
+                    @* Year *@
+                    <div class="filter-chip filter-year">
+                        <select id="filterYear" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["CalendarYear"]">
+                        </select>
+                    </div>
+
+                    @* Status — fed from the contract endpoint, not from markup. *@
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                        </select>
+                    </div>
+
+                    @* Archived rows are hidden by default; history stays reachable through this toggle. *@
+                    <div class="filter-chip filter-archived">
+                        <select id="filterArchived" class="form-select form-select-sm select2" data-placeholder="@Localizer["IncludeArchived"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="true">@Localizer["IncludeArchived"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

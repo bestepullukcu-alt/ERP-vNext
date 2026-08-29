@@ -1,0 +1,137 @@
+@model Diten.Web.Models.CRM.TerritoryRuleScopedPageViewModel
+@using Diten.Web.Views.CRM.TerritoryManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TerritoryManagementResources> L
+@inject IHtmlLocalizer<Diten.Web.SharedResource> Shared
+@{
+    var m = Model.Model;
+    var rule = Model.Rule;
+    ViewData["Title"] = $"{L["AssignmentPreview"].Value} — {(rule is not null ? rule.RuleCode : m.Name)}";
+    Layout = "_LayoutTenantShell";
+}
+
+@* Header follows the same convention as the rules grid: title + scope badge → breadcrumb. *@
+<div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-3 gap-3">
+    <div>
+        <h5 class="mb-0 d-flex align-items-center gap-2">
+            @L["AssignmentPreview"]
+            @if (rule is not null)
+            {
+                <span class="badge bg-label-info">@rule.RuleCode — @rule.Name</span>
+            }
+            else
+            {
+                <span class="badge bg-label-secondary">@L["PreviewScopeAllShort"]</span>
+            }
+        </h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/TerritoryManagement">@L["TerritoryModels"]</a></li>
+                <li class="breadcrumb-item"><a href="/CRM/TerritoryManagement/Models/@m.Id">@m.ModelCode — @m.Name</a></li>
+                <li class="breadcrumb-item"><a href="/CRM/TerritoryManagement/Models/@m.Id/AssignmentRules">@L["AssignmentRules"]</a></li>
+                <li class="breadcrumb-item active text-primary">@L["AssignmentPreview"]</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center flex-wrap gap-2">
+        @* Re-running the preview is this page's own action, so it stays a button; everything that navigates
+           elsewhere lives in the same Go To dropdown the rules grid uses. *@
+        <button type="button" class="btn btn-label-primary" id="js-run-preview">
+            <i class="bx bx-refresh me-1"></i>@L["RunPreview"]
+        </button>
+        <div class="btn-group">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bx bx-navigation me-1"></i>@L["GoTo"]
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                @if (rule is not null)
+                {
+                    <li>
+                        <a class="dropdown-item" href="/CRM/TerritoryManagement/Models/@m.Id/AssignmentRules/Preview">
+                            <i class="bx bx-layer me-2"></i>@L["PreviewAllRules"]
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                }
+                <li>
+                    <a class="dropdown-item" href="/CRM/TerritoryManagement/Models/@m.Id/AssignmentRules">
+                        <i class="bx bx-filter-alt me-2"></i>@L["AssignmentRules"]
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="/CRM/TerritoryManagement/Models/@m.Id/ResourceAssignments">
+                        <i class="bx bx-group me-2"></i>@L["ResourceAssignments"]
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="/CRM/TerritoryManagement/Models/@m.Id">
+                        <i class="bx bx-sitemap me-2"></i>@L["TerritoryHierarchy"]
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item" href="/CRM/TerritoryManagement">
+                        <i class="bx bx-arrow-back me-2"></i>@L["BackToList"]
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-info alert-dismissible d-flex align-items-start" role="alert">
+    <i class="bx bx-info-circle me-2 mt-1"></i>
+    <div>
+        <div>@L["PreviewDoesNotAssign"]</div>
+        <div class="mt-1 small d-none" id="preview-scope"></div>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<div id="preview-warnings"></div>
+
+<div class="row g-3 mb-3" id="preview-stats"></div>
+
+<partial name="~/Views/CRM/TerritoryManagement/_AssignmentPreview.cshtml" model="Model" />
+
+@* Apply consumes the preview run id and the rows ticked above, so it belongs on this page. *@
+<partial name="~/Views/CRM/TerritoryManagement/_AccountAssignments.cshtml" model="Model" />
+
+<script id="territory-assignment-data" type="application/json">
+    @Json.Serialize(new
+    {
+        modelId = m.Id,
+        modelStatus = m.StoredStatus.Length > 0 ? m.StoredStatus : m.Status,
+        modelEffectiveFrom = m.EffectiveFrom.ToString("yyyy-MM-dd"),
+        modelEffectiveTo = m.EffectiveTo?.ToString("yyyy-MM-dd"),
+        ruleId = rule?.Id,
+        ruleCode = rule?.RuleCode,
+        autoRun = true,
+        labels = new
+        {
+            noMatches = L["NoMatches"].Value,
+            noConflicts = L["NoConflicts"].Value,
+            candidates = L["Candidates"].Value,
+            conflicts = L["Conflicts"].Value,
+            scannedAccounts = L["ScannedAccounts"].Value,
+            evaluatedRules = L["EvaluatedRules"].Value,
+            generatedAt = L["GeneratedAt"].Value,
+            evaluatedAsOf = L["EvaluatedAsOf"].Value,
+            noAssignmentsPersisted = L["NoAssignmentsPersisted"].Value,
+            conflictWinner = L["ConflictWinner"].Value,
+            conflictLoser = L["ConflictLoser"].Value,
+            noConflict = L["NoConflict"].Value,
+            previewScopeAll = L["PreviewScopeAll"].Value,
+            previewScopeSingle = L["PreviewScopeSingle"].Value,
+            singleRuleNoConflicts = L["SingleRuleNoConflicts"].Value,
+            applyRequiresActiveModel = L["ApplyRequiresActiveModel"].Value,
+            yes = L["Yes"].Value,
+            gatewayError = Shared["GatewayError"].Value
+        }
+    })
+</script>
+
+@section Scripts {
+    <script src="~/assets/js/CRM/TerritoryManagement/assignment-preview.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/TerritoryManagement/account-assignments.js" asp-append-version="true"></script>
+}

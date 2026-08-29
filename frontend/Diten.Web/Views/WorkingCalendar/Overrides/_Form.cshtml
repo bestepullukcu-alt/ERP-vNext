@@ -1,0 +1,141 @@
+@model Diten.Web.Models.WorkingCalendar.WorkingCalendarEditViewModel
+@using Diten.Web.Views.WorkingCalendar.Overrides
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OverridesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isCreate = string.Equals(ViewData["FormMode"] as string, "create", StringComparison.OrdinalIgnoreCase);
+    var title = isCreate ? Localizer["FormTitleCreate"] : Localizer["FormTitleEdit"];
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/WorkingCalendar/Overrides">@Localizer["BreadcrumbOverrides"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/WorkingCalendar/Overrides" class="btn btn-label-secondary">
+            @SharedLocalizer["Cancel"]
+        </a>
+        <button type="submit" form="workingCalendarForm" class="btn btn-primary" id="btnSaveCalendar">
+            @SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>
+
+<form id="workingCalendarForm" method="post" novalidate>
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="ExpectedVersion" />
+    <input type="hidden" asp-for="Source" />
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            @* Section 1 — Identity *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionIdentity"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <label class="form-label fw-medium" asp-for="CalendarCode">
+                                @Localizer["CalendarCode"] <span class="text-danger">*</span>
+                            </label>
+                            <input class="form-control" asp-for="CalendarCode" required maxlength="64" />
+                            <span class="text-muted small">@Localizer["CalendarCodeHint"]</span>
+                        </div>
+                        <div class="col-12 col-md-8">
+                            <label class="form-label fw-medium" asp-for="CalendarName">
+                                @Localizer["CalendarName"] <span class="text-danger">*</span>
+                            </label>
+                            <input class="form-control" asp-for="CalendarName" required maxlength="200" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" asp-for="Description">@SharedLocalizer["Description"]</label>
+                            <textarea class="form-control" asp-for="Description" rows="4"
+                                      maxlength="1000" placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* Section 2 — Weekend *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionWeekend"]</h6>
+                    <label class="form-label fw-medium" asp-for="WeekendDays">@Localizer["WeekendDays"]</label>
+                    <select class="select2 form-select" asp-for="WeekendDays" id="WeekendDays" multiple="multiple"></select>
+                    <div id="weekendInheritanceHint" class="mt-2 small text-muted d-none">
+                        <i class="icon-base bx bx-link icon-xs me-1"></i>
+                        <span id="weekendInheritanceText"></span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            @* Section 3 — Scope *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionScope"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-medium" asp-for="CountryCode">
+                                @Localizer["CountryCode"] <span class="text-danger">*</span>
+                            </label>
+                            <select class="select2 form-select" asp-for="CountryCode" id="CountryCode" required></select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" asp-for="CalendarYear">
+                                @Localizer["CalendarYear"] <span class="text-danger">*</span>
+                            </label>
+                            <input class="form-control" asp-for="CalendarYear" type="number" min="1900" max="2200" required />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" asp-for="ScopeType">
+                                @Localizer["ScopeType"] <span class="text-danger">*</span>
+                            </label>
+                            <select class="select2 form-select" asp-for="ScopeType" id="ScopeType" required></select>
+                        </div>
+                        <div class="col-12 d-none" id="organizationUnitField">
+                            <label class="form-label fw-medium" asp-for="OrganizationUnitId">
+                                @Localizer["OrganizationUnit"]
+                            </label>
+                            <select class="select2 form-select" asp-for="OrganizationUnitId" id="OrganizationUnitId"></select>
+                        </div>
+                        <div class="col-12 d-none" id="legalEntityField">
+                            <label class="form-label fw-medium" asp-for="LegalEntityId">
+                                @Localizer["LegalEntity"]
+                            </label>
+                            <select class="select2 form-select" asp-for="LegalEntityId" id="LegalEntityId"></select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* Section 4 — Lifecycle *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionLifecycle"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-medium" asp-for="CalendarStatus">
+                                @SharedLocalizer["Status"] <span class="text-danger">*</span>
+                            </label>
+                            <select class="select2 form-select" asp-for="CalendarStatus" id="CalendarStatus" required></select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-medium" asp-for="Notes">@Localizer["Notes"]</label>
+                            <textarea class="form-control" asp-for="Notes" rows="4" maxlength="2000"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

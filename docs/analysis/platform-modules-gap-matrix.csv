@@ -1,0 +1,16 @@
+Gap ID,Module,Missing Capability,Current Evidence,Required Implementation,Dependency,Severity
+GAP-01,MOD-0019,Data masking + row/field policy engine,PiiMasking.cs log redaction only,Classification+masking rules+row-level security+query enforcement+response masking+policy test harness,MOD-0018,P0
+GAP-02,MOD-0021,Cryptographic tamper-evidence chain,AuditEvent has no hash field,Hash/previousHash chain or WORM sink,MOD-0021 core,P1
+GAP-03,MOD-0021,Authenticated runtime golden-flow smoke,Offline tests only no closeout,Login->critical action->explorer->export smoke,Platform startup,P1
+GAP-04,MOD-0021,Audit-writer failure behavior,Outbox exists failure not runtime-proven,Fail-closed vs fail-open decision+test,none,P1
+GAP-05,MOD-0018,ABAC / real data-scope resolver,FU15 planned,Attribute policy + DataScopeResolver,MOD-0288 backing data,P1
+GAP-06,MOD-0018,RBAC Admin UI,FU9 planned,Role/Permission Builder+Policy Console+Access Review,RBAC core,P2
+GAP-07,MOD-0028,FU06 Corporate unique index,dollar-ne partial index crashes startup,Convert filter to type/lt,Mongo,P1
+GAP-08,MOD-0028,Checksum / version-compare runtime,Controller exists runtime unproven,Upload checksum+version diff smoke,FU06 fix,P2
+GAP-09,MOD-0023,End-to-end approval golden-flow smoke,runtime-available claim only,approve/reject/request-info authenticated smoke+designer UI,RBAC+Audit,P1
+GAP-10,MOD-0031,EvidenceLink SoR all layers,Pack only,Domain+persistence+API+gateway+UI panel,MOD-0028 MOD-0021,P1
+GAP-11,MOD-0040,Canonical/external ID mapping model,Correlation foundation only,ExternalReference model+ObjectId mapping+trace stitching,Interface Registry,P1
+GAP-12,MOD-0040,Registry identity conflict CONF-01,MOD-0040 aliased to MOD-0288,EA reservation align to Blueprint,none,P1
+GAP-13,MOD-0004,Metric & semantic registry all,None,Metric def+calc contract+certification+KPI catalog+UI,SoR/Data Contract Registry,P2
+GAP-14,MOD-0063,Lakehouse all,None,Dataset catalog+ingestion+storage+ACL+lineage,Data Contract Registry,P2
+GAP-15,General,Cross-service correlation consistency test,Partial,Cross-service correlation propagation test,MOD-0040,P2

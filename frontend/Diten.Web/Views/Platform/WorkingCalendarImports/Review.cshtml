@@ -1,0 +1,63 @@
+@using Diten.Web.Views.Platform.WorkingCalendarImports
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkingCalendarImportsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["Review"].Value;
+    Layout = "_LayoutPlatformAdmin";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["Review"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/Platform/WorkingCalendarImports">@Localizer["Title"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@Localizer["Review"]</li>
+            </ol>
+        </nav>
+        @* Filled by review.js: "WCI-TR-2026-… · TR 2026 · in-review" *@
+        <p class="text-muted small mb-0" id="batchSummary"></p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/Platform/WorkingCalendarImports" class="btn btn-label-secondary">
+            @Localizer["Back"]
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="candidateTable" class="table border-top">
+            <thead>
+                <tr>
+                    <th>@Localizer["Date"]</th>
+                    <th class="all">@Localizer["Name"]</th>
+                    <th>@Localizer["Change"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Decision"]</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="card-footer border-top p-4 d-flex justify-content-end gap-2">
+        <button type="button" id="btnDiscard" class="btn btn-label-danger">@Localizer["Discard"]</button>
+        <button type="button" id="btnApply" class="btn btn-primary">@Localizer["Apply"]</button>
+    </div>
+</div>
+
+<input type="hidden" id="BatchId" value="@ViewData["BatchId"]" />
+
+@section Scripts {
+    <script src="~/assets/js/Platform/WorkingCalendarImports/review.js" asp-append-version="true"></script>
+}

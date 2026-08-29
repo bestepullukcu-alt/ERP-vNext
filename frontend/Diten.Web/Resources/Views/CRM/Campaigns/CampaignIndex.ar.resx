@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CampaignsTitle" xml:space="preserve"><value>الحملات</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>إدارة الحملات وعضوية الأهداف واللقطات الثابتة المراعية للموافقة.</value></data>
+  <data name="CreateCampaign" xml:space="preserve"><value>إنشاء حملة</value></data>
+  <data name="CampaignDetail" xml:space="preserve"><value>تفاصيل الحملة</value></data>
+  <data name="EditCampaign" xml:space="preserve"><value>تعديل الحملة</value></data>
+  <data name="ArchiveCampaign" xml:space="preserve"><value>أرشفة الحملة</value></data>
+  <data name="ArchiveCampaignConfirm" xml:space="preserve"><value>هل تريد أرشفة هذه الحملة؟ هذا إجراء دورة حياة مرن؛ يبقى السجل قابلاً للقراءة.</value></data>
+  <data name="CampaignContractUnavailable" xml:space="preserve"><value>عقد قدرات الحملة غير متاح. الإجراءات معطّلة.</value></data>
+  <data name="CampaignCode" xml:space="preserve"><value>رمز الحملة</value></data>
+  <data name="CampaignName" xml:space="preserve"><value>اسم الحملة</value></data>
+  <data name="CampaignType" xml:space="preserve"><value>نوع الحملة</value></data>
+  <data name="CampaignStatus" xml:space="preserve"><value>حالة الحملة</value></data>
+  <data name="ObjectiveType" xml:space="preserve"><value>نوع الهدف</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>معرّف وحدة الأعمال</value></data>
+  <data name="DefaultConsentChannel" xml:space="preserve"><value>قناة الموافقة الافتراضية</value></data>
+  <data name="DefaultConsentPurpose" xml:space="preserve"><value>غرض الموافقة الافتراضي</value></data>
+  <data name="StartDate" xml:space="preserve"><value>تاريخ البدء</value></data>
+  <data name="EndDate" xml:space="preserve"><value>تاريخ الانتهاء</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="SummarySection" xml:space="preserve"><value>ملخص</value></data>
+  <data name="ConsentContextSection" xml:space="preserve"><value>سياق الموافقة</value></data>
+  <data name="ConsentDefaultsHelp" xml:space="preserve"><value>هذه القيم افتراضيات اختيارية للحملة. لا تزال اللقطة المرشّحة بالموافقة تتطلب قناة وغرضًا ظاهرين.</value></data>
+  <data name="NoDefault" xml:space="preserve"><value>بدون قيمة افتراضية</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>النظام المصدر</value></data>
+  <data name="ExternalId" xml:space="preserve"><value>المعرّف الخارجي</value></data>
+  <data name="ExternalCode" xml:space="preserve"><value>الرمز الخارجي</value></data>
+  <data name="ExternalName" xml:space="preserve"><value>الاسم الخارجي</value></data>
+  <data name="ImportedAt" xml:space="preserve"><value>وقت الاستيراد</value></data>
+  <data name="Primary" xml:space="preserve"><value>أساسي</value></data>
+  <data name="Remove" xml:space="preserve"><value>إزالة</value></data>
+  <data name="CampaignTargets" xml:space="preserve"><value>أهداف الحملة</value></data>
+  <data name="CampaignTargetId" xml:space="preserve"><value>معرّف هدف الحملة</value></data>
+  <data name="CreateTarget" xml:space="preserve"><value>إنشاء هدف</value></data>
+  <data name="EditTarget" xml:space="preserve"><value>تحرير الهدف</value></data>
+  <data name="ArchiveTarget" xml:space="preserve"><value>أرشفة الهدف</value></data>
+  <data name="ArchiveTargetConfirm" xml:space="preserve"><value>هل تريد أرشفة هذا الهدف؟ هذا إجراء دورة حياة مرن؛ يبقى السجل قابلاً للقراءة.</value></data>
+  <data name="TargetType" xml:space="preserve"><value>نوع الهدف</value></data>
+  <data name="TargetId" xml:space="preserve"><value>معرّف الهدف</value></data>
+  <data name="TargetDisplayName" xml:space="preserve"><value>الاسم المعروض للهدف</value></data>
+  <data name="DisplayLabelNotSourceOfTruth" xml:space="preserve"><value>تسمية عرض فقط؛ ليست مصدرًا للحقيقة.</value></data>
+  <data name="TargetStatus" xml:space="preserve"><value>حالة الهدف</value></data>
+  <data name="TargetSource" xml:space="preserve"><value>مصدر الهدف</value></data>
+  <data name="SourceReferenceType" xml:space="preserve"><value>نوع المرجع المصدر</value></data>
+  <data name="SourceReferenceId" xml:space="preserve"><value>معرّف المرجع المصدر</value></data>
+  <data name="SnapshotBatchId" xml:space="preserve"><value>معرّف دفعة اللقطة</value></data>
+  <data name="SelectionReason" xml:space="preserve"><value>سبب الاختيار</value></data>
+  <data name="ReasonCodes" xml:space="preserve"><value>رموز الأسباب</value></data>
+  <data name="ExclusionReason" xml:space="preserve"><value>سبب الاستبعاد</value></data>
+  <data name="ConsentDecision" xml:space="preserve"><value>قرار الموافقة</value></data>
+  <data name="EligibilityStatus" xml:space="preserve"><value>حالة الأهلية</value></data>
+  <data name="EvaluatedAt" xml:space="preserve"><value>وقت التقييم</value></data>
+  <data name="MatchedConsentId" xml:space="preserve"><value>معرّف الموافقة المطابقة</value></data>
+  <data name="MatchedPreferenceIds" xml:space="preserve"><value>معرّفات التفضيلات المطابقة</value></data>
+  <data name="EvaluatorVersion" xml:space="preserve"><value>إصدار المُقيِّم</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>ساري من</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>ساري حتى</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>ساري اعتبارًا من</value></data>
+  <data name="Archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="ArchivedAt" xml:space="preserve"><value>تاريخ الأرشفة</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>تاريخ التحديث</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="CreateSnapshot" xml:space="preserve"><value>إنشاء لقطة أهداف ثابتة</value></data>
+  <data name="ApplyConsentFilter" xml:space="preserve"><value>تطبيق مرشّح الموافقة</value></data>
+  <data name="ConsentChannel" xml:space="preserve"><value>قناة الموافقة</value></data>
+  <data name="ConsentPurpose" xml:space="preserve"><value>غرض الموافقة</value></data>
+  <data name="ConsentFilterNotAppliedWarning" xml:space="preserve"><value>تصفية الموافقة معطّلة. ستحمل اللقطة تحذيرًا خطيرًا consent_filter_not_applied.</value></data>
+  <data name="SourceType" xml:space="preserve"><value>نوع المصدر</value></data>
+  <data name="TargetItems" xml:space="preserve"><value>عناصر الهدف</value></data>
+  <data name="AddRow" xml:space="preserve"><value>إضافة صف</value></data>
+  <data name="JsonPasteFallback" xml:space="preserve"><value>خيار لصق JSON</value></data>
+  <data name="JsonFallbackHelp" xml:space="preserve"><value>عند إدخالها، تحل عناصر الهدف بصيغة JSON الصحيحة محل الصفوف اليدوية البسيطة. هذه ليست أداة استيراد.</value></data>
+  <data name="CommaSeparated" xml:space="preserve"><value>قيم مفصولة بفواصل.</value></data>
+  <data name="ExcludedTargetsVisibleHelp" xml:space="preserve"><value>تبقى الأهداف المستبعَدة والمحظورة وغير المعروفة ظاهرة مع أسبابها.</value></data>
+  <data name="TargetsUnavailable" xml:space="preserve"><value>إدارة الأهداف غير متاحة أو غير مسموح بها.</value></data>
+  <data name="UnsupportedFiltersNote" xml:space="preserve"><value>لا تدعم واجهة البرمجة التصفية بالبحث أو الهدف أو وحدة الأعمال أو النطاق الزمني؛ ولا يُطبَّق أي مرشّح وهمي في المتصفح.</value></data>
+  <data name="UnsupportedFilters" xml:space="preserve"><value>غير مدعوم: البحث، نوع الهدف، وحدة الأعمال، النطاق الزمني</value></data>
+  <data name="UnsupportedTargetFiltersNote" xml:space="preserve"><value>سبب الاستبعاد وقرار/حالة الموافقة للعرض فقط لأن واجهة البرمجة لا توفّر مرشّحًا خادميًا لها.</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>تضمين المؤرشفة</value></data>
+  <data name="Apply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="Reset" xml:space="preserve"><value>إعادة ضبط</value></data>
+  <data name="Filter" xml:space="preserve"><value>تصفية</value></data>
+  <data name="Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="BackToList" xml:space="preserve"><value>العودة إلى القائمة</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>اختر…</value></data>
+  <data name="RequiredProgress" xml:space="preserve"><value>الحقول المطلوبة: 0/5 مكتملة عند الفتح الأول.</value></data>
+  <data name="ArchivedCampaignReadOnly" xml:space="preserve"><value>هذه الحملة مؤرشفة. تم تعطيل تحرير الحملة وتعديل الأهداف.</value></data>
+  <data name="DateWindow" xml:space="preserve"><value>النطاق الزمني</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <data name="View" xml:space="preserve"><value>عرض</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل…</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>لم يتم العثور على سجلات حملات.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>تعذّر إكمال العملية.</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>أكمل جميع الحقول المطلوبة وصحّح النطاقات الزمنية غير الصالحة.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>تمت الأرشفة بنجاح.</value></data>
+  <data name="SnapshotCreated" xml:space="preserve"><value>تم إنشاء لقطة أهداف ثابتة.</value></data>
+  <data name="CreatedCount" xml:space="preserve"><value>المُنشأة</value></data>
+  <data name="ReconciledCount" xml:space="preserve"><value>المُطابَقة</value></data>
+  <data name="ExcludedCount" xml:space="preserve"><value>المستبعَدة</value></data>
+  <data name="DifferentSourceConflict" xml:space="preserve"><value>لم تُكتب اللقطة لأن أحد الأهداف يعود إلى مصدر مختلف.</value></data>
+  <data name="Allowed" xml:space="preserve"><value>مسموح</value></data>
+  <data name="Blocked" xml:space="preserve"><value>محظور</value></data>
+  <data name="Unknown" xml:space="preserve"><value>غير معروف</value></data>
+  <data name="NotApplicable" xml:space="preserve"><value>غير منطبق</value></data>
+  <data name="Excluded" xml:space="preserve"><value>مستبعَد</value></data>
+  <data name="AddNew" xml:space="preserve"><value>إضافة جديد</value></data>
+  <data name="EndDateBeforeStartDate" xml:space="preserve"><value>لا يمكن أن يكون تاريخ الانتهاء قبل تاريخ البدء.</value></data>
+  <data name="Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>هل أنت متأكد؟</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>حذف جماعي</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>حذف السجلات المحددة؟</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>الأعمدة</value></data>
+  <data name="Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="Export" xml:space="preserve"><value>تصدير</value></data>
+  <data name="Import" xml:space="preserve"><value>استيراد</value></data>
+  <data name="Passive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="SaveView" xml:space="preserve"><value>حفظ العرض</value></data>
+  <data name="Search" xml:space="preserve"><value>بحث</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>عرض الكل</value></data>
+  <data name="Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>عرض التفاصيل</value></data>
+  <data name="CyclePeriod" xml:space="preserve">
+    <value>الدورة الزمنية</value>
+  </data>
+  <data name="NoCyclePeriod" xml:space="preserve">
+    <value>غير مرتبط بدورة زمنية</value>
+  </data>
+  <data name="CyclePeriodHelp" xml:space="preserve">
+    <value>اختياري. أثناء الارتباط، يجب أن تبقى نافذة الحملة داخل نافذة الدورة (شاملة الطرفين).</value>
+  </data>
+  <data name="CyclePeriodWindow" xml:space="preserve">
+    <value>نافذة الدورة:</value>
+  </data>
+  <data name="CyclePeriodClosedBadge" xml:space="preserve">
+    <value>مغلقة</value>
+  </data>
+  <data name="CampaignOutsideCycleWindow" xml:space="preserve">
+    <value>نافذة الحملة خارج نافذة الدورة المرتبطة.</value>
+  </data>
+  <data name="CyclePeriodNotActive" xml:space="preserve">
+    <value>لا يمكن ربط الحملة إلا بدورة زمنية نشطة.</value>
+  </data>
+  <data name="CyclePeriodNotFound" xml:space="preserve">
+    <value>لم يتم العثور على الدورة الزمنية المحددة.</value>
+  </data>
+  <data name="EndDateRequiredWhenBound" xml:space="preserve">
+    <value>الحملة المرتبطة بدورة زمنية تتطلب تاريخ انتهاء.</value>
+  </data>
+  <data name="ScopeSection" xml:space="preserve">
+    <value>النطاق</value>
+  </data>
+  <data name="ScopeType" xml:space="preserve">
+    <value>مستوى النطاق</value>
+  </data>
+  <data name="ScopeReference" xml:space="preserve">
+    <value>مرجع النطاق</value>
+  </data>
+  <data name="ScopeType_tenant" xml:space="preserve">
+    <value>المستأجر بالكامل</value>
+  </data>
+  <data name="ScopeType_country" xml:space="preserve">
+    <value>الدولة</value>
+  </data>
+  <data name="ScopeType_legal-entity" xml:space="preserve">
+    <value>الكيان القانوني</value>
+  </data>
+  <data name="ScopeType_business-unit" xml:space="preserve">
+    <value>وحدة الأعمال</value>
+  </data>
+  <data name="CountryScope" xml:space="preserve">
+    <value>الدولة</value>
+  </data>
+  <data name="LegalEntity" xml:space="preserve">
+    <value>الكيان القانوني</value>
+  </data>
+  <data name="BusinessUnit" xml:space="preserve">
+    <value>وحدة الأعمال</value>
+  </data>
+  <data name="BusinessUnitCountryFilter" xml:space="preserve">
+    <value>تصفية وحدات الأعمال حسب الدولة</value>
+  </data>
+  <data name="ScopeHelp" xml:space="preserve">
+    <value>عنوان الحملة. يحدد الدورات التي يمكن ربطها: نطاق الحملة نفسه بالإضافة إلى الدورات على مستوى المستأجر.</value>
+  </data>
+  <data name="ScopeEditableHint" xml:space="preserve">
+    <value>يمكن تغيير النطاق. إذا لم تعد الدورة المرتبطة قابلة للتطبيق على النطاق الجديد، فأزلها أولاً.</value>
+  </data>
+  <data name="CyclePeriodNotApplicable" xml:space="preserve">
+    <value>لا ينطبق على هذا النطاق</value>
+  </data>
+  <data name="CyclePeriodScopeMismatch" xml:space="preserve">
+    <value>الدورة المرتبطة لا تنطبق على هذا النطاق. أزلها أو أعد النطاق كما كان.</value>
+  </data>
+  <data name="ScopeReferenceRequired" xml:space="preserve">
+    <value>يتطلب مستوى النطاق هذا مرجعًا.</value>
+  </data>
+  <data name="ScopeAmbiguous" xml:space="preserve">
+    <value>يمكن تقديم مرجع نطاق واحد فقط.</value>
+  </data>
+  <data name="CountryUnknown" xml:space="preserve">
+    <value>هذه الدولة ليست قيمة منشورة.</value>
+  </data>
+  <data name="BusinessUnitUnknown" xml:space="preserve">
+    <value>وحدة الأعمال هذه ليست قيمة منشورة.</value>
+  </data>
+  <data name="LegalEntityNotReferenceable" xml:space="preserve">
+    <value>لا يمكن الإشارة إلى هذا الكيان القانوني.</value>
+  </data>
+  <data name="LegalEntityUnavailable" xml:space="preserve">
+    <value>لم تستجب خدمة البيانات الرئيسية. لم يتم حفظ أي شيء — يرجى المحاولة مرة أخرى.</value>
+  </data>
+  <data name="ReferenceSetUnpublished" xml:space="preserve">
+    <value>مجموعة المراجع المحوكمة غير منشورة بعد. يجب أن ينشرها المشغل.</value>
+  </data>
+  <data name="DependencyUnavailable" xml:space="preserve">
+    <value>لم تستجب التبعية، لذا تعذر تحميل هذه القائمة.</value>
+  </data>
+  <data name="NoTerritoryPlanMatches" xml:space="preserve">
+    <value>لا توجد خطة إقليمية مطابقة، لذا تُعرض القائمة المنشورة الكاملة.</value>
+  </data>
+  <data name="TargetingSection" xml:space="preserve">
+    <value>الاستهداف</value>
+  </data>
+  <data name="TargetingMode" xml:space="preserve">
+    <value>وضع الاستهداف</value>
+  </data>
+  <data name="TargetingMode_segment" xml:space="preserve">
+    <value>حسب الشريحة</value>
+  </data>
+  <data name="TargetingMode_manual" xml:space="preserve">
+    <value>يدوي</value>
+  </data>
+  <data name="TargetingModeHelp" xml:space="preserve">
+    <value>كيفية اختيار الجمهور. يُستخدم الوضع المحدد فقط؛ بيانات الوضع الآخر محفوظة لكنها غير مطبقة.</value>
+  </data>
+  <data name="TargetedSegments" xml:space="preserve">
+    <value>الشرائح المستهدفة</value>
+  </data>
+  <data name="TargetedSegmentsHelp" xml:space="preserve">
+    <value>شريحة نشطة واحدة على الأقل. لا يتم تحديد العضوية هنا — تسجّل الحملة من تستهدف.</value>
+  </data>
+  <data name="SelectSegments" xml:space="preserve">
+    <value>اختر الشرائح</value>
+  </data>
+  <data name="SegmentSuperseded" xml:space="preserve">
+    <value>مُستبدلة</value>
+  </data>
+  <data name="SegmentArchived" xml:space="preserve">
+    <value>مؤرشفة</value>
+  </data>
+  <data name="SegmentRequired" xml:space="preserve">
+    <value>يتطلب الاستهداف بالشرائح شريحة واحدة على الأقل.</value>
+  </data>
+  <data name="SegmentNotActive" xml:space="preserve">
+    <value>لا يمكن إضافة سوى شريحة نشطة.</value>
+  </data>
+  <data name="SegmentNotFound" xml:space="preserve">
+    <value>لم يتم العثور على الشريحة المحددة.</value>
+  </data>
+  <data name="SegmentDuplicate" xml:space="preserve">
+    <value>تم اختيار الشريحة نفسها أكثر من مرة.</value>
+  </data>
+  <data name="SegmentLimitExceeded" xml:space="preserve">
+    <value>عدد الشرائح المستهدفة كبير جدًا.</value>
+  </data>
+  <data name="SubjectType" xml:space="preserve">
+    <value>نوع الموضوع</value>
+  </data>
+  <data name="ManualTargetingHint" xml:space="preserve">
+    <value>تُضاف الأهداف من صفحة تفاصيل الحملة بعد حفظ الحملة.</value>
+  </data>
+  <data name="TargetingTitle" xml:space="preserve">
+    <value>الاستهداف</value>
+  </data>
+  <data name="TargetingWhatToPromote" xml:space="preserve">
+    <value>ما الذي يتم الترويج له</value>
+  </data>
+  <data name="TargetingWhatToPromoteClosed" xml:space="preserve">
+    <value>غير متاح بعد. يُخطط لما يتم الترويج له لكل شريحة ويوجد في نموذج منفصل.</value>
+  </data>
+  <data name="TargetingDormantData" xml:space="preserve">
+    <value>لا تزال هذه الحملة تحتفظ ببيانات من وضع الاستهداف الآخر. محفوظة وغير مستخدمة.</value>
+  </data>
+  <data name="NoTargetedSegments" xml:space="preserve">
+    <value>لا توجد شرائح مستهدفة</value>
+  </data>
+  <data name="CampaignCodeAutoHint" xml:space="preserve">
+    <value>اتركه فارغًا وسيُخصص رمز تلقائيًا عند الحفظ.</value>
+  </data>
+  <data name="CampaignCodeAutoPlaceholder" xml:space="preserve">
+    <value>{0} (تلقائي)</value>
+  </data>
+  <data name="PriorityLevel" xml:space="preserve">
+    <value>الأولوية</value>
+  </data>
+  <data name="PriorityLevel_low" xml:space="preserve">
+    <value>منخفضة</value>
+  </data>
+  <data name="PriorityLevel_medium" xml:space="preserve">
+    <value>متوسطة</value>
+  </data>
+  <data name="PriorityLevel_high" xml:space="preserve">
+    <value>عالية</value>
+  </data>
+  <data name="TargetPicker" xml:space="preserve">
+    <value>الهدف</value>
+  </data>
+  <data name="TargetTypePickerHelp" xml:space="preserve">
+    <value>يمكن لهذه الشاشة اختيار الحساب وجهة الاتصال. تبقى أنواع الأهداف الأخرى متاحة عبر واجهة البرمجة.</value>
+  </data>
+  <data name="SelectAccount" xml:space="preserve">
+    <value>اختر حسابًا</value>
+  </data>
+  <data name="SelectContact" xml:space="preserve">
+    <value>اختر جهة اتصال</value>
+  </data>
+  <data name="Notes" xml:space="preserve">
+    <value>ملاحظات</value>
+  </data>
+  <data name="ManualTargetDefaultsHint" xml:space="preserve">
+    <value>يُملأ المصدر والسبب وتاريخ البدء عند الحفظ: يُسجَّل الهدف على أنه اختيار يدوي منك اليوم.</value>
+  </data>
+  <data name="TargetStatus_draft" xml:space="preserve">
+    <value>مسودة</value>
+  </data>
+  <data name="TargetStatus_active" xml:space="preserve">
+    <value>نشط</value>
+  </data>
+  <data name="TargetStatus_inactive" xml:space="preserve">
+    <value>غير نشط</value>
+  </data>
+  <data name="TargetStatus_completed" xml:space="preserve">
+    <value>مكتمل</value>
+  </data>
+</root>

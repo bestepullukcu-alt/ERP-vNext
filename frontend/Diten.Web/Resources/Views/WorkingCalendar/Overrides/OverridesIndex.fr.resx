@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="OverridesTitle" xml:space="preserve"><value>Exceptions du calendrier de travail</value></data>
+  <data name="BreadcrumbOverrides" xml:space="preserve"><value>Exceptions du calendrier de travail</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Vos jours fériés d'entreprise, fermetures et jours de récupération. Ils se superposent au calendrier national, qui n'est pas géré ici.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Détail de l'exception</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Ajouter une exception</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Modifier l'exception</value></data>
+  <data name="FormDescription" xml:space="preserve"><value>Une exception couvre un pays pour une année. Laissez les jours de week-end vides pour hériter du calendrier national.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Ajouter une exception</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Aperçu rapide</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>Identité</value></data>
+  <data name="SectionScope" xml:space="preserve"><value>Portée</value></data>
+  <data name="SectionWeekend" xml:space="preserve"><value>Week-end</value></data>
+  <data name="SectionLifecycle" xml:space="preserve"><value>Cycle de vie</value></data>
+  <data name="SectionDays" xml:space="preserve"><value>Jours fériés et fermetures</value></data>
+  <data name="SectionResolution" xml:space="preserve"><value>Vérification du jour ouvré</value></data>
+  <data name="CalendarCode" xml:space="preserve"><value>Code du calendrier</value></data>
+  <data name="CalendarCodeHint" xml:space="preserve"><value>Clé stable, par exemple TR-2026. Elle n'est jamais renommée.</value></data>
+  <data name="CalendarName" xml:space="preserve"><value>Nom du calendrier</value></data>
+  <data name="CountryCode" xml:space="preserve"><value>Pays</value></data>
+  <data name="CountryInherited" xml:space="preserve"><value>Pays (hérité)</value></data>
+  <data name="CalendarYear" xml:space="preserve"><value>Année</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Portée</value></data>
+  <data name="OrganizationUnit" xml:space="preserve"><value>Unité organisationnelle</value></data>
+  <data name="WeekendDays" xml:space="preserve"><value>Jours de week-end</value></data>
+  <data name="DayCount" xml:space="preserve"><value>Jours</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notes</value></data>
+  <data name="Activate" xml:space="preserve"><value>Activer</value></data>
+  <data name="ActivateConfirm" xml:space="preserve"><value>L'activation applique cette exception à votre organisation. Continuer ?</value></data>
+  <data name="Archive" xml:space="preserve"><value>Archiver</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Cette exception sera archivée. Elle reste lisible dans l'historique mais ne répond plus aux questions de jour ouvré.</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Inclure les archivés</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Actif</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="Inherited" xml:space="preserve"><value>hérité</value></data>
+  <data name="InheritedFromCountry" xml:space="preserve"><value>Hérité du calendrier national</value></data>
+  <data name="NoCalendarData" xml:space="preserve"><value>Aucune donnée de calendrier</value></data>
+  <data name="ResolutionResolved" xml:space="preserve"><value>Résolu</value></data>
+  <data name="ResolutionCalendarMissing" xml:space="preserve"><value>Aucun calendrier saisi pour ce pays</value></data>
+  <data name="ResolutionYearMissing" xml:space="preserve"><value>Aucun calendrier pour cette année</value></data>
+  <data name="ResolutionCountryUnknown" xml:space="preserve"><value>Pays absent des données de référence</value></data>
+  <data name="AddDay" xml:space="preserve"><value>Ajouter un jour</value></data>
+  <data name="EditDay" xml:space="preserve"><value>Modifier le jour</value></data>
+  <data name="DayDateHint" xml:space="preserve"><value>Doit se situer dans l'année du calendrier.</value></data>
+  <data name="ObservedDateHint" xml:space="preserve"><value>À renseigner uniquement si le jour est observé à une autre date.</value></data>
+  <data name="Recurrence" xml:space="preserve"><value>Récurrence</value></data>
+  <data name="RecurrenceHint" xml:space="preserve"><value>Simple déclaration. Rien n'est généré automatiquement ; l'année suivante se saisit séparément.</value></data>
+  <data name="IsHalfDayHint" xml:space="preserve"><value>Une demi-journée compte quand même comme jour ouvré, et la réponse le précise.</value></data>
+  <data name="WorkingDayOverrideHint" xml:space="preserve"><value>Un jour de récupération impose le travail, il ne peut donc pas être une demi-journée.</value></data>
+  <data name="ArchiveDayConfirm" xml:space="preserve"><value>Ce jour sera archivé. Il cesse d'influencer les réponses mais reste dans l'historique.</value></data>
+  <data name="DayCode" xml:space="preserve"><value>Code</value></data>
+  <data name="DayName" xml:space="preserve"><value>Nom</value></data>
+  <data name="DayDate" xml:space="preserve"><value>Date</value></data>
+  <data name="ObservedDate" xml:space="preserve"><value>Date observée</value></data>
+  <data name="DayType" xml:space="preserve"><value>Type</value></data>
+  <data name="DayTypePublicHoliday" xml:space="preserve"><value>Jour férié</value></data>
+  <data name="DayTypeReligiousHoliday" xml:space="preserve"><value>Fête religieuse</value></data>
+  <data name="DayTypeMoveableHoliday" xml:space="preserve"><value>Fête mobile</value></data>
+  <data name="DayTypeCompanyHoliday" xml:space="preserve"><value>Jour férié d'entreprise</value></data>
+  <data name="DayTypeCompanyClosure" xml:space="preserve"><value>Fermeture d'entreprise</value></data>
+  <data name="DayTypeWorkingDayOverride" xml:space="preserve"><value>Jour de récupération</value></data>
+  <data name="RecurrenceNone" xml:space="preserve"><value>Aucune</value></data>
+  <data name="RecurrenceAnnualFixed" xml:space="preserve"><value>Annuelle, date fixe</value></data>
+  <data name="RecurrenceAnnualMoveable" xml:space="preserve"><value>Annuelle, date mobile</value></data>
+  <data name="IsHalfDay" xml:space="preserve"><value>Demi-journée</value></data>
+  <data name="ProbeDate" xml:space="preserve"><value>Vérifier une date</value></data>
+  <data name="Probe" xml:space="preserve"><value>Vérifier</value></data>
+  <data name="monday" xml:space="preserve"><value>Lundi</value></data>
+  <data name="tuesday" xml:space="preserve"><value>Mardi</value></data>
+  <data name="wednesday" xml:space="preserve"><value>Mercredi</value></data>
+  <data name="thursday" xml:space="preserve"><value>Jeudi</value></data>
+  <data name="friday" xml:space="preserve"><value>Vendredi</value></data>
+  <data name="saturday" xml:space="preserve"><value>Samedi</value></data>
+  <data name="sunday" xml:space="preserve"><value>Dimanche</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Entité juridique</value></data>
+  <data name="ScopeTenant" xml:space="preserve"><value>Locataire</value></data>
+  <data name="ScopeOrganizationUnit" xml:space="preserve"><value>Unité organisationnelle</value></data>
+  <data name="SelectLegalEntity" xml:space="preserve"><value>Sélectionner une entité juridique</value></data>
+  <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>Les entités juridiques sont indisponibles</value></data>
+</root>

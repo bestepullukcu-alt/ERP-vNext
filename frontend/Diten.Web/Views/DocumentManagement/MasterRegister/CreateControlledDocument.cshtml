@@ -1,0 +1,26 @@
+@using Diten.Web.Views.DocumentManagement.MasterRegister
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MasterRegisterIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["UnifiedCreateTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canCreate = Perms.Has("platform.document-management.master-register.registration.create")
+        && Perms.Has("platform.document-management.master-register.manage")
+        && Perms.Has("platform.document-management.master-register.link")
+        && Perms.Has("platform.document-management.controlled-documents.create");
+    var canRetry = Perms.Has("platform.document-management.master-register.registration.reconcile");
+}
+
+<partial name="~/Views/DocumentManagement/MasterRegister/_CreateControlledDocumentForm.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/MasterRegister/_CreateControlledDocumentL10n.cshtml" />
+    <script>
+        window.ControlledDocumentRegistrationConfig = {
+            canCreate: @Json.Serialize(canCreate),
+            canRetry: @Json.Serialize(canRetry)
+        };
+    </script>
+    <script src="~/assets/js/DocumentManagement/MasterRegister/create-controlled-document.js" asp-append-version="true"></script>
+}

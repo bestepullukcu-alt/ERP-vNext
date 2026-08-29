@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="ActivateSegment" xml:space="preserve"><value>Activar</value></data>
+  <data name="ActivateSegmentConfirm" xml:space="preserve"><value>¿Activar este segmento? Sus criterios quedarán congelados; cambiar la regla requerirá una nueva versión.</value></data>
+  <data name="ActivatedAt" xml:space="preserve"><value>Activado el</value></data>
+  <data name="Active" xml:space="preserve"><value>Activo</value></data>
+  <data name="AddGroup" xml:space="preserve"><value>Añadir grupo</value></data>
+  <data name="AddGroupAtRoot" xml:space="preserve"><value>Añadir grupo</value></data>
+  <data name="AddGroupInside" xml:space="preserve"><value>Grupo dentro</value></data>
+  <data name="AddMember" xml:space="preserve"><value>Añadir miembro</value></data>
+  <data name="AddPredicate" xml:space="preserve"><value>Añadir predicado</value></data>
+  <data name="AddPredicateAtRoot" xml:space="preserve"><value>Añadir condición</value></data>
+  <data name="AddPredicateInside" xml:space="preserve"><value>Condición dentro</value></data>
+  <data name="Apply" xml:space="preserve"><value>Aplicar</value></data>
+  <data name="ArchiveSegment" xml:space="preserve"><value>Archivar segmento</value></data>
+  <data name="ArchiveSegmentConfirm" xml:space="preserve"><value>¿Archivar este segmento? No se elimina nada; queda de solo lectura y sigue siendo explicable.</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="ArchivedSegmentReadOnly" xml:space="preserve"><value>Este segmento está archivado y es de solo lectura.</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>¿Está seguro?</value></data>
+  <data name="Attribute" xml:space="preserve"><value>Atributo</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Volver a la lista</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Eliminación masiva</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>¿Eliminar los registros seleccionados?</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>Unidad de negocio</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="CandidateCount" xml:space="preserve"><value>Candidatos</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Clasificación</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Columnas</value></data>
+  <data name="CommaSeparated" xml:space="preserve"><value>Separe los valores con comas</value></data>
+  <data name="CreateSegment" xml:space="preserve"><value>Crear segmento</value></data>
+  <data name="CriteriaHelp" xml:space="preserve"><value>La regla es un árbol de predicados tipado almacenado con el segmento. Atributos, operadores y parámetros provienen del catálogo publicado.</value></data>
+  <data name="CriteriaSection" xml:space="preserve"><value>Criterios</value></data>
+  <data name="CriteriaState" xml:space="preserve"><value>Criterios</value></data>
+  <data name="Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="DynamicForbidsManualHelp" xml:space="preserve"><value>Un segmento dinámico rechaza filas manuales. Cámbielo a híbrido si necesita una excepción manual, para que la etiqueta no mienta sobre el origen de un miembro.</value></data>
+  <data name="Edit" xml:space="preserve"><value>Editar</value></data>
+  <data name="EditSegment" xml:space="preserve"><value>Editar segmento</value></data>
+  <data name="Editable" xml:space="preserve"><value>Editable</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Vigente desde</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Vigente hasta</value></data>
+  <data name="EmptyGroupHelp" xml:space="preserve"><value>Este grupo aún no tiene condiciones. Añada una o elimine el grupo: un grupo vacío no se puede guardar.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>No se encontraron segmentos.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Se ha producido un error.</value></data>
+  <data name="ExcludedCount" xml:space="preserve"><value>Excluidos</value></data>
+  <data name="Export" xml:space="preserve"><value>Exportar</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtro</value></data>
+  <data name="From" xml:space="preserve"><value>Desde</value></data>
+  <data name="Frozen" xml:space="preserve"><value>Congelado</value></data>
+  <data name="FrozenCriteriaHelp" xml:space="preserve"><value>Esta versión está activa y sus criterios están congelados. Cree una nueva versión para cambiar la regla, de modo que las selecciones pasadas sigan siendo explicables.</value></data>
+  <data name="GroupHelp" xml:space="preserve"><value>Un grupo combina sus hijos; un grupo NOT admite exactamente un hijo.</value></data>
+  <data name="GroupNode" xml:space="preserve"><value>Grupo</value></data>
+  <data name="GroupOperator" xml:space="preserve"><value>Operador de grupo</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identidad</value></data>
+  <data name="Import" xml:space="preserve"><value>Importar</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Incluir archivados</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Ciclo de vida</value></data>
+  <data name="LimitReached" xml:space="preserve"><value>Límite alcanzado</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando...</value></data>
+  <data name="MatchMode" xml:space="preserve"><value>Modo de coincidencia</value></data>
+  <data name="MatchedCount" xml:space="preserve"><value>Miembros</value></data>
+  <data name="MembersHelp" xml:space="preserve"><value>Aquí solo hay filas escritas a mano: incluir o excluir. La pertenencia derivada nunca se escribe.</value></data>
+  <data name="MembersSection" xml:space="preserve"><value>Pertenencia manual</value></data>
+  <data name="MembershipMode" xml:space="preserve"><value>Modo de pertenencia</value></data>
+  <data name="MembershipNeverStoredHelp" xml:space="preserve"><value>La pertenencia nunca se almacena: no existe lista de miembros, recuento ni marca de última resolución en un segmento.</value></data>
+  <data name="MembershipSource" xml:space="preserve"><value>Origen</value></data>
+  <data name="Move" xml:space="preserve"><value>Mover</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Nueva versión</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>¿Crear una nueva versión borrador? Los criterios se clonan con nuevos ids de nodo y la versión actual sigue funcionando.</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="NoCriteria" xml:space="preserve"><value>Aún no hay criterios.</value></data>
+  <data name="NoMembers" xml:space="preserve"><value>No hay filas de pertenencia manual.</value></data>
+  <data name="NoValueNeeded" xml:space="preserve"><value>No requiere valor</value></data>
+  <data name="NotGroupHelp" xml:space="preserve"><value>NOT admite exactamente una condición.</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notas</value></data>
+  <data name="Operator" xml:space="preserve"><value>Operador</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Un segmento es la DEFINICIÓN de quién pertenece a un conjunto, nunca una lista almacenada. La pertenencia se deriva cada vez que se consulta.</value></data>
+  <data name="ParentGroup" xml:space="preserve"><value>Padre</value></data>
+  <data name="Passive" xml:space="preserve"><value>Pasivo</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>No tiene permiso para consultar esta lista, así que el valor debe introducirse por id.</value></data>
+  <data name="PredicateCount" xml:space="preserve"><value>Predicados</value></data>
+  <data name="PredicateNode" xml:space="preserve"><value>Condición</value></data>
+  <data name="ProductPickerUnavailable" xml:space="preserve"><value>No tiene permiso para consultar productos globales, así que este valor no puede elegirse aquí.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Vista rápida</value></data>
+  <data name="ReasonCodes" xml:space="preserve"><value>Motivos</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>Segmento activado.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Registro archivado.</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>Registro creado.</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>Registro actualizado.</value></data>
+  <data name="Remove" xml:space="preserve"><value>Quitar</value></data>
+  <data name="Reset" xml:space="preserve"><value>Restablecer</value></data>
+  <data name="ResolvePreviewHelp" xml:space="preserve"><value>Se calcula a demanda y no se guarda en ninguna parte. Los candidatos eliminados se listan con el motivo de su exclusión.</value></data>
+  <data name="ResolvePreviewSection" xml:space="preserve"><value>Vista previa de pertenencia</value></data>
+  <data name="RootCombinatorHelp" xml:space="preserve"><value>cómo se combinan los nodos de nivel superior</value></data>
+  <data name="RootLevel" xml:space="preserve"><value>Nivel raíz</value></data>
+  <data name="RunResolve" xml:space="preserve"><value>Ejecutar vista previa</value></data>
+  <data name="Save" xml:space="preserve"><value>Guardar</value></data>
+  <data name="SaveBeforeMembers" xml:space="preserve"><value>Guarde primero el segmento; las filas de pertenencia manual se añaden después.</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Guardar vista</value></data>
+  <data name="Search" xml:space="preserve"><value>Buscar</value></data>
+  <data name="SegmentCode" xml:space="preserve"><value>Código del segmento</value></data>
+  <data name="SegmentCodeHelp" xml:space="preserve"><value>Clave de negocio estable. Nunca se renombra; cambie el nombre en su lugar.</value></data>
+  <data name="SegmentContractUnavailable" xml:space="preserve"><value>El contrato de capacidades de Segmento no está disponible. Las acciones están deshabilitadas.</value></data>
+  <data name="SegmentName" xml:space="preserve"><value>Nombre del segmento</value></data>
+  <data name="SegmentStatus" xml:space="preserve"><value>Estado</value></data>
+  <data name="SegmentType" xml:space="preserve"><value>Tipo de segmento</value></data>
+  <data name="SegmentTypeHelp" xml:space="preserve"><value>static = solo la lista manual. dynamic = solo la regla (las filas manuales se rechazan). hybrid = la regla más inclusiones/exclusiones manuales.</value></data>
+  <data name="SegmentVersion" xml:space="preserve"><value>Versión</value></data>
+  <data name="SegmentsMenu" xml:space="preserve"><value>Segmentos</value></data>
+  <data name="SegmentsTitle" xml:space="preserve"><value>Segmentos</value></data>
+  <data name="SelectAccount" xml:space="preserve"><value>Buscar una cuenta</value></data>
+  <data name="SelectContact" xml:space="preserve"><value>Buscar un contacto</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seleccionar...</value></data>
+  <data name="SelectTerritoryModel" xml:space="preserve"><value>Seleccione primero un modelo de territorio</value></data>
+  <data name="SelectionReason" xml:space="preserve"><value>Motivo de selección</value></data>
+  <data name="SelectionReasonHelp" xml:space="preserve"><value>Obligatorio: una pertenencia manual sin motivo no se puede crear.</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Mostrar todo</value></data>
+  <data name="Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="StatusSeparateEndpointHelp" xml:space="preserve"><value>El estado no se cambia aquí: activar y archivar son acciones separadas con sus propios permisos.</value></data>
+  <data name="SubjectDisplayName" xml:space="preserve"><value>Nombre visible</value></data>
+  <data name="SubjectDisplayNameHelp" xml:space="preserve"><value>Solo para visualización y auditoría. Explícitamente no es fuente de verdad.</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>Id. del sujeto</value></data>
+  <data name="SubjectIdHelp" xml:space="preserve"><value>El id se toma tal cual; el maestro referenciado no se lee ni se modifica aquí.</value></data>
+  <data name="SubjectPickerHelp" xml:space="preserve"><value>Al seleccionar se rellenan el id y el nombre visible de abajo. El id sigue siendo el campo de referencia y puede escribirse a mano.</value></data>
+  <data name="SubjectType" xml:space="preserve"><value>Tipo de sujeto</value></data>
+  <data name="SubjectTypeHelp" xml:space="preserve"><value>Qué agrupa el segmento. Inmutable tras la creación: un segmento no debe empezar a responder otra pregunta en silencio.</value></data>
+  <data name="Superseded" xml:space="preserve"><value>Sustituido</value></data>
+  <data name="SupersededHelp" xml:space="preserve"><value>Una versión más reciente la ha sustituido. Sigue resolviéndose, porque explicar una selección pasada requiere la regla vigente entonces.</value></data>
+  <data name="To" xml:space="preserve"><value>Hasta</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Desconocido</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Actualizado el</value></data>
+  <data name="Verdict" xml:space="preserve"><value>Veredicto</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ver detalles</value></data>
+  <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+</root>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Vista rápida</value></data>
+  <data name="CycleCapacitiesTitle" xml:space="preserve"><value>Capacidad de ciclo</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Cuántas visitas caben en un periodo de ciclo. Una estimación basada en el calendario laboral publicado y un presupuesto de actividad introducido.</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>El servicio de capacidad de ciclo no está disponible.</value></data>
+  <data name="CreateCycleCapacity" xml:space="preserve"><value>Nueva capacidad</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nueva capacidad de ciclo</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar capacidad de ciclo</value></data>
+  <data name="CyclePeriod" xml:space="preserve"><value>Periodo de ciclo</value></data>
+  <data name="CycleCode" xml:space="preserve"><value>Código de periodo</value></data>
+  <data name="CycleName" xml:space="preserve"><value>Nombre de periodo</value></data>
+  <data name="PeriodWindow" xml:space="preserve"><value>Ventana del periodo</value></data>
+  <data name="CalendarCountryCode" xml:space="preserve"><value>País del calendario</value></data>
+  <data name="DailyWorkMinutes" xml:space="preserve"><value>Jornada laboral (minutos)</value></data>
+  <data name="MinutesPerVisit" xml:space="preserve"><value>Minutos por visita</value></data>
+  <data name="Fte" xml:space="preserve"><value>ETC</value></data>
+  <data name="MonthCount" xml:space="preserve"><value>Meses</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Actualizado</value></data>
+  <data name="ArchiveCycleCapacity" xml:space="preserve"><value>Archivar</value></data>
+  <data name="ArchiveCycleCapacityConfirm" xml:space="preserve"><value>¿Archivar esta capacidad? No se elimina nada y el periodo queda libre para una nueva capacidad.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Capacidad archivada.</value></data>
+  <data name="ArchivedFilter" xml:space="preserve"><value>Archivado</value></data>
+  <data name="ArchivedHidden" xml:space="preserve"><value>Archivados ocultos</value></data>
+  <data name="ArchivedOnly" xml:space="preserve"><value>Archivado</value></data>
+  <data name="PeriodClosedLock" xml:space="preserve"><value>Periodo cerrado</value></data>
+  <data name="EstimateNoticeTitle" xml:space="preserve"><value>Esto es una estimación, no una cuota.</value></data>
+  <data name="EstimateNoticeBody" xml:space="preserve"><value>La cifra se basa en tiempos medios de actividad y un ETC provisional configurado, no en una plantilla de RR. HH. Los días laborables provienen del calendario publicado y pueden cambiar.</value></data>
+  <data name="BudgetVisitMinutesZero" xml:space="preserve"><value>El tiempo de producto promocionado y no promocionado no puede ser cero en ambos casos.</value></data>
+  <data name="BudgetDailySpendExceedsDay" xml:space="preserve"><value>El desplazamiento, el reporte y el cuestionario no dejan espacio para visitas en la jornada.</value></data>
+  <data name="PinnedPeriodSection" xml:space="preserve"><value>Periodo vinculado</value></data>
+  <data name="ActivityBudgetSection" xml:space="preserve"><value>Presupuesto de minutos de actividad</value></data>
+  <data name="MonthlyPlanSection" xml:space="preserve"><value>Plan mensual</value></data>
+  <data name="FieldForceSection" xml:space="preserve"><value>Equipo de campo</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>Notas</value></data>
+  <data name="EstimateSectionHint" xml:space="preserve"><value>Los días laborables provienen del calendario de la plataforma y ya excluyen fines de semana, festivos y cierres. Aquí solo se restan sus propias deducciones.</value></data>
+  <data name="CyclePeriodsBreadcrumb" xml:space="preserve"><value>Periodos de ciclo</value></data>
+  <data name="NonWorkingDays" xml:space="preserve"><value>Días no laborables</value></data>
+  <data name="FteMovedToMonthly" xml:space="preserve"><value>El ETC ahora se define por mes, en el plan mensual de abajo.</value></data>
+  <data name="NoPeriodsAvailable" xml:space="preserve"><value>Todavía no hay ningún periodo de ciclo. Cree uno primero.</value></data>
+  <data name="CalendarCountryHint" xml:space="preserve"><value>Se usa solo para leer el calendario laboral. No cambia el alcance del periodo.</value></data>
+  <data name="CalendarCountryDerivedHint" xml:space="preserve"><value>Derivado del periodo con alcance de país; no se puede cambiar aquí.</value></data>
+  <data name="CalendarCountryNotReady" xml:space="preserve"><value>Aún no hay países disponibles: no existe ningún periodo con alcance de país.</value></data>
+  <data name="CalendarCountryDerived" xml:space="preserve"><value>Derivado</value></data>
+  <data name="CalendarCountryIsNotScope" xml:space="preserve"><value>Un parámetro del calendario laboral, no un alcance.</value></data>
+  <data name="DailyWorkMinutesHint" xml:space="preserve"><value>Minutos de una jornada de campo (8 h = 480).</value></data>
+  <data name="PerVisitHint" xml:space="preserve"><value>Minutos por visita.</value></data>
+  <data name="PerDayHint" xml:space="preserve"><value>Minutos por día de campo.</value></data>
+  <data name="PromoProductTime" xml:space="preserve"><value>Tiempo de producto promocionado</value></data>
+  <data name="NonPromoProductTime" xml:space="preserve"><value>Tiempo de producto no promocionado</value></data>
+  <data name="TravelingTime" xml:space="preserve"><value>Tiempo de desplazamiento</value></data>
+  <data name="ReportDuration" xml:space="preserve"><value>Tiempo de reporte</value></data>
+  <data name="QuizDuration" xml:space="preserve"><value>Tiempo de cuestionario</value></data>
+  <data name="MonthlyDeductionsHint" xml:space="preserve"><value>Los meses provienen de la ventana del periodo y no se pueden añadir ni quitar. No deduzca fines de semana ni festivos: el calendario laboral ya los ha excluido.</value></data>
+  <data name="MonthsPendingPeriod" xml:space="preserve"><value>Elija primero un periodo; su ventana decide qué meses aparecen.</value></data>
+  <data name="Month" xml:space="preserve"><value>Mes</value></data>
+  <data name="MeetingDays" xml:space="preserve"><value>Días de reunión</value></data>
+  <data name="TrainingDays" xml:space="preserve"><value>Días de formación</value></data>
+  <data name="VacationDays" xml:space="preserve"><value>Días de permiso</value></data>
+  <data name="MicroTargetingDayCount" xml:space="preserve"><value>Días de microsegmentación</value></data>
+  <data name="MicroTargetingDuration" xml:space="preserve"><value>Microsegmentación min/día</value></data>
+  <data name="FteInterimHint" xml:space="preserve"><value>Un promedio provisional configurado. Cuando llegue la integración con RR. HH. vendrá automáticamente por unidad de negocio y año.</value></data>
+  <data name="CalculationUnavailable" xml:space="preserve"><value>No se pudo leer la estimación.</value></data>
+  <data name="CalendarForbiddenTitle" xml:space="preserve"><value>Sin permiso para leer el calendario laboral</value></data>
+  <data name="CalendarForbiddenBody" xml:space="preserve"><value>Es posible que el calendario exista; esta cuenta carece del permiso de plataforma correspondiente. Solicítelo a un administrador.</value></data>
+  <data name="CalendarUnresolvedTitle" xml:space="preserve"><value>El calendario laboral no respondió</value></data>
+  <data name="CalendarUnresolvedBody" xml:space="preserve"><value>No se muestra ninguna estimación en lugar de una supuesta. Publique un calendario laboral para este país y año e inténtelo de nuevo.</value></data>
+  <data name="TotalVisitNumber" xml:space="preserve"><value>Visitas</value></data>
+  <data name="WorkingDays" xml:space="preserve"><value>Días laborables</value></data>
+  <data name="DeductedDays" xml:space="preserve"><value>Deducidos</value></data>
+  <data name="FieldDays" xml:space="preserve"><value>Días de campo</value></data>
+  <data name="VisitMinutes" xml:space="preserve"><value>Minutos de visita</value></data>
+  <data name="NoFieldDays" xml:space="preserve"><value>Sin días de campo</value></data>
+</root>

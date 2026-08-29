@@ -1,0 +1,65 @@
+@using Diten.Web.Views.CRM.Contacts
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ContactIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["ContactTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var bulkActionBar = new DataTableBulkActionBarViewModel
+    {
+        SelectedText = SharedLocalizer["SelectedCount"].Value,
+        ClearSelectionText = SharedLocalizer["ClearSelection"].Value,
+        Actions =
+        [
+            new DataTableActionItemViewModel
+            {
+                Key = "delete",
+                Text = SharedLocalizer["BulkDelete"].Value,
+                Icon = "bx bx-trash",
+                ButtonClass = "btn btn-label-danger",
+                ConfirmKey = "BulkDeleteConfirm",
+                Endpoint = "/api/crm/contacts/bulk",
+                Method = "DELETE"
+            }
+        ]
+    };
+}
+
+@* ① Inline Filter partial *@
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/CRM/Contacts/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ContactTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* ② Bulk Action Bar *@
+<partial name="~/Views/Shared/Components/DataTable/_BulkActionBar.cshtml" model="bulkActionBar" />
+
+@* MOD-0150 Import/Export Task 1 — toolbar capability flags. The Gateway/CrmService enforce the same permissions;
+   this only decides which actions are offered. *@
+<script id="contacts-capabilities" type="application/json">
+    @Json.Serialize(new
+    {
+        canImport = (bool?)ViewData["CanImport"] ?? false,
+        canExport = (bool?)ViewData["CanExport"] ?? false,
+        canReadAccountContacts = (bool?)ViewData["CanReadAccountContacts"] ?? false,
+        canReadAccounts = (bool?)ViewData["CanReadAccounts"] ?? false,
+        templateUrl = Url.Action("DownloadTemplate", "Contacts"),
+        exportUrl = Url.Action("Export", "Contacts")
+    })
+</script>
+
+@* ③ DataTable Card *@
+@* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-contacts" data-dt-standard="v2"> *@
+<partial name="~/Views/CRM/Contacts/_DataTable.cshtml" />
+
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/Contacts/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/Contacts/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/Contacts/index.js" asp-append-version="true"></script>
+}

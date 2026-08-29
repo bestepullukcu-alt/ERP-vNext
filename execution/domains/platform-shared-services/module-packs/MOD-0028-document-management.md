@@ -1,6 +1,6 @@
 ---
 id: MOD-0028
-name: Documentation Management
+name: Documentation & Evidence Management
 domain: platform-shared-services
 service: Diten.Platform
 shell: tenant
@@ -14,7 +14,7 @@ target: 2026-06-22
 form_field_count: 19
 ---
 
-# MOD-0028 - Documentation Management
+# MOD-0028 - Documentation & Evidence Management
 
 ## 1. Module Summary
 
@@ -31,18 +31,9 @@ MOD-0028 is the tenant-scoped backbone governance module for documentation colle
 
 - Blueprint lookup result: `MOD-0028 = Documentation & Evidence Management`.
 - Registry result: `MOD-0028 = Documentation & Evidence Management`; deprecated aliases include `MOD-0028-document-management` and `MOD-0028-document-managementController`.
-- v2.3.0 specification and this requested pack name use `Documentation Management`.
-- Interim module-pack/runtime display name: `Documentation Management`.
-- Enterprise Architect decision gate:
-  - If MOD-0031 remains the separate owner of Evidence Pack assembly/export, preserve `Documentation Management` as the MOD-0028 pack/display name and mark `Documentation & Evidence Management` as a legacy/broad alias in canonical sources.
-  - If the Blueprint canonical name remains unchanged, update this pack's frontmatter `name` to `Documentation & Evidence Management` and record `Documentation Management` as the v2.3.0 functional/spec alias.
-- Recommended outcome:
-  - Preserve the MOD-0028 pack/display name as `Documentation Management`.
-  - Treat `Documentation & Evidence Management` as a legacy/broad canonical alias unless the Enterprise Architect decides otherwise.
-  - Rationale: MOD-0031 remains the owner of Evidence Pack assembly/export, so MOD-0028 must not expand into evidence-pack ownership.
-  - If the Enterprise Architect rejects this recommendation, change frontmatter `name` to `Documentation & Evidence Management` and record `Documentation Management` as the v2.3.0 functional/spec alias.
-- **BLOCKER / 🔴 TBD:** The Enterprise Architect must choose and record one of the two reconciliation outcomes above. Until then, the requested/spec name does not match the current Blueprint and registry canonical name, and this pack cannot become `approved` or `ready-for-dev`.
-- The Python preflight could not run because Python is unavailable on this workstation; the workbook was inspected directly and confirms the mismatch.
+- Canonical module-pack/runtime display name: `Documentation & Evidence Management`.
+- The v2.3.0 specification name `Documentation Management` is retained as the historical/legacy functional alias.
+- This identity reconciliation does not change MOD-0031 ownership of Evidence Pack assembly/export or expand MOD-0028 scope.
 - No new ID is created. The existing `MOD-0028` identity remains in use.
 
 ### Documentation Structure Naming Decision
@@ -522,6 +513,7 @@ dotnet build gateway/Diten.ApiGateway/Diten.ApiGateway.csproj -c Debug
 
 ## 19. Implementation Notes
 
+- Historical/legacy alias: `Documentation Management` (the v2.3.0 functional/specification name). The canonical Blueprint and registry name is `Documentation & Evidence Management`.
 - The first golden flow is read-only: inspect v2.3.0 alignment, map current backend/frontend/routes/entities/permissions/audit/tests, detect shell placement and contract gaps, and produce an evidence-backed verdict without code changes.
 - Wave 1 must not seed data, create placeholders, invent endpoints, activate deferred scopes, or mutate runtime files.
 - If current implementation places main governance screens under PlatformAdminShell, activates Position/Person, lacks a MOD-0220 binding seam, applies NL-01 only in UI, or lacks audit/correlation propagation, classify the issue as P0.

@@ -1,0 +1,26 @@
+@model Diten.Web.Models.MasterData.ProductEditViewModel
+@using Diten.Web.Views.MasterData.Products
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProductsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["EditProduct"].Value;
+    Layout = "_LayoutTenantShell";
+}
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h5 class="mb-0">@Localizer["EditProduct"]</h5>
+    <a href="/MasterData/Products/@Model.ProductId" class="btn btn-label-secondary">@Localizer["Cancel"]</a>
+</div>
+<form asp-action="Edit" asp-route-productId="@Model.ProductId" method="post" id="productForm">
+    @Html.AntiForgeryToken()
+    <input asp-for="ProductId" type="hidden" />
+    <partial name="~/Views/MasterData/Products/_Form.cshtml" model="Model" />
+    <div class="d-flex justify-content-end gap-2 mt-3">
+        <a href="/MasterData/Products/@Model.ProductId" class="btn btn-label-secondary">@Localizer["Cancel"]</a>
+        <button type="submit" class="btn btn-primary">@Localizer["Save"]</button>
+    </div>
+</form>
+@section Scripts {
+    <partial name="~/Views/MasterData/Products/_IndexL10n.cshtml" />
+    <script src="~/assets/js/MasterData/Products/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/MasterData/Products/form.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,95 @@
+@using Diten.Web.Views.Platform.WorkingCalendars
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkingCalendarsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="workingcalendars-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Actions = Localizer["Actions"].Value,
+        Edit = SharedLocalizer["EditRecord"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Details = SharedLocalizer["Details"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        BulkDelete = SharedLocalizer["BulkDelete"].Value,
+        BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        ComingSoon = SharedLocalizer["ComingSoon"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        Description = SharedLocalizer["Description"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        RecordCreated = SharedLocalizer["RecordCreated"].Value,
+        RecordUpdated = SharedLocalizer["RecordUpdated"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        AddNew = Localizer["AddNew"].Value,
+        CalendarCode = Localizer["CalendarCode"].Value,
+        CalendarName = Localizer["CalendarName"].Value,
+        CountryCode = Localizer["CountryCode"].Value,
+        CalendarYear = Localizer["CalendarYear"].Value,
+        WeekendDays = Localizer["WeekendDays"].Value,
+        DayCount = Localizer["DayCount"].Value,
+        Activate = Localizer["Activate"].Value,
+        ActivateConfirm = Localizer["ActivateConfirm"].Value,
+        Archive = Localizer["Archive"].Value,
+        ArchiveConfirm = Localizer["ArchiveConfirm"].Value,
+        IncludeArchived = Localizer["IncludeArchived"].Value,
+        StatusDraft = Localizer["StatusDraft"].Value,
+        StatusActive = Localizer["StatusActive"].Value,
+        StatusArchived = Localizer["StatusArchived"].Value,
+        Inherited = Localizer["Inherited"].Value,
+        InheritedFromCountry = Localizer["InheritedFromCountry"].Value,
+        NoCalendarData = Localizer["NoCalendarData"].Value,
+        ResolutionResolved = Localizer["ResolutionResolved"].Value,
+        ResolutionCalendarMissing = Localizer["ResolutionCalendarMissing"].Value,
+        ResolutionYearMissing = Localizer["ResolutionYearMissing"].Value,
+        ResolutionCountryUnknown = Localizer["ResolutionCountryUnknown"].Value,
+        AddDay = Localizer["AddDay"].Value,
+        EditDay = Localizer["EditDay"].Value,
+        Recurrence = Localizer["Recurrence"].Value,
+        WorkingDayOverrideHint = Localizer["WorkingDayOverrideHint"].Value,
+        ArchiveDayConfirm = Localizer["ArchiveDayConfirm"].Value,
+        DayCode = Localizer["DayCode"].Value,
+        DayName = Localizer["DayName"].Value,
+        DayDate = Localizer["DayDate"].Value,
+        ObservedDate = Localizer["ObservedDate"].Value,
+        DayType = Localizer["DayType"].Value,
+        IsHalfDay = Localizer["IsHalfDay"].Value,
+        // Vocabulary tokens arrive from the contract as hyphenated slugs, which are not valid identifiers — they go
+        // in a nested map so the UI shows "Resmî tatil" instead of "public-holiday".
+        DayTypeLabels = new Dictionary<string, string>
+        {
+            ["public-holiday"] = Localizer["DayTypePublicHoliday"].Value,
+            ["religious-holiday"] = Localizer["DayTypeReligiousHoliday"].Value,
+            ["moveable-holiday"] = Localizer["DayTypeMoveableHoliday"].Value,
+            ["company-holiday"] = Localizer["DayTypeCompanyHoliday"].Value,
+            ["company-closure"] = Localizer["DayTypeCompanyClosure"].Value,
+            ["working-day-override"] = Localizer["DayTypeWorkingDayOverride"].Value
+        },
+        RecurrenceLabels = new Dictionary<string, string>
+        {
+            ["none"] = Localizer["RecurrenceNone"].Value,
+            ["annual-fixed"] = Localizer["RecurrenceAnnualFixed"].Value,
+            ["annual-moveable"] = Localizer["RecurrenceAnnualMoveable"].Value
+        },
+        DayStatusLabels = new Dictionary<string, string>
+        {
+            ["active"] = Localizer["StatusActive"].Value,
+            ["archived"] = Localizer["StatusArchived"].Value
+        }
+    })
+</script>

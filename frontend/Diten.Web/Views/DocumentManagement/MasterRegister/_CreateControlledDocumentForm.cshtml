@@ -1,0 +1,312 @@
+@using Diten.Web.Views.DocumentManagement.MasterRegister
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MasterRegisterIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject IConfiguration Configuration
+@{
+    var ownerFunctionSetCode = Configuration["DocumentManagement:ReferenceData:OwnerFunctionSetCode"] ?? "department-type";
+    var retentionClassSetCode = Configuration["DocumentManagement:ReferenceData:RetentionClassSetCode"] ?? "qms-document-retention";
+    var countrySetCode = Configuration["DocumentManagement:ReferenceData:CountrySetCode"] ?? "country";
+    var siteSetCode = Configuration["DocumentManagement:ReferenceData:SiteSetCode"] ?? "site";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h5 class="mb-1">@Localizer["UnifiedCreateTitle"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb breadcrumb-style1 mb-0">
+                <li class="breadcrumb-item"><a href="/DocumentManagementMasterRegister">@Localizer["DocumentMasterRegisterTitle"]</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@Localizer["UnifiedCreateTitle"]</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="/DocumentManagementMasterRegister" class="btn btn-label-secondary">
+            <i class="icon-base bx bx-x me-1"></i>@SharedLocalizer["Cancel"]
+        </a>
+        <button type="submit" form="controlledDocumentRegistrationForm" class="btn btn-primary" id="registrationSubmit">
+            <span class="spinner-border spinner-border-sm me-1 d-none" aria-hidden="true"></span>
+            <i class="icon-base bx bx-file me-1"></i>@Localizer["CreateAndRegister"]
+        </button>
+    </div>
+</div>
+
+<div class="alert alert-warning d-none" id="registrationPermissionAlert" role="alert">
+    @Localizer["UnifiedCreatePermissionRequired"]
+</div>
+
+<div class="alert alert-primary alert-dismissible fade show" role="alert">
+    <div class="d-flex gap-3">
+        <i class="icon-base bx bx-info-circle fs-4 mt-1"></i>
+        <ul class="mb-0 ps-3">
+            <li>@Localizer["RegistrationSuccessRequiresCompleteRelationship"]</li>
+            <li>@Localizer["RegistrationDoesNotAllocateIdentifiers"]</li>
+            <li>@Localizer["RegistrationDoesNotApproveReleaseSignOrEffective"]</li>
+        </ul>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="@SharedLocalizer["Close"]"></button>
+</div>
+
+<form id="controlledDocumentRegistrationForm" class="needs-validation" novalidate enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <section class="card mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-12 col-lg-4">
+                    <label class="form-label" for="registrationKind">@Localizer["DocumentKind"] <span class="text-danger">*</span></label>
+                    <select class="form-select" id="registrationKind" required>
+                        <option value="ControlledDocument" selected>@Localizer["KindControlledDocument"]</option>
+                        <option value="Record">@Localizer["KindRecord"]</option>
+                        <option value="Variant">@Localizer["KindVariant"]</option>
+                    </select>
+                    <div class="form-text">@Localizer["KindHint"]</div>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <label class="form-label" for="registrationDocumentScope">@Localizer["DocumentScope"] <span class="text-danger">*</span></label>
+                    <select class="form-select" id="registrationDocumentScope" required>
+                        <option value="Company" selected>@Localizer["DocumentScopeCompany"]</option>
+                        <option value="Corporate">@Localizer["DocumentScopeCorporate"]</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+    @* Variant-only: parent controlled document + variant type + locale. Shown by the script when kind = Variant. *@
+    <section class="card mb-4 d-none" id="registrationVariantSection">
+        <div class="card-body p-4">
+            <h6 class="mb-3">@Localizer["VariantDetails"]</h6>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label" for="registrationParent">@Localizer["ParentDocument"] <span class="text-danger">*</span></label>
+                    <select class="form-select" id="registrationParent">
+                        <option value=""></option>
+                    </select>
+                    <div class="form-text">@Localizer["VariantContentChangeHint"]</div>
+                </div>
+                @* Parent preview — populated by the script when a parent is selected. *@
+                <div class="col-12 d-none" id="registrationParentPreview">
+                    <div class="d-flex align-items-center gap-3 border rounded p-3">
+                        <div class="avatar avatar-lg flex-shrink-0">
+                            <span class="avatar-initial rounded bg-label-primary">
+                                <i class="icon-base bx bx-file-blank" id="parentPreviewIcon"></i>
+                            </span>
+                        </div>
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="fw-medium text-heading text-truncate" id="parentPreviewTitle"></div>
+                            <div class="small text-muted" id="parentPreviewMeta"></div>
+                            <div class="small text-muted" id="parentPreviewFolder"></div>
+                        </div>
+                        <div class="d-flex flex-column flex-sm-row gap-2 flex-shrink-0">
+                            <a class="btn btn-sm btn-label-primary d-none" id="parentPreviewView" target="_blank" rel="noopener">
+                                <i class="icon-base bx bx-show me-1"></i>@Localizer["View"]
+                            </a>
+                            <a class="btn btn-sm btn-label-secondary d-none" id="parentPreviewDownload" download>
+                                <i class="icon-base bx bx-download me-1"></i>@Localizer["Download"]
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="registrationVariantType">@Localizer["VariantType"]</label>
+                    <select class="form-select" id="registrationVariantType">
+                        <option value="Translation" selected>@Localizer["VariantTypeTranslation"]</option>
+                        <option value="SiteAdoption">@Localizer["VariantTypeSiteAdoption"]</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="registrationCountry">@Localizer["CountryCode"]</label>
+                    <select class="form-select" id="registrationCountry" data-reference-set="@countrySetCode">
+                        <option value=""></option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="registrationSite">@Localizer["SiteCode"]</label>
+                    <select class="form-select" id="registrationSite" data-reference-set="@siteSetCode">
+                        <option value=""></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div class="row g-4">
+        <div class="col-12 col-xl-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["Identification"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="registrationTitle">@Localizer["DocumentTitle"] <span class="text-danger">*</span></label>
+                            <input class="form-control" id="registrationTitle" maxlength="512" required />
+                            <div class="invalid-feedback">@SharedLocalizer["ValidationFailed"]</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="registrationLanguage">@Localizer["GoverningLanguage"] <span class="text-danger">*</span></label>
+                            <select class="form-select" id="registrationLanguage" required>
+                                <option value=""></option>
+                            </select>
+                            <div class="invalid-feedback">@Localizer["LanguageSelectionRequired"]</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="registrationTags">@Localizer["Tags"]</label>
+                            <input class="form-control" id="registrationTags" maxlength="1000" placeholder="@Localizer["TagsHint"]" />
+                        </div>
+                        @* Records are not eligible for the governed identifier allocation engine, so an optional manual
+                           record code is offered for them here. Distinct from the governed identifier and hidden for
+                           controlled documents. *@
+                        <div class="col-md-6 d-none" id="registrationRecordCodeField">
+                            <label class="form-label" for="registrationRecordCode">@Localizer["RecordCode"]</label>
+                            <input class="form-control" id="registrationRecordCode" maxlength="120" />
+                            <div class="form-text">@Localizer["RecordCodeHint"]</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="registrationDescription">@Localizer["Description"]</label>
+                            <textarea class="form-control" id="registrationDescription" rows="4" maxlength="4000"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["Classification"]</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label" for="registrationClass">@Localizer["DocumentClass"] <span class="text-danger">*</span></label>
+                            <select class="form-select" id="registrationClass" required>
+                                <option value="PolicyGovernance">@Localizer["ClassPolicyGovernance"]</option>
+                                <option value="ManualSystemDescription">@Localizer["ClassManualSystemDescription"]</option>
+                                <option value="Sop" selected>@Localizer["ClassSop"]</option>
+                                <option value="WorkInstruction">@Localizer["ClassWorkInstruction"]</option>
+                                <option value="FormTemplateRegisterMatrixPlanChecklist">@Localizer["ClassFormTemplateRegisterMatrixPlanChecklist"]</option>
+                                <option value="QualityTechnicalAgreementSdea">@Localizer["ClassQualityTechnicalAgreementSdea"]</option>
+                                <option value="UrgentTemporaryInstruction">@Localizer["ClassUrgentTemporaryInstruction"]</option>
+                                <option value="Other">@Localizer["ClassOther"]</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="registrationCriticality">@Localizer["Criticality"] <span class="text-danger">*</span></label>
+                            <select class="form-select" id="registrationCriticality" required>
+                                <option value="Critical">@Localizer["CriticalityCritical"]</option>
+                                <option value="Major" selected>@Localizer["CriticalityMajor"]</option>
+                                <option value="Minor">@Localizer["CriticalityMinor"]</option>
+                                <option value="UrgentTemporary">@Localizer["CriticalityUrgentTemporary"]</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="registrationType">@Localizer["DocumentType"] <span class="text-danger">*</span></label>
+                            <select class="form-select" id="registrationType" required>
+                                <option value="Sop" selected>@Localizer["TypeSop"]</option>
+                                <option value="WorkInstruction">@Localizer["TypeWorkInstruction"]</option>
+                                <option value="Policy">@Localizer["TypePolicy"]</option>
+                                <option value="Form">@Localizer["TypeForm"]</option>
+                                <option value="Other">@Localizer["TypeOther"]</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["InitialFile"]</h6>
+                    <label class="form-label" for="registrationFile">@Localizer["InitialFile"] <span class="text-danger">*</span></label>
+                    <input class="form-control" type="file" id="registrationFile" required />
+                    <div class="form-text">@Localizer["InitialFileHint"]</div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["Ownership"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="registrationOwnerFunction">@Localizer["OwnerFunction"]</label>
+                            <select class="form-select" id="registrationOwnerFunction" data-reference-set="@ownerFunctionSetCode">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                        <div class="col-12" data-company-field>
+                            <label class="form-label" for="registrationOwnerCompany">@Localizer["OwnerCompany"] <span class="text-danger">*</span></label>
+                            <select class="form-select" id="registrationOwnerCompany" required><option value=""></option></select>
+                        </div>
+                        <div class="col-12 d-none" data-corporate-field>
+                            <label class="form-label" for="registrationCorporateOwner">@Localizer["CorporateOwner"] <span class="text-danger">*</span></label>
+                            <select class="form-select" id="registrationCorporateOwner" disabled required><option value=""></option></select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="registrationProcessRole">@Localizer["ProcessOwnerRole"]</label>
+                            <input class="form-control" id="registrationProcessRole" maxlength="256" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="registrationProcessUser">@Localizer["ProcessOwnerUser"]</label>
+                            <select class="form-select" id="registrationProcessUser"><option value=""></option></select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="registrationAuthorUser">@Localizer["DocumentAuthor"] <span class="text-danger">*</span></label>
+                            <select class="form-select" id="registrationAuthorUser" required><option value=""></option></select>
+                            <div class="invalid-feedback">@SharedLocalizer["ValidationFailed"]</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["GovernanceMetadata"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12" id="registrationReviewCycleField">
+                            <label class="form-label" for="registrationReviewCycle">@Localizer["ReviewCycleMonths"]</label>
+                            <input class="form-control" id="registrationReviewCycle" type="number" min="1" max="120" step="1" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="registrationRetentionClass">@Localizer["GovernedRetentionClass"] <span class="text-danger">*</span></label>
+                            <select class="form-select" id="registrationRetentionClass" data-reference-set="@retentionClassSetCode" required>
+                                <option value=""></option>
+                            </select>
+                            <div class="invalid-feedback">@Localizer["RetentionClassSelectionRequired"]</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["RepositoryPlacement"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12" data-company-field>
+                            <label class="form-label" for="registrationCompany">@Localizer["LegalEntityCompany"] <span class="text-danger">*</span></label>
+                            <select class="form-select" id="registrationCompany" required><option value=""></option></select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="registrationCollectionInstance" id="registrationCollectionInstanceLabel">@Localizer["CompanyCollectionInstance"] <span class="text-danger">*</span></label>
+                            <select class="form-select" id="registrationCollectionInstance" required disabled><option value=""></option></select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="registrationFolder" id="registrationFolderLabel">@Localizer["CompanyFolder"] <span class="text-danger">*</span></label>
+                            <select class="form-select" id="registrationFolder" required disabled><option value=""></option></select>
+                        </div>
+                        <div class="col-12 d-none" id="registrationCorporateInstanceRequired" role="alert">
+                            <div class="alert alert-warning mb-0">@Localizer["CorporateCollectionInstanceProvisioningRequired"]</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>
+
+<div class="card mt-4 d-none" id="registrationOperationCard" aria-live="polite">
+    <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <h6 class="mb-1">@Localizer["RegistrationOperation"]</h6>
+            <span class="badge bg-label-secondary" id="registrationStatus">-</span>
+            <div class="small text-muted mt-2" id="registrationOperationMeta"></div>
+            <div class="small text-danger mt-1 d-none" id="registrationFailure"></div>
+        </div>
+        <button type="button" class="btn btn-label-warning d-none" id="registrationRetry">
+            <i class="icon-base bx bx-refresh me-1"></i>@Localizer["RetryRegistration"]
+        </button>
+    </div>
+</div>

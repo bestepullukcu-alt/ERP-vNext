@@ -1,0 +1,37 @@
+@using Diten.Web.Views.DocumentManagement.MasterRegister
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MasterRegisterIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-masterregister" data-dt-standard="v2" class="datatables-masterregister table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>@Localizer["UID"]</th>
+                    <th class="all">@Localizer["DocumentCode"]</th>
+                    <th class="all">@Localizer["DocumentTitle"]</th>
+                    <th>@Localizer["DocumentClass"]</th>
+                    <th>@Localizer["Criticality"]</th>
+                    <th>@Localizer["LifecycleStatus"]</th>
+                    <th>@Localizer["RegisterStatus"]</th>
+                    <th>@Localizer["Allocation"]</th>
+                    <th>@Localizer["EffectiveDate"]</th>
+                    <th>@Localizer["NextReviewDueDate"]</th>
+                    <th>@Localizer["CreatedAt"]</th>
+                    <th>@Localizer["DocumentKind"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

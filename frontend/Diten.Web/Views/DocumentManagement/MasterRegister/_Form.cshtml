@@ -1,0 +1,299 @@
+@using Diten.Web.Views.DocumentManagement.MasterRegister
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MasterRegisterIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject IConfiguration Configuration
+@{
+    // Governed option list (PSS-012). Resolved server-side so the set can be repointed per environment without a
+    // code change; the script degrades to free text when the set is missing/unpublished/empty.
+    var ownerFunctionSetCode = Configuration["DocumentManagement:ReferenceData:OwnerFunctionSetCode"] ?? "department-type";
+    var isEdit = string.Equals(ViewData["FormMode"] as string, "edit", StringComparison.OrdinalIgnoreCase);
+    var entryId = (Guid)(ViewData["MasterRegisterEntryId"] ?? Guid.Empty);
+    var title = isEdit ? Localizer["DocumentMasterRegisterEdit"] : Localizer["DocumentMasterRegisterCreate"];
+}
+
+@* MOD-0029-FU24 — create/edit metadata form. Allocation (PermanentUid/DocumentCode), lifecycle status, effective
+   date, approval evidence and release-gate results are NEVER editable here: FU06 update is metadata-only and the
+   dedicated FU07/FU08/FU09/FU10 services own those fields. *@
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h5 class="mb-1">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb breadcrumb-style1 mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/DocumentManagementMasterRegister">@Localizer["DocumentMasterRegisterTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="/DocumentManagementMasterRegister" class="btn btn-label-secondary">
+            <i class="icon-base bx bx-x me-1"></i>@SharedLocalizer["Cancel"]
+        </a>
+        <button type="submit" form="masterRegisterForm" class="btn btn-primary">
+            <i class="icon-base bx bx-save me-1"></i>@SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>
+
+<div id="formAlert" class="alert alert-danger d-none" role="alert"></div>
+
+<form id="masterRegisterForm" class="needs-validation" novalidate
+      data-form-mode="@(isEdit ? "edit" : "create")"
+      data-entry-id="@(entryId == Guid.Empty ? string.Empty : entryId.ToString())">
+    @Html.AntiForgeryToken()
+    <div class="row g-4">
+        <div class="col-12 col-xl-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["Identification"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="documentTitle">@Localizer["DocumentTitle"] <span class="text-danger">*</span></label>
+                            <input class="form-control" id="documentTitle" name="documentTitle" maxlength="512" required />
+                            <div class="invalid-feedback">@SharedLocalizer["ValidationFailed"]</div>
+                        </div>
+
+                        @if (isEdit)
+                        {
+                            @* Informational only — the kind and scope of an entry are fixed at creation and cannot be
+                               changed by a metadata edit, so they are shown disabled. *@
+                            <div class="col-md-6">
+                                <label class="form-label" for="documentKindInfo">@Localizer["DocumentKind"]</label>
+                                <input class="form-control" id="documentKindInfo" readonly disabled />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="documentScopeInfo">@Localizer["DocumentScope"]</label>
+                                <input class="form-control" id="documentScopeInfo" readonly disabled />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="permanentUid">@Localizer["PermanentUid"]</label>
+                                <input class="form-control" id="permanentUid" readonly disabled />
+                                <div class="form-text">@Localizer["ProtectedFieldsReadOnly"]</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="documentCode">@Localizer["DocumentCode"]</label>
+                                <input class="form-control" id="documentCode" readonly disabled />
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-md-6">
+                                <label class="form-label" for="permanentUid">@Localizer["PermanentUid"]</label>
+                                <input class="form-control" id="permanentUid" name="permanentUid" maxlength="120" />
+                                <div class="form-text">@Localizer["AllocationHint"]</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="documentCode">@Localizer["DocumentCode"]</label>
+                                <input class="form-control" id="documentCode" name="documentCode" maxlength="120" />
+                            </div>
+                        }
+
+                        <div class="col-md-6">
+                            <label class="form-label" for="legacyCode">@Localizer["LegacyCode"]</label>
+                            <input class="form-control" id="legacyCode" name="legacyCode" maxlength="120" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="governingLanguage">@Localizer["GoverningLanguage"]</label>
+                            <select class="select2 form-select" id="governingLanguage" name="governingLanguage" data-placeholder="@Localizer["GoverningLanguage"]">
+                                <option value=""></option>
+                            </select>
+                            @* Fallback control: shown by the script only when the governed language list cannot be
+                               loaded, so a reference-data gap can never make the field unfillable. *@
+                            <input class="form-control d-none" id="governingLanguageFallback" maxlength="16" placeholder="en" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["Flags"]</h6>
+                    @if (isEdit)
+                    {
+                        <p class="text-muted mb-3">@Localizer["ProtectedFieldsReadOnly"]</p>
+                        <dl class="row mb-0" id="flagsReadOnlyList"></dl>
+                    }
+                    else
+                    {
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="isControlledDocument" name="isControlledDocument" checked />
+                                    <label class="form-check-label" for="isControlledDocument">@Localizer["IsControlledDocument"]</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="isRecord" name="isRecord" />
+                                    <label class="form-check-label" for="isRecord">@Localizer["IsRecord"]</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="isExternalDocument" name="isExternalDocument" />
+                                    <label class="form-check-label" for="isExternalDocument">@Localizer["IsExternalDocument"]</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="isTemplate" name="isTemplate" />
+                                    <label class="form-check-label" for="isTemplate">@Localizer["IsTemplate"]</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="isVariant" name="isVariant" />
+                                    <label class="form-check-label" for="isVariant">@Localizer["IsVariant"]</label>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
+
+            <section class="card mb-4 d-none" id="parentReferenceSection">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["ParentDocument"]</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="parentDocumentUid">@Localizer["ParentDocumentUid"]</label>
+                            <input class="form-control" id="parentDocumentUid" name="parentDocumentUid" maxlength="120" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="parentDocumentCode">@Localizer["ParentDocumentCode"]</label>
+                            <input class="form-control" id="parentDocumentCode" name="parentDocumentCode" maxlength="120" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* Approved Repository (Id/Name/Path) is intentionally NOT editable here: it is owned by the FU16 Repository
+               Assessment process (Repository & Copies tab) and feeds Release Gate 2. Provenance is a create-time only
+               concern, so this whole block only renders on create. *@
+            @if (!isEdit)
+            {
+                <section class="card">
+                    <div class="card-body p-4">
+                        <h6 class="mb-3">@Localizer["Provenance"]</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="sourceSystem">@Localizer["SourceSystem"]</label>
+                                <input class="form-control" id="sourceSystem" name="sourceSystem" maxlength="120" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="sourceLegacyId">@Localizer["SourceLegacyId"]</label>
+                                <input class="form-control" id="sourceLegacyId" name="sourceLegacyId" maxlength="120" />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            }
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["Classification"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="documentClass">@Localizer["DocumentClass"] <span class="text-danger">*</span></label>
+                            <select class="select2 form-select" id="documentClass" name="documentClass" data-placeholder="@Localizer["DocumentClass"]" required>
+                                <option value="PolicyGovernance">@Localizer["ClassPolicyGovernance"]</option>
+                                <option value="ManualSystemDescription">@Localizer["ClassManualSystemDescription"]</option>
+                                <option value="Sop" selected>@Localizer["ClassSop"]</option>
+                                <option value="WorkInstruction">@Localizer["ClassWorkInstruction"]</option>
+                                <option value="FormTemplateRegisterMatrixPlanChecklist">@Localizer["ClassFormTemplateRegisterMatrixPlanChecklist"]</option>
+                                <option value="QualityTechnicalAgreementSdea">@Localizer["ClassQualityTechnicalAgreementSdea"]</option>
+                                <option value="UrgentTemporaryInstruction">@Localizer["ClassUrgentTemporaryInstruction"]</option>
+                                <option value="Other">@Localizer["ClassOther"]</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="criticality">@Localizer["Criticality"] <span class="text-danger">*</span></label>
+                            <select class="select2 form-select" id="criticality" name="criticality" data-placeholder="@Localizer["Criticality"]" required>
+                                <option value="Critical">@Localizer["CriticalityCritical"]</option>
+                                <option value="Major" selected>@Localizer["CriticalityMajor"]</option>
+                                <option value="Minor">@Localizer["CriticalityMinor"]</option>
+                                <option value="UrgentTemporary">@Localizer["CriticalityUrgentTemporary"]</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="documentType">@Localizer["DocumentType"]</label>
+                            <select class="select2 form-select" id="documentType" name="documentType" data-placeholder="@Localizer["DocumentType"]">
+                                <option value="Sop">@Localizer["TypeSop"]</option>
+                                <option value="WorkInstruction">@Localizer["TypeWorkInstruction"]</option>
+                                <option value="Policy">@Localizer["TypePolicy"]</option>
+                                <option value="Form">@Localizer["TypeForm"]</option>
+                                <option value="Template">@Localizer["TypeTemplate"]</option>
+                                <option value="Other">@Localizer["TypeOther"]</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["Ownership"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="ownerFunction">@Localizer["OwnerFunction"]</label>
+                            <select class="select2 form-select" id="ownerFunction" name="ownerFunction"
+                                    data-reference-set="@ownerFunctionSetCode"
+                                    data-placeholder="@Localizer["OwnerFunction"]">
+                                <option value=""></option>
+                            </select>
+                            @* Fallback control: shown by the script only when the reference set yields no options,
+                               so a missing/unpublished set can never make the field unfillable. *@
+                            <input class="form-control d-none" id="ownerFunctionFallback" maxlength="256"
+                                   placeholder="@Localizer["OwnerFunction"]" />
+                            <div class="form-text d-none" id="ownerFunctionFallbackHint">@Localizer["OwnerFunctionFallbackHint"]</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="ownerCompanyId">@Localizer["OwnerCompany"]</label>
+                            <select class="select2 form-select" id="ownerCompanyId" name="ownerCompanyId" data-placeholder="@Localizer["OwnerCompany"]">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="processOwnerRole">@Localizer["ProcessOwnerRole"]</label>
+                            <input class="form-control" id="processOwnerRole" name="processOwnerRole" maxlength="256" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="processOwnerUserId">@Localizer["ProcessOwnerUser"]</label>
+                            <select class="select2 form-select" id="processOwnerUserId" name="processOwnerUserId" data-placeholder="@Localizer["ProcessOwnerUser"]">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="authorUserId">@Localizer["DocumentAuthor"] <span class="text-danger">*</span></label>
+                            <select class="select2 form-select" id="authorUserId" name="authorUserId"
+                                    data-placeholder="@Localizer["DocumentAuthor"]" required>
+                                <option value=""></option>
+                            </select>
+                            <div class="invalid-feedback">@SharedLocalizer["ValidationFailed"]</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">@Localizer["GovernanceMetadata"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="retentionClass">@Localizer["RetentionClass"]</label>
+                            <input class="form-control" id="retentionClass" name="retentionClass" maxlength="120" />
+                        </div>
+                        <div class="col-12" id="reviewCycleMonthsField">
+                            <label class="form-label" for="reviewCycleMonths">@Localizer["ReviewCycleMonths"]</label>
+                            <input class="form-control" id="reviewCycleMonths" name="reviewCycleMonths" type="number" min="1" max="120" step="1" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

@@ -48,7 +48,12 @@ public sealed record CollectionInstanceReferenceDto(
     string InstanceStatus,
     bool IsUsable,
     IReadOnlyList<CollectionInstanceScopeBindingDto> ScopeBindings,
-    int DisplayOrder = 0);
+    int DisplayOrder = 0,
+    string CollectionScopeType = "COMPANY",
+    Guid ScopeOwnerId = default,
+    Guid CorporateOwnerId = default,
+    string? StoragePartition = null,
+    Guid? ProvisioningOperationId = null);
 
 public sealed record CollectionInstanceScopeBindingDto(
     string ScopeType,

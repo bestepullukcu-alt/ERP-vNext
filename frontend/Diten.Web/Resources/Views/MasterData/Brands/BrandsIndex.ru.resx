@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Apply" xml:space="preserve"><value>Применить</value></data>
+  <data name="Reset" xml:space="preserve"><value>Сбросить</value></data>
+  <data name="Filter" xml:space="preserve"><value>Фильтр</value></data>
+  <data name="Search" xml:space="preserve"><value>Поиск</value></data>
+  <data name="Export" xml:space="preserve"><value>Экспорт</value></data>
+  <data name="Import" xml:space="preserve"><value>Импорт</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Показать все</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Сохранить вид</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Столбцы</value></data>
+  <data name="Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <data name="View" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="Edit" xml:space="preserve"><value>Изменить</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Подробнее</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Массовое удаление</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Удалить выбранные записи?</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Вы уверены?</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="Remove" xml:space="preserve"><value>Удалить</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Выберите…</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Включая архивные</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Назад к списку</value></data>
+  <data name="RequiredFieldsHint" xml:space="preserve"><value>Поля, отмеченные *, обязательны.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Записи не найдены.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Не удалось загрузить записи.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>Это поле обязательно.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Запись архивирована.</value></data>
+  <data name="EffectiveToBeforeEffectiveFrom" xml:space="preserve"><value>Дата окончания не может быть раньше даты начала.</value></data>
+  <data name="Active" xml:space="preserve"><value>Активный</value></data>
+  <data name="Passive" xml:space="preserve"><value>Неактивный</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="Archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="ArchivedAt" xml:space="preserve"><value>Дата архивации</value></data>
+  <data name="ArchivedBy" xml:space="preserve"><value>Кем архивировано</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Дата создания</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>Кем создано</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Дата обновления</value></data>
+  <data name="UpdatedBy" xml:space="preserve"><value>Кем обновлено</value></data>
+  <data name="SummarySection" xml:space="preserve"><value>Сводка</value></data>
+  <data name="AuditSection" xml:space="preserve"><value>Аудит и происхождение</value></data>
+  <data name="ExternalReferencesSection" xml:space="preserve"><value>Внешние ссылки</value></data>
+  <data name="ExternalReferencesHelp" xml:space="preserve"><value>Устаревшие записи трассировки. Не более одной основной на исходную систему.</value></data>
+  <data name="AddReference" xml:space="preserve"><value>Добавить ссылку</value></data>
+  <data name="NoExternalReferences" xml:space="preserve"><value>Внешних ссылок нет.</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Исходная система</value></data>
+  <data name="ExternalId" xml:space="preserve"><value>Внешний ID</value></data>
+  <data name="ExternalCode" xml:space="preserve"><value>Внешний код</value></data>
+  <data name="ExternalName" xml:space="preserve"><value>Внешнее имя</value></data>
+  <data name="ImportedAt" xml:space="preserve"><value>Дата импорта</value></data>
+  <data name="Primary" xml:space="preserve"><value>Основной</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Действует до</value></data>
+  <data name="TherapeuticAreaId" xml:space="preserve"><value>Терапевтическая область</value></data>
+  <data name="TherapeuticAreaHelp" xml:space="preserve"><value>Терапевтическая область — это концепт/ссылка, а не плоский локальный справочник.</value></data>
+  <data name="BrandProductContractUnavailable" xml:space="preserve"><value>Контракт возможностей «Бренд/Продукт» недоступен. Действия отключены.</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Активный</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>Неактивный</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="BrandCode" xml:space="preserve"><value>Код бренда</value></data>
+  <data name="BrandName" xml:space="preserve"><value>Название бренда</value></data>
+  <data name="ProductCode" xml:space="preserve"><value>Код продукта</value></data>
+  <data name="ProductName" xml:space="preserve"><value>Название продукта</value></data>
+  <data name="ProductStatus" xml:space="preserve"><value>Статус продукта</value></data>
+  <data name="ProductType" xml:space="preserve"><value>Тип продукта</value></data>
+  <data name="BrandsTitle" xml:space="preserve"><value>Бренды</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Мастер-данные брендов. Модули кампаний, знаний и частоты используют их только по ссылке.</value></data>
+  <data name="CreateBrand" xml:space="preserve"><value>Создать бренд</value></data>
+  <data name="EditBrand" xml:space="preserve"><value>Изменить бренд</value></data>
+  <data name="BrandDetail" xml:space="preserve"><value>Детали бренда</value></data>
+  <data name="ArchiveBrand" xml:space="preserve"><value>Архивировать бренд</value></data>
+  <data name="ArchiveBrandConfirm" xml:space="preserve"><value>Архивировать этот бренд? История останется доступной, его продукты не архивируются.</value></data>
+  <data name="ArchivedBrandReadOnly" xml:space="preserve"><value>Этот бренд архивирован и доступен только для чтения. Исторические ссылки сохраняются.</value></data>
+  <data name="BrandStatus" xml:space="preserve"><value>Статус бренда</value></data>
+  <data name="BrandCodeImmutableHelp" xml:space="preserve"><value>Код бренда постоянный. Переименуйте бренд через название бренда.</value></data>
+  <data name="OwnerCompanyId" xml:space="preserve"><value>Компания-владелец</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>Бизнес-подразделение</value></data>
+  <data name="ReferencesSection" xml:space="preserve"><value>Ссылки</value></data>
+  <data name="ReferenceIdsOnlyHelp" xml:space="preserve"><value>Идентификаторы ссылок показаны как есть; мастер-запись для них пока не разрешается.</value></data>
+  <data name="ProductsTab" xml:space="preserve"><value>Продукты</value></data>
+  <data name="ProductsTabUnavailable" xml:space="preserve"><value>Без права чтения продуктов список продуктов здесь недоступен.</value></data>
+  <data name="ArchiveNoCascadeHelp" xml:space="preserve"><value>Архивация бренда никогда не архивирует и не удаляет его продукты.</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Код или название…</value></data>
+</root>

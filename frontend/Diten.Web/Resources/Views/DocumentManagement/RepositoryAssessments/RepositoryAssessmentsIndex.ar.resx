@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="RepositoryAssessments" xml:space="preserve"><value>تقييمات المستودعات</value></data>
+  <data name="RepositoryAssessmentsTitle" xml:space="preserve"><value>تقييمات المستودعات</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>تقييمات المستودعات على مستوى المستأجر التي تغذي بوابة الإصدار 2 للوثائق الخاضعة للرقابة (حدود DMS، البند §11).</value></data>
+  <data name="RepositoryAssessmentCreate" xml:space="preserve"><value>تقييم جديد</value></data>
+  <data name="RepositoryAssessmentEdit" xml:space="preserve"><value>تعديل التقييم</value></data>
+  <data name="RepositoryAssessmentDetails" xml:space="preserve"><value>تفاصيل التقييم</value></data>
+  <data name="RepositoryName" xml:space="preserve"><value>اسم المستودع</value></data>
+  <data name="RepositoryKey" xml:space="preserve"><value>مفتاح المستودع</value></data>
+  <data name="RepositoryType" xml:space="preserve"><value>نوع المستودع</value></data>
+  <data name="AssessmentStatus" xml:space="preserve"><value>الحالة</value></data>
+  <data name="RepositoryOwner" xml:space="preserve"><value>دور المالك</value></data>
+  <data name="RepositoryLocation" xml:space="preserve"><value>الموقع</value></data>
+  <data name="LocationType" xml:space="preserve"><value>نوع الموقع</value></data>
+  <data name="LocationTypeInHouseSoftware" xml:space="preserve"><value>برمجيات داخلية</value></data>
+  <data name="LocationTypeGoogleDrive" xml:space="preserve"><value>Google Drive</value></data>
+  <data name="LocationTypeSharePoint" xml:space="preserve"><value>SharePoint</value></data>
+  <data name="LocationTypeNetworkShare" xml:space="preserve"><value>مشاركة شبكة</value></data>
+  <data name="LocationTypeOther" xml:space="preserve"><value>أخرى</value></data>
+  <data name="AccessControlModel" xml:space="preserve"><value>نموذج التحكم في الوصول</value></data>
+  <data name="AccessReviewFrequency" xml:space="preserve"><value>تكرار مراجعة الوصول</value></data>
+  <data name="EffectiveCopyControl" xml:space="preserve"><value>التحكم في النسخة السارية</value></data>
+  <data name="ApprovalMechanism" xml:space="preserve"><value>آلية الاعتماد</value></data>
+  <data name="BackupPlan" xml:space="preserve"><value>خطة النسخ الاحتياطي</value></data>
+  <data name="RestoreTestEvidence" xml:space="preserve"><value>تكرار اختبار الاستعادة</value></data>
+  <data name="AuditTrail" xml:space="preserve"><value>سجل التدقيق</value></data>
+  <data name="ChangeControl" xml:space="preserve"><value>ضبط التغيير</value></data>
+  <data name="ValidationEvidence" xml:space="preserve"><value>دليل التأهيل</value></data>
+  <data name="ValidationEvidenceHint" xml:space="preserve"><value>مرجع لدليل التأهيل المحفوظ في مكان آخر. هذا ليس ادعاء تأهيل؛ الخادم يصنّف الحدود.</value></data>
+  <data name="MaxInterimPeriodDays" xml:space="preserve"><value>الحد الأقصى للفترة المؤقتة (أيام)</value></data>
+  <data name="InterimCheckpointDueDate" xml:space="preserve"><value>موعد نقطة التحقق المؤقتة</value></data>
+  <data name="MigrationReconciliationRequired" xml:space="preserve"><value>مطلوب تسوية الترحيل</value></data>
+  <data name="MigrationReconciliationEvidence" xml:space="preserve"><value>دليل تسوية الترحيل</value></data>
+  <data name="EvidenceReference" xml:space="preserve"><value>مرجع الدليل</value></data>
+  <data name="EvidenceReferenceHint" xml:space="preserve"><value>مرجع للدليل المحفوظ في مكان آخر (تذكرة، محضر، سجل موقّع). لا يتم رفع ملفات هنا.</value></data>
+  <data name="RepositoryTypeValidatedDms" xml:space="preserve"><value>نظام DMS مؤهل</value></data>
+  <data name="RepositoryTypeApprovedInterimRepository" xml:space="preserve"><value>مستودع مؤقت معتمد</value></data>
+  <data name="RepositoryTypeSeparateApprovalMechanism" xml:space="preserve"><value>آلية اعتماد منفصلة</value></data>
+  <data name="RepositoryTypeUnapprovedRepository" xml:space="preserve"><value>مستودع غير معتمد</value></data>
+  <data name="RepositoryStatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="RepositoryStatusUnderReview" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="RepositoryStatusApproved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="RepositoryStatusRejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="RepositoryStatusExpired" xml:space="preserve"><value>منتهي الصلاحية</value></data>
+  <data name="RepositoryStatusSuperseded" xml:space="preserve"><value>مستبدل</value></data>
+  <data name="CanSupportReleaseGate" xml:space="preserve"><value>يمكنه دعم بوابة الإصدار</value></data>
+  <data name="CanSupportRegulatedESignature" xml:space="preserve"><value>يمكنه دعم التوقيع الإلكتروني المنظم</value></data>
+  <data name="BoundaryStatement" xml:space="preserve"><value>بيان الحدود</value></data>
+  <data name="EvaluateToSeeBoundary" xml:space="preserve"><value>قم بتقييم لعرض بيان الحدود.</value></data>
+  <data name="CriticalFindings" xml:space="preserve"><value>الملاحظات الحرجة</value></data>
+  <data name="Findings" xml:space="preserve"><value>الملاحظات</value></data>
+  <data name="FindingType" xml:space="preserve"><value>نوع الملاحظة</value></data>
+  <data name="FindingSeverity" xml:space="preserve"><value>الخطورة</value></data>
+  <data name="FindingStatus" xml:space="preserve"><value>الحالة</value></data>
+  <data name="FindingMessage" xml:space="preserve"><value>الوصف</value></data>
+  <data name="BlockingFindings" xml:space="preserve"><value>الملاحظات المانعة</value></data>
+  <data name="WarningFindings" xml:space="preserve"><value>ملاحظات تحذيرية</value></data>
+  <data name="NoFindingsFound" xml:space="preserve"><value>لا توجد ملاحظات</value></data>
+  <data name="FindingTypeMissingOwner" xml:space="preserve"><value>مالك مفقود</value></data>
+  <data name="FindingTypeMissingExactLocation" xml:space="preserve"><value>الموقع الدقيق مفقود</value></data>
+  <data name="FindingTypeMissingAccessModel" xml:space="preserve"><value>نموذج الوصول مفقود</value></data>
+  <data name="FindingTypeMissingAccessReview" xml:space="preserve"><value>مراجعة الوصول مفقودة</value></data>
+  <data name="FindingTypeMissingBackup" xml:space="preserve"><value>النسخ الاحتياطي مفقود</value></data>
+  <data name="FindingTypeMissingRestoreTest" xml:space="preserve"><value>اختبار الاستعادة مفقود</value></data>
+  <data name="FindingTypeMissingApprovalMechanism" xml:space="preserve"><value>آلية الاعتماد مفقودة</value></data>
+  <data name="FindingTypeMissingEffectiveCopyControl" xml:space="preserve"><value>التحكم في النسخة السارية مفقود</value></data>
+  <data name="FindingTypeMissingAuditTrail" xml:space="preserve"><value>سجل التدقيق مفقود</value></data>
+  <data name="FindingTypeMissingChangeControl" xml:space="preserve"><value>ضبط التغيير مفقود</value></data>
+  <data name="FindingTypeInterimPeriodExpired" xml:space="preserve"><value>انتهت الفترة المؤقتة</value></data>
+  <data name="FindingTypeMigrationReconciliationMissing" xml:space="preserve"><value>تسوية الترحيل مفقودة</value></data>
+  <data name="FindingTypeNativeESignatureMisuseRisk" xml:space="preserve"><value>خطر إساءة استخدام التوقيع الإلكتروني الأصلي</value></data>
+  <data name="FindingTypeOther" xml:space="preserve"><value>أخرى</value></data>
+  <data name="SeverityWarning" xml:space="preserve"><value>تحذير</value></data>
+  <data name="SeverityMajor" xml:space="preserve"><value>رئيسية</value></data>
+  <data name="SeverityCritical" xml:space="preserve"><value>حرجة</value></data>
+  <data name="FindingStatusOpen" xml:space="preserve"><value>مفتوحة</value></data>
+  <data name="FindingStatusResolved" xml:space="preserve"><value>مُعالَجة</value></data>
+  <data name="FindingStatusAcceptedAsInterimRisk" xml:space="preserve"><value>مقبول كخطر مؤقت</value></data>
+  <data name="FindingStatusClosed" xml:space="preserve"><value>مغلقة</value></data>
+  <data name="EvaluateRepository" xml:space="preserve"><value>تقييم</value></data>
+  <data name="ApproveRepository" xml:space="preserve"><value>اعتماد</value></data>
+  <data name="RejectRepository" xml:space="preserve"><value>رفض</value></data>
+  <data name="ApproverRole" xml:space="preserve"><value>الدور المعتمد</value></data>
+  <data name="ApproverRoleHint" xml:space="preserve"><value>يسمح البند §11.2 فقط لمدير الجودة أو نائبه أو مالك تقنية المعلومات باعتماد التقييم.</value></data>
+  <data name="RejectionReason" xml:space="preserve"><value>سبب الرفض</value></data>
+  <data name="ApprovedAt" xml:space="preserve"><value>تاريخ الاعتماد</value></data>
+  <data name="ApprovedBy" xml:space="preserve"><value>الدور المعتمد</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>صالح من</value></data>
+  <data name="ValidUntil" xml:space="preserve"><value>صالح حتى</value></data>
+  <data name="ApprovalRoleGQD" xml:space="preserve"><value>مدير الجودة للمجموعة</value></data>
+  <data name="ApprovalRoleGQDDeputy" xml:space="preserve"><value>نائب مدير الجودة للمجموعة</value></data>
+  <data name="ApprovalRoleITCSVOwner" xml:space="preserve"><value>مالك تقنية المعلومات / CSV</value></data>
+  <data name="InterimRepositoryWarning" xml:space="preserve"><value>المستودع المؤقت المعتمد ليس نظام DMS مؤهلاً. لا يمكن تقديمه كامتثال للتوقيع الإلكتروني المنظم ويخضع لنقطة تحقق محددة زمنياً.</value></data>
+  <data name="UnapprovedRepositoryWarning" xml:space="preserve"><value>لا يمكن للمستودع غير المعتمد دعم إصدار الوثائق الخاضعة للرقابة. يجب تقييمه واعتماده قبل اجتياز بوابة الإصدار 2.</value></data>
+  <data name="SeparateApprovalMechanismNote" xml:space="preserve"><value>يعتمد هذا المستودع على آلية اعتماد موثقة منفصلة بدلاً من نظام DMS مؤهل. يوضح بيان الحدود ما يمكن استخدامه له.</value></data>
+  <data name="ValidatedDmsNote" xml:space="preserve"><value>مصنّف كحدود نظام DMS مؤهل. يعكس التصنيف محتوى التقييم المسجل؛ وهو ليس شهادة تأهيل مستقلة.</value></data>
+  <data name="NoComplianceClaim" xml:space="preserve"><value>لا ادعاء بالامتثال</value></data>
+  <data name="NoValidatedDmsClaim" xml:space="preserve"><value>تصنّف هذه الشاشة المستودع وفق حدود الإجراء. وهي لا تدّعي التحقق من النظام ولا الامتثال للتوقيع الإلكتروني ولا أي شهادة.</value></data>
+  <data name="RepositoryBoundaryDisclaimer" xml:space="preserve"><value>تصنّف هذه الشاشة حدود حوكمة المستودع. وهي لا تعتمد النظام ولا تؤهل نظام DMS ولا تدّعي الامتثال للتوقيع الإلكتروني.</value></data>
+  <data name="EvaluateDoesNotApprove" xml:space="preserve"><value>التقييم يصنّف المستودع ويعيد حدوده. وهو لا يعتمد التقييم ولا يغيّر حالته.</value></data>
+  <data name="ApproveDoesNotValidate" xml:space="preserve"><value>الاعتماد يسجل قرار حوكمة بشأن هذا المستودع. وهو لا يؤكد تأهيل النظام ولا الامتثال للتوقيع الإلكتروني. وتمنع الملاحظة الحرجة الاعتماد.</value></data>
+  <data name="RejectDoesNotDelete" xml:space="preserve"><value>الرفض يسجل قرار حوكمة. السبب إلزامي. يُحتفظ بالتقييم ولا يُحذف.</value></data>
+  <data name="ApprovedAssessmentReadOnly" xml:space="preserve"><value>تم اعتماد هذا التقييم أو استبداله ولم يعد قابلاً للتعديل. أنشئ تقييمًا جديدًا بدلاً من ذلك.</value></data>
+  <data name="ReleaseGate2Note" xml:space="preserve"><value>تقرأ بوابة الإصدار 2 (توفر مستودع معتمد) التصنيف المسجل هنا. تعرض هذه الشاشة التقييم وتسجله؛ وهي لا تجتاز البوابة ولا تجعل الوثيقة سارية.</value></data>
+  <data name="EvaluationSucceeded" xml:space="preserve"><value>تم تقييم المستودع</value></data>
+  <data name="EvaluationFailed" xml:space="preserve"><value>تعذر تقييم المستودع</value></data>
+  <data name="ApprovalSucceeded" xml:space="preserve"><value>تم اعتماد التقييم</value></data>
+  <data name="ApprovalFailed" xml:space="preserve"><value>تعذر اعتماد التقييم</value></data>
+  <data name="RejectionSucceeded" xml:space="preserve"><value>تم رفض التقييم</value></data>
+  <data name="RejectionFailed" xml:space="preserve"><value>تعذر رفض التقييم</value></data>
+  <data name="AlreadyDecided" xml:space="preserve"><value>تم البت في هذا التقييم بالفعل</value></data>
+  <data name="ApproverRoleInvalid" xml:space="preserve"><value>لا يجوز لهذا الدور اعتماد التقييم (§11.2)</value></data>
+  <data name="LinkStatusInvalid" xml:space="preserve"><value>هذا التقييم ليس في حالة تسمح بالربط</value></data>
+  <data name="NameAndTypeRequired" xml:space="preserve"><value>اسم المستودع ونوع صالح مطلوبان</value></data>
+  <data name="RequiredFieldsMissing" xml:space="preserve"><value>محتوى التقييم الإلزامي مفقود؛ عالج الملاحظات الحرجة قبل الاعتماد</value></data>
+  <data name="AssessmentNotFound" xml:space="preserve"><value>لم يتم العثور على تقييم المستودع</value></data>
+  <data name="ReasonRequiredError" xml:space="preserve"><value>السبب مطلوب</value></data>
+  <data name="NoRepositoryAssessmentsFound" xml:space="preserve"><value>لم يُسجَّل أي تقييم للمستودعات بعد</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>تعذر تحميل التقييمات</value></data>
+  <data name="SaveSucceeded" xml:space="preserve"><value>تم حفظ التقييم</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>تعذر حفظ التقييم</value></data>
+  <data name="Forbidden" xml:space="preserve"><value>ليست لديك صلاحية لهذه العملية</value></data>
+  <data name="ConflictOccurred" xml:space="preserve"><value>تتعارض العملية مع الحالة الحالية</value></data>
+  <data name="ActionNotAvailable" xml:space="preserve"><value>غير متاح</value></data>
+  <data name="BasicInformation" xml:space="preserve"><value>المعلومات الأساسية</value></data>
+  <data name="AccessAndControl" xml:space="preserve"><value>الوصول والتحكم</value></data>
+  <data name="TechnicalControls" xml:space="preserve"><value>الضوابط التقنية</value></data>
+  <data name="InterimRepositoryFields" xml:space="preserve"><value>المستودع المؤقت</value></data>
+  <data name="EvidenceAndNotes" xml:space="preserve"><value>الأدلة</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <data name="AddNew" xml:space="preserve"><value>إضافة جديد</value></data>
+  <data name="Back" xml:space="preserve"><value>رجوع</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+</root>

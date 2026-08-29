@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="AccountTitle" xml:space="preserve"><value>Hesaplar</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Müşteri hesaplarını, hiyerarşisini ve konum bilgilerini yönetin.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Hesap Ekle</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Hesabı Düzenle</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Hesap Ekle</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Hesabı Düzenle</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Back" xml:space="preserve"><value>Geri</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Oluşturulma Tarihi</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncellenme Tarihi</value></data>
+  <data name="ReferenceDataUnavailable" xml:space="preserve"><value>Referans verilerine şu anda ulaşılamıyor; hesap tipi ve durumu seçilemez. Lütfen daha sonra tekrar deneyin veya yöneticinizle iletişime geçin.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="LogoSection" xml:space="preserve"><value>Logo</value></data>
+  <data name="LogoHelp" xml:space="preserve"><value>PNG, JPG, GIF, WEBP veya SVG. En fazla 256 KB.</value></data>
+  <data name="LogoSelect" xml:space="preserve"><value>Görsel Seç</value></data>
+  <data name="LogoRemove" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="LogoInvalidType" xml:space="preserve"><value>Geçersiz dosya türü. Lütfen bir görsel seçin (PNG, JPG, GIF, WEBP, SVG).</value></data>
+  <data name="LogoTooLarge" xml:space="preserve"><value>Görsel çok büyük. En fazla 256 KB olmalıdır.</value></data>
+  <data name="LocationSection" xml:space="preserve"><value>Konum</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>Notlar</value></data>
+  <data name="StatusSection" xml:space="preserve"><value>Durum</value></data>
+  <data name="ContactSection" xml:space="preserve"><value>İletişim</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>Entegrasyon</value></data>
+  <data name="ChildAccountsSection" xml:space="preserve"><value>Alt Hesaplar</value></data>
+  <data name="CoverageSection" xml:space="preserve"><value>Kapsama</value></data>
+  <data name="CoverageStatus" xml:space="preserve"><value>Kapsama Durumu</value></data>
+  <data name="TerritorySection" xml:space="preserve"><value>Bölge</value></data>
+  <data name="TerritoryNode" xml:space="preserve"><value>Bölge Düğümü</value></data>
+  <data name="AssignmentSource" xml:space="preserve"><value>Atama Kaynağı</value></data>
+  <data name="NoTerritoryAssignment" xml:space="preserve"><value>Geçerli bölge ataması yok.</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>Ülke Kapsamı</value></data>
+  <data name="TerritoryNodeCode" xml:space="preserve"><value>Düğüm Kodu</value></data>
+  <data name="CurrentBadge" xml:space="preserve"><value>Güncel</value></data>
+  <data name="AccountName" xml:space="preserve"><value>Hesap Adı</value></data>
+  <data name="AccountNamePlaceholder" xml:space="preserve"><value>örn. Merkez Hastanesi</value></data>
+  <data name="AccountCode" xml:space="preserve"><value>Hesap Kodu</value></data>
+  <data name="AccountCodePlaceholder" xml:space="preserve"><value>örn. ACC-2026-000001</value></data>
+  <data name="AccountCodeHelp" xml:space="preserve"><value>Otomatik oluşturulması için boş bırakın.</value></data>
+  <data name="AccountType" xml:space="preserve"><value>Hesap Tipi</value></data>
+  <data name="AccountCategory" xml:space="preserve"><value>Hesap Kategorisi</value></data>
+  <data name="ParentAccount" xml:space="preserve"><value>Üst Hesap</value></data>
+  <data name="ParentAccountHelp" xml:space="preserve"><value>Bu hesabı hiyerarşiye yerleştirmek için bir üst hesap seçin.</value></data>
+  <data name="CountryRef" xml:space="preserve"><value>Ülke</value></data>
+  <data name="CountryRefPlaceholder" xml:space="preserve"><value>örn. Türkiye</value></data>
+  <data name="CityRef" xml:space="preserve"><value>Şehir</value></data>
+  <data name="CityRefPlaceholder" xml:space="preserve"><value>örn. İstanbul</value></data>
+  <data name="DistrictRef" xml:space="preserve"><value>İlçe</value></data>
+  <data name="DistrictRefPlaceholder" xml:space="preserve"><value>örn. Kadıköy</value></data>
+  <data name="AddressLine" xml:space="preserve"><value>Adres</value></data>
+  <data name="AddressLinePlaceholder" xml:space="preserve"><value>Sokak, bina, kat</value></data>
+  <data name="Latitude" xml:space="preserve"><value>Enlem</value></data>
+  <data name="Longitude" xml:space="preserve"><value>Boylam</value></data>
+  <data name="ResponsiblePersonName" xml:space="preserve"><value>Sorumlu Kişi</value></data>
+  <data name="ResponsiblePersonNamePlaceholder" xml:space="preserve"><value>örn. Ayşe Yılmaz</value></data>
+  <data name="ResponsiblePersonPhone" xml:space="preserve"><value>Telefon</value></data>
+  <data name="ResponsiblePersonPhonePlaceholder" xml:space="preserve"><value>örn. +90 555 000 0000</value></data>
+  <data name="ResponsiblePersonEmail" xml:space="preserve"><value>E-posta</value></data>
+  <data name="ResponsiblePersonEmailPlaceholder" xml:space="preserve"><value>örn. iletisim@ornek.com</value></data>
+  <data name="ExternalReference" xml:space="preserve"><value>Dış Referans</value></data>
+  <data name="ExternalReferencePlaceholder" xml:space="preserve"><value>örn. eski sistem kimliği</value></data>
+  <data name="ExternalReferenceHelp" xml:space="preserve"><value>Bu hesabın kaynak sistemdeki tanımlayıcısı.</value></data>
+  <data name="MapSearchPlaceholder" xml:space="preserve"><value>Mahalle, sokak veya adres ara</value></data>
+  <data name="MapHelp" xml:space="preserve"><value>Konumu belirlemek için haritaya tıklayın veya işaretçiyi sürükleyin; adres otomatik doldurulur. Alanları elle de düzenleyebilirsiniz.</value></data>
+  <data name="UseMyLocation" xml:space="preserve"><value>Konumumu kullan</value></data>
+  <data name="RelatedContacts" xml:space="preserve"><value>İlgili Kişiler</value></data>
+  <data name="NoRelatedContacts" xml:space="preserve"><value>Henüz ilgili kişi yok.</value></data>
+  <data name="RelatedAccounts" xml:space="preserve"><value>İlgili Hesaplar</value></data>
+  <data name="NoRelatedAccounts" xml:space="preserve"><value>Henüz ilgili hesap yok.</value></data>
+  <data name="Primary" xml:space="preserve"><value>Birincil</value></data>
+  <data name="RelationshipType" xml:space="preserve"><value>İlişki</value></data>
+  <data name="RelationshipDirection" xml:space="preserve"><value>Yön</value></data>
+  <data name="NotAuthorized" xml:space="preserve"><value>Bu bölümü görüntüleme yetkiniz yok.</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>Bu bilgi geçici olarak kullanılamıyor.</value></data>
+  <data name="ViewContact" xml:space="preserve"><value>Kişiyi görüntüle</value></data>
+  <data name="ViewAccount" xml:space="preserve"><value>Hesabı görüntüle</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Ad</value></data>
+  <data name="ContactType" xml:space="preserve"><value>Kişi Türü</value></data>
+  <data name="Role" xml:space="preserve"><value>Rol</value></data>
+  <data name="Phone" xml:space="preserve"><value>Telefon</value></data>
+  <data name="Email" xml:space="preserve"><value>E-posta</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>Geçerlilik Başlangıcı</value></data>
+  <data name="ValidTo" xml:space="preserve"><value>Geçerlilik Bitişi</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notlar</value></data>
+  <data name="AddContactLink" xml:space="preserve"><value>Kişi Bağlantısı Ekle</value></data>
+  <data name="EditContactLink" xml:space="preserve"><value>Kişi Bağlantısını Düzenle</value></data>
+  <data name="EndContactLink" xml:space="preserve"><value>Kişi Bağlantısını Sonlandır</value></data>
+  <data name="AddRelatedAccount" xml:space="preserve"><value>İlişkili Hesap Ekle</value></data>
+  <data name="EditRelationship" xml:space="preserve"><value>İlişkiyi Düzenle</value></data>
+  <data name="EndRelationship" xml:space="preserve"><value>İlişkiyi Sonlandır</value></data>
+  <data name="SelectContact" xml:space="preserve"><value>Kişi Seç</value></data>
+  <data name="SelectAccount" xml:space="preserve"><value>Hesap Seç</value></data>
+  <data name="RoleCode" xml:space="preserve"><value>Rol</value></data>
+  <data name="RelationshipStatus" xml:space="preserve"><value>İlişki Durumu</value></data>
+  <data name="PrimaryContact" xml:space="preserve"><value>Birincil Kişi</value></data>
+  <data name="EndDate" xml:space="preserve"><value>Bitiş Tarihi</value></data>
+  <data name="EndReason" xml:space="preserve"><value>Bitiş Nedeni / Notlar</value></data>
+  <data name="HistoricalLinkNotice" xml:space="preserve"><value>Kişi bağlantıları tarihseldir: bir bağlantıyı sonlandırmak geçmişini korur — asla silinmez.</value></data>
+  <data name="HistoricalRelationshipNotice" xml:space="preserve"><value>İlişkiler tarihseldir: bir ilişkiyi sonlandırmak geçmişini korur — asla silinmez.</value></data>
+  <data name="LinkWillBeEndedNotDeleted" xml:space="preserve"><value>Bu bağlantı geçmişten silinmeyecek. Yalnızca belirttiğiniz tarihten itibaren pasif olacak.</value></data>
+  <data name="RelationshipWillBeEndedNotDeleted" xml:space="preserve"><value>Bu ilişki geçmişten silinmeyecek. Yalnızca belirttiğiniz tarihten itibaren pasif olacak.</value></data>
+  <data name="SaveLink" xml:space="preserve"><value>Bağlantıyı Kaydet</value></data>
+  <data name="SaveRelationship" xml:space="preserve"><value>İlişkiyi Kaydet</value></data>
+  <data name="ConfirmEndLink" xml:space="preserve"><value>Bağlantıyı Sonlandırmayı Onayla</value></data>
+  <data name="ConfirmEndRelationship" xml:space="preserve"><value>İlişkiyi Sonlandırmayı Onayla</value></data>
+  <data name="ManagedFromSource" xml:space="preserve"><value>Kaynak hesaptan yönetilir</value></data>
+  <data name="LinkEndedMessage" xml:space="preserve"><value>Kişi bağlantısı sonlandırıldı ve geçmişte korundu.</value></data>
+  <data name="RelationshipEndedMessage" xml:space="preserve"><value>İlişki sonlandırıldı ve geçmişte korundu.</value></data>
+  <data name="CrossCountryReason" xml:space="preserve"><value>Ülkeler arası iş gerekçesi</value></data>
+  <data name="CrossCountryHelp" xml:space="preserve"><value>Yalnızca bu kişi/hesap ile ilgili taraf farklı ülkelerdeyse gereklidir. Ülke kodları denetlenir; bu gerekçe loglara yazılmaz.</value></data>
+  <data name="NotesSafetyNotice" xml:space="preserve"><value>Bu alana hasta verisi, sağlık verisi, teşhis, tedavi, reçete veya özel nitelikli kişisel veri girmeyin.</value></data>
+  <data name="ReportsTo" xml:space="preserve"><value>Bağlı Olduğu Kişi</value></data>
+  <data name="ReportsToNone" xml:space="preserve"><value>— Yok (en üst) —</value></data>
+  <data name="ReportsToHelp" xml:space="preserve"><value>Bu account'a zaten bağlı bir kişi seçin. Account içi hiyerarşi; kişinin kendine bağlanması veya döngü kurulmasına izin verilmez.</value></data>
+  <data name="FormValidationError" xml:space="preserve"><value>Lütfen zorunlu alanları doğru şekilde doldurun.</value></data>
+</root>

@@ -20,22 +20,60 @@ public sealed class DocumentAccessEvaluator
     private readonly IDocumentAccessPrincipalAccessor _principalAccessor;
     private readonly DocumentAccessResolver? _matrix;
     private readonly AccessMatrixOptions _options;
+    private readonly IDocumentMasterRegisterRepository? _masterRegister;
 
     public DocumentAccessEvaluator(
         IFolderDocumentAccessPolicyRepository folderPolicies,
         IDocumentShareRecordRepository shares,
         IDocumentAccessPrincipalAccessor principalAccessor,
         DocumentAccessResolver? matrix = null,
-        IOptions<AccessMatrixOptions>? options = null)
+        IOptions<AccessMatrixOptions>? options = null,
+        IDocumentMasterRegisterRepository? masterRegister = null)
     {
         _folderPolicies = folderPolicies;
         _shares = shares;
         _principalAccessor = principalAccessor;
         _matrix = matrix;
         _options = options?.Value ?? new AccessMatrixOptions();
+        _masterRegister = masterRegister;
     }
 
     public DocumentPrincipal Principal => _principalAccessor.GetPrincipal();
+
+    /// <summary>
+    /// Lifecycle is an additional authoritative gate, never a replacement for tenant/company/resource access.
+    /// Ordinary users may consume only a linked EFFECTIVE register entry. Governance principals may inspect
+    /// non-effective and legacy-unlinked documents. Unlinked documents deliberately fail closed for ordinary users.
+    /// </summary>
+    public async Task<bool> CanConsumeControlledDocumentLifecycleAsync(ControlledDocument document, CancellationToken ct)
+    {
+        if (Principal.HasMasterRegisterGovernanceAccess)
+        {
+            return true;
+        }
+
+        if (_masterRegister is null)
+        {
+            return false;
+        }
+
+        var entry = await _masterRegister.GetByControlledDocumentIdAsync(document.Id, ct);
+        return entry is not null
+            && entry.LifecycleStatus == ControlledDocumentLifecycleStatus.Effective;
+    }
+
+    public async Task<ControlledDocumentLifecycleVisibility> GetControlledDocumentLifecycleVisibilityAsync(
+        ControlledDocument document,
+        CancellationToken ct)
+    {
+        var entry = _masterRegister is null
+            ? null
+            : await _masterRegister.GetByControlledDocumentIdAsync(document.Id, ct);
+        return new ControlledDocumentLifecycleVisibility(
+            entry?.LifecycleStatus.ToString(),
+            entry?.LifecycleStatus == ControlledDocumentLifecycleStatus.Effective,
+            Principal.HasMasterRegisterGovernanceAccess);
+    }
 
     public async Task<bool> HasFolderActionAsync(Guid collectionInstanceId, DocumentAccessAction action, CancellationToken ct)
     {
@@ -294,6 +332,10 @@ public sealed class DocumentAccessEvaluator
     public Task<bool> CanReachDocumentAsync(ControlledDocument document, CancellationToken ct) =>
         CanViewControlledDocumentAsync(document, null, ct);
 
+    public async Task<bool> CanReadControlledDocumentAsync(ControlledDocument document, CancellationToken ct) =>
+        await CanConsumeControlledDocumentLifecycleAsync(document, ct)
+        && await CanViewControlledDocumentAsync(document, null, ct);
+
     public async Task<bool> CanViewControlledDocumentAsync(
         ControlledDocument document,
         IReadOnlySet<Guid>? sharedItemIds,
@@ -523,3 +565,8 @@ public sealed class DocumentAccessEvaluator
         _ => $"user:{targetId.Trim()}"
     };
 }
+
+public sealed record ControlledDocumentLifecycleVisibility(
+    string? MasterRegisterLifecycleStatus,
+    bool IsOfficiallyEffective,
+    bool CanViewNonEffective);

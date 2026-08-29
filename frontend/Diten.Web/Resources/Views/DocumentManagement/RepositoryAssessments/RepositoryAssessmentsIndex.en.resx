@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="RepositoryAssessments" xml:space="preserve"><value>Repository Assessments</value></data>
+  <data name="RepositoryAssessmentsTitle" xml:space="preserve"><value>Repository Assessments</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Tenant-wide repository assessments feeding controlled-document Release Gate 2 (SOP §11 DMS boundary).</value></data>
+  <data name="RepositoryAssessmentCreate" xml:space="preserve"><value>New Assessment</value></data>
+  <data name="RepositoryAssessmentEdit" xml:space="preserve"><value>Edit Assessment</value></data>
+  <data name="RepositoryAssessmentDetails" xml:space="preserve"><value>Assessment Details</value></data>
+  <data name="RepositoryName" xml:space="preserve"><value>Repository name</value></data>
+  <data name="RepositoryKey" xml:space="preserve"><value>Repository key</value></data>
+  <data name="RepositoryType" xml:space="preserve"><value>Repository type</value></data>
+  <data name="AssessmentStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="RepositoryOwner" xml:space="preserve"><value>Owner role</value></data>
+  <data name="RepositoryLocation" xml:space="preserve"><value>Location</value></data>
+  <data name="LocationType" xml:space="preserve"><value>Location type</value></data>
+  <data name="LocationTypeInHouseSoftware" xml:space="preserve"><value>In-house software</value></data>
+  <data name="LocationTypeGoogleDrive" xml:space="preserve"><value>Google Drive</value></data>
+  <data name="LocationTypeSharePoint" xml:space="preserve"><value>SharePoint</value></data>
+  <data name="LocationTypeNetworkShare" xml:space="preserve"><value>Network share</value></data>
+  <data name="LocationTypeOther" xml:space="preserve"><value>Other</value></data>
+  <data name="AccessControlModel" xml:space="preserve"><value>Access control model</value></data>
+  <data name="AccessReviewFrequency" xml:space="preserve"><value>Access review frequency</value></data>
+  <data name="EffectiveCopyControl" xml:space="preserve"><value>Effective copy control</value></data>
+  <data name="ApprovalMechanism" xml:space="preserve"><value>Approval mechanism</value></data>
+  <data name="BackupPlan" xml:space="preserve"><value>Backup plan</value></data>
+  <data name="RestoreTestEvidence" xml:space="preserve"><value>Restore test frequency</value></data>
+  <data name="AuditTrail" xml:space="preserve"><value>Audit trail</value></data>
+  <data name="ChangeControl" xml:space="preserve"><value>Change control</value></data>
+  <data name="ValidationEvidence" xml:space="preserve"><value>Validation evidence</value></data>
+  <data name="ValidationEvidenceHint" xml:space="preserve"><value>A reference to validation/qualification evidence held elsewhere. This is not a validation claim; the backend classifies the boundary.</value></data>
+  <data name="MaxInterimPeriodDays" xml:space="preserve"><value>Max interim period (days)</value></data>
+  <data name="InterimCheckpointDueDate" xml:space="preserve"><value>Interim checkpoint due</value></data>
+  <data name="MigrationReconciliationRequired" xml:space="preserve"><value>Migration reconciliation required</value></data>
+  <data name="MigrationReconciliationEvidence" xml:space="preserve"><value>Migration reconciliation evidence</value></data>
+  <data name="EvidenceReference" xml:space="preserve"><value>Evidence reference</value></data>
+  <data name="EvidenceReferenceHint" xml:space="preserve"><value>A reference to evidence held elsewhere (ticket, minute, signed record). No file is uploaded here.</value></data>
+  <data name="RepositoryTypeValidatedDms" xml:space="preserve"><value>Validated DMS</value></data>
+  <data name="RepositoryTypeApprovedInterimRepository" xml:space="preserve"><value>Approved interim repository</value></data>
+  <data name="RepositoryTypeSeparateApprovalMechanism" xml:space="preserve"><value>Separate approval mechanism</value></data>
+  <data name="RepositoryTypeUnapprovedRepository" xml:space="preserve"><value>Unapproved repository</value></data>
+  <data name="RepositoryStatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="RepositoryStatusUnderReview" xml:space="preserve"><value>Under review</value></data>
+  <data name="RepositoryStatusApproved" xml:space="preserve"><value>Approved</value></data>
+  <data name="RepositoryStatusRejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="RepositoryStatusExpired" xml:space="preserve"><value>Expired</value></data>
+  <data name="RepositoryStatusSuperseded" xml:space="preserve"><value>Superseded</value></data>
+  <data name="CanSupportReleaseGate" xml:space="preserve"><value>Can support release gate</value></data>
+  <data name="CanSupportRegulatedESignature" xml:space="preserve"><value>Can support regulated e-signature</value></data>
+  <data name="BoundaryStatement" xml:space="preserve"><value>Boundary statement</value></data>
+  <data name="EvaluateToSeeBoundary" xml:space="preserve"><value>Evaluate the assessment to see its boundary statement.</value></data>
+  <data name="CriticalFindings" xml:space="preserve"><value>Critical findings</value></data>
+  <data name="Findings" xml:space="preserve"><value>Findings</value></data>
+  <data name="FindingType" xml:space="preserve"><value>Finding type</value></data>
+  <data name="FindingSeverity" xml:space="preserve"><value>Severity</value></data>
+  <data name="FindingStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="FindingMessage" xml:space="preserve"><value>Description</value></data>
+  <data name="BlockingFindings" xml:space="preserve"><value>Blocking findings</value></data>
+  <data name="WarningFindings" xml:space="preserve"><value>Warning findings</value></data>
+  <data name="NoFindingsFound" xml:space="preserve"><value>No finding raised</value></data>
+  <data name="FindingTypeMissingOwner" xml:space="preserve"><value>Missing owner</value></data>
+  <data name="FindingTypeMissingExactLocation" xml:space="preserve"><value>Missing exact location</value></data>
+  <data name="FindingTypeMissingAccessModel" xml:space="preserve"><value>Missing access model</value></data>
+  <data name="FindingTypeMissingAccessReview" xml:space="preserve"><value>Missing access review</value></data>
+  <data name="FindingTypeMissingBackup" xml:space="preserve"><value>Missing backup</value></data>
+  <data name="FindingTypeMissingRestoreTest" xml:space="preserve"><value>Missing restore test</value></data>
+  <data name="FindingTypeMissingApprovalMechanism" xml:space="preserve"><value>Missing approval mechanism</value></data>
+  <data name="FindingTypeMissingEffectiveCopyControl" xml:space="preserve"><value>Missing effective copy control</value></data>
+  <data name="FindingTypeMissingAuditTrail" xml:space="preserve"><value>Missing audit trail</value></data>
+  <data name="FindingTypeMissingChangeControl" xml:space="preserve"><value>Missing change control</value></data>
+  <data name="FindingTypeInterimPeriodExpired" xml:space="preserve"><value>Interim period expired</value></data>
+  <data name="FindingTypeMigrationReconciliationMissing" xml:space="preserve"><value>Migration reconciliation missing</value></data>
+  <data name="FindingTypeNativeESignatureMisuseRisk" xml:space="preserve"><value>Native e-signature misuse risk</value></data>
+  <data name="FindingTypeOther" xml:space="preserve"><value>Other</value></data>
+  <data name="SeverityWarning" xml:space="preserve"><value>Warning</value></data>
+  <data name="SeverityMajor" xml:space="preserve"><value>Major</value></data>
+  <data name="SeverityCritical" xml:space="preserve"><value>Critical</value></data>
+  <data name="FindingStatusOpen" xml:space="preserve"><value>Open</value></data>
+  <data name="FindingStatusResolved" xml:space="preserve"><value>Resolved</value></data>
+  <data name="FindingStatusAcceptedAsInterimRisk" xml:space="preserve"><value>Accepted as interim risk</value></data>
+  <data name="FindingStatusClosed" xml:space="preserve"><value>Closed</value></data>
+  <data name="EvaluateRepository" xml:space="preserve"><value>Evaluate</value></data>
+  <data name="ApproveRepository" xml:space="preserve"><value>Approve</value></data>
+  <data name="RejectRepository" xml:space="preserve"><value>Reject</value></data>
+  <data name="ApproverRole" xml:space="preserve"><value>Approving role</value></data>
+  <data name="ApproverRoleHint" xml:space="preserve"><value>SOP §11.2 permits only the GQD, Deputy GQD or the IT/CSV owner to approve a repository assessment.</value></data>
+  <data name="RejectionReason" xml:space="preserve"><value>Rejection reason</value></data>
+  <data name="ApprovedAt" xml:space="preserve"><value>Approved at</value></data>
+  <data name="ApprovedBy" xml:space="preserve"><value>Approving role</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>Valid from</value></data>
+  <data name="ValidUntil" xml:space="preserve"><value>Valid until</value></data>
+  <data name="ApprovalRoleGQD" xml:space="preserve"><value>Group Quality Director</value></data>
+  <data name="ApprovalRoleGQDDeputy" xml:space="preserve"><value>Deputy Group Quality Director</value></data>
+  <data name="ApprovalRoleITCSVOwner" xml:space="preserve"><value>IT / CSV Owner</value></data>
+  <data name="InterimRepositoryWarning" xml:space="preserve"><value>An approved interim repository is not a validated DMS. It cannot be presented as regulated electronic-signature compliance and carries a time-bounded checkpoint.</value></data>
+  <data name="UnapprovedRepositoryWarning" xml:space="preserve"><value>An unapproved repository cannot support controlled-document release. It must be assessed and approved (or documents moved to an approved repository) before Release Gate 2 can pass.</value></data>
+  <data name="SeparateApprovalMechanismNote" xml:space="preserve"><value>This repository relies on a separate documented approval mechanism rather than a validated DMS. The boundary statement describes what it may be used for.</value></data>
+  <data name="ValidatedDmsNote" xml:space="preserve"><value>Classified as a validated DMS boundary. The classification reflects recorded assessment content; it is not an independent validation certificate.</value></data>
+  <data name="NoComplianceClaim" xml:space="preserve"><value>No compliance claim</value></data>
+  <data name="NoValidatedDmsClaim" xml:space="preserve"><value>This screen classifies a repository against the SOP boundary. It makes no computer-system validation claim, no electronic-signature compliance claim, and no certificate assertion.</value></data>
+  <data name="RepositoryBoundaryDisclaimer" xml:space="preserve"><value>This screen classifies repository governance boundaries. It does not certify the system, does not validate a DMS, and makes no regulated electronic-signature compliance claim.</value></data>
+  <data name="EvaluateDoesNotApprove" xml:space="preserve"><value>Evaluate classifies the repository and returns its boundary. It does not approve the assessment and does not change its status.</value></data>
+  <data name="ApproveDoesNotValidate" xml:space="preserve"><value>Approving records a governance decision about this repository. It asserts no computer-system validation and no electronic-signature compliance. A critical finding blocks approval.</value></data>
+  <data name="RejectDoesNotDelete" xml:space="preserve"><value>Rejecting records a governance decision. A reason is mandatory. The assessment is retained, not deleted.</value></data>
+  <data name="ApprovedAssessmentReadOnly" xml:space="preserve"><value>This assessment has been approved or superseded and can no longer be edited. Create a new assessment instead.</value></data>
+  <data name="ReleaseGate2Note" xml:space="preserve"><value>Release Gate 2 (Approved Repository Available) reads the classification recorded here. This screen shows and records the assessment; it never passes the gate and never marks a document effective.</value></data>
+  <data name="EvaluationSucceeded" xml:space="preserve"><value>Repository evaluated</value></data>
+  <data name="EvaluationFailed" xml:space="preserve"><value>The repository could not be evaluated</value></data>
+  <data name="ApprovalSucceeded" xml:space="preserve"><value>Assessment approved</value></data>
+  <data name="ApprovalFailed" xml:space="preserve"><value>The assessment could not be approved</value></data>
+  <data name="RejectionSucceeded" xml:space="preserve"><value>Assessment rejected</value></data>
+  <data name="RejectionFailed" xml:space="preserve"><value>The assessment could not be rejected</value></data>
+  <data name="AlreadyDecided" xml:space="preserve"><value>This assessment has already been decided</value></data>
+  <data name="ApproverRoleInvalid" xml:space="preserve"><value>This role may not approve a repository assessment (SOP §11.2)</value></data>
+  <data name="LinkStatusInvalid" xml:space="preserve"><value>This assessment is not in a linkable status</value></data>
+  <data name="NameAndTypeRequired" xml:space="preserve"><value>A repository name and a valid type are required</value></data>
+  <data name="RequiredFieldsMissing" xml:space="preserve"><value>Mandatory assessment content is missing; resolve the critical findings before approval</value></data>
+  <data name="AssessmentNotFound" xml:space="preserve"><value>Repository assessment not found</value></data>
+  <data name="ReasonRequiredError" xml:space="preserve"><value>A reason is required</value></data>
+  <data name="NoRepositoryAssessmentsFound" xml:space="preserve"><value>No repository assessment recorded yet</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>The assessments could not be loaded</value></data>
+  <data name="SaveSucceeded" xml:space="preserve"><value>Assessment saved</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>The assessment could not be saved</value></data>
+  <data name="Forbidden" xml:space="preserve"><value>You are not authorized for this operation</value></data>
+  <data name="ConflictOccurred" xml:space="preserve"><value>The operation conflicts with the current state</value></data>
+  <data name="ActionNotAvailable" xml:space="preserve"><value>Not available</value></data>
+  <data name="BasicInformation" xml:space="preserve"><value>Basic information</value></data>
+  <data name="AccessAndControl" xml:space="preserve"><value>Access and control</value></data>
+  <data name="TechnicalControls" xml:space="preserve"><value>Technical controls</value></data>
+  <data name="InterimRepositoryFields" xml:space="preserve"><value>Interim repository</value></data>
+  <data name="EvidenceAndNotes" xml:space="preserve"><value>Evidence</value></data>
+  <data name="Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Add New</value></data>
+  <data name="Back" xml:space="preserve"><value>Back</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Quick View</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+</root>

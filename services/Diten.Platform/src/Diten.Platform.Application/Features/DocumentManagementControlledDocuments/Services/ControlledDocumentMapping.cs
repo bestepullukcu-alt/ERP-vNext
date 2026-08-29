@@ -1,23 +1,39 @@
 using Diten.Platform.Domain.Entities.DocumentManagement;
+using Diten.Platform.Domain.Enums.DocumentManagement;
 
 namespace Diten.Platform.Application.Features.DocumentManagementControlledDocuments.Services;
 
 /// <summary>MOD-0029-FU01 — entity → wire model mappers (UPPER_SNAKE enums, no internal storage key leakage).</summary>
 public static class ControlledDocumentMapping
 {
-    public static ControlledDocumentListItemModel ToListItem(ControlledDocument d) => new(
+    public static ControlledDocumentListItemModel ToListItem(ControlledDocument d)
+    {
+        var isCorporate = d.DocumentScope == DocumentScope.Corporate
+            || d.CorporateOwnerId != Guid.Empty;
+        var hasScopeSnapshot = isCorporate || d.ScopeOwnerId != Guid.Empty || d.FolderId != Guid.Empty;
+        var scope = !hasScopeSnapshot
+            ? "LEGACY"
+            : isCorporate ? "CORPORATE" : "COMPANY";
+
+        return new(
         d.Id,
         d.DocumentKey,
         d.Title,
         d.DocumentType.ToWire(),
-        d.CompanyId,
+        isCorporate || d.CompanyId == Guid.Empty ? null : d.CompanyId,
         d.CollectionInstanceId,
         d.CollectionPath,
         d.CurrentVersionNumber,
         d.CurrentVersionId,
         d.Status.ToWire(),
         d.Controlled,
-        d.CreatedAt);
+        d.CreatedAt,
+        false,
+        scope,
+        d.ScopeOwnerId == Guid.Empty ? null : d.ScopeOwnerId,
+        d.CorporateOwnerId == Guid.Empty ? null : d.CorporateOwnerId,
+        d.FolderId == Guid.Empty ? null : d.FolderId);
+    }
 
     public static ControlledDocumentDetailModel ToDetail(ControlledDocument d) => new(
         d.Id,

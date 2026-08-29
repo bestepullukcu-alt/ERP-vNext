@@ -1,0 +1,56 @@
+@using Diten.Web.Views.DocumentManagement.RepositoryAssessments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<RepositoryAssessmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* MOD-0029-FU28A — inline filter panel. The FU16 list endpoint takes no query parameters, so these are applied
+   client-side over the returned set. Filters whose source field is not on the list DTO are not offered. *@
+<div id="inlineFilterHost" class="px-3">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    <div class="filter-chip filter-repository-type">
+                        <select id="filterRepositoryType" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["RepositoryType"]">
+                            <option value="ValidatedDms">@Localizer["RepositoryTypeValidatedDms"]</option>
+                            <option value="ApprovedInterimRepository">@Localizer["RepositoryTypeApprovedInterimRepository"]</option>
+                            <option value="SeparateApprovalMechanism">@Localizer["RepositoryTypeSeparateApprovalMechanism"]</option>
+                            <option value="UnapprovedRepository">@Localizer["RepositoryTypeUnapprovedRepository"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-assessment-status">
+                        <select id="filterAssessmentStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["AssessmentStatus"]">
+                            <option value="Draft">@Localizer["RepositoryStatusDraft"]</option>
+                            <option value="UnderReview">@Localizer["RepositoryStatusUnderReview"]</option>
+                            <option value="Approved">@Localizer["RepositoryStatusApproved"]</option>
+                            <option value="Rejected">@Localizer["RepositoryStatusRejected"]</option>
+                            <option value="Expired">@Localizer["RepositoryStatusExpired"]</option>
+                            <option value="Superseded">@Localizer["RepositoryStatusSuperseded"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-location-type">
+                        <select id="filterLocationType" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["LocationType"]">
+                            <option value="InHouseSoftware">@Localizer["LocationTypeInHouseSoftware"]</option>
+                            <option value="GoogleDrive">@Localizer["LocationTypeGoogleDrive"]</option>
+                            <option value="SharePoint">@Localizer["LocationTypeSharePoint"]</option>
+                            <option value="NetworkShare">@Localizer["LocationTypeNetworkShare"]</option>
+                            <option value="Other">@Localizer["LocationTypeOther"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-owner">
+                        <input id="filterOwnerRole" class="form-control form-control-sm" placeholder="@Localizer["RepositoryOwner"]" maxlength="120" />
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

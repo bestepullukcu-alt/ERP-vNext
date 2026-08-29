@@ -1,0 +1,303 @@
+@model Diten.Web.Models.CRM.StrategyTemplatePageViewModel
+@using Diten.Web.Views.CRM.StrategyTemplates
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StrategyTemplatesIndex> Localizer
+@{
+    var t = Model.Template;
+    ViewData["Title"] = t.TemplateCode;
+    Layout = "_LayoutTenantShell";
+
+    var segmentHints = (Model.Bindings?.SegmentBindings ?? new()).ToDictionary(x => x.SegmentId);
+    var contentHints = (Model.Bindings?.ContentBindings ?? new()).ToDictionary(x => x.ContentRefId);
+    var frequencyHint = Model.Bindings?.FrequencyIntent;
+}
+
+<div class="strategy-template-details">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0">@t.TemplateName <span class="badge bg-label-secondary ms-2">v@t.TemplateVersion</span></h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/CRM/StrategyTemplates">@Localizer["StrategyTemplatesTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@t.TemplateCode</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            @if (Model.CanManage && !t.IsArchived)
+            {
+                <a href="/CRM/StrategyTemplates/Edit/@t.TemplateId" class="btn btn-label-primary"><i class="bx bx-edit-alt me-1"></i>@Localizer["Edit"]</a>
+            }
+            @if (Model.CanActivate && !t.IsArchived && t.TemplateStatus == "draft")
+            {
+                <button type="button" class="btn btn-primary" data-action="activate" data-id="@t.TemplateId"><i class="bx bx-play-circle me-1"></i>@Localizer["ActivateStrategyTemplate"]</button>
+            }
+            @if (Model.CanManage && t.AreBindingsFrozen && !t.IsArchived)
+            {
+                <button type="button" class="btn btn-label-warning" data-action="new-version" data-id="@t.TemplateId"><i class="bx bx-git-branch me-1"></i>@Localizer["NewVersion"]</button>
+            }
+            @if (Model.CanManage && !t.IsArchived)
+            {
+                <button type="button" class="btn btn-label-danger" data-action="archive" data-id="@t.TemplateId"><i class="bx bx-archive-in me-1"></i>@Localizer["ArchiveStrategyTemplate"]</button>
+            }
+        </div>
+    </div>
+
+    @if (t.IsArchived)
+    {
+        <div class="alert alert-secondary" role="alert"><i class="bx bx-archive me-1"></i>@Localizer["Archived"]</div>
+    }
+    @if (t.Superseded)
+    {
+        <div class="alert alert-info" role="alert"><i class="bx bx-git-branch me-1"></i>@Localizer["Superseded"]</div>
+    }
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+
+            @* Section 1 — Identity (mirrors _Form) *@
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 fw-medium">@Localizer["TemplateCode"]</dt>
+                        <dd class="col-sm-8">@t.TemplateCode</dd>
+                        <dt class="col-sm-4 fw-medium">@Localizer["TemplateName"]</dt>
+                        <dd class="col-sm-8">@t.TemplateName</dd>
+                        <dt class="col-sm-4 fw-medium">@Localizer["Description"]</dt>
+                        <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(t.Description) ? "—" : t.Description)</dd>
+                        <dt class="col-sm-4 fw-medium">@Localizer["Notes"]</dt>
+                        <dd class="col-sm-8 mb-0">@(string.IsNullOrWhiteSpace(t.Notes) ? "—" : t.Notes)</dd>
+                    </dl>
+                </div>
+            </section>
+
+            @* Section 2 — "who" *@
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["SegmentSection"]</h6>
+                    <div class="alert alert-secondary py-2 small" role="alert">
+                        <i class="bx bx-info-circle me-1"></i>@Localizer["NoMembersEverHelp"]
+                    </div>
+                    @if (t.SegmentBindings.Count == 0)
+                    {
+                        <p class="text-muted mb-0">@Localizer["NoSegmentBindings"]</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm mb-0">
+                                <thead><tr>
+                                    <th>@Localizer["Segment"]</th>
+                                    <th>@Localizer["BindingRole"]</th>
+                                    <th>@Localizer["TemplateVersion"]</th>
+                                    <th>@Localizer["Status"]</th>
+                                    <th>@Localizer["Notes"]</th>
+                                </tr></thead>
+                                <tbody>
+                                @foreach (var b in t.SegmentBindings.OrderBy(x => x.SortOrder))
+                                {
+                                    var hint = segmentHints.TryGetValue(b.SegmentId, out var h) ? h : null;
+                                    <tr>
+                                        <td><code>@(b.SegmentCodeDisplay ?? b.SegmentId.ToString())</code></td>
+                                        <td>@(b.BindingRole ?? "—")</td>
+                                        <td>v@b.SegmentVersionAtBinding</td>
+                                        <td>
+                                            <span class="badge bg-label-secondary">@(hint?.CurrentStatus ?? "—")</span>
+                                            @if (hint?.Superseded == true)
+                                            {
+                                                <span class="badge bg-label-info ms-1">@Localizer["Superseded"]</span>
+                                            }
+                                            @if (hint?.Archived == true)
+                                            {
+                                                <span class="badge bg-label-danger ms-1">@Localizer["Archived"]</span>
+                                            }
+                                        </td>
+                                        <td>@(string.IsNullOrWhiteSpace(b.Notes) ? "—" : b.Notes)</td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </section>
+
+            @* Section 3 — "how often" *@
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["FrequencySection"]</h6>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 fw-medium">@Localizer["FrequencyIntentMode"]</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-label-primary">@t.FrequencyIntent.Mode</span>
+                            @if (frequencyHint is { Binding: false } && t.FrequencyIntent.Mode == "declared-intent")
+                            {
+                                <span class="text-muted small ms-2">@Localizer["DeclaredIntentNotBindingHelp"]</span>
+                            }
+                        </dd>
+                        @if (t.FrequencyIntent.Mode == "policy-reference")
+                        {
+                            <dt class="col-sm-4 fw-medium">@Localizer["FrequencyPolicy"]</dt>
+                            <dd class="col-sm-8">
+                                <code>@(t.FrequencyIntent.PolicyCodeDisplay ?? t.FrequencyIntent.VisitFrequencyPolicyId?.ToString() ?? "—")</code>
+                                @if (frequencyHint?.PolicyStatus is { } status)
+                                {
+                                    <span class="badge bg-label-secondary ms-1">@status</span>
+                                }
+                            </dd>
+                        }
+                        @if (t.FrequencyIntent.Mode == "declared-intent")
+                        {
+                            <dt class="col-sm-4 fw-medium">@Localizer["FrequencyType"]</dt>
+                            <dd class="col-sm-8">@t.FrequencyIntent.FrequencyType</dd>
+                            <dt class="col-sm-4 fw-medium">@Localizer["RequiredVisitCount"]</dt>
+                            <dd class="col-sm-8">@t.FrequencyIntent.RequiredVisitCount</dd>
+                            <dt class="col-sm-4 fw-medium">@Localizer["PeriodType"]</dt>
+                            <dd class="col-sm-8">@t.FrequencyIntent.PeriodType</dd>
+                        }
+                        <dt class="col-sm-4 fw-medium">@Localizer["IntentNote"]</dt>
+                        <dd class="col-sm-8 mb-0">@(string.IsNullOrWhiteSpace(t.FrequencyIntent.IntentNote) ? "—" : t.FrequencyIntent.IntentNote)</dd>
+                    </dl>
+                </div>
+            </section>
+
+            @* Section 4 — "what" *@
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["ProductSection"]</h6>
+                    <div class="alert alert-secondary py-2 small" role="alert">
+                        <i class="bx bx-info-circle me-1"></i>@Localizer["ContainmentNotVerifiedHelp"]
+                    </div>
+                    @if (t.ProductLines.Count == 0)
+                    {
+                        <p class="text-muted mb-0">@Localizer["NoProductLines"]</p>
+                    }
+                    else
+                    {
+                        @foreach (var line in t.ProductLines.OrderBy(x => x.SortOrder))
+                        {
+                            <div class="border rounded p-3 mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <code>@(line.GlobalProductCodeDisplay ?? line.GlobalProductId.ToString())</code>
+                                        <span class="badge bg-label-secondary ms-2">@line.SkuAllocationMode</span>
+                                        @if (line.LineWeightPercentage is { } weight)
+                                        {
+                                            <span class="badge bg-label-info ms-1">@Localizer["LineWeightPercentage"]: @weight.ToString("0.##")</span>
+                                        }
+                                    </div>
+                                    @if (line.SkuAllocations.Count > 0)
+                                    {
+                                        <span class="badge @(line.TotalPercentage == 100m ? "bg-label-success" : "bg-label-danger")">
+                                            @Localizer["TotalPercentage"]: @line.TotalPercentage.ToString("0.##")
+                                        </span>
+                                    }
+                                </div>
+                                @if (line.SkuAllocations.Count > 0)
+                                {
+                                    <table class="table table-sm mb-0">
+                                        <thead><tr><th>@Localizer["Gsku"]</th><th class="text-end">@Localizer["Percentage"]</th></tr></thead>
+                                        <tbody>
+                                        @foreach (var a in line.SkuAllocations.OrderBy(x => x.SortOrder))
+                                        {
+                                            <tr>
+                                                <td><code>@(a.GskuCanonicalCodeDisplay ?? a.GskuId.ToString())</code></td>
+                                                <td class="text-end">@a.Percentage.ToString("0.##")</td>
+                                            </tr>
+                                        }
+                                        </tbody>
+                                    </table>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+            </section>
+
+            @* Section 5 — "which story" *@
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["ContentSection"]</h6>
+                    @if (t.ContentBindings.Count == 0)
+                    {
+                        <p class="text-muted mb-0">@Localizer["NoContentBindings"]</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm mb-0">
+                                <thead><tr>
+                                    <th>@Localizer["ContentRefType"]</th>
+                                    <th>@Localizer["ContentRef"]</th>
+                                    <th>@Localizer["TemplateVersion"]</th>
+                                    <th>@Localizer["Status"]</th>
+                                </tr></thead>
+                                <tbody>
+                                @foreach (var c in t.ContentBindings.OrderBy(x => x.SortOrder))
+                                {
+                                    var hint = contentHints.TryGetValue(c.ContentRefId, out var h) ? h : null;
+                                    <tr>
+                                        <td><span class="badge bg-label-secondary">@c.ContentRefType</span></td>
+                                        <td><code>@(c.ContentCodeDisplay ?? c.ContentRefId.ToString())</code></td>
+                                        <td>@(c.ContentVersionAtBinding ?? "—")</td>
+                                        <td>
+                                            <span class="badge bg-label-secondary">@(hint?.CurrentStatus ?? "—")</span>
+                                            @if (hint?.Archived == true)
+                                            {
+                                                <span class="badge bg-label-danger ms-1">@Localizer["Archived"]</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ClassificationSection"]</h6>
+                    <dl class="row mb-0">
+                        <dt class="col-6 fw-medium">@Localizer["SubjectType"]</dt>
+                        <dd class="col-6">@t.SubjectType</dd>
+                        <dt class="col-6 fw-medium">@Localizer["BusinessUnitId"]</dt>
+                        <dd class="col-6 mb-0">@(string.IsNullOrWhiteSpace(t.BusinessUnitId) ? "—" : t.BusinessUnitId)</dd>
+                    </dl>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LifecycleSection"]</h6>
+                    <dl class="row mb-0">
+                        <dt class="col-6 fw-medium">@Localizer["TemplateStatus"]</dt>
+                        <dd class="col-6"><span class="badge bg-label-primary">@t.TemplateStatus</span></dd>
+                        <dt class="col-6 fw-medium">@Localizer["BindingState"]</dt>
+                        <dd class="col-6">@(t.AreBindingsFrozen ? Localizer["Frozen"] : Localizer["Editable"])</dd>
+                        <dt class="col-6 fw-medium">@Localizer["EffectiveFrom"]</dt>
+                        <dd class="col-6">@t.EffectiveFrom.ToString("yyyy-MM-dd")</dd>
+                        <dt class="col-6 fw-medium">@Localizer["EffectiveTo"]</dt>
+                        <dd class="col-6">@(t.EffectiveTo?.ToString("yyyy-MM-dd") ?? "—")</dd>
+                        <dt class="col-6 fw-medium">@Localizer["UpdatedAt"]</dt>
+                        <dd class="col-6 mb-0">@(t.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? t.CreatedAt.ToString("yyyy-MM-dd HH:mm"))</dd>
+                    </dl>
+                    <div class="alert alert-secondary mt-3 mb-0 py-2 small">
+                        <i class="bx bx-info-circle me-1"></i>@Localizer["ApplyIsMicroTargetHelp"]
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/StrategyTemplates/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/StrategyTemplates/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/StrategyTemplates/details.js" asp-append-version="true"></script>
+}

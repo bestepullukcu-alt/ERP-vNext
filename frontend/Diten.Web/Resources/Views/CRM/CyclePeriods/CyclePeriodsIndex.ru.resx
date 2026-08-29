@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="ActivateCyclePeriod" xml:space="preserve"><value>Активировать</value></data>
+  <data name="ActivateCyclePeriodConfirm" xml:space="preserve"><value>Ввести период в действие? Активные периоды одного бизнес-подразделения не могут пересекаться ни одним днём, а даты станут доступны только для чтения.</value></data>
+  <data name="ActivatedAt" xml:space="preserve"><value>Активирован</value></data>
+  <data name="ActiveEditNotice" xml:space="preserve"><value>Период активен: даты, год, порядковый номер и бизнес-подразделение доступны только для чтения. Закройте его и создайте новый, чтобы изменить.</value></data>
+  <data name="AmbiguousPeriod" xml:space="preserve"><value>Сегодняшний день покрывают несколько активных периодов</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>Бизнес-подразделение</value></data>
+  <data name="BusinessUnitIdHint" xml:space="preserve"><value>Оставьте пустым для календаря всего арендатора. Разные подразделения могут вести пересекающиеся периоды.</value></data>
+  <data name="BusinessUnitIdPlaceholder" xml:space="preserve"><value>Пусто — весь арендатор</value></data>
+  <data name="CloseCyclePeriod" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="CloseCyclePeriodConfirm" xml:space="preserve"><value>Закрыть период? Ничего не удаляется, но закрытие окончательно: повторное открытие невозможно.</value></data>
+  <data name="ClosedAt" xml:space="preserve"><value>Закрыт</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>Сервис периодов недоступен.</value></data>
+  <data name="CreateCyclePeriod" xml:space="preserve"><value>Новый период</value></data>
+  <data name="CurrentPeriod" xml:space="preserve"><value>Действующий период</value></data>
+  <data name="CycleCode" xml:space="preserve"><value>Код</value></data>
+  <data name="CycleCodeHint" xml:space="preserve"><value>Строчные буквы, цифры, точка, подчёркивание и дефис. После создания не переименовывается.</value></data>
+  <data name="CycleCodePlaceholder" xml:space="preserve"><value>c-2026-03</value></data>
+  <data name="CycleName" xml:space="preserve"><value>Название</value></data>
+  <data name="CycleNamePlaceholder" xml:space="preserve"><value>2026 / цикл 3</value></data>
+  <data name="CyclePeriodsTitle" xml:space="preserve"><value>Периоды циклов</value></data>
+  <data name="EndDate" xml:space="preserve"><value>Дата окончания</value></data>
+  <data name="EndDateHint" xml:space="preserve"><value>Включительно: период охватывает этот день.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Новый период цикла</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить период цикла</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>Общие сведения</value></data>
+  <data name="Lifecycle" xml:space="preserve"><value>Жизненный цикл</value></data>
+  <data name="NoActivePeriod" xml:space="preserve"><value>Сегодня нет активного периода</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Именованные периоды планирования: к какому периоду относится план. Рабочие дни и праздники — отдельный календарь.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>Период активирован.</value></data>
+  <data name="RecordClosed" xml:space="preserve"><value>Период закрыт.</value></data>
+  <data name="SequenceInYear" xml:space="preserve"><value>Порядковый номер</value></data>
+  <data name="StartDate" xml:space="preserve"><value>Дата начала</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Активен</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Закрыт</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="TenantWide" xml:space="preserve"><value>Весь арендатор</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Обновлён</value></data>
+  <data name="Window" xml:space="preserve"><value>Интервал</value></data>
+  <data name="Year" xml:space="preserve"><value>Год</value></data>
+  <data name="YearHint" xml:space="preserve"><value>Год планирования. Период может пересекать календарный год.</value></data>
+  <data name="ActiveWindowImmutableHint" xml:space="preserve"><value>Период активен: его даты, год, порядковый номер и область действия доступны только для чтения. Закройте его и откройте новый период, чтобы изменить их.</value></data>
+  <data name="BusinessUnitCountryContext" xml:space="preserve"><value>Контекст страны</value></data>
+  <data name="BusinessUnitCountryFilter" xml:space="preserve"><value>Страна (фильтр)</value></data>
+  <data name="BusinessUnitCountryFirstHint" xml:space="preserve"><value>Сначала выберите страну — бизнес-подразделения берутся из территориальных планов, покрывающих эту страну в течение периода.</value></data>
+  <data name="BusinessUnitFromTerritory" xml:space="preserve"><value>Подразделения, охваченные подходящими полевыми планами.</value></data>
+  <data name="BusinessUnitFromVocabulary" xml:space="preserve"><value>Все опубликованные бизнес-подразделения — ни один полевой план не соответствует этой стране и диапазону дат.</value></data>
+  <data name="BusinessUnitNoPlan" xml:space="preserve"><value>Нет активного полевого плана для этой страны и диапазона дат.</value></data>
+  <data name="BusinessUnitSourceLabel" xml:space="preserve"><value>Источник бизнес-подразделения</value></data>
+  <data name="BusinessUnitSource_manual" xml:space="preserve"><value>Введено вручную</value></data>
+  <data name="BusinessUnitSource_territory" xml:space="preserve"><value>Из полевого плана</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>Страна</value></data>
+  <data name="CountrySetUnavailable" xml:space="preserve"><value>Справочник стран ещё не опубликован:</value></data>
+  <data name="CycleStatus_active" xml:space="preserve"><value>Активный</value></data>
+  <data name="CycleStatus_closed" xml:space="preserve"><value>Закрыт</value></data>
+  <data name="CycleStatus_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="EndDateInclusiveHint" xml:space="preserve"><value>Включительно: период охватывает этот день.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Юридическое лицо</value></data>
+  <data name="LegalEntityListUnavailable" xml:space="preserve"><value>Не удалось загрузить список юридических лиц.</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Жизненный цикл</value></data>
+  <data name="NewCyclePeriod" xml:space="preserve"><value>Новый период</value></data>
+  <data name="Scope" xml:space="preserve"><value>Область действия</value></data>
+  <data name="ScopeRef" xml:space="preserve"><value>Ссылка области действия</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>Область действия</value></data>
+  <data name="ScopeSectionHint" xml:space="preserve"><value>Период существует ровно по одному адресу. Выбранный уровень определяет, какая ссылка применяется.</value></data>
+  <data name="ScopeTenantHint" xml:space="preserve"><value>Этот период действует для всего арендатора.</value></data>
+  <data name="ScopeTenantWide" xml:space="preserve"><value>Весь арендатор</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Уровень области действия</value></data>
+  <data name="ScopeTypeImmutableHint" xml:space="preserve"><value>Область действия — часть идентичности периода и не может быть изменена. Закройте этот период и откройте новый.</value></data>
+  <data name="ScopeType_business-unit" xml:space="preserve"><value>Бизнес-подразделение</value></data>
+  <data name="ScopeType_country" xml:space="preserve"><value>Страна</value></data>
+  <data name="ScopeType_legal-entity" xml:space="preserve"><value>Юридическое лицо</value></data>
+  <data name="ScopeType_tenant" xml:space="preserve"><value>Весь арендатор</value></data>
+  <data name="Version" xml:space="preserve"><value>Версия</value></data>
+  <data name="CycleCapacity" xml:space="preserve"><value>Ёмкость цикла</value></data>
+</root>

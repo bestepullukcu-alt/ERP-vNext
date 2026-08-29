@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="Active" xml:space="preserve"><value>启用</value></data>
+  <data name="ActiveStageCount" xml:space="preserve"><value>活动阶段</value></data>
+  <data name="AddBranchCondition" xml:space="preserve"><value>添加条件</value></data>
+  <data name="AddStage" xml:space="preserve"><value>添加阶段</value></data>
+  <data name="AdvancementRule" xml:space="preserve"><value>推进规则</value></data>
+  <data name="Apply" xml:space="preserve"><value>应用</value></data>
+  <data name="ArchiveJourney" xml:space="preserve"><value>归档旅程</value></data>
+  <data name="ArchiveJourneyConfirm" xml:space="preserve"><value>归档此旅程？不会删除任何内容，将变为只读。</value></data>
+  <data name="ArchiveStageConfirm" xml:space="preserve"><value>归档此阶段？它仍保留在文档中，只是离开活动列表。</value></data>
+  <data name="Archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="ArchivedJourneyReadOnly" xml:space="preserve"><value>此旅程已归档，为只读。</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>确定吗？</value></data>
+  <data name="AudienceProfileId" xml:space="preserve"><value>受众画像</value></data>
+  <data name="BackToList" xml:space="preserve"><value>返回列表</value></data>
+  <data name="BranchConditions" xml:space="preserve"><value>分支条件</value></data>
+  <data name="BranchConditionsHelp" xml:space="preserve"><value>仅可录入的数据——条件只被携带，从不被求值。没有它们，旅程也能从头走到尾。</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>批量删除</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>删除选中的记录？</value></data>
+  <data name="Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>分类</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>列</value></data>
+  <data name="ConditionCode" xml:space="preserve"><value>条件编码</value></data>
+  <data name="ContentEngagementJourneyContractUnavailable" xml:space="preserve"><value>ContentEngagementJourney 能力契约不可用。操作已禁用。</value></data>
+  <data name="ContentEngagementJourneysMenu" xml:space="preserve"><value>内容互动旅程</value></data>
+  <data name="ContentEngagementJourneysTitle" xml:space="preserve"><value>内容互动旅程</value></data>
+  <data name="CreateJourney" xml:space="preserve"><value>创建旅程</value></data>
+  <data name="CrossLanguage" xml:space="preserve"><value>跨语言</value></data>
+  <data name="CrossSubject" xml:space="preserve"><value>跨主题</value></data>
+  <data name="DeclaredNotEvaluatedHelp" xml:space="preserve"><value>推进规则、回退阶段和分支条件仅为“声明”——本模块不会对它们求值。</value></data>
+  <data name="Description" xml:space="preserve"><value>描述</value></data>
+  <data name="Edit" xml:space="preserve"><value>编辑</value></data>
+  <data name="EditJourney" xml:space="preserve"><value>编辑旅程</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>生效日期</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>失效日期</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>未找到知识路径。</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>发生错误。</value></data>
+  <data name="Export" xml:space="preserve"><value>导出</value></data>
+  <data name="FallbackStageId" xml:space="preserve"><value>回退阶段</value></data>
+  <data name="Filter" xml:space="preserve"><value>筛选</value></data>
+  <data name="Frozen" xml:space="preserve"><value>已冻结</value></data>
+  <data name="FrozenStagesHelp" xml:space="preserve"><value>该版本已发布，其阶段集已冻结。如需修改阶段，请创建新版本。</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>标识</value></data>
+  <data name="Import" xml:space="preserve"><value>导入</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>包含已归档</value></data>
+  <data name="IsRequired" xml:space="preserve"><value>必修</value></data>
+  <data name="JourneyCode" xml:space="preserve"><value>旅程编码</value></data>
+  <data name="JourneyDetail" xml:space="preserve"><value>旅程详情</value></data>
+  <data name="JourneyName" xml:space="preserve"><value>旅程名称</value></data>
+  <data name="JourneyStatus" xml:space="preserve"><value>旅程状态</value></data>
+  <data name="JourneyVersion" xml:space="preserve"><value>旅程版本</value></data>
+  <data name="LanguageCode" xml:space="preserve"><value>语言</value></data>
+  <data name="Loading" xml:space="preserve"><value>加载中…</value></data>
+  <data name="MaxVisitNumber" xml:space="preserve"><value>最晚拜访序号</value></data>
+  <data name="MinVisitNumber" xml:space="preserve"><value>最早拜访序号</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>新版本</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>从已发布版本创建新的草稿版本？阶段将以新 ID 复制。</value></data>
+  <data name="No" xml:space="preserve"><value>否</value></data>
+  <data name="NoStages" xml:space="preserve"><value>尚无阶段。</value></data>
+  <data name="Notes" xml:space="preserve"><value>备注</value></data>
+  <data name="Objective" xml:space="preserve"><value>目标</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>规划多次拜访的内容推进：下一个阶段是什么，以及该阶段适用哪条知识路径。</value></data>
+  <data name="Passive" xml:space="preserve"><value>停用</value></data>
+  <data name="PathPinHelp" xml:space="preserve"><value>pinned = 固定在该路径版本；latest-published = 读取时解析已发布版本。</value></data>
+  <data name="PathResolution" xml:space="preserve"><value>路径解析</value></data>
+  <data name="PathVersionPinPolicy" xml:space="preserve"><value>路径版本固定</value></data>
+  <data name="Publish" xml:space="preserve"><value>发布</value></data>
+  <data name="PublishConfirm" xml:space="preserve"><value>发布此旅程？阶段集将被冻结。</value></data>
+  <data name="PublishSeparatelyHelp" xml:space="preserve"><value>发布是单独的操作；状态字段无法切换为 published。</value></data>
+  <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="RecommendedKnowledgePathId" xml:space="preserve"><value>推荐知识路径</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>记录已归档。</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>记录已创建。</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>记录已更新。</value></data>
+  <data name="Repeatable" xml:space="preserve"><value>可重复</value></data>
+  <data name="Repeated" xml:space="preserve"><value>重复</value></data>
+  <data name="RequiredStageCount" xml:space="preserve"><value>必需阶段</value></data>
+  <data name="Reset" xml:space="preserve"><value>重置</value></data>
+  <data name="Resolved" xml:space="preserve"><value>已解析</value></data>
+  <data name="Save" xml:space="preserve"><value>保存</value></data>
+  <data name="SaveBeforeStages" xml:space="preserve"><value>请先保存旅程，然后在此添加阶段。</value></data>
+  <data name="SaveView" xml:space="preserve"><value>保存视图</value></data>
+  <data name="SchedulingSection" xml:space="preserve"><value>排期与生命周期</value></data>
+  <data name="Search" xml:space="preserve"><value>搜索</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>请选择…</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>全部</value></data>
+  <data name="Source" xml:space="preserve"><value>来源</value></data>
+  <data name="StageCode" xml:space="preserve"><value>阶段编码</value></data>
+  <data name="StageName" xml:space="preserve"><value>阶段名称</value></data>
+  <data name="StageObjective" xml:space="preserve"><value>阶段目标</value></data>
+  <data name="StageOrder" xml:space="preserve"><value>阶段顺序</value></data>
+  <data name="StageType" xml:space="preserve"><value>阶段类型</value></data>
+  <data name="StagesHelp" xml:space="preserve"><value>按互动推进的顺序添加阶段；每个阶段绑定一条已发布的知识路径。</value></data>
+  <data name="StagesSection" xml:space="preserve"><value>阶段</value></data>
+  <data name="Status" xml:space="preserve"><value>状态</value></data>
+  <data name="StepCount" xml:space="preserve"><value>步</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>主题</value></data>
+  <data name="TopicId" xml:space="preserve"><value>话题</value></data>
+  <data name="Unknown" xml:space="preserve"><value>未知</value></data>
+  <data name="Unresolved" xml:space="preserve"><value>未解析</value></data>
+  <data name="UnresolvedPathHelp" xml:space="preserve"><value>至少有一个阶段无法解析其知识路径（unresolved）。该阶段不会被隐藏——请修正绑定。</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>更新时间</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>查看详情</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+</root>

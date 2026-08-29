@@ -518,4 +518,34 @@
   </data>
   <data name="Computing" xml:space="preserve">
     <value>Computing…</value>
-  </data></root>
+  </data>
+  <data name="MasterRegister" xml:space="preserve"><value>Master Register</value></data>
+  <data name="LinkedMasterRegister" xml:space="preserve"><value>Governed Master Register relationship</value></data>
+  <data name="OpenMasterRegister" xml:space="preserve"><value>Open Master Register</value></data>
+  <data name="MasterRegisterEntry" xml:space="preserve"><value>Master Register entry</value></data>
+  <data name="MasterRegisterEntryId" xml:space="preserve"><value>Master Register entry ID</value></data>
+  <data name="MasterRegisterStatus" xml:space="preserve"><value>Register status</value></data>
+  <data name="MasterRegisterLinkStatus" xml:space="preserve"><value>Link compatibility</value></data>
+  <data name="DocumentScope" xml:space="preserve"><value>Document scope</value></data>
+  <data name="ScopeOwner" xml:space="preserve"><value>Scope owner</value></data>
+  <data name="DocumentClass" xml:space="preserve"><value>Document class</value></data>
+  <data name="LifecycleStatus" xml:space="preserve"><value>Lifecycle status</value></data>
+  <data name="LinkedAt" xml:space="preserve"><value>Linked at</value></data>
+  <data name="NoLinkedMasterRegisterLegacyHint" xml:space="preserve"><value>No linked Master Register entry was found for this Controlled Document. This may be a legacy, migration or reconciliation record.</value></data>
+  <data name="ReverseLookupFailed" xml:space="preserve"><value>The Master Register relationship could not be loaded.</value></data>
+  <data name="ReverseLookupForbidden" xml:space="preserve"><value>You are not authorized to view the linked Master Register entry.</value></data>
+  <data name="ReadinessFailClosedDueToLink" xml:space="preserve"><value>The link is unverified or incompatible. Approval, training and release readiness remain blocked.</value></data>
+  <data name="GovernedRegistrationComplete" xml:space="preserve"><value>The governed Master Register relationship is verified.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Loading…</value></data>
+  <data name="LifecycleDraftNotForUse" xml:space="preserve"><value>DRAFT — NOT FOR USE</value></data>
+  <data name="LifecycleInReviewNotEffective" xml:space="preserve"><value>IN REVIEW — NOT EFFECTIVE</value></data>
+  <data name="LifecycleApprovedPendingEffective" xml:space="preserve"><value>APPROVED — PENDING EFFECTIVE</value></data>
+  <data name="LifecycleEffective" xml:space="preserve"><value>EFFECTIVE</value></data>
+  <data name="LifecycleSuspendedDoNotUse" xml:space="preserve"><value>SUSPENDED — DO NOT USE</value></data>
+  <data name="LifecycleSuperseded" xml:space="preserve"><value>SUPERSEDED</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>RETIRED</value></data>
+  <data name="LifecycleUnderRevisionNotEffective" xml:space="preserve"><value>UNDER REVISION — NOT EFFECTIVE</value></data>
+  <data name="LegacyUnlinked" xml:space="preserve"><value>LEGACY — UNLINKED</value></data>
+  <data name="ShowNonEffectiveDocuments" xml:space="preserve"><value>Show drafts / non-effective</value></data>
+  <data name="ShowNonEffectiveDocumentsHint" xml:space="preserve"><value>Governance view only. Includes drafts, documents under review, suspended, retired, superseded and legacy unlinked records.</value></data>
+</root>

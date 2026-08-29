@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="AccountTitle" xml:space="preserve"><value>الحسابات</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>إدارة حسابات العملاء وتسلسلها الهرمي ومعلومات الموقع.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>إضافة حساب</value></data>
+  <data name="EditItem" xml:space="preserve"><value>تعديل الحساب</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>إضافة حساب</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل الحساب</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Back" xml:space="preserve"><value>رجوع</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>تاريخ التحديث</value></data>
+  <data name="ReferenceDataUnavailable" xml:space="preserve"><value>البيانات المرجعية غير متاحة حاليًا، لذا لا يمكن تحديد نوع الحساب وحالته. يرجى المحاولة لاحقًا أو الاتصال بالمسؤول.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>الهوية</value></data>
+  <data name="LogoSection" xml:space="preserve"><value>الشعار</value></data>
+  <data name="LogoHelp" xml:space="preserve"><value>PNG أو JPG أو GIF أو WEBP أو SVG. بحد أقصى 256 كيلوبايت.</value></data>
+  <data name="LogoSelect" xml:space="preserve"><value>اختر صورة</value></data>
+  <data name="LogoRemove" xml:space="preserve"><value>إزالة</value></data>
+  <data name="LogoInvalidType" xml:space="preserve"><value>نوع ملف غير صالح. يرجى اختيار صورة (PNG، JPG، GIF، WEBP، SVG).</value></data>
+  <data name="LogoTooLarge" xml:space="preserve"><value>الصورة كبيرة جدًا. يجب ألا تتجاوز 256 كيلوبايت.</value></data>
+  <data name="LocationSection" xml:space="preserve"><value>الموقع</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>ملاحظات</value></data>
+  <data name="StatusSection" xml:space="preserve"><value>الحالة</value></data>
+  <data name="ContactSection" xml:space="preserve"><value>جهة الاتصال</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>التكامل</value></data>
+  <data name="ChildAccountsSection" xml:space="preserve"><value>الحسابات الفرعية</value></data>
+  <data name="CoverageSection" xml:space="preserve"><value>التغطية</value></data>
+  <data name="CoverageStatus" xml:space="preserve"><value>حالة التغطية</value></data>
+  <data name="TerritorySection" xml:space="preserve"><value>المنطقة</value></data>
+  <data name="TerritoryNode" xml:space="preserve"><value>عقدة المنطقة</value></data>
+  <data name="AssignmentSource" xml:space="preserve"><value>مصدر التعيين</value></data>
+  <data name="NoTerritoryAssignment" xml:space="preserve"><value>لا يوجد تعيين منطقة حالي.</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>نطاق الدولة</value></data>
+  <data name="TerritoryNodeCode" xml:space="preserve"><value>رمز العقدة</value></data>
+  <data name="CurrentBadge" xml:space="preserve"><value>الحالي</value></data>
+  <data name="AccountName" xml:space="preserve"><value>اسم الحساب</value></data>
+  <data name="AccountNamePlaceholder" xml:space="preserve"><value>مثال: المستشفى المركزي</value></data>
+  <data name="AccountCode" xml:space="preserve"><value>رمز الحساب</value></data>
+  <data name="AccountCodePlaceholder" xml:space="preserve"><value>مثال: ACC-2026-000001</value></data>
+  <data name="AccountCodeHelp" xml:space="preserve"><value>اتركه فارغًا ليتم إنشاؤه تلقائيًا.</value></data>
+  <data name="AccountType" xml:space="preserve"><value>نوع الحساب</value></data>
+  <data name="AccountCategory" xml:space="preserve"><value>فئة الحساب</value></data>
+  <data name="ParentAccount" xml:space="preserve"><value>الحساب الرئيسي</value></data>
+  <data name="ParentAccountHelp" xml:space="preserve"><value>حدد حسابًا رئيسيًا لوضع هذا الحساب في التسلسل الهرمي.</value></data>
+  <data name="CountryRef" xml:space="preserve"><value>الدولة</value></data>
+  <data name="CountryRefPlaceholder" xml:space="preserve"><value>مثال: تركيا</value></data>
+  <data name="CityRef" xml:space="preserve"><value>المدينة</value></data>
+  <data name="CityRefPlaceholder" xml:space="preserve"><value>مثال: إسطنبول</value></data>
+  <data name="DistrictRef" xml:space="preserve"><value>المنطقة</value></data>
+  <data name="DistrictRefPlaceholder" xml:space="preserve"><value>مثال: كاديكوي</value></data>
+  <data name="AddressLine" xml:space="preserve"><value>العنوان</value></data>
+  <data name="AddressLinePlaceholder" xml:space="preserve"><value>الشارع، المبنى، الطابق</value></data>
+  <data name="Latitude" xml:space="preserve"><value>خط العرض</value></data>
+  <data name="Longitude" xml:space="preserve"><value>خط الطول</value></data>
+  <data name="ResponsiblePersonName" xml:space="preserve"><value>الشخص المسؤول</value></data>
+  <data name="ResponsiblePersonNamePlaceholder" xml:space="preserve"><value>مثال: سارة أحمد</value></data>
+  <data name="ResponsiblePersonPhone" xml:space="preserve"><value>الهاتف</value></data>
+  <data name="ResponsiblePersonPhonePlaceholder" xml:space="preserve"><value>مثال: ‎+90 555 000 0000</value></data>
+  <data name="ResponsiblePersonEmail" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="ResponsiblePersonEmailPlaceholder" xml:space="preserve"><value>مثال: contact@example.com</value></data>
+  <data name="ExternalReference" xml:space="preserve"><value>مرجع خارجي</value></data>
+  <data name="ExternalReferencePlaceholder" xml:space="preserve"><value>مثال: معرف النظام القديم</value></data>
+  <data name="ExternalReferenceHelp" xml:space="preserve"><value>معرّف هذا الحساب في النظام المصدر.</value></data>
+  <data name="MapSearchPlaceholder" xml:space="preserve"><value>ابحث عن حي أو شارع أو عنوان</value></data>
+  <data name="MapHelp" xml:space="preserve"><value>انقر على الخريطة أو اسحب العلامة لتحديد الموقع؛ يُملأ العنوان تلقائيًا. يمكنك أيضًا تعديل الحقول يدويًا.</value></data>
+  <data name="UseMyLocation" xml:space="preserve"><value>استخدم موقعي</value></data>
+  <data name="RelatedContacts" xml:space="preserve"><value>جهات الاتصال ذات الصلة</value></data>
+  <data name="NoRelatedContacts" xml:space="preserve"><value>لا توجد جهات اتصال ذات صلة بعد.</value></data>
+  <data name="RelatedAccounts" xml:space="preserve"><value>الحسابات ذات الصلة</value></data>
+  <data name="NoRelatedAccounts" xml:space="preserve"><value>لا توجد حسابات ذات صلة بعد.</value></data>
+  <data name="Primary" xml:space="preserve"><value>أساسي</value></data>
+  <data name="RelationshipType" xml:space="preserve"><value>العلاقة</value></data>
+  <data name="RelationshipDirection" xml:space="preserve"><value>الاتجاه</value></data>
+  <data name="NotAuthorized" xml:space="preserve"><value>ليس لديك إذن لعرض هذا القسم.</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>هذه المعلومات غير متوفرة مؤقتًا.</value></data>
+  <data name="ViewContact" xml:space="preserve"><value>عرض جهة الاتصال</value></data>
+  <data name="ViewAccount" xml:space="preserve"><value>عرض الحساب</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>الاسم</value></data>
+  <data name="ContactType" xml:space="preserve"><value>نوع جهة الاتصال</value></data>
+  <data name="Role" xml:space="preserve"><value>الدور</value></data>
+  <data name="Phone" xml:space="preserve"><value>الهاتف</value></data>
+  <data name="Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>صالح من</value></data>
+  <data name="ValidTo" xml:space="preserve"><value>صالح حتى</value></data>
+  <data name="Notes" xml:space="preserve"><value>ملاحظات</value></data>
+  <data name="AddContactLink" xml:space="preserve"><value>إضافة ربط جهة اتصال</value></data>
+  <data name="EditContactLink" xml:space="preserve"><value>تعديل ربط جهة الاتصال</value></data>
+  <data name="EndContactLink" xml:space="preserve"><value>إنهاء ربط جهة الاتصال</value></data>
+  <data name="AddRelatedAccount" xml:space="preserve"><value>إضافة حساب ذي صلة</value></data>
+  <data name="EditRelationship" xml:space="preserve"><value>تعديل العلاقة</value></data>
+  <data name="EndRelationship" xml:space="preserve"><value>إنهاء العلاقة</value></data>
+  <data name="SelectContact" xml:space="preserve"><value>اختر جهة اتصال</value></data>
+  <data name="SelectAccount" xml:space="preserve"><value>اختر حسابًا</value></data>
+  <data name="RoleCode" xml:space="preserve"><value>الدور</value></data>
+  <data name="RelationshipStatus" xml:space="preserve"><value>حالة العلاقة</value></data>
+  <data name="PrimaryContact" xml:space="preserve"><value>جهة الاتصال الأساسية</value></data>
+  <data name="EndDate" xml:space="preserve"><value>تاريخ الانتهاء</value></data>
+  <data name="EndReason" xml:space="preserve"><value>سبب الإنهاء / ملاحظات</value></data>
+  <data name="HistoricalLinkNotice" xml:space="preserve"><value>روابط جهات الاتصال تاريخية: إنهاء الرابط يحفظ سجله — لا يُحذف أبدًا.</value></data>
+  <data name="HistoricalRelationshipNotice" xml:space="preserve"><value>العلاقات تاريخية: إنهاء العلاقة يحفظ سجلها — لا تُحذف أبدًا.</value></data>
+  <data name="LinkWillBeEndedNotDeleted" xml:space="preserve"><value>لن يُحذف هذا الرابط من السجل. سيصبح غير نشط فقط اعتبارًا من التاريخ الذي تحدده.</value></data>
+  <data name="RelationshipWillBeEndedNotDeleted" xml:space="preserve"><value>لن تُحذف هذه العلاقة من السجل. ستصبح غير نشطة فقط اعتبارًا من التاريخ الذي تحدده.</value></data>
+  <data name="SaveLink" xml:space="preserve"><value>حفظ الرابط</value></data>
+  <data name="SaveRelationship" xml:space="preserve"><value>حفظ العلاقة</value></data>
+  <data name="ConfirmEndLink" xml:space="preserve"><value>تأكيد إنهاء الرابط</value></data>
+  <data name="ConfirmEndRelationship" xml:space="preserve"><value>تأكيد إنهاء العلاقة</value></data>
+  <data name="ManagedFromSource" xml:space="preserve"><value>تُدار من الحساب المصدر</value></data>
+  <data name="LinkEndedMessage" xml:space="preserve"><value>تم إنهاء ربط جهة الاتصال والحفاظ عليه في السجل.</value></data>
+  <data name="RelationshipEndedMessage" xml:space="preserve"><value>تم إنهاء العلاقة والحفاظ عليها في السجل.</value></data>
+  <data name="CrossCountryReason" xml:space="preserve"><value>سبب العمل عبر الدول</value></data>
+  <data name="CrossCountryHelp" xml:space="preserve"><value>مطلوب فقط عندما يكون جهة الاتصال/الحساب والطرف المرتبط في دول مختلفة. تُدقَّق رموز الدول؛ ولا يُكتب هذا السبب في السجلات.</value></data>
+  <data name="NotesSafetyNotice" xml:space="preserve"><value>لا تُدخل بيانات المرضى أو البيانات الصحية أو التشخيص أو العلاج أو الوصفات الطبية أو البيانات الشخصية الحساسة في هذا الحقل.</value></data>
+  <data name="ReportsTo" xml:space="preserve"><value>يتبع لـ</value></data>
+  <data name="ReportsToNone" xml:space="preserve"><value>— لا يوجد (الأعلى) —</value></data>
+  <data name="ReportsToHelp" xml:space="preserve"><value>اختر جهة اتصال مرتبطة بالفعل بهذا الحساب. التسلسل داخل الحساب؛ لا يُسمح بالتبعية الذاتية أو الحلقات.</value></data>
+  <data name="FormValidationError" xml:space="preserve"><value>يرجى تعبئة الحقول المطلوبة بشكل صحيح.</value></data>
+</root>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="RepositoryAssessments" xml:space="preserve"><value>Depo Değerlendirmeleri</value></data>
+  <data name="RepositoryAssessmentsTitle" xml:space="preserve"><value>Depo Değerlendirmeleri</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Kontrollü doküman Yayın Kapısı 2&apos;yi besleyen tenant genelinde depo değerlendirmeleri (SOP §11 DMS sınırı).</value></data>
+  <data name="RepositoryAssessmentCreate" xml:space="preserve"><value>Yeni Değerlendirme</value></data>
+  <data name="RepositoryAssessmentEdit" xml:space="preserve"><value>Değerlendirmeyi Düzenle</value></data>
+  <data name="RepositoryAssessmentDetails" xml:space="preserve"><value>Değerlendirme Detayları</value></data>
+  <data name="RepositoryName" xml:space="preserve"><value>Depo adı</value></data>
+  <data name="RepositoryKey" xml:space="preserve"><value>Depo anahtarı</value></data>
+  <data name="RepositoryType" xml:space="preserve"><value>Depo tipi</value></data>
+  <data name="AssessmentStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="RepositoryOwner" xml:space="preserve"><value>Sahip rolü</value></data>
+  <data name="RepositoryLocation" xml:space="preserve"><value>Konum</value></data>
+  <data name="LocationType" xml:space="preserve"><value>Konum tipi</value></data>
+  <data name="LocationTypeInHouseSoftware" xml:space="preserve"><value>Kurum içi yazılım</value></data>
+  <data name="LocationTypeGoogleDrive" xml:space="preserve"><value>Google Drive</value></data>
+  <data name="LocationTypeSharePoint" xml:space="preserve"><value>SharePoint</value></data>
+  <data name="LocationTypeNetworkShare" xml:space="preserve"><value>Ağ paylaşımı</value></data>
+  <data name="LocationTypeOther" xml:space="preserve"><value>Diğer</value></data>
+  <data name="AccessControlModel" xml:space="preserve"><value>Erişim kontrol modeli</value></data>
+  <data name="AccessReviewFrequency" xml:space="preserve"><value>Erişim gözden geçirme sıklığı</value></data>
+  <data name="EffectiveCopyControl" xml:space="preserve"><value>Yürürlükteki kopya kontrolü</value></data>
+  <data name="ApprovalMechanism" xml:space="preserve"><value>Onay mekanizması</value></data>
+  <data name="BackupPlan" xml:space="preserve"><value>Yedekleme planı</value></data>
+  <data name="RestoreTestEvidence" xml:space="preserve"><value>Geri yükleme testi sıklığı</value></data>
+  <data name="AuditTrail" xml:space="preserve"><value>Denetim izi</value></data>
+  <data name="ChangeControl" xml:space="preserve"><value>Değişiklik kontrolü</value></data>
+  <data name="ValidationEvidence" xml:space="preserve"><value>Doğrulama kanıtı</value></data>
+  <data name="ValidationEvidenceHint" xml:space="preserve"><value>Başka bir yerde tutulan doğrulama/kalifikasyon kanıtının referansı. Bu bir doğrulama iddiası değildir; sınırı backend sınıflandırır.</value></data>
+  <data name="MaxInterimPeriodDays" xml:space="preserve"><value>Azami geçici dönem (gün)</value></data>
+  <data name="InterimCheckpointDueDate" xml:space="preserve"><value>Geçici kontrol noktası tarihi</value></data>
+  <data name="MigrationReconciliationRequired" xml:space="preserve"><value>Migrasyon mutabakatı gerekli</value></data>
+  <data name="MigrationReconciliationEvidence" xml:space="preserve"><value>Migrasyon mutabakat kanıtı</value></data>
+  <data name="EvidenceReference" xml:space="preserve"><value>Kanıt referansı</value></data>
+  <data name="EvidenceReferenceHint" xml:space="preserve"><value>Kanıtın başka bir yerdeki referansı (talep no, tutanak, imzalı kayıt). Buraya dosya yüklenmez.</value></data>
+  <data name="RepositoryTypeValidatedDms" xml:space="preserve"><value>Doğrulanmış DMS</value></data>
+  <data name="RepositoryTypeApprovedInterimRepository" xml:space="preserve"><value>Onaylı geçici depo</value></data>
+  <data name="RepositoryTypeSeparateApprovalMechanism" xml:space="preserve"><value>Ayrı onay mekanizması</value></data>
+  <data name="RepositoryTypeUnapprovedRepository" xml:space="preserve"><value>Onaysız depo</value></data>
+  <data name="RepositoryStatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="RepositoryStatusUnderReview" xml:space="preserve"><value>İncelemede</value></data>
+  <data name="RepositoryStatusApproved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="RepositoryStatusRejected" xml:space="preserve"><value>Reddedildi</value></data>
+  <data name="RepositoryStatusExpired" xml:space="preserve"><value>Süresi doldu</value></data>
+  <data name="RepositoryStatusSuperseded" xml:space="preserve"><value>Yerine geçildi</value></data>
+  <data name="CanSupportReleaseGate" xml:space="preserve"><value>Yayın kapısını destekleyebilir</value></data>
+  <data name="CanSupportRegulatedESignature" xml:space="preserve"><value>Regüle e-imzayı destekleyebilir</value></data>
+  <data name="BoundaryStatement" xml:space="preserve"><value>Sınır beyanı</value></data>
+  <data name="EvaluateToSeeBoundary" xml:space="preserve"><value>Sınır beyanını görmek için değerlendirmeyi çalıştırın.</value></data>
+  <data name="CriticalFindings" xml:space="preserve"><value>Kritik bulgular</value></data>
+  <data name="Findings" xml:space="preserve"><value>Bulgular</value></data>
+  <data name="FindingType" xml:space="preserve"><value>Bulgu tipi</value></data>
+  <data name="FindingSeverity" xml:space="preserve"><value>Önem</value></data>
+  <data name="FindingStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="FindingMessage" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="BlockingFindings" xml:space="preserve"><value>Engelleyen bulgular</value></data>
+  <data name="WarningFindings" xml:space="preserve"><value>Uyarı bulguları</value></data>
+  <data name="NoFindingsFound" xml:space="preserve"><value>Bulgu yok</value></data>
+  <data name="FindingTypeMissingOwner" xml:space="preserve"><value>Sahip eksik</value></data>
+  <data name="FindingTypeMissingExactLocation" xml:space="preserve"><value>Kesin konum eksik</value></data>
+  <data name="FindingTypeMissingAccessModel" xml:space="preserve"><value>Erişim modeli eksik</value></data>
+  <data name="FindingTypeMissingAccessReview" xml:space="preserve"><value>Erişim gözden geçirmesi eksik</value></data>
+  <data name="FindingTypeMissingBackup" xml:space="preserve"><value>Yedekleme eksik</value></data>
+  <data name="FindingTypeMissingRestoreTest" xml:space="preserve"><value>Geri yükleme testi eksik</value></data>
+  <data name="FindingTypeMissingApprovalMechanism" xml:space="preserve"><value>Onay mekanizması eksik</value></data>
+  <data name="FindingTypeMissingEffectiveCopyControl" xml:space="preserve"><value>Yürürlükteki kopya kontrolü eksik</value></data>
+  <data name="FindingTypeMissingAuditTrail" xml:space="preserve"><value>Denetim izi eksik</value></data>
+  <data name="FindingTypeMissingChangeControl" xml:space="preserve"><value>Değişiklik kontrolü eksik</value></data>
+  <data name="FindingTypeInterimPeriodExpired" xml:space="preserve"><value>Geçici dönem doldu</value></data>
+  <data name="FindingTypeMigrationReconciliationMissing" xml:space="preserve"><value>Migrasyon mutabakatı eksik</value></data>
+  <data name="FindingTypeNativeESignatureMisuseRisk" xml:space="preserve"><value>Yerel e-imza kötüye kullanım riski</value></data>
+  <data name="FindingTypeOther" xml:space="preserve"><value>Diğer</value></data>
+  <data name="SeverityWarning" xml:space="preserve"><value>Uyarı</value></data>
+  <data name="SeverityMajor" xml:space="preserve"><value>Önemli</value></data>
+  <data name="SeverityCritical" xml:space="preserve"><value>Kritik</value></data>
+  <data name="FindingStatusOpen" xml:space="preserve"><value>Açık</value></data>
+  <data name="FindingStatusResolved" xml:space="preserve"><value>Çözüldü</value></data>
+  <data name="FindingStatusAcceptedAsInterimRisk" xml:space="preserve"><value>Geçici risk olarak kabul edildi</value></data>
+  <data name="FindingStatusClosed" xml:space="preserve"><value>Kapatıldı</value></data>
+  <data name="EvaluateRepository" xml:space="preserve"><value>Değerlendir</value></data>
+  <data name="ApproveRepository" xml:space="preserve"><value>Onayla</value></data>
+  <data name="RejectRepository" xml:space="preserve"><value>Reddet</value></data>
+  <data name="ApproverRole" xml:space="preserve"><value>Onaylayan rol</value></data>
+  <data name="ApproverRoleHint" xml:space="preserve"><value>SOP §11.2 uyarınca depo değerlendirmesini yalnızca GQD, GQD Yardımcısı veya BT/CSV sahibi onaylayabilir.</value></data>
+  <data name="RejectionReason" xml:space="preserve"><value>Ret gerekçesi</value></data>
+  <data name="ApprovedAt" xml:space="preserve"><value>Onay tarihi</value></data>
+  <data name="ApprovedBy" xml:space="preserve"><value>Onaylayan rol</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>Geçerlilik başlangıcı</value></data>
+  <data name="ValidUntil" xml:space="preserve"><value>Geçerlilik bitişi</value></data>
+  <data name="ApprovalRoleGQD" xml:space="preserve"><value>Grup Kalite Direktörü</value></data>
+  <data name="ApprovalRoleGQDDeputy" xml:space="preserve"><value>Grup Kalite Direktör Yardımcısı</value></data>
+  <data name="ApprovalRoleITCSVOwner" xml:space="preserve"><value>BT / CSV Sahibi</value></data>
+  <data name="InterimRepositoryWarning" xml:space="preserve"><value>Onaylı geçici depo, doğrulanmış bir DMS değildir. Regüle elektronik imza uygunluğu olarak sunulamaz ve süreli bir kontrol noktası taşır.</value></data>
+  <data name="UnapprovedRepositoryWarning" xml:space="preserve"><value>Onaysız bir depo kontrollü doküman yayınını destekleyemez. Yayın Kapısı 2 geçebilmeden önce değerlendirilip onaylanmalı (veya dokümanlar onaylı bir depoya taşınmalı).</value></data>
+  <data name="SeparateApprovalMechanismNote" xml:space="preserve"><value>Bu depo doğrulanmış bir DMS yerine ayrı, belgelenmiş bir onay mekanizmasına dayanır. Sınır beyanı ne için kullanılabileceğini açıklar.</value></data>
+  <data name="ValidatedDmsNote" xml:space="preserve"><value>Doğrulanmış DMS sınırı olarak sınıflandırıldı. Sınıflandırma kaydedilen değerlendirme içeriğini yansıtır; bağımsız bir doğrulama sertifikası değildir.</value></data>
+  <data name="NoComplianceClaim" xml:space="preserve"><value>Uygunluk iddiası yok</value></data>
+  <data name="NoValidatedDmsClaim" xml:space="preserve"><value>Bu ekran bir depoyu SOP sınırına göre sınıflandırır. Hiçbir bilgisayar sistemi doğrulama iddiası, elektronik imza uygunluk iddiası veya sertifika beyanı içermez.</value></data>
+  <data name="RepositoryBoundaryDisclaimer" xml:space="preserve"><value>Bu ekran depo yönetişim sınırlarını sınıflandırır. Sistemi sertifikalandırmaz, bir DMS&apos;i doğrulamaz ve regüle elektronik imza uygunluk iddiası içermez.</value></data>
+  <data name="EvaluateDoesNotApprove" xml:space="preserve"><value>Değerlendirme depoyu sınıflandırır ve sınırını döndürür. Değerlendirmeyi onaylamaz ve durumunu değiştirmez.</value></data>
+  <data name="ApproveDoesNotValidate" xml:space="preserve"><value>Onaylamak bu depo hakkında bir yönetişim kararı kaydeder. Bilgisayar sistemi doğrulaması veya elektronik imza uygunluğu beyan etmez. Kritik bir bulgu onayı engeller.</value></data>
+  <data name="RejectDoesNotDelete" xml:space="preserve"><value>Reddetmek bir yönetişim kararı kaydeder. Gerekçe zorunludur. Değerlendirme silinmez, korunur.</value></data>
+  <data name="ApprovedAssessmentReadOnly" xml:space="preserve"><value>Bu değerlendirme onaylandı veya yerine geçildi ve artık düzenlenemez. Bunun yerine yeni bir değerlendirme oluşturun.</value></data>
+  <data name="ReleaseGate2Note" xml:space="preserve"><value>Yayın Kapısı 2 (Onaylı Depo Mevcut) burada kaydedilen sınıflandırmayı okur. Bu ekran değerlendirmeyi gösterir ve kaydeder; kapıyı geçirmez ve dokümanı yürürlüğe almaz.</value></data>
+  <data name="EvaluationSucceeded" xml:space="preserve"><value>Depo değerlendirildi</value></data>
+  <data name="EvaluationFailed" xml:space="preserve"><value>Depo değerlendirilemedi</value></data>
+  <data name="ApprovalSucceeded" xml:space="preserve"><value>Değerlendirme onaylandı</value></data>
+  <data name="ApprovalFailed" xml:space="preserve"><value>Değerlendirme onaylanamadı</value></data>
+  <data name="RejectionSucceeded" xml:space="preserve"><value>Değerlendirme reddedildi</value></data>
+  <data name="RejectionFailed" xml:space="preserve"><value>Değerlendirme reddedilemedi</value></data>
+  <data name="AlreadyDecided" xml:space="preserve"><value>Bu değerlendirme zaten karara bağlanmış</value></data>
+  <data name="ApproverRoleInvalid" xml:space="preserve"><value>Bu rol depo değerlendirmesini onaylayamaz (SOP §11.2)</value></data>
+  <data name="LinkStatusInvalid" xml:space="preserve"><value>Bu değerlendirme bağlanabilir durumda değil</value></data>
+  <data name="NameAndTypeRequired" xml:space="preserve"><value>Depo adı ve geçerli bir tip zorunludur</value></data>
+  <data name="RequiredFieldsMissing" xml:space="preserve"><value>Zorunlu değerlendirme içeriği eksik; onaydan önce kritik bulguları giderin</value></data>
+  <data name="AssessmentNotFound" xml:space="preserve"><value>Depo değerlendirmesi bulunamadı</value></data>
+  <data name="ReasonRequiredError" xml:space="preserve"><value>Gerekçe zorunludur</value></data>
+  <data name="NoRepositoryAssessmentsFound" xml:space="preserve"><value>Henüz depo değerlendirmesi kaydedilmedi</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Değerlendirmeler yüklenemedi</value></data>
+  <data name="SaveSucceeded" xml:space="preserve"><value>Değerlendirme kaydedildi</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>Değerlendirme kaydedilemedi</value></data>
+  <data name="Forbidden" xml:space="preserve"><value>Bu işlem için yetkiniz yok</value></data>
+  <data name="ConflictOccurred" xml:space="preserve"><value>İşlem mevcut durumla çakışıyor</value></data>
+  <data name="ActionNotAvailable" xml:space="preserve"><value>Kullanılamaz</value></data>
+  <data name="BasicInformation" xml:space="preserve"><value>Temel bilgiler</value></data>
+  <data name="AccessAndControl" xml:space="preserve"><value>Erişim ve kontrol</value></data>
+  <data name="TechnicalControls" xml:space="preserve"><value>Teknik kontroller</value></data>
+  <data name="InterimRepositoryFields" xml:space="preserve"><value>Geçici depo</value></data>
+  <data name="EvidenceAndNotes" xml:space="preserve"><value>Kanıt</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Yeni Ekle</value></data>
+  <data name="Back" xml:space="preserve"><value>Geri</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı Görünüm</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+</root>

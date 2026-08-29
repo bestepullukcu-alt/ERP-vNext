@@ -1,0 +1,53 @@
+@using Diten.Web.Views.CRM.Accounts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<AccountIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* Both chips are populated at runtime from MOD-0048 published values (/CRM/Accounts/lookups).
+   They are intentionally empty here: hardcoding account-type/account-status options would fork the
+   reference-data source of truth. *@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Filter Chip: Status (Multi-select) *@
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Account Type (Multi-select) *@
+                    <div class="filter-chip filter-account-type">
+                        <select id="filterAccountType" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["AccountType"]">
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Country Scope (Multi-select). Distinct current country scopes present in the loaded
+                       grid rows (MOD-0151 node CountryCode). Drives the Territory Node chip below (cascade). *@
+                    <div class="filter-chip filter-country-scope">
+                        <select id="filterCountryScope" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["CountryScope"]">
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Territory Node (Multi-select). Options are the distinct current territory nodes
+                       present in the loaded grid rows (MOD-0151 projection), narrowed by the selected country scope. *@
+                    <div class="filter-chip filter-territory">
+                        <select id="filterTerritory" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["TerritoryNode"]">
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

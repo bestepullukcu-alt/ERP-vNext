@@ -9,7 +9,7 @@ public sealed class GetControlledDocumentListHandler(ControlledDocumentService s
     : IRequestHandler<GetControlledDocumentListQuery, Response<IReadOnlyList<ControlledDocumentListItemModel>>>
 {
     public Task<Response<IReadOnlyList<ControlledDocumentListItemModel>>> Handle(GetControlledDocumentListQuery request, CancellationToken ct) =>
-        service.ListAsync(request.CollectionInstanceId, request.CorrelationId, ct);
+        service.ListAsync(request.CollectionInstanceId, request.IncludeNonEffective, request.CorrelationId, ct);
 }
 
 public sealed class GetControlledDocumentByIdHandler(ControlledDocumentService service)
@@ -72,7 +72,7 @@ public sealed class GetFolderDocumentsHandler(FolderDocumentService service)
     : IRequestHandler<GetFolderDocumentsQuery, Response<FolderDocumentsModel>>
 {
     public Task<Response<FolderDocumentsModel>> Handle(GetFolderDocumentsQuery request, CancellationToken ct) =>
-        service.GetFolderDocumentsAsync(request.CollectionInstanceId, request.CorrelationId, ct);
+        service.GetFolderDocumentsAsync(request.CollectionInstanceId, request.IncludeNonEffective, request.CorrelationId, ct);
 }
 
 public sealed class GetFolderDocumentAccessHandler(FolderDocumentService service)

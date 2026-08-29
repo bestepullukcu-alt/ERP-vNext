@@ -1,0 +1,197 @@
+@model Diten.Web.Models.CRM.TerritoryModelDetailPageViewModel
+@using Diten.Web.Views.CRM.TerritoryManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TerritoryManagementResources> L
+@inject IHtmlLocalizer<Diten.Web.SharedResource> Shared
+@{
+    var m = Model.Model;
+    ViewData["Title"] = $"{L["ImportExport"].Value} — {m.Name}";
+    Layout = "_LayoutTenantShell";
+}
+
+@* MOD-0151 FU08 — Import / Export. Every call goes through the Web proxy → Gateway; the browser never posts a
+   TenantId and never reaches CrmService directly. Dry-run is the only way in: Apply stays disabled until a
+   dry-run has returned canApply. *@
+
+<div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-3 gap-3">
+    <div>
+        <h5 class="mb-0 d-flex align-items-center gap-2">
+            @L["ImportExport"]
+            <span class="badge bg-label-info">@m.ModelCode</span>
+            <span class="badge bg-label-secondary">@m.Status</span>
+        </h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/TerritoryManagement">@L["TerritoryModels"]</a></li>
+                <li class="breadcrumb-item"><a href="/CRM/TerritoryManagement/Models/@m.Id">@m.ModelCode — @m.Name</a></li>
+                <li class="breadcrumb-item active text-primary">@L["ImportExport"]</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center flex-wrap gap-2">
+        <a class="btn btn-label-secondary" href="/CRM/TerritoryManagement/Models/@m.Id/Export">
+            <i class="bx bx-download me-1"></i>@L["ExportXlsx"]
+        </a>
+        <a class="btn btn-label-primary" href="/CRM/TerritoryManagement/Models/@m.Id/ImportTemplate">
+            <i class="bx bx-file-blank me-1"></i>@L["DownloadImportTemplate"]
+        </a>
+    </div>
+</div>
+
+<div class="alert alert-info d-flex align-items-start gap-2" role="alert">
+    <i class="bx bx-info-circle mt-1"></i>
+    <div>
+        <div>@L["ImportDryRunFirstNotice"]</div>
+        <div class="small text-muted mt-1">@L["ImportResourceApplyNotSupported"]</div>
+        <div class="small text-muted">@L["ImportReadModelsNotImportable"]</div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <h6 class="mb-0">@L["UploadWorkbook"]</h6>
+        <span class="badge bg-label-secondary">@L["DryRunWritesNothing"]</span>
+    </div>
+    <div class="card-body">
+        <form id="tm-import-form" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <label class="form-label" for="tm-import-file">@L["SelectXlsxFile"]</label>
+                    <input class="form-control" type="file" id="tm-import-file" name="file" accept=".xlsx" />
+                </div>
+                <div class="col-md-3">
+                    <div class="form-check mt-4">
+                        <input class="form-check-input" type="checkbox" id="tm-import-strict" />
+                        <label class="form-check-label" for="tm-import-strict">@L["StrictMode"]</label>
+                        <div class="form-text">@L["StrictModeHint"]</div>
+                    </div>
+                </div>
+                <div class="col-md-3 d-flex gap-2 justify-content-md-end">
+                    <button type="button" class="btn btn-primary" id="tm-import-dryrun">
+                        <i class="bx bx-search-alt me-1"></i>@L["RunDryRun"]
+                    </button>
+                    <button type="button" class="btn btn-success" id="tm-import-apply" disabled>
+                        <i class="bx bx-check-double me-1"></i>@L["ApplyImport"]
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mb-4 d-none" id="tm-import-result">
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h6 class="mb-0" id="tm-import-result-title">@L["DryRunResult"]</h6>
+        <div class="d-flex align-items-center flex-wrap gap-2" id="tm-import-counters"></div>
+    </div>
+    <div class="card-body">
+        <div id="tm-import-blocked" class="alert alert-warning d-none" role="alert"></div>
+        <div id="tm-import-file-messages" class="mb-3"></div>
+        <div class="table-responsive mb-3">
+            <table class="table table-sm table-bordered align-middle mb-0" id="tm-import-sheets">
+                <thead>
+                <tr>
+                    <th>@L["Sheet"]</th>
+                    <th class="text-end">@L["Rows"]</th>
+                    <th class="text-end">@L["Blocking"]</th>
+                    <th class="text-end">@L["Creates"]</th>
+                    <th class="text-end">@L["Updates"]</th>
+                    <th class="text-end">@L["Ends"]</th>
+                    <th class="text-end">@L["Skips"]</th>
+                    <th>@L["Outcome"]</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="tm-import-only-blocking" />
+                <label class="form-check-label" for="tm-import-only-blocking">@L["ShowOnlyBlocking"]</label>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0" id="tm-import-rows">
+                <thead>
+                <tr>
+                    <th>@L["Sheet"]</th>
+                    <th class="text-end">@L["RowNumber"]</th>
+                    <th>@L["Severity"]</th>
+                    <th>@L["Operation"]</th>
+                    <th>@L["ResolvedKey"]</th>
+                    <th>@L["Status"]</th>
+                    <th>@L["Message"]</th>
+                    <th>@L["SuggestedFix"]</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <h6 class="mb-0">@L["ImportRunHistory"]</h6>
+        <span class="badge bg-label-secondary">@L["AppendOnly"]</span>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0" id="tm-import-runs">
+                <thead>
+                <tr>
+                    <th>@L["UploadedAt"]</th>
+                    <th>@L["FileName"]</th>
+                    <th>@L["UploadedBy"]</th>
+                    <th>@L["RunStatus"]</th>
+                    <th class="text-end">@L["Creates"]</th>
+                    <th class="text-end">@L["Updates"]</th>
+                    <th class="text-end">@L["Ends"]</th>
+                    <th class="text-end">@L["Errors"]</th>
+                    <th>@L["Outcome"]</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        window.TerritoryImportExport = {
+            modelId: '@m.Id',
+            canApply: @(Model.CanManageModel ? "true" : "false"),
+            urls: {
+                dryRun: '/CRM/TerritoryManagement/Models/@m.Id/ImportDryRun',
+                apply: '/CRM/TerritoryManagement/Models/@m.Id/ImportApply',
+                runs: '/CRM/TerritoryManagement/Models/@m.Id/ImportRuns/Json'
+            },
+            l10n: {
+                selectFile: '@Html.Raw(L["ImportSelectFile"].Value)',
+                xlsxOnly: '@Html.Raw(L["ImportXlsxOnly"].Value)',
+                dryRunResult: '@Html.Raw(L["DryRunResult"].Value)',
+                applyResult: '@Html.Raw(L["ApplyResult"].Value)',
+                applied: '@Html.Raw(L["Applied"].Value)',
+                notApplied: '@Html.Raw(L["NotApplied"].Value)',
+                nothingToApply: '@Html.Raw(L["NothingToApply"].Value)',
+                applyBlocked: '@Html.Raw(L["ApplyBlocked"].Value)',
+                confirmApply: '@Html.Raw(L["ConfirmApply"].Value)',
+                noRuns: '@Html.Raw(L["NoImportRuns"].Value)',
+                gatewayError: '@Html.Raw(Shared["GatewayError"].Value)',
+                creates: '@Html.Raw(L["Creates"].Value)',
+                updates: '@Html.Raw(L["Updates"].Value)',
+                ends: '@Html.Raw(L["Ends"].Value)',
+                skips: '@Html.Raw(L["Skips"].Value)',
+                errors: '@Html.Raw(L["Errors"].Value)',
+                conflicts: '@Html.Raw(L["Conflicts"].Value)',
+                warnings: '@Html.Raw(L["Warnings"].Value)',
+                reRun: '@Html.Raw(L["FileAlreadyApplied"].Value)'
+            }
+        };
+    </script>
+    <script src="~/assets/js/CRM/TerritoryManagement/import-export.js" asp-append-version="true"></script>
+}

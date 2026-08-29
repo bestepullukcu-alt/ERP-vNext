@@ -10,7 +10,7 @@ using Diten.Platform.Application.Features.DocumentManagementContract;
 
 namespace Diten.Platform.API.Security;
 
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
 public sealed class HasPermissionAttribute : Attribute, IAsyncAuthorizationFilter
 {
     private readonly string _permission;

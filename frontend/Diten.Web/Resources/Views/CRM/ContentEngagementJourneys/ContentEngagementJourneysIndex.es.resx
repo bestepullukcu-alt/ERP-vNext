@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Active" xml:space="preserve"><value>Activo</value></data>
+  <data name="ActiveStageCount" xml:space="preserve"><value>Etapas activas</value></data>
+  <data name="AddBranchCondition" xml:space="preserve"><value>Agregar condición</value></data>
+  <data name="AddStage" xml:space="preserve"><value>Agregar etapa</value></data>
+  <data name="AdvancementRule" xml:space="preserve"><value>Regla de avance</value></data>
+  <data name="Apply" xml:space="preserve"><value>Aplicar</value></data>
+  <data name="ArchiveJourney" xml:space="preserve"><value>Archivar recorrido</value></data>
+  <data name="ArchiveJourneyConfirm" xml:space="preserve"><value>¿Archivar este recorrido? No se elimina nada; queda de solo lectura.</value></data>
+  <data name="ArchiveStageConfirm" xml:space="preserve"><value>¿Archivar esta etapa? Permanece en el documento y solo sale de la lista activa.</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="ArchivedJourneyReadOnly" xml:space="preserve"><value>Este recorrido está archivado y es de solo lectura.</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>¿Está seguro?</value></data>
+  <data name="AudienceProfileId" xml:space="preserve"><value>Perfil de audiencia</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Volver a la lista</value></data>
+  <data name="BranchConditions" xml:space="preserve"><value>Condiciones de ramificación</value></data>
+  <data name="BranchConditionsHelp" xml:space="preserve"><value>Solo datos editables: las condiciones se transportan, nunca se evalúan. Un recorrido siempre se puede recorrer sin ellas.</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Eliminación masiva</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>¿Eliminar los registros seleccionados?</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Clasificación</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Columnas</value></data>
+  <data name="ConditionCode" xml:space="preserve"><value>Código de condición</value></data>
+  <data name="ContentEngagementJourneyContractUnavailable" xml:space="preserve"><value>El contrato de capacidad ContentEngagementJourney no está disponible. Acciones deshabilitadas.</value></data>
+  <data name="ContentEngagementJourneysMenu" xml:space="preserve"><value>Recorridos de interacción de contenido</value></data>
+  <data name="ContentEngagementJourneysTitle" xml:space="preserve"><value>Recorridos de interacción de contenido</value></data>
+  <data name="CreateJourney" xml:space="preserve"><value>Crear recorrido</value></data>
+  <data name="CrossLanguage" xml:space="preserve"><value>Entre idiomas</value></data>
+  <data name="CrossSubject" xml:space="preserve"><value>Entre materias</value></data>
+  <data name="DeclaredNotEvaluatedHelp" xml:space="preserve"><value>La regla de avance, la etapa alternativa y las condiciones de ramificación solo se DECLARAN: este módulo no evalúa ninguna.</value></data>
+  <data name="Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="Edit" xml:space="preserve"><value>Editar</value></data>
+  <data name="EditJourney" xml:space="preserve"><value>Editar recorrido</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Vigente desde</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Vigente hasta</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>No se encontraron rutas de conocimiento.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Se produjo un error.</value></data>
+  <data name="Export" xml:space="preserve"><value>Exportar</value></data>
+  <data name="FallbackStageId" xml:space="preserve"><value>Etapa alternativa</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtrar</value></data>
+  <data name="Frozen" xml:space="preserve"><value>Congelado</value></data>
+  <data name="FrozenStagesHelp" xml:space="preserve"><value>Esta versión está publicada y su conjunto de etapas está congelado. Cree una nueva versión para cambiarlas.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identidad</value></data>
+  <data name="Import" xml:space="preserve"><value>Importar</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Incluir archivados</value></data>
+  <data name="IsRequired" xml:space="preserve"><value>Obligatorio</value></data>
+  <data name="JourneyCode" xml:space="preserve"><value>Código del recorrido</value></data>
+  <data name="JourneyDetail" xml:space="preserve"><value>Detalle del recorrido</value></data>
+  <data name="JourneyName" xml:space="preserve"><value>Nombre del recorrido</value></data>
+  <data name="JourneyStatus" xml:space="preserve"><value>Estado del recorrido</value></data>
+  <data name="JourneyVersion" xml:space="preserve"><value>Versión del recorrido</value></data>
+  <data name="LanguageCode" xml:space="preserve"><value>Idioma</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando…</value></data>
+  <data name="MaxVisitNumber" xml:space="preserve"><value>N.º de visita máximo</value></data>
+  <data name="MinVisitNumber" xml:space="preserve"><value>N.º de visita mínimo</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Nueva versión</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>¿Crear una nueva versión borrador a partir de la publicada? Las etapas se copian con nuevos identificadores.</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="NoStages" xml:space="preserve"><value>Aún no hay etapas.</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notas</value></data>
+  <data name="Objective" xml:space="preserve"><value>Objetivo</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Planifique la progresión de contenido en varias visitas: qué etapa sigue y qué ruta de conocimiento se aplica.</value></data>
+  <data name="Passive" xml:space="preserve"><value>Inactivo</value></data>
+  <data name="PathPinHelp" xml:space="preserve"><value>pinned = permanece fija en esta versión; latest-published = resuelve la versión publicada al leer.</value></data>
+  <data name="PathResolution" xml:space="preserve"><value>Resolución de la ruta</value></data>
+  <data name="PathVersionPinPolicy" xml:space="preserve"><value>Fijación de versión de la ruta</value></data>
+  <data name="Publish" xml:space="preserve"><value>Publicar</value></data>
+  <data name="PublishConfirm" xml:space="preserve"><value>¿Publicar este recorrido? El conjunto de etapas quedará congelado.</value></data>
+  <data name="PublishSeparatelyHelp" xml:space="preserve"><value>La publicación es una acción aparte; el estado no puede cambiar a published.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Vista rápida</value></data>
+  <data name="RecommendedKnowledgePathId" xml:space="preserve"><value>Ruta de conocimiento recomendada</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Registro archivado.</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>Registro creado.</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>Registro actualizado.</value></data>
+  <data name="Repeatable" xml:space="preserve"><value>Repetible</value></data>
+  <data name="Repeated" xml:space="preserve"><value>Repetido</value></data>
+  <data name="RequiredStageCount" xml:space="preserve"><value>Etapas obligatorias</value></data>
+  <data name="Reset" xml:space="preserve"><value>Restablecer</value></data>
+  <data name="Resolved" xml:space="preserve"><value>Resuelto</value></data>
+  <data name="Save" xml:space="preserve"><value>Guardar</value></data>
+  <data name="SaveBeforeStages" xml:space="preserve"><value>Guarde primero el recorrido y luego agregue sus etapas aquí.</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Guardar vista</value></data>
+  <data name="SchedulingSection" xml:space="preserve"><value>Programación y ciclo de vida</value></data>
+  <data name="Search" xml:space="preserve"><value>Buscar</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seleccionar…</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Todos</value></data>
+  <data name="Source" xml:space="preserve"><value>Origen</value></data>
+  <data name="StageCode" xml:space="preserve"><value>Código de la etapa</value></data>
+  <data name="StageName" xml:space="preserve"><value>Nombre de la etapa</value></data>
+  <data name="StageObjective" xml:space="preserve"><value>Objetivo de la etapa</value></data>
+  <data name="StageOrder" xml:space="preserve"><value>Orden de la etapa</value></data>
+  <data name="StageType" xml:space="preserve"><value>Tipo de etapa</value></data>
+  <data name="StagesHelp" xml:space="preserve"><value>Agregue las etapas en el orden de progresión; cada etapa se vincula a una ruta de conocimiento publicada.</value></data>
+  <data name="StagesSection" xml:space="preserve"><value>Etapas</value></data>
+  <data name="Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="StepCount" xml:space="preserve"><value>pasos</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>Materia</value></data>
+  <data name="TopicId" xml:space="preserve"><value>Tema</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Desconocido</value></data>
+  <data name="Unresolved" xml:space="preserve"><value>Sin resolver</value></data>
+  <data name="UnresolvedPathHelp" xml:space="preserve"><value>Al menos una etapa no puede resolver su ruta de conocimiento (unresolved). La etapa nunca se oculta: corrija el vínculo.</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Actualizado</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ver detalles</value></data>
+  <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+</root>

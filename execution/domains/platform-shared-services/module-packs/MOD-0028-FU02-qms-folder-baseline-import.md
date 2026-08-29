@@ -629,3 +629,77 @@ No frontend build, DataTable verifier, RESX parity, or browser UI smoke is requi
    file-lock constraint is resolved.
 
 Each follow-up requires its own approved or ready-for-dev scope. FU02 does not authorize any later wave.
+
+## 21. DCP-007 Approved Amendment — Import Completion Visibility and Consumer Guardrails
+
+**Amendment status:** `approved`
+**Approved by user:** `2026-08-27`
+**Runtime authority:** `false`
+
+This amendment is a bounded DCP-007 governance contract approved by the user on 2026-08-27. The parent FU02 pack
+remains `approved`; amendment approval does not authorize implementation.
+
+### Amendment ownership
+
+FU02 owns the combined evidence/review/action guard contract, the `BaselineRelease`/`CollectionDefinition` lineage
+seam, normal baseline/definition consumer enforcement, batch guard evaluation, publish/approve/mark-effective
+completion enforcement, and the legacy/manual disposition consumption seam. It remains the owner of the existing
+`platform.document-management.qms-baselines.import`, `.view`, and `.publish` permission literals.
+
+FU02 consumes FU07's authoritative `ImportCompletionVerified` evidence. It does not own FU07's import-operation or
+immutable import-manifest aggregates, operation status endpoint, or safe findings-summary endpoint.
+
+### Required behavior
+
+- Normal baseline lists omit incomplete records through bounded batch guard evaluation; per-row/N+1 guard evaluation
+  is prohibited.
+- Direct incomplete baseline or definition access returns 404 non-leakage without source, checksum, operation, or
+  finding disclosure.
+- Every mutation re-evaluates the combined guard server-side; prior list/detail visibility is never reusable proof.
+- Publish and approve evaluate the guard before any definition read or lifecycle manifest creation.
+- Mark-effective evaluates the guard before querying, superseding, or changing any prior Effective baseline.
+- Guard unavailability returns controlled 503 and produces no definition, manifest, status, audit-success, or other
+  mutation side effect.
+- Integrity mismatch returns controlled 409 and records controlled integrity audit evidence without raw source data.
+- Every new FU07-produced baseline carries required `ImportOperationId` lineage to its same-tenant operation.
+- A null operation is never implicit legacy/manual success. Legacy disposition persistence or authority remains
+  fail-closed until DCP-007 G7 is separately resolved.
+- This amendment changes no broader MOD-0029 Controlled Document lifecycle ownership. Existing FU08 annotations remain
+  AS-IS drift evidence only and are not authority.
+
+### Amendment acceptance criteria
+
+- [ ] Incomplete records are absent from normal lists, while direct incomplete baseline/definition access is 404.
+- [ ] Batch evaluation has a bounded query contract and a regression proving no N+1 completion lookup.
+- [ ] Publish/approve perform no definition read or manifest creation after a failed guard.
+- [ ] Mark-effective performs no previous-Effective query or update after a failed guard.
+- [ ] Guard-unavailable and integrity-mismatch responses use the controlled 503/409 contracts with no forbidden side
+      effect and with safe audit evidence.
+- [ ] New FU07 lineage is exact and tenant-scoped; missing/mismatched operation or manifest fails closed.
+- [ ] Null-operation records remain hidden/ineligible unless the later G7 legacy/manual disposition contract succeeds.
+- [ ] Existing import/view/publish permission enforcement remains server-side and no new permission seed is introduced.
+
+### Amendment test expectations
+
+- Batch-list visibility tests: mixed Completed/incomplete/legacy records, bounded repository calls, stable ordering.
+- Direct baseline and definition tests: incomplete, missing, cross-tenant, mismatched lineage, and tampered evidence all
+  return non-leaking controlled failures.
+- Publish/approve/mark-effective side-effect-absence tests instrument definition, manifest, baseline, and audit writes.
+- Concurrency tests re-evaluate the guard at mutation time and reject stale/tampered completion evidence.
+- Dependency-failure and integrity-mismatch tests prove 503/409 behavior and controlled audit redaction.
+- Regression tests preserve existing FU02 import behavior and permission literals outside the approved amendment.
+
+### Amendment governance gates
+
+- DCP-007 remains `under-review`; FU07 remains `draft` with `runtime_code_allowed: false`.
+- This amendment is approved at governance level; runtime implementation remains prohibited until DCP-007 and the
+  active member-pack execution gates close.
+- DCP-007 G2 is resolved because FU02, FU03, FU05, and FU06 amendments received separate user approval on 2026-08-27.
+- This amendment does not close G7, G12, load/lease/heartbeat, retention/audit, FU07 approval, or runtime-evidence gates.
+- It creates no permission seed, MOD/FU identity, Gateway change, Company sharing/overlay, or template-propagation scope.
+
+### Approval note
+
+- Approval covers only this amendment's scope, acceptance criteria, and test governance contract.
+- Code may start only after DCP-007 and the active member pack pass their separate execution gates.
+- This approval is not runtime implementation, deployment, or activation authority.

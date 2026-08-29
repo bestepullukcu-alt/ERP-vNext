@@ -17,7 +17,8 @@ public static class QmsCanonicalIdFactory
     }
 
     /// <summary>
-    /// MOD-0028-FU06 — register-backed stable CanonicalId. Derives identity from the register's stable
+    /// QMS register import extension — governance identity pending. Register-backed stable CanonicalId derives
+    /// identity from the register's stable
     /// <c>folder_id</c> (e.g. <c>ENT-00</c>) instead of the full path, so the identity is invariant under a later
     /// folder rename/move. Same format/regex as <see cref="Create"/>, still tenant- and baseline-scoped and
     /// deterministic. Use this only when the source row carries a register folder id; otherwise fall back to

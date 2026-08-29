@@ -190,6 +190,7 @@ public sealed class InstantiationService
                 TenantId = tenantId,
                 InstanceKey = node.InstanceKey,
                 CompanyId = plan.CompanyId,
+                ScopeOwnerId = plan.CompanyId,
                 BaselineReleaseId = plan.BaselineReleaseId,
                 CanonicalId = node.CanonicalId,
                 ParentCanonicalId = node.ParentCanonicalId,

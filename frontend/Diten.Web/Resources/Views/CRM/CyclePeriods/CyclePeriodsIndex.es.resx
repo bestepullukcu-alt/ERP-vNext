@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="ActivateCyclePeriod" xml:space="preserve"><value>Activar</value></data>
+  <data name="ActivateCyclePeriodConfirm" xml:space="preserve"><value>¿Poner este período en vigor? Los períodos activos de la misma unidad de negocio no pueden compartir un día y sus fechas pasan a ser de solo lectura.</value></data>
+  <data name="ActivatedAt" xml:space="preserve"><value>Activado el</value></data>
+  <data name="ActiveEditNotice" xml:space="preserve"><value>Este período está en vigor: sus fechas, año, secuencia y unidad de negocio son de solo lectura. Ciérrelo y abra uno nuevo para cambiarlos.</value></data>
+  <data name="AmbiguousPeriod" xml:space="preserve"><value>Más de un período activo cubre hoy</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>Unidad de negocio</value></data>
+  <data name="BusinessUnitIdHint" xml:space="preserve"><value>Déjelo vacío para un calendario de todo el inquilino. Distintas unidades pueden tener períodos solapados.</value></data>
+  <data name="BusinessUnitIdPlaceholder" xml:space="preserve"><value>Todo el inquilino si está vacío</value></data>
+  <data name="CloseCyclePeriod" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="CloseCyclePeriodConfirm" xml:space="preserve"><value>¿Cerrar este período? No se elimina nada, pero el cierre es definitivo: no hay reapertura.</value></data>
+  <data name="ClosedAt" xml:space="preserve"><value>Cerrado el</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>El servicio de períodos no está disponible.</value></data>
+  <data name="CreateCyclePeriod" xml:space="preserve"><value>Nuevo período</value></data>
+  <data name="CurrentPeriod" xml:space="preserve"><value>Período vigente hoy</value></data>
+  <data name="CycleCode" xml:space="preserve"><value>Código</value></data>
+  <data name="CycleCodeHint" xml:space="preserve"><value>Minúsculas, dígitos, punto, guion bajo y guion. No se renombra tras la creación.</value></data>
+  <data name="CycleCodePlaceholder" xml:space="preserve"><value>c-2026-03</value></data>
+  <data name="CycleName" xml:space="preserve"><value>Nombre</value></data>
+  <data name="CycleNamePlaceholder" xml:space="preserve"><value>2026 / ciclo 3</value></data>
+  <data name="CyclePeriodsTitle" xml:space="preserve"><value>Períodos de ciclo</value></data>
+  <data name="EndDate" xml:space="preserve"><value>Fecha de fin</value></data>
+  <data name="EndDateHint" xml:space="preserve"><value>Inclusiva: el período cubre este día.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nuevo período de ciclo</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar período de ciclo</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>Información general</value></data>
+  <data name="Lifecycle" xml:space="preserve"><value>Ciclo de vida</value></data>
+  <data name="NoActivePeriod" xml:space="preserve"><value>Hoy no hay período activo</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Períodos de planificación con nombre: a qué período pertenece un plan. Los días laborables y festivos son un calendario aparte.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Vista rápida</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>Período activado.</value></data>
+  <data name="RecordClosed" xml:space="preserve"><value>Período cerrado.</value></data>
+  <data name="SequenceInYear" xml:space="preserve"><value>Secuencia</value></data>
+  <data name="StartDate" xml:space="preserve"><value>Fecha de inicio</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Activo</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Cerrado</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="TenantWide" xml:space="preserve"><value>Todo el inquilino</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Actualizado el</value></data>
+  <data name="Window" xml:space="preserve"><value>Intervalo</value></data>
+  <data name="Year" xml:space="preserve"><value>Año</value></data>
+  <data name="YearHint" xml:space="preserve"><value>El año de planificación. Un período puede cruzar el año natural.</value></data>
+  <data name="ActiveWindowImmutableHint" xml:space="preserve"><value>Este periodo está activo: sus fechas, año, secuencia y alcance son de solo lectura. Ciérrelo y abra un periodo nuevo para cambiarlos.</value></data>
+  <data name="BusinessUnitCountryContext" xml:space="preserve"><value>Contexto de país</value></data>
+  <data name="BusinessUnitCountryFilter" xml:space="preserve"><value>País (filtro)</value></data>
+  <data name="BusinessUnitCountryFirstHint" xml:space="preserve"><value>Elija primero un país: las unidades de negocio se listan a partir de los planes de territorio que cubren ese país durante este período.</value></data>
+  <data name="BusinessUnitFromTerritory" xml:space="preserve"><value>Unidades cubiertas por los planes de campo coincidentes.</value></data>
+  <data name="BusinessUnitFromVocabulary" xml:space="preserve"><value>Todas las unidades de negocio publicadas: ningún plan de campo coincide con este país y rango de fechas.</value></data>
+  <data name="BusinessUnitNoPlan" xml:space="preserve"><value>Ningún plan de campo activo cubre este país y rango de fechas.</value></data>
+  <data name="BusinessUnitSourceLabel" xml:space="preserve"><value>Origen de la unidad de negocio</value></data>
+  <data name="BusinessUnitSource_manual" xml:space="preserve"><value>Introducida manualmente</value></data>
+  <data name="BusinessUnitSource_territory" xml:space="preserve"><value>Desde un plan de campo</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>País</value></data>
+  <data name="CountrySetUnavailable" xml:space="preserve"><value>El conjunto de referencia de países aún no está publicado:</value></data>
+  <data name="CycleStatus_active" xml:space="preserve"><value>Activo</value></data>
+  <data name="CycleStatus_closed" xml:space="preserve"><value>Cerrado</value></data>
+  <data name="CycleStatus_draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="EndDateInclusiveHint" xml:space="preserve"><value>Inclusiva: el periodo cubre este día.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identidad</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Entidad jurídica</value></data>
+  <data name="LegalEntityListUnavailable" xml:space="preserve"><value>No se pudo cargar la lista de entidades jurídicas.</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Ciclo de vida</value></data>
+  <data name="NewCyclePeriod" xml:space="preserve"><value>Nuevo periodo</value></data>
+  <data name="Scope" xml:space="preserve"><value>Alcance</value></data>
+  <data name="ScopeRef" xml:space="preserve"><value>Referencia de alcance</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>Alcance</value></data>
+  <data name="ScopeSectionHint" xml:space="preserve"><value>Un periodo vive exactamente en una dirección. El nivel que elija determina qué referencia se aplica.</value></data>
+  <data name="ScopeTenantHint" xml:space="preserve"><value>Este periodo se aplica a todo el inquilino.</value></data>
+  <data name="ScopeTenantWide" xml:space="preserve"><value>Todo el inquilino</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Nivel de alcance</value></data>
+  <data name="ScopeTypeImmutableHint" xml:space="preserve"><value>El alcance forma parte de la identidad del periodo y no puede cambiarse. Cierre este periodo y abra uno nuevo.</value></data>
+  <data name="ScopeType_business-unit" xml:space="preserve"><value>Unidad de negocio</value></data>
+  <data name="ScopeType_country" xml:space="preserve"><value>País</value></data>
+  <data name="ScopeType_legal-entity" xml:space="preserve"><value>Entidad jurídica</value></data>
+  <data name="ScopeType_tenant" xml:space="preserve"><value>Todo el inquilino</value></data>
+  <data name="Version" xml:space="preserve"><value>Versión</value></data>
+  <data name="CycleCapacity" xml:space="preserve"><value>Capacidad de ciclo</value></data>
+</root>

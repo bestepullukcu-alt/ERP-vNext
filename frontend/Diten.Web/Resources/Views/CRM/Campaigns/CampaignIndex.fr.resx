@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CampaignsTitle" xml:space="preserve"><value>Campagnes</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gérez les campagnes, l'appartenance des cibles et les instantanés statiques tenant compte du consentement.</value></data>
+  <data name="CreateCampaign" xml:space="preserve"><value>Créer une campagne</value></data>
+  <data name="CampaignDetail" xml:space="preserve"><value>Détail de la campagne</value></data>
+  <data name="EditCampaign" xml:space="preserve"><value>Modifier la campagne</value></data>
+  <data name="ArchiveCampaign" xml:space="preserve"><value>Archiver la campagne</value></data>
+  <data name="ArchiveCampaignConfirm" xml:space="preserve"><value>Archiver cette campagne ? Il s'agit d'une action de cycle de vie douce ; l'historique reste lisible.</value></data>
+  <data name="CampaignContractUnavailable" xml:space="preserve"><value>Le contrat de capacités de la campagne est indisponible. Les actions sont désactivées.</value></data>
+  <data name="CampaignCode" xml:space="preserve"><value>Code de campagne</value></data>
+  <data name="CampaignName" xml:space="preserve"><value>Nom de la campagne</value></data>
+  <data name="CampaignType" xml:space="preserve"><value>Type de campagne</value></data>
+  <data name="CampaignStatus" xml:space="preserve"><value>Statut de la campagne</value></data>
+  <data name="ObjectiveType" xml:space="preserve"><value>Type d'objectif</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>ID d'unité opérationnelle</value></data>
+  <data name="DefaultConsentChannel" xml:space="preserve"><value>Canal de consentement par défaut</value></data>
+  <data name="DefaultConsentPurpose" xml:space="preserve"><value>Finalité de consentement par défaut</value></data>
+  <data name="StartDate" xml:space="preserve"><value>Date de début</value></data>
+  <data name="EndDate" xml:space="preserve"><value>Date de fin</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="SummarySection" xml:space="preserve"><value>Résumé</value></data>
+  <data name="ConsentContextSection" xml:space="preserve"><value>Contexte de consentement</value></data>
+  <data name="ConsentDefaultsHelp" xml:space="preserve"><value>Ces valeurs sont des valeurs par défaut facultatives. Un instantané filtré par consentement exige toujours un canal et une finalité visibles.</value></data>
+  <data name="NoDefault" xml:space="preserve"><value>Aucune valeur par défaut</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Système source</value></data>
+  <data name="ExternalId" xml:space="preserve"><value>ID externe</value></data>
+  <data name="ExternalCode" xml:space="preserve"><value>Code externe</value></data>
+  <data name="ExternalName" xml:space="preserve"><value>Nom externe</value></data>
+  <data name="ImportedAt" xml:space="preserve"><value>Importé le</value></data>
+  <data name="Primary" xml:space="preserve"><value>Principal</value></data>
+  <data name="Remove" xml:space="preserve"><value>Supprimer</value></data>
+  <data name="CampaignTargets" xml:space="preserve"><value>Cibles de campagne</value></data>
+  <data name="CampaignTargetId" xml:space="preserve"><value>ID de cible de campagne</value></data>
+  <data name="CreateTarget" xml:space="preserve"><value>Créer une cible</value></data>
+  <data name="EditTarget" xml:space="preserve"><value>Modifier la cible</value></data>
+  <data name="ArchiveTarget" xml:space="preserve"><value>Archiver la cible</value></data>
+  <data name="ArchiveTargetConfirm" xml:space="preserve"><value>Archiver cette cible ? Il s'agit d'une action de cycle de vie douce ; l'historique reste lisible.</value></data>
+  <data name="TargetType" xml:space="preserve"><value>Type de cible</value></data>
+  <data name="TargetId" xml:space="preserve"><value>ID de cible</value></data>
+  <data name="TargetDisplayName" xml:space="preserve"><value>Nom affiché de la cible</value></data>
+  <data name="DisplayLabelNotSourceOfTruth" xml:space="preserve"><value>Libellé d'affichage uniquement ; ce n'est pas une source de vérité.</value></data>
+  <data name="TargetStatus" xml:space="preserve"><value>Statut de la cible</value></data>
+  <data name="TargetSource" xml:space="preserve"><value>Source de la cible</value></data>
+  <data name="SourceReferenceType" xml:space="preserve"><value>Type de référence source</value></data>
+  <data name="SourceReferenceId" xml:space="preserve"><value>ID de référence source</value></data>
+  <data name="SnapshotBatchId" xml:space="preserve"><value>ID de lot d'instantané</value></data>
+  <data name="SelectionReason" xml:space="preserve"><value>Motif de sélection</value></data>
+  <data name="ReasonCodes" xml:space="preserve"><value>Codes de motif</value></data>
+  <data name="ExclusionReason" xml:space="preserve"><value>Motif d'exclusion</value></data>
+  <data name="ConsentDecision" xml:space="preserve"><value>Décision de consentement</value></data>
+  <data name="EligibilityStatus" xml:space="preserve"><value>Statut d'éligibilité</value></data>
+  <data name="EvaluatedAt" xml:space="preserve"><value>Évalué le</value></data>
+  <data name="MatchedConsentId" xml:space="preserve"><value>ID de consentement correspondant</value></data>
+  <data name="MatchedPreferenceIds" xml:space="preserve"><value>ID de préférences correspondantes</value></data>
+  <data name="EvaluatorVersion" xml:space="preserve"><value>Version de l'évaluateur</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Effectif à partir du</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Effectif jusqu'au</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>Effectif le</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="ArchivedAt" xml:space="preserve"><value>Archivé le</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Mis à jour le</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="CreateSnapshot" xml:space="preserve"><value>Créer un instantané statique</value></data>
+  <data name="ApplyConsentFilter" xml:space="preserve"><value>Appliquer le filtre de consentement</value></data>
+  <data name="ConsentChannel" xml:space="preserve"><value>Canal de consentement</value></data>
+  <data name="ConsentPurpose" xml:space="preserve"><value>Finalité du consentement</value></data>
+  <data name="ConsentFilterNotAppliedWarning" xml:space="preserve"><value>Le filtrage par consentement est désactivé. L'instantané portera un avertissement sérieux consent_filter_not_applied.</value></data>
+  <data name="SourceType" xml:space="preserve"><value>Type de source</value></data>
+  <data name="TargetItems" xml:space="preserve"><value>Éléments cibles</value></data>
+  <data name="AddRow" xml:space="preserve"><value>Ajouter une ligne</value></data>
+  <data name="JsonPasteFallback" xml:space="preserve"><value>Solution de repli : coller du JSON</value></data>
+  <data name="JsonFallbackHelp" xml:space="preserve"><value>Si fournis, des éléments cibles JSON valides remplacent les lignes manuelles simplifiées. Ce n'est pas un moteur d'import.</value></data>
+  <data name="CommaSeparated" xml:space="preserve"><value>Valeurs séparées par des virgules.</value></data>
+  <data name="ExcludedTargetsVisibleHelp" xml:space="preserve"><value>Les cibles exclues, bloquées et inconnues restent visibles avec leurs motifs.</value></data>
+  <data name="TargetsUnavailable" xml:space="preserve"><value>La gestion des cibles est indisponible ou non autorisée.</value></data>
+  <data name="UnsupportedFiltersNote" xml:space="preserve"><value>L'API ne prend pas en charge le filtrage par recherche, objectif, unité opérationnelle ou plage de dates ; aucun faux filtre client n'est appliqué.</value></data>
+  <data name="UnsupportedFilters" xml:space="preserve"><value>Non pris en charge : recherche, type d'objectif, unité opérationnelle, plage de dates</value></data>
+  <data name="UnsupportedTargetFiltersNote" xml:space="preserve"><value>Le motif d'exclusion et la décision/le statut de consentement sont en affichage seul : l'API n'offre aucun filtre serveur pour ces champs.</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Inclure les archivés</value></data>
+  <data name="Apply" xml:space="preserve"><value>Appliquer</value></data>
+  <data name="Reset" xml:space="preserve"><value>Réinitialiser</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtrer</value></data>
+  <data name="Save" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Annuler</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Retour à la liste</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Sélectionner…</value></data>
+  <data name="RequiredProgress" xml:space="preserve"><value>Champs obligatoires : 0/5 complétés à l'ouverture.</value></data>
+  <data name="ArchivedCampaignReadOnly" xml:space="preserve"><value>Cette campagne est archivée. La modification de la campagne et des cibles est désactivée.</value></data>
+  <data name="DateWindow" xml:space="preserve"><value>Période</value></data>
+  <data name="Yes" xml:space="preserve"><value>Oui</value></data>
+  <data name="No" xml:space="preserve"><value>Non</value></data>
+  <data name="View" xml:space="preserve"><value>Voir</value></data>
+  <data name="Loading" xml:space="preserve"><value>Chargement…</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Aucune campagne trouvée.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>L'opération n'a pas pu être effectuée.</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>Complétez tous les champs obligatoires et corrigez les plages de dates invalides.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Archivé avec succès.</value></data>
+  <data name="SnapshotCreated" xml:space="preserve"><value>Instantané statique des cibles créé.</value></data>
+  <data name="CreatedCount" xml:space="preserve"><value>Créées</value></data>
+  <data name="ReconciledCount" xml:space="preserve"><value>Réconciliées</value></data>
+  <data name="ExcludedCount" xml:space="preserve"><value>Exclues</value></data>
+  <data name="DifferentSourceConflict" xml:space="preserve"><value>L'instantané n'a pas été écrit car une cible appartient à une autre source.</value></data>
+  <data name="Allowed" xml:space="preserve"><value>Autorisé</value></data>
+  <data name="Blocked" xml:space="preserve"><value>Bloqué</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Inconnu</value></data>
+  <data name="NotApplicable" xml:space="preserve"><value>Non applicable</value></data>
+  <data name="Excluded" xml:space="preserve"><value>Exclu</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Ajouter</value></data>
+  <data name="EndDateBeforeStartDate" xml:space="preserve"><value>La date de fin ne peut pas précéder la date de début.</value></data>
+  <data name="Active" xml:space="preserve"><value>Actif</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Êtes-vous sûr ?</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Suppression groupée</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Supprimer les enregistrements sélectionnés ?</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Colonnes</value></data>
+  <data name="Edit" xml:space="preserve"><value>Modifier</value></data>
+  <data name="Export" xml:space="preserve"><value>Exporter</value></data>
+  <data name="Import" xml:space="preserve"><value>Importer</value></data>
+  <data name="Passive" xml:space="preserve"><value>Passif</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Aperçu rapide</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Enregistrer la vue</value></data>
+  <data name="Search" xml:space="preserve"><value>Rechercher</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Tout afficher</value></data>
+  <data name="Status" xml:space="preserve"><value>Statut</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Voir les détails</value></data>
+  <data name="CyclePeriod" xml:space="preserve">
+    <value>Période de cycle</value>
+  </data>
+  <data name="NoCyclePeriod" xml:space="preserve">
+    <value>Non lié à une période de cycle</value>
+  </data>
+  <data name="CyclePeriodHelp" xml:space="preserve">
+    <value>Facultatif. Tant qu'elle est liée, la fenêtre de la campagne doit rester dans celle de la période (bornes incluses).</value>
+  </data>
+  <data name="CyclePeriodWindow" xml:space="preserve">
+    <value>Fenêtre de la période :</value>
+  </data>
+  <data name="CyclePeriodClosedBadge" xml:space="preserve">
+    <value>clôturée</value>
+  </data>
+  <data name="CampaignOutsideCycleWindow" xml:space="preserve">
+    <value>La fenêtre de la campagne est en dehors de celle de la période liée.</value>
+  </data>
+  <data name="CyclePeriodNotActive" xml:space="preserve">
+    <value>Seule une période de cycle active peut être liée à une campagne.</value>
+  </data>
+  <data name="CyclePeriodNotFound" xml:space="preserve">
+    <value>La période de cycle sélectionnée est introuvable.</value>
+  </data>
+  <data name="EndDateRequiredWhenBound" xml:space="preserve">
+    <value>Une campagne liée à une période de cycle exige une date de fin.</value>
+  </data>
+  <data name="ScopeSection" xml:space="preserve">
+    <value>Périmètre</value>
+  </data>
+  <data name="ScopeType" xml:space="preserve">
+    <value>Niveau de périmètre</value>
+  </data>
+  <data name="ScopeReference" xml:space="preserve">
+    <value>Référence de périmètre</value>
+  </data>
+  <data name="ScopeType_tenant" xml:space="preserve">
+    <value>Locataire entier</value>
+  </data>
+  <data name="ScopeType_country" xml:space="preserve">
+    <value>Pays</value>
+  </data>
+  <data name="ScopeType_legal-entity" xml:space="preserve">
+    <value>Entité juridique</value>
+  </data>
+  <data name="ScopeType_business-unit" xml:space="preserve">
+    <value>Unité opérationnelle</value>
+  </data>
+  <data name="CountryScope" xml:space="preserve">
+    <value>Pays</value>
+  </data>
+  <data name="LegalEntity" xml:space="preserve">
+    <value>Entité juridique</value>
+  </data>
+  <data name="BusinessUnit" xml:space="preserve">
+    <value>Unité opérationnelle</value>
+  </data>
+  <data name="BusinessUnitCountryFilter" xml:space="preserve">
+    <value>Filtrer les unités par pays</value>
+  </data>
+  <data name="ScopeHelp" xml:space="preserve">
+    <value>L'adresse de la campagne. Elle détermine les périodes de cycle liables : le périmètre propre de la campagne et les périodes valables pour tout le locataire.</value>
+  </data>
+  <data name="ScopeEditableHint" xml:space="preserve">
+    <value>Le périmètre est modifiable. Si la période liée ne s'applique plus au nouveau périmètre, retirez-la d'abord.</value>
+  </data>
+  <data name="CyclePeriodNotApplicable" xml:space="preserve">
+    <value>non applicable à ce périmètre</value>
+  </data>
+  <data name="CyclePeriodScopeMismatch" xml:space="preserve">
+    <value>La période liée ne s'applique pas à ce périmètre. Retirez-la ou rétablissez le périmètre.</value>
+  </data>
+  <data name="ScopeReferenceRequired" xml:space="preserve">
+    <value>Ce niveau de périmètre exige une référence.</value>
+  </data>
+  <data name="ScopeAmbiguous" xml:space="preserve">
+    <value>Une seule référence de périmètre peut être fournie.</value>
+  </data>
+  <data name="CountryUnknown" xml:space="preserve">
+    <value>Ce pays n'est pas une valeur publiée.</value>
+  </data>
+  <data name="BusinessUnitUnknown" xml:space="preserve">
+    <value>Cette unité opérationnelle n'est pas une valeur publiée.</value>
+  </data>
+  <data name="LegalEntityNotReferenceable" xml:space="preserve">
+    <value>Cette entité juridique ne peut pas être référencée.</value>
+  </data>
+  <data name="LegalEntityUnavailable" xml:space="preserve">
+    <value>Le service de données de référence n'a pas répondu. Rien n'a été enregistré — réessayez.</value>
+  </data>
+  <data name="ReferenceSetUnpublished" xml:space="preserve">
+    <value>Le jeu de références gouverné n'est pas encore publié. Un opérateur doit le publier.</value>
+  </data>
+  <data name="DependencyUnavailable" xml:space="preserve">
+    <value>La dépendance n'a pas répondu ; cette liste n'a pas pu être chargée.</value>
+  </data>
+  <data name="NoTerritoryPlanMatches" xml:space="preserve">
+    <value>Aucun plan territorial ne correspond ; la liste publiée complète est affichée.</value>
+  </data>
+  <data name="TargetingSection" xml:space="preserve">
+    <value>Ciblage</value>
+  </data>
+  <data name="TargetingMode" xml:space="preserve">
+    <value>Mode de ciblage</value>
+  </data>
+  <data name="TargetingMode_segment" xml:space="preserve">
+    <value>Par segment</value>
+  </data>
+  <data name="TargetingMode_manual" xml:space="preserve">
+    <value>Manuel</value>
+  </data>
+  <data name="TargetingModeHelp" xml:space="preserve">
+    <value>Comment l'audience est choisie. Seul le mode sélectionné est utilisé ; les données de l'autre mode sont conservées sans être appliquées.</value>
+  </data>
+  <data name="TargetedSegments" xml:space="preserve">
+    <value>Segments ciblés</value>
+  </data>
+  <data name="TargetedSegmentsHelp" xml:space="preserve">
+    <value>Au moins un segment actif. L'appartenance n'est pas résolue ici : la campagne enregistre qui elle vise.</value>
+  </data>
+  <data name="SelectSegments" xml:space="preserve">
+    <value>Sélectionner des segments</value>
+  </data>
+  <data name="SegmentSuperseded" xml:space="preserve">
+    <value>remplacé</value>
+  </data>
+  <data name="SegmentArchived" xml:space="preserve">
+    <value>archivé</value>
+  </data>
+  <data name="SegmentRequired" xml:space="preserve">
+    <value>Le ciblage par segment exige au moins un segment.</value>
+  </data>
+  <data name="SegmentNotActive" xml:space="preserve">
+    <value>Seul un segment actif peut être ajouté.</value>
+  </data>
+  <data name="SegmentNotFound" xml:space="preserve">
+    <value>Le segment sélectionné est introuvable.</value>
+  </data>
+  <data name="SegmentDuplicate" xml:space="preserve">
+    <value>Le même segment a été sélectionné plusieurs fois.</value>
+  </data>
+  <data name="SegmentLimitExceeded" xml:space="preserve">
+    <value>Trop de segments ciblés.</value>
+  </data>
+  <data name="SubjectType" xml:space="preserve">
+    <value>Type de sujet</value>
+  </data>
+  <data name="ManualTargetingHint" xml:space="preserve">
+    <value>Les cibles s'ajoutent depuis la page de détail une fois la campagne enregistrée.</value>
+  </data>
+  <data name="TargetingTitle" xml:space="preserve">
+    <value>Ciblage</value>
+  </data>
+  <data name="TargetingWhatToPromote" xml:space="preserve">
+    <value>Quoi promouvoir</value>
+  </data>
+  <data name="TargetingWhatToPromoteClosed" xml:space="preserve">
+    <value>Pas encore disponible. Le contenu à promouvoir se planifie par segment, dans un modèle distinct.</value>
+  </data>
+  <data name="TargetingDormantData" xml:space="preserve">
+    <value>Cette campagne conserve encore des données de son autre mode de ciblage. Conservées, non utilisées.</value>
+  </data>
+  <data name="NoTargetedSegments" xml:space="preserve">
+    <value>Aucun segment ciblé</value>
+  </data>
+  <data name="CampaignCodeAutoHint" xml:space="preserve">
+    <value>Laissez vide : un code sera attribué automatiquement à l'enregistrement.</value>
+  </data>
+  <data name="CampaignCodeAutoPlaceholder" xml:space="preserve">
+    <value>{0} (automatique)</value>
+  </data>
+  <data name="PriorityLevel" xml:space="preserve">
+    <value>Priorité</value>
+  </data>
+  <data name="PriorityLevel_low" xml:space="preserve">
+    <value>Basse</value>
+  </data>
+  <data name="PriorityLevel_medium" xml:space="preserve">
+    <value>Moyenne</value>
+  </data>
+  <data name="PriorityLevel_high" xml:space="preserve">
+    <value>Haute</value>
+  </data>
+  <data name="TargetPicker" xml:space="preserve">
+    <value>Cible</value>
+  </data>
+  <data name="TargetTypePickerHelp" xml:space="preserve">
+    <value>Cet écran peut choisir un compte ou un contact. Les autres types de cible restent accessibles par l'API.</value>
+  </data>
+  <data name="SelectAccount" xml:space="preserve">
+    <value>Sélectionner un compte</value>
+  </data>
+  <data name="SelectContact" xml:space="preserve">
+    <value>Sélectionner un contact</value>
+  </data>
+  <data name="Notes" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="ManualTargetDefaultsHint" xml:space="preserve">
+    <value>La source, le motif et la date de début sont renseignés à l'enregistrement : la cible est consignée comme sélectionnée manuellement par vous, aujourd'hui.</value>
+  </data>
+  <data name="TargetStatus_draft" xml:space="preserve">
+    <value>Brouillon</value>
+  </data>
+  <data name="TargetStatus_active" xml:space="preserve">
+    <value>Actif</value>
+  </data>
+  <data name="TargetStatus_inactive" xml:space="preserve">
+    <value>Inactif</value>
+  </data>
+  <data name="TargetStatus_completed" xml:space="preserve">
+    <value>Terminé</value>
+  </data>
+</root>

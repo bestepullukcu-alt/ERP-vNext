@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="ActiveStageCount" xml:space="preserve"><value>Aktif Aşama</value></data>
+  <data name="AddBranchCondition" xml:space="preserve"><value>Koşul Ekle</value></data>
+  <data name="AddStage" xml:space="preserve"><value>Aşama Ekle</value></data>
+  <data name="AdvancementRule" xml:space="preserve"><value>İlerletme Kuralı</value></data>
+  <data name="Apply" xml:space="preserve"><value>Uygula</value></data>
+  <data name="ArchiveJourney" xml:space="preserve"><value>Yolculuğu Arşivle</value></data>
+  <data name="ArchiveJourneyConfirm" xml:space="preserve"><value>Bu yolculuk arşivlensin mi? Hiçbir şey silinmez, kayıt salt okunur olur.</value></data>
+  <data name="ArchiveStageConfirm" xml:space="preserve"><value>Bu aşama arşivlensin mi? Aşama dokümanda kalır, yalnızca aktif listeden düşer.</value></data>
+  <data name="Archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="ArchivedJourneyReadOnly" xml:space="preserve"><value>Bu yolculuk arşivlendi ve salt okunurdur.</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Emin misiniz?</value></data>
+  <data name="AudienceProfileId" xml:space="preserve"><value>Hedef Kitle Profili</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Listeye dön</value></data>
+  <data name="BranchConditions" xml:space="preserve"><value>Dal Koşulları</value></data>
+  <data name="BranchConditionsHelp" xml:space="preserve"><value>Yalnızca yazılabilir veri — koşullar taşınır, asla değerlendirilmez. Bir yolculuk koşullar olmadan da baştan sona yürünebilir.</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Toplu Sil</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Seçili kayıtlar silinsin mi?</value></data>
+  <data name="Cancel" xml:space="preserve"><value>İptal</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Sınıflandırma</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Sütunlar</value></data>
+  <data name="ConditionCode" xml:space="preserve"><value>Koşul Kodu</value></data>
+  <data name="ContentEngagementJourneyContractUnavailable" xml:space="preserve"><value>ContentEngagementJourney yetenek sözleşmesi kullanılamıyor. İşlemler devre dışı.</value></data>
+  <data name="ContentEngagementJourneysMenu" xml:space="preserve"><value>İçerik Etkileşim Yolculukları</value></data>
+  <data name="ContentEngagementJourneysTitle" xml:space="preserve"><value>İçerik Etkileşim Yolculukları</value></data>
+  <data name="CreateJourney" xml:space="preserve"><value>Yolculuk Oluştur</value></data>
+  <data name="CrossLanguage" xml:space="preserve"><value>Dil-dışı</value></data>
+  <data name="CrossSubject" xml:space="preserve"><value>Konu-dışı</value></data>
+  <data name="DeclaredNotEvaluatedHelp" xml:space="preserve"><value>İlerletme kuralı, geri dönüş aşaması ve dallanma koşulları yalnızca BEYAN edilir — bu modül hiçbirini değerlendirmez.</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="EditJourney" xml:space="preserve"><value>Yolculuğu Düzenle</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Bitiş</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Bilgi yolu bulunamadı.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Bir hata oluştu.</value></data>
+  <data name="Export" xml:space="preserve"><value>Dışa Aktar</value></data>
+  <data name="FallbackStageId" xml:space="preserve"><value>Geri Dönüş Aşaması</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtrele</value></data>
+  <data name="Frozen" xml:space="preserve"><value>Donduruldu</value></data>
+  <data name="FrozenStagesHelp" xml:space="preserve"><value>Bu sürüm yayımlandı ve aşama seti donduruldu. Aşamaları değiştirmek için yeni sürüm oluşturun.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="Import" xml:space="preserve"><value>İçe Aktar</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Arşivlenenleri dâhil et</value></data>
+  <data name="IsRequired" xml:space="preserve"><value>Zorunlu</value></data>
+  <data name="JourneyCode" xml:space="preserve"><value>Yolculuk Kodu</value></data>
+  <data name="JourneyDetail" xml:space="preserve"><value>Yolculuk Ayrıntısı</value></data>
+  <data name="JourneyName" xml:space="preserve"><value>Yolculuk Adı</value></data>
+  <data name="JourneyStatus" xml:space="preserve"><value>Yolculuk Durumu</value></data>
+  <data name="JourneyVersion" xml:space="preserve"><value>Yolculuk Sürümü</value></data>
+  <data name="LanguageCode" xml:space="preserve"><value>Dil</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="MaxVisitNumber" xml:space="preserve"><value>En Geç Ziyaret No</value></data>
+  <data name="MinVisitNumber" xml:space="preserve"><value>En Erken Ziyaret No</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Yeni Sürüm</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Yayımlanmış sürümden yeni bir taslak sürüm oluşturulsun mu? Aşamalar yeni kimliklerle kopyalanır.</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="NoStages" xml:space="preserve"><value>Henüz aşama yok.</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notlar</value></data>
+  <data name="Objective" xml:space="preserve"><value>Amaç</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Çok ziyaretli içerik ilerlemesini planlayın: hangi aşama sırada ve o aşamada hangi bilgi yolu uygulanır.</value></data>
+  <data name="Passive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="PathPinHelp" xml:space="preserve"><value>pinned = bu yol sürümüne sabit kalır; latest-published = okuma anında yayımlanmış sürümü çözer.</value></data>
+  <data name="PathResolution" xml:space="preserve"><value>Yol Çözümlemesi</value></data>
+  <data name="PathVersionPinPolicy" xml:space="preserve"><value>Yol Sürüm Sabitleme</value></data>
+  <data name="Publish" xml:space="preserve"><value>Yayımla</value></data>
+  <data name="PublishConfirm" xml:space="preserve"><value>Bu yolculuk yayımlansın mı? Aşama seti dondurulacak.</value></data>
+  <data name="PublishSeparatelyHelp" xml:space="preserve"><value>Yayımlama ayrı bir işlemdir; durum alanından published seçilemez.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı Görünüm</value></data>
+  <data name="RecommendedKnowledgePathId" xml:space="preserve"><value>Önerilen Bilgi Yolu</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Kayıt arşivlendi.</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>Kayıt oluşturuldu.</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>Kayıt güncellendi.</value></data>
+  <data name="Repeatable" xml:space="preserve"><value>Tekrarlanabilir</value></data>
+  <data name="Repeated" xml:space="preserve"><value>Tekrar</value></data>
+  <data name="RequiredStageCount" xml:space="preserve"><value>Zorunlu Aşama</value></data>
+  <data name="Reset" xml:space="preserve"><value>Sıfırla</value></data>
+  <data name="Resolved" xml:space="preserve"><value>Çözüldü</value></data>
+  <data name="Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="SaveBeforeStages" xml:space="preserve"><value>Önce yolculuğu kaydedin, ardından aşamalarını buradan ekleyin.</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Görünümü Kaydet</value></data>
+  <data name="SchedulingSection" xml:space="preserve"><value>Zamanlama ve Yaşam Döngüsü</value></data>
+  <data name="Search" xml:space="preserve"><value>Ara</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seçin…</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Tümü</value></data>
+  <data name="Source" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="StageCode" xml:space="preserve"><value>Aşama Kodu</value></data>
+  <data name="StageName" xml:space="preserve"><value>Aşama Adı</value></data>
+  <data name="StageObjective" xml:space="preserve"><value>Aşama Amacı</value></data>
+  <data name="StageOrder" xml:space="preserve"><value>Aşama Sırası</value></data>
+  <data name="StageType" xml:space="preserve"><value>Aşama Tipi</value></data>
+  <data name="StagesHelp" xml:space="preserve"><value>Aşamaları temasın ilerleyeceği sırayla ekleyin; her aşama yayımlanmış bir bilgi yoluna bağlanır.</value></data>
+  <data name="StagesSection" xml:space="preserve"><value>Aşamalar</value></data>
+  <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="StepCount" xml:space="preserve"><value>adım</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>Konu</value></data>
+  <data name="TopicId" xml:space="preserve"><value>Başlık</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
+  <data name="Unresolved" xml:space="preserve"><value>Çözülemedi</value></data>
+  <data name="UnresolvedPathHelp" xml:space="preserve"><value>En az bir aşamanın bilgi yolu çözümlenemiyor (unresolved). Aşama gizlenmez — yol bağını düzeltin.</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncellendi</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ayrıntılar</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+</root>

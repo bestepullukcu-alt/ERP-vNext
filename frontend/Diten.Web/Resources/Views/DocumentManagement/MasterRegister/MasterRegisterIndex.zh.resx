@@ -1,0 +1,1084 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="DocumentMasterRegister" xml:space="preserve"><value>文件主登记簿</value></data>
+  <data name="DocumentMasterRegisterTitle" xml:space="preserve"><value>文件主登记簿</value></data>
+  <data name="DocumentMasterRegisterCreate" xml:space="preserve"><value>新建登记条目</value></data>
+  <data name="DocumentMasterRegisterEdit" xml:space="preserve"><value>编辑登记条目</value></data>
+  <data name="DocumentMasterRegisterDetails" xml:space="preserve"><value>登记条目详情</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>受控文件、标识符与治理元数据的权威登记簿</value></data>
+  <data name="UID" xml:space="preserve"><value>唯一标识</value></data>
+  <data name="DocumentCode" xml:space="preserve"><value>文件编码</value></data>
+  <data name="DocumentTitle" xml:space="preserve"><value>文件标题</value></data>
+  <data name="DocumentClass" xml:space="preserve"><value>文件类别</value></data>
+  <data name="DocumentType" xml:space="preserve"><value>文件类型</value></data>
+  <data name="Criticality" xml:space="preserve"><value>关键等级</value></data>
+  <data name="LifecycleStatus" xml:space="preserve"><value>生命周期状态</value></data>
+  <data name="RegisterStatus" xml:space="preserve"><value>登记状态</value></data>
+  <data name="OwnerFunction" xml:space="preserve"><value>归属职能</value></data>
+  <data name="OwnerCompany" xml:space="preserve"><value>归属公司</value></data>
+  <data name="ProcessOwnerRole" xml:space="preserve"><value>流程负责人角色</value></data>
+  <data name="ProcessOwnerUser" xml:space="preserve"><value>流程负责人</value></data>
+  <data name="GoverningLanguage" xml:space="preserve"><value>主导语言</value></data>
+  <data name="EffectiveDate" xml:space="preserve"><value>生效日期</value></data>
+  <data name="NextReviewDueDate" xml:space="preserve"><value>下次评审到期</value></data>
+  <data name="LastPeriodicReviewDate" xml:space="preserve"><value>上次定期评审</value></data>
+  <data name="IsControlledDocument" xml:space="preserve"><value>受控文件</value></data>
+  <data name="IsRecord" xml:space="preserve"><value>记录</value></data>
+  <data name="IsExternalDocument" xml:space="preserve"><value>外部文件</value></data>
+  <data name="IsTemplate" xml:space="preserve"><value>模板</value></data>
+  <data name="IsVariant" xml:space="preserve"><value>变体</value></data>
+  <data name="ParentDocument" xml:space="preserve"><value>父文件</value></data>
+  <data name="ParentDocumentUid" xml:space="preserve"><value>父文件唯一标识</value></data>
+  <data name="ParentDocumentCode" xml:space="preserve"><value>父文件编码</value></data>
+  <data name="RetentionClass" xml:space="preserve"><value>保留类别</value></data>
+  <data name="ReviewCycleMonths" xml:space="preserve"><value>评审周期（月）</value></data>
+  <data name="ApprovedRepository" xml:space="preserve"><value>批准的存储库</value></data>
+  <data name="ApprovedRepositoryId" xml:space="preserve"><value>存储库标识</value></data>
+  <data name="ApprovedRepositoryName" xml:space="preserve"><value>存储库名称</value></data>
+  <data name="ApprovedRepositoryPath" xml:space="preserve"><value>存储库路径</value></data>
+  <data name="LegacyCode" xml:space="preserve"><value>旧编码</value></data>
+  <data name="PermanentUid" xml:space="preserve"><value>永久唯一标识</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>来源系统</value></data>
+  <data name="SourceLegacyId" xml:space="preserve"><value>来源旧标识</value></data>
+  <data name="Allocation" xml:space="preserve"><value>编号分配</value></data>
+  <data name="AllocationSystem" xml:space="preserve"><value>系统分配</value></data>
+  <data name="AllocationManual" xml:space="preserve"><value>手动录入</value></data>
+  <data name="AllocationHint" xml:space="preserve"><value>留空则由编号分配引擎稍后自动分配。</value></data>
+  <data name="CurrentVersionLabel" xml:space="preserve"><value>当前版本</value></data>
+  <data name="ApprovalEvidenceStatus" xml:space="preserve"><value>审批证据</value></data>
+  <data name="LastReleaseGateEvaluationStatus" xml:space="preserve"><value>最近发布关卡结果</value></data>
+  <data name="LinkedControlledDocument" xml:space="preserve"><value>关联受控文件</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>创建时间</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>创建人</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>更新时间</value></data>
+  <data name="UpdatedBy" xml:space="preserve"><value>更新人</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="Identification" xml:space="preserve"><value>标识信息</value></data>
+  <data name="Classification" xml:space="preserve"><value>分类</value></data>
+  <data name="Ownership" xml:space="preserve"><value>归属</value></data>
+  <data name="Flags" xml:space="preserve"><value>标记</value></data>
+  <data name="GovernanceMetadata" xml:space="preserve"><value>治理元数据</value></data>
+  <data name="Provenance" xml:space="preserve"><value>来源信息</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>生效起始</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>生效截止</value></data>
+  <data name="NextReviewFrom" xml:space="preserve"><value>评审起始</value></data>
+  <data name="NextReviewTo" xml:space="preserve"><value>评审截止</value></data>
+  <data name="ClassPolicyGovernance" xml:space="preserve"><value>政策／治理</value></data>
+  <data name="ClassManualSystemDescription" xml:space="preserve"><value>手册／系统说明</value></data>
+  <data name="ClassSop" xml:space="preserve"><value>标准作业程序</value></data>
+  <data name="ClassWorkInstruction" xml:space="preserve"><value>作业指导书</value></data>
+  <data name="ClassFormTemplateRegisterMatrixPlanChecklist" xml:space="preserve"><value>表单／模板／登记／矩阵／计划／检查表</value></data>
+  <data name="ClassQualityTechnicalAgreementSdea" xml:space="preserve"><value>质量／技术协议（SDEA）</value></data>
+  <data name="ClassUrgentTemporaryInstruction" xml:space="preserve"><value>紧急临时指令</value></data>
+  <data name="ClassOther" xml:space="preserve"><value>其他</value></data>
+  <data name="CriticalityCritical" xml:space="preserve"><value>关键</value></data>
+  <data name="CriticalityMajor" xml:space="preserve"><value>重要</value></data>
+  <data name="CriticalityMinor" xml:space="preserve"><value>次要</value></data>
+  <data name="CriticalityUrgentTemporary" xml:space="preserve"><value>紧急／临时</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="LifecycleInReview" xml:space="preserve"><value>评审中</value></data>
+  <data name="LifecycleApprovedPendingEffective" xml:space="preserve"><value>已批准（待生效）</value></data>
+  <data name="LifecycleEffective" xml:space="preserve"><value>生效中</value></data>
+  <data name="LifecycleUnderRevision" xml:space="preserve"><value>修订中</value></data>
+  <data name="LifecycleSuspended" xml:space="preserve"><value>已暂停</value></data>
+  <data name="LifecycleSuperseded" xml:space="preserve"><value>已被替代</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>已退役</value></data>
+  <data name="LifecycleObsoleteCopy" xml:space="preserve"><value>作废副本</value></data>
+  <data name="RegisterDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="RegisterActive" xml:space="preserve"><value>启用</value></data>
+  <data name="RegisterArchived" xml:space="preserve"><value>已归档</value></data>
+  <data name="RegisterCorrectionPending" xml:space="preserve"><value>待更正</value></data>
+  <data name="RegisterSuperseded" xml:space="preserve"><value>已被替代</value></data>
+  <data name="RegisterRetired" xml:space="preserve"><value>已退役</value></data>
+  <data name="TypeSop" xml:space="preserve"><value>标准作业程序</value></data>
+  <data name="TypeWorkInstruction" xml:space="preserve"><value>作业指导书</value></data>
+  <data name="TypePolicy" xml:space="preserve"><value>政策</value></data>
+  <data name="TypeForm" xml:space="preserve"><value>表单</value></data>
+  <data name="TypeTemplate" xml:space="preserve"><value>模板</value></data>
+  <data name="TypeOther" xml:space="preserve"><value>其他</value></data>
+  <data name="TabGeneral" xml:space="preserve"><value>概览</value></data>
+  <data name="TabIdentifiers" xml:space="preserve"><value>标识符</value></data>
+  <data name="TabLifecycle" xml:space="preserve"><value>生命周期</value></data>
+  <data name="TabApproval" xml:space="preserve"><value>审批</value></data>
+  <data name="TabReleaseGates" xml:space="preserve"><value>发布关卡</value></data>
+  <data name="TabTraining" xml:space="preserve"><value>培训</value></data>
+  <data name="TabRepository" xml:space="preserve"><value>存储库</value></data>
+  <data name="TabRetention" xml:space="preserve"><value>保留</value></data>
+  <data name="TabSignatures" xml:space="preserve"><value>签名</value></data>
+  <data name="TabQualityEvents" xml:space="preserve"><value>质量事件</value></data>
+  <data name="DeferredSectionMessage" xml:space="preserve"><value>该部分将在下一个界面包中实现。</value></data>
+  <data name="DeferredActionTooltip" xml:space="preserve"><value>将在下一个界面包中提供</value></data>
+  <data name="NoDocumentsFound" xml:space="preserve"><value>未找到登记条目</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>无法加载登记簿</value></data>
+  <data name="SaveSucceeded" xml:space="preserve"><value>登记条目已保存</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>无法保存登记条目</value></data>
+  <data name="Forbidden" xml:space="preserve"><value>您无权执行此操作</value></data>
+  <data name="VariantParentRequired" xml:space="preserve"><value>变体必须提供父文件引用</value></data>
+  <data name="RecordControlledConflict" xml:space="preserve"><value>记录不能同时是受控文件</value></data>
+  <data name="ProtectedFieldsReadOnly" xml:space="preserve"><value>标识符、生命周期与发布字段由治理引擎管理，无法在此编辑。</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="No" xml:space="preserve"><value>否</value></data>
+  <data name="Back" xml:space="preserve"><value>返回</value></data>
+  <data name="AddNew" xml:space="preserve"><value>新增</value></data>
+  <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="IdentifiersTabTitle" xml:space="preserve"><value>标识符</value></data>
+  <data name="LifecycleTabTitle" xml:space="preserve"><value>生命周期</value></data>
+  <data name="IdentifierSummary" xml:space="preserve"><value>标识符分配</value></data>
+  <data name="CurrentIdentity" xml:space="preserve"><value>当前标识</value></data>
+  <data name="AllocationReadiness" xml:space="preserve"><value>分配就绪状态</value></data>
+  <data name="IdentifierLedger" xml:space="preserve"><value>标识符台账</value></data>
+  <data name="IdentifierType" xml:space="preserve"><value>标识符类型</value></data>
+  <data name="IdentifierValue" xml:space="preserve"><value>标识符值</value></data>
+  <data name="IdentifierTypePermanentUid" xml:space="preserve"><value>永久唯一标识</value></data>
+  <data name="IdentifierTypeDocumentCode" xml:space="preserve"><value>文件编码</value></data>
+  <data name="AllocationStatus" xml:space="preserve"><value>分配状态</value></data>
+  <data name="AllocationStatusReserved" xml:space="preserve"><value>已预留</value></data>
+  <data name="AllocationStatusAssigned" xml:space="preserve"><value>已分配</value></data>
+  <data name="AllocationStatusCancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="AllocationStatusAbandoned" xml:space="preserve"><value>已废弃</value></data>
+  <data name="AllocationStatusSupersededByCorrection" xml:space="preserve"><value>因更正被替代</value></data>
+  <data name="AllocationSource" xml:space="preserve"><value>分配来源</value></data>
+  <data name="SystemAllocated" xml:space="preserve"><value>系统分配</value></data>
+  <data name="ManualReserve" xml:space="preserve"><value>手动预留</value></data>
+  <data name="MigrationReserve" xml:space="preserve"><value>迁移预留</value></data>
+  <data name="AllocationReasonLabel" xml:space="preserve"><value>分配原因</value></data>
+  <data name="AllocationReasonNewDocument" xml:space="preserve"><value>新文件</value></data>
+  <data name="AllocationReasonMigration" xml:space="preserve"><value>迁移</value></data>
+  <data name="AllocationReasonManualImport" xml:space="preserve"><value>手动导入</value></data>
+  <data name="AllocationReasonCorrection" xml:space="preserve"><value>更正</value></data>
+  <data name="AllocatedAt" xml:space="preserve"><value>分配时间</value></data>
+  <data name="AllocatedBy" xml:space="preserve"><value>分配人</value></data>
+  <data name="IdentifierOperations" xml:space="preserve"><value>标识符操作</value></data>
+  <data name="AllocateUid" xml:space="preserve"><value>分配唯一标识</value></data>
+  <data name="AllocateCode" xml:space="preserve"><value>分配编码</value></data>
+  <data name="AllocateBoth" xml:space="preserve"><value>同时分配两者</value></data>
+  <data name="ReserveIdentifier" xml:space="preserve"><value>预留标识符</value></data>
+  <data name="ReserveIdentifierHint" xml:space="preserve"><value>预留外部来源的唯一标识或编码（手动录入或迁移）。该值将绑定到此登记条目。</value></data>
+  <data name="CancelAllocation" xml:space="preserve"><value>取消分配</value></data>
+  <data name="CancelAllocationReason" xml:space="preserve"><value>取消原因</value></data>
+  <data name="ConfirmCancelAllocation" xml:space="preserve"><value>此操作仅取消标识符分配。不会删除任何内容——该值保留在台账中且永不重复使用。</value></data>
+  <data name="IdentifierNeverReusedNote" xml:space="preserve"><value>标识符台账仅可追加。已取消或已废弃的值将永久保留且永不重复使用；允许编号存在间隔（SOP §6.3）。</value></data>
+  <data name="RelatedRegisterEntry" xml:space="preserve"><value>登记条目</value></data>
+  <data name="UidAllocated" xml:space="preserve"><value>唯一标识已分配</value></data>
+  <data name="CodeAllocated" xml:space="preserve"><value>编码已分配</value></data>
+  <data name="EffectiveReadiness" xml:space="preserve"><value>生效就绪度</value></data>
+  <data name="IdentifiersComplete" xml:space="preserve"><value>唯一标识与编码齐备</value></data>
+  <data name="ActiveAllocations" xml:space="preserve"><value>有效分配数</value></data>
+  <data name="LedgerRowCount" xml:space="preserve"><value>台账行数</value></data>
+  <data name="NoIdentifierLedgerFound" xml:space="preserve"><value>尚未记录任何标识符分配</value></data>
+  <data name="AllocationSucceeded" xml:space="preserve"><value>标识符已分配</value></data>
+  <data name="AllocationFailed" xml:space="preserve"><value>无法分配标识符</value></data>
+  <data name="ReservationSucceeded" xml:space="preserve"><value>标识符已预留</value></data>
+  <data name="ReservationFailed" xml:space="preserve"><value>无法预留标识符</value></data>
+  <data name="CancellationSucceeded" xml:space="preserve"><value>分配已取消</value></data>
+  <data name="CancellationFailed" xml:space="preserve"><value>无法取消分配</value></data>
+  <data name="UidAlreadyAllocated" xml:space="preserve"><value>已存在永久唯一标识</value></data>
+  <data name="CodeAlreadyAllocated" xml:space="preserve"><value>已存在文件编码</value></data>
+  <data name="IdentifiersAlreadyAllocated" xml:space="preserve"><value>至少已分配一个标识符</value></data>
+  <data name="DuplicateIdentifier" xml:space="preserve"><value>该标识符值已被使用</value></data>
+  <data name="ManualIdentifierExists" xml:space="preserve"><value>此条目已存在手动标识符</value></data>
+  <data name="TypeMappingMissing" xml:space="preserve"><value>该类别／类型组合没有确定的类型代码</value></data>
+  <data name="RecordNotEligible" xml:space="preserve"><value>记录类型不适用标识符分配</value></data>
+  <data name="ExternalNotEligible" xml:space="preserve"><value>外部文件不适用标识符分配</value></data>
+  <data name="VariantInheritsParent" xml:space="preserve"><value>变体继承父文件的标识符</value></data>
+  <data name="EntryNotAllocatable" xml:space="preserve"><value>此登记条目当前不可分配</value></data>
+  <data name="LifecycleSummary" xml:space="preserve"><value>生命周期状态</value></data>
+  <data name="AvailableTransitions" xml:space="preserve"><value>可用状态转换</value></data>
+  <data name="NoTransitionAvailable" xml:space="preserve"><value>当前状态无可用转换</value></data>
+  <data name="OperationalUseAllowed" xml:space="preserve"><value>允许实际使用</value></data>
+  <data name="LastTransition" xml:space="preserve"><value>最近转换</value></data>
+  <data name="LastTransitionReason" xml:space="preserve"><value>最近转换原因</value></data>
+  <data name="LifecycleHistory" xml:space="preserve"><value>生命周期历史</value></data>
+  <data name="NoLifecycleHistoryFound" xml:space="preserve"><value>尚未记录任何生命周期转换</value></data>
+  <data name="FromStatus" xml:space="preserve"><value>原状态</value></data>
+  <data name="ToStatus" xml:space="preserve"><value>新状态</value></data>
+  <data name="TransitionedAt" xml:space="preserve"><value>转换时间</value></data>
+  <data name="TransitionedBy" xml:space="preserve"><value>执行人</value></data>
+  <data name="TransitionLifecycle" xml:space="preserve"><value>变更状态</value></data>
+  <data name="TransitionReason" xml:space="preserve"><value>原因</value></data>
+  <data name="TransitionComment" xml:space="preserve"><value>备注</value></data>
+  <data name="EvidenceReference" xml:space="preserve"><value>证据参考</value></data>
+  <data name="TargetStatus" xml:space="preserve"><value>目标状态</value></data>
+  <data name="MarkEffective" xml:space="preserve"><value>标记生效</value></data>
+  <data name="Supersede" xml:space="preserve"><value>标记被替代</value></data>
+  <data name="Retire" xml:space="preserve"><value>退役</value></data>
+  <data name="ReplacementRegisterEntry" xml:space="preserve"><value>替代登记条目</value></data>
+  <data name="ReplacementRegisterEntryHint" xml:space="preserve"><value>可选。请选择本文件所替代的先前有效登记条目。</value></data>
+  <data name="EffectiveDateNotRetroactive" xml:space="preserve"><value>生效日期不得早于今日（SOP §4）。留空则使用今天。</value></data>
+  <data name="LifecycleTransitionSucceeded" xml:space="preserve"><value>生命周期状态已更新</value></data>
+  <data name="LifecycleTransitionFailed" xml:space="preserve"><value>无法变更生命周期状态</value></data>
+  <data name="MarkEffectiveWarning" xml:space="preserve"><value>后端强制校验唯一标识／编码、审批证据、发布关卡以及生效日期不得回溯。本界面不会绕过这些校验。</value></data>
+  <data name="BackendEnforcesReleaseGates" xml:space="preserve"><value>所有生命周期规则由治理引擎强制执行。此处按钮反映后端当前允许的操作；最终以后端判定为准。</value></data>
+  <data name="BackendWarnings" xml:space="preserve"><value>治理警告</value></data>
+  <data name="ConfirmMarkEffective" xml:space="preserve"><value>此操作将使文件正式生效，无法通过编辑元数据撤销。</value></data>
+  <data name="ConfirmSupersede" xml:space="preserve"><value>此操作将文件标记为已被新版本替代。必须填写原因。</value></data>
+  <data name="ConfirmRetire" xml:space="preserve"><value>此操作结束文件的使用期。不删除任何内容，记录予以保留。必须填写原因。</value></data>
+  <data name="InvalidTransition" xml:space="preserve"><value>当前状态不允许此状态变更</value></data>
+  <data name="ReasonRequiredError" xml:space="preserve"><value>此状态变更必须填写原因</value></data>
+  <data name="MissingUidOrCode" xml:space="preserve"><value>必须先具备永久唯一标识与文件编码</value></data>
+  <data name="RetroactiveEffectiveDate" xml:space="preserve"><value>生效日期不得回溯</value></data>
+  <data name="ReleaseGateBlocked" xml:space="preserve"><value>被不可豁免的发布关卡阻止</value></data>
+  <data name="ApprovalEvidenceBlocked" xml:space="preserve"><value>因审批证据不完整而被阻止</value></data>
+  <data name="TrainingReadinessBlocked" xml:space="preserve"><value>因培训就绪度不足而被阻止</value></data>
+  <data name="DuplicateEffective" xml:space="preserve"><value>已有相同唯一标识的条目处于生效状态</value></data>
+  <data name="StaleVersion" xml:space="preserve"><value>条目已被其他操作修改——请刷新后重试</value></data>
+  <data name="RegisterEntryNotFound" xml:space="preserve"><value>未找到登记条目</value></data>
+  <data name="ConflictOccurred" xml:space="preserve"><value>该操作与当前状态冲突</value></data>
+  <data name="ReloadTab" xml:space="preserve"><value>刷新</value></data>
+  <data name="ActionNotAvailable" xml:space="preserve"><value>不可用</value></data>
+  <data name="PermissionRequired" xml:space="preserve"><value>您无权执行此操作</value></data>
+  <data name="OwnerFunctionFallbackHint" xml:space="preserve"><value>此字段暂无已发布的参考列表，可自由输入。请保持写法一致。</value></data>
+  <data name="LegacyValue" xml:space="preserve"><value>历史值</value></data>
+  <data name="ApprovalTabTitle" xml:space="preserve"><value>审批</value></data>
+  <data name="ReleaseGatesTabTitle" xml:space="preserve"><value>发布关卡</value></data>
+  <data name="ApprovalSummary" xml:space="preserve"><value>审批路径与证据</value></data>
+  <data name="ApprovalRoute" xml:space="preserve"><value>审批路径</value></data>
+  <data name="ResolveApprovalRoute" xml:space="preserve"><value>计算审批路径</value></data>
+  <data name="ResolveRouteIsNotApproval" xml:space="preserve"><value>计算路径仅确定需要哪些审批。它不会批准任何内容，也不会改变生命周期状态。</value></data>
+  <data name="ApprovalRouteResolved" xml:space="preserve"><value>审批路径已计算</value></data>
+  <data name="ApprovalReadiness" xml:space="preserve"><value>审批就绪度</value></data>
+  <data name="ApprovalRequirement" xml:space="preserve"><value>要求项</value></data>
+  <data name="ApprovalRequirements" xml:space="preserve"><value>审批要求</value></data>
+  <data name="NoApprovalRequirementsFound" xml:space="preserve"><value>尚未计算任何审批要求</value></data>
+  <data name="RequirementRole" xml:space="preserve"><value>所需角色</value></data>
+  <data name="RequirementType" xml:space="preserve"><value>要求类型</value></data>
+  <data name="Mandatory" xml:space="preserve"><value>必需</value></data>
+  <data name="Optional" xml:space="preserve"><value>可选</value></data>
+  <data name="NonDelegable" xml:space="preserve"><value>不可委派</value></data>
+  <data name="SourceRule" xml:space="preserve"><value>来源规则</value></data>
+  <data name="CompletedBy" xml:space="preserve"><value>完成人</value></data>
+  <data name="CompletedCount" xml:space="preserve"><value>已完成</value></data>
+  <data name="PendingCount" xml:space="preserve"><value>待处理</value></data>
+  <data name="RejectedCount" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="RequiredApprovers" xml:space="preserve"><value>所需审批</value></data>
+  <data name="BlockingIssues" xml:space="preserve"><value>阻塞问题</value></data>
+  <data name="NoBlockingIssues" xml:space="preserve"><value>无阻塞问题</value></data>
+  <data name="Ready" xml:space="preserve"><value>就绪</value></data>
+  <data name="NotReady" xml:space="preserve"><value>未就绪</value></data>
+  <data name="EvidenceStatus" xml:space="preserve"><value>证据状态</value></data>
+  <data name="EvidenceAction" xml:space="preserve"><value>动作</value></data>
+  <data name="RecordEvidence" xml:space="preserve"><value>记录证据</value></data>
+  <data name="RecordEvidenceNote" xml:space="preserve"><value>为该要求记录审批决定。职责分离由服务端校验，可能被拒绝。</value></data>
+  <data name="RejectEvidence" xml:space="preserve"><value>拒绝</value></data>
+  <data name="RejectEvidenceNote" xml:space="preserve"><value>拒绝该审批要求。原因为必填并保留在审计追踪中。</value></data>
+  <data name="RejectionReason" xml:space="preserve"><value>拒绝原因</value></data>
+  <data name="EvidenceComment" xml:space="preserve"><value>备注</value></data>
+  <data name="EvidenceReferenceHint" xml:space="preserve"><value>指向别处保存的证据的引用（工单、纪要、签署记录）。此处不上传文件。</value></data>
+  <data name="PerformedBy" xml:space="preserve"><value>执行人</value></data>
+  <data name="PerformedByRole" xml:space="preserve"><value>执行角色</value></data>
+  <data name="SegregationCheckedServerSide" xml:space="preserve"><value>职责分离由后端强制执行，被禁组合将被拒绝。</value></data>
+  <data name="SegregationStatus" xml:space="preserve"><value>职责分离</value></data>
+  <data name="SegregationPassed" xml:space="preserve"><value>职责分离已满足</value></data>
+  <data name="SegregationFailed" xml:space="preserve"><value>职责分离未满足</value></data>
+  <data name="SegregationFailedError" xml:space="preserve"><value>此操作违反职责分离</value></data>
+  <data name="AuthorSoleApproverBlocked" xml:space="preserve"><value>作者不得作为自己文件的唯一审批人（SOP §5）。</value></data>
+  <data name="SameUserCannotCompleteAllMandatory" xml:space="preserve"><value>单一用户不能完成全部必需审批</value></data>
+  <data name="MissingAuthorWarning" xml:space="preserve"><value>此登记条目未记录作者</value></data>
+  <data name="DocumentAuthor" xml:space="preserve"><value>文档作者</value></data>
+  <data name="MissingMandatoryEvidence" xml:space="preserve"><value>缺少必需审批</value></data>
+  <data name="ApprovalEvidenceComplete" xml:space="preserve"><value>审批证据齐备</value></data>
+  <data name="ApprovalEvidenceIncomplete" xml:space="preserve"><value>审批证据不完整</value></data>
+  <data name="RequirementNotFound" xml:space="preserve"><value>未找到审批要求</value></data>
+  <data name="WrongApproverRole" xml:space="preserve"><value>该用户不具备所需审批角色</value></data>
+  <data name="RequirementStatusPending" xml:space="preserve"><value>待处理</value></data>
+  <data name="RequirementStatusCompleted" xml:space="preserve"><value>已完成</value></data>
+  <data name="RequirementStatusRejected" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="RequirementStatusWaived" xml:space="preserve"><value>已豁免</value></data>
+  <data name="RequirementStatusBlocked" xml:space="preserve"><value>已阻止</value></data>
+  <data name="ApprovalStateNotRequired" xml:space="preserve"><value>无需</value></data>
+  <data name="ApprovalStatePending" xml:space="preserve"><value>待处理</value></data>
+  <data name="ApprovalStateComplete" xml:space="preserve"><value>已完成</value></data>
+  <data name="ApprovalStateRejected" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="ApprovalStateBlocked" xml:space="preserve"><value>已阻止</value></data>
+  <data name="ActionReviewed" xml:space="preserve"><value>已审阅</value></data>
+  <data name="ActionApproved" xml:space="preserve"><value>已批准</value></data>
+  <data name="ActionEndorsed" xml:space="preserve"><value>已认可</value></data>
+  <data name="ActionReturned" xml:space="preserve"><value>已退回</value></data>
+  <data name="RequirementTypeApproval" xml:space="preserve"><value>审批</value></data>
+  <data name="RequirementTypeReview" xml:space="preserve"><value>审阅</value></data>
+  <data name="RequirementTypeEndorsement" xml:space="preserve"><value>认可</value></data>
+  <data name="RequirementTypeTechnicalReview" xml:space="preserve"><value>技术审阅</value></data>
+  <data name="RequirementTypeQualityConcurrence" xml:space="preserve"><value>质量会签</value></data>
+  <data name="RequirementTypeLegalReview" xml:space="preserve"><value>法务审阅</value></data>
+  <data name="RequirementTypeTrainingReadinessVerification" xml:space="preserve"><value>培训就绪验证</value></data>
+  <data name="SourceRuleCriticality" xml:space="preserve"><value>关键等级</value></data>
+  <data name="SourceRuleDocumentClass" xml:space="preserve"><value>文件类别</value></data>
+  <data name="SourceRuleRegulatoryOverlay" xml:space="preserve"><value>法规叠加</value></data>
+  <data name="SourceRulePVOverlay" xml:space="preserve"><value>药物警戒叠加</value></data>
+  <data name="SourceRuleBatchReleaseOverlay" xml:space="preserve"><value>批放行叠加</value></data>
+  <data name="SourceRuleAgreementOverlay" xml:space="preserve"><value>协议叠加</value></data>
+  <data name="SourceRuleDmsCsvOverlay" xml:space="preserve"><value>DMS／CSV 叠加</value></data>
+  <data name="SourceRuleGroupGovernanceOverlay" xml:space="preserve"><value>集团治理叠加</value></data>
+  <data name="SourceRuleSegregationOverlay" xml:space="preserve"><value>职责分离叠加</value></data>
+  <data name="SourceRuleManualOverride" xml:space="preserve"><value>手动覆盖</value></data>
+  <data name="ApprovalRoleGQD" xml:space="preserve"><value>集团质量总监</value></data>
+  <data name="ApprovalRoleGQDDeputy" xml:space="preserve"><value>集团质量副总监</value></data>
+  <data name="ApprovalRoleGRA" xml:space="preserve"><value>集团法规事务</value></data>
+  <data name="ApprovalRoleQPPV" xml:space="preserve"><value>QPPV</value></data>
+  <data name="ApprovalRoleQP" xml:space="preserve"><value>质量受权人</value></data>
+  <data name="ApprovalRoleLegal" xml:space="preserve"><value>法务</value></data>
+  <data name="ApprovalRoleITCSVOwner" xml:space="preserve"><value>IT／CSV 负责人</value></data>
+  <data name="ApprovalRoleQADocumentation" xml:space="preserve"><value>质量文件管理</value></data>
+  <data name="ApprovalRoleDocumentOwner" xml:space="preserve"><value>文件负责人</value></data>
+  <data name="ApprovalRoleLocalQA" xml:space="preserve"><value>本地质量保证</value></data>
+  <data name="ApprovalRoleCEO" xml:space="preserve"><value>首席执行官</value></data>
+  <data name="ApprovalRoleIndependentQASenior" xml:space="preserve"><value>独立高级质量保证</value></data>
+  <data name="ApprovalRoleTrainingCoordinator" xml:space="preserve"><value>培训协调员</value></data>
+  <data name="ReleaseGateSummary" xml:space="preserve"><value>不可豁免的发布关卡</value></data>
+  <data name="NonWaivableExplanation" xml:space="preserve"><value>全部六道关卡均不可豁免。无论在此界面还是他处，都不存在覆盖、豁免或例外途径。</value></data>
+  <data name="EvaluateReleaseGates" xml:space="preserve"><value>评估关卡</value></data>
+  <data name="ReleaseGate" xml:space="preserve"><value>发布关卡</value></data>
+  <data name="ReleaseGateResult" xml:space="preserve"><value>结果</value></data>
+  <data name="NonWaivable" xml:space="preserve"><value>不可豁免</value></data>
+  <data name="NoWaiverAllowed" xml:space="preserve"><value>不可豁免</value></data>
+  <data name="GatePassed" xml:space="preserve"><value>通过</value></data>
+  <data name="GateBlocked" xml:space="preserve"><value>受阻</value></data>
+  <data name="GateWarning" xml:space="preserve"><value>警告</value></data>
+  <data name="GateNotApplicable" xml:space="preserve"><value>不适用</value></data>
+  <data name="GateEvidence" xml:space="preserve"><value>关卡证据</value></data>
+  <data name="RecordGateEvidence" xml:space="preserve"><value>记录关卡证据</value></data>
+  <data name="GateEvidenceDoesNotForcePass" xml:space="preserve"><value>记录证据不会强制关卡通过。引擎会重新评估，关卡可能仍受阻。</value></data>
+  <data name="BlockingReason" xml:space="preserve"><value>阻塞原因</value></data>
+  <data name="GateSource" xml:space="preserve"><value>来源</value></data>
+  <data name="VerifiedBy" xml:space="preserve"><value>验证人</value></data>
+  <data name="VerifiedByRole" xml:space="preserve"><value>验证角色</value></data>
+  <data name="VerificationDate" xml:space="preserve"><value>验证日期</value></data>
+  <data name="GatesPassed" xml:space="preserve"><value>通过关卡</value></data>
+  <data name="GatesBlocked" xml:space="preserve"><value>受阻关卡</value></data>
+  <data name="GatesWarning" xml:space="preserve"><value>警告数</value></data>
+  <data name="EvidenceMissingCount" xml:space="preserve"><value>缺少证据</value></data>
+  <data name="EvaluatedAt" xml:space="preserve"><value>评估时间</value></data>
+  <data name="EvaluatedBy" xml:space="preserve"><value>评估人</value></data>
+  <data name="GateEvaluationHistory" xml:space="preserve"><value>评估历史</value></data>
+  <data name="GateEvaluationComplete" xml:space="preserve"><value>完成</value></data>
+  <data name="GateEvaluationIncomplete" xml:space="preserve"><value>未完成</value></data>
+  <data name="NoGateEvaluationFound" xml:space="preserve"><value>尚未记录关卡评估</value></data>
+  <data name="MasterRegisterGate" xml:space="preserve"><value>主登记簿有效且文件已登记唯一标识</value></data>
+  <data name="ApprovedRepositoryGate" xml:space="preserve"><value>批准的存储库或具备授权发布路径的已验证 DMS</value></data>
+  <data name="MandatoryApprovalEvidenceGate" xml:space="preserve"><value>必需审批人的审批证据；作者非唯一审批人</value></data>
+  <data name="RequiredExecutionMaterialsGate" xml:space="preserve"><value>执行所需的全部表单／模板／登记均已生效且可用</value></data>
+  <data name="TrainingReadinessGate" xml:space="preserve"><value>已分配培训；关键流程用户已培训或已正式限制</value></data>
+  <data name="SupersededCopyWithdrawalGate" xml:space="preserve"><value>存在从使用点撤回被替代副本的方法</value></data>
+  <data name="TrainingDetailsDeferred" xml:space="preserve"><value>培训详情将在下一个界面包中提供。上方阻塞原因来自培训就绪引擎。</value></data>
+  <data name="RepositoryDetailsDeferred" xml:space="preserve"><value>存储库评估详情将在下一个界面包中提供。</value></data>
+  <data name="ControlledCopyDetailsDeferred" xml:space="preserve"><value>受控副本核对详情将在下一个界面包中提供。</value></data>
+  <data name="GateEvaluationSucceeded" xml:space="preserve"><value>发布关卡已评估</value></data>
+  <data name="GateEvaluationFailed" xml:space="preserve"><value>无法评估发布关卡</value></data>
+  <data name="EvidenceRecordSucceeded" xml:space="preserve"><value>证据已记录</value></data>
+  <data name="EvidenceRecordFailed" xml:space="preserve"><value>无法记录证据</value></data>
+  <data name="EvidenceRejectSucceeded" xml:space="preserve"><value>审批已拒绝</value></data>
+  <data name="EvidenceRejectFailed" xml:space="preserve"><value>无法记录拒绝</value></data>
+  <data name="ReleaseGateIncomplete" xml:space="preserve"><value>发布关卡尚未完成</value></data>
+  <data name="InvalidGateKey" xml:space="preserve"><value>未知的发布关卡</value></data>
+  <data name="TrainingNotReady" xml:space="preserve"><value>培训就绪度未满足</value></data>
+  <data name="RepositoryNotApproved" xml:space="preserve"><value>无可用的批准存储库</value></data>
+  <data name="RequiredExecutionMaterialsMissing" xml:space="preserve"><value>所需执行材料尚未生效</value></data>
+  <data name="SupersededCopyWithdrawalMissing" xml:space="preserve"><value>未记录被替代副本的撤回方法</value></data>
+  <data name="MasterRegisterInactive" xml:space="preserve"><value>主登记条目未处于有效状态</value></data>
+  <data name="UidCodeMissing" xml:space="preserve"><value>需要永久唯一标识与文件编码</value></data>
+  <data name="EvidenceReferenceRequired" xml:space="preserve"><value>必须提供证据引用</value></data>
+  <data name="GateEvidenceRequired" xml:space="preserve"><value>该关卡需要已记录的证据</value></data>
+  <data name="RefreshApproval" xml:space="preserve"><value>刷新</value></data>
+  <data name="RefreshReleaseGates" xml:space="preserve"><value>刷新</value></data>
+  <data name="TrainingTabTitle" xml:space="preserve"><value>培训</value></data>
+  <data name="TrainingSummary" xml:space="preserve"><value>培训矩阵与发布就绪度</value></data>
+  <data name="TrainingReadiness" xml:space="preserve"><value>培训就绪度</value></data>
+  <data name="ReleaseGateTrainingNote" xml:space="preserve"><value>发布关卡 5 使用此培训就绪结果。本界面展示并记录培训证据，不会通过关卡，也不会使文件生效。</value></data>
+  <data name="ResolveTrainingMatrix" xml:space="preserve"><value>计算培训矩阵</value></data>
+  <data name="TrainingRequirement" xml:space="preserve"><value>培训要求</value></data>
+  <data name="TrainingRequirements" xml:space="preserve"><value>培训要求</value></data>
+  <data name="NoTrainingRequirementsFound" xml:space="preserve"><value>尚未计算任何培训要求</value></data>
+  <data name="TrainingAssignment" xml:space="preserve"><value>培训分配</value></data>
+  <data name="TrainingAssignments" xml:space="preserve"><value>培训分配</value></data>
+  <data name="NoTrainingAssignmentsFound" xml:space="preserve"><value>本次会话未创建或修改任何分配</value></data>
+  <data name="AssignmentListNotAvailableNote" xml:space="preserve"><value>后端尚未提供培训分配列表，因此本表仅显示本次会话中创建或修改的分配。上方计数来自服务端，始终反映完整情况。</value></data>
+  <data name="TrainingAudience" xml:space="preserve"><value>对象</value></data>
+  <data name="TrainingAudienceRole" xml:space="preserve"><value>角色</value></data>
+  <data name="TrainingAudienceUser" xml:space="preserve"><value>用户</value></data>
+  <data name="TrainingAudienceDepartment" xml:space="preserve"><value>部门</value></data>
+  <data name="TrainingAudienceThirdParty" xml:space="preserve"><value>第三方</value></data>
+  <data name="TrainingType" xml:space="preserve"><value>培训类型</value></data>
+  <data name="TrainingTypeFullSopCompetencyAssessment" xml:space="preserve"><value>完整 SOP 能力评估</value></data>
+  <data name="TrainingTypeScenarioAssessment" xml:space="preserve"><value>情景评估</value></data>
+  <data name="TrainingTypeReadAndUnderstand" xml:space="preserve"><value>阅读并理解</value></data>
+  <data name="TrainingTypeThirdPartyVerifiedTraining" xml:space="preserve"><value>第三方验证培训</value></data>
+  <data name="CriticalProcess" xml:space="preserve"><value>关键流程</value></data>
+  <data name="EffectivenessRequired" xml:space="preserve"><value>需要有效性验证</value></data>
+  <data name="EffectivenessStatus" xml:space="preserve"><value>有效性</value></data>
+  <data name="EffectivenessResult" xml:space="preserve"><value>有效性结果</value></data>
+  <data name="EffectivenessNotRequired" xml:space="preserve"><value>无需</value></data>
+  <data name="EffectivenessPending" xml:space="preserve"><value>待处理</value></data>
+  <data name="EffectivenessPassed" xml:space="preserve"><value>通过</value></data>
+  <data name="EffectivenessFailed" xml:space="preserve"><value>未通过</value></data>
+  <data name="EffectivenessIsRecordedNotComputed" xml:space="preserve"><value>有效性结果是记录的证据而非计算值。记录“通过”本身不会使培训就绪度变绿。</value></data>
+  <data name="AssignmentStatus" xml:space="preserve"><value>分配状态</value></data>
+  <data name="TrainingAssignmentStatusAssigned" xml:space="preserve"><value>已分配</value></data>
+  <data name="TrainingAssignmentStatusCompleted" xml:space="preserve"><value>已完成</value></data>
+  <data name="TrainingAssignmentStatusFailed" xml:space="preserve"><value>未通过</value></data>
+  <data name="TrainingAssignmentStatusRestricted" xml:space="preserve"><value>已限制</value></data>
+  <data name="TrainingAssignmentStatusCancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="TrainingRequirementStatusPending" xml:space="preserve"><value>待处理</value></data>
+  <data name="TrainingRequirementStatusAssigned" xml:space="preserve"><value>已分配</value></data>
+  <data name="TrainingRequirementStatusCompleted" xml:space="preserve"><value>已完成</value></data>
+  <data name="TrainingRequirementStatusRestricted" xml:space="preserve"><value>已限制</value></data>
+  <data name="TrainingRequirementStatusWaivedNotAllowed" xml:space="preserve"><value>尝试豁免——不被允许</value></data>
+  <data name="TrainingRequirementStatusOverdue" xml:space="preserve"><value>已逾期</value></data>
+  <data name="TrainingRequirementStatusBlocked" xml:space="preserve"><value>已阻止</value></data>
+  <data name="TrainingSourceRuleCriticality" xml:space="preserve"><value>关键等级</value></data>
+  <data name="TrainingSourceRuleDocumentClass" xml:space="preserve"><value>文件类别</value></data>
+  <data name="TrainingSourceRuleManual" xml:space="preserve"><value>手动</value></data>
+  <data name="TrainingSourceRuleImpactAssessment" xml:space="preserve"><value>影响评估</value></data>
+  <data name="TrainingSourceRuleThirdPartyAgreement" xml:space="preserve"><value>第三方协议</value></data>
+  <data name="AssignTraining" xml:space="preserve"><value>分配</value></data>
+  <data name="AssignDoesNotCompleteTraining" xml:space="preserve"><value>分配会产生培训义务。它不会完成培训，也不会记录任何证据。</value></data>
+  <data name="AssignTargetHint" xml:space="preserve"><value>根据要求填写用户、角色或部门。</value></data>
+  <data name="AssignedUser" xml:space="preserve"><value>分配用户</value></data>
+  <data name="AssignedRole" xml:space="preserve"><value>分配角色</value></data>
+  <data name="AssignedDepartment" xml:space="preserve"><value>分配部门</value></data>
+  <data name="AssignedTo" xml:space="preserve"><value>分配对象</value></data>
+  <data name="TrainingDueDate" xml:space="preserve"><value>截止日期</value></data>
+  <data name="CompleteTraining" xml:space="preserve"><value>完成培训</value></data>
+  <data name="CompletionEvidence" xml:space="preserve"><value>完成证据</value></data>
+  <data name="CompletionDoesNotMarkEffective" xml:space="preserve"><value>我理解这仅记录培训完成证据——不会使文件生效，也不会通过发布关卡 5。</value></data>
+  <data name="RecordEffectiveness" xml:space="preserve"><value>记录有效性</value></data>
+  <data name="EffectivenessEvidence" xml:space="preserve"><value>有效性证据</value></data>
+  <data name="RestrictTraining" xml:space="preserve"><value>限制</value></data>
+  <data name="RestrictionStatus" xml:space="preserve"><value>限制</value></data>
+  <data name="Restricted" xml:space="preserve"><value>已限制</value></data>
+  <data name="NotRestricted" xml:space="preserve"><value>未限制</value></data>
+  <data name="RestrictionDoesNotDelete" xml:space="preserve"><value>限制是访问与就绪控制，不是删除。分配予以保留并在审计追踪中可见。</value></data>
+  <data name="RequiredCount" xml:space="preserve"><value>需求数</value></data>
+  <data name="AssignedCount" xml:space="preserve"><value>已分配</value></data>
+  <data name="RestrictedCount" xml:space="preserve"><value>已限制</value></data>
+  <data name="EffectivenessPendingCount" xml:space="preserve"><value>待验证有效性</value></data>
+  <data name="TrainingReady" xml:space="preserve"><value>就绪</value></data>
+  <data name="TrainingBlocked" xml:space="preserve"><value>已阻止</value></data>
+  <data name="TrainingMatrixMissing" xml:space="preserve"><value>尚未为该文件计算培训矩阵</value></data>
+  <data name="MissingTrainingAssignments" xml:space="preserve"><value>缺少分配</value></data>
+  <data name="TrainingAssignmentMissing" xml:space="preserve"><value>未找到培训分配</value></data>
+  <data name="TrainingCompletionRequired" xml:space="preserve"><value>必须先完成培训</value></data>
+  <data name="TrainingEffectivenessRequired" xml:space="preserve"><value>需要有效性验证</value></data>
+  <data name="TrainingEffectivenessFailed" xml:space="preserve"><value>有效性验证未通过</value></data>
+  <data name="TrainingRestrictionRequired" xml:space="preserve"><value>未受训用户需要正式限制</value></data>
+  <data name="InvalidTrainingStatus" xml:space="preserve"><value>此操作对当前培训状态无效</value></data>
+  <data name="TrainingResolveSucceeded" xml:space="preserve"><value>培训矩阵已计算</value></data>
+  <data name="TrainingResolveFailed" xml:space="preserve"><value>无法计算培训矩阵</value></data>
+  <data name="TrainingAssignSucceeded" xml:space="preserve"><value>培训已分配</value></data>
+  <data name="TrainingAssignFailed" xml:space="preserve"><value>无法分配培训</value></data>
+  <data name="TrainingCompleteSucceeded" xml:space="preserve"><value>培训完成已记录</value></data>
+  <data name="TrainingCompleteFailed" xml:space="preserve"><value>无法记录培训完成</value></data>
+  <data name="TrainingEffectivenessSucceeded" xml:space="preserve"><value>有效性已记录</value></data>
+  <data name="TrainingEffectivenessFailedMessage" xml:space="preserve"><value>无法记录有效性结果</value></data>
+  <data name="TrainingRestrictSucceeded" xml:space="preserve"><value>限制已记录</value></data>
+  <data name="TrainingRestrictFailed" xml:space="preserve"><value>无法记录限制</value></data>
+  <data name="RefreshTraining" xml:space="preserve"><value>刷新</value></data>
+  <data name="RepositoryTabTitle" xml:space="preserve"><value>存储库与副本</value></data>
+  <data name="RepositorySummary" xml:space="preserve"><value>存储库评估与受控副本</value></data>
+  <data name="RefreshRepository" xml:space="preserve"><value>刷新</value></data>
+  <data name="RepositoryAssessment" xml:space="preserve"><value>存储库评估</value></data>
+  <data name="RepositoryAssessments" xml:space="preserve"><value>存储库评估</value></data>
+  <data name="NoRepositoryAssessmentsFound" xml:space="preserve"><value>尚未记录任何存储库评估</value></data>
+  <data name="RepositoryName" xml:space="preserve"><value>存储库名称</value></data>
+  <data name="RepositoryStatus" xml:space="preserve"><value>评估状态</value></data>
+  <data name="RepositoryStatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="RepositoryStatusUnderReview" xml:space="preserve"><value>审核中</value></data>
+  <data name="RepositoryStatusApproved" xml:space="preserve"><value>已批准</value></data>
+  <data name="RepositoryStatusRejected" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="RepositoryStatusExpired" xml:space="preserve"><value>已过期</value></data>
+  <data name="RepositoryStatusSuperseded" xml:space="preserve"><value>已被替代</value></data>
+  <data name="RepositoryTypeValidatedDms" xml:space="preserve"><value>已验证 DMS</value></data>
+  <data name="RepositoryTypeApprovedInterimRepository" xml:space="preserve"><value>批准的临时存储库</value></data>
+  <data name="RepositoryTypeSeparateApprovalMechanism" xml:space="preserve"><value>独立审批机制</value></data>
+  <data name="RepositoryTypeUnapprovedRepository" xml:space="preserve"><value>未批准存储库</value></data>
+  <data name="LinkedRepository" xml:space="preserve"><value>关联存储库</value></data>
+  <data name="NoRepositoryLinked" xml:space="preserve"><value>此文件未关联存储库评估</value></data>
+  <data name="NotLinked" xml:space="preserve"><value>未关联</value></data>
+  <data name="LinkRepository" xml:space="preserve"><value>关联存储库</value></data>
+  <data name="LinkDoesNotApproveRepository" xml:space="preserve"><value>关联仅将本文件指向现有评估。它不会批准存储库，也不会改变其分类。</value></data>
+  <data name="ReleaseGateRepositoryNote" xml:space="preserve"><value>发布关卡 2 使用此存储库分类。本界面展示并记录评估，不会通过关卡，也不会使文件生效。</value></data>
+  <data name="NoComplianceClaim" xml:space="preserve"><value>不作合规声明</value></data>
+  <data name="NoValidatedDmsClaim" xml:space="preserve"><value>本界面依据 SOP 边界对存储库进行分类。不作任何计算机系统验证声明、电子签名合规声明或证书断言。</value></data>
+  <data name="InterimRepositoryWarning" xml:space="preserve"><value>批准的临时存储库不是已验证的 DMS。不得作为受监管电子签名合规凭据，且带有限期检查点。</value></data>
+  <data name="BoundaryStatement" xml:space="preserve"><value>边界声明</value></data>
+  <data name="EvaluateToSeeBoundary" xml:space="preserve"><value>运行评估以查看其边界声明</value></data>
+  <data name="CanSupportReleaseGate" xml:space="preserve"><value>可支持发布关卡</value></data>
+  <data name="CanSupportRegulatedESignature" xml:space="preserve"><value>可支持受监管电子签名</value></data>
+  <data name="RepositoryLocation" xml:space="preserve"><value>位置</value></data>
+  <data name="RepositoryOwner" xml:space="preserve"><value>负责人</value></data>
+  <data name="AccessControlModel" xml:space="preserve"><value>访问控制模型</value></data>
+  <data name="BackupRestorePlan" xml:space="preserve"><value>备份／恢复方案</value></data>
+  <data name="ApprovalMechanism" xml:space="preserve"><value>审批机制</value></data>
+  <data name="EffectiveCopyControl" xml:space="preserve"><value>生效副本控制</value></data>
+  <data name="AuditTrail" xml:space="preserve"><value>审计追踪</value></data>
+  <data name="ChangeControl" xml:space="preserve"><value>变更控制</value></data>
+  <data name="ValidationEvidence" xml:space="preserve"><value>验证证据</value></data>
+  <data name="CriticalFindings" xml:space="preserve"><value>关键发现</value></data>
+  <data name="RepositoryFindings" xml:space="preserve"><value>存储库发现项</value></data>
+  <data name="NoRepositoryFindingsFound" xml:space="preserve"><value>未记录存储库发现项</value></data>
+  <data name="EvaluateRepository" xml:space="preserve"><value>评估</value></data>
+  <data name="ApproveRepository" xml:space="preserve"><value>批准</value></data>
+  <data name="RejectRepository" xml:space="preserve"><value>拒绝</value></data>
+  <data name="ApproveDoesNotClaimValidation" xml:space="preserve"><value>批准仅记录关于该存储库的治理决定，不断言系统验证或电子签名合规。</value></data>
+  <data name="RejectRepositoryNote" xml:space="preserve"><value>拒绝将记录治理决定。原因为必填并保留在审计追踪中。</value></data>
+  <data name="RepositoryApproverRoleHint" xml:space="preserve"><value>SOP §11.2 仅允许集团质量总监、其副手或 IT／CSV 负责人批准存储库评估。</value></data>
+  <data name="ApprovedByRole" xml:space="preserve"><value>批准角色</value></data>
+  <data name="ValidUntil" xml:space="preserve"><value>有效期至</value></data>
+  <data name="ApprovedRepositoryAvailable" xml:space="preserve"><value>批准的存储库</value></data>
+  <data name="RepositoryEvaluateSucceeded" xml:space="preserve"><value>存储库已评估</value></data>
+  <data name="RepositoryEvaluateFailed" xml:space="preserve"><value>无法评估存储库</value></data>
+  <data name="RepositoryApproveSucceeded" xml:space="preserve"><value>存储库评估已批准</value></data>
+  <data name="RepositoryApproveFailed" xml:space="preserve"><value>无法批准存储库评估</value></data>
+  <data name="RepositoryRejectSucceeded" xml:space="preserve"><value>存储库评估已拒绝</value></data>
+  <data name="RepositoryLinkSucceeded" xml:space="preserve"><value>存储库已关联</value></data>
+  <data name="RepositoryLinkFailed" xml:space="preserve"><value>无法关联存储库</value></data>
+  <data name="RepositoryAssessmentNotFound" xml:space="preserve"><value>未找到存储库评估</value></data>
+  <data name="RepositoryNameAndTypeRequired" xml:space="preserve"><value>必须提供存储库名称与类型</value></data>
+  <data name="RepositoryRequiredFieldsMissing" xml:space="preserve"><value>缺少必填的评估字段</value></data>
+  <data name="RepositoryAlreadyDecided" xml:space="preserve"><value>该评估已作出决定</value></data>
+  <data name="RepositoryApproverRoleInvalid" xml:space="preserve"><value>该角色无权批准存储库评估</value></data>
+  <data name="RepositoryLinkStatusInvalid" xml:space="preserve"><value>该评估当前状态不可关联</value></data>
+  <data name="RepositoryBoundaryBlocked" xml:space="preserve"><value>存储库边界阻止此操作</value></data>
+  <data name="UnapprovedRepositoryError" xml:space="preserve"><value>该存储库未获批准</value></data>
+  <data name="ValidatedDmsEvidenceRequired" xml:space="preserve"><value>需要已验证 DMS 的证据</value></data>
+  <data name="InterimRepositoryLimitation" xml:space="preserve"><value>适用临时存储库限制</value></data>
+  <data name="ControlledCopies" xml:space="preserve"><value>受控副本</value></data>
+  <data name="ControlledCopy" xml:space="preserve"><value>受控副本</value></data>
+  <data name="ControlledCopyLog" xml:space="preserve"><value>受控副本台账</value></data>
+  <data name="NoControlledCopiesFound" xml:space="preserve"><value>未登记受控副本</value></data>
+  <data name="NoControlledCopyDataYet" xml:space="preserve"><value>尚未为该文件登记受控副本。</value></data>
+  <data name="CopyWithdrawalReady" xml:space="preserve"><value>该文件的副本撤回已完成。</value></data>
+  <data name="ReleaseGateCopyNote" xml:space="preserve"><value>发布关卡 6 使用此副本撤回就绪度。本界面展示并记录副本证据，不会通过关卡，也不会使文件生效。</value></data>
+  <data name="CopyNumber" xml:space="preserve"><value>副本编号</value></data>
+  <data name="CopyType" xml:space="preserve"><value>副本类型</value></data>
+  <data name="CopyTypeDigitalEffectiveCopy" xml:space="preserve"><value>数字生效副本</value></data>
+  <data name="CopyTypeDigitalControlledCopy" xml:space="preserve"><value>数字受控副本</value></data>
+  <data name="CopyTypePrintedControlledCopy" xml:space="preserve"><value>纸质受控副本</value></data>
+  <data name="CopyTypeTrainingCopy" xml:space="preserve"><value>培训副本</value></data>
+  <data name="CopyTypeReferenceCopy" xml:space="preserve"><value>参考副本</value></data>
+  <data name="CopyTypeExternalSharedCopy" xml:space="preserve"><value>外部共享副本</value></data>
+  <data name="CopyTypeTemporaryControlledIssue" xml:space="preserve"><value>临时受控发放</value></data>
+  <data name="CopyStatus" xml:space="preserve"><value>副本状态</value></data>
+  <data name="CopyStatusActive" xml:space="preserve"><value>有效</value></data>
+  <data name="CopyStatusPendingWithdrawal" xml:space="preserve"><value>待撤回</value></data>
+  <data name="CopyStatusWithdrawn" xml:space="preserve"><value>已撤回</value></data>
+  <data name="CopyStatusReconciled" xml:space="preserve"><value>已核对</value></data>
+  <data name="CopyStatusMissing" xml:space="preserve"><value>遗失</value></data>
+  <data name="CopyStatusObsolete" xml:space="preserve"><value>作废</value></data>
+  <data name="CopyStatusDestroyed" xml:space="preserve"><value>已销毁</value></data>
+  <data name="Holder" xml:space="preserve"><value>持有人</value></data>
+  <data name="HolderRole" xml:space="preserve"><value>持有角色</value></data>
+  <data name="HolderDepartment" xml:space="preserve"><value>持有部门</value></data>
+  <data name="HolderOrLocationRequiredHint" xml:space="preserve"><value>请填写持有人或位置——后端至少需要其一。</value></data>
+  <data name="HolderOrLocationRequired" xml:space="preserve"><value>必须提供持有人或位置</value></data>
+  <data name="CopyLocation" xml:space="preserve"><value>位置</value></data>
+  <data name="IssuedAt" xml:space="preserve"><value>发放时间</value></data>
+  <data name="RegisterCopy" xml:space="preserve"><value>登记副本</value></data>
+  <data name="IssueDoesNotMarkEffective" xml:space="preserve"><value>登记受控副本会将其记入台账。不会使文件生效，也不会通过任何发布关卡。</value></data>
+  <data name="WithdrawCopy" xml:space="preserve"><value>撤回</value></data>
+  <data name="WithdrawalDoesNotDelete" xml:space="preserve"><value>撤回会改变副本状态并保留台账行。不删除任何内容，副本仍在台账中可见。</value></data>
+  <data name="ReconcileCopy" xml:space="preserve"><value>核对</value></data>
+  <data name="ReconcileDoesNotDelete" xml:space="preserve"><value>核对记录该副本已被清点。不会删除副本记录。</value></data>
+  <data name="MarkCopyMissing" xml:space="preserve"><value>标记遗失</value></data>
+  <data name="MarkMissingDoesNotDelete" xml:space="preserve"><value>标记遗失会为核对记录该事实。副本记录予以保留，可能需要偏差处理。</value></data>
+  <data name="MarkCopyObsolete" xml:space="preserve"><value>标记作废</value></data>
+  <data name="MarkObsoleteDoesNotDelete" xml:space="preserve"><value>标记作废会产生核对发现项。副本记录予以保留。</value></data>
+  <data name="ObsoleteReason" xml:space="preserve"><value>作废原因</value></data>
+  <data name="WithdrawnAt" xml:space="preserve"><value>撤回时间</value></data>
+  <data name="ReconciledAt" xml:space="preserve"><value>核对时间</value></data>
+  <data name="ActiveCopies" xml:space="preserve"><value>有效副本</value></data>
+  <data name="PendingWithdrawal" xml:space="preserve"><value>待撤回</value></data>
+  <data name="WithdrawnCopies" xml:space="preserve"><value>已撤回</value></data>
+  <data name="CopyRegisterSucceeded" xml:space="preserve"><value>受控副本已登记</value></data>
+  <data name="CopyWithdrawSucceeded" xml:space="preserve"><value>副本已撤回</value></data>
+  <data name="CopyReconcileSucceeded" xml:space="preserve"><value>副本已核对</value></data>
+  <data name="CopyMarkMissingSucceeded" xml:space="preserve"><value>副本已标记遗失</value></data>
+  <data name="CopyMarkObsoleteSucceeded" xml:space="preserve"><value>副本已标记作废</value></data>
+  <data name="ControlledCopyNotFound" xml:space="preserve"><value>未找到受控副本</value></data>
+  <data name="CopyNotEligible" xml:space="preserve"><value>该副本当前状态不适用此操作</value></data>
+  <data name="DuplicateCopyNumber" xml:space="preserve"><value>该副本编号已被使用</value></data>
+  <data name="CopyAlreadyWithdrawn" xml:space="preserve"><value>该副本已被撤回</value></data>
+  <data name="CopyReconciliationRequired" xml:space="preserve"><value>需要进行副本核对</value></data>
+  <data name="ControlledCopyWithdrawalRequired" xml:space="preserve"><value>副本撤回尚未完成</value></data>
+  <data name="WithdrawalPlans" xml:space="preserve"><value>撤回计划</value></data>
+  <data name="WithdrawalPlan" xml:space="preserve"><value>撤回计划</value></data>
+  <data name="NoWithdrawalPlansFound" xml:space="preserve"><value>未创建撤回计划</value></data>
+  <data name="GenerateWithdrawalPlan" xml:space="preserve"><value>生成计划</value></data>
+  <data name="CompleteWithdrawalPlan" xml:space="preserve"><value>完成计划</value></data>
+  <data name="PlanCompleteNote" xml:space="preserve"><value>完成计划表示撤回结束。遗失副本可能需要偏差引用。</value></data>
+  <data name="PlanStatus" xml:space="preserve"><value>计划状态</value></data>
+  <data name="PlanStatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="PlanStatusActive" xml:space="preserve"><value>进行中</value></data>
+  <data name="PlanStatusCompleted" xml:space="preserve"><value>已完成</value></data>
+  <data name="PlanStatusBlocked" xml:space="preserve"><value>受阻</value></data>
+  <data name="PlanStatusCancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="TriggerType" xml:space="preserve"><value>触发方式</value></data>
+  <data name="RequiredCopies" xml:space="preserve"><value>需处理</value></data>
+  <data name="WithdrawnCopiesCount" xml:space="preserve"><value>已撤回</value></data>
+  <data name="MissingCopies" xml:space="preserve"><value>遗失</value></data>
+  <data name="PlanGenerateSucceeded" xml:space="preserve"><value>撤回计划已生成</value></data>
+  <data name="PlanCompleteSucceeded" xml:space="preserve"><value>撤回计划已完成</value></data>
+  <data name="PlanIncomplete" xml:space="preserve"><value>撤回计划尚未完成</value></data>
+  <data name="WithdrawalPlanNotFound" xml:space="preserve"><value>未找到撤回计划</value></data>
+  <data name="ObsoleteCopyFindings" xml:space="preserve"><value>作废副本发现项</value></data>
+  <data name="NoObsoleteFindingsFound" xml:space="preserve"><value>无作废副本发现项</value></data>
+  <data name="EvaluateReconciliation" xml:space="preserve"><value>评估核对</value></data>
+  <data name="ReconciliationEvaluateSucceeded" xml:space="preserve"><value>核对已评估</value></data>
+  <data name="ResolveFinding" xml:space="preserve"><value>处置</value></data>
+  <data name="ResolveFindingDoesNotDelete" xml:space="preserve"><value>处置会记录该发现项的处理方式。不会删除发现项或底层副本记录。</value></data>
+  <data name="FindingResolveSucceeded" xml:space="preserve"><value>发现项已处置</value></data>
+  <data name="FindingNotFound" xml:space="preserve"><value>未找到发现项</value></data>
+  <data name="ObsoleteCopyFindingOpen" xml:space="preserve"><value>仍有未关闭的作废副本发现项</value></data>
+  <data name="FindingStatusOpen" xml:space="preserve"><value>未处理</value></data>
+  <data name="FindingStatusAcknowledged" xml:space="preserve"><value>已确认</value></data>
+  <data name="FindingStatusResolved" xml:space="preserve"><value>已处置</value></data>
+  <data name="FindingStatusClosed" xml:space="preserve"><value>已关闭</value></data>
+  <data name="SeverityCritical" xml:space="preserve"><value>严重</value></data>
+  <data name="SeverityMajor" xml:space="preserve"><value>重要</value></data>
+  <data name="SeverityMinor" xml:space="preserve"><value>轻微</value></data>
+  <data name="CriticalFinding" xml:space="preserve"><value>严重发现项</value></data>
+  <data name="Description" xml:space="preserve"><value>说明</value></data>
+  <data name="DeviationReference" xml:space="preserve"><value>偏差引用</value></data>
+  <data name="DeviationReferenceHint" xml:space="preserve"><value>指向别处登记的偏差或质量事件的引用。本界面不是 CAPA 模块。</value></data>
+  <data name="DeviationRequired" xml:space="preserve"><value>必须提供偏差引用</value></data>
+  <data name="RetentionTabTitle" xml:space="preserve">
+    <value>保留</value>
+  </data>
+  <data name="SignaturesTabTitle" xml:space="preserve">
+    <value>签名</value>
+  </data>
+  <data name="QualityEventsTabTitle" xml:space="preserve">
+    <value>质量事件</value>
+  </data>
+  <data name="RetentionSummary" xml:space="preserve">
+    <value>保留摘要</value>
+  </data>
+  <data name="RetentionSchedule" xml:space="preserve">
+    <value>保留计划</value>
+  </data>
+  <data name="RetentionPolicyKey" xml:space="preserve">
+    <value>保留策略</value>
+  </data>
+  <data name="RetentionTriggerDate" xml:space="preserve">
+    <value>触发日期</value>
+  </data>
+  <data name="RetentionDueDate" xml:space="preserve">
+    <value>保留到期日</value>
+  </data>
+  <data name="RetentionEligibilityDate" xml:space="preserve">
+    <value>资格日期</value>
+  </data>
+  <data name="RetentionPermanent" xml:space="preserve">
+    <value>永久保留</value>
+  </data>
+  <data name="RetentionActiveHolds" xml:space="preserve">
+    <value>有效法律保留</value>
+  </data>
+  <data name="DispositionReadiness" xml:space="preserve">
+    <value>处置就绪状态</value>
+  </data>
+  <data name="DispositionStatus" xml:space="preserve">
+    <value>处置状态</value>
+  </data>
+  <data name="DispositionEligible" xml:space="preserve">
+    <value>符合条件</value>
+  </data>
+  <data name="DispositionNotEligible" xml:space="preserve">
+    <value>不符合条件</value>
+  </data>
+  <data name="DispositionBlocked" xml:space="preserve">
+    <value>处置被阻止</value>
+  </data>
+  <data name="LegalHold" xml:space="preserve">
+    <value>法律保留</value>
+  </data>
+  <data name="LegalHolds" xml:space="preserve">
+    <value>法律保留</value>
+  </data>
+  <data name="LegalHoldActive" xml:space="preserve">
+    <value>法律保留生效中</value>
+  </data>
+  <data name="LegalHoldNotFound" xml:space="preserve">
+    <value>未找到法律保留。</value>
+  </data>
+  <data name="LegalHoldNotActive" xml:space="preserve">
+    <value>法律保留未生效。</value>
+  </data>
+  <data name="HoldTitle" xml:space="preserve">
+    <value>保留标题</value>
+  </data>
+  <data name="HoldStatus" xml:space="preserve">
+    <value>保留状态</value>
+  </data>
+  <data name="HoldReason" xml:space="preserve">
+    <value>保留原因</value>
+  </data>
+  <data name="ReleasedAt" xml:space="preserve">
+    <value>解除时间</value>
+  </data>
+  <data name="LegalCaseReference" xml:space="preserve">
+    <value>法律/案件参考</value>
+  </data>
+  <data name="HoldReleaseApprovalRequired" xml:space="preserve">
+    <value>解除保留需同时获得法律批准和 GQD 认可。</value>
+  </data>
+  <data name="LegalHoldBlocksDisposition" xml:space="preserve">
+    <value>有效的法律保留将阻止处置。</value>
+  </data>
+  <data name="ReleaseHoldDoesNotDispose" xml:space="preserve">
+    <value>解除法律保留不会处置该文档。</value>
+  </data>
+  <data name="NoDispositionOverride" xml:space="preserve">
+    <value>此界面绝不会覆盖处置阻止。</value>
+  </data>
+  <data name="NoRetentionScheduleFound" xml:space="preserve">
+    <value>尚未为此条目评估保留计划。</value>
+  </data>
+  <data name="NoLegalHoldsFound" xml:space="preserve">
+    <value>没有法律保留影响此条目。</value>
+  </data>
+  <data name="EvaluateRetention" xml:space="preserve">
+    <value>评估保留</value>
+  </data>
+  <data name="RetentionEvaluateSucceeded" xml:space="preserve">
+    <value>保留已评估。</value>
+  </data>
+  <data name="RetentionEvaluateFailed" xml:space="preserve">
+    <value>保留评估失败。</value>
+  </data>
+  <data name="LastEvaluatedAt" xml:space="preserve">
+    <value>最近评估时间</value>
+  </data>
+  <data name="EvaluationStatus" xml:space="preserve">
+    <value>评估状态</value>
+  </data>
+  <data name="EvaluationNote" xml:space="preserve">
+    <value>评估备注</value>
+  </data>
+  <data name="DispositionRequestsTitle" xml:space="preserve">
+    <value>处置请求</value>
+  </data>
+  <data name="DispositionRequestNumber" xml:space="preserve">
+    <value>请求编号</value>
+  </data>
+  <data name="EligibilityResult" xml:space="preserve">
+    <value>资格结果</value>
+  </data>
+  <data name="RequestedAt" xml:space="preserve">
+    <value>请求时间</value>
+  </data>
+  <data name="ExecutedAt" xml:space="preserve">
+    <value>执行时间</value>
+  </data>
+  <data name="NoDispositionRequestsForEntry" xml:space="preserve">
+    <value>此条目没有处置请求。</value>
+  </data>
+  <data name="SignatureSummary" xml:space="preserve">
+    <value>签名摘要</value>
+  </data>
+  <data name="SignaturePolicy" xml:space="preserve">
+    <value>策略名称</value>
+  </data>
+  <data name="SignaturePolicies" xml:space="preserve">
+    <value>签名策略</value>
+  </data>
+  <data name="SignaturePolicyCount" xml:space="preserve">
+    <value>签名策略</value>
+  </data>
+  <data name="SignatureSubjectType" xml:space="preserve">
+    <value>主体类型</value>
+  </data>
+  <data name="SignatureMeaning" xml:space="preserve">
+    <value>签名含义</value>
+  </data>
+  <data name="SignatureRequests" xml:space="preserve">
+    <value>签名请求</value>
+  </data>
+  <data name="SignatureRequestNumber" xml:space="preserve">
+    <value>请求编号</value>
+  </data>
+  <data name="SignatureRecords" xml:space="preserve">
+    <value>签名记录</value>
+  </data>
+  <data name="SignatureFingerprint" xml:space="preserve">
+    <value>指纹</value>
+  </data>
+  <data name="SignerRole" xml:space="preserve">
+    <value>签署人角色</value>
+  </data>
+  <data name="SignerUser" xml:space="preserve">
+    <value>签署人</value>
+  </data>
+  <data name="SignedAt" xml:space="preserve">
+    <value>签署时间</value>
+  </data>
+  <data name="SignatureDueDate" xml:space="preserve">
+    <value>截止日期</value>
+  </data>
+  <data name="ReAuthenticationRequired" xml:space="preserve">
+    <value>重新认证</value>
+  </data>
+  <data name="TwoFactorRequired" xml:space="preserve">
+    <value>双因素</value>
+  </data>
+  <data name="TwoFactorNotImplemented" xml:space="preserve">
+    <value>未实现双因素认证</value>
+  </data>
+  <data name="VerifySignature" xml:space="preserve">
+    <value>验证</value>
+  </data>
+  <data name="FingerprintValid" xml:space="preserve">
+    <value>指纹有效——对象完整性已确认。</value>
+  </data>
+  <data name="FingerprintInvalid" xml:space="preserve">
+    <value>指纹不匹配——已签名对象已更改。</value>
+  </data>
+  <data name="FingerprintMismatch" xml:space="preserve">
+    <value>指纹不匹配。</value>
+  </data>
+  <data name="SubjectNotSignable" xml:space="preserve">
+    <value>该主体不可签名。</value>
+  </data>
+  <data name="AuthenticationContextRequired" xml:space="preserve">
+    <value>需要认证上下文。</value>
+  </data>
+  <data name="DuplicateSignature" xml:space="preserve">
+    <value>此请求已存在签名。</value>
+  </data>
+  <data name="SignatureNotAllowed" xml:space="preserve">
+    <value>此处不允许签名。</value>
+  </data>
+  <data name="SignaturePolicyNotFound" xml:space="preserve">
+    <value>未找到签名策略。</value>
+  </data>
+  <data name="SignatureRequestNotFound" xml:space="preserve">
+    <value>未找到签名请求。</value>
+  </data>
+  <data name="SignatureNotFound" xml:space="preserve">
+    <value>未找到签名。</value>
+  </data>
+  <data name="MetadataFingerprintOnly" xml:space="preserve">
+    <value>此界面仅验证已存储的元数据指纹绑定。</value>
+  </data>
+  <data name="NoESignComplianceClaim" xml:space="preserve">
+    <value>这不是受监管的电子签名能力，也不作出 21 CFR Part 11 / Annex 11 合规声明。</value>
+  </data>
+  <data name="NoCertificateValidationClaim" xml:space="preserve">
+    <value>不会调用外部提供商，也不会验证证书链。</value>
+  </data>
+  <data name="OpenSignatureRequests" xml:space="preserve">
+    <value>未处理请求</value>
+  </data>
+  <data name="CompletedSignatures" xml:space="preserve">
+    <value>已完成签名</value>
+  </data>
+  <data name="InvalidVerifications" xml:space="preserve">
+    <value>无效／需重签</value>
+  </data>
+  <data name="NoSignaturePoliciesFound" xml:space="preserve">
+    <value>未找到签名策略。</value>
+  </data>
+  <data name="NoSignatureRequestsFound" xml:space="preserve">
+    <value>此条目没有签名请求。</value>
+  </data>
+  <data name="NoSignatureRecordsFound" xml:space="preserve">
+    <value>此条目没有签名记录。</value>
+  </data>
+  <data name="QualityEventSummary" xml:space="preserve">
+    <value>质量事件摘要</value>
+  </data>
+  <data name="QualityEventLinks" xml:space="preserve">
+    <value>质量事件关联</value>
+  </data>
+  <data name="LinkedQualityEventsCount" xml:space="preserve">
+    <value>关联事件</value>
+  </data>
+  <data name="EventType" xml:space="preserve">
+    <value>事件类型</value>
+  </data>
+  <data name="EventReference" xml:space="preserve">
+    <value>事件参考</value>
+  </data>
+  <data name="EventSeverity" xml:space="preserve">
+    <value>严重程度</value>
+  </data>
+  <data name="EventStatus" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="QualityBlockingStatus" xml:space="preserve">
+    <value>阻止</value>
+  </data>
+  <data name="QualityBlockingYes" xml:space="preserve">
+    <value>阻止</value>
+  </data>
+  <data name="QualityBlockingNo" xml:space="preserve">
+    <value>不阻止</value>
+  </data>
+  <data name="DetectedAt" xml:space="preserve">
+    <value>检测时间</value>
+  </data>
+  <data name="ClosedAt" xml:space="preserve">
+    <value>关闭时间</value>
+  </data>
+  <data name="ReportedBy" xml:space="preserve">
+    <value>报告人</value>
+  </data>
+  <data name="OpenDeviations" xml:space="preserve">
+    <value>未处理偏差</value>
+  </data>
+  <data name="DeviationStatus" xml:space="preserve">
+    <value>偏差状态</value>
+  </data>
+  <data name="DeviationOpen" xml:space="preserve">
+    <value>存在未处理偏差正在阻止。</value>
+  </data>
+  <data name="DeviationNotFoundError" xml:space="preserve">
+    <value>未找到偏差。</value>
+  </data>
+  <data name="OpenCapas" xml:space="preserve">
+    <value>未处理 CAPA</value>
+  </data>
+  <data name="CapaReference" xml:space="preserve">
+    <value>CAPA 参考</value>
+  </data>
+  <data name="CapaStatus" xml:space="preserve">
+    <value>CAPA 状态</value>
+  </data>
+  <data name="CapaOpen" xml:space="preserve">
+    <value>存在未处理 CAPA 措施正在阻止。</value>
+  </data>
+  <data name="CapaEffectivenessPending" xml:space="preserve">
+    <value>CAPA 有效性待定。</value>
+  </data>
+  <data name="CapaNotFoundError" xml:space="preserve">
+    <value>未找到 CAPA 措施。</value>
+  </data>
+  <data name="CapaDueDate" xml:space="preserve">
+    <value>截止日期</value>
+  </data>
+  <data name="ActionOwner" xml:space="preserve">
+    <value>负责人</value>
+  </data>
+  <data name="LinkDoesNotCloseEvent" xml:space="preserve">
+    <value>在此查看质量事件不会关闭或修改它。</value>
+  </data>
+  <data name="RefreshDoesNotCloseEvent" xml:space="preserve">
+    <value>刷新不会关闭 CAPA 或偏差。</value>
+  </data>
+  <data name="NoExternalQmsCall" xml:space="preserve">
+    <value>不会调用外部 QMS/CAPA 系统。</value>
+  </data>
+  <data name="NoQualityEventsFound" xml:space="preserve">
+    <value>此条目没有质量事件。</value>
+  </data>
+  <data name="NoDeviationsFound" xml:space="preserve">
+    <value>此条目没有偏差。</value>
+  </data>
+  <data name="NoCapasFound" xml:space="preserve">
+    <value>此条目没有 CAPA 措施。</value>
+  </data>
+  <data name="QualityEventNotFound" xml:space="preserve">
+    <value>未找到质量事件。</value>
+  </data>
+  <data name="QualityEventLinkRequired" xml:space="preserve">
+    <value>需要质量事件关联。</value>
+  </data>
+  <data name="QualityEventBlocking" xml:space="preserve">
+    <value>存在阻止性质量事件未关闭。</value>
+  </data>
+  <data name="QualityEventSourceNotFound" xml:space="preserve">
+    <value>未找到质量事件来源。</value>
+  </data>
+  <data name="LinkAlreadyExists" xml:space="preserve">
+    <value>此关联已存在。</value>
+  </data>
+  <data name="LinkedControlledDocumentDescription" xml:space="preserve"><value>受治理登记项与实际版本文件之间的关系。</value></data>
+  <data name="ControlledDocumentLoading" xml:space="preserve"><value>正在加载受控文件…</value></data>
+  <data name="ControlledDocumentNotLinked" xml:space="preserve"><value>尚未关联受控文件</value></data>
+  <data name="ControlledDocumentNotLinkedHint" xml:space="preserve"><value>选择有权访问的文件，将其文件和版本历史关联到此登记项。</value></data>
+  <data name="LinkControlledDocument" xml:space="preserve"><value>关联受控文件</value></data>
+  <data name="LinkControlledDocumentHint" xml:space="preserve"><value>仅列出您有权查看的文件。关联后，此登记项不能再关联其他文件。</value></data>
+  <data name="SelectControlledDocument" xml:space="preserve"><value>选择受控文件</value></data>
+  <data name="OpenControlledDocument" xml:space="preserve"><value>打开受控文件</value></data>
+  <data name="ViewVersionHistory" xml:space="preserve"><value>版本历史</value></data>
+  <data name="ControlledDocumentLinkSucceeded" xml:space="preserve"><value>受控文件关联成功。</value></data>
+  <data name="ControlledDocumentListEmpty" xml:space="preserve"><value>没有可用的授权受控文件。</value></data>
+  <data name="ControlledDocumentLoadFailed" xml:space="preserve"><value>无法加载受控文件信息。</value></data>
+  <data name="ControlledDocumentStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="ControlledDocumentFolder" xml:space="preserve"><value>文件夹</value></data>
+  <data name="ControlledDocumentVersion" xml:space="preserve"><value>当前版本</value></data>
+  <data name="UnifiedCreateTitle" xml:space="preserve"><value>创建受控文档</value></data>
+  <data name="DocumentKind" xml:space="preserve"><value>文档类型</value></data>
+  <data name="KindControlledDocument" xml:space="preserve"><value>受控文档</value></data>
+  <data name="KindRecord" xml:space="preserve"><value>记录</value></data>
+  <data name="KindVariant" xml:space="preserve"><value>变体</value></data>
+  <data name="View" xml:space="preserve"><value>查看</value></data>
+  <data name="Download" xml:space="preserve"><value>下载</value></data>
+  <data name="VariantDetails" xml:space="preserve"><value>变体详情</value></data>
+  <data name="VariantContentChangeHint" xml:space="preserve"><value>选择父文档。变体内容必须与父文档不同。</value></data>
+  <data name="VariantType" xml:space="preserve"><value>变体类型</value></data>
+  <data name="VariantTypeTranslation" xml:space="preserve"><value>翻译</value></data>
+  <data name="VariantTypeSiteAdoption" xml:space="preserve"><value>站点采用</value></data>
+  <data name="CountryCode" xml:space="preserve"><value>国家/地区代码</value></data>
+  <data name="SiteCode" xml:space="preserve"><value>站点代码</value></data>
+  <data name="VariantContentUnchanged" xml:space="preserve"><value>变体内容必须与父文档不同。请上传已更改的文件。</value></data>
+  <data name="VariantParentNotFound" xml:space="preserve"><value>未找到所选的父受控文档。</value></data>
+  <data name="RecordCode" xml:space="preserve"><value>记录编码</value></data>
+  <data name="RecordCodeHint" xml:space="preserve"><value>留空时按标准编码格式自动生成。输入值可使用自己的编码。</value></data>
+  <data name="KindHint" xml:space="preserve"><value>受控文档受治理（生命周期、审批、发布关卡）。记录仅存储文件和登记条目——不适用审批或生命周期。</value></data>
+  <data name="CreateAndRegister" xml:space="preserve"><value>创建并登记</value></data>
+  <data name="UnifiedCreatePermissionRequired" xml:space="preserve"><value>您没有创建和登记受控文档所需的全部权限。</value></data>
+  <data name="Tags" xml:space="preserve"><value>标签</value></data>
+  <data name="TagsHint" xml:space="preserve"><value>请用逗号分隔标签</value></data>
+  <data name="InitialFile" xml:space="preserve"><value>初始文件</value></data>
+  <data name="InitialFileHint" xml:space="preserve"><value>此文件将成为受控文档的第一个版本。</value></data>
+  <data name="RepositoryPlacement" xml:space="preserve"><value>存储库位置</value></data>
+  <data name="LegalEntityCompany" xml:space="preserve"><value>法人实体 / 公司</value></data>
+  <data name="RegistrationOperation" xml:space="preserve"><value>登记操作</value></data>
+  <data name="RetryRegistration" xml:space="preserve"><value>重试登记</value></data>
+  <data name="RegistrationCompleted" xml:space="preserve"><value>受控文档和主登记册记录已创建并关联。</value></data>
+  <data name="RegistrationIncomplete" xml:space="preserve"><value>登记尚未完成。重试前请检查操作状态。</value></data>
+  <data name="RegistrationRetryStarted" xml:space="preserve"><value>已处理登记重试，但操作尚未完成。</value></data>
+  <data name="OperationId" xml:space="preserve"><value>操作 ID</value></data>
+  <data name="CorrelationId" xml:space="preserve"><value>关联 ID</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>请选择</value></data>
+  <data name="NoFolders" xml:space="preserve"><value>未找到可访问的文件夹。</value></data>
+  <data name="NewControlledDocument" xml:space="preserve"><value>新建文档</value></data>
+  <data name="RegistrationSuccessRequiresCompleteRelationship" xml:space="preserve"><value>仅当登记记录、文档、首个版本及其关联全部完成后才显示成功。</value></data>
+  <data name="RegistrationDoesNotAllocateIdentifiers" xml:space="preserve"><value>此处不分配 UID 和文档代码。创建后请使用“标识符”选项卡。</value></data>
+  <data name="RegistrationDoesNotApproveReleaseSignOrEffective" xml:space="preserve"><value>此操作不会批准、签署、发布文档或使其生效。</value></data>
+  <data name="DocumentScope" xml:space="preserve"><value>文档范围</value></data>
+  <data name="DocumentScopeCompany" xml:space="preserve"><value>公司</value></data>
+  <data name="DocumentScopeCorporate" xml:space="preserve"><value>集团</value></data>
+  <data name="CompanyScopeHelp" xml:space="preserve"><value>公司文档属于公司集合实例并使用公司存储分区。</value></data>
+  <data name="CorporateScopeHelp" xml:space="preserve"><value>集团文档使用现有集团集合实例，不使用 CompanyId。</value></data>
+  <data name="ScopeSwitchClearsSelections" xml:space="preserve"><value>切换范围会清除所有者、集合实例和文件夹选择。</value></data>
+  <data name="CorporateOwner" xml:space="preserve"><value>集团所有者</value></data>
+  <data name="CorporateCollectionInstance" xml:space="preserve"><value>集团集合实例</value></data>
+  <data name="CompanyCollectionInstance" xml:space="preserve"><value>公司集合实例</value></data>
+  <data name="CorporateFolder" xml:space="preserve"><value>集团文件夹</value></data>
+  <data name="CompanyFolder" xml:space="preserve"><value>公司文件夹</value></data>
+  <data name="CorporateCollectionInstanceProvisioningRequired" xml:space="preserve"><value>需要现有集团集合实例。预配由 MOD-0028-FU06 管理。</value></data>
+  <data name="NoCorporateCollectionInstancesAvailable" xml:space="preserve"><value>没有可访问的集团集合实例。</value></data>
+  <data name="SelectCorporateOwner" xml:space="preserve"><value>选择集团所有者</value></data>
+  <data name="SelectCorporateCollectionInstance" xml:space="preserve"><value>选择集团集合实例</value></data>
+  <data name="SelectCorporateFolder" xml:space="preserve"><value>选择集团文件夹</value></data>
+  <data name="SelectCompanyCollectionInstance" xml:space="preserve"><value>选择公司集合实例</value></data>
+  <data name="SelectCompanyFolder" xml:space="preserve"><value>选择公司文件夹</value></data>
+  <data name="GovernedRetentionClass" xml:space="preserve"><value>受控保留类别</value></data>
+  <data name="LanguageSelectionRequired" xml:space="preserve"><value>请选择受控语言。</value></data>
+  <data name="RetentionClassSelectionRequired" xml:space="preserve"><value>请选择受控保留类别。</value></data>
+  <data name="GovernedLookupUnavailable" xml:space="preserve"><value>受控语言或保留值不可用，注册已阻止。</value></data>
+  <data name="IdempotencyScopeConflict" xml:space="preserve"><value>此注册密钥已绑定到其他范围或目标。</value></data>
+  <data name="DuplicateDocumentTitle" xml:space="preserve"><value>所选文件夹中已存在具有此标题的受控文档。请使用其他标题或打开现有文档。</value></data>
+  <data name="DuplicateRecordCode" xml:space="preserve"><value>已存在使用此编码的文档或记录。请使用其他编码。</value></data>
+  <data name="ScopeMismatch" xml:space="preserve"><value>所有者、集合实例或文件夹与范围不匹配。</value></data>
+  <data name="CorporateAccessDenied" xml:space="preserve"><value>您没有此集团文件夹的受控创建权限。</value></data>
+  <data name="CompanyAccessDenied" xml:space="preserve"><value>您没有在此公司文件夹中创建文档的权限。</value></data>
+  <data name="ManualLinkReconciliationOnly" xml:space="preserve"><value>手动关联仅用于核对旧记录。范围、所有者、集合和文件夹必须完全匹配。</value></data>
+  <data name="ReconciliationReason" xml:space="preserve"><value>核对原因</value></data>
+  <data name="ReconciliationReasonHint" xml:space="preserve"><value>请说明核对此旧关系的原因。</value></data>
+</root>

@@ -1,0 +1,256 @@
+﻿@model Diten.Web.Models.CRM.SegmentPageViewModel
+@using Diten.Web.Views.CRM.Segments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SegmentsIndex> Localizer
+@{
+    var segment = Model.Segment;
+    ViewData["Title"] = segment.SegmentName;
+    Layout = "_LayoutTenantShell";
+}
+
+@* data-segment-type drives which membership blocks details.js shows: static hides the preview, dynamic hides the
+   manual table, hybrid shows both - the same rule the runtime already enforces. *@
+<div class="segments-details" data-segment-type="@segment.SegmentType">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0">@segment.SegmentName</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/CRM/Segments">@Localizer["SegmentsTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@segment.SegmentCode</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="/CRM/Segments" class="btn btn-label-secondary">@Localizer["BackToList"]</a>
+            @if (Model.CanActivate && !segment.IsArchived && segment.SegmentStatus == "draft")
+            {
+                <button type="button" class="btn btn-label-success js-activate-segment" data-id="@segment.SegmentId">@Localizer["ActivateSegment"]</button>
+            }
+            @if (Model.CanManage && !segment.IsArchived)
+            {
+                <button type="button" class="btn btn-label-warning js-new-version" data-id="@segment.SegmentId">@Localizer["NewVersion"]</button>
+                @if (!segment.IsCriteriaFrozen)
+                {
+                    <a href="/CRM/Segments/Edit/@segment.SegmentId" class="btn btn-primary">@Localizer["EditSegment"]</a>
+                }
+            }
+        </div>
+    </div>
+
+    @if (segment.Superseded)
+    {
+        <div class="alert alert-secondary" role="alert">
+            <i class="bx bx-history me-1"></i>@Localizer["SupersededHelp"]
+        </div>
+    }
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted fw-normal">@Localizer["SegmentCode"]</dt>
+                        <dd class="col-sm-8">@segment.SegmentCode</dd>
+                        <dt class="col-sm-4 text-muted fw-normal">@Localizer["SegmentName"]</dt>
+                        <dd class="col-sm-8">@segment.SegmentName</dd>
+                        <dt class="col-sm-4 text-muted fw-normal">@Localizer["Description"]</dt>
+                        <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(segment.Description) ? "—" : segment.Description)</dd>
+                        <dt class="col-sm-4 text-muted fw-normal">@Localizer["Notes"]</dt>
+                        <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(segment.Notes) ? "—" : segment.Notes)</dd>
+                    </dl>
+                </div>
+            </section>
+
+            @* Read-only criteria tree. Indentation comes from the ParentNodeId chain, exactly as stored. *@
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["CriteriaSection"]</h6>
+                    @if (segment.Criteria.Count == 0)
+                    {
+                        <p class="text-muted mb-0">@Localizer["NoCriteria"]</p>
+                    }
+                    else
+                    {
+                        var byParent = segment.Criteria
+                            .GroupBy(n => n.ParentNodeId ?? Guid.Empty)
+                            .ToDictionary(g => g.Key, g => g.OrderBy(n => n.SortOrder).ToList());
+
+                        @* Real nesting, same visual language as the editor: a group is a bordered rail carrying its
+                           own operator, a condition is a light card. Read-only, so no control and no technical
+                           metadata - just the rule as a sentence. *@
+                        void RenderNodes(Guid parentKey)
+                        {
+                            if (!byParent.TryGetValue(parentKey, out var children)) { return; }
+                            foreach (var node in children)
+                            {
+                                if (node.NodeKind == "group")
+                                {
+                                    <div class="border rounded-3 p-3 mb-2">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <span class="badge bg-label-secondary text-uppercase">@Localizer["GroupNode"]</span>
+                                            <span class="badge bg-label-dark text-uppercase">@node.GroupOperator</span>
+                                            @if (node.Negate)
+                                            {
+                                                <span class="badge bg-label-warning">NOT</span>
+                                            }
+                                        </div>
+                                        <div class="ps-3 border-start border-2">
+                                            @{ RenderNodes(node.NodeId); }
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="border rounded-3 shadow-sm bg-body p-3 mb-2">
+                                        <div class="d-flex align-items-center flex-wrap gap-2">
+                                            <span class="badge bg-label-primary">@node.AttributeCode</span>
+                                            <span class="badge bg-label-info">@node.Operator</span>
+                                            @if (node.Values.Count > 0)
+                                            {
+                                                foreach (var value in node.Values)
+                                                {
+                                                    <span class="badge bg-label-dark fw-normal">@value</span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted small">@Localizer["NoValueNeeded"]</span>
+                                            }
+                                            @if (node.Negate)
+                                            {
+                                                <span class="badge bg-label-warning">NOT</span>
+                                            }
+                                        </div>
+                                        @if (node.Parameters.Count > 0)
+                                        {
+                                            <div class="d-flex flex-wrap gap-3 pt-2 mt-2 border-top">
+                                                @foreach (var parameter in node.Parameters)
+                                                {
+                                                    <span class="small text-muted">@parameter.Key: <span class="text-heading">@parameter.Value</span></span>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            }
+                        }
+
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <span class="badge bg-label-dark text-uppercase">@(segment.MatchMode == "any" ? "OR" : "AND")</span>
+                            <span class="text-muted small">@Localizer["RootCombinatorHelp"]</span>
+                        </div>
+                        RenderNodes(Guid.Empty);
+                    }
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["MembersSection"]</h6>
+
+                    @if (Model.CanResolve)
+                    {
+                        @* Resolution preview. It PERSISTS NOTHING - it is a report, computed on demand. *@
+                        <div id="resolvePreview" class="border rounded p-3 mb-4" data-segment-id="@segment.SegmentId" data-endpoint="/CRM/Segments/api">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-medium text-heading">@Localizer["ResolvePreviewSection"]</span>
+                                <button type="button" id="btnResolve" class="btn btn-sm btn-label-primary"><i class="bx bx-refresh me-1"></i>@Localizer["RunResolve"]</button>
+                            </div>
+                            <small class="text-muted d-block mb-3">@Localizer["ResolvePreviewHelp"]</small>
+                            <div id="resolveSummary" class="d-none mb-3"></div>
+                            <div id="resolveMembers" class="table-responsive d-none">
+                                <table class="table table-sm">
+                                    <thead><tr>
+                                        <th>@Localizer["SubjectDisplayName"]</th>
+                                        <th>@Localizer["Verdict"]</th>
+                                        <th>@Localizer["MembershipSource"]</th>
+                                        <th>@Localizer["ReasonCodes"]</th>
+                                    </tr></thead>
+                                    <tbody id="resolveMembersBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+
+                    @* Hidden for a `dynamic` segment, which refuses manual rows outright - details.js toggles it. *@
+                    <div id="manualMembersBlock">
+                        <small class="text-muted d-block mb-3">@Localizer["MembersHelp"]</small>
+                        <div id="detailsMemberList" data-segment-id="@segment.SegmentId" data-endpoint="/CRM/Segments/api" class="table-responsive">
+                        <table class="table table-sm">
+                            <thead><tr>
+                                <th>@Localizer["SubjectDisplayName"]</th>
+                                <th>@Localizer["SubjectId"]</th>
+                                <th>@Localizer["MembershipMode"]</th>
+                                <th>@Localizer["SelectionReason"]</th>
+                                <th>@Localizer["EffectiveFrom"]</th>
+                                <th>@Localizer["Archived"]</th>
+                            </tr></thead>
+                            <tbody id="detailsMemberBody"></tbody>
+                        </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ClassificationSection"]</h6>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-6 text-muted fw-normal">@Localizer["SegmentType"]</dt>
+                        <dd class="col-sm-6"><span class="badge bg-label-primary">@segment.SegmentType</span></dd>
+                        <dt class="col-sm-6 text-muted fw-normal">@Localizer["SubjectType"]</dt>
+                        <dd class="col-sm-6">@segment.SubjectType</dd>
+                        <dt class="col-sm-6 text-muted fw-normal">@Localizer["MatchMode"]</dt>
+                        <dd class="col-sm-6">@segment.MatchMode</dd>
+                        <dt class="col-sm-6 text-muted fw-normal">@Localizer["BusinessUnitId"]</dt>
+                        <dd class="col-sm-6">@(string.IsNullOrWhiteSpace(segment.BusinessUnitId) ? "—" : segment.BusinessUnitId)</dd>
+                    </dl>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LifecycleSection"]</h6>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-6 text-muted fw-normal">@Localizer["SegmentStatus"]</dt>
+                        <dd class="col-sm-6"><span class="badge bg-label-@(segment.SegmentStatus == "active" ? "success" : segment.SegmentStatus == "archived" ? "secondary" : "primary")">@segment.SegmentStatus</span></dd>
+                        <dt class="col-sm-6 text-muted fw-normal">@Localizer["SegmentVersion"]</dt>
+                        <dd class="col-sm-6">@segment.SegmentVersion</dd>
+                        <dt class="col-sm-6 text-muted fw-normal">@Localizer["CriteriaState"]</dt>
+                        <dd class="col-sm-6">
+                            <span class="badge bg-label-@(segment.IsCriteriaFrozen ? "warning" : "success")">
+                                @(segment.IsCriteriaFrozen ? Localizer["Frozen"] : Localizer["Editable"])
+                            </span>
+                        </dd>
+                        <dt class="col-sm-6 text-muted fw-normal">@Localizer["EffectiveFrom"]</dt>
+                        <dd class="col-sm-6">@segment.EffectiveFrom.ToString("yyyy-MM-dd")</dd>
+                        <dt class="col-sm-6 text-muted fw-normal">@Localizer["EffectiveTo"]</dt>
+                        <dd class="col-sm-6">@(segment.EffectiveTo?.ToString("yyyy-MM-dd") ?? "—")</dd>
+                        <dt class="col-sm-6 text-muted fw-normal">@Localizer["ActivatedAt"]</dt>
+                        <dd class="col-sm-6">@(segment.ActivatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")</dd>
+                        <dt class="col-sm-6 text-muted fw-normal">@Localizer["UpdatedAt"]</dt>
+                        <dd class="col-sm-6">@(segment.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "—")</dd>
+                    </dl>
+                    @if (segment.IsCriteriaFrozen)
+                    {
+                        <div class="alert alert-warning mt-3 mb-0 py-2 small">
+                            <i class="bx bx-lock-alt me-1"></i>@Localizer["FrozenCriteriaHelp"]
+                        </div>
+                    }
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/Segments/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/Segments/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/Segments/details.js" asp-append-version="true"></script>
+}

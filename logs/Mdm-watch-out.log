@@ -1,0 +1,25 @@
+C:\Users\user\Desktop\ERP-vNext\services\Diten.MdmService\src\Diten.MdmService.Api\Properties\launchSettings.json içindeki başlatma ayarları kullanılıyor...
+info: Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager[63]
+      User profile is available. Using 'C:\Users\user\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+warn: Diten.MdmService.Api.ModuleRegistration.ModuleRegistrationHostedService[0]
+      Module self-registration skipped: PlatformRegistration BaseUrl/InternalApiKey not configured.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5059
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\user\Desktop\ERP-vNext\services\Diten.MdmService\src\Diten.MdmService.Api
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5059/swagger/index.html - - -
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5059/swagger/index.html - 200 - text/html;charset=utf-8 256.4891ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5059/_framework/aspnetcore-browser-refresh.js - - -
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5059/_framework/aspnetcore-browser-refresh.js - 200 16481 application/javascript;+charset=utf-8 2.9033ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5059/swagger/v1/swagger.json - - -
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5059/swagger/v1/swagger.json - 200 - application/json;charset=utf-8 198.0047ms

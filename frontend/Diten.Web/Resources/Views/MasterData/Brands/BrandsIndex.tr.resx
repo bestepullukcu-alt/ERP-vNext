@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Apply" xml:space="preserve"><value>Uygula</value></data>
+  <data name="Reset" xml:space="preserve"><value>Sıfırla</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtre</value></data>
+  <data name="Search" xml:space="preserve"><value>Ara</value></data>
+  <data name="Export" xml:space="preserve"><value>Dışa Aktar</value></data>
+  <data name="Import" xml:space="preserve"><value>İçe Aktar</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Tümünü Göster</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Görünümü Kaydet</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Sütunlar</value></data>
+  <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="View" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Detayları Gör</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı Görünüm</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Toplu Sil</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Seçili kayıtlar silinsin mi?</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Emin misiniz?</value></data>
+  <data name="Cancel" xml:space="preserve"><value>İptal</value></data>
+  <data name="Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="Remove" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seçiniz…</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Arşivlenenleri dahil et</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Listeye dön</value></data>
+  <data name="RequiredFieldsHint" xml:space="preserve"><value>* ile işaretli alanlar zorunludur.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Kayıt bulunamadı.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Kayıtlar yüklenemedi.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>Bu alan zorunludur.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Kayıt arşivlendi.</value></data>
+  <data name="EffectiveToBeforeEffectiveFrom" xml:space="preserve"><value>Geçerlilik bitişi, başlangıcından önce olamaz.</value></data>
+  <data name="Active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="Passive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
+  <data name="Archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="ArchivedAt" xml:space="preserve"><value>Arşivlenme Tarihi</value></data>
+  <data name="ArchivedBy" xml:space="preserve"><value>Arşivleyen</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Oluşturulma Tarihi</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>Oluşturan</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncellenme Tarihi</value></data>
+  <data name="UpdatedBy" xml:space="preserve"><value>Güncelleyen</value></data>
+  <data name="SummarySection" xml:space="preserve"><value>Özet</value></data>
+  <data name="AuditSection" xml:space="preserve"><value>Denetim ve Kaynak</value></data>
+  <data name="ExternalReferencesSection" xml:space="preserve"><value>Dış Referanslar</value></data>
+  <data name="ExternalReferencesHelp" xml:space="preserve"><value>Legacy iz kayıtları. Kaynak sistem başına en fazla bir birincil kayıt.</value></data>
+  <data name="AddReference" xml:space="preserve"><value>Referans Ekle</value></data>
+  <data name="NoExternalReferences" xml:space="preserve"><value>Dış referans yok.</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Kaynak Sistem</value></data>
+  <data name="ExternalId" xml:space="preserve"><value>Dış Kimlik</value></data>
+  <data name="ExternalCode" xml:space="preserve"><value>Dış Kod</value></data>
+  <data name="ExternalName" xml:space="preserve"><value>Dış Ad</value></data>
+  <data name="ImportedAt" xml:space="preserve"><value>İçe Aktarma Tarihi</value></data>
+  <data name="Primary" xml:space="preserve"><value>Birincil</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Geçerlilik Başlangıcı</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Geçerlilik Bitişi</value></data>
+  <data name="TherapeuticAreaId" xml:space="preserve"><value>Terapötik Alan</value></data>
+  <data name="TherapeuticAreaHelp" xml:space="preserve"><value>Terapötik alan bir concept/reference’tır; düz yerel referans seti değildir.</value></data>
+  <data name="BrandProductContractUnavailable" xml:space="preserve"><value>Marka/Ürün yetenek sözleşmesi kullanılamıyor. İşlemler devre dışı.</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="BrandCode" xml:space="preserve"><value>Marka Kodu</value></data>
+  <data name="BrandName" xml:space="preserve"><value>Marka Adı</value></data>
+  <data name="ProductCode" xml:space="preserve"><value>Ürün Kodu</value></data>
+  <data name="ProductName" xml:space="preserve"><value>Ürün Adı</value></data>
+  <data name="ProductStatus" xml:space="preserve"><value>Ürün Durumu</value></data>
+  <data name="ProductType" xml:space="preserve"><value>Ürün Tipi</value></data>
+  <data name="BrandsTitle" xml:space="preserve"><value>Markalar</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Marka ana verisi. Kampanya, bilgi ve sıklık modülleri markaları yalnızca referansla tüketir.</value></data>
+  <data name="CreateBrand" xml:space="preserve"><value>Marka Oluştur</value></data>
+  <data name="EditBrand" xml:space="preserve"><value>Markayı Düzenle</value></data>
+  <data name="BrandDetail" xml:space="preserve"><value>Marka Detayı</value></data>
+  <data name="ArchiveBrand" xml:space="preserve"><value>Markayı Arşivle</value></data>
+  <data name="ArchiveBrandConfirm" xml:space="preserve"><value>Bu marka arşivlensin mi? Geçmiş okunabilir kalır ve ürünleri arşivlenmez.</value></data>
+  <data name="ArchivedBrandReadOnly" xml:space="preserve"><value>Bu marka arşivlenmiş ve salt okunurdur. Geçmiş referanslar korunur.</value></data>
+  <data name="BrandStatus" xml:space="preserve"><value>Marka Durumu</value></data>
+  <data name="BrandCodeImmutableHelp" xml:space="preserve"><value>Marka kodu kalıcıdır. Yeniden adlandırmayı Marka Adı üzerinden yapın.</value></data>
+  <data name="OwnerCompanyId" xml:space="preserve"><value>Sahip Şirket</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>İş Birimi</value></data>
+  <data name="ReferencesSection" xml:space="preserve"><value>Referanslar</value></data>
+  <data name="ReferenceIdsOnlyHelp" xml:space="preserve"><value>Referans kimlikleri olduğu gibi gösterilir; henüz bir master kayıt çözümlenmez.</value></data>
+  <data name="ProductsTab" xml:space="preserve"><value>Ürünler</value></data>
+  <data name="ProductsTabUnavailable" xml:space="preserve"><value>Ürün okuma yetkisi olmadan ürünler burada listelenemez.</value></data>
+  <data name="ArchiveNoCascadeHelp" xml:space="preserve"><value>Marka arşivlemek ürünlerini asla arşivlemez veya silmez.</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Kod veya ad…</value></data>
+</root>

@@ -1,0 +1,54 @@
+@using Diten.Web.Views.CRM.TerritoryManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TerritoryManagementResources> L
+@inject IHtmlLocalizer<Diten.Web.SharedResource> Shared
+
+<script id="territorymodels-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Active = Shared["Active"].Value,
+        Passive = Shared["Passive"].Value,
+        Unknown = Shared["Unknown"].Value,
+        Actions = L["Actions"].Value,
+        Edit = L["Edit"].Value,
+        View = L["View"].Value,
+        ViewDetails = Shared["ViewDetails"].Value,
+        QuickView = Shared["QuickView"].Value,
+        TerritoryHierarchy = L["TerritoryHierarchy"].Value,
+        AssignmentRules = L["AssignmentRules"].Value,
+        ResourceAssignments = L["ResourceAssignments"].Value,
+        Details = Shared["Details"].Value,
+        Search = Shared["Search"].Value,
+        Export = Shared["Export"].Value,
+        Import = Shared["Import"].Value,
+        ComingSoon = Shared["ComingSoon"].Value,
+        Filter = Shared["Filter"].Value,
+        Apply = Shared["Apply"].Value,
+        Reset = Shared["Reset"].Value,
+        ShowAll = Shared["ShowAll"].Value,
+        SaveView = Shared["SaveView"].Value,
+        ColumnVisibility = Shared["ColumnVisibility"].Value,
+        Status = Shared["Status"].Value,
+        RecordCreated = Shared["RecordCreated"].Value,
+        RecordUpdated = Shared["RecordUpdated"].Value,
+        RecordSaved = Shared["RecordSaved"].Value,
+        ErrorOccurred = Shared["ErrorOccurred"].Value,
+        Save = Shared["Save"].Value,
+        Update = Shared["Update"].Value,
+        FormValidationError = Shared["ValidationFailed"].Value,
+        AddNew = L["CreateModel"].Value,
+        FormTitleCreate = L["CreateModel"].Value,
+        FormTitleEdit = L["EditModel"].Value,
+        CreateDraftVersion = L["CreateDraftVersion"].Value,
+        ModelCode = L["ModelCode"].Value,
+        Name = L["Name"].Value,
+        Activate = L["Activate"].Value,
+        Deactivate = L["Deactivate"].Value,
+        Archive = L["Archive"].Value,
+        DeleteDraft = L["DeleteDraft"].Value,
+        ConfirmLifecycleAction = L["ConfirmLifecycleAction"].Value,
+        LifecycleConfirmation = L["LifecycleConfirmation"].Value,
+        Confirm = L["Confirm"].Value,
+        Cancel = L["Cancel"].Value
+    })
+</script>

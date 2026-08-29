@@ -1,0 +1,59 @@
+@using Diten.Web.Views.CRM.Campaigns
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CampaignIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost" class="px-3">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form id="campaignFilterForm" class="m-0" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Campaign Status — options come from the campaign CONTRACT vocabulary, never a hardcoded list. *@
+                    <div class="filter-chip">
+                        <select id="filterCampaignStatus" class="form-select form-select-sm select2" data-placeholder="@Localizer["CampaignStatus"]">
+                            <option value="">@Localizer["ShowAll"]</option>
+                        </select>
+                    </div>
+
+                    @* Campaign Type — contract vocabulary. *@
+                    <div class="filter-chip">
+                        <select id="filterCampaignType" class="form-select form-select-sm select2" data-placeholder="@Localizer["CampaignType"]">
+                            <option value="">@Localizer["ShowAll"]</option>
+                        </select>
+                    </div>
+
+                    @* FU10 - the brand / product / subject chips went with the fields they filtered: nobody
+                       can author those any more, and filtering by an unauthorable field advertises a capability that
+                       no longer exists. How a campaign is targeted took their place. *@
+                    <div class="filter-chip">
+                        <select id="filterTargetingMode" class="form-select form-select-sm select2" data-placeholder="@Localizer["TargetingMode"]">
+                            <option value="">@Localizer["ShowAll"]</option>
+                            <option value="segment">@Localizer["TargetingMode_segment"]</option>
+                            <option value="manual">@Localizer["TargetingMode_manual"]</option>
+                        </select>
+                    </div>
+
+                    @* Archived visibility (single-select, mirrors the includeArchived query flag). *@
+                    <div class="filter-chip">
+                        <select id="filterIncludeArchived" class="form-select form-select-sm select2" data-placeholder="@Localizer["IncludeArchived"]">
+                            <option value="true">@Localizer["IncludeArchived"]</option>
+                            <option value="false">@Localizer["Active"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+
+                @* Kept from FU04: some list filters are evaluated server-side only, so the note stays visible. *@
+                <div class="alert alert-secondary py-2 px-3 mt-3 mb-0 small" id="unsupportedFiltersNote">
+                    <i class="bx bx-info-circle me-1"></i>@Localizer["UnsupportedFiltersNote"]
+                    <span class="ms-1">@Localizer["UnsupportedFilters"]</span>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

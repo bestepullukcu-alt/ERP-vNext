@@ -1,0 +1,73 @@
+@model Diten.Web.Models.CRM.ConsentPreferenceIndexViewModel
+@using Diten.Web.Views.CRM.ConsentPreferences
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ConsentPreferencesIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["PageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var active = Model.ActiveTab;
+    string TabActive(string tab) => active == tab ? "active" : "";
+    string PaneActive(string tab) => active == tab ? "show active" : "";
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["PageTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header p-3">
+        <div class="nav-align-top">
+            <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap" role="tablist">
+                @if (Model.CanReadConsent)
+                {
+                    <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                        <button type="button" class="nav-link @TabActive("consents") small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#tab-consents" role="tab" aria-selected="@(active == "consents" ? "true" : "false")">
+                            <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-check-shield me-1 wc-tab-icon"></i>@Localizer["ConsentsTab"]</span>
+                            <i class="bx bx-check-shield d-sm-none wc-tab-icon"></i>
+                        </button>
+                    </li>
+                }
+                @if (Model.CanReadPreference)
+                {
+                    <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                        <button type="button" class="nav-link @TabActive("preferences") small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#tab-preferences" role="tab" aria-selected="@(active == "preferences" ? "true" : "false")">
+                            <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-slider-alt me-1 wc-tab-icon"></i>@Localizer["PreferencesTab"]</span>
+                            <i class="bx bx-slider-alt d-sm-none wc-tab-icon"></i>
+                        </button>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="tab-content p-0">
+    @if (Model.CanReadConsent)
+    {
+        <div class="tab-pane fade @PaneActive("consents")" id="tab-consents" role="tabpanel">
+            @* Create Consent lives in the DataTable toolbar (add-new slot); the inline filter mounts into the toolbar. *@
+            <partial name="~/Views/CRM/ConsentPreferences/Consents/_Filter.cshtml" />
+            <partial name="~/Views/CRM/ConsentPreferences/Consents/_DataTable.cshtml" />
+        </div>
+    }
+
+    @if (Model.CanReadPreference)
+    {
+        <div class="tab-pane fade @PaneActive("preferences")" id="tab-preferences" role="tabpanel">
+            @* Create Preference lives in the DataTable toolbar (add-new slot); the inline filter mounts into the toolbar. *@
+            <partial name="~/Views/CRM/ConsentPreferences/Preferences/_Filter.cshtml" />
+            <partial name="~/Views/CRM/ConsentPreferences/Preferences/_DataTable.cshtml" />
+        </div>
+    }
+
+    @* Evaluate and Subject tabs removed per request. *@
+</div>
+
+@section Scripts {
+    <partial name="~/Views/CRM/ConsentPreferences/_IndexL10n.cshtml" />
+    <script>window.ConsentPreferencePerms = { canManageConsent: @Json.Serialize(Model.CanManageConsent), canManagePreference: @Json.Serialize(Model.CanManagePreference) };</script>
+    <script src="~/assets/js/CRM/ConsentPreferences/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/ConsentPreferences/index.js" asp-append-version="true"></script>
+}

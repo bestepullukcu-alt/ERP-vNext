@@ -476,6 +476,18 @@ public sealed class BusinessReferenceDataConsumerQueryService : IBusinessReferen
             return true;
         }
 
+        // FIX (MOD-0149 / PSS-012): a tenant-scoped version that carries no explicit ScopeKey *is* the tenant's
+        // version. Versions are TenantScopedEntity and every repository read is already filtered by
+        // TenantContext.TenantId, so this cannot match another tenant's data. ScopeKey has never been stamped on
+        // versions by the publish flow, which made this equality check unsatisfiable and surfaced as
+        // `scope_not_found` (500) for EVERY tenant-scoped set. Company/Region keep strict matching because their
+        // ScopeKey is a real discriminator *within* a tenant.
+        if (string.Equals(scopeType, "tenant", StringComparison.OrdinalIgnoreCase)
+            && string.IsNullOrWhiteSpace(version.ScopeKey))
+        {
+            return true;
+        }
+
         return string.Equals(version.ScopeKey, scopeKey, StringComparison.OrdinalIgnoreCase);
     }
 

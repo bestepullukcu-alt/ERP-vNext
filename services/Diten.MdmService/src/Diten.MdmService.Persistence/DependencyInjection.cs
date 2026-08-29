@@ -17,6 +17,10 @@ public static class DependencyInjection
     {
         RegisterGuidSerializer();
 
+        // MOD-0290-FU02 — explicit Brand/Product class maps. Must run before any collection is resolved so the
+        // write path and the query path agree on Guid representation from the very first request.
+        Configurations.BrandProductClassMaps.Register();
+
         var connectionString = configuration["Mongo:ConnectionString"]
             ?? throw new InvalidOperationException("Configuration error: 'Mongo:ConnectionString' is missing.");
         var databaseName = configuration["Mongo:DatabaseName"]
@@ -52,6 +56,10 @@ public static class DependencyInjection
         services.AddScoped<IProductAbbreviationHistoryRepository, ProductAbbreviationHistoryRepository>();
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<IAuditIntentDeliveryRepository, AuditIntentDeliveryRepository>();
+
+        // MOD-0290-FU02 — Brand/Product master repositories (tenant-scoped, soft archive, no hard delete).
+        services.AddScoped<IBrandRepository, BrandRepository>();
+        services.AddScoped<IProductRepository, ProductRepository>();
 
         return services;
     }

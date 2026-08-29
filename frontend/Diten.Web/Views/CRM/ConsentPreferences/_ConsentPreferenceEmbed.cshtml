@@ -1,0 +1,52 @@
+@model Diten.Web.Models.CRM.ConsentPreferenceEmbedViewModel
+@using Diten.Web.Views.CRM.ConsentPreferences
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ConsentPreferencesIndex> Localizer
+
+@* Read-only 360 embed of a subject's consent & preference records (owned by MOD-0164 / FU03). The records are fetched
+   client-side by consent-preference-embed.js from the same-origin FU03 proxy, filtered to this subject. *@
+<div class="card backbone-preview-section p-4" id="consentPreferenceEmbed"
+     data-subject-type="@Model.SubjectType" data-subject-id="@Model.SubjectId">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["PageTitle"]</h6>
+        <a class="btn btn-sm btn-label-secondary" target="_blank"
+           href="/CRM/ConsentPreferences"><i class="bx bx-link-external me-1"></i>@Localizer["PageTitle"]</a>
+    </div>
+
+    <div id="cpEmbedAlert" class="alert alert-secondary py-2 d-none" role="alert"></div>
+
+    <div class="mb-4">
+        <div class="fw-medium text-heading mb-2"><i class="bx bx-check-shield text-success me-1"></i>@Localizer["ConsentsTitle"]</div>
+        <div class="card-datatable table-responsive">
+            <table id="dt-embed-consents" data-dt-standard="v2" class="table border-top w-100">
+                <thead><tr>
+                    <th>@Localizer["Channel"]</th>
+                    <th>@Localizer["Purpose"]</th>
+                    <th>@Localizer["LegalBasis"]</th>
+                    <th>@Localizer["ConsentStatus"]</th>
+                    <th>@Localizer["EffectiveFrom"]</th>
+                    <th class="text-end">@Localizer["Actions"]</th>
+                </tr></thead>
+            </table>
+        </div>
+    </div>
+
+    <div>
+        <div class="fw-medium text-heading mb-2"><i class="bx bx-slider-alt text-primary me-1"></i>@Localizer["PreferencesTitle"]</div>
+        <div class="card-datatable table-responsive">
+            <table id="dt-embed-preferences" data-dt-standard="v2" class="table border-top w-100">
+                <thead><tr>
+                    <th>@Localizer["Channel"]</th>
+                    <th>@Localizer["PreferenceType"]</th>
+                    <th>@Localizer["PreferenceValue"]</th>
+                    <th>@Localizer["Priority"]</th>
+                    <th>@Localizer["EffectiveFrom"]</th>
+                    <th class="text-end">@Localizer["Actions"]</th>
+                </tr></thead>
+            </table>
+        </div>
+    </div>
+
+    @* L10n payload for consent-preference-embed.js (parsed by index.l10n.js into window.ConsentPreferenceL10n). *@
+    <partial name="~/Views/CRM/ConsentPreferences/_IndexL10n.cshtml" />
+</div>

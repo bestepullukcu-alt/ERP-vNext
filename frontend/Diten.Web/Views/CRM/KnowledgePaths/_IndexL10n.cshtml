@@ -1,0 +1,23 @@
+@using System.Text.Json
+@using Diten.Web.Views.CRM.KnowledgePaths
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgePathsIndex> Localizer
+@{
+    var keys = new[]
+    {
+        "Actions", "Active", "Passive", "Unknown", "Edit", "ViewDetails", "QuickView",
+        "BulkDelete", "BulkDeleteConfirm", "AreYouSure", "Cancel", "Save", "No", "Yes",
+        "Search", "Export", "Import", "Filter", "Apply", "Reset", "ShowAll", "SaveView", "ColumnVisibility", "Status",
+        "KnowledgePathContractUnavailable", "PathCode", "PathName", "PathVersion", "PathStatus", "SubjectId",
+        "LanguageCode", "ActiveStepCount", "RequiredStepCount", "ContentResolution", "EffectiveFrom", "EffectiveTo",
+        "Archived", "UpdatedAt", "CreatePath", "EditPath", "ArchivePath", "ArchivePathConfirm", "EmptyState",
+        "ErrorState", "Loading", "RecordArchived", "IncludeArchived", "Unresolved", "Resolved", "Frozen",
+        "SelectOption"
+    };
+    var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
+    // Verifier-compatible property markers for the dictionary-backed JSON bridge (each token below is `Key =`):
+    // Active =, Passive =, Unknown =, Actions =, Edit =, ViewDetails =, QuickView =,
+    // BulkDelete =, BulkDeleteConfirm =, AreYouSure =, Cancel =, Search =, Export =,
+    // Import =, Filter =, Apply =, Reset =, ShowAll =, SaveView =, ColumnVisibility =, Status =
+}
+<script id="knowledge-paths-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>

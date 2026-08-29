@@ -1,0 +1,16 @@
+@model Diten.Web.Models.CRM.ConsentEditViewModel
+@using Diten.Web.Views.CRM.ConsentPreferences
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ConsentPreferencesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["EditConsent"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "edit";
+}
+
+<partial name="~/Views/CRM/ConsentPreferences/Consents/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/js/CRM/ConsentPreferences/consent-form.js" asp-append-version="true"></script>
+}

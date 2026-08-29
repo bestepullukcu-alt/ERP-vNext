@@ -1,0 +1,137 @@
+@using Diten.Web.Views.CRM.KnowledgeConcepts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeConceptsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["ConceptsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ConceptsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    @* AC-UI-1: in Knowledge, "Subject" means the knowledge domain — not the legacy "Subject Type". *@
+    <small class="text-muted"><i class="bx bx-info-circle me-1"></i>@Localizer["SubjectMeaningNote"]</small>
+</div>
+
+@* Hybrid golden-reference console (pack §7.1): ConceptNode is the Compact primary surface (route-based
+   Create/Edit/Details pages), while ConceptType / Connections / Chain Templates are Slim surfaces whose
+   create/edit lives in their own offcanvas. Graph Preview (tab 5) is a separate read-only slice, not built here. *@
+<div class="card mb-4">
+    <div class="card-header p-3">
+        <div class="nav-align-top">
+            <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap" role="tablist">
+                <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                    <button type="button" class="nav-link small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#tab-concept-types" role="tab" aria-selected="false" tabindex="-1">
+                        <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-category me-1 wc-tab-icon"></i>@Localizer["TypesTab"]</span>
+                        <i class="bx bx-category d-sm-none wc-tab-icon"></i>
+                    </button>
+                </li>
+                <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                    <button type="button" class="nav-link active small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#tab-concept-nodes" role="tab" aria-selected="true">
+                        <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-shape-circle me-1 wc-tab-icon"></i>@Localizer["NodesTab"]</span>
+                        <i class="bx bx-shape-circle d-sm-none wc-tab-icon"></i>
+                    </button>
+                </li>
+                <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                    <button type="button" class="nav-link small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#tab-concept-connections" role="tab" aria-selected="false" tabindex="-1">
+                        <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-git-merge me-1 wc-tab-icon"></i>@Localizer["ConnectionsTab"]</span>
+                        <i class="bx bx-git-merge d-sm-none wc-tab-icon"></i>
+                    </button>
+                </li>
+                <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                    <button type="button" class="nav-link small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#tab-concept-templates" role="tab" aria-selected="false" tabindex="-1">
+                        <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-list-ol me-1 wc-tab-icon"></i>@Localizer["TemplatesTab"]</span>
+                        <i class="bx bx-list-ol d-sm-none wc-tab-icon"></i>
+                    </button>
+                </li>
+                <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                    <button type="button" class="nav-link small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#tab-concept-graph" role="tab" aria-selected="false" tabindex="-1">
+                        <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-network-chart me-1 wc-tab-icon"></i>@Localizer["GraphPreviewTab"]</span>
+                        <i class="bx bx-network-chart d-sm-none wc-tab-icon"></i>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="tab-content p-0">
+
+    @* Tab 1 — Concept Types (Slim) *@
+    <div class="tab-pane fade" id="tab-concept-types" role="tabpanel">
+        <partial name="~/Views/CRM/KnowledgeConcepts/_TypesFilter.cshtml" />
+        <partial name="~/Views/CRM/KnowledgeConcepts/_TypesDataTable.cshtml" />
+    </div>
+
+    @* Tab 2 — Concept Nodes (Compact primary surface) *@
+    <div class="tab-pane fade show active" id="tab-concept-nodes" role="tabpanel">
+        @* Contract marker: <partial name="_Filter" /> *@
+        <partial name="~/Views/CRM/KnowledgeConcepts/_Filter.cshtml" />
+        @* The primary "Create Node" action is rendered inside the DataTable toolbar (.add-new) by index.js — Golden pattern. *@
+        @* Contract markers rendered by _DataTable: skeleton-loader + data-dt-standard=v2 *@
+        <partial name="~/Views/CRM/KnowledgeConcepts/_DataTable.cshtml" />
+    </div>
+
+    @* Tab 3 — Connections (Slim) *@
+    <div class="tab-pane fade" id="tab-concept-connections" role="tabpanel">
+        <partial name="~/Views/CRM/KnowledgeConcepts/_RelationshipsFilter.cshtml" />
+        <partial name="~/Views/CRM/KnowledgeConcepts/_RelationshipsDataTable.cshtml" />
+    </div>
+
+    @* Tab 4 — Chain Templates (Slim) *@
+    <div class="tab-pane fade" id="tab-concept-templates" role="tabpanel">
+        <partial name="~/Views/CRM/KnowledgeConcepts/_TemplatesFilter.cshtml" />
+        <partial name="~/Views/CRM/KnowledgeConcepts/_TemplatesDataTable.cshtml" />
+    </div>
+
+    @* Tab 5 — Graph Preview (read-only; no golden reference, no DataTable, verifier N/A per §7.1) *@
+    <div class="tab-pane fade" id="tab-concept-graph" role="tabpanel">
+        <partial name="~/Views/CRM/KnowledgeConcepts/_GraphPreview.cshtml" />
+    </div>
+</div>
+
+@* Slim create/edit surfaces — one offcanvas per aggregate (pack §11). The Compact ConceptNode surface deliberately
+   has none of these: it keeps its route-based Create/Edit pages. *@
+<partial name="~/Views/CRM/KnowledgeConcepts/_TypeCreateEditOffcanvas.cshtml" />
+<partial name="~/Views/CRM/KnowledgeConcepts/_RelationshipCreateEditOffcanvas.cshtml" />
+<partial name="~/Views/CRM/KnowledgeConcepts/_TemplateCreateEditOffcanvas.cshtml" />
+
+@* Shared read-only quick view for the three Slim surfaces. This is the Golden preview canvas shell; each aggregate
+   contributes its own field-map partial and concept-slim.js reveals the one that was asked for. *@
+<div class="offcanvas offcanvas-end backbone-preview-offcanvas" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="offcanvasDetailsPreviewLabel">
+    <div class="offcanvas-header p-4">
+        <div class="d-flex align-items-center min-w-0">
+            <div class="backbone-preview-avatar d-flex align-items-center justify-content-center me-3 flex-shrink-0">
+                <i class="bx bx-sitemap fs-4"></i>
+            </div>
+            <div class="min-w-0">
+                <h5 id="conceptPreviewTitle" class="offcanvas-title mb-0 text-truncate">-</h5>
+                <small id="conceptPreviewSubtitle" class="text-muted d-block text-truncate">-</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body flex-grow-1 p-4 border-top">
+        <partial name="~/Views/CRM/KnowledgeConcepts/_TypeDetailsQuickView.cshtml" />
+        <partial name="~/Views/CRM/KnowledgeConcepts/_RelationshipDetailsQuickView.cshtml" />
+        <partial name="~/Views/CRM/KnowledgeConcepts/_TemplateDetailsQuickView.cshtml" />
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        @* concept-slim.js closes this canvas itself and opens the edit form once it is fully hidden, so this button
+           must NOT also carry data-bs-dismiss — two hide paths at once strand the backdrop. *@
+        <button type="button" id="conceptPreviewEdit" class="btn btn-primary d-none">@Localizer["Edit"]</button>
+    </div>
+</div>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/KnowledgeConcepts/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/KnowledgeConcepts/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/KnowledgeConcepts/index.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/KnowledgeConcepts/concept-slim.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/KnowledgeConcepts/graph-preview.js" asp-append-version="true"></script>
+}

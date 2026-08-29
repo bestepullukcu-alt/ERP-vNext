@@ -44,7 +44,18 @@ public enum CollectionScopeType
 {
     Company = 0,
     Plant = 1,
-    BusinessUnit = 2
+    BusinessUnit = 2,
+    Corporate = 3
+}
+
+public enum CorporateCollectionProvisioningStatus
+{
+    Pending = 0,
+    InstanceCreated = 1,
+    FolderTreeMaterialized = 2,
+    Completed = 3,
+    Failed = 4,
+    CompensationPending = 5
 }
 
 public enum CollectionInstanceStatus
