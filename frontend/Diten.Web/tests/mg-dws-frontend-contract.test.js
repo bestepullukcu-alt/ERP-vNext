@@ -10,6 +10,10 @@ describe('MOD-0354 DWS frontend contract', () => {
     const view = () => read('Views/ManagementGovernance/Dws/Index.cshtml');
     const script = () => read('wwwroot/assets/js/pages/management-governance/dws/index.js');
 
+    it('binds the localization partial by its module-owned absolute view path', () => {
+        expect(view()).toContain('<partial name="~/Views/ManagementGovernance/Dws/_IndexL10n.cshtml" />');
+    });
+
     it('owns only the canonical tenant route and preserves the legacy comparison URL', () => {
         expect(controller()).toContain('[Route("management-governance/delivery-execution/structures")]');
         expect(view()).toContain('href="/DecompositionTreeBuilder"');
