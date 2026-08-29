@@ -234,6 +234,12 @@ subtree wildcards below are exact ownership roots; every adjacent/shared file is
 - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Eventing/GateIAuditBilateralFixtureTests.cs`
 - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Eventing/GateIAuditContractTests.cs`
 - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Eventing/GateIAuditDisposableReplicaSetTests.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/EventingMvpTests.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/RabbitMqEventingIntegrationTests.cs`
+
+The two `Diten.Platform.Eventing.Tests` files are authorized only for explicit namespace/type-alias qualification that
+resolves canonical BuildingBlocks versus legacy Platform transport-name ambiguity in the existing tests. This does not
+authorize assertion or behavior changes, live RabbitMQ execution, transport wiring, runtime composition or activation.
 
 The two schema files are an exact DB-010 exception only for the default-off Gate-I audit-intake evidence collection.
 `PlatformCollections` remains the single collection-name authority and `PlatformSchemaManifest.Eventing` remains the
@@ -429,6 +435,9 @@ Gateway route degisikligi gerekli degildir.
 21. Gate-I audit persistence declares its collection name once in `PlatformCollections` and its indexes once in
     `PlatformSchemaManifest.Eventing`; focused tests apply only `SchemaProfile.Eventing`, never the full production
     initializer, and leave no per-run database or disposable-Mongo residue.
+22. `EventingMvpTests.cs` and `RabbitMqEventingIntegrationTests.cs` may change only through explicit namespace/type
+    aliases needed to distinguish canonical BuildingBlocks contracts from legacy Platform transport types; test
+    behavior and live-RabbitMQ disposition remain unchanged.
 
 ## 17. Test Expectations
 
@@ -464,6 +473,9 @@ Gateway route degisikligi gerekli degildir.
 - Gate-I schema tests prove the audit-intake collection is declared through `PlatformCollections`, included only in
   `SchemaProfile.Eventing`, has its exact indexes applied idempotently, and does not call the production-wide
   `EnsureIndexesAsync` path or create a database per test run.
+- Existing Platform Eventing tests compile with explicit aliases for ambiguous canonical BuildingBlocks and legacy
+  Platform transport names; their assertions and live-RabbitMQ skip/execution policy remain byte-for-byte semantic
+  equivalents.
 - Full AuthService, Platform.Common, BuildingBlocks Eventing and relevant Platform Eventing regressions plus API/project
   builds pass before any local implementation checkpoint. Mutation evidence uses non-equivalent expected-red guards;
   unsafe port/secret/activation mutants receive explicit security-policy-forbidden disposition instead of execution.
@@ -490,6 +502,8 @@ Gateway route degisikligi gerekli degildir.
 - [x] Exact AuthService, Platform.Common, BuildingBlocks Eventing, Platform Eventing and evidence allow-lists are locked.
 - [x] Exact Gate-I DB-010 schema seams are limited to `PlatformCollections.cs` and
       `PlatformSchemaManifest.Eventing.cs`; production composition/activation remains prohibited.
+- [x] Exact Platform Eventing alias-only reconciliation is limited to `EventingMvpTests.cs` and
+      `RabbitMqEventingIntegrationTests.cs`; behavior and live RabbitMQ execution remain unauthorized.
 - [x] Current MOD-0018-FU16 through FU20 identities and files are protected unchanged.
 - [x] Default-off/non-production authority and production activation exclusions are explicit.
 - [ ] Current-main semantic implementation and the Section 17 evidence matrix pass before an implementation checkpoint.
