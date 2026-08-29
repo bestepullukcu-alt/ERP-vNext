@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Features.ServiceIdentityTokens;
 using Diten.AuthService.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -11,8 +12,6 @@ namespace Diten.AuthService.Infrastructure.Services;
 public sealed class ServiceIdentityTokenIssuer : IServiceIdentityTokenIssuer
 {
     public const int LifetimeSeconds = 300;
-    private const string RequiredServiceName = "Diten.MDM";
-    private const string RequiredAudience = "TRUSTED_AUDIT_SOURCE_INGEST";
     private readonly ServiceIdentityTokenIssuerOptions _options;
     private readonly TimeProvider _timeProvider;
 
@@ -25,8 +24,7 @@ public sealed class ServiceIdentityTokenIssuer : IServiceIdentityTokenIssuer
     public ServiceIdentityTokenIssue Issue(Guid clientId, string serviceName, Guid tenantId, string audience)
     {
         if (clientId == Guid.Empty || tenantId == Guid.Empty
-            || !string.Equals(serviceName, RequiredServiceName, StringComparison.Ordinal)
-            || !string.Equals(audience, RequiredAudience, StringComparison.Ordinal))
+            || !ServiceIdentityTokenAudiencePolicy.IsAllowedPair(serviceName, audience))
             throw new InvalidOperationException("Service identity token subject is outside the bounded contract.");
 
         if (_options.TokenLifetimeSeconds != LifetimeSeconds || !IsExactIdentifier(_options.Issuer, 256)

@@ -5,15 +5,13 @@ namespace Diten.AuthService.Application.Features.ServiceIdentityTokens.Validator
 
 public sealed class IssueServiceIdentityTokenValidator : AbstractValidator<IssueServiceIdentityTokenCommand>
 {
-    private const string RequiredAudience = "TRUSTED_AUDIT_SOURCE_INGEST";
-
     public IssueServiceIdentityTokenValidator()
     {
         RuleFor(x => x.ClientCode).NotEmpty().MaximumLength(128).Must(IsExactValue);
         RuleFor(x => x.ClientSecret).NotEmpty().MaximumLength(512).Must(IsExactValue);
         RuleFor(x => x.TenantId).NotEmpty();
         RuleFor(x => x.Audience).NotEmpty().MaximumLength(128).Must(IsExactValue)
-            .Equal(RequiredAudience, StringComparer.Ordinal);
+            .Must(ServiceIdentityTokenAudiencePolicy.IsAllowedAudience);
     }
 
     private static bool IsExactValue(string value) =>

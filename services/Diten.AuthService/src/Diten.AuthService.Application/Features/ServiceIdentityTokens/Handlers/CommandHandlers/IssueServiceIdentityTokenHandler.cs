@@ -10,8 +10,6 @@ namespace Diten.AuthService.Application.Features.ServiceIdentityTokens.Handlers.
 public sealed class IssueServiceIdentityTokenHandler : IRequestHandler<IssueServiceIdentityTokenCommand, Response<ServiceIdentityTokenResponse>>
 {
     private static readonly TimeSpan Budget = TimeSpan.FromSeconds(2);
-    private const string RequiredServiceName = "Diten.MDM";
-    private const string RequiredAudience = "TRUSTED_AUDIT_SOURCE_INGEST";
     private readonly IServiceClientIdentityRepository _identities;
     private readonly IServiceClientTenantGrantRepository _grants;
     private readonly IServiceClientCredentialVerifier _credentials;
@@ -55,8 +53,13 @@ public sealed class IssueServiceIdentityTokenHandler : IRequestHandler<IssueServ
             if (!stateCoherent)
                 return Response<ServiceIdentityTokenResponse>.Fail("Service client credential state is inconsistent.", 409);
 
-            if (!string.Equals(identity.ServiceName, RequiredServiceName, StringComparison.Ordinal)
-                || !string.Equals(request.Audience, RequiredAudience, StringComparison.Ordinal))
+            if (!ServiceIdentityTokenAudiencePolicy.TryResolveIdentityAudience(identity.AllowedAudience, out var identityAudience))
+                return Response<ServiceIdentityTokenResponse>.Fail("Service client purpose is inconsistent.", 409);
+
+            if (!ServiceIdentityTokenAudiencePolicy.IsAllowedPair(identity.ServiceName, request.Audience))
+                return Response<ServiceIdentityTokenResponse>.Fail("Service client is not permitted for the requested audience.", 403);
+
+            if (!string.Equals(identityAudience, request.Audience, StringComparison.Ordinal))
                 return Response<ServiceIdentityTokenResponse>.Fail("Service client is not permitted for the requested audience.", 403);
 
             var granted = await _grants.HasEnabledGrantAsync(request.TenantId, identity.Id, request.Audience, budget.Token);

@@ -4,6 +4,7 @@ public sealed class ServiceClientIdentity : GlobalEntityBase
 {
     public string ClientCode { get; init; } = string.Empty;
     public string ServiceName { get; init; } = string.Empty;
+    public string? AllowedAudience { get; init; }
     public string ActiveCredentialHash { get; set; } = string.Empty;
     public string ActiveCredentialVersion { get; set; } = string.Empty;
     public string? PreviousCredentialHash { get; set; }
