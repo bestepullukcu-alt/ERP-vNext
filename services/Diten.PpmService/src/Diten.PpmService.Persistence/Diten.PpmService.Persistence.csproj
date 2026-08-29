@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="2.27.0" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Diten.PpmService.Application\Diten.PpmService.Application.csproj" />
+    <ProjectReference Include="..\Diten.PpmService.Domain\Diten.PpmService.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.Eventing\Diten.BuildingBlocks.Eventing.csproj" />
+  </ItemGroup>
+</Project>
