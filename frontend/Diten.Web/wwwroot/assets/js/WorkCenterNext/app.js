@@ -6315,9 +6315,25 @@
                 item.claimed = false; item.assignee = null;
                 item.admissionState = 'pendingClaim';
                 item.ownershipState = 'unowned';
-                // No queue name here: the projection never says WHICH pool an item belongs to, and inventing one
-                // ("Operasyon Kuyruğu") put a non-existent team's name on real work. The ungrouped state gets its
-                // own translated label instead. Naming the queue is WC-3 contract work (BL-031 a/b).
+                /*
+                 * ⚠ THE OLD COMMENT HERE SAID THE PROJECTION "NEVER SAYS WHICH POOL AN ITEM BELONGS TO", and
+                 * that naming the queue was still WC-3 contract work. MEASURED, AND NO LONGER TRUE: the wire
+                 * carries `WorkItemPoolDto? Pool` on every work item (WorkAggregationModels.cs:402) as
+                 * `{ Id, Label? }` (:660), and `TaskWorkItemProvider` resolves the names in one batched read
+                 * (:341, :642, :1394) — a position that cannot be read still yields the id with a null label,
+                 * never a printed GUID. The fixtures answer it too (`pool.id` is REQUIRED of every groupQueue
+                 * fixture, fixture-contract.js:347), and the surface already reads it: mock-data.js maps
+                 * `pool.label.text` onto `item.group`, which is what `buildGroupSelector` draws its buttons from.
+                 *
+                 * NO QUEUE NAME IS WRITTEN HERE ANYWAY, for a reason that outlived the wrong one: this argument
+                 * is the item's STATUS TEXT, not its queue. Released work is back in the queue and held by
+                 * nobody, which is what `PoolUnassigned` says ("Unassigned — in the pool", all seven languages).
+                 * The nameless state keeps a TRANSLATED label and never a team name — "Operasyon Kuyruğu" once
+                 * put a non-existent team's name on real work (BL-031).
+                 *
+                 * FIXTURE-ONLY, like the whole of `applyTransition`: `applyAction` hands every real item to
+                 * `submitRealTransition` before this branch is reachable, so what it writes is a simulated row.
+                 */
                 setProjectionState(item, 'Pending', item.itemType === 'task' ? 'Open' : null, t('PoolUnassigned'));
                 return 'released';
             case 'approve': setProjectionState(item, 'Done', null, 'Onaylandı'); return 'resolved';

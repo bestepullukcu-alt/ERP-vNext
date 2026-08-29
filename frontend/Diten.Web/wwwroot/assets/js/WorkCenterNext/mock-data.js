@@ -348,12 +348,6 @@
         item.assignee = personName(item.assignee);
         item.scope = item.delegationContext ? 'onBehalf' : 'mine';
         item.delegator = item.delegationContext?.displayName || null;
-        // A group is shown only when something actually NAMES one. The projection carries no pool identity — a
-        // real item says only assignmentMode:"groupQueue", never WHICH queue — so deriving a name from that flag
-        // meant labelling genuine CFO-pool work "Operasyon Kuyruğu", a queue that does not exist. Nothing is
-        // synthesized any more: buildGroupSelector then renders nothing, and the Havuz tab stops asserting a team
-        // it cannot know. Giving the provider a pool-identity field is WC-3 contract work (BL-031 a/b), NOT this
-        // slice. A showcase fixture may still declare its own `group` and keep it; none does today.
         /*
          * WHICH queue this work waits in. It now comes from the projection (WC-3 / BL-031): `pool.label` is the
          * position joined to its organization unit, resolved server-side.
