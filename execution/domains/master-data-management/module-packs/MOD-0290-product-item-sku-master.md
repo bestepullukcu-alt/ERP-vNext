@@ -3606,6 +3606,15 @@ Platform/Auth runtime, WorkCenter provider/dispatcher, committed config/secrets/
 protected. E1A, E1B and E1C each require green predecessor evidence; standing non-push authorization grants their
 local runtime/test work in this exact order.
 
+**E1C implementation evidence — 2026-08-29:** the GSKU API exposes only the two additive lifecycle commands:
+submit dispatches the durable First Revision + GSKU workflow operation, while retire dispatches the direct,
+child-fenced pair retirement operation. Both routes require the exact permission and a non-empty D-format
+`Idempotency-Key`; strict bodies reject unknown fields and reject a missing `ExpectedVersion` before MediatR. The GSKU
+manifest adds only `SUBMIT` and `RETIRE`, retains its existing navigation visibility and declares no approve/reject
+action. Independent re-review reports no remaining P0/P1/P2 after the missing-version fail-before-dispatch fix.
+Focused API/authorization/manifest tests pass **29/29**, the full MDM Release suite passes **918/918** with zero skips,
+and `git diff --check` is clean. Gateway, frontend, configuration/data, Production/Staging and push were unchanged.
+
 **E1A implementation evidence — 2026-08-29:** the dedicated First Revision + GSKU pair operation, shared binding,
 tenant/soft-delete/version/state fenced aggregate transitions, four tenant-first indexes, bounded recovery discovery,
 default-disabled worker and one-shot runner are implemented. `ApprovalValidated` durably freezes exact provider proof
@@ -3764,6 +3773,8 @@ navigation, bulk lifecycle and push remain separate gates.
 - [x] D2 is complete at local commit `576991d0` with 41/41 focused and 863/863 full MDM evidence; no push.
 - [x] E1A-E1C current-code allow-lists, ordering, retirement race fence, referenceability rule and acceptance boundaries
   are frozen on 2026-08-29; standing non-push authorization grants local runtime/test work in that exact order.
+- [x] E1C API/manifest implementation is complete locally on 2026-08-29 with strict route/body/idempotency contracts,
+  29/29 focused and 918/918 full MDM evidence, and an independent review reporting no remaining P0/P1/P2.
 - [ ] E2-E3 and G-H receive exact current-code allow-lists and predecessor evidence before mutation.
 
 ## 20. Follow-up Items

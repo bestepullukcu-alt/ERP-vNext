@@ -13,6 +13,8 @@ public sealed class GskuAuthorizationTests
     [InlineData(nameof(GskusController.GetById), "mdm.gskus.read")]
     [InlineData(nameof(GskusController.GetCreateOptions), "mdm.gskus.create")]
     [InlineData(nameof(GskusController.CreateDraft), "mdm.gskus.create")]
+    [InlineData(nameof(GskusController.SubmitIdentity), "mdm.gskus.submit")]
+    [InlineData(nameof(GskusController.RetireIdentity), "mdm.gskus.retire")]
     public void Every_endpoint_demands_the_exact_permission(string methodName, string permission)
     {
         var method = typeof(GskusController).GetMethod(methodName)!;
@@ -30,7 +32,7 @@ public sealed class GskuAuthorizationTests
             .SelectMany(x => x.GetCustomAttributes<HasPermissionAttribute>())
             .Select(x => x.Policy)
             .ToHashSet(StringComparer.Ordinal);
-        Assert.Equal(["Permission:mdm.gskus.create", "Permission:mdm.gskus.read"],
+        Assert.Equal(["Permission:mdm.gskus.create", "Permission:mdm.gskus.read", "Permission:mdm.gskus.retire", "Permission:mdm.gskus.submit"],
             policies.OrderBy(x => x, StringComparer.Ordinal));
     }
 }
