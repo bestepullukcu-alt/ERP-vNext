@@ -115,6 +115,8 @@ public sealed class EnterpriseStrategyLineageE2ETests
             DeliveryCompanyId = "cmp-001"
         }, 0, "tester", "corr");
         Assert.True(project.Success);
+        Assert.Equal("ppm", project.Data!.SourceSystem);
+        Assert.Equal("prj-001", project.Data.SourceRecordId);
 
         var lineage = await services.Projects.UpstreamLineageAsync("prj-001");
         Assert.True(lineage.Success);

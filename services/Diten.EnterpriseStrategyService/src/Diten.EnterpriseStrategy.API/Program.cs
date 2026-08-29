@@ -4,11 +4,16 @@ using Diten.Persistence;
 using Diten.Infrastructure;
 using Diten.WebAPI.Health;
 using Diten.WebAPI.Middleware;
+using Diten.WebAPI.Security;
+using Diten.Application.WorkCenter;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddSingleton(new EnterpriseStrategyWorkItemProjectionService(
+    builder.Configuration.GetValue("WorkCenterRemoteRead:Enabled", false)));
+builder.Services.AddEsbpSecurityPerimeter(builder.Configuration);
 builder.Services.AddHealthChecks()
     .AddCheck<DeliveryExecutionManagementDependencyHealthCheck>("delivery_execution_management_ppm_dependency");
 
@@ -77,11 +82,14 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+app.UseRouting();
 app.UseCors("FrontendPolicy");
 app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseAuthentication();
+app.UseMiddleware<EsbpSecurityPerimeterMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
-app.MapHealthChecks("/healthz");
+app.MapHealthChecks("/healthz").AllowAnonymous();
 
 var seedTask = DbInitializer.SeedData(app.Services);
 var completed = await Task.WhenAny(seedTask, Task.Delay(TimeSpan.FromSeconds(5)));
@@ -102,3 +110,5 @@ else
 }
 
 app.Run();
+
+public partial class Program;

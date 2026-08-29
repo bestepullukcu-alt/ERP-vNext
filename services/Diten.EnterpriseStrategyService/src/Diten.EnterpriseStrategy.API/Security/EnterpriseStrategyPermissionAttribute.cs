@@ -15,6 +15,8 @@ public sealed class EnterpriseStrategyPermissionAttribute : Attribute, IAsyncAct
         _permission = permission;
     }
 
+    public string Permission => _permission;
+
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         var service = context.HttpContext.RequestServices.GetRequiredService<IEnterpriseStrategyAuthorizationService>();

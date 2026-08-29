@@ -9,11 +9,14 @@
   <ItemGroup>
     <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.1" />
     <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.21" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.21" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.16.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
     <ProjectReference Include="..\Diten.EnterpriseStrategy.Application\Diten.Application.csproj" />
     <ProjectReference Include="..\Diten.EnterpriseStrategy.Infrastructure\Diten.Infrastructure.csproj" />
     <ProjectReference Include="..\Diten.EnterpriseStrategy.Persistence\Diten.Persistence.csproj" />

@@ -925,6 +925,12 @@ public sealed class InitiativeOrchestrationService : IInitiativeOrchestrationSer
 
 public sealed class ProjectOrchestrationService : IProjectOrchestrationService
 {
+    private enum ProjectSaveProfile
+    {
+        FullLifecycle,
+        TrustedPpmLinkProjection
+    }
+
     private const string LocalProjectSource = "delivery";
     private static readonly string[] NonDraftStatuses = ["planned", "approved", "active", "onhold", "closed"];
     private readonly IPpmProjectReadAdapter _ppmProjects;
@@ -1088,7 +1094,10 @@ public sealed class ProjectOrchestrationService : IProjectOrchestrationService
         current.SourceTemplateName = link.SourceTemplateName;
         current.CreationMode = string.IsNullOrWhiteSpace(link.CreationMode) ? current.CreationMode : link.CreationMode;
         current.StrategyLinkStatus = "Linked";
-        return await SaveProjectAsync(projectId, current, expectedVersion, actor, correlationId, cancellationToken);
+        var saveProfile = ppm is null
+            ? ProjectSaveProfile.FullLifecycle
+            : ProjectSaveProfile.TrustedPpmLinkProjection;
+        return await SaveProjectAsync(projectId, current, expectedVersion, actor, correlationId, cancellationToken, saveProfile, ppm);
     }
 
     public async Task<Response<ProjectStrategyLinkViewDto>> ChangeStrategyLinkStatusAsync(string projectId, string status, int expectedVersion, string actor, string correlationId, CancellationToken cancellationToken = default)
@@ -1243,7 +1252,9 @@ public sealed class ProjectOrchestrationService : IProjectOrchestrationService
         int? expectedVersion,
         string actor,
         string correlationId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        ProjectSaveProfile saveProfile = ProjectSaveProfile.FullLifecycle,
+        PpmProjectReadModelDto? trustedPpmProject = null)
     {
         var existing = await _projectLinks.GetByProjectIdAsync(projectId, cancellationToken);
         if (expectedVersion.HasValue && existing is not null && EnterpriseStrategyResult.IsStaleWrite(expectedVersion.Value, existing.Version))
@@ -1291,8 +1302,8 @@ public sealed class ProjectOrchestrationService : IProjectOrchestrationService
                 new() { ["sourceTemplateId"] = new() { "Selected Project Template is incompatible with the selected Parent Initiative type." } });
         }
 
-        var aggregate = BuildAggregateForSave(existing, projectId, project, initiative, objective, goal, template, actor);
-        var validationErrors = ValidateProjectAggregate(aggregate);
+        var aggregate = BuildAggregateForSave(existing, projectId, project, initiative, objective, goal, template, actor, saveProfile, trustedPpmProject);
+        var validationErrors = ValidateProjectAggregate(aggregate, saveProfile);
         if (validationErrors.Count > 0)
             return Response<ProjectStrategyLinkViewDto>.Fail(EnterpriseStrategyErrorCodes.ValidationError, validationErrors);
 
@@ -1312,7 +1323,9 @@ public sealed class ProjectOrchestrationService : IProjectOrchestrationService
         ObjectiveAggregate objective,
         GoalAggregate goal,
         ProjectTemplate? template,
-        string actor)
+        string actor,
+        ProjectSaveProfile saveProfile,
+        PpmProjectReadModelDto? trustedPpmProject)
     {
         var status = string.IsNullOrWhiteSpace(project.Status) ? existing?.Status ?? "Draft" : project.Status.Trim();
         var creationMode = NormalizeCreationMode(project.CreationMode, project.SourceTemplateId);
@@ -1345,8 +1358,16 @@ public sealed class ProjectOrchestrationService : IProjectOrchestrationService
             ComplianceRegulatoryImpact = FirstText(project.ComplianceRegulatoryImpact, initiative.GovernanceNotes),
             DependencyFlag = project.DependencyFlag,
             EvidenceRequiredFlag = project.EvidenceRequiredFlag,
-            SourceSystem = string.IsNullOrWhiteSpace(existing?.SourceSystem) ? LocalProjectSource : existing.SourceSystem,
-            SourceRecordId = string.IsNullOrWhiteSpace(existing?.SourceRecordId) ? projectId : existing.SourceRecordId,
+            SourceSystem = !string.IsNullOrWhiteSpace(existing?.SourceSystem)
+                ? existing.SourceSystem
+                : saveProfile == ProjectSaveProfile.TrustedPpmLinkProjection
+                    ? trustedPpmProject?.SourceSystem ?? string.Empty
+                    : LocalProjectSource,
+            SourceRecordId = !string.IsNullOrWhiteSpace(existing?.SourceRecordId)
+                ? existing.SourceRecordId
+                : saveProfile == ProjectSaveProfile.TrustedPpmLinkProjection
+                    ? trustedPpmProject?.ProjectId ?? string.Empty
+                    : projectId,
             ParentInitiativeId = initiative.InitiativeId,
             ParentInitiativeName = initiative.InitiativeName,
             ParentObjectiveId = objective.Id,
@@ -1396,7 +1417,9 @@ public sealed class ProjectOrchestrationService : IProjectOrchestrationService
         };
     }
 
-    private static Dictionary<string, List<string>> ValidateProjectAggregate(ProjectStrategyLinkAggregate aggregate)
+    private static Dictionary<string, List<string>> ValidateProjectAggregate(
+        ProjectStrategyLinkAggregate aggregate,
+        ProjectSaveProfile saveProfile)
     {
         var errors = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         if (string.IsNullOrWhiteSpace(aggregate.ParentInitiativeId))
@@ -1409,7 +1432,7 @@ public sealed class ProjectOrchestrationService : IProjectOrchestrationService
         if (aggregate.GoLiveDate.HasValue && aggregate.StartDate.HasValue && aggregate.GoLiveDate.Value.Date < aggregate.StartDate.Value.Date)
             AddValidationError(errors, "goLiveDate", "Go-Live / Target Milestone must be on or after Start Date.");
 
-        if (!IsNonDraftStatus(aggregate.Status))
+        if (!IsNonDraftStatus(aggregate.Status) || saveProfile == ProjectSaveProfile.TrustedPpmLinkProjection)
             return errors;
 
         if (string.IsNullOrWhiteSpace(aggregate.ProjectName))
