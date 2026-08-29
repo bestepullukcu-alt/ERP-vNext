@@ -4580,44 +4580,6 @@ doğrulama yardımcıları, ayrı değerlendirilmeli).
   4. Bugüne kadar "gönderildi" işaretlenmiş outbox kayıtlarının kaybı
      **ölçülsün ve raporlansın** — telafi gerekiyorsa ayrı iş olarak açılsın
 
-### BL-316 — `TenantPropagationHandler` üç serviste kayıtlı, canlı çağrı yolu SIFIR; işaretli ama silinmedi (2026-08-28, ölçüldü)
-> **DURUM:** AÇIK · **SAHİP:** CONTROL TOWER
-
-**Devraldığı kayıt: BL-311** (kapandı, arşivde). BL-311 iki referans doğrulayıcıyı handler'dan
-kurtardı; geriye handler'ın **kendisi** kaldı. Silme üç servise yayıldığı için CT 2026-08-28'de
-"kendi diff'ini hak ediyor" dedi ve bu turda yapılmadı — bu kayıt onun unutulmamasıdır.
-
-- **Ölçüm — nerede kayıtlı:** üç serviste.
-  - `Diten.Platform/…/Infrastructure/DependencyInjection.cs`
-  - `Diten.AuthService/…/Infrastructure/DependencyInjection.cs:73-74`
-  - `Diten.DevEnablementService/…/Infrastructure/DependencyInjection.cs:21-22`
-- **Ölçüm — neye takılı:** yalnızca isimli `"TenantAwareClient"`. Platform'daki diğer iki istemci
-  (iki referans doğrulayıcı) 2026-08-28'de ondan koparıldı.
-- **⚠ Ölçüm — o istemciyi kimse yaratmıyor:** repoda `CreateClient("TenantAwareClient")` **çağrısı yok**;
-  tüm `CreateClient()` kullanımları argümansız (varsayılan istemci, handler'sız). Üç servisin üçünde de.
-- **Sonuç: bu turdan sonra handler'ın canlı çağrı yolu SIFIR.** Kimsenin yaratmadığı bir istemciye
-  takılı, hiçbir şey yapmayan bir handler.
-- **Neden hiç çalışmadı (BL-311'den devralınan sebep):** `IHttpClientFactory` handler zincirini KENDİ
-  kapsamında kurup önbelleğe alıyor; zincirdeki `DelegatingHandler` istek kapsamındaki `ITenantContext`'i
-  çözemiyor, `IsResolved == false` dönüyor, başlık eklenmiyor, hiçbir yerde bir şey denmiyor.
-- **⚠ Neden "dursun" yeterli bir cevap değil:** yerinde duran bir handler, sonraki geliştiriciye
-  **"bu istemcide kiracı taşınıyor"** diye okunur — WC-D1 köprüsü tam olarak bu yanılgıyla başladı ve
-  bir tur yedi. Bugün hem sınıf yorumunda hem DI'da "bu şey kiracı taşımıyor" diye işaretli, ama
-  **işaret kalıcı çözüm değildir**: bir sonraki okuyucunun yorumu okuyacağının garantisi yok.
-- **Öneri:** üçünden de **sil** — handler sınıfı + `"TenantAwareClient"` kaydı. Düzeltmenin
-  (kurucuda enjekte edilen bağlam yerine gönderim anında `IHttpContextAccessor` okumak) müşterisi yok:
-  bugün onu isteyen tek bir çağrı yolu bile ölçülmedi.
-- **Doğru desen, silerken referans verilecek:** başlığı çağıran sınıf yazar —
-  `RemoteWorkItemGateway`, `MdmLegalEntityReferenceValidator`, `AuthServiceUserReferenceValidator`
-  (üçü de `TenantOnTheWire` ile aynı kuralı okuyor).
-- **Muhafız zaten var, silme onu bozmamalı:**
-  `Tenant_header_is_written_by_the_validator_and_not_by_a_delegating_handler` (her iki doğrulayıcıda)
-  ve `HttpWorkItemBridgeTests.The_tenant_header_and_the_callers_own_bearer_token_reach_the_module`.
-- **⚠ Kural K2:** bu iş bitince **AYNI TURDA** `DURUM: KAPANDI` yazılıp
-  `docs/product-backlog-closed.md`'ye taşınacak. "Sonra toplu temizleriz" bu dosyayı 6927 satıra çıkaran şeydir.
-- **Gelecek regresyon riski: 🟡** — bugün hiçbir şey kırılmıyor (canlı yol yok). Risk tamamen
-  **yanlış okumada**: birinin "kiracılık hallediliyor" sanıp yeni bir istemciyi bu handler'a takması.
-
 ### BL-317 — Başlık kimlik/vekâlet çipi tasarımı bir stash'te bekliyor, bir aydır (2026-08-29, ölçüldü)
 
 > **DURUM:** AÇIK · **SAHİP:** Ali Tufanoğlu

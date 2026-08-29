@@ -21,7 +21,6 @@ using Diten.Platform.Infrastructure.Persistence.Repositories.BusinessReferenceDa
 using Diten.Platform.Infrastructure.Persistence.Settings;
 using Diten.Platform.Infrastructure.Services;
 using Diten.Platform.Infrastructure.Services.Audit;
-using Diten.Platform.Infrastructure.Services.Http;
 using Diten.Platform.Infrastructure.Services.WorkAggregation;
 using Diten.Platform.Infrastructure.Services.Mdm;
 using Diten.Platform.Infrastructure.Services.WorkingCalendarImport;
@@ -207,27 +206,14 @@ public static class DependencyInjection
         services.AddScoped<IPlatformAdministratorProvisioningService, PlatformAdministratorProvisioningService>();
         services.AddScoped<IPlatformAdministratorInvitationEmailService, PlatformAdministratorInvitationEmailService>();
         /*
-         * ⚠ TenantPropagationHandler PROPAGATES NOTHING — MEASURED 2026-08-28, left in place pending a CONTROL
-         * TOWER decision, NOT because it works.
-         *
-         * IHttpClientFactory builds and CACHES a client's handler chain in its OWN scope. The handler injects the
-         * request-scoped ITenantContext, so it holds an instance that belongs to no request, reports
-         * IsResolved == false, adds no X-Tenant-Id, and logs nothing. It has never added the header on any of the
-         * three services that register it (Platform, Auth, DevEnablement).
-         *
-         * It is registered here ONLY for "TenantAwareClient", which is itself dead: no CreateClient("TenantAwareClient")
-         * exists anywhere in the repo (measured), in any of the three services. So today this pair adds one broken
-         * handler to one client nobody creates. It is named here rather than deleted because deleting a public
-         * registration across three services is CT's call, not this round's — see the round report.
-         *
-         * The two reference validators below NO LONGER carry it. They write X-Tenant-Id themselves, from the
-         * request's own scope, via TenantOnTheWire — the shape RemoteWorkItemGateway arrived at by the same
-         * measurement. Re-attaching the handler to them would be worse than useless: on the day it did resolve, it
-         * would OVERWRITE their correct value (it does Remove-then-Add) with ITenantContext.TenantId, which in a
-         * platform context is the sentinel realm and not the target tenant.
+         * ⚠ These reference-validator clients carry NO tenant DelegatingHandler, and that is DELIBERATE.
+         * A handler cannot see the request: IHttpClientFactory caches a client's handler chain in its OWN scope,
+         * so a handler injecting the request-scoped ITenantContext is never resolved and adds no X-Tenant-Id —
+         * silently, and green in unit tests, which register the context as a singleton and so prove wiring rather
+         * than lifetime. Measured 2026-08-28 by a live read; the shared handler was deleted in BL-316.
+         * Each validator writes X-Tenant-Id itself, from the request's own scope, via TenantOnTheWire — which is
+         * also the one place that decides WHICH tenant may travel. Do not re-introduce a handler here.
          */
-        services.AddTransient<TenantPropagationHandler>();
-        services.AddHttpClient("TenantAwareClient").AddHttpMessageHandler<TenantPropagationHandler>();
         services.AddHttpClient<ILegalEntityReferenceValidator, MdmLegalEntityReferenceValidator>();
         services.AddHttpClient<IWorkingCalendarLegalEntityValidator, WorkingCalendarLegalEntityValidator>(client =>
         {
