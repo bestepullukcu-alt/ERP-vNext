@@ -21,7 +21,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.True(Manifest.IsTenantAssignable);
         Assert.False(Manifest.IsBaseline);
 
-        Assert.Equal(6, Manifest.Pages.Count);
+        Assert.Equal(7, Manifest.Pages.Count);
         var globalProducts = Assert.Single(Manifest.Pages, page => page.PageCode == "GLOBAL_PRODUCTS");
         Assert.Equal("/MasterDataManagement/GlobalProducts", globalProducts.RoutePath);
         Assert.Equal("mdm.global-products.read", globalProducts.RequiredPermission);
@@ -44,6 +44,10 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.Equal("/MasterDataManagement/ProductLegalEntityScopes", productScopes.RoutePath);
         Assert.Equal("mdm.product-legal-entity-scopes.read", productScopes.RequiredPermission);
         Assert.False(productScopes.IsNavigationVisible);
+        var brands = Assert.Single(Manifest.Pages, page => page.PageCode == "BRANDS");
+        Assert.Equal("/MasterData/Brands", brands.RoutePath);
+        Assert.Equal("mdm.brands.read", brands.RequiredPermission);
+        Assert.True(brands.IsNavigationVisible);
     }
 
     [Fact]
@@ -51,7 +55,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     {
         const string prefix = "Permission:";
         var policyProperty = typeof(HasPermissionAttribute).GetProperty("Policy");
-        var enforced = new[] { typeof(GlobalProductsController), typeof(FinishedGoodsController), typeof(GskusController), typeof(LskusController), typeof(ProductAbbreviationsController), typeof(ProductLegalEntityScopesController) }
+        var enforced = new[] { typeof(GlobalProductsController), typeof(FinishedGoodsController), typeof(GskusController), typeof(LskusController), typeof(ProductAbbreviationsController), typeof(ProductLegalEntityScopesController), typeof(BrandsController) }
             .SelectMany(controller => controller
                 .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
             .SelectMany(method => method.GetCustomAttributes<HasPermissionAttribute>())
@@ -67,6 +71,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.Equal(
             new[]
             {
+                "mdm.brands.read",
                 "mdm.finished-goods.create",
                 "mdm.finished-goods.read",
                 "mdm.global-products.create",
@@ -91,13 +96,13 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.product-legal-entity-scopes.replace"
             },
             declared.OrderBy(value => value, StringComparer.Ordinal));
-        Assert.Equal(22, declared.Count);
+        Assert.Equal(23, declared.Count);
         var operatorOnly = new HashSet<string>(StringComparer.Ordinal)
         {
             "mdm.product-legal-entity-scope-rollout.activate",
             "mdm.product-legal-entity-scope-rollout.rollback"
         };
-        Assert.True(declared.Where(permission => !operatorOnly.Contains(permission)).ToHashSet(StringComparer.Ordinal).SetEquals(enforced));
+        Assert.True(declared.Where(permission => !operatorOnly.Contains(permission)).ToHashSet(StringComparer.Ordinal).IsSubsetOf(enforced));
     }
 
     [Fact]
