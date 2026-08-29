@@ -1,8 +1,8 @@
+using Diten.Platform.Application.Tests.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.WorkingCalendar;
-using Diten.Platform.Infrastructure.Persistence;
-using Diten.Platform.Infrastructure.Persistence.Configurations;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using MongoDB.Driver;
 using Xunit;
 using Wc = Diten.Platform.Domain.Entities.WorkingCalendar.WorkingCalendar;
@@ -20,30 +20,26 @@ public sealed class WorkingCalendarCodeUniquenessMongoTests : IAsyncLifetime
     private const string CollectionName = "working_calendars";
     private static readonly Guid TenantId = Guid.Parse("97c59330-dbc4-4665-b29c-0c26dbb5cc93");
 
-    private MongoClient _client = null!;
-    private string _databaseName = null!;
-    private IMongoDatabase _database = null!;
+    private MongoIntegrationHarness _harness = null!;
     private WorkingCalendarRepository _repository = null!;
 
     public async Task InitializeAsync()
     {
-        var settings = MongoClientSettings.FromConnectionString("mongodb://127.0.0.1:27017");
-        settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
-        _client = new MongoClient(settings);
-        _databaseName = $"diten_wc_code_{Guid.NewGuid():N}";
-        _database = _client.GetDatabase(_databaseName);
-        await _database.RunCommandAsync<object>("{ ping: 1 }");
-        await MongoDbIndexConfigurations.EnsureIndexesAsync(_database);
+        // The subject is the COUNTRY layer (TenantId=null), which is database-global rather than tenant-scoped,
+        // so this uses the isolated shared harness (fixed-name database, WorkingCalendar profile indexes built
+        // once via PlatformSchemaManifest.ApplyAsync, collections emptied per test) instead of a per-run Guid
+        // database + EnsureIndexesAsync — the pattern the Mongo test-database architecture guard forbids.
+        _harness = await MongoIntegrationHarness.CreateIsolatedAsync("working_calendar_code", SchemaProfile.WorkingCalendar);
 
         // Platform actor: no ambient tenant, so the repository operates on the country layer.
         var tenantContext = new TenantContext();
         tenantContext.SetPlatformContext(Guid.Parse("00000000-0000-0000-0000-000000000001"));
-        _repository = new WorkingCalendarRepository(new PlatformDbContext(_client, _database), tenantContext);
+        _repository = new WorkingCalendarRepository(_harness.DbContext, tenantContext);
     }
 
-    public Task DisposeAsync() => _client.DropDatabaseAsync(_databaseName);
+    public async Task DisposeAsync() => await _harness.DisposeAsync();
 
-    private IMongoCollection<Wc> Collection => _database.GetCollection<Wc>(CollectionName);
+    private IMongoCollection<Wc> Collection => _harness.Database.GetCollection<Wc>(CollectionName);
 
     private static Wc Row(string status, Guid? tenantId = null, string code = "TR-2026") => new()
     {
