@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Xunit;
+using EventTransportMessage = Diten.Platform.Application.Contracts.Eventing.EventTransportMessage;
 
 namespace Diten.Platform.Eventing.Tests;
 

@@ -12,6 +12,7 @@ using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Persistence.Models;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
 using Diten.Platform.Infrastructure.Persistence.Configurations;
+using Diten.Platform.Infrastructure.Eventing;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -57,6 +58,21 @@ public static partial class PlatformSchemaManifest
                             .Ascending(x => x.ConsumerName),
                         new CreateIndexOptions { Unique = true, Name = "ux_consumed_events_event_consumer" })
 
+            }),
+        Collection<GateIAuditInboxMessage>(
+            SchemaProfile.Eventing,
+            PlatformCollections.GateIAuditInbox,
+            () => new CreateIndexModel<GateIAuditInboxMessage>[]
+            {
+                new(
+                    Builders<GateIAuditInboxMessage>.IndexKeys
+                        .Ascending(item => item.ConsumerName)
+                        .Ascending(item => item.EventId),
+                    new CreateIndexOptions
+                    {
+                        Unique = true,
+                        Name = "ux_gate_i_audit_inbox_consumer_event"
+                    })
             }),
     };
 }
