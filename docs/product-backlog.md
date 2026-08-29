@@ -4621,45 +4621,35 @@ doğrulama yardımcıları, ayrı değerlendirilmeli).
   duruyordu. Ayrıldı; iki commit'in dosya kümesi eskisiyle birebir doğrulandı.
   Aynı hata bu oturumda ikinci kez oldu.
 
-### BL-323 — köprüde cross-tenant davranışı TANIMSIZ; iki farklı cevap zaten depoda (2026-08-29, ölçüldü, KARAR BEKLİYOR)
+### BL-324 — kiracı çelişkisi (BL-323 durum 1) DÖRT kiracı-çözüm noktasında hâlâ dayatılmıyor (2026-08-29, ölçüldü)
 
 > **DURUM:** AÇIK · **SAHİP:** CONTROL TOWER
+> *Geldiği kayıt:* BL-323 (kapandı, arşivde) — kural onaylandı, kapsamı köprüydü; bu, kural
+> yazılırken ÖLÇÜLEN artıktır.
 
-⚠ **Bu kayıt bir öneri taşır, karar SAHİBİNDE.** Enterprise Strategy'yi geliştiren
-Codex sordu, cevabı yoktu; ölçüm de göstermiştir ki cevapsızlık zaten iki farklı
-uygulamaya yol açmış.
+BL-323 sahibin kararıyla şunu kurala bağladı: **başlık kiracısı ile JWT kiracısı ÇELİŞİYORSA
+400.** O turda köprünün kendi servisi (`Diten.DevEnablementService`) düzeltildi ve muhafızlandı.
+Aynı turda yedi kiracı-çözüm noktasının hepsi okundu; sonuç:
 
-- **Soru:** Bir modülden BAŞKA kiracının işi istenirse ne dönecek?
+| Nokta | Çelişkide bugünkü davranış |
+|---|---|
+| `Diten.MdmService/.../TenantResolutionMiddleware.cs` | **400** ✅ kurala uygun |
+| `Diten.DevEnablementService/.../TenantResolutionMiddleware.cs` | **400** ✅ BL-323'te düzeltildi |
+| `Diten.AuthService/.../TenantResolutionMiddleware.cs` | ⚠ "JWT kazanır" + uyarı logu |
+| `Diten.Platform.Common/src/.../Tenancy/TenantResolutionMiddleware.cs` | ⚠ "JWT kazanır" + uyarı logu |
+| `gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs` | ⚠ "JWT kazanır" + uyarı logu (alt alan adı için de aynısı) |
+| `Diten.HcmService/.../TenantResolutionMiddleware.cs` | ⚠ **JWT'yi HİÇ okumuyor** — yalnız başlık; çelişki kavramı yok |
+| `Diten.CrmService/.../TenantResolutionMiddleware.cs` | ⚠ **JWT'yi HİÇ okumuyor** — yalnız başlık; çelişki kavramı yok |
 
-- **Köprü kural DAYATMIYOR — ölçüldü.** `RemoteWorkItemGateway:167-176`: modülün
-  kendi kararı taşıma durumunu yener (200 + `isSuccessful=false` bir REDDİR),
-  zarf olmayan gövde "ulaşılmadı" sayılır, durum kodu olduğu gibi geçer.
-  Yani cevabı **modül** verir, köprü yalnız taşır.
-
-- **Onboarding notu §7 (satır 269) yalnız yarısını söylüyor:**
-  *"Hangi kiracı → `X-Tenant-Id`, Platform istek kapsamından yazar → kendi kiracı
-  middleware'in her zamanki gibi okur."* Okumayı söylüyor, **yabancı kiracı
-  istendiğinde ne cevaplanacağını söylemiyor.**
-
-- **DEPODA ZATEN İKİ CEVAP VAR — ve aslında iki AYRI soruyu cevaplıyorlar:**
-
-  | Durum | Bugünkü cevap | Nerede |
-  |---|---|---|
-  | Başlık kiracı A der, JWT kiracı B der (çelişki) | **400** "Tenant mismatch" | `Diten.MdmService/.../TenantResolutionMiddleware.cs` |
-  | Başlık ve JWT aynı kiracıda anlaşır, ama İSTENEN KAYIT başka kiracının | **404** | `ReferenceWorkItemProviderController:104` → `REFERENCE_ITEM_NOT_FOUND` |
-
-  ⚠ Bunlar çelişmiyor: ilki **bozuk istek**, ikincisi **yetkisiz kayıt**. Ama
-  hiçbir yerde yazılı olmadığı için bir sonraki modül ikisini karıştırabilir.
-
-- **CONTROL TOWER ÖNERİSİ (onay bekliyor):**
-  1. Çelişkili başlık/JWT → **400**. Bu bir bozuk istektir, gizlenecek bir şey yok.
-  2. Yabancı kiracının kaydı → **404**, "yok" gibi. **403 DEĞİL** — 403 kaydın
-     var olduğunu söyler, yani varlığını sızdırır. Çok kiracılı sistemlerde
-     görmemen gereken kayıt senin için yoktur; SAP ve Oracle worklist'lerinde de
-     desen budur.
-  3. Bu iki satır onboarding notu §7'ye yazılır ve **bir muhafıza bağlanır** —
-     cümle olarak kalırsa bir sonraki modül yine kendi cevabını uydurur.
-
-- **Karar verilmeden yapılmayacak:** hiçbir modül sözleşmesi (MOD-0117, MOD-0355
-  dahil) bu satırı varsayarak yazılmamalı. Codex'e "Control Tower kararı bekliyor"
-  denmesi istendi.
+- **Neden BL-323 turunda yapılmadı:** BL-323'ün kapsamı köprüdür. Gateway ile
+  `Platform.Common`'ı çelişkide reddetmeye çevirmek SİSTEM GENELİNDE bir kiracılık davranış
+  değişikliğidir — o iki dosya platform-admin `X-Tenant-Id` akışlarını ayrıca ele alıyor — ve
+  kendi ölçümünü, kendi turunu hak eder. Kapsamı sessizce genişletmek yerine kayda geçirildi.
+- **Hcm/Crm ayrı ve daha ağır bir sorudur:** oradaki eksik "çelişkide ne yapılır" değil,
+  **JWT ile başlığın hiç karşılaştırılmamasıdır** — başlık tek başına kiracıyı belirliyor.
+  Bu bir çelişki kuralı değil, bir güven kararıdır; BL-323'ün cümlesiyle kapanmaz.
+- **Repo genelinde statik muhafız BİLEREK yazılmadı:** bugün yazılsaydı beş noktada kırmızı
+  olurdu; yeşil kalması için bir istisna listesi gerekirdi, o liste de sapmayı "kabul edilmiş"
+  hâline getirirdi. Muhafız, düzeltmeyle AYNI turda gelmeli.
+- **Gelecek regresyon riski: 🟡** — davranış bugün değişmedi, ama kural artık DCP-004 §7.4'te
+  YAZILI; yazılı bir kuralın beş noktada tutmaması, okuyanın "tutuyor" varsayması demektir.
