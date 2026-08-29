@@ -2367,6 +2367,49 @@ runtime readiness, a catalog seed/publication, consumer exposure or production r
 - Frontmatter records planned branch `feature/pss/mod-0048-fu01-reference-data-provider`; this task does not create or
   switch to that branch.
 
+### Workflow-safe verified Market revalidation (Phase 1.5, 2026-08-29)
+
+Background LSKU decision recovery cannot use the interactive `PlatformVerifiedMarketResolverClient`: that client
+forwards an inbound tenant-user Bearer token, while a recovery worker has no `HttpContext`. Submit-time Market proof
+also cannot substitute for approval-time proof. The provider therefore adds a purpose-specific service-token path;
+the interactive tenant-user path remains unchanged and no fallback between the two clients is permitted.
+
+Security contract:
+
+- Auth prerequisite: MOD-0033-FU02 Section D issues a separate exact
+  `Diten.MDM/TRUSTED_REFERENCE_DATA_CONSUMER` identity token with a tenant/audience grant. The Workflow or Audit
+  identities/tokens are never accepted.
+- Platform validates exactly one named service scheme, exact `actor_type=service`, `service_name=Diten.MDM`, exact
+  audience and one token-derived tenant. `X-Tenant-Id` remains forbidden. Ambiguous/default-user-plus-service
+  authentication fails closed.
+- Existing `VerifiedGskuResolverCredentialAuthenticator` remains the independent second factor with exact
+  `VERIFIED_GSKU_RESOLVE`; no credential or token grants tenant access by itself.
+- The current market handler remains authoritative: success proves the exact ordinal MarketCode is a current active
+  member of the verified immutable publication. The returned proof is consumer-internal only.
+
+Exact Platform runtime allow-list:
+
+- `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedServiceTokenValidationExtensions.cs`
+- new purpose-specific verified-reference service-tenant context under `Diten.Platform.API/Security`
+- `services/Diten.Platform/src/Diten.Platform.API/Security/VerifiedReferenceDataRequestExecutor.cs`
+- `services/Diten.Platform/src/Diten.Platform.API/Controllers/Internal/InternalVerifiedMarketReferenceDataController.cs`
+- `services/Diten.Platform/src/Diten.Platform.API/Program.cs` only if explicit DI registration is required
+
+Exact MDM provider-consumer prerequisite allow-list:
+
+- new `IWorkflowVerifiedMarketReferenceResolver` and service-identity contract under Application ReferenceData
+  contracts;
+- new purpose-specific Auth token provider/options and Platform workflow-market client under Infrastructure
+  ReferenceData;
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/DependencyInjection.cs`.
+
+Exact tests are limited to Auth purpose/tenant-grant tests from MOD-0033-FU02 Section D; Platform scheme/context,
+executor/controller, dual-factor, wrong-purpose, ambiguity, header-rejection, timeout/cancellation and DI tests; and
+MDM token acquisition/cache/rotation, strict response, 401 refresh-once, 403/404/409/503/504, cancellation and
+no-token/secret-persistence tests. A background-path contract test must exercise the service-token route; a fake
+resolver alone is insufficient. Config, secrets, identity/grant provisioning, data mutation and Production/Staging
+remain separate operational gates.
+
 ## 20. Follow-up Items
 
 - `MARKET-ARTIFACT-01` is closed for artifact authoring: the immutable artifact is version
