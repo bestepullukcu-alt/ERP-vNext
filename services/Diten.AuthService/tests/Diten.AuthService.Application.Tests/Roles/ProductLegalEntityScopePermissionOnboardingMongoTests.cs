@@ -1,7 +1,6 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Domain.Entities;
-using Diten.AuthService.Persistence.Configurations;
 using Diten.AuthService.Persistence.Repositories;
 using Microsoft.Extensions.Logging.Abstractions;
 using MongoDB.Bson;
@@ -10,10 +9,16 @@ using Xunit;
 
 namespace Diten.AuthService.Application.Tests.Roles;
 
+[CollectionDefinition(AuthPermissionOnboardingMongoCollectionDefinition.Name, DisableParallelization = true)]
+public sealed class AuthPermissionOnboardingMongoCollectionDefinition
+{
+    public const string Name = "AuthPermissionOnboardingMongo";
+}
+
+[Collection(AuthPermissionOnboardingMongoCollectionDefinition.Name)]
 public sealed class ProductLegalEntityScopePermissionOnboardingMongoTests
 {
-    private static readonly Guid TenantA = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
-    private static readonly Guid TenantB = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+    private const string DatabaseName = "diten_auth_permission_onboarding_itest";
 
     [Fact]
     public async Task Real_mongo_reconciles_replays_revokes_and_isolates_exact_composite_profile()
@@ -24,13 +29,19 @@ public sealed class ProductLegalEntityScopePermissionOnboardingMongoTests
         var client = new MongoClient(settings);
         await client.GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
 
-        var databaseName = "diten_auth_fu22_" + Guid.NewGuid().ToString("N");
-        var database = client.GetDatabase(databaseName);
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+        var database = client.GetDatabase(DatabaseName);
+        var catalog = ProductItemSkuMasterCatalog();
         try
         {
-            await MongoDbIndexConfigurations.EnsureIndexesAsync(database);
+            var permissionsCollection = database.GetCollection<Permission>("permissions");
+            var simulatedCrashResidue = PermissionFor(ProductLegalEntityScopeEntitlementGrantProfile.Read);
+            await permissionsCollection.InsertOneAsync(simulatedCrashResidue);
+            await CleanupOwnedRowsAsync(database, tenantA, tenantB, catalog);
+            Assert.Equal(0, await CountOwnedPermissionsAsync(database, catalog));
             var tenantContext = new TenantContext();
-            tenantContext.SetTenant(TenantA);
+            tenantContext.SetTenant(tenantA);
             var permissions = new PermissionRepository(database);
             var roles = new RoleRepository(database, tenantContext);
             var rolePermissions = new RolePermissionRepository(database, tenantContext);
@@ -40,21 +51,20 @@ public sealed class ProductLegalEntityScopePermissionOnboardingMongoTests
                 rolePermissions,
                 NullLogger<EntitlementPermissionSyncService>.Instance);
 
-            var catalog = ProductItemSkuMasterCatalog();
             foreach (var permission in catalog)
             {
                 await permissions.CreateAsync(permission, CancellationToken.None);
             }
 
-            var admin = await roles.UpsertSystemRoleAsync("Admin", "Admin", null, TenantA, CancellationToken.None);
-            var viewer = await roles.UpsertSystemRoleAsync("Viewer", "Viewer", null, TenantA, CancellationToken.None);
+            var admin = await roles.UpsertSystemRoleAsync("Admin", "Admin", null, tenantA, CancellationToken.None);
+            var viewer = await roles.UpsertSystemRoleAsync("Viewer", "Viewer", null, tenantA, CancellationToken.None);
             var manualPermission = catalog.Single(permission => permission.Key == "manual.retained.read");
             var otherModulePermission = catalog.Single(permission => permission.Key == "other.retained.read");
             await rolePermissions.AssignAsync(
-                RolePermission.ManualGrant(viewer.Id, manualPermission.Id, TenantA, "operator"),
+                RolePermission.ManualGrant(viewer.Id, manualPermission.Id, tenantA, "operator"),
                 CancellationToken.None);
             await rolePermissions.AssignAsync(
-                RolePermission.ModuleGrant(admin.Id, otherModulePermission.Id, TenantA, "other", "another-module"),
+                RolePermission.ModuleGrant(admin.Id, otherModulePermission.Id, tenantA, "other", "another-module"),
                 CancellationToken.None);
 
             var permissionKeys = catalog
@@ -62,19 +72,19 @@ public sealed class ProductLegalEntityScopePermissionOnboardingMongoTests
                 .Select(permission => permission.Key)
                 .ToArray();
             await service.GrantModuleWithKeysAsync(
-                TenantA,
+                tenantA,
                 ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
                 permissionKeys,
                 "fu22-mongo-test");
-            await AssertExactProfileAsync(roles, rolePermissions, catalog);
+            await AssertExactProfileAsync(roles, rolePermissions, catalog, tenantA);
 
             var rolesCollection = database.GetCollection<Role>("roles");
             var grantsCollection = database.GetCollection<RolePermission>("rolePermissions");
-            var roleCountAfterFirst = await rolesCollection.CountDocumentsAsync(role => role.TenantId == TenantA);
-            var grantCountAfterFirst = await grantsCollection.CountDocumentsAsync(grant => grant.TenantId == TenantA);
+            var roleCountAfterFirst = await rolesCollection.CountDocumentsAsync(role => role.TenantId == tenantA);
+            var grantCountAfterFirst = await grantsCollection.CountDocumentsAsync(grant => grant.TenantId == tenantA);
 
             await service.GrantModuleWithKeysAsync(
-                TenantA,
+                tenantA,
                 ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
                 permissionKeys,
                 "fu22-mongo-test");
@@ -82,58 +92,66 @@ public sealed class ProductLegalEntityScopePermissionOnboardingMongoTests
             Assert.Equal(9, roleCountAfterFirst);
             Assert.Equal(29, grantCountAfterFirst);
             Assert.Equal(27, await grantsCollection.CountDocumentsAsync(grant =>
-                grant.TenantId == TenantA
+                grant.TenantId == tenantA
                 && grant.GrantSource == GrantSource.Module
                 && grant.SourceModuleCode == ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode));
-            Assert.Equal(roleCountAfterFirst, await rolesCollection.CountDocumentsAsync(role => role.TenantId == TenantA));
-            Assert.Equal(grantCountAfterFirst, await grantsCollection.CountDocumentsAsync(grant => grant.TenantId == TenantA));
-            Assert.Equal(0, await database.GetCollection<UserRole>("userRoles").CountDocumentsAsync(FilterDefinition<UserRole>.Empty));
+            Assert.Equal(roleCountAfterFirst, await rolesCollection.CountDocumentsAsync(role => role.TenantId == tenantA));
+            Assert.Equal(grantCountAfterFirst, await grantsCollection.CountDocumentsAsync(grant => grant.TenantId == tenantA));
+            Assert.Equal(0, await database.GetCollection<UserRole>("userRoles").CountDocumentsAsync(role => role.TenantId == tenantA));
 
             await service.RevokeModuleAsync(
-                TenantA,
+                tenantA,
                 ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
                 "fu22-mongo-test");
             Assert.Equal(0, await grantsCollection.CountDocumentsAsync(grant =>
-                grant.TenantId == TenantA
+                grant.TenantId == tenantA
                 && grant.GrantSource == GrantSource.Module
                 && grant.SourceModuleCode == ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode));
             Assert.Equal(1, await grantsCollection.CountDocumentsAsync(grant =>
-                grant.TenantId == TenantA && grant.GrantSource == GrantSource.Manual));
+                grant.TenantId == tenantA && grant.GrantSource == GrantSource.Manual));
             Assert.Equal(1, await grantsCollection.CountDocumentsAsync(grant =>
-                grant.TenantId == TenantA && grant.SourceModuleCode == "another-module"));
+                grant.TenantId == tenantA && grant.SourceModuleCode == "another-module"));
 
             await service.GrantModuleWithKeysAsync(
-                TenantA,
+                tenantA,
                 ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
                 permissionKeys,
                 "fu22-mongo-test");
-            await AssertExactProfileAsync(roles, rolePermissions, catalog);
+            await AssertExactProfileAsync(roles, rolePermissions, catalog, tenantA);
 
-            var tenantAGrantCount = await grantsCollection.CountDocumentsAsync(grant => grant.TenantId == TenantA);
-            tenantContext.SetTenant(TenantB);
-            await roles.UpsertSystemRoleAsync("Admin", "Admin", null, TenantB, CancellationToken.None);
-            await roles.UpsertSystemRoleAsync("Viewer", "Viewer", null, TenantB, CancellationToken.None);
+            var tenantAGrantCount = await grantsCollection.CountDocumentsAsync(grant => grant.TenantId == tenantA);
+            tenantContext.SetTenant(tenantB);
+            await roles.UpsertSystemRoleAsync("Admin", "Admin", null, tenantB, CancellationToken.None);
+            await roles.UpsertSystemRoleAsync("Viewer", "Viewer", null, tenantB, CancellationToken.None);
             await roles.CreateAsync(
                 new Role(
                     ProductLegalEntityScopeEntitlementGrantProfile.AuditorRole,
                     "Operator-owned collision",
                     null,
-                    TenantB),
+                    tenantB),
                 CancellationToken.None);
 
             await Assert.ThrowsAsync<InvalidOperationException>(() => service.GrantModuleWithKeysAsync(
-                TenantB,
+                tenantB,
                 ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
                 permissionKeys,
                 "fu22-mongo-test"));
 
-            Assert.Equal(0, await grantsCollection.CountDocumentsAsync(grant => grant.TenantId == TenantB));
-            Assert.Equal(tenantAGrantCount, await grantsCollection.CountDocumentsAsync(grant => grant.TenantId == TenantA));
-            Assert.Equal(0, await database.GetCollection<UserRole>("userRoles").CountDocumentsAsync(FilterDefinition<UserRole>.Empty));
+            Assert.Equal(0, await grantsCollection.CountDocumentsAsync(grant => grant.TenantId == tenantB));
+            Assert.Equal(tenantAGrantCount, await grantsCollection.CountDocumentsAsync(grant => grant.TenantId == tenantA));
+            Assert.Equal(0, await database.GetCollection<UserRole>("userRoles").CountDocumentsAsync(role =>
+                role.TenantId == tenantA || role.TenantId == tenantB));
         }
         finally
         {
-            await client.DropDatabaseAsync(databaseName);
+            await CleanupOwnedRowsAsync(database, tenantA, tenantB, catalog);
+            Assert.Equal(0, await CountOwnedPermissionsAsync(database, catalog));
+            Assert.Equal(0, await database.GetCollection<Role>("roles").CountDocumentsAsync(role =>
+                role.TenantId == tenantA || role.TenantId == tenantB));
+            Assert.Equal(0, await database.GetCollection<RolePermission>("rolePermissions").CountDocumentsAsync(grant =>
+                grant.TenantId == tenantA || grant.TenantId == tenantB));
+            Assert.Equal(0, await database.GetCollection<UserRole>("userRoles").CountDocumentsAsync(role =>
+                role.TenantId == tenantA || role.TenantId == tenantB));
         }
     }
 
@@ -162,12 +180,14 @@ public sealed class ProductLegalEntityScopePermissionOnboardingMongoTests
     private static async Task AssertExactProfileAsync(
         RoleRepository roles,
         RolePermissionRepository rolePermissions,
-        IReadOnlyList<Permission> catalog)
+        IReadOnlyList<Permission> catalog,
+        Guid tenantId)
     {
         await AssertRoleAsync(
             roles,
             rolePermissions,
             catalog,
+            tenantId,
             "Admin",
             [
                 "mdm.global-products.create",
@@ -179,6 +199,7 @@ public sealed class ProductLegalEntityScopePermissionOnboardingMongoTests
             roles,
             rolePermissions,
             catalog,
+            tenantId,
             "Viewer",
             ["mdm.global-products.read", ProductAbbreviationEntitlementGrantProfile.Read],
             allowAdditionalNonModuleGrants: true);
@@ -189,6 +210,7 @@ public sealed class ProductLegalEntityScopePermissionOnboardingMongoTests
                 roles,
                 rolePermissions,
                 catalog,
+                tenantId,
                 template.RoleName,
                 template.PermissionKeys.OrderBy(key => key, StringComparer.Ordinal).ToArray());
         }
@@ -198,6 +220,7 @@ public sealed class ProductLegalEntityScopePermissionOnboardingMongoTests
                 roles,
                 rolePermissions,
                 catalog,
+                tenantId,
                 template.RoleName,
                 template.PermissionKeys.OrderBy(key => key, StringComparer.Ordinal).ToArray());
         }
@@ -207,14 +230,15 @@ public sealed class ProductLegalEntityScopePermissionOnboardingMongoTests
         RoleRepository roles,
         RolePermissionRepository rolePermissions,
         IReadOnlyList<Permission> catalog,
+        Guid tenantId,
         string roleName,
         string[] expectedKeys,
         bool allowAdditionalNonModuleGrants = false)
     {
-        var role = await roles.GetByNameAndTenantAsync(roleName, TenantA, CancellationToken.None);
+        var role = await roles.GetByNameAndTenantAsync(roleName, tenantId, CancellationToken.None);
         Assert.NotNull(role);
         Assert.True(role.IsSystem);
-        var grants = await rolePermissions.GetByRoleAsync(role.Id, TenantA, CancellationToken.None);
+        var grants = await rolePermissions.GetByRoleAsync(role.Id, tenantId, CancellationToken.None);
         var moduleGrants = grants.Where(grant =>
             grant.GrantSource == GrantSource.Module
             && grant.SourceModuleCode == ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode).ToList();
@@ -228,4 +252,30 @@ public sealed class ProductLegalEntityScopePermissionOnboardingMongoTests
             moduleGrants.Select(grant => catalog.Single(permission => permission.Id == grant.PermissionId).Key)
                 .OrderBy(key => key, StringComparer.Ordinal));
     }
+
+    private static async Task CleanupOwnedRowsAsync(
+        IMongoDatabase database,
+        Guid tenantA,
+        Guid tenantB,
+        IReadOnlyCollection<Permission> catalog)
+    {
+        var tenantFilter = Builders<Role>.Filter.In(role => role.TenantId, [tenantA, tenantB]);
+        await database.GetCollection<UserRole>("userRoles").DeleteManyAsync(
+            Builders<UserRole>.Filter.In(role => role.TenantId, [tenantA, tenantB]));
+        await database.GetCollection<RolePermission>("rolePermissions").DeleteManyAsync(
+            Builders<RolePermission>.Filter.In(grant => grant.TenantId, [tenantA, tenantB]));
+        await database.GetCollection<Role>("roles").DeleteManyAsync(tenantFilter);
+        await database.GetCollection<Permission>("permissions").DeleteManyAsync(
+            Builders<Permission>.Filter.In(
+                permission => permission.Key,
+                catalog.Select(permission => permission.Key.ToLowerInvariant()).Distinct(StringComparer.Ordinal)));
+    }
+
+    private static Task<long> CountOwnedPermissionsAsync(
+        IMongoDatabase database,
+        IReadOnlyCollection<Permission> catalog)
+        => database.GetCollection<Permission>("permissions").CountDocumentsAsync(
+            Builders<Permission>.Filter.In(
+                permission => permission.Key,
+                catalog.Select(permission => permission.Key.ToLowerInvariant()).Distinct(StringComparer.Ordinal)));
 }
