@@ -3494,9 +3494,113 @@ protected until their owned steps. No new collection, WorkCenter provider or Pla
 pair operation with checkpoints/recovery; later GSKU and the two children use single-aggregate CAS plus workflow binding.
 Approval revalidates approved parent and verified reference facts. No independent Revision screen/action/permission.
 
-**F — MDM Workflow clients and reconciler:** typed trusted-start and terminal-evidence clients, durable binding/poll
-state, short-lived service-token acquisition/cache, bounded worker/one-shot recovery seam, DI and exact crash/replay
-tests. No callback, direct Workflow database read or service-token human impersonation.
+**F — MDM Global Product Workflow client and durable reconciler (exact current-code allow-list):** this step is
+limited to Global Product. GSKU/LSKU/Finished Good workflow consumers remain Step E successors and cannot reuse a
+Global Product operation by changing `ObjectType`.
+
+Existing runtime files permitted for narrow modification:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/ReconcileGlobalProductIdentityDecisionHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/SubmitGlobalProductIdentityHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Validators/SubmitGlobalProductIdentityValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Validators/ReconcileGlobalProductIdentityDecisionValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GlobalProductRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/DependencyInjection.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/DependencyInjection.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Program.cs`
+
+New Domain/Persistence files permitted:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/GlobalProductIdentityWorkflowOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/GlobalProductIdentityWorkflowCheckpoint.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductIdentityWorkflowRecoveryDisposition.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGlobalProductIdentityWorkflowOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/GlobalProductIdentityWorkflowOperationResults.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GlobalProductIdentityWorkflowOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGlobalProductIdentityWorkflowTenantPartitionDiscovery.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GlobalProductIdentityWorkflowTenantPartitionDiscoveryRepository.cs`
+
+New Application contract/processor files permitted:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Workflow/IProductIdentityWorkflowClient.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Workflow/IProductIdentityWorkflowServiceIdentityProvider.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Workflow/IProductIdentityDelegatedTokenAccessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Workflow/ProductIdentityWorkflowTransportModels.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/ProductIdentityWorkflowStartRequestFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/GlobalProductIdentityWorkflowProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Commands/StartGlobalProductIdentityWorkflowCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/StartGlobalProductIdentityWorkflowHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Validators/StartGlobalProductIdentityWorkflowValidator.cs`
+
+New Infrastructure/API files permitted:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Workflow/AuthProductIdentityWorkflowServiceIdentityProviderOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Workflow/AuthProductIdentityWorkflowServiceIdentityProvider.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Workflow/ProductIdentityWorkflowClientOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Workflow/PlatformProductIdentityWorkflowClient.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Workflow/HttpContextProductIdentityDelegatedTokenAccessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/ProductIdentityWorkflowOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/ProductIdentityWorkflowWorkerOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/ProductIdentityWorkflowRecoveryWorker.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/ProductIdentityWorkflowRecoveryRunner.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/ProductIdentityWorkflowRecoveryCommandLine.cs`
+
+Exact test allow-list:
+
+- new `GlobalProductIdentityWorkflowOperationMongoTests.cs`
+- new `GlobalProductIdentityWorkflowProcessorTests.cs`
+- new `GlobalProductIdentityWorkflowRecoveryWorkerMongoTests.cs`
+- new `GlobalProductIdentityWorkflowRecoveryRunnerTests.cs`
+- new `PlatformProductIdentityWorkflowClientTests.cs`
+- new `AuthProductIdentityWorkflowServiceIdentityProviderTests.cs`
+- new `ProductIdentityDelegatedTokenAccessorTests.cs`
+- new `ProductIdentityWorkflowDependencyInjectionTests.cs`
+- new `ProductIdentityWorkflowNoCredentialPersistenceTests.cs`
+- narrow edits to `GlobalProductLifecycleUnitTests.cs` and `GlobalProductLifecycleMongoTests.cs` only for native
+  `TaskStatus=Approved` plus `InstanceStatus=Completed` evidence and exact replay assertions.
+
+The durable tenant-owned operation state machine is `Prepared -> StartOutcomeUnknown -> WorkflowStarted ->
+LocalPendingApplied -> AwaitingDecision -> DecisionObserved -> DecisionApplied -> Completed`, with fail-closed
+`AwaitingMakerReplay` and `ManualReconciliationRequired` branches. Every mutation is fenced by tenant, soft-delete,
+expected checkpoint, operation fingerprint and monotonically increasing lease generation. The operation stores the
+server-owned template/candidate/options snapshot, maker GUID, aggregate/version, exact idempotency/fingerprint,
+sanitized Workflow start result and sanitized terminal evidence. It never stores a delegated JWT, service token,
+credential, Authorization header or secret.
+
+The resolved Workflow `StartedAt` is persisted once as scalar `WorkflowStartedAtUtcTicksV1` together with the
+`WorkflowStarted` checkpoint and is the immutable local binding/audit timestamp on every recovery replay. Terminal
+status tuples are exact and defense-in-depth enforced by transport, processor and repository:
+`Approve -> Approved/Completed`, `Reject -> Rejected/Rejected`.
+
+Before the outbound start call the operation must be durable in `StartOutcomeUnknown`. If the response is lost,
+service-only `start-result` recovers the same Workflow identity. A 404 or incomplete start cannot be advanced by the
+worker because it may not impersonate the maker; the operation becomes `AwaitingMakerReplay` and only the exact maker
+with a fresh delegated JWT may replay. Workflow completion alone is not Product approval: only the processor invokes
+the existing atomic submit/reconcile repository paths and verifies the final aggregate plus local audit intent.
+
+All scheduler/range/sort timestamps in the new operation are scalar UTC ticks with `TemporalStorageVersion=1`,
+including created/updated/next-attempt/lease/decision-observed ticks. `DateTimeOffset` evidence fields may be retained
+only as non-query proof and may not participate in indexes. The repository owns four measured tenant-safe indexes:
+active unique `(TenantId, OperationId)`, active unique `(TenantId, StartIdempotencyKey)`, active unique
+`(TenantId, GlobalProductId, ExpectedProductVersion)`, and the bounded recovery index over tenant, soft delete,
+next-attempt ticks, operation-ID tie-break, checkpoint, lease ticks and created ticks. Recovery discovery is tenant
+partitioned, bounded to 100 records, excludes active leases and uses the same next-attempt/operation-ID cursor order.
+Existing MDM distributed repository-index ownership is used; no Platform schema profile is copied and tests use the
+fixed shared MDM integration database with tenant cleanup.
+
+`ProductIdentityWorkflowOptions` is default-disabled and freezes one exact Global Product entry: exactly one
+TemplateId XOR TemplateCode, 1..100 exact candidate principal GUIDs, exact reason code, comment/evidence flags and an
+optional bounded UTC due-time policy. The Auth client is a dedicated Workflow-purpose identity with exact
+`TRUSTED_WORKFLOW_CONSUMER` tenant grant; audit credential reuse is rejected by MOD-0033-FU02. The Platform trusted
+start policy must contain the matching exact client/object/template tuple. No appsettings, secret, grant, template or
+business data is written in this code step.
+
+Acceptance includes crash at every checkpoint, ambiguous start/start-result recovery, exact fresh-maker replay,
+start fact drift, nonterminal poll, approve/reject once, evidence conflict quarantine, timeout/cancellation, token
+expiry and one forced refresh on 401, 403 terminal handling, worker restart, parallel lease contention, tenant
+isolation, no credential persistence, one Workflow/binding/lifecycle/audit outcome and full MDM regression/build.
+Callback, direct Workflow Mongo read, service-token maker impersonation, WorkCenter provider/dispatcher changes,
+Gateway/frontend/config/data/Production/Staging and push are protected.
 
 **G — Existing tenant UI controls:** only the existing four MVC controllers/views/scripts/tests and seven locales.
 Submit and direct retire controls are state/permission gated and same-origin; approve/reject stays in WorkCenter.
@@ -3515,13 +3619,27 @@ navigation, bulk lifecycle and push remain separate gates.
 - [x] `MOD-0018-FU23` exact eight-key/shared-Workflow permission profile is approved, implemented and present in the
   lifecycle delivery base.
 - [x] `MOD-0023-FU02 Trusted Consumer Workflow Start and Terminal Decision Evidence Foundation` is collision-checked,
-  implemented with real-Mongo/security evidence and integrated at local commit `de318743`.
-- [x] The reviewed `MOD-0033-FU02` service-token dependency is integrated into the lifecycle delivery base.
-- [ ] Exact Workflow template/candidate/position and secure-poll evidence contracts are frozen.
+  implemented with real-Mongo/security evidence, lost-start recovery and exact trusted-start tuple authorization;
+  the latest integrated local prerequisite is `28047a49`.
+- [x] The reviewed `MOD-0033-FU02` service-token dependency is integrated with runtime-enforced dedicated Workflow
+  audience identity purpose at local commit `87dd852f`.
+- [x] Exact template/candidate/position, durable operation, no-token-persistence and secure-poll contracts are frozen
+  for code; Local Development values and provisioning remain a separate operational gate.
 - [x] D1 current-code allow-list, actor boundary, admission bound and retirement blocker are frozen; the user's standing
   non-push authorization grants D1 runtime code-start on 2026-08-29.
 - [x] D1 implementation, focused/full MDM tests, real-Mongo race/replay proof and Release build are complete on
   2026-08-29; D2 remains closed pending Step F.
+- [x] Step F exhaustive current-code allow-list and acceptance matrix are frozen; the standing non-push user
+  authorization grants runtime/test code-start on 2026-08-29.
+- [x] Step F implementation is complete locally on 2026-08-29: exact `GlobalProduct` transport/binding literal,
+  dedicated Auth-issued Workflow identity, ephemeral delegated JWT, durable checkpoint/lease/recovery operation,
+  bounded tenant discovery, service-only lost-start recovery, terminal evidence reconciliation, default-disabled
+  worker and explicit one-shot runner are integrated. Focused lifecycle/workflow/recovery/DI tests pass 58/58, the
+  full MDM Release suite passes 851/851 with zero skips, and the MDM API Release build has zero warnings/errors.
+  Independent security/reliability re-review reports no remaining P0/P1/P2 after immutable-start-time,
+  contradictory-terminal-status, worker-loop and bounded tenant-discovery hardening.
+  The repository-wide DB-010 architecture guard remains at its exact pre-existing two failures (five known per-run
+  DB offenders and two stale exception-list entries); this Step F adds neither violation.
 - [ ] D2 and E-H each receive their exact current-code allow-list and predecessor evidence before mutation.
 
 ## 20. Follow-up Items

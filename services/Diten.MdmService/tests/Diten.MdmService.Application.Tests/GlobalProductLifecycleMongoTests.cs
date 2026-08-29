@@ -207,7 +207,7 @@ public sealed class GlobalProductLifecycleMongoTests : IAsyncLifetime
         WorkflowInstanceId = Guid.NewGuid(), WorkflowTemplateId = Guid.NewGuid(),
         WorkflowTemplateVersionId = Guid.NewGuid(), ApprovalTaskId = Guid.NewGuid(),
         AssignmentSnapshotId = Guid.NewGuid(), StartTransitionLogId = Guid.NewGuid(),
-        ObjectType = "global-product", ObjectId = productId, ObjectRef = $"GP:{productId:D}",
+        ObjectType = "GlobalProduct", ObjectId = productId, ObjectRef = $"GP:{productId:D}",
         SubmitterSubjectId = Guid.NewGuid(), StartIdempotencyKey = key,
         StartRequestFingerprint = fingerprint, SubmittedAtUtc = Now
     };
@@ -219,11 +219,12 @@ public sealed class GlobalProductLifecycleMongoTests : IAsyncLifetime
     {
         Decision = decision, WorkflowInstanceId = binding.WorkflowInstanceId,
         ApprovalTaskId = binding.ApprovalTaskId, WorkflowTemplateId = binding.WorkflowTemplateId,
-        WorkflowTemplateVersionId = binding.WorkflowTemplateVersionId, ObjectType = "global-product",
+        WorkflowTemplateVersionId = binding.WorkflowTemplateVersionId, ObjectType = "GlobalProduct",
         ObjectId = productId, ObjectRef = binding.ObjectRef, DecisionActorSubjectId = Guid.NewGuid(),
         ReasonCode = decision == ProductIdentityDecisionKind.Rejected ? "REJECTED" : null,
-        DecisionAtUtc = Now.AddMinutes(1), TransitionSequence = 2, TaskStatus = "Approved",
-        InstanceStatus = decision == ProductIdentityDecisionKind.Approved ? "Approved" : "Rejected"
+        DecisionAtUtc = Now.AddMinutes(1), TransitionSequence = 2,
+        TaskStatus = decision == ProductIdentityDecisionKind.Approved ? "Approved" : "Rejected",
+        InstanceStatus = decision == ProductIdentityDecisionKind.Approved ? "Completed" : "Rejected"
     };
 
     private LocalAuditIntent Intent(

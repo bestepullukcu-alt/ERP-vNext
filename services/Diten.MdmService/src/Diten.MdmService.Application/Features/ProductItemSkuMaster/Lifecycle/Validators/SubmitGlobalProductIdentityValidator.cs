@@ -22,7 +22,7 @@ public sealed class SubmitGlobalProductIdentityValidator : AbstractValidator<Sub
                 RuleFor(x => x.Request.WorkflowBinding.AssignmentSnapshotId).NotEmpty();
                 RuleFor(x => x.Request.WorkflowBinding.StartTransitionLogId).NotEmpty();
                 RuleFor(x => x.Request.WorkflowBinding.ObjectType)
-                    .Equal("global-product", StringComparer.Ordinal);
+                    .Equal("GlobalProduct", StringComparer.Ordinal);
                 RuleFor(x => x.Request.WorkflowBinding.ObjectId).NotEmpty();
                 RuleFor(x => x.Request.WorkflowBinding.ObjectRef)
                     .NotEmpty().MaximumLength(512).Must(IsExact);
