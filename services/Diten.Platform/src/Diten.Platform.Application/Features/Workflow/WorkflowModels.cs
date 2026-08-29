@@ -39,6 +39,9 @@ public static class WorkflowReasonCodes
     public const string WorkflowTemplateNotPublished = "WORKFLOW_TEMPLATE_NOT_PUBLISHED";
     public const string WorkflowTemplateNoActiveVersion = "WORKFLOW_TEMPLATE_NO_ACTIVE_VERSION";
     public const string WorkflowInstanceStartConflict = "WORKFLOW_INSTANCE_START_CONFLICT";
+    public const string WorkflowStartIdempotencyConflict = "WORKFLOW_START_IDEMPOTENCY_CONFLICT";
+    public const string WorkflowStartRecoveryConflict = "WORKFLOW_START_RECOVERY_CONFLICT";
+    public const string WorkflowTerminalEvidenceInconsistent = "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT";
     public const string WorkflowAssignmentCandidatesRequired = "WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED";
     public const string WorkflowTaskNotFound = "WORKFLOW_TASK_NOT_FOUND";
     public const string WorkflowInstanceNotFound = "WORKFLOW_INSTANCE_NOT_FOUND";
@@ -165,6 +168,52 @@ public sealed record StartWorkflowInstanceResponse(
     string CurrentStep,
     DateTimeOffset? StartedAt,
     DateTimeOffset? DueAt,
+    string? CorrelationId);
+
+public sealed record TrustedWorkflowStartRequest(
+    Guid? TemplateId,
+    string? TemplateCode,
+    string ObjectType,
+    string ObjectId,
+    string? ObjectRef,
+    IReadOnlyList<string> CandidatePrincipalIds,
+    string? ReasonCode,
+    string IdempotencyKey,
+    bool CommentRequired,
+    bool EvidenceRequired,
+    DateTimeOffset? DueAt);
+
+public sealed record TrustedWorkflowStartResult(
+    Guid WorkflowInstanceId,
+    Guid TemplateId,
+    Guid TemplateVersionId,
+    Guid ApprovalTaskId,
+    Guid AssignmentSnapshotId,
+    Guid StartTransitionLogId,
+    string ObjectRef,
+    string Status,
+    string CurrentStage,
+    string CurrentStep,
+    DateTimeOffset? StartedAt,
+    DateTimeOffset? DueAt,
+    bool IsReplay,
+    string? CorrelationId);
+
+public sealed record TrustedWorkflowTerminalDecisionEvidence(
+    Guid WorkflowInstanceId,
+    Guid ApprovalTaskId,
+    Guid TemplateId,
+    Guid TemplateVersionId,
+    string ObjectType,
+    string ObjectId,
+    string ObjectRef,
+    string TerminalAction,
+    string ActorUserId,
+    string? ReasonCode,
+    DateTimeOffset DecisionAt,
+    long TransitionSequence,
+    string TaskStatus,
+    string InstanceStatus,
     string? CorrelationId);
 
 public sealed record WorkflowInstanceDto(

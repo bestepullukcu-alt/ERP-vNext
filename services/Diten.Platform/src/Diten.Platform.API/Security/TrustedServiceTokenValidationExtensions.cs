@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Globalization;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using Diten.BuildingBlocks.Security.Secrets;
 using Diten.Platform.API.Configuration;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -15,6 +16,10 @@ public static class TrustedServiceTokenValidationExtensions
     public const string AuthenticationScheme = "TrustedServiceToken";
     public const string RequiredAudience = "TRUSTED_AUDIT_SOURCE_INGEST";
     public const string RequiredServiceName = "Diten.MDM";
+    public const string WorkflowAuthenticationScheme = "TrustedWorkflowConsumerService";
+    public const string WorkflowDelegatedUserAuthenticationScheme = "TrustedWorkflowDelegatedUser";
+    public const string WorkflowRequiredAudience = "TRUSTED_WORKFLOW_CONSUMER";
+    public const string DelegatedAuthorizationHeader = "X-Delegated-Authorization";
 
     private static readonly HashSet<string> RequiredClaimTypes = new(StringComparer.Ordinal)
     {
@@ -63,15 +68,72 @@ public static class TrustedServiceTokenValidationExtensions
                         return Task.CompletedTask;
                     }
                 };
+            })
+            .AddJwtBearer(WorkflowAuthenticationScheme, options =>
+            {
+                options.MapInboundClaims = false;
+                var validationOptions = configuration
+                    .GetSection(TrustedServiceTokenValidationOptions.SectionName)
+                    .Get<TrustedServiceTokenValidationOptions>() ?? new TrustedServiceTokenValidationOptions();
+                options.TokenValidationParameters = CreateTokenValidationParameters(
+                    validationOptions,
+                    clock,
+                    WorkflowRequiredAudience);
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = context =>
+                    {
+                        if (context.Principal?.Identity?.IsAuthenticated != true
+                            || !HasExactWorkflowServiceClaims(context.SecurityToken, validationOptions.Issuer))
+                        {
+                            context.Fail("The trusted workflow service identity token claim contract is invalid.");
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
+            })
+            .AddJwtBearer(WorkflowDelegatedUserAuthenticationScheme, options =>
+            {
+                options.MapInboundClaims = false;
+                options.TokenValidationParameters = CreateDelegatedUserTokenValidationParameters(configuration);
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var values = context.Request.Headers[DelegatedAuthorizationHeader];
+                        if (values.Count == 1 && TryReadExactBearer(values[0], out var token))
+                        {
+                            context.Token = token;
+                        }
+                        else
+                        {
+                            context.NoResult();
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
             });
     }
 
     public static TokenValidationParameters CreateTokenValidationParameters(
         TrustedServiceTokenValidationOptions options,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider) =>
+        CreateTokenValidationParameters(options, timeProvider, RequiredAudience);
+
+    public static TokenValidationParameters CreateTokenValidationParameters(
+        TrustedServiceTokenValidationOptions options,
+        TimeProvider timeProvider,
+        string requiredAudience)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(timeProvider);
+
+        if (!IsExactIdentifier(requiredAudience))
+        {
+            throw new InvalidOperationException("Trusted service token audience is invalid.");
+        }
 
         if (!IsExactIdentifier(options.Issuer, 256))
         {
@@ -103,12 +165,12 @@ public static class TrustedServiceTokenValidationExtensions
             ValidateIssuer = true,
             ValidIssuer = options.Issuer,
             ValidateAudience = true,
-            ValidAudience = RequiredAudience,
+            ValidAudience = requiredAudience,
             ValidateLifetime = true,
             RequireExpirationTime = true,
             RequireSignedTokens = true,
             ValidateIssuerSigningKey = true,
-            ClockSkew = TimeSpan.Zero,
+            ClockSkew = JwtValidationDefaults.ClockSkew,
             ValidAlgorithms = [SecurityAlgorithms.RsaSha256],
             NameClaimType = JwtRegisteredClaimNames.Sub,
             RoleClaimType = "service_identity_role_forbidden",
@@ -140,8 +202,17 @@ public static class TrustedServiceTokenValidationExtensions
     }
 
     public static bool HasExactServiceClaims(SecurityToken? securityToken, string issuer)
+        => HasExactServiceClaims(securityToken, issuer, RequiredAudience);
+
+    public static bool HasExactWorkflowServiceClaims(SecurityToken? securityToken, string issuer)
+        => HasExactServiceClaims(securityToken, issuer, WorkflowRequiredAudience);
+
+    private static bool HasExactServiceClaims(
+        SecurityToken? securityToken,
+        string issuer,
+        string requiredAudience)
     {
-        if (!IsExactIdentifier(issuer, 256))
+        if (!IsExactIdentifier(issuer, 256) || !IsExactIdentifier(requiredAudience))
         {
             return false;
         }
@@ -169,12 +240,64 @@ public static class TrustedServiceTokenValidationExtensions
         }
 
         return HasOneExact(claims, JwtRegisteredClaimNames.Iss, issuer)
-            && HasOneExact(claims, JwtRegisteredClaimNames.Aud, RequiredAudience)
+            && HasOneExact(claims, JwtRegisteredClaimNames.Aud, requiredAudience)
             && HasOneGuid(claims, JwtRegisteredClaimNames.Sub)
             && HasOneExact(claims, "actor_type", "service")
             && HasOneExact(claims, "service_name", RequiredServiceName)
             && HasOneGuid(claims, "tenant_id")
             && HasOneGuid(claims, JwtRegisteredClaimNames.Jti);
+    }
+
+    private static TokenValidationParameters CreateDelegatedUserTokenValidationParameters(
+        IConfiguration configuration)
+    {
+        var issuer = configuration["JwtSettings:Issuer"];
+        var audience = configuration["JwtSettings:Audience"];
+        var keys = new JwtSecretRotationResolver(configuration).GetValidationKeys();
+        if (!IsExactIdentifier(issuer, 256)
+            || !IsExactIdentifier(audience, 256)
+            || keys.Count == 0)
+        {
+            throw new InvalidOperationException("Delegated workflow user JWT configuration is invalid.");
+        }
+
+        return new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = issuer,
+            ValidateAudience = true,
+            ValidAudience = audience,
+            ValidateLifetime = true,
+            RequireExpirationTime = true,
+            RequireSignedTokens = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKeys = keys,
+            ClockSkew = JwtValidationDefaults.ClockSkew,
+            NameClaimType = JwtRegisteredClaimNames.Sub
+        };
+    }
+
+    internal static bool TryReadExactBearer(string? header, out string token)
+    {
+        token = string.Empty;
+        const string prefix = "Bearer ";
+        if (header is null
+            || !header.StartsWith(prefix, StringComparison.Ordinal)
+            || header.Length <= prefix.Length)
+        {
+            return false;
+        }
+
+        var candidate = header[prefix.Length..];
+        if (!string.Equals(candidate, candidate.Trim(), StringComparison.Ordinal)
+            || candidate.Any(char.IsWhiteSpace)
+            || candidate.Any(char.IsControl))
+        {
+            return false;
+        }
+
+        token = candidate;
+        return true;
     }
 
     private static RsaSecurityKey CreatePublicKey(string? keyId, string? publicKeyPem)

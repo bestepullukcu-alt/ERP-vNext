@@ -28,6 +28,13 @@ public sealed class WorkflowInstance : TenantScopedEntity
 
     public string? CorrelationId { get; set; }
     public string? IdempotencyKey { get; set; }
+    public Guid? TrustedConsumerClientId { get; set; }
+    public Guid? DelegatedMakerUserId { get; set; }
+    public string? StartRequestFingerprint { get; set; }
+    public WorkflowStartCheckpoint StartCheckpoint { get; set; }
+    public Guid? InitialApprovalTaskId { get; set; }
+    public Guid? InitialAssignmentSnapshotId { get; set; }
+    public Guid? StartTransitionLogId { get; set; }
     public string? StartedBy { get; set; }
     public DateTimeOffset? StartedAt { get; set; }
     public DateTimeOffset? DueAt { get; set; }

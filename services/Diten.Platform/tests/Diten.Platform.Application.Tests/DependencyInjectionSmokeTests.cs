@@ -4,6 +4,9 @@ using Diten.Platform.Application.Features.BusinessReferenceData.Handlers.QueryHa
 using Diten.Platform.Application.Features.BusinessReferenceData.Queries;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.BusinessReferenceData.Models;
+using Diten.Platform.Application.Features.Workflow.Services;
+using Diten.Platform.Common.Tenancy;
+using Diten.Platform.Domain.Repositories;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Diten.Platform.API.Services.BusinessReferenceData;
@@ -16,6 +19,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Diten.Platform.Application.Authorization;
 using Microsoft.Extensions.Options;
+using Moq;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests;
@@ -49,6 +53,27 @@ public sealed class DependencyInjectionSmokeTests
             descriptor.ServiceType == typeof(IRequestHandler<ResolveVerifiedGskuReferenceDataQuery,
                 Response<BusinessReferenceDataVerifiedResolveResult>>)
             && descriptor.ImplementationType == typeof(ResolveVerifiedGskuReferenceDataHandler));
+    }
+
+    [Fact]
+    public void AddApplication_ResolvesTrustedWorkflowStartCoordinator()
+    {
+        var services = new ServiceCollection();
+        services.AddApplication();
+        services.AddSingleton(Mock.Of<IWorkflowTemplateRepository>());
+        services.AddSingleton(Mock.Of<IWorkflowTemplateVersionRepository>());
+        services.AddSingleton(Mock.Of<IWorkflowInstanceRepository>());
+        services.AddSingleton(Mock.Of<IApprovalTaskRepository>());
+        services.AddSingleton(Mock.Of<IRuntimeAssignmentSnapshotRepository>());
+        services.AddSingleton(Mock.Of<IWorkflowTransitionLogRepository>());
+        services.AddSingleton(Mock.Of<ITenantContext>());
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        var coordinator = scope.ServiceProvider.GetRequiredService<IWorkflowInstanceStartCoordinator>();
+
+        Assert.IsType<WorkflowInstanceStartCoordinator>(coordinator);
     }
 
     [Fact]
@@ -160,6 +185,10 @@ public sealed class DependencyInjectionSmokeTests
         Assert.Equal(baseline.DefaultSignInScheme, authentication.DefaultSignInScheme);
         Assert.Equal(baseline.DefaultSignOutScheme, authentication.DefaultSignOutScheme);
         Assert.NotNull(await schemes.GetSchemeAsync(TrustedServiceTokenValidationExtensions.AuthenticationScheme));
+        Assert.NotNull(await schemes.GetSchemeAsync(
+            TrustedServiceTokenValidationExtensions.WorkflowAuthenticationScheme));
+        Assert.NotNull(await schemes.GetSchemeAsync(
+            TrustedServiceTokenValidationExtensions.WorkflowDelegatedUserAuthenticationScheme));
     }
 
     [Fact]
@@ -185,6 +214,25 @@ public sealed class DependencyInjectionSmokeTests
         Assert.DoesNotContain("AddHostedService<TrustedSourceAuditIntent", program, StringComparison.Ordinal);
         Assert.DoesNotContain("AddHostedService<TrustedSourceAuditIntent", dependencyInjection, StringComparison.Ordinal);
         Assert.False(typeof(IHostedService).IsAssignableFrom(typeof(TrustedSourceAuditIntentRequestExecutor)));
+    }
+
+    [Fact]
+    public void Program_RegistersTrustedWorkflowTransportWithoutHostedOrDefaultSchemeMutation()
+    {
+        var root = FindRepositoryRoot();
+        var program = File.ReadAllText(Path.Combine(
+            root,
+            "services", "Diten.Platform", "src", "Diten.Platform.API", "Program.cs"));
+
+        Assert.Contains("TrustedWorkflowConsumerRequestParser", program, StringComparison.Ordinal);
+        Assert.Contains("ITrustedWorkflowConsumerRequestExecutor", program, StringComparison.Ordinal);
+        Assert.Contains("TrustedWorkflowConsumerRequestExecutor", program, StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "AddAuthentication(TrustedServiceTokenValidationExtensions.WorkflowAuthenticationScheme",
+            program,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain("AddHostedService<TrustedWorkflow", program, StringComparison.Ordinal);
+        Assert.False(typeof(IHostedService).IsAssignableFrom(typeof(TrustedWorkflowConsumerRequestExecutor)));
     }
 
     private static string FindRepositoryRoot()
