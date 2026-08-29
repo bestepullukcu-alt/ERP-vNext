@@ -23,6 +23,7 @@ implementation_authority: explicit-user-control-tower-bounded-core-scaffold-cont
 b02_evidence_authority: explicit-user-control-tower-non-runtime-persistence-integration-evidence
 backend_local_testability_authority: explicit-user-control-tower-non-production-default-off
 functional_local_dws_api_authority: explicit-user-control-tower-non-production-default-off
+frontend_legacy_parity_authority: explicit-user-control-tower-bounded-default-off-non-production
 production_authority: none
 ---
 
@@ -76,6 +77,12 @@ production_authority: none
 
 > **Planning date:** `target: 2026-08-14` is a provisional planning date, not a delivery commitment or
 > implementation authorization.
+
+> **Frontend & Legacy-Parity amendment:** The explicit Control Tower decision dated 2026-08-29 authorizes
+> governance preparation for the bounded tenant UI slice defined in §19. This is a default-off,
+> non-production and non-migrating authority. It supersedes earlier blanket frontend exclusions only for the
+> exact allowlist in that amendment. It does not authorize a Gateway route, direct browser-to-`5017` access,
+> production activation, deployment, WorkCenter integration, legacy mutation or shared-shell modification.
 
 ## 1. Module Summary
 
@@ -1598,6 +1605,83 @@ The functional implementation is not complete until all of the following executa
 
 Passing this gate closes only the Functional Local DWS API amendment. B-03 through B-09, live provider
 integration, production, frontend, Gateway, WorkCenter, migration and legacy retirement remain open.
+
+### Frontend & Legacy Parity / READY-FOR-DEV / DEFAULT-OFF / NON-PRODUCTION amendment
+
+This amendment authorizes a later bounded frontend implementation and its evidence; it does not itself
+declare the frontend implemented. The canonical tenant page route is
+`GET /management-governance/delivery-execution/structures`. That exact new route is owned by MOD-0354, but
+the existing `DeliveryExecutionManagementController`, its routes and views remain byte-preserved. The
+historical `/DecompositionTreeBuilder` page remains available for side-by-side comparison and is never
+redirected, replaced, modified or treated as canonical DWS truth.
+
+The MVP is a **read-first structural workspace** over the typed DWS query contracts. Initial page load may
+render only shell/loading/empty/error states. Until an integration-agent supplies a separately approved
+Gateway `5000` route, the same-origin proxy is disabled and returns typed `503 dws_frontend_gateway_not_ready`
+with zero service reads. Browser JavaScript never calls loopback `5017`, embeds a bearer token, reads an
+HttpOnly cookie or invents tenant/context data. Enabling writes, Gateway routing or production transport is a
+separate activation gate.
+
+#### Exact frontend allowlist
+
+Only the following paths may be created or changed by this slice:
+
+- `frontend/Diten.Web/Controllers/DwsStructuresFrontendController.cs`
+- `frontend/Diten.Web/Models/ManagementGovernance/Dws/**`
+- `frontend/Diten.Web/Services/ManagementGovernance/Dws/**`
+- `frontend/Diten.Web/Views/ManagementGovernance/Dws/**`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/Dws/DwsIndex.en.resx`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/Dws/DwsIndex.fr.resx`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/Dws/DwsIndex.es.resx`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/Dws/DwsIndex.zh.resx`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/Dws/DwsIndex.ar.resx`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/Dws/DwsIndex.ru.resx`
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/Dws/DwsIndex.tr.resx`
+- `frontend/Diten.Web/wwwroot/assets/js/pages/management-governance/dws/index.js`
+- `frontend/Diten.Web/wwwroot/assets/js/pages/management-governance/dws/index.l10n.js`
+- `frontend/Diten.Web/wwwroot/assets/css/pages/management-governance/dws.css`
+- `frontend/Diten.Web/tests/mg-dws-frontend-contract.test.js`
+- `frontend/Diten.Web/tests/mg-dws-legacy-parity.test.js`
+- `execution/domains/management-governance/evidence/MOD-0354-legacy-parity.md`
+
+No wildcard above reaches the existing generic `ManagementGovernance` controller/model/adapter/registry,
+`DeliveryExecutionManagement`, `EnterpriseStrategyBusinessPerformance`, `WorkCenter`, `WorkCenterNext`,
+`DecompositionTreeBuilder`, shared layouts/resources, `Program.cs`, Gateway or service runtime.
+
+#### UX, permissions and localization
+
+- Every Razor page explicitly uses `_LayoutTenantShell`; `_Layout.cshtml` and `_ViewStart.cshtml` remain
+  unchanged.
+- This hierarchy/editor surface remains `golden_reference: none` and `form_field_count: 0`; it is not a
+  DataTable CRUD page. Tree, inspector, validation and comparison components replace the Slim/Compact form
+  contract.
+- The first enabled milestone is read-only and may use only
+  `management-governance.dws.read`, `management-governance.dws.validate` and
+  `management-governance.dws.compare`. Later visible commands map one-to-one to the existing exact six-key
+  inventory; hiding a control is never authorization.
+- The page exposes no task, owner, due date, progress, status, approve, assign, escalate, start, complete,
+  workflow, SLA or WorkCenter behavior. Baseline creation is labeled **Seal Baseline**, never approval.
+- All module strings come from the exact seven RESX files. Shared actions use existing `SharedResource`
+  keys; no English fallback, inline translation dictionary or hardcoded user-facing JavaScript string is
+  permitted. Arabic RTL and keyboard-only tree/inspector navigation are acceptance requirements.
+- Loading, empty, validation, `401`, `403`, non-disclosing `404`, `409`, `503` and offline states are
+  distinct. A `503` never renders stale/LKG data as authoritative.
+
+#### Legacy parity and browser evidence gate
+
+The parity matrix records, for every legacy `/DecompositionTreeBuilder` page/state: old URL, old entities,
+fields, commands/actions, lifecycle, permissions, integrations, new owner/module, new URL, field mapping,
+`Same|Replaced|Missing|Intentionally Removed|Out of Scope`, migration requirement and browser evidence.
+Legacy task/date/owner/status/approve controls are recorded as `Out of Scope` or `Intentionally Removed`
+only after owner review; they are not copied into MOD-0354. The user must be able to open old and new URLs
+on different ports and compare them page-by-page. Until the matrix and user acceptance are complete, no
+legacy retirement, delete, redirect or `full parity complete` claim is allowed.
+
+Required executable evidence is exact route ownership, tenant-shell use, seven-language key parity, no
+hardcoded strings, no direct-service URL/token access, zero-read default-off behavior, permission-to-control
+mapping, keyboard/RTL checks, protected-path diff zero and browser screenshots/network logs for loading,
+empty, populated-read, `403`, `404`, `409` and `503`. Gateway, write activation and production evidence remain
+open even after these frontend tests pass.
 
 ### Human review questions
 
