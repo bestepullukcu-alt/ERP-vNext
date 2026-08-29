@@ -905,8 +905,13 @@ The authorized Phase 2A implementation may create only:
 - `services/Diten.PpmService/**` — user-approved Phase 2A scaffold/backend.
 - `frontend/Diten.Web/Views/PPM/**` — user-approved tenant-shell Phase 2A surfaces.
 - `frontend/Diten.Web/Controllers/PpmController.cs` or equivalent same-origin proxy — exact decision pending.
+- `frontend/Diten.Web/Models/PPM/**` — frontend-only form/list models for the authorized six surfaces.
+- `frontend/Diten.Web/Navigation/PpmModuleManifest.cs` — discovery metadata for the exact `MOD-0117` / `PPM`
+  route and permission inventory; it grants no entitlement, role or effective permission.
 - `frontend/Diten.Web/wwwroot/assets/js/PPM/**`.
 - `frontend/Diten.Web/Resources/Views/PPM/**`.
+- `frontend/Diten.Web/tests/js/ppm-add-new-delegation.test.mjs` and
+  `frontend/Diten.Web/tests/js/ppm-gate-l-contract.test.mjs` — frontend-only executable contract evidence.
 - `services/Diten.PpmService/tests/**`.
 - Gateway route work only through a separate `integration-agent` task after route/port approval.
 
@@ -915,6 +920,24 @@ test roots enumerated in §4.9.1. It does not inherit the broad Phase 2A/fronten
 no Persistence, Infrastructure, Api, composition or runtime change.
 
 Gateway configuration remains unauthorized and integration-agent-only.
+
+### Current-main frontend materialization amendment — NON-PRODUCTION / NON-ACTIVATING
+
+The explicit Control Tower decision dated 2026-08-29 authorizes semantic materialization of the already
+approved MOD-0117 frontend from historical branch `feature/ppm/mod-0117-phase2a-integration` onto the
+current-main integration line. The scope is exactly the frontend paths listed above, including the equivalent
+same-origin proxy at `frontend/Diten.Web/Controllers/PPM/PpmController.cs`. Existing frontend composition may
+receive only the minimum additive registration needed by these exact paths. WorkCenter, WorkCenterNext,
+Gateway, Platform, other module UI, shared layouts and shared assets remain protected.
+
+The historical source is evidence, not automatically correct code. Materialization must preserve the current
+HttpOnly user/session flow, derive tenant identity only from authenticated server context, forward the exact
+tenant/correlation headers required by the Gateway contract, use no browser token access or direct service
+port, and keep all six surfaces on `_LayoutTenantShell`. It must preserve the exact twenty-four permissions,
+seven-language resource parity and Golden Slim/DataTable v2 profile. No bulk-delete capability may be added.
+Successful build, focused frontend tests, localization parity, route/proxy checks and the applicable DataTable
+verifier results are local evidence only; this amendment grants no production activation, push, merge,
+WorkCenter integration, legacy migration or retirement authority.
 
 ## 6. Protected Paths
 
