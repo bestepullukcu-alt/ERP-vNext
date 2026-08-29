@@ -77,13 +77,19 @@ public sealed class ReconcileGlobalProductIdentityDecisionHandler
         ProductIdentityWorkflowDecisionEvidence evidence,
         Guid globalProductId)
     {
-        var expectedStatus = evidence.Decision switch
+        var expectedTaskStatus = evidence.Decision switch
         {
             ProductIdentityDecisionKind.Approved => "Approved",
             ProductIdentityDecisionKind.Rejected => "Rejected",
             _ => string.Empty
         };
-        return expectedStatus.Length > 0
+        var expectedInstanceStatus = evidence.Decision switch
+        {
+            ProductIdentityDecisionKind.Approved => "Completed",
+            ProductIdentityDecisionKind.Rejected => "Rejected",
+            _ => string.Empty
+        };
+        return expectedTaskStatus.Length > 0
             && evidence.WorkflowInstanceId == binding.WorkflowInstanceId
             && evidence.ApprovalTaskId == binding.ApprovalTaskId
             && evidence.WorkflowTemplateId == binding.WorkflowTemplateId
@@ -91,8 +97,8 @@ public sealed class ReconcileGlobalProductIdentityDecisionHandler
             && evidence.ObjectId == globalProductId
             && string.Equals(evidence.ObjectType, binding.ObjectType, StringComparison.Ordinal)
             && string.Equals(evidence.ObjectRef, binding.ObjectRef, StringComparison.Ordinal)
-            && string.Equals(evidence.TaskStatus, expectedStatus, StringComparison.Ordinal)
-            && string.Equals(evidence.InstanceStatus, expectedStatus, StringComparison.Ordinal)
+            && string.Equals(evidence.TaskStatus, expectedTaskStatus, StringComparison.Ordinal)
+            && string.Equals(evidence.InstanceStatus, expectedInstanceStatus, StringComparison.Ordinal)
             && evidence.TransitionSequence > 0
             && evidence.DecisionAtUtc.Offset == TimeSpan.Zero;
     }

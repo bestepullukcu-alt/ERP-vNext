@@ -212,7 +212,7 @@ internal static class LifecycleTestData
         ApprovalTaskId = Guid.Parse("89000000-0000-0000-0000-000000000089"),
         AssignmentSnapshotId = Guid.Parse("8b000000-0000-0000-0000-00000000008b"),
         StartTransitionLogId = Guid.Parse("8c000000-0000-0000-0000-00000000008c"),
-        ObjectType = "global-product",
+        ObjectType = "GlobalProduct",
         ObjectId = ProductId,
         ObjectRef = "GP-TEST",
         SubmitterSubjectId = Maker,
@@ -228,7 +228,7 @@ internal static class LifecycleTestData
         ApprovalTaskId = Binding().ApprovalTaskId,
         WorkflowTemplateId = Binding().WorkflowTemplateId,
         WorkflowTemplateVersionId = Binding().WorkflowTemplateVersionId,
-        ObjectType = "global-product",
+        ObjectType = "GlobalProduct",
         ObjectId = ProductId,
         ObjectRef = "GP-TEST",
         DecisionActorSubjectId = Approver,
@@ -236,7 +236,7 @@ internal static class LifecycleTestData
         DecisionAtUtc = new DateTimeOffset(2030, 1, 2, 0, 0, 0, TimeSpan.Zero),
         TransitionSequence = 2,
         TaskStatus = decision.ToString(),
-        InstanceStatus = decision.ToString()
+        InstanceStatus = decision == ProductIdentityDecisionKind.Approved ? "Completed" : "Rejected"
     };
 }
 

@@ -4,11 +4,14 @@ using Diten.MdmService.Api.ModuleRegistration;
 using Diten.MdmService.Api.Configuration;
 using Diten.MdmService.Api.Services.ProductLegalEntityScopes;
 using Diten.MdmService.Api.Services.Audit;
+using Diten.MdmService.Api.Services.ProductItemSkuMaster;
 using Diten.MdmService.Application;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 using Diten.MdmService.Infrastructure;
 using Diten.MdmService.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,7 +19,11 @@ var runProductLegalEntityScopeOperational =
     ProductLegalEntityScopeOperationalCommandLine.IsRequested(args);
 var runAuditIntentTemporalMigration =
     AuditIntentTemporalMigrationCommandLine.IsRequested(args);
-if (runProductLegalEntityScopeOperational && runAuditIntentTemporalMigration)
+var runProductIdentityWorkflowRecovery =
+    ProductIdentityWorkflowRecoveryCommandLine.IsRequested(args);
+if ((runProductLegalEntityScopeOperational ? 1 : 0)
+    + (runAuditIntentTemporalMigration ? 1 : 0)
+    + (runProductIdentityWorkflowRecovery ? 1 : 0) > 1)
 {
     throw new InvalidOperationException("MDM_OPERATIONAL_COMMAND_AMBIGUOUS");
 }
@@ -38,8 +45,40 @@ builder.Services.Configure<AuditIntentTemporalMigrationOptions>(
 builder.Services.Configure<AuditIntentDeliveryWorkerOptions>(
     builder.Configuration.GetSection(AuditIntentDeliveryWorkerOptions.SectionName));
 builder.Services.AddHostedService<AuditIntentDeliveryWorker>();
+builder.Services.AddOptions<ProductIdentityWorkflowOptions>()
+    .Bind(builder.Configuration.GetSection(ProductIdentityWorkflowOptions.SectionName))
+    .Validate(options => !options.Enabled || IsValidProductIdentityWorkflowOptions(options),
+        "PRODUCT_IDENTITY_WORKFLOW_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddOptions<ProductIdentityWorkflowWorkerOptions>()
+    .Bind(builder.Configuration.GetSection(ProductIdentityWorkflowWorkerOptions.SectionName))
+    .Validate(IsValidProductIdentityWorkflowWorkerOptions,
+        "PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<ProductIdentityWorkflowOptions>>().Value;
+    var configuration = options.Enabled
+        ? options.ToStartConfiguration()
+        : new ProductIdentityWorkflowStartConfiguration(null, null, [], string.Empty, false, false, null);
+    return new ProductIdentityWorkflowStartRequestFactory(
+        configuration,
+        sp.GetRequiredService<TimeProvider>());
+});
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<ProductIdentityWorkflowWorkerOptions>>().Value;
+    return new ProductIdentityWorkflowExecutionConfiguration(
+        TimeSpan.FromSeconds(options.LeaseSeconds),
+        TimeSpan.FromSeconds(options.RetryDelaySeconds));
+});
+builder.Services.AddScoped<GlobalProductIdentityWorkflowProcessor>();
+builder.Services.AddSingleton<ProductIdentityWorkflowRecoveryRunner>();
+builder.Services.AddHostedService<ProductIdentityWorkflowRecoveryWorker>();
 
-if (!runProductLegalEntityScopeOperational && !runAuditIntentTemporalMigration)
+if (!runProductLegalEntityScopeOperational
+    && !runAuditIntentTemporalMigration
+    && !runProductIdentityWorkflowRecovery)
 {
     var jwtSecret = builder.Configuration["JwtSettings:Secret"];
     var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
@@ -147,6 +186,22 @@ if (runProductLegalEntityScopeOperational)
     return;
 }
 
+if (runProductIdentityWorkflowRecovery)
+{
+    var runner = app.Services.GetRequiredService<ProductIdentityWorkflowRecoveryRunner>();
+    var result = await ProductIdentityWorkflowRecoveryCommandLine.RunAsync(
+        runner,
+        app.Lifetime.ApplicationStopping);
+    app.Logger.LogInformation(
+        "Product identity workflow recovery completed; tenants {TenantCount}, operations {OperationCount}, completed {CompletedCount}, deferred {DeferredCount}, failed {FailedCount}.",
+        result.TenantCount,
+        result.OperationCount,
+        result.CompletedCount,
+        result.DeferredCount,
+        result.FailedCount);
+    return;
+}
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -174,5 +229,42 @@ static void ValidateRequiredJwtSetting(string? value, string key)
     if (string.IsNullOrWhiteSpace(value))
     {
         throw new InvalidOperationException($"Configuration error: '{key}' is missing or empty.");
+    }
+}
+
+static bool IsValidProductIdentityWorkflowOptions(ProductIdentityWorkflowOptions options)
+{
+    try
+    {
+        _ = options.ToStartConfiguration();
+        return true;
+    }
+    catch (InvalidOperationException)
+    {
+        return false;
+    }
+}
+
+static bool IsValidProductIdentityWorkflowWorkerOptions(ProductIdentityWorkflowWorkerOptions options)
+{
+    if (options.LeaseSeconds is < 10 or > 900
+        || options.RetryDelaySeconds is < 1 or > 3_600)
+    {
+        return false;
+    }
+
+    if (!options.Enabled)
+    {
+        return true;
+    }
+
+    try
+    {
+        options.EnsureValidWhenEnabled();
+        return true;
+    }
+    catch (InvalidOperationException)
+    {
+        return false;
     }
 }
