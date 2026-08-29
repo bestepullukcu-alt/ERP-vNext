@@ -153,6 +153,7 @@ builder.Services.AddSingleton<ITrustedLegalEntityScopeCredentialAuthenticator, T
 builder.Services.AddScoped<ITrustedLegalEntityScopeJwtContext, TrustedLegalEntityScopeJwtContext>();
 builder.Services.AddScoped<ITrustedLegalEntityScopeRequestExecutor, TrustedLegalEntityScopeRequestExecutor>();
 builder.Services.AddSingleton<IOrgDataScopeCandidateAvailabilityClassifier, MongoOrgDataScopeCandidateAvailabilityClassifier>();
+builder.Services.AddScoped<IVerifiedReferenceDataServiceTenantContext, VerifiedReferenceDataServiceTenantContext>();
 builder.Services.AddScoped<ITrustedSourceAuditIntentServiceIdentity, TrustedSourceAuditIntentServiceIdentity>();
 builder.Services.AddSingleton<Diten.Platform.API.Models.Audit.TrustedSourceAuditIntentRequestParser>();
 builder.Services.AddScoped<ITrustedSourceAuditIntentRequestExecutor, TrustedSourceAuditIntentRequestExecutor>();
