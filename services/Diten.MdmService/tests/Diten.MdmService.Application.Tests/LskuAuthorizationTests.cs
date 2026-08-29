@@ -13,6 +13,8 @@ public sealed class LskuAuthorizationTests
     [InlineData(nameof(LskusController.GetById), "mdm.lskus.read")]
     [InlineData(nameof(LskusController.GetCreateOptions), "mdm.lskus.create")]
     [InlineData(nameof(LskusController.CreateDraft), "mdm.lskus.create")]
+    [InlineData(nameof(LskusController.SubmitIdentity), "mdm.lskus.submit")]
+    [InlineData(nameof(LskusController.RetireIdentity), "mdm.lskus.retire")]
     public void Every_endpoint_demands_the_exact_permission(string methodName, string permission)
     {
         var method = typeof(LskusController).GetMethod(methodName)!;
@@ -22,7 +24,7 @@ public sealed class LskuAuthorizationTests
     }
 
     [Fact]
-    public void Controller_requires_authentication_and_declares_only_read_and_create_permissions()
+    public void Controller_requires_authentication_and_declares_only_exact_lifecycle_permissions()
     {
         Assert.NotNull(typeof(LskusController).GetCustomAttribute<AuthorizeAttribute>());
         var policies = typeof(LskusController)
@@ -31,7 +33,12 @@ public sealed class LskuAuthorizationTests
             .Select(attribute => attribute.Policy)
             .ToHashSet(StringComparer.Ordinal);
 
-        Assert.Equal(["Permission:mdm.lskus.create", "Permission:mdm.lskus.read"],
+        Assert.Equal([
+                "Permission:mdm.lskus.create",
+                "Permission:mdm.lskus.read",
+                "Permission:mdm.lskus.retire",
+                "Permission:mdm.lskus.submit"
+            ],
             policies.OrderBy(policy => policy, StringComparer.Ordinal));
     }
 }

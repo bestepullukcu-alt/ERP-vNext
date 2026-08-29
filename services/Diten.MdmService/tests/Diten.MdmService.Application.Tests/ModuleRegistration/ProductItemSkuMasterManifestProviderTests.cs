@@ -74,6 +74,8 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.brands.read",
                 "mdm.finished-goods.create",
                 "mdm.finished-goods.read",
+                "mdm.finished-goods.retire",
+                "mdm.finished-goods.submit",
                 "mdm.global-products.create",
                 "mdm.global-products.read",
                 "mdm.global-products.retire",
@@ -84,6 +86,8 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.gskus.submit",
                 "mdm.lskus.create",
                 "mdm.lskus.read",
+                "mdm.lskus.retire",
+                "mdm.lskus.submit",
                 "mdm.product-abbreviations.approve",
                 "mdm.product-abbreviations.audit",
                 "mdm.product-abbreviations.cancel",
@@ -100,7 +104,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.product-legal-entity-scopes.replace"
             },
             declared.OrderBy(value => value, StringComparer.Ordinal));
-        Assert.Equal(27, declared.Count);
+        Assert.Equal(31, declared.Count);
         var operatorOnly = new HashSet<string>(StringComparer.Ordinal)
         {
             "mdm.product-legal-entity-scope-rollout.activate",
@@ -116,9 +120,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.Equal(4, productPages.Count);
         foreach (var page in productPages)
         {
-            var expectedActions = page.PageCode is "GLOBAL_PRODUCTS" or "GSKUS"
-                ? new[] { "ADD_NEW", "RETIRE", "SUBMIT", "VIEW_DETAILS" }
-                : ["ADD_NEW", "VIEW_DETAILS"];
+            var expectedActions = new[] { "ADD_NEW", "RETIRE", "SUBMIT", "VIEW_DETAILS" };
             Assert.Equal(expectedActions.Length, page.Actions.Count);
             Assert.Equal(
                 expectedActions,
@@ -180,6 +182,30 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.True(retire.IsDangerous);
         Assert.DoesNotContain(page.Actions, action => action.ActionCode is "APPROVE" or "REJECT");
         Assert.True(page.IsNavigationVisible);
+    }
+
+    [Theory]
+    [InlineData("LSKUS", "mdm.lskus", false)]
+    [InlineData("FINISHED_GOODS", "mdm.finished-goods", false)]
+    public void Lsku_and_finished_good_activate_lifecycle_together_without_navigation_change(
+        string pageCode,
+        string permissionPrefix,
+        bool expectedNavigationVisible)
+    {
+        var page = Assert.Single(Manifest.Pages, item => item.PageCode == pageCode);
+        var submit = Assert.Single(page.Actions, action => action.ActionCode == "SUBMIT");
+        var retire = Assert.Single(page.Actions, action => action.ActionCode == "RETIRE");
+
+        Assert.Equal(permissionPrefix + ".submit", submit.PermissionKey);
+        Assert.True(submit.IsRowAction);
+        Assert.False(submit.IsToolbarAction);
+        Assert.False(submit.IsDangerous);
+        Assert.Equal(permissionPrefix + ".retire", retire.PermissionKey);
+        Assert.True(retire.IsRowAction);
+        Assert.False(retire.IsToolbarAction);
+        Assert.True(retire.IsDangerous);
+        Assert.DoesNotContain(page.Actions, action => action.ActionCode is "APPROVE" or "REJECT");
+        Assert.Equal(expectedNavigationVisible, page.IsNavigationVisible);
     }
 
     [Fact]
