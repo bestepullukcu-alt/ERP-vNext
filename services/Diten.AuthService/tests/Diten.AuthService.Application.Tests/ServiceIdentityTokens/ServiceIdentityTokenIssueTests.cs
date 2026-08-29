@@ -98,6 +98,32 @@ public sealed class ServiceIdentityTokenIssueTests
             jwt.Claims.Select(x => x.Type).OrderBy(x => x, StringComparer.Ordinal).ToArray());
     }
 
+    [Fact]
+    public void Issuer_emits_exact_reference_data_audience_without_changing_claim_shape_or_lifetime()
+    {
+        using var rsa = RSA.Create(2048);
+        var now = DateTimeOffset.UtcNow;
+        var issuer = new ServiceIdentityTokenIssuer(Options.Create(new ServiceIdentityTokenIssuerOptions
+        {
+            Issuer = "https://auth.local",
+            ActiveKeyId = "service-key-1",
+            ActivePrivateKeyPem = rsa.ExportPkcs8PrivateKeyPem(),
+            TokenLifetimeSeconds = 300
+        }), new FrozenTimeProvider(now));
+
+        var issued = issuer.Issue(
+            Guid.NewGuid(), "Diten.MDM", Guid.NewGuid(), ServiceIdentityTokenAudiencePolicy.TrustedReferenceDataConsumer);
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(issued.AccessToken);
+
+        Assert.Equal(SecurityAlgorithms.RsaSha256, jwt.Header.Alg);
+        Assert.Equal(ServiceIdentityTokenAudiencePolicy.TrustedReferenceDataConsumer, Assert.Single(jwt.Audiences));
+        Assert.Equal(300, issued.ExpiresInSeconds);
+        Assert.Equal(now.AddSeconds(300), issued.ExpiresAtUtc);
+        Assert.Equal(
+            new[] { "actor_type", "aud", "exp", "iat", "iss", "jti", "nbf", "service_name", "sub", "tenant_id" },
+            jwt.Claims.Select(x => x.Type).OrderBy(x => x, StringComparer.Ordinal).ToArray());
+    }
+
     [Theory]
     [InlineData(1024, "key")]
     [InlineData(2048, "")]
@@ -120,6 +146,7 @@ public sealed class ServiceIdentityTokenIssueTests
     [Theory]
     [InlineData("Other.Service", "TRUSTED_AUDIT_SOURCE_INGEST")]
     [InlineData("Other.Service", "TRUSTED_WORKFLOW_CONSUMER")]
+    [InlineData("Other.Service", "TRUSTED_REFERENCE_DATA_CONSUMER")]
     [InlineData("Diten.MDM", "OTHER_AUDIENCE")]
     public void Issuer_defends_the_first_bounded_pair(string serviceName, string audience)
     {
