@@ -2,7 +2,6 @@ using Diten.DevEnablementService.Application.Common;
 using Diten.DevEnablementService.Application.Interfaces;
 using Diten.DevEnablementService.Infrastructure.Authorization;
 using Diten.DevEnablementService.Infrastructure.Middleware;
-using Diten.DevEnablementService.Infrastructure.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,8 +17,6 @@ public static class DependencyInjection
         services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantContext>());
 
         services.AddHttpContextAccessor();
-        services.AddTransient<TenantPropagationHandler>();
-        services.AddHttpClient("TenantAwareClient").AddHttpMessageHandler<TenantPropagationHandler>();
         services.AddScoped<ICurrentUserContext, UserContext.CurrentUserContext>();
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();

@@ -6,12 +6,25 @@ namespace Diten.Platform.Infrastructure.Services.Http;
 /// The ONE answer to "which tenant id may this outbound call carry?", so the reference validators cannot drift
 /// into two answers.
 ///
-/// <para><b>Why this is not a <c>DelegatingHandler</c>.</b> Because a handler cannot see the request. MEASURED
-/// 2026-08-28: <c>IHttpClientFactory</c> builds and CACHES the handler chain in its own scope, so a handler that
-/// injects the request-scoped <see cref="ITenantContext"/> holds an instance belonging to no request, reports
-/// <c>IsResolved == false</c>, and silently adds nothing. That is what <c>TenantPropagationHandler</c> has been
-/// doing. The caller must therefore ask this question itself, from its own scope — the shape
-/// <c>RemoteWorkItemGateway</c> arrived at by the same measurement.</para>
+/// <para><b>⚠ Why this is not a <c>DelegatingHandler</c>, and must never become one. MEASURED 2026-08-28.</b>
+/// Because a handler cannot see the request. <c>IHttpClientFactory</c> builds and CACHES each client's handler
+/// chain in its OWN scope, so a handler that injects the request-scoped <see cref="ITenantContext"/> holds an
+/// instance belonging to no request: it reports <c>IsResolved == false</c>, adds no header, and says nothing
+/// anywhere. A shared tenant-propagation handler did exactly that on three services for its entire life; the two
+/// reference validators were moved off it (BL-311) and the class itself was then deleted (BL-316). The caller
+/// must therefore ask this question itself, from its own scope — the shape <c>RemoteWorkItemGateway</c> arrived
+/// at by the same measurement.</para>
+///
+/// <para><b>⚠ A unit test cannot catch that failure, and did not.</b> A test container registers the tenant
+/// context as a SINGLETON, so it proves the WIRING and never the LIFETIME — the tests that "covered" the deleted
+/// handler passed green while it put nothing on the wire. It was caught only by calling a real module and reading
+/// the tenant it echoed back: "(no tenant header)". Treat any claim that tenancy travels on some client as worth
+/// exactly the live read behind it.</para>
+///
+/// <para><b>⚠ And a handler would be the wrong answer even on the day it did resolve.</b> The deleted one did
+/// Remove-then-Add with <see cref="ITenantContext.TenantId"/>, so it would OVERWRITE a value a caller had
+/// correctly computed here with — in a platform context — the login sentinel realm instead of the target tenant.
+/// "Just fix the handler" is therefore not a cheaper alternative to this class; it is a second, quieter bug.</para>
 ///
 /// <para><b>Why the platform sentinel must never travel.</b> A platform token's <c>tenant_id</c> claim is the
 /// sentinel <c>00000000-0000-0000-0000-000000000001</c> (<c>PlatformLoginCommandHandler</c>), which is a login

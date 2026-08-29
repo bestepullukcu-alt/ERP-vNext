@@ -249,8 +249,10 @@ Exact files are finalized at implementation start; listed for boundary visibilit
     the MOD-0288 §7 locked validation (exists / same-tenant / ACTIVE / not-deleted) and return shape.
   - **Consumer (MOD-0288, `Diten.Platform`):** `ILegalEntityReferenceValidator` /
     `MdmLegalEntityReferenceValidator` (HTTP GET, **fail-closed** on non-2xx, ID-mismatch, non-ACTIVE,
-    `Referenceable != true`, and network/JSON errors), registered Scoped with `TenantPropagationHandler` and
-    consumed by `Create`/`UpdateOrganizationUnitCommandHandler`.
+    `Referenceable != true`, and network/JSON errors), registered Scoped as a typed `HttpClient` and
+    consumed by `Create`/`UpdateOrganizationUnitCommandHandler`. (⚠ Corrected 2026-08-29, BL-316: this line used
+    to say "registered Scoped with `TenantPropagationHandler`". That handler never added the header and has been
+    deleted — `X-Tenant-Id` is written by the validator itself from the request scope; see `TenantOnTheWire`.)
 - **Governance outcome:** `LegalEntity`-scope emission is **ungated at the governance level** — no narrow MOD-0220
   follow-up pack is required. **Runtime behavior stays fail-closed regardless:** the resolver/consumer still treats
   a non-referenceable or unresolvable Legal Entity as "no scope" (zero rows), exactly as the verified consumer does.
@@ -267,8 +269,10 @@ Exact files are finalized at implementation start; listed for boundary visibilit
 - **Gate status — SATISFIED.** MOD-0288-FU01 runtime is **merged** and its governance status is **`done`** (registry:
   `MOD-0288-FU01`, runtime merged via PR #24 / `d816db6`, 510 tests pass). Verified on this branch:
   - **AuthService Tenant User lookup-validation consumer integration exists:** `IUserReferenceValidator` /
-    `AuthServiceUserReferenceValidator` (HTTP `GET api/users/{userId}/lookup-validation`), registered Scoped with
-    `TenantPropagationHandler`, **fail-closed** on non-2xx / ID-mismatch / `Referenceable != true` / network+JSON
+    `AuthServiceUserReferenceValidator` (HTTP `GET api/users/{userId}/lookup-validation`), registered Scoped as a
+    typed `HttpClient` that writes `X-Tenant-Id` itself from the request scope (⚠ corrected 2026-08-29, BL-316 —
+    this used to read "with `TenantPropagationHandler`"; that handler never added the header and was deleted, see
+    `TenantOnTheWire`), **fail-closed** on non-2xx / ID-mismatch / `Referenceable != true` / network+JSON
     errors.
   - **Fail-closed validation before Position Assignment Create/Update:** both
     `CreatePositionAssignmentCommandHandler` and `UpdatePositionAssignmentCommandHandler` call

@@ -315,8 +315,11 @@ shared `TenantPropagationHandler` and sent **no tenant header at all**, while it
 passed: `IHttpClientFactory` caches its handler chain in its own scope, so a
 `DelegatingHandler` resolving a request-scoped `ITenantContext` never sees a resolved one.
 It was visible only because the far service echoed back "(no tenant header)". The header is
-now written by the request-scoped gateway. The two other clients still using that handler
-are the same defect unfixed — **BL-311**.
+now written by the request-scoped gateway. **Closed out 2026-08-29:** the two other clients
+were moved off the handler the same way (**BL-311**), and the handler class itself — dead on
+all three services, attached only to a named client nobody created — was deleted (**BL-316**).
+The surviving rule is `TenantOnTheWire`: the calling class writes `X-Tenant-Id` from its own
+request scope, never a `DelegatingHandler`.
 
 ---
 

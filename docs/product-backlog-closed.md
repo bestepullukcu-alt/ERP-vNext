@@ -3652,3 +3652,83 @@ nasıl yanlış ölçüldüğü**. İkincisi birincisinden daha pahalıya mal ol
   **eklemeli** (opsiyonel alan, ayrı sorgu) ve mevcut iki okumanın sonucu hiç değişmedi. Riskin durduğu tek
   yer **precedence**: yeni bir sahiplik kipi eklenirse sıranın nereye gireceğine karar verilmelidir, yoksa
   bir satır iki sekmede görünür. Sıra `GetWorkItemsAsync`'te tek yerde ve yorumlu.
+
+### BL-316 — `TenantPropagationHandler` üç serviste kayıtlı, canlı çağrı yolu SIFIR; işaretli ama silinmedi (2026-08-28, ölçüldü)
+> **DURUM:** KAPANDI · **SAHİP:** CONTROL TOWER
+> *Geldiği bölüm:* Açık kararlar
+
+**Devraldığı kayıt: BL-311** (kapandı, arşivde). BL-311 iki referans doğrulayıcıyı handler'dan
+kurtardı; geriye handler'ın **kendisi** kaldı. Silme üç servise yayıldığı için CT 2026-08-28'de
+"kendi diff'ini hak ediyor" dedi ve bu turda yapılmadı — bu kayıt onun unutulmamasıdır.
+
+- **Ölçüm — nerede kayıtlı:** üç serviste.
+  - `Diten.Platform/…/Infrastructure/DependencyInjection.cs`
+  - `Diten.AuthService/…/Infrastructure/DependencyInjection.cs:73-74`
+  - `Diten.DevEnablementService/…/Infrastructure/DependencyInjection.cs:21-22`
+- **Ölçüm — neye takılı:** yalnızca isimli `"TenantAwareClient"`. Platform'daki diğer iki istemci
+  (iki referans doğrulayıcı) 2026-08-28'de ondan koparıldı.
+- **⚠ Ölçüm — o istemciyi kimse yaratmıyor:** repoda `CreateClient("TenantAwareClient")` **çağrısı yok**;
+  tüm `CreateClient()` kullanımları argümansız (varsayılan istemci, handler'sız). Üç servisin üçünde de.
+- **Sonuç: bu turdan sonra handler'ın canlı çağrı yolu SIFIR.** Kimsenin yaratmadığı bir istemciye
+  takılı, hiçbir şey yapmayan bir handler.
+- **Neden hiç çalışmadı (BL-311'den devralınan sebep):** `IHttpClientFactory` handler zincirini KENDİ
+  kapsamında kurup önbelleğe alıyor; zincirdeki `DelegatingHandler` istek kapsamındaki `ITenantContext`'i
+  çözemiyor, `IsResolved == false` dönüyor, başlık eklenmiyor, hiçbir yerde bir şey denmiyor.
+- **⚠ Neden "dursun" yeterli bir cevap değil:** yerinde duran bir handler, sonraki geliştiriciye
+  **"bu istemcide kiracı taşınıyor"** diye okunur — WC-D1 köprüsü tam olarak bu yanılgıyla başladı ve
+  bir tur yedi. Bugün hem sınıf yorumunda hem DI'da "bu şey kiracı taşımıyor" diye işaretli, ama
+  **işaret kalıcı çözüm değildir**: bir sonraki okuyucunun yorumu okuyacağının garantisi yok.
+- **Öneri:** üçünden de **sil** — handler sınıfı + `"TenantAwareClient"` kaydı. Düzeltmenin
+  (kurucuda enjekte edilen bağlam yerine gönderim anında `IHttpContextAccessor` okumak) müşterisi yok:
+  bugün onu isteyen tek bir çağrı yolu bile ölçülmedi.
+- **Doğru desen, silerken referans verilecek:** başlığı çağıran sınıf yazar —
+  `RemoteWorkItemGateway`, `MdmLegalEntityReferenceValidator`, `AuthServiceUserReferenceValidator`
+  (üçü de `TenantOnTheWire` ile aynı kuralı okuyor).
+- **Muhafız zaten var, silme onu bozmamalı:**
+  `Tenant_header_is_written_by_the_validator_and_not_by_a_delegating_handler` (her iki doğrulayıcıda)
+  ve `HttpWorkItemBridgeTests.The_tenant_header_and_the_callers_own_bearer_token_reach_the_module`.
+- **⚠ Kural K2:** bu iş bitince **AYNI TURDA** `DURUM: KAPANDI` yazılıp
+  `docs/product-backlog-closed.md`'ye taşınacak. "Sonra toplu temizleriz" bu dosyayı 6927 satıra çıkaran şeydir.
+- **Gelecek regresyon riski: 🟡** — bugün hiçbir şey kırılmıyor (canlı yol yok). Risk tamamen
+  **yanlış okumada**: birinin "kiracılık hallediliyor" sanıp yeni bir istemciyi bu handler'a takması.
+
+- **KAPANIŞ (2026-08-29) — ÖNERİ UYGULANDI: üçünden de silindi.** Handler sınıfı üç serviste de kaldırıldı
+  (`Diten.Platform/…/Services/Http/TenantPropagationHandler.cs`,
+  `Diten.AuthService/…/Services/TenantPropagationHandler.cs`,
+  `Diten.DevEnablementService/…/Services/TenantPropagationHandler.cs`) ve üç DI dosyasındaki
+  `AddTransient<TenantPropagationHandler>()` + `AddHttpClient("TenantAwareClient")` çiftleri silindi.
+  Silme öncesi yeniden ölçüldü: repoda **tek bir** `CreateClient("TenantAwareClient")` yok — canlı çağrı
+  yolu gerçekten SIFIR'dı, yani davranış değişimi yok.
+- **⚠ Bilgi orphan bırakılmadı — kaydın asıl bedeli buydu.** Sınıfı ve DI'ı silmek, "neden çalışmıyor"
+  bilgisini taşıyan ~8 yorumu öksüz bırakırdı. Kural: **artık var olmayan bir tipi adlandıran yorum,
+  yorumsuzluktan kötüdür.** Yapılanlar:
+  - **TAŞINDI → `TenantOnTheWire`** (kalıcı ev, zaten "hangi kiracı tele çıkar" sorusunun tek cevabı):
+    (a) mekanizma — `IHttpClientFactory` zinciri KENDİ kapsamında önbelleğe alır, handler istek kapsamını
+    göremez; (b) **birim testi bunu yakalayamaz** — test konteyneri bağlamı SINGLETON kaydeder, yani
+    kabloyu kanıtlar ömrü değil; canlı okuma yakaladı; (c) **çözülseydi bile yanlış olurdu** —
+    Remove-then-Add ile çağıranın doğru hesapladığı değeri platform sentinel'iyle EZERDİ. (c) yalnızca
+    silinen DI blokunda vardı; kaybolacaktı.
+  - **YERİNDE TUTULDU, tip adı ayıklandı:** `RemoteWorkItemGateway`, `MdmLegalEntityReferenceValidator`,
+    `AuthServiceUserReferenceValidator`, `RemoteWorkItemProviderRegistration` ve üç test dosyası
+    (`…ValidatorTests` ×2, `HttpWorkItemBridgeTests`). Hepsi artık ölü tipi değil `DelegatingHandler`
+    desenini adlandırıyor — kural (başlığı çağıran sınıf yazar) hâlâ geçerli olduğu için yorumlar kaldı.
+  - **YENİ İŞARET, tam cazibe noktasında:** Platform DI'da iki doğrulayıcı istemcisinin ÜSTÜNE kısa bir
+    blok kondu ("buraya handler ekleme, ve nedeni"). Kaydın 🟡 riski tam olarak orasıydı.
+  - **SİLİNDİ:** yalnız ölü kaydın kendi gerekçe bloğu (Platform DI) ve sınıfın kendi XML yorumu —
+    ikisi de "bu ölü şey neden hâlâ duruyor" sorusunu cevaplıyordu; soru ortadan kalktı.
+- **Kod dışı sürükleme referansları da temizlendi** (derlenmeyen ama yalan söyleyen kayıtlar):
+  `CAND-CAP-0008-FU03` (**ready-for-dev, runtime_code_allowed: true** — silinmiş bir sınıfı "yeniden kullan"
+  diyordu; en tehlikelisi buydu), `MOD-0018-FU15` (ready-for-dev), `MOD-0288-FU01` §7 Runtime Constraints
+  ("Existing `TenantPropagationHandler` behavior should be reused" — diğer pack'lerin işaret ettiği desen
+  kaynağı), `access-governance-completion-plan` AG-STEP-003, `DCP-004-mod-0290-…` iki dosya-yolu atıfı,
+  ve iki `DCP-004` notunun **"iki istemci hâlâ o handler'ı taşıyor — BL-311"** cümlesi (BL-311 kapandığında
+  zaten yanlıştı). Geçmiş anlatılar (BL-311 arşiv kaydı, DCP-004'lerin geçmiş zamanlı hikâyesi) **DEĞİŞTİRİLMEDİ** —
+  var olmuş bir sınıfı geçmiş zamanda anmak kayıt tutmaktır, yalan değildir.
+- **Ölçüm — testler:** `dotnet test services/Diten.Platform` **23 kırmızı / 3534 yeşil / 3557 toplam** —
+  taban ile **birebir aynı** (23'ü main'in, PR #60'ın kodu; bu turun değil). `dotnet build` üç serviste de
+  **0 hata**. `dotnet test tests/architecture/…` **11 yeşil**. Muhafızlar korundu ve hâlâ yeşil:
+  `Tenant_header_is_written_by_the_validator_and_not_by_a_delegating_handler` (iki doğrulayıcıda) ve
+  `HttpWorkItemBridgeTests.The_tenant_header_and_the_callers_own_bearer_token_reach_the_module`.
+- **Gelecek regresyon riski: 🟢** — silinen şeyin canlı çağrı yolu yoktu, davranış değişmedi. Kaydın açılış
+  riski (birinin "kiracılık hallediliyor" sanması) artık yalnızca sınıfın YOKLUĞUYLA değil, DI'daki açık
+  işaretle ve `TenantOnTheWire`'ın üç paragrafıyla kapatıldı.
