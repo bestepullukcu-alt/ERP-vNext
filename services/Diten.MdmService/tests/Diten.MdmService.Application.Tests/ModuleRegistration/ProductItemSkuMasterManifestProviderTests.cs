@@ -80,6 +80,8 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.global-products.submit",
                 "mdm.gskus.create",
                 "mdm.gskus.read",
+                "mdm.gskus.retire",
+                "mdm.gskus.submit",
                 "mdm.lskus.create",
                 "mdm.lskus.read",
                 "mdm.product-abbreviations.approve",
@@ -98,7 +100,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.product-legal-entity-scopes.replace"
             },
             declared.OrderBy(value => value, StringComparer.Ordinal));
-        Assert.Equal(25, declared.Count);
+        Assert.Equal(27, declared.Count);
         var operatorOnly = new HashSet<string>(StringComparer.Ordinal)
         {
             "mdm.product-legal-entity-scope-rollout.activate",
@@ -114,7 +116,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.Equal(4, productPages.Count);
         foreach (var page in productPages)
         {
-            var expectedActions = page.PageCode == "GLOBAL_PRODUCTS"
+            var expectedActions = page.PageCode is "GLOBAL_PRODUCTS" or "GSKUS"
                 ? new[] { "ADD_NEW", "RETIRE", "SUBMIT", "VIEW_DETAILS" }
                 : ["ADD_NEW", "VIEW_DETAILS"];
             Assert.Equal(expectedActions.Length, page.Actions.Count);
@@ -154,6 +156,25 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.False(submit.IsToolbarAction);
         Assert.False(submit.IsDangerous);
         Assert.Equal("mdm.global-products.retire", retire.PermissionKey);
+        Assert.True(retire.IsRowAction);
+        Assert.False(retire.IsToolbarAction);
+        Assert.True(retire.IsDangerous);
+        Assert.DoesNotContain(page.Actions, action => action.ActionCode is "APPROVE" or "REJECT");
+        Assert.True(page.IsNavigationVisible);
+    }
+
+    [Fact]
+    public void Gsku_declares_submit_and_direct_retire_without_approve_reject_or_navigation_change()
+    {
+        var page = Assert.Single(Manifest.Pages, item => item.PageCode == "GSKUS");
+        var submit = Assert.Single(page.Actions, action => action.ActionCode == "SUBMIT");
+        var retire = Assert.Single(page.Actions, action => action.ActionCode == "RETIRE");
+
+        Assert.Equal("mdm.gskus.submit", submit.PermissionKey);
+        Assert.True(submit.IsRowAction);
+        Assert.False(submit.IsToolbarAction);
+        Assert.False(submit.IsDangerous);
+        Assert.Equal("mdm.gskus.retire", retire.PermissionKey);
         Assert.True(retire.IsRowAction);
         Assert.False(retire.IsToolbarAction);
         Assert.True(retire.IsDangerous);
