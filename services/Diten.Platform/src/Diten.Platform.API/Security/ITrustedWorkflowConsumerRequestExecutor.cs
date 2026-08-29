@@ -18,4 +18,11 @@ public interface ITrustedWorkflowConsumerRequestExecutor
         Func<TrustedWorkflowTerminalDecisionEvidenceTransportRequest, TrustedWorkflowConsumerServiceIdentity,
             CancellationToken, Task<IActionResult>> dispatch,
         Func<int, string, IActionResult> failure);
+
+    Task<IActionResult> ExecuteStartResultAsync(
+        HttpContext httpContext,
+        CancellationToken cancellationToken,
+        Func<TrustedWorkflowStartResultTransportRequest, string, TrustedWorkflowConsumerServiceIdentity,
+            CancellationToken, Task<IActionResult>> dispatch,
+        Func<int, string, IActionResult> failure);
 }

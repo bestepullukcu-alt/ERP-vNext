@@ -41,7 +41,9 @@ public static class WorkflowReasonCodes
     public const string WorkflowInstanceStartConflict = "WORKFLOW_INSTANCE_START_CONFLICT";
     public const string WorkflowStartIdempotencyConflict = "WORKFLOW_START_IDEMPOTENCY_CONFLICT";
     public const string WorkflowStartRecoveryConflict = "WORKFLOW_START_RECOVERY_CONFLICT";
+    public const string WorkflowStartNotCompleted = "WORKFLOW_START_NOT_COMPLETED";
     public const string WorkflowTerminalEvidenceInconsistent = "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT";
+    public const string WorkflowDecisionNotTerminal = "WORKFLOW_DECISION_NOT_TERMINAL";
     public const string WorkflowAssignmentCandidatesRequired = "WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED";
     public const string WorkflowTaskNotFound = "WORKFLOW_TASK_NOT_FOUND";
     public const string WorkflowInstanceNotFound = "WORKFLOW_INSTANCE_NOT_FOUND";

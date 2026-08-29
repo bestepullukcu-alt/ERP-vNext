@@ -16,3 +16,8 @@ public sealed record TrustedWorkflowTerminalDecisionEvidenceTransportRequest(
     Guid WorkflowInstanceId,
     string ExpectedObjectType,
     string ExpectedObjectId);
+
+public sealed record TrustedWorkflowStartResultTransportRequest(
+    string ExpectedObjectType,
+    string ExpectedObjectId,
+    Guid ExpectedMakerSubjectId);
