@@ -17,6 +17,8 @@ describe('MOD-0355 process-model catalog', () => {
     expect(controller).toContain('[HttpGet("models/{id:guid}")]');
     expect(controller).toContain('[Authorize]');
     expect(controller).toContain('HasPermission(ProcessModelingFrontendPermissions.Read)');
+    expect(controller).toContain('return StatusCode(StatusCodes.Status403Forbidden);');
+    expect(controller).not.toContain('return Forbid();');
     expect(controller).toContain('process_modeling_permission_denied');
     expect(index).toContain('Layout = "_LayoutTenantShell"');
   });

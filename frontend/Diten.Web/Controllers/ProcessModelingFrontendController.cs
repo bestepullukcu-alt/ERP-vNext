@@ -26,7 +26,7 @@ public sealed class ProcessModelingFrontendController : Controller
     public IActionResult Index()
     {
         if (!HasPermission(ProcessModelingFrontendPermissions.Read))
-            return Forbid();
+            return StatusCode(StatusCodes.Status403Forbidden);
 
         return View("~/Views/ManagementGovernance/ProcessModeling/Index.cshtml",
             new ProcessModelingIndexViewModel
@@ -40,7 +40,7 @@ public sealed class ProcessModelingFrontendController : Controller
     public IActionResult Editor(Guid id)
     {
         if (!HasPermission(ProcessModelingFrontendPermissions.Read))
-            return Forbid();
+            return StatusCode(StatusCodes.Status403Forbidden);
 
         return View("~/Views/ManagementGovernance/ProcessModeling/Editor.cshtml",
             new ProcessModelingEditorViewModel
