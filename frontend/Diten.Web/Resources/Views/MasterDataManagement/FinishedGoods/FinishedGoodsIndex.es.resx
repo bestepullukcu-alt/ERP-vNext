@@ -11,4 +11,16 @@
   <data name="Export" xml:space="preserve"><value>Exportar</value></data>
   <data name="ColumnVisibility" xml:space="preserve"><value>Visibilidad de columnas</value></data>
   <data name="Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="SubmitIdentity" xml:space="preserve"><value>Enviar para aprobación</value></data>
+  <data name="RetireIdentity" xml:space="preserve"><value>Retirar identidad</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>¿Enviar esta identidad de producto terminado para aprobación?</value></data>
+  <data name="RetireConfirmation" xml:space="preserve"><value>¿Retirar esta identidad de producto terminado aprobada?</value></data>
+  <data name="RetirementReasonLabel" xml:space="preserve"><value>Motivo del retiro</value></data>
+  <data name="RetirementReasonRequired" xml:space="preserve"><value>El motivo del retiro es obligatorio.</value></data>
+  <data name="RetirementReasonTooLong" xml:space="preserve"><value>El motivo del retiro no puede superar los 128 caracteres.</value></data>
+  <data name="SubmitPendingSuccess" xml:space="preserve"><value>La identidad de producto terminado se envió y está pendiente de aprobación.</value></data>
+  <data name="RetireSuccess" xml:space="preserve"><value>La identidad de producto terminado se retiró.</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>El estado del ciclo de vida cambió. Se cargó el registro más reciente.</value></data>
+  <data name="ErrorServiceUnavailable" xml:space="preserve"><value>El servicio de ciclo de vida no está disponible. Inténtelo más tarde.</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>La solicitud de ciclo de vida agotó el tiempo de espera. Inténtelo de nuevo.</value></data>
 </root>

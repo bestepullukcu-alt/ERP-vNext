@@ -11,4 +11,16 @@
   <data name="Export" xml:space="preserve"><value>导出</value></data>
   <data name="ColumnVisibility" xml:space="preserve"><value>列可见性</value></data>
   <data name="Status" xml:space="preserve"><value>状态</value></data>
+  <data name="SubmitIdentity" xml:space="preserve"><value>提交审批</value></data>
+  <data name="RetireIdentity" xml:space="preserve"><value>停用标识</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>是否提交此成品标识以供审批？</value></data>
+  <data name="RetireConfirmation" xml:space="preserve"><value>是否停用此已批准的成品标识？</value></data>
+  <data name="RetirementReasonLabel" xml:space="preserve"><value>停用原因</value></data>
+  <data name="RetirementReasonRequired" xml:space="preserve"><value>必须填写停用原因。</value></data>
+  <data name="RetirementReasonTooLong" xml:space="preserve"><value>停用原因不能超过 128 个字符。</value></data>
+  <data name="SubmitPendingSuccess" xml:space="preserve"><value>成品标识已提交，正在等待审批。</value></data>
+  <data name="RetireSuccess" xml:space="preserve"><value>成品标识已停用。</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>生命周期状态已更改，已加载最新记录。</value></data>
+  <data name="ErrorServiceUnavailable" xml:space="preserve"><value>生命周期服务不可用，请稍后重试。</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>生命周期请求超时，请重试。</value></data>
 </root>

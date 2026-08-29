@@ -18,8 +18,14 @@ describe('MOD-0290 Finished Good Draft Foundation', () => {
         });
         expect(index).toContain('@inject Diten.Web.Services.IPermissionSnapshot Permissions');
         expect(index).toContain('Permissions.Has("mdm.finished-goods.create")');
+        expect(index).toContain('Permissions.Has("mdm.finished-goods.submit")');
+        expect(index).toContain('Permissions.Has("mdm.finished-goods.retire")');
         expect(index).toContain('data-can-create="@canCreate.ToString().ToLowerInvariant()"');
-        expect(source).toContain("const canCreate = document.querySelector('[data-can-create]')");
+        expect(index).toContain('data-can-submit="@canSubmit.ToString().ToLowerInvariant()"');
+        expect(index).toContain('data-can-retire="@canRetire.ToString().ToLowerInvariant()"');
+        expect(index).toContain('id="finishedGoodLifecycleToken"');
+        expect(source).toContain("const permissionHost = document.querySelector('[data-can-create]')");
+        expect(source).toContain("const canCreate = permissionHost?.getAttribute('data-can-create') === 'true'");
         expect(source).toContain('exportButtons(canCreate ? L.AddNew : null');
         expect(l10nScript()).toContain('normalized[toPascalCase(key)] = raw[key]');
     });
@@ -68,14 +74,50 @@ describe('MOD-0290 Finished Good Draft Foundation', () => {
         expect(browser).toMatch(/500:\s*L\.ErrorGateway/);
     });
 
-    it('exposes only list, detail, selector and create MVC proxy routes', () => {
+    it('exposes list, detail, selector, create and only submit/retire lifecycle routes', () => {
         const source = controller();
         expect(source).toContain('[Route("MasterDataManagement/FinishedGoods")]');
         expect(source).toContain('[HttpGet("api")]');
         expect(source).toContain('[HttpGet("api/{id:guid}")]');
         expect(source).toContain('[HttpGet("api/gsku-selector")]');
         expect(source).toContain('[HttpPost("api")]');
-        expect(source).not.toMatch(/HttpPut|HttpPatch|HttpDelete|bulk|lifecycle/i);
+        expect(source).toContain('[HttpPost("api/{id:guid}/submit")]');
+        expect(source).toContain('[HttpPost("api/{id:guid}/retire")]');
+        expect(source).not.toMatch(/HttpPut|HttpPatch|HttpDelete|bulk|approve|reject/i);
+    });
+
+    it('guards lifecycle mutations with strict forms, canonical actor identity and exact envelopes', () => {
+        const source = controller();
+        expect(source).toContain('private const string SubmitPermission = "mdm.finished-goods.submit"');
+        expect(source).toContain('private const string RetirePermission = "mdm.finished-goods.retire"');
+        expect(source).toContain('HasOnlyFormFieldsAsync(isRetire ? ["ExpectedVersion", "ReasonCode"] : ["ExpectedVersion"])');
+        expect(source).toContain('TryResolveLifecycleIdentity(out var tenantId, out var actor)');
+        expect(source).toContain('tenantId, actor, "finished-good", action, id, expectedVersion.Value');
+        expect(source).toContain('AppendLengthPrefixed(hash, tenantId.ToString("D"))');
+        expect(source).toContain('request.Headers.TryAddWithoutValidation("Idempotency-Key", operationId.ToString("D"))');
+        expect(source).toContain('envelope?.IsSuccessful != true || envelope.StatusCode != responseStatus');
+        expect(source).toContain('new HashSet<int> { StatusCodes.Status200OK, StatusCodes.Status202Accepted }');
+        expect(source).toContain('tenantId, actor, "finished-good", action, id, expectedVersion.Value');
+        expect(source).toContain('TryResolveCanonicalTenant(User, out tenantId)');
+        expect(source).toContain('Guid.TryParseExact(value, "D", out var parsed)');
+        expect(source).toContain('canonical.HasValue && canonical.Value != parsed');
+    });
+
+    it('uses fresh detail fencing, bounded Premium reason input and exact state actions', () => {
+        const source = script();
+        expect(source).toContain('const detail = await fetchDetail(id)');
+        expect(source).toContain('const verified = validateDetail(detail, id)');
+        expect(source).toContain("const expectedState = action === 'submit' ? 1 : 3");
+        expect(source).toContain("body.set('ExpectedVersion', String(verified.version))");
+        expect(source).toContain('const refreshedDetail = await fetchDetail(id)');
+        expect(source).toContain("refreshedState !== (action === 'submit' ? 2 : 4)");
+        expect(source).toContain('showInput: true');
+        expect(source).toContain("inputAttributes: { maxlength: '128', rows: '3' }");
+        expect(source).toContain('reason.length > 128');
+        expect(source).toContain('lifecycleRequests.has(requestKey)');
+        expect(source).toContain('state === 1 && canSubmit');
+        expect(source).toContain('state === 3 && canRetire');
+        expect(source).not.toMatch(/js-approve|js-reject|\/approve|\/reject|crypto\.randomUUID|localhost:50(?:57|59)/i);
     });
 
     it('uses only the bounded search contract and exact selector path', () => {
@@ -141,6 +183,7 @@ describe('MOD-0290 Finished Good Draft Foundation', () => {
             return [...xml.matchAll(/<data name="([^"]+)"/g)].map((match) => match[1]).sort();
         });
         keys.slice(1).forEach((keySet) => expect(keySet).toEqual(keys[0]));
+        expect(keys[0]).toHaveLength(51);
         expect(keys[0]).toContain('CreatePending');
         expect(keys[0]).toContain('GskuNotReferenceable');
         ['QuickView', 'Search', 'Export', 'ColumnVisibility', 'Status']

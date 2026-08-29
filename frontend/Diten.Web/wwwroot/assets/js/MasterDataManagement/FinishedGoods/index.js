@@ -17,7 +17,11 @@ const FinishedGoodsList = (function () {
     const totalColumnCount = 6;
     const baseOrder = [[1, 'asc']];
     const L = window.L10n || {};
-    const canCreate = document.querySelector('[data-can-create]')?.getAttribute('data-can-create') === 'true';
+    const permissionHost = document.querySelector('[data-can-create]');
+    const canCreate = permissionHost?.getAttribute('data-can-create') === 'true';
+    const canSubmit = permissionHost?.getAttribute('data-can-submit') === 'true';
+    const canRetire = permissionHost?.getAttribute('data-can-retire') === 'true';
+    const lifecycleRequests = new Set();
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
     const emptyFilters = () => ({ codeSearch: '' });
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
@@ -142,17 +146,19 @@ const FinishedGoodsList = (function () {
     });
 
     const lifecycleMap = () => ({
-        Draft: { title: L.LifecycleDraft, class: 'bg-label-secondary' },
-        1: { title: L.LifecycleDraft, class: 'bg-label-secondary' },
-        PendingIdentityApproval: { title: L.LifecyclePendingIdentityApproval, class: 'bg-label-warning' },
-        2: { title: L.LifecyclePendingIdentityApproval, class: 'bg-label-warning' },
-        IdentityApproved: { title: L.LifecycleIdentityApproved, class: 'bg-label-success' },
-        3: { title: L.LifecycleIdentityApproved, class: 'bg-label-success' },
-        Retired: { title: L.LifecycleRetired, class: 'bg-label-danger' },
-        4: { title: L.LifecycleRetired, class: 'bg-label-danger' }
+        Draft: { code: 1, title: L.LifecycleDraft, class: 'bg-label-secondary' },
+        1: { code: 1, title: L.LifecycleDraft, class: 'bg-label-secondary' },
+        PendingIdentityApproval: { code: 2, title: L.LifecyclePendingIdentityApproval, class: 'bg-label-warning' },
+        2: { code: 2, title: L.LifecyclePendingIdentityApproval, class: 'bg-label-warning' },
+        IdentityApproved: { code: 3, title: L.LifecycleIdentityApproved, class: 'bg-label-success' },
+        3: { code: 3, title: L.LifecycleIdentityApproved, class: 'bg-label-success' },
+        Retired: { code: 4, title: L.LifecycleRetired, class: 'bg-label-danger' },
+        4: { code: 4, title: L.LifecycleRetired, class: 'bg-label-danger' }
     });
+    const lifecycleItem = value => lifecycleMap()[value] || null;
+    const lifecycleCode = value => lifecycleItem(value)?.code ?? null;
     const renderLifecycle = (value) => {
-        const item = lifecycleMap()[value] || { title: value || L.Unknown, class: 'bg-label-secondary' };
+        const item = lifecycleItem(value) || { title: L.Unknown, class: 'bg-label-secondary' };
         return `<span class="badge ${item.class}">${escapeHtml(item.title)}</span>`;
     };
     const handleUnauthorized = () => {
@@ -175,8 +181,8 @@ const FinishedGoodsList = (function () {
             409: L.ErrorConflict,
             500: L.ErrorGateway,
             502: L.ErrorGateway,
-            503: L.ErrorGateway,
-            504: L.ErrorGateway
+            503: L.ErrorServiceUnavailable,
+            504: L.ErrorTimeout
         })[response.status] || L.ErrorGateway;
     };
     const buildQuery = (data) => {
@@ -222,45 +228,153 @@ const FinishedGoodsList = (function () {
         });
     };
 
-    const populateDetails = async (id) => {
+    const fetchDetail = async id => {
+        const response = await fetch(`${endpoint}/${encodeURIComponent(id)}`, {
+            credentials: 'same-origin', headers: getAuthHeaders()
+        });
+        if (response.status === 401) handleUnauthorized();
+        if (!response.ok) throw new Error(await getErrorMessage(response));
+        return unwrapData(await response.json());
+    };
+    const valueOf = (source, camel, pascal) => source?.[camel] ?? source?.[pascal];
+    const validateDetail = (detail, expectedId) => {
+        const detailId = String(valueOf(detail, 'id', 'Id') || '').toLowerCase();
+        const state = lifecycleCode(valueOf(detail, 'lifecycleStatus', 'LifecycleStatus'));
+        const version = Number(valueOf(detail, 'version', 'Version'));
+        if (!detailId || detailId !== String(expectedId || '').toLowerCase()
+            || state === null || !Number.isInteger(version) || version < 0) {
+            throw new Error(L.ErrorGateway);
+        }
+        return { state, version };
+    };
+    const renderDetail = (detail, expectedId) => {
+        const verified = validateDetail(detail, expectedId);
+        const setText = (elementId, fieldValue) => {
+            const element = document.getElementById(elementId);
+            if (!element) throw new Error(L.ErrorGateway);
+            element.textContent = fieldValue === null || fieldValue === undefined || fieldValue === ''
+                ? L.NotAvailable : String(fieldValue);
+        };
+        const code = valueOf(detail, 'canonicalCode', 'CanonicalCode');
+        setText('oc-title', code);
+        setText('oc-subtitle', valueOf(detail, 'gskuCanonicalCode', 'GskuCanonicalCode'));
+        setText('oc-id', valueOf(detail, 'id', 'Id'));
+        setText('oc-code', code);
+        setText('oc-gsku-code', valueOf(detail, 'gskuCanonicalCode', 'GskuCanonicalCode'));
+        setText('oc-version', verified.version);
+        const formatDate = dateValue => dateValue
+            ? new Intl.DateTimeFormat(document.documentElement.lang || undefined, {
+                dateStyle: 'medium', timeStyle: 'short'
+            }).format(new Date(dateValue))
+            : L.NotAvailable;
+        setText('oc-created-at', formatDate(valueOf(detail, 'createdAt', 'CreatedAt')));
+        setText('oc-updated-at', formatDate(valueOf(detail, 'updatedAt', 'UpdatedAt')));
+        const statusElement = document.getElementById('oc-status');
+        if (!statusElement) throw new Error(L.ErrorGateway);
+        statusElement.outerHTML = renderLifecycle(valueOf(detail, 'lifecycleStatus', 'LifecycleStatus'))
+            .replace('<span ', '<span id="oc-status" ');
+        bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasDetailsPreview')).show();
+        return verified.state;
+    };
+    const populateDetails = async id => {
+        try { renderDetail(await fetchDetail(id), id); }
+        catch (error) { if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error'); }
+    };
+
+    const lifecycleToken = () => document.querySelector(
+        '#finishedGoodLifecycleToken input[name="__RequestVerificationToken"]')?.value || '';
+    const setLifecycleBusy = (button, busy) => {
+        button?.classList.toggle('disabled', busy);
+        button?.setAttribute('aria-disabled', busy ? 'true' : 'false');
+    };
+    const postLifecycle = async (id, action, reasonCode, button) => {
+        const requestKey = `${id}:${action}`;
+        if (lifecycleRequests.has(requestKey)) return;
+        lifecycleRequests.add(requestKey);
+        setLifecycleBusy(button, true);
         try {
-            const response = await fetch(`${endpoint}/${encodeURIComponent(id)}`, {
-                credentials: 'same-origin',
-                headers: getAuthHeaders()
+            const detail = await fetchDetail(id);
+            const verified = validateDetail(detail, id);
+            const expectedState = action === 'submit' ? 1 : 3;
+            if (verified.state !== expectedState) {
+                dt?.ajax.reload(null, false);
+                throw new Error(L.LifecycleStateChanged);
+            }
+
+            const body = new FormData();
+            body.set('ExpectedVersion', String(verified.version));
+            if (action === 'retire') body.set('ReasonCode', reasonCode);
+            const token = lifecycleToken();
+            body.set('__RequestVerificationToken', token);
+            const response = await fetch(`${endpoint}/${encodeURIComponent(id)}/${action}`, {
+                method: 'POST', credentials: 'same-origin',
+                headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'XMLHttpRequest' }, body
             });
             if (response.status === 401) handleUnauthorized();
             if (!response.ok) throw new Error(await getErrorMessage(response));
-            const detail = unwrapData(await response.json());
-            const value = (camel, pascal) => detail[camel] ?? detail[pascal];
-            const setText = (elementId, fieldValue) => {
-                const element = document.getElementById(elementId);
-                if (element) element.textContent = fieldValue === null || fieldValue === undefined || fieldValue === ''
-                    ? L.NotAvailable
-                    : String(fieldValue);
-            };
-            const code = value('canonicalCode', 'CanonicalCode');
-            setText('oc-title', code);
-            setText('oc-subtitle', value('gskuCanonicalCode', 'GskuCanonicalCode'));
-            setText('oc-id', value('id', 'Id'));
-            setText('oc-code', code);
-            setText('oc-gsku-code', value('gskuCanonicalCode', 'GskuCanonicalCode'));
-            setText('oc-version', value('version', 'Version'));
-            const formatDate = (dateValue) => dateValue
-                ? new Intl.DateTimeFormat(document.documentElement.lang || undefined, {
-                    dateStyle: 'medium', timeStyle: 'short'
-                }).format(new Date(dateValue))
-                : L.NotAvailable;
-            setText('oc-created-at', formatDate(value('createdAt', 'CreatedAt')));
-            setText('oc-updated-at', formatDate(value('updatedAt', 'UpdatedAt')));
-            const statusElement = document.getElementById('oc-status');
-            if (statusElement) {
-                statusElement.outerHTML = renderLifecycle(value('lifecycleStatus', 'LifecycleStatus'))
-                    .replace('<span ', '<span id="oc-status" ');
+            const payload = await response.json().catch(() => null);
+            const responseStatus = Number(payload?.statusCode ?? payload?.StatusCode);
+            if (payload?.isSuccessful !== true && payload?.IsSuccessful !== true) throw new Error(L.ErrorGateway);
+            if (responseStatus !== response.status
+                || (action === 'retire' && response.status !== 200)
+                || (action === 'submit' && response.status !== 200 && response.status !== 202)) {
+                throw new Error(L.ErrorGateway);
             }
-            bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasDetailsPreview')).show();
+
+            dt?.ajax.reload(null, false);
+            const refreshedDetail = await fetchDetail(id);
+            const refreshedState = renderDetail(refreshedDetail, id);
+            if (refreshedState !== (action === 'submit' ? 2 : 4)) throw new Error(L.LifecycleStateChanged);
+            window.showToast?.(action === 'submit' ? L.SubmitPendingSuccess : L.RetireSuccess, 'success');
         } catch (error) {
             if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error');
+        } finally {
+            lifecycleRequests.delete(requestKey);
+            setLifecycleBusy(button, false);
         }
+    };
+    const requestLifecycle = (id, action, button) => {
+        if (!id || (action === 'submit' && !canSubmit) || (action === 'retire' && !canRetire)) return;
+        if (action === 'submit') {
+            window.showConfirm?.(L.SubmitConfirmation, () => postLifecycle(id, action, '', button), {
+                type: 'warning', confirmButtonText: L.SubmitIdentity
+            });
+            return;
+        }
+        window.showConfirm?.(L.RetireConfirmation, input => {
+            const reason = normalizeSearch(input);
+            if (!reason) {
+                window.showToast?.(L.RetirementReasonRequired, 'error');
+                return;
+            }
+            if (reason.length > 128) {
+                window.showToast?.(L.RetirementReasonTooLong, 'error');
+                return;
+            }
+            return postLifecycle(id, action, reason, button);
+        }, {
+            type: 'warning', showInput: true, inputRequired: true,
+            inputLabel: L.RetirementReasonLabel,
+            inputAttributes: { maxlength: '128', rows: '3' },
+            confirmButtonText: L.RetireIdentity
+        });
+    };
+    const renderActions = row => {
+        const id = row.id || row.Id;
+        const actions = [{
+            key: 'details', className: 'js-quick-view', text: L.QuickView, icon: 'bx bx-show',
+            attrs: { 'data-id': id, title: L.QuickView }
+        }];
+        const state = lifecycleCode(row.lifecycleStatus ?? row.LifecycleStatus);
+        if (state === 1 && canSubmit) actions.push({
+            key: 'submit', className: 'js-submit-identity', text: L.SubmitIdentity, icon: 'bx bx-send',
+            attrs: { 'data-id': id, title: L.SubmitIdentity }
+        });
+        if (state === 3 && canRetire) actions.push({
+            key: 'retire', className: 'js-retire-identity', text: L.RetireIdentity, icon: 'bx bx-archive',
+            attrs: { 'data-id': id, title: L.RetireIdentity }
+        });
+        return window.DitenDataTable.renderActions(actions);
     };
 
     const initGskuSelector = () => {
@@ -448,13 +562,7 @@ const FinishedGoodsList = (function () {
                     searchable: false,
                     orderable: false,
                     className: 'cell-fit all text-end pe-3',
-                    render: (data, type, row) => window.DitenDataTable.renderActions([{
-                        key: 'details',
-                        className: 'js-quick-view',
-                        text: L.QuickView,
-                        icon: 'bx bx-show',
-                        attrs: { 'data-id': row.id || row.Id, title: L.QuickView }
-                    }])
+                    render: (data, type, row) => renderActions(row)
                 }
             ],
             buttons: window.DtDefaults.exportButtons(canCreate ? L.AddNew : null, {}, extraButtons, {
@@ -482,10 +590,14 @@ const FinishedGoodsList = (function () {
         bindFilter();
         document.getElementById('btnSaveFinishedGood')?.addEventListener('click', submitCreate);
         document.addEventListener('click', (event) => {
-            const action = event.target.closest('.js-quick-view');
-            if (!action || !action.closest('.datatables-finishedgoods')) return;
+            const quickView = event.target.closest('.js-quick-view');
+            const lifecycleAction = event.target.closest('.js-submit-identity, .js-retire-identity');
+            const action = quickView || lifecycleAction;
+            if (!action || !action.closest('.datatables-finishedgoods') || action.classList.contains('disabled')) return;
             event.preventDefault();
-            populateDetails(action.dataset.id);
+            if (action.classList.contains('js-submit-identity')) requestLifecycle(action.dataset.id, 'submit', action);
+            else if (action.classList.contains('js-retire-identity')) requestLifecycle(action.dataset.id, 'retire', action);
+            else populateDetails(action.dataset.id);
         });
     };
 

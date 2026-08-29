@@ -6,15 +6,27 @@
     ViewData["Title"] = Localizer["FinishedGoodsTitle"].Value;
     Layout = "_LayoutTenantShell";
     var canCreate = Permissions.Has("mdm.finished-goods.create");
+    var canSubmit = Permissions.Has("mdm.finished-goods.submit");
+    var canRetire = Permissions.Has("mdm.finished-goods.retire");
 }
 
 @* Contract marker: <partial name="_Filter" /> *@
 <partial name="~/Views/MasterDataManagement/FinishedGoods/_Filter.cshtml" />
 
-<div class="mb-3" data-can-create="@canCreate.ToString().ToLowerInvariant()">
+<div class="mb-3"
+     data-can-create="@canCreate.ToString().ToLowerInvariant()"
+     data-can-submit="@canSubmit.ToString().ToLowerInvariant()"
+     data-can-retire="@canRetire.ToString().ToLowerInvariant()">
     <h5 class="mb-0">@Localizer["FinishedGoodsTitle"]</h5>
     <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
 </div>
+
+@if (canSubmit || canRetire)
+{
+    <form id="finishedGoodLifecycleToken" class="d-none" data-no-tracker>
+        @Html.AntiForgeryToken()
+    </form>
+}
 
 <partial name="~/Views/MasterDataManagement/FinishedGoods/_DataTable.cshtml" />
 @* Contract marker rendered by the partial: id="offcanvasDetailsPreview" *@
