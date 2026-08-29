@@ -44,7 +44,22 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
         new(
             ModuleCode: "tasks",
             ModuleName: "Task Engine",
-            DisplayName: "Görevler / Tasks",
+            /*
+             * ⚠ "GÖREV TANIMLARI", NOT "GÖREVLER". Every page this manifest publishes to the sidebar
+             * (TASK_FIELD_DEFINITIONS, TASK_TYPES, TASK_DOCUMENT_LIST, TASK_RECURRENCE_RULES) is a
+             * definition/settings screen. The four work surfaces — TASKS, TASK_CREATE, TASK_DETAIL, TASK_EDIT —
+             * are IsNavigationVisible: false on purpose (see the Nav visibility note above), so "Görevler"
+             * promised the user a task LIST from the menu and handed them a configuration screen instead.
+             *
+             * It also collided with the neighbouring module "Görev Merkezi / Task Center", which IS where a
+             * person's work lives. Two near-identical names for two different things is not a labelling nit: the
+             * menu could not tell the user which one answered "where is my work". Renaming this one separates them.
+             *
+             * NOTE — this string is the FALLBACK, not what the sidebar prints. The menu localizes the module by
+             * its stable CODE (Nav.Module.TASKS, all seven tenant languages); this is what renders only when that
+             * key is missing, plus what the operator sees in the module catalog. Both were changed together.
+             */
+            DisplayName: "Görev Tanımları / Task Settings",
             Domain: "Workspace",
             Service: "DitenPlatform",
             ModuleVersion: "1.0.0",
