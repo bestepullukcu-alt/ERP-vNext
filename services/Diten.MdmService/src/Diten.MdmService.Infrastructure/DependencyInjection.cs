@@ -25,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<TenantContext>());
         services.AddHttpContextAccessor();
         services.AddScoped<IProductIdentityActorContext, ProductIdentityActorContext>();
+        services.AddScoped<IProductIdentityLifecycleActorContext, ProductIdentityLifecycleActorContext>();
         services.AddScoped<IProductAbbreviationActorContext, ProductAbbreviationActorContext>();
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
