@@ -44,12 +44,15 @@ const captureConfig = () => {
 
 describe("the callers that were already using the input box", () => {
   /*
-   * MEASURED: six call sites across four modules pass `showInput` today —
+   * MEASURED: eleven call sites pass `showInput` today —
    *   Platform/Tenants/details.js  ×2      Platform/Tenants/index.js      ×1
    *   Platform/AuditLog/index.js   ×1      DocumentManagement/TemplateMasters/index.js ×1
+   *   DocumentManagement/MasterRegister/details.js ×1
    *   WorkCenterNext/app.js        ×1  (the module seam, which forwards whatever its caller asked for)
    *   Tasks/DocumentList/index.js  ×1  (added 2026-08-26 — the list-version withdrawal asks for a reason)
    *   MDM/ProductAbbreviationRegister/index.js ×1  (arrived 2026-08-26 with main; does not name a type either)
+   *   MasterDataManagement/GlobalProducts/index.js ×1 and Gskus/index.js ×1
+   *     (added 2026-08-29 — direct retirement asks for a bounded reason)
    * Not one of them names a type, so not one of them may change. This file is the whole product's shared
    * component: one module's round must not move another module's dialog.
    *
@@ -71,7 +74,7 @@ describe("the callers that were already using the input box", () => {
     const callers = files.filter((f) => /showInput\s*:/.test(fs.readFileSync(f, "utf8")));
     const occurrences = callers.reduce((n, f) =>
       n + (fs.readFileSync(f, "utf8").match(/showInput\s*:/g) || []).length, 0);
-    expect(occurrences).toBe(8);
+    expect(occurrences).toBe(11);
 
     // The one file that DOES pass a type is the WorkCenterNext seam, and it passes whatever its own caller said —
     // `undefined` for every prose dialog, which is what keeps them on the default.

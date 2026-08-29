@@ -17,7 +17,11 @@ const GskusList = (function () {
     const totalColumnCount = 7;
     const baseOrder = [[1, 'asc']];
     const L = window.L10n || {};
-    const canCreate = document.querySelector('[data-can-create]')?.getAttribute('data-can-create') === 'true';
+    const permissionHost = document.querySelector('[data-can-create]');
+    const canCreate = permissionHost?.getAttribute('data-can-create') === 'true';
+    const canSubmit = permissionHost?.getAttribute('data-can-submit') === 'true';
+    const canRetire = permissionHost?.getAttribute('data-can-retire') === 'true';
+    const lifecycleRequests = new Set();
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
     const emptyFilters = () => ({ search: '' });
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
@@ -156,6 +160,12 @@ const GskusList = (function () {
         const item = lifecycleMap()[value] || { title: value || L.Unknown, class: 'bg-label-secondary' };
         return `<span class="badge ${item.class}">${escapeHtml(item.title)}</span>`;
     };
+    const lifecycleCode = (value) => ({
+        Draft: 1, 1: 1,
+        PendingIdentityApproval: 2, 2: 2,
+        IdentityApproved: 3, 3: 3,
+        Retired: 4, 4: 4
+    })[value] || 0;
     const handleUnauthorized = () => {
         window.DtDefaults?.handleUnauthorized?.();
         const error = new Error('auth-refresh-in-progress');
@@ -173,8 +183,8 @@ const GskusList = (function () {
             403: L.ErrorForbidden,
             404: L.ErrorNotFound,
             409: L.ErrorConflict,
-            503: L.ErrorProviderUnavailable,
-            504: L.ErrorProviderTimeout
+            503: L.ErrorServiceUnavailable || L.ErrorProviderUnavailable,
+            504: L.ErrorTimeout || L.ErrorProviderTimeout
         })[response.status] || L.ErrorGateway;
     };
     const buildQuery = (data) => {
@@ -219,7 +229,8 @@ const GskusList = (function () {
 
     const setText = (elementId, fieldValue) => {
         const element = document.getElementById(elementId);
-        if (element) element.textContent = fieldValue === null || fieldValue === undefined || fieldValue === ''
+        if (!element) throw new Error(L.ErrorGateway);
+        element.textContent = fieldValue === null || fieldValue === undefined || fieldValue === ''
             ? L.NotAvailable
             : String(fieldValue);
     };
@@ -228,38 +239,150 @@ const GskusList = (function () {
             dateStyle: 'medium', timeStyle: 'short'
         }).format(new Date(dateValue))
         : L.NotAvailable;
+    const fetchDetail = async (id) => {
+        const response = await fetch(`${endpoint}/${encodeURIComponent(id)}`, {
+            credentials: 'same-origin', headers: getAuthHeaders()
+        });
+        if (response.status === 401) handleUnauthorized();
+        if (!response.ok) throw new Error(await getErrorMessage(response));
+        return unwrapData(await response.json());
+    };
+    const renderDetail = (detail, expectedId) => {
+        const detailId = valueOf(detail, 'id', 'Id');
+        const detailVersion = Number(valueOf(detail, 'version', 'Version'));
+        const detailState = lifecycleCode(valueOf(detail, 'lifecycleStatus', 'LifecycleStatus'));
+        const offcanvas = document.getElementById('offcanvasDetailsPreview');
+        if (!detailId || String(detailId).toLowerCase() !== String(expectedId).toLowerCase()
+            || !Number.isInteger(detailVersion) || detailVersion < 0 || detailState === 0 || !offcanvas) {
+            throw new Error(L.ErrorGateway);
+        }
+        const code = valueOf(detail, 'canonicalCode', 'CanonicalCode');
+        const productCode = valueOf(detail, 'globalProductCanonicalCode', 'GlobalProductCanonicalCode');
+        const productName = valueOf(detail, 'globalProductName', 'GlobalProductName');
+        const quantity = valueOf(detail, 'packQuantity', 'PackQuantity');
+        const uom = valueOf(detail, 'packUomCode', 'PackUomCode');
+        setText('oc-title', code);
+        setText('oc-subtitle', valueOf(detail, 'revisionIdentifier', 'RevisionIdentifier'));
+        setText('oc-id', detailId);
+        setText('oc-code', code);
+        setText('oc-global-product', `${productCode || ''}${productCode && productName ? ' — ' : ''}${productName || ''}`);
+        setText('oc-revision', valueOf(detail, 'revisionIdentifier', 'RevisionIdentifier'));
+        setText('oc-pack', `${quantity ?? ''}${quantity !== null && quantity !== undefined && uom ? ' ' : ''}${uom || ''}`);
+        setText('oc-version', valueOf(detail, 'version', 'Version'));
+        setText('oc-created-at', formatDate(valueOf(detail, 'createdAt', 'CreatedAt')));
+        setText('oc-updated-at', formatDate(valueOf(detail, 'updatedAt', 'UpdatedAt')));
+        const statusElement = document.getElementById('oc-status');
+        if (!statusElement) throw new Error(L.ErrorGateway);
+        statusElement.outerHTML = renderLifecycle(valueOf(detail, 'lifecycleStatus', 'LifecycleStatus'))
+            .replace('<span ', '<span id="oc-status" ');
+        bootstrap.Offcanvas.getOrCreateInstance(offcanvas).show();
+        return detailState;
+    };
     const populateDetails = async (id) => {
         try {
-            const response = await fetch(`${endpoint}/${encodeURIComponent(id)}`, {
-                credentials: 'same-origin', headers: getAuthHeaders()
-            });
-            if (response.status === 401) handleUnauthorized();
-            if (!response.ok) throw new Error(await getErrorMessage(response));
-            const detail = unwrapData(await response.json());
-            const code = valueOf(detail, 'canonicalCode', 'CanonicalCode');
-            const productCode = valueOf(detail, 'globalProductCanonicalCode', 'GlobalProductCanonicalCode');
-            const productName = valueOf(detail, 'globalProductName', 'GlobalProductName');
-            const quantity = valueOf(detail, 'packQuantity', 'PackQuantity');
-            const uom = valueOf(detail, 'packUomCode', 'PackUomCode');
-            setText('oc-title', code);
-            setText('oc-subtitle', valueOf(detail, 'revisionIdentifier', 'RevisionIdentifier'));
-            setText('oc-id', valueOf(detail, 'id', 'Id'));
-            setText('oc-code', code);
-            setText('oc-global-product', `${productCode || ''}${productCode && productName ? ' — ' : ''}${productName || ''}`);
-            setText('oc-revision', valueOf(detail, 'revisionIdentifier', 'RevisionIdentifier'));
-            setText('oc-pack', `${quantity ?? ''}${quantity !== null && quantity !== undefined && uom ? ' ' : ''}${uom || ''}`);
-            setText('oc-version', valueOf(detail, 'version', 'Version'));
-            setText('oc-created-at', formatDate(valueOf(detail, 'createdAt', 'CreatedAt')));
-            setText('oc-updated-at', formatDate(valueOf(detail, 'updatedAt', 'UpdatedAt')));
-            const statusElement = document.getElementById('oc-status');
-            if (statusElement) {
-                statusElement.outerHTML = renderLifecycle(valueOf(detail, 'lifecycleStatus', 'LifecycleStatus'))
-                    .replace('<span ', '<span id="oc-status" ');
-            }
-            bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasDetailsPreview')).show();
+            const detail = await fetchDetail(id);
+            renderDetail(detail, id);
         } catch (error) {
             if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error');
         }
+    };
+
+    const lifecycleToken = () => document.querySelector(
+        '#gskuLifecycleToken input[name="__RequestVerificationToken"]')?.value || '';
+    const setLifecycleBusy = (button, busy) => {
+        button?.classList.toggle('disabled', busy);
+        button?.setAttribute('aria-disabled', busy ? 'true' : 'false');
+    };
+    const postLifecycle = async (id, action, reasonCode, button) => {
+        const requestKey = `${id}:${action}`;
+        if (lifecycleRequests.has(requestKey)) return;
+        lifecycleRequests.add(requestKey);
+        setLifecycleBusy(button, true);
+        try {
+            const detail = await fetchDetail(id);
+            const state = lifecycleCode(valueOf(detail, 'lifecycleStatus', 'LifecycleStatus'));
+            const expectedState = action === 'submit' ? 1 : 3;
+            if (state !== expectedState) {
+                dt?.ajax.reload(null, false);
+                throw new Error(L.LifecycleStateChanged);
+            }
+            const expectedVersion = Number(valueOf(detail, 'version', 'Version'));
+            if (!Number.isInteger(expectedVersion) || expectedVersion < 0) throw new Error(L.ErrorConflict);
+
+            const body = new FormData();
+            body.set('ExpectedVersion', String(expectedVersion));
+            if (action === 'retire') body.set('ReasonCode', reasonCode);
+            const token = lifecycleToken();
+            body.set('__RequestVerificationToken', token);
+            const response = await fetch(`${endpoint}/${encodeURIComponent(id)}/${action}`, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'XMLHttpRequest' },
+                body
+            });
+            if (response.status === 401) handleUnauthorized();
+            if (!response.ok) throw new Error(await getErrorMessage(response));
+
+            dt?.ajax.reload(null, false);
+            const refreshedDetail = await fetchDetail(id);
+            const refreshedState = renderDetail(refreshedDetail, id);
+            if (refreshedState !== (action === 'submit' ? 2 : 4)) throw new Error(L.LifecycleStateChanged);
+            window.showToast?.(action === 'submit' ? L.SubmitPendingSuccess : L.RetireSuccess, 'success');
+        } catch (error) {
+            if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error');
+        } finally {
+            lifecycleRequests.delete(requestKey);
+            setLifecycleBusy(button, false);
+        }
+    };
+    const requestLifecycle = (id, action, button) => {
+        if (!id || (action === 'submit' && !canSubmit) || (action === 'retire' && !canRetire)) return;
+        if (action === 'submit') {
+            window.showConfirm?.(L.SubmitConfirmation, () => postLifecycle(id, action, '', button), {
+                type: 'warning', confirmButtonText: L.SubmitIdentity
+            });
+            return;
+        }
+        window.showConfirm?.(L.RetireConfirmation, (input) => {
+            const reason = normalizeSearch(input);
+            if (!reason) {
+                window.showToast?.(L.RetirementReasonRequired, 'error');
+                return;
+            }
+            if (reason.length > 128) {
+                window.showToast?.(L.RetirementReasonTooLong, 'error');
+                return;
+            }
+            return postLifecycle(id, action, reason, button);
+        }, {
+            type: 'warning',
+            showInput: true,
+            inputRequired: true,
+            inputLabel: L.RetirementReasonLabel,
+            inputAttributes: { maxlength: 128 },
+            confirmButtonText: L.RetireIdentity
+        });
+    };
+
+    const renderActions = (row) => {
+        const id = row.id || row.Id;
+        const actions = [{
+            key: 'details',
+            className: 'js-quick-view',
+            text: L.QuickView,
+            icon: 'bx bx-show',
+            attrs: { 'data-id': id, title: L.ViewDetails }
+        }];
+        const state = lifecycleCode(row.lifecycleStatus ?? row.LifecycleStatus);
+        if (state === 1 && canSubmit) actions.push({
+            key: 'submit', className: 'js-submit-identity', text: L.SubmitIdentity, icon: 'bx bx-send',
+            attrs: { 'data-id': id, title: L.SubmitIdentity }
+        });
+        if (state === 3 && canRetire) actions.push({
+            key: 'retire', className: 'js-retire-identity', text: L.RetireIdentity, icon: 'bx bx-archive',
+            attrs: { 'data-id': id, title: L.RetireIdentity }
+        });
+        return window.DitenDataTable.renderActions(actions);
     };
 
     const initializeCreateSelects = () => {
@@ -482,13 +605,7 @@ const GskusList = (function () {
                     searchable: false,
                     orderable: false,
                     className: 'cell-fit all text-end pe-3',
-                    render: (data, type, row) => window.DitenDataTable.renderActions([{
-                        key: 'details',
-                        className: 'js-quick-view',
-                        text: L.QuickView,
-                        icon: 'bx bx-show',
-                        attrs: { 'data-id': row.id || row.Id, title: L.ViewDetails }
-                    }])
+                    render: (data, type, row) => renderActions(row)
                 }
             ],
             buttons: window.DtDefaults.exportButtons(canCreate ? L.AddNew : null, {}, extraButtons, {
@@ -517,10 +634,14 @@ const GskusList = (function () {
         bindFilter();
         document.getElementById('btnSaveGsku')?.addEventListener('click', submitCreate);
         document.addEventListener('click', (event) => {
-            const action = event.target.closest('.js-quick-view');
-            if (!action || !action.closest('.datatables-gskus')) return;
+            const quickViewAction = event.target.closest('.js-quick-view');
+            const lifecycleAction = event.target.closest('.js-submit-identity, .js-retire-identity');
+            const action = quickViewAction || lifecycleAction;
+            if (!action || !action.closest('.datatables-gskus') || action.classList.contains('disabled')) return;
             event.preventDefault();
-            populateDetails(action.dataset.id);
+            if (action.classList.contains('js-submit-identity')) requestLifecycle(action.dataset.id, 'submit', action);
+            else if (action.classList.contains('js-retire-identity')) requestLifecycle(action.dataset.id, 'retire', action);
+            else populateDetails(action.dataset.id);
         });
     };
 
