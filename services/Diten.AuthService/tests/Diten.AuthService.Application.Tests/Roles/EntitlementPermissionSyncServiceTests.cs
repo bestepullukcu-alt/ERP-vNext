@@ -868,6 +868,141 @@ public sealed class EntitlementPermissionSyncServiceTests
     }
 
     [Fact]
+    public async Task Composite_catalog_removing_both_special_subsets_cleans_grants_without_removing_generic_grants()
+    {
+        var catalog = ProductItemSkuMasterCompositeCatalog();
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        await svc.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
+            catalog.Select(permission => permission.Key).ToArray(),
+            Actor);
+
+        catalog.RemoveAll(permission =>
+            ProductAbbreviationEntitlementGrantProfile.IsProductAbbreviationKey(permission.Key)
+            || ProductLegalEntityScopeEntitlementGrantProfile.IsProductLegalEntityScopeKey(permission.Key));
+        await svc.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
+            catalog.Select(permission => permission.Key).ToArray(),
+            Actor);
+
+        Assert.Equal(
+            ["mdm.global-products.create", "mdm.global-products.read"],
+            rolePerms.KeysFor(roles.IdOf(TenantA, "Admin"), catalog).OrderBy(key => key, StringComparer.Ordinal));
+        Assert.Equal(
+            ["mdm.global-products.read"],
+            rolePerms.KeysFor(roles.IdOf(TenantA, "Viewer"), catalog));
+        Assert.All(
+            AllCompositeDedicatedRoleNames(),
+            row => Assert.DoesNotContain(rolePerms.Rows, grant =>
+                grant.RoleId == roles.IdOf(TenantA, (string)row[0])
+                && grant.SourceModuleCode == ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode));
+    }
+
+    [Fact]
+    public async Task Inactive_scope_profile_cleanup_does_not_create_missing_scope_roles()
+    {
+        var catalog = ProductItemSkuMasterCompositeCatalog()
+            .Where(permission => !ProductLegalEntityScopeEntitlementGrantProfile.IsProductLegalEntityScopeKey(permission.Key))
+            .ToList();
+        var (svc, roles, _) = BuildWith(catalog);
+
+        await svc.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
+            catalog.Select(permission => permission.Key).ToArray(),
+            Actor);
+
+        Assert.All(
+            ProductLegalEntityScopeEntitlementGrantProfile.DedicatedRoles,
+            template => Assert.False(roles.Exists(TenantA, template.RoleName)));
+        Assert.All(
+            ProductAbbreviationEntitlementGrantProfile.DedicatedRoles,
+            template => Assert.True(roles.Exists(TenantA, template.RoleName)));
+    }
+
+    [Fact]
+    public async Task Removing_scope_subset_cleans_only_scope_profile_and_preserves_ABB_profile()
+    {
+        var catalog = ProductItemSkuMasterCompositeCatalog();
+        var allPermissions = catalog.ToList();
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        await svc.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
+            catalog.Select(permission => permission.Key).ToArray(),
+            Actor);
+
+        catalog.RemoveAll(permission =>
+            ProductLegalEntityScopeEntitlementGrantProfile.IsProductLegalEntityScopeKey(permission.Key));
+        await svc.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
+            catalog.Select(permission => permission.Key).ToArray(),
+            Actor);
+
+        foreach (var template in ProductAbbreviationEntitlementGrantProfile.DedicatedRoles)
+        {
+            Assert.Equal(
+                template.PermissionKeys.OrderBy(key => key, StringComparer.Ordinal),
+                rolePerms.KeysFor(roles.IdOf(TenantA, template.RoleName), allPermissions)
+                    .OrderBy(key => key, StringComparer.Ordinal));
+        }
+        Assert.All(
+            ProductLegalEntityScopeEntitlementGrantProfile.DedicatedRoles,
+            template => Assert.DoesNotContain(rolePerms.Rows, grant =>
+                grant.RoleId == roles.IdOf(TenantA, template.RoleName)
+                && grant.SourceModuleCode == ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode));
+    }
+
+    [Fact]
+    public async Task Inactive_profile_cleanup_is_not_blocked_by_non_system_reserved_role_collision()
+    {
+        var catalog = ProductItemSkuMasterCompositeCatalog()
+            .Where(permission => !ProductLegalEntityScopeEntitlementGrantProfile.IsProductLegalEntityScopeKey(permission.Key))
+            .ToList();
+        var orphanScopePermission = PermissionFor(ProductLegalEntityScopeEntitlementGrantProfile.Read);
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        roles.SeedNonSystem(TenantA, ProductLegalEntityScopeEntitlementGrantProfile.AuditorRole);
+        var collisionRoleId = roles.IdOf(TenantA, ProductLegalEntityScopeEntitlementGrantProfile.AuditorRole);
+        rolePerms.Seed(RolePermission.ModuleGrant(
+            collisionRoleId,
+            orphanScopePermission.Id,
+            TenantA,
+            Actor,
+            ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode));
+        rolePerms.Seed(RolePermission.ManualGrant(
+            collisionRoleId,
+            orphanScopePermission.Id,
+            TenantA,
+            "operator"));
+        rolePerms.Seed(RolePermission.SystemGrant(
+            collisionRoleId,
+            orphanScopePermission.Id,
+            TenantA,
+            "system"));
+
+        await svc.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
+            catalog.Select(permission => permission.Key).ToArray(),
+            Actor);
+
+        Assert.DoesNotContain(rolePerms.Rows, grant =>
+            grant.RoleId == collisionRoleId
+            && grant.GrantSource == GrantSource.Module
+            && grant.SourceModuleCode == ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode);
+        Assert.Contains(rolePerms.Rows, grant =>
+            grant.RoleId == collisionRoleId && grant.GrantSource == GrantSource.Manual);
+        Assert.Contains(rolePerms.Rows, grant =>
+            grant.RoleId == collisionRoleId && grant.GrantSource == GrantSource.System);
+        Assert.All(
+            ProductAbbreviationEntitlementGrantProfile.DedicatedRoles,
+            template => Assert.True(roles.Exists(TenantA, template.RoleName)));
+    }
+
+    [Fact]
     public async Task Product_legal_entity_scope_cancellation_propagates_before_mutation()
     {
         var catalog = ProductItemSkuMasterCompositeCatalog();

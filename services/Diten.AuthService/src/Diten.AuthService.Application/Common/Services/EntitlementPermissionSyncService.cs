@@ -141,7 +141,11 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         string actor,
         CancellationToken ct)
     {
-        if (modulePermissions.Count == 0)
+        var isCompositeProductModule = string.Equals(
+            code,
+            ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
+            StringComparison.OrdinalIgnoreCase);
+        if (modulePermissions.Count == 0 && !isCompositeProductModule)
         {
             return;
         }
@@ -151,7 +155,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             ProductAbbreviationEntitlementGrantProfile.AppliesTo(code, permissionKeys);
         var hasProductLegalEntityScopeProfile =
             ProductLegalEntityScopeEntitlementGrantProfile.AppliesTo(code, permissionKeys);
-        if (hasProductAbbreviationProfile || hasProductLegalEntityScopeProfile)
+        if (isCompositeProductModule)
         {
             if (hasProductAbbreviationProfile)
             {
@@ -224,8 +228,8 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         {
             dedicatedRoles = await ResolveDedicatedRolesAsync(
                 tenantId,
-                includeProductAbbreviation: true,
-                includeProductLegalEntityScope: true,
+                includeProductAbbreviation: false,
+                includeProductLegalEntityScope: false,
                 createMissing: false,
                 ct);
         }
@@ -420,8 +424,9 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
                 legalEntityScopePermissions.Values);
         }
 
-        // All applicable dedicated role names are preflighted before the first role or grant mutation. A collision in
-        // either special profile therefore cannot leave the other profile partially provisioned.
+        // Active profile role names are preflighted before the first role or grant mutation. Inactive profiles are
+        // resolved only for stale module-grant cleanup: they never create roles and an unrelated operator-owned role
+        // with a reserved name cannot block cleanup of grants previously sourced by this module.
         var dedicatedRoles = await ResolveDedicatedRolesAsync(
             tenantId,
             includeProductAbbreviation,
@@ -470,7 +475,9 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             {
                 plans.Add((
                     role,
-                    abbreviationTemplate.PermissionKeys.Select(key => abbreviationPermissions[key]).ToList()));
+                    includeProductAbbreviation
+                        ? abbreviationTemplate.PermissionKeys.Select(key => abbreviationPermissions[key]).ToList()
+                        : Array.Empty<Permission>()));
                 continue;
             }
 
@@ -478,7 +485,9 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
                 .Single(item => string.Equals(item.RoleName, role.Name, StringComparison.Ordinal));
             plans.Add((
                 role,
-                scopeTemplate.PermissionKeys.Select(key => legalEntityScopePermissions[key]).ToList()));
+                includeProductLegalEntityScope
+                    ? scopeTemplate.PermissionKeys.Select(key => legalEntityScopePermissions[key]).ToList()
+                    : Array.Empty<Permission>()));
         }
 
         foreach (var (role, desiredPermissions) in plans)
@@ -521,23 +530,25 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         bool createMissing,
         CancellationToken ct)
     {
-        var templates = new List<DedicatedRoleTemplate>();
-        if (includeProductAbbreviation)
-        {
-            templates.AddRange(ProductAbbreviationEntitlementGrantProfile.DedicatedRoles.Select(template =>
-                new DedicatedRoleTemplate(template.RoleName, template.DisplayName, template.Description)));
-        }
-        if (includeProductLegalEntityScope)
-        {
-            templates.AddRange(ProductLegalEntityScopeEntitlementGrantProfile.DedicatedRoles.Select(template =>
-                new DedicatedRoleTemplate(template.RoleName, template.DisplayName, template.Description)));
-        }
+        var templates = ProductAbbreviationEntitlementGrantProfile.DedicatedRoles.Select(template =>
+                new DedicatedRoleTemplate(
+                    template.RoleName,
+                    template.DisplayName,
+                    template.Description,
+                    includeProductAbbreviation))
+            .Concat(ProductLegalEntityScopeEntitlementGrantProfile.DedicatedRoles.Select(template =>
+                new DedicatedRoleTemplate(
+                    template.RoleName,
+                    template.DisplayName,
+                    template.Description,
+                    includeProductLegalEntityScope)))
+            .ToList();
 
         var existing = new Dictionary<string, Role?>(StringComparer.Ordinal);
         foreach (var template in templates)
         {
             var role = await _roles.GetByNameAndTenantAsync(template.RoleName, tenantId, ct);
-            if (role is not null && !role.IsSystem)
+            if (template.IsActive && role is not null && !role.IsSystem)
             {
                 throw new InvalidOperationException(
                     $"Entitlement profile system role name collision: '{template.RoleName}'.");
@@ -554,8 +565,17 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         var resolved = new List<Role>();
         foreach (var template in templates)
         {
-            var role = existing[template.RoleName]
-                       ?? await _roles.UpsertSystemRoleAsync(
+            var role = existing[template.RoleName];
+            if (!template.IsActive)
+            {
+                if (role is not null)
+                {
+                    resolved.Add(role);
+                }
+                continue;
+            }
+
+            role ??= await _roles.UpsertSystemRoleAsync(
                            template.RoleName,
                            template.DisplayName,
                            template.Description,
@@ -620,5 +640,9 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         }
     }
 
-    private sealed record DedicatedRoleTemplate(string RoleName, string DisplayName, string Description);
+    private sealed record DedicatedRoleTemplate(
+        string RoleName,
+        string DisplayName,
+        string Description,
+        bool IsActive);
 }
