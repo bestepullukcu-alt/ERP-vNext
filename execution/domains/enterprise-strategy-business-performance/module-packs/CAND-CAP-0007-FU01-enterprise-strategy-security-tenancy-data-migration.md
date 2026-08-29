@@ -452,7 +452,7 @@ Gateway work requires a separate, explicitly approved `integration-agent` task a
 21. No frontend, gateway, Platform/Auth service or other-domain file changes occur in this slice.
 22. All scoped regression is green before the slice closes; failures are not deferred.
 23. All 148 HTTP actions are inventoried by executable tests; only health actions may be anonymous.
-24. Existing 80 permission-decorated actions deny without an exact ordinal permission claim; configuration
+24. Existing 81 permission-decorated actions deny without an exact ordinal permission claim; configuration
     absence never enables a development bootstrap.
 25. Existing 67 actions without custom permission metadata (including health) are explicitly classified;
     non-health role-only or open actions without a reviewed exact permission mapping remain fail-closed and
