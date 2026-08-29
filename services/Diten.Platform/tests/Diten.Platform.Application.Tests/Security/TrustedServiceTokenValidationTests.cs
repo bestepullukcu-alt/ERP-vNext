@@ -112,6 +112,53 @@ public sealed class TrustedServiceTokenValidationTests : IDisposable
     }
 
     [Fact]
+    public async Task Reference_data_scheme_accepts_only_reference_audience_without_weakening_other_schemes()
+    {
+        var options = Options();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [$"{TrustedServiceTokenValidationOptions.SectionName}:Issuer"] = options.Issuer,
+                [$"{TrustedServiceTokenValidationOptions.SectionName}:CurrentKeyId"] = options.CurrentKeyId,
+                [$"{TrustedServiceTokenValidationOptions.SectionName}:CurrentPublicKeyPem"] = options.CurrentPublicKeyPem,
+                ["JwtSettings:Issuer"] = "human-issuer",
+                ["JwtSettings:Audience"] = "human-audience",
+                ["JwtSettings:Secret"] = new string('s', 64)
+            })
+            .Build();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddAuthentication("HumanBearer");
+        services.AddTrustedServiceTokenValidation(configuration, _clock);
+        await using var provider = services.BuildServiceProvider();
+        var token = Token(
+            _current,
+            "current-key",
+            SecurityAlgorithms.RsaSha256,
+            audience: TrustedServiceTokenValidationExtensions.ReferenceDataRequiredAudience);
+
+        var reference = await AuthenticateAsync(
+            provider,
+            token,
+            TrustedServiceTokenValidationExtensions.ReferenceDataAuthenticationScheme);
+        var workflow = await AuthenticateAsync(
+            provider,
+            token,
+            TrustedServiceTokenValidationExtensions.WorkflowAuthenticationScheme);
+        var audit = await AuthenticateAsync(
+            provider,
+            token,
+            TrustedServiceTokenValidationExtensions.AuthenticationScheme);
+
+        Assert.True(reference.Succeeded);
+        Assert.True(TrustedServiceTokenValidationExtensions.HasExactReferenceDataServiceClaims(
+            new JsonWebToken(token),
+            Issuer));
+        Assert.False(workflow.Succeeded);
+        Assert.False(audit.Succeeded);
+    }
+
+    [Fact]
     public async Task Delegated_user_scheme_reads_only_exact_delegated_header_and_validates_human_jwt()
     {
         const string secret = "delegated-user-secret-with-at-least-thirty-two-bytes";

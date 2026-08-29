@@ -215,7 +215,28 @@ public sealed class DependencyInjectionSmokeTests
         Assert.NotNull(await schemes.GetSchemeAsync(
             TrustedServiceTokenValidationExtensions.WorkflowAuthenticationScheme));
         Assert.NotNull(await schemes.GetSchemeAsync(
+            TrustedServiceTokenValidationExtensions.ReferenceDataAuthenticationScheme));
+        Assert.NotNull(await schemes.GetSchemeAsync(
             TrustedServiceTokenValidationExtensions.WorkflowDelegatedUserAuthenticationScheme));
+    }
+
+    [Fact]
+    public void Program_RegistersPurposeSpecificVerifiedReferenceDataTenantContext()
+    {
+        var root = FindRepositoryRoot();
+        var program = File.ReadAllText(Path.Combine(
+            root,
+            "services", "Diten.Platform", "src", "Diten.Platform.API", "Program.cs"));
+
+        Assert.Contains(
+            "AddScoped<IVerifiedReferenceDataServiceTenantContext, VerifiedReferenceDataServiceTenantContext>()",
+            program,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "AddAuthentication(TrustedServiceTokenValidationExtensions.ReferenceDataAuthenticationScheme",
+            program,
+            StringComparison.Ordinal);
+        Assert.False(typeof(IHostedService).IsAssignableFrom(typeof(VerifiedReferenceDataServiceTenantContext)));
     }
 
     [Fact]

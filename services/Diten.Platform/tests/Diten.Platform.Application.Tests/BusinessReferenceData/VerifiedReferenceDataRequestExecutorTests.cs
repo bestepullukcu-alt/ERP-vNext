@@ -49,13 +49,44 @@ public sealed class VerifiedReferenceDataRequestExecutorTests
         credential.Setup(x => x.Authenticate(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
             .Returns(VerifiedGskuResolverCredentialAuthenticationResult.Unauthenticated);
         var jwt = new Mock<IVerifiedGskuResolverJwtTenantContext>(MockBehavior.Strict);
-        var result = await new VerifiedReferenceDataRequestExecutor(credential.Object, jwt.Object, new TenantContext()).ExecuteAsync(
+        var service = new Mock<IVerifiedReferenceDataServiceTenantContext>(MockBehavior.Strict);
+        var result = await new VerifiedReferenceDataRequestExecutor(
+            credential.Object,
+            jwt.Object,
+            service.Object,
+            new TenantContext()).ExecuteAsync(
             new DefaultHttpContext(), CancellationToken.None,
             (_, _) => Task.FromResult<IActionResult>(new OkResult()),
             (status, _) => new StatusCodeResult(status));
 
         Assert.Equal(401, Assert.IsType<StatusCodeResult>(result).StatusCode);
         jwt.VerifyNoOtherCalls();
+        service.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Executor_RejectsDuplicateStaticCredentialHeadersBeforeAuthentication()
+    {
+        var credential = new Mock<IVerifiedGskuResolverCredentialAuthenticator>(MockBehavior.Strict);
+        var jwt = new Mock<IVerifiedGskuResolverJwtTenantContext>(MockBehavior.Strict);
+        var service = new Mock<IVerifiedReferenceDataServiceTenantContext>(MockBehavior.Strict);
+        var http = AuthorizedHttp();
+        http.Request.Headers.Append(InternalBusinessReferenceDataController.CredentialIdHeader, "second-id");
+
+        var result = await new VerifiedReferenceDataRequestExecutor(
+            credential.Object,
+            jwt.Object,
+            service.Object,
+            new TenantContext()).ExecuteAsync(
+                http,
+                CancellationToken.None,
+                (_, _) => Task.FromResult<IActionResult>(new OkResult()),
+                (status, _) => new StatusCodeResult(status));
+
+        Assert.Equal(401, Assert.IsType<StatusCodeResult>(result).StatusCode);
+        credential.VerifyNoOtherCalls();
+        jwt.VerifyNoOtherCalls();
+        service.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -124,6 +155,62 @@ public sealed class VerifiedReferenceDataRequestExecutorTests
         Assert.Equal(previous, context.TenantId);
     }
 
+    [Fact]
+    public async Task Executor_AcceptsOneExactServiceIdentityTenant()
+    {
+        var tenantId = Guid.NewGuid();
+        var context = new TenantContext();
+        var credential = AuthenticatedCredential();
+        var interactive = TenantContextResult(VerifiedGskuResolverJwtTenantResult.Unauthenticated);
+        var service = ServiceTenantContextResult(new VerifiedGskuResolverJwtTenantResult(true, true, tenantId));
+        var http = AuthorizedHttp();
+
+        var result = await new VerifiedReferenceDataRequestExecutor(
+            credential.Object,
+            interactive.Object,
+            service.Object,
+            context).ExecuteAsync(
+                http,
+                CancellationToken.None,
+                (resolvedTenant, _) =>
+                {
+                    Assert.Equal(tenantId, resolvedTenant);
+                    Assert.Equal(tenantId, context.TenantId);
+                    return Task.FromResult<IActionResult>(new OkResult());
+                },
+                (status, _) => new StatusCodeResult(status));
+
+        Assert.IsType<OkResult>(result);
+        Assert.Throws<InvalidOperationException>(() => context.TenantId);
+    }
+
+    [Fact]
+    public async Task Executor_RejectsAmbiguousInteractiveAndServiceAuthentication()
+    {
+        var interactive = TenantContextResult(
+            new VerifiedGskuResolverJwtTenantResult(true, true, Guid.NewGuid()));
+        var service = ServiceTenantContextResult(
+            new VerifiedGskuResolverJwtTenantResult(true, true, Guid.NewGuid()));
+        var dispatched = false;
+
+        var result = await new VerifiedReferenceDataRequestExecutor(
+            AuthenticatedCredential().Object,
+            interactive.Object,
+            service.Object,
+            new TenantContext()).ExecuteAsync(
+                AuthorizedHttp(),
+                CancellationToken.None,
+                (_, _) =>
+                {
+                    dispatched = true;
+                    return Task.FromResult<IActionResult>(new OkResult());
+                },
+                (status, _) => new StatusCodeResult(status));
+
+        Assert.Equal(403, Assert.IsType<StatusCodeResult>(result).StatusCode);
+        Assert.False(dispatched);
+    }
+
     private static (VerifiedReferenceDataRequestExecutor Executor, DefaultHttpContext Http, Guid TenantId)
         AuthorizedExecutor(TenantContext context)
     {
@@ -144,5 +231,42 @@ public sealed class VerifiedReferenceDataRequestExecutorTests
         http.Request.Headers[InternalBusinessReferenceDataController.AudienceHeader] = "VERIFIED_GSKU_RESOLVE";
 
         return (new VerifiedReferenceDataRequestExecutor(credential.Object, jwt.Object, context), http, tenantId);
+    }
+
+    private static Mock<IVerifiedGskuResolverCredentialAuthenticator> AuthenticatedCredential()
+    {
+        var credential = new Mock<IVerifiedGskuResolverCredentialAuthenticator>(MockBehavior.Strict);
+        credential.Setup(x => x.Authenticate("id", "secret", "VERIFIED_GSKU_RESOLVE"))
+            .Returns(new VerifiedGskuResolverCredentialAuthenticationResult(
+                true,
+                false,
+                "DITENMDMSERVICE",
+                "VERIFIED_GSKU_RESOLVE"));
+        return credential;
+    }
+
+    private static Mock<IVerifiedGskuResolverJwtTenantContext> TenantContextResult(
+        VerifiedGskuResolverJwtTenantResult result)
+    {
+        var context = new Mock<IVerifiedGskuResolverJwtTenantContext>(MockBehavior.Strict);
+        context.Setup(value => value.ResolveAsync(It.IsAny<HttpContext>())).ReturnsAsync(result);
+        return context;
+    }
+
+    private static Mock<IVerifiedReferenceDataServiceTenantContext> ServiceTenantContextResult(
+        VerifiedGskuResolverJwtTenantResult result)
+    {
+        var context = new Mock<IVerifiedReferenceDataServiceTenantContext>(MockBehavior.Strict);
+        context.Setup(value => value.ResolveAsync(It.IsAny<HttpContext>())).ReturnsAsync(result);
+        return context;
+    }
+
+    private static DefaultHttpContext AuthorizedHttp()
+    {
+        var http = new DefaultHttpContext();
+        http.Request.Headers[InternalBusinessReferenceDataController.CredentialIdHeader] = "id";
+        http.Request.Headers[InternalBusinessReferenceDataController.CredentialSecretHeader] = "secret";
+        http.Request.Headers[InternalBusinessReferenceDataController.AudienceHeader] = "VERIFIED_GSKU_RESOLVE";
+        return http;
     }
 }
