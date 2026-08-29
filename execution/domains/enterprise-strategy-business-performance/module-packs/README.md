@@ -18,7 +18,9 @@ Bu scaffold herhangi bir module pack oluşturmaz veya production implementation 
 İlk beklenen authoring sırası:
 
 1. `CAND-CAP-0007-FU01` — Security, Tenancy & Data Migration Foundation
-2. `MOD-0352` — Enterprise Strategy Management (1.1; active DCP-006 scope dışı)
+2. [MOD-0352 — Enterprise Strategy Management](MOD-0352-enterprise-strategy-management.md) — bounded
+   Slice 3 strategy-link contract reconciliation ready-for-dev; broader 1.1 delivery and active DCP-006
+   scope remain unchanged
 3. MOD-0117 altında Demand transition slice (kimlik DCP-003 sahibiyle birlikte kararlaştırılır)
 4. `MOD-0354` — DWS Wave 1 structural mechanics
 5. `MOD-0355` — BPM process model/version
