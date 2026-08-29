@@ -12,4 +12,16 @@
   <data name="Export" xml:space="preserve"><value>Export</value></data>
   <data name="ColumnVisibility" xml:space="preserve"><value>Column Visibility</value></data>
   <data name="Status" xml:space="preserve"><value>Status</value></data>
+  <data name="SubmitIdentity" xml:space="preserve"><value>Submit for Approval</value></data>
+  <data name="RetireIdentity" xml:space="preserve"><value>Retire Identity</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>Submit this Finished Good identity for approval?</value></data>
+  <data name="RetireConfirmation" xml:space="preserve"><value>Retire this approved Finished Good identity?</value></data>
+  <data name="RetirementReasonLabel" xml:space="preserve"><value>Retirement reason</value></data>
+  <data name="RetirementReasonRequired" xml:space="preserve"><value>A retirement reason is required.</value></data>
+  <data name="RetirementReasonTooLong" xml:space="preserve"><value>The retirement reason cannot exceed 128 characters.</value></data>
+  <data name="SubmitPendingSuccess" xml:space="preserve"><value>The Finished Good identity was submitted and is pending approval.</value></data>
+  <data name="RetireSuccess" xml:space="preserve"><value>The Finished Good identity was retired.</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>The lifecycle state changed. The latest record has been loaded.</value></data>
+  <data name="ErrorServiceUnavailable" xml:space="preserve"><value>The lifecycle service is unavailable. Try again later.</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>The lifecycle request timed out. Try again.</value></data>
 </root>

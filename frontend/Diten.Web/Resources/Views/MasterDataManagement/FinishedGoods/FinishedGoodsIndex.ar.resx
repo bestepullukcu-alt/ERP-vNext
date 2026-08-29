@@ -6,6 +6,18 @@
   <data name="GeneralInformation" xml:space="preserve"><value>معلومات عامة</value></data><data name="Id" xml:space="preserve"><value>المعرّف</value></data><data name="Version" xml:space="preserve"><value>الإصدار</value></data><data name="CreatedAt" xml:space="preserve"><value>تاريخ الإنشاء</value></data><data name="UpdatedAt" xml:space="preserve"><value>تاريخ التحديث</value></data><data name="CodeSearch" xml:space="preserve"><value>البحث بالرمز</value></data><data name="CodeSearchPlaceholder" xml:space="preserve"><value>الرمز المعياري للمنتج النهائي أو GSKU</value></data>
   <data name="CreateConfirmation" xml:space="preserve"><value>هل تريد إنشاء مسودة المنتج النهائي؟</value></data><data name="CreateSuccessWithCode" xml:space="preserve"><value>تم إنشاء المنتج النهائي بالرمز المعياري {0}.</value></data><data name="CreatePendingWithCode" xml:space="preserve"><value>تم إنشاء المنتج النهائي {0} وتأكيد الربط معلق؛ تم تحديث القائمة.</value></data><data name="CreatePending" xml:space="preserve"><value>طلب الإنشاء بانتظار التسوية؛ تم تحديث القائمة.</value></data>
   <data name="ErrorUnauthorized" xml:space="preserve"><value>انتهت الجلسة. سجّل الدخول مجددًا.</value></data><data name="ErrorForbidden" xml:space="preserve"><value>ليس لديك إذن للوصول إلى المنتجات النهائية.</value></data><data name="ErrorNotFound" xml:space="preserve"><value>لم يتم العثور على المنتج النهائي أو GSKU.</value></data><data name="ErrorConflict" xml:space="preserve"><value>يتعارض الطلب مع بيانات موجودة.</value></data><data name="ErrorValidation" xml:space="preserve"><value>تحقق من GSKU المحدد وحاول مرة أخرى.</value></data><data name="ErrorGateway" xml:space="preserve"><value>خدمة المنتجات النهائية غير متاحة حاليًا.</value></data><data name="GskuNotReferenceable" xml:space="preserve"><value>لا يمكن استخدام GSKU المحدد لمسودة المنتج النهائي.</value></data>
+  <data name="SubmitIdentity" xml:space="preserve"><value>إرسال للاعتماد</value></data>
+  <data name="RetireIdentity" xml:space="preserve"><value>إيقاف الهوية</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>هل تريد إرسال هوية المنتج النهائي للاعتماد؟</value></data>
+  <data name="RetireConfirmation" xml:space="preserve"><value>هل تريد إيقاف هوية المنتج النهائي؟</value></data>
+  <data name="RetirementReasonLabel" xml:space="preserve"><value>سبب الإيقاف</value></data>
+  <data name="RetirementReasonRequired" xml:space="preserve"><value>سبب الإيقاف مطلوب.</value></data>
+  <data name="RetirementReasonTooLong" xml:space="preserve"><value>يجب ألا يتجاوز سبب الإيقاف 128 حرفًا.</value></data>
+  <data name="SubmitPendingSuccess" xml:space="preserve"><value>تم إرسال هوية المنتج النهائي للاعتماد.</value></data>
+  <data name="RetireSuccess" xml:space="preserve"><value>تم إيقاف هوية المنتج النهائي.</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>تغيرت حالة دورة الحياة. تم تحديث التفاصيل؛ راجعها وحاول مرة أخرى.</value></data>
+  <data name="ErrorServiceUnavailable" xml:space="preserve"><value>خدمة دورة حياة المنتج النهائي غير متاحة حاليًا.</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>انتهت مهلة طلب دورة الحياة. حاول مرة أخرى.</value></data>
   <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
   <data name="Search" xml:space="preserve"><value>بحث</value></data>
   <data name="Export" xml:space="preserve"><value>تصدير</value></data>
