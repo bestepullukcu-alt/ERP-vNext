@@ -3732,3 +3732,86 @@ kurtardı; geriye handler'ın **kendisi** kaldı. Silme üç servise yayıldığ
 - **Gelecek regresyon riski: 🟢** — silinen şeyin canlı çağrı yolu yoktu, davranış değişmedi. Kaydın açılış
   riski (birinin "kiracılık hallediliyor" sanması) artık yalnızca sınıfın YOKLUĞUYLA değil, DI'daki açık
   işaretle ve `TenantOnTheWire`'ın üç paragrafıyla kapatıldı.
+
+### BL-323 — köprüde cross-tenant davranışı TANIMSIZ'dı; kural yazıldı, muhafıza bağlandı, örnek uygulamada bir SIZINTI bulundu (2026-08-29, ölçüldü, KAPANDI)
+
+> **DURUM:** KAPANDI · **SAHİP:** CONTROL TOWER
+> *Geldiği bölüm:* Açık kararlar
+
+**Kapanış gerekçesi:** kaydın kendi kapanış koşulu üçtü — (1) karar verilecek, (2) onboarding
+notu §7'ye yazılacak, (3) bir muhafıza bağlanacak. Üçü de yapıldı. Dördüncüsü istenmemişti ama
+ölçüm sırasında çıktı: kuralın MODEL ALINDIĞI referans tüketici, kuralın kendisini ihlal
+ediyordu (aşağıda).
+
+**SAHİP KARARI (2026-08-29) — onaylandı ve yazıldı:**
+1. Başlık kiracısı ile JWT kiracısı **ÇELİŞİYORSA → 400.** Bozuk istektir; gizlenecek bir şey
+   yok, iki değeri de çağıran yazdı.
+2. Anlaşıyorlar ama **İSTENEN KAYIT başka kiracınınsa → 404**, yokmuş gibi.
+3. **Durum 2 için ASLA 403.** Gerekçe kuralla birlikte yazıldı, çünkü gerekçesi silinen kural
+   sonradan "sadeleştiriliyor": 403 kaydın VAR olduğunu doğrular, yani 404'ün tam olarak
+   engellemek için seçildiği sızıntıyı yapar.
+
+**§7'ye ne yazıldı** (`DCP-004-provider-onboarding-note.md` §7.4, kaydın işaret ettiği satır 269'un
+tam olarak orası): iki durumun tablosu; 403-yerine-404'ün tek satırlık gerekçesi; **yeni bir
+kullanıcı dizesi ÜRETİLMEDİĞİ** ve üretilmemesi gerektiği (ayrı bir `reason_code` ayrı bir cümle
+ister, o cümle de 404'ün sakladığı şeyi duyurur — yabancı kayıt, herhangi bir yok kayıt gibi
+okunmalı); ve **doğru şeklin kiracıya-KAPSANMIŞ sorgu olduğu, cross-tenant dalı olmadığı**
+(`if (record.TenantId != mine) return Forbid()` yazan kişi durum 2'yi izin kontrolü olarak
+yazmıştır ve oradan sızdırır).
+
+**⚠ ÖRNEK UYGULAMADA SIZINTI BULUNDU — kural yazılırken ölçüldü.** Referans tüketici durum 2'ye
+zaten uyuyordu (durumu kiracıya göre anahtarlıyor, yabancı kayıt yok sayılıyor → 404). Ama:
+- `ReferenceWorkItemProviderController.TenantKey` **HAM BAŞLIĞI** okuyor (bilerek — "(no tenant
+  header)" yankısı §7.7'deki propagation kusurunu yakalayan şeydi), buna karşılık
+- `Diten.DevEnablementService`'in `TenantResolutionMiddleware`'i çelişkide **"JWT kazanır" + uyarı
+  logu** yapıyordu (durum 1'i dayatmıyordu).
+- İkisi birlikte: **kiracı A'nın token'ını taşıyan çağıran, B'nin başlığını göndererek B'nin
+  kaydını OKUYABİLİYOR ve DEĞİŞTİREBİLİYORDU.** Ölçüldü, tahmin değil — muhafız düzeltmeden
+  ÖNCE çalıştırıldı ve çelişkili istek handler'a ulaşıyordu.
+- **Düzeltme kuralın sahibi olan TEK yere kondu** (middleware 400 döner), handler'a kopyalanmadı;
+  ham başlık okuması korundu, çünkü teşhis değeri gerçek bir kusuru yakalamıştı.
+
+**MUHAFIZ — ne kapsıyor, ne kapsamıyor (§7.4'te de bu sözlerle yazılı):**
+`Diten.DevEnablementService.Api.Tests/WorkItemBridge/CrossTenantContractGuardTests.cs`, **9 test**
+(dosya toplamı 7 → 16).
+- **Kapsıyor:** bu servisin GERÇEK middleware'i (durum 1) ve GERÇEK referans tüketicisi (durum 2)
+  — ikisi de bizim kodumuz, ikisi de iddia edilebilir.
+- **KAPSAMIYOR ve kapsayamaz:** BAŞKA ekiplerin modüllerinin ne cevapladığı. O kod bu depoda değil
+  ve Platform onu 404'e çeviremez: `RemoteWorkItemGateway` modülün durum kodunu bilerek olduğu gibi
+  taşır, çünkü 403'ü 404'e çeviren bir köprü **meşru** 403'ü (kaydı senin olan ama yapamayacağın
+  eylem) de silerdi. Onlar için kural BELGEDİR; not bunu "kapsanıyormuş" gibi ima etmek yerine
+  düpedüz öyle yazıyor.
+- **Boş muhafız DEĞİL:** durum-2 iddialarının hepsi FARKSAL — aynı item id, aynı action code,
+  sahibine **200**, yabancıya **404**. Her şeye 404 diyen bir controller (ör. `Enabled=false` ile
+  kapatılmış olan — bu muhafızın sessizce yeşil kalabileceği tam yol) her çiftin sahip yarısında
+  düşer.
+
+**MUTASYON ÖLÇÜMÜ — dördü de öldürüldü, sonra geri alındı (16/16 yeşil):**
+| Mutasyon | Sonuç |
+|---|---|
+| Middleware düzeltmesi geri alındı ("JWT kazanır") | **2 kırmızı** — çelişki handler'a ulaştı (kapanış öncesi GERÇEK durum) |
+| Yabancı kayıt 404 → 403 (`REFERENCE_ITEM_FORBIDDEN`) | **2 kırmızı** |
+| `WorkItemReferenceProvider:Enabled` = false (boşluk tuzağı) | **4 kırmızı** — dördü de |
+| Kiracı kapsamı kaldırıldı (herkese tek kova) | **4 kırmızı** — dördü de |
+
+⚠ Mutasyon sırasında muhafızın kendisinde bir zayıflık bulundu ve düzeltildi:
+`Case1_..._never_403_or_404` testi, hiçbir şey yapmayan bir middleware'de de yeşil kalıyordu
+(200 ne 403'tür ne 404). Teste "reddedildi mi" iddiası eklendi; ikinci mutasyon turunda iki
+durum-1 testi de kırmızıya döndü.
+
+**ÖLÇÜM — testler:** `dotnet test services/Diten.Platform` **23 kırmızı / 3534 yeşil / 3557 toplam**
+— taban ile **birebir aynı** (23'ü main'in, PR #60'ın kodu; bu turun değil).
+`dotnet test tests/architecture/TenantArchitecture.ArchitectureTests` **11 yeşil.**
+`dotnet test services/.../Diten.DevEnablementService.Api.Tests` **16 yeşil** (taban 7).
+`dotnet build` iki projede **0 hata, 0 uyarı.** Frontend dosyası değişmedi → vitest çalıştırılmadı.
+
+**Yeni kullanıcı dizesi: SIFIR.** Hiçbir resx'e dokunulmadı; yabancı kayıt zaten var olan
+`REFERENCE_ITEM_NOT_FOUND` ile, herhangi bir yok kayıt gibi cevaplanıyor.
+
+**Devreden artık: BL-324** — çelişki kuralı (durum 1) dört kiracı-çözüm noktasında hâlâ
+dayatılmıyor, ikisinde ise JWT hiç okunmuyor. BL-323'ün kapsamı köprüydü; bu sistem geneli bir
+davranış değişikliğidir ve kendi turunu hak eder. Kapsamı sessizce genişletmek yerine kayda geçti.
+
+**Gelecek regresyon riski: 🟡** — köprünün kendi ucu artık davranışsal muhafızla kapalı, ama
+kuralın diğer modüllerdeki tek dayanağı §7'nin okunmasıdır; bunu bir teste bağlamanın yolu yok
+ve not bunu saklamıyor.
