@@ -200,7 +200,7 @@ public sealed class PlatformProductIdentityWorkflowClient : IProductIdentityWork
         && value.CandidatePrincipalIds.Distinct(StringComparer.Ordinal).Count() == value.CandidatePrincipalIds.Count
         && ValidOptionalText(value.ReasonCode, 128) && ValidUtc(value.DueAt);
     private static bool ValidObject(string objectType, string objectId) =>
-        objectType is "GlobalProduct" or "gsku" or "lsku"
+        objectType is "GlobalProduct" or "gsku" or "lsku" or "finished-good"
         && Guid.TryParseExact(objectId, "D", out var id) && id != Guid.Empty;
     private static bool ValidStartResult(
         ProductIdentityWorkflowStartResult value,

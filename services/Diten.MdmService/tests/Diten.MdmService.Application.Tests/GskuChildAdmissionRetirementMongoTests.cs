@@ -1,4 +1,5 @@
 using Diten.MdmService.Application.Common;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
@@ -124,12 +125,27 @@ public sealed class GskuChildAdmissionRetirementMongoTests : IAsyncLifetime
         {
             Id = Guid.NewGuid(), TenantId = _tenantId, GskuId = pair.Gsku.Id,
             CanonicalCode = $"FG-{Guid.NewGuid():N}", CodeReservationId = Guid.NewGuid(),
-            CreationCommandId = "finished-good-existing", LifecycleStatus = ProductIdentityLifecycleStatus.Draft
+            CreationCommandId = "finished-good-existing",
+            LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved,
+            Version = 0
         };
         await _finishedGoods.InsertOneAsync(finishedGood);
         Assert.Equal("DEPENDENT_IDENTITIES_EXIST", await repository.FindRetirementBlockerAsync(pair.Gsku.Id));
-        await _finishedGoods.UpdateOneAsync(x => x.TenantId == _tenantId && x.Id == finishedGood.Id,
-            Builders<FinishedGood>.Update.Set(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Retired));
+        var finishedGoodRepository = new FinishedGoodRepository(_database, new Tenant(_tenantId));
+        var finishedGoodRetirementOperationId = Guid.NewGuid();
+        var finishedGoodRetirementAudit = FinishedGoodIdentityLifecycleAuditIntentFactory.CreateRetire(
+            finishedGood,
+            finishedGood.Version,
+            finishedGoodRetirementOperationId,
+            Guid.NewGuid(),
+            "OBSOLETE",
+            null,
+            DateTimeOffset.UtcNow);
+        var retiredFinishedGood = await finishedGoodRepository.RetireIdentityAsync(
+            finishedGood.Id, finishedGood.Version, finishedGoodRetirementAudit);
+        Assert.True(retiredFinishedGood.Succeeded);
+        Assert.Equal(ProductIdentityLifecycleStatus.Retired,
+            retiredFinishedGood.FinishedGood!.LifecycleStatus);
         Assert.Null(await repository.FindRetirementBlockerAsync(pair.Gsku.Id));
         var fencedGsku = fence.Aggregate!;
         var retiredGsku = await repository.RetireIdentityAsync(

@@ -1,4 +1,5 @@
 using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.ValueObjects;
 
 namespace Diten.MdmService.Domain.Repositories;
 
@@ -31,6 +32,22 @@ public interface IFinishedGoodRepository
         FinishedGood finishedGood, string admissionFingerprint,
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("GSKU_CHILD_ADMISSION_NOT_IMPLEMENTED");
+
+    Task<FinishedGoodLifecycleWriteResult> SubmitIdentityAsync(
+        Guid id, int expectedVersion, ProductIdentityWorkflowBinding workflowBinding,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("FINISHED_GOOD_LIFECYCLE_SUBMIT_NOT_IMPLEMENTED");
+
+    Task<FinishedGoodLifecycleWriteResult> ReconcileIdentityDecisionAsync(
+        Guid id, int expectedVersion, ProductIdentityWorkflowBinding expectedWorkflowBinding,
+        ProductIdentityWorkflowDecisionEvidence decisionEvidence,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("FINISHED_GOOD_LIFECYCLE_DECISION_NOT_IMPLEMENTED");
+
+    Task<FinishedGoodLifecycleWriteResult> RetireIdentityAsync(
+        Guid id, int expectedVersion, LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("FINISHED_GOOD_LIFECYCLE_RETIRE_NOT_IMPLEMENTED");
 }
 
 public sealed record FinishedGoodPage(IReadOnlyList<FinishedGood> Items, long TotalCount);
@@ -39,3 +56,9 @@ public sealed record FinishedGoodCreateResult(
     FinishedGood? FinishedGood,
     string? ErrorCode = null,
     bool WriteOutcomeAmbiguous = false);
+
+public sealed record FinishedGoodLifecycleWriteResult(
+    bool Succeeded,
+    FinishedGood? FinishedGood,
+    string? ErrorCode = null,
+    bool IsReplay = false);
