@@ -3490,9 +3490,99 @@ no `ReplaceOne`, production data/config mutation, commit or push was performed.
 approve/reject endpoint; terminal decisions enter exclusively through the trusted reconciler. Gateway/frontend remain
 protected until their owned steps. No new collection, WorkCenter provider or Platform class is permitted.
 
+**D2 implementation evidence — 2026-08-29:** `POST /api/global-products/{id:guid}/submit` dispatches the durable
+`StartGlobalProductIdentityWorkflowCommand`; `POST /api/global-products/{id:guid}/retire` dispatches the direct MDM
+retirement command. Exact submit/retire permissions are enforced. Operation identity is an exact non-empty D-format
+`Idempotency-Key` header; tenant, actor, Workflow binding and operation identity cannot be supplied in the body, and
+unknown fields fail before MediatR. The existing visible Global Product page gained only `SUBMIT` and dangerous
+`RETIRE` row actions; no approve/reject or navigation change was introduced. Independent review found no P0/P1 and
+its one P2 negative-test gap was closed. Focused tests pass **41/41**, full MDM passes **863/863** with zero skips, and
+the MDM API Release build has zero warnings/errors. Local commits are `1daf65d1` and `576991d0`; neither was pushed.
+
 **E — Revision/GSKU, LSKU and Finished Good lifecycle:** implement in that order. First Revision/GSKU uses one durable
 pair operation with checkpoints/recovery; later GSKU and the two children use single-aggregate CAS plus workflow binding.
 Approval revalidates approved parent and verified reference facts. No independent Revision screen/action/permission.
+
+Code-truth review splits the first pair into three ordered substeps. Direct GSKU retirement is forbidden until child
+admission fencing exists: without it retirement can race LSKU or Finished Good creation.
+
+**E1A — First Revision + GSKU pair Workflow and decision recovery.** Existing runtime allow-list:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/ProductDefinitionRevision.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/Gsku.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductAuditOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IProductDefinitionRevisionRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGskuRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductDefinitionRevisionRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GskuRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/DependencyInjection.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/DependencyInjection.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Program.cs`
+
+New runtime allow-list:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/FirstGskuIdentityWorkflowBinding.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/FirstGskuIdentityWorkflowOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/FirstGskuIdentityWorkflowCheckpoint.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IFirstGskuIdentityWorkflowOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/FirstGskuIdentityWorkflowOperationResults.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IFirstGskuIdentityWorkflowTenantPartitionDiscovery.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FirstGskuIdentityWorkflowOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FirstGskuIdentityWorkflowTenantPartitionDiscoveryRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/FirstGskuIdentityLifecycleModels.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/FirstGskuIdentityLifecycleAuditIntentFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/FirstGskuIdentityWorkflowStartRequestFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/FirstGskuIdentityWorkflowProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Commands/StartFirstGskuIdentityWorkflowCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/StartFirstGskuIdentityWorkflowHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Validators/StartFirstGskuIdentityWorkflowValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/FirstGskuIdentityWorkflowOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/FirstGskuIdentityWorkflowWorkerOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/FirstGskuIdentityWorkflowRecoveryWorker.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/FirstGskuIdentityWorkflowRecoveryRunner.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/FirstGskuIdentityWorkflowRecoveryCommandLine.cs`
+
+The existing Workflow client, delegated-token accessor and dedicated service-identity transport are reused unchanged.
+The Global Product operation/repository/processor is not generalized by changing `ObjectType`. E1A owns exact trusted
+Workflow `ObjectType=gsku`, one GSKU `ObjectId`, one operator-owned GSKU template and one Workflow item for the pair;
+Revision has no separate permission, endpoint, template or item. The pair operation binds tenant, operation, Revision,
+GSKU, original creation command, both expected versions, maker, exact template/candidates, original verified reference
+selections and immutable Workflow evidence. It never persists token/header/secret material.
+
+The durable sequence is `Prepared -> StartOutcomeUnknown -> WorkflowStarted -> RevisionPendingApplied ->
+PairPendingApplied -> AwaitingDecision -> DecisionObserved`. Approval continues `RevisionApproved -> PairApproved ->
+Completed`; rejection restores GSKU first and then Revision before `Completed`. Completion requires exact pair/version,
+one shared binding, two audit intents and read-back. Approval revalidates the Global Product as `IdentityApproved` and
+the persisted pack-applicability/UoM codes against latest active verified provider facts. The original immutable
+selection remains historical evidence and approval-time proof is separate. Provider `404/409/503/504`, timeout and
+cancellation are fail-closed and never approve the pair.
+
+E1A test allow-list is new `FirstGskuIdentityLifecycleUnitTests.cs`, `FirstGskuIdentityLifecycleMongoTests.cs`,
+`FirstGskuIdentityWorkflowOperationMongoTests.cs`, `FirstGskuIdentityWorkflowProcessorTests.cs`,
+`FirstGskuIdentityWorkflowRecoveryWorkerMongoTests.cs`, `FirstGskuIdentityWorkflowRecoveryRunnerTests.cs`,
+`FirstGskuReferenceRevalidationTests.cs`, `FirstGskuIdentityLifecycleAuthorizationTests.cs` and narrow regressions in
+`ProductItemSkuMasterMongoTests.cs`, `GskuRegisterFacadeTests.cs`, `GskuRegisterMongoTests.cs`,
+`LskuRegisterMongoTests.cs`, `FinishedGoodRegisterMongoTests.cs`, `GskuCreateOptionsFacadeTests.cs` and existing
+Workflow transport/security tests only for an additive exact `gsku` profile assertion.
+
+**E1B — downstream admission and direct pair retirement.** Runtime allow-list is `Gsku.cs`, a new bounded
+`GskuChildCreationAdmission.cs`, `IGskuRepository.cs`, `GskuRepository.cs`, `ILskuRepository.cs`, `LskuRepository.cs`,
+`IFinishedGoodRepository.cs`, `FinishedGoodRepository.cs`, `CreateLskuDraftHandler.cs`,
+`CreateFinishedGoodDraftHandler.cs`, the pair-retirement command/handler/validator and exact unit/real-Mongo tests.
+Capacity is the existing non-tenant-configurable bound of 32 active admissions shared by LSKU and Finished Good.
+Create acquires before allocation and completes after durable binding. Retirement fences new admission first, blocks
+on any non-retired child, applies GSKU retired before Revision retired, never cascades, and recovers every checkpoint.
+Referenceable queries require both Revision and GSKU `IdentityApproved`; Draft is no longer referenceable. Existing
+Development records require separate preflight/backfill/approval and are not silently grandfathered.
+
+**E1C — GSKU API/manifest enablement.** Exact allow-list is `GskusController.cs`,
+`ProductItemSkuMasterManifestProvider.cs`, `GskuApiContractTests.cs`, `GskuAuthorizationTests.cs` and
+`ProductItemSkuMasterManifestProviderTests.cs`. Only `POST /api/gskus/{id:guid}/submit` and
+`POST /api/gskus/{id:guid}/retire` plus `SUBMIT`/`RETIRE` actions are added after E1A+B. There is no Revision surface
+and no MDM approve/reject endpoint/action. Gateway routes already cover POST catch-all; Gateway, frontend,
+Platform/Auth runtime, WorkCenter provider/dispatcher, committed config/secrets/data and Production/Staging remain
+protected. E1A, E1B and E1C each require green predecessor evidence; standing non-push authorization grants their
+local runtime/test work in this exact order.
 
 **F — MDM Global Product Workflow client and durable reconciler (exact current-code allow-list):** this step is
 limited to Global Product. GSKU/LSKU/Finished Good workflow consumers remain Step E successors and cannot reuse a
@@ -3640,7 +3730,10 @@ navigation, bulk lifecycle and push remain separate gates.
   contradictory-terminal-status, worker-loop and bounded tenant-discovery hardening.
   The repository-wide DB-010 architecture guard remains at its exact pre-existing two failures (five known per-run
   DB offenders and two stale exception-list entries); this Step F adds neither violation.
-- [ ] D2 and E-H each receive their exact current-code allow-list and predecessor evidence before mutation.
+- [x] D2 is complete at local commit `576991d0` with 41/41 focused and 863/863 full MDM evidence; no push.
+- [x] E1A-E1C current-code allow-lists, ordering, retirement race fence, referenceability rule and acceptance boundaries
+  are frozen on 2026-08-29; standing non-push authorization grants local runtime/test work in that exact order.
+- [ ] E2-E3 and G-H receive exact current-code allow-lists and predecessor evidence before mutation.
 
 ## 20. Follow-up Items
 
