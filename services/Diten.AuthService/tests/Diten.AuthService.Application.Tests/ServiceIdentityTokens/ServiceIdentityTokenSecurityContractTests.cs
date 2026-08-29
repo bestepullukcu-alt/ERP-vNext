@@ -79,6 +79,29 @@ public sealed class ServiceIdentityTokenSecurityContractTests
         Assert.False(result.IsValid);
     }
 
+    [Theory]
+    [InlineData("TRUSTED_AUDIT_SOURCE_INGEST")]
+    [InlineData("TRUSTED_WORKFLOW_CONSUMER")]
+    public void Validator_accepts_only_each_exact_bounded_audience(string audience)
+    {
+        var result = new IssueServiceIdentityTokenValidator().Validate(new IssueServiceIdentityTokenCommand(
+            "client", "secret", Guid.NewGuid(), audience));
+
+        Assert.True(result.IsValid);
+    }
+
+    [Theory]
+    [InlineData("trusted_workflow_consumer")]
+    [InlineData("TRUSTED_WORKFLOW_CONSUMER ")]
+    [InlineData("TRUSTED_WORKFLOW_CONSUMER,TRUSTED_AUDIT_SOURCE_INGEST")]
+    public void Validator_rejects_case_trim_and_multi_audience_drift(string audience)
+    {
+        var result = new IssueServiceIdentityTokenValidator().Validate(new IssueServiceIdentityTokenCommand(
+            "client", "secret", Guid.NewGuid(), audience));
+
+        Assert.False(result.IsValid);
+    }
+
     [Fact]
     public async Task Controller_rethrows_caller_cancellation_even_when_pipeline_returns_500_envelope()
     {
