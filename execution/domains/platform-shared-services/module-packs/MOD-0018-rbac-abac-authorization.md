@@ -199,8 +199,10 @@ subtree wildcards below are exact ownership roots; every adjacent/shared file is
 **Platform.Common — exact protocol/evidence files:**
 
 - `services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/IPermissionClaimEvaluator.cs`
+- `services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/S2S/S2SCanonicalRequestBinding.cs`
 - `services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/SignedJwtPermissionClaimEvaluator.cs`
 - `services/Diten.Platform.Common/tests/Diten.Platform.Common.Tests/Diten.Platform.Common.Tests.csproj`
+- `services/Diten.Platform.Common/tests/Diten.Platform.Common.Tests/Authorization/S2S/S2SCanonicalRequestBindingTests.cs`
 - `services/Diten.Platform.Common/tests/Diten.Platform.Common.Tests/SignedJwtPermissionClaimEvaluatorTests.cs`
 
 **BuildingBlocks Eventing — exact transport files:**
@@ -438,6 +440,10 @@ Gateway route degisikligi gerekli degildir.
 22. `EventingMvpTests.cs` and `RabbitMqEventingIntegrationTests.cs` may change only through explicit namespace/type
     aliases needed to distinguish canonical BuildingBlocks contracts from legacy Platform transport types; test
     behavior and live-RabbitMQ disposition remain unchanged.
+23. The parent-owned `S2SCanonicalRequestBinding` is the single neutral cross-component request-binding oracle for
+    HTTP method, path, body bytes, tenant, operation and ordered permission values. It preserves the historical exact
+    length-prefixed SHA-256 algorithm without retaining the colliding FU16 identity, and it adds no handler, scheme,
+    DI, project reference, endpoint or activation.
 
 ## 17. Test Expectations
 
@@ -466,6 +472,8 @@ Gateway route degisikligi gerekli degildir.
   rejection and zero Admin/Viewer/entitlement side effects during registration.
 - Platform.Common tests prove authenticated principal, non-empty tenant/subject and exact permission evaluation without
   producer constants or HS256/S2S family fallback.
+- Platform.Common request-binding tests prove deterministic lowercase SHA-256 output, body rewind/readability and
+  independent binding of HTTP method, path, body bytes, tenant, operation and ordered permission values.
 - BuildingBlocks Eventing tests prove raw duplicate/case-duplicate header rejection, canonical signing input,
   active/previous-key boundary, revocation/freshness and test-only production rejection.
 - Platform Eventing tests prove exact adapter mapping, canonical payload/metadata/signing-identity conflict behavior,
