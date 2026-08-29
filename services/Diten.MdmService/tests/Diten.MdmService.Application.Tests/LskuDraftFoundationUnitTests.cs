@@ -104,8 +104,16 @@ public sealed class LskuDraftFoundationUnitTests
         Assert.Equal(10, (int)ProductAuditOperation.LskuDraftCreated);
         Assert.DoesNotContain(typeof(ILskuRepository).GetMethods(), method =>
             method.Name.Contains("Update", StringComparison.OrdinalIgnoreCase)
-            || method.Name.Contains("Delete", StringComparison.OrdinalIgnoreCase)
-            || method.Name.Contains("Retire", StringComparison.OrdinalIgnoreCase));
+            || method.Name.Contains("Delete", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(typeof(ILskuRepository).GetMethods(), method =>
+            method.Name == nameof(ILskuRepository.SubmitIdentityAsync));
+        Assert.Contains(typeof(ILskuRepository).GetMethods(), method =>
+            method.Name == nameof(ILskuRepository.ReconcileIdentityDecisionAsync));
+        Assert.Contains(typeof(ILskuRepository).GetMethods(), method =>
+            method.Name == nameof(ILskuRepository.RetireIdentityAsync));
+        Assert.DoesNotContain(typeof(ILskuRepository).GetMethods(), method =>
+            method.Name.Contains("Retire", StringComparison.OrdinalIgnoreCase)
+            && method.Name != nameof(ILskuRepository.RetireIdentityAsync));
     }
 
     [Fact]
