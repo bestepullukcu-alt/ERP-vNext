@@ -7,7 +7,6 @@ using Diten.PpmService.Persistence;
 using Diten.PpmService.Persistence.GateI;
 using Diten.PpmService.Persistence.Mongo;
 using Diten.BuildingBlocks.Eventing;
-using Diten.PpmService.IntegrationTests;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
@@ -16,13 +15,19 @@ using Xunit;
 
 namespace Diten.PpmService.IntegrationTests.GateI.DecisionTrace;
 
-[Collection(PpmMongoCollection.CollectionName)]
+[Collection(GateILocalEvidenceCollection.CollectionName)]
 public sealed class GateIRelationshipMutationMongoTests
 {
     private static string _connection = string.Empty;
+    private static string _database = string.Empty;
+    private static GateIDisposableMongoReplicaSet? _mongo;
 
-    public GateIRelationshipMutationMongoTests(PpmDisposableMongo mongo) =>
-        _connection = mongo.ReplicaSetConnectionString;
+    public GateIRelationshipMutationMongoTests(GateIDisposableMongoReplicaSet mongo)
+    {
+        _mongo = mongo;
+        _connection = mongo.ConnectionString;
+        _database = mongo.DatabaseName;
+    }
 
     private static string Hash(string value) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
@@ -124,12 +129,11 @@ public sealed class GateIRelationshipMutationMongoTests
 
         public static async Task<Fixture> Create(string? failAfter = null)
         {
-            var database = PpmDisposableMongo.DatabaseName;
-            await PpmMongoTestDatabase.ResetAsync(PpmMongoTestDatabase.Open(_connection));
+            await _mongo!.ResetAsync();
             var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Mongo:ConnectionString"] = _connection,
-                ["Mongo:DatabaseName"] = database
+                ["Mongo:DatabaseName"] = _database
             }).Build();
             var services = new ServiceCollection();
             services.AddPpmPersistence(configuration);
