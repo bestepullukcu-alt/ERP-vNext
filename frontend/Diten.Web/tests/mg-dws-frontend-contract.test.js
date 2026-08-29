@@ -81,6 +81,21 @@ describe('MOD-0354 DWS frontend contract', () => {
         expect(document.getElementById('dws-load').disabled).toBe(true);
     });
 
+    it('reads camel-case localization JSON without relying on the bootstrap script', () => {
+        document.body.innerHTML = `
+          <script id="dws-l10n" type="application/json">{"unavailable":"hazır değil","empty":"boş"}</script>
+          <main id="dws-workspace" data-gateway-enabled="false"><div id="dws-state"><b id="dws-state-title"></b><span id="dws-state-detail"></span></div>
+          <input id="dws-structure-id"><input id="dws-revision-number"><button id="dws-load" data-permission="read"></button>
+          <div id="dws-tree"></div><span id="dws-node-code"></span><span id="dws-node-title"></span><span id="dws-node-description"></span><span id="dws-node-order"></span></main>`;
+        delete window.DwsL10n;
+        global.fetch = vi.fn();
+        loadScript('wwwroot/assets/js/pages/management-governance/dws/index.js');
+        document.getElementById('dws-load').click();
+        expect(global.fetch).not.toHaveBeenCalled();
+        expect(document.getElementById('dws-state-title').textContent).toBe('hazır değil');
+        expect(document.getElementById('dws-state-detail').textContent).toBe('hazır değil');
+    });
+
     it('implements keyboard tree navigation and RTL-safe logical CSS', () => {
         expect(script()).toMatch(/ArrowDown|ArrowUp|ArrowLeft|ArrowRight|Home|End/);
         const css = read('wwwroot/assets/css/pages/management-governance/dws.css');

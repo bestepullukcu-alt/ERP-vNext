@@ -4,7 +4,18 @@
     const root = document.getElementById('dws-workspace');
     if (!root) return;
 
-    const L = window.DwsL10n || {};
+    const localizationSource = document.getElementById('dws-l10n');
+    let localizedValues = window.DwsL10n || {};
+    if (localizationSource) {
+        try {
+            localizedValues = JSON.parse(localizationSource.textContent || '{}');
+        } catch {
+            localizedValues = window.DwsL10n || {};
+        }
+    }
+    const L = Object.fromEntries(Object.entries(localizedValues).map(([key, value]) => [
+        key.charAt(0).toUpperCase() + key.slice(1), value
+    ]));
     const enabled = root.dataset.gatewayEnabled === 'true';
     const endpoint = '/management-governance/delivery-execution/structures/api';
     const byId = (id) => document.getElementById(id);
