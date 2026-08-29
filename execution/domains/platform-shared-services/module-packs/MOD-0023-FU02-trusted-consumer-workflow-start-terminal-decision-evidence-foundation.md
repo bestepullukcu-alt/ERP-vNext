@@ -8,7 +8,7 @@ golden_reference: none
 entity_base: BaseEntity
 status: review
 owner: platform-workflow-owner
-branch: feature/pss/mod-0018-fu23-product-identity-lifecycle-permissions
+branch: feature/pss/mod-0023-fu02-terminal-evidence-hardening
 started: 2026-08-29
 target: 2026-09-02
 form_field_count: 0
@@ -107,6 +107,32 @@ The existing public endpoints remain in place:
 
 Their request bodies no longer carry actor authority. Actor identity is resolved from the authenticated JWT.
 
+### Terminal evidence and lost-start-response hardening (named acceptance step, 2026-08-29)
+
+Code-truth measurement after the first implementation found three consumer-blocking gaps. The native transition
+engine writes `WorkflowInstanceStatus.Completed` after the final approve, while the evidence reader accepted only
+the legacy `Approved` value. A multi-step approve/reject history also contains more than one approve/reject log, but
+the reader required exactly one. Finally, if trusted start completed remotely and the HTTP response was lost before
+the consumer persisted the returned IDs, replay still required the delegated user's short-lived JWT; a background
+worker may neither persist that JWT nor impersonate the maker.
+
+This named step therefore owns:
+
+- a distinct retryable `WORKFLOW_DECISION_NOT_TERMINAL` result for a coherent workflow that is still active;
+- terminal evidence derived from the final monotonic approve/reject transition, accepting native final
+  `Completed` (or legacy `Approved`) for approve and `Rejected` for reject, while preserving full task/instance/log
+  coherence and fail-closed contradictory-history handling; and
+- a service-only, tenant/object/maker/idempotency-bound sanitized start-result lookup. It returns a result only for
+  the exact trusted service client and a `Completed` trusted-start checkpoint. It never accepts tenant authority,
+  token, secret, template override or candidate override from the request and never returns the start fingerprint.
+
+The additive endpoint is `POST /api/internal/v1/workflow/trusted-consumer/start-result`. `Idempotency-Key` remains
+header-only. The strict body contains only expected object type, expected object ID and expected maker subject ID.
+Tenant comes from the independently validated service token grant and client ID comes from that token's subject.
+Missing/mismatched tenant, client, object or maker is the same non-leaking `404`; incomplete start is retryable
+`409 WORKFLOW_START_NOT_COMPLETED`; contradictory persisted facts remain fail-closed `409`. No new collection or
+index is required because the existing tenant-bound unique idempotency lookup is reused.
+
 ## 4. Entity Fields
 
 No new aggregate or collection is introduced. `WorkflowInstance` continues to inherit the live Platform
@@ -175,6 +201,19 @@ recreate or fork the Auth-issued service-token contract.
 26. `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedWorkflowDelegatedUserIdentity.cs`
 27. `services/Diten.Platform/src/Diten.Platform.API/Controllers/Internal/InternalTrustedWorkflowConsumerController.cs`
 
+### Additive hardening runtime files
+
+The named hardening step may additionally create only:
+
+28. `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Queries/GetTrustedWorkflowStartResultQuery.cs`
+29. `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Handlers/QueryHandlers/GetTrustedWorkflowStartResultHandler.cs`
+30. `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Validators/GetTrustedWorkflowStartResultValidator.cs`
+
+It may modify only the already-listed `WorkflowModels.cs`, terminal-evidence handler, strict request models/parser,
+trusted request executor/interface and internal controller. Repository interfaces/implementations, entities,
+schema manifest and transition mutation code are read-only unless a failing real-Mongo test proves the existing
+tenant-bound idempotency lookup or native transition output differs from the measured contract.
+
 ### Test allow-list
 
 1. `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowInstanceStartTests.cs`
@@ -186,6 +225,13 @@ recreate or fork the Auth-issued service-token contract.
 7. `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Security/TrustedServiceTokenValidationTests.cs`
 8. `services/Diten.Platform/tests/Diten.Platform.Application.Tests/DependencyInjectionSmokeTests.cs`
 9. `services/Diten.Platform/tests/Diten.Platform.Application.Tests/WorkAggregation/WorkItemActionDispatchTests.cs`
+
+The named hardening step may edit only tests 3-5 above and
+`Workflow/WorkflowTaskTransitionTests.cs` to add actual transition-to-evidence, multi-step terminal-log,
+nonterminal/inconsistent separation, strict start-result parsing/security, completed lookup, incomplete lookup,
+client/maker/object mismatch and cross-tenant non-leakage regressions. Hand-authored terminal states alone are not
+acceptable evidence; at least one real-Mongo test must invoke the native transition support and then the evidence
+handler.
 
 Governance maintenance while implementing is limited to this pack and its single canonical registry row.
 
@@ -509,6 +555,34 @@ pack consumes a pinned workflow template/version through existing MOD-0023 repos
   validator now uses the shared `JwtValidationDefaults.ClockSkew`, and the focused guard passes **4/4**.
   The full architecture project improved from **8/11** to **9/11**; its two remaining failures are the
   pre-existing Mongo per-run database inventory/debt outside this pack's allow-list.
+
+### Terminal-evidence and lost-start-response hardening evidence — 2026-08-29
+
+- Native workflow transition support was exercised against real Mongo for both final `Approve` and `Reject`.
+  Final approve is accepted in the native `Completed` state and in the legacy `Approved` state; reject remains
+  `Rejected`. Earlier coherent approvals in a multi-step workflow are retained as history and the final monotonic
+  approve/reject transition is authoritative. Prior reject, duplicate/non-monotonic sequence, terminal-action
+  mismatch, or task/log/instance actor/status/reason mismatch remains fail-closed.
+- Evidence is also bound to the authenticated service client and a coherent completed trusted-start proof.
+  Wrong same-tenant client, generic/non-trusted workflow, or incomplete trusted start returns the same non-leaking
+  404. Transition sequence numbers must be exactly contiguous from 1 through the terminal record; a `1,3` gap is
+  inconsistent rather than merely increasing.
+- A coherent active or pending workflow now returns retryable `409 WORKFLOW_DECISION_NOT_TERMINAL` instead of
+  being misclassified as corrupt evidence. Focused terminal-evidence real-Mongo tests passed **17/17** and the
+  expanded Workflow plus trusted-security group passed **196/196**, with no skipped tests.
+- `POST /api/internal/v1/workflow/trusted-consumer/start-result` provides service-only recovery after a lost start
+  response. The idempotency key is header-only; tenant and service client come from the validated service token;
+  the exact object type, object ID, and maker subject are request assertions. A delegated JWT is neither required
+  nor accepted. Tenant/client/object/maker mismatch returns the same non-leaking 404, an incomplete checkpoint
+  returns retryable 409, and inconsistent persisted task/snapshot/start-log facts return fail-closed 409.
+- The recovery response reuses the sanitized `TrustedWorkflowStartResult`; no fingerprint, credential, token, or
+  tenant authority is exposed. Persisted proof additionally requires exact maker `StartedBy`, start-log
+  `ActorRef == ActorId`, and native `Active` target state/status. Strict JSON, auth, context-restoration, timeout,
+  cancellation, corruption, and real-Mongo recovery tests passed **32/32**, with no skipped tests.
+- Platform API Release build passed with zero errors. The complete Platform suite recorded **3734/3758 passed**
+  and the same **24** pre-existing failures already recorded above; all newly added hardening tests passed.
+  `git diff --check` remained clean. No collection, index, schema profile, repository, entity, configuration,
+  credential, or operational data mutation was introduced.
 
 ## 20. Follow-up Items
 

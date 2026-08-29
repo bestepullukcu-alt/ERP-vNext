@@ -25,6 +25,13 @@ public sealed class TrustedWorkflowConsumerRequestParser
         "expectedObjectId"
     };
 
+    private static readonly HashSet<string> StartResultProperties = new(StringComparer.Ordinal)
+    {
+        "expectedObjectType",
+        "expectedObjectId",
+        "expectedMakerSubjectId"
+    };
+
     public bool TryParseStart(
         ReadOnlyMemory<byte> utf8Json,
         out TrustedWorkflowStartTransportRequest? request)
@@ -75,6 +82,24 @@ public sealed class TrustedWorkflowConsumerRequestParser
         }
 
         request = new(workflowInstanceId, expectedObjectType!, expectedObjectId!);
+        return true;
+    }
+
+    public bool TryParseStartResult(
+        ReadOnlyMemory<byte> utf8Json,
+        out TrustedWorkflowStartResultTransportRequest? request)
+    {
+        request = null;
+        if (!TryReadObject(utf8Json, StartResultProperties, out var values)
+            || values.Count != 3
+            || !TryRequiredBoundedString(values, "expectedObjectType", 128, out var expectedObjectType)
+            || !TryRequiredBoundedString(values, "expectedObjectId", 256, out var expectedObjectId)
+            || !TryRequiredGuid(values, "expectedMakerSubjectId", out var expectedMakerSubjectId))
+        {
+            return false;
+        }
+
+        request = new(expectedObjectType!, expectedObjectId!, expectedMakerSubjectId);
         return true;
     }
 

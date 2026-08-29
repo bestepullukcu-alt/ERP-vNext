@@ -208,6 +208,113 @@ public sealed class TrustedWorkflowConsumerSecurityTests
     }
 
     [Fact]
+    public async Task Start_result_is_service_only_header_idempotent_and_strictly_parsed()
+    {
+        var authentication = new RecordingAuthenticationService(new Dictionary<string, AuthenticateResult>
+        {
+            [TrustedServiceTokenValidationExtensions.WorkflowAuthenticationScheme] = Success(ServicePrincipal())
+        });
+        var context = Context(authentication);
+        context.Request.Headers.Authorization = "Bearer service-token";
+        context.Request.Headers["Idempotency-Key"] = " operation-1 ";
+        SetBody(context,
+            "{\"expectedObjectType\":\"GlobalProduct\"," +
+            "\"expectedObjectId\":\"GP-0001\"," +
+            $"\"expectedMakerSubjectId\":\"{UserId:D}\"}}");
+        var tenantContext = new TenantContext();
+        var executor = new TrustedWorkflowConsumerRequestExecutor(new(), tenantContext);
+
+        var result = await executor.ExecuteStartResultAsync(
+            context,
+            CancellationToken.None,
+            (request, key, service, _) =>
+            {
+                Assert.Equal("operation-1", key);
+                Assert.Equal(UserId, request.ExpectedMakerSubjectId);
+                Assert.Equal(ClientId, service.ClientId);
+                Assert.Equal(TenantId, tenantContext.TenantId);
+                return Task.FromResult<IActionResult>(new OkResult());
+            },
+            Failure);
+
+        Assert.IsType<OkResult>(result);
+        Assert.False(tenantContext.IsResolved);
+        Assert.Single(authentication.Schemes);
+    }
+
+    [Fact]
+    public async Task Start_result_rejects_delegated_header_and_unknown_body_field()
+    {
+        var authentication = new RecordingAuthenticationService(new Dictionary<string, AuthenticateResult>
+        {
+            [TrustedServiceTokenValidationExtensions.WorkflowAuthenticationScheme] = Success(ServicePrincipal())
+        });
+        var executor = new TrustedWorkflowConsumerRequestExecutor(new(), new TenantContext());
+        var delegated = Context(authentication);
+        delegated.Request.Headers.Authorization = "Bearer service-token";
+        delegated.Request.Headers["Idempotency-Key"] = "operation-1";
+        delegated.Request.Headers[TrustedServiceTokenValidationExtensions.DelegatedAuthorizationHeader] = "Bearer user";
+        SetBody(delegated, "{}");
+
+        var rejectedDelegated = await executor.ExecuteStartResultAsync(
+            delegated, CancellationToken.None, NeverStartResult, Failure);
+
+        var unknown = Context(authentication);
+        unknown.Request.Headers.Authorization = "Bearer service-token";
+        unknown.Request.Headers["Idempotency-Key"] = "operation-1";
+        SetBody(unknown,
+            "{\"expectedObjectType\":\"GlobalProduct\",\"expectedObjectId\":\"GP-0001\"," +
+            $"\"expectedMakerSubjectId\":\"{UserId:D}\",\"tenantId\":\"{TenantId:D}\"}}");
+        var rejectedUnknown = await executor.ExecuteStartResultAsync(
+            unknown, CancellationToken.None, NeverStartResult, Failure);
+
+        Assert.Equal(403, Assert.IsType<ObjectResult>(rejectedDelegated).StatusCode);
+        Assert.Equal(400, Assert.IsType<ObjectResult>(rejectedUnknown).StatusCode);
+    }
+
+    [Fact]
+    public void Start_result_parser_rejects_duplicate_fields()
+    {
+        var json =
+            "{\"expectedObjectType\":\"GlobalProduct\",\"expectedObjectType\":\"GSKU\"," +
+            "\"expectedObjectId\":\"GP-0001\"," +
+            $"\"expectedMakerSubjectId\":\"{UserId:D}\"}}";
+
+        Assert.False(new TrustedWorkflowConsumerRequestParser().TryParseStartResult(
+            Encoding.UTF8.GetBytes(json), out _));
+    }
+
+    [Fact]
+    public async Task Start_result_budget_timeout_maps_to_504_and_caller_cancellation_propagates()
+    {
+        var authentication = new RecordingAuthenticationService(new Dictionary<string, AuthenticateResult>
+        {
+            [TrustedServiceTokenValidationExtensions.WorkflowAuthenticationScheme] = Success(ServicePrincipal())
+        });
+        var executor = new TrustedWorkflowConsumerRequestExecutor(new(), new TenantContext());
+        var timeoutContext = ValidStartResultContext(authentication);
+
+        var timeout = await executor.ExecuteStartResultAsync(
+            timeoutContext,
+            CancellationToken.None,
+            async (_, _, _, token) =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(10), token);
+                return new OkResult();
+            },
+            Failure);
+
+        using var caller = new CancellationTokenSource();
+        caller.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => executor.ExecuteStartResultAsync(
+            ValidStartResultContext(authentication),
+            caller.Token,
+            NeverStartResult,
+            Failure));
+        Assert.Equal(504, Assert.IsType<ObjectResult>(timeout).StatusCode);
+    }
+
+    [Fact]
     public async Task Caller_cancellation_propagates_without_timeout_mapping()
     {
         var executor = new TrustedWorkflowConsumerRequestExecutor(new(), new TenantContext());
@@ -241,6 +348,18 @@ public sealed class TrustedWorkflowConsumerSecurityTests
             "{\"workflowInstanceId\":\"24000000-0000-0000-0000-000000000024\"," +
             "\"expectedObjectType\":\"GlobalProduct\"," +
             "\"expectedObjectId\":\"26000000-0000-0000-0000-000000000026\"}");
+        return context;
+    }
+
+    private static DefaultHttpContext ValidStartResultContext(IAuthenticationService authentication)
+    {
+        var context = Context(authentication);
+        context.Request.Headers.Authorization = "Bearer service-token";
+        context.Request.Headers["Idempotency-Key"] = "operation-1";
+        SetBody(context,
+            "{\"expectedObjectType\":\"GlobalProduct\"," +
+            "\"expectedObjectId\":\"GP-0001\"," +
+            $"\"expectedMakerSubjectId\":\"{UserId:D}\"}}");
         return context;
     }
 
@@ -319,6 +438,13 @@ public sealed class TrustedWorkflowConsumerSecurityTests
         string key,
         TrustedWorkflowConsumerServiceIdentity service,
         TrustedWorkflowDelegatedUserIdentity delegated,
+        CancellationToken cancellationToken) =>
+        throw new Xunit.Sdk.XunitException("Dispatch must not run.");
+
+    private static Task<IActionResult> NeverStartResult(
+        TrustedWorkflowStartResultTransportRequest request,
+        string key,
+        TrustedWorkflowConsumerServiceIdentity service,
         CancellationToken cancellationToken) =>
         throw new Xunit.Sdk.XunitException("Dispatch must not run.");
 
