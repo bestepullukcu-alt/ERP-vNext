@@ -3845,6 +3845,47 @@ full frontend run passes **1983/2008**; all 25 failures are in 12 pre-existing o
 test files and none is a G1 or shared-confirm regression. Browser/runtime smoke, configuration/data and push did not
 occur and remain H.
 
+**G2 — LSKU and Finished Good existing tenant UI lifecycle controls (exact current-code allow-list):** this slice is
+limited to the two aggregates whose combined E2B/E3B API/manifest activation is green at local commit `83d53936`.
+Runtime writes are restricted to the existing frontend controllers
+`frontend/Diten.Web/Controllers/LskusController.cs` and
+`frontend/Diten.Web/Controllers/FinishedGoodsController.cs`; the existing `Index.cshtml` and `_IndexL10n.cshtml` in
+the matching `Views/MasterDataManagement/{Lskus,FinishedGoods}` folders; and the existing
+`wwwroot/assets/js/MasterDataManagement/{Lskus,FinishedGoods}/index.js` files. Test writes are restricted to
+`frontend/Diten.Web/tests/lsku-register.test.js`,
+`frontend/Diten.Web/tests/finished-good-draft-foundation.test.js` and one narrow caller-census update in
+`frontend/Diten.Web/tests/global-confirm-input-type.test.js`. Localization writes are restricted to the fourteen
+existing `LskusIndex.{en,fr,es,zh,ar,ru,tr}.resx` and
+`FinishedGoodsIndex.{en,fr,es,zh,ar,ru,tr}.resx` files. No new file is authorized.
+
+The exact visible state matrix is `Draft + submit permission -> SUBMIT`,
+`IdentityApproved + retire permission -> RETIRE`, and Pending/Retired -> details only. Permission and state are both
+mandatory. Approve/reject never render in MDM and remain WorkCenter-owned. Before either mutation JavaScript re-fetches
+the exact same-origin detail and validates the same ID, current lifecycle state and nonnegative Version. MVC exposes
+only POST `/MasterDataManagement/Lskus/api/{id}/submit|retire` and
+`/MasterDataManagement/FinishedGoods/api/{id}/submit|retire`; it requires antiforgery and the exact local permission,
+sends only `ExpectedVersion` plus the bounded retirement reason where applicable, and derives tenant, canonical human
+actor and deterministic operation identity from the authenticated server context. The operation identity uses the G1
+length-prefixed UTF-8 D-GUID scheme with exact aggregate literals `lsku` and `finished-good` and travels only in the
+`Idempotency-Key` header. The browser may not provide tenant, actor or operation identity.
+
+Submit accepts only verified `200/202` JSON success envelopes and is described as submitted/pending, never approved.
+Retire accepts only a verified `200` JSON success envelope. Arbitrary HTML, malformed payloads or status-envelope
+mismatches fail closed. Every success reloads the list and re-fetches exact detail; success is not shown until the same
+ID and expected Pending or Retired lifecycle state are proved. Retirement uses the existing Premium input confirmation,
+requires a trimmed non-empty reason of at most 128 characters and blocks duplicate in-flight action. LSKU receives a
+bounded numeric/string lifecycle display map; both screens receive exact seven-locale action/state/error parity.
+
+Read-only regression surfaces are the matching view models, `_DataTable.cshtml`, `_DetailsQuickView.cshtml`,
+`_CreateEditOffcanvas.cshtml`, `_Filter.cshtml` and `index.l10n.js`. Backend/API/manifest, Gateway, Auth, Platform,
+Workflow/WorkCenter, navigation, configuration/secrets/data, shared layout/scripts/styles and Archive paths are
+protected. Existing Finished Good create/read permission-rendering drift is recorded as a separate hardening finding
+and is not silently mixed into G2. Acceptance covers state-and-permission rendering, no approve/reject, fresh-detail
+version, strict form cardinality and antiforgery, stable header-only operation identity, exact success envelopes,
+`400/401/403/404/409/503/504`, same-origin/direct-port negatives, Premium reason/busy behavior, fourteen-locale parity,
+Save View/create/detail regression, focused Vitest, shared confirmation census, Golden Slim variance accounting,
+frontend Release build and full-frontend baseline. Browser/runtime smoke remains H.
+
 **H — Local Development acceptance:** source allow-list none by default. Separately authorized operator work provisions
 the template, exact candidates/positions, FU23 roles/grants, MDM service identity/audience/tenant grant and secret-safe
 settings. Smoke proves submit -> native WorkCenter decision -> secure poll -> MDM state/audit, replay/stale/crash,
@@ -3916,9 +3957,17 @@ navigation, bulk lifecycle and push remain separate gates.
   seam passes **2/2**. The full MDM Release suite passes **1009/1009**, zero skipped. MDM API Release build passes with
   zero errors and five pre-existing Persistence warnings. Independent processor/security and persistence reviews
   report no remaining P0/P1/P2. No API, controller, manifest, frontend, Gateway, runtime config, credential, data,
-  operational execution or push occurred. E2B/E3B combined API/manifest activation remains closed.
+  operational execution or push occurred.
+- [x] E2B/E3B combined API/manifest activation is complete locally at commit `83d53936`: both controllers expose only
+  strict `submit` and `retire` POST actions with exact permissions and canonical non-empty D-GUID idempotency headers;
+  both manifest pages activate `SUBMIT/RETIRE` together while navigation remains hidden and no `approve/reject` route
+  exists. Focused API/authorization/manifest tests pass **76/76**, the full MDM Release suite passes **1038/1038** with
+  zero skips, MDM API Release build passes with zero warnings/errors, and independent review reports no P0/P1/P2.
+- [x] G2 LSKU/Finished Good current-code UI allow-list, server-owned stable operation identity, state/permission matrix,
+  same-origin lifecycle proxy and acceptance boundaries are frozen on 2026-08-30; standing non-push authorization
+  grants local runtime/test implementation. Browser/runtime acceptance remains H.
 - [ ] Additional-GSKU cardinality/ownership receives a separate owner decision before any implementation.
-- [ ] G2 and H receive exact current-code allow-lists and predecessor evidence before mutation/operation.
+- [ ] H receives exact operational values and predecessor evidence before Local Development mutation.
 
 ## 20. Follow-up Items
 
