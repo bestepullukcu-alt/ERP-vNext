@@ -81,9 +81,69 @@ public sealed class ServiceIdentityTokenHandlerTests
         Assert.Equal(ServiceIdentityTokenAudiencePolicy.TrustedWorkflowConsumer, grants.Audience);
     }
 
+    [Fact]
+    public async Task Dedicated_reference_data_client_with_enabled_exact_grant_succeeds()
+    {
+        var verifier = new ServiceClientCredentialVerifier();
+        var identity = Identity(verifier, "Diten.MDM", ServiceIdentityTokenAudiencePolicy.TrustedReferenceDataConsumer);
+        var grants = new GrantRepository(true);
+        var tenantId = Guid.NewGuid();
+
+        var response = await Handler(identity, grants, verifier).Handle(new IssueServiceIdentityTokenCommand(
+            "mdm", "secret", tenantId, ServiceIdentityTokenAudiencePolicy.TrustedReferenceDataConsumer), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(tenantId, grants.TenantId);
+        Assert.Equal(identity.Id, grants.ClientId);
+        Assert.Equal(ServiceIdentityTokenAudiencePolicy.TrustedReferenceDataConsumer, grants.Audience);
+    }
+
+    [Theory]
+    [InlineData("TRUSTED_AUDIT_SOURCE_INGEST")]
+    [InlineData("TRUSTED_WORKFLOW_CONSUMER")]
+    public async Task Dedicated_reference_data_identity_cannot_issue_other_purposes(string audience)
+    {
+        var verifier = new ServiceClientCredentialVerifier();
+        var identity = Identity(verifier, "Diten.MDM", ServiceIdentityTokenAudiencePolicy.TrustedReferenceDataConsumer);
+
+        var response = await Handler(identity, new GrantRepository(true), verifier).Handle(
+            new IssueServiceIdentityTokenCommand("mdm", "secret", Guid.NewGuid(), audience), CancellationToken.None);
+
+        Assert.Equal(403, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Dedicated_reference_data_identity_with_wrong_credential_is_unauthorized()
+    {
+        var verifier = new ServiceClientCredentialVerifier();
+        var identity = Identity(verifier, "Diten.MDM", ServiceIdentityTokenAudiencePolicy.TrustedReferenceDataConsumer);
+
+        var response = await Handler(identity, new GrantRepository(true), verifier).Handle(
+            new IssueServiceIdentityTokenCommand(
+                "mdm", "wrong", Guid.NewGuid(), ServiceIdentityTokenAudiencePolicy.TrustedReferenceDataConsumer),
+            CancellationToken.None);
+
+        Assert.Equal(401, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Dedicated_reference_data_identity_without_enabled_grant_is_forbidden()
+    {
+        var verifier = new ServiceClientCredentialVerifier();
+        var identity = Identity(verifier, "Diten.MDM", ServiceIdentityTokenAudiencePolicy.TrustedReferenceDataConsumer);
+
+        var response = await Handler(identity, new GrantRepository(false), verifier).Handle(
+            new IssueServiceIdentityTokenCommand(
+                "mdm", "secret", Guid.NewGuid(), ServiceIdentityTokenAudiencePolicy.TrustedReferenceDataConsumer),
+            CancellationToken.None);
+
+        Assert.Equal(403, response.StatusCode);
+    }
+
     [Theory]
     [InlineData("Other.Service", "TRUSTED_AUDIT_SOURCE_INGEST")]
     [InlineData("Other.Service", "TRUSTED_WORKFLOW_CONSUMER")]
+    [InlineData("Other.Service", "TRUSTED_REFERENCE_DATA_CONSUMER")]
     [InlineData("Diten.MDM", "OTHER_AUDIENCE")]
     public async Task Wrong_service_or_audience_is_forbidden_even_if_grant_exists(string service, string audience)
     {
