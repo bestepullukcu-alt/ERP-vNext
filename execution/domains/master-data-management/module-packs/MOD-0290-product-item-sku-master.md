@@ -3615,6 +3615,49 @@ action. Independent re-review reports no remaining P0/P1/P2 after the missing-ve
 Focused API/authorization/manifest tests pass **29/29**, the full MDM Release suite passes **918/918** with zero skips,
 and `git diff --check` is clean. Gateway, frontend, configuration/data, Production/Staging and push were unchanged.
 
+**E2/E3 corrected code truth and delivery order — 2026-08-29:** the stale phrase “later GSKU independently” is not
+runtime authorization. Every supported public GSKU create currently allocates a new Revision plus its first GSKU, the
+binding and submit factory require that pair, and pair retirement retires both while blocking non-retired siblings.
+The code therefore does not support adding another GSKU to an existing Revision. No such implementation may start
+until Product Data ownership explicitly chooses and designs either strict Revision:GSKU 1:1 or a separate 1:N
+Additional GSKU foundation with Revision admission/fencing, binding and last-sibling retirement semantics.
+
+**E2A — LSKU lifecycle backend/workflow.** Existing runtime allow-list is `Lsku.cs`, `ProductAuditOperation.cs`,
+`ILskuRepository.cs`, `LskuRepository.cs`, Persistence `DependencyInjection.cs`,
+`PlatformProductIdentityWorkflowClient.cs`, Infrastructure `DependencyInjection.cs` and API `Program.cs`. New files are
+limited to a strongly typed LSKU workflow operation/checkpoint/results/repository/tenant-discovery pair, persistence
+implementations, `LskuIdentityLifecycleModels.cs`, `LskuIdentityLifecycleAuditIntentFactory.cs`, LSKU start-request
+factory/processor/start command-handler-validator, direct-retire command-handler-validator, and LSKU-specific
+options/worker/runner/CLI. Existing Workflow binding/transport/delegated-token/service-identity abstractions are reused;
+Global Product/First GSKU operation documents are not generalized. Approval revalidates approved GSKU+Revision and the
+exact verified MarketCode before mutation and completion, freezing provider proof at an `ApprovalValidated` checkpoint.
+Reject remains possible during provider/parent outage. Direct retirement is atomic CAS/audit replay and no cascade.
+
+E2A tests are new LSKU lifecycle unit/real-Mongo, operation-Mongo, processor, recovery-worker, runner, market
+revalidation and authorization tests, plus narrow existing Workflow client/DI/no-token-persistence regressions. Tests
+use the fixed shared MDM integration database with tenant cleanup; no per-run database or Platform schema profile.
+
+**E3A — Finished Good lifecycle backend/workflow.** Exact structure mirrors E2A with Finished Good-specific entity,
+repository, strongly typed operation/checkpoint/results/discovery/persistence, lifecycle models/audit factory,
+start-request factory/processor/start command-handler-validator, direct-retire command-handler-validator and
+options/worker/runner/CLI. It revalidates approved GSKU+Revision but has no market-provider proof. Direct retirement is
+atomic CAS/audit replay and no cascade. Tests mirror E2A except market-provider cases.
+
+**E2B/E3B — combined API/manifest activation.** Exact allow-list is `LskusController.cs`,
+`FinishedGoodsController.cs`, `ProductItemSkuMasterManifestProvider.cs`, `LskuApiContractTests.cs`,
+`LskuAuthorizationTests.cs`, `FinishedGoodApiContractTests.cs`, `FinishedGoodAuthorizationTests.cs` and
+`ProductItemSkuMasterManifestProviderTests.cs`. Only `{id:guid}/submit` and `{id:guid}/retire` are added with strict
+bodies, exact D-format header idempotency and no approve/reject. Because FU23 expects the complete permission catalog,
+LSKU and Finished Good `SUBMIT`/`RETIRE` manifest actions activate together only after both E2A and E3A are green;
+existing navigation flags remain unchanged.
+
+Protected throughout E2/E3: additional-GSKU creation, Gateway/frontend until G2, Auth/Platform/WorkCenter runtime,
+configuration/secrets/data, Production/Staging and push. Acceptance covers every crash checkpoint, ambiguous start,
+fresh-maker replay, tenant/version/soft-delete fencing, exact terminal evidence, LSKU market `404/409/503/504` and
+cancellation, parent revalidation, reject during dependency outage, exact audit replay, no token/secret persistence,
+direct-retire replay and the existing GSKU child blocker. Standing non-push authorization grants E2A, then E3A, then
+combined E2B/E3B runtime/test work in this exact order after G1 is green.
+
 **E1A implementation evidence — 2026-08-29:** the dedicated First Revision + GSKU pair operation, shared binding,
 tenant/soft-delete/version/state fenced aggregate transitions, four tenant-first indexes, bounded recovery discovery,
 default-disabled worker and one-shot runner are implemented. `ApprovalValidated` durably freezes exact provider proof
@@ -3736,6 +3779,61 @@ Gateway/frontend/config/data/Production/Staging and push are protected.
 Submit and direct retire controls are state/permission gated and same-origin; approve/reject stays in WorkCenter.
 Product pages reload from MDM after reconciliation and never claim Workflow completion equals MDM completion.
 
+**G1 — Global Product and GSKU existing tenant UI lifecycle controls (exact current-code allow-list):** this first UI
+slice is limited to the two aggregates whose lifecycle API/manifest evidence is green. Runtime writes are restricted to
+`frontend/Diten.Web/Controllers/GlobalProductsController.cs`, `frontend/Diten.Web/Controllers/GskusController.cs`,
+the existing `Index.cshtml` and `_IndexL10n.cshtml` in each matching view folder, and the two existing
+`wwwroot/assets/js/MasterDataManagement/{GlobalProducts,Gskus}/index.js` files. Test writes are restricted to
+`frontend/Diten.Web/tests/global-products-register.test.js`, `frontend/Diten.Web/tests/gsku-register.test.js` and the
+fourteen existing `GlobalProductsIndex.{en,fr,es,zh,ar,ru,tr}.resx` / `GskusIndex.{en,fr,es,zh,ar,ru,tr}.resx` files.
+One narrow shared-census regression update is also allowed in
+`frontend/Diten.Web/tests/global-confirm-input-type.test.js`: it may only account for the two new Premium retirement
+reason callers plus the already-present measured caller drift; shared modal runtime behavior and assertions remain
+protected.
+
+The exact visible state matrix is `Draft + submit permission -> SUBMIT`, `IdentityApproved + retire permission ->
+RETIRE`, and Pending/Retired -> details only. Permission and state are both mandatory. Approve/reject never render in
+MDM. Before either mutation, JavaScript re-fetches the exact same-origin detail and uses its current lifecycle status
+and version; this is mandatory for Global Product because its list projection has no Version. MVC exposes only POST
+`/MasterDataManagement/GlobalProducts/api/{id}/submit|retire` and
+`/MasterDataManagement/Gskus/api/{id}/submit|retire`, requires antiforgery plus the exact local permission, sends only
+the strict business body to the existing Gateway catch-all route, derives tenant and actor from the authenticated
+server context, and supplies the backend operation identity only as an `Idempotency-Key` header.
+
+The operation identity is a deterministic D-format GUID derived server-side from an unambiguous length-prefixed UTF-8
+encoding of tenant, authenticated actor, aggregate type, action, aggregate ID, expected version and the exact bounded
+retirement reason. Identical facts survive lost-response/reload replay; actor, version, action or reason drift produces
+a different key. The browser neither chooses nor sends tenant, actor or operation identity. A successful submit is
+worded only as submitted/pending, never approved. Every 2xx result reloads list/detail from MDM; `409` is stale/conflict
+and never last-write-wins. Retirement requires Premium confirmation and a non-empty reason of at most 128 characters.
+Double click is disabled while the request is in flight.
+
+Read-only regression surfaces are the matching view models, `_DataTable.cshtml`, `_DetailsQuickView.cshtml`,
+`_CreateEditOffcanvas.cshtml`, `_Filter.cshtml` and `index.l10n.js`. Backend/API/manifest, Gateway, Auth, Platform,
+Workflow/WorkCenter, LSKU/Finished Good UI, navigation, configuration/secrets/data, shared layout/scripts/styles and
+Archive paths are protected. Acceptance covers permission-by-state rendering, no approve/reject, fresh-detail version,
+strict body/antiforgery, stable replay/drift keys, header-only backend operation identity, honest 2xx wording/reload,
+`400/401/403/404/409/503/504`, same-origin/direct-port negatives, seven-locale parity, existing Save View/create/detail
+regression, focused Vitest, frontend Release build and browser console/network smoke. Standing non-push authorization
+grants G1 runtime/test code-start after this exact current-code freeze; runtime browser smoke remains H.
+
+**G1 implementation evidence — 2026-08-29:** the existing Global Product and GSKU tenant registers now expose only
+state-and-permission-gated submit/direct-retire actions. Both MVC proxies mirror the backend canonical-human-subject
+boundary, require exact antiforgery/form cardinality, derive the stable operation D-GUID from length-prefixed trusted
+facts, and accept only action-specific `200/202` JSON success envelopes whose embedded status matches HTTP. Arbitrary
+HTML/malformed `2xx` is fail-closed. The browser re-fetches current detail before mutation and, after mutation, proves
+the same ID, a valid Version and exact Pending/Retired state before showing success. Approve/reject remains WorkCenter.
+Independent final review reports no remaining P0/P1/P2.
+
+Focused Global Product/GSKU/shared-confirm tests pass **46/46**. Frontend Release build passes with zero errors and 14
+pre-existing out-of-scope warnings. JavaScript syntax, fourteen-locale XML/parity, direct-port/approve/reject/browser-
+identity scans and `git diff --check` are clean. Golden Slim verification records Global Products **81 pass / 11
+controlled variance** and GSKU **75 pass / 17 controlled variance**; all remaining findings are the pre-existing
+generic edit/bulk/checkbox/shared-personalization expectations forbidden by these create/read/lifecycle surfaces. The
+full frontend run passes **1983/2008**; all 25 failures are in 12 pre-existing out-of-scope CRM/ESBP/PV/WorkCenter
+test files and none is a G1 or shared-confirm regression. Browser/runtime smoke, configuration/data and push did not
+occur and remain H.
+
 **H — Local Development acceptance:** source allow-list none by default. Separately authorized operator work provisions
 the template, exact candidates/positions, FU23 roles/grants, MDM service identity/audience/tenant grant and secret-safe
 settings. Smoke proves submit -> native WorkCenter decision -> secure poll -> MDM state/audit, replay/stale/crash,
@@ -3775,7 +3873,15 @@ navigation, bulk lifecycle and push remain separate gates.
   are frozen on 2026-08-29; standing non-push authorization grants local runtime/test work in that exact order.
 - [x] E1C API/manifest implementation is complete locally on 2026-08-29 with strict route/body/idempotency contracts,
   29/29 focused and 918/918 full MDM evidence, and an independent review reporting no remaining P0/P1/P2.
-- [ ] E2-E3 and G-H receive exact current-code allow-lists and predecessor evidence before mutation.
+- [x] G1 Global Product/GSKU current-code UI allow-list, server-owned stable operation identity, state/permission matrix,
+  same-origin lifecycle proxy and acceptance boundaries are frozen on 2026-08-29; standing non-push authorization
+  grants local runtime/test implementation.
+- [x] G1 implementation is complete locally on 2026-08-29 with 46/46 focused evidence, zero-error Release build and
+  independent review reporting no remaining P0/P1/P2; browser/runtime acceptance remains H.
+- [x] E2/E3 code truth rejects unsupported “later GSKU” assumptions and freezes the LSKU -> Finished Good -> combined
+  API/manifest order and exact bounded current-code allow-lists on 2026-08-29.
+- [ ] Additional-GSKU cardinality/ownership receives a separate owner decision before any implementation.
+- [ ] G2 and H receive exact current-code allow-lists and predecessor evidence before mutation/operation.
 
 ## 20. Follow-up Items
 
