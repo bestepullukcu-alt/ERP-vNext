@@ -3,13 +3,15 @@ using Diten.BuildingBlocks.ModuleRegistration.Abstractions;
 namespace Diten.MdmService.Api.ModuleRegistration;
 
 /// <summary>
-/// Product / Item / SKU Master registration descriptor for the Global Product and Finished Good tenant surfaces.
-/// The manifest declares only the read and create permission candidates enforced by their API controllers.
+/// Product / Item / SKU Master registration descriptor for the tenant surfaces owned by this module.
+/// The manifest declares only permission candidates enforced by their API controllers.
 /// </summary>
 public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvider
 {
     private const string Read = "mdm.global-products.read";
     private const string Create = "mdm.global-products.create";
+    private const string Submit = "mdm.global-products.submit";
+    private const string Retire = "mdm.global-products.retire";
     private const string FinishedGoodsRead = "mdm.finished-goods.read";
     private const string FinishedGoodsCreate = "mdm.finished-goods.create";
     private const string GskusRead = "mdm.gskus.read";
@@ -55,7 +57,9 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                     Actions:
                     [
                         new ModuleManifestAction("ADD_NEW", "Add New", Create, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
-                        new ModuleManifestAction("VIEW_DETAILS", "View Details", Read, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
+                        new ModuleManifestAction("VIEW_DETAILS", "View Details", Read, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("SUBMIT", "Submit", Submit, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("RETIRE", "Retire", Retire, "RowAction", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
                     ]),
                 new ModuleManifestPage(
                     PageCode: "FINISHED_GOODS",

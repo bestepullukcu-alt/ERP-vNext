@@ -76,6 +76,8 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.finished-goods.read",
                 "mdm.global-products.create",
                 "mdm.global-products.read",
+                "mdm.global-products.retire",
+                "mdm.global-products.submit",
                 "mdm.gskus.create",
                 "mdm.gskus.read",
                 "mdm.lskus.create",
@@ -96,7 +98,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.product-legal-entity-scopes.replace"
             },
             declared.OrderBy(value => value, StringComparer.Ordinal));
-        Assert.Equal(23, declared.Count);
+        Assert.Equal(25, declared.Count);
         var operatorOnly = new HashSet<string>(StringComparer.Ordinal)
         {
             "mdm.product-legal-entity-scope-rollout.activate",
@@ -112,9 +114,12 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.Equal(4, productPages.Count);
         foreach (var page in productPages)
         {
-            Assert.Equal(2, page.Actions.Count);
+            var expectedActions = page.PageCode == "GLOBAL_PRODUCTS"
+                ? new[] { "ADD_NEW", "RETIRE", "SUBMIT", "VIEW_DETAILS" }
+                : ["ADD_NEW", "VIEW_DETAILS"];
+            Assert.Equal(expectedActions.Length, page.Actions.Count);
             Assert.Equal(
-                ["ADD_NEW", "VIEW_DETAILS"],
+                expectedActions,
                 page.Actions.Select(action => action.ActionCode).OrderBy(value => value, StringComparer.Ordinal));
             var permissionPrefix = page.PageCode switch
             {
@@ -135,6 +140,25 @@ public sealed class ProductItemSkuMasterManifestProviderTests
             Assert.False(details.IsToolbarAction);
             Assert.False(details.IsDangerous);
         }
+    }
+
+    [Fact]
+    public void Global_product_declares_submit_and_direct_retire_without_approve_or_reject()
+    {
+        var page = Assert.Single(Manifest.Pages, item => item.PageCode == "GLOBAL_PRODUCTS");
+        var submit = Assert.Single(page.Actions, action => action.ActionCode == "SUBMIT");
+        var retire = Assert.Single(page.Actions, action => action.ActionCode == "RETIRE");
+
+        Assert.Equal("mdm.global-products.submit", submit.PermissionKey);
+        Assert.True(submit.IsRowAction);
+        Assert.False(submit.IsToolbarAction);
+        Assert.False(submit.IsDangerous);
+        Assert.Equal("mdm.global-products.retire", retire.PermissionKey);
+        Assert.True(retire.IsRowAction);
+        Assert.False(retire.IsToolbarAction);
+        Assert.True(retire.IsDangerous);
+        Assert.DoesNotContain(page.Actions, action => action.ActionCode is "APPROVE" or "REJECT");
+        Assert.True(page.IsNavigationVisible);
     }
 
     [Fact]
