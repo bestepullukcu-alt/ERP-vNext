@@ -19,6 +19,8 @@ public static class TrustedServiceTokenValidationExtensions
     public const string WorkflowAuthenticationScheme = "TrustedWorkflowConsumerService";
     public const string WorkflowDelegatedUserAuthenticationScheme = "TrustedWorkflowDelegatedUser";
     public const string WorkflowRequiredAudience = "TRUSTED_WORKFLOW_CONSUMER";
+    public const string ReferenceDataAuthenticationScheme = "TrustedReferenceDataConsumerService";
+    public const string ReferenceDataRequiredAudience = "TRUSTED_REFERENCE_DATA_CONSUMER";
     public const string DelegatedAuthorizationHeader = "X-Delegated-Authorization";
 
     private static readonly HashSet<string> RequiredClaimTypes = new(StringComparer.Ordinal)
@@ -87,6 +89,30 @@ public static class TrustedServiceTokenValidationExtensions
                             || !HasExactWorkflowServiceClaims(context.SecurityToken, validationOptions.Issuer))
                         {
                             context.Fail("The trusted workflow service identity token claim contract is invalid.");
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
+            })
+            .AddJwtBearer(ReferenceDataAuthenticationScheme, options =>
+            {
+                options.MapInboundClaims = false;
+                var validationOptions = configuration
+                    .GetSection(TrustedServiceTokenValidationOptions.SectionName)
+                    .Get<TrustedServiceTokenValidationOptions>() ?? new TrustedServiceTokenValidationOptions();
+                options.TokenValidationParameters = CreateTokenValidationParameters(
+                    validationOptions,
+                    clock,
+                    ReferenceDataRequiredAudience);
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = context =>
+                    {
+                        if (context.Principal?.Identity?.IsAuthenticated != true
+                            || !HasExactReferenceDataServiceClaims(context.SecurityToken, validationOptions.Issuer))
+                        {
+                            context.Fail("The trusted reference-data service identity token claim contract is invalid.");
                         }
 
                         return Task.CompletedTask;
@@ -206,6 +232,9 @@ public static class TrustedServiceTokenValidationExtensions
 
     public static bool HasExactWorkflowServiceClaims(SecurityToken? securityToken, string issuer)
         => HasExactServiceClaims(securityToken, issuer, WorkflowRequiredAudience);
+
+    public static bool HasExactReferenceDataServiceClaims(SecurityToken? securityToken, string issuer)
+        => HasExactServiceClaims(securityToken, issuer, ReferenceDataRequiredAudience);
 
     private static bool HasExactServiceClaims(
         SecurityToken? securityToken,
