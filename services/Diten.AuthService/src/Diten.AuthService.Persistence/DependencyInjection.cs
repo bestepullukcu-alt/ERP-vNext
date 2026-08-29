@@ -4,13 +4,11 @@ using Diten.AuthService.Persistence.Configurations;
 using Diten.AuthService.Persistence.Repositories;
 using Diten.AuthService.Persistence.Seed;
 using Diten.AuthService.Persistence.Settings;
+using Diten.AuthService.Persistence.S2S;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
-using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 namespace Diten.AuthService.Persistence;
@@ -24,7 +22,7 @@ public static class DependencyInjection
         ]);
 
         // MongoDB Serializers
-        BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+        MongoGuidRepresentationPolicy.EnsureGlobalSerializer();
 
         // MongoDB Conventions - Globally ignore extra elements to prevent deserialization errors on schema changes
         var conventionPack = new ConventionPack
@@ -50,13 +48,13 @@ public static class DependencyInjection
         services.AddSingleton(mongoSettings);
 
         // Drivers
-        var clientSettings = MongoClientSettings.FromConnectionString(mongoSettings.ConnectionString);
-        clientSettings.GuidRepresentation = GuidRepresentation.Standard;
+        var clientSettings = MongoGuidRepresentationPolicy.CreateClientSettings(mongoSettings.ConnectionString);
         var client = new MongoClient(clientSettings);
         var database = client.GetDatabase(mongoSettings.DatabaseName);
 
         services.AddSingleton<IMongoClient>(client);
         services.AddSingleton<IMongoDatabase>(database);
+        AddS2SFoundation(services);
 
         // Repositories
         services.AddScoped<IUserRepository, UserRepository>();
@@ -87,5 +85,19 @@ public static class DependencyInjection
         }
 
         return services;
+    }
+
+    private static void AddS2SFoundation(IServiceCollection services)
+    {
+        services.AddSingleton<IS2SMongoContext, S2SMongoContext>();
+        services.AddScoped<IServicePrincipalRepository, ServicePrincipalRepository>();
+        services.AddScoped<IServiceCredentialDescriptorRepository, ServiceCredentialDescriptorRepository>();
+        services.AddScoped<IS2SReplayReceiptStore, S2SReplayReceiptStore>();
+        services.AddScoped<IS2SProofAcceptanceCoordinator, S2SProofAcceptanceCoordinator>();
+        services.AddSingleton<IPermissionCatalogTransactionProbe>(_ => NoOpPermissionCatalogTransactionProbe.Instance);
+        services.AddScoped<IPermissionCatalogManifestRegistrar, PermissionCatalogManifestRegistrar>();
+        services.AddSingleton<IExplicitRoleGrantProvisioningAuthorizer>(_ => UnboundExplicitRoleGrantProvisioningAuthorizer.Instance);
+        services.AddSingleton<IExplicitRoleGrantTransactionProbe>(_ => NoOpExplicitRoleGrantTransactionProbe.Instance);
+        services.AddScoped<IExplicitRoleGrantProvisioningCoordinator, ExplicitRoleGrantProvisioningCoordinator>();
     }
 }

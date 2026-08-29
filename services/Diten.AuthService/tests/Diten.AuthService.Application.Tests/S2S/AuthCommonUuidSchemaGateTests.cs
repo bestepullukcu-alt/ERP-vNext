@@ -48,6 +48,33 @@ public sealed class AuthCommonUuidSchemaGateTests
         Assert.Equal(1, await versions.GetAsync(fixture.TenantId, CancellationToken.None));
     }
 
+    [Fact]
+    public async Task Legacy_version_is_typed_migration_required_and_is_never_read_as_zero_or_rewritten()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var legacy = new BsonDocument
+        {
+            ["_id"] = Legacy(fixture.TenantId),
+            ["Version"] = 7L,
+            ["UpdatedAt"] = DateTime.UtcNow
+        };
+        await fixture.InsertLegacyAsync("auth_role_assignment_versions", legacy);
+        var storedLegacy = await fixture.ReadLegacyAsync("auth_role_assignment_versions");
+        Assert.Equal(BsonBinarySubType.UuidLegacy, storedLegacy["_id"].AsBsonBinaryData.SubType);
+        var repository = new RoleAssignmentVersionRepository(fixture.Database);
+
+        var get = await Assert.ThrowsAsync<AuthUuidMigrationRequiredException>(
+            () => repository.GetAsync(fixture.TenantId, CancellationToken.None));
+        Assert.Equal("AUTH_UUID_MIGRATION_REQUIRED", get.FailureCode);
+        var increment = await Assert.ThrowsAsync<AuthUuidMigrationRequiredException>(
+            () => repository.IncrementAsync(fixture.TenantId, CancellationToken.None));
+        Assert.Equal("AUTH_UUID_MIGRATION_REQUIRED", increment.FailureCode);
+
+        var unchanged = await fixture.ReadLegacyAsync("auth_role_assignment_versions");
+        Assert.Equal(BsonBinarySubType.UuidLegacy, unchanged["_id"].AsBsonBinaryData.SubType);
+        Assert.Equal(7L, unchanged["Version"].AsInt64);
+    }
+
     [Theory]
     [InlineData("roles", "_id")]
     [InlineData("roles", "TenantId")]
