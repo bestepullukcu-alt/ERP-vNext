@@ -20,15 +20,17 @@ describe('MOD-0290 GSKU Register exposure', () => {
         expect(index).toContain('data-can-create="@canCreate.ToString().ToLowerInvariant()"');
     });
 
-    it('exposes exactly the four approved same-origin MVC routes', () => {
+    it('exposes the approved create/read and lifecycle same-origin MVC routes', () => {
         const source = controller();
         expect(source).toContain('[Route("MasterDataManagement/Gskus")]');
         expect(source).toContain('[HttpGet("api")]');
         expect(source).toContain('[HttpGet("api/{id:guid}")]');
         expect(source).toContain('[HttpGet("api/create-options")]');
         expect(source).toContain('[HttpPost("api")]');
+        expect(source).toContain('[HttpPost("api/{id:guid}/submit")]');
+        expect(source).toContain('[HttpPost("api/{id:guid}/retire")]');
         expect(source).toContain('/api/gskus/drafts');
-        expect(source).not.toMatch(/HttpPut|HttpPatch|HttpDelete|code-reservations|\/bulk|lifecycle/i);
+        expect(source).not.toMatch(/HttpPut|HttpPatch|HttpDelete|code-reservations|\/bulk/);
     });
 
     it('keeps browser traffic on the same-origin proxy without credentials or generated identity', () => {
@@ -72,6 +74,90 @@ describe('MOD-0290 GSKU Register exposure', () => {
         expect(source).toContain('private const string CreatePermission = "mdm.gskus.create"');
         expect(source.match(/!HasPermission\(CreatePermission\)/g).length).toBeGreaterThanOrEqual(2);
         expect(script()).toContain('exportButtons(canCreate ? L.AddNew : null');
+    });
+
+    it('gates lifecycle actions by exact permission and freshly fetched detail state', () => {
+        const source = controller();
+        const browser = script();
+        const view = read('Views/MasterDataManagement/Gskus/Index.cshtml');
+
+        expect(source).toContain('private const string SubmitPermission = "mdm.gskus.submit"');
+        expect(source).toContain('private const string RetirePermission = "mdm.gskus.retire"');
+        expect(source).toContain('ViewData["CanSubmitGsku"] = HasPermission(SubmitPermission)');
+        expect(source).toContain('ViewData["CanRetireGsku"] = HasPermission(RetirePermission)');
+        expect(view).toContain('data-can-submit="@canSubmit.ToString().ToLowerInvariant()"');
+        expect(view).toContain('data-can-retire="@canRetire.ToString().ToLowerInvariant()"');
+        expect(browser).toContain('const detail = await fetchDetail(id)');
+        expect(browser).toContain("const expectedState = action === 'submit' ? 1 : 3");
+        expect(browser).toContain("if (state === 1 && canSubmit)");
+        expect(browser).toContain("if (state === 3 && canRetire)");
+        expect(browser).not.toMatch(/approve-identity|reject-identity/);
+    });
+
+    it('derives a stable D-GUID on the server and forwards it only as a header', () => {
+        const source = controller();
+        const browser = script();
+
+        expect(source).toContain('AppendLengthPrefixed(hash, tenantId.ToString("D"))');
+        expect(source).toContain('AppendLengthPrefixed(hash, actor)');
+        expect(source.match(/\[FromForm\] int\? expectedVersion/g)?.length).toBe(2);
+        expect(source).toContain('expectedVersion is null or < 0');
+        expect(source).toContain('expectedVersion.Value');
+        expect(source).toContain('AppendLengthPrefixed(hash, aggregateType)');
+        expect(source).toContain('AppendLengthPrefixed(hash, action)');
+        expect(source).toContain('AppendLengthPrefixed(hash, reasonCode)');
+        expect(source).toContain('operationId.ToString("D")');
+        expect(source).toContain('form.Count == allowed.Count');
+        expect(source).toContain('antiforgery.Count == 1');
+        expect(source).toContain('required.All(field => form.TryGetValue(field, out var values) && values.Count == 1)');
+        expect(browser).toContain("body.set('ExpectedVersion'");
+        expect(browser).toContain("body.set('ReasonCode'");
+        expect(browser).not.toMatch(/body\.set\(['"](?:TenantId|Actor|OperationId|IdempotencyKey)/);
+    });
+
+    it('accepts only exact lifecycle success envelopes and never relays arbitrary 2xx content', () => {
+        const source = controller();
+
+        expect(source).toContain('new HashSet<int> { StatusCodes.Status200OK }');
+        expect(source).toContain('new HashSet<int> { StatusCodes.Status200OK, StatusCodes.Status202Accepted }');
+        expect(source).toContain('allowedSuccessStatusCodes.Contains(responseStatus)');
+        expect(source).toContain('IsJsonMediaType(mediaType)');
+        expect(source).toContain('mediaType?.EndsWith("+json"');
+        expect(source).toContain('JsonSerializer.Deserialize<LifecycleGatewayEnvelope>');
+        expect(source).toContain('envelope?.IsSuccessful != true || envelope.StatusCode != responseStatus');
+        expect(source).toContain('ContentType = "application/json"');
+    });
+
+    it('fails closed unless lifecycle actor claims resolve to one canonical human subject', () => {
+        const source = controller();
+        const identity = source.match(/private bool TryResolveLifecycleIdentity[\s\S]*?private static Guid CreateLifecycleOperationId/)?.[0] || '';
+
+        expect(identity).toContain('User.Identity?.IsAuthenticated != true');
+        expect(identity).toContain('SingleClaim(User, "actor_type")');
+        expect(identity).toContain('"tenant_user" or "platform_admin" or "partner_admin"');
+        expect(identity).toContain('subjects.Count > 1 || nameIdentifiers.Count > 1');
+        expect(identity).toContain('subjects.Count == 0 && nameIdentifiers.Count == 0');
+        expect(identity).toContain('subject.HasValue && nameIdentifier.HasValue && subject != nameIdentifier');
+        expect(identity).toContain('string.Equals(claim.Type, type, StringComparison.Ordinal)');
+        expect(identity).toContain('Guid.TryParseExact(values[0], "D"');
+        expect(identity).toContain('parsed == Guid.Empty');
+        expect(identity).toContain('actor = subjectId.ToString("D")');
+        expect(identity).not.toContain('User.Identity?.Name');
+        expect(identity).not.toContain('ResolveUserSubject()');
+    });
+
+    it('uses premium bounded retirement confirmation and reloads list plus detail', () => {
+        const source = script();
+        expect(source).toContain('showInput: true');
+        expect(source).toContain('inputRequired: true');
+        expect(source).toContain('inputAttributes: { maxlength: 128 }');
+        expect(source).toContain('const renderDetail = (detail, expectedId) =>');
+        expect(source).toContain('const refreshedDetail = await fetchDetail(id)');
+        expect(source).toContain('renderDetail(refreshedDetail, id)');
+        expect(source).toContain("refreshedState !== (action === 'submit' ? 2 : 4)");
+        expect(source.indexOf('renderDetail(refreshedDetail, id)')).toBeLessThan(source.indexOf("action === 'submit' ? L.SubmitPendingSuccess : L.RetireSuccess"));
+        expect(source).not.toContain('await populateDetails(id)');
+        expect(source).toContain("action === 'submit' ? L.SubmitPendingSuccess : L.RetireSuccess");
     });
 
     it('uses only the frozen create-options fields and provider precision', () => {
@@ -129,6 +215,8 @@ describe('MOD-0290 GSKU Register exposure', () => {
         });
         keys.slice(1).forEach((keySet) => expect(keySet).toEqual(keys[0]));
         ['CreateReconciliationPending', 'ErrorInvalidFormAttempt', 'ErrorProviderUnavailable', 'ErrorProviderTimeout']
+            .forEach((key) => expect(keys[0]).toContain(key));
+        ['SubmitIdentity', 'RetireIdentity', 'RetirementReasonRequired', 'SubmitPendingSuccess', 'ErrorTimeout']
             .forEach((key) => expect(keys[0]).toContain(key));
     });
 });

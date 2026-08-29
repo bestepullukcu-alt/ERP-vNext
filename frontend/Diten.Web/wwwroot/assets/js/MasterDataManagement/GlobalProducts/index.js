@@ -19,7 +19,11 @@ const GlobalProductsList = (function () {
     const totalColumnCount = 5;
     const baseOrder = [[1, 'asc']];
     const L = window.L10n || {};
-    const canCreate = document.querySelector('[data-can-create]')?.getAttribute('data-can-create') === 'true';
+    const permissionHost = document.querySelector('[data-can-create]');
+    const canCreate = permissionHost?.getAttribute('data-can-create') === 'true';
+    const canSubmit = permissionHost?.getAttribute('data-can-submit') === 'true';
+    const canRetire = permissionHost?.getAttribute('data-can-retire') === 'true';
+    const lifecycleRequests = new Set();
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
     const emptyFilters = () => ({ lifecycleStatus: '' });
 
@@ -206,6 +210,12 @@ const GlobalProductsList = (function () {
         const item = lifecycleMap()[value] || { title: value || L.Unknown, class: 'bg-label-secondary' };
         return `<span class="badge ${item.class}">${escapeHtml(item.title)}</span>`;
     };
+    const lifecycleCode = (value) => ({
+        Draft: 1, 1: 1,
+        PendingIdentityApproval: 2, 2: 2,
+        IdentityApproved: 3, 3: 3,
+        Retired: 4, 4: 4
+    })[value] || 0;
     const unwrapData = (payload) => payload?.data || payload?.Data || {};
     const getErrorMessage = async (response) => {
         let payload = {};
@@ -217,7 +227,15 @@ const GlobalProductsList = (function () {
             CODE_RESERVATION_REQUIRED: L.ErrorReservationRequired
         };
         if (raw) return domainMessages[raw] || raw;
-        return ({ 400: L.ErrorValidation, 401: L.ErrorUnauthorized, 403: L.ErrorForbidden, 404: L.ErrorNotFound, 409: L.ErrorConflict })[response.status] || L.ErrorGateway;
+        return ({
+            400: L.ErrorValidation,
+            401: L.ErrorUnauthorized,
+            403: L.ErrorForbidden,
+            404: L.ErrorNotFound,
+            409: L.ErrorConflict,
+            503: L.ErrorServiceUnavailable,
+            504: L.ErrorTimeout
+        })[response.status] || L.ErrorGateway;
     };
     const handleUnauthorized = () => {
         window.DtDefaults?.handleUnauthorized?.();
@@ -236,29 +254,146 @@ const GlobalProductsList = (function () {
         return query.toString();
     };
 
+    const fetchDetail = async (id) => {
+        const response = await fetch(`${endpoint}/${encodeURIComponent(id)}`, {
+            credentials: 'same-origin', headers: getAuthHeaders()
+        });
+        if (response.status === 401) handleUnauthorized();
+        if (!response.ok) throw new Error(await getErrorMessage(response));
+        return unwrapData(await response.json());
+    };
+    const renderDetail = (detail, expectedId) => {
+        const detailId = detail?.id || detail?.Id;
+        const detailVersion = Number(detail?.version ?? detail?.Version);
+        const detailState = lifecycleCode(detail?.lifecycleStatus ?? detail?.LifecycleStatus);
+        const offcanvas = document.getElementById('offcanvasDetailsPreview');
+        if (!detailId || String(detailId).toLowerCase() !== String(expectedId).toLowerCase()
+            || !Number.isInteger(detailVersion) || detailVersion < 0 || detailState === 0 || !offcanvas) {
+            throw new Error(L.ErrorGateway);
+        }
+        const setText = (elementId, value) => {
+            const element = document.getElementById(elementId);
+            if (!element) throw new Error(L.ErrorGateway);
+            element.textContent = value === null || value === undefined || value === '' ? L.NotAvailable : String(value);
+        };
+        setText('oc-title', detail.globalProductName || detail.GlobalProductName);
+        setText('oc-subtitle', detail.canonicalCode || detail.CanonicalCode);
+        setText('oc-id', detailId);
+        setText('oc-code', detail.canonicalCode || detail.CanonicalCode);
+        setText('oc-name', detail.globalProductName || detail.GlobalProductName);
+        setText('oc-version', String(detail.version ?? detail.Version ?? ''));
+        const formatDate = (value) => value ? new Intl.DateTimeFormat(document.documentElement.lang || undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : L.NotAvailable;
+        setText('oc-created-at', formatDate(detail.createdAt || detail.CreatedAt));
+        setText('oc-updated-at', formatDate(detail.updatedAt || detail.UpdatedAt));
+        const status = detail.lifecycleStatus || detail.LifecycleStatus;
+        const statusElement = document.getElementById('oc-status');
+        if (!statusElement) throw new Error(L.ErrorGateway);
+        statusElement.outerHTML = renderLifecycle(status).replace('<span ', '<span id="oc-status" ');
+        bootstrap.Offcanvas.getOrCreateInstance(offcanvas).show();
+        return detailState;
+    };
     const populateDetails = async (id) => {
         try {
-            const response = await fetch(`${endpoint}/${encodeURIComponent(id)}`, { credentials: 'same-origin', headers: getAuthHeaders() });
-            if (response.status === 401) handleUnauthorized();
-            if (!response.ok) throw new Error(await getErrorMessage(response));
-            const detail = unwrapData(await response.json());
-            const setText = (elementId, value) => { const element = document.getElementById(elementId); if (element) element.textContent = value === null || value === undefined || value === '' ? L.NotAvailable : String(value); };
-            setText('oc-title', detail.globalProductName || detail.GlobalProductName);
-            setText('oc-subtitle', detail.canonicalCode || detail.CanonicalCode);
-            setText('oc-id', detail.id || detail.Id);
-            setText('oc-code', detail.canonicalCode || detail.CanonicalCode);
-            setText('oc-name', detail.globalProductName || detail.GlobalProductName);
-            setText('oc-version', String(detail.version ?? detail.Version ?? ''));
-            const formatDate = (value) => value ? new Intl.DateTimeFormat(document.documentElement.lang || undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : L.NotAvailable;
-            setText('oc-created-at', formatDate(detail.createdAt || detail.CreatedAt));
-            setText('oc-updated-at', formatDate(detail.updatedAt || detail.UpdatedAt));
-            const status = detail.lifecycleStatus || detail.LifecycleStatus;
-            const statusElement = document.getElementById('oc-status');
-            if (statusElement) statusElement.outerHTML = renderLifecycle(status).replace('<span ', '<span id="oc-status" ');
-            bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasDetailsPreview')).show();
+            const detail = await fetchDetail(id);
+            renderDetail(detail, id);
         } catch (error) {
             if (!error?.authHandled) window.showToast?.(error.message || L.ErrorOccurred, 'error');
         }
+    };
+
+    const lifecycleToken = () => document.querySelector(
+        '#globalProductLifecycleToken input[name="__RequestVerificationToken"]')?.value || '';
+    const setLifecycleBusy = (button, busy) => {
+        button?.classList.toggle('disabled', busy);
+        button?.setAttribute('aria-disabled', busy ? 'true' : 'false');
+    };
+    const postLifecycle = async (id, action, reasonCode, button) => {
+        const requestKey = `${id}:${action}`;
+        if (lifecycleRequests.has(requestKey)) return;
+        lifecycleRequests.add(requestKey);
+        setLifecycleBusy(button, true);
+        try {
+            const detail = await fetchDetail(id);
+            const state = lifecycleCode(detail.lifecycleStatus ?? detail.LifecycleStatus);
+            const expectedState = action === 'submit' ? 1 : 3;
+            if (state !== expectedState) {
+                dt?.ajax.reload(null, false);
+                throw new Error(L.LifecycleStateChanged);
+            }
+            const expectedVersion = Number(detail.version ?? detail.Version);
+            if (!Number.isInteger(expectedVersion) || expectedVersion < 0) throw new Error(L.ErrorConflict);
+
+            const body = new FormData();
+            body.set('ExpectedVersion', String(expectedVersion));
+            if (action === 'retire') body.set('ReasonCode', reasonCode);
+            const token = lifecycleToken();
+            body.set('__RequestVerificationToken', token);
+            const response = await fetch(`${endpoint}/${encodeURIComponent(id)}/${action}`, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'XMLHttpRequest' },
+                body
+            });
+            if (response.status === 401) handleUnauthorized();
+            if (!response.ok) throw new Error(await getErrorMessage(response));
+
+            dt?.ajax.reload(null, false);
+            const refreshedDetail = await fetchDetail(id);
+            const refreshedState = renderDetail(refreshedDetail, id);
+            if (refreshedState !== (action === 'submit' ? 2 : 4)) throw new Error(L.LifecycleStateChanged);
+            window.showToast?.(action === 'submit' ? L.SubmitPendingSuccess : L.RetireSuccess, 'success');
+        } catch (error) {
+            if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error');
+        } finally {
+            lifecycleRequests.delete(requestKey);
+            setLifecycleBusy(button, false);
+        }
+    };
+    const requestLifecycle = (id, action, button) => {
+        if (!id || (action === 'submit' && !canSubmit) || (action === 'retire' && !canRetire)) return;
+        if (action === 'submit') {
+            window.showConfirm?.(L.SubmitConfirmation, () => postLifecycle(id, action, '', button), {
+                type: 'warning', confirmButtonText: L.SubmitIdentity
+            });
+            return;
+        }
+        window.showConfirm?.(L.RetireConfirmation, (input) => {
+            const reason = normalizeString(input);
+            if (!reason) {
+                window.showToast?.(L.RetirementReasonRequired, 'error');
+                return;
+            }
+            if (reason.length > 128) {
+                window.showToast?.(L.RetirementReasonTooLong, 'error');
+                return;
+            }
+            return postLifecycle(id, action, reason, button);
+        }, {
+            type: 'warning',
+            showInput: true,
+            inputRequired: true,
+            inputLabel: L.RetirementReasonLabel,
+            inputAttributes: { maxlength: 128 },
+            confirmButtonText: L.RetireIdentity
+        });
+    };
+
+    const renderActions = (row) => {
+        const id = row.id || row.Id;
+        const actions = [{
+            key: 'details', className: 'js-quick-view', text: L.ViewDetails, icon: 'bx bx-show',
+            attrs: { 'data-id': id, title: L.ViewDetails }
+        }];
+        const state = lifecycleCode(row.lifecycleStatus ?? row.LifecycleStatus);
+        if (state === 1 && canSubmit) actions.push({
+            key: 'submit', className: 'js-submit-identity', text: L.SubmitIdentity, icon: 'bx bx-send',
+            attrs: { 'data-id': id, title: L.SubmitIdentity }
+        });
+        if (state === 3 && canRetire) actions.push({
+            key: 'retire', className: 'js-retire-identity', text: L.RetireIdentity, icon: 'bx bx-archive',
+            attrs: { 'data-id': id, title: L.RetireIdentity }
+        });
+        return window.DitenDataTable.renderActions(actions);
     };
 
     const openCreate = () => {
@@ -367,10 +502,7 @@ const GlobalProductsList = (function () {
                 { targets: 3, render: renderLifecycle },
                 {
                     targets: -1, title: L.Actions, searchable: false, orderable: false, className: 'cell-fit all text-end pe-3',
-                    render: (data, type, row) => window.DitenDataTable.renderActions([{
-                        key: 'details', className: 'js-quick-view', text: L.ViewDetails, icon: 'bx bx-show',
-                        attrs: { 'data-id': row.id || row.Id, title: L.ViewDetails }
-                    }])
+                    render: (data, type, row) => renderActions(row)
                 }
             ],
             buttons: window.DtDefaults.exportButtons(canCreate ? L.AddNew : null, {}, extraButtons, { exportColumns: saveViewColumnIndexes, colvisColumns: saveViewColumnIndexes }),
@@ -408,10 +540,14 @@ const GlobalProductsList = (function () {
         bindFilterEvents();
         document.getElementById('btnSaveGlobalProduct')?.addEventListener('click', submitCreate);
         document.addEventListener('click', (event) => {
-            const action = event.target.closest('.js-quick-view');
-            if (!action || !action.closest('.datatables-globalproducts')) return;
+            const quickViewAction = event.target.closest('.js-quick-view');
+            const lifecycleAction = event.target.closest('.js-submit-identity, .js-retire-identity');
+            const action = quickViewAction || lifecycleAction;
+            if (!action || !action.closest('.datatables-globalproducts') || action.classList.contains('disabled')) return;
             event.preventDefault();
-            populateDetails(action.dataset.id);
+            if (action.classList.contains('js-submit-identity')) requestLifecycle(action.dataset.id, 'submit', action);
+            else if (action.classList.contains('js-retire-identity')) requestLifecycle(action.dataset.id, 'retire', action);
+            else populateDetails(action.dataset.id);
         });
     };
 
