@@ -26,13 +26,16 @@ implementation_authority: explicit-user-control-tower
 > the internal endpoint and contract recorded below; this does not authorize Phase 2B, DWS runtime integration, any Gateway change beyond
 > the scoped PPM mappings, legacy migration or any WorkCenter hazard. Those boundaries remain fail-closed.
 
-> **Current-main semantic integration note — 2026-08-29:** The implementation checkpoints cited by this pack live in
-> the clean PPM evidence chain and are not yet materialized on the current-main integration branch. This governance
-> checkpoint authorizes only a later exact-scope reconstruction. It does not claim that `Diten.PpmService` exists on
-> current main and does not authorize a bulk historical cherry-pick. Cross-service authentication consumes the
-> parent-owned `MOD-0018` S2S authority through a PPM-local HTTP Trusted Context Model A adapter; the historical
-> colliding S2S FU label and its FU-named Platform.Common namespace are explicitly invalid for new code. This pack
-> authorizes no new shared Platform.Common authentication family.
+> **Current-main semantic integration note — 2026-08-29:** The PPM-owned backend scaffold and bounded Gate I
+> contracts are now materialized on the current-main integration chain. Checkpoint `a22a872f` reconstructs the
+> PPM-owned base service and Gate I-A/B/C contract-test foundation; parent-owned MOD-0018 governance checkpoint
+> `457edbdd` and neutral shared request-binding checkpoint `92eb29ea` replace the historical colliding FU-named
+> shared contract; checkpoint `8c659594` adds the PPM-owned, default-off relationship, receipt, audit and signed-outbox
+> composition. The verified current-main result is build `0` warnings / `0` errors, unit `286/286`, dynamic-Mongo
+> integration `82/82` with `0` skips, architecture `11/11`, and physical mutation evidence `6/6` with restore SHA-256
+> `61e79023258a6086db98f52378a7c86bf611f309d71a83979f7368b056d68170`. This closes only the backend/default-off
+> Gate I evidence named here. The pack remains `review`; MOD-0023 remains `ExcludedV1`, and full 1.3, browser,
+> live-provider, bilateral, WorkCenter and production-activation gates remain open.
 
 > **Composite-pack UI decision:** `form_field_count: 7` is the maximum create/edit field count across the
 > four authorized Phase 2A surfaces, not a single composite form. All four select Golden Slim.
@@ -1399,6 +1402,11 @@ claim a fresh test execution or production activation.
 - [x] The three exact NON-RUNTIME consumer contract-test handoffs are authorized in §4.9.1.
 - [x] The three immutable contract-test checkpoints are composed at `20c95c16`; §4.9.2 authorizes only a
   bounded, internal, default-off implementation handoff and explicitly excludes MOD-0023 from release V1.
+- [x] Current-main semantic reconstruction is checkpointed at `a22a872f`, with MOD-0018 authority and neutral
+  shared request binding at `457edbdd` + `92eb29ea`, and PPM-owned default-off Gate I composition at `8c659594`.
+- [x] Current-main backend/default-off evidence passes build `0` warnings / `0` errors, unit `286/286`, dynamic-Mongo
+  integration `82/82` with `0` skips, architecture `11/11`, and physical mutation `6/6`; restored source SHA-256 is
+  `61e79023258a6086db98f52378a7c86bf611f309d71a83979f7368b056d68170`.
 - [ ] Gate I runtime composition is activation-ready. Provider placement, migration rehearsal, credentials,
   entitlement/grants, signed audit transport, broker/live evidence and explicit activation authority remain open.
 - [ ] Each Gate I production adapter has a later runtime amendment, explicit runtime authority and live bilateral
@@ -1413,7 +1421,8 @@ claim a fresh test execution or production activation.
   AuthService PPM grant provisioning remains open.
 - [x] MOD-0021 Minimal Mutation Audit v1 contract and isolated PPM delivery evidence are exact; production
   publisher credential, activation, replay operations and observability remain deployment/runtime gates.
-- [ ] Idempotency key scope, canonicalization, receipt and retention are approved.
+- [x] Backend/default-off idempotency key scope, canonicalization, receipt and retention are implemented and
+  evidenced at `8c659594`; live delivery, replay operations and production activation remain open.
 - [x] EntityBase CLR/BSON representation and isolated real-Mongo replica-set evidence pass.
 - [ ] Full bilateral runtime compatibility/security evidence remains open. The isolated provider-side contract
   and security suite passes, but production activation and MOD-0354/DWS consumer evidence are not complete.
@@ -1438,6 +1447,13 @@ Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separat
 ## 19. Implementation Notes
 
 - Target `phase-2a` is scoped authorization, not whole-module completion.
+- Current-main semantic integration is deliberately split into four reviewable checkpoints: PPM-owned base and
+  contract reconstruction `a22a872f`, parent MOD-0018 governance `457edbdd`, neutral shared request binding
+  `92eb29ea`, and PPM-owned default-off Gate I relationship/outbox composition `8c659594`.
+- Checkpoint `8c659594` was verified with build `0` warnings / `0` errors, unit `286/286`, dynamic-Mongo integration
+  `82/82` with `0` skips, architecture `11/11`, and mutation `6/6`; the post-restore source SHA-256 is
+  `61e79023258a6086db98f52378a7c86bf611f309d71a83979f7368b056d68170`. This is backend/default-off evidence,
+  not full 1.3, browser, live-provider, bilateral, WorkCenter or production-activation evidence.
 - DCP-006 is the sole active 1.3/1.4/1.6 orchestration contract. DCP-003 remains deferred/non-executable
   legacy safe-parity planning and gives no implementation authority.
 - Registry and master-plan delivery status are reconciled in the same governance closure.
@@ -1490,6 +1506,7 @@ Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separat
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-08-29 | Reconciled the current-main semantic checkpoint chain: PPM base/contracts `a22a872f`, parent MOD-0018 governance `457edbdd`, neutral S2S request binding `92eb29ea`, and PPM-owned default-off Gate I relationship/outbox composition `8c659594`. Recorded build `0/0`, unit `286/286`, dynamic-Mongo integration `82/82` with zero skips, architecture `11/11`, mutation `6/6`, and restore SHA-256 `61e79023258a6086db98f52378a7c86bf611f309d71a83979f7368b056d68170`. This closes only backend/default-off evidence; `review`, MOD-0023 `ExcludedV1`, and full 1.3/browser/live-provider/bilateral/WorkCenter/production gates remain unchanged and open. | Enterprise Strategy Control Tower — current-main evidence reconciliation |
 | 2026-08-26 | Authorized the bounded, internal-only, default-off Gate I runtime-composition implementation handoff after exact I-A/I-B/I-C contract checkpoints were composed. Recorded dependency checkpoint order, exact source/config/test allowlist and provider ownership. MOD-0023 is `ExcludedV1`: no DTO/provider/positive fixture, and every ApprovalOutcome-required path remains zero-residue `503`. This grants no activation, secret/key, deployment, broker/live, frontend, Gateway or WorkCenter authority. | User / Enterprise Strategy Control Tower |
 | 2026-08-26 | Authorized exact pure Domain/Application and test roots for three parallel NON-RUNTIME consumer contract-test lanes: I-A MOD-0007 Decision Trace with MOD-0023 explicitly blocked/test-plan-only, atomic I-B MOD-0136+MOD-0138 Funding & Scenario, and I-C MOD-0072 Benefit Realization. Bound exact producer checkpoints, wrappers, operations, permissions, service identities, mode/error/no-copy/security/idempotency fixtures and later composition gates. No Persistence/Infrastructure/Api/runtime/frontend/Gateway/WorkCenter authority, status promotion or production activation was granted. | User / Enterprise Strategy Control Tower |
 | 2026-08-26 | Reconciled factual Gate L (`536aa685`) and default-disabled ExternalContextReference provider (`eddabab0` + `682b0afb`) implementation evidence, replaced stale missing-producer-pack wording with immutable ready-for-dev/core checkpoint provenance, and recorded three parallel NON-EXECUTABLE I-A/I-B/I-C planning lanes. MOD-0117 remains `review`; Gate I adapters, composition, activation, parity acceptance and production authority remain open. | Enterprise Strategy Control Tower governance reconciliation |
