@@ -39,6 +39,11 @@ public sealed class ProductItemSkuMasterMongoTests
         };
 
         var first = await handler.Handle(new CreateFirstGskuDraftCommand(request), CancellationToken.None);
+        await scope.Database.GetCollection<GlobalProduct>("mdm_global_products").UpdateOneAsync(
+            Builders<GlobalProduct>.Filter.Eq(x => x.Id, parent.Id),
+            Builders<GlobalProduct>.Update.Set(
+                x => x.LifecycleStatus,
+                ProductIdentityLifecycleStatus.Retired));
         var replay = await handler.Handle(new CreateFirstGskuDraftCommand(request), CancellationToken.None);
 
         Assert.True(first.IsSuccessful);
@@ -60,6 +65,9 @@ public sealed class ProductItemSkuMasterMongoTests
             .CountDocumentsAsync(Builders<ProductDefinitionRevision>.Filter.Empty));
         Assert.Equal(1, await scope.Database.GetCollection<Gsku>("mdm_gskus")
             .CountDocumentsAsync(Builders<Gsku>.Filter.Empty));
+        var retiredParent = await scope.GlobalProducts(scope.TenantA).GetByIdAsync(parent.Id);
+        Assert.Equal(ProductIdentityLifecycleStatus.Retired, retiredParent!.LifecycleStatus);
+        Assert.Empty(retiredParent.ChildCreationAdmissions);
 
         var scopeDependencies = ScopeDependencies(scope, scope.TenantA);
         var updater = new UpdateGskuDraftHandler(
@@ -202,6 +210,44 @@ public sealed class ProductItemSkuMasterMongoTests
             .CountDocumentsAsync(Builders<Gsku>.Filter.Empty));
         var unchanged = await scope.Reservations(scope.TenantB).GetByIdAsync(reservation.Id);
         Assert.Equal(CodeReservationState.Reserved, unchanged!.ReservationState);
+    }
+
+    [Fact]
+    public async Task First_gsku_rejects_draft_parent_before_provider_reservation_or_allocation()
+    {
+        await using var scope = await MongoTestScope.CreateAsync();
+        var parent = await InsertParentAsync(
+            scope,
+            scope.TenantA,
+            ProductIdentityLifecycleStatus.Draft);
+        var reservation = await scope.Reservations(scope.TenantA).ReserveAsync(
+            CodeBearingEntityType.Gsku, "draft-parent-reserve", "actor", "corr");
+        var resolver = new VerifiedResolver();
+
+        var result = await CreateFirstGskuHandler(scope, scope.TenantA, resolver).Handle(
+            new CreateFirstGskuDraftCommand(new ProductItemSkuMasterModels.CreateFirstGskuDraftRequest
+            {
+                GlobalProductId = parent.Id,
+                GskuReservationId = reservation.Id,
+                ExpectedReservationVersion = reservation.Version,
+                CreationCommandId = "draft-parent-command",
+                PackQuantity = 1m,
+                PackUomCode = "C62"
+            }),
+            CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Contains("PARENT_NOT_IDENTITY_APPROVED", result.Errors);
+        Assert.Equal(0, resolver.CallCount);
+        Assert.Equal(0, await scope.Database.GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions")
+            .CountDocumentsAsync(Builders<ProductDefinitionRevision>.Filter.Empty));
+        Assert.Equal(0, await scope.Database.GetCollection<Gsku>("mdm_gskus")
+            .CountDocumentsAsync(Builders<Gsku>.Filter.Empty));
+        var unchangedReservation = await scope.Reservations(scope.TenantA).GetByIdAsync(reservation.Id);
+        Assert.Equal(CodeReservationState.Reserved, unchangedReservation!.ReservationState);
+        var unchangedParent = await scope.GlobalProducts(scope.TenantA).GetByIdAsync(parent.Id);
+        Assert.Empty(unchangedParent!.ChildCreationAdmissions);
     }
 
     [Fact]
@@ -1094,7 +1140,10 @@ public sealed class ProductItemSkuMasterMongoTests
         return current?.FullName ?? throw new InvalidOperationException("Repository root was not found.");
     }
 
-    private static async Task<GlobalProduct> InsertParentAsync(MongoTestScope scope, Guid tenantId)
+    private static async Task<GlobalProduct> InsertParentAsync(
+        MongoTestScope scope,
+        Guid tenantId,
+        ProductIdentityLifecycleStatus lifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved)
     {
         _ = scope.GlobalProducts(tenantId);
         var parent = new GlobalProduct
@@ -1105,7 +1154,7 @@ public sealed class ProductItemSkuMasterMongoTests
             GlobalProductName = "Parent " + Guid.NewGuid().ToString("N"),
             GlobalProductNameNormalized = Guid.NewGuid().ToString("N"),
             CodeReservationId = Guid.NewGuid(),
-            LifecycleStatus = ProductIdentityLifecycleStatus.Draft
+            LifecycleStatus = lifecycleStatus
         };
         await scope.Database.GetCollection<GlobalProduct>("mdm_global_products").InsertOneAsync(parent);
         return parent;
