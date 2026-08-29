@@ -265,6 +265,32 @@ worktree, based on remote-main commit `c2cc8e10dcfc54b08f21cd258bc63e4a33449824`
 - Independent security re-review found no P0/P1/P2 issue. `git diff --check` remained clean. No repository, index,
   endpoint, parser, configuration, credential, grant or operational data mutation was performed.
 
+### Section D — Trusted Reference Data Consumer purpose (Phase 1.5, 2026-08-29)
+
+This additive named step closes the service-identity prerequisite for background LSKU approval revalidation. It does
+not reuse or broaden the Workflow identity. `ServiceClientIdentity.AllowedAudience` is singular, so the exact new pair
+is `Diten.MDM/TRUSTED_REFERENCE_DATA_CONSUMER` with a separate client identity, credential lifecycle and tenant grant.
+The token remains RS256, `actor_type=service`, exact `service_name=Diten.MDM`, exact token-derived `tenant_id`, exact
+300-second lifetime and current/previous signing-key rotation. Audit and Workflow audiences remain unchanged.
+
+Exact runtime allow-list:
+
+- `services/Diten.AuthService/src/Diten.AuthService.Application/Features/ServiceIdentityTokens/ServiceIdentityTokenAudiencePolicy.cs`
+- `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedServiceTokenValidationExtensions.cs`
+
+Exact test allow-list:
+
+- existing Auth service-identity audience/validator/handler/issuer security and real-Mongo test files, extended only
+  for the third exact pair, distinct-identity enforcement, wrong-purpose 403, wrong credential 401, missing/disabled
+  tenant grant 403 and replay/cardinality evidence;
+- existing Platform trusted-service-token validation and DI tests, extended only for the named
+  `TrustedReferenceDataConsumerService` scheme and exact audience/claim rejection matrix.
+
+No endpoint, service-client/grant provisioning, config, secret or operational mutation is authorized by Section D.
+Runtime acceptance requires focused Auth/Platform security tests, real Mongo tenant/audience isolation, full suites,
+Release builds and an independent no-P0/P1 review. Local Development identity/grant/credential provisioning remains a
+separate operational gate.
+
 ## 20. Follow-up Items
 
 1. Reconcile MOD-0033 parent pack/domain prose with Blueprint 8.1 canonical ownership without renaming runtime literals.

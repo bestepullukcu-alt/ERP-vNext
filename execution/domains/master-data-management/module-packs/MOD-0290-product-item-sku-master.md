@@ -3628,10 +3628,20 @@ Additional GSKU foundation with Revision admission/fencing, binding and last-sib
 limited to a strongly typed LSKU workflow operation/checkpoint/results/repository/tenant-discovery pair, persistence
 implementations, `LskuIdentityLifecycleModels.cs`, `LskuIdentityLifecycleAuditIntentFactory.cs`, LSKU start-request
 factory/processor/start command-handler-validator, direct-retire command-handler-validator, and LSKU-specific
-options/worker/runner/CLI. Existing Workflow binding/transport/delegated-token/service-identity abstractions are reused;
-Global Product/First GSKU operation documents are not generalized. Approval revalidates approved GSKU+Revision and the
-exact verified MarketCode before mutation and completion, freezing provider proof at an `ApprovalValidated` checkpoint.
-Reject remains possible during provider/parent outage. Direct retirement is atomic CAS/audit replay and no cascade.
+options/worker/runner/CLI. Existing Workflow binding/transport/delegated-token abstractions are reused; Global
+Product/First GSKU operation documents are not generalized. Approval revalidates approved GSKU+Revision and the exact
+verified MarketCode before mutation and completion, freezing a new approval-time provider proof at an
+`ApprovalValidated` checkpoint without overwriting the create-time `Lsku.MarketSelection`. Equality with the
+create-time resolution timestamp/version is not required: the exact ordinal code must be active in the current
+verified publication. Reject branches before every parent/provider call and remains possible during their outage.
+Direct retirement is atomic CAS/audit replay, invokes neither provider nor parent, and performs no cascade.
+
+The provider revalidation prerequisite is MOD-0033-FU02 Section D plus the MOD-0048-FU01 workflow-safe verified Market
+named step. The interactive `IVerifiedMarketReferenceResolver` may not gain a hidden background fallback. E2A may add
+only the purpose-specific MDM contracts/options/token provider/client and tests frozen in the provider pack; the
+service token, static credential, secret and tenant grant are never persisted in lifecycle operation/audit/log data.
+E2A provider-dependent runtime work starts only after the Auth/Platform prerequisite suites and independent security
+review are green.
 
 E2A tests are new LSKU lifecycle unit/real-Mongo, operation-Mongo, processor, recovery-worker, runner, market
 revalidation and authorization tests, plus narrow existing Workflow client/DI/no-token-persistence regressions. Tests
@@ -3651,7 +3661,8 @@ bodies, exact D-format header idempotency and no approve/reject. Because FU23 ex
 LSKU and Finished Good `SUBMIT`/`RETIRE` manifest actions activate together only after both E2A and E3A are green;
 existing navigation flags remain unchanged.
 
-Protected throughout E2/E3: additional-GSKU creation, Gateway/frontend until G2, Auth/Platform/WorkCenter runtime,
+Protected throughout E2/E3 after the explicitly named service-token/provider prerequisite closes: additional-GSKU
+creation, Gateway/frontend until G2, unrelated Auth/Platform/WorkCenter runtime,
 configuration/secrets/data, Production/Staging and push. Acceptance covers every crash checkpoint, ambiguous start,
 fresh-maker replay, tenant/version/soft-delete fencing, exact terminal evidence, LSKU market `404/409/503/504` and
 cancellation, parent revalidation, reject during dependency outage, exact audit replay, no token/secret persistence,
