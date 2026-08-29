@@ -30,8 +30,8 @@ consumer_module: MOD-0290-FU03
 > created, the exact command
 > `verify_module_id.py . --check-id MOD-0018-FU22 --name "Product Legal Entity Scope Permission Onboarding" --parent MOD-0018`
 > returned `OK MOD-0018-FU22: proven against Blueprint/registry`. No conflicting pack or registry row existed. This is
-> mechanical identity evidence only; Master 8.1 remains the business/model authority. Registry mutation is deliberately
-> outside this planning task and remains a separate identity-governance gate.
+> mechanical identity evidence only; Master 8.1 remains the business/model authority. The canonical collision-free
+> registry row was added later as a separate identity-governance commit after runtime acceptance.
 
 ## 1. Module Summary
 
@@ -301,7 +301,7 @@ is edited to manufacture test success.
 - [x] Current ABB-special/generic-residual overgrant risk is evidenced from code truth.
 - [x] Exact no-glob Auth runtime/test allow-list and protected paths are documented.
 - [x] No MDM or Platform runtime is invented; separate FU03 manifest/catalog dependency is explicit.
-- [ ] Canonical FU22 registry row is present and collision-free; this remains a separate governance commit.
+- [x] Canonical FU22 registry row is present and collision-free in a separate governance commit.
 - [x] Composite profile, exact role names and Admin-read/Viewer-none defaults approved on 2026-08-26.
 - [x] User approved the Phase 1.5 architecture on 2026-08-26; this approval does not grant runtime code-start.
 - [x] Pack promoted to `ready-for-dev` after Auth-owner approval.
