@@ -254,27 +254,96 @@ public sealed class ExplicitRoleGrantProvisioningMongoTests
         Assert.Equal(20, version["Version"].AsInt64);
     }
 
+    [Fact]
+    public async Task Ppm_grant_requires_current_entitlement_and_preserves_explicit_grant_as_dormant_without_default_roles()
+    {
+        await using var fixture = await Fixture.CreateAsync(ppm: true);
+        Assert.Equal(0, await fixture.Count("rolePermissions"));
+
+        var applied = await fixture.Coordinator.ExecuteAsync(
+            fixture.Request(ExplicitRoleGrantMutationV1.Grant, "ppm-explicit-grant"), CancellationToken.None);
+        Assert.Equal(ExplicitRoleGrantProvisioningStatus.Applied, applied.Status);
+        Assert.Equal(1, await fixture.Count("rolePermissions"));
+
+        fixture.Authorizer.Decision = ExplicitRoleGrantAuthorizationDecision.Denied;
+        var dormant = await fixture.Coordinator.ExecuteAsync(
+            fixture.Request(ExplicitRoleGrantMutationV1.Grant, "ppm-entitlement-disabled"), CancellationToken.None);
+        Assert.Equal(ExplicitRoleGrantProvisioningStatus.Forbidden, dormant.Status);
+        Assert.Equal(1, await fixture.Count("rolePermissions"));
+        Assert.Equal(1, await fixture.Count(ExplicitRoleGrantProvisioningCoordinator.ReceiptsCollection));
+
+        fixture.Authorizer.Decision = ExplicitRoleGrantAuthorizationDecision.Allowed;
+        var replay = await fixture.Coordinator.ExecuteAsync(
+            fixture.Request(ExplicitRoleGrantMutationV1.Grant, "ppm-entitlement-restored"), CancellationToken.None);
+        Assert.Equal(ExplicitRoleGrantProvisioningStatus.NoOp, replay.Status);
+        Assert.Equal(1, await fixture.Count("rolePermissions"));
+        var grant = await fixture.Database.GetCollection<RolePermission>("rolePermissions")
+            .Find(FilterDefinition<RolePermission>.Empty).SingleAsync();
+        Assert.Equal(fixture.RoleId, grant.RoleId);
+        Assert.Equal(GrantSource.Manual, grant.GrantSource);
+    }
+
+    [Fact]
+    public async Task Ppm_cross_tenant_changed_payload_and_unavailable_entitlement_are_fail_closed()
+    {
+        await using var fixture = await Fixture.CreateAsync(ppm: true);
+        var crossTenant = fixture.Request(ExplicitRoleGrantMutationV1.Grant, "ppm-cross") with { TenantId = Guid.NewGuid() };
+        Assert.Equal(ExplicitRoleGrantProvisioningStatus.NotFound,
+            (await fixture.Coordinator.ExecuteAsync(crossTenant, CancellationToken.None)).Status);
+        Assert.Equal(0, await fixture.Count("rolePermissions"));
+
+        var request = fixture.Request(ExplicitRoleGrantMutationV1.Grant, "ppm-same-key");
+        Assert.Equal(ExplicitRoleGrantProvisioningStatus.Applied,
+            (await fixture.Coordinator.ExecuteAsync(request, CancellationToken.None)).Status);
+        var changed = request with { PermissionId = Guid.NewGuid() };
+        changed = changed with { CanonicalPayloadHash = ExplicitRoleGrantProvisioningV1.ComputeHash(changed) };
+        Assert.Equal(ExplicitRoleGrantProvisioningStatus.Conflict,
+            (await fixture.Coordinator.ExecuteAsync(changed, CancellationToken.None)).Status);
+
+        fixture.Authorizer.Decision = ExplicitRoleGrantAuthorizationDecision.Unavailable;
+        Assert.Equal(ExplicitRoleGrantProvisioningStatus.Unavailable,
+            (await fixture.Coordinator.ExecuteAsync(
+                fixture.Request(ExplicitRoleGrantMutationV1.Revoke, "ppm-authority-unavailable"), CancellationToken.None)).Status);
+        Assert.Equal(1, await fixture.Count("rolePermissions"));
+    }
+
     private sealed class Fixture : IAsyncDisposable
     {
         private readonly MongoClient _client;
         public IMongoDatabase Database { get; } public RecordingProbe Probe { get; } = new();
         public ExplicitRoleGrantProvisioningCoordinator Coordinator { get; }
+        public MutableAuthorizer Authorizer { get; }
         public Guid TenantId { get; } = Guid.NewGuid(); public Guid ActorId { get; } = Guid.NewGuid(); public Guid RoleId { get; } = Guid.NewGuid(); public Guid PermissionId { get; } = Guid.NewGuid();
         private Fixture(MongoClient client, IMongoDatabase database, ExplicitRoleGrantAuthorizationDecision decision)
-        { _client = client; Database = database; Coordinator = new(client, database, new FixedAuthorizer(decision), Probe); }
-        public static async Task<Fixture> CreateAsync(ExplicitRoleGrantAuthorizationDecision decision = ExplicitRoleGrantAuthorizationDecision.Allowed)
+        { _client = client; Database = database; Authorizer = new(decision); Coordinator = new(client, database, Authorizer, Probe); }
+        public static async Task<Fixture> CreateAsync(ExplicitRoleGrantAuthorizationDecision decision = ExplicitRoleGrantAuthorizationDecision.Allowed, bool ppm = false)
         {
             var client = Mod0018S2STestDatabase.CreateClient();
             var db = await Mod0018S2STestDatabase.ResetAsync(client);
             await db.RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
-            var fixture = new Fixture(client, db, decision); await fixture.SeedAsync(); return fixture;
+            var fixture = new Fixture(client, db, decision); await fixture.SeedAsync(ppm); return fixture;
         }
-        private async Task SeedAsync()
+        private async Task SeedAsync(bool ppm)
         {
             await Database.GetCollection<Role>("roles").InsertOneAsync(new Role("Operator", "Operator", null, TenantId) { Id = RoleId });
-            var permission = new Permission("management-governance", "decisions", "read", "read", null, "MOD-0007", PermissionScope.Tenant) { Id = PermissionId };
+            if (ppm)
+            {
+                await Database.GetCollection<Role>("roles").InsertManyAsync(new[]
+                {
+                    new Role("Admin", "Admin", null, TenantId),
+                    new Role("Viewer", "Viewer", null, TenantId)
+                });
+            }
+            var permission = ppm
+                ? new Permission("ppm", "portfolios", "read", "ppm.portfolios.read", null, "PPM", PermissionScope.Tenant) { Id = PermissionId }
+                : new Permission("management-governance", "decisions", "read", "read", null, "MOD-0007", PermissionScope.Tenant) { Id = PermissionId };
             await Database.GetCollection<Permission>("permissions").InsertOneAsync(permission);
-            await Database.GetCollection<PermissionOwnerDocument>("s2sPermissionCatalogPermissionOwners").InsertOneAsync(new() { RegistrationId = Guid.NewGuid(), PermissionId = PermissionId, OwnerModuleId = "MOD-0007", ModuleEntitlementCode = "MOD-0007", PermissionKey = permission.Key });
+            await Database.GetCollection<PermissionOwnerDocument>("s2sPermissionCatalogPermissionOwners").InsertOneAsync(new()
+            {
+                RegistrationId = Guid.NewGuid(), PermissionId = PermissionId,
+                OwnerModuleId = ppm ? "MOD-0117" : "MOD-0007",
+                ModuleEntitlementCode = ppm ? "PPM" : "MOD-0007", PermissionKey = permission.Key
+            });
         }
         public ExplicitRoleGrantProvisioningV1 Request(ExplicitRoleGrantMutationV1 mutation, string key, Guid? permissionId = null) => ExplicitRoleGrantProvisioningV1.Create(TenantId, ActorId, RoleId, permissionId ?? PermissionId, mutation, key, "trusted-test");
         public async Task<Guid> AddPermissionAsync(int index)
@@ -296,8 +365,11 @@ public sealed class ExplicitRoleGrantProvisioningMongoTests
         }
         public async ValueTask DisposeAsync() => await Mod0018S2STestDatabase.ResetAsync(_client);
     }
-    private sealed class FixedAuthorizer(ExplicitRoleGrantAuthorizationDecision decision) : IExplicitRoleGrantProvisioningAuthorizer
-    { public Task<ExplicitRoleGrantAuthorizationDecision> AuthorizeAsync(Guid tenantId, Guid authenticatedActorId, ExplicitRoleGrantMutationV1 mutation, string trustedProvenance, CancellationToken cancellationToken) => Task.FromResult(decision); }
+    private sealed class MutableAuthorizer(ExplicitRoleGrantAuthorizationDecision decision) : IExplicitRoleGrantProvisioningAuthorizer
+    {
+        public ExplicitRoleGrantAuthorizationDecision Decision { get; set; } = decision;
+        public Task<ExplicitRoleGrantAuthorizationDecision> AuthorizeAsync(Guid tenantId, Guid authenticatedActorId, ExplicitRoleGrantMutationV1 mutation, string trustedProvenance, CancellationToken cancellationToken) => Task.FromResult(Decision);
+    }
     private sealed class RecordingProbe : IExplicitRoleGrantTransactionProbe
     {
         public ExplicitRoleGrantTransactionParticipant? FailAfter { get; set; }

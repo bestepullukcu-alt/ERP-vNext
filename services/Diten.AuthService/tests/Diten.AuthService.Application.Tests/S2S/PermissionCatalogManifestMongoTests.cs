@@ -107,7 +107,7 @@ public sealed class PermissionCatalogManifestMongoTests
         finally { await Mod0018S2STestDatabase.ResetAsync(client); }
     }
     [Fact]
-    public async Task Four_manifests_register_atomically_and_replay_is_stable_without_grants_or_versions()
+    public async Task Five_manifests_register_atomically_and_replay_is_stable_without_grants_or_versions()
     {
         var (client, database, name) = await CreateDatabaseAsync();
         try
@@ -122,10 +122,10 @@ public sealed class PermissionCatalogManifestMongoTests
                 Assert.Equal(first.RegistrationId, second.RegistrationId);
             }
 
-            Assert.Equal(4, await database.GetCollection<ManifestDocument>("s2sPermissionCatalogManifests").CountDocumentsAsync(FilterDefinition<ManifestDocument>.Empty));
-            Assert.Equal(48, await database.GetCollection<OperationDocument>("s2sPermissionCatalogOperations").CountDocumentsAsync(FilterDefinition<OperationDocument>.Empty));
-            Assert.Equal(45, await database.GetCollection<PermissionOwnerDocument>("s2sPermissionCatalogPermissionOwners").CountDocumentsAsync(FilterDefinition<PermissionOwnerDocument>.Empty));
-            Assert.Equal(45, await database.GetCollection<Permission>("permissions").CountDocumentsAsync(FilterDefinition<Permission>.Empty));
+            Assert.Equal(5, await database.GetCollection<ManifestDocument>("s2sPermissionCatalogManifests").CountDocumentsAsync(FilterDefinition<ManifestDocument>.Empty));
+            Assert.Equal(64, await database.GetCollection<OperationDocument>("s2sPermissionCatalogOperations").CountDocumentsAsync(FilterDefinition<OperationDocument>.Empty));
+            Assert.Equal(61, await database.GetCollection<PermissionOwnerDocument>("s2sPermissionCatalogPermissionOwners").CountDocumentsAsync(FilterDefinition<PermissionOwnerDocument>.Empty));
+            Assert.Equal(61, await database.GetCollection<Permission>("permissions").CountDocumentsAsync(FilterDefinition<Permission>.Empty));
             Assert.Equal(0, await CountAsync(database, "rolePermissions"));
             Assert.Equal(0, await CountAsync(database, "roleAssignmentVersions"));
             Assert.Equal(0, await CountAsync(database, "entitlementStates"));
@@ -133,6 +133,43 @@ public sealed class PermissionCatalogManifestMongoTests
             await AssertUniqueIndexAsync(database.GetCollection<OperationDocument>("s2sPermissionCatalogOperations"), "ux_operation");
             await AssertUniqueIndexAsync(database.GetCollection<PermissionOwnerDocument>("s2sPermissionCatalogPermissionOwners"), "ux_permission_owner");
             await AssertUniqueIndexAsync(database.GetCollection<RegistrationAuditDocument>("s2sPermissionCatalogRegistrationAudits"), "ux_audit_owner_version");
+        }
+        finally { await Mod0018S2STestDatabase.ResetAsync(client); }
+    }
+
+    [Fact]
+    public async Task Mod0117_registration_binds_global_permissions_to_PPM_without_tenant_grants()
+    {
+        var (client, database, name) = await CreateDatabaseAsync();
+        try
+        {
+            var manifest = GateIPermissionCatalogManifests.Mod0117;
+            var registrar = new PermissionCatalogManifestRegistrar(client, database);
+            var first = await registrar.RegisterAsync(manifest, CancellationToken.None);
+            var replay = await registrar.RegisterAsync(manifest, CancellationToken.None);
+
+            Assert.Equal(Application.Common.Interfaces.PermissionCatalogRegistrationStatus.Registered, first.Status);
+            Assert.Equal(Application.Common.Interfaces.PermissionCatalogRegistrationStatus.NoOp, replay.Status);
+            Assert.Equal(first.RegistrationId, replay.RegistrationId);
+            var header = await database.GetCollection<ManifestDocument>("s2sPermissionCatalogManifests")
+                .Find(FilterDefinition<ManifestDocument>.Empty).SingleAsync();
+            Assert.Equal("MOD-0117", header.OwnerModuleId);
+            Assert.Equal("PPM", header.ModuleEntitlementCode);
+            var permissions = await database.GetCollection<Permission>("permissions")
+                .Find(FilterDefinition<Permission>.Empty).ToListAsync();
+            Assert.Equal(16, permissions.Count);
+            Assert.All(permissions, permission => Assert.Equal("PPM", permission.Module));
+            var owners = await database.GetCollection<PermissionOwnerDocument>("s2sPermissionCatalogPermissionOwners")
+                .Find(FilterDefinition<PermissionOwnerDocument>.Empty).ToListAsync();
+            Assert.Equal(16, owners.Count);
+            Assert.All(owners, owner =>
+            {
+                Assert.Equal("MOD-0117", owner.OwnerModuleId);
+                Assert.Equal("PPM", owner.ModuleEntitlementCode);
+            });
+            Assert.Equal(0, await CountAsync(database, "rolePermissions"));
+            Assert.Equal(0, await CountAsync(database, "roleAssignmentVersions"));
+            Assert.Equal(0, await CountAsync(database, "entitlementStates"));
         }
         finally { await Mod0018S2STestDatabase.ResetAsync(client); }
     }

@@ -9,18 +9,64 @@ public sealed class PermissionCatalogManifestV1Tests
     public void Canonical_gate_i_manifests_have_exact_pack_cardinality_and_bindings()
     {
         var manifests = GateIPermissionCatalogManifests.All;
-        Assert.Equal(new[] { "MOD-0007", "MOD-0136", "MOD-0138", "MOD-0072" }, manifests.Select(x => x.OwnerModuleId));
-        Assert.Equal(new[] { 8, 15, 16, 9 }, manifests.Select(x => x.Entries.Count));
-        Assert.Equal(48, manifests.Sum(x => x.Entries.Count));
-        Assert.Equal(45, manifests.SelectMany(x => x.Entries).Select(x => x.PermissionKey).Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(new[] { "MOD-0007", "MOD-0136", "MOD-0138", "MOD-0072", "MOD-0117" }, manifests.Select(x => x.OwnerModuleId));
+        Assert.Equal(new[] { 8, 15, 16, 9, 16 }, manifests.Select(x => x.Entries.Count));
+        Assert.Equal(64, manifests.Sum(x => x.Entries.Count));
+        Assert.Equal(61, manifests.SelectMany(x => x.Entries).Select(x => x.PermissionKey).Distinct(StringComparer.Ordinal).Count());
         Assert.All(manifests, x =>
         {
-            Assert.Equal(x.OwnerModuleId, x.ModuleEntitlementCode);
             Assert.Equal("diten.s2s.delegated.invoke", x.ProtocolScope);
             Assert.Equal(x.CanonicalPayloadHash, PermissionCatalogManifestV1.ComputeHash(x));
             PermissionCatalogManifestValidator.ValidateCanonical(x);
         });
         Assert.DoesNotContain(manifests.SelectMany(x => x.Entries), x => x.OperationId == "fpa.scenario-planning.comparators.execute");
+    }
+
+    [Fact]
+    public void Mod0117_has_exact_independent_owner_entitlement_and_closed_phase_2a_manifest()
+    {
+        var manifest = GateIPermissionCatalogManifests.Mod0117;
+        var expected = new[]
+        {
+            "ppm.portfolios.read", "ppm.portfolios.create", "ppm.portfolios.update", "ppm.portfolios.change-lifecycle",
+            "ppm.initiatives.read", "ppm.initiatives.create", "ppm.initiatives.update", "ppm.initiatives.change-lifecycle",
+            "ppm.programs.read", "ppm.programs.create", "ppm.programs.update", "ppm.programs.change-lifecycle",
+            "ppm.projects.read", "ppm.projects.create", "ppm.projects.update", "ppm.projects.change-lifecycle"
+        };
+
+        Assert.Equal("MOD-0117", manifest.OwnerModuleId);
+        Assert.Equal("PPM", manifest.ModuleEntitlementCode);
+        Assert.NotEqual(manifest.OwnerModuleId, manifest.ModuleEntitlementCode);
+        Assert.Equal("Diten.PpmService", manifest.ServiceIdentity);
+        Assert.Equal("diten.ppm", manifest.ClientId);
+        Assert.Equal("diten-ppm-service", manifest.Audience);
+        Assert.Equal(expected, manifest.Entries.Select(x => x.OperationId));
+        Assert.Equal(expected, manifest.Entries.Select(x => x.PermissionKey));
+        Assert.Equal(16, manifest.Entries.Select(x => x.PermissionKey).Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal("495c2ea7305e043e1ec9a3fc0a6e16118d8a775cf457768c96ab2a88a28d3ed7", manifest.CanonicalPayloadHash);
+        PermissionCatalogManifestValidator.ValidateCanonical(manifest);
+    }
+
+    [Fact]
+    public void Mod0117_missing_extra_reordered_duplicate_case_alias_and_wildcard_variants_fail_closed()
+    {
+        var source = GateIPermissionCatalogManifests.Mod0117;
+        var variants = new[]
+        {
+            source with { Entries = source.Entries.Skip(1).ToArray() },
+            source with { Entries = source.Entries.Append(new("ppm.projects.archive", "ppm.projects.archive")).ToArray() },
+            source with { Entries = source.Entries.Reverse().ToArray() },
+            source with { Entries = source.Entries.Append(source.Entries[0]).ToArray() },
+            source with { Entries = new[] { source.Entries[0] with { OperationId = "PPM.portfolios.read" } }.Concat(source.Entries.Skip(1)).ToArray() },
+            source with { Entries = new[] { source.Entries[0] with { OperationId = "ppm.portfolios.view" } }.Concat(source.Entries.Skip(1)).ToArray() },
+            source with { Entries = new[] { source.Entries[0] with { OperationId = "ppm.portfolios.*" } }.Concat(source.Entries.Skip(1)).ToArray() }
+        };
+
+        Assert.All(variants, changed => Assert.Throws<S2SContractException>(() =>
+            PermissionCatalogManifestValidator.ValidateCanonical(changed with
+            {
+                CanonicalPayloadHash = PermissionCatalogManifestV1.ComputeHash(changed)
+            })));
     }
 
     [Fact]
