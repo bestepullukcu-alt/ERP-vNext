@@ -3886,6 +3886,26 @@ version, strict form cardinality and antiforgery, stable header-only operation i
 Save View/create/detail regression, focused Vitest, shared confirmation census, Golden Slim variance accounting,
 frontend Release build and full-frontend baseline. Browser/runtime smoke remains H.
 
+**G2 implementation evidence — 2026-08-30:** the LSKU and Finished Good tenant registers now expose only
+state-and-permission-gated submit/direct-retire actions through the existing same-origin MVC proxies. Both proxies
+fail closed on missing, malformed, non-`D` or conflicting tenant claims; require canonical human actor identity,
+antiforgery and exact form cardinality; derive the stable operation D-GUID from trusted length-prefixed server facts;
+and send it only in the `Idempotency-Key` header. The browser re-fetches and validates ID, lifecycle state and Version
+before mutation, then proves the same ID and exact Pending/Retired result before showing success. LSKU detail and
+lifecycle `401` paths delegate to the shared unauthorized handler without exposing the internal refresh sentinel.
+Approve/reject remains WorkCenter-owned. Independent final security and quality review reports no remaining P0/P1/P2.
+
+Focused LSKU/Finished Good/shared-confirm tests pass **44/44**. The full frontend run passes **1988/2013**; all 25
+failures remain in the same 12 pre-existing out-of-scope CRM/ESBP/PV/WorkCenter/shared Windows-path test files and
+none is a G2 regression. Frontend Release build passes with zero errors and 14 pre-existing out-of-scope warnings.
+JavaScript syntax, fourteen-locale XML/parity, direct-port/approve/reject/browser-identity scans and
+`git diff --check` are clean. Authoritative Golden Slim verification records **74 pass / 17 controlled variance**
+for both registers. The exact controlled variances are the shared personalization tenant-header expectation plus the
+generic edit/status, bulk/delete/checkbox/direct-Gateway expectations that these same-origin create/read/lifecycle
+surfaces intentionally do not implement; fake controls or inert localization keys were not added. The exact 25-file
+delivery is committed locally at `d34c4ed6`; browser/runtime smoke, configuration/data and push did not occur and
+remain H.
+
 **H — Local Development acceptance:** source allow-list none by default. Separately authorized operator work provisions
 the template, exact candidates/positions, FU23 roles/grants, MDM service identity/audience/tenant grant and secret-safe
 settings. Smoke proves submit -> native WorkCenter decision -> secure poll -> MDM state/audit, replay/stale/crash,
@@ -3966,6 +3986,9 @@ navigation, bulk lifecycle and push remain separate gates.
 - [x] G2 LSKU/Finished Good current-code UI allow-list, server-owned stable operation identity, state/permission matrix,
   same-origin lifecycle proxy and acceptance boundaries are frozen on 2026-08-30; standing non-push authorization
   grants local runtime/test implementation. Browser/runtime acceptance remains H.
+- [x] G2 implementation is complete locally at commit `d34c4ed6` with **44/44** focused evidence, zero-error Release
+  build, exact **74/17** Golden Slim controlled-variance evidence for both screens and independent review reporting no
+  remaining P0/P1/P2. Browser/runtime acceptance remains H; no push occurred.
 - [ ] Additional-GSKU cardinality/ownership receives a separate owner decision before any implementation.
 - [ ] H receives exact operational values and predecessor evidence before Local Development mutation.
 
