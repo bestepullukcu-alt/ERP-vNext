@@ -23,10 +23,13 @@ var runProductIdentityWorkflowRecovery =
     ProductIdentityWorkflowRecoveryCommandLine.IsRequested(args);
 var runFirstGskuIdentityWorkflowRecovery =
     FirstGskuIdentityWorkflowRecoveryCommandLine.IsRequested(args);
+var runLskuIdentityWorkflowRecovery =
+    LskuIdentityWorkflowRecoveryCommandLine.IsRequested(args);
 if ((runProductLegalEntityScopeOperational ? 1 : 0)
     + (runAuditIntentTemporalMigration ? 1 : 0)
     + (runProductIdentityWorkflowRecovery ? 1 : 0)
-    + (runFirstGskuIdentityWorkflowRecovery ? 1 : 0) > 1)
+    + (runFirstGskuIdentityWorkflowRecovery ? 1 : 0)
+    + (runLskuIdentityWorkflowRecovery ? 1 : 0) > 1)
 {
     throw new InvalidOperationException("MDM_OPERATIONAL_COMMAND_AMBIGUOUS");
 }
@@ -109,11 +112,38 @@ builder.Services.AddScoped(sp =>
 builder.Services.AddScoped<FirstGskuIdentityWorkflowProcessor>();
 builder.Services.AddSingleton<FirstGskuIdentityWorkflowRecoveryRunner>();
 builder.Services.AddHostedService<FirstGskuIdentityWorkflowRecoveryWorker>();
+builder.Services.AddOptions<LskuIdentityWorkflowOptions>()
+    .Bind(builder.Configuration.GetSection(LskuIdentityWorkflowOptions.SectionName))
+    .Validate(options => options.IsValid(), "LSKU_IDENTITY_WORKFLOW_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddOptions<LskuIdentityWorkflowWorkerOptions>()
+    .Bind(builder.Configuration.GetSection(LskuIdentityWorkflowWorkerOptions.SectionName))
+    .Validate(IsValidLskuIdentityWorkflowWorkerOptions,
+        "LSKU_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<LskuIdentityWorkflowOptions>>().Value;
+    var configuration = options.Enabled ? options.ToStartConfiguration()
+        : new LskuIdentityWorkflowStartConfiguration(null, null, [], string.Empty, false, false, null);
+    return new LskuIdentityWorkflowStartRequestFactory(configuration,
+        sp.GetRequiredService<TimeProvider>());
+});
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<LskuIdentityWorkflowWorkerOptions>>().Value;
+    return new LskuIdentityWorkflowExecutionConfiguration(
+        TimeSpan.FromSeconds(options.LeaseSeconds), TimeSpan.FromSeconds(options.RetryDelaySeconds));
+});
+builder.Services.AddScoped<LskuIdentityWorkflowProcessor>();
+builder.Services.AddSingleton<LskuIdentityWorkflowRecoveryRunner>();
+builder.Services.AddHostedService<LskuIdentityWorkflowRecoveryWorker>();
 
 if (!runProductLegalEntityScopeOperational
     && !runAuditIntentTemporalMigration
     && !runProductIdentityWorkflowRecovery
-    && !runFirstGskuIdentityWorkflowRecovery)
+    && !runFirstGskuIdentityWorkflowRecovery
+    && !runLskuIdentityWorkflowRecovery)
 {
     var jwtSecret = builder.Configuration["JwtSettings:Secret"];
     var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
@@ -253,6 +283,18 @@ if (runFirstGskuIdentityWorkflowRecovery)
     return;
 }
 
+if (runLskuIdentityWorkflowRecovery)
+{
+    var runner = app.Services.GetRequiredService<LskuIdentityWorkflowRecoveryRunner>();
+    var result = await LskuIdentityWorkflowRecoveryCommandLine.RunAsync(
+        runner, app.Lifetime.ApplicationStopping);
+    app.Logger.LogInformation(
+        "LSKU identity workflow recovery completed; tenants {TenantCount}, operations {OperationCount}, completed {CompletedCount}, deferred {DeferredCount}, failed {FailedCount}.",
+        result.TenantCount, result.OperationCount, result.CompletedCount,
+        result.DeferredCount, result.FailedCount);
+    return;
+}
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -356,4 +398,10 @@ static bool IsValidFirstGskuIdentityWorkflowWorkerOptions(
     {
         return false;
     }
+}
+
+static bool IsValidLskuIdentityWorkflowWorkerOptions(LskuIdentityWorkflowWorkerOptions options)
+{
+    try { options.EnsureValidWhenEnabled(); return true; }
+    catch (InvalidOperationException) { return false; }
 }

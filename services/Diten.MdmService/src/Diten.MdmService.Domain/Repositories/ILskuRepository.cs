@@ -1,4 +1,5 @@
 using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.ValueObjects;
 
 namespace Diten.MdmService.Domain.Repositories;
 
@@ -45,6 +46,21 @@ public interface ILskuRepository
         Lsku lsku, string admissionFingerprint,
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("GSKU_CHILD_ADMISSION_NOT_IMPLEMENTED");
+
+    Task<LskuLifecycleWriteResult> SubmitIdentityAsync(
+        Guid id, int expectedVersion, ProductIdentityWorkflowBinding workflowBinding,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("LSKU_LIFECYCLE_SUBMIT_NOT_IMPLEMENTED");
+
+    Task<LskuLifecycleWriteResult> ReconcileIdentityDecisionAsync(
+        Guid id, int expectedVersion, ProductIdentityWorkflowDecisionEvidence decisionEvidence,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("LSKU_LIFECYCLE_DECISION_NOT_IMPLEMENTED");
+
+    Task<LskuLifecycleWriteResult> RetireIdentityAsync(
+        Guid id, int expectedVersion, LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("LSKU_LIFECYCLE_RETIRE_NOT_IMPLEMENTED");
 }
 
 public sealed record LskuPage(
@@ -64,3 +80,9 @@ public enum LskuCreateConflictKind
     CommandOrPayload = 1,
     IdentityKey = 2
 }
+
+public sealed record LskuLifecycleWriteResult(
+    bool Succeeded,
+    Lsku? Lsku,
+    string? ErrorCode = null,
+    bool IsReplay = false);
