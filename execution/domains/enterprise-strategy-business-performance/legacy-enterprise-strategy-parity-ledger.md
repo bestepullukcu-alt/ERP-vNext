@@ -28,17 +28,73 @@ browser rows: all 14 still require an approved new browser URL, real backend evi
 | 1.3 Portfolio Management | `/management-governance/modules/mod-portfolio-management` | Registry metadata only; no authoritative portfolio aggregate evidenced | Placeholder navigation; no proven command/lifecycle/permission | MOD-0117 Portfolio | TBD | Registry label is not migrated; compare only intended capability | Replaced | No placeholder-data migration | Pending |
 | 1.3 Investment Governance | `/management-governance/modules/mod-investment-governance` | Registry metadata only | Placeholder navigation; approval truth must remain MOD-0023-owned | MOD-0117 InvestmentCase; MOD-0023 approval refs | TBD | Investment identity/decision references map to typed contracts | Replaced | No placeholder-data migration; decision refs require contract mapping | Pending |
 | 1.3 Benefits & Value Tracking | `/management-governance/modules/mod-benefits-value` | Registry metadata only | No proven lifecycle | MOD-0117 BenefitCommitment + MOD-0072 Outcome | TBD | Commitment stays MOD-0117; measured outcome stays MOD-0072 | Missing | Define page projection; do not copy Outcome truth | Pending |
-| 1.3 Capital Allocation | `/management-governance/modules/mod-capital-allocation` | Registry metadata only | No proven lifecycle; local approval forbidden | MOD-0136 Budgeting typed reference from MOD-0117 | TBD | Financial amount/hash/reference only; Budgeting remains SoR | Out of Scope | Typed reference mapping only | Pending |
+| 1.3 Capital Allocation | `/management-governance/modules/mod-capital-allocation` | `ModuleSummary` registry descriptor only; synthetic pending/KPI metadata, no allocation aggregate | Placeholder navigation only; no command, allocation lifecycle or permission enforcement evidenced | MOD-0136 owns financial allocation truth; MOD-0117 owns only `InvestmentCase` and its typed selected-budget-version relationship | None evidenced. Existing `/ppm/investment-cases` is adjacent, not an equivalent Capital Allocation page. | Placeholder metadata is not migrated. Any future allocation amount/currency/period/line/certification remains MOD-0136-owned; MOD-0117 may carry only the approved typed reference. | Out of Scope for MOD-0117 / Missing authoritative target page | No placeholder migration. Real allocation data, if any, requires a separate read-only inventory and owner-approved MOD-0136 migration plan. | Pending |
 | 1.4 Initiatives list | `/management-governance/delivery-execution/initiatives` | Initiative link plus name, description, owner/sponsor, company/person/position refs, dates, wave, status, priority, complexity, benefit, KPI, budget and governance fields | Create/edit/detail, link to Objective, readiness/traceability; current frontend adapter may be mock | MOD-0117 Initiative; MOD-0352 strategy-link projection | TBD | Initiative lifecycle fields → MOD-0117; ParentObjective/Goal and contribution → MOD-0352 projection; person/org → MOD-0288 refs; budget → MOD-0136 refs | Missing | Field-by-field migration/quarantine plan required | Pending |
 | 1.4 Initiative create/edit/detail | `/management-governance/delivery-execution/initiatives/new`, `/initiatives/{id}/edit`, `/initiatives/{id}` | Same rich Initiative contract | Draft/edit/readiness and strategy anchor | MOD-0117 + MOD-0352 read-only alignment | TBD | Same ownership split as list; no second lifecycle | Missing | Exact create/update payload mapping and rejected-field ledger | Pending |
 | 1.4 Projects list | `/management-governance/delivery-execution/projects` | Project link plus owner/PM, sponsor, status/phase, dates, methodology, readiness/risk/health, budget/funding/cost center, approval/evidence refs | Create/detail/link; non-draft local validation exists; current frontend adapter may be mock | MOD-0117 Project; MOD-0352 link-only projection | TBD | Project lifecycle → MOD-0117; strategy lineage → MOD-0352; approval → MOD-0023; budget → MOD-0136; evidence → shared typed ref | Missing | Field-by-field migration/quarantine plan required | Pending |
 | 1.4 Project create/detail | `/management-governance/delivery-execution/projects/new`, `/projects/{id}` | Same rich Project contract | Draft/non-draft lifecycle and budget governance | MOD-0117 + typed owner references | TBD | Full lifecycle stays MOD-0117; MOD-0352 cannot require foreign local fields for link-only projection | Missing | Exact payload and state-transition mapping | Pending |
 | 1.4 Programs | `/management-governance/delivery-execution/programs` | Shell cards only; no authoritative legacy Program model evidenced | Navigation shell | MOD-0117 Program | TBD | No legacy data assumed | Replaced | None unless later data evidence appears | Pending |
-| 1.4 Delivery Map / Dependencies | `/management-governance/delivery-execution/delivery-map` | Shell plus legacy structural/dependency evidence | Current surface does not prove critical-path or scheduling ownership | MOD-0354 structural DWS; MOD-0024 tasks; MOD-0117 delivery refs | TBD | Pure hierarchy/order/dependency → MOD-0354; task/status/due date/owner → MOD-0024/MOD-0117; FS/SS/FF/SF requires separate owner decision | Missing | Quarantine ambiguous rows; no blind migration | Pending |
+| 1.4 Delivery Map / Dependencies | `/management-governance/delivery-execution/delivery-map` | Static shell; controller loads Goal/Objective/Connection plus Initiative/Project strategy-link collections, but the page renders no dependency entity/edge rows | Three navigation links only; no create/edit dependency command, dependency lifecycle, critical-path calculation or route-level permission evidenced | MOD-0354 owns pure structural hierarchy/order/dependency; MOD-0117 owns Initiative/Program/Project identity and lifecycle only; MOD-0024/execution owner must own task/status/due/assignee semantics | Partial structural target exists at `/management-governance/delivery-execution/structures`; existing `/ppm/initiatives`, `/ppm/programs`, `/ppm/projects` are entity workspaces, not a Delivery Map. No canonical composite-map URL exists. | Structure/node/order/untyped directed edge → MOD-0354; typed PPM identity reference → MOD-0117; task/status/due/assignee → MOD-0024/execution owner. FS/SS/FF/SF, lag, calendar and critical path remain unsupported pending a separate owner decision. | Missing full equivalent; partial structural replacement only | Quarantine ambiguous legacy rows. No blind conversion of free text, task fields or scheduling edge types into DWS/PPM. | Pending |
 | 1.6 Process Architecture | `/management-governance/modules/mod-process-architecture` | Registry placeholder only | No proven backend lifecycle | MOD-0355 | TBD | No legacy entity migration evidenced | Replaced | None | Pending |
 | 1.6 Process Design & Modeling | `/management-governance/modules/mod-process-design` | Registry placeholder only | No proven backend lifecycle | MOD-0355 | TBD | New model/version/activity/control-point contract is authoritative | Replaced | None | Pending |
 | 1.6 Process Performance | `/management-governance/modules/mod-process-performance` | Registry placeholder only | No proven legacy backend lifecycle | MOD-0355 bounded performance contract; no browser/API surface | TBD | MOD-0355 owns the bounded KPI-binding contract, but the mandatory reference contract and user surface remain unavailable | Missing | No placeholder-data migration; browser/API delivery remains a separate bounded slice | Pending |
 | 1.6 Process Improvement | `/management-governance/modules/mod-process-improvement` | Registry placeholder only | No proven legacy backend lifecycle | MOD-0355 Process Improvement Opportunity/Outcome; no browser/API surface | TBD | MOD-0355 owns the bounded opportunity/outcome contract, nine exact operations/permissions and two collections | Missing | No placeholder-data migration; browser/API delivery remains a separate bounded slice | Pending |
+
+## Focused parity audit — Capital Allocation and Delivery Map
+
+### Capital Allocation
+
+- **Old URL:** `/management-governance/modules/mod-capital-allocation`.
+- **Old entity/fields:** no persisted allocation entity is proven. The route resolves the registry-only
+  `ModuleSummary` fields `Id`, `Name`, `Slug`, `Description`, `Status`, `Owner`, `RiskLevel`, `Route`,
+  `PendingItemsCount`, `Implemented`, `LinkedBlueprintModuleIds`, `Tags`, `Dependencies` and `KpiSummary`.
+  `PendingItemsCount`, Blueprint link and KPI rows are generated shell metadata, not financial truth.
+- **Old actions/lifecycle/permissions/integrations:** the placeholder offers only **Open Related Queue** and
+  **Find Signals** navigation. No allocation create/edit/approve command, lifecycle, persistence, permission
+  guard or finance-provider integration is evidenced.
+- **Authoritative target:** MOD-0136 remains the owner of budget/allocation financial truth. MOD-0117 owns
+  `InvestmentCase` and only the typed selected-budget-version relationship; it cannot become a second budget
+  or capital-allocation SoR.
+- **Existing-page decision:** `/ppm/investment-cases` can show and mutate the PPM-owned case but cannot serve
+  as the Capital Allocation equivalent. Its fields and lifecycle contain no allocation amount, currency,
+  period, line, certification or approval truth. Reusing it as the replacement would silently collapse two
+  owners.
+- **Required slice:** if Capital Allocation remains a required product page, a separately approved MOD-0136
+  backend/read projection plus frontend slice is required. A bounded MOD-0117 UI extension may later display
+  only the approved typed budget-version reference. No new URL is authorized by this ledger.
+- **Pack authority:** MOD-0117 is `review` and authorizes the selected-budget-version relationship/API evidence,
+  not a Capital Allocation UI or financial aggregate. No MOD-0136 pack is materialized in this integration
+  worktree, so an executable Capital Allocation page authority cannot be proven here.
+
+### Delivery Map / Dependencies
+
+- **Old URL:** `/management-governance/delivery-execution/delivery-map`.
+- **Old entity/fields:** there is no delivery-map aggregate. `DeliveryExecutionManagementController` loads
+  `Goal`, `Objective`, `StrategyConnection`, `InitiativeStrategyLinkView` and `ProjectStrategyLinkView` and
+  computes three summary cards. The Razor page renders explanatory text and navigation only; its shared shell
+  explicitly disables metric-card rendering. It renders no dependency ID, endpoints, type, lag, dates,
+  critical path or edge lifecycle.
+- **Old actions/lifecycle/permissions/integrations:** the only visible actions navigate to Projects, Programs
+  and Strategy Lineage. No dependency mutation or lifecycle exists and no route-level permission is evidenced.
+  Adapter reads are not proof of a dependency SoR or user-visible dependency mapping.
+- **Authoritative target split:** MOD-0354 owns structure definition, revision, logical node, sibling order and
+  pure untyped directed structural dependencies. MOD-0117 owns Portfolio/Initiative/Program/Project identity
+  and lifecycle. MOD-0024 or another expressly approved execution owner must own task, assignee, due-date,
+  status and execution dependency semantics.
+- **Existing-page decision:** `/ppm/initiatives`, `/ppm/programs`, `/ppm/projects` and the Project workspace
+  are not a Delivery Map: their DTOs have no dependency collection or critical-path contract. The default-off
+  MOD-0354 page `/management-governance/delivery-execution/structures` is a valid partial replacement for
+  hierarchy/order/pure structural edges only; it is not a full Delivery Map and currently lacks populated
+  Gateway/browser acceptance evidence.
+- **Required slice:** a composite read-only Delivery Map frontend/projection is still required if the product
+  needs one screen combining DWS structure with typed PPM references. No new PPM backend aggregate is needed
+  for the pure structural subset. If FS/SS/FF/SF, lag, calendar or critical-path behavior is required, a new
+  owner decision and separately authorized backend contract are mandatory because MOD-0354 deliberately
+  forbids those fields and MOD-0117 does not own them.
+- **Pack authority:** MOD-0354 is `ready-for-dev` and records a default-off/non-production structural frontend
+  amendment plus static checkpoint evidence; Gateway, populated browser evidence and activation remain open.
+  MOD-0117 remains `review`, owns no dependency entity/map and its DCP-004 Gate-2 disposition projects zero
+  WorkCenter items/actions. Neither pack currently authorizes a full composite Delivery Map.
 
 ## Field-level mandatory follow-up
 

@@ -49,6 +49,14 @@ authorized_slice: security-perimeter-and-read-only-inventory
 > to change a production JavaScript asset, Razor/controller surface, route, localization resource, frontend
 > behavior, WorkCenter, Gateway, Platform, database, activation, deployment, credential or secret.
 
+> **Bounded amendment — LEGACY-PARITY-EVIDENCE / GOVERNANCE-ONLY / NON-RUNTIME / NON-MIGRATING
+> (2026-08-30):** authority is limited to the exact parity evidence file listed in §5. The evidence records
+> route-backed old/new page dispositions and an executable browser checklist while keeping all fourteen user
+> decisions `Pending`. It does not authorize a browser route, production frontend/runtime change, database
+> access, test-data creation, migration, redirect, retirement, deletion, Gateway, WorkCenter, activation,
+> deployment, credential or secret. A route existing is not parity evidence and cannot be treated as user
+> acceptance.
+
 ## 1. Module Summary
 
 This backend-only foundation makes the existing `Diten.EnterpriseStrategyService` fail-closed, tenant-aware
@@ -253,6 +261,19 @@ The six tests must exercise the current production assets without changing them.
 defect discovered during reconciliation stops this slice and requires a separate amendment; it is not fixed
 under this authority.
 
+### Bounded LEGACY-PARITY-EVIDENCE scope
+
+Only this exact governance/evidence path may be created or updated by the evidence-only slice:
+
+- `execution/domains/enterprise-strategy-business-performance/evidence/legacy-enterprise-strategy-browser-parity-v1.md`
+
+The file may cite current route/source/test evidence from any domain read-only, but it cannot grant another
+module implementation authority, change a runtime/frontend file, copy business data, claim browser PASS or
+record user acceptance on the user's behalf. Every acceptance remains `Pending` until the user compares the
+old and new surfaces on different ports. The existing
+`legacy-enterprise-strategy-parity-ledger.md` remains the full static 142-field ledger and is not replaced or
+retired by this 14-row browser checklist.
+
 ### Future implementation scope
 
 An approved implementation may authorize only the following concrete ES-owned paths:
@@ -301,6 +322,7 @@ directory.
 - Candidate identities in any runtime path or literal
 - for this read-only inventory amendment, all runtime/test/tool/evidence paths outside its exact allowlist
   above
+- for the legacy-parity evidence amendment, every path except the exact §5 evidence file and this pack
 
 Additional protected hazards pending Gate 2:
 
@@ -500,8 +522,13 @@ Gateway work requires a separate, explicitly approved `integration-agent` task a
     harnesses, identifiers and invalid fixture combinations are corrected without any production frontend
     diff, and the complete ES-relevant frontend Vitest suite remains green. The repository-wide frontend
     suite is also run; unrelated baseline failures are reported explicitly and are not attributed to this slice.
-35. Completing this inventory does not change the exact WorkCenter `TENANT_SAFETY_NOT_READY` 503/zero-read
+36. Completing this inventory does not change the exact WorkCenter `TENANT_SAFETY_NOT_READY` 503/zero-read
     boundary and grants no successful projection authority.
+37. The legacy parity evidence contains exactly 14 page rows; every row has an exact old path, a
+    route-evidenced new path or explicit `Missing`, a permitted disposition, migration requirement and
+    browser checklist, while all user acceptance values remain `Pending` and retirement remains blocked.
+38. The evidence-only slice changes no runtime, frontend, Gateway, WorkCenter, database or legacy surface and
+    does not present route existence, static tests or placeholder pages as browser/user acceptance.
 
 ## 17. Test Expectations
 
@@ -550,6 +577,11 @@ Mongo access or `EnsureIndexesAsync` call was introduced.
 
 No DataTable verifier or RESX check applies because `shell: none`.
 
+The legacy-parity evidence amendment is validated with the candidate preflight, relative-link scan, exact
+14-row/disposition/`Pending` checks, protected-path diff and `git diff --check`. It runs no browser, Mongo or
+runtime process by itself. Browser execution is a later human-operated evidence step against explicitly
+recorded old/new ports and commit identities.
+
 ## 18. Ready-for-dev Checklist
 
 - [x] Human approved the bounded SECURITY-PERIMETER amendment as ready-for-dev on 2026-08-28.
@@ -563,6 +595,8 @@ No DataTable verifier or RESX check applies because `shell: none`.
 - [x] Exact future inventory implementation/evidence allowlist and manual environment gate are fixed in §5/§8.
 - [x] Explicit user authorization dated 2026-08-28 permits the bounded inventory implementation as part of
   the Enterprise Strategy tenant/auth retrofit; the manual target-copy run remains separately gated by §8.
+- [x] Control Tower authorized the bounded governance/evidence-only legacy parity amendment on 2026-08-30.
+- [x] The exact 14-row evidence path is fixed in §5; all user decisions and retirement remain open.
 - [ ] BaseEntity scalar UTC/BSON representation decision is approved.
 - [ ] Collection inventory has been executed read-only against the target data copy.
 - [ ] Every collection has a mapping owner and disposition.
@@ -578,6 +612,15 @@ Unchecked migration/Gate-2 items do not block the bounded security perimeter, bu
 schema/data migration, tenant-safe business endpoint activation and full-pack completion.
 
 ## 19. Implementation Notes
+
+### Legacy parity browser-evidence result
+
+The exact 14-row browser checklist is
+[legacy-enterprise-strategy-browser-parity-v1.md](../evidence/legacy-enterprise-strategy-browser-parity-v1.md).
+It records only route/source evidence available in this repository. A missing route is reported as
+`Missing`; a route-backed candidate remains unaccepted until browser evidence and field/action/lifecycle
+comparison are complete. The checklist cannot supersede the full 142-field static ledger, authorize a
+migration or retire a legacy page.
 
 ### Collection-by-collection migration matrix
 
