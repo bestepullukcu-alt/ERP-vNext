@@ -20,5 +20,11 @@ public enum ProductAuditOperation
     GlobalProductIdentitySubmitted = 16,
     GlobalProductIdentityApproved = 17,
     GlobalProductIdentityRejected = 18,
-    GlobalProductIdentityRetired = 19
+    GlobalProductIdentityRetired = 19,
+    ProductDefinitionRevisionIdentitySubmitted = 20,
+    GskuIdentitySubmitted = 21,
+    ProductDefinitionRevisionIdentityApproved = 22,
+    GskuIdentityApproved = 23,
+    ProductDefinitionRevisionIdentityRejected = 24,
+    GskuIdentityRejected = 25
 }

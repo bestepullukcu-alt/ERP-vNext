@@ -32,6 +32,60 @@ public sealed class PlatformProductIdentityWorkflowClientTests
     }
 
     [Fact]
+    public async Task Exact_lowercase_gsku_profile_is_allowed_for_start_and_machine_reads()
+    {
+        var gskuId = Guid.NewGuid().ToString("D");
+        var startRequest = StartRequest() with
+        {
+            TemplateCode = "GSKU-IDENTITY",
+            ObjectType = "gsku",
+            ObjectId = gskuId,
+            ObjectRef = "GS-000000000001|REV-001"
+        };
+        var handler = new CaptureHandler(request =>
+            request.RequestUri!.AbsolutePath.EndsWith("start", StringComparison.Ordinal)
+                ? Success(StartResult() with { ObjectRef = startRequest.ObjectRef! })
+                : request.RequestUri.AbsolutePath.EndsWith("start-result", StringComparison.Ordinal)
+                    ? Failure(HttpStatusCode.Conflict, "WORKFLOW_START_NOT_COMPLETED")
+                    : Failure(HttpStatusCode.Conflict, "WORKFLOW_DECISION_NOT_TERMINAL"));
+        var client = Client(handler, new IdentityProvider());
+
+        var start = await client.StartAsync(Guid.NewGuid(), startRequest, "human.jwt");
+        var lookup = await client.GetStartResultAsync(Guid.NewGuid(), new(
+            "gsku", gskuId, Guid.NewGuid(), startRequest.IdempotencyKey));
+        var evidence = await client.GetTerminalEvidenceAsync(Guid.NewGuid(), new(
+            Guid.NewGuid(), "gsku", gskuId));
+
+        Assert.Equal(ProductIdentityWorkflowTransportOutcome.Success, start.Outcome);
+        Assert.Equal(ProductIdentityWorkflowTransportOutcome.Incomplete, lookup.Outcome);
+        Assert.Equal(ProductIdentityWorkflowTransportOutcome.NonTerminal, evidence.Outcome);
+    }
+
+    [Theory]
+    [InlineData("Gsku")]
+    [InlineData("GSKU")]
+    [InlineData("global-product")]
+    [InlineData("finished-good")]
+    [InlineData("gsku ")]
+    public async Task Unapproved_object_type_profiles_fail_before_transport(string objectType)
+    {
+        var handler = new CaptureHandler(_ => throw new InvalidOperationException("Transport must not run."));
+        var client = Client(handler, new IdentityProvider());
+        var request = StartRequest() with { ObjectType = objectType };
+
+        var start = await client.StartAsync(Guid.NewGuid(), request, "human.jwt");
+        var lookup = await client.GetStartResultAsync(Guid.NewGuid(), new(
+            objectType, request.ObjectId, Guid.NewGuid(), request.IdempotencyKey));
+        var evidence = await client.GetTerminalEvidenceAsync(Guid.NewGuid(), new(
+            Guid.NewGuid(), objectType, request.ObjectId));
+
+        Assert.Equal(ProductIdentityWorkflowTransportOutcome.Invalid, start.Outcome);
+        Assert.Equal(ProductIdentityWorkflowTransportOutcome.Invalid, lookup.Outcome);
+        Assert.Equal(ProductIdentityWorkflowTransportOutcome.Invalid, evidence.Outcome);
+        Assert.Empty(handler.Requests);
+    }
+
+    [Fact]
     public async Task Unauthorized_forces_exactly_one_refresh_and_one_replay()
     {
         var count = 0;

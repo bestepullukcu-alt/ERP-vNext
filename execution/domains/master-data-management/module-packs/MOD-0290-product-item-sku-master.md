@@ -3517,6 +3517,7 @@ admission fencing exists: without it retirement can race LSKU or Finished Good c
 - `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GskuRepository.cs`
 - `services/Diten.MdmService/src/Diten.MdmService.Persistence/DependencyInjection.cs`
 - `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/DependencyInjection.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Workflow/PlatformProductIdentityWorkflowClient.cs`
 - `services/Diten.MdmService/src/Diten.MdmService.Api/Program.cs`
 
 New runtime allow-list:
@@ -3542,7 +3543,9 @@ New runtime allow-list:
 - `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/FirstGskuIdentityWorkflowRecoveryRunner.cs`
 - `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/FirstGskuIdentityWorkflowRecoveryCommandLine.cs`
 
-The existing Workflow client, delegated-token accessor and dedicated service-identity transport are reused unchanged.
+The existing Workflow client, delegated-token accessor and dedicated service-identity transport are reused. The client
+may change only to accept the closed exact `GlobalProduct` + `gsku` profile set; arbitrary ObjectType input remains
+forbidden. `PlatformProductIdentityWorkflowClientTests.cs` is editable only for that additive profile regression.
 The Global Product operation/repository/processor is not generalized by changing `ObjectType`. E1A owns exact trusted
 Workflow `ObjectType=gsku`, one GSKU `ObjectId`, one operator-owned GSKU template and one Workflow item for the pair;
 Revision has no separate permission, endpoint, template or item. The pair operation binds tenant, operation, Revision,
@@ -3583,6 +3586,15 @@ and no MDM approve/reject endpoint/action. Gateway routes already cover POST cat
 Platform/Auth runtime, WorkCenter provider/dispatcher, committed config/secrets/data and Production/Staging remain
 protected. E1A, E1B and E1C each require green predecessor evidence; standing non-push authorization grants their
 local runtime/test work in this exact order.
+
+**E1A implementation evidence — 2026-08-29:** the dedicated First Revision + GSKU pair operation, shared binding,
+tenant/soft-delete/version/state fenced aggregate transitions, four tenant-first indexes, bounded recovery discovery,
+default-disabled worker and one-shot runner are implemented. `ApprovalValidated` durably freezes exact provider proof
+before Revision approval; parent/provider facts are revalidated before Revision, before GSKU and before completion.
+Maker replay, lost-start recovery, full immutable binding/terminal/audit equality and sanitized operation-level recovery
+logging are regression-locked. Independent final review reports no remaining P0/P1/P2. Focused E1A/transport tests pass
+**43/43**, the full MDM Release suite passes **895/895** with zero skips, and API Release build is zero warning/error.
+E1B remains the next gate; no GSKU lifecycle API, config/data mutation, operational run or push occurred.
 
 **F — MDM Global Product Workflow client and durable reconciler (exact current-code allow-list):** this step is
 limited to Global Product. GSKU/LSKU/Finished Good workflow consumers remain Step E successors and cannot reuse a
