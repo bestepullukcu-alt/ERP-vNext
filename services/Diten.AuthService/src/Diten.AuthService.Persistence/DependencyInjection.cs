@@ -1,5 +1,6 @@
 using Diten.BuildingBlocks.Security.Secrets;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Domain.Repositories;
 using Diten.AuthService.Persistence.Configurations;
 using Diten.AuthService.Persistence.Repositories;
 using Diten.AuthService.Persistence.Seed;
@@ -71,6 +72,8 @@ public static class DependencyInjection
         services.AddScoped<IIntegrationEventInboxRepository, IntegrationEventInboxRepository>();
         services.AddScoped<IAuthAuditService, AuthAuditService>();
         services.AddScoped<IMfaChallengeRepository, MfaChallengeRepository>();
+        services.AddScoped<IServiceClientIdentityRepository, ServiceClientIdentityRepository>();
+        services.AddScoped<IServiceClientTenantGrantRepository, ServiceClientTenantGrantRepository>();
 
         // Ensure Indexes and Seed Data
         // Note: In a production environment, this might be handled by an initialization service or migration tool.

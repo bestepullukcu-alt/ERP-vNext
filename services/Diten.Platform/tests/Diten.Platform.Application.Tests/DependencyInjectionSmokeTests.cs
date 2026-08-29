@@ -7,7 +7,11 @@ using Diten.Platform.Application.Features.BusinessReferenceData.Models;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Diten.Platform.API.Services.BusinessReferenceData;
+using Diten.Platform.API.Security;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests;
@@ -56,6 +60,57 @@ public sealed class DependencyInjectionSmokeTests
         Assert.Contains("AddScoped<VerifiedMarketOperationalProvisioningRunner>()", program, StringComparison.Ordinal);
         Assert.DoesNotContain("AddHostedService<VerifiedMarketOperationalProvisioningRunner", program, StringComparison.Ordinal);
         Assert.False(typeof(IHostedService).IsAssignableFrom(typeof(VerifiedMarketOperationalProvisioningRunner)));
+    }
+
+    [Fact]
+    public async Task TrustedServiceTokenValidation_RegistersNamedSchemeWithoutChangingHumanDefault()
+    {
+        var baselineServices = new ServiceCollection();
+        baselineServices.AddLogging();
+        baselineServices.AddAuthentication(options =>
+        {
+            options.DefaultScheme = "HumanBearer";
+            options.DefaultAuthenticateScheme = "HumanBearer";
+            options.DefaultChallengeScheme = "HumanBearer";
+        });
+        await using var baselineProvider = baselineServices.BuildServiceProvider();
+        var baseline = baselineProvider.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddAuthentication(options =>
+        {
+            options.DefaultScheme = "HumanBearer";
+            options.DefaultAuthenticateScheme = "HumanBearer";
+            options.DefaultChallengeScheme = "HumanBearer";
+        });
+
+        services.AddTrustedServiceTokenValidation(new ConfigurationBuilder().Build());
+
+        await using var provider = services.BuildServiceProvider();
+        var authentication = provider.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
+        var schemes = provider.GetRequiredService<IAuthenticationSchemeProvider>();
+        Assert.Equal("HumanBearer", authentication.DefaultScheme);
+        Assert.Equal(baseline.DefaultScheme, authentication.DefaultScheme);
+        Assert.Equal(baseline.DefaultAuthenticateScheme, authentication.DefaultAuthenticateScheme);
+        Assert.Equal(baseline.DefaultChallengeScheme, authentication.DefaultChallengeScheme);
+        Assert.Equal(baseline.DefaultForbidScheme, authentication.DefaultForbidScheme);
+        Assert.Equal(baseline.DefaultSignInScheme, authentication.DefaultSignInScheme);
+        Assert.Equal(baseline.DefaultSignOutScheme, authentication.DefaultSignOutScheme);
+        Assert.NotNull(await schemes.GetSchemeAsync(TrustedServiceTokenValidationExtensions.AuthenticationScheme));
+    }
+
+    [Fact]
+    public void Program_RegistersTrustedServiceTokenValidationWithoutChangingInfrastructureAuthentication()
+    {
+        var root = FindRepositoryRoot();
+        var program = File.ReadAllText(Path.Combine(
+            root,
+            "services", "Diten.Platform", "src", "Diten.Platform.API", "Program.cs"));
+
+        Assert.Contains("AddInfrastructure(builder.Configuration, builder.Environment)", program, StringComparison.Ordinal);
+        Assert.Contains("AddTrustedServiceTokenValidation(builder.Configuration)", program, StringComparison.Ordinal);
+        Assert.DoesNotContain("AddAuthentication(TrustedServiceTokenValidationExtensions.AuthenticationScheme", program, StringComparison.Ordinal);
     }
 
     private static string FindRepositoryRoot()
