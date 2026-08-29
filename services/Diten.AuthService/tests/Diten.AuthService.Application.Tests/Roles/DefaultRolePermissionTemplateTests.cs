@@ -86,6 +86,18 @@ public sealed class DefaultRolePermissionTemplateTests
                 moduleOverride: "product-item-sku-master"),
             new("mdm", "product-abbreviations", "audit", "Audit Product Abbreviations", null,
                 moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-legal-entity-scopes", "read", "Read Product Legal Entity Scopes", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-legal-entity-scopes", "configure", "Configure Product Legal Entity Scopes", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-legal-entity-scopes", "replace", "Replace Product Legal Entity Scopes", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-legal-entity-scopes", "end", "End Product Legal Entity Scopes", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-legal-entity-scope-rollout", "activate", "Activate Product Legal Entity Scope Rollout", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-legal-entity-scope-rollout", "rollback", "Rollback Product Legal Entity Scope Rollout", null,
+                moduleOverride: "product-item-sku-master"),
             new("mdm", "legal-entities", "read", "Read Legal Entities", null,
                 moduleOverride: "legal-entity")
         };
@@ -103,6 +115,8 @@ public sealed class DefaultRolePermissionTemplateTests
         Assert.DoesNotContain("mdm.lskus.create", adminKeys);
         Assert.DoesNotContain("mdm.product-abbreviations.read", viewerKeys);
         Assert.DoesNotContain("mdm.product-abbreviations.read", adminKeys);
+        Assert.DoesNotContain("mdm.product-legal-entity-scopes.read", viewerKeys);
+        Assert.DoesNotContain("mdm.product-legal-entity-scopes.read", adminKeys);
         Assert.Equal(
             [
                 "mdm.finished-goods.create",
@@ -120,7 +134,13 @@ public sealed class DefaultRolePermissionTemplateTests
                 "mdm.product-abbreviations.read",
                 "mdm.product-abbreviations.reject",
                 "mdm.product-abbreviations.request",
-                "mdm.product-abbreviations.retire"
+                "mdm.product-abbreviations.retire",
+                "mdm.product-legal-entity-scope-rollout.activate",
+                "mdm.product-legal-entity-scope-rollout.rollback",
+                "mdm.product-legal-entity-scopes.configure",
+                "mdm.product-legal-entity-scopes.end",
+                "mdm.product-legal-entity-scopes.read",
+                "mdm.product-legal-entity-scopes.replace"
             ],
             DefaultRolePermissionTemplate.EntitlementOnlyViewerPermissions.OrderBy(k => k).ToArray());
     }
