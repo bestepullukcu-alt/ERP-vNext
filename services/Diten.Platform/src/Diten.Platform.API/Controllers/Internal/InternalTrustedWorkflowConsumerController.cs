@@ -72,6 +72,8 @@ public sealed class InternalTrustedWorkflowConsumerController : CustomBaseContro
                 request.EvidenceRequired,
                 request.DueAt),
             serviceIdentity.ClientId,
+            serviceIdentity.ServiceName,
+            serviceIdentity.Audience,
             delegatedUser.UserId,
             HttpContext.TraceIdentifier), cancellationToken);
         return CreateActionResultInstance(response);

@@ -11,6 +11,7 @@ using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Diten.Platform.API.Services.BusinessReferenceData;
 using Diten.Platform.API.Security;
+using Diten.Platform.API.Configuration;
 using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Infrastructure.Persistence.Migrations;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
@@ -26,6 +27,56 @@ namespace Diten.Platform.Application.Tests;
 
 public sealed class DependencyInjectionSmokeTests
 {
+    [Fact]
+    public void Trusted_workflow_start_policy_resolves_without_options_cycle_and_defaults_to_deny()
+    {
+        var services = new ServiceCollection();
+        services.AddOptions<TrustedWorkflowStartAuthorizationOptions>();
+        services.AddSingleton<IValidateOptions<TrustedWorkflowStartAuthorizationOptions>,
+            TrustedWorkflowStartAuthorizationOptionsValidator>();
+        services.AddSingleton<ITrustedWorkflowStartAuthorizationPolicy,
+            ConfiguredTrustedWorkflowStartAuthorizationPolicy>();
+
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true
+        });
+        var policy = provider.GetRequiredService<ITrustedWorkflowStartAuthorizationPolicy>();
+
+        Assert.False(policy.IsAuthorized(new(
+            Guid.NewGuid(), "Diten.MDM", "TRUSTED_WORKFLOW_CONSUMER",
+            "GlobalProduct", Guid.NewGuid(), null)));
+    }
+
+    [Fact]
+    public void Trusted_workflow_start_policy_rejects_malformed_configuration_during_resolution()
+    {
+        var services = new ServiceCollection();
+        services.AddOptions<TrustedWorkflowStartAuthorizationOptions>()
+            .Configure(options => options.Entries.Add(new()
+            {
+                ClientId = Guid.NewGuid(),
+                ServiceName = "Diten.MDM",
+                Audience = "TRUSTED_WORKFLOW_CONSUMER",
+                ObjectType = "Global*",
+                TemplateId = Guid.NewGuid()
+            }))
+            .ValidateOnStart();
+        services.AddSingleton<IValidateOptions<TrustedWorkflowStartAuthorizationOptions>,
+            TrustedWorkflowStartAuthorizationOptionsValidator>();
+        services.AddSingleton<ITrustedWorkflowStartAuthorizationPolicy,
+            ConfiguredTrustedWorkflowStartAuthorizationPolicy>();
+
+        using var provider = services.BuildServiceProvider();
+        var exception = Assert.Throws<OptionsValidationException>(() =>
+            provider.GetRequiredService<ITrustedWorkflowStartAuthorizationPolicy>());
+
+        Assert.Contains(
+            ConfiguredTrustedWorkflowStartAuthorizationPolicy.ConfigurationError,
+            exception.Failures);
+    }
+
     [Fact]
     public void AddApplication_RegistersPlatformCatalogContract()
     {

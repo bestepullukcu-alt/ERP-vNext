@@ -8,7 +8,7 @@ golden_reference: none
 entity_base: BaseEntity
 status: review
 owner: platform-workflow-owner
-branch: feature/pss/mod-0023-fu02-terminal-evidence-hardening
+branch: feature/pss/mod-0023-fu02-start-authorization
 started: 2026-08-29
 target: 2026-09-02
 form_field_count: 0
@@ -232,6 +232,44 @@ nonterminal/inconsistent separation, strict start-result parsing/security, compl
 client/maker/object mismatch and cross-tenant non-leakage regressions. Hand-authored terminal states alone are not
 acceptable evidence; at least one real-Mongo test must invoke the native transition support and then the evidence
 handler.
+
+### Exact trusted-start client/object/template authorization (named hardening step, 2026-08-29)
+
+Code truth showed that valid service and delegated-user tokens could start any published tenant Workflow template for
+any object type. This named step adds one exact tuple policy before coordinator or template/repository access. It does
+not change the generic public Workflow start path, evidence/start-result reads, authentication schemes, repositories,
+schema, configuration data or operational grants.
+
+Exact runtime allow-list:
+
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Commands/StartTrustedWorkflowInstanceCommand.cs`
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Handlers/CommandHandlers/StartTrustedWorkflowInstanceHandler.cs`
+- new `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Services/ITrustedWorkflowStartAuthorizationPolicy.cs`
+- `services/Diten.Platform/src/Diten.Platform.API/Controllers/Internal/InternalTrustedWorkflowConsumerController.cs`
+- new `services/Diten.Platform/src/Diten.Platform.API/Configuration/TrustedWorkflowStartAuthorizationOptions.cs`
+- new `services/Diten.Platform/src/Diten.Platform.API/Security/ConfiguredTrustedWorkflowStartAuthorizationPolicy.cs`
+- `services/Diten.Platform/src/Diten.Platform.API/Program.cs`
+
+Exact test allow-list:
+
+- new `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Security/TrustedWorkflowStartAuthorizationPolicyTests.cs`
+- new `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/TrustedWorkflowStartAuthorizationTests.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/TrustedWorkflowStartRecoveryMongoTests.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/DependencyInjectionSmokeTests.cs`
+
+Each entry is one exact tuple: non-empty `ClientId`, exact `Diten.MDM`, exact `TRUSTED_WORKFLOW_CONSUMER`, exact
+ordinal `ObjectType`, and exactly one non-empty `TemplateId` XOR bounded exact `TemplateCode`. Wildcard, glob,
+prefix, regex, alias, trim/case fallback and cross-product arrays are forbidden. Maximum cardinality is 64; duplicate
+or malformed entries fail startup with `WORKFLOW_TRUSTED_START_AUTHORIZATION_CONFIGURATION_INVALID`. Missing or
+empty configuration is valid default-disabled state and denies every trusted start with
+`403 WORKFLOW_TRUSTED_START_FORBIDDEN` before template/repository mutation. Tenant authority remains the independently
+validated service/delegated token intersection and is not duplicated in this policy.
+
+Acceptance requires exact tuple allow, every individual fact/casing/selector drift deny, empty policy deny,
+malformed/duplicate/wildcard startup failure, zero coordinator/repository calls on deny, exact authorized
+start/replay real-Mongo regression, unchanged start-result/evidence behavior, full Workflow/Platform regression and
+Release build. Operational tuple configuration remains a separate Local Development mutation. The standing non-push
+user authorization grants this exact named-step code-start on 2026-08-29.
 
 Governance maintenance while implementing is limited to this pack and its single canonical registry row.
 
@@ -583,6 +621,25 @@ pack consumes a pinned workflow template/version through existing MOD-0023 repos
   and the same **24** pre-existing failures already recorded above; all newly added hardening tests passed.
   `git diff --check` remained clean. No collection, index, schema profile, repository, entity, configuration,
   credential, or operational data mutation was introduced.
+
+### Trusted-start authorization implementation evidence — 2026-08-29
+
+- Trusted start now requires one exact configured tuple of authenticated client ID, `Diten.MDM`,
+  `TRUSTED_WORKFLOW_CONSUMER`, object type, and exactly one template ID or template code. Missing/empty policy is a
+  valid default-disabled configuration; malformed, duplicate, wildcard, selector-invalid or over-64 configuration
+  fails startup.
+- Authorization runs before coordinator, template or repository access. A denied request returns stable 403 and a
+  real-Mongo regression proves zero instance/task/snapshot/log writes. An exact authorized replay preserves the
+  existing one-instance/task/snapshot/log identity.
+- Exact tests cover every tuple fact, casing and value drift, template selector-kind mismatch in both directions,
+  both/neither selector, and hybrid cross-product requests across two valid tuples. Capturing-policy and real
+  controller→executor→mediator tests prove the independently validated service identity, delegated maker, object,
+  selector, idempotency key and correlation facts reach enforcement unchanged.
+- New focused authorization/DI/real-Mongo tests passed **15/15**; the complete Workflow plus DI regression passed
+  **218/218**, with no skipped tests. Platform API Release build passed with zero warnings and zero errors. The
+  repository-wide run recorded **3743/3767 passed** with the same 24 pre-existing out-of-scope failures. Independent
+  re-review found no residual P0/P1/P2 issue. `git diff --check` remained clean; no operational config/data mutation
+  or push was performed.
 
 ## 20. Follow-up Items
 
