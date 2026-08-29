@@ -11,11 +11,13 @@ namespace Diten.AuthService.Application.Tests.ServiceIdentityTokens;
 
 public sealed class ServiceIdentityTokenHandlerTests
 {
-    [Fact]
-    public async Task Exact_client_tenant_and_audience_succeeds()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task Legacy_missing_or_empty_purpose_remains_audit_only(string? legacyPurpose)
     {
         var verifier = new ServiceClientCredentialVerifier();
-        var identity = Identity(verifier, "Diten.MDM");
+        var identity = Identity(verifier, "Diten.MDM", legacyPurpose);
         var grants = new GrantRepository(true);
         var handler = Handler(identity, grants, verifier);
         var tenantId = Guid.NewGuid();
@@ -29,8 +31,59 @@ public sealed class ServiceIdentityTokenHandlerTests
         Assert.Equal("TRUSTED_AUDIT_SOURCE_INGEST", grants.Audience);
     }
 
+    [Fact]
+    public async Task Same_identity_cannot_issue_both_audiences_even_when_grant_exists()
+    {
+        var verifier = new ServiceClientCredentialVerifier();
+        var auditIdentity = Identity(verifier, "Diten.MDM");
+        var workflowIdentity = Identity(verifier, "Diten.MDM", ServiceIdentityTokenAudiencePolicy.TrustedWorkflowConsumer);
+
+        var workflowFromAudit = await Handler(auditIdentity, new GrantRepository(true), verifier).Handle(
+            new IssueServiceIdentityTokenCommand("mdm", "secret", Guid.NewGuid(), ServiceIdentityTokenAudiencePolicy.TrustedWorkflowConsumer),
+            CancellationToken.None);
+        var auditFromWorkflow = await Handler(workflowIdentity, new GrantRepository(true), verifier).Handle(
+            new IssueServiceIdentityTokenCommand("mdm", "secret", Guid.NewGuid(), ServiceIdentityTokenAudiencePolicy.TrustedAuditSourceIngest),
+            CancellationToken.None);
+
+        Assert.Equal(403, workflowFromAudit.StatusCode);
+        Assert.Equal(403, auditFromWorkflow.StatusCode);
+    }
+
+    [Theory]
+    [InlineData(" ")]
+    [InlineData("OTHER_AUDIENCE")]
+    [InlineData("trusted_workflow_consumer")]
+    public async Task Malformed_persisted_identity_purpose_is_state_conflict(string purpose)
+    {
+        var verifier = new ServiceClientCredentialVerifier();
+        var response = await Handler(Identity(verifier, "Diten.MDM", purpose), new GrantRepository(true), verifier).Handle(
+            new IssueServiceIdentityTokenCommand("mdm", "secret", Guid.NewGuid(), ServiceIdentityTokenAudiencePolicy.TrustedAuditSourceIngest),
+            CancellationToken.None);
+
+        Assert.Equal(409, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Dedicated_workflow_client_with_enabled_exact_grant_succeeds()
+    {
+        var verifier = new ServiceClientCredentialVerifier();
+        var identity = Identity(verifier, "Diten.MDM", ServiceIdentityTokenAudiencePolicy.TrustedWorkflowConsumer);
+        var grants = new GrantRepository(true);
+        var handler = Handler(identity, grants, verifier);
+        var tenantId = Guid.NewGuid();
+
+        var response = await handler.Handle(new IssueServiceIdentityTokenCommand(
+            "mdm", "secret", tenantId, ServiceIdentityTokenAudiencePolicy.TrustedWorkflowConsumer), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(tenantId, grants.TenantId);
+        Assert.Equal(identity.Id, grants.ClientId);
+        Assert.Equal(ServiceIdentityTokenAudiencePolicy.TrustedWorkflowConsumer, grants.Audience);
+    }
+
     [Theory]
     [InlineData("Other.Service", "TRUSTED_AUDIT_SOURCE_INGEST")]
+    [InlineData("Other.Service", "TRUSTED_WORKFLOW_CONSUMER")]
     [InlineData("Diten.MDM", "OTHER_AUDIENCE")]
     public async Task Wrong_service_or_audience_is_forbidden_even_if_grant_exists(string service, string audience)
     {
@@ -148,10 +201,14 @@ public sealed class ServiceIdentityTokenHandlerTests
         IServiceIdentityTokenIssuer? issuer = null) =>
         new(new IdentityRepository(identity), grants, verifier, issuer ?? new StubIssuer(), TimeProvider.System);
 
-    private static ServiceClientIdentity Identity(ServiceClientCredentialVerifier verifier, string service) => new()
+    private static ServiceClientIdentity Identity(
+        ServiceClientCredentialVerifier verifier,
+        string service,
+        string? allowedAudience = null) => new()
     {
         ClientCode = "mdm",
         ServiceName = service,
+        AllowedAudience = allowedAudience,
         ActiveCredentialHash = verifier.Hash("secret"),
         ActiveCredentialVersion = "v1"
     };

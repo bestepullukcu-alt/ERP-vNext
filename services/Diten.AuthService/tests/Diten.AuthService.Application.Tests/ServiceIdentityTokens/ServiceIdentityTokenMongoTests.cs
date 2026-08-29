@@ -2,6 +2,10 @@ using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Persistence.Configurations;
 using Diten.AuthService.Persistence.Repositories;
 using Diten.AuthService.Application.Features.ServiceIdentityTokens;
+using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Features.ServiceIdentityTokens.Commands;
+using Diten.AuthService.Application.Features.ServiceIdentityTokens.Handlers.CommandHandlers;
+using Diten.AuthService.Infrastructure.Services;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
@@ -30,13 +34,22 @@ public sealed class ServiceIdentityTokenMongoTests
         {
             ClientCode = "mdm-" + marker,
             ServiceName = "Diten.MDM",
-            ActiveCredentialHash = "test-only",
+            ActiveCredentialHash = new ServiceClientCredentialVerifier().Hash("audit-secret"),
+            ActiveCredentialVersion = "v1"
+        };
+        var workflowIdentity = new ServiceClientIdentity
+        {
+            ClientCode = "mdm-workflow-" + marker,
+            ServiceName = "Diten.MDM",
+            AllowedAudience = ServiceIdentityTokenAudiencePolicy.TrustedWorkflowConsumer,
+            ActiveCredentialHash = new ServiceClientCredentialVerifier().Hash("workflow-secret"),
             ActiveCredentialVersion = "v1"
         };
 
         try
         {
             await identities.InsertOneAsync(identity);
+            await identities.InsertOneAsync(workflowIdentity);
             await Assert.ThrowsAsync<MongoWriteException>(() => identities.InsertOneAsync(new ServiceClientIdentity
             {
                 ClientCode = identity.ClientCode,
@@ -47,7 +60,11 @@ public sealed class ServiceIdentityTokenMongoTests
 
             await grants.InsertManyAsync([
                 new ServiceClientTenantGrant { TenantId = tenantA, ServiceClientIdentityId = identity.Id, Audience = "TRUSTED_AUDIT_SOURCE_INGEST", IsEnabled = true },
-                new ServiceClientTenantGrant { TenantId = tenantB, ServiceClientIdentityId = identity.Id, Audience = "TRUSTED_AUDIT_SOURCE_INGEST", IsEnabled = false }
+                new ServiceClientTenantGrant { TenantId = tenantB, ServiceClientIdentityId = identity.Id, Audience = "TRUSTED_AUDIT_SOURCE_INGEST", IsEnabled = false },
+                new ServiceClientTenantGrant { TenantId = tenantA, ServiceClientIdentityId = identity.Id, Audience = "TRUSTED_WORKFLOW_CONSUMER", IsEnabled = true },
+                new ServiceClientTenantGrant { TenantId = tenantA, ServiceClientIdentityId = workflowIdentity.Id, Audience = "TRUSTED_WORKFLOW_CONSUMER", IsEnabled = true },
+                new ServiceClientTenantGrant { TenantId = tenantB, ServiceClientIdentityId = workflowIdentity.Id, Audience = "TRUSTED_WORKFLOW_CONSUMER", IsEnabled = false },
+                new ServiceClientTenantGrant { TenantId = tenantA, ServiceClientIdentityId = workflowIdentity.Id, Audience = "TRUSTED_AUDIT_SOURCE_INGEST", IsEnabled = true }
             ]);
 
             var identityRepository = new ServiceClientIdentityRepository(database);
@@ -56,6 +73,32 @@ public sealed class ServiceIdentityTokenMongoTests
             Assert.True(await grantRepository.HasEnabledGrantAsync(tenantA, identity.Id, "TRUSTED_AUDIT_SOURCE_INGEST", CancellationToken.None));
             Assert.False(await grantRepository.HasEnabledGrantAsync(tenantB, identity.Id, "TRUSTED_AUDIT_SOURCE_INGEST", CancellationToken.None));
             Assert.False(await grantRepository.HasEnabledGrantAsync(tenantA, identity.Id, "OTHER", CancellationToken.None));
+            Assert.True(await grantRepository.HasEnabledGrantAsync(tenantA, workflowIdentity.Id, "TRUSTED_WORKFLOW_CONSUMER", CancellationToken.None));
+            Assert.False(await grantRepository.HasEnabledGrantAsync(tenantB, workflowIdentity.Id, "TRUSTED_WORKFLOW_CONSUMER", CancellationToken.None));
+            Assert.True(await grantRepository.HasEnabledGrantAsync(tenantA, identity.Id, "TRUSTED_WORKFLOW_CONSUMER", CancellationToken.None));
+            Assert.True(await grantRepository.HasEnabledGrantAsync(tenantA, workflowIdentity.Id, "TRUSTED_AUDIT_SOURCE_INGEST", CancellationToken.None));
+
+            var verifier = new ServiceClientCredentialVerifier();
+            var auditHandler = new IssueServiceIdentityTokenHandler(
+                identityRepository, grantRepository, verifier, new StubIssuer(), TimeProvider.System);
+            var workflowHandler = new IssueServiceIdentityTokenHandler(
+                identityRepository, grantRepository, verifier, new StubIssuer(), TimeProvider.System);
+            var auditSuccess = await auditHandler.Handle(new IssueServiceIdentityTokenCommand(
+                identity.ClientCode, "audit-secret", tenantA, ServiceIdentityTokenAudiencePolicy.TrustedAuditSourceIngest), CancellationToken.None);
+            var workflowSuccess = await workflowHandler.Handle(new IssueServiceIdentityTokenCommand(
+                workflowIdentity.ClientCode, "workflow-secret", tenantA, ServiceIdentityTokenAudiencePolicy.TrustedWorkflowConsumer), CancellationToken.None);
+            var workflowFromAuditIdentity = await auditHandler.Handle(new IssueServiceIdentityTokenCommand(
+                identity.ClientCode, "audit-secret", tenantA, ServiceIdentityTokenAudiencePolicy.TrustedWorkflowConsumer), CancellationToken.None);
+            var auditFromWorkflowIdentity = await workflowHandler.Handle(new IssueServiceIdentityTokenCommand(
+                workflowIdentity.ClientCode, "workflow-secret", tenantA, ServiceIdentityTokenAudiencePolicy.TrustedAuditSourceIngest), CancellationToken.None);
+            var wrongWorkflowCredential = await workflowHandler.Handle(new IssueServiceIdentityTokenCommand(
+                workflowIdentity.ClientCode, "audit-secret", tenantA, ServiceIdentityTokenAudiencePolicy.TrustedWorkflowConsumer), CancellationToken.None);
+
+            Assert.True(auditSuccess.IsSuccessful);
+            Assert.True(workflowSuccess.IsSuccessful);
+            Assert.Equal(403, workflowFromAuditIdentity.StatusCode);
+            Assert.Equal(403, auditFromWorkflowIdentity.StatusCode);
+            Assert.Equal(401, wrongWorkflowCredential.StatusCode);
 
             await Assert.ThrowsAsync<MongoBulkWriteException<ServiceClientTenantGrant>>(() => grants.InsertManyAsync([
                 new ServiceClientTenantGrant
@@ -123,7 +166,14 @@ public sealed class ServiceIdentityTokenMongoTests
         finally
         {
             await identities.DeleteManyAsync(x => x.ClientCode == identity.ClientCode);
-            await grants.DeleteManyAsync(x => x.ServiceClientIdentityId == identity.Id);
+            await identities.DeleteManyAsync(x => x.ClientCode == workflowIdentity.ClientCode);
+            await grants.DeleteManyAsync(x => x.ServiceClientIdentityId == identity.Id || x.ServiceClientIdentityId == workflowIdentity.Id);
         }
+    }
+
+    private sealed class StubIssuer : IServiceIdentityTokenIssuer
+    {
+        public ServiceIdentityTokenIssue Issue(Guid clientId, string serviceName, Guid tenantId, string audience) =>
+            new("token", DateTimeOffset.UtcNow.AddMinutes(5), 300);
     }
 }

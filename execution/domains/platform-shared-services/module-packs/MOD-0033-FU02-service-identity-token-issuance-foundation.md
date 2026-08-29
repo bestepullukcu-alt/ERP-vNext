@@ -8,7 +8,7 @@ golden_reference: none
 entity_base: GlobalEntityBase
 status: review
 owner: api-consumer-credential-owner / auth-security-owner / platform-owner
-branch: feature/pss/mod-0033-fu02-service-identity-token-issuance-foundation
+branch: feature/pss/mod-0033-fu02-workflow-audience
 started: 2026-08-28
 target: 2026-09-04
 form_field_count: 0
@@ -89,6 +89,43 @@ and `(TenantId, ServiceClientIdentityId, Audience)`. Raw secrets and access toke
 - `services/Diten.Platform/src/Diten.Platform.API/Program.cs`
 - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Security/TrustedServiceTokenValidationTests.cs`
 - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/DependencyInjectionSmokeTests.cs`
+
+### C — Dedicated trusted Workflow consumer audience (named hardening step, 2026-08-29)
+
+This additive step closes the code-truth gap discovered before the Product Identity Workflow consumer started:
+Platform validates `TRUSTED_WORKFLOW_CONSUMER`, while Auth previously issued only
+`TRUSTED_AUDIT_SOURCE_INGEST`. It does not weaken the audit audience or create a wildcard audience.
+
+Exact runtime allow-list:
+
+- new `services/Diten.AuthService/src/Diten.AuthService.Application/Features/ServiceIdentityTokens/ServiceIdentityTokenAudiencePolicy.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Domain/Entities/ServiceClientIdentity.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Application/Features/ServiceIdentityTokens/Validators/IssueServiceIdentityTokenValidator.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Application/Features/ServiceIdentityTokens/Handlers/CommandHandlers/IssueServiceIdentityTokenHandler.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Infrastructure/Services/ServiceIdentityTokenIssuer.cs`
+
+Exact test allow-list:
+
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceIdentityTokenHandlerTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceIdentityTokenIssueTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceIdentityTokenSecurityContractTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceIdentityTokenMongoTests.cs`
+
+Only two exact service/audience pairs are valid: `Diten.MDM` with `TRUSTED_AUDIT_SOURCE_INGEST`, and
+`Diten.MDM` with `TRUSTED_WORKFLOW_CONSUMER`. Every other audience or service remains fail-closed. The Workflow
+audience requires its own persisted service-client identity, credential lifecycle and exact tenant/audience grant at
+operational onboarding; the audit client credential may not be reused. `ServiceClientIdentity.AllowedAudience` is a
+single exact purpose binding: legacy records without the field remain audit-only, while Workflow issuance requires
+the exact Workflow value. One identity can therefore never issue both audience tokens even if two grants are
+misprovisioned. Malformed persisted purpose is inconsistent state and fails closed. This named step changes no
+repository, index, endpoint, parser, claim, TTL, signing key, configuration, secret or data. Operational
+identity/grant creation remains separately gated.
+
+Acceptance requires exact-audience validation at the parser/validator, identity-purpose, handler and issuer layers;
+a valid enabled Workflow grant; audit regression; same-identity dual-grant denial;
+wrong/missing/disabled/cross-tenant grant denial; exact 300-second RS256 claims;
+real-Mongo identity/grant isolation; full Auth regression and Release build. The standing non-push user authorization
+grants this exact named-step code-start on 2026-08-29.
 
 ## 6. Protected Paths
 
@@ -209,6 +246,24 @@ worktree, based on remote-main commit `c2cc8e10dcfc54b08f21cd258bc63e4a33449824`
   the live cross-service proof remains part of the separately gated operational onboarding.
 - `git diff --check` is clean. No appsettings, secret, credential, tenant grant, business data, startup provisioning,
   commit or push mutation was performed.
+
+### Section C implementation evidence — 2026-08-29
+
+- Auth now accepts exactly two bounded pairs and no others: `Diten.MDM/TRUSTED_AUDIT_SOURCE_INGEST` and
+  `Diten.MDM/TRUSTED_WORKFLOW_CONSUMER`. Validator, handler and issuer share one exact ordinal policy; wildcard,
+  trim, case-fold, comma/multi-audience and unknown service/audience values remain fail-closed.
+- `ServiceClientIdentity.AllowedAudience` makes credential purpose a runtime invariant. A missing/empty legacy value
+  is audit-only; an exact Workflow value is Workflow-only; malformed persisted purpose returns 409 inconsistent
+  state. Even if one identity is incorrectly granted both audiences, it cannot issue both token types.
+- Real-Mongo evidence uses distinct audit and Workflow identity IDs, client codes, credential hashes and exact tenant
+  grants. Cross-purpose issuance is 403, using the audit credential against the Workflow identity is 401, and tenant
+  or disabled-grant drift remains denied.
+- Focused service-identity tests passed **61/61**, with no skipped tests. Auth API Release build passed with zero
+  warnings and zero errors. The complete Auth suite recorded **649/651 passed**; the two unchanged failures are the
+  pre-existing stale User Lookup two-field contract assertions against the already four-field DTO, outside this
+  named-step allow-list. No service-identity test failed.
+- Independent security re-review found no P0/P1/P2 issue. `git diff --check` remained clean. No repository, index,
+  endpoint, parser, configuration, credential, grant or operational data mutation was performed.
 
 ## 20. Follow-up Items
 
