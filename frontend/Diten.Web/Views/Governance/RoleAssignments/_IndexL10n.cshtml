@@ -3,6 +3,34 @@
 @inject IHtmlLocalizer<RoleAssignmentsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
+@{
+    // FIX-ROLEPERMS-MODULE-LABEL — module display names for the Role Permissions group headers + module filter,
+    // reusing the SAME Nav.Module.{CODE} resources the sidebar and Ctrl+K localize with (NavNameLocalizer), so the
+    // three surfaces read identically in all 7 languages. Discovered by PREFIX, never a hardcoded list: a future
+    // self-registered module localizes here the moment it ships its Nav.Module key — no code change.
+    // Keys are already in canonical form (uppercase, alphanumerics only) — the same form ModuleLabel.normalize
+    // produces from a permission's raw module slug, which is what makes "work-aggregation" meet WORKAGGREGATION.
+    const string NavModulePrefix = "Nav.Module.";
+    var moduleNames = new Dictionary<string, string>(StringComparer.Ordinal);
+    try
+    {
+        foreach (var entry in SharedLocalizer.GetAllStrings(includeParentCultures: true))
+        {
+            if (entry.ResourceNotFound || !entry.Name.StartsWith(NavModulePrefix, StringComparison.Ordinal)) continue;
+            var code = entry.Name.Substring(NavModulePrefix.Length);
+            if (code.Length == 0 || string.IsNullOrWhiteSpace(entry.Value)) continue;
+            // First win: GetAllStrings walks the culture hierarchy most-specific first.
+            if (!moduleNames.ContainsKey(code)) moduleNames[code] = entry.Value;
+        }
+    }
+    catch (Exception)
+    {
+        // A missing or unreadable resource set must not take the whole L10n bridge down: an empty map degrades to
+        // the nav names and then to the humanized code — never to a raw slug.
+        moduleNames.Clear();
+    }
+}
+
 <script id="roleassignments-l10n" type="application/json">
     @Json.Serialize(new
     {
@@ -15,6 +43,9 @@
         LockedHintSystem = Localizer["LockedHintSystem"].Value,
         LockedHintModule = Localizer["LockedHintModule"].Value,
         ModuleUngrouped = Localizer["ModuleUngrouped"].Value,
+        // FIX-ROLEPERMS-MODULE-LABEL — { NORMALIZEDMODULECODE: localized name } for the group headers + module
+        // filter. → window.L10n.ModuleNames, consumed by ModuleLabel.buildMap. See the @{ } block above.
+        ModuleNames = moduleNames,
         PermissionSummary = Localizer["PermissionSummary"].Value,
         SelectedRoleTitle = Localizer["SelectedRoleTitle"].Value,
         CoverageLabel = Localizer["CoverageLabel"].Value,
