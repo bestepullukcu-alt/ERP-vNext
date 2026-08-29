@@ -17,7 +17,9 @@ public sealed class ProductIdentityWorkflowNoCredentialPersistenceTests
             typeof(ProductIdentityWorkflowStartResult),
             typeof(ProductIdentityWorkflowTerminalEvidence),
             typeof(GlobalProduct),
-            typeof(GlobalProductIdentityWorkflowOperation)
+            typeof(GlobalProductIdentityWorkflowOperation),
+            typeof(FirstGskuIdentityWorkflowOperation),
+            typeof(Domain.ValueObjects.FirstGskuIdentityWorkflowBinding)
         };
         var forbidden = new[] { "AccessToken", "ServiceToken", "DelegatedToken", "Authorization", "ClientSecret", "Credential" };
 

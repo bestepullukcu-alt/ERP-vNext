@@ -2,6 +2,7 @@ using Diten.MdmService.Application.Common;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
+using Diten.MdmService.Domain.ValueObjects;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
@@ -285,6 +286,181 @@ public sealed class GskuRepository : IGskuRepository
             ? new(false, null, "CONCURRENCY_CONFLICT")
             : new(true, updated);
     }
+
+    public Task<FirstGskuIdentityLifecycleMutationResult<Gsku>> MarkIdentityPendingAsync(
+        Guid id, int expectedVersion, FirstGskuIdentityWorkflowBinding binding, LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) => MutateLifecycleAsync(
+            id, expectedVersion, ProductIdentityLifecycleStatus.Draft,
+            ProductIdentityLifecycleStatus.PendingIdentityApproval, binding, auditIntent,
+            ProductAuditOperation.GskuIdentitySubmitted, cancellationToken);
+
+    public Task<FirstGskuIdentityLifecycleMutationResult<Gsku>> ApproveIdentityAsync(
+        Guid id, int expectedVersion, FirstGskuIdentityWorkflowBinding binding, LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) => MutateLifecycleAsync(
+            id, expectedVersion, ProductIdentityLifecycleStatus.PendingIdentityApproval,
+            ProductIdentityLifecycleStatus.IdentityApproved, binding, auditIntent,
+            ProductAuditOperation.GskuIdentityApproved, cancellationToken);
+
+    public Task<FirstGskuIdentityLifecycleMutationResult<Gsku>> RestoreDraftAfterRejectionAsync(
+        Guid id, int expectedVersion, FirstGskuIdentityWorkflowBinding binding, LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) => MutateLifecycleAsync(
+            id, expectedVersion, ProductIdentityLifecycleStatus.PendingIdentityApproval,
+            ProductIdentityLifecycleStatus.Draft, binding, auditIntent,
+            ProductAuditOperation.GskuIdentityRejected, cancellationToken);
+
+    private async Task<FirstGskuIdentityLifecycleMutationResult<Gsku>> MutateLifecycleAsync(
+        Guid id, int expectedVersion, ProductIdentityLifecycleStatus sourceStatus,
+        ProductIdentityLifecycleStatus targetStatus, FirstGskuIdentityWorkflowBinding binding,
+        LocalAuditIntent auditIntent, ProductAuditOperation operation, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(binding);
+        ArgumentNullException.ThrowIfNull(auditIntent);
+        var contractError = ValidateLifecycleContract(id, expectedVersion, binding, auditIntent, operation);
+        if (contractError is not null)
+        {
+            return new(false, false, null, contractError);
+        }
+
+        var current = await GetByIdAsync(id, cancellationToken);
+        var replayIntent = current?.AuditIntents.SingleOrDefault(x => x.IdempotencyKey == auditIntent.IdempotencyKey);
+        if (replayIntent is not null)
+        {
+            var exact = replayIntent.Operation == operation
+                        && replayIntent.EvidenceHash == auditIntent.EvidenceHash
+                        && current!.LifecycleStatus == targetStatus
+                        && SameBinding(current.IdentityWorkflowBinding, binding);
+            return exact
+                ? new(true, true, current, null)
+                : new(false, false, current, "FIRST_GSKU_IDENTITY_IDEMPOTENCY_CONFLICT");
+        }
+
+        var filter = ActiveFilter
+                     & Builders<Gsku>.Filter.Eq(x => x.Id, id)
+                     & Builders<Gsku>.Filter.Eq(x => x.Version, expectedVersion)
+                     & Builders<Gsku>.Filter.Eq(x => x.LifecycleStatus, sourceStatus)
+                     & Builders<Gsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        if (sourceStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval)
+        {
+            filter &= BindingFence(binding);
+        }
+
+        var update = Builders<Gsku>.Update
+            .Set(x => x.LifecycleStatus, targetStatus)
+            .Set(x => x.IdentityWorkflowBinding, binding)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+            .Inc(x => x.Version, 1)
+            .Push(x => x.AuditIntents, auditIntent);
+        var updated = await _gskus.FindOneAndUpdateAsync(
+            filter, update, new FindOneAndUpdateOptions<Gsku> { ReturnDocument = ReturnDocument.After },
+            cancellationToken);
+        if (updated is not null)
+        {
+            return new(true, false, updated, null);
+        }
+
+        current = await GetByIdAsync(id, cancellationToken);
+        return new(false, false, current, current is null
+            ? "FIRST_GSKU_NOT_FOUND"
+            : current.Version != expectedVersion
+                ? "FIRST_GSKU_CONCURRENCY_CONFLICT"
+                : current.LifecycleStatus != sourceStatus
+                    ? "FIRST_GSKU_STATE_CONFLICT"
+                    : "FIRST_GSKU_WORKFLOW_BINDING_CONFLICT");
+    }
+
+    private string? ValidateLifecycleContract(
+        Guid id, int expectedVersion, FirstGskuIdentityWorkflowBinding binding,
+        LocalAuditIntent auditIntent, ProductAuditOperation operation)
+    {
+        if (_tenantId == Guid.Empty || id == Guid.Empty || expectedVersion < 0
+            || binding.GskuId != id || binding.ProductDefinitionRevisionId == Guid.Empty
+            || binding.WorkflowInstanceId == Guid.Empty || binding.WorkflowTemplateId == Guid.Empty
+            || binding.WorkflowTemplateVersionId == Guid.Empty || binding.ApprovalTaskId == Guid.Empty
+            || binding.AssignmentSnapshotId == Guid.Empty || binding.StartTransitionLogId == Guid.Empty
+            || binding.SubmitterSubjectId == Guid.Empty || binding.ObjectType != "gsku"
+            || binding.SubmittedAtUtc.Offset != TimeSpan.Zero
+            || binding.DueAtUtc.HasValue && binding.DueAtUtc.Value.Offset != TimeSpan.Zero
+            || string.IsNullOrWhiteSpace(binding.ObjectRef)
+            || string.IsNullOrWhiteSpace(binding.StartIdempotencyKey)
+            || string.IsNullOrWhiteSpace(binding.StartRequestFingerprint))
+        {
+            return "FIRST_GSKU_WORKFLOW_BINDING_INVALID";
+        }
+        var expectedDecision = operation switch
+        {
+            ProductAuditOperation.GskuIdentityApproved => ProductIdentityDecisionKind.Approved,
+            ProductAuditOperation.GskuIdentityRejected => ProductIdentityDecisionKind.Rejected,
+            _ => (ProductIdentityDecisionKind?)null
+        };
+        if (expectedDecision.HasValue
+                ? !ValidTerminalDecision(binding, expectedDecision.Value)
+                : binding.TerminalDecision is not null)
+        {
+            return "FIRST_GSKU_WORKFLOW_DECISION_INVALID";
+        }
+        if (auditIntent.TenantId != _tenantId || auditIntent.AggregateId != id
+            || auditIntent.PreVersion != expectedVersion || auditIntent.PostVersion != expectedVersion + 1
+            || auditIntent.Operation != operation || string.IsNullOrWhiteSpace(auditIntent.IdempotencyKey)
+            || string.IsNullOrWhiteSpace(auditIntent.EvidenceHash))
+        {
+            return "AUDIT_INTENT_CONTRACT_INVALID";
+        }
+        return null;
+    }
+
+    private FilterDefinition<Gsku> BindingFence(FirstGskuIdentityWorkflowBinding binding) =>
+        Builders<Gsku>.Filter.Eq(x => x.IdentityWorkflowBinding!.WorkflowInstanceId, binding.WorkflowInstanceId)
+        & Builders<Gsku>.Filter.Eq(x => x.IdentityWorkflowBinding!.ApprovalTaskId, binding.ApprovalTaskId)
+        & Builders<Gsku>.Filter.Eq(x => x.IdentityWorkflowBinding!.StartRequestFingerprint, binding.StartRequestFingerprint);
+
+    private static bool SameBinding(FirstGskuIdentityWorkflowBinding? left, FirstGskuIdentityWorkflowBinding right) =>
+        left is not null && left.WorkflowInstanceId == right.WorkflowInstanceId
+        && left.WorkflowTemplateId == right.WorkflowTemplateId
+        && left.WorkflowTemplateVersionId == right.WorkflowTemplateVersionId
+        && left.ApprovalTaskId == right.ApprovalTaskId
+        && left.AssignmentSnapshotId == right.AssignmentSnapshotId
+        && left.StartTransitionLogId == right.StartTransitionLogId
+        && left.ObjectType == right.ObjectType
+        && left.GskuId == right.GskuId
+        && left.ProductDefinitionRevisionId == right.ProductDefinitionRevisionId
+        && left.ObjectRef == right.ObjectRef
+        && left.SubmitterSubjectId == right.SubmitterSubjectId
+        && left.StartIdempotencyKey == right.StartIdempotencyKey
+        && left.StartRequestFingerprint == right.StartRequestFingerprint
+        && left.SubmittedAtUtc == right.SubmittedAtUtc
+        && left.DueAtUtc == right.DueAtUtc
+        && SameTerminalDecision(left.TerminalDecision, right.TerminalDecision);
+
+    private static bool ValidTerminalDecision(
+        FirstGskuIdentityWorkflowBinding binding, ProductIdentityDecisionKind expected)
+    {
+        var value = binding.TerminalDecision;
+        return value is not null && value.Decision == expected
+            && value.WorkflowInstanceId == binding.WorkflowInstanceId
+            && value.ApprovalTaskId == binding.ApprovalTaskId
+            && value.WorkflowTemplateId == binding.WorkflowTemplateId
+            && value.WorkflowTemplateVersionId == binding.WorkflowTemplateVersionId
+            && value.ObjectType == binding.ObjectType && value.ObjectId == binding.GskuId
+            && value.ObjectRef == binding.ObjectRef && value.DecisionActorSubjectId != Guid.Empty
+            && value.DecisionActorSubjectId != binding.SubmitterSubjectId
+            && value.DecisionAtUtc.Offset == TimeSpan.Zero && value.TransitionSequence > 0
+            && (expected == ProductIdentityDecisionKind.Approved
+                ? value.TaskStatus == "Approved" && value.InstanceStatus == "Completed"
+                : value.TaskStatus == "Rejected" && value.InstanceStatus == "Rejected");
+    }
+
+    private static bool SameTerminalDecision(
+        ProductIdentityWorkflowDecisionEvidence? left, ProductIdentityWorkflowDecisionEvidence? right) =>
+        left is null && right is null
+        || left is not null && right is not null
+        && left.Decision == right.Decision && left.WorkflowInstanceId == right.WorkflowInstanceId
+        && left.ApprovalTaskId == right.ApprovalTaskId && left.WorkflowTemplateId == right.WorkflowTemplateId
+        && left.WorkflowTemplateVersionId == right.WorkflowTemplateVersionId
+        && left.ObjectType == right.ObjectType && left.ObjectId == right.ObjectId
+        && left.ObjectRef == right.ObjectRef && left.DecisionActorSubjectId == right.DecisionActorSubjectId
+        && left.ReasonCode == right.ReasonCode && left.DecisionAtUtc == right.DecisionAtUtc
+        && left.TransitionSequence == right.TransitionSequence && left.TaskStatus == right.TaskStatus
+        && left.InstanceStatus == right.InstanceStatus;
 
     private static bool SameFacts(Gsku left, Gsku right)
         => left.Id == right.Id

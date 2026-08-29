@@ -67,6 +67,10 @@ public static class DependencyInjection
             GlobalProductIdentityWorkflowOperationRepository>();
         services.AddScoped<IGlobalProductIdentityWorkflowTenantPartitionDiscovery,
             GlobalProductIdentityWorkflowTenantPartitionDiscoveryRepository>();
+        services.AddScoped<IFirstGskuIdentityWorkflowOperationRepository,
+            FirstGskuIdentityWorkflowOperationRepository>();
+        services.AddScoped<IFirstGskuIdentityWorkflowTenantPartitionDiscovery,
+            FirstGskuIdentityWorkflowTenantPartitionDiscoveryRepository>();
 
         // MOD-0290-FU02 — Brand/Product master repositories (tenant-scoped, soft archive, no hard delete).
         services.AddScoped<IBrandRepository, BrandRepository>();
