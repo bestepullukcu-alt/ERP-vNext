@@ -37,7 +37,7 @@ public sealed class SubmitGlobalProductIdentityHandler
             || input.ExpectedVersion < 0
             || input.WorkflowBinding.SubmitterSubjectId != actorId
             || input.WorkflowBinding.ObjectId != input.GlobalProductId
-            || !string.Equals(input.WorkflowBinding.ObjectType, "global-product", StringComparison.Ordinal))
+            || !string.Equals(input.WorkflowBinding.ObjectType, "GlobalProduct", StringComparison.Ordinal))
         {
             return Fail("WORKFLOW_BINDING_CONTRACT_INVALID", 400);
         }

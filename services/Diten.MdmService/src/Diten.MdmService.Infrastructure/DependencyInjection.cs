@@ -7,9 +7,11 @@ using Diten.MdmService.Infrastructure.Audit;
 using Diten.MdmService.Infrastructure.Middleware;
 using Diten.MdmService.Infrastructure.Security;
 using Diten.MdmService.Application.Contracts.ReferenceData;
+using Diten.MdmService.Application.Contracts.Workflow;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Audit;
 using Diten.MdmService.Infrastructure.ReferenceData;
+using Diten.MdmService.Infrastructure.Workflow;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
@@ -75,6 +77,34 @@ public static class DependencyInjection
             AuthTrustedSourceAuditServiceIdentityProvider>();
         services.AddScoped<ITrustedSourceAuditIntentClient, PlatformTrustedSourceAuditIntentClient>();
         services.AddScoped<AuditIntentDeliveryProcessor>();
+        services.Configure<AuthProductIdentityWorkflowServiceIdentityProviderOptions>(
+            configuration.GetSection(AuthProductIdentityWorkflowServiceIdentityProviderOptions.SectionName));
+        services.Configure<ProductIdentityWorkflowClientOptions>(
+            configuration.GetSection(ProductIdentityWorkflowClientOptions.SectionName));
+        services.AddHttpClient(nameof(AuthProductIdentityWorkflowServiceIdentityProvider), client =>
+            {
+                client.Timeout = Timeout.InfiniteTimeSpan;
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false })
+            .RedactLoggedHeaders([
+                AuthProductIdentityWorkflowServiceIdentityProvider.ClientIdHeader,
+                AuthProductIdentityWorkflowServiceIdentityProvider.ClientSecretHeader
+            ]);
+        services.AddHttpClient(nameof(PlatformProductIdentityWorkflowClient), client =>
+            {
+                client.Timeout = Timeout.InfiniteTimeSpan;
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false })
+            .RedactLoggedHeaders([
+                "Authorization",
+                PlatformProductIdentityWorkflowClient.DelegatedAuthorizationHeader,
+                PlatformProductIdentityWorkflowClient.IdempotencyKeyHeader
+            ]);
+        services.AddSingleton<IProductIdentityWorkflowServiceIdentityProvider,
+            AuthProductIdentityWorkflowServiceIdentityProvider>();
+        services.AddScoped<IProductIdentityWorkflowClient, PlatformProductIdentityWorkflowClient>();
+        services.AddScoped<IProductIdentityDelegatedTokenAccessor,
+            HttpContextProductIdentityDelegatedTokenAccessor>();
 
         return services;
     }

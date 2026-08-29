@@ -936,7 +936,7 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
             || binding.ApprovalTaskId == Guid.Empty
             || binding.AssignmentSnapshotId == Guid.Empty
             || binding.StartTransitionLogId == Guid.Empty
-            || !string.Equals(binding.ObjectType, "global-product", StringComparison.Ordinal)
+            || !string.Equals(binding.ObjectType, "GlobalProduct", StringComparison.Ordinal)
             || binding.ObjectId != aggregateId
             || string.IsNullOrWhiteSpace(binding.ObjectRef)
             || binding.SubmitterSubjectId == Guid.Empty
@@ -955,19 +955,30 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
             || evidence.ApprovalTaskId == Guid.Empty
             || evidence.WorkflowTemplateId == Guid.Empty
             || evidence.WorkflowTemplateVersionId == Guid.Empty
-            || !string.Equals(evidence.ObjectType, "global-product", StringComparison.Ordinal)
+            || !string.Equals(evidence.ObjectType, "GlobalProduct", StringComparison.Ordinal)
             || evidence.ObjectId != aggregateId
             || string.IsNullOrWhiteSpace(evidence.ObjectRef)
             || evidence.DecisionActorSubjectId == Guid.Empty
             || evidence.DecisionAtUtc.Offset != TimeSpan.Zero
             || evidence.TransitionSequence < 1
-            || string.IsNullOrWhiteSpace(evidence.TaskStatus)
-            || string.IsNullOrWhiteSpace(evidence.InstanceStatus)
+            || !ExactTerminalStatuses(evidence)
             || (evidence.Decision == ProductIdentityDecisionKind.Rejected
                 && string.IsNullOrWhiteSpace(evidence.ReasonCode)))
             return "WORKFLOW_DECISION_EVIDENCE_INVALID";
         return null;
     }
+
+    private static bool ExactTerminalStatuses(ProductIdentityWorkflowDecisionEvidence evidence) =>
+        evidence.Decision switch
+        {
+            ProductIdentityDecisionKind.Approved =>
+                string.Equals(evidence.TaskStatus, "Approved", StringComparison.Ordinal)
+                && string.Equals(evidence.InstanceStatus, "Completed", StringComparison.Ordinal),
+            ProductIdentityDecisionKind.Rejected =>
+                string.Equals(evidence.TaskStatus, "Rejected", StringComparison.Ordinal)
+                && string.Equals(evidence.InstanceStatus, "Rejected", StringComparison.Ordinal),
+            _ => false
+        };
 
     private static string? ValidateAdmissionInput(
         string creationCommandId,

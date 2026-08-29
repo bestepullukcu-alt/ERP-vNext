@@ -27,7 +27,7 @@ public sealed class ReconcileGlobalProductIdentityDecisionValidator
                 RuleFor(x => x.Request.DecisionEvidence.WorkflowTemplateId).NotEmpty();
                 RuleFor(x => x.Request.DecisionEvidence.WorkflowTemplateVersionId).NotEmpty();
                 RuleFor(x => x.Request.DecisionEvidence.ObjectType)
-                    .Equal("global-product", StringComparer.Ordinal);
+                    .Equal("GlobalProduct", StringComparer.Ordinal);
                 RuleFor(x => x.Request.DecisionEvidence.ObjectId).NotEmpty();
                 RuleFor(x => x.Request.DecisionEvidence.ObjectRef)
                     .NotEmpty().MaximumLength(512).Must(IsExact);
