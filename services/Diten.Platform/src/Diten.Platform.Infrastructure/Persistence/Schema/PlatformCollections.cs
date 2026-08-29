@@ -105,6 +105,7 @@ public static class PlatformCollections
     public const string DocumentReferenceEntries = "document_reference_entries";
     public const string DocumentReferenceListVersions = "document_reference_list_versions";
     public const string FeatureCategories = "platform_feature_categories";
+    public const string GateIAuditInbox = "gate_i_audit_inbox";
     public const string InterfaceActiveSnapshots = "platform_interface_active_snapshots";
     public const string InterfaceDefinitions = "platform_interface_definitions";
     public const string InterfaceDiscoveryBatches = "platform_interface_discovery_batches";

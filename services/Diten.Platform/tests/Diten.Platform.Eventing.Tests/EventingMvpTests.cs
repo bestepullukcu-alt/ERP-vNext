@@ -7,6 +7,8 @@ using Diten.Platform.Infrastructure.Eventing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit;
+using EventTransportMessage = Diten.Platform.Application.Contracts.Eventing.EventTransportMessage;
+using IEventTransportPublisher = Diten.Platform.Application.Contracts.Eventing.IEventTransportPublisher;
 
 namespace Diten.Platform.Eventing.Tests;
 
