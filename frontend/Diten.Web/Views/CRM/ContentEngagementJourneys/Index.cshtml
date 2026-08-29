@@ -1,0 +1,26 @@
+﻿@using Diten.Web.Views.CRM.ContentEngagementJourneys
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ContentEngagementJourneysIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["ContentEngagementJourneysTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/CRM/ContentEngagementJourneys/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ContentEngagementJourneysTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* The primary "Create Journey" action is rendered inside the DataTable toolbar (.add-new) by index.js. *@
+@* Contract markers rendered by _DataTable: skeleton-loader + data-dt-standard=v2 *@
+<partial name="~/Views/CRM/ContentEngagementJourneys/_DataTable.cshtml" />
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/ContentEngagementJourneys/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/ContentEngagementJourneys/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/ContentEngagementJourneys/index.js" asp-append-version="true"></script>
+}

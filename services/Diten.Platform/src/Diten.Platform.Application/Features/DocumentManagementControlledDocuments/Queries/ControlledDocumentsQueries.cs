@@ -6,7 +6,7 @@ namespace Diten.Platform.Application.Features.DocumentManagementControlledDocume
 
 // MOD-0029-FU01 — controlled-document / template / folder / share queries.
 
-public sealed record GetControlledDocumentListQuery(Guid? CollectionInstanceId, string CorrelationId)
+public sealed record GetControlledDocumentListQuery(Guid? CollectionInstanceId, string CorrelationId, bool IncludeNonEffective = false)
     : IRequest<Response<IReadOnlyList<ControlledDocumentListItemModel>>>;
 
 public sealed record GetControlledDocumentByIdQuery(Guid DocumentId, string CorrelationId)
@@ -33,7 +33,7 @@ public sealed record GetTemplateVersionsQuery(Guid TemplateId, string Correlatio
 public sealed record DownloadTemplateVersionQuery(Guid TemplateId, Guid VersionId, string CorrelationId)
     : IRequest<Response<DocumentDownloadResult>>;
 
-public sealed record GetFolderDocumentsQuery(Guid CollectionInstanceId, string CorrelationId)
+public sealed record GetFolderDocumentsQuery(Guid CollectionInstanceId, string CorrelationId, bool IncludeNonEffective = false)
     : IRequest<Response<FolderDocumentsModel>>;
 
 public sealed record GetFolderDocumentAccessQuery(Guid CollectionInstanceId, string CorrelationId)

@@ -1,0 +1,284 @@
+@model Diten.Web.Models.CRM.AccountEditViewModel
+@using Diten.Web.Views.CRM.Accounts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<AccountIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var action = isEdit ? "Edit" : "Create";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/CRM/Accounts">@Localizer["AccountTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/CRM/Accounts" class="btn btn-label-secondary">
+            @SharedLocalizer["Cancel"]
+        </a>
+        <button type="submit" form="accountForm" class="btn btn-primary">
+            @SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.ReferenceDependencyMessage))
+{
+    @* Controlled dependency: a required MOD-0048 set is unavailable. The selects stay empty on purpose —
+       no local fallback list is ever substituted. *@
+    <div class="alert alert-warning" role="alert">@Model.ReferenceDependencyMessage</div>
+}
+
+<form id="accountForm" asp-controller="Accounts" asp-action="@action" asp-route-id="@Model.Id" method="post"
+      class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="AccountName" class="form-label fw-medium">@Localizer["AccountName"] <span class="text-danger">*</span></label>
+                            <input asp-for="AccountName" class="form-control" maxlength="200" placeholder="@Localizer["AccountNamePlaceholder"]" required />
+                            <span asp-validation-for="AccountName" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="AccountCode" class="form-label fw-medium">@Localizer["AccountCode"]</label>
+                            <input asp-for="AccountCode" class="form-control" maxlength="64" placeholder="@Localizer["AccountCodePlaceholder"]" />
+                            <div class="form-text">@Localizer["AccountCodeHelp"]</div>
+                            <span asp-validation-for="AccountCode" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="AccountType" class="form-label fw-medium">@Localizer["AccountType"] <span class="text-danger">*</span></label>
+                            <select asp-for="AccountType" class="select2 form-select"
+                                    asp-items="@(new SelectList(Model.AccountTypeOptions, nameof(Diten.Web.Models.CRM.ReferenceOptionViewModel.Value), nameof(Diten.Web.Models.CRM.ReferenceOptionViewModel.Text)))" required>
+                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                            </select>
+                            <span asp-validation-for="AccountType" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="AccountCategory" class="form-label fw-medium">@Localizer["AccountCategory"]</label>
+                            <select asp-for="AccountCategory" class="select2 form-select"
+                                    asp-items="@(new SelectList(Model.AccountCategoryOptions, nameof(Diten.Web.Models.CRM.ReferenceOptionViewModel.Value), nameof(Diten.Web.Models.CRM.ReferenceOptionViewModel.Text)))">
+                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="ParentAccountId" class="form-label fw-medium">@Localizer["ParentAccount"]</label>
+                            <select asp-for="ParentAccountId" class="select2 form-select"
+                                    asp-items="@(new SelectList(Model.ParentAccountOptions, nameof(Diten.Web.Models.CRM.ReferenceOptionViewModel.Value), nameof(Diten.Web.Models.CRM.ReferenceOptionViewModel.Text)))">
+                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                            </select>
+                            <div class="form-text">@Localizer["ParentAccountHelp"]</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LocationSection"]</h6>
+
+                    @* Inline map picker (Leaflet + OpenStreetMap). Click/drag the marker to set coordinates; the address
+                       fields can also be filled manually. No modal — the map lives directly in the form. *@
+                    <div class="mb-3">
+                        <div class="input-group mb-2">
+                            <span class="input-group-text"><i class="bx bx-search"></i></span>
+                            <input type="text" id="accountMapSearch" class="form-control"
+                                   placeholder="@Localizer["MapSearchPlaceholder"]" autocomplete="off" />
+                            <button type="button" class="btn btn-outline-primary" id="btnAccountMapSearch">@SharedLocalizer["Search"]</button>
+                            <button type="button" class="btn btn-outline-secondary" id="btnAccountUseMyLocation">
+                                <i class="bx bx-current-location me-1"></i>@Localizer["UseMyLocation"]
+                            </button>
+                        </div>
+                        <div id="accountMap" class="rounded border"
+                             style="height: 320px; width: 100%;"
+                             data-lat="@(Model.Latitude?.ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                             data-lng="@(Model.Longitude?.ToString(System.Globalization.CultureInfo.InvariantCulture))"></div>
+                        <div class="form-text">@Localizer["MapHelp"]</div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <label asp-for="CountryRef" class="form-label fw-medium">@Localizer["CountryRef"]</label>
+                            <select asp-for="CountryRef" class="select2 form-select" data-placeholder="@Localizer["CountryRefPlaceholder"]">
+                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                @foreach (var o in Model.CountryOptions)
+                                {
+                                    <option value="@o.Value" selected="@(string.Equals(o.Value, Model.CountryRef, StringComparison.OrdinalIgnoreCase))">@o.Text</option>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(Model.CountryRef) && !Model.CountryOptions.Any(o => string.Equals(o.Value, Model.CountryRef, StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    <option value="@Model.CountryRef" selected="selected">@Model.CountryRef</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="CityRef" class="form-label fw-medium">@Localizer["CityRef"]</label>
+                            <select asp-for="CityRef" class="select2 form-select" data-placeholder="@Localizer["CityRefPlaceholder"]">
+                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                @foreach (var o in Model.CityOptions)
+                                {
+                                    <option value="@o.Value" selected="@(string.Equals(o.Value, Model.CityRef, StringComparison.OrdinalIgnoreCase))">@o.Text</option>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(Model.CityRef) && !Model.CityOptions.Any(o => string.Equals(o.Value, Model.CityRef, StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    <option value="@Model.CityRef" selected="selected">@Model.CityRef</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="DistrictRef" class="form-label fw-medium">@Localizer["DistrictRef"]</label>
+                            <select asp-for="DistrictRef" class="select2 form-select" data-placeholder="@Localizer["DistrictRefPlaceholder"]">
+                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                @foreach (var o in Model.DistrictOptions)
+                                {
+                                    <option value="@o.Value" selected="@(string.Equals(o.Value, Model.DistrictRef, StringComparison.OrdinalIgnoreCase))">@o.Text</option>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(Model.DistrictRef) && !Model.DistrictOptions.Any(o => string.Equals(o.Value, Model.DistrictRef, StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    <option value="@Model.DistrictRef" selected="selected">@Model.DistrictRef</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="AddressLine" class="form-label fw-medium">@Localizer["AddressLine"]</label>
+                            <textarea asp-for="AddressLine" class="form-control" rows="2" maxlength="500" placeholder="@Localizer["AddressLinePlaceholder"]"></textarea>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Latitude" class="form-label fw-medium">@Localizer["Latitude"]</label>
+                            <input asp-for="Latitude" type="number" step="any" min="-90" max="90" class="form-control" placeholder="41.0082" />
+                            <span asp-validation-for="Latitude" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Longitude" class="form-label fw-medium">@Localizer["Longitude"]</label>
+                            <input asp-for="Longitude" type="number" step="any" min="-180" max="180" class="form-control" placeholder="28.9784" />
+                            <span asp-validation-for="Longitude" class="text-danger small mt-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["NotesSection"]</h6>
+                    <label asp-for="Notes" class="form-label fw-medium">@SharedLocalizer["Description"]</label>
+                    <textarea asp-for="Notes" class="form-control" rows="6" maxlength="2000" placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right) -->
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LogoSection"]</h6>
+
+                    @* Optional account logo. Stored inline as a base64 data URI on the account (no external file storage);
+                       the picker reads the file client-side into the hidden field. Capped ~256 KB — form.js enforces it. *@
+                    <input type="hidden" asp-for="LogoDataUri" id="accountLogoData" />
+
+                    <div id="accountLogoBox"
+                         class="d-flex flex-column align-items-center gap-3"
+                         data-invalid-type="@Localizer["LogoInvalidType"]"
+                         data-too-large="@Localizer["LogoTooLarge"]">
+                        @{
+                            var hasLogo = !string.IsNullOrWhiteSpace(Model.LogoDataUri);
+                        }
+                        <img id="accountLogoPreview"
+                             src="@(hasLogo ? Model.LogoDataUri : "")"
+                             alt="@Localizer["LogoSection"]"
+                             class="rounded border object-fit-contain bg-lighter @(hasLogo ? "" : "d-none")"
+                             style="width: 140px; height: 140px;" />
+                        <div id="accountLogoPlaceholder"
+                             class="rounded border d-flex align-items-center justify-content-center text-muted bg-lighter @(hasLogo ? "d-none" : "")"
+                             style="width: 140px; height: 140px;">
+                            <i class="bx bx-image-add" style="font-size: 2.5rem;"></i>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <label for="accountLogoFile" class="btn btn-sm btn-outline-primary mb-0">
+                                <i class="bx bx-upload me-1"></i>@Localizer["LogoSelect"]
+                            </label>
+                            <button type="button" id="accountLogoRemove"
+                                    class="btn btn-sm btn-outline-danger @(hasLogo ? "" : "d-none")">
+                                <i class="bx bx-trash me-1"></i>@Localizer["LogoRemove"]
+                            </button>
+                        </div>
+                        <input type="file" id="accountLogoFile" class="d-none"
+                               accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" />
+
+                        <div class="form-text text-center mb-0">@Localizer["LogoHelp"]</div>
+                        <div id="accountLogoError" class="text-danger small text-center d-none"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["StatusSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="Status" class="form-label fw-medium">@SharedLocalizer["Status"] <span class="text-danger">*</span></label>
+                            <select asp-for="Status" class="select2 form-select"
+                                    asp-items="@(new SelectList(Model.AccountStatusOptions, nameof(Diten.Web.Models.CRM.ReferenceOptionViewModel.Value), nameof(Diten.Web.Models.CRM.ReferenceOptionViewModel.Text)))" required>
+                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger small mt-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ContactSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="ResponsiblePersonName" class="form-label fw-medium">@Localizer["ResponsiblePersonName"]</label>
+                            <input asp-for="ResponsiblePersonName" class="form-control" maxlength="200" placeholder="@Localizer["ResponsiblePersonNamePlaceholder"]" />
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="ResponsiblePersonPhone" class="form-label fw-medium">@Localizer["ResponsiblePersonPhone"]</label>
+                            <input asp-for="ResponsiblePersonPhone" class="form-control" maxlength="32" placeholder="@Localizer["ResponsiblePersonPhonePlaceholder"]" />
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="ResponsiblePersonEmail" class="form-label fw-medium">@Localizer["ResponsiblePersonEmail"]</label>
+                            <input asp-for="ResponsiblePersonEmail" type="email" class="form-control" maxlength="256" placeholder="@Localizer["ResponsiblePersonEmailPlaceholder"]" />
+                            <span asp-validation-for="ResponsiblePersonEmail" class="text-danger small mt-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IntegrationSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="ExternalReference" class="form-label fw-medium">@Localizer["ExternalReference"]</label>
+                            <input asp-for="ExternalReference" class="form-control" maxlength="128" placeholder="@Localizer["ExternalReferencePlaceholder"]" />
+                            <div class="form-text">@Localizer["ExternalReferenceHelp"]</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+</form>

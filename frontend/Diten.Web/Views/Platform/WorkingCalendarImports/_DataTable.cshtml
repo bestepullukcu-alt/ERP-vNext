@@ -1,0 +1,35 @@
+@using Diten.Web.Views.Platform.WorkingCalendarImports
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkingCalendarImportsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-workingcalendarimports" data-dt-standard="v2" class="datatables-workingcalendarimports table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="cell-fit"><input type="checkbox" class="dt-checkboxes-select-all form-check-input"></th>
+                    <th>@Localizer["Batch"]</th>
+                    <th>@Localizer["Country"]</th>
+                    <th>@Localizer["Year"]</th>
+                    <th class="all">@Localizer["Target"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th>@Localizer["Trigger"]</th>
+                    <th>@Localizer["Candidates"]</th>
+                    <th>@Localizer["RequestedBy"]</th>
+                    <th>@Localizer["Date"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,40 @@
+CapabilityId,Capability,LegacyStatus,LegacyEvidencePath,ERPvNextStatus,ERPvNextModuleId,RuntimeProof,BusinessImportance,GapSeverity
+CAP-01,PV tenant/organization,IMPLEMENTED_AND_PROVEN,DitenPvTenant + DitenPvOrganization/Organization.cs,PARTIALLY_AVAILABLE,MOD-0288/MOD-0009,code-path-only,High,P1
+CAP-02,PV user/role,PARTIAL,DitenPvUser/User.cs + AuthController.cs,PARTIALLY_AVAILABLE,MOD-0018/AuthService,code-path-only,High,P0
+CAP-03,PV system/safety DB definition,CONFIGURATION_ONLY,appsettings.json DatabaseName,NOT_IMPLEMENTED,none,none,Medium,P1
+CAP-04,Product & pharmaceutical form,IMPLEMENTED_AND_PROVEN,GlobalSku.cs + TenantPharmaceuticalForm,CONTRACT_ONLY/FOUNDATION,MOD-0290/MOD-0048,none,High,P1
+CAP-05,Registration/regulatory affairs,PARTIAL,MarketingAuthorization.cs + RegulatoryReport.cs,NOT_IMPLEMENTED,none,none,High,P1
+CAP-06,Safety report/AE intake,IMPLEMENTED_AND_PROVEN,SafetyReport.cs + CreateSafetyReportHandler.cs,NOT_IMPLEMENTED,none,none,Critical,P0
+CAP-07,Patient,PARTIAL,SafetyReport.cs Patient class,NOT_IMPLEMENTED,none,none,High,P0
+CAP-08,Reporter,DATA_MODEL_ONLY,SafetyReport.Reporter string,NOT_IMPLEMENTED,none,none,High,P0
+CAP-09,Suspect/concomitant products,PARTIAL,ProductDescription + ConcomitantMedications,NOT_IMPLEMENTED,none,none,High,P1
+CAP-10,Event/reaction,PARTIAL,SafetyReport.AdverseReaction string,NOT_IMPLEMENTED,none,none,Critical,P0
+CAP-11,Seriousness,PARTIAL,SafetyReport.isSerious bool,NOT_IMPLEMENTED,none,none,Critical,P0
+CAP-12,Expectedness,PARTIAL,SafetyReport.isUnexpected bool,NOT_IMPLEMENTED,none,none,Critical,P0
+CAP-13,Causality,PARTIAL,CausalityAssessment enum,NOT_IMPLEMENTED,none,none,Critical,P0
+CAP-14,Case narrative,UI_ONLY,SafetyReport.SafetyComments/Summary string,NOT_IMPLEMENTED,none,none,High,P1
+CAP-15,Attachments/documents,IMPLEMENTED_AND_PROVEN,CreateSafetyReportDocumentsHandler.cs local disk,PARTIALLY_AVAILABLE,MOD-0028,none,High,P2
+CAP-16,Case versioning,DATA_MODEL_ONLY,SafetyReport.Version string,NOT_IMPLEMENTED,none,none,High,P1
+CAP-17,Follow-up,UI_ONLY,SafetyReport.FollowUpTracker string,NOT_IMPLEMENTED,none,none,High,P1
+CAP-18,Duplicate detection,NOT_FOUND,SafetyReport.IsDuplicate manual bool,NOT_IMPLEMENTED,none,none,High,P1
+CAP-19,Case assignment,IMPLEMENTED_AND_PROVEN,SafetyReport Assigned*/Reviewer fields,NOT_IMPLEMENTED,none,none,Medium,P2
+CAP-20,Workflow/review/approval,NOT_FOUND,enum statuses no engine,FOUNDATION_ONLY,MOD-0023,none,Critical,P2
+CAP-21,Reconciliation,PARTIAL,LcppvMonthlyReconcilationController.cs (survey),NOT_IMPLEMENTED,none,none,Medium,P1
+CAP-22,Authority reporting,UI_ONLY,RegulatoryReport.cs link/summary,NOT_IMPLEMENTED,none,none,Critical,P1
+CAP-23,Reporting & KPIs,NOT_FOUND,no read-model,NOT_IMPLEMENTED,none,none,Medium,P2
+CAP-24,Audit trail,NOT_FOUND,AuditTrail/AuditLog=0 matches,PARTIALLY_AVAILABLE,MOD-0021,implemented-evidence,Critical,P0
+CAP-25,E-signature,NOT_FOUND,ESignature=0 matches,NOT_IMPLEMENTED,none,none,Critical,P0
+CAP-26,Notifications,PARTIAL,DitenPvUser Gmail/SMTP,PARTIALLY_AVAILABLE,MOD-0027,none,Medium,P2
+CAP-27,Lookup/reference data,PARTIAL,DitenPvLookup/Country.cs + DitenPvTenant,PARTIALLY_AVAILABLE,MOD-0048,none,High,P1
+CAP-28,Import/export,NOT_FOUND,not found,NOT_IMPLEMENTED,none,none,Medium,P2
+CAP-29,Integration,PARTIAL,Flurl HTTP + Google API,NOT_IMPLEMENTED,none,none,Medium,P2
+CAP-30,Data retention/archive,NOT_FOUND,soft-delete Status only,NOT_IMPLEMENTED,none,none,High,P2
+CAP-31,Security/tenant isolation,PARTIAL,TenantResolutionMiddleware.cs host-based,PARTIALLY_AVAILABLE,MOD-0018/MOD-0009,tenant-scoped-token,Critical,P0
+CAP-32,Validation/data quality,PARTIAL,CreateSafetyReportHandler null checks,NOT_IMPLEMENTED,none,none,High,P1
+CAP-33,Search/list/filter,IMPLEMENTED_AND_PROVEN,GetSafetyReportsHandler + DataTables,NOT_IMPLEMENTED,none,none,Medium,P2
+CAP-34,Dashboard,NOT_FOUND,none for PV,NOT_IMPLEMENTED,none,none,Low,P3
+CAP-35,MedDRA coding,NOT_FOUND,MedDRA=0 matches,NOT_IMPLEMENTED,none,none,Critical,P1
+CAP-36,WHO Drug coding,NOT_FOUND,WHODrug=0 matches,NOT_IMPLEMENTED,none,none,Critical,P1
+CAP-37,Signal management,NOT_FOUND,SignalDetectionParticipation bool only,NOT_IMPLEMENTED,none,none,High,P3
+CAP-38,Literature monitoring,UI_ONLY,SafetyReport.Literature* fields,NOT_IMPLEMENTED,none,none,Medium,P3
+CAP-39,Compliance evidence,NOT_FOUND,no IQ/OQ/PQ or validation package,NOT_IMPLEMENTED,none,none,Critical,P0

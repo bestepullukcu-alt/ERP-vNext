@@ -1,0 +1,38 @@
+@using Diten.Web.Views.MasterData.Products
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProductsIndex> Localizer
+
+<div class="card">
+    <div id="productContractError" class="alert alert-danger rounded-0 d-none mb-0" role="alert"></div>
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+    </div>
+    <div class="card-datatable table-responsive">
+        @* The full column set is offered; the denser pharma columns start hidden and are reachable through
+           column visibility, so the default view stays readable without dropping data. *@
+        <table id="dt-products" data-dt-standard="v2" class="datatables-products table border-top w-100">
+            <thead><tr>
+                <th></th>
+                <th>@Localizer["ProductCode"]</th>
+                <th class="all">@Localizer["ProductName"]</th>
+                <th>@Localizer["ProductStatus"]</th>
+                <th>@Localizer["BrandId"]</th>
+                <th>@Localizer["ProductType"]</th>
+                <th>@Localizer["DosageForm"]</th>
+                <th>@Localizer["Strength"]</th>
+                <th>@Localizer["PackSize"]</th>
+                <th>@Localizer["UnitOfMeasure"]</th>
+                <th>@Localizer["ATCCode"]</th>
+                <th>@Localizer["TherapeuticAreaId"]</th>
+                <th>@Localizer["EffectiveFrom"]</th>
+                <th>@Localizer["EffectiveTo"]</th>
+                <th>@Localizer["Archived"]</th>
+                <th>@Localizer["UpdatedAt"]</th>
+                <th class="all text-end">@Localizer["Actions"]</th>
+            </tr></thead>
+        </table>
+    </div>
+</div>

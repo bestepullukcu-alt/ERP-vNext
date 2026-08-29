@@ -1,0 +1,76 @@
+@using Diten.Web.Views.CRM.Campaigns
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CampaignIndex> Localizer
+
+@*
+    Campaign targets grid — golden-slim.
+
+    FU11 round-2 slimmed what is SHOWN, not what is kept. Five columns stay on the row (type, target, status,
+    priority, actions); the other twenty are hidden and restored from the column-visibility control, which is why the
+    six consent-provenance columns and every source-provenance column are still declared here. Deleting them would
+    cost FU04's audit surface — the one that answers "why is this target in, or out?" — and nobody asked to lose that,
+    only to stop scrolling sideways to read a name.
+
+    The filter bar follows the golden-slim inline pattern: it lives inside a collapse that details.js moves under the
+    toolbar at init, and it is opened from the toolbar's filter button rather than sitting permanently above the grid.
+
+    `dt-inline-filter-host` is required on this SECOND filter host: all of the chip styling is scoped to
+    #inlineFilterHost and that class, so without it this bar renders unstyled.
+*@
+<div id="targetFilterHost" class="dt-inline-filter-host">
+    <div class="collapse" id="targetFilterCollapse">
+        <div class="pt-0 pb-3 px-3">
+            <form id="targetFilterForm" class="m-0" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Filter Chip: Target Type *@
+                    <div class="filter-chip filter-target-type">
+                        <select id="targetTypeFilter" class="form-select form-select-sm select2" data-placeholder="@Localizer["TargetType"]" aria-label="@Localizer["TargetType"]"></select>
+                    </div>
+
+                    @* Filter Chip: Target Status *@
+                    <div class="filter-chip filter-target-status">
+                        <select id="targetStatusFilter" class="form-select form-select-sm select2" data-placeholder="@Localizer["TargetStatus"]" aria-label="@Localizer["TargetStatus"]"></select>
+                    </div>
+
+                    @* Filter Chip: Target Source *@
+                    <div class="filter-chip filter-target-source">
+                        <select id="targetSourceFilter" class="form-select form-select-sm select2" data-placeholder="@Localizer["TargetSource"]" aria-label="@Localizer["TargetSource"]"></select>
+                    </div>
+
+                    @* Filter Chip: Snapshot batch — a free-text id, so it stays an input rather than a select. *@
+                    <div class="filter-chip filter-snapshot-batch">
+                        <input id="snapshotBatchFilter" class="form-control form-control-sm" placeholder="@Localizer["SnapshotBatchId"]" aria-label="@Localizer["SnapshotBatchId"]" />
+                    </div>
+
+                    <div class="form-check form-switch ms-1">
+                        <input id="targetIncludeArchived" class="form-check-input" type="checkbox" checked />
+                        <label class="form-check-label" for="targetIncludeArchived">@Localizer["IncludeArchived"]</label>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="applyTargetFilters">@Localizer["Apply"]</button>
+                        <button type="button" class="btn btn-sm btn-label-danger" id="resetTargetFilters">@Localizer["Reset"]</button>
+                    </div>
+                </div>
+                <div class="small text-muted mt-2">@Localizer["UnsupportedTargetFiltersNote"]</div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="targetsSkeleton" class="backbone-skeleton p-4">
+    <div class="shimmer skeleton-row skeleton-row-lg"></div>
+    <div class="shimmer skeleton-row"></div>
+    <div class="shimmer skeleton-row"></div>
+</div>
+
+<div class="card-datatable table-responsive">
+    <table id="dt-campaign-targets" data-dt-standard="v2" class="table border-top w-100">
+        <thead>
+            <tr>
+                <th></th><th>@Localizer["CampaignTargetId"]</th><th>@Localizer["TargetType"]</th><th>@Localizer["TargetId"]</th><th class="all">@Localizer["TargetDisplayName"]</th><th>@Localizer["TargetStatus"]</th><th>@Localizer["TargetSource"]</th><th>@Localizer["SourceReferenceType"]</th><th>@Localizer["SourceReferenceId"]</th><th>@Localizer["SnapshotBatchId"]</th><th>@Localizer["PriorityLevel"]</th><th>@Localizer["SelectionReason"]</th><th>@Localizer["ReasonCodes"]</th><th>@Localizer["ExclusionReason"]</th><th>@Localizer["ConsentDecision"]</th><th>@Localizer["EligibilityStatus"]</th><th>@Localizer["EvaluatedAt"]</th><th>@Localizer["MatchedConsentId"]</th><th>@Localizer["MatchedPreferenceIds"]</th><th>@Localizer["EvaluatorVersion"]</th><th>@Localizer["EffectiveFrom"]</th><th>@Localizer["EffectiveTo"]</th><th>@Localizer["Archived"]</th><th>@Localizer["UpdatedAt"]</th><th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+            </tr>
+        </thead>
+    </table>
+</div>

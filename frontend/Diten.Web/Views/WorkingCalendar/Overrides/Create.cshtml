@@ -1,0 +1,18 @@
+@model Diten.Web.Models.WorkingCalendar.WorkingCalendarEditViewModel
+@using Diten.Web.Views.WorkingCalendar.Overrides
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OverridesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleCreate"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "create";
+}
+
+<partial name="~/Views/WorkingCalendar/Overrides/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <partial name="~/Views/WorkingCalendar/Overrides/_IndexL10n.cshtml" />
+    <script src="~/assets/js/WorkingCalendar/Overrides/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkingCalendar/Overrides/form.js" asp-append-version="true"></script>
+}

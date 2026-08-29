@@ -274,6 +274,7 @@ public sealed class ControlledDocumentsTests
 
         var created = await f.Documents.CreateAsync(CreateInput(), Corr, CancellationToken.None);
         Assert.True(created.IsSuccessful);
+        LinkEffective(f, created.Data!.Id);
 
         var list = await f.Documents.ListAsync(null, Corr, CancellationToken.None);
         Assert.True(list.IsSuccessful);
@@ -295,6 +296,7 @@ public sealed class ControlledDocumentsTests
         var owner = Fixture(grantFolder: true); // claimed principal seeds the document
         var created = await owner.Documents.CreateAsync(CreateInput(), Corr, CancellationToken.None);
         Assert.True(created.IsSuccessful);
+        LinkEffective(owner, created.Data!.Id);
 
         var claimless = Fixture(grantFolder: false, principalCompanies: [], shareReader: owner);
         var list = await claimless.Documents.ListAsync(null, Corr, CancellationToken.None);
@@ -333,6 +335,7 @@ public sealed class ControlledDocumentsTests
         var created = await f.Documents.CreateAsync(CreateInput(), Corr, CancellationToken.None);
         Assert.True(created.IsSuccessful);
         var docId = created.Data!.Id;
+        LinkEffective(f, docId);
         var versionId = f.VersionRepo.Items.Single().Id;
         SeedMatrixPolicy(f, DocumentAccessTargetType.ControlledDocument, docId, DocumentAccessEffect.Deny,
             DocumentAccessMatrixAction.Download,
@@ -398,6 +401,7 @@ public sealed class ControlledDocumentsTests
         var f = Fixture(grantFolder: true);
         var created = await f.Documents.CreateAsync(CreateInput(), Corr, CancellationToken.None);
         Assert.True(created.IsSuccessful);
+        LinkEffective(f, created.Data!.Id);
 
         var list = await f.Documents.ListAsync(null, Corr, CancellationToken.None);
         var folderDocs = await f.FolderDocs.GetFolderDocumentsAsync(InstanceId, Corr, CancellationToken.None);
@@ -413,6 +417,16 @@ public sealed class ControlledDocumentsTests
 
     private static FileUploadInput File(string marker) =>
         new($"{marker}.pdf", "application/pdf", Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("content-" + marker)));
+
+    private static void LinkEffective(TestFixture f, Guid controlledDocumentId) =>
+        f.MasterRegister.Items.Add(new DocumentMasterRegisterEntry
+        {
+            Id = Guid.NewGuid(),
+            TenantId = TenantId,
+            ControlledDocumentId = controlledDocumentId,
+            DocumentTitle = "Quality Manual",
+            LifecycleStatus = ControlledDocumentLifecycleStatus.Effective
+        });
 
     private static TemplateDocument SeedTemplate(TestFixture f, bool shareable, bool copyable = false, Guid? instanceId = null)
     {
@@ -456,6 +470,7 @@ public sealed class ControlledDocumentsTests
         var folderOps = new FakeFolderShareOperationRepository();
         var folderOutcomes = new FakeFolderShareOutcomeRepository();
         var storage = shareReader?.Storage ?? new FakeContentStorageGateway();
+        var masterRegister = shareReader?.MasterRegister ?? new FakeDocumentMasterRegisterRepository();
 
         var fullPermissions = new FolderPermissionSet
         {
@@ -500,7 +515,12 @@ public sealed class ControlledDocumentsTests
             compatibility,
             new FakePrincipalAccessor(principal),
             Options.Create(new AccessMatrixOptions()));
-        var access = new DocumentAccessEvaluator(folderPolicies, shares, new FakePrincipalAccessor(principal), matrix);
+        var access = new DocumentAccessEvaluator(
+            folderPolicies,
+            shares,
+            new FakePrincipalAccessor(principal),
+            matrix,
+            masterRegister: masterRegister);
         var flags = Options.Create(new ControlledDocumentsFeatureFlagOptions
         {
             ControlledDocumentsEnabled = true,
@@ -520,7 +540,7 @@ public sealed class ControlledDocumentsTests
         var folderShares = new FolderShareService(planner, sharing, folderOps, folderOutcomes, currentUser, tenantContext);
         var folderDocs = new FolderDocumentService(reader, documentRepo, templateRepo, favoriteRepo, folderPolicies, access, currentUser, tenantContext);
 
-        return new TestFixture(documents, templates, sharing, folderShares, folderDocs, documentRepo, versionRepo, templateRepo, templateVersionRepo, shares, folderOps, folderOutcomes, storage, matrixPolicies);
+        return new TestFixture(documents, templates, sharing, folderShares, folderDocs, documentRepo, versionRepo, templateRepo, templateVersionRepo, shares, folderOps, folderOutcomes, storage, matrixPolicies, masterRegister);
     }
 
     private static void SeedMatrixPolicy(
@@ -557,7 +577,8 @@ public sealed class ControlledDocumentsTests
         FakeFolderShareOperationRepository FolderOpRepo,
         FakeFolderShareOutcomeRepository FolderOutcomeRepo,
         FakeContentStorageGateway Storage,
-        FakeDocumentAccessPolicyRepository MatrixPolicies);
+        FakeDocumentAccessPolicyRepository MatrixPolicies,
+        FakeDocumentMasterRegisterRepository MasterRegister);
 
     private sealed class FakeDocumentAccessPolicyRepository : IDocumentAccessPolicyRepository
     {

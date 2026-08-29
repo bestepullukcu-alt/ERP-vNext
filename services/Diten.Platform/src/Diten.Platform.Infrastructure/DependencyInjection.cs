@@ -5,6 +5,8 @@ using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Application.Features.Lookups.Services;
 using Diten.Platform.Application.Features.Notifications.Services;
+using Diten.Platform.Application.Features.WorkingCalendar.Services;
+using Diten.Platform.Application.Features.WorkingCalendarImport;
 using Diten.Platform.Application.Features.TenantOrganization.Services;
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Application.Services;
@@ -22,6 +24,7 @@ using Diten.Platform.Infrastructure.Services.Audit;
 using Diten.Platform.Infrastructure.Services.Http;
 using Diten.Platform.Infrastructure.Services.WorkAggregation;
 using Diten.Platform.Infrastructure.Services.Mdm;
+using Diten.Platform.Infrastructure.Services.WorkingCalendarImport;
 using Diten.Platform.Infrastructure.Services.Notifications;
 using Diten.Platform.Infrastructure.Settings;
 using Diten.Platform.Common.Authorization;
@@ -154,6 +157,10 @@ public static class DependencyInjection
         services.Configure<EventBusOptions>(configuration.GetSection(EventBusOptions.SectionName));
         services.Configure<RabbitMqEventingOptions>(configuration.GetSection(RabbitMqEventingOptions.SectionName));
         services.Configure<BackgroundJobSchedulerOptions>(configuration.GetSection(BackgroundJobSchedulerOptions.SectionName));
+        services.AddOptions<WorkingCalendarImportOptions>()
+            .Bind(configuration.GetSection(WorkingCalendarImportOptions.SectionName))
+            .ValidateOnStart();
+        services.AddSingleton<IValidateOptions<WorkingCalendarImportOptions>, WorkingCalendarImportOptionsValidator>();
         // MOD-0029-FU01 — controlled-document feature flags + Phase 1 content-storage options.
         services.Configure<Diten.Platform.Application.Features.DocumentManagementControlledDocuments.ControlledDocumentsFeatureFlagOptions>(
             configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementControlledDocuments.ControlledDocumentsFeatureFlagOptions.SectionName));
@@ -165,6 +172,24 @@ public static class DependencyInjection
         // MOD-0029-FU05 — access-profile template role mapping.
         services.Configure<Diten.Platform.Application.Features.DocumentManagementAccessProfileTemplates.AccessProfileTemplateOptions>(
             configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementAccessProfileTemplates.AccessProfileTemplateOptions.SectionName));
+        // MOD-0029-FU07 — identifier coding rules (org/domain prefix, padding). Defaults match SOP examples when unset.
+        services.Configure<Diten.Platform.Application.Features.DocumentManagementIdentifiers.DocumentCodingOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementIdentifiers.DocumentCodingOptions.SectionName));
+        // MOD-0029-FU08 — lifecycle policy toggles (release-gate requirement defaults off until FU10).
+        services.Configure<Diten.Platform.Application.Features.DocumentManagementLifecycle.DocumentLifecycleOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementLifecycle.DocumentLifecycleOptions.SectionName));
+        // MOD-0029-FU09 — approval policy toggles (approval-required gate defaults off for backward compatibility).
+        services.Configure<Diten.Platform.Application.Features.DocumentManagementApproval.DocumentApprovalOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementApproval.DocumentApprovalOptions.SectionName));
+        // MOD-0029-FU10 — release gate policy toggles (training-for-non-critical defaults off).
+        services.Configure<Diten.Platform.Application.Features.DocumentManagementReleaseGates.DocumentReleaseGateOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementReleaseGates.DocumentReleaseGateOptions.SectionName));
+        // MOD-0029-FU12 — periodic review policy (60-day window / 60-day single extension; no auto lifecycle change).
+        services.Configure<Diten.Platform.Application.Features.DocumentManagementPeriodicReview.DocumentPeriodicReviewOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementPeriodicReview.DocumentPeriodicReviewOptions.SectionName));
+        // MOD-0029-FU13 — withdrawal policy (temporary instruction 30-day SOP ceiling).
+        services.Configure<Diten.Platform.Application.Features.DocumentManagementSuspension.DocumentWithdrawalOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementSuspension.DocumentWithdrawalOptions.SectionName));
 
         services.AddScoped<ITenantContext, TenantContext>();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
@@ -204,7 +229,29 @@ public static class DependencyInjection
         services.AddTransient<TenantPropagationHandler>();
         services.AddHttpClient("TenantAwareClient").AddHttpMessageHandler<TenantPropagationHandler>();
         services.AddHttpClient<ILegalEntityReferenceValidator, MdmLegalEntityReferenceValidator>();
+        services.AddHttpClient<IWorkingCalendarLegalEntityValidator, WorkingCalendarLegalEntityValidator>(client =>
+        {
+            // The validator owns one linked 3-second budget across both attempts.
+            client.Timeout = Timeout.InfiniteTimeSpan;
+        });
+        services.AddHttpClient<NagerDateHolidayProvider>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<IOptions<WorkingCalendarImportOptions>>().Value;
+            client.BaseAddress = new Uri(options.BaseUrl.TrimEnd('/') + "/", UriKind.Absolute);
+            client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
+        }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
+        services.AddScoped<OfflineHolidayProvider>();
+        services.AddScoped<IHolidayProvider>(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<WorkingCalendarImportOptions>>().Value;
+            return string.Equals(options.Provider, "nager-date", StringComparison.OrdinalIgnoreCase)
+                ? sp.GetRequiredService<NagerDateHolidayProvider>()
+                : sp.GetRequiredService<OfflineHolidayProvider>();
+        });
         services.AddHttpClient<IUserReferenceValidator, Diten.Platform.Infrastructure.Services.Auth.AuthServiceUserReferenceValidator>();
+        services.AddHttpClient<
+            Diten.Platform.Application.Features.DocumentManagementApproval.Services.IApprovalRoleDirectory,
+            Diten.Platform.Infrastructure.Services.Auth.AuthServiceApprovalRoleDirectory>();
 
         /*
          * WC-D1 (DCP-004 §2 D1) — THE GENERAL BRIDGE to modules that live in their own service.
@@ -278,6 +325,11 @@ public static class DependencyInjection
         services.AddScoped<IPositionAssignmentRepository, PositionAssignmentRepository>();
         services.AddScoped<IPersonReferenceRepository, PersonReferenceRepository>();
 
+        // Working Calendar & Public Holidays — first production consumer of HybridRepository (country rows with
+        // TenantId=null + per-tenant override rows in one collection).
+        services.AddScoped<IWorkingCalendarRepository, WorkingCalendarRepository>();
+        services.AddScoped<IWorkingCalendarImportBatchRepository, WorkingCalendarImportBatchRepository>();
+
         // Workflow Repositories
         services.AddScoped<IWorkflowTemplateRepository, WorkflowTemplateRepository>();
         services.AddScoped<IWorkflowTemplateVersionRepository, WorkflowTemplateVersionRepository>();
@@ -322,6 +374,7 @@ public static class DependencyInjection
         services.AddScoped<IBaselineSnapshotManifestRepository, BaselineSnapshotManifestRepository>();
         services.AddScoped<ICollectionInstanceRepository, CollectionInstanceRepository>();
         services.AddScoped<IInstantiationOperationRepository, InstantiationOperationRepository>();
+        services.AddScoped<ICorporateCollectionProvisioningOperationRepository, CorporateCollectionProvisioningOperationRepository>();
         services.AddScoped<IInstantiationOutcomeRepository, InstantiationOutcomeRepository>();
 
         // MOD-0029-FU01 — controlled documents / templates / versions / shares repositories + seams.
@@ -336,6 +389,79 @@ public static class DependencyInjection
         // MOD-0028-FU09 — provisioning evidence + read-back deviation repositories (sidecar).
         services.AddScoped<IProvisioningEvidenceRepository, ProvisioningEvidenceRepository>();
         services.AddScoped<IDocumentCollectionDeviationRepository, DocumentCollectionDeviationRepository>();
+        // MOD-0029-FU06 — Document Master Register (LOG-0001) repository (sidecar governance projection).
+        services.AddScoped<IDocumentMasterRegisterRepository, DocumentMasterRegisterRepository>();
+        // MOD-0029-FU36 — durable controlled-document registration orchestration.
+        services.AddScoped<IControlledDocumentRegistrationRepository, ControlledDocumentRegistrationRepository>();
+        // MOD-0029-FU07 — document identifier (Permanent UID / Document Code) allocation ledger + sequence counter.
+        services.AddScoped<IDocumentIdentifierAllocationRepository, DocumentIdentifierAllocationRepository>();
+        services.AddScoped<IDocumentIdentifierSequenceCounterRepository, DocumentIdentifierSequenceCounterRepository>();
+        // MOD-0029-FU08 — controlled document lifecycle transition record repository.
+        services.AddScoped<IDocumentLifecycleTransitionRecordRepository, DocumentLifecycleTransitionRecordRepository>();
+        // MOD-0029-FU09 — approval requirement + immutable evidence repositories.
+        services.AddScoped<IDocumentApprovalRequirementRepository, DocumentApprovalRequirementRepository>();
+        services.AddScoped<IDocumentApprovalEvidenceRepository, DocumentApprovalEvidenceRepository>();
+        // MOD-0029 (Faz 2a) — document-centric variant link repository.
+        services.AddScoped<IDocumentVariantRepository, DocumentVariantRepository>();
+        // MOD-0029-FU10 — release gate evaluation / result / manual evidence repositories.
+        services.AddScoped<IDocumentReleaseGateEvaluationRepository, DocumentReleaseGateEvaluationRepository>();
+        services.AddScoped<IDocumentReleaseGateResultRepository, DocumentReleaseGateResultRepository>();
+        services.AddScoped<IDocumentReleaseGateEvidenceRepository, DocumentReleaseGateEvidenceRepository>();
+        // MOD-0029-FU11 — training matrix requirement + assignment repositories.
+        services.AddScoped<IDocumentTrainingMatrixRequirementRepository, DocumentTrainingMatrixRequirementRepository>();
+        services.AddScoped<IDocumentTrainingAssignmentRepository, DocumentTrainingAssignmentRepository>();
+        // MOD-0029-FU12 — periodic review / extension / escalation repositories.
+        services.AddScoped<IDocumentPeriodicReviewRepository, DocumentPeriodicReviewRepository>();
+        services.AddScoped<IDocumentPeriodicReviewExtensionRepository, DocumentPeriodicReviewExtensionRepository>();
+        services.AddScoped<IDocumentPeriodicReviewEscalationRepository, DocumentPeriodicReviewEscalationRepository>();
+        // MOD-0029-FU13 — suspension / retirement / temporary-instruction repositories.
+        services.AddScoped<IDocumentSuspensionCaseRepository, DocumentSuspensionCaseRepository>();
+        services.AddScoped<IDocumentRetirementCaseRepository, DocumentRetirementCaseRepository>();
+        services.AddScoped<ITemporaryInstructionControlRepository, TemporaryInstructionControlRepository>();
+        // MOD-0029-FU16 — repository assessment + finding repositories.
+        services.AddScoped<IDocumentRepositoryAssessmentRepository, DocumentRepositoryAssessmentRepository>();
+        services.AddScoped<IDocumentRepositoryAssessmentFindingRepository, DocumentRepositoryAssessmentFindingRepository>();
+        // MOD-0029-FU17 — controlled copy / withdrawal plan / obsolete finding repositories.
+        services.AddScoped<IDocumentControlledCopyRepository, DocumentControlledCopyRepository>();
+        services.AddScoped<IDocumentCopyWithdrawalPlanRepository, DocumentCopyWithdrawalPlanRepository>();
+        services.AddScoped<IDocumentObsoleteCopyFindingRepository, DocumentObsoleteCopyFindingRepository>();
+        // MOD-0029-FU14 — external document register / monitoring check / impact assessment / internal link repositories.
+        services.AddScoped<IExternalDocumentRegisterRepository, ExternalDocumentRegisterRepository>();
+        services.AddScoped<IExternalDocumentMonitoringCheckRepository, ExternalDocumentMonitoringCheckRepository>();
+        services.AddScoped<IExternalDocumentImpactAssessmentRepository, ExternalDocumentImpactAssessmentRepository>();
+        services.AddScoped<IExternalDocumentInternalLinkRepository, ExternalDocumentInternalLinkRepository>();
+        // MOD-0029-FU15 — retention policy / subject / legal hold / hold membership / disposition repositories.
+        services.AddScoped<IDocumentRetentionPolicyRepository, DocumentRetentionPolicyRepository>();
+        services.AddScoped<IDocumentRetentionSubjectRepository, DocumentRetentionSubjectRepository>();
+        services.AddScoped<IDocumentLegalHoldRepository, DocumentLegalHoldRepository>();
+        services.AddScoped<IDocumentLegalHoldSubjectRepository, DocumentLegalHoldSubjectRepository>();
+        services.AddScoped<IDocumentDispositionRequestRepository, DocumentDispositionRequestRepository>();
+        // MOD-0029-FU18 — variant localization profile / review evidence / parent change assessment repositories.
+        services.AddScoped<ITemplateVariantLocalizationProfileRepository, TemplateVariantLocalizationProfileRepository>();
+        services.AddScoped<ITemplateVariantReviewEvidenceRepository, TemplateVariantReviewEvidenceRepository>();
+        services.AddScoped<ITemplateVariantParentChangeAssessmentRepository, TemplateVariantParentChangeAssessmentRepository>();
+        // MOD-0029-FU20 — repository downtime event / temporary controlled issue / downtime escalation repositories.
+        services.AddScoped<IDocumentRepositoryDowntimeEventRepository, DocumentRepositoryDowntimeEventRepository>();
+        services.AddScoped<IDocumentTemporaryControlledIssueRepository, DocumentTemporaryControlledIssueRepository>();
+        services.AddScoped<IDocumentDowntimeEscalationRepository, DocumentDowntimeEscalationRepository>();
+        // MOD-0029-FU21 — GDocP correction trail record / policy / review repositories (append-only; no delete).
+        services.AddScoped<IDocumentGDocPCorrectionRecordRepository, DocumentGDocPCorrectionRecordRepository>();
+        services.AddScoped<IDocumentGDocPCorrectionPolicyRepository, DocumentGDocPCorrectionPolicyRepository>();
+        services.AddScoped<IDocumentGDocPCorrectionReviewRepository, DocumentGDocPCorrectionReviewRepository>();
+        // MOD-0029-FU22 — quality event / deviation / CAPA / source link repositories (document-control scoped).
+        services.AddScoped<IDocumentQualityEventRepository, DocumentQualityEventRepository>();
+        services.AddScoped<IDocumentDeviationRepository, DocumentDeviationRepository>();
+        services.AddScoped<IDocumentCAPAActionRepository, DocumentCAPAActionRepository>();
+        services.AddScoped<IDocumentQualityEventSourceLinkRepository, DocumentQualityEventSourceLinkRepository>();
+        // MOD-0029-FU23 — signature policy / request / record / fingerprint repositories (append-only; no delete).
+        services.AddScoped<IDocumentSignaturePolicyRepository, DocumentSignaturePolicyRepository>();
+        services.AddScoped<IDocumentSignatureRequestRepository, DocumentSignatureRequestRepository>();
+        services.AddScoped<IDocumentSignatureRecordRepository, DocumentSignatureRecordRepository>();
+        services.AddScoped<IDocumentSignedObjectFingerprintRepository, DocumentSignedObjectFingerprintRepository>();
+        // MOD-0029-FU31A — governance policy pack application history (append-only; no delete, no update).
+        services.AddScoped<IDocumentGovernancePolicyPackApplicationRepository, DocumentGovernancePolicyPackApplicationRepository>();
+        // MOD-0029-FU32 — governance sweep run history (append-only; no delete).
+        services.AddScoped<IDocumentGovernanceSweepRunRepository, DocumentGovernanceSweepRunRepository>();
         // MOD-0029-FU04 — generalized document access matrix policy repository.
         services.AddScoped<IDocumentAccessPolicyRepository, DocumentAccessPolicyRepository>();
         services.AddScoped<IFolderDocumentAccessPolicyRepository, FolderDocumentAccessPolicyRepository>();
@@ -366,9 +492,16 @@ public static class DependencyInjection
         LegacySavedViewMigration.MigrateAsync(database).GetAwaiter().GetResult();
         // MC-2 — drop duplicate live module-service rows before the unique partial index is (re)created.
         ModuleServiceDeduplicationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+
         // FIX-DOMAIN-DEDUP — collapse cross-format duplicate domain rows + backfill CodeKey BEFORE the unique
         // partial index (ux_platform_module_domains_code_key) is (re)created, else the index build would fail.
         ModuleDomainDeduplicationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+
+        // NOTE (2026-08-28 main-sync): the pre-refactor MongoDbIndexConfigurations.ReconcileDevelopmentIndexesAsync
+        // dev-only drop was removed here — main's refactor folded drop-before-rebuild into PlatformSchemaMigrations
+        // (run first by EnsureIndexesAsync). The one index it dropped, "ux_dm_collection_instances_corporate_owner_
+        // baseline_node_active", is not a name main's manifest recreates, so it can never raise IndexOptionsConflict;
+        // any lingering copy in an old dev DB is a harmless orphan.
         MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
         var auditRetentionSeedOptions = configuration
             .GetSection(AuditRetentionSeedOptions.SectionName)

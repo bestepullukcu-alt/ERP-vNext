@@ -1,0 +1,45 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.CRM.Accounts.AccountIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* Inline collapse filter bar for the Account 360 "Related Accounts" DataTable (v2 contract).
+   The chips are populated at runtime from the relationship projection actually rendered for THIS account —
+   the section is a per-account slice, so an account that has no "refers-to" row must not offer it as a filter.
+   MOD-0048 stays the source of truth for which codes may exist; nothing is hardcoded here. *@
+<div id="inlineFilterHost" class="dt-inline-filter-host">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Filter Chip: Relationship (effective label from this account's perspective) *@
+                    <div class="filter-chip filter-relationship-type">
+                        <select id="filterRelationshipType" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["RelationshipType"]">
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Relationship Status *@
+                    <div class="filter-chip filter-status">
+                        <select id="filterRelationshipStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Related Account Type *@
+                    <div class="filter-chip filter-account-type">
+                        <select id="filterRelatedAccountType" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["AccountType"]">
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

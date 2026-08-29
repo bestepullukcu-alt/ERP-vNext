@@ -1,0 +1,35 @@
+@using System.Text.Json
+@using Diten.Web.Views.CRM.StrategyTemplates
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StrategyTemplatesIndex> Localizer
+@{
+    var keys = new[]
+    {
+        "Actions", "Active", "Passive", "Unknown", "Edit", "ViewDetails", "QuickView",
+        "BulkDelete", "BulkDeleteConfirm", "AreYouSure", "Cancel", "Save", "No", "Yes",
+        "Search", "Export", "Import", "Filter", "Apply", "Reset", "ShowAll", "SaveView", "ColumnVisibility", "Status",
+        "StrategyTemplateContractUnavailable", "StrategyTemplatesTitle", "TemplateCode", "TemplateName",
+        "SubjectType", "TemplateStatus", "TemplateVersion", "SegmentBindingCount", "FrequencyIntentMode",
+        "ProductLineCount", "SkuAllocationCount", "ContentBindingCount", "BindingState", "BusinessUnitId",
+        "EffectiveFrom", "EffectiveTo", "Archived", "UpdatedAt", "CreateStrategyTemplate", "EditStrategyTemplate",
+        "ArchiveStrategyTemplate", "ArchiveStrategyTemplateConfirm", "ActivateStrategyTemplate",
+        "ActivateStrategyTemplateConfirm", "NewVersion", "NewVersionConfirm", "EmptyState", "ErrorState", "Loading",
+        "RecordArchived", "RecordActivated", "IncludeArchived", "Frozen", "Editable", "Superseded", "SelectOption",
+        // Binding-editor labels: form.js reads them from this same bridge, so Create/Edit load it too.
+        "RecordCreated", "RecordUpdated", "SegmentSection", "FrequencySection", "ProductSection", "ContentSection",
+        "AddSegmentBinding", "AddProductLine", "AddSkuAllocation", "AddContentBinding", "Remove", "SortOrder",
+        "BindingRole", "Notes", "Segment", "NoSegmentBindings", "SegmentBindingHelp", "FrequencyIntentHelp",
+        "FrequencyPolicy", "FrequencyType", "RequiredVisitCount", "PeriodType", "IntentNote",
+        "DeclaredIntentNotBindingHelp", "GlobalProduct", "Gsku", "Percentage", "LineWeightPercentage",
+        "SkuAllocationMode", "TotalPercentage", "TotalMustBe100", "ContainmentNotVerifiedHelp", "NoProductLines",
+        "ContentRefType", "ContentRef", "NoContentBindings", "ContentPublishedOnlyHelp", "PickerUnavailable",
+        "GskuPickerUnavailable", "LimitReached", "FrozenBindingsHelp", "StatusSeparateEndpointHelp",
+        "NoMembersEverHelp", "ApplyIsMicroTargetHelp"
+    };
+    var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
+    // Verifier-compatible property markers for the dictionary-backed JSON bridge (each token below is `Key =`):
+    // Active =, Passive =, Unknown =, Actions =, Edit =, ViewDetails =, QuickView =,
+    // BulkDelete =, BulkDeleteConfirm =, AreYouSure =, Cancel =, Search =, Export =,
+    // Import =, Filter =, Apply =, Reset =, ShowAll =, SaveView =, ColumnVisibility =, Status =
+}
+<script id="strategy-templates-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>

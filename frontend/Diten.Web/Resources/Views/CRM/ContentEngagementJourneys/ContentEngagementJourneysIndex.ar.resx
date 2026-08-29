@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="ActiveStageCount" xml:space="preserve"><value>المراحل النشطة</value></data>
+  <data name="AddBranchCondition" xml:space="preserve"><value>إضافة شرط</value></data>
+  <data name="AddStage" xml:space="preserve"><value>إضافة مرحلة</value></data>
+  <data name="AdvancementRule" xml:space="preserve"><value>قاعدة التقدم</value></data>
+  <data name="Apply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="ArchiveJourney" xml:space="preserve"><value>أرشفة الرحلة</value></data>
+  <data name="ArchiveJourneyConfirm" xml:space="preserve"><value>أرشفة هذه الرحلة؟ لا يُحذف شيء، وتصبح للقراءة فقط.</value></data>
+  <data name="ArchiveStageConfirm" xml:space="preserve"><value>أرشفة هذه المرحلة؟ تبقى في المستند وتغادر القائمة النشطة فقط.</value></data>
+  <data name="Archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="ArchivedJourneyReadOnly" xml:space="preserve"><value>هذه الرحلة مؤرشفة وللقراءة فقط.</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>هل أنت متأكد؟</value></data>
+  <data name="AudienceProfileId" xml:space="preserve"><value>ملف الجمهور</value></data>
+  <data name="BackToList" xml:space="preserve"><value>العودة إلى القائمة</value></data>
+  <data name="BranchConditions" xml:space="preserve"><value>شروط التفرّع</value></data>
+  <data name="BranchConditionsHelp" xml:space="preserve"><value>بيانات قابلة للإدخال فقط — تُحمل الشروط ولا تُقيَّم أبدًا. يمكن اجتياز الرحلة من البداية إلى النهاية بدونها.</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>حذف جماعي</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>حذف السجلات المحددة؟</value></data>
+  <data name="Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>التصنيف</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>الأعمدة</value></data>
+  <data name="ConditionCode" xml:space="preserve"><value>رمز الشرط</value></data>
+  <data name="ContentEngagementJourneyContractUnavailable" xml:space="preserve"><value>عقد إمكانات ContentEngagementJourney غير متاح. الإجراءات معطلة.</value></data>
+  <data name="ContentEngagementJourneysMenu" xml:space="preserve"><value>رحلات التفاعل مع المحتوى</value></data>
+  <data name="ContentEngagementJourneysTitle" xml:space="preserve"><value>رحلات التفاعل مع المحتوى</value></data>
+  <data name="CreateJourney" xml:space="preserve"><value>إنشاء رحلة</value></data>
+  <data name="CrossLanguage" xml:space="preserve"><value>عابر للغة</value></data>
+  <data name="CrossSubject" xml:space="preserve"><value>عابر للموضوع</value></data>
+  <data name="DeclaredNotEvaluatedHelp" xml:space="preserve"><value>قاعدة التقدم ومرحلة الاحتياط وشروط التفرع مُعلَنة فقط — لا تقيّمها هذه الوحدة إطلاقًا.</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="EditJourney" xml:space="preserve"><value>تعديل الرحلة</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>ساري من</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>ساري حتى</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>لم يتم العثور على مسارات معرفية.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>حدث خطأ.</value></data>
+  <data name="Export" xml:space="preserve"><value>تصدير</value></data>
+  <data name="FallbackStageId" xml:space="preserve"><value>مرحلة احتياطية</value></data>
+  <data name="Filter" xml:space="preserve"><value>تصفية</value></data>
+  <data name="Frozen" xml:space="preserve"><value>مجمّد</value></data>
+  <data name="FrozenStagesHelp" xml:space="preserve"><value>هذه النسخة منشورة ومجموعة مراحلها مجمدة. أنشئ نسخة جديدة لتغيير المراحل.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>الهوية</value></data>
+  <data name="Import" xml:space="preserve"><value>استيراد</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>تضمين المؤرشف</value></data>
+  <data name="IsRequired" xml:space="preserve"><value>إلزامي</value></data>
+  <data name="JourneyCode" xml:space="preserve"><value>رمز الرحلة</value></data>
+  <data name="JourneyDetail" xml:space="preserve"><value>تفاصيل الرحلة</value></data>
+  <data name="JourneyName" xml:space="preserve"><value>اسم الرحلة</value></data>
+  <data name="JourneyStatus" xml:space="preserve"><value>حالة الرحلة</value></data>
+  <data name="JourneyVersion" xml:space="preserve"><value>إصدار الرحلة</value></data>
+  <data name="LanguageCode" xml:space="preserve"><value>اللغة</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل…</value></data>
+  <data name="MaxVisitNumber" xml:space="preserve"><value>أقصى رقم زيارة</value></data>
+  <data name="MinVisitNumber" xml:space="preserve"><value>أقل رقم زيارة</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>إصدار جديد</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>إنشاء نسخة مسودة جديدة من النسخة المنشورة؟ تُنسخ المراحل بمعرفات جديدة.</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <data name="NoStages" xml:space="preserve"><value>لا توجد مراحل بعد.</value></data>
+  <data name="Notes" xml:space="preserve"><value>ملاحظات</value></data>
+  <data name="Objective" xml:space="preserve"><value>الهدف</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>خطط لتقدم المحتوى عبر عدة زيارات: ما المرحلة التالية وأي مسار معرفي ينطبق فيها.</value></data>
+  <data name="Passive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="PathPinHelp" xml:space="preserve"><value>pinned = يبقى ثابتًا على هذا الإصدار؛ latest-published = يحل الإصدار المنشور عند القراءة.</value></data>
+  <data name="PathResolution" xml:space="preserve"><value>تحليل المسار</value></data>
+  <data name="PathVersionPinPolicy" xml:space="preserve"><value>تثبيت إصدار المسار</value></data>
+  <data name="Publish" xml:space="preserve"><value>نشر</value></data>
+  <data name="PublishConfirm" xml:space="preserve"><value>نشر هذه الرحلة؟ سيتم تجميد مجموعة المراحل.</value></data>
+  <data name="PublishSeparatelyHelp" xml:space="preserve"><value>النشر إجراء منفصل؛ لا يمكن تحويل الحالة إلى published.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="RecommendedKnowledgePathId" xml:space="preserve"><value>مسار المعرفة الموصى به</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>تمت أرشفة السجل.</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>تم إنشاء السجل.</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>تم تحديث السجل.</value></data>
+  <data name="Repeatable" xml:space="preserve"><value>قابلة للتكرار</value></data>
+  <data name="Repeated" xml:space="preserve"><value>مكرر</value></data>
+  <data name="RequiredStageCount" xml:space="preserve"><value>المراحل الإلزامية</value></data>
+  <data name="Reset" xml:space="preserve"><value>إعادة تعيين</value></data>
+  <data name="Resolved" xml:space="preserve"><value>محلول</value></data>
+  <data name="Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="SaveBeforeStages" xml:space="preserve"><value>احفظ الرحلة أولاً ثم أضف مراحلها هنا.</value></data>
+  <data name="SaveView" xml:space="preserve"><value>حفظ العرض</value></data>
+  <data name="SchedulingSection" xml:space="preserve"><value>الجدولة ودورة الحياة</value></data>
+  <data name="Search" xml:space="preserve"><value>بحث</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>اختر…</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>الكل</value></data>
+  <data name="Source" xml:space="preserve"><value>المصدر</value></data>
+  <data name="StageCode" xml:space="preserve"><value>رمز المرحلة</value></data>
+  <data name="StageName" xml:space="preserve"><value>اسم المرحلة</value></data>
+  <data name="StageObjective" xml:space="preserve"><value>هدف المرحلة</value></data>
+  <data name="StageOrder" xml:space="preserve"><value>ترتيب المرحلة</value></data>
+  <data name="StageType" xml:space="preserve"><value>نوع المرحلة</value></data>
+  <data name="StagesHelp" xml:space="preserve"><value>أضف المراحل بترتيب تقدم التفاعل؛ ترتبط كل مرحلة بمسار معرفي منشور.</value></data>
+  <data name="StagesSection" xml:space="preserve"><value>المراحل</value></data>
+  <data name="Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="StepCount" xml:space="preserve"><value>خطوات</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>الموضوع</value></data>
+  <data name="TopicId" xml:space="preserve"><value>الفئة</value></data>
+  <data name="Unknown" xml:space="preserve"><value>غير معروف</value></data>
+  <data name="Unresolved" xml:space="preserve"><value>غير محلول</value></data>
+  <data name="UnresolvedPathHelp" xml:space="preserve"><value>هناك مرحلة واحدة على الأقل لا يمكنها تحليل مسارها المعرفي (unresolved). لا تُخفى المرحلة — صحّح الارتباط.</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>آخر تحديث</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>عرض التفاصيل</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+</root>

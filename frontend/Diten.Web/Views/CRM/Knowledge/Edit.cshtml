@@ -1,0 +1,40 @@
+@model Diten.Web.Models.CRM.KnowledgeContentEditViewModel
+@using Diten.Web.Views.CRM.Knowledge
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["EditContent"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["EditContent"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/Knowledge">@Localizer["KnowledgeTitle"]</a></li>
+                <li class="breadcrumb-item"><a href="/CRM/Knowledge/Details/@Model.ContentId">@Model.ContentCode</a></li>
+                <li class="breadcrumb-item active text-primary">@Localizer["EditContent"]</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/CRM/Knowledge/Details/@Model.ContentId" class="btn btn-label-secondary">@Localizer["Cancel"]</a>
+        <button type="submit" form="knowledgeForm" class="btn btn-primary">@Localizer["Save"]</button>
+    </div>
+</div>
+
+<form asp-action="Edit" asp-route-id="@Model.ContentId" method="post" id="knowledgeForm" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <partial name="~/Views/CRM/Knowledge/_Form.cshtml" model="Model" />
+</form>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+}
+
+@section Scripts {
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/js/CRM/Knowledge/form.js" asp-append-version="true"></script>
+}

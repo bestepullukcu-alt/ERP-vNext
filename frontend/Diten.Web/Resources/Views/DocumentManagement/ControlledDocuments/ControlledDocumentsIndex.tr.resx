@@ -518,4 +518,34 @@
   </data>
   <data name="Computing" xml:space="preserve">
     <value>Hesaplanıyor…</value>
-  </data></root>
+  </data>
+  <data name="MasterRegister" xml:space="preserve"><value>Master Register</value></data>
+  <data name="LinkedMasterRegister" xml:space="preserve"><value>Yönetilen Master Register ilişkisi</value></data>
+  <data name="OpenMasterRegister" xml:space="preserve"><value>Master Register'ı Aç</value></data>
+  <data name="MasterRegisterEntry" xml:space="preserve"><value>Master Register kaydı</value></data>
+  <data name="MasterRegisterEntryId" xml:space="preserve"><value>Master Register kayıt kimliği</value></data>
+  <data name="MasterRegisterStatus" xml:space="preserve"><value>Register durumu</value></data>
+  <data name="MasterRegisterLinkStatus" xml:space="preserve"><value>Bağlantı uyumluluğu</value></data>
+  <data name="DocumentScope" xml:space="preserve"><value>Doküman kapsamı</value></data>
+  <data name="ScopeOwner" xml:space="preserve"><value>Kapsam sahibi</value></data>
+  <data name="DocumentClass" xml:space="preserve"><value>Doküman sınıfı</value></data>
+  <data name="LifecycleStatus" xml:space="preserve"><value>Yaşam döngüsü durumu</value></data>
+  <data name="LinkedAt" xml:space="preserve"><value>Bağlanma tarihi</value></data>
+  <data name="NoLinkedMasterRegisterLegacyHint" xml:space="preserve"><value>Bu Controlled Document için bağlı Master Register kaydı bulunamadı. Bu kayıt legacy, migration veya reconciliation kapsamındaki bir kayıt olabilir.</value></data>
+  <data name="ReverseLookupFailed" xml:space="preserve"><value>Master Register ilişkisi yüklenemedi.</value></data>
+  <data name="ReverseLookupForbidden" xml:space="preserve"><value>Bağlı Master Register kaydını görüntüleme yetkiniz yok.</value></data>
+  <data name="ReadinessFailClosedDueToLink" xml:space="preserve"><value>Bağlantı doğrulanmamış veya uyumsuz. Approval, training ve release readiness engelli kalır.</value></data>
+  <data name="GovernedRegistrationComplete" xml:space="preserve"><value>Yönetilen Master Register ilişkisi doğrulandı.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="LifecycleDraftNotForUse" xml:space="preserve"><value>TASLAK — KULLANMAYIN</value></data>
+  <data name="LifecycleInReviewNotEffective" xml:space="preserve"><value>İNCELEMEDE — YÜRÜRLÜKTE DEĞİL</value></data>
+  <data name="LifecycleApprovedPendingEffective" xml:space="preserve"><value>ONAYLANDI — YÜRÜRLÜK BEKLİYOR</value></data>
+  <data name="LifecycleEffective" xml:space="preserve"><value>YÜRÜRLÜKTE</value></data>
+  <data name="LifecycleSuspendedDoNotUse" xml:space="preserve"><value>ASKIYA ALINDI — KULLANMAYIN</value></data>
+  <data name="LifecycleSuperseded" xml:space="preserve"><value>YENİ SÜRÜMLE DEĞİŞTİRİLDİ</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>KULLANIMDAN KALDIRILDI</value></data>
+  <data name="LifecycleUnderRevisionNotEffective" xml:space="preserve"><value>REVİZYONDA — YÜRÜRLÜKTE DEĞİL</value></data>
+  <data name="LegacyUnlinked" xml:space="preserve"><value>ESKİ KAYIT — BAĞLANTISIZ</value></data>
+  <data name="ShowNonEffectiveDocuments" xml:space="preserve"><value>Taslakları / yürürlükte olmayanları göster</value></data>
+  <data name="ShowNonEffectiveDocumentsHint" xml:space="preserve"><value>Yalnızca yönetişim görünümü. Taslak, incelemedeki, askıya alınmış, kullanımdan kaldırılmış, değiştirilmiş ve eski bağlantısız kayıtları içerir.</value></data>
+</root>

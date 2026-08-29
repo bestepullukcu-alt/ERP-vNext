@@ -1,0 +1,58 @@
+@using Diten.Web.Views.CRM.CyclePeriods
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CyclePeriodsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* FU07: the scope filters NARROW the listing; they never resolve. Asking for country=TR shows the TR periods, not
+   "the period a TR caller would resolve to" - precedence lives in exactly one place, and it is not here. *@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Status and scope-type options come from the CONTRACT vocabulary, never from a hardcoded list. *@
+                    <div class="filter-chip filter-status">
+                        <select id="filterCycleStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-scope-type">
+                        <select id="filterScopeType" class="form-select form-select-sm select2" data-placeholder="@Localizer["ScopeType"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                        </select>
+                    </div>
+
+                    @* Years, countries and business units come from the loaded rows: a fixed list would go stale, and a
+                       hardcoded one would offer a value the runtime does not know. *@
+                    <div class="filter-chip filter-year">
+                        <select id="filterYear" class="form-select form-select-sm select2" data-placeholder="@Localizer["Year"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-country">
+                        <select id="filterCountry" class="form-select form-select-sm select2" data-placeholder="@Localizer["CountryScope"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-business-unit">
+                        <select id="filterBusinessUnitId" class="form-select form-select-sm select2" data-placeholder="@Localizer["BusinessUnitId"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

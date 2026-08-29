@@ -41,7 +41,7 @@ public sealed class CollectionDefinition : TenantScopedEntity
     /// <summary>Per-definition deterministic structural hash recorded at import.</summary>
     public required string DefinitionHash { get; set; }
 
-    // ── MOD-0028-FU06 — register-backed governance metadata (additive, all nullable). ─────────────────
+    // ── QMS register import extension — governance identity pending; additive nullable metadata. ─────
     // Carried from the GMG-QMS-LOG-0007 register package so the software never loses the register's
     // governance columns. Descriptive only in this FU: NOT part of the structural DefinitionHash, and it
     // drives no access-policy seed, approval, or IQ evidence behaviour (those are later FUs). Existing

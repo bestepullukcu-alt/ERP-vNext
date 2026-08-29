@@ -170,15 +170,38 @@ public sealed class ControlledDocumentService
         return Response<ControlledDocumentDetailModel>.Success(ControlledDocumentMapping.ToDetail(document), 201, correlationId);
     }
 
-    public async Task<Response<IReadOnlyList<ControlledDocumentListItemModel>>> ListAsync(Guid? collectionInstanceId, string correlationId, CancellationToken ct)
+    public Task<Response<IReadOnlyList<ControlledDocumentListItemModel>>> ListAsync(
+        Guid? collectionInstanceId,
+        string correlationId,
+        CancellationToken ct) =>
+        ListAsync(collectionInstanceId, false, correlationId, ct);
+
+    public async Task<Response<IReadOnlyList<ControlledDocumentListItemModel>>> ListAsync(
+        Guid? collectionInstanceId,
+        bool includeNonEffective,
+        string correlationId,
+        CancellationToken ct)
     {
         var visible = await GetVisibleDocumentsAsync(collectionInstanceId, ct);
         var favorites = _currentUser.UserId == Guid.Empty
             ? (IReadOnlySet<Guid>)new HashSet<Guid>()
             : await _favorites.GetFavoriteDocumentIdsAsync(_currentUser.UserId, ct);
-        var items = visible
-            .Select(d => ControlledDocumentMapping.ToListItem(d) with { IsFavorite = favorites.Contains(d.Id) })
-            .ToList();
+        var items = new List<ControlledDocumentListItemModel>();
+        foreach (var document in visible)
+        {
+            var lifecycle = await _access.GetControlledDocumentLifecycleVisibilityAsync(document, ct);
+            if ((!includeNonEffective || !lifecycle.CanViewNonEffective) && !lifecycle.IsOfficiallyEffective)
+            {
+                continue;
+            }
+
+            items.Add(ControlledDocumentMapping.ToListItem(document) with
+            {
+                IsFavorite = favorites.Contains(document.Id),
+                MasterRegisterLifecycleStatus = lifecycle.MasterRegisterLifecycleStatus,
+                IsOfficiallyEffective = lifecycle.IsOfficiallyEffective
+            });
+        }
         return Response<IReadOnlyList<ControlledDocumentListItemModel>>.Success(items, correlationId: correlationId);
     }
 
@@ -396,7 +419,7 @@ public sealed class ControlledDocumentService
     public async Task<Response<ControlledDocumentDetailModel>> GetDetailAsync(Guid documentId, string correlationId, CancellationToken ct)
     {
         var document = await _documents.GetByIdAsync(documentId, ct);
-        if (document is null || !await _access.CanReachDocumentAsync(document, ct))
+        if (document is null || !await _access.CanReadControlledDocumentAsync(document, ct))
         {
             return NotFound<ControlledDocumentDetailModel>(correlationId);
         }
@@ -406,13 +429,21 @@ public sealed class ControlledDocumentService
             return PermDenied<ControlledDocumentDetailModel>(correlationId);
         }
 
-        return Response<ControlledDocumentDetailModel>.Success(ControlledDocumentMapping.ToDetail(document), correlationId: correlationId);
+        var lifecycle = await _access.GetControlledDocumentLifecycleVisibilityAsync(document, ct);
+        return Response<ControlledDocumentDetailModel>.Success(
+            ControlledDocumentMapping.ToDetail(document) with
+            {
+                MasterRegisterLifecycleStatus = lifecycle.MasterRegisterLifecycleStatus,
+                IsOfficiallyEffective = lifecycle.IsOfficiallyEffective,
+                CanViewNonEffective = lifecycle.CanViewNonEffective
+            },
+            correlationId: correlationId);
     }
 
     public async Task<Response<IReadOnlyList<DocumentVersionModel>>> GetVersionsAsync(Guid documentId, string correlationId, CancellationToken ct)
     {
         var document = await _documents.GetByIdAsync(documentId, ct);
-        if (document is null || !await _access.CanReachDocumentAsync(document, ct))
+        if (document is null || !await _access.CanReadControlledDocumentAsync(document, ct))
         {
             return NotFound<IReadOnlyList<DocumentVersionModel>>(correlationId);
         }
@@ -431,7 +462,7 @@ public sealed class ControlledDocumentService
     public async Task<Response<DocumentVersionModel>> GetVersionAsync(Guid documentId, Guid versionId, string correlationId, CancellationToken ct)
     {
         var document = await _documents.GetByIdAsync(documentId, ct);
-        if (document is null || !await _access.CanReachDocumentAsync(document, ct))
+        if (document is null || !await _access.CanReadControlledDocumentAsync(document, ct))
         {
             return NotFound<DocumentVersionModel>(correlationId);
         }
@@ -532,7 +563,7 @@ public sealed class ControlledDocumentService
     public async Task<Response<DocumentDownloadResult>> DownloadAsync(Guid documentId, Guid versionId, string correlationId, CancellationToken ct)
     {
         var document = await _documents.GetByIdAsync(documentId, ct);
-        if (document is null || !await _access.CanReachDocumentAsync(document, ct))
+        if (document is null || !await _access.CanReadControlledDocumentAsync(document, ct))
         {
             return NotFound<DocumentDownloadResult>(correlationId);
         }

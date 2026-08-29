@@ -20,6 +20,7 @@ const ControlledDocumentsList = (function () {
     let moveItem = null;
     let moveModalMode = 'move';
     let searchTimer;
+    let includeNonEffective = false;
 
     const $id = (id) => document.getElementById(id);
     const text = (v, fallback) => (v === null || v === undefined || v === '' ? (fallback || '-') : String(v));
@@ -75,9 +76,32 @@ const ControlledDocumentsList = (function () {
 
     const statusBadge = (value) => {
         const v = upper(value);
-        const label = v === 'ACTIVE' ? L.StatusActive : v === 'ARCHIVED' ? L.StatusArchived : (L.Unknown || value);
-        const tone = v === 'ACTIVE' ? 'success' : 'secondary';
+        const statuses = {
+            DRAFT: [L.LifecycleDraftNotForUse, 'warning'],
+            INREVIEW: [L.LifecycleInReviewNotEffective, 'warning'],
+            APPROVEDPENDINGEFFECTIVE: [L.LifecycleApprovedPendingEffective, 'info'],
+            EFFECTIVE: [L.LifecycleEffective, 'success'],
+            UNDERREVISION: [L.LifecycleUnderRevisionNotEffective, 'warning'],
+            SUSPENDED: [L.LifecycleSuspendedDoNotUse, 'danger'],
+            SUPERSEDED: [L.LifecycleSuperseded, 'secondary'],
+            RETIRED: [L.LifecycleRetired, 'secondary'],
+            ACTIVE: [L.StatusActive, 'success'],
+            ARCHIVED: [L.StatusArchived, 'secondary']
+        };
+        const normalized = v.replace(/[^A-Z]/g, '');
+        const [label, tone] = statuses[normalized] || [L.Unknown || value, 'secondary'];
         return `<span class="badge bg-label-${tone}">${html(label)}</span>`;
+    };
+
+    const lifecycleStatusOf = (row) =>
+        get(row, 'masterRegisterLifecycleStatus', 'MasterRegisterLifecycleStatus')
+        || get(row, 'lifecycleStatus', 'LifecycleStatus')
+        || get(row, 'status', 'Status');
+
+    const isLegacyUnlinked = (row) => {
+        const linked = get(row, 'isMasterRegisterLinked', 'IsMasterRegisterLinked');
+        const linkStatus = upper(get(row, 'masterRegisterLinkStatus', 'MasterRegisterLinkStatus'));
+        return linked === false || linkStatus === 'UNLINKED' || linkStatus === 'LEGACY_UNLINKED';
     };
 
     const handleErr = (json) => {
@@ -468,6 +492,7 @@ const ControlledDocumentsList = (function () {
             scope,
             query
         });
+        qs.set('includeNonEffective', includeNonEffective ? 'true' : 'false');
         if (selectedFolderId && scope !== 'structure') qs.set('collectionInstanceId', selectedFolderId);
         try {
             const json = await fetchJson(`${BASE}/search?${qs.toString()}`);
@@ -509,7 +534,7 @@ const ControlledDocumentsList = (function () {
                 </div>`;
             }
             const documentType = get(item, 'documentType', 'DocumentType') || (kind === 'TEMPLATE' ? 'TEMPLATE' : resultTypeLabel(kind));
-            const status = get(item, 'status', 'Status');
+            const status = lifecycleStatusOf(item);
             const targetId = get(item, 'documentId', 'DocumentId') || get(item, 'templateId', 'TemplateId') || id;
             return itemRowHtml({
                 id: targetId,
@@ -517,6 +542,9 @@ const ControlledDocumentsList = (function () {
                 title,
                 documentType,
                 status: status || 'ACTIVE',
+                masterRegisterLifecycleStatus: get(item, 'masterRegisterLifecycleStatus', 'MasterRegisterLifecycleStatus'),
+                masterRegisterLinkStatus: get(item, 'masterRegisterLinkStatus', 'MasterRegisterLinkStatus'),
+                isMasterRegisterLinked: get(item, 'isMasterRegisterLinked', 'IsMasterRegisterLinked'),
                 collectionPath: path,
                 collectionInstanceId: get(item, 'collectionInstanceId', 'CollectionInstanceId'),
                 currentVersionId: get(item, 'currentVersionId', 'CurrentVersionId'),
@@ -724,6 +752,9 @@ const ControlledDocumentsList = (function () {
         const favoriteMarker = isFavoriteDocument
             ? `<span class="badge bg-label-warning explorer-favorite-badge"><i class="icon-base bx bxs-star"></i>${favoriteLabel}</span>`
             : '';
+        const legacyMarker = isLegacyUnlinked(row)
+            ? `<span class="badge bg-label-danger">${html(L.LegacyUnlinked)}</span>`
+            : '';
         const hasVersion = !!currentVersionIdOf(row);
         const rowJson = html(JSON.stringify(row));
         const attrs = { 'data-id': id, 'data-json': rowJson };
@@ -769,12 +800,13 @@ const ControlledDocumentsList = (function () {
                         <i class="icon-base bx ${icon}"></i>
                         <span class="fw-medium text-heading text-truncate">${html(title)}</span>
                         ${favoriteMarker}
+                        ${legacyMarker}
                     </div>
                     <small class="text-muted d-block text-truncate">${meta}</small>
                 </div>
                 <div class="d-inline-flex align-items-center gap-2 flex-shrink-0">
                     ${typeLabel(get(row, 'documentType', 'DocumentType'), kind)}
-                    ${statusBadge(get(row, 'status', 'Status'))}
+                    ${statusBadge(lifecycleStatusOf(row))}
                     <span class="cell-fit">${window.DitenDataTable.renderActions(actions)}</span>
                 </div>
             </div>
@@ -793,7 +825,9 @@ const ControlledDocumentsList = (function () {
 
         let contents = [];
         try {
-            const json = await fetchJson(`${BASE}/folder-documents?collectionInstanceId=${encodeURIComponent(selectedFolderId)}`);
+            const json = await fetchJson(
+                `${BASE}/folder-documents?collectionInstanceId=${encodeURIComponent(selectedFolderId)}&includeNonEffective=${includeNonEffective ? 'true' : 'false'}`
+            );
             contents = mergeFolderContents(json);
         } catch (err) { handleErr(err.payload || {}); }
 
@@ -866,6 +900,11 @@ const ControlledDocumentsList = (function () {
             searchTimer = setTimeout(runSearch, 250);
         });
         $id('explorerSearchScope')?.addEventListener('change', () => { if (isSearchActive()) runSearch(); });
+        $id('showNonEffectiveDocuments')?.addEventListener('change', (e) => {
+            includeNonEffective = window.ControlledDocumentsPerms?.canViewGovernanceDocuments === true && e.target.checked === true;
+            if (isSearchActive()) runSearch();
+            else reloadTable();
+        });
         $id('btnExplorerSearchReset')?.addEventListener('click', () => {
             const input = $id('explorerSearchInput');
             if (input) input.value = '';

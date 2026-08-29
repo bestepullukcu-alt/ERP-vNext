@@ -129,7 +129,9 @@ public sealed class ControlledDocumentExplorerService
         {
             foreach (var d in await _documents.GetByCollectionInstanceAsync(folderId, ct))
             {
-                if (!await _access.CanReachDocumentAsync(d, ct)) continue;
+                var lifecycle = await _access.GetControlledDocumentLifecycleVisibilityAsync(d, ct);
+                if ((!input.IncludeNonEffective || !lifecycle.CanViewNonEffective) && !lifecycle.IsOfficiallyEffective) continue;
+                if (!await _access.CanReadControlledDocumentAsync(d, ct)) continue;
                 if (hasQuery && !Contains(d.Title, query!)) continue;
                 if ((int)documentType >= 0 && d.DocumentType != documentType) continue;
                 if (!string.IsNullOrWhiteSpace(input.Status) && !string.Equals(d.Status.ToWire(), input.Status, StringComparison.OrdinalIgnoreCase)) continue;
@@ -137,7 +139,9 @@ public sealed class ControlledDocumentExplorerService
                 results.Add(new ExplorerSearchResultModel(
                     "DOCUMENT", d.Id, d.Title, d.CollectionPath, d.CollectionInstanceId, d.Id, null,
                     d.DocumentType.ToWire(), d.CurrentVersionNumber, d.Status.ToWire(), d.UpdatedAt ?? d.CreatedAt,
-                    await DocumentPermissionsAsync(d, ct)));
+                    await DocumentPermissionsAsync(d, ct),
+                    lifecycle.MasterRegisterLifecycleStatus,
+                    lifecycle.IsOfficiallyEffective));
             }
 
             if (input.IncludeTemplates)
@@ -213,4 +217,5 @@ public sealed record ExplorerSearchInput(
     string? Query,
     string? DocumentType,
     bool IncludeTemplates,
-    string? Status);
+    string? Status,
+    bool IncludeNonEffective = false);

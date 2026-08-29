@@ -38,6 +38,12 @@ public static partial class PlatformSchemaManifest
             .Concat(OrganizationCollections)
             .Concat(WorkflowWorkCenterCollections)
             .Concat(DocumentManagementCollections)
+            // F-WC-DOC-SCHEMA-PORT (2026-08-28 main-sync): collections that only existed in the pre-refactor
+            // monolith. DocumentManagementFollowUp rows carry SchemaProfile.DocumentManagement; the Working
+            // Calendar rows carry the new SchemaProfile.WorkingCalendar. Both MUST be in the union — see the
+            // "PRODUCTION READS THE UNION" note above.
+            .Concat(DocumentManagementFollowUpCollections)
+            .Concat(WorkingCalendarCollections)
             .ToArray());
 
     /// <summary>Every collection in every profile — what the production path builds.</summary>

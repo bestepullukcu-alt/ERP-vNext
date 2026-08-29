@@ -1,0 +1,22 @@
+@model Diten.Web.Models.CRM.AccountEditViewModel
+@using Diten.Web.Views.CRM.Accounts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<AccountIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleEdit"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "edit";
+}
+
+<partial name="~/Views/CRM/Accounts/_Form.cshtml" model="Model" />
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/leaflet/leaflet.css" />
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/vendor/libs/leaflet/leaflet.js"></script>
+    <script src="~/assets/js/CRM/Accounts/form.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/Accounts/map.js" asp-append-version="true"></script>
+}

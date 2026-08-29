@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="OverridesTitle" xml:space="preserve"><value>Çalışma Takvimi İstisnaları</value></data>
+  <data name="BreadcrumbOverrides" xml:space="preserve"><value>Çalışma Takvimi İstisnaları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Şirketinize ait tatiller, kapanışlar ve telafi çalışma günleri. Bunlar ülke takviminin üzerine biner; ülke takvimi burada yönetilmez.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>İstisna Detayı</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Takvim İstisnası Ekle</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Takvim İstisnasını Düzenle</value></data>
+  <data name="FormDescription" xml:space="preserve"><value>Bir istisna tek bir ülkenin tek bir yılını kapsar. Hafta sonu günlerini boş bırakırsanız ülke takviminden devralınır.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>İstisna Ekle</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı görünüm</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="SectionScope" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="SectionWeekend" xml:space="preserve"><value>Hafta Sonu</value></data>
+  <data name="SectionLifecycle" xml:space="preserve"><value>Yaşam Döngüsü</value></data>
+  <data name="SectionDays" xml:space="preserve"><value>Şirket Tatilleri ve Kapanışları</value></data>
+  <data name="SectionResolution" xml:space="preserve"><value>Çalışma Günü Kontrolü</value></data>
+  <data name="CalendarCode" xml:space="preserve"><value>Takvim Kodu</value></data>
+  <data name="CalendarCodeHint" xml:space="preserve"><value>Sabit anahtar, örnek TR-2026. Sonradan değiştirilmez.</value></data>
+  <data name="CalendarName" xml:space="preserve"><value>Takvim Adı</value></data>
+  <data name="CountryCode" xml:space="preserve"><value>Ülke</value></data>
+  <data name="CountryInherited" xml:space="preserve"><value>Ülke (devralınan)</value></data>
+  <data name="CalendarYear" xml:space="preserve"><value>Yıl</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="OrganizationUnit" xml:space="preserve"><value>Organizasyon Birimi</value></data>
+  <data name="WeekendDays" xml:space="preserve"><value>Hafta Sonu Günleri</value></data>
+  <data name="DayCount" xml:space="preserve"><value>Gün</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notlar</value></data>
+  <data name="Activate" xml:space="preserve"><value>Aktive Et</value></data>
+  <data name="ActivateConfirm" xml:space="preserve"><value>Bu istisnayı aktive etmek onu bundan sonra organizasyonunuza uygular. Devam edilsin mi?</value></data>
+  <data name="Archive" xml:space="preserve"><value>Arşivle</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Bu takvim arşivlenecek. Geçmiş olarak okunabilir kalır ama artık çalışma günü sorularına cevap vermez.</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Arşivlenenleri göster</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="Inherited" xml:space="preserve"><value>devralındı</value></data>
+  <data name="InheritedFromCountry" xml:space="preserve"><value>Ülke takviminden devralınıyor</value></data>
+  <data name="NoCalendarData" xml:space="preserve"><value>Takvim verisi yok</value></data>
+  <data name="ResolutionResolved" xml:space="preserve"><value>Çözümlendi</value></data>
+  <data name="ResolutionCalendarMissing" xml:space="preserve"><value>Bu ülke için takvim girilmemiş</value></data>
+  <data name="ResolutionYearMissing" xml:space="preserve"><value>Bu yıl için takvim yok</value></data>
+  <data name="ResolutionCountryUnknown" xml:space="preserve"><value>Ülke referans veride bulunamadı</value></data>
+  <data name="AddDay" xml:space="preserve"><value>Gün Ekle</value></data>
+  <data name="EditDay" xml:space="preserve"><value>Günü Düzenle</value></data>
+  <data name="DayDateHint" xml:space="preserve"><value>Takvim yılının içinde olmalıdır.</value></data>
+  <data name="ObservedDateHint" xml:space="preserve"><value>Yalnız gün başka bir tarihte kullanılıyorsa doldurun.</value></data>
+  <data name="Recurrence" xml:space="preserve"><value>Tekrar</value></data>
+  <data name="RecurrenceHint" xml:space="preserve"><value>Yalnızca bir beyandır. Hiçbir şey otomatik üretilmez; gelecek yıl ayrıca girilir.</value></data>
+  <data name="IsHalfDayHint" xml:space="preserve"><value>Yarım gün yine çalışma günü sayılır ve cevap bunu açıkça belirtir.</value></data>
+  <data name="WorkingDayOverrideHint" xml:space="preserve"><value>Telafi günü çalışmayı zorunlu kılar, bu yüzden aynı anda yarım gün olamaz.</value></data>
+  <data name="ArchiveDayConfirm" xml:space="preserve"><value>Bu gün arşivlenecek. Çalışma günü cevaplarını etkilemeyi bırakır ama kayıtta kalır.</value></data>
+  <data name="DayCode" xml:space="preserve"><value>Kod</value></data>
+  <data name="DayName" xml:space="preserve"><value>Ad</value></data>
+  <data name="DayDate" xml:space="preserve"><value>Tarih</value></data>
+  <data name="ObservedDate" xml:space="preserve"><value>Kullanılan Tarih</value></data>
+  <data name="DayType" xml:space="preserve"><value>Tür</value></data>
+  <data name="DayTypePublicHoliday" xml:space="preserve"><value>Resmî tatil</value></data>
+  <data name="DayTypeReligiousHoliday" xml:space="preserve"><value>Dinî bayram</value></data>
+  <data name="DayTypeMoveableHoliday" xml:space="preserve"><value>Hareketli tatil</value></data>
+  <data name="DayTypeCompanyHoliday" xml:space="preserve"><value>Şirket tatili</value></data>
+  <data name="DayTypeCompanyClosure" xml:space="preserve"><value>Şirket kapanışı</value></data>
+  <data name="DayTypeWorkingDayOverride" xml:space="preserve"><value>Telafi çalışma günü</value></data>
+  <data name="RecurrenceNone" xml:space="preserve"><value>Yok</value></data>
+  <data name="RecurrenceAnnualFixed" xml:space="preserve"><value>Yıllık, sabit tarih</value></data>
+  <data name="RecurrenceAnnualMoveable" xml:space="preserve"><value>Yıllık, hareketli tarih</value></data>
+  <data name="IsHalfDay" xml:space="preserve"><value>Yarım Gün</value></data>
+  <data name="ProbeDate" xml:space="preserve"><value>Bir tarihi kontrol et</value></data>
+  <data name="Probe" xml:space="preserve"><value>Kontrol Et</value></data>
+  <data name="monday" xml:space="preserve"><value>Pazartesi</value></data>
+  <data name="tuesday" xml:space="preserve"><value>Salı</value></data>
+  <data name="wednesday" xml:space="preserve"><value>Çarşamba</value></data>
+  <data name="thursday" xml:space="preserve"><value>Perşembe</value></data>
+  <data name="friday" xml:space="preserve"><value>Cuma</value></data>
+  <data name="saturday" xml:space="preserve"><value>Cumartesi</value></data>
+  <data name="sunday" xml:space="preserve"><value>Pazar</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Tüzel kişilik</value></data>
+  <data name="ScopeTenant" xml:space="preserve"><value>Kiracı</value></data>
+  <data name="ScopeOrganizationUnit" xml:space="preserve"><value>Organizasyon birimi</value></data>
+  <data name="SelectLegalEntity" xml:space="preserve"><value>Bir tüzel kişilik seçin</value></data>
+  <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>Tüzel kişilikler kullanılamıyor</value></data>
+</root>

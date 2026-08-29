@@ -1,0 +1,127 @@
+Vocabulary,Code,Display Name,Accountable Owner,Status,Effective Date,Notes
+Zone,00_Group_Repository_Control,Group repository control,Records Management / IT,ACTIVE,[To be set on approval],Governed top-level zone
+Zone,01_Enterprise_Governance_and_Strategy,Enterprise governance and strategy,Records Management / IT,ACTIVE,[To be set on approval],Governed top-level zone
+Zone,02_GQMS_Controlled_Repository,GQMS controlled repository,Records Management / IT,ACTIVE,[To be set on approval],Governed top-level zone
+Zone,03_Business_Functions_and_Operations,Business functions and operations,Records Management / IT,ACTIVE,[To be set on approval],Governed top-level zone
+Zone,04_Products_Brands_and_Dossiers,"Products, brands and dossiers",Records Management / IT,ACTIVE,[To be set on approval],Governed top-level zone
+Zone,05_Markets_Expansion_and_Countries,"Markets, expansion and countries",Records Management / IT,ACTIVE,[To be set on approval],Governed top-level zone
+Zone,06_Clients_Partners_and_Deals,"Clients, partners and deals",Records Management / IT,ACTIVE,[To be set on approval],Governed top-level zone
+Zone,07_Programmes_and_Projects,Programmes and projects,Records Management / IT,ACTIVE,[To be set on approval],Governed top-level zone
+Zone,08_Knowledge_Templates_and_Reference,"Knowledge, templates and reference",Records Management / IT,ACTIVE,[To be set on approval],Governed top-level zone
+Zone,09_Restricted_Corporate_Records,Restricted corporate records,Records Management / IT,ACTIVE,[To be set on approval],Governed top-level zone
+Zone,95_Records_Archive,Records archive,Records Management / IT,ACTIVE,[To be set on approval],Governed top-level zone
+Zone,98_Legacy_Migration,Legacy migration,Records Management / IT,ACTIVE,[To be set on approval],Governed top-level zone
+Zone,99_Inbox_and_Quarantine,Inbox and quarantine,Records Management / IT,ACTIVE,[To be set on approval],Governed top-level zone
+Entity,00_Group_Shared,"Group-level, no single legal owner",Legal / Finance / HR,ACTIVE,[To be set on approval],Legal-entity container. Codes are never reassigned.
+Entity,10_GMG_AG_CH,Grand Medical Group AG (CH),Legal / Finance / HR,ACTIVE,[To be set on approval],Legal-entity container. Codes are never reassigned.
+Entity,20_Setonda_SL_ES,Setonda S.L. (ES),Legal / Finance / HR,RETIRED — CODE PERMANENTLY RESERVED,[To be set on approval],Legal-entity container. Codes are never reassigned.
+Entity,30_GM_Poland_PL,Grand Medical Poland Sp. z o.o. (PL),Legal / Finance / HR,ACTIVE,[To be set on approval],Legal-entity container. Codes are never reassigned.
+Entity,40_Miquel_y_Garriga_SL_ES,Miquel y Garriga S.L. (ES),Legal / Finance / HR,ACTIVE,[To be set on approval],Legal-entity container. Codes are never reassigned.
+Entity,50_GMG_Ilaclari_LTD_TR,Grand Medical Ilaclari Ltd (TR),Legal / Finance / HR,ACTIVE,[To be set on approval],Legal-entity container. Codes are never reassigned.
+Entity,80_Cross_Entity,Intercompany,Legal / Finance / HR,ACTIVE,[To be set on approval],Legal-entity container. Codes are never reassigned.
+Entity,90_External_or_Joint_Ventures,External / JV,Legal / Finance / HR,ACTIVE,[To be set on approval],Legal-entity container. Codes are never reassigned.
+Domain,00_Governance,Governance,Group Quality Director,ACTIVE,[To be set on approval],GQMS domain
+Domain,01_QMS,Quality management system,Group Quality Director,ACTIVE,[To be set on approval],GQMS domain
+Domain,02_GMP,Good manufacturing practice,Group Quality Director,ACTIVE,[To be set on approval],GQMS domain
+Domain,03_GDP,Good distribution practice,Group Quality Director,ACTIVE,[To be set on approval],GQMS domain
+Domain,04_PV,Pharmacovigilance,Group Quality Director,ACTIVE,[To be set on approval],GQMS domain
+Domain,05_RAF,Regulatory affairs,Group Quality Director,ACTIVE,[To be set on approval],GQMS domain
+Domain,06_NUT,Nutraceuticals,Group Quality Director,ACTIVE,[To be set on approval],GQMS domain
+Domain,07_MDV,Medical devices,Group Quality Director,ACTIVE,[To be set on approval],GQMS domain
+Domain,08_CSV,Computerised system validation,Group Quality Director,ACTIVE,[To be set on approval],GQMS domain
+Domain,09_LAB,Laboratory,Group Quality Director,ACTIVE,[To be set on approval],GQMS domain
+Domain,10_RND,Research and development,Group Quality Director,ACTIVE,[To be set on approval],GQMS domain
+Domain,11_GLP,Good laboratory practice,Group Quality Director,ACTIVE,[To be set on approval],GQMS domain
+Domain,12_GCP,Good clinical practice,Group Quality Director,ACTIVE,[To be set on approval],GQMS domain
+Domain,13_GCLP,Good clinical laboratory practice,Group Quality Director,ACTIVE,[To be set on approval],GQMS domain
+Domain,14_BIO,Biologicals,Group Quality Director,ACTIVE,[To be set on approval],GQMS domain
+Domain,15_ATMP,Advanced therapy medicinal products,Group Quality Director,ACTIVE,[To be set on approval],GQMS domain
+Domain,16_STE,Sterile products,Group Quality Director,ACTIVE,[To be set on approval],GQMS domain
+Domain,17_API,Active pharmaceutical ingredients,Group Quality Director,ACTIVE,[To be set on approval],GQMS domain
+Domain,18_DQ,Data quality and integrity,Group Quality Director,ACTIVE,[To be set on approval],GQMS domain
+Container,30_BPG,Business process governance,Group Quality Director,ACTIVE,[To be set on approval],Container for business functions
+Function,BCM,Business continuity management,Function owner / GQD,ACTIVE,[To be set on approval],BPG business function
+Function,CGV,Corporate governance,Function owner / GQD,ACTIVE,[To be set on approval],BPG business function
+Function,COM,Commercial and marketing,Function owner / GQD,ACTIVE,[To be set on approval],BPG business function
+Function,CTY,Country operations,Function owner / GQD,ACTIVE,[To be set on approval],BPG business function
+Function,EHS,"Environment, health and safety",Function owner / GQD,ACTIVE,[To be set on approval],BPG business function
+Function,FAC,Facilities,Function owner / GQD,ACTIVE,[To be set on approval],BPG business function
+Function,FIN,Finance,Function owner / GQD,ACTIVE,[To be set on approval],BPG business function
+Function,HR,Human resources,Function owner / GQD,ACTIVE,[To be set on approval],BPG business function
+Function,ISM,Information security management,Function owner / GQD,ACTIVE,[To be set on approval],BPG business function
+Function,ITG,IT and digital,Function owner / GQD,ACTIVE,[To be set on approval],BPG business function
+Function,LEG,Legal,Function owner / GQD,ACTIVE,[To be set on approval],BPG business function
+Function,PPM,Portfolio and project management,Function owner / GQD,ACTIVE,[To be set on approval],BPG business function
+Function,PRC,Procurement,Function owner / GQD,ACTIVE,[To be set on approval],BPG business function
+Function,PRF,Performance management,Function owner / GQD,ACTIVE,[To be set on approval],BPG business function
+Function,SCM,Supply chain management,Function owner / GQD,ACTIVE,[To be set on approval],BPG business function
+TYPE,AGR,Agreement,QA Documentation,ACTIVE,[To be set on approval],"Valid in: 00_Governance, 01_QMS, 02_GMP, 03_GDP, 04_PV, 05_RAF, 06_NUT, 07_MDV, 08_CSV, 09_LAB, 10_RND, 11_GLP, 12_GCP, 13_GCLP, 14_BIO, 15_ATMP, 16_STE, 17_API, 18_DQ, 30_BPG/BCM, 30_BPG/CGV, 30_BPG/COM, 30_BPG/CTY, 30_BPG/EHS, 30_BPG/FAC, 30_BPG/FIN, 30_BPG/HR, 30_BPG/ISM, 30_BPG/ITG, 30_BPG/LEG, 30_BPG/PPM, 30_BPG/PRC, 30_BPG/PRF, 30_BPG/SCM"
+TYPE,CAT,Catalogue,QA Documentation,ACTIVE,[To be set on approval],Valid in: 30_BPG/COM
+TYPE,CHK,Checklist,QA Documentation,ACTIVE,[To be set on approval],"Valid in: 00_Governance, 01_QMS, 02_GMP, 03_GDP, 04_PV, 05_RAF, 06_NUT, 07_MDV, 08_CSV, 09_LAB, 10_RND, 11_GLP, 12_GCP, 13_GCLP, 14_BIO, 15_ATMP, 16_STE, 17_API, 18_DQ, 30_BPG/BCM, 30_BPG/CGV, 30_BPG/COM, 30_BPG/CTY, 30_BPG/EHS, 30_BPG/FAC, 30_BPG/FIN, 30_BPG/HR, 30_BPG/ISM, 30_BPG/ITG, 30_BPG/LEG, 30_BPG/PPM, 30_BPG/PRC, 30_BPG/PRF, 30_BPG/SCM"
+TYPE,FRM,Form,QA Documentation,ACTIVE,[To be set on approval],"Valid in: 00_Governance, 01_QMS, 02_GMP, 03_GDP, 04_PV, 05_RAF, 06_NUT, 07_MDV, 08_CSV, 09_LAB, 10_RND, 11_GLP, 12_GCP, 13_GCLP, 14_BIO, 15_ATMP, 16_STE, 17_API, 18_DQ, 30_BPG/BCM, 30_BPG/CGV, 30_BPG/COM, 30_BPG/CTY, 30_BPG/EHS, 30_BPG/FAC, 30_BPG/FIN, 30_BPG/HR, 30_BPG/ISM, 30_BPG/ITG, 30_BPG/LEG, 30_BPG/PPM, 30_BPG/PRC, 30_BPG/PRF, 30_BPG/SCM"
+TYPE,FWK,Framework,QA Documentation,ACTIVE,[To be set on approval],Valid in: 30_BPG/COM
+TYPE,JDS,Job description,QA Documentation,ACTIVE,[To be set on approval],Valid in: 04_PV
+TYPE,LOG,Log / register,QA Documentation,ACTIVE,[To be set on approval],"Valid in: 00_Governance, 01_QMS, 02_GMP, 03_GDP, 04_PV, 05_RAF, 06_NUT, 07_MDV, 08_CSV, 09_LAB, 10_RND, 11_GLP, 12_GCP, 13_GCLP, 14_BIO, 15_ATMP, 16_STE, 17_API, 18_DQ, 30_BPG/BCM, 30_BPG/CGV, 30_BPG/COM, 30_BPG/CTY, 30_BPG/EHS, 30_BPG/FAC, 30_BPG/FIN, 30_BPG/HR, 30_BPG/ISM, 30_BPG/ITG, 30_BPG/LEG, 30_BPG/PPM, 30_BPG/PRC, 30_BPG/PRF, 30_BPG/SCM"
+TYPE,LOGB,LOGB,QA Documentation,ACTIVE,[To be set on approval],Valid in: 02_GMP
+TYPE,LST,List,QA Documentation,ACTIVE,[To be set on approval],"Valid in: 02_GMP, 04_PV, 30_BPG/BCM, 30_BPG/CGV, 30_BPG/COM, 30_BPG/CTY, 30_BPG/EHS, 30_BPG/FAC, 30_BPG/FIN, 30_BPG/HR, 30_BPG/ISM, 30_BPG/ITG, 30_BPG/LEG, 30_BPG/PPM, 30_BPG/PRC, 30_BPG/PRF, 30_BPG/SCM"
+TYPE,MAN,Manual,QA Documentation,ACTIVE,[To be set on approval],"Valid in: 00_Governance, 04_PV, 30_BPG/COM"
+TYPE,MEM,Memorandum,QA Documentation,ACTIVE,[To be set on approval],Valid in: 05_RAF
+TYPE,MFR,MFR,QA Documentation,ACTIVE,[To be set on approval],Valid in: 02_GMP
+TYPE,MTX,Matrix,QA Documentation,ACTIVE,[To be set on approval],"Valid in: 00_Governance, 01_QMS, 02_GMP, 03_GDP, 04_PV, 05_RAF, 06_NUT, 07_MDV, 08_CSV, 09_LAB, 10_RND, 11_GLP, 12_GCP, 13_GCLP, 14_BIO, 15_ATMP, 16_STE, 17_API, 18_DQ, 30_BPG/BCM, 30_BPG/CGV, 30_BPG/COM, 30_BPG/CTY, 30_BPG/EHS, 30_BPG/FAC, 30_BPG/FIN, 30_BPG/HR, 30_BPG/ISM, 30_BPG/ITG, 30_BPG/LEG, 30_BPG/PPM, 30_BPG/PRC, 30_BPG/PRF, 30_BPG/SCM"
+TYPE,PLN,Plan,QA Documentation,ACTIVE,[To be set on approval],"Valid in: 00_Governance, 01_QMS, 02_GMP, 03_GDP, 04_PV, 05_RAF, 06_NUT, 07_MDV, 08_CSV, 09_LAB, 10_RND, 11_GLP, 12_GCP, 13_GCLP, 14_BIO, 15_ATMP, 16_STE, 17_API, 18_DQ, 30_BPG/BCM, 30_BPG/CGV, 30_BPG/COM, 30_BPG/CTY, 30_BPG/EHS, 30_BPG/FAC, 30_BPG/FIN, 30_BPG/HR, 30_BPG/ISM, 30_BPG/ITG, 30_BPG/LEG, 30_BPG/PPM, 30_BPG/PRC, 30_BPG/PRF, 30_BPG/SCM"
+TYPE,POL,Policy,QA Documentation,ACTIVE,[To be set on approval],"Valid in: 00_Governance, 30_BPG/BCM, 30_BPG/CGV, 30_BPG/COM, 30_BPG/CTY, 30_BPG/EHS, 30_BPG/FAC, 30_BPG/FIN, 30_BPG/HR, 30_BPG/ISM, 30_BPG/ITG, 30_BPG/LEG, 30_BPG/PPM, 30_BPG/PRC, 30_BPG/PRF, 30_BPG/SCM"
+TYPE,RPT,Report,QA Documentation,ACTIVE,[To be set on approval],"Valid in: 02_GMP, 04_PV, 30_BPG/HR"
+TYPE,RSK,Risk assessment,QA Documentation,ACTIVE,[To be set on approval],"Valid in: 01_QMS, 02_GMP, 04_PV, 06_NUT, 11_GLP, 12_GCP, 13_GCLP, 14_BIO, 15_ATMP, 16_STE, 17_API, 18_DQ, 30_BPG/BCM, 30_BPG/CGV, 30_BPG/COM, 30_BPG/CTY, 30_BPG/EHS, 30_BPG/FAC, 30_BPG/FIN, 30_BPG/HR, 30_BPG/ISM, 30_BPG/ITG, 30_BPG/LEG, 30_BPG/PPM, 30_BPG/PRC, 30_BPG/PRF, 30_BPG/SCM"
+TYPE,SMF,SMF,QA Documentation,ACTIVE,[To be set on approval],Valid in: 02_GMP
+TYPE,SOP,Standard operating procedure,QA Documentation,ACTIVE,[To be set on approval],"Valid in: 00_Governance, 01_QMS, 02_GMP, 03_GDP, 04_PV, 05_RAF, 06_NUT, 07_MDV, 08_CSV, 09_LAB, 10_RND, 11_GLP, 12_GCP, 13_GCLP, 14_BIO, 15_ATMP, 16_STE, 17_API, 18_DQ, 30_BPG/BCM, 30_BPG/CGV, 30_BPG/COM, 30_BPG/CTY, 30_BPG/EHS, 30_BPG/FAC, 30_BPG/FIN, 30_BPG/HR, 30_BPG/ISM, 30_BPG/ITG, 30_BPG/LEG, 30_BPG/PPM, 30_BPG/PRC, 30_BPG/PRF, 30_BPG/SCM"
+TYPE,STD,Standard,QA Documentation,ACTIVE,[To be set on approval],"Valid in: 01_QMS, 10_RND, 30_BPG/COM, 30_BPG/HR"
+TYPE,TIA,Technical impact assessment,QA Documentation,ACTIVE,[To be set on approval],Valid in: 04_PV
+TYPE,TPL,Template,QA Documentation,ACTIVE,[To be set on approval],"Valid in: 00_Governance, 01_QMS, 02_GMP, 03_GDP, 04_PV, 05_RAF, 06_NUT, 07_MDV, 08_CSV, 09_LAB, 10_RND, 11_GLP, 12_GCP, 13_GCLP, 14_BIO, 15_ATMP, 16_STE, 17_API, 18_DQ, 30_BPG/BCM, 30_BPG/CGV, 30_BPG/COM, 30_BPG/CTY, 30_BPG/EHS, 30_BPG/FAC, 30_BPG/FIN, 30_BPG/HR, 30_BPG/ISM, 30_BPG/ITG, 30_BPG/LEG, 30_BPG/PPM, 30_BPG/PRC, 30_BPG/PRF, 30_BPG/SCM"
+TYPE,URG,URG,QA Documentation,ACTIVE,[To be set on approval],Valid in: 02_GMP
+TYPE,URS,User requirement specification,QA Documentation,ACTIVE,[To be set on approval],Valid in: 30_BPG/COM
+TYPE,WIN,Work instruction,QA Documentation,ACTIVE,[To be set on approval],"Valid in: 00_Governance, 01_QMS, 02_GMP, 03_GDP, 04_PV, 05_RAF, 06_NUT, 07_MDV, 08_CSV, 09_LAB, 10_RND, 11_GLP, 12_GCP, 13_GCLP, 14_BIO, 15_ATMP, 16_STE, 17_API, 18_DQ, 30_BPG/BCM, 30_BPG/CGV, 30_BPG/COM, 30_BPG/CTY, 30_BPG/EHS, 30_BPG/FAC, 30_BPG/FIN, 30_BPG/HR, 30_BPG/ISM, 30_BPG/ITG, 30_BPG/LEG, 30_BPG/PPM, 30_BPG/PRC, 30_BPG/PRF, 30_BPG/SCM"
+Lifecycle state,Draft,Draft,QA Documentation,ACTIVE,[To be set on approval],Controlled-document lifecycle state
+Lifecycle state,In_Review,In review,QA Documentation,ACTIVE,[To be set on approval],Controlled-document lifecycle state
+Lifecycle state,Approved_Pending_Effective,"Approved, pending effective",QA Documentation,ACTIVE,[To be set on approval],Controlled-document lifecycle state
+Lifecycle state,Effective,Effective,QA Documentation,ACTIVE,[To be set on approval],Controlled-document lifecycle state
+Lifecycle state,Superseded,Superseded,QA Documentation,ACTIVE,[To be set on approval],Controlled-document lifecycle state
+Lifecycle state,Retired,Retired,QA Documentation,ACTIVE,[To be set on approval],Controlled-document lifecycle state
+Permission profile,PS-ROOT-GOVERNANCE,Enterprise root administration,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-ROOT-READ,Root README and navigation,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-REGISTER-READ,Registers required for authoring/filing,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-GQMS-DOCUMENTS,Controlled-document lifecycle,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-GQMS-RECORDS,Executed quality records,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-PV-RESTRICTED,PV administrative/quality interfaces,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-MGMT-BOARD,Board/shareholder/confidential management,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-MGMT-EXEC,Executive management records,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-MGMT-RESTRICTED,Restricted management records,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-OPS-STANDARD,Routine operational records,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-FIN-RESTRICTED,"Finance, banking, payroll-finance and tax",ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-HR-RESTRICTED,Employee records,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-HR-SENSITIVE,Disciplinary/grievance,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-HR-MEDICAL,Medical/occupational health,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-LEGAL-PRIVILEGED,"Legal privilege, contracts and disputes",ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-IT-RESTRICTED,IT operational records,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-INFOSEC-RESTRICTED,Security/access/incident records,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-EHS-RESTRICTED,EHS incidents/health interfaces,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-MED-RESTRICTED,Medical Affairs records,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-MASTER-DATA,Approved shared master/reference data,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-WORKING,Non-authoritative working areas,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-INTAKE,Transfer quarantine,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-LEGACY-READONLY,Legacy holdings,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-ARCHIVE-READONLY,Archived records,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-REPO-CONTROL,Zone 00 repository governance and file plan,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-PRODUCT-RESTRICTED,"Product, brand and dossier lifecycle",ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-MARKET,Market expansion and country records,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-DEALS-CONFIDENTIAL,"Clients, partners, opportunities and deals",ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-PROJECT,Programmes and projects,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-KNOWLEDGE-READ,Non-controlled knowledge and reference,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-CORP-HIGHLY-RESTRICTED,Highly confidential corporate records,ISM / IT,PENDING — G7,[To be set on approval],
+Permission profile,PS-QUARANTINE,Inbox and quarantine,ISM / IT,PENDING — G7,[To be set on approval],
+Record class,01_Audits_and_Assessments,Audits and Assessments,Records Management,ACTIVE,[To be set on approval],Quality-record class
+Record class,02_Implementation_and_Validation,Implementation and Validation,Records Management,ACTIVE,[To be set on approval],Quality-record class
+Record class,03_Training_Evidence,Training Evidence,Records Management,ACTIVE,[To be set on approval],Quality-record class
+Record class,04_Approval_and_Decision_Records,Approval and Decision Records,Records Management,ACTIVE,[To be set on approval],Quality-record class
+Record class,05_Risk_and_Compliance_Records,Risk and Compliance Records,Records Management,ACTIVE,[To be set on approval],Quality-record class
+Record class,06_Repository_Control_Records,Repository Control Records,Records Management,ACTIVE,[To be set on approval],Quality-record class
+Record class,07_Exception_and_Deviation_Records,Exception and Deviation Records,Records Management,ACTIVE,[To be set on approval],Quality-record class

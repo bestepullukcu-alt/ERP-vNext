@@ -1,0 +1,38 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.CRM.Accounts.AccountIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* Inline collapse filter bar for the Account 360 "Territory" history DataTable (v2 contract). Ids are suffixed
+   "Territory" so this section's host/buttons never collide with the Related Contacts / Related Accounts tables on the
+   same page. Chips are populated at runtime from the assignment rows actually rendered for THIS account. *@
+<div id="inlineFilterHostTerritory" class="dt-inline-filter-host">
+    <div class="collapse" id="inlineFilterCollapseTerritory">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterFormTerritory" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Filter Chip: Assignment Status *@
+                    <div class="filter-chip filter-status">
+                        <select id="filterTerritoryStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Assignment Source *@
+                    <div class="filter-chip filter-source">
+                        <select id="filterTerritorySource" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["AssignmentSource"]">
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnTerritoryFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnTerritoryFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

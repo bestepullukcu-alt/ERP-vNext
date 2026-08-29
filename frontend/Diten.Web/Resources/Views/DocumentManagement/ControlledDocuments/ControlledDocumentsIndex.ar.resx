@@ -518,4 +518,34 @@
   </data>
   <data name="Computing" xml:space="preserve">
     <value>جارٍ الحساب…</value>
-  </data></root>
+  </data>
+  <data name="MasterRegister" xml:space="preserve"><value>السجل الرئيسي</value></data>
+  <data name="LinkedMasterRegister" xml:space="preserve"><value>علاقة السجل الرئيسي المحكومة</value></data>
+  <data name="OpenMasterRegister" xml:space="preserve"><value>فتح السجل الرئيسي</value></data>
+  <data name="MasterRegisterEntry" xml:space="preserve"><value>قيد السجل الرئيسي</value></data>
+  <data name="MasterRegisterEntryId" xml:space="preserve"><value>معرف قيد السجل</value></data>
+  <data name="MasterRegisterStatus" xml:space="preserve"><value>حالة السجل</value></data>
+  <data name="MasterRegisterLinkStatus" xml:space="preserve"><value>توافق الارتباط</value></data>
+  <data name="DocumentScope" xml:space="preserve"><value>نطاق المستند</value></data>
+  <data name="ScopeOwner" xml:space="preserve"><value>مالك النطاق</value></data>
+  <data name="DocumentClass" xml:space="preserve"><value>فئة المستند</value></data>
+  <data name="LifecycleStatus" xml:space="preserve"><value>حالة دورة الحياة</value></data>
+  <data name="LinkedAt" xml:space="preserve"><value>تاريخ الارتباط</value></data>
+  <data name="NoLinkedMasterRegisterLegacyHint" xml:space="preserve"><value>لم يتم العثور على قيد مرتبط في السجل الرئيسي. قد يكون هذا سجلاً قديماً أو مرحّلاً أو قيد التسوية.</value></data>
+  <data name="ReverseLookupFailed" xml:space="preserve"><value>تعذر تحميل علاقة السجل الرئيسي.</value></data>
+  <data name="ReverseLookupForbidden" xml:space="preserve"><value>غير مصرح لك بعرض قيد السجل المرتبط.</value></data>
+  <data name="ReadinessFailClosedDueToLink" xml:space="preserve"><value>الارتباط غير متحقق أو غير متوافق. تظل جاهزية الاعتماد والتدريب والإصدار محظورة.</value></data>
+  <data name="GovernedRegistrationComplete" xml:space="preserve"><value>تم التحقق من علاقة السجل الرئيسي المحكومة.</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل…</value></data>
+  <data name="LifecycleDraftNotForUse" xml:space="preserve"><value>مسودة — غير مخصص للاستخدام</value></data>
+  <data name="LifecycleInReviewNotEffective" xml:space="preserve"><value>قيد المراجعة — غير نافذ</value></data>
+  <data name="LifecycleApprovedPendingEffective" xml:space="preserve"><value>معتمد — بانتظار النفاذ</value></data>
+  <data name="LifecycleEffective" xml:space="preserve"><value>نافذ</value></data>
+  <data name="LifecycleSuspendedDoNotUse" xml:space="preserve"><value>معلق — لا تستخدمه</value></data>
+  <data name="LifecycleSuperseded" xml:space="preserve"><value>مستبدل</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>مسحوب</value></data>
+  <data name="LifecycleUnderRevisionNotEffective" xml:space="preserve"><value>قيد التنقيح — غير نافذ</value></data>
+  <data name="LegacyUnlinked" xml:space="preserve"><value>قديم — غير مرتبط</value></data>
+  <data name="ShowNonEffectiveDocuments" xml:space="preserve"><value>إظهار المسودات / غير النافذة</value></data>
+  <data name="ShowNonEffectiveDocumentsHint" xml:space="preserve"><value>عرض الحوكمة فقط. يشمل المسودات والوثائق غير النافذة والسجلات القديمة غير المرتبطة.</value></data>
+</root>

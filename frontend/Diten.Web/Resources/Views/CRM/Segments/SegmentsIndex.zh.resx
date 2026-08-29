@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="ActivateSegment" xml:space="preserve"><value>激活</value></data>
+  <data name="ActivateSegmentConfirm" xml:space="preserve"><value>激活该细分？其条件将被冻结；此后修改规则需要新建版本。</value></data>
+  <data name="ActivatedAt" xml:space="preserve"><value>激活时间</value></data>
+  <data name="Active" xml:space="preserve"><value>启用</value></data>
+  <data name="AddGroup" xml:space="preserve"><value>添加分组</value></data>
+  <data name="AddGroupAtRoot" xml:space="preserve"><value>添加分组</value></data>
+  <data name="AddGroupInside" xml:space="preserve"><value>内部分组</value></data>
+  <data name="AddMember" xml:space="preserve"><value>添加成员</value></data>
+  <data name="AddPredicate" xml:space="preserve"><value>添加谓词</value></data>
+  <data name="AddPredicateAtRoot" xml:space="preserve"><value>添加条件</value></data>
+  <data name="AddPredicateInside" xml:space="preserve"><value>内部条件</value></data>
+  <data name="Apply" xml:space="preserve"><value>应用</value></data>
+  <data name="ArchiveSegment" xml:space="preserve"><value>归档细分</value></data>
+  <data name="ArchiveSegmentConfirm" xml:space="preserve"><value>归档该细分？不会删除任何内容；它将变为只读且仍可解释。</value></data>
+  <data name="Archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="ArchivedSegmentReadOnly" xml:space="preserve"><value>该细分已归档，为只读。</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>确定吗？</value></data>
+  <data name="Attribute" xml:space="preserve"><value>属性</value></data>
+  <data name="BackToList" xml:space="preserve"><value>返回列表</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>批量删除</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>删除所选记录？</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>业务单元</value></data>
+  <data name="Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="CandidateCount" xml:space="preserve"><value>候选</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>分类</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>列</value></data>
+  <data name="CommaSeparated" xml:space="preserve"><value>用逗号分隔多个值</value></data>
+  <data name="CreateSegment" xml:space="preserve"><value>新建细分</value></data>
+  <data name="CriteriaHelp" xml:space="preserve"><value>规则是与细分一同存储的强类型谓词树。属性、运算符与参数均来自已发布目录。</value></data>
+  <data name="CriteriaSection" xml:space="preserve"><value>条件</value></data>
+  <data name="CriteriaState" xml:space="preserve"><value>条件</value></data>
+  <data name="Description" xml:space="preserve"><value>描述</value></data>
+  <data name="DynamicForbidsManualHelp" xml:space="preserve"><value>动态细分拒绝手工行。若需要手工例外，请改为 hybrid，以免标签对成员来源产生误导。</value></data>
+  <data name="Edit" xml:space="preserve"><value>编辑</value></data>
+  <data name="EditSegment" xml:space="preserve"><value>编辑细分</value></data>
+  <data name="Editable" xml:space="preserve"><value>可编辑</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>生效日期</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>截止日期</value></data>
+  <data name="EmptyGroupHelp" xml:space="preserve"><value>该分组尚无条件。请添加一个条件或删除分组：空分组无法保存。</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>未找到细分。</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>发生错误。</value></data>
+  <data name="ExcludedCount" xml:space="preserve"><value>已排除</value></data>
+  <data name="Export" xml:space="preserve"><value>导出</value></data>
+  <data name="Filter" xml:space="preserve"><value>筛选</value></data>
+  <data name="From" xml:space="preserve"><value>起</value></data>
+  <data name="Frozen" xml:space="preserve"><value>已冻结</value></data>
+  <data name="FrozenCriteriaHelp" xml:space="preserve"><value>此版本已激活，条件已冻结。若要修改规则请创建新版本，以便过往筛选结果仍可解释。</value></data>
+  <data name="GroupHelp" xml:space="preserve"><value>分组用于组合其子节点；NOT 分组只能有一个子节点。</value></data>
+  <data name="GroupNode" xml:space="preserve"><value>分组</value></data>
+  <data name="GroupOperator" xml:space="preserve"><value>分组运算符</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>标识</value></data>
+  <data name="Import" xml:space="preserve"><value>导入</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>含已归档</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>生命周期</value></data>
+  <data name="LimitReached" xml:space="preserve"><value>已达上限</value></data>
+  <data name="Loading" xml:space="preserve"><value>加载中...</value></data>
+  <data name="MatchMode" xml:space="preserve"><value>匹配模式</value></data>
+  <data name="MatchedCount" xml:space="preserve"><value>成员</value></data>
+  <data name="MembersHelp" xml:space="preserve"><value>此处仅保存人工填写的行：纳入或排除。推导出的成员资格从不写入。</value></data>
+  <data name="MembersSection" xml:space="preserve"><value>手工成员</value></data>
+  <data name="MembershipMode" xml:space="preserve"><value>成员模式</value></data>
+  <data name="MembershipNeverStoredHelp" xml:space="preserve"><value>成员资格从不存储：细分上不存在成员名单、成员计数或上次解析时间。</value></data>
+  <data name="MembershipSource" xml:space="preserve"><value>来源</value></data>
+  <data name="Move" xml:space="preserve"><value>移动</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>新版本</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>创建新的草稿版本？条件将以全新节点 ID 克隆，当前版本继续有效。</value></data>
+  <data name="No" xml:space="preserve"><value>否</value></data>
+  <data name="NoCriteria" xml:space="preserve"><value>尚无条件。</value></data>
+  <data name="NoMembers" xml:space="preserve"><value>没有手工成员行。</value></data>
+  <data name="NoValueNeeded" xml:space="preserve"><value>无需取值</value></data>
+  <data name="NotGroupHelp" xml:space="preserve"><value>NOT 只能包含一个条件。</value></data>
+  <data name="Notes" xml:space="preserve"><value>备注</value></data>
+  <data name="Operator" xml:space="preserve"><value>运算符</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>细分是「谁属于该集合」的定义，而不是已保存的名单。成员资格在每次询问时重新推导。</value></data>
+  <data name="ParentGroup" xml:space="preserve"><value>上级</value></data>
+  <data name="Passive" xml:space="preserve"><value>停用</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>您没有浏览该列表的权限，请直接输入 ID 作为取值。</value></data>
+  <data name="PredicateCount" xml:space="preserve"><value>谓词数</value></data>
+  <data name="PredicateNode" xml:space="preserve"><value>条件</value></data>
+  <data name="ProductPickerUnavailable" xml:space="preserve"><value>您没有浏览全局产品的权限，因此无法在此选择该取值。</value></data>
+  <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="ReasonCodes" xml:space="preserve"><value>原因</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>细分已激活。</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>记录已归档。</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>记录已创建。</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>记录已更新。</value></data>
+  <data name="Remove" xml:space="preserve"><value>移除</value></data>
+  <data name="Reset" xml:space="preserve"><value>重置</value></data>
+  <data name="ResolvePreviewHelp" xml:space="preserve"><value>按需计算且不做任何保存。被淘汰的候选者会连同淘汰原因一并列出。</value></data>
+  <data name="ResolvePreviewSection" xml:space="preserve"><value>成员预览</value></data>
+  <data name="RootCombinatorHelp" xml:space="preserve"><value>顶层节点的组合方式</value></data>
+  <data name="RootLevel" xml:space="preserve"><value>根级</value></data>
+  <data name="RunResolve" xml:space="preserve"><value>运行预览</value></data>
+  <data name="Save" xml:space="preserve"><value>保存</value></data>
+  <data name="SaveBeforeMembers" xml:space="preserve"><value>请先保存细分；手工成员行随后添加。</value></data>
+  <data name="SaveView" xml:space="preserve"><value>保存视图</value></data>
+  <data name="Search" xml:space="preserve"><value>搜索</value></data>
+  <data name="SegmentCode" xml:space="preserve"><value>细分代码</value></data>
+  <data name="SegmentCodeHelp" xml:space="preserve"><value>稳定的业务键，不做重命名；请改名称字段。</value></data>
+  <data name="SegmentContractUnavailable" xml:space="preserve"><value>细分能力契约不可用，操作已禁用。</value></data>
+  <data name="SegmentName" xml:space="preserve"><value>细分名称</value></data>
+  <data name="SegmentStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="SegmentType" xml:space="preserve"><value>细分类型</value></data>
+  <data name="SegmentTypeHelp" xml:space="preserve"><value>static = 仅手工名单；dynamic = 仅规则（拒绝手工行）；hybrid = 规则加手工纳入/排除。</value></data>
+  <data name="SegmentVersion" xml:space="preserve"><value>版本</value></data>
+  <data name="SegmentsMenu" xml:space="preserve"><value>客户细分</value></data>
+  <data name="SegmentsTitle" xml:space="preserve"><value>客户细分</value></data>
+  <data name="SelectAccount" xml:space="preserve"><value>选择客户</value></data>
+  <data name="SelectContact" xml:space="preserve"><value>选择联系人</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>请选择...</value></data>
+  <data name="SelectTerritoryModel" xml:space="preserve"><value>请先选择区域模型</value></data>
+  <data name="SelectionReason" xml:space="preserve"><value>选择理由</value></data>
+  <data name="SelectionReasonHelp" xml:space="preserve"><value>必填：没有理由的手工成员无法创建。</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>全部</value></data>
+  <data name="Status" xml:space="preserve"><value>状态</value></data>
+  <data name="StatusSeparateEndpointHelp" xml:space="preserve"><value>此处不修改状态：激活与归档是拥有各自权限的独立操作。</value></data>
+  <data name="SubjectDisplayName" xml:space="preserve"><value>显示名称</value></data>
+  <data name="SubjectDisplayNameHelp" xml:space="preserve"><value>仅用于显示与审计，明确不是事实来源。</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>对象 ID</value></data>
+  <data name="SubjectIdHelp" xml:space="preserve"><value>该 ID 按原样采用；此处不读取也不修改所引用的主数据。</value></data>
+  <data name="SubjectPickerHelp" xml:space="preserve"><value>选择后会自动填入下方的 ID 与显示名称。ID 仍是权威字段，也可手工输入。</value></data>
+  <data name="SubjectType" xml:space="preserve"><value>对象类型</value></data>
+  <data name="SubjectTypeHelp" xml:space="preserve"><value>该细分归类的对象。创建后不可更改：细分不能悄悄改为回答另一个问题。</value></data>
+  <data name="Superseded" xml:space="preserve"><value>已被取代</value></data>
+  <data name="SupersededHelp" xml:space="preserve"><value>已有更新版本取代此版本。它仍可解析，因为解释过往筛选需要当时生效的规则。</value></data>
+  <data name="To" xml:space="preserve"><value>止</value></data>
+  <data name="Unknown" xml:space="preserve"><value>未知</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>更新时间</value></data>
+  <data name="Verdict" xml:space="preserve"><value>判定</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>查看详情</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+</root>

@@ -1,0 +1,30 @@
+@using Diten.Web.Views.MasterData.Brands
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<BrandsIndex> Localizer
+
+<div class="card">
+    <div id="brandContractError" class="alert alert-danger rounded-0 d-none mb-0" role="alert"></div>
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+    </div>
+    <div class="card-datatable table-responsive">
+        <table id="dt-brands" data-dt-standard="v2" class="datatables-brands table border-top w-100">
+            <thead><tr>
+                <th></th>
+                <th>@Localizer["BrandCode"]</th>
+                <th class="all">@Localizer["BrandName"]</th>
+                <th>@Localizer["BrandStatus"]</th>
+                <th>@Localizer["BusinessUnitId"]</th>
+                <th>@Localizer["TherapeuticAreaId"]</th>
+                <th>@Localizer["EffectiveFrom"]</th>
+                <th>@Localizer["EffectiveTo"]</th>
+                <th>@Localizer["Archived"]</th>
+                <th>@Localizer["UpdatedAt"]</th>
+                <th class="all text-end">@Localizer["Actions"]</th>
+            </tr></thead>
+        </table>
+    </div>
+</div>

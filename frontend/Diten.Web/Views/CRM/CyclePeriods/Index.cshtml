@@ -1,0 +1,48 @@
+@model Diten.Web.Models.CRM.CyclePeriodIndexViewModel
+@using Diten.Web.Views.CRM.CyclePeriods
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CyclePeriodsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["CyclePeriodsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@* ① Inline Filter partial *@
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/CRM/CyclePeriods/_Filter.cshtml" />
+
+@* Golden Compact: authoring happens on its own page, and the create affordance lives in the DataTable toolbar
+   (the `.add-new` button) — exactly once. A second button in the page header offered the same action twice, which
+   makes a reader wonder whether the two differ. The permission gate is UNCHANGED and still decided server-side; it is
+   published to index.js below so the surviving toolbar button obeys it (the Campaign golden-compact pattern). *@
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["CyclePeriodsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* ② The read-only "which period is in force today?" badge. It is a READ: opening this page creates nothing and
+     remembers nothing. An ambiguous answer is shown as a WARNING rather than silently resolved to the first row, and
+     the badge names the SCOPE that answered — "my unit has its own calendar" and "my unit follows the tenant's" are
+     different facts. *@
+<div class="card mb-3">
+    <div class="card-body py-3 d-flex flex-wrap align-items-center gap-3">
+        <span class="text-muted">@Localizer["CurrentPeriod"]</span>
+        <span id="currentPeriodBadge" class="badge bg-label-secondary">@SharedLocalizer["Loading"]</span>
+        <span id="currentPeriodScope" class="badge bg-label-primary d-none"></span>
+        <small id="currentPeriodWindow" class="text-muted"></small>
+    </div>
+</div>
+
+@* ③ DataTable Card *@
+@* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-cycle-periods" data-dt-standard="v2"> *@
+<partial name="~/Views/CRM/CyclePeriods/_DataTable.cshtml" />
+
+<script id="cycleperiod-page-flags" type="application/json">{"canManage": @(Model.CanManage ? "true" : "false")}</script>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/CyclePeriods/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/CyclePeriods/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/CyclePeriods/index.js" asp-append-version="true"></script>
+}

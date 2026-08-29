@@ -1,0 +1,38 @@
+@using Diten.Web.Views.DocumentManagement.MasterRegister
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MasterRegisterIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["DocumentMasterRegisterTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    // MOD-0029-FU24 — FE-B UX guard only; the FU06 controller ([HasPermission]) stays authoritative.
+    var canManage = Perms.Has("platform.document-management.master-register.manage");
+    var canCreateControlledDocument = Perms.Has("platform.document-management.master-register.registration.create")
+        && canManage
+        && Perms.Has("platform.document-management.master-register.link")
+        && Perms.Has("platform.document-management.controlled-documents.create");
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/DocumentManagement/MasterRegister/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["DocumentMasterRegisterTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="~/Views/DocumentManagement/MasterRegister/_DataTable.cshtml" />
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/DocumentManagement/MasterRegister/_IndexL10n.cshtml" />
+    <script>
+        window.MasterRegisterPerms = {
+            canManage: @Json.Serialize(canManage),
+            canCreateControlledDocument: @Json.Serialize(canCreateControlledDocument)
+        };
+    </script>
+    <script src="~/assets/js/DocumentManagement/MasterRegister/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/MasterRegister/index.js" asp-append-version="true"></script>
+}

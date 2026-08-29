@@ -1,0 +1,40 @@
+@using Diten.Web.Views.CRM.Campaigns
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CampaignIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["CampaignsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    // Unchanged permission gate: the create affordance is still decided server-side. It is now published to
+    // index.js as a data attribute so the button can live in the DataTable toolbar (golden compact) instead of
+    // the page header — the guard itself, and the contract check that also hides it, are untouched.
+    var canManage = Perms.Has("crm.campaign.manage") || Perms.Has("crm.territory.model.manage");
+}
+
+@* ① Inline Filter partial *@
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/CRM/Campaigns/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["CampaignsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@*
+    ② No bulk action bar.
+    Campaigns are CRUD-minus-delete: the service has no DELETE and no /bulk endpoint (a campaign is archived so a
+    past target selection stays explainable). The golden bulk-delete checks are expected N/A here.
+*@
+
+@* ③ DataTable Card *@
+@* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-campaigns" data-dt-standard="v2"> *@
+<partial name="~/Views/CRM/Campaigns/_DataTable.cshtml" />
+
+<script id="campaign-page-flags" type="application/json">{"canManage": @(canManage ? "true" : "false")}</script>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/Campaigns/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/Campaigns/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/Campaigns/index.js" asp-append-version="true"></script>
+}

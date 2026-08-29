@@ -1,0 +1,46 @@
+@model Diten.Web.Models.CRM.TerritoryIndexPageViewModel
+@using Diten.Web.Models.CRM
+@using Diten.Web.Views.CRM.TerritoryManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TerritoryManagementResources> L
+@inject IHtmlLocalizer<Diten.Web.SharedResource> Shared
+@{
+    ViewData["Title"] = L["Title"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@* ① Inline Filter partial *@
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/CRM/TerritoryManagement/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@L["Title"]</h5>
+    <p class="mb-0 text-muted">@L["PageDescription"]</p>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible" role="alert">@TempData["SuccessMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible" role="alert">@TempData["ErrorMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+
+@* ② DataTable Card *@
+@* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-territorymodels" data-dt-standard="v2"> *@
+<partial name="~/Views/CRM/TerritoryManagement/_DataTable.cshtml" />
+
+@* ③ Offcanvas: slim Create / Edit panel *@
+<partial name="~/Views/CRM/TerritoryManagement/_CreateEditOffcanvas.cshtml" />
+<partial name="~/Views/CRM/TerritoryManagement/_DetailsQuickView.cshtml" />
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/TerritoryManagement/_IndexL10n.cshtml" />
+    <script>
+        window.TerritoryCanManage = @(Model.CanManageModel ? "true" : "false");
+    </script>
+    <script src="~/assets/js/CRM/TerritoryManagement/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/TerritoryManagement/index.js" asp-append-version="true"></script>
+}

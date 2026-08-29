@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="OverridesTitle" xml:space="preserve"><value>Исключения рабочего календаря</value></data>
+  <data name="BreadcrumbOverrides" xml:space="preserve"><value>Исключения рабочего календаря</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Праздники вашей компании, закрытия и отработочные рабочие дни. Они накладываются на календарь страны, который здесь не управляется.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Сведения об исключении</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Добавить исключение</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить исключение</value></data>
+  <data name="FormDescription" xml:space="preserve"><value>Исключение охватывает одну страну за один год. Оставьте выходные дни пустыми, чтобы унаследовать их из календаря страны.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Добавить исключение</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="SectionScope" xml:space="preserve"><value>Область</value></data>
+  <data name="SectionWeekend" xml:space="preserve"><value>Выходные</value></data>
+  <data name="SectionLifecycle" xml:space="preserve"><value>Жизненный цикл</value></data>
+  <data name="SectionDays" xml:space="preserve"><value>Праздники и закрытия компании</value></data>
+  <data name="SectionResolution" xml:space="preserve"><value>Проверка рабочего дня</value></data>
+  <data name="CalendarCode" xml:space="preserve"><value>Код календаря</value></data>
+  <data name="CalendarCodeHint" xml:space="preserve"><value>Устойчивый ключ, например TR-2026. Никогда не переименовывается.</value></data>
+  <data name="CalendarName" xml:space="preserve"><value>Название календаря</value></data>
+  <data name="CountryCode" xml:space="preserve"><value>Страна</value></data>
+  <data name="CountryInherited" xml:space="preserve"><value>Страна (унаследовано)</value></data>
+  <data name="CalendarYear" xml:space="preserve"><value>Год</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Область</value></data>
+  <data name="OrganizationUnit" xml:space="preserve"><value>Организационная единица</value></data>
+  <data name="WeekendDays" xml:space="preserve"><value>Выходные дни</value></data>
+  <data name="DayCount" xml:space="preserve"><value>Дни</value></data>
+  <data name="Notes" xml:space="preserve"><value>Примечания</value></data>
+  <data name="Activate" xml:space="preserve"><value>Активировать</value></data>
+  <data name="ActivateConfirm" xml:space="preserve"><value>Активация применит это исключение к вашей организации. Продолжить?</value></data>
+  <data name="Archive" xml:space="preserve"><value>Архивировать</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Это исключение будет архивировано. Оно останется доступным как история, но больше не будет отвечать на вопросы о рабочих днях.</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Показать архивные</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Активный</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Архивный</value></data>
+  <data name="Inherited" xml:space="preserve"><value>унаследовано</value></data>
+  <data name="InheritedFromCountry" xml:space="preserve"><value>Унаследовано из календаря страны</value></data>
+  <data name="NoCalendarData" xml:space="preserve"><value>Нет данных календаря</value></data>
+  <data name="ResolutionResolved" xml:space="preserve"><value>Определено</value></data>
+  <data name="ResolutionCalendarMissing" xml:space="preserve"><value>Для этой страны календарь не заведён</value></data>
+  <data name="ResolutionYearMissing" xml:space="preserve"><value>Нет календаря на этот год</value></data>
+  <data name="ResolutionCountryUnknown" xml:space="preserve"><value>Страна отсутствует в справочных данных</value></data>
+  <data name="AddDay" xml:space="preserve"><value>Добавить день</value></data>
+  <data name="EditDay" xml:space="preserve"><value>Изменить день</value></data>
+  <data name="DayDateHint" xml:space="preserve"><value>Должен попадать в год календаря.</value></data>
+  <data name="ObservedDateHint" xml:space="preserve"><value>Заполняйте только если день фактически соблюдается в другую дату.</value></data>
+  <data name="Recurrence" xml:space="preserve"><value>Повторяемость</value></data>
+  <data name="RecurrenceHint" xml:space="preserve"><value>Только декларация. Ничего не создаётся автоматически; следующий год вводится отдельно.</value></data>
+  <data name="IsHalfDayHint" xml:space="preserve"><value>Полдня всё равно считается рабочим днём, и ответ это указывает.</value></data>
+  <data name="WorkingDayOverrideHint" xml:space="preserve"><value>Отработочный день обязывает работать, поэтому он не может быть полуднём.</value></data>
+  <data name="ArchiveDayConfirm" xml:space="preserve"><value>Этот день будет архивирован. Он перестанет влиять на ответы, но останется в записи.</value></data>
+  <data name="DayCode" xml:space="preserve"><value>Код</value></data>
+  <data name="DayName" xml:space="preserve"><value>Название</value></data>
+  <data name="DayDate" xml:space="preserve"><value>Дата</value></data>
+  <data name="ObservedDate" xml:space="preserve"><value>Фактическая дата</value></data>
+  <data name="DayType" xml:space="preserve"><value>Тип</value></data>
+  <data name="DayTypePublicHoliday" xml:space="preserve"><value>Государственный праздник</value></data>
+  <data name="DayTypeReligiousHoliday" xml:space="preserve"><value>Религиозный праздник</value></data>
+  <data name="DayTypeMoveableHoliday" xml:space="preserve"><value>Переходящий праздник</value></data>
+  <data name="DayTypeCompanyHoliday" xml:space="preserve"><value>Праздник компании</value></data>
+  <data name="DayTypeCompanyClosure" xml:space="preserve"><value>Закрытие компании</value></data>
+  <data name="DayTypeWorkingDayOverride" xml:space="preserve"><value>Отработочный рабочий день</value></data>
+  <data name="RecurrenceNone" xml:space="preserve"><value>Нет</value></data>
+  <data name="RecurrenceAnnualFixed" xml:space="preserve"><value>Ежегодно, фиксированная дата</value></data>
+  <data name="RecurrenceAnnualMoveable" xml:space="preserve"><value>Ежегодно, переходящая дата</value></data>
+  <data name="IsHalfDay" xml:space="preserve"><value>Полдня</value></data>
+  <data name="ProbeDate" xml:space="preserve"><value>Проверить дату</value></data>
+  <data name="Probe" xml:space="preserve"><value>Проверить</value></data>
+  <data name="monday" xml:space="preserve"><value>Понедельник</value></data>
+  <data name="tuesday" xml:space="preserve"><value>Вторник</value></data>
+  <data name="wednesday" xml:space="preserve"><value>Среда</value></data>
+  <data name="thursday" xml:space="preserve"><value>Четверг</value></data>
+  <data name="friday" xml:space="preserve"><value>Пятница</value></data>
+  <data name="saturday" xml:space="preserve"><value>Суббота</value></data>
+  <data name="sunday" xml:space="preserve"><value>Воскресенье</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Юридическое лицо</value></data>
+  <data name="ScopeTenant" xml:space="preserve"><value>Тенант</value></data>
+  <data name="ScopeOrganizationUnit" xml:space="preserve"><value>Организационная единица</value></data>
+  <data name="SelectLegalEntity" xml:space="preserve"><value>Выберите юридическое лицо</value></data>
+  <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>Юридические лица недоступны</value></data>
+</root>

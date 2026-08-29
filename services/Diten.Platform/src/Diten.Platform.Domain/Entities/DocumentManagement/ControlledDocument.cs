@@ -1,5 +1,6 @@
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Domain.Enums.DocumentManagement;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace Diten.Platform.Domain.Entities.DocumentManagement;
 
@@ -11,9 +12,20 @@ namespace Diten.Platform.Domain.Entities.DocumentManagement;
 public sealed class ControlledDocument : TenantScopedEntity
 {
     public required string DocumentKey { get; set; }
-    public required Guid CompanyId { get; set; }
-    public required Guid OwnerCompanyId { get; set; }
+    public DocumentScope DocumentScope { get; set; } = DocumentScope.Company;
+    public Guid ScopeOwnerId { get; set; }
+    [BsonIgnoreIfDefault]
+    public Guid CorporateOwnerId { get; set; }
+    [BsonIgnoreIfDefault]
+    public Guid CompanyId { get; set; }
+    [BsonIgnoreIfDefault]
+    public Guid OwnerCompanyId { get; set; }
     public required Guid CollectionInstanceId { get; set; }
+    public Guid FolderId { get; set; }
+    public string? StoragePartition { get; set; }
+    public string? GovernanceOwnerFunction { get; set; }
+    public string? GovernanceOwnerRole { get; set; }
+    public Guid? GovernanceOwnerUserId { get; set; }
     public required string CollectionPath { get; set; }
     public string? CanonicalId { get; set; }
     public required string Title { get; set; }

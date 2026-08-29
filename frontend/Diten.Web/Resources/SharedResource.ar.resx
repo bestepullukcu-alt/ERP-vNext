@@ -471,6 +471,9 @@
   <data name="ReferenceDataMenu" xml:space="preserve"><value>البيانات المرجعية</value></data>
   <data name="HumanCapitalManagement" xml:space="preserve"><value>إدارة رأس المال البشري</value></data>
   <data name="EmployeeDraftsMenu" xml:space="preserve"><value>مسودات الموظفين</value></data>
+  <data name="CommercialSuite" xml:space="preserve"><value>الحزمة التجارية</value></data>
+  <data name="AccountsMenu" xml:space="preserve"><value>الحسابات</value></data>
+  <data name="ContactsMenu" xml:space="preserve"><value>جهات الاتصال</value></data>
   <data name="ModuleCodeInUse" xml:space="preserve"><value>رمز الوحدة هذا مستخدم بالفعل.</value></data>
   <data name="Organization" xml:space="preserve"><value>المؤسسة</value></data>
   <data name="OrganizationUnits" xml:space="preserve"><value>الوحدات التنظيمية</value></data>
@@ -482,6 +485,8 @@
   <data name="DocumentationStructures" xml:space="preserve"><value>هياكل التوثيق</value></data>
   <data name="ControlledDocuments" xml:space="preserve"><value>المستندات المُدارة</value></data>
   <data name="TemplateMasters" xml:space="preserve"><value>قوالب الشركة الرئيسية</value></data>
+  <data name="DocumentMasterRegister" xml:space="preserve"><value>سجل الوثائق الرئيسي</value></data>
+  <data name="RepositoryAssessments" xml:space="preserve"><value>تقييمات المستودعات</value></data>
   <data name="TemplateVariants" xml:space="preserve"><value>متغيرات القالب</value></data>
   <data name="AccessMatrix" xml:space="preserve"><value>مصفوفة الوصول</value></data>
   <data name="Reconciliation" xml:space="preserve"><value>التسوية</value></data>
@@ -511,6 +516,8 @@
   <data name="Nav.Domain.DOCUMENTMANAGEMENT" xml:space="preserve"><value>إدارة المستندات</value></data>
   <data name="Nav.Domain.MASTERDATAMANAGEMENT" xml:space="preserve"><value>إدارة البيانات الرئيسية</value></data>
   <data name="Nav.Domain.PLATFORMSHAREDSERVICES" xml:space="preserve"><value>الخدمات المشتركة للمنصة</value></data>
+  <data name="Nav.Module.WORKINGCALENDAR" xml:space="preserve"><value>تقويم العمل</value></data>
+  <data name="Nav.Page.WORKINGCALENDAROVERRIDES" xml:space="preserve"><value>استثناءات تقويم العمل</value></data>
   <data name="Nav.Module.ACCESSGOVERNANCE" xml:space="preserve"><value>حوكمة الوصول</value></data>
   <data name="Nav.Module.TENANTSETTINGS" xml:space="preserve"><value>إعدادات المستأجر</value></data>
   <data name="Nav.Module.GOLDENSLIM" xml:space="preserve"><value>Golden Slim</value></data>
@@ -548,6 +555,29 @@
   </data>
   <data name="NoRecords" xml:space="preserve">
     <value>لا توجد سجلات</value>
+  </data>
+  <data name="TerritoryManagementMenu" xml:space="preserve"><value>إدارة المناطق</value></data>
+  <data name="CampaignsMenu" xml:space="preserve"><value>الحملات</value></data>
+  <data name="KnowledgeMenu" xml:space="preserve"><value>المعرفة</value></data>
+  <data name="BrandsMenu" xml:space="preserve"><value>العلامات التجارية</value></data>
+  <data name="ProductsMenu" xml:space="preserve"><value>المنتجات</value></data>
+  <data name="ConsentPreferencesMenu" xml:space="preserve"><value>الموافقة والتفضيلات</value></data>
+  <data name="KnowledgeConceptsMenu" xml:space="preserve"><value>Concepts</value></data>
+  <data name="KnowledgePathsMenu" xml:space="preserve"><value>مسارات المعرفة</value></data>
+  <data name="ContentEngagementJourneysMenu" xml:space="preserve">
+    <value>رحلات التفاعل مع المحتوى</value>
+  </data>
+  <data name="SegmentsMenu" xml:space="preserve">
+    <value>الشرائح</value>
+  </data>
+  <data name="StrategyTemplatesMenu" xml:space="preserve">
+    <value>قوالب الاستراتيجية</value>
+  </data>
+  <data name="CyclePeriodsMenu" xml:space="preserve">
+    <value>فترات الدورات</value>
+  </data>
+  <data name="CycleCapacitiesMenu" xml:space="preserve">
+    <value>سعة الدورة</value>
   </data>
   <data name="Nav.Domain.WORKSPACE" xml:space="preserve">
     <value>مساحة العمل</value>
@@ -605,5 +635,68 @@
   </data>
   <data name="NavigationLoadFailedHint" xml:space="preserve">
     <value>حدّث الصفحة للمحاولة مرة أخرى.</value>
+  </data>
+  <data name="Nav.Page.ACCOUNTS" xml:space="preserve">
+    <value>الحسابات</value>
+  </data>
+  <data name="Nav.Page.CONTACTS" xml:space="preserve">
+    <value>جهات الاتصال</value>
+  </data>
+  <data name="Nav.Page.TERRITORYMANAGEMENT" xml:space="preserve">
+    <value>إدارة المناطق</value>
+  </data>
+  <data name="Nav.Page.SEGMENTS" xml:space="preserve">
+    <value>الشرائح</value>
+  </data>
+  <data name="Nav.Page.STRATEGYTEMPLATES" xml:space="preserve">
+    <value>قوالب الاستراتيجية</value>
+  </data>
+  <data name="Nav.Page.CAMPAIGNS" xml:space="preserve">
+    <value>الحملات</value>
+  </data>
+  <data name="Nav.Page.CYCLEPERIODS" xml:space="preserve">
+    <value>فترات الدورات</value>
+  </data>
+  <data name="Nav.Page.CYCLECAPACITIES" xml:space="preserve">
+    <value>سعة الدورة</value>
+  </data>
+  <data name="Nav.Page.CONSENTPREFERENCES" xml:space="preserve">
+    <value>الموافقة والتفضيلات</value>
+  </data>
+  <data name="Nav.Page.KNOWLEDGE" xml:space="preserve">
+    <value>المعرفة</value>
+  </data>
+  <data name="Nav.Page.KNOWLEDGECONCEPTS" xml:space="preserve">
+    <value>Concepts</value>
+  </data>
+  <data name="Nav.Page.KNOWLEDGEPATHS" xml:space="preserve">
+    <value>مسارات المعرفة</value>
+  </data>
+  <data name="Nav.Page.CONTENTENGAGEMENTJOURNEYS" xml:space="preserve">
+    <value>رحلات التفاعل مع المحتوى</value>
+  </data>
+  <data name="Nav.Module.CRM" xml:space="preserve">
+    <value>إدارة علاقات العملاء</value>
+  </data>
+  <data name="Nav.Domain.SALES" xml:space="preserve">
+    <value>المبيعات</value>
+  </data>
+  <data name="Nav.Page.WORKINGCALENDARS" xml:space="preserve">
+    <value>تقويم العمل</value>
+  </data>
+  <data name="Nav.Page.WORKINGCALENDARIMPORTS" xml:space="preserve">
+    <value>استيرادات تقويم العمل</value>
+  </data>
+  <data name="Nav.Module.WORKINGCALENDARIMPORT" xml:space="preserve">
+    <value>استيراد تقويم العمل</value>
+  </data>
+  <data name="Nav.Page.MASTERREGISTER" xml:space="preserve">
+    <value>سجل الوثائق الرئيسي</value>
+  </data>
+  <data name="Nav.Page.REPOSITORYASSESSMENT" xml:space="preserve">
+    <value>تقييمات المستودعات</value>
+  </data>
+  <data name="Nav.Page.BRANDS" xml:space="preserve">
+    <value>العلامات التجارية</value>
   </data>
 </root>

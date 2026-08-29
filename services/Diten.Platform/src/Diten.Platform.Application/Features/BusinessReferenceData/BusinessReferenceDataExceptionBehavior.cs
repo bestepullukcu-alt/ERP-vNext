@@ -180,6 +180,7 @@ public sealed class BusinessReferenceDataExceptionBehavior<TRequest, TResponse> 
             return default;
         }
 
+
         var failMethod = responseType.GetMethods(BindingFlags.Public | BindingFlags.Static)
             .SingleOrDefault(method => method.Name == "Fail"
                 && method.GetParameters() is var parameters
@@ -190,5 +191,7 @@ public sealed class BusinessReferenceDataExceptionBehavior<TRequest, TResponse> 
         return failMethod is null
             ? default
             : (TResponse?)failMethod.Invoke(null, [error, statusCode, error, null]);
+
+
     }
 }

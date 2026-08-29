@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="ActivateStrategyTemplate" xml:space="preserve"><value>Activar</value></data>
+  <data name="ActivateStrategyTemplateConfirm" xml:space="preserve"><value>¿Activar este plan? Sus enlaces se congelan y cada segmento enlazado debe estar ya activo.</value></data>
+  <data name="Active" xml:space="preserve"><value>Activo</value></data>
+  <data name="AddContentBinding" xml:space="preserve"><value>Enlazar contenido</value></data>
+  <data name="AddProductLine" xml:space="preserve"><value>Añadir línea de producto</value></data>
+  <data name="AddSegmentBinding" xml:space="preserve"><value>Enlazar segmento</value></data>
+  <data name="AddSkuAllocation" xml:space="preserve"><value>Añadir SKU</value></data>
+  <data name="Apply" xml:space="preserve"><value>Aplicar</value></data>
+  <data name="ApplyIsMicroTargetHelp" xml:space="preserve"><value>Aplicar un plan a un período (objetivos, planes) corresponde a la planificación de campo, no a esta página.</value></data>
+  <data name="ArchiveStrategyTemplate" xml:space="preserve"><value>Archivar</value></data>
+  <data name="ArchiveStrategyTemplateConfirm" xml:space="preserve"><value>¿Archivar este plan? No se elimina nada; queda de solo lectura y sigue siendo explicable.</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="ArchivedTemplateReadOnly" xml:space="preserve"><value>Esta plantilla de estrategia está archivada y es de solo lectura.</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>¿Está seguro?</value></data>
+  <data name="BindingRole" xml:space="preserve"><value>Rol</value></data>
+  <data name="BindingState" xml:space="preserve"><value>Enlaces</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Eliminación masiva</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>¿Eliminar los registros seleccionados?</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>Unidad de negocio</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Clasificación</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Columnas</value></data>
+  <data name="ContainmentNotVerifiedHelp" xml:space="preserve"><value>Aquí no se verifica si un SKU pertenece al producto seleccionado: compruébelo usted mismo.</value></data>
+  <data name="ContentBindingCount" xml:space="preserve"><value>Contenido</value></data>
+  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Solo se puede enlazar contenido publicado y no archivado, fijado a esa versión exacta.</value></data>
+  <data name="ContentRef" xml:space="preserve"><value>Contenido</value></data>
+  <data name="ContentRefType" xml:space="preserve"><value>Tipo de contenido</value></data>
+  <data name="ContentSection" xml:space="preserve"><value>Qué relato — contenido</value></data>
+  <data name="CreateStrategyTemplate" xml:space="preserve"><value>Crear plantilla de estrategia</value></data>
+  <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>Un ritmo declarado registra la intención del autor. No es vinculante y el resolutor de frecuencia no lo lee.</value></data>
+  <data name="Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="Edit" xml:space="preserve"><value>Editar</value></data>
+  <data name="EditStrategyTemplate" xml:space="preserve"><value>Editar plantilla de estrategia</value></data>
+  <data name="Editable" xml:space="preserve"><value>editable</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Vigente desde</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Vigente hasta</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>No se encontró ninguna plantilla.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>No se pudo completar la operación.</value></data>
+  <data name="Export" xml:space="preserve"><value>Exportar</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtro</value></data>
+  <data name="FrequencyIntentHelp" xml:space="preserve"><value>Referencie una política activa existente, declare un ritmo no vinculante o elija ninguno. Desde aquí nunca se escribe una política.</value></data>
+  <data name="FrequencyIntentMode" xml:space="preserve"><value>Intención de frecuencia</value></data>
+  <data name="FrequencyPolicy" xml:space="preserve"><value>Política de frecuencia de visitas</value></data>
+  <data name="FrequencySection" xml:space="preserve"><value>Con qué frecuencia — intención</value></data>
+  <data name="FrequencyType" xml:space="preserve"><value>Frecuencia</value></data>
+  <data name="Frozen" xml:space="preserve"><value>congelado</value></data>
+  <data name="FrozenBindingsHelp" xml:space="preserve"><value>Este plan está activo, por lo que sus enlaces están congelados. Cree una nueva versión para cambiarlos; el nombre y las notas siguen editables.</value></data>
+  <data name="GlobalProduct" xml:space="preserve"><value>Producto global</value></data>
+  <data name="Gsku" xml:space="preserve"><value>SKU (GSKU)</value></data>
+  <data name="GskuPickerUnavailable" xml:space="preserve"><value>No tiene permiso para consultar la lista de SKU.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identidad</value></data>
+  <data name="Import" xml:space="preserve"><value>Importar</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Incluir archivados</value></data>
+  <data name="IntentNote" xml:space="preserve"><value>Por qué este ritmo</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Ciclo de vida</value></data>
+  <data name="LimitReached" xml:space="preserve"><value>Se alcanzó el límite de esta lista.</value></data>
+  <data name="LineWeightPercentage" xml:space="preserve"><value>Peso de línea %</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando…</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Nueva versión</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>¿Crear una nueva versión borrador de este plan? La versión actual sigue siendo legible.</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="NoContentBindings" xml:space="preserve"><value>Sin contenido enlazado. Entonces el plan no tiene dimensión de contenido.</value></data>
+  <data name="NoMembersEverHelp" xml:space="preserve"><value>Un plan enlaza la identidad de un segmento. Nunca lista ni cuenta a las personas que contiene.</value></data>
+  <data name="NoProductLines" xml:space="preserve"><value>Sin línea de producto. Entonces el plan no tiene dimensión de producto.</value></data>
+  <data name="NoSegmentBindings" xml:space="preserve"><value>Ningún segmento enlazado. Un plan sin segmento no responde a «¿quién?».</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notas</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Playbooks reutilizables que enlazan un segmento, una intención de frecuencia, una mezcla producto/SKU y contenido. Una plantilla enlaza; nunca produce.</value></data>
+  <data name="Passive" xml:space="preserve"><value>Pasivo</value></data>
+  <data name="Percentage" xml:space="preserve"><value>Cuota %</value></data>
+  <data name="PeriodType" xml:space="preserve"><value>Período</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>No tiene permiso para consultar esta lista.</value></data>
+  <data name="ProductLineCount" xml:space="preserve"><value>Líneas de producto</value></data>
+  <data name="ProductSection" xml:space="preserve"><value>Qué — mezcla de producto y SKU</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Vista rápida</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>Activado.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Archivado.</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>Creado.</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>Actualizado.</value></data>
+  <data name="Remove" xml:space="preserve"><value>Quitar</value></data>
+  <data name="RequiredVisitCount" xml:space="preserve"><value>Visitas por período</value></data>
+  <data name="Reset" xml:space="preserve"><value>Restablecer</value></data>
+  <data name="Save" xml:space="preserve"><value>Guardar</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Guardar vista</value></data>
+  <data name="Search" xml:space="preserve"><value>Buscar</value></data>
+  <data name="Segment" xml:space="preserve"><value>Segmento</value></data>
+  <data name="SegmentBindingCount" xml:space="preserve"><value>Segmentos</value></data>
+  <data name="SegmentBindingHelp" xml:space="preserve"><value>Un segmento enlazado queda fijado a esa versión exacta. La lista es una enumeración: aquí no se aplica unión ni exclusión.</value></data>
+  <data name="SegmentSection" xml:space="preserve"><value>Quién — segmentos</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seleccionar…</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Todos</value></data>
+  <data name="SkuAllocationCount" xml:space="preserve"><value>Filas SKU</value></data>
+  <data name="SkuAllocationMode" xml:space="preserve"><value>Modo SKU</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Orden</value></data>
+  <data name="Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="StatusSeparateEndpointHelp" xml:space="preserve"><value>El estado solo cambia mediante Activar / Archivar.</value></data>
+  <data name="StrategyTemplateContractUnavailable" xml:space="preserve"><value>No se pudo leer el contrato de plantillas de estrategia. La página permanece de solo lectura.</value></data>
+  <data name="StrategyTemplatesTitle" xml:space="preserve"><value>Plantillas de estrategia</value></data>
+  <data name="SubjectType" xml:space="preserve"><value>Tipo de sujeto</value></data>
+  <data name="SubjectTypeHelp" xml:space="preserve"><value>A qué apunta el plan. Inmutable tras la creación; cada segmento enlazado debe coincidir.</value></data>
+  <data name="Superseded" xml:space="preserve"><value>reemplazado</value></data>
+  <data name="TemplateCode" xml:space="preserve"><value>Código</value></data>
+  <data name="TemplateCodeHelp" xml:space="preserve"><value>Clave de negocio estable. Nunca se renombra: cambie el nombre en su lugar.</value></data>
+  <data name="TemplateName" xml:space="preserve"><value>Nombre</value></data>
+  <data name="TemplateStatus" xml:space="preserve"><value>Estado</value></data>
+  <data name="TemplateVersion" xml:space="preserve"><value>Versión</value></data>
+  <data name="TotalMustBe100" xml:space="preserve"><value>Las cuotas SKU de cada línea asignada deben sumar exactamente 100,00. Nada se redondea ni se normaliza por usted.</value></data>
+  <data name="TotalPercentage" xml:space="preserve"><value>Total</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Desconocido</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Actualizado</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ver detalles</value></data>
+  <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+</root>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="Apply" xml:space="preserve"><value>应用</value></data>
+  <data name="Reset" xml:space="preserve"><value>重置</value></data>
+  <data name="Filter" xml:space="preserve"><value>筛选</value></data>
+  <data name="Search" xml:space="preserve"><value>搜索</value></data>
+  <data name="Export" xml:space="preserve"><value>导出</value></data>
+  <data name="Import" xml:space="preserve"><value>导入</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>显示全部</value></data>
+  <data name="SaveView" xml:space="preserve"><value>保存视图</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>列</value></data>
+  <data name="Status" xml:space="preserve"><value>状态</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="No" xml:space="preserve"><value>否</value></data>
+  <data name="View" xml:space="preserve"><value>查看</value></data>
+  <data name="Edit" xml:space="preserve"><value>编辑</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>查看详情</value></data>
+  <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>批量删除</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>删除所选记录？</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>确定吗？</value></data>
+  <data name="Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="Save" xml:space="preserve"><value>保存</value></data>
+  <data name="Remove" xml:space="preserve"><value>移除</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>请选择…</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>包含已归档</value></data>
+  <data name="BackToList" xml:space="preserve"><value>返回列表</value></data>
+  <data name="RequiredFieldsHint" xml:space="preserve"><value>标有 * 的字段为必填项。</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>未找到记录。</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>无法加载记录。</value></data>
+  <data name="Loading" xml:space="preserve"><value>加载中…</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>此字段为必填项。</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>记录已归档。</value></data>
+  <data name="EffectiveToBeforeEffectiveFrom" xml:space="preserve"><value>生效结束日期不能早于开始日期。</value></data>
+  <data name="Active" xml:space="preserve"><value>启用</value></data>
+  <data name="Passive" xml:space="preserve"><value>停用</value></data>
+  <data name="Unknown" xml:space="preserve"><value>未知</value></data>
+  <data name="Archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="ArchivedAt" xml:space="preserve"><value>归档时间</value></data>
+  <data name="ArchivedBy" xml:space="preserve"><value>归档人</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>创建时间</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>创建人</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>更新时间</value></data>
+  <data name="UpdatedBy" xml:space="preserve"><value>更新人</value></data>
+  <data name="SummarySection" xml:space="preserve"><value>摘要</value></data>
+  <data name="AuditSection" xml:space="preserve"><value>审计与来源</value></data>
+  <data name="ExternalReferencesSection" xml:space="preserve"><value>外部引用</value></data>
+  <data name="ExternalReferencesHelp" xml:space="preserve"><value>遗留追溯记录。每个来源系统最多一个主记录。</value></data>
+  <data name="AddReference" xml:space="preserve"><value>添加引用</value></data>
+  <data name="NoExternalReferences" xml:space="preserve"><value>无外部引用。</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>来源系统</value></data>
+  <data name="ExternalId" xml:space="preserve"><value>外部 ID</value></data>
+  <data name="ExternalCode" xml:space="preserve"><value>外部编码</value></data>
+  <data name="ExternalName" xml:space="preserve"><value>外部名称</value></data>
+  <data name="ImportedAt" xml:space="preserve"><value>导入时间</value></data>
+  <data name="Primary" xml:space="preserve"><value>主要</value></data>
+  <data name="Description" xml:space="preserve"><value>描述</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>生效开始</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>生效结束</value></data>
+  <data name="TherapeuticAreaId" xml:space="preserve"><value>治疗领域</value></data>
+  <data name="TherapeuticAreaHelp" xml:space="preserve"><value>治疗领域是概念/引用，而非本地扁平引用集。</value></data>
+  <data name="BrandProductContractUnavailable" xml:space="preserve"><value>品牌/产品能力契约不可用，操作已禁用。</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="Status_active" xml:space="preserve"><value>启用</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>停用</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="BrandCode" xml:space="preserve"><value>品牌编码</value></data>
+  <data name="BrandName" xml:space="preserve"><value>品牌名称</value></data>
+  <data name="ProductCode" xml:space="preserve"><value>产品编码</value></data>
+  <data name="ProductName" xml:space="preserve"><value>产品名称</value></data>
+  <data name="ProductStatus" xml:space="preserve"><value>产品状态</value></data>
+  <data name="ProductType" xml:space="preserve"><value>产品类型</value></data>
+  <data name="BrandsTitle" xml:space="preserve"><value>品牌</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>品牌主数据。营销活动、知识与频次模块仅以引用方式使用品牌。</value></data>
+  <data name="CreateBrand" xml:space="preserve"><value>新建品牌</value></data>
+  <data name="EditBrand" xml:space="preserve"><value>编辑品牌</value></data>
+  <data name="BrandDetail" xml:space="preserve"><value>品牌详情</value></data>
+  <data name="ArchiveBrand" xml:space="preserve"><value>归档品牌</value></data>
+  <data name="ArchiveBrandConfirm" xml:space="preserve"><value>归档此品牌？历史记录仍可读取，其产品不会被归档。</value></data>
+  <data name="ArchivedBrandReadOnly" xml:space="preserve"><value>该品牌已归档且为只读。历史引用保持不变。</value></data>
+  <data name="BrandStatus" xml:space="preserve"><value>品牌状态</value></data>
+  <data name="BrandCodeImmutableHelp" xml:space="preserve"><value>品牌编码是永久的。请通过品牌名称重命名。</value></data>
+  <data name="OwnerCompanyId" xml:space="preserve"><value>所属公司</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>业务单元</value></data>
+  <data name="ReferencesSection" xml:space="preserve"><value>引用</value></data>
+  <data name="ReferenceIdsOnlyHelp" xml:space="preserve"><value>引用标识按原样显示；尚未解析对应主数据记录。</value></data>
+  <data name="ProductsTab" xml:space="preserve"><value>产品</value></data>
+  <data name="ProductsTabUnavailable" xml:space="preserve"><value>没有产品读取权限时无法在此列出产品。</value></data>
+  <data name="ArchiveNoCascadeHelp" xml:space="preserve"><value>归档品牌绝不会归档或删除其产品。</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>编码或名称…</value></data>
+</root>

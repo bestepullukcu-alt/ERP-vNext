@@ -30,7 +30,8 @@ public sealed class DocumentVersioningService
         FileUploadInput file,
         string createdBy,
         string correlationId,
-        CancellationToken ct)
+        CancellationToken ct,
+        string? storagePartition = null)
     {
         var tenantId = TenantGuard.RequireTenant(_tenantContext);
 
@@ -52,7 +53,8 @@ public sealed class DocumentVersioningService
         }
 
         var request = new ContentStoreRequest(
-            tenantId, companyId, scope, itemId, versionId, file.FileName, file.MediaType, bytes, createdBy);
+            tenantId, companyId, scope, itemId, versionId, file.FileName, file.MediaType, bytes, createdBy,
+            storagePartition);
 
         var stored = await _storage.StoreAsync(request, ct);
         if (!stored.IsSuccessful)

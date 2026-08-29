@@ -1,0 +1,348 @@
+@model Diten.Web.Models.CRM.CampaignPageViewModel
+@using System.Text.Json
+@using Diten.Web.Views.CRM.Campaigns
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CampaignIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["CampaignDetail"].Value;
+    Layout = "_LayoutTenantShell";
+    var c = Model.Campaign;
+    var isManual = !string.Equals(c.TargetingMode, "segment", StringComparison.OrdinalIgnoreCase);
+    string Show(object? value)
+    {
+        var text = value?.ToString();
+        return string.IsNullOrWhiteSpace(text) ? "—" : text;
+    }
+}
+
+@*
+    Golden compact preview layout. Section headings and their ORDER mirror _Form.cshtml exactly
+    (Summary -> Scope -> Cycle period -> Targeting -> Consent).
+
+    The manual targeting surface below the preview is unchanged FU04 behaviour and is MODE-GATED: it renders only when
+    the campaign is targeted manually. It lives in a plain .card - deliberately NOT a preview section - so it stays out
+    of the form/details section map.
+*@
+<div id="campaignDetailsPage" data-campaign-id="@c.CampaignId"
+     data-archived="@c.IsArchived.ToString().ToLowerInvariant()"
+     data-targeting-mode="@c.TargetingMode">
+
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <div>
+            <h5 class="mb-0">@c.CampaignName</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="/CRM/Campaigns">@Localizer["CampaignsTitle"]</a>
+                    </li>
+                    <li class="breadcrumb-item active text-primary">@c.CampaignCode</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="/CRM/Campaigns" class="btn btn-label-secondary">@Localizer["BackToList"]</a>
+            <a href="/CRM/Campaigns/@c.CampaignId/Targeting" class="btn btn-label-primary">@Localizer["TargetingTitle"]</a>
+            @if (Model.CanManageCampaign && !c.IsArchived)
+            {
+                <a href="/CRM/Campaigns/Edit/@c.CampaignId" class="btn btn-primary">@Localizer["EditCampaign"]</a>
+                <button type="button" id="archiveCampaign" class="btn btn-label-warning">@Localizer["ArchiveCampaign"]</button>
+            }
+        </div>
+    </div>
+
+    @if (c.IsArchived)
+    {
+        <div class="alert alert-warning" role="alert"><i class="bx bx-archive me-1"></i>@Localizer["ArchivedCampaignReadOnly"]</div>
+    }
+
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+
+            @* Section 1 - Summary *@
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SummarySection"]</h6>
+                <div class="row g-4">
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-purchase-tag-alt"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["CampaignCode"]</div>
+                                <div class="backbone-preview-value mt-1">@c.CampaignCode</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-category"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["CampaignType"]</div>
+                                <div class="backbone-preview-value mt-1">@Show(c.CampaignType)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-check-shield"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["CampaignStatus"]</div>
+                                <div class="backbone-preview-value mt-1"><span class="badge bg-label-primary">@c.CampaignStatus</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-target-lock"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["ObjectiveType"]</div>
+                                <div class="backbone-preview-value mt-1">@Show(c.ObjectiveType)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-calendar"></i>
+                            <div>
+                                @* Dates are DAYS: shown as the stored UTC day, the same day the author picked. *@
+                                <div class="backbone-preview-label">@Localizer["DateWindow"]</div>
+                                <div class="backbone-preview-value mt-1">
+                                    @c.StartDate.UtcDateTime.ToString("yyyy-MM-dd") — @(c.EndDate?.UtcDateTime.ToString("yyyy-MM-dd") ?? "—")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-archive"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["Archived"]</div>
+                                <div class="backbone-preview-value mt-1">@(c.IsArchived ? Localizer["Yes"] : Localizer["No"])</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-file"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["Description"]</div>
+                                <div class="backbone-preview-description mt-1">@Show(c.Description)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* Section 3 - Targeting. Shows the ACTIVE mode; the manual rows themselves are in the card below. *@
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["TargetingSection"]</h6>
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-been-here"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["TargetingMode"]</div>
+                                <div class="backbone-preview-value mt-1">
+                                    <span class="badge bg-label-primary">
+                                        @Localizer["TargetingMode_" + (isManual ? "manual" : "segment")]
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-collection"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["TargetedSegments"]</div>
+                                <div class="backbone-preview-value mt-1">
+                                    @if (isManual)
+                                    {
+                                        <span class="text-muted">@Localizer["ManualTargetingHint"]</span>
+                                    }
+                                    else if (c.TargetedSegments.Count == 0)
+                                    {
+                                        <span class="text-muted">@Localizer["NoTargetedSegments"]</span>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var s in c.TargetedSegments)
+                                        {
+                                            <span class="badge bg-label-secondary me-1 mb-1">
+                                                @(s.IsResolvable ? $"{s.SegmentCode}" : s.SegmentId.ToString())
+                                                @if (s.Superseded)
+                                                {
+                                                    <text> · @Localizer["SegmentSuperseded"]</text>
+                                                }
+                                            </span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right) -->
+        <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+
+            @* Section 4 - Cycle period. FU11 moved it into the sidebar: a campaign has at most one period and it is a single read-only line, so it was using a full-width row to say very little.
+               The order here MUST match _Form.cshtml or the compact section-map check breaks. *@
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["CyclePeriod"]</h6>
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-calendar-event"></i>
+                            <div>
+                                @* A READ-TIME projection: only the id is stored, so a renamed or re-dated period
+                                   shows its current values without the campaign ever being written. *@
+                                <div class="backbone-preview-label">@Localizer["CyclePeriod"]</div>
+                                <div class="backbone-preview-value mt-1">
+                                    @if (c.CyclePeriod is { } cycle)
+                                    {
+                                        <span>@cycle.CycleCode — @cycle.CycleName</span>
+                                        <span class="badge bg-label-secondary ms-1">@cycle.CycleStatus</span>
+                                        <div class="text-muted small mt-1">
+                                            @cycle.StartDate.ToString("yyyy-MM-dd") — @cycle.EndDate.ToString("yyyy-MM-dd")
+                                        </div>
+                                    }
+                                    else if (c.CyclePeriodId is not null)
+                                    {
+                                        @* Bound, but the period could not be read. Never invent a label. *@
+                                        <span class="text-muted">@c.CyclePeriodId</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@Localizer["NoCyclePeriod"]</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* Section 5 - Consent context. Two optional defaults and a note - sidebar material for the same reason. *@
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ConsentContextSection"]</h6>
+                <div class="row g-4">
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-broadcast"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["DefaultConsentChannel"]</div>
+                                <div class="backbone-preview-value mt-1">@Show(c.DefaultConsentChannel)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-shield-quarter"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["DefaultConsentPurpose"]</div>
+                                <div class="backbone-preview-value mt-1">@Show(c.DefaultConsentPurpose)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="alert alert-info py-2 mb-0">@Localizer["ConsentDefaultsHelp"]</div>
+                    </div>
+                </div>
+            </section>
+
+            @* Section 5 - Scope. FU11 round-2 moved it into the sidebar, below the consent defaults: a campaign names
+               ONE level, and that is filing information - where this campaign lives - not something a reader
+               works through while reading the summary. It also lands directly under the period it constrains.
+               _Form.cshtml carries the SAME order; the two files must expose the same headings in the same
+               sequence or the compact form/details section-map check breaks. *@
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ScopeSection"]</h6>
+                <div class="row g-4">
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-map-pin"></i>
+                            <div>
+                                <div class="backbone-preview-label">@Localizer["ScopeType"]</div>
+                                <div class="backbone-preview-value mt-1">
+                                    @Localizer["ScopeType_" + (string.IsNullOrWhiteSpace(c.ScopeType) ? "tenant" : c.ScopeType)]
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-crosshair"></i>
+                            <div>
+                                @* A tenant-scoped campaign has no reference, and that is an address rather than a
+                                   blank: it is labelled instead of shown as a dash. *@
+                                <div class="backbone-preview-label">@Localizer["ScopeReference"]</div>
+                                <div class="backbone-preview-value mt-1 text-break">
+                                    @(string.IsNullOrWhiteSpace(c.ScopeRef) ? Localizer["ScopeType_tenant"].Value : c.ScopeRef)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    @*
+        Manual targeting - unchanged FU04 behaviour (targets, snapshot, consent provenance), now MODE-GATED.
+        It renders only for a manually targeted campaign; a segment-targeted one has no manual surface, and the server
+        refuses a manual target write for it too, so the hidden card is a reminder rather than the rule.
+    *@
+    @if (isManual)
+    {
+        <div class="card mt-4">
+            <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <h6 class="mb-0">@Localizer["CampaignTargets"]</h6>
+                    <small class="text-muted">@Localizer["ExcludedTargetsVisibleHelp"]</small>
+                </div>
+                <div class="d-flex gap-2">
+                    @*
+                        FU11 round-2 - "create target" moved into the grid's own toolbar, where every other slim grid
+                        keeps its primary action (details.js builds it as the `.add-new` button). Rendering it here as
+                        well would give the same action two places to live.
+                    *@
+                    @*
+                        MOD-0165 FU11 - the "create static target snapshot" trigger is deliberately absent.
+
+                        A snapshot turns a resolved audience into target rows. Here there is nothing to resolve: every
+                        row on this screen was typed by a person, and running a snapshot over them would overwrite what
+                        the author just entered with a copy of itself. Its real home is segment resolution, which is a
+                        separate piece of work (F-SEGMENT-RESOLUTION).
+
+                        The ENDPOINT is untouched and supportsStaticTargetSnapshot stays true, because the API really
+                        does support it - the contract's limitations say plainly that this release ships no screen for
+                        it. Model.CanCreateSnapshot is left in place for that screen to use.
+                    *@
+                </div>
+            </div>
+            @if (Model.CanReadTargets)
+            {
+                <partial name="~/Views/CRM/Campaigns/_TargetsDataTable.cshtml" />
+            }
+            else
+            {
+                <div class="card-body text-muted">@Localizer["TargetsUnavailable"]</div>
+            }
+        </div>
+
+        @* Consent provenance contract marker - the columns are rendered by details.js from the FU04 DTO. *@
+        <partial name="~/Views/CRM/Campaigns/_ConsentProvenance.cshtml" />
+        <partial name="~/Views/CRM/Campaigns/_TargetCreateEditOffcanvas.cshtml" model="Model" />
+        <partial name="~/Views/CRM/Campaigns/_SnapshotPanel.cshtml" model="Model" />
+    }
+</div>
+
+@section Scripts {
+    <partial name="~/Views/CRM/Campaigns/_IndexL10n.cshtml" />
+    <script>window.CampaignPage = @Html.Raw(JsonSerializer.Serialize(new { campaignId = c.CampaignId, isArchived = c.IsArchived, targetingMode = c.TargetingMode, contract = Model.Contract, canManageTargets = Model.CanManageTargets, canCreateSnapshot = Model.CanCreateSnapshot }, new JsonSerializerOptions(JsonSerializerDefaults.Web)));</script>
+    <script src="~/assets/js/CRM/Campaigns/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/Campaigns/details.js" asp-append-version="true"></script>
+}

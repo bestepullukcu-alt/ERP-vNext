@@ -106,7 +106,7 @@ public sealed record ControlledDocumentListItemModel(
     string DocumentKey,
     string Title,
     string DocumentType,
-    Guid CompanyId,
+    Guid? CompanyId,
     Guid CollectionInstanceId,
     string CollectionPath,
     int CurrentVersionNumber,
@@ -114,7 +114,13 @@ public sealed record ControlledDocumentListItemModel(
     string Status,
     bool Controlled,
     DateTimeOffset CreatedAt,
-    bool IsFavorite = false);
+    bool IsFavorite = false,
+    string DocumentScope = "LEGACY",
+    Guid? ScopeOwnerId = null,
+    Guid? CorporateOwnerId = null,
+    Guid? FolderId = null,
+    string? MasterRegisterLifecycleStatus = null,
+    bool IsOfficiallyEffective = false);
 
 public sealed record ControlledDocumentDetailModel(
     Guid Id,
@@ -138,7 +144,10 @@ public sealed record ControlledDocumentDetailModel(
     AccessPolicyModel AccessPolicy,
     Guid? CopiedFromDocumentId,
     DateTimeOffset CreatedAt,
-    string CreatedBy);
+    string CreatedBy,
+    string? MasterRegisterLifecycleStatus = null,
+    bool IsOfficiallyEffective = false,
+    bool CanViewNonEffective = false);
 
 public sealed record TemplateFlagsModel(bool Reusable, bool Shareable, bool CopyableOnAdopt, bool ReferenceOnly);
 
@@ -241,7 +250,9 @@ public sealed record ExplorerSearchResultModel(
     int? CurrentVersion,
     string Status,
     DateTimeOffset? ModifiedAt,
-    SearchResultPermissions Permissions);
+    SearchResultPermissions Permissions,
+    string? MasterRegisterLifecycleStatus = null,
+    bool IsOfficiallyEffective = false);
 
 public sealed record ExplorerSearchResultModelList(
     Guid CompanyId,

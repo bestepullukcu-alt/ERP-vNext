@@ -1,0 +1,48 @@
+@using Diten.Web.Views.DocumentManagement.RepositoryAssessments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<RepositoryAssessmentsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["RepositoryAssessmentsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    // MOD-0029-FU28A — FE-B UX guards only; the FU16 controller ([HasPermission]) stays authoritative.
+    var canManage = Perms.Has("platform.document-management.repository-assessment.manage");
+    var canApprove = Perms.Has("platform.document-management.repository-assessment.approve");
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/DocumentManagement/RepositoryAssessments/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["RepositoryAssessmentsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div class="alert alert-warning d-flex align-items-start" role="alert">
+    <i class="icon-base bx bx-shield-x me-2 mt-1"></i>
+    <span><strong>@Localizer["NoComplianceClaim"]</strong> — @Localizer["RepositoryBoundaryDisclaimer"]</span>
+</div>
+
+<div class="alert alert-info d-flex align-items-start" role="alert">
+    <i class="icon-base bx bx-log-in-circle me-2 mt-1"></i>
+    <span>@Localizer["ReleaseGate2Note"]</span>
+</div>
+
+<div id="listAlert" class="alert alert-danger d-none" role="alert"></div>
+
+<partial name="~/Views/DocumentManagement/RepositoryAssessments/_DataTable.cshtml" />
+
+<partial name="~/Views/DocumentManagement/RepositoryAssessments/_DecisionModals.cshtml" />
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/DocumentManagement/RepositoryAssessments/_IndexL10n.cshtml" />
+    <script>
+        window.RepositoryAssessmentPerms = {
+            canManage: @Json.Serialize(canManage),
+            canApprove: @Json.Serialize(canApprove)
+        };
+    </script>
+    <script src="~/assets/js/DocumentManagement/RepositoryAssessments/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/RepositoryAssessments/index.js" asp-append-version="true"></script>
+}

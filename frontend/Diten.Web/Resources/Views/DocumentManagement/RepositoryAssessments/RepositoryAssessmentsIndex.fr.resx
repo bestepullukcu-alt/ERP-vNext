@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="RepositoryAssessments" xml:space="preserve"><value>Évaluations des référentiels</value></data>
+  <data name="RepositoryAssessmentsTitle" xml:space="preserve"><value>Évaluations des référentiels</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Évaluations de référentiels au niveau du locataire alimentant le contrôle 2 (limite GED, MON §11).</value></data>
+  <data name="RepositoryAssessmentCreate" xml:space="preserve"><value>Nouvelle évaluation</value></data>
+  <data name="RepositoryAssessmentEdit" xml:space="preserve"><value>Modifier l&apos;évaluation</value></data>
+  <data name="RepositoryAssessmentDetails" xml:space="preserve"><value>Détails de l&apos;évaluation</value></data>
+  <data name="RepositoryName" xml:space="preserve"><value>Nom du référentiel</value></data>
+  <data name="RepositoryKey" xml:space="preserve"><value>Clé du référentiel</value></data>
+  <data name="RepositoryType" xml:space="preserve"><value>Type de référentiel</value></data>
+  <data name="AssessmentStatus" xml:space="preserve"><value>Statut</value></data>
+  <data name="RepositoryOwner" xml:space="preserve"><value>Rôle propriétaire</value></data>
+  <data name="RepositoryLocation" xml:space="preserve"><value>Emplacement</value></data>
+  <data name="LocationType" xml:space="preserve"><value>Type d&apos;emplacement</value></data>
+  <data name="LocationTypeInHouseSoftware" xml:space="preserve"><value>Logiciel interne</value></data>
+  <data name="LocationTypeGoogleDrive" xml:space="preserve"><value>Google Drive</value></data>
+  <data name="LocationTypeSharePoint" xml:space="preserve"><value>SharePoint</value></data>
+  <data name="LocationTypeNetworkShare" xml:space="preserve"><value>Partage réseau</value></data>
+  <data name="LocationTypeOther" xml:space="preserve"><value>Autre</value></data>
+  <data name="AccessControlModel" xml:space="preserve"><value>Modèle de contrôle d&apos;accès</value></data>
+  <data name="AccessReviewFrequency" xml:space="preserve"><value>Fréquence de revue des accès</value></data>
+  <data name="EffectiveCopyControl" xml:space="preserve"><value>Contrôle de la copie en vigueur</value></data>
+  <data name="ApprovalMechanism" xml:space="preserve"><value>Mécanisme d&apos;approbation</value></data>
+  <data name="BackupPlan" xml:space="preserve"><value>Plan de sauvegarde</value></data>
+  <data name="RestoreTestEvidence" xml:space="preserve"><value>Fréquence des tests de restauration</value></data>
+  <data name="AuditTrail" xml:space="preserve"><value>Piste d&apos;audit</value></data>
+  <data name="ChangeControl" xml:space="preserve"><value>Maîtrise des changements</value></data>
+  <data name="ValidationEvidence" xml:space="preserve"><value>Preuve de validation</value></data>
+  <data name="ValidationEvidenceHint" xml:space="preserve"><value>Référence à une preuve de validation conservée ailleurs. Ce n&apos;est pas une revendication de validation ; le backend classe la limite.</value></data>
+  <data name="MaxInterimPeriodDays" xml:space="preserve"><value>Période intérimaire max (jours)</value></data>
+  <data name="InterimCheckpointDueDate" xml:space="preserve"><value>Point de contrôle intérimaire</value></data>
+  <data name="MigrationReconciliationRequired" xml:space="preserve"><value>Réconciliation de migration requise</value></data>
+  <data name="MigrationReconciliationEvidence" xml:space="preserve"><value>Preuve de réconciliation de migration</value></data>
+  <data name="EvidenceReference" xml:space="preserve"><value>Référence de preuve</value></data>
+  <data name="EvidenceReferenceHint" xml:space="preserve"><value>Référence de la preuve conservée ailleurs. Aucun fichier ici.</value></data>
+  <data name="RepositoryTypeValidatedDms" xml:space="preserve"><value>GED validée</value></data>
+  <data name="RepositoryTypeApprovedInterimRepository" xml:space="preserve"><value>Référentiel intérimaire approuvé</value></data>
+  <data name="RepositoryTypeSeparateApprovalMechanism" xml:space="preserve"><value>Mécanisme d&apos;approbation distinct</value></data>
+  <data name="RepositoryTypeUnapprovedRepository" xml:space="preserve"><value>Référentiel non approuvé</value></data>
+  <data name="RepositoryStatusDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="RepositoryStatusUnderReview" xml:space="preserve"><value>En cours d&apos;examen</value></data>
+  <data name="RepositoryStatusApproved" xml:space="preserve"><value>Approuvé</value></data>
+  <data name="RepositoryStatusRejected" xml:space="preserve"><value>Rejeté</value></data>
+  <data name="RepositoryStatusExpired" xml:space="preserve"><value>Expiré</value></data>
+  <data name="RepositoryStatusSuperseded" xml:space="preserve"><value>Remplacé</value></data>
+  <data name="CanSupportReleaseGate" xml:space="preserve"><value>Peut satisfaire le contrôle de publication</value></data>
+  <data name="CanSupportRegulatedESignature" xml:space="preserve"><value>Peut supporter la signature électronique réglementée</value></data>
+  <data name="BoundaryStatement" xml:space="preserve"><value>Déclaration de limites</value></data>
+  <data name="EvaluateToSeeBoundary" xml:space="preserve"><value>Évaluez pour afficher la déclaration de limites.</value></data>
+  <data name="CriticalFindings" xml:space="preserve"><value>Constats critiques</value></data>
+  <data name="Findings" xml:space="preserve"><value>Constats</value></data>
+  <data name="FindingType" xml:space="preserve"><value>Type de constat</value></data>
+  <data name="FindingSeverity" xml:space="preserve"><value>Gravité</value></data>
+  <data name="FindingStatus" xml:space="preserve"><value>Statut</value></data>
+  <data name="FindingMessage" xml:space="preserve"><value>Description</value></data>
+  <data name="BlockingFindings" xml:space="preserve"><value>Constats bloquants</value></data>
+  <data name="WarningFindings" xml:space="preserve"><value>Constats d&apos;avertissement</value></data>
+  <data name="NoFindingsFound" xml:space="preserve"><value>Aucun constat</value></data>
+  <data name="FindingTypeMissingOwner" xml:space="preserve"><value>Propriétaire manquant</value></data>
+  <data name="FindingTypeMissingExactLocation" xml:space="preserve"><value>Emplacement exact manquant</value></data>
+  <data name="FindingTypeMissingAccessModel" xml:space="preserve"><value>Modèle d&apos;accès manquant</value></data>
+  <data name="FindingTypeMissingAccessReview" xml:space="preserve"><value>Revue des accès manquante</value></data>
+  <data name="FindingTypeMissingBackup" xml:space="preserve"><value>Sauvegarde manquante</value></data>
+  <data name="FindingTypeMissingRestoreTest" xml:space="preserve"><value>Test de restauration manquant</value></data>
+  <data name="FindingTypeMissingApprovalMechanism" xml:space="preserve"><value>Mécanisme d&apos;approbation manquant</value></data>
+  <data name="FindingTypeMissingEffectiveCopyControl" xml:space="preserve"><value>Contrôle de copie manquant</value></data>
+  <data name="FindingTypeMissingAuditTrail" xml:space="preserve"><value>Piste d&apos;audit manquante</value></data>
+  <data name="FindingTypeMissingChangeControl" xml:space="preserve"><value>Maîtrise des changements manquante</value></data>
+  <data name="FindingTypeInterimPeriodExpired" xml:space="preserve"><value>Période intérimaire expirée</value></data>
+  <data name="FindingTypeMigrationReconciliationMissing" xml:space="preserve"><value>Réconciliation de migration manquante</value></data>
+  <data name="FindingTypeNativeESignatureMisuseRisk" xml:space="preserve"><value>Risque de mésusage de signature native</value></data>
+  <data name="FindingTypeOther" xml:space="preserve"><value>Autre</value></data>
+  <data name="SeverityWarning" xml:space="preserve"><value>Avertissement</value></data>
+  <data name="SeverityMajor" xml:space="preserve"><value>Majeur</value></data>
+  <data name="SeverityCritical" xml:space="preserve"><value>Critique</value></data>
+  <data name="FindingStatusOpen" xml:space="preserve"><value>Ouvert</value></data>
+  <data name="FindingStatusResolved" xml:space="preserve"><value>Résolu</value></data>
+  <data name="FindingStatusAcceptedAsInterimRisk" xml:space="preserve"><value>Accepté comme risque intérimaire</value></data>
+  <data name="FindingStatusClosed" xml:space="preserve"><value>Clos</value></data>
+  <data name="EvaluateRepository" xml:space="preserve"><value>Évaluer</value></data>
+  <data name="ApproveRepository" xml:space="preserve"><value>Approuver</value></data>
+  <data name="RejectRepository" xml:space="preserve"><value>Rejeter</value></data>
+  <data name="ApproverRole" xml:space="preserve"><value>Rôle approbateur</value></data>
+  <data name="ApproverRoleHint" xml:space="preserve"><value>Le MON §11.2 n&apos;autorise que le GQD, son adjoint ou le responsable IT/CSV à approuver.</value></data>
+  <data name="RejectionReason" xml:space="preserve"><value>Motif de rejet</value></data>
+  <data name="ApprovedAt" xml:space="preserve"><value>Approuvé le</value></data>
+  <data name="ApprovedBy" xml:space="preserve"><value>Rôle approbateur</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>Valide à partir du</value></data>
+  <data name="ValidUntil" xml:space="preserve"><value>Valide jusqu&apos;au</value></data>
+  <data name="ApprovalRoleGQD" xml:space="preserve"><value>Directeur Qualité Groupe</value></data>
+  <data name="ApprovalRoleGQDDeputy" xml:space="preserve"><value>Directeur Qualité Groupe adjoint</value></data>
+  <data name="ApprovalRoleITCSVOwner" xml:space="preserve"><value>Responsable IT / CSV</value></data>
+  <data name="InterimRepositoryWarning" xml:space="preserve"><value>Un référentiel intérimaire approuvé n&apos;est pas une GED validée. Il ne peut être présenté comme conformité de signature électronique réglementée.</value></data>
+  <data name="UnapprovedRepositoryWarning" xml:space="preserve"><value>Un référentiel non approuvé ne peut soutenir la publication. Il doit être évalué et approuvé avant de valider le contrôle 2.</value></data>
+  <data name="SeparateApprovalMechanismNote" xml:space="preserve"><value>Ce référentiel repose sur un mécanisme d&apos;approbation documenté distinct, pas sur une GED validée. La déclaration de limites en décrit l&apos;usage.</value></data>
+  <data name="ValidatedDmsNote" xml:space="preserve"><value>Classé comme limite de GED validée. Le classement reflète le contenu de l&apos;évaluation ; ce n&apos;est pas un certificat de validation indépendant.</value></data>
+  <data name="NoComplianceClaim" xml:space="preserve"><value>Aucune déclaration de conformité</value></data>
+  <data name="NoValidatedDmsClaim" xml:space="preserve"><value>Cet écran classe un référentiel selon la limite du MON. Il ne revendique ni validation de système, ni conformité de signature électronique, ni certificat.</value></data>
+  <data name="RepositoryBoundaryDisclaimer" xml:space="preserve"><value>Cet écran classe les limites de gouvernance. Il ne certifie pas le système, ne valide pas une GED et ne revendique aucune conformité de signature.</value></data>
+  <data name="EvaluateDoesNotApprove" xml:space="preserve"><value>Évaluer classe le référentiel et renvoie sa limite. Cela n&apos;approuve pas l&apos;évaluation et ne change pas son statut.</value></data>
+  <data name="ApproveDoesNotValidate" xml:space="preserve"><value>Approuver enregistre une décision de gouvernance. Cela n&apos;affirme ni validation ni conformité de signature. Un constat critique bloque l&apos;approbation.</value></data>
+  <data name="RejectDoesNotDelete" xml:space="preserve"><value>Rejeter enregistre une décision de gouvernance. Le motif est obligatoire. L&apos;évaluation est conservée, pas supprimée.</value></data>
+  <data name="ApprovedAssessmentReadOnly" xml:space="preserve"><value>Cette évaluation a été approuvée ou remplacée et n&apos;est plus modifiable. Créez-en une nouvelle.</value></data>
+  <data name="ReleaseGate2Note" xml:space="preserve"><value>Le contrôle 2 (Référentiel approuvé disponible) lit le classement enregistré ici. Cet écran affiche et enregistre l&apos;évaluation ; il ne valide pas le contrôle.</value></data>
+  <data name="EvaluationSucceeded" xml:space="preserve"><value>Référentiel évalué</value></data>
+  <data name="EvaluationFailed" xml:space="preserve"><value>Le référentiel n&apos;a pas pu être évalué</value></data>
+  <data name="ApprovalSucceeded" xml:space="preserve"><value>Évaluation approuvée</value></data>
+  <data name="ApprovalFailed" xml:space="preserve"><value>L&apos;évaluation n&apos;a pas pu être approuvée</value></data>
+  <data name="RejectionSucceeded" xml:space="preserve"><value>Évaluation rejetée</value></data>
+  <data name="RejectionFailed" xml:space="preserve"><value>L&apos;évaluation n&apos;a pas pu être rejetée</value></data>
+  <data name="AlreadyDecided" xml:space="preserve"><value>Cette évaluation a déjà été tranchée</value></data>
+  <data name="ApproverRoleInvalid" xml:space="preserve"><value>Ce rôle ne peut approuver (MON §11.2)</value></data>
+  <data name="LinkStatusInvalid" xml:space="preserve"><value>Cette évaluation n&apos;est pas dans un état liable</value></data>
+  <data name="NameAndTypeRequired" xml:space="preserve"><value>Un nom et un type valide sont requis</value></data>
+  <data name="RequiredFieldsMissing" xml:space="preserve"><value>Contenu obligatoire manquant ; résolvez les constats critiques avant approbation</value></data>
+  <data name="AssessmentNotFound" xml:space="preserve"><value>Évaluation introuvable</value></data>
+  <data name="ReasonRequiredError" xml:space="preserve"><value>Un motif est requis</value></data>
+  <data name="NoRepositoryAssessmentsFound" xml:space="preserve"><value>Aucune évaluation de référentiel enregistrée</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Les évaluations n&apos;ont pas pu être chargées</value></data>
+  <data name="SaveSucceeded" xml:space="preserve"><value>Évaluation enregistrée</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>L&apos;évaluation n&apos;a pas pu être enregistrée</value></data>
+  <data name="Forbidden" xml:space="preserve"><value>Vous n&apos;êtes pas autorisé</value></data>
+  <data name="ConflictOccurred" xml:space="preserve"><value>L&apos;opération entre en conflit avec l&apos;état actuel</value></data>
+  <data name="ActionNotAvailable" xml:space="preserve"><value>Non disponible</value></data>
+  <data name="BasicInformation" xml:space="preserve"><value>Informations de base</value></data>
+  <data name="AccessAndControl" xml:space="preserve"><value>Accès et contrôle</value></data>
+  <data name="TechnicalControls" xml:space="preserve"><value>Contrôles techniques</value></data>
+  <data name="InterimRepositoryFields" xml:space="preserve"><value>Référentiel intérimaire</value></data>
+  <data name="EvidenceAndNotes" xml:space="preserve"><value>Preuves</value></data>
+  <data name="Yes" xml:space="preserve"><value>Oui</value></data>
+  <data name="No" xml:space="preserve"><value>Non</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Ajouter</value></data>
+  <data name="Back" xml:space="preserve"><value>Retour</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Aperçu rapide</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+</root>

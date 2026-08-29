@@ -1,0 +1,83 @@
+GMG ENTERPRISE DOCUMENT AND RECORDS MANAGEMENT SYSTEM
+IT HANDOVER PACKAGE — v0.2
+======================================================================
+2026-08-12.  DRAFT.  NOT APPROVED.  NOT A BUILD AUTHORISATION.
+
+READINESS — carried from independent review, updated for this release
+----------------------------------------------------------------------
+  IT estimation and platform workshops        GO
+  Provisioning-script development             GO
+  Admin-only sandbox topology rehearsal       CONDITIONAL GO
+  Controlled pilot with users or documents    NO-GO
+  Production implementation                   NO-GO
+
+CLOSED IN THIS RELEASE
+----------------------------------------------------------------------
+  URS document control    Control-block version now matches the title.
+                          Parent document and sections 1 and 4 cite
+                          v0.36. Revision-history rows no longer split.
+  Migration figures       Reconciled to Annex B and stated once:
+                          1,236 promoted, 330 held, 65 staged only.
+  Crosswalk confusion     4,158 is the count of v0.22 SOURCE PATHS.
+                          4,185 is the count of TARGET FOLDERS. They
+                          are unrelated. Both now stated as such.
+  Missing sheet refs      Sheets 08, 09, 11 and 33 are now supplied
+                          inside the register itself, not referenced
+                          to a workbook that was never issued.
+  Gate definitions        Register sheet 11 defines all 13 gates with
+                          owner, required control, acceptance evidence
+                          and release boundary.
+  Folder vs file count    Register carries an Object Type column.
+                          4,385 rows = 4,384 folders + 1 control file.
+                          4,186 to provision = 4,185 folders + 1 file.
+  README access           GMG_Enterprise_Repository/_README.txt is now
+                          row 1 of Annex A3 with an explicit scope:
+                          read for all authorised users, write
+                          restricted to Records Management.
+  Vocabulary compliance   Annex C now carries code, display name,
+                          owner, status and effective date per
+                          URS-011. Zero blank display names.
+  Formula portability     All QA formulas use quoted sheet references.
+                          15 of 15 checks recalculate and match.
+
+STILL OPEN — AND WHY
+----------------------------------------------------------------------
+1. 54 COMPOUND PERMISSION PROFILES.
+   A RESOLUTION IS NOW PROPOSED, NOT JUST FLAGGED. URS-071a forbids
+   compound values outright. URS-071b designates the 54 as pass-through
+   containers: no direct filing, no independent access grant. They are
+   the zone roots and entity containers of Zones 02 and 03 — structural
+   levels nobody files into. This needs QA Documentation approval, and
+   until it has it, IT cannot safely configure GQMS access.
+
+2. PLATFORM CONFIGURATION SPECIFICATION.
+   Cannot exist before a platform is selected. This is not an omission.
+
+3. THE TEN GOVERNANCE DECISIONS IN URS SECTION 19.
+   Owners: GQD, Legal, QA, Records Management, ISM, IT.
+
+4. VALIDATION.
+   58 of 101 requirements need a test script authored. 32 permission
+   profiles are not negatively tested. IQ/OQ/UAT not executed.
+
+5. 08_CSV HAS NO URS TYPE FOLDER.
+   This document has no compliant filing location. Seven folders to
+   add in the next register revision.
+
+WHAT AN ADMIN-ONLY SANDBOX REHEARSAL MAY DO
+----------------------------------------------------------------------
+  Create 4,185 folders and generate 1 control README
+  Reconcile every created object against register sheet 19
+  Measure ABSOLUTE path length on the real client — the outstanding
+      half of IQ-07; relative max is 224, measured absolute reached 302
+  Record results as REHEARSAL EVIDENCE, not as executed IQ
+
+  It may NOT migrate operational documents, grant general user access,
+  or be presented as a controlled location.
+
+CONTENTS
+----------------------------------------------------------------------
+  GMG-CSV-URS-0001_v0.3_DRAFT_2026-08-12.docx        103 requirements
+  GMG-QMS-LOG-0007_v0.36_PROVISIONING_REGISTER.xlsx  9 sheets, the build list
+  GMG-CSV-URS-0001_Annex_Pack_v0.2.xlsx              annexes A1-A3, B, C, D
+  A1/A2/A3/B/C/D .csv                                same annexes for import

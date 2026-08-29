@@ -1,0 +1,90 @@
+@model Diten.Web.Models.CRM.AccountOverviewViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.CRM.Accounts.AccountIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* MOD-0150 FU04 — Related Accounts (Account↔Account relationship) 360 projection, rendered as a DataTable v2
+   (data-dt-standard="v2") in the Golden Compact detail-page shape: skeleton loader, control + checkbox columns,
+   colReorder, export/colvis toolbar and an "Add Related Account" toolbar action that opens the Golden Slim canvas.
+   EffectiveLabelCode is the label from THIS account's perspective (direct type or inverse). Rows are projected
+   server-side into the payload below and rendered by details.js — no extra endpoint.
+   No checkbox column / bulk action bar: a relationship is never bulk-deleted — it is closed one by one through the
+   End canvas (historical lifecycle: Status=ended + ValidTo, never a delete). *@
+
+<div class="card" id="relatedAccountsCard">
+    <div class="card-header d-flex flex-column align-items-start pb-0">
+        <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["RelatedAccounts"]</h6>
+        @if (Model.RelatedAccountsCanManage)
+        {
+            <p class="text-muted small mb-0"><i class="bx bx-info-circle me-1"></i>@Localizer["HistoricalRelationshipNotice"]</p>
+        }
+    </div>
+
+    @if (!Model.RelatedAccountsAuthorized)
+    {
+        <div class="card-body text-muted">@Localizer["NotAuthorized"]</div>
+    }
+    else if (Model.RelatedAccountsUnavailable)
+    {
+        <div class="card-body text-muted">@Localizer["DependencyUnavailable"]</div>
+    }
+    else
+    {
+        @* ① Inline Filter partial (mounted under the toolbar row by details.js) *@
+        @* Contract marker: <partial name="_Filter" /> *@
+        <partial name="~/Views/CRM/Accounts/_RelatedAccountsFilter.cshtml" />
+
+        <div id="skeleton-loader" class="backbone-skeleton p-4">
+            <div class="shimmer skeleton-row skeleton-row-lg"></div>
+            <div class="shimmer skeleton-row"></div>
+            <div class="shimmer skeleton-row"></div>
+            <div class="shimmer skeleton-row"></div>
+            <div class="shimmer skeleton-row skeleton-row-last"></div>
+        </div>
+
+        <div class="card-datatable table-responsive">
+            <table id="dt-account-relationships" data-dt-standard="v2" class="datatables-account-relationships table border-top">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th class="all">@Localizer["AccountName"]</th>
+                        <th>@Localizer["AccountCode"]</th>
+                        <th>@Localizer["AccountType"]</th>
+                        <th>@Localizer["RelationshipType"]</th>
+                        <th>@Localizer["RelationshipDirection"]</th>
+                        <th>@SharedLocalizer["Status"]</th>
+                        <th>@Localizer["ValidFrom"]</th>
+                        <th>@Localizer["ValidTo"]</th>
+                        <th>@Localizer["Notes"]</th>
+                        <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                    </tr>
+                </thead>
+                <tbody id="relatedAccountsBody"></tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<script id="related-accounts-payload" type="application/json">
+    @Json.Serialize(new
+    {
+        accountId = Model.Account!.Id,
+        canManage = Model.RelatedAccountsCanManage,
+        rows = Model.RelatedAccounts.Select(r => new
+        {
+            relationshipId = r.AccountRelationshipId,
+            isSource = r.SourceAccountId == Model.Account!.Id,
+            relatedAccountId = r.RelatedAccountId,
+            relatedAccountName = r.RelatedAccountName,
+            relatedAccountCode = r.RelatedAccountCode,
+            relatedAccountType = r.RelatedAccountType,
+            relationshipType = r.RelationshipType,
+            effectiveLabelCode = r.EffectiveLabelCode,
+            displayDirection = r.DisplayDirection,
+            status = r.Status,
+            validFrom = r.ValidFrom?.ToString("yyyy-MM-dd"),
+            validTo = r.ValidTo?.ToString("yyyy-MM-dd"),
+            notes = r.Notes
+        })
+    })
+</script>

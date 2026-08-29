@@ -1,0 +1,34 @@
+﻿@using Diten.Web.Views.CRM.ContentEngagementJourneys
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ContentEngagementJourneysIndex> Localizer
+
+<div class="card">
+    <div id="contentEngagementJourneyContractError" class="alert alert-danger rounded-0 d-none mb-0" role="alert"></div>
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+    </div>
+    <div class="card-datatable table-responsive">
+        <table id="dt-content-engagement-journeys" data-dt-standard="v2" class="datatables-content-engagement-journeys table border-top w-100">
+            <thead><tr>
+                <th></th>
+                <th>@Localizer["JourneyCode"]</th>
+                <th class="all">@Localizer["JourneyName"]</th>
+                <th>@Localizer["JourneyVersion"]</th>
+                <th>@Localizer["JourneyStatus"]</th>
+                <th>@Localizer["SubjectId"]</th>
+                <th>@Localizer["LanguageCode"]</th>
+                <th>@Localizer["ActiveStageCount"]</th>
+                <th>@Localizer["RequiredStageCount"]</th>
+                <th>@Localizer["PathResolution"]</th>
+                <th>@Localizer["EffectiveFrom"]</th>
+                <th>@Localizer["EffectiveTo"]</th>
+                <th>@Localizer["Archived"]</th>
+                <th>@Localizer["UpdatedAt"]</th>
+                <th class="all text-end">@Localizer["Actions"]</th>
+            </tr></thead>
+        </table>
+    </div>
+</div>

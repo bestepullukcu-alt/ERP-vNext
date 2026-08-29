@@ -1,0 +1,154 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Consentimiento y preferencias</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gestione consentimientos, preferencias y la evaluación de elegibilidad de solo lectura.</value></data>
+  <data name="ConsentsTab" xml:space="preserve"><value>Consentimientos</value></data>
+  <data name="PreferencesTab" xml:space="preserve"><value>Preferencias</value></data>
+  <data name="EvaluateTab" xml:space="preserve"><value>Evaluar</value></data>
+  <data name="SubjectTab" xml:space="preserve"><value>Sujeto</value></data>
+  <data name="ConsentsTitle" xml:space="preserve"><value>Consentimientos</value></data>
+  <data name="ConsentsSubtitle" xml:space="preserve"><value>El consentimiento es siempre sujeto × canal × propósito × ámbito × tiempo, nunca un permiso general.</value></data>
+  <data name="PreferencesTitle" xml:space="preserve"><value>Preferencias</value></data>
+  <data name="CreateConsent" xml:space="preserve"><value>Crear consentimiento</value></data>
+  <data name="CreatePreference" xml:space="preserve"><value>Crear preferencia</value></data>
+  <data name="EditConsent" xml:space="preserve"><value>Editar consentimiento</value></data>
+  <data name="EditPreference" xml:space="preserve"><value>Editar preferencia</value></data>
+  <data name="ArchiveConsent" xml:space="preserve"><value>Archivar consentimiento</value></data>
+  <data name="ArchivePreference" xml:space="preserve"><value>Archivar preferencia</value></data>
+  <data name="ArchiveConsentConfirm" xml:space="preserve"><value>¿Archivar este consentimiento? No se elimina: permanece legible pero excluido de la evaluación.</value></data>
+  <data name="ArchivePreferenceConfirm" xml:space="preserve"><value>¿Archivar esta preferencia? No se elimina: permanece legible pero excluida de la evaluación.</value></data>
+  <data name="ConsentDetail" xml:space="preserve"><value>Detalle del consentimiento</value></data>
+  <data name="PreferenceDetail" xml:space="preserve"><value>Detalle de la preferencia</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Volver a la lista</value></data>
+  <data name="Save" xml:space="preserve"><value>Guardar</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seleccionar…</value></data>
+  <data name="NoScope" xml:space="preserve"><value>Sin ámbito</value></data>
+  <data name="NoEvidence" xml:space="preserve"><value>Sin referencia de evidencia</value></data>
+  <data name="NoExternalReferences" xml:space="preserve"><value>Sin referencias externas</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Incluir archivados</value></data>
+  <data name="UnsupportedFiltersNote" xml:space="preserve"><value>Algunos filtros no son compatibles con el backend y se omiten intencionadamente (sin filtrado cliente falso):</value></data>
+  <data name="ConsentUnsupportedFilters" xml:space="preserve"><value>Búsqueda, ScopeType, ScopeId, LegalBasis, Source, rango de fechas.</value></data>
+  <data name="PreferenceUnsupportedFilters" xml:space="preserve"><value>Búsqueda, ScopeType, ScopeId, IsRestrictive.</value></data>
+  <data name="Apply" xml:space="preserve"><value>Aplicar</value></data>
+  <data name="Reset" xml:space="preserve"><value>Restablecer</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtrar</value></data>
+  <data name="SubjectType" xml:space="preserve"><value>Tipo de sujeto</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>ID de sujeto</value></data>
+  <data name="Channel" xml:space="preserve"><value>Canal</value></data>
+  <data name="Purpose" xml:space="preserve"><value>Propósito</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Tipo de ámbito</value></data>
+  <data name="ScopeId" xml:space="preserve"><value>ID de ámbito</value></data>
+  <data name="LegalBasis" xml:space="preserve"><value>Base legal</value></data>
+  <data name="ConsentStatus" xml:space="preserve"><value>Estado del consentimiento</value></data>
+  <data name="Source" xml:space="preserve"><value>Origen</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Vigente desde</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Vigente hasta</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>Vigente en</value></data>
+  <data name="WithdrawalReason" xml:space="preserve"><value>Motivo de retirada</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notas</value></data>
+  <data name="EvidenceRefType" xml:space="preserve"><value>Tipo de ref. de evidencia</value></data>
+  <data name="EvidenceRefId" xml:space="preserve"><value>ID de ref. de evidencia</value></data>
+  <data name="EvidenceSourceModule" xml:space="preserve"><value>Módulo de origen de evidencia</value></data>
+  <data name="EvidenceRefCode" xml:space="preserve"><value>Código de ref. de evidencia</value></data>
+  <data name="PreferenceType" xml:space="preserve"><value>Tipo de preferencia</value></data>
+  <data name="PreferenceValue" xml:space="preserve"><value>Valor de preferencia</value></data>
+  <data name="Priority" xml:space="preserve"><value>Prioridad</value></data>
+  <data name="Restrictive" xml:space="preserve"><value>Restrictivo</value></data>
+  <data name="ConsentId" xml:space="preserve"><value>ID de consentimiento</value></data>
+  <data name="PreferenceId" xml:space="preserve"><value>ID de preferencia</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Actualizado el</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Creado el</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>Creado por</value></data>
+  <data name="UpdatedBy" xml:space="preserve"><value>Actualizado por</value></data>
+  <data name="ArchivedAt" xml:space="preserve"><value>Archivado el</value></data>
+  <data name="ArchivedBy" xml:space="preserve"><value>Archivado por</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Sistema de origen</value></data>
+  <data name="ExternalId" xml:space="preserve"><value>ID externo</value></data>
+  <data name="ExternalCode" xml:space="preserve"><value>Código externo</value></data>
+  <data name="ExternalName" xml:space="preserve"><value>Nombre externo</value></data>
+  <data name="Primary" xml:space="preserve"><value>Principal</value></data>
+  <data name="Remove" xml:space="preserve"><value>Eliminar</value></data>
+  <data name="AddReference" xml:space="preserve"><value>Añadir referencia</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identidad</value></data>
+  <data name="ConsentStatusSection" xml:space="preserve"><value>Legal y estado</value></data>
+  <data name="EvidenceSection" xml:space="preserve"><value>Puntero de evidencia</value></data>
+  <data name="ExternalReferencesSection" xml:space="preserve"><value>Referencias externas</value></data>
+  <data name="PreferenceContextSection" xml:space="preserve"><value>Contexto de preferencia</value></data>
+  <data name="AuditSection" xml:space="preserve"><value>Auditoría y procedencia</value></data>
+  <data name="ProvenanceSection" xml:space="preserve"><value>Procedencia</value></data>
+  <data name="DiagnosticsSection" xml:space="preserve"><value>Diagnósticos</value></data>
+  <data name="ImmutableQuestionHelp" xml:space="preserve"><value>Las dimensiones de la pregunta (sujeto, canal, propósito, ámbito) son inmutables: una pregunta distinta es un registro distinto.</value></data>
+  <data name="ScopeHelp" xml:space="preserve"><value>Un ámbito restringe el consentimiento; si se define un ID de ámbito, se requiere un tipo de ámbito.</value></data>
+  <data name="WithdrawalReasonHelp" xml:space="preserve"><value>Requerido por el backend cuando el estado es «withdrawn».</value></data>
+  <data name="EvidencePointerHelp" xml:space="preserve"><value>Solo una referencia: no se muestra contenido de archivo, URL ni paquete de evidencia.</value></data>
+  <data name="ConsentContextHelp" xml:space="preserve"><value>El consentimiento solo responde: ¿puede contactarse a este sujeto en este canal, con este propósito, en este ámbito y momento?</value></data>
+  <data name="PreferenceCannotGrant" xml:space="preserve"><value>Una preferencia puede restringir el consentimiento pero no puede otorgarlo.</value></data>
+  <data name="PreferenceChannelAllHelp" xml:space="preserve"><value>El valor «all» del canal solo es válido para preferencias (nunca para consentimiento).</value></data>
+  <data name="EvaluateReadOnlyHelp" xml:space="preserve"><value>La evaluación es de solo lectura: no escribe nada ni crea un consentimiento almacenado.</value></data>
+  <data name="UnknownNotAllowed" xml:space="preserve"><value>«Unknown» NO significa permitido: ningún consentimiento responde y no se inventa un valor por defecto.</value></data>
+  <data name="EvaluateThisContext" xml:space="preserve"><value>Evaluar este sujeto/contexto</value></data>
+  <data name="EvaluateTitle" xml:space="preserve"><value>Panel de prueba de evaluación</value></data>
+  <data name="RunEvaluate" xml:space="preserve"><value>Ejecutar evaluación</value></data>
+  <data name="EvaluatorVersion" xml:space="preserve"><value>Versión del evaluador</value></data>
+  <data name="EvaluatedAt" xml:space="preserve"><value>Evaluado el</value></data>
+  <data name="MatchedConsentId" xml:space="preserve"><value>ID de consentimiento coincidente</value></data>
+  <data name="MatchedPreferenceIds" xml:space="preserve"><value>ID de preferencias coincidentes</value></data>
+  <data name="ReasonCodes" xml:space="preserve"><value>Códigos de motivo</value></data>
+  <data name="CandidateConsents" xml:space="preserve"><value>Consentimientos candidatos</value></data>
+  <data name="CandidatePreferences" xml:space="preserve"><value>Preferencias candidatas</value></data>
+  <data name="Selected" xml:space="preserve"><value>Seleccionado</value></data>
+  <data name="Reason" xml:space="preserve"><value>Motivo</value></data>
+  <data name="ToggleDiagnostics" xml:space="preserve"><value>Mostrar/ocultar diagnósticos</value></data>
+  <data name="SubjectPanelTitle" xml:space="preserve"><value>Panel de consentimiento y preferencia del sujeto</value></data>
+  <data name="SubjectPanelHelp" xml:space="preserve"><value>Introduzca un sujeto para ver sus consentimientos y preferencias. Este panel reutilizable nunca escribe un estado plano en Contact/AccountContactLink.</value></data>
+  <data name="Load" xml:space="preserve"><value>Cargar</value></data>
+  <data name="SubjectPickerPlaceholder" xml:space="preserve"><value>Buscar o pegar un ID de sujeto…</value></data>
+  <data name="SubjectPickerHelp" xml:space="preserve"><value>Elija primero un tipo de sujeto; contacto/cuenta se buscan por nombre, los demás aceptan un GUID.</value></data>
+  <data name="ExternalReferencesOptionalHelp" xml:space="preserve"><value>Opcional: vincule este registro con sistemas externos/heredados. Añada cada referencia desde el panel.</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>Buscar o escribir un sistema de origen…</value></data>
+  <data name="Allowed" xml:space="preserve"><value>Permitido</value></data>
+  <data name="Blocked" xml:space="preserve"><value>Bloqueado</value></data>
+  <data name="NotApplicable" xml:space="preserve"><value>No aplicable</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>No se encontraron registros.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Algo salió mal. Inténtelo de nuevo.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando…</value></data>
+  <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="View" xml:space="preserve"><value>Ver</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Registro archivado.</value></data>
+  <data name="ConsentContractUnavailable" xml:space="preserve"><value>El contrato de capacidad de consentimiento no está disponible. Las acciones están deshabilitadas.</value></data>
+  <data name="ArchivedRecordReadOnly" xml:space="preserve"><value>Este registro está archivado y es de solo lectura.</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>Complete los campos obligatorios.</value></data>
+  <data name="EffectiveToBeforeFrom" xml:space="preserve"><value>«Vigente hasta» no puede ser anterior a «Vigente desde».</value></data>
+  <data name="Active" xml:space="preserve"><value>Activo</value></data>
+  <data name="Passive" xml:space="preserve"><value>Pasivo</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Desconocido</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Edit" xml:space="preserve"><value>Editar</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ver detalles</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Vista rápida</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Eliminación masiva</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>¿Eliminar los registros seleccionados?</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>¿Está seguro?</value></data>
+  <data name="Search" xml:space="preserve"><value>Buscar</value></data>
+  <data name="Export" xml:space="preserve"><value>Exportar</value></data>
+  <data name="Import" xml:space="preserve"><value>Importar</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Mostrar todo</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Guardar vista</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Columnas</value></data>
+  <data name="Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>Alta</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Media</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Baja</value></data>
+  <data name="PriorityCustom" xml:space="preserve"><value>Personalizada</value></data>
+  <data name="PriorityHelp" xml:space="preserve"><value>La prioridad más alta se evalúa primero cuando las preferencias entran en conflicto.</value></data>
+  <data name="ValueTrue" xml:space="preserve"><value>True</value></data>
+  <data name="ValueFalse" xml:space="preserve"><value>False</value></data>
+  <data name="PreferenceValueBoolHelp" xml:space="preserve"><value>Para este tipo de preferencia, True significa que se aplica la restricción.</value></data>
+</root>

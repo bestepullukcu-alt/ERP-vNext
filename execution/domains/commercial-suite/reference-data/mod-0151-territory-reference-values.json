@@ -1,0 +1,155 @@
+{
+  "$schema": "mod-0151-territory-reference-values-publish-data",
+  "note": "MOD-0151 territory reference publish DATA for the operator driver script. Values + string attributes sourced from the F1 authoring template and the publish-execution task spec. ALL attribute values are strings (MOD-0048 attributes = Dictionary<string,string>). This file publishes nothing on its own; publish-mod-0151-territory-reference.ps1 drives the maker-checker flow with real operator tokens.",
+  "tenantId": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+  "scopeType": "tenant",
+  "sets": [
+    {
+      "order": 1, "setCode": "territory-coverage-scope", "name": "Territory Coverage Scope", "required": true,
+      "description": "MOD-0151 coverage scope of a resource assignment.",
+      "values": [
+        { "code": "exact-territory", "label": "Exact Territory", "sortOrder": 10, "attributes": { "requiresTerritoryId": "true", "requiresBusinessScope": "false", "allowsTerritoryId": "true", "allowsBusinessScope": "true" } },
+        { "code": "territory-subtree", "label": "Territory Subtree", "sortOrder": 20, "attributes": { "requiresTerritoryId": "true", "requiresBusinessScope": "false", "allowsTerritoryId": "true", "allowsBusinessScope": "true" } },
+        { "code": "business-unit", "label": "Business Unit", "sortOrder": 30, "attributes": { "requiresTerritoryId": "false", "requiresBusinessScope": "true", "allowsTerritoryId": "false", "allowsBusinessScope": "true" } },
+        { "code": "product-portfolio", "label": "Product Portfolio", "sortOrder": 40, "attributes": { "requiresTerritoryId": "false", "requiresBusinessScope": "true", "allowsTerritoryId": "false", "allowsBusinessScope": "true" } },
+        { "code": "business-scope", "label": "Business Scope", "sortOrder": 50, "attributes": { "requiresTerritoryId": "false", "requiresBusinessScope": "true", "allowsTerritoryId": "false", "allowsBusinessScope": "true" } },
+        { "code": "model-wide", "label": "Model Wide", "sortOrder": 60, "attributes": { "requiresTerritoryId": "false", "requiresBusinessScope": "false", "allowsTerritoryId": "false", "allowsBusinessScope": "false" } },
+        { "code": "all-business-scopes", "label": "All Business Scopes", "sortOrder": 70, "attributes": { "requiresTerritoryId": "false", "requiresBusinessScope": "false", "allowsTerritoryId": "false", "allowsBusinessScope": "false" } }
+      ]
+    },
+    {
+      "order": 2, "setCode": "territory-level", "name": "Territory Level", "required": true,
+      "description": "MOD-0151 territory hierarchy levels. MicroZone is a level, NOT a separate set.",
+      "values": [
+        { "code": "division", "label": "Division", "sortOrder": 10, "attributes": { "rank": "10", "sortOrder": "10", "canHaveChildren": "true", "isLeafAllowed": "false" } },
+        { "code": "country", "label": "Country", "sortOrder": 20, "attributes": { "rank": "20", "sortOrder": "20", "canHaveChildren": "true", "isLeafAllowed": "false" } },
+        { "code": "region", "label": "Region", "sortOrder": 30, "attributes": { "rank": "30", "sortOrder": "30", "canHaveChildren": "true", "isLeafAllowed": "false" } },
+        { "code": "area", "label": "Area", "sortOrder": 40, "attributes": { "rank": "40", "sortOrder": "40", "canHaveChildren": "true", "isLeafAllowed": "false" } },
+        { "code": "zone", "label": "Zone", "sortOrder": 50, "attributes": { "rank": "50", "sortOrder": "50", "canHaveChildren": "true", "isLeafAllowed": "true" } },
+        { "code": "microzone", "label": "MicroZone", "sortOrder": 60, "attributes": { "rank": "60", "sortOrder": "60", "canHaveChildren": "false", "isLeafAllowed": "true" } }
+      ]
+    },
+    {
+      "order": 3, "setCode": "territory-model-status", "name": "Territory Model Status", "required": true,
+      "description": "MOD-0151 TerritoryModel lifecycle status.",
+      "values": [
+        { "code": "draft", "label": "Draft", "sortOrder": 10, "attributes": { "lifecycleOrder": "10", "isEditable": "true", "requiresApproval": "false", "isTerminal": "false" } },
+        { "code": "review", "label": "In Review", "sortOrder": 20, "attributes": { "lifecycleOrder": "20", "isEditable": "false", "requiresApproval": "true", "isTerminal": "false" } },
+        { "code": "approved", "label": "Approved", "sortOrder": 30, "attributes": { "lifecycleOrder": "30", "isEditable": "false", "requiresApproval": "false", "isTerminal": "false" } },
+        { "code": "active", "label": "Active", "sortOrder": 40, "attributes": { "lifecycleOrder": "40", "isEditable": "false", "requiresApproval": "false", "isTerminal": "false" } },
+        { "code": "inactive", "label": "Inactive", "sortOrder": 45, "attributes": { "lifecycleOrder": "45", "isEditable": "false", "requiresApproval": "false", "isTerminal": "false" } },
+        { "code": "superseded", "label": "Superseded", "sortOrder": 50, "attributes": { "lifecycleOrder": "50", "isEditable": "false", "requiresApproval": "false", "isTerminal": "true" } },
+        { "code": "archived", "label": "Archived", "sortOrder": 60, "attributes": { "lifecycleOrder": "60", "isEditable": "false", "requiresApproval": "false", "isTerminal": "true" } }
+      ]
+    },
+    {
+      "order": 4, "setCode": "territory-node-status", "name": "Territory Node Status", "required": true,
+      "description": "MOD-0151 TerritoryNode status.",
+      "values": [
+        { "code": "draft", "label": "Draft", "sortOrder": 10, "attributes": { "isEditable": "true", "isActiveLike": "false", "isHistorical": "false" } },
+        { "code": "active", "label": "Active", "sortOrder": 20, "attributes": { "isEditable": "false", "isActiveLike": "true", "isHistorical": "false" } },
+        { "code": "inactive", "label": "Inactive", "sortOrder": 30, "attributes": { "isEditable": "false", "isActiveLike": "false", "isHistorical": "false" } },
+        { "code": "ended", "label": "Ended", "sortOrder": 40, "attributes": { "isEditable": "false", "isActiveLike": "false", "isHistorical": "true" } },
+        { "code": "archived", "label": "Archived", "sortOrder": 50, "attributes": { "isEditable": "false", "isActiveLike": "false", "isHistorical": "true" } }
+      ]
+    },
+    {
+      "order": 5, "setCode": "territory-assignment-status", "name": "Territory Assignment Status", "required": true,
+      "description": "MOD-0151 status for account/resource assignments.",
+      "values": [
+        { "code": "proposed", "label": "Proposed", "sortOrder": 10, "attributes": { "isActiveLike": "false", "isHistorical": "false", "allowsMutation": "true" } },
+        { "code": "active", "label": "Active", "sortOrder": 20, "attributes": { "isActiveLike": "true", "isHistorical": "false", "allowsMutation": "false" } },
+        { "code": "ended", "label": "Ended", "sortOrder": 30, "attributes": { "isActiveLike": "false", "isHistorical": "true", "allowsMutation": "false" } },
+        { "code": "rejected", "label": "Rejected", "sortOrder": 40, "attributes": { "isActiveLike": "false", "isHistorical": "true", "allowsMutation": "false" } }
+      ]
+    },
+    {
+      "order": 6, "setCode": "territory-assignment-source", "name": "Territory Assignment Source", "required": true,
+      "description": "MOD-0151 origin of an assignment.",
+      "values": [
+        { "code": "rule", "label": "Rule", "sortOrder": 10, "attributes": { "requiresReason": "false", "canBeOverwrittenByRule": "true" } },
+        { "code": "manual", "label": "Manual", "sortOrder": 20, "attributes": { "requiresReason": "true", "canBeOverwrittenByRule": "false" } },
+        { "code": "import", "label": "Import", "sortOrder": 30, "attributes": { "requiresReason": "false", "canBeOverwrittenByRule": "false" } },
+        { "code": "override", "label": "Override", "sortOrder": 40, "attributes": { "requiresReason": "true", "canBeOverwrittenByRule": "false" } }
+      ]
+    },
+    {
+      "order": 7, "setCode": "business-scope-type", "name": "Business Scope Type", "required": true,
+      "description": "MOD-0151 TerritoryBusinessScope classification. Business Unit is a crossing dimension, not a territory level.",
+      "values": [
+        { "code": "business-unit", "label": "Business Unit", "sortOrder": 10, "attributes": { "isSalesScopeDefault": "true", "includeInSalesPerformanceDefault": "true", "ownerModule": "MOD-0288-or-MOD-0048-temporary" } },
+        { "code": "product-portfolio", "label": "Product Portfolio", "sortOrder": 20, "attributes": { "isSalesScopeDefault": "true", "includeInSalesPerformanceDefault": "true", "ownerModule": "MDM-Product-future-or-MOD-0048-temporary" } },
+        { "code": "brand-group", "label": "Brand Group", "sortOrder": 30, "attributes": { "isSalesScopeDefault": "true", "includeInSalesPerformanceDefault": "true", "ownerModule": "MDM-Product-future-or-MOD-0048-temporary" } },
+        { "code": "operational-scope", "label": "Operational Scope", "sortOrder": 40, "attributes": { "isSalesScopeDefault": "false", "includeInSalesPerformanceDefault": "false", "ownerModule": "MOD-0288-or-MOD-0048-temporary" } },
+        { "code": "non-sales-resource-planning", "label": "Non-Sales Resource Planning", "sortOrder": 50, "attributes": { "isSalesScopeDefault": "false", "includeInSalesPerformanceDefault": "false", "ownerModule": "MOD-0288-or-MOD-0048-temporary" } },
+        { "code": "channel", "label": "Channel", "sortOrder": 60, "attributes": { "isSalesScopeDefault": "conditional", "includeInSalesPerformanceDefault": "conditional", "ownerModule": "MOD-0048-or-MOD-0167" } },
+        { "code": "segment", "label": "Segment", "sortOrder": 70, "attributes": { "isSalesScopeDefault": "conditional", "includeInSalesPerformanceDefault": "conditional", "ownerModule": "MOD-0167" } }
+      ]
+    },
+    {
+      "order": 8, "setCode": "territory-resource-role", "name": "Territory Resource Role", "required": true,
+      "description": "MOD-0151 resource assignment roles. MOD-0151 does NOT own employee/person/position master.",
+      "values": [
+        { "code": "medical-representative", "label": "Medical Representative", "sortOrder": 10, "attributes": { "defaultCoverageScope": "exact-territory", "isSalesRole": "true", "isManagementRole": "false", "canBePrimary": "true", "requiresBusinessScope": "false" } },
+        { "code": "area-manager", "label": "Area Manager", "sortOrder": 20, "attributes": { "defaultCoverageScope": "territory-subtree", "isSalesRole": "true", "isManagementRole": "true", "canBePrimary": "true", "requiresBusinessScope": "false" } },
+        { "code": "regional-manager", "label": "Regional Manager", "sortOrder": 30, "attributes": { "defaultCoverageScope": "territory-subtree", "isSalesRole": "true", "isManagementRole": "true", "canBePrimary": "true", "requiresBusinessScope": "false" } },
+        { "code": "division-manager", "label": "Division Manager", "sortOrder": 40, "attributes": { "defaultCoverageScope": "territory-subtree", "isSalesRole": "true", "isManagementRole": "true", "canBePrimary": "true", "requiresBusinessScope": "false" } },
+        { "code": "product-manager", "label": "Product Manager", "sortOrder": 50, "attributes": { "defaultCoverageScope": "product-portfolio", "isSalesRole": "true", "isManagementRole": "true", "canBePrimary": "true", "requiresBusinessScope": "true" } },
+        { "code": "business-unit-manager", "label": "Business Unit Manager", "sortOrder": 60, "attributes": { "defaultCoverageScope": "business-unit", "isSalesRole": "true", "isManagementRole": "true", "canBePrimary": "true", "requiresBusinessScope": "true" } },
+        { "code": "hoc", "label": "Head of Commercial", "sortOrder": 70, "attributes": { "defaultCoverageScope": "all-business-scopes", "isSalesRole": "true", "isManagementRole": "true", "canBePrimary": "false", "requiresBusinessScope": "false" } },
+        { "code": "commercial-manager", "label": "Commercial Manager", "sortOrder": 80, "attributes": { "defaultCoverageScope": "territory-subtree", "isSalesRole": "true", "isManagementRole": "true", "canBePrimary": "true", "requiresBusinessScope": "true" } },
+        { "code": "admin", "label": "Territory Admin", "sortOrder": 90, "attributes": { "defaultCoverageScope": "model-wide", "isSalesRole": "false", "isManagementRole": "true", "canBePrimary": "false", "requiresBusinessScope": "false" } },
+        { "code": "viewer", "label": "Viewer", "sortOrder": 100, "attributes": { "defaultCoverageScope": "model-wide", "isSalesRole": "false", "isManagementRole": "false", "canBePrimary": "false", "requiresBusinessScope": "false" } },
+        { "code": "operational-resource", "label": "Operational Resource", "sortOrder": 110, "attributes": { "defaultCoverageScope": "business-scope", "isSalesRole": "false", "isManagementRole": "false", "canBePrimary": "false", "requiresBusinessScope": "true" } }
+      ]
+    },
+    {
+      "order": 9, "setCode": "territory-rule-type", "name": "Territory Rule Type", "required": true,
+      "description": "MOD-0151 TerritoryAssignmentRule types.",
+      "values": [
+        { "code": "geography", "label": "Geography", "sortOrder": 10, "attributes": { "requiresCriteria": "true", "supportsPriority": "true", "supportsPreview": "true" } },
+        { "code": "account-list", "label": "Account List", "sortOrder": 20, "attributes": { "requiresCriteria": "true", "supportsPriority": "true", "supportsPreview": "true" } },
+        { "code": "account-type", "label": "Account Type", "sortOrder": 30, "attributes": { "requiresCriteria": "true", "supportsPriority": "true", "supportsPreview": "true" } },
+        { "code": "product-portfolio", "label": "Product Portfolio", "sortOrder": 40, "attributes": { "requiresCriteria": "true", "supportsPriority": "true", "supportsPreview": "true" } },
+        { "code": "business-scope", "label": "Business Scope", "sortOrder": 50, "attributes": { "requiresCriteria": "true", "supportsPriority": "true", "supportsPreview": "true" } },
+        { "code": "channel", "label": "Channel", "sortOrder": 60, "attributes": { "requiresCriteria": "true", "supportsPriority": "true", "supportsPreview": "true" } },
+        { "code": "segment", "label": "Segment", "sortOrder": 70, "attributes": { "requiresCriteria": "true", "supportsPriority": "true", "supportsPreview": "true" } },
+        { "code": "manual", "label": "Manual", "sortOrder": 80, "attributes": { "requiresCriteria": "false", "supportsPriority": "false", "supportsPreview": "false" } },
+        { "code": "import", "label": "Import", "sortOrder": 90, "attributes": { "requiresCriteria": "false", "supportsPriority": "false", "supportsPreview": "false" } }
+      ]
+    },
+    {
+      "order": 10, "setCode": "territory-conflict-policy", "name": "Territory Conflict Policy", "required": true,
+      "description": "MOD-0151 conflict handling policy on assignment rules.",
+      "values": [
+        { "code": "block", "label": "Block", "sortOrder": 10, "attributes": { "severity": "error", "blocksActivation": "true" } },
+        { "code": "warn", "label": "Warn", "sortOrder": 20, "attributes": { "severity": "warning", "blocksActivation": "false" } },
+        { "code": "priority", "label": "Priority", "sortOrder": 30, "attributes": { "severity": "info", "blocksActivation": "false" } },
+        { "code": "manual-review", "label": "Manual Review", "sortOrder": 40, "attributes": { "severity": "warning", "blocksActivation": "true" } }
+      ]
+    },
+    {
+      "order": 11, "setCode": "planning-period-type", "name": "Planning Period Type", "required": false,
+      "description": "MOD-0151 PlanningPeriodRef type (optional). Planning-only; does not gate runtime validation.",
+      "values": [
+        { "code": "annual", "label": "Annual", "sortOrder": 10, "attributes": { "defaultDurationMonths": "12", "periodCodePattern": "YYYY" } },
+        { "code": "quarterly", "label": "Quarterly", "sortOrder": 20, "attributes": { "defaultDurationMonths": "3", "periodCodePattern": "YYYY-QN" } },
+        { "code": "monthly", "label": "Monthly", "sortOrder": 30, "attributes": { "defaultDurationMonths": "1", "periodCodePattern": "YYYY-MM" } },
+        { "code": "custom", "label": "Custom", "sortOrder": 40, "attributes": { "defaultDurationMonths": "", "periodCodePattern": "custom" } }
+      ]
+    },
+    {
+      "order": 12, "setCode": "territory-change-type", "name": "Territory Change Type", "required": false,
+      "description": "MOD-0151 TerritoryChangeRequest change types (optional). Trace/reporting consistency.",
+      "values": [
+        { "code": "create-model", "label": "Create Model", "sortOrder": 10, "attributes": { "category": "trace" } },
+        { "code": "update-hierarchy", "label": "Update Hierarchy", "sortOrder": 20, "attributes": { "category": "trace" } },
+        { "code": "update-assignment-rule", "label": "Update Assignment Rule", "sortOrder": 30, "attributes": { "category": "trace" } },
+        { "code": "update-account-assignment", "label": "Update Account Assignment", "sortOrder": 40, "attributes": { "category": "trace" } },
+        { "code": "update-resource-assignment", "label": "Update Resource Assignment", "sortOrder": 50, "attributes": { "category": "trace" } },
+        { "code": "activate-model", "label": "Activate Model", "sortOrder": 60, "attributes": { "category": "trace" } },
+        { "code": "supersede-model", "label": "Supersede Model", "sortOrder": 70, "attributes": { "category": "trace" } }
+      ]
+    }
+  ]
+}

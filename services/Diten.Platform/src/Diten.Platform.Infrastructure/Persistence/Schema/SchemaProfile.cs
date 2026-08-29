@@ -28,5 +28,8 @@ public enum SchemaProfile
     WorkflowWorkCenter = 7,
 
     /// <summary>MOD-0029 controlled documents, templates, shares, access policies.</summary>
-    DocumentManagement = 8
+    DocumentManagement = 8,
+
+    /// <summary>CAND-CAP-0010 Working Calendar &amp; Public Holidays: working_calendars + import batches.</summary>
+    WorkingCalendar = 9
 }

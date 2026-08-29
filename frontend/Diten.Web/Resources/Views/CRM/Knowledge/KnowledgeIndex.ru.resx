@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="KnowledgeMenu" xml:space="preserve"><value>База знаний</value></data>
+  <data name="KnowledgeTitle" xml:space="preserve"><value>Контент знаний</value></data>
+  <data name="TaxonomyTitle" xml:space="preserve"><value>Knowledge Taxonomy</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Manage knowledge content and its subject / topic / audience taxonomy.</value></data>
+  <data name="ManageTaxonomy" xml:space="preserve"><value>Управление таксономией</value></data>
+  <data name="CreateContent" xml:space="preserve"><value>Создать контент</value></data>
+  <data name="EditContent" xml:space="preserve"><value>Изменить контент</value></data>
+  <data name="ContentDetail" xml:space="preserve"><value>Content Detail</value></data>
+  <data name="ArchiveContent" xml:space="preserve"><value>Архивировать контент</value></data>
+  <data name="ArchiveContentConfirm" xml:space="preserve"><value>Archive this content? This is a soft lifecycle action; history remains readable.</value></data>
+  <data name="ArchivedContentReadOnly" xml:space="preserve"><value>This content is archived and read-only.</value></data>
+  <data name="KnowledgeContractUnavailable" xml:space="preserve"><value>Knowledge capability contract is unavailable. Actions are disabled.</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Back to list</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="RequiredProgress" xml:space="preserve"><value>Fields marked * are required.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Select…</value></data>
+  <data name="ContentCode" xml:space="preserve"><value>Content Code</value></data>
+  <data name="ContentTitle" xml:space="preserve"><value>Content Title</value></data>
+  <data name="ContentType" xml:space="preserve"><value>Content Type</value></data>
+  <data name="ContentStatus" xml:space="preserve"><value>Content Status</value></data>
+  <data name="Source" xml:space="preserve"><value>Source</value></data>
+  <data name="LanguageCode" xml:space="preserve"><value>Language</value></data>
+  <data name="ContentVersion" xml:space="preserve"><value>Content Version</value></data>
+  <data name="Summary" xml:space="preserve"><value>Summary</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>Subject</value></data>
+  <data name="TopicId" xml:space="preserve"><value>Topic</value></data>
+  <data name="AudienceProfileId" xml:space="preserve"><value>Audience Profile</value></data>
+  <data name="ConceptNodeId" xml:space="preserve"><value>Concept Node</value></data>
+  <data name="BrandId" xml:space="preserve"><value>Brand</value></data>
+  <data name="ProductId" xml:space="preserve"><value>Product</value></data>
+  <data name="CampaignId" xml:space="preserve"><value>Campaign</value></data>
+  <data name="SegmentId" xml:space="preserve"><value>Segment</value></data>
+  <data name="Url" xml:space="preserve"><value>URL</value></data>
+  <data name="FileRef" xml:space="preserve"><value>Document Reference</value></data>
+  <data name="ContentBodyRef" xml:space="preserve"><value>Body Reference</value></data>
+  <data name="ContentAssetRef" xml:space="preserve"><value>Asset Reference</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Effective From</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Effective To</value></data>
+  <data name="Tags" xml:space="preserve"><value>Tags</value></data>
+  <data name="TagsHelp" xml:space="preserve"><value>Comma-separated tags</value></data>
+  <data name="ContentPointerHelp" xml:space="preserve"><value>At least one of URL / Document Reference / Body Reference / Asset Reference is required. No file is stored here; a document reference points to Document Management.</value></data>
+  <data name="ReferenceIdsOnlyHelp" xml:space="preserve"><value>References are displayed as IDs only; no master data lookup is performed.</value></data>
+  <data name="SummarySection" xml:space="preserve"><value>Summary</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Classification</value></data>
+  <data name="ReferencesSection" xml:space="preserve"><value>References</value></data>
+  <data name="ContentPointersSection" xml:space="preserve"><value>Content Pointers</value></data>
+  <data name="EffectiveSection" xml:space="preserve"><value>Effective Window</value></data>
+  <data name="ExternalReferencesSection" xml:space="preserve"><value>External References</value></data>
+  <data name="AddReference" xml:space="preserve"><value>Add Reference</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Source System</value></data>
+  <data name="ExternalId" xml:space="preserve"><value>External ID</value></data>
+  <data name="ExternalCode" xml:space="preserve"><value>External Code</value></data>
+  <data name="ExternalName" xml:space="preserve"><value>External Name</value></data>
+  <data name="Primary" xml:space="preserve"><value>Primary</value></data>
+  <data name="Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="NoExternalReferences" xml:space="preserve"><value>No external references.</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archived</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Updated</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Search" xml:space="preserve"><value>Поиск</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Include archived</value></data>
+  <data name="Apply" xml:space="preserve"><value>Применить</value></data>
+  <data name="Reset" xml:space="preserve"><value>Сбросить</value></data>
+  <data name="View" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Record archived.</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>Record created.</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>Record updated.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>No content found.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Something went wrong.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="Filter" xml:space="preserve"><value>Фильтр</value></data>
+  <data name="EffectiveToBeforeFrom" xml:space="preserve"><value>Effective end cannot be earlier than start.</value></data>
+  <data name="ContentPointerRequired" xml:space="preserve"><value>At least one content pointer is required.</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>This field is required.</value></data>
+  <data name="TaxonomyTab" xml:space="preserve"><value>Taxonomy</value></data>
+  <data name="SubjectsTab" xml:space="preserve"><value>Subjects</value></data>
+  <data name="TopicsTab" xml:space="preserve"><value>Topics</value></data>
+  <data name="ProfilesTab" xml:space="preserve"><value>Audience Profiles</value></data>
+  <data name="CreateSubject" xml:space="preserve"><value>Create Subject</value></data>
+  <data name="CreateTopic" xml:space="preserve"><value>Create Topic</value></data>
+  <data name="CreateProfile" xml:space="preserve"><value>Create Profile</value></data>
+  <data name="EditSubject" xml:space="preserve"><value>Edit Subject</value></data>
+  <data name="EditTopic" xml:space="preserve"><value>Edit Topic</value></data>
+  <data name="EditProfile" xml:space="preserve"><value>Edit Profile</value></data>
+  <data name="ArchiveSubject" xml:space="preserve"><value>Archive Subject</value></data>
+  <data name="ArchiveTopic" xml:space="preserve"><value>Archive Topic</value></data>
+  <data name="ArchiveProfile" xml:space="preserve"><value>Archive Profile</value></data>
+  <data name="ArchiveTaxonomyConfirm" xml:space="preserve"><value>Archive this row? Existing content keeps its classification; only new attachment is blocked.</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Sort Order</value></data>
+  <data name="Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="ProfileType" xml:space="preserve"><value>Profile Type</value></data>
+  <data name="ParentTopicId" xml:space="preserve"><value>Parent Topic ID</value></data>
+  <data name="Active" xml:space="preserve"><value>Активный</value></data>
+  <data name="Passive" xml:space="preserve"><value>Пассивный</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="Edit" xml:space="preserve"><value>Изменить</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>View Details</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Quick View</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Bulk Delete</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Delete the selected rows?</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Are you sure?</value></data>
+  <data name="Export" xml:space="preserve"><value>Экспорт</value></data>
+  <data name="Import" xml:space="preserve"><value>Импорт</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Show all</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Save view</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Столбцы</value></data>
+  <data name="AddRow" xml:space="preserve"><value>Add row</value></data>
+  <data name="CodeAutoGenerated" xml:space="preserve"><value>Создан автоматически — можно изменить.</value></data>
+  <data name="Activate" xml:space="preserve"><value>Активировать</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Деактивировать</value></data>
+  <data name="Restore" xml:space="preserve"><value>Восстановить</value></data>
+  <data name="RestoredAsInactive" xml:space="preserve"><value>Восстановлено как неактивное.</value></data>
+  <data name="ParentSubjectId" xml:space="preserve"><value>Родительская тема</value></data>
+  <data name="ConceptTypeId" xml:space="preserve"><value>Concept Type</value></data>
+  <data name="ConceptNodeSubjectNote" xml:space="preserve"><value>The node list follows the Subject and Concept Type chosen above.</value></data>
+  <data name="ConceptNodePickerUnavailable" xml:space="preserve"><value>The concept node list could not be loaded, so the current value is kept as-is.</value></data>
+</root>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Active" xml:space="preserve"><value>Активный</value></data>
+  <data name="Passive" xml:space="preserve"><value>Неактивный</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="Edit" xml:space="preserve"><value>Изменить</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Подробнее</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Массовое удаление</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Удалить выбранные записи?</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Вы уверены?</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="Search" xml:space="preserve"><value>Поиск</value></data>
+  <data name="Export" xml:space="preserve"><value>Экспорт</value></data>
+  <data name="Import" xml:space="preserve"><value>Импорт</value></data>
+  <data name="Filter" xml:space="preserve"><value>Фильтр</value></data>
+  <data name="Apply" xml:space="preserve"><value>Применить</value></data>
+  <data name="Reset" xml:space="preserve"><value>Сбросить</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Все</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Сохранить вид</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Столбцы</value></data>
+  <data name="Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Пути знаний не найдены.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Произошла ошибка.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Запись архивирована.</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>Запись создана.</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>Запись обновлена.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Выберите…</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Назад к списку</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Включая архив</value></data>
+  <data name="Archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Действует до</value></data>
+  <data name="KnowledgePathsMenu" xml:space="preserve"><value>Пути знаний</value></data>
+  <data name="KnowledgePathsTitle" xml:space="preserve"><value>Пути знаний</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Упорядочивайте контент знаний в обучающие пути — порядок, предпосылки и закреплённые версии контента.</value></data>
+  <data name="KnowledgePathContractUnavailable" xml:space="preserve"><value>Контракт возможностей KnowledgePath недоступен. Действия отключены.</value></data>
+  <data name="PathCode" xml:space="preserve"><value>Код пути</value></data>
+  <data name="PathName" xml:space="preserve"><value>Название пути</value></data>
+  <data name="PathVersion" xml:space="preserve"><value>Версия</value></data>
+  <data name="PathStatus" xml:space="preserve"><value>Статус</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>Предмет</value></data>
+  <data name="TopicId" xml:space="preserve"><value>Тема</value></data>
+  <data name="AudienceProfileId" xml:space="preserve"><value>Профиль аудитории</value></data>
+  <data name="LanguageCode" xml:space="preserve"><value>Язык</value></data>
+  <data name="Objective" xml:space="preserve"><value>Цель</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="Source" xml:space="preserve"><value>Источник</value></data>
+  <data name="ActiveStepCount" xml:space="preserve"><value>Активные шаги</value></data>
+  <data name="RequiredStepCount" xml:space="preserve"><value>Обязательные шаги</value></data>
+  <data name="ContentResolution" xml:space="preserve"><value>Контент</value></data>
+  <data name="Unresolved" xml:space="preserve"><value>Не разрешено</value></data>
+  <data name="Resolved" xml:space="preserve"><value>Разрешено</value></data>
+  <data name="Frozen" xml:space="preserve"><value>Заморожено</value></data>
+  <data name="CreatePath" xml:space="preserve"><value>Создать путь</value></data>
+  <data name="EditPath" xml:space="preserve"><value>Изменить путь</value></data>
+  <data name="ArchivePath" xml:space="preserve"><value>Архивировать путь</value></data>
+  <data name="ArchivePathConfirm" xml:space="preserve"><value>Архивировать этот путь? Это мягкое действие; история остаётся доступной.</value></data>
+  <data name="ArchivedPathReadOnly" xml:space="preserve"><value>Этот путь в архиве и доступен только для чтения.</value></data>
+  <data name="PathDetail" xml:space="preserve"><value>Детали пути</value></data>
+  <data name="Publish" xml:space="preserve"><value>Опубликовать</value></data>
+  <data name="PublishConfirm" xml:space="preserve"><value>Опубликовать этот путь? Набор шагов будет заморожен; создайте новую версию, чтобы изменить его позже.</value></data>
+  <data name="PublishSeparatelyHelp" xml:space="preserve"><value>Публикация — отдельное действие; путь никогда не создаётся опубликованным.</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Новая версия</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Создать новую черновую версию из этого опубликованного пути?</value></data>
+  <data name="FrozenStepsHelp" xml:space="preserve"><value>Эта версия опубликована, набор шагов заморожен. Создайте новую версию, чтобы изменить шаги.</value></data>
+  <data name="SaveBeforeSteps" xml:space="preserve"><value>Сначала сохраните путь, затем добавьте его шаги здесь.</value></data>
+  <data name="StepsHelp" xml:space="preserve"><value>Добавляйте шаги в порядке, в котором контент должен рассказываться / изучаться / показываться.</value></data>
+  <data name="AddStep" xml:space="preserve"><value>Добавить шаг</value></data>
+  <data name="NoSteps" xml:space="preserve"><value>Пока нет шагов.</value></data>
+  <data name="StepsSection" xml:space="preserve"><value>Шаги</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Классификация</value></data>
+  <data name="SchedulingSection" xml:space="preserve"><value>Планирование и жизненный цикл</value></data>
+  <data name="StepOrder" xml:space="preserve"><value>Порядок</value></data>
+  <data name="StepCode" xml:space="preserve"><value>Код шага</value></data>
+  <data name="StepTitle" xml:space="preserve"><value>Название шага</value></data>
+  <data name="StepType" xml:space="preserve"><value>Тип шага</value></data>
+  <data name="ContentId" xml:space="preserve"><value>Контент</value></data>
+  <data name="VersionPinPolicy" xml:space="preserve"><value>Политика версии контента</value></data>
+  <data name="CompletionRule" xml:space="preserve"><value>Правило завершения</value></data>
+  <data name="EstimatedDurationMinutes" xml:space="preserve"><value>Длительность (мин)</value></data>
+  <data name="PrerequisiteStepId" xml:space="preserve"><value>Предшествующий шаг</value></data>
+  <data name="ConceptNodeId" xml:space="preserve"><value>Узел концепции</value></data>
+  <data name="IsRequired" xml:space="preserve"><value>Обязательный</value></data>
+  <data name="Notes" xml:space="preserve"><value>Заметки</value></data>
+  <data name="BranchConditions" xml:space="preserve"><value>Условия ветвления</value></data>
+  <data name="AddBranchCondition" xml:space="preserve"><value>Добавить условие</value></data>
+  <data name="BranchConditionsHelp" xml:space="preserve"><value>Только редактируемые данные — условия переносятся, но не вычисляются. Путь всегда проходим без них.</value></data>
+  <data name="ConditionCode" xml:space="preserve"><value>Код условия</value></data>
+  <data name="ArchiveStepConfirm" xml:space="preserve"><value>Архивировать этот шаг? Он останется в документе как история.</value></data>
+  <data name="CrossSubject" xml:space="preserve"><value>Межпредметный</value></data>
+  <data name="CrossLanguage" xml:space="preserve"><value>Межъязычный</value></data>
+</root>

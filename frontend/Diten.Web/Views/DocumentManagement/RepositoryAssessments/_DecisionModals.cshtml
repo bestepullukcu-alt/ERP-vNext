@@ -1,0 +1,59 @@
+@using Diten.Web.Views.DocumentManagement.RepositoryAssessments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<RepositoryAssessmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    var canApproveModal = Perms.Has("platform.document-management.repository-assessment.approve");
+}
+
+@* MOD-0029-FU28A — approve / reject decision modals, shared by the list and the details page. *@
+@if (canApproveModal)
+{
+    <div class="modal fade" id="assessmentDecisionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" id="assessmentDecisionForm" novalidate>
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="assessmentDecisionTitle">@Localizer["ApproveRepository"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning mb-3" id="assessmentDecisionNote"></div>
+                    <input type="hidden" id="assessmentDecisionId" />
+                    <input type="hidden" id="assessmentDecisionMode" />
+
+                    <div class="mb-3">
+                        <label class="form-label" for="assessmentDecisionLabel">@Localizer["RepositoryName"]</label>
+                        <input class="form-control" id="assessmentDecisionLabel" readonly disabled />
+                    </div>
+
+                    <div id="assessmentApproveFields">
+                        <div class="mb-3">
+                            <label class="form-label" for="assessmentApproverRole">@Localizer["ApproverRole"] <span class="text-danger">*</span></label>
+                            <select class="form-select" id="assessmentApproverRole">
+                                <option value="GQD">@Localizer["ApprovalRoleGQD"]</option>
+                                <option value="GQDDeputy">@Localizer["ApprovalRoleGQDDeputy"]</option>
+                                <option value="ITCSVOwner">@Localizer["ApprovalRoleITCSVOwner"]</option>
+                            </select>
+                            <div class="form-text">@Localizer["ApproverRoleHint"]</div>
+                        </div>
+                        <div class="mb-0">
+                            <label class="form-label" for="assessmentValidUntil">@Localizer["ValidUntil"]</label>
+                            <input class="form-control" id="assessmentValidUntil" type="date" />
+                        </div>
+                    </div>
+
+                    <div class="mb-0 d-none" id="assessmentRejectFields">
+                        <label class="form-label" for="assessmentRejectionReason">@Localizer["RejectionReason"] <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="assessmentRejectionReason" rows="3" maxlength="1000"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="submit" class="btn btn-primary" id="assessmentDecisionSubmit">@Localizer["ApproveRepository"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}

@@ -108,7 +108,8 @@ public sealed class QmsFolderTreeValidator
         var definitions = new List<QmsCollectionDefinitionDraft>(orderedNodes.Count);
         if (!hasBlockingFindings)
         {
-            // MOD-0028-FU06: resolve each node's CanonicalId up front so parent linkage reuses the child's own
+            // QMS register import extension — governance identity pending. Resolve each node's CanonicalId up front
+            // so parent linkage reuses the child's own
             // strategy. A node that carries a register folder_id gets a stable, path-independent id; every other
             // node keeps the exact legacy path-hash id. Parent resolution stays path-based (unchanged); only the
             // id VALUE changes, and only for register rows.

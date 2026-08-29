@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CampaignsTitle" xml:space="preserve"><value>活动</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>管理活动、目标成员以及考虑同意状态的静态快照。</value></data>
+  <data name="CreateCampaign" xml:space="preserve"><value>创建活动</value></data>
+  <data name="CampaignDetail" xml:space="preserve"><value>活动详情</value></data>
+  <data name="EditCampaign" xml:space="preserve"><value>编辑活动</value></data>
+  <data name="ArchiveCampaign" xml:space="preserve"><value>归档活动</value></data>
+  <data name="ArchiveCampaignConfirm" xml:space="preserve"><value>要归档此活动吗？这是软性生命周期操作；历史记录仍可读。</value></data>
+  <data name="CampaignContractUnavailable" xml:space="preserve"><value>活动能力契约不可用。操作已停用。</value></data>
+  <data name="CampaignCode" xml:space="preserve"><value>活动编码</value></data>
+  <data name="CampaignName" xml:space="preserve"><value>活动名称</value></data>
+  <data name="CampaignType" xml:space="preserve"><value>活动类型</value></data>
+  <data name="CampaignStatus" xml:space="preserve"><value>活动状态</value></data>
+  <data name="ObjectiveType" xml:space="preserve"><value>目标类型</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>业务单元 ID</value></data>
+  <data name="DefaultConsentChannel" xml:space="preserve"><value>默认同意渠道</value></data>
+  <data name="DefaultConsentPurpose" xml:space="preserve"><value>默认同意用途</value></data>
+  <data name="StartDate" xml:space="preserve"><value>开始日期</value></data>
+  <data name="EndDate" xml:space="preserve"><value>结束日期</value></data>
+  <data name="Description" xml:space="preserve"><value>描述</value></data>
+  <data name="SummarySection" xml:space="preserve"><value>摘要</value></data>
+  <data name="ConsentContextSection" xml:space="preserve"><value>同意上下文</value></data>
+  <data name="ConsentDefaultsHelp" xml:space="preserve"><value>这些值是活动的可选默认值。启用同意筛选的快照仍需要明确的渠道和用途。</value></data>
+  <data name="NoDefault" xml:space="preserve"><value>无默认值</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>来源系统</value></data>
+  <data name="ExternalId" xml:space="preserve"><value>外部 ID</value></data>
+  <data name="ExternalCode" xml:space="preserve"><value>外部编码</value></data>
+  <data name="ExternalName" xml:space="preserve"><value>外部名称</value></data>
+  <data name="ImportedAt" xml:space="preserve"><value>导入时间</value></data>
+  <data name="Primary" xml:space="preserve"><value>主要</value></data>
+  <data name="Remove" xml:space="preserve"><value>移除</value></data>
+  <data name="CampaignTargets" xml:space="preserve"><value>活动目标</value></data>
+  <data name="CampaignTargetId" xml:space="preserve"><value>活动目标 ID</value></data>
+  <data name="CreateTarget" xml:space="preserve"><value>创建目标</value></data>
+  <data name="EditTarget" xml:space="preserve"><value>编辑目标</value></data>
+  <data name="ArchiveTarget" xml:space="preserve"><value>归档目标</value></data>
+  <data name="ArchiveTargetConfirm" xml:space="preserve"><value>要归档此目标吗？这是软性生命周期操作；历史记录仍可读。</value></data>
+  <data name="TargetType" xml:space="preserve"><value>目标类型</value></data>
+  <data name="TargetId" xml:space="preserve"><value>目标 ID</value></data>
+  <data name="TargetDisplayName" xml:space="preserve"><value>目标显示名称</value></data>
+  <data name="DisplayLabelNotSourceOfTruth" xml:space="preserve"><value>仅为显示标签；不是可信数据来源。</value></data>
+  <data name="TargetStatus" xml:space="preserve"><value>目标状态</value></data>
+  <data name="TargetSource" xml:space="preserve"><value>目标来源</value></data>
+  <data name="SourceReferenceType" xml:space="preserve"><value>来源引用类型</value></data>
+  <data name="SourceReferenceId" xml:space="preserve"><value>来源引用 ID</value></data>
+  <data name="SnapshotBatchId" xml:space="preserve"><value>快照批次 ID</value></data>
+  <data name="SelectionReason" xml:space="preserve"><value>选择原因</value></data>
+  <data name="ReasonCodes" xml:space="preserve"><value>原因代码</value></data>
+  <data name="ExclusionReason" xml:space="preserve"><value>排除原因</value></data>
+  <data name="ConsentDecision" xml:space="preserve"><value>同意决定</value></data>
+  <data name="EligibilityStatus" xml:space="preserve"><value>资格状态</value></data>
+  <data name="EvaluatedAt" xml:space="preserve"><value>评估时间</value></data>
+  <data name="MatchedConsentId" xml:space="preserve"><value>匹配的同意 ID</value></data>
+  <data name="MatchedPreferenceIds" xml:space="preserve"><value>匹配的偏好 ID</value></data>
+  <data name="EvaluatorVersion" xml:space="preserve"><value>评估器版本</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>生效起始</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>生效截止</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>生效时点</value></data>
+  <data name="Archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="ArchivedAt" xml:space="preserve"><value>归档时间</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>更新时间</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="CreateSnapshot" xml:space="preserve"><value>创建静态目标快照</value></data>
+  <data name="ApplyConsentFilter" xml:space="preserve"><value>应用同意筛选</value></data>
+  <data name="ConsentChannel" xml:space="preserve"><value>同意渠道</value></data>
+  <data name="ConsentPurpose" xml:space="preserve"><value>同意用途</value></data>
+  <data name="ConsentFilterNotAppliedWarning" xml:space="preserve"><value>同意筛选已关闭。快照将带有严重的 consent_filter_not_applied 警告。</value></data>
+  <data name="SourceType" xml:space="preserve"><value>来源类型</value></data>
+  <data name="TargetItems" xml:space="preserve"><value>目标条目</value></data>
+  <data name="AddRow" xml:space="preserve"><value>添加行</value></data>
+  <data name="JsonPasteFallback" xml:space="preserve"><value>JSON 粘贴备选方式</value></data>
+  <data name="JsonFallbackHelp" xml:space="preserve"><value>填写后，有效的 JSON 目标项将取代轻量手工行。这不是导入引擎。</value></data>
+  <data name="CommaSeparated" xml:space="preserve"><value>以逗号分隔的值。</value></data>
+  <data name="ExcludedTargetsVisibleHelp" xml:space="preserve"><value>被排除、被阻止和状态未知的目标会连同其原因一起保持可见。</value></data>
+  <data name="TargetsUnavailable" xml:space="preserve"><value>目标管理不可用或未获授权。</value></data>
+  <data name="UnsupportedFiltersNote" xml:space="preserve"><value>API 不支持按搜索、目标、业务单元或日期范围筛选；不会应用任何伪造的客户端筛选。</value></data>
+  <data name="UnsupportedFilters" xml:space="preserve"><value>不支持：搜索、目标类型、业务单元、日期范围</value></data>
+  <data name="UnsupportedTargetFiltersNote" xml:space="preserve"><value>排除原因与同意决定/状态仅供显示，因为 API 没有为其提供服务端筛选。</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>包含已归档</value></data>
+  <data name="Apply" xml:space="preserve"><value>应用</value></data>
+  <data name="Reset" xml:space="preserve"><value>重置</value></data>
+  <data name="Filter" xml:space="preserve"><value>筛选</value></data>
+  <data name="Save" xml:space="preserve"><value>保存</value></data>
+  <data name="Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="BackToList" xml:space="preserve"><value>返回列表</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>请选择…</value></data>
+  <data name="RequiredProgress" xml:space="preserve"><value>必填字段：首次打开时已完成 0/5。</value></data>
+  <data name="ArchivedCampaignReadOnly" xml:space="preserve"><value>此活动已归档。活动编辑与目标变更操作已停用。</value></data>
+  <data name="DateWindow" xml:space="preserve"><value>日期区间</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="No" xml:space="preserve"><value>否</value></data>
+  <data name="View" xml:space="preserve"><value>查看</value></data>
+  <data name="Loading" xml:space="preserve"><value>加载中…</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>未找到活动记录。</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>操作无法完成。</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>请填写所有必填字段并修正无效的日期区间。</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>已成功归档。</value></data>
+  <data name="SnapshotCreated" xml:space="preserve"><value>已创建静态目标快照。</value></data>
+  <data name="CreatedCount" xml:space="preserve"><value>已创建</value></data>
+  <data name="ReconciledCount" xml:space="preserve"><value>已核对</value></data>
+  <data name="ExcludedCount" xml:space="preserve"><value>已排除</value></data>
+  <data name="DifferentSourceConflict" xml:space="preserve"><value>未写入快照：某个目标属于不同的来源。</value></data>
+  <data name="Allowed" xml:space="preserve"><value>允许</value></data>
+  <data name="Blocked" xml:space="preserve"><value>阻止</value></data>
+  <data name="Unknown" xml:space="preserve"><value>未知</value></data>
+  <data name="NotApplicable" xml:space="preserve"><value>不适用</value></data>
+  <data name="Excluded" xml:space="preserve"><value>已排除</value></data>
+  <data name="AddNew" xml:space="preserve"><value>新增</value></data>
+  <data name="EndDateBeforeStartDate" xml:space="preserve"><value>结束日期不能早于开始日期。</value></data>
+  <data name="Active" xml:space="preserve"><value>启用</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>确定吗？</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>批量删除</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>删除所选记录？</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>列</value></data>
+  <data name="Edit" xml:space="preserve"><value>编辑</value></data>
+  <data name="Export" xml:space="preserve"><value>导出</value></data>
+  <data name="Import" xml:space="preserve"><value>导入</value></data>
+  <data name="Passive" xml:space="preserve"><value>停用</value></data>
+  <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="SaveView" xml:space="preserve"><value>保存视图</value></data>
+  <data name="Search" xml:space="preserve"><value>搜索</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>全部</value></data>
+  <data name="Status" xml:space="preserve"><value>状态</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>查看详情</value></data>
+  <data name="CyclePeriod" xml:space="preserve">
+    <value>周期区间</value>
+  </data>
+  <data name="NoCyclePeriod" xml:space="preserve">
+    <value>未绑定周期区间</value>
+  </data>
+  <data name="CyclePeriodHelp" xml:space="preserve">
+    <value>可选。绑定期间，活动时间窗必须处于周期时间窗之内（含两端）。</value>
+  </data>
+  <data name="CyclePeriodWindow" xml:space="preserve">
+    <value>周期时间窗：</value>
+  </data>
+  <data name="CyclePeriodClosedBadge" xml:space="preserve">
+    <value>已关闭</value>
+  </data>
+  <data name="CampaignOutsideCycleWindow" xml:space="preserve">
+    <value>活动时间窗超出所绑定周期区间的时间窗。</value>
+  </data>
+  <data name="CyclePeriodNotActive" xml:space="preserve">
+    <value>只能将处于启用状态的周期区间绑定到活动。</value>
+  </data>
+  <data name="CyclePeriodNotFound" xml:space="preserve">
+    <value>未找到所选的周期区间。</value>
+  </data>
+  <data name="EndDateRequiredWhenBound" xml:space="preserve">
+    <value>绑定周期区间的活动必须填写结束日期。</value>
+  </data>
+  <data name="ScopeSection" xml:space="preserve">
+    <value>范围</value>
+  </data>
+  <data name="ScopeType" xml:space="preserve">
+    <value>范围层级</value>
+  </data>
+  <data name="ScopeReference" xml:space="preserve">
+    <value>范围引用</value>
+  </data>
+  <data name="ScopeType_tenant" xml:space="preserve">
+    <value>整个租户</value>
+  </data>
+  <data name="ScopeType_country" xml:space="preserve">
+    <value>国家</value>
+  </data>
+  <data name="ScopeType_legal-entity" xml:space="preserve">
+    <value>法人实体</value>
+  </data>
+  <data name="ScopeType_business-unit" xml:space="preserve">
+    <value>业务单元</value>
+  </data>
+  <data name="CountryScope" xml:space="preserve">
+    <value>国家</value>
+  </data>
+  <data name="LegalEntity" xml:space="preserve">
+    <value>法人实体</value>
+  </data>
+  <data name="BusinessUnit" xml:space="preserve">
+    <value>业务单元</value>
+  </data>
+  <data name="BusinessUnitCountryFilter" xml:space="preserve">
+    <value>按国家筛选业务单元</value>
+  </data>
+  <data name="ScopeHelp" xml:space="preserve">
+    <value>活动的所属范围。它决定可绑定哪些周期区间：活动自身范围，以及面向整个租户的区间。</value>
+  </data>
+  <data name="ScopeEditableHint" xml:space="preserve">
+    <value>范围可以更改。若所绑定的周期区间不再适用于新范围，请先解除绑定。</value>
+  </data>
+  <data name="CyclePeriodNotApplicable" xml:space="preserve">
+    <value>不适用于此范围</value>
+  </data>
+  <data name="CyclePeriodScopeMismatch" xml:space="preserve">
+    <value>所绑定的周期区间不适用于此范围。请解除绑定或改回原范围。</value>
+  </data>
+  <data name="ScopeReferenceRequired" xml:space="preserve">
+    <value>此范围层级需要一个引用值。</value>
+  </data>
+  <data name="ScopeAmbiguous" xml:space="preserve">
+    <value>只能提供一个范围引用值。</value>
+  </data>
+  <data name="CountryUnknown" xml:space="preserve">
+    <value>该国家不是已发布的值。</value>
+  </data>
+  <data name="BusinessUnitUnknown" xml:space="preserve">
+    <value>该业务单元不是已发布的值。</value>
+  </data>
+  <data name="LegalEntityNotReferenceable" xml:space="preserve">
+    <value>无法引用该法人实体。</value>
+  </data>
+  <data name="LegalEntityUnavailable" xml:space="preserve">
+    <value>主数据服务未响应。未保存任何内容，请重试。</value>
+  </data>
+  <data name="ReferenceSetUnpublished" xml:space="preserve">
+    <value>受管引用数据集尚未发布，需由运维人员发布。</value>
+  </data>
+  <data name="DependencyUnavailable" xml:space="preserve">
+    <value>依赖服务未响应，无法加载此列表。</value>
+  </data>
+  <data name="NoTerritoryPlanMatches" xml:space="preserve">
+    <value>没有匹配的区域计划，因此显示完整的已发布列表。</value>
+  </data>
+  <data name="TargetingSection" xml:space="preserve">
+    <value>目标设定</value>
+  </data>
+  <data name="TargetingMode" xml:space="preserve">
+    <value>目标设定方式</value>
+  </data>
+  <data name="TargetingMode_segment" xml:space="preserve">
+    <value>按细分群体</value>
+  </data>
+  <data name="TargetingMode_manual" xml:space="preserve">
+    <value>手动</value>
+  </data>
+  <data name="TargetingModeHelp" xml:space="preserve">
+    <value>如何选定受众。仅使用所选方式；另一种方式的数据会保留但不生效。</value>
+  </data>
+  <data name="TargetedSegments" xml:space="preserve">
+    <value>目标细分群体</value>
+  </data>
+  <data name="TargetedSegmentsHelp" xml:space="preserve">
+    <value>至少一个启用中的细分群体。此处不解析成员构成——活动只记录它面向谁。</value>
+  </data>
+  <data name="SelectSegments" xml:space="preserve">
+    <value>选择细分群体</value>
+  </data>
+  <data name="SegmentSuperseded" xml:space="preserve">
+    <value>已有新版本</value>
+  </data>
+  <data name="SegmentArchived" xml:space="preserve">
+    <value>已归档</value>
+  </data>
+  <data name="SegmentRequired" xml:space="preserve">
+    <value>按细分群体设定目标至少需要一个群体。</value>
+  </data>
+  <data name="SegmentNotActive" xml:space="preserve">
+    <value>只能添加启用中的细分群体。</value>
+  </data>
+  <data name="SegmentNotFound" xml:space="preserve">
+    <value>未找到所选的细分群体。</value>
+  </data>
+  <data name="SegmentDuplicate" xml:space="preserve">
+    <value>同一个细分群体被重复选择。</value>
+  </data>
+  <data name="SegmentLimitExceeded" xml:space="preserve">
+    <value>目标细分群体过多。</value>
+  </data>
+  <data name="SubjectType" xml:space="preserve">
+    <value>对象类型</value>
+  </data>
+  <data name="ManualTargetingHint" xml:space="preserve">
+    <value>活动保存后，可在活动详情页添加目标。</value>
+  </data>
+  <data name="TargetingTitle" xml:space="preserve">
+    <value>目标设定</value>
+  </data>
+  <data name="TargetingWhatToPromote" xml:space="preserve">
+    <value>推广内容</value>
+  </data>
+  <data name="TargetingWhatToPromoteClosed" xml:space="preserve">
+    <value>尚未开放。推广内容按细分群体规划，属于另一个模型。</value>
+  </data>
+  <data name="TargetingDormantData" xml:space="preserve">
+    <value>该活动仍保留着另一种目标设定方式的数据。数据被保留，但未被使用。</value>
+  </data>
+  <data name="NoTargetedSegments" xml:space="preserve">
+    <value>没有目标细分群体</value>
+  </data>
+  <data name="CampaignCodeAutoHint" xml:space="preserve">
+    <value>留空则在保存时自动分配编码。</value>
+  </data>
+  <data name="CampaignCodeAutoPlaceholder" xml:space="preserve">
+    <value>{0}（自动）</value>
+  </data>
+  <data name="PriorityLevel" xml:space="preserve">
+    <value>优先级</value>
+  </data>
+  <data name="PriorityLevel_low" xml:space="preserve">
+    <value>低</value>
+  </data>
+  <data name="PriorityLevel_medium" xml:space="preserve">
+    <value>中</value>
+  </data>
+  <data name="PriorityLevel_high" xml:space="preserve">
+    <value>高</value>
+  </data>
+  <data name="TargetPicker" xml:space="preserve">
+    <value>目标</value>
+  </data>
+  <data name="TargetTypePickerHelp" xml:space="preserve">
+    <value>此页面可选择客户和联系人。其他目标类型仍可通过 API 使用。</value>
+  </data>
+  <data name="SelectAccount" xml:space="preserve">
+    <value>选择客户</value>
+  </data>
+  <data name="SelectContact" xml:space="preserve">
+    <value>选择联系人</value>
+  </data>
+  <data name="Notes" xml:space="preserve">
+    <value>备注</value>
+  </data>
+  <data name="ManualTargetDefaultsHint" xml:space="preserve">
+    <value>来源、理由和开始日期在保存时自动填写：该目标会记录为今天由您手动选择。</value>
+  </data>
+  <data name="TargetStatus_draft" xml:space="preserve">
+    <value>草稿</value>
+  </data>
+  <data name="TargetStatus_active" xml:space="preserve">
+    <value>启用中</value>
+  </data>
+  <data name="TargetStatus_inactive" xml:space="preserve">
+    <value>未启用</value>
+  </data>
+  <data name="TargetStatus_completed" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+</root>

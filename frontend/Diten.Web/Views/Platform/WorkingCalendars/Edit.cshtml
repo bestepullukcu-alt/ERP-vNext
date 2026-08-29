@@ -1,0 +1,18 @@
+@model Diten.Web.Models.WorkingCalendar.WorkingCalendarEditViewModel
+@using Diten.Web.Views.Platform.WorkingCalendars
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkingCalendarsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleEdit"].Value;
+    Layout = "_LayoutPlatformAdmin";
+    ViewData["FormMode"] = "edit";
+}
+
+<partial name="~/Views/Platform/WorkingCalendars/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <partial name="~/Views/Platform/WorkingCalendars/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Platform/WorkingCalendars/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/WorkingCalendars/form.js" asp-append-version="true"></script>
+}

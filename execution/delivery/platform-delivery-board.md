@@ -56,6 +56,27 @@ Below is the list of active development tasks and carry-overs extracted from the
 | **WIP-MOD-0043-DRIFT-verify** | MOD-0043 | Investigation | Section 9.4 | Investigate DitenAuditService / MdmService directory drift in repo | planned | Medium | Claude Code / Opus | architecture diagnostics / explorer-agent / Manual Review | TBD | TBD | None | Run tree diagnostics. Repo drift, missing service directories ve diagnostic tree doğrulanmadan kod üretimi yapılmamalı. |
 | **WIP-PSS-009-T1-test-coverage** | PSS-009 | Testing | Section 9.4 | Increase backend test coverage for profile edits from 4/9 to 9/9 | planned | Medium | Antigravity / Gemini | `/test` | TBD | TBD | None | Add tampering fail tests |
 | **WIP-PSS-010-FU1-mfa-ui** | PSS-010 | UI | Section 9.4 | Build Platform admin MFA settings and active sessions UI | planned | High | Antigravity / Gemini | `/add-module` | TBD | TBD | None | Create HTML settings cards |
+| **WIP-PSS-DOC-review-workflow** | MOD-0029 / MOD-0023 / MOD-0027 | Integration | User backlog 2026-07-27 | Orchestrate Draft → In Review with approval requirements, reviewer tasks, due dates and notifications | backlog | High | Codex / Antigravity | `/prepare-capability-pack` | TBD | TBD | Approved cross-module Delivery Capability Pack and follow-up Module Pack(s) required | Prepare and approve the capability pack before implementation |
+
+---
+
+## Candidate Scope Notes
+
+### WIP-PSS-DOC-review-workflow — Controlled Document Review Orchestration
+
+Deferred on 2026-07-27. No runtime implementation is authorized by this backlog entry.
+
+Expected outcome:
+
+* `Draft → In Review` collects a review due date and starts the formal review through the system.
+* MOD-0029 resolves document approval/review requirements idempotently from document class, criticality and governance overlays.
+* Required roles are resolved to authorized users; MOD-0023 creates the workflow instance and actionable reviewer/approver tasks.
+* MOD-0027 queues assignment notifications without duplicate delivery on a repeated request.
+* The operation is fail-closed: missing workflow template, unresolved mandatory reviewer, task creation failure or notification enqueue failure leaves the document in `Draft`.
+* Lifecycle transition, requirement reconciliation, workflow/task creation and notification dispatch use correlation and idempotency identifiers and produce auditable evidence.
+* Implementation must define compensation/transaction boundaries so a partial cross-module failure cannot leave an `In Review` document without its required work items.
+
+Governance next step: prepare a cross-cutting Delivery Capability Pack, decide the MOD-0029 follow-up identity through the DCP-002 gate, and reference the existing MOD-0023 and MOD-0027 contracts. This delivery-board item does not replace those approved packs.
 
 ---
 

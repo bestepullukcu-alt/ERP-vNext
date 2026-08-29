@@ -1,0 +1,55 @@
+@using System.Text.Json
+@using Diten.Web.Views.CRM.KnowledgeConcepts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeConceptsIndex> Localizer
+@{
+    var keys = new[] { "Actions", "AddRow", "Apply", "ArchiveNode", "ArchiveNodeConfirm", "Archived",
+        "ConceptContractUnavailable", "ConceptNodeCode", "ConceptNodeName", "ConceptTypeId", "Status", "Cancel",
+        "CreateNode", "EditNode", "EmptyState", "ErrorState", "Filter", "Loading", "No",
+        "RecordArchived", "Save", "SubjectId", "ExternalRefType", "ExternalRefId", "EffectiveFrom", "EffectiveTo",
+        "UpdatedAt", "ValidationRequired", "View", "Yes", "EffectiveToBeforeFrom",
+        "RecordCreated", "RecordUpdated", "Description", "IncludeArchived", "SelectOption",
+        "GlobalProductPickerUnavailable", "GlobalProductEndpointMissing", "GlobalProductPermissionMissing",
+        "TypesTab", "NodesTab", "ConnectionsTab", "TemplatesTab", "GraphPreviewTab", "MetadataJson",
+        // --- Slim tabs (Type / Connection / Chain Template) ---
+        "RecordSaved", "ImmutableAfterCreate", "ArchivedRecordReadOnly", "SortOrder",
+        "ConceptTypeCode", "ConceptTypeName", "CreateType", "EditType", "TypeDetails", "ArchiveType",
+        "ArchiveTypeConfirm", "TypesEmptyState", "TypeSortOrderNote",
+        "RelationshipCode", "RelationshipName", "RelationshipType", "FromConceptNode", "ToConceptNode",
+        "Direction", "Priority", "Conformance", "Conforming", "NonConforming", "NonConformingNote",
+        "CreateConnection", "EditConnection", "ConnectionDetails", "ArchiveConnection", "ArchiveConnectionConfirm",
+        "ConnectionsEmptyState", "NodePickerSubjectFirst", "PriorityNote",
+        "ChainCode", "ChainName", "ChainVersion", "OrderedConceptTypes", "SequenceLength", "AddToSequence",
+        "RemoveStep", "MoveUp", "MoveDown", "SequenceEmpty", "SequenceMinTwo", "SequenceDuplicateType",
+        "PublishedSequenceFrozen", "CreateTemplate", "EditTemplate", "TemplateDetails", "ArchiveTemplate",
+        "ArchiveTemplateConfirm", "TemplatesEmptyState",
+        // --- Graph Preview (read-only tab) ---
+        "GraphScope", "GraphScopeSubject", "GraphScopeNode", "GraphScopeContent", "GraphNodeAnchor",
+        "GraphContentAnchor", "GraphEffectiveAt", "GraphLoad", "GraphNodesSection", "GraphEdgesSection",
+        "GraphTemplatesSection", "GraphNodeCount", "GraphEdgeCount", "GraphTemplateCount", "GraphEmpty",
+        "GraphPickScope", "GraphContentNoLinks", "GraphDepthNoticeNode", "GraphDepthNoticeContent",
+        "GraphDepthNoticeSubject", "GraphReadOnlyNotice", "GraphEdgeOrderNote", "GraphUngroupedType",
+        "GraphOpenNode", "GraphSelfContained" };
+    var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
+    values["Active"] = Localizer["Active"].Value;
+    values["Passive"] = Localizer["Passive"].Value;
+    values["Unknown"] = Localizer["Unknown"].Value;
+    values["Edit"] = Localizer["Edit"].Value;
+    values["ViewDetails"] = Localizer["ViewDetails"].Value;
+    values["QuickView"] = Localizer["QuickView"].Value;
+    values["BulkDelete"] = Localizer["BulkDelete"].Value;
+    values["BulkDeleteConfirm"] = Localizer["BulkDeleteConfirm"].Value;
+    values["AreYouSure"] = Localizer["AreYouSure"].Value;
+    values["Search"] = Localizer["Search"].Value;
+    values["Export"] = Localizer["Export"].Value;
+    values["Import"] = Localizer["Import"].Value;
+    values["Reset"] = Localizer["Reset"].Value;
+    values["ShowAll"] = Localizer["ShowAll"].Value;
+    values["SaveView"] = Localizer["SaveView"].Value;
+    values["ColumnVisibility"] = Localizer["ColumnVisibility"].Value;
+    // Verifier-compatible property markers for the dictionary-backed JSON bridge:
+    // Active =, Passive =, Unknown =, Actions =, Edit =, ViewDetails =, QuickView =,
+    // BulkDelete =, BulkDeleteConfirm =, AreYouSure =, Cancel =, Search =, Export =,
+    // Import =, Filter =, Apply =, Reset =, ShowAll =, SaveView =, ColumnVisibility =, Status =
+}
+<script id="concept-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>

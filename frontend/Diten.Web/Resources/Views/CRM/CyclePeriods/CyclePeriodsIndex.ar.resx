@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="ActivateCyclePeriod" xml:space="preserve"><value>تفعيل</value></data>
+  <data name="ActivateCyclePeriodConfirm" xml:space="preserve"><value>هل تريد تفعيل هذه الفترة؟ لا يمكن للفترات النشطة في نفس وحدة الأعمال أن تتشارك يوماً واحداً، وتصبح تواريخها للقراءة فقط.</value></data>
+  <data name="ActivatedAt" xml:space="preserve"><value>تاريخ التفعيل</value></data>
+  <data name="ActiveEditNotice" xml:space="preserve"><value>هذه الفترة نشطة: تواريخها وسنتها وترتيبها ووحدة الأعمال للقراءة فقط. أغلقها وافتح فترة جديدة لتغييرها.</value></data>
+  <data name="AmbiguousPeriod" xml:space="preserve"><value>أكثر من فترة نشطة تغطي اليوم</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>وحدة الأعمال</value></data>
+  <data name="BusinessUnitIdHint" xml:space="preserve"><value>اتركه فارغاً لتقويم على مستوى المستأجر. يمكن لوحدات أعمال مختلفة تشغيل فترات متداخلة.</value></data>
+  <data name="BusinessUnitIdPlaceholder" xml:space="preserve"><value>على مستوى المستأجر إذا كان فارغاً</value></data>
+  <data name="CloseCyclePeriod" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="CloseCyclePeriodConfirm" xml:space="preserve"><value>هل تريد إغلاق هذه الفترة؟ لا يُحذف شيء، لكن الإغلاق نهائي: لا يمكن إعادة الفتح.</value></data>
+  <data name="ClosedAt" xml:space="preserve"><value>تاريخ الإغلاق</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>خدمة الفترات غير متاحة.</value></data>
+  <data name="CreateCyclePeriod" xml:space="preserve"><value>فترة جديدة</value></data>
+  <data name="CurrentPeriod" xml:space="preserve"><value>الفترة السارية اليوم</value></data>
+  <data name="CycleCode" xml:space="preserve"><value>الرمز</value></data>
+  <data name="CycleCodeHint" xml:space="preserve"><value>أحرف صغيرة وأرقام ونقطة وشرطة سفلية وشرطة. لا يُعاد تسميته بعد الإنشاء.</value></data>
+  <data name="CycleCodePlaceholder" xml:space="preserve"><value>c-2026-03</value></data>
+  <data name="CycleName" xml:space="preserve"><value>الاسم</value></data>
+  <data name="CycleNamePlaceholder" xml:space="preserve"><value>2026 / الدورة 3</value></data>
+  <data name="CyclePeriodsTitle" xml:space="preserve"><value>فترات الدورات</value></data>
+  <data name="EndDate" xml:space="preserve"><value>تاريخ الانتهاء</value></data>
+  <data name="EndDateHint" xml:space="preserve"><value>شامل: تغطي الفترة هذا اليوم.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>فترة دورة جديدة</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل فترة الدورة</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>معلومات عامة</value></data>
+  <data name="Lifecycle" xml:space="preserve"><value>دورة الحياة</value></data>
+  <data name="NoActivePeriod" xml:space="preserve"><value>لا توجد فترة نشطة اليوم</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>فترات تخطيط مُسمّاة: إلى أي فترة تنتمي الخطة. أيام العمل والعطلات تقويم منفصل.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="RecordActivated" xml:space="preserve"><value>تم تفعيل الفترة.</value></data>
+  <data name="RecordClosed" xml:space="preserve"><value>تم إغلاق الفترة.</value></data>
+  <data name="SequenceInYear" xml:space="preserve"><value>الترتيب</value></data>
+  <data name="StartDate" xml:space="preserve"><value>تاريخ البدء</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>نشطة</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>مغلقة</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="TenantWide" xml:space="preserve"><value>على مستوى المستأجر</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>تاريخ التحديث</value></data>
+  <data name="Window" xml:space="preserve"><value>النطاق</value></data>
+  <data name="Year" xml:space="preserve"><value>السنة</value></data>
+  <data name="YearHint" xml:space="preserve"><value>سنة التخطيط. قد تمتد الفترة عبر سنة تقويمية.</value></data>
+  <data name="ActiveWindowImmutableHint" xml:space="preserve"><value>هذه الفترة نشطة: تواريخها وسنتها وتسلسلها ونطاقها للقراءة فقط. أغلقها وافتح فترة جديدة لتغييرها.</value></data>
+  <data name="BusinessUnitCountryContext" xml:space="preserve"><value>سياق الدولة</value></data>
+  <data name="BusinessUnitCountryFilter" xml:space="preserve"><value>الدولة (تصفية)</value></data>
+  <data name="BusinessUnitCountryFirstHint" xml:space="preserve"><value>اختر الدولة أولاً — تُدرج وحدات الأعمال من خطط المناطق التي تغطي تلك الدولة خلال هذه الفترة.</value></data>
+  <data name="BusinessUnitFromTerritory" xml:space="preserve"><value>الوحدات التي تغطيها الخطط الميدانية المطابقة.</value></data>
+  <data name="BusinessUnitFromVocabulary" xml:space="preserve"><value>جميع وحدات الأعمال المنشورة — لا توجد خطة ميدانية تطابق هذا البلد ونطاق التواريخ.</value></data>
+  <data name="BusinessUnitNoPlan" xml:space="preserve"><value>لا توجد خطة ميدانية نشطة تغطي هذا البلد ونطاق التواريخ.</value></data>
+  <data name="BusinessUnitSourceLabel" xml:space="preserve"><value>مصدر وحدة الأعمال</value></data>
+  <data name="BusinessUnitSource_manual" xml:space="preserve"><value>أُدخلت يدويًا</value></data>
+  <data name="BusinessUnitSource_territory" xml:space="preserve"><value>من خطة ميدانية</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>البلد</value></data>
+  <data name="CountrySetUnavailable" xml:space="preserve"><value>لم تُنشر مجموعة مرجع البلدان بعد:</value></data>
+  <data name="CycleStatus_active" xml:space="preserve"><value>نشطة</value></data>
+  <data name="CycleStatus_closed" xml:space="preserve"><value>مغلقة</value></data>
+  <data name="CycleStatus_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="EndDateInclusiveHint" xml:space="preserve"><value>شامل: الفترة تغطي هذا اليوم.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>الهوية</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>الكيان القانوني</value></data>
+  <data name="LegalEntityListUnavailable" xml:space="preserve"><value>تعذّر تحميل قائمة الكيانات القانونية.</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>دورة الحياة</value></data>
+  <data name="NewCyclePeriod" xml:space="preserve"><value>فترة جديدة</value></data>
+  <data name="Scope" xml:space="preserve"><value>النطاق</value></data>
+  <data name="ScopeRef" xml:space="preserve"><value>مرجع النطاق</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>النطاق</value></data>
+  <data name="ScopeSectionHint" xml:space="preserve"><value>تعيش الفترة في عنوان واحد بالضبط. المستوى الذي تختاره يحدد المرجع المطبَّق.</value></data>
+  <data name="ScopeTenantHint" xml:space="preserve"><value>تنطبق هذه الفترة على المستأجر بأكمله.</value></data>
+  <data name="ScopeTenantWide" xml:space="preserve"><value>على مستوى المستأجر</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>مستوى النطاق</value></data>
+  <data name="ScopeTypeImmutableHint" xml:space="preserve"><value>النطاق جزء من هوية الفترة ولا يمكن تغييره. أغلق هذه الفترة وافتح فترة جديدة بدلًا من ذلك.</value></data>
+  <data name="ScopeType_business-unit" xml:space="preserve"><value>وحدة الأعمال</value></data>
+  <data name="ScopeType_country" xml:space="preserve"><value>البلد</value></data>
+  <data name="ScopeType_legal-entity" xml:space="preserve"><value>الكيان القانوني</value></data>
+  <data name="ScopeType_tenant" xml:space="preserve"><value>على مستوى المستأجر</value></data>
+  <data name="Version" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="CycleCapacity" xml:space="preserve"><value>سعة الدورة</value></data>
+</root>

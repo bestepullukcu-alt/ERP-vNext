@@ -1,0 +1,151 @@
+@model Diten.Web.Models.CRM.TerritoryModelDetailPageViewModel
+@using Diten.Web.Views.CRM.TerritoryManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TerritoryManagementResources> L
+
+@* Preview panel. Split out of _AssignmentRules.cshtml so it can live in its own tab; the markup and every DOM id
+   are unchanged, because assignment-rules.js and account-assignments.js address them directly. *@
+@* The DataTable toolbar rows and outer cells otherwise inherit the theme's larger/asymmetric side padding,
+   which doesn't line up with the tab strip above (a card-header p-3 = 1rem inset). Scope a symmetric 1rem
+   inset to just the three preview tables so their left/right gaps match the tab card. *@
+<style>
+    #preview-matched .dt-container > .row,
+    #preview-conflicts .dt-container > .row,
+    #preview-rules .dt-container > .row {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    #preview-matched table.dataTable > thead > tr > *:first-child,
+    #preview-matched table.dataTable > tbody > tr > *:first-child,
+    #preview-conflicts table.dataTable > thead > tr > *:first-child,
+    #preview-conflicts table.dataTable > tbody > tr > *:first-child,
+    #preview-rules table.dataTable > thead > tr > *:first-child,
+    #preview-rules table.dataTable > tbody > tr > *:first-child {
+        padding-left: 1rem !important;
+    }
+
+    #preview-matched table.dataTable > thead > tr > *:last-child,
+    #preview-matched table.dataTable > tbody > tr > *:last-child,
+    #preview-conflicts table.dataTable > thead > tr > *:last-child,
+    #preview-conflicts table.dataTable > tbody > tr > *:last-child,
+    #preview-rules table.dataTable > thead > tr > *:last-child,
+    #preview-rules table.dataTable > tbody > tr > *:last-child {
+        padding-right: 1rem !important;
+    }
+</style>
+<div class="d-none" id="assignment-preview-card">
+    <span class="d-none" id="preview-meta"></span>
+
+    <div class="card mb-4">
+        <div class="card-header p-3">
+            <div class="nav-align-top">
+                <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap" role="tablist">
+                    <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                        <button type="button" class="nav-link active small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#preview-matched" role="tab" aria-selected="true">
+                            <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-user-check me-1 wc-tab-icon"></i>@L["MatchedAccounts"] <span class="badge bg-label-primary ms-1" id="preview-matched-count">0</span></span>
+                            <i class="bx bx-user-check d-sm-none wc-tab-icon"></i>
+                        </button>
+                    </li>
+                    <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                        <button type="button" class="nav-link small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#preview-conflicts" role="tab" aria-selected="false" tabindex="-1">
+                            <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-error-circle me-1 wc-tab-icon"></i>@L["Conflicts"] <span class="badge bg-label-danger ms-1" id="preview-conflict-count">0</span></span>
+                            <i class="bx bx-error-circle d-sm-none wc-tab-icon"></i>
+                        </button>
+                    </li>
+                    <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                        <button type="button" class="nav-link small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#preview-rules" role="tab" aria-selected="false" tabindex="-1">
+                            <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-filter-alt me-1 wc-tab-icon"></i>@L["RuleSummary"]</span>
+                            <i class="bx bx-filter-alt d-sm-none wc-tab-icon"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    @* The theme forces padding:1.5rem on every .tab-content; p-0 clears it so the DataTable cards line up
+       flush with the tab strip above (which sits outside this .tab-content). *@
+    <div class="tab-content p-0">
+        <div class="tab-pane fade show active" id="preview-matched" role="tabpanel">
+            @* Bulk-action bar: golden selection surface. It only counts/clears the ticked rows;
+               the ticked rows feed the Apply form below (dates/override stay there). *@
+            <div id="preview-bulk-bar" class="card mb-3 d-none">
+                <div class="card-body d-flex align-items-center justify-content-between py-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bx bx-check-square icon-md text-primary"></i>
+                        <span id="preview-bulk-count" class="fw-medium text-heading">0</span>
+                        <span class="text-muted">selected for apply</span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" id="preview-bulk-apply" class="btn btn-primary">
+                            <i class="bx bx-down-arrow-alt me-1"></i>Apply selected
+                        </button>
+                        <button type="button" id="preview-bulk-clear" class="btn btn-label-secondary">Clear</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-datatable table-responsive">
+                    <table id="dt-preview-matched" data-dt-standard="v2" class="table border-top">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th class="cell-fit"><input type="checkbox" class="form-check-input" id="preview-select-all" /></th>
+                                <th class="all">@L["AccountCode"]</th>
+                                <th>@L["AccountName"]</th>
+                                <th>@L["TargetNode"]</th>
+                                <th>@L["RuleCode"]</th>
+                                <th>@L["MatchReason"]</th>
+                                <th>@L["ConflictStatus"]</th>
+                                <th>Assigned To</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="preview-conflicts" role="tabpanel">
+            <div class="card">
+                <div class="card-datatable table-responsive">
+                    <table id="dt-preview-conflicts" data-dt-standard="v2" class="table border-top">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th class="all">@L["AccountCode"]</th>
+                                <th>@L["AccountName"]</th>
+                                <th>@L["CandidateNodes"]</th>
+                                <th>@L["ConflictPolicy"]</th>
+                                <th>@L["ResolutionSuggestion"]</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="preview-rules" role="tabpanel">
+            <div class="card">
+                <div class="card-datatable table-responsive">
+                    <table id="dt-preview-rules" data-dt-standard="v2" class="table border-top">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th class="all">@L["RuleCode"]</th>
+                                <th>@L["RuleType"]</th>
+                                <th>@L["Priority"]</th>
+                                <th>@L["Criteria"]</th>
+                                <th>@L["Evaluated"]</th>
+                                <th>@L["Matches"]</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

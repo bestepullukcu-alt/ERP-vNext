@@ -1,0 +1,38 @@
+@using Diten.Web.Views.CRM.CyclePeriods
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CyclePeriodsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* There is no select-all checkbox and no bulk action bar here on purpose: this module has NO bulk delete and no delete
+   at all (ending a period is Close), so a selection column would offer an action that does not exist. *@
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-cycle-periods" data-dt-standard="v2" class="datatables-cycleperiods table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>@Localizer["CycleCode"]</th>
+                    <th class="all">@Localizer["CycleName"]</th>
+                    <th>@Localizer["Year"]</th>
+                    <th>@Localizer["SequenceInYear"]</th>
+                    <th>@Localizer["StartDate"]</th>
+                    <th>@Localizer["EndDate"]</th>
+                    @* One Scope column: the level as a badge plus its reference, so a reader can see at a glance which
+                       calendar a row belongs to. *@
+                    <th>@Localizer["Scope"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th>@Localizer["UpdatedAt"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

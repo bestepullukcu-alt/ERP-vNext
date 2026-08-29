@@ -1,0 +1,28 @@
+@using Diten.Web.Views.CRM.KnowledgeConcepts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeConceptsIndex> Localizer
+
+<div class="card">
+    <div id="types-skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+    </div>
+    <div class="card-datatable table-responsive">
+        <table id="dt-concept-types" data-dt-standard="v2" class="datatables-concept-types table border-top w-100">
+            <thead><tr>
+                <th></th>
+                <th>@Localizer["ConceptTypeCode"]</th>
+                <th class="all">@Localizer["ConceptTypeName"]</th>
+                <th>@Localizer["SubjectId"]</th>
+                <th>@Localizer["Status"]</th>
+                <th>@Localizer["SortOrder"]</th>
+                <th>@Localizer["Description"]</th>
+                <th>@Localizer["Archived"]</th>
+                <th>@Localizer["UpdatedAt"]</th>
+                <th class="all text-end">@Localizer["Actions"]</th>
+            </tr></thead>
+        </table>
+    </div>
+</div>

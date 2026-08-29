@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>  <data name="Title" xml:space="preserve"><value>Gestion des territoires</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gérez les plans de territoire versionnés et leur hiérarchie.</value></data>
+  <data name="ContractSection" xml:space="preserve"><value>État du contrat</value></data>
+  <data name="ContractReady" xml:space="preserve"><value>Contrat prêt</value></data>
+  <data name="ReferenceDataNotReady" xml:space="preserve"><value>Données de référence non prêtes</value></data>
+  <data name="MissingSets" xml:space="preserve"><value>Ensembles de référence manquants</value></data>
+  <data name="TerritoryModels" xml:space="preserve"><value>Modèles de territoire</value></data>
+  <data name="TerritoryNodes" xml:space="preserve"><value>Nœuds de territoire</value></data>
+  <data name="CreateModel" xml:space="preserve"><value>Créer un modèle</value></data>
+  <data name="EditModel" xml:space="preserve"><value>Modifier le modèle</value></data>
+  <data name="NoModels" xml:space="preserve"><value>Aucun modèle de territoire pour le moment.</value></data>
+  <data name="ModelCode" xml:space="preserve"><value>Code du modèle</value></data>
+  <data name="Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="Status" xml:space="preserve"><value>Statut</value></data>
+  <data name="VersionNumber" xml:space="preserve"><value>Version</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>Portée pays</value></data>
+  <data name="DivisionScope" xml:space="preserve"><value>Portée division</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Effectif à partir de</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Effectif jusqu'à</value></data>
+  <data name="ChangeReason" xml:space="preserve"><value>Motif du changement</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="View" xml:space="preserve"><value>Voir</value></data>
+  <data name="Edit" xml:space="preserve"><value>Modifier</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Retour à la liste</value></data>
+  <data name="Save" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Annuler</value></data>
+  <data name="ModelDetails" xml:space="preserve"><value>Détails du modèle</value></data>
+  <data name="TerritoryHierarchy" xml:space="preserve"><value>Hiérarchie de territoire</value></data>
+  <data name="NoNodes" xml:space="preserve"><value>Aucun nœud dans ce modèle pour le moment.</value></data>
+  <data name="CreateNode" xml:space="preserve"><value>Créer un nœud de territoire</value></data>
+  <data name="EditNode" xml:space="preserve"><value>Modifier le nœud de territoire</value></data>
+  <data name="TerritoryCode" xml:space="preserve"><value>Code de territoire</value></data>
+  <data name="TerritoryLevel" xml:space="preserve"><value>Niveau de territoire</value></data>
+  <data name="ParentTerritory" xml:space="preserve"><value>Territoire parent</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Ordre de tri</value></data>
+  <data name="MicroZoneProfile" xml:space="preserve"><value>Profil de micro-zone</value></data>
+  <data name="MicroZoneProfileHelp" xml:space="preserve"><value>Disponible uniquement lorsque le niveau est microzone.</value></data>
+  <data name="AnchorAccountId" xml:space="preserve"><value>Id du compte d ancrage</value></data>
+  <data name="ClusterNotes" xml:space="preserve"><value>Notes du cluster</value></data>
+  <data name="PlanningCenterType" xml:space="preserve"><value>Type de centre de planification</value></data>
+  <data name="CountryCode" xml:space="preserve"><value>Code pays</value></data>
+  <data name="DivisionCode" xml:space="preserve"><value>Code division</value></data>
+  <data name="RegionCode" xml:space="preserve"><value>Code région</value></data>
+  <data name="AreaCode" xml:space="preserve"><value>Code zone</value></data>
+  <data name="ZoneCode" xml:space="preserve"><value>Code de zone</value></data>
+  <data name="MicroZoneCode" xml:space="preserve"><value>Code de micro-zone</value></data>
+  <data name="ReferenceDataUnavailable" xml:space="preserve"><value>Les données de référence sont indisponibles, les niveaux ne peuvent pas être sélectionnés. Réessayez plus tard.</value></data>
+  <data name="LimitationsSection" xml:space="preserve"><value>Périmètre FU01 — pas encore disponible</value></data>
+  <data name="LimAssignmentRules" xml:space="preserve"><value>Les règles d affectation ne sont pas disponibles dans ce FU.</value></data>
+  <data name="LimResourceAssignment" xml:space="preserve"><value>L affectation des ressources n est pas disponible dans ce FU.</value></data>
+  <data name="LimWorkflowActivation" xml:space="preserve"><value>L activation du workflow n est pas disponible dans ce FU.</value></data>
+  <data name="LimEvidencePack" xml:space="preserve"><value>Le dossier de preuves n est pas disponible dans ce FU.</value></data>
+  <data name="LimImportExport" xml:space="preserve"><value>L import/export n est pas disponible dans ce FU.</value></data>
+  <data name="SelectLevel" xml:space="preserve"><value>Sélectionnez un niveau</value></data>
+  <data name="SelectParent" xml:space="preserve"><value>(racine - sans parent)</value></data>
+  <data name="LiveSmokeReady" xml:space="preserve"><value>Prêt</value></data>
+  <data name="ModuleId" xml:space="preserve"><value>Module</value></data>
+  <data name="RuntimeScope" xml:space="preserve"><value>Périmètre d exécution</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identité</value></data>
+  <data name="EffectivePeriodSection" xml:space="preserve"><value>Période de validité</value></data>
+  <data name="GeoCodesSection" xml:space="preserve"><value>Codes géographiques</value></data>
+  <data name="BusinessUnitScope" xml:space="preserve"><value>Portée de l'unité commerciale</value></data>
+  <data name="BusinessUnitScopeHelp" xml:space="preserve"><value>Unités commerciales concernées par ce plan de territoire (p. ex. Alpha, Beta).</value></data>
+  <data name="BrandScopePlanned" xml:space="preserve"><value>La portée de marque est prévue pour une intégration Marque/Marketing ultérieure.</value></data>
+  <data name="CountryReferenceNotReady" xml:space="preserve"><value>Les données de référence des pays ne sont pas encore publiées.</value></data>
+  <data name="BusinessUnitReferenceNotReady" xml:space="preserve"><value>Les données de référence des unités commerciales ne sont pas encore publiées.</value></data>
+  <data name="SelectCountry" xml:space="preserve"><value>Sélectionnez un pays</value></data>
+  <data name="Activate" xml:space="preserve"><value>Activer</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Désactiver</value></data>
+  <data name="Archive" xml:space="preserve"><value>Archiver</value></data>
+  <data name="DeleteDraft" xml:space="preserve"><value>Supprimer le brouillon</value></data>
+  <data name="DeleteDraftNode" xml:space="preserve"><value>Supprimer le nœud brouillon</value></data>
+  <data name="ExpiredWarning" xml:space="preserve"><value>La date de fin est dépassée. Le statut enregistré reste inchangé; l’enregistrement est calculé comme expiré.</value></data>
+  <data name="ConfirmLifecycleAction" xml:space="preserve"><value>Confirmer l’action de cycle de vie</value></data>
+  <data name="LifecycleConfirmation" xml:space="preserve"><value>Cette action modifie l’état opérationnel. Voulez-vous continuer ?</value></data>
+  <data name="Confirm" xml:space="preserve"><value>Confirmer</value></data>
+  <data name="AssignmentRules" xml:space="preserve"><value>Règles d'affectation</value></data>
+  <data name="AssignmentRulesSubtitle" xml:space="preserve"><value>Les règles décrivent comment les comptes seraient associés à un nœud de territoire. Elles n’affectent jamais rien.</value></data>
+  <data name="RunPreview" xml:space="preserve"><value>Lancer l'aperçu</value></data>
+  <data name="CreateRule" xml:space="preserve"><value>Créer une règle</value></data>
+  <data name="EditRule" xml:space="preserve"><value>Modifier la règle</value></data>
+  <data name="DeleteRule" xml:space="preserve"><value>Supprimer la règle</value></data>
+  <data name="DeleteRuleConfirm" xml:space="preserve"><value>Cette règle sera supprimée logiquement (pas de suppression définitive) :</value></data>
+  <data name="PreviewDoesNotAssign" xml:space="preserve"><value>L'aperçu n'affecte aucun compte.</value></data>
+  <data name="ApplyComesInFu05" xml:space="preserve"><value>L'application et l'historique d'affectation arriveront en FU05.</value></data>
+  <data name="ResourceComesInFu04" xml:space="preserve"><value>L'affectation des ressources / MR arrivera en FU04.</value></data>
+  <data name="RulesEditableOnDraftOnly" xml:space="preserve"><value>Les règles d'affectation ne peuvent être modifiées que lorsque le modèle est un brouillon.</value></data>
+  <data name="ArchivedReadOnly" xml:space="preserve"><value>Ce modèle est archivé et en lecture seule.</value></data>
+  <data name="RuleCode" xml:space="preserve"><value>Code de règle</value></data>
+  <data name="TargetNode" xml:space="preserve"><value>Nœud cible</value></data>
+  <data name="RuleType" xml:space="preserve"><value>Type de règle</value></data>
+  <data name="Criteria" xml:space="preserve"><value>Critères</value></data>
+  <data name="CriteriaHint" xml:space="preserve"><value>Codes séparés par des virgules. Les valeurs d’un champ sont en OU ; les champs différents en ET.</value></data>
+  <data name="Priority" xml:space="preserve"><value>Priorité</value></data>
+  <data name="PriorityHint" xml:space="preserve"><value>La valeur la plus basse l’emporte lorsque plusieurs règles correspondent au même compte.</value></data>
+  <data name="ConflictPolicy" xml:space="preserve"><value>Politique de conflit</value></data>
+  <data name="Enabled" xml:space="preserve"><value>Activé</value></data>
+  <data name="Disabled" xml:space="preserve"><value>Désactivé</value></data>
+  <data name="AssignmentPreview" xml:space="preserve"><value>Aperçu d'affectation</value></data>
+  <data name="NoAssignmentsPersisted" xml:space="preserve"><value>Aucune affectation n'a été enregistrée.</value></data>
+  <data name="MatchedAccounts" xml:space="preserve"><value>Comptes correspondants</value></data>
+  <data name="Conflicts" xml:space="preserve"><value>Conflits</value></data>
+  <data name="RuleSummary" xml:space="preserve"><value>Résumé des règles</value></data>
+  <data name="AccountCode" xml:space="preserve"><value>Code de compte</value></data>
+  <data name="AccountName" xml:space="preserve"><value>Nom du compte</value></data>
+  <data name="MatchReason" xml:space="preserve"><value>Motif de correspondance</value></data>
+  <data name="ConflictStatus" xml:space="preserve"><value>État du conflit</value></data>
+  <data name="CandidateNodes" xml:space="preserve"><value>Nœuds candidats</value></data>
+  <data name="ResolutionSuggestion" xml:space="preserve"><value>Suggestion de résolution</value></data>
+  <data name="Evaluated" xml:space="preserve"><value>Évalué</value></data>
+  <data name="Matches" xml:space="preserve"><value>Correspondances</value></data>
+  <data name="CountryRefs" xml:space="preserve"><value>Codes pays</value></data>
+  <data name="CityRefs" xml:space="preserve"><value>Codes ville</value></data>
+  <data name="DistrictRefs" xml:space="preserve"><value>Codes de district</value></data>
+  <data name="AccountTypes" xml:space="preserve"><value>Types de compte</value></data>
+  <data name="AccountCategories" xml:space="preserve"><value>Catégories de compte</value></data>
+  <data name="AccountStatuses" xml:space="preserve"><value>Statuts de compte</value></data>
+  <data name="NoRules" xml:space="preserve"><value>Aucune règle d'affectation pour le moment.</value></data>
+  <data name="NoMatches" xml:space="preserve"><value>Aucun compte ne correspond aux règles.</value></data>
+  <data name="NoConflicts" xml:space="preserve"><value>Aucun conflit détecté.</value></data>
+  <data name="Candidates" xml:space="preserve"><value>Candidats</value></data>
+  <data name="ScannedAccounts" xml:space="preserve"><value>Comptes analysés</value></data>
+  <data name="EvaluatedRules" xml:space="preserve"><value>Règles évaluées</value></data>
+  <data name="GeneratedAt" xml:space="preserve"><value>Généré le</value></data>
+  <data name="ConflictWinner" xml:space="preserve"><value>Gagnant</value></data>
+  <data name="ConflictLoser" xml:space="preserve"><value>Remplacé</value></data>
+  <data name="NoConflict" xml:space="preserve"><value>OK</value></data>
+  <data name="MissingNode" xml:space="preserve"><value>nœud manquant</value></data>
+  <data name="Yes" xml:space="preserve"><value>Oui</value></data>
+  <data name="EvaluatedAsOf" xml:space="preserve"><value>évalué au</value></data>
+  <data name="ResourceAssignments" xml:space="preserve"><value>Affectations de ressources</value></data>
+  <data name="ResourceAssignmentsSubtitle" xml:space="preserve"><value>Qui est responsable de ce nœud de territoire ou de ce périmètre commercial.</value></data>
+  <data name="ResourceAssignmentsExplainer" xml:space="preserve"><value>Ces affectations donnent aux personnes la responsabilité de territoires. Elles n’affectent pas de clients.</value></data>
+  <data name="AccountCoverageComesInFu05" xml:space="preserve"><value>La couverture des comptes clients arrivera en FU05.</value></data>
+  <data name="EndingIsNotDeleting" xml:space="preserve"><value>Terminer une affectation conserve son historique ; elle n’est jamais supprimée.</value></data>
+  <data name="ResourcesEditableOnDraftOnly" xml:space="preserve"><value>Les affectations de ressources ne peuvent être modifiées que lorsque le modèle est un brouillon.</value></data>
+  <data name="AssignResource" xml:space="preserve"><value>Affecter une ressource</value></data>
+  <data name="EditAssignment" xml:space="preserve"><value>Modifier l’affectation</value></data>
+  <data name="DeleteAssignment" xml:space="preserve"><value>Supprimer l’affectation</value></data>
+  <data name="EndAssignment" xml:space="preserve"><value>Terminer l’affectation</value></data>
+  <data name="EndAssignmentConfirm" xml:space="preserve"><value>Cette affectation sera terminée et conservée dans l’historique :</value></data>
+  <data name="CheckConflicts" xml:space="preserve"><value>Vérifier les conflits</value></data>
+  <data name="NoConflictsFound" xml:space="preserve"><value>Aucun conflit ni avertissement trouvé.</value></data>
+  <data name="NoAssignments" xml:space="preserve"><value>Aucune affectation de ressource pour le moment.</value></data>
+  <data name="Resource" xml:space="preserve"><value>Ressource</value></data>
+  <data name="Role" xml:space="preserve"><value>Rôle</value></data>
+  <data name="CoverageScope" xml:space="preserve"><value>Périmètre de couverture</value></data>
+  <data name="CoverageScopeHint" xml:space="preserve"><value>Laissez vide pour utiliser la valeur par défaut du rôle. Il détermine si un nœud et une unité commerciale sont requis.</value></data>
+  <data name="RoleDefaultsCoverage" xml:space="preserve"><value>Laissez le périmètre vide pour utiliser la valeur par défaut du rôle.</value></data>
+  <data name="Primary" xml:space="preserve"><value>Principal</value></data>
+  <data name="ValidPeriod" xml:space="preserve"><value>Période de validité</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>Valide à partir du</value></data>
+  <data name="ValidTo" xml:space="preserve"><value>Valide jusqu’au</value></data>
+  <data name="Expired" xml:space="preserve"><value>Expiré</value></data>
+  <data name="ResourceId" xml:space="preserve"><value>Id de ressource</value></data>
+  <data name="ResourceType" xml:space="preserve"><value>Type de ressource</value></data>
+  <data name="ResourceDisplayName" xml:space="preserve"><value>Nom affiché</value></data>
+  <data name="ResourceEmail" xml:space="preserve"><value>E-mail</value></data>
+  <data name="SelectResource" xml:space="preserve"><value>Sélectionnez une personne</value></data>
+  <data name="SelectUser" xml:space="preserve"><value>Sélectionner un utilisateur</value></data>
+  <data name="Employee" xml:space="preserve"><value>Employé</value></data>
+  <data name="ResourceLookupNotReady" xml:space="preserve"><value>L’annuaire des utilisateurs n’est pas disponible. La sélection des employés sera activée après l’intégration RH.</value></data>
+  <data name="AssignmentSource" xml:space="preserve"><value>Source de l’affectation</value></data>
+  <data name="AssignmentSourceHint" xml:space="preserve"><value>Utilisez override pour autoriser une exception ; un motif est toujours requis.</value></data>
+  <data name="ChangeReasonHint" xml:space="preserve"><value>Obligatoire pour les affectations manuelles et de type override.</value></data>
+  <data name="BusinessUnitScopeAssignmentHint" xml:space="preserve"><value>Seules les unités commerciales déjà incluses dans le périmètre du modèle peuvent être sélectionnées.</value></data>
+  <data name="AssignmentHistory" xml:space="preserve"><value>Historique des affectations</value></data>
+  <data name="RunPreviewHint" xml:space="preserve"><value>Aucun aperçu n’a encore été lancé. Utilisez « Lancer l’aperçu » dans l’onglet Règles d’affectation pour voir les comptes candidats.</value></data>
+  <data name="RuleCodeHint" xml:space="preserve"><value>Rempli automatiquement — modifiez-le si vous préférez votre propre code. Il ne peut plus être modifié après la création de la règle.</value></data>
+  <data name="CriteriaNotReady" xml:space="preserve"><value>Ces jeux de référence ne sont pas encore publiés ; leurs critères ne peuvent donc pas être sélectionnés :</value></data>
+  <data name="PreviewThisRule" xml:space="preserve"><value>Aperçu de cette règle</value></data>
+  <data name="PreviewScopeAll" xml:space="preserve"><value>Toutes les règles de ce modèle ont été évaluées.</value></data>
+  <data name="PreviewScopeSingle" xml:space="preserve"><value>Seule cette règle a été évaluée :</value></data>
+  <data name="SingleRuleNoConflicts" xml:space="preserve"><value>Une règle unique n’a qu’un seul nœud cible ; aucun conflit ne peut donc apparaître ici. Lancez toutes les règles pour voir les conflits.</value></data>
+  <data name="HistoryThisRule" xml:space="preserve"><value>Historique d’affectation de cette règle</value></data>
+  <data name="PreviewAllRules" xml:space="preserve"><value>Aperçu de toutes les règles</value></data>
+  <data name="HistoryAllRules" xml:space="preserve"><value>Historique de toutes les règles</value></data>
+  <data name="PreviewScopeAllShort" xml:space="preserve"><value>Toutes les règles</value></data>
+  <data name="HistoryScopeAllShort" xml:space="preserve"><value>Toutes les règles</value></data>
+  <data name="HistoryScopeSingle" xml:space="preserve"><value>Seules les affectations produites par cette règle sont affichées :</value></data>
+  <data name="NoAssignmentHistory" xml:space="preserve"><value>Aucun historique d’affectation pour le moment.</value></data>
+  <data name="RuleHasConflict" xml:space="preserve"><value>Cette règle entre en concurrence avec une autre pour au moins un compte. Ouvrez l’aperçu de toutes les règles pour les détails.</value></data>
+  <data name="GoTo" xml:space="preserve"><value>Aller à</value></data>
+  <data name="ReplaceAssignment" xml:space="preserve"><value>Remplacer l’affectation</value></data>
+  <data name="TransferAssignment" xml:space="preserve"><value>Transférer l’affectation</value></data>
+  <data name="EffectiveDate" xml:space="preserve"><value>Date d’effet</value></data>
+  <data name="ReplaceAssignmentConfirm" xml:space="preserve"><value>Cette affectation sera remplacée par une nouvelle ressource :</value></data>
+  <data name="TransferAssignmentConfirm" xml:space="preserve"><value>Cette affectation sera transférée vers un autre nœud :</value></data>
+  <data name="PlanVsCurrent" xml:space="preserve"><value>Plan vs Actuel</value></data>
+  <data name="PlanVsCurrentExplainer" xml:space="preserve"><value>Compare le plan d&apos;affectation des ressources capture lors de l&apos;activation du modele avec les responsabilites actuelles.</value></data>
+  <data name="PlanVsCurrentReadOnlyHint" xml:space="preserve"><value>Cet onglet est en lecture seule. Les affectations se modifient sur la page Affectations de ressources.</value></data>
+  <data name="PlanCapturedAt" xml:space="preserve"><value>Plan capture le</value></data>
+  <data name="PlanCapturedBy" xml:space="preserve"><value>Plan capture par</value></data>
+  <data name="PlanSnapshotVersion" xml:space="preserve"><value>Version du plan</value></data>
+  <data name="CorrelationId" xml:space="preserve"><value>Identifiant de correlation</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>Date d&apos;effet</value></data>
+  <data name="ChangeType" xml:space="preserve"><value>Type de changement</value></data>
+  <data name="TerritoryNode" xml:space="preserve"><value>Noeud de territoire</value></data>
+  <data name="Position" xml:space="preserve"><value>Poste</value></data>
+  <data name="PlannedResource" xml:space="preserve"><value>Ressource planifiee</value></data>
+  <data name="CurrentResource" xml:space="preserve"><value>Ressource actuelle</value></data>
+  <data name="Reason" xml:space="preserve"><value>Motif</value></data>
+  <data name="NoPlanVsCurrentRows" xml:space="preserve"><value>Aucune difference a afficher.</value></data>
+  <data name="PlanNotYetActivated" xml:space="preserve"><value>Ce modele n&apos;a pas encore ete active, il n&apos;existe donc aucune reference de plan. La page Affectations de ressources affiche un apercu de planification.</value></data>
+  <data name="PlanSnapshotNotCaptured" xml:space="preserve"><value>Aucune reference de plan n&apos;a ete capturee pour ce modele, la comparaison est donc impossible.</value></data>
+  <data name="PlanVsCurrentHistorical" xml:space="preserve"><value>Ce modele n&apos;est plus actif. La comparaison est affichee comme un historique en lecture seule.</value></data>
+  <data name="Planned" xml:space="preserve"><value>Planifie</value></data>
+  <data name="Current" xml:space="preserve"><value>Actuel</value></data>
+  <data name="ReplacementLink" xml:space="preserve"><value>Remplacement</value></data>
+  <data name="TransferLink" xml:space="preserve"><value>Transfert</value></data>
+  <data name="ChangedAt" xml:space="preserve"><value>Modifie le</value></data>
+  <data name="ChangedBy" xml:space="preserve"><value>Modifie par</value></data>
+  <data name="ChangedByUnavailable" xml:space="preserve"><value>Non enregistre sur l&apos;affectation</value></data>
+  <data name="AlsoDiffers" xml:space="preserve"><value>Differe egalement</value></data>
+  <data name="LegacyRoleDisplayOnly" xml:space="preserve"><value>Role hérité (affichage uniquement)</value></data>
+  <data name="ChangedRows" xml:space="preserve"><value>Modifie</value></data>
+  <data name="PlannedCount" xml:space="preserve"><value>Planifie</value></data>
+  <data name="CurrentCount" xml:space="preserve"><value>Actuel</value></data>
+  <data name="DiffUnchanged" xml:space="preserve"><value>Inchange</value></data>
+  <data name="DiffReplaced" xml:space="preserve"><value>Remplace</value></data>
+  <data name="DiffTransferredOut" xml:space="preserve"><value>Transfere (sortie)</value></data>
+  <data name="DiffTransferredIn" xml:space="preserve"><value>Transfere (entree)</value></data>
+  <data name="DiffAddedAfterActivation" xml:space="preserve"><value>Ajoute apres activation</value></data>
+  <data name="DiffEndedAfterActivation" xml:space="preserve"><value>Termine apres activation</value></data>
+  <data name="DiffMissingCurrent" xml:space="preserve"><value>Aucun element actuel</value></data>
+  <data name="DiffDateChanged" xml:space="preserve"><value>Dates modifiees</value></data>
+  <data name="DiffScopeChanged" xml:space="preserve"><value>Perimetre modifie</value></data>
+  <data name="DiffPositionChanged" xml:space="preserve"><value>Poste modifie</value></data>
+  <data name="ApplyRequiresActiveModel" xml:space="preserve"><value>Les affectations de comptes ne peuvent être appliquées qu’à un modèle de territoire actif. Activez d’abord ce modèle.</value></data>
+  <data name="ImportExport" xml:space="preserve">
+    <value>Import / Export</value>
+  </data>
+  <data name="ExportXlsx" xml:space="preserve">
+    <value>Exporter (XLSX)</value>
+  </data>
+  <data name="DownloadImportTemplate" xml:space="preserve">
+    <value>Télécharger le modèle d’import</value>
+  </data>
+  <data name="ImportDryRunFirstNotice" xml:space="preserve">
+    <value>L’import commence toujours par une simulation. Une simulation n’écrit rien — ni nœud, ni règle, ni affectation, ni ligne d’historique. Seule l’action Appliquer écrit.</value>
+  </data>
+  <data name="ImportResourceApplyNotSupported" xml:space="preserve">
+    <value>Les affectations de ressources peuvent être exportées, modélisées et validées, mais pas appliquées depuis un fichier dans cette version.</value>
+  </data>
+  <data name="ImportReadModelsNotImportable" xml:space="preserve">
+    <value>Coverage Summary et Plan vs Current sont des modèles de lecture en export seul et ne peuvent pas être importés.</value>
+  </data>
+  <data name="UploadWorkbook" xml:space="preserve">
+    <value>Téléverser le classeur</value>
+  </data>
+  <data name="DryRunWritesNothing" xml:space="preserve">
+    <value>La simulation n’écrit rien</value>
+  </data>
+  <data name="SelectXlsxFile" xml:space="preserve">
+    <value>Sélectionnez un fichier .xlsx</value>
+  </data>
+  <data name="StrictMode" xml:space="preserve">
+    <value>Mode strict</value>
+  </data>
+  <data name="StrictModeHint" xml:space="preserve">
+    <value>Une seule ligne bloquante arrête tout le fichier.</value>
+  </data>
+  <data name="RunDryRun" xml:space="preserve">
+    <value>Lancer la simulation</value>
+  </data>
+  <data name="ApplyImport" xml:space="preserve">
+    <value>Appliquer</value>
+  </data>
+  <data name="DryRunResult" xml:space="preserve">
+    <value>Résultat de la simulation</value>
+  </data>
+  <data name="ApplyResult" xml:space="preserve">
+    <value>Résultat de l’application</value>
+  </data>
+  <data name="Sheet" xml:space="preserve">
+    <value>Feuille</value>
+  </data>
+  <data name="Rows" xml:space="preserve">
+    <value>Lignes</value>
+  </data>
+  <data name="Blocking" xml:space="preserve">
+    <value>Bloquant</value>
+  </data>
+  <data name="Creates" xml:space="preserve">
+    <value>Créations</value>
+  </data>
+  <data name="Updates" xml:space="preserve">
+    <value>Mises à jour</value>
+  </data>
+  <data name="Ends" xml:space="preserve">
+    <value>Clôtures</value>
+  </data>
+  <data name="Skips" xml:space="preserve">
+    <value>Ignorées</value>
+  </data>
+  <data name="Outcome" xml:space="preserve">
+    <value>Résultat</value>
+  </data>
+  <data name="ShowOnlyBlocking" xml:space="preserve">
+    <value>Afficher uniquement les lignes bloquantes</value>
+  </data>
+  <data name="RowNumber" xml:space="preserve">
+    <value>Ligne</value>
+  </data>
+  <data name="Severity" xml:space="preserve">
+    <value>Gravité</value>
+  </data>
+  <data name="Operation" xml:space="preserve">
+    <value>Opération</value>
+  </data>
+  <data name="ResolvedKey" xml:space="preserve">
+    <value>Enregistrement</value>
+  </data>
+  <data name="Message" xml:space="preserve">
+    <value>Message</value>
+  </data>
+  <data name="SuggestedFix" xml:space="preserve">
+    <value>Correction suggérée</value>
+  </data>
+  <data name="ImportRunHistory" xml:space="preserve">
+    <value>Historique des imports</value>
+  </data>
+  <data name="AppendOnly" xml:space="preserve">
+    <value>Ajout seul</value>
+  </data>
+  <data name="UploadedAt" xml:space="preserve">
+    <value>Téléversé le</value>
+  </data>
+  <data name="FileName" xml:space="preserve">
+    <value>Fichier</value>
+  </data>
+  <data name="UploadedBy" xml:space="preserve">
+    <value>Téléversé par</value>
+  </data>
+  <data name="RunStatus" xml:space="preserve">
+    <value>Statut</value>
+  </data>
+  <data name="Errors" xml:space="preserve">
+    <value>Erreurs</value>
+  </data>
+  <data name="Warnings" xml:space="preserve">
+    <value>Avertissements</value>
+  </data>
+  <data name="ImportSelectFile" xml:space="preserve">
+    <value>Sélectionnez un fichier .xlsx à importer.</value>
+  </data>
+  <data name="ImportXlsxOnly" xml:space="preserve">
+    <value>Seuls les fichiers .xlsx issus du modèle d’import ou de l’export sont pris en charge.</value>
+  </data>
+  <data name="Applied" xml:space="preserve">
+    <value>Appliqué</value>
+  </data>
+  <data name="NotApplied" xml:space="preserve">
+    <value>Non appliqué</value>
+  </data>
+  <data name="NothingToApply" xml:space="preserve">
+    <value>Il n’y a rien à appliquer.</value>
+  </data>
+  <data name="ApplyBlocked" xml:space="preserve">
+    <value>Lancez d’abord une simulation sur ce fichier, puis appliquez-le.</value>
+  </data>
+  <data name="ConfirmApply" xml:space="preserve">
+    <value>Appliquer cet import ?</value>
+  </data>
+  <data name="NoImportRuns" xml:space="preserve">
+    <value>Aucun import n’a encore été appliqué à ce modèle.</value>
+  </data>
+  <data name="FileAlreadyApplied" xml:space="preserve">
+    <value>Déjà appliqué</value>
+  </data>
+  <data name="CreateDraftVersion" xml:space="preserve"><value>Créer une version brouillon</value></data>
+</root>

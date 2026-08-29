@@ -1,0 +1,266 @@
+@model Diten.Web.Models.CRM.SegmentEditViewModel
+@using Diten.Web.Views.CRM.Segments
+@using Microsoft.AspNetCore.Mvc.Localization
+@using System.Text.Json
+@inject IHtmlLocalizer<SegmentsIndex> Localizer
+@{
+    var jsonOpts = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+}
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+@if (!string.IsNullOrWhiteSpace(Model.ContractError))
+{
+    <div class="alert alert-danger" role="alert">@Localizer[Model.ContractError]</div>
+}
+
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <label asp-for="SegmentCode" class="form-label fw-medium">@Localizer["SegmentCode"] <span class="text-danger">*</span></label>
+                        <input asp-for="SegmentCode" class="form-control" readonly="@(Model.SegmentId.HasValue)" maxlength="64" required />
+                        <span asp-validation-for="SegmentCode" class="text-danger small mt-1"></span>
+                        <small class="text-muted">@Localizer["SegmentCodeHelp"]</small>
+                    </div>
+                    <div class="col-12 col-md-8">
+                        <label asp-for="SegmentName" class="form-label fw-medium">@Localizer["SegmentName"] <span class="text-danger">*</span></label>
+                        <input asp-for="SegmentName" class="form-control" maxlength="200" required />
+                        <span asp-validation-for="SegmentName" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label fw-medium">@Localizer["Description"]</label>
+                        <textarea asp-for="Description" class="form-control" rows="3" maxlength="2000"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Notes" class="form-label fw-medium">@Localizer["Notes"]</label>
+                        <textarea asp-for="Notes" class="form-control" rows="2" maxlength="2000"></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        @* The criteria tree editor lives INSIDE this Compact page (D2 embedded). It is not a second surface.
+           Hidden for a `static` segment, whose membership IS the manual list - form.js toggles it by segment type. *@
+        <section class="card mb-4" id="criteriaSection">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["CriteriaSection"]</h6>
+                    <div class="d-flex gap-2">
+                        @* Root-level adds. Adding INSIDE a group is done by that group's own buttons, so the parent is
+                           chosen by where you click rather than by a dropdown you have to get right. *@
+                        <button type="button" id="btnAddGroup" class="btn btn-sm btn-label-secondary"><i class="bx bx-folder-plus me-1"></i>@Localizer["AddGroupAtRoot"]</button>
+                        <button type="button" id="btnAddPredicate" class="btn btn-sm btn-primary"><i class="bx bx-plus me-1"></i>@Localizer["AddPredicateAtRoot"]</button>
+                    </div>
+                </div>
+
+                @if (Model.IsCriteriaFrozen)
+                {
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bx bx-lock-alt me-1"></i>@Localizer["FrozenCriteriaHelp"]
+                        @if (Model.SegmentId.HasValue)
+                        {
+                            <button type="button" class="btn btn-sm btn-label-warning ms-2" id="btnNewVersionFromForm" data-id="@Model.SegmentId">@Localizer["NewVersion"]</button>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <small class="text-muted d-block mb-3">@Localizer["CriteriaHelp"]</small>
+                }
+
+                <div id="criteriaEditor"
+                     data-segment-id="@Model.SegmentId"
+                     data-endpoint="/CRM/Segments/api"
+                     data-frozen="@(Model.IsCriteriaFrozen ? "true" : "false")"
+                     data-subject-type="@Model.SubjectType"
+                     data-can-pick-products="@(Model.CanPickGlobalProducts ? "true" : "false")"
+                     data-max-nodes="@Model.MaxCriteriaNodes"
+                     data-max-depth="@Model.MaxCriteriaDepth"
+                     data-max-children="@Model.MaxChildrenPerGroup">
+                    <div id="criteriaList" class="d-flex flex-column gap-2"></div>
+                    <div id="criteriaEmpty" class="text-muted d-none">@Localizer["NoCriteria"]</div>
+                </div>
+
+                @* The tree is posted as JSON: the runtime assigns the real NodeIds and remaps the parents. *@
+                <input type="hidden" asp-for="CriteriaJson" id="CriteriaJson" />
+            </div>
+        </section>
+
+        @* The manual membership sub-editor, also embedded. Only include/exclude ever live here.
+           Hidden for a `dynamic` segment, which refuses manual rows outright - form.js toggles it by segment type. *@
+        <section class="card mb-4" id="manualMembershipSection">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["MembersSection"]</h6>
+                    @if (Model.SegmentId.HasValue)
+                    {
+                        <button type="button" id="btnAddMember" class="btn btn-sm btn-primary"><i class="bx bx-plus me-1"></i>@Localizer["AddMember"]</button>
+                    }
+                </div>
+
+                @if (!Model.SegmentId.HasValue)
+                {
+                    <div class="alert alert-info mb-0"><i class="bx bx-info-circle me-1"></i>@Localizer["SaveBeforeMembers"]</div>
+                }
+                else
+                {
+                    @* No "a dynamic segment refuses manual rows" banner any more: for a dynamic segment the whole
+                       section is hidden, so the warning would only ever be shown to nobody. *@
+                    <div id="memberEditor" data-segment-id="@Model.SegmentId" data-endpoint="/CRM/Segments/api" data-segment-type="@Model.SegmentType">
+                        <small class="text-muted d-block mb-3">@Localizer["MembersHelp"]</small>
+                        <div id="memberList" class="d-flex flex-column gap-2"></div>
+                        <div id="memberEmpty" class="text-muted d-none">@Localizer["NoMembers"]</div>
+                    </div>
+                }
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ClassificationSection"]</h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label asp-for="SegmentType" class="form-label fw-medium">@Localizer["SegmentType"] <span class="text-danger">*</span></label>
+                        <select asp-for="SegmentType" class="select2 form-select" required>
+                            @foreach (var x in Model.SegmentTypes) { <option value="@x">@x</option> }
+                        </select>
+                        <span asp-validation-for="SegmentType" class="text-danger small mt-1"></span>
+                        <small class="text-muted">@Localizer["SegmentTypeHelp"]</small>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="SubjectType" class="form-label fw-medium">@Localizer["SubjectType"] <span class="text-danger">*</span></label>
+                        <select asp-for="SubjectType" class="select2 form-select" disabled="@(Model.SegmentId.HasValue)" required>
+                            @foreach (var x in Model.SubjectTypes) { <option value="@x">@x</option> }
+                        </select>
+                        @if (Model.SegmentId.HasValue)
+                        {
+                            @* Immutable after create, so it is posted back as a hidden field rather than silently lost. *@
+                            <input type="hidden" asp-for="SubjectType" />
+                        }
+                        <span asp-validation-for="SubjectType" class="text-danger small mt-1"></span>
+                        <small class="text-muted">@Localizer["SubjectTypeHelp"]</small>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="MatchMode" class="form-label fw-medium">@Localizer["MatchMode"] <span class="text-danger">*</span></label>
+                        <select asp-for="MatchMode" class="select2 form-select" required>
+                            @foreach (var x in Model.MatchModes) { <option value="@x">@x</option> }
+                        </select>
+                        <span asp-validation-for="MatchMode" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="BusinessUnitId" class="form-label fw-medium">@Localizer["BusinessUnitId"]</label>
+                        <input asp-for="BusinessUnitId" class="form-control" maxlength="64" />
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LifecycleSection"]</h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label asp-for="SegmentStatus" class="form-label fw-medium">@Localizer["SegmentStatus"] <span class="text-danger">*</span></label>
+                        <select asp-for="SegmentStatus" class="select2 form-select" disabled required>
+                            @foreach (var x in Model.SegmentStatuses) { <option value="@x">@x</option> }
+                        </select>
+                        <input type="hidden" asp-for="SegmentStatus" />
+                        <small class="text-muted">@Localizer["StatusSeparateEndpointHelp"]</small>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="EffectiveFrom" class="form-label fw-medium">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
+                        <input asp-for="EffectiveFrom" type="text" class="form-control flatpickr-date" value="@(Model.EffectiveFrom?.ToString("yyyy-MM-dd"))" placeholder="YYYY-MM-DD" autocomplete="off" required />
+                        <span asp-validation-for="EffectiveFrom" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="EffectiveTo" class="form-label fw-medium">@Localizer["EffectiveTo"]</label>
+                        <input asp-for="EffectiveTo" type="text" class="form-control flatpickr-date" value="@(Model.EffectiveTo?.ToString("yyyy-MM-dd"))" placeholder="YYYY-MM-DD" autocomplete="off" />
+                    </div>
+                    <div class="col-12">
+                        <div class="alert alert-secondary mb-0 py-2 small">
+                            <i class="bx bx-info-circle me-1"></i>@Localizer["MembershipNeverStoredHelp"]
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+@* Editor bootstrap. Attribute, operator and parameter lists come from the attribute-catalog endpoint at runtime -
+   there is no hardcoded attribute or operator list anywhere in this page or in form.js. *@
+<script id="segmentFormBootstrap" type="application/json">@Html.Raw(JsonSerializer.Serialize(new {
+    segmentId = Model.SegmentId,
+    subjectType = Model.SubjectType,
+    segmentType = Model.SegmentType,
+    isCriteriaFrozen = Model.IsCriteriaFrozen,
+    canPickGlobalProducts = Model.CanPickGlobalProducts,
+    availablePickers = Model.AvailablePickers,
+    maxCriteriaNodes = Model.MaxCriteriaNodes,
+    maxCriteriaDepth = Model.MaxCriteriaDepth,
+    maxChildrenPerGroup = Model.MaxChildrenPerGroup,
+    maxCandidateSet = Model.MaxCandidateSet
+}, jsonOpts))</script>
+
+@* Manual membership sub-editor. Include / exclude are the only two modes there are. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="memberCanvas" aria-labelledby="memberCanvasLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title" id="memberCanvasLabel">@Localizer["AddMember"]</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@Localizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div id="memberCanvasError" class="alert alert-danger d-none" role="alert"></div>
+        <input type="hidden" id="memberEditId" />
+        <div class="row g-3">
+            @* Pick the subject from the existing Account / Contact list instead of pasting a GUID. The picker is a
+               convenience only: it fills the id field below, which stays the authoritative input and can still be
+               typed by hand. The runtime keeps storing the id exactly as given (D-TC). *@
+            <div class="col-12" id="memberPickerBlock">
+                <label class="form-label fw-medium" for="memberSubjectPicker" id="memberPickerLabel"></label>
+                <select id="memberSubjectPicker" class="form-select"></select>
+                <small class="text-muted" id="memberPickerHint"></small>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium" for="memberSubjectId">@Localizer["SubjectId"] <span class="text-danger">*</span></label>
+                <input type="text" id="memberSubjectId" class="form-control" placeholder="00000000-0000-0000-0000-000000000000" />
+                <small class="text-muted">@Localizer["SubjectIdHelp"]</small>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium" for="memberDisplayName">@Localizer["SubjectDisplayName"]</label>
+                <input type="text" id="memberDisplayName" class="form-control" maxlength="200" />
+                <small class="text-muted">@Localizer["SubjectDisplayNameHelp"]</small>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium" for="memberMode">@Localizer["MembershipMode"] <span class="text-danger">*</span></label>
+                <select id="memberMode" class="form-select"></select>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium" for="memberReason">@Localizer["SelectionReason"] <span class="text-danger">*</span></label>
+                <textarea id="memberReason" class="form-control" rows="2" maxlength="1000"></textarea>
+                <small class="text-muted">@Localizer["SelectionReasonHelp"]</small>
+            </div>
+            <div class="col-6">
+                <label class="form-label fw-medium" for="memberEffectiveFrom">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
+                <input type="text" id="memberEffectiveFrom" class="form-control flatpickr-date" placeholder="YYYY-MM-DD" autocomplete="off" />
+            </div>
+            <div class="col-6">
+                <label class="form-label fw-medium" for="memberEffectiveTo">@Localizer["EffectiveTo"]</label>
+                <input type="text" id="memberEffectiveTo" class="form-control flatpickr-date" placeholder="YYYY-MM-DD" autocomplete="off" />
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-medium" for="memberNotes">@Localizer["Notes"]</label>
+                <textarea id="memberNotes" class="form-control" rows="2" maxlength="2000"></textarea>
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-4">
+            <button type="button" id="memberSaveBtn" class="btn btn-primary"><i class="bx bx-check me-1"></i>@Localizer["Save"]</button>
+            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["Cancel"]</button>
+        </div>
+    </div>
+</div>

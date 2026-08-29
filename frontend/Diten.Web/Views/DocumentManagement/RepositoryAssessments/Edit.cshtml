@@ -1,0 +1,16 @@
+@using Diten.Web.Views.DocumentManagement.RepositoryAssessments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<RepositoryAssessmentsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["RepositoryAssessmentEdit"].Value;
+    ViewData["FormMode"] = "edit";
+    Layout = "_LayoutTenantShell";
+}
+
+<partial name="~/Views/DocumentManagement/RepositoryAssessments/_Form.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/RepositoryAssessments/_IndexL10n.cshtml" />
+    <script src="~/assets/js/DocumentManagement/RepositoryAssessments/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/RepositoryAssessments/index.js" asp-append-version="true"></script>
+}

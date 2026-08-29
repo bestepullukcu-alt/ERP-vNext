@@ -73,6 +73,8 @@ public static class DependencyInjection
         services.AddScoped<IActorSafetyGuard, ActorSafetyGuard>();
         services.AddScoped<IQuotaService, QuotaService>();
         services.AddScoped<IPlatformLookupProvider, PlatformLookupProvider>();
+        // Working Calendar read-only working-day seam — the capability's actual product; consumers call THIS in-process.
+        services.AddScoped<Features.WorkingCalendar.Provider.IWorkingCalendarProvider, Features.WorkingCalendar.Provider.WorkingCalendarProvider>();
         services.AddScoped<Features.ModuleCatalog.Services.IModuleTaxonomyResolver, Features.ModuleCatalog.Services.ModuleTaxonomyResolver>();
         services.AddScoped<IBusinessReferenceDataValidationService, BusinessReferenceDataValidationService>();
         services.AddScoped<IBusinessReferenceDataPublicationEligibility, RuntimeBusinessReferenceDataPublicationEligibility>();
@@ -85,7 +87,7 @@ public static class DependencyInjection
         // MOD-0028-FU02 QMS folder baseline import services (dependency-free xlsx parsing, deterministic build/hash).
         services.AddScoped<Features.DocumentManagementQmsBaseline.Services.IQmsFolderImportParser,
             Features.DocumentManagementQmsBaseline.Services.XlsxQmsFolderImportParser>();
-        // MOD-0028-FU06 register-backed CSV / flat-JSON parsers for the GMG-QMS-LOG-0007 package.
+        // QMS register import extension — governance identity pending; CSV / flat-JSON parsers for GMG-QMS-LOG-0007.
         services.AddScoped<Features.DocumentManagementQmsBaseline.Services.IQmsFolderImportParser,
             Features.DocumentManagementQmsBaseline.Services.CsvQmsFolderImportParser>();
         services.AddScoped<Features.DocumentManagementQmsBaseline.Services.IQmsFolderImportParser,
@@ -98,6 +100,11 @@ public static class DependencyInjection
         services.AddScoped<CompanyInstanceKeyFactory>();
         services.AddScoped<IInstantiationPlanner, InstantiationPlanner>();
         services.AddScoped<InstantiationService>();
+        // MOD-0028-FU06 — tenant-owned, company-independent Corporate Collection Instance foundation.
+        services.AddScoped<Features.DocumentManagementCorporateCollectionInstances.CorporateCollectionStoragePartitionBuilder>();
+        services.AddScoped<Features.DocumentManagementCorporateCollectionInstances.CorporateCollectionFolderAccessEvaluator>();
+        services.AddScoped<Features.DocumentManagementCorporateCollectionInstances.CorporateCollectionInstanceProvisioningService>();
+        services.AddScoped<Features.DocumentManagementMasterRegister.Services.DocumentLinkScopeCompatibilityValidator>();
         // MOD-0029-FU01 — controlled documents / templates / versioning / sharing services.
         services.AddScoped<Features.DocumentManagementControlledDocuments.Services.DocumentKeyFactory>();
         services.AddScoped<Features.DocumentManagementControlledDocuments.Services.DocumentVersioningService>();
@@ -111,6 +118,91 @@ public static class DependencyInjection
         services.AddScoped<Features.DocumentManagementControlledDocuments.Services.FolderDocumentService>();
         services.AddScoped<Features.DocumentManagementControlledDocuments.Services.ControlledDocumentExplorerService>();
         services.AddScoped<Features.DocumentManagementTemplateMasters.Services.TemplateMasterService>();
+        // MOD-0029-FU06 — Document Master Register (LOG-0001) governance projection service.
+        services.AddScoped<Features.DocumentManagementMasterRegister.Services.DocumentMasterRegisterService>();
+        // MOD-0029-FU36 — durable controlled-document registration orchestration.
+        services.AddScoped<Features.DocumentManagementControlledDocumentRegistration.Services.ControlledDocumentRegistrationService>();
+        // MOD-0029-FU07 — Permanent UID / Document Code allocation engine (ledger + atomic sequence counter).
+        services.AddScoped<Features.DocumentManagementIdentifiers.Services.DocumentIdentifierAllocationService>();
+        // MOD-0029-FU08 — controlled document lifecycle status engine.
+        services.AddScoped<Features.DocumentManagementLifecycle.Services.DocumentLifecycleService>();
+        // MOD-0029-FU09 — approval route matrix + segregation + evidence + the FU08 approval-gate adapter.
+        services.AddScoped<Features.DocumentManagementApproval.Services.DocumentApprovalRouteResolver>();
+        services.AddScoped<Features.DocumentManagementApproval.Services.DocumentSegregationRuleEvaluator>();
+        services.AddScoped<Features.DocumentManagementApproval.Services.DocumentApprovalService>();
+        services.AddScoped<Features.DocumentManagementLifecycle.IApprovedPendingEffectiveGate,
+            Features.DocumentManagementApproval.Services.ApprovedPendingEffectiveGate>();
+        // MOD-0029-FU10 — non-waivable release gate engine + the FU08 release-gate port adapter.
+        services.AddScoped<Features.DocumentManagementReleaseGates.Services.DocumentReleaseGateEvaluator>();
+        services.AddScoped<Features.DocumentManagementLifecycle.IReleaseGateEvaluationPort,
+            Features.DocumentManagementReleaseGates.Services.ReleaseGateEvaluationPortAdapter>();
+        // MOD-0029-FU11 — training matrix + readiness + the FU10 Gate 5 training port adapter.
+        services.AddScoped<Features.DocumentManagementTraining.Services.DocumentTrainingMatrixResolver>();
+        services.AddScoped<Features.DocumentManagementTraining.Services.DocumentTrainingReadinessEvaluator>();
+        services.AddScoped<Features.DocumentManagementTraining.Services.DocumentTrainingService>();
+        services.AddScoped<Features.DocumentManagementReleaseGates.ITrainingReadinessPort,
+            Features.DocumentManagementTraining.Services.TrainingReadinessPortAdapter>();
+        // MOD-0029-FU12 — periodic review / extension / overdue engine.
+        services.AddScoped<Features.DocumentManagementPeriodicReview.Services.DocumentPeriodicReviewStatusEvaluator>();
+        services.AddScoped<Features.DocumentManagementPeriodicReview.Services.DocumentPeriodicReviewService>();
+        // MOD-0029-FU13 — suspension / urgent withdrawal / retirement / temporary-instruction governance.
+        services.AddScoped<Features.DocumentManagementSuspension.Services.DocumentSuspensionService>();
+        services.AddScoped<Features.DocumentManagementSuspension.Services.DocumentRetirementService>();
+        services.AddScoped<Features.DocumentManagementSuspension.Services.TemporaryInstructionService>();
+        // MOD-0029-FU16 — repository assessment / DMS boundary + the FU10 Gate 2 repository port adapter.
+        services.AddScoped<Features.DocumentManagementRepositoryAssessment.Services.DocumentRepositoryAssessmentEvaluator>();
+        services.AddScoped<Features.DocumentManagementRepositoryAssessment.Services.DocumentRepositoryAssessmentService>();
+        services.AddScoped<Features.DocumentManagementReleaseGates.IRepositoryReadinessPort,
+            Features.DocumentManagementRepositoryAssessment.Services.RepositoryReadinessPortAdapter>();
+        // MOD-0029-FU17 — controlled copy / obsolete reconciliation + the FU10 Gate 6 and FU13 withdrawal adapters.
+        services.AddScoped<Features.DocumentManagementControlledCopy.Services.DocumentControlledCopyReadinessEvaluator>();
+        services.AddScoped<Features.DocumentManagementControlledCopy.Services.DocumentControlledCopyService>();
+        services.AddScoped<Features.DocumentManagementReleaseGates.ICopyReconciliationPort,
+            Features.DocumentManagementControlledCopy.Services.CopyReconciliationPortAdapter>();
+        services.AddScoped<Features.DocumentManagementSuspension.IControlledCopyWithdrawalPort,
+            Features.DocumentManagementControlledCopy.Services.ControlledCopyWithdrawalPortAdapter>();
+        // MOD-0029-FU14 — external document register / monitoring / impact assessment orchestration.
+        services.AddScoped<Features.DocumentManagementExternalDocuments.Services.ExternalDocumentRegisterService>();
+        // MOD-0029-FU15 — retention schedule, litigation hold and disposition (no purge engine; evaluation is opt-in).
+        services.AddScoped<Features.DocumentManagementRetention.Services.DocumentRetentionTriggerDateResolver>();
+        services.AddScoped<Features.DocumentManagementRetention.Services.DocumentLegalHoldEvaluator>();
+        services.AddScoped<Features.DocumentManagementRetention.Services.DocumentRetentionEvaluator>();
+        services.AddScoped<Features.DocumentManagementRetention.Services.DocumentRetentionPolicyService>();
+        services.AddScoped<Features.DocumentManagementRetention.Services.DocumentLegalHoldService>();
+        services.AddScoped<Features.DocumentManagementRetention.Services.DocumentDispositionService>();
+        // MOD-0029-FU18 — variant translation / site-adoption governance (metadata + evidence only; no content diff).
+        services.AddScoped<Features.DocumentManagementVariantLocalization.Services.TemplateVariantLocalizationService>();
+        services.AddScoped<Features.DocumentManagementVariantLocalization.Services.TemplateVariantParentChangeEvaluator>();
+        // MOD-0029-FU20 — repository downtime + temporary controlled issue (no scheduler; evaluation is explicit).
+        services.AddScoped<Features.DocumentManagementDowntime.Services.DocumentRepositoryDowntimeService>();
+        services.AddScoped<Features.DocumentManagementDowntime.Services.DocumentTemporaryIssueService>();
+        // MOD-0029-FU21 — GDocP correction trail. Additive to the central AuditBehavior; replaces no audit store.
+        services.AddScoped<Features.DocumentManagementGDocPCorrection.Services.DocumentGDocPCorrectionEvaluator>();
+        services.AddScoped<Features.DocumentManagementGDocPCorrection.Services.DocumentGDocPCorrectionService>();
+        services.AddScoped<Features.DocumentManagementGDocPCorrection.Services.DocumentGDocPCorrectionPolicyService>();
+        // Extension point for existing update commands; not injected into any of them in this FU.
+        services.AddScoped<Features.DocumentManagementGDocPCorrection.Services.IGDocPCorrectionRecorder>(sp =>
+            sp.GetRequiredService<Features.DocumentManagementGDocPCorrection.Services.DocumentGDocPCorrectionService>());
+        // MOD-0029-FU22 — document-control scoped quality event / deviation / CAPA bridge. Not a QMS module.
+        services.AddScoped<Features.DocumentManagementQualityEvent.Services.DocumentQualityEventService>();
+        services.AddScoped<Features.DocumentManagementQualityEvent.Services.DocumentDeviationService>();
+        services.AddScoped<Features.DocumentManagementQualityEvent.Services.DocumentCapaActionService>();
+        services.AddScoped<Features.DocumentManagementQualityEvent.Services.DocumentQualityEventBridgeService>();
+        // MOD-0029-FU23 — document-control scoped electronic signature foundation. NOT a regulated/qualified
+        // e-signature capability: no external provider, no certificate validation, no compliance claim.
+        services.AddScoped<Features.DocumentManagementElectronicSignature.Services.DocumentSignableSubjectResolver>();
+        services.AddScoped<Features.DocumentManagementElectronicSignature.Services.DocumentSignatureBoundaryEvaluator>();
+        services.AddScoped<Features.DocumentManagementElectronicSignature.Services.DocumentSignaturePolicyService>();
+        services.AddScoped<Features.DocumentManagementElectronicSignature.Services.DocumentSignatureRequestService>();
+        services.AddScoped<Features.DocumentManagementElectronicSignature.Services.DocumentSignatureService>();
+        services.AddScoped<Features.DocumentManagementElectronicSignature.Services.DocumentSignatureVerificationService>();
+        // MOD-0029-FU31 — SOP-aligned default governance policy pack seeder (tenant-scoped, idempotent, non-destructive).
+        services.AddScoped<Features.DocumentManagementGovernancePolicyPack.DocumentGovernancePolicyPackSeeder>();
+        // MOD-0029-FU31A — preview/apply orchestration + append-only application history over the FU31 seeder.
+        services.AddScoped<Features.DocumentManagementGovernancePolicyPack.DocumentGovernancePolicyPackApplicationService>();
+        // MOD-0029-FU32 — background governance sweep orchestrator. Observer only: no delete, purge, auto-close,
+        // auto-approve, auto-effective, auto-disposition, auto-sign or auto-retire anywhere in it.
+        services.AddScoped<Features.DocumentManagementGovernanceSweep.DocumentGovernanceSweepService>();
         // MOD-0029-FU03 — template variant governance + drift orchestration.
         services.AddScoped<Features.DocumentManagementTemplateVariants.Services.TemplateVariantService>();
         // MOD-0029-FU04 — document access matrix resolver + orchestration services.
@@ -299,6 +391,11 @@ public static class DependencyInjection
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.AccessGovernance.SelfRegistration.AccessGovernanceManifestProvider>();
         // FEAT-BASELINE-MODULES-S2 — Tenant Settings baseline module (Security Settings / Menu Settings; entitlement-free).
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.TenantSettingsModule.SelfRegistration.TenantSettingsManifestProvider>();
+        // MOD-0149 — Commercial Suite CRM (Account Foundation). Reconciles the CRM catalog identity + /CRM/Accounts page
+        // descriptor (nav-visible=false; static tenant-shell menu owns nav until the MOD-0285 migration).
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.Crm.SelfRegistration.CrmManifestProvider>();
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.WorkingCalendar.SelfRegistration.WorkingCalendarManifestProvider>();
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.WorkingCalendarImport.WorkingCalendarImportManifestProvider>();
         // WC-1b (DCP-004) — Görev Merkezi / Task Center tenant module (entitlement-gated, NOT baseline).
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.WorkAggregation.SelfRegistration.WorkAggregationManifestProvider>();
         // MOD-0024 — Task Engine. Declares its permission keys (so the manifest, not the A1 reflection worker,

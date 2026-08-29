@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- MOD-0028-FU06 register import fixtures (GMG-QMS-LOG-0007 v0.8 package) copied to test output. -->
+    <!-- QMS register import extension — governance identity pending; GMG-QMS-LOG-0007 v0.8 fixtures copied to test output. -->
     <Content Include="Fixtures\DocumentManagement\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -1,0 +1,30 @@
+@using Diten.Web.Views.CRM.TerritoryManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TerritoryManagementResources> L
+@inject IHtmlLocalizer<Diten.Web.SharedResource> Shared
+
+@* Chips are populated at runtime from the assignments actually returned — status/source are MOD-0048 vocabularies. *@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip filter-history-status">
+                        <select id="filterHistoryStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@L["Status"]"></select>
+                    </div>
+                    <div class="filter-chip filter-history-node">
+                        <select id="filterHistoryNode" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@L["TargetNode"]"></select>
+                    </div>
+                    <div class="filter-chip filter-history-source">
+                        <select id="filterHistorySource" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@L["AssignmentSource"]"></select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@Shared["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@Shared["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,66 @@
+@model Diten.Web.Models.CRM.CampaignPageViewModel
+@using Diten.Web.Views.CRM.Campaigns
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CampaignIndex> Localizer
+
+@*
+    MOD-0165 FU11 - the manual target canvas, reduced from thirteen fields to five.
+
+    The eight that went were not deleted from the record; they are now written by the server from what it already
+    knows. An author was being asked to retype the source (always manual), the moment (always now), a machine reason
+    code, and a justification sentence - and to paste a GUID for the target itself. Everything that survived here is
+    something only a person can answer.
+
+    What the server fills in is listed under the picker, so nothing about the row is a surprise when it appears in the
+    grid. See CampaignTargetWrite.ResolveManualDefaults.
+*@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="targetCanvas" aria-labelledby="targetCanvasTitle">
+    <div class="offcanvas-header p-4">
+        <h5 id="targetCanvasTitle" class="offcanvas-title">@Localizer["CreateTarget"]</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body border-top p-4">
+        <form id="targetForm" novalidate>
+            <input id="campaignTargetId" type="hidden" />
+            @* The picker fills this; it travels with the row as an audit label, never as a source of truth. *@
+            <input id="targetDisplayName" type="hidden" />
+            <div id="targetValidation" class="alert alert-danger d-none"></div>
+
+            <div class="mb-3">
+                <label class="form-label fw-medium" for="targetType">@Localizer["TargetType"] *</label>
+                <select id="targetType" class="form-select" required></select>
+                <div class="form-text">@Localizer["TargetTypePickerHelp"]</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-medium" for="targetId">@Localizer["TargetPicker"] *</label>
+                <select id="targetId" class="form-select" required></select>
+                <div class="form-text">@Localizer["DisplayLabelNotSourceOfTruth"]</div>
+            </div>
+
+            <div class="row g-2">
+                <div class="col-6 mb-3">
+                    <label class="form-label fw-medium" for="targetStatus">@Localizer["TargetStatus"]</label>
+                    <select id="targetStatus" class="form-select"></select>
+                </div>
+                <div class="col-6 mb-3">
+                    <label class="form-label fw-medium" for="priorityLevel">@Localizer["PriorityLevel"]</label>
+                    <select id="priorityLevel" class="form-select"></select>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-medium" for="notes">@Localizer["Notes"]</label>
+                <textarea id="notes" class="form-control" rows="2"></textarea>
+            </div>
+
+            <div class="alert alert-secondary small mb-0">
+                <i class="bx bx-info-circle me-1"></i>@Localizer["ManualTargetDefaultsHint"]
+            </div>
+        </form>
+    </div>
+    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["Cancel"]</button>
+        <button type="button" id="saveTarget" class="btn btn-primary">@Localizer["Save"]</button>
+    </div>
+</div>

@@ -1,8 +1,49 @@
 {
-  "catalog_version": "2026.06.19-document-management-qms",
+  "catalog_version": "2026.07.23-document-management-qms",
   "module": "BusinessReferenceData",
-  "note": "MOD-0028-FU04/FU05 tenant designer published governance dropdown values.",
+  "note": "MOD-0028-FU04/FU05 tenant designer published governance dropdown values; MOD-0029 master register owner function.",
   "sets": [
+    {
+      "set_code": "business-unit",
+      "set_name": "Business Unit",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "MOD-0151 Territory Management business units (crossing sales dimension) a territory model applies to. Tenant-scoped; consumed by the Territory Model Business Unit Scope selector.",
+      "values": [
+        { "value_code": "alpha", "display_name": "Alpha", "description": "Alpha business unit.", "is_active": true, "sort_order": 10 },
+        { "value_code": "beta", "display_name": "Beta", "description": "Beta business unit.", "is_active": true, "sort_order": 20 },
+        { "value_code": "gamma", "display_name": "Gamma", "description": "Gamma business unit.", "is_active": true, "sort_order": 30 }
+      ]
+    },
+    {
+      "set_code": "qms-owner-function",
+      "set_name": "QMS Owner Function",
+      "scope_type": "global",
+      "status": "Active",
+      "description": "Owning organisational function for a controlled document (MOD-0029 master register). Drives approval routing, periodic review reminders and training scope.",
+      "values": [
+        { "value_code": "quality-assurance", "display_name": "Quality Assurance", "description": "Quality assurance function.", "is_active": true, "sort_order": 10 },
+        { "value_code": "quality-control", "display_name": "Quality Control", "description": "Quality control function.", "is_active": true, "sort_order": 20 },
+        { "value_code": "regulatory-affairs", "display_name": "Regulatory Affairs", "description": "Regulatory affairs function.", "is_active": true, "sort_order": 30 },
+        { "value_code": "medical-affairs", "display_name": "Medical Affairs", "description": "Medical affairs function.", "is_active": true, "sort_order": 40 },
+        { "value_code": "clinical-operations", "display_name": "Clinical Operations", "description": "Clinical operations function.", "is_active": true, "sort_order": 50 },
+        { "value_code": "nursing", "display_name": "Nursing", "description": "Nursing function.", "is_active": true, "sort_order": 60 },
+        { "value_code": "pharmacy", "display_name": "Pharmacy", "description": "Pharmacy function.", "is_active": true, "sort_order": 70 },
+        { "value_code": "laboratory", "display_name": "Laboratory", "description": "Laboratory function.", "is_active": true, "sort_order": 80 },
+        { "value_code": "production", "display_name": "Production", "description": "Production / manufacturing function.", "is_active": true, "sort_order": 90 },
+        { "value_code": "engineering-maintenance", "display_name": "Engineering & Maintenance", "description": "Engineering and maintenance function.", "is_active": true, "sort_order": 100 },
+        { "value_code": "supply-chain", "display_name": "Supply Chain & Logistics", "description": "Supply chain and logistics function.", "is_active": true, "sort_order": 110 },
+        { "value_code": "procurement", "display_name": "Procurement", "description": "Procurement function.", "is_active": true, "sort_order": 120 },
+        { "value_code": "warehouse", "display_name": "Warehouse", "description": "Warehouse function.", "is_active": true, "sort_order": 130 },
+        { "value_code": "ehs", "display_name": "Environment, Health & Safety", "description": "Environment, health and safety function.", "is_active": true, "sort_order": 140 },
+        { "value_code": "information-technology", "display_name": "Information Technology", "description": "Information technology function.", "is_active": true, "sort_order": 150 },
+        { "value_code": "human-resources", "display_name": "Human Resources", "description": "Human resources function.", "is_active": true, "sort_order": 160 },
+        { "value_code": "finance", "display_name": "Finance", "description": "Finance function.", "is_active": true, "sort_order": 170 },
+        { "value_code": "legal-compliance", "display_name": "Legal & Compliance", "description": "Legal and compliance function.", "is_active": true, "sort_order": 180 },
+        { "value_code": "executive-management", "display_name": "Executive Management", "description": "Executive management function.", "is_active": true, "sort_order": 190 },
+        { "value_code": "other", "display_name": "Other", "description": "Any other function.", "is_active": true, "sort_order": 900 }
+      ]
+    },
     {
       "set_code": "qms-document-class",
       "set_name": "QMS Document Class",

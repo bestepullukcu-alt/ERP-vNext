@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>  <data name="Title" xml:space="preserve"><value>Bölge Yönetimi</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Sürümlü bölge planlarını ve hiyerarşilerini yönetin.</value></data>
+  <data name="ContractSection" xml:space="preserve"><value>Kontrat Hazırlığı</value></data>
+  <data name="ContractReady" xml:space="preserve"><value>Kontrat Hazır</value></data>
+  <data name="ReferenceDataNotReady" xml:space="preserve"><value>Referans verisi hazır değil</value></data>
+  <data name="MissingSets" xml:space="preserve"><value>Eksik referans setleri</value></data>
+  <data name="TerritoryModels" xml:space="preserve"><value>Bölge Modelleri</value></data>
+  <data name="TerritoryNodes" xml:space="preserve"><value>Bölge Düğümleri</value></data>
+  <data name="CreateModel" xml:space="preserve"><value>Model Oluştur</value></data>
+  <data name="EditModel" xml:space="preserve"><value>Modeli Düzenle</value></data>
+  <data name="NoModels" xml:space="preserve"><value>Henüz bölge modeli yok.</value></data>
+  <data name="ModelCode" xml:space="preserve"><value>Model Kodu</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="VersionNumber" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>Ülke Kapsamı</value></data>
+  <data name="DivisionScope" xml:space="preserve"><value>Bölüm Kapsamı</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Geçerlilik Başlangıcı</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Geçerlilik Bitişi</value></data>
+  <data name="ChangeReason" xml:space="preserve"><value>Değişiklik Nedeni</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="View" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Listeye dön</value></data>
+  <data name="Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="Cancel" xml:space="preserve"><value>İptal</value></data>
+  <data name="ModelDetails" xml:space="preserve"><value>Model Detayları</value></data>
+  <data name="TerritoryHierarchy" xml:space="preserve"><value>Bölge Hiyerarşisi</value></data>
+  <data name="NoNodes" xml:space="preserve"><value>Bu modelde henüz düğüm yok.</value></data>
+  <data name="CreateNode" xml:space="preserve"><value>Bölge Düğümü Oluştur</value></data>
+  <data name="EditNode" xml:space="preserve"><value>Bölge Düğümünü Düzenle</value></data>
+  <data name="TerritoryCode" xml:space="preserve"><value>Bölge Kodu</value></data>
+  <data name="TerritoryLevel" xml:space="preserve"><value>Bölge Seviyesi</value></data>
+  <data name="ParentTerritory" xml:space="preserve"><value>Üst Bölge</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Sıralama</value></data>
+  <data name="MicroZoneProfile" xml:space="preserve"><value>Mikro Bölge Profili</value></data>
+  <data name="MicroZoneProfileHelp" xml:space="preserve"><value>Yalnızca seviye microzone olduğunda kullanılabilir.</value></data>
+  <data name="AnchorAccountId" xml:space="preserve"><value>Çapa Hesap Kimliği</value></data>
+  <data name="ClusterNotes" xml:space="preserve"><value>Küme Notları</value></data>
+  <data name="PlanningCenterType" xml:space="preserve"><value>Planlama Merkezi Tipi</value></data>
+  <data name="CountryCode" xml:space="preserve"><value>Ülke Kodu</value></data>
+  <data name="DivisionCode" xml:space="preserve"><value>Bölüm Kodu</value></data>
+  <data name="RegionCode" xml:space="preserve"><value>Bölge Kodu (Region)</value></data>
+  <data name="AreaCode" xml:space="preserve"><value>Alan Kodu</value></data>
+  <data name="ZoneCode" xml:space="preserve"><value>Zon Kodu</value></data>
+  <data name="MicroZoneCode" xml:space="preserve"><value>Mikro Bölge Kodu</value></data>
+  <data name="ReferenceDataUnavailable" xml:space="preserve"><value>Referans verisi şu anda kullanılamıyor, bu nedenle seviyeler seçilemiyor. Lütfen daha sonra tekrar deneyin.</value></data>
+  <data name="LimitationsSection" xml:space="preserve"><value>FU01 kapsamı — henüz kullanılamıyor</value></data>
+  <data name="LimAssignmentRules" xml:space="preserve"><value>Atama kuralları bu FU da kullanılamaz.</value></data>
+  <data name="LimResourceAssignment" xml:space="preserve"><value>Kaynak ataması bu FU da kullanılamaz.</value></data>
+  <data name="LimWorkflowActivation" xml:space="preserve"><value>İş akışı aktivasyonu bu FU da kullanılamaz.</value></data>
+  <data name="LimEvidencePack" xml:space="preserve"><value>Kanıt paketi bu FU da kullanılamaz.</value></data>
+  <data name="LimImportExport" xml:space="preserve"><value>İçe/dışa aktarma bu FU da kullanılamaz.</value></data>
+  <data name="SelectLevel" xml:space="preserve"><value>Bir seviye seçin</value></data>
+  <data name="SelectParent" xml:space="preserve"><value>(kök - üst yok)</value></data>
+  <data name="LiveSmokeReady" xml:space="preserve"><value>Hazır</value></data>
+  <data name="ModuleId" xml:space="preserve"><value>Modül</value></data>
+  <data name="RuntimeScope" xml:space="preserve"><value>Çalışma Kapsamı</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="EffectivePeriodSection" xml:space="preserve"><value>Geçerlilik Dönemi</value></data>
+  <data name="GeoCodesSection" xml:space="preserve"><value>Coğrafi Kodlar</value></data>
+  <data name="BusinessUnitScope" xml:space="preserve"><value>İş Birimi Kapsamı</value></data>
+  <data name="BusinessUnitScopeHelp" xml:space="preserve"><value>Bu bölge planının kapsadığı iş birimleri (ör. Alpha, Beta).</value></data>
+  <data name="BrandScopePlanned" xml:space="preserve"><value>Marka kapsamı, ileride Marka/Pazarlama entegrasyonu ile eklenecektir.</value></data>
+  <data name="CountryReferenceNotReady" xml:space="preserve"><value>Ülke referans verisi henüz yayınlanmadı.</value></data>
+  <data name="BusinessUnitReferenceNotReady" xml:space="preserve"><value>İş birimi referans verisi henüz yayınlanmadı.</value></data>
+  <data name="SelectCountry" xml:space="preserve"><value>Bir ülke seçin</value></data>
+  <data name="Activate" xml:space="preserve"><value>Aktifleştir</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Pasifleştir</value></data>
+  <data name="Archive" xml:space="preserve"><value>Arşivle</value></data>
+  <data name="DeleteDraft" xml:space="preserve"><value>Taslağı Sil</value></data>
+  <data name="DeleteDraftNode" xml:space="preserve"><value>Taslak Düğümü Sil</value></data>
+  <data name="ExpiredWarning" xml:space="preserve"><value>Geçerlilik bitiş tarihi geçti. Kayıtlı durum değişmedi; kayıt süresi dolmuş olarak hesaplandı.</value></data>
+  <data name="ConfirmLifecycleAction" xml:space="preserve"><value>Yaşam döngüsü işlemini onayla</value></data>
+  <data name="LifecycleConfirmation" xml:space="preserve"><value>Bu işlem operasyonel yaşam döngüsü durumunu değiştirir. Devam etmek istiyor musunuz?</value></data>
+  <data name="Confirm" xml:space="preserve"><value>Onayla</value></data>
+  <data name="AssignmentRules" xml:space="preserve"><value>Atama Kuralları</value></data>
+  <data name="AssignmentRulesSubtitle" xml:space="preserve"><value>Kurallar, hesapların hangi bölge düğümüyle eşleşeceğini tanımlar. Hiçbir atama yapmaz.</value></data>
+  <data name="RunPreview" xml:space="preserve"><value>Önizlemeyi Çalıştır</value></data>
+  <data name="CreateRule" xml:space="preserve"><value>Kural Oluştur</value></data>
+  <data name="EditRule" xml:space="preserve"><value>Kuralı Düzenle</value></data>
+  <data name="DeleteRule" xml:space="preserve"><value>Kuralı Sil</value></data>
+  <data name="DeleteRuleConfirm" xml:space="preserve"><value>Bu kural mantıksal olarak silinecek (kalıcı silme yok):</value></data>
+  <data name="PreviewDoesNotAssign" xml:space="preserve"><value>Önizleme hesapları atamaz.</value></data>
+  <data name="ApplyComesInFu05" xml:space="preserve"><value>Uygulama ve atama geçmişi FU05 ile gelecek.</value></data>
+  <data name="ResourceComesInFu04" xml:space="preserve"><value>Kaynak / MR ataması FU04 ile gelecek.</value></data>
+  <data name="RulesEditableOnDraftOnly" xml:space="preserve"><value>Atama kuralları yalnız model draft durumundayken değiştirilebilir.</value></data>
+  <data name="ArchivedReadOnly" xml:space="preserve"><value>Bu model arşivlenmiş ve salt okunurdur.</value></data>
+  <data name="RuleCode" xml:space="preserve"><value>Kural Kodu</value></data>
+  <data name="TargetNode" xml:space="preserve"><value>Hedef Düğüm</value></data>
+  <data name="RuleType" xml:space="preserve"><value>Kural Tipi</value></data>
+  <data name="Criteria" xml:space="preserve"><value>Kriterler</value></data>
+  <data name="CriteriaHint" xml:space="preserve"><value>Virgülle ayrılmış kodlar. Aynı alandaki değerler VEYA, farklı alanlar VE ile birleşir.</value></data>
+  <data name="Priority" xml:space="preserve"><value>Öncelik</value></data>
+  <data name="PriorityHint" xml:space="preserve"><value>Aynı hesap birden fazla kurala uyduğunda düşük değer kazanır.</value></data>
+  <data name="ConflictPolicy" xml:space="preserve"><value>Çakışma Politikası</value></data>
+  <data name="Enabled" xml:space="preserve"><value>Etkin</value></data>
+  <data name="Disabled" xml:space="preserve"><value>Devre dışı</value></data>
+  <data name="AssignmentPreview" xml:space="preserve"><value>Atama Önizlemesi</value></data>
+  <data name="NoAssignmentsPersisted" xml:space="preserve"><value>Hiçbir atama kaydedilmedi.</value></data>
+  <data name="MatchedAccounts" xml:space="preserve"><value>Eşleşen Hesaplar</value></data>
+  <data name="Conflicts" xml:space="preserve"><value>Çakışmalar</value></data>
+  <data name="RuleSummary" xml:space="preserve"><value>Kural Özeti</value></data>
+  <data name="AccountCode" xml:space="preserve"><value>Hesap Kodu</value></data>
+  <data name="AccountName" xml:space="preserve"><value>Hesap Adı</value></data>
+  <data name="MatchReason" xml:space="preserve"><value>Eşleşme Nedeni</value></data>
+  <data name="ConflictStatus" xml:space="preserve"><value>Çakışma Durumu</value></data>
+  <data name="CandidateNodes" xml:space="preserve"><value>Aday Düğümler</value></data>
+  <data name="ResolutionSuggestion" xml:space="preserve"><value>Çözüm Önerisi</value></data>
+  <data name="Evaluated" xml:space="preserve"><value>Değerlendirildi</value></data>
+  <data name="Matches" xml:space="preserve"><value>Eşleşme</value></data>
+  <data name="CountryRefs" xml:space="preserve"><value>Ülke kodları</value></data>
+  <data name="CityRefs" xml:space="preserve"><value>Şehir kodları</value></data>
+  <data name="DistrictRefs" xml:space="preserve"><value>İlçe kodları</value></data>
+  <data name="AccountTypes" xml:space="preserve"><value>Hesap tipleri</value></data>
+  <data name="AccountCategories" xml:space="preserve"><value>Hesap kategorileri</value></data>
+  <data name="AccountStatuses" xml:space="preserve"><value>Hesap durumları</value></data>
+  <data name="NoRules" xml:space="preserve"><value>Henüz atama kuralı yok.</value></data>
+  <data name="NoMatches" xml:space="preserve"><value>Hiçbir hesap kurallara uymadı.</value></data>
+  <data name="NoConflicts" xml:space="preserve"><value>Çakışma bulunmadı.</value></data>
+  <data name="Candidates" xml:space="preserve"><value>Adaylar</value></data>
+  <data name="ScannedAccounts" xml:space="preserve"><value>Taranan hesaplar</value></data>
+  <data name="EvaluatedRules" xml:space="preserve"><value>Değerlendirilen kurallar</value></data>
+  <data name="GeneratedAt" xml:space="preserve"><value>Oluşturulma</value></data>
+  <data name="ConflictWinner" xml:space="preserve"><value>Kazanan</value></data>
+  <data name="ConflictLoser" xml:space="preserve"><value>Ezildi</value></data>
+  <data name="NoConflict" xml:space="preserve"><value>Uygun</value></data>
+  <data name="MissingNode" xml:space="preserve"><value>düğüm yok</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="EvaluatedAsOf" xml:space="preserve"><value>şu tarihe göre değerlendirildi</value></data>
+  <data name="ResourceAssignments" xml:space="preserve"><value>Kaynak Atamaları</value></data>
+  <data name="ResourceAssignmentsSubtitle" xml:space="preserve"><value>Bu bölge düğümünden veya ticari kapsamdan kim sorumlu.</value></data>
+  <data name="ResourceAssignmentsExplainer" xml:space="preserve"><value>Bu atamalar kişilere bölge sorumluluğu verir. Müşteri ataması yapmaz.</value></data>
+  <data name="AccountCoverageComesInFu05" xml:space="preserve"><value>Müşteri (hesap) kapsamı FU05 ile gelecek.</value></data>
+  <data name="EndingIsNotDeleting" xml:space="preserve"><value>Atamayı sonlandırmak geçmişi korur; kayıt silinmez.</value></data>
+  <data name="ResourcesEditableOnDraftOnly" xml:space="preserve"><value>Kaynak atamaları yalnız model draft durumundayken değiştirilebilir.</value></data>
+  <data name="AssignResource" xml:space="preserve"><value>Kaynak Ata</value></data>
+  <data name="EditAssignment" xml:space="preserve"><value>Atamayı Düzenle</value></data>
+  <data name="DeleteAssignment" xml:space="preserve"><value>Atamayı Sil</value></data>
+  <data name="EndAssignment" xml:space="preserve"><value>Atamayı Sonlandır</value></data>
+  <data name="EndAssignmentConfirm" xml:space="preserve"><value>Bu atama sonlandırılacak ve geçmiş olarak saklanacak:</value></data>
+  <data name="CheckConflicts" xml:space="preserve"><value>Çakışmaları Denetle</value></data>
+  <data name="NoConflictsFound" xml:space="preserve"><value>Çakışma veya uyarı bulunamadı.</value></data>
+  <data name="NoAssignments" xml:space="preserve"><value>Henüz kaynak ataması yok.</value></data>
+  <data name="Resource" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="Role" xml:space="preserve"><value>Rol</value></data>
+  <data name="CoverageScope" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="CoverageScopeHint" xml:space="preserve"><value>Rolün varsayılanını kullanmak için boş bırakın. Düğüm ve business unit gerekliliğini bu alan belirler.</value></data>
+  <data name="RoleDefaultsCoverage" xml:space="preserve"><value>Rolün varsayılanını kullanmak için kapsamı boş bırakın.</value></data>
+  <data name="Primary" xml:space="preserve"><value>Birincil</value></data>
+  <data name="ValidPeriod" xml:space="preserve"><value>Geçerlilik</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="ValidTo" xml:space="preserve"><value>Bitiş</value></data>
+  <data name="Expired" xml:space="preserve"><value>Süresi doldu</value></data>
+  <data name="ResourceId" xml:space="preserve"><value>Kaynak Kimliği</value></data>
+  <data name="ResourceType" xml:space="preserve"><value>Kaynak Tipi</value></data>
+  <data name="ResourceDisplayName" xml:space="preserve"><value>Görünen Ad</value></data>
+  <data name="ResourceEmail" xml:space="preserve"><value>E-posta</value></data>
+  <data name="SelectResource" xml:space="preserve"><value>Kişi seçin</value></data>
+  <data name="SelectUser" xml:space="preserve"><value>Kullanıcı seçin</value></data>
+  <data name="Employee" xml:space="preserve"><value>Çalışan</value></data>
+  <data name="ResourceLookupNotReady" xml:space="preserve"><value>Kullanıcı dizini kullanılamıyor. Çalışan seçimi HR entegrasyonu tamamlandığında etkinleştirilecektir.</value></data>
+  <data name="AssignmentSource" xml:space="preserve"><value>Atama Kaynağı</value></data>
+  <data name="AssignmentSourceHint" xml:space="preserve"><value>İstisnaya izin vermek için override kullanın; her zaman gerekçe ister.</value></data>
+  <data name="ChangeReasonHint" xml:space="preserve"><value>Manual ve override atamalarında zorunludur.</value></data>
+  <data name="BusinessUnitScopeAssignmentHint" xml:space="preserve"><value>Yalnız modelin kapsamındaki business unit’ler seçilebilir.</value></data>
+  <data name="AssignmentHistory" xml:space="preserve"><value>Atama Geçmişi</value></data>
+  <data name="RunPreviewHint" xml:space="preserve"><value>Henüz önizleme çalıştırılmadı. Aday hesapları görmek için Atama Kuralları sekmesindeki "Önizlemeyi Çalıştır" düğmesini kullanın.</value></data>
+  <data name="RuleCodeHint" xml:space="preserve"><value>Otomatik dolduruldu — kendi kodunuzu kullanmak isterseniz değiştirebilirsiniz. Kural oluşturulduktan sonra değiştirilemez.</value></data>
+  <data name="CriteriaNotReady" xml:space="preserve"><value>Şu referans setleri henüz publish edilmemiş, bu nedenle kriterleri seçilemiyor:</value></data>
+  <data name="PreviewThisRule" xml:space="preserve"><value>Bu kuralı önizle</value></data>
+  <data name="PreviewScopeAll" xml:space="preserve"><value>Bu modelin tüm kuralları değerlendirildi.</value></data>
+  <data name="PreviewScopeSingle" xml:space="preserve"><value>Yalnız bu kural değerlendirildi:</value></data>
+  <data name="SingleRuleNoConflicts" xml:space="preserve"><value>Tek kuralın hedefi tek node olduğu için burada çakışma çıkmaz. Çakışmaları görmek için tüm kuralları çalıştırın.</value></data>
+  <data name="HistoryThisRule" xml:space="preserve"><value>Bu kuralın atama geçmişi</value></data>
+  <data name="PreviewAllRules" xml:space="preserve"><value>Tüm kuralları önizle</value></data>
+  <data name="HistoryAllRules" xml:space="preserve"><value>Tüm kuralların geçmişi</value></data>
+  <data name="PreviewScopeAllShort" xml:space="preserve"><value>Tüm kurallar</value></data>
+  <data name="HistoryScopeAllShort" xml:space="preserve"><value>Tüm kurallar</value></data>
+  <data name="HistoryScopeSingle" xml:space="preserve"><value>Yalnız bu kuralın ürettiği atamalar gösteriliyor:</value></data>
+  <data name="NoAssignmentHistory" xml:space="preserve"><value>Henüz atama geçmişi yok.</value></data>
+  <data name="RuleHasConflict" xml:space="preserve"><value>Bu kural en az bir hesap için başka bir kuralla çakışıyor. Ayrıntılar için tüm kurallar önizlemesini açın.</value></data>
+  <data name="GoTo" xml:space="preserve"><value>Git</value></data>
+  <data name="ReplaceAssignment" xml:space="preserve"><value>Atamayı değiştir</value></data>
+  <data name="TransferAssignment" xml:space="preserve"><value>Atamayı transfer et</value></data>
+  <data name="EffectiveDate" xml:space="preserve"><value>Yürürlük Tarihi</value></data>
+  <data name="ReplaceAssignmentConfirm" xml:space="preserve"><value>Bu atama yeni bir kaynakla değiştirilecek:</value></data>
+  <data name="TransferAssignmentConfirm" xml:space="preserve"><value>Bu atama başka bir düğüme transfer edilecek:</value></data>
+  <data name="PlanVsCurrent" xml:space="preserve"><value>Plan / Mevcut</value></data>
+  <data name="PlanVsCurrentExplainer" xml:space="preserve"><value>Model aktive edildiginde alinan kaynak atama planini bugunku gecerli sorumluluklarla karsilastirir.</value></data>
+  <data name="PlanVsCurrentReadOnlyHint" xml:space="preserve"><value>Bu sekme salt okunurdur. Atamalar Kaynak Atamalari sayfasindan degistirilir.</value></data>
+  <data name="PlanCapturedAt" xml:space="preserve"><value>Plan alinma zamani</value></data>
+  <data name="PlanCapturedBy" xml:space="preserve"><value>Plani alan</value></data>
+  <data name="PlanSnapshotVersion" xml:space="preserve"><value>Plan surumu</value></data>
+  <data name="CorrelationId" xml:space="preserve"><value>Korelasyon kimligi</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>Gecerlilik tarihi</value></data>
+  <data name="ChangeType" xml:space="preserve"><value>Degisim tipi</value></data>
+  <data name="TerritoryNode" xml:space="preserve"><value>Territory dugumu</value></data>
+  <data name="Position" xml:space="preserve"><value>Pozisyon</value></data>
+  <data name="PlannedResource" xml:space="preserve"><value>Planlanan kaynak</value></data>
+  <data name="CurrentResource" xml:space="preserve"><value>Mevcut kaynak</value></data>
+  <data name="Reason" xml:space="preserve"><value>Gerekce</value></data>
+  <data name="NoPlanVsCurrentRows" xml:space="preserve"><value>Gosterilecek fark yok.</value></data>
+  <data name="PlanNotYetActivated" xml:space="preserve"><value>Bu model henuz aktive edilmedi, bu nedenle plan referansi yok. Kaynak Atamalari sayfasi yalnizca planlama onizlemesi gosterir.</value></data>
+  <data name="PlanSnapshotNotCaptured" xml:space="preserve"><value>Bu model icin plan referansi alinmamis, bu nedenle karsilastirma uretilemez.</value></data>
+  <data name="PlanVsCurrentHistorical" xml:space="preserve"><value>Bu model artik aktif degil. Karsilastirma salt okunur gecmis olarak gosteriliyor.</value></data>
+  <data name="Planned" xml:space="preserve"><value>Planlanan</value></data>
+  <data name="Current" xml:space="preserve"><value>Mevcut</value></data>
+  <data name="ReplacementLink" xml:space="preserve"><value>Yerine gecme</value></data>
+  <data name="TransferLink" xml:space="preserve"><value>Transfer</value></data>
+  <data name="ChangedAt" xml:space="preserve"><value>Degisim zamani</value></data>
+  <data name="ChangedBy" xml:space="preserve"><value>Degistiren</value></data>
+  <data name="ChangedByUnavailable" xml:space="preserve"><value>Atamada kayitli degil</value></data>
+  <data name="AlsoDiffers" xml:space="preserve"><value>Ayrica farkli</value></data>
+  <data name="LegacyRoleDisplayOnly" xml:space="preserve"><value>Eski rol (yalnizca gosterim)</value></data>
+  <data name="ChangedRows" xml:space="preserve"><value>Degisen</value></data>
+  <data name="PlannedCount" xml:space="preserve"><value>Planlanan</value></data>
+  <data name="CurrentCount" xml:space="preserve"><value>Mevcut</value></data>
+  <data name="DiffUnchanged" xml:space="preserve"><value>Degismedi</value></data>
+  <data name="DiffReplaced" xml:space="preserve"><value>Yerine gecildi</value></data>
+  <data name="DiffTransferredOut" xml:space="preserve"><value>Transfer edildi (cikis)</value></data>
+  <data name="DiffTransferredIn" xml:space="preserve"><value>Transfer edildi (giris)</value></data>
+  <data name="DiffAddedAfterActivation" xml:space="preserve"><value>Aktivasyon sonrasi eklendi</value></data>
+  <data name="DiffEndedAfterActivation" xml:space="preserve"><value>Aktivasyon sonrasi sonlandirildi</value></data>
+  <data name="DiffMissingCurrent" xml:space="preserve"><value>Mevcut karsiligi yok</value></data>
+  <data name="DiffDateChanged" xml:space="preserve"><value>Tarihler degisti</value></data>
+  <data name="DiffScopeChanged" xml:space="preserve"><value>Kapsam degisti</value></data>
+  <data name="DiffPositionChanged" xml:space="preserve"><value>Pozisyon degisti</value></data>
+  <data name="ApplyRequiresActiveModel" xml:space="preserve"><value>Hesap atamaları yalnızca aktif bir bölge modeline uygulanabilir. Önce bu modeli etkinleştirin.</value></data>
+  <data name="ImportExport" xml:space="preserve">
+    <value>İçe / Dışa Aktarım</value>
+  </data>
+  <data name="ExportXlsx" xml:space="preserve">
+    <value>Dışa aktar (XLSX)</value>
+  </data>
+  <data name="DownloadImportTemplate" xml:space="preserve">
+    <value>İçe aktarım şablonunu indir</value>
+  </data>
+  <data name="ImportDryRunFirstNotice" xml:space="preserve">
+    <value>İçe aktarım her zaman önce deneme (dry-run) olarak çalışır. Deneme hiçbir şey yazmaz — ne node, ne kural, ne atama, ne de geçmiş kaydı. Yalnız ayrı Uygula işlemi yazar.</value>
+  </data>
+  <data name="ImportResourceApplyNotSupported" xml:space="preserve">
+    <value>Kaynak atamaları dışa aktarılabilir, şablonlanabilir ve doğrulanabilir; ancak bu sürümde dosyadan uygulanamaz.</value>
+  </data>
+  <data name="ImportReadModelsNotImportable" xml:space="preserve">
+    <value>Coverage Summary ve Plan vs Current yalnız dışa aktarılan okuma modelleridir; içe aktarılamaz.</value>
+  </data>
+  <data name="UploadWorkbook" xml:space="preserve">
+    <value>Dosya yükle</value>
+  </data>
+  <data name="DryRunWritesNothing" xml:space="preserve">
+    <value>Deneme hiçbir şey yazmaz</value>
+  </data>
+  <data name="SelectXlsxFile" xml:space="preserve">
+    <value>.xlsx dosyası seçin</value>
+  </data>
+  <data name="StrictMode" xml:space="preserve">
+    <value>Katı mod</value>
+  </data>
+  <data name="StrictModeHint" xml:space="preserve">
+    <value>Herhangi bir yerdeki tek engelleyici satır tüm dosyayı durdurur.</value>
+  </data>
+  <data name="RunDryRun" xml:space="preserve">
+    <value>Denemeyi çalıştır</value>
+  </data>
+  <data name="ApplyImport" xml:space="preserve">
+    <value>Uygula</value>
+  </data>
+  <data name="DryRunResult" xml:space="preserve">
+    <value>Deneme sonucu</value>
+  </data>
+  <data name="ApplyResult" xml:space="preserve">
+    <value>Uygulama sonucu</value>
+  </data>
+  <data name="Sheet" xml:space="preserve">
+    <value>Sayfa</value>
+  </data>
+  <data name="Rows" xml:space="preserve">
+    <value>Satır</value>
+  </data>
+  <data name="Blocking" xml:space="preserve">
+    <value>Engelleyici</value>
+  </data>
+  <data name="Creates" xml:space="preserve">
+    <value>Oluşturma</value>
+  </data>
+  <data name="Updates" xml:space="preserve">
+    <value>Güncelleme</value>
+  </data>
+  <data name="Ends" xml:space="preserve">
+    <value>Sonlandırma</value>
+  </data>
+  <data name="Skips" xml:space="preserve">
+    <value>Atlanan</value>
+  </data>
+  <data name="Outcome" xml:space="preserve">
+    <value>Sonuç</value>
+  </data>
+  <data name="ShowOnlyBlocking" xml:space="preserve">
+    <value>Yalnız engelleyici satırları göster</value>
+  </data>
+  <data name="RowNumber" xml:space="preserve">
+    <value>Satır</value>
+  </data>
+  <data name="Severity" xml:space="preserve">
+    <value>Önem</value>
+  </data>
+  <data name="Operation" xml:space="preserve">
+    <value>İşlem</value>
+  </data>
+  <data name="ResolvedKey" xml:space="preserve">
+    <value>Kayıt</value>
+  </data>
+  <data name="Message" xml:space="preserve">
+    <value>Mesaj</value>
+  </data>
+  <data name="SuggestedFix" xml:space="preserve">
+    <value>Önerilen düzeltme</value>
+  </data>
+  <data name="ImportRunHistory" xml:space="preserve">
+    <value>İçe aktarım geçmişi</value>
+  </data>
+  <data name="AppendOnly" xml:space="preserve">
+    <value>Yalnız ekleme</value>
+  </data>
+  <data name="UploadedAt" xml:space="preserve">
+    <value>Yükleme zamanı</value>
+  </data>
+  <data name="FileName" xml:space="preserve">
+    <value>Dosya</value>
+  </data>
+  <data name="UploadedBy" xml:space="preserve">
+    <value>Yükleyen</value>
+  </data>
+  <data name="RunStatus" xml:space="preserve">
+    <value>Durum</value>
+  </data>
+  <data name="Errors" xml:space="preserve">
+    <value>Hata</value>
+  </data>
+  <data name="Warnings" xml:space="preserve">
+    <value>Uyarı</value>
+  </data>
+  <data name="ImportSelectFile" xml:space="preserve">
+    <value>İçe aktarmak için bir .xlsx dosyası seçin.</value>
+  </data>
+  <data name="ImportXlsxOnly" xml:space="preserve">
+    <value>Yalnız içe aktarım şablonundan veya dışa aktarımdan üretilen .xlsx dosyaları desteklenir.</value>
+  </data>
+  <data name="Applied" xml:space="preserve">
+    <value>Uygulandı</value>
+  </data>
+  <data name="NotApplied" xml:space="preserve">
+    <value>Uygulanmadı</value>
+  </data>
+  <data name="NothingToApply" xml:space="preserve">
+    <value>Uygulanacak bir şey yok.</value>
+  </data>
+  <data name="ApplyBlocked" xml:space="preserve">
+    <value>Önce bu dosya için denemeyi çalıştırın, sonra uygulayın.</value>
+  </data>
+  <data name="ConfirmApply" xml:space="preserve">
+    <value>Bu içe aktarım uygulansın mı?</value>
+  </data>
+  <data name="NoImportRuns" xml:space="preserve">
+    <value>Bu modele henüz bir içe aktarım uygulanmadı.</value>
+  </data>
+  <data name="FileAlreadyApplied" xml:space="preserve">
+    <value>Daha önce uygulandı</value>
+  </data>
+  <data name="CreateDraftVersion" xml:space="preserve"><value>Taslak sürüm oluştur</value></data>
+</root>

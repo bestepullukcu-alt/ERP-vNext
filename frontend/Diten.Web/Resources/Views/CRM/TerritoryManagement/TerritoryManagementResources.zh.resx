@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>  <data name="Title" xml:space="preserve"><value>区域管理</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>管理带版本的区域计划及其层级结构。</value></data>
+  <data name="ContractSection" xml:space="preserve"><value>契约就绪状态</value></data>
+  <data name="ContractReady" xml:space="preserve"><value>契约就绪</value></data>
+  <data name="ReferenceDataNotReady" xml:space="preserve"><value>参考数据未就绪</value></data>
+  <data name="MissingSets" xml:space="preserve"><value>缺失的参考集</value></data>
+  <data name="TerritoryModels" xml:space="preserve"><value>区域模型</value></data>
+  <data name="TerritoryNodes" xml:space="preserve"><value>区域节点</value></data>
+  <data name="CreateModel" xml:space="preserve"><value>创建模型</value></data>
+  <data name="EditModel" xml:space="preserve"><value>编辑模型</value></data>
+  <data name="NoModels" xml:space="preserve"><value>暂无区域模型。</value></data>
+  <data name="ModelCode" xml:space="preserve"><value>模型编码</value></data>
+  <data name="Name" xml:space="preserve"><value>名称</value></data>
+  <data name="Status" xml:space="preserve"><value>状态</value></data>
+  <data name="VersionNumber" xml:space="preserve"><value>版本</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>国家范围</value></data>
+  <data name="DivisionScope" xml:space="preserve"><value>部门范围</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>生效起始</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>生效结束</value></data>
+  <data name="ChangeReason" xml:space="preserve"><value>变更原因</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="View" xml:space="preserve"><value>查看</value></data>
+  <data name="Edit" xml:space="preserve"><value>编辑</value></data>
+  <data name="BackToList" xml:space="preserve"><value>返回列表</value></data>
+  <data name="Save" xml:space="preserve"><value>保存</value></data>
+  <data name="Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="ModelDetails" xml:space="preserve"><value>模型详情</value></data>
+  <data name="TerritoryHierarchy" xml:space="preserve"><value>区域层级</value></data>
+  <data name="NoNodes" xml:space="preserve"><value>此模型暂无节点。</value></data>
+  <data name="CreateNode" xml:space="preserve"><value>创建区域节点</value></data>
+  <data name="EditNode" xml:space="preserve"><value>编辑区域节点</value></data>
+  <data name="TerritoryCode" xml:space="preserve"><value>区域编码</value></data>
+  <data name="TerritoryLevel" xml:space="preserve"><value>区域级别</value></data>
+  <data name="ParentTerritory" xml:space="preserve"><value>上级区域</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>排序</value></data>
+  <data name="MicroZoneProfile" xml:space="preserve"><value>微区档案</value></data>
+  <data name="MicroZoneProfileHelp" xml:space="preserve"><value>仅当级别为 microzone 时可用。</value></data>
+  <data name="AnchorAccountId" xml:space="preserve"><value>锚定账户ID</value></data>
+  <data name="ClusterNotes" xml:space="preserve"><value>集群备注</value></data>
+  <data name="PlanningCenterType" xml:space="preserve"><value>规划中心类型</value></data>
+  <data name="CountryCode" xml:space="preserve"><value>国家代码</value></data>
+  <data name="DivisionCode" xml:space="preserve"><value>部门代码</value></data>
+  <data name="RegionCode" xml:space="preserve"><value>地区代码</value></data>
+  <data name="AreaCode" xml:space="preserve"><value>区域代码</value></data>
+  <data name="ZoneCode" xml:space="preserve"><value>片区代码</value></data>
+  <data name="MicroZoneCode" xml:space="preserve"><value>微区代码</value></data>
+  <data name="ReferenceDataUnavailable" xml:space="preserve"><value>参考数据当前不可用，无法选择级别。请稍后再试。</value></data>
+  <data name="LimitationsSection" xml:space="preserve"><value>FU01 范围 — 暂不可用</value></data>
+  <data name="LimAssignmentRules" xml:space="preserve"><value>此功能单元不提供分配规则。</value></data>
+  <data name="LimResourceAssignment" xml:space="preserve"><value>此功能单元不提供资源分配。</value></data>
+  <data name="LimWorkflowActivation" xml:space="preserve"><value>此功能单元不提供工作流激活。</value></data>
+  <data name="LimEvidencePack" xml:space="preserve"><value>此功能单元不提供证据包。</value></data>
+  <data name="LimImportExport" xml:space="preserve"><value>此功能单元不提供导入/导出。</value></data>
+  <data name="SelectLevel" xml:space="preserve"><value>选择级别</value></data>
+  <data name="SelectParent" xml:space="preserve"><value>(根 - 无上级)</value></data>
+  <data name="LiveSmokeReady" xml:space="preserve"><value>就绪</value></data>
+  <data name="ModuleId" xml:space="preserve"><value>模块</value></data>
+  <data name="RuntimeScope" xml:space="preserve"><value>运行范围</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>标识</value></data>
+  <data name="EffectivePeriodSection" xml:space="preserve"><value>生效周期</value></data>
+  <data name="GeoCodesSection" xml:space="preserve"><value>地理编码</value></data>
+  <data name="BusinessUnitScope" xml:space="preserve"><value>业务单元范围</value></data>
+  <data name="BusinessUnitScopeHelp" xml:space="preserve"><value>此区域计划适用的业务单元（例如 Alpha、Beta）。</value></data>
+  <data name="BrandScopePlanned" xml:space="preserve"><value>品牌范围计划在后续的品牌/营销集成中提供。</value></data>
+  <data name="CountryReferenceNotReady" xml:space="preserve"><value>国家参考数据尚未发布。</value></data>
+  <data name="BusinessUnitReferenceNotReady" xml:space="preserve"><value>业务单元参考数据尚未发布。</value></data>
+  <data name="SelectCountry" xml:space="preserve"><value>选择国家</value></data>
+  <data name="Activate" xml:space="preserve"><value>激活</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>停用</value></data>
+  <data name="Archive" xml:space="preserve"><value>归档</value></data>
+  <data name="DeleteDraft" xml:space="preserve"><value>删除草稿</value></data>
+  <data name="DeleteDraftNode" xml:space="preserve"><value>删除草稿节点</value></data>
+  <data name="ExpiredWarning" xml:space="preserve"><value>有效期已结束。存储状态保持不变；该记录被计算为已过期。</value></data>
+  <data name="ConfirmLifecycleAction" xml:space="preserve"><value>确认生命周期操作</value></data>
+  <data name="LifecycleConfirmation" xml:space="preserve"><value>此操作将更改运行状态。是否继续？</value></data>
+  <data name="Confirm" xml:space="preserve"><value>确认</value></data>
+  <data name="AssignmentRules" xml:space="preserve"><value>分配规则</value></data>
+  <data name="AssignmentRulesSubtitle" xml:space="preserve"><value>规则描述客户如何与区域节点匹配，但不会进行任何分配。</value></data>
+  <data name="RunPreview" xml:space="preserve"><value>运行预览</value></data>
+  <data name="CreateRule" xml:space="preserve"><value>创建规则</value></data>
+  <data name="EditRule" xml:space="preserve"><value>编辑规则</value></data>
+  <data name="DeleteRule" xml:space="preserve"><value>删除规则</value></data>
+  <data name="DeleteRuleConfirm" xml:space="preserve"><value>此规则将被软删除（非物理删除）：</value></data>
+  <data name="PreviewDoesNotAssign" xml:space="preserve"><value>预览不会分配客户。</value></data>
+  <data name="ApplyComesInFu05" xml:space="preserve"><value>应用与分配历史将在 FU05 中提供。</value></data>
+  <data name="ResourceComesInFu04" xml:space="preserve"><value>资源 / 医药代表分配将在 FU04 中提供。</value></data>
+  <data name="RulesEditableOnDraftOnly" xml:space="preserve"><value>仅当模型处于草稿状态时才能修改分配规则。</value></data>
+  <data name="ArchivedReadOnly" xml:space="preserve"><value>该模型已归档，只读。</value></data>
+  <data name="RuleCode" xml:space="preserve"><value>规则代码</value></data>
+  <data name="TargetNode" xml:space="preserve"><value>目标节点</value></data>
+  <data name="RuleType" xml:space="preserve"><value>规则类型</value></data>
+  <data name="Criteria" xml:space="preserve"><value>条件</value></data>
+  <data name="CriteriaHint" xml:space="preserve"><value>以逗号分隔的代码。同一字段内为“或”，不同字段之间为“与”。</value></data>
+  <data name="Priority" xml:space="preserve"><value>优先级</value></data>
+  <data name="PriorityHint" xml:space="preserve"><value>当多条规则匹配同一客户时，数值较小者优先。</value></data>
+  <data name="ConflictPolicy" xml:space="preserve"><value>冲突策略</value></data>
+  <data name="Enabled" xml:space="preserve"><value>已启用</value></data>
+  <data name="Disabled" xml:space="preserve"><value>已禁用</value></data>
+  <data name="AssignmentPreview" xml:space="preserve"><value>分配预览</value></data>
+  <data name="NoAssignmentsPersisted" xml:space="preserve"><value>未保存任何分配。</value></data>
+  <data name="MatchedAccounts" xml:space="preserve"><value>匹配的客户</value></data>
+  <data name="Conflicts" xml:space="preserve"><value>冲突</value></data>
+  <data name="RuleSummary" xml:space="preserve"><value>规则摘要</value></data>
+  <data name="AccountCode" xml:space="preserve"><value>客户代码</value></data>
+  <data name="AccountName" xml:space="preserve"><value>客户名称</value></data>
+  <data name="MatchReason" xml:space="preserve"><value>匹配原因</value></data>
+  <data name="ConflictStatus" xml:space="preserve"><value>冲突状态</value></data>
+  <data name="CandidateNodes" xml:space="preserve"><value>候选节点</value></data>
+  <data name="ResolutionSuggestion" xml:space="preserve"><value>解决建议</value></data>
+  <data name="Evaluated" xml:space="preserve"><value>已评估</value></data>
+  <data name="Matches" xml:space="preserve"><value>匹配数</value></data>
+  <data name="CountryRefs" xml:space="preserve"><value>国家代码</value></data>
+  <data name="CityRefs" xml:space="preserve"><value>城市代码</value></data>
+  <data name="DistrictRefs" xml:space="preserve"><value>区代码</value></data>
+  <data name="AccountTypes" xml:space="preserve"><value>客户类型</value></data>
+  <data name="AccountCategories" xml:space="preserve"><value>客户类别</value></data>
+  <data name="AccountStatuses" xml:space="preserve"><value>客户状态</value></data>
+  <data name="NoRules" xml:space="preserve"><value>暂无分配规则。</value></data>
+  <data name="NoMatches" xml:space="preserve"><value>没有客户匹配这些规则。</value></data>
+  <data name="NoConflicts" xml:space="preserve"><value>未检测到冲突。</value></data>
+  <data name="Candidates" xml:space="preserve"><value>候选</value></data>
+  <data name="ScannedAccounts" xml:space="preserve"><value>已扫描客户</value></data>
+  <data name="EvaluatedRules" xml:space="preserve"><value>已评估规则</value></data>
+  <data name="GeneratedAt" xml:space="preserve"><value>生成时间</value></data>
+  <data name="ConflictWinner" xml:space="preserve"><value>胜出</value></data>
+  <data name="ConflictLoser" xml:space="preserve"><value>被覆盖</value></data>
+  <data name="NoConflict" xml:space="preserve"><value>正常</value></data>
+  <data name="MissingNode" xml:space="preserve"><value>节点缺失</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="EvaluatedAsOf" xml:space="preserve"><value>评估基准日</value></data>
+  <data name="ResourceAssignments" xml:space="preserve"><value>资源分配</value></data>
+  <data name="ResourceAssignmentsSubtitle" xml:space="preserve"><value>谁负责该区域节点或业务范围。</value></data>
+  <data name="ResourceAssignmentsExplainer" xml:space="preserve"><value>这些分配赋予人员对区域的责任，不分配客户。</value></data>
+  <data name="AccountCoverageComesInFu05" xml:space="preserve"><value>客户覆盖将在 FU05 中提供。</value></data>
+  <data name="EndingIsNotDeleting" xml:space="preserve"><value>结束分配会保留历史记录，不会删除。</value></data>
+  <data name="ResourcesEditableOnDraftOnly" xml:space="preserve"><value>仅当模型处于草稿状态时才能修改资源分配。</value></data>
+  <data name="AssignResource" xml:space="preserve"><value>分配资源</value></data>
+  <data name="EditAssignment" xml:space="preserve"><value>编辑分配</value></data>
+  <data name="DeleteAssignment" xml:space="preserve"><value>删除分配</value></data>
+  <data name="EndAssignment" xml:space="preserve"><value>结束分配</value></data>
+  <data name="EndAssignmentConfirm" xml:space="preserve"><value>此分配将被结束并保留为历史记录：</value></data>
+  <data name="CheckConflicts" xml:space="preserve"><value>检查冲突</value></data>
+  <data name="NoConflictsFound" xml:space="preserve"><value>未发现冲突或警告。</value></data>
+  <data name="NoAssignments" xml:space="preserve"><value>暂无资源分配。</value></data>
+  <data name="Resource" xml:space="preserve"><value>资源</value></data>
+  <data name="Role" xml:space="preserve"><value>角色</value></data>
+  <data name="CoverageScope" xml:space="preserve"><value>覆盖范围</value></data>
+  <data name="CoverageScopeHint" xml:space="preserve"><value>留空则使用角色默认值。它决定是否需要节点和业务单元。</value></data>
+  <data name="RoleDefaultsCoverage" xml:space="preserve"><value>留空覆盖范围以使用该角色默认值。</value></data>
+  <data name="Primary" xml:space="preserve"><value>主要</value></data>
+  <data name="ValidPeriod" xml:space="preserve"><value>有效期</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>生效日期</value></data>
+  <data name="ValidTo" xml:space="preserve"><value>失效日期</value></data>
+  <data name="Expired" xml:space="preserve"><value>已过期</value></data>
+  <data name="ResourceId" xml:space="preserve"><value>资源 ID</value></data>
+  <data name="ResourceType" xml:space="preserve"><value>资源类型</value></data>
+  <data name="ResourceDisplayName" xml:space="preserve"><value>显示名称</value></data>
+  <data name="ResourceEmail" xml:space="preserve"><value>电子邮件</value></data>
+  <data name="SelectResource" xml:space="preserve"><value>选择人员</value></data>
+  <data name="SelectUser" xml:space="preserve"><value>选择用户</value></data>
+  <data name="Employee" xml:space="preserve"><value>员工</value></data>
+  <data name="ResourceLookupNotReady" xml:space="preserve"><value>用户目录不可用。HR 集成完成后将启用员工选择。</value></data>
+  <data name="AssignmentSource" xml:space="preserve"><value>分配来源</value></data>
+  <data name="AssignmentSourceHint" xml:space="preserve"><value>使用 override 允许例外；始终需要填写原因。</value></data>
+  <data name="ChangeReasonHint" xml:space="preserve"><value>手动和 override 分配时必填。</value></data>
+  <data name="BusinessUnitScopeAssignmentHint" xml:space="preserve"><value>只能选择已在模型范围内的业务单元。</value></data>
+  <data name="AssignmentHistory" xml:space="preserve"><value>分配历史</value></data>
+  <data name="RunPreviewHint" xml:space="preserve"><value>尚未运行预览。请在“分配规则”标签页点击“运行预览”以查看候选客户。</value></data>
+  <data name="RuleCodeHint" xml:space="preserve"><value>已自动填写——如需使用自己的编码可以修改。规则创建后不可更改。</value></data>
+  <data name="CriteriaNotReady" xml:space="preserve"><value>以下参考数据集尚未发布，因此无法选择其条件：</value></data>
+  <data name="PreviewThisRule" xml:space="preserve"><value>预览此规则</value></data>
+  <data name="PreviewScopeAll" xml:space="preserve"><value>已评估该模型的所有规则。</value></data>
+  <data name="PreviewScopeSingle" xml:space="preserve"><value>仅评估了此规则：</value></data>
+  <data name="SingleRuleNoConflicts" xml:space="preserve"><value>单条规则只有一个目标节点，因此这里不会出现冲突。运行全部规则以查看冲突。</value></data>
+  <data name="HistoryThisRule" xml:space="preserve"><value>此规则的分配历史</value></data>
+  <data name="PreviewAllRules" xml:space="preserve"><value>预览全部规则</value></data>
+  <data name="HistoryAllRules" xml:space="preserve"><value>全部规则的历史</value></data>
+  <data name="PreviewScopeAllShort" xml:space="preserve"><value>全部规则</value></data>
+  <data name="HistoryScopeAllShort" xml:space="preserve"><value>全部规则</value></data>
+  <data name="HistoryScopeSingle" xml:space="preserve"><value>仅显示由此规则产生的分配：</value></data>
+  <data name="NoAssignmentHistory" xml:space="preserve"><value>暂无分配历史。</value></data>
+  <data name="RuleHasConflict" xml:space="preserve"><value>此规则与另一条规则争夺至少一个客户。打开全部规则预览查看详情。</value></data>
+  <data name="GoTo" xml:space="preserve"><value>前往</value></data>
+  <data name="ReplaceAssignment" xml:space="preserve"><value>替换分配</value></data>
+  <data name="TransferAssignment" xml:space="preserve"><value>转移分配</value></data>
+  <data name="EffectiveDate" xml:space="preserve"><value>生效日期</value></data>
+  <data name="ReplaceAssignmentConfirm" xml:space="preserve"><value>此分配将被替换为新资源：</value></data>
+  <data name="TransferAssignmentConfirm" xml:space="preserve"><value>此分配将转移到另一个节点：</value></data>
+  <data name="PlanVsCurrent" xml:space="preserve"><value>计划与当前</value></data>
+  <data name="PlanVsCurrentExplainer" xml:space="preserve"><value>将模型激活时捕获的资源分配计划与今天生效的职责进行对比。</value></data>
+  <data name="PlanVsCurrentReadOnlyHint" xml:space="preserve"><value>此选项卡为只读。分配请在“资源分配”页面修改。</value></data>
+  <data name="PlanCapturedAt" xml:space="preserve"><value>计划捕获时间</value></data>
+  <data name="PlanCapturedBy" xml:space="preserve"><value>计划捕获人</value></data>
+  <data name="PlanSnapshotVersion" xml:space="preserve"><value>计划版本</value></data>
+  <data name="CorrelationId" xml:space="preserve"><value>关联标识</value></data>
+  <data name="EffectiveAt" xml:space="preserve"><value>生效时间</value></data>
+  <data name="ChangeType" xml:space="preserve"><value>变更类型</value></data>
+  <data name="TerritoryNode" xml:space="preserve"><value>区域节点</value></data>
+  <data name="Position" xml:space="preserve"><value>岗位</value></data>
+  <data name="PlannedResource" xml:space="preserve"><value>计划资源</value></data>
+  <data name="CurrentResource" xml:space="preserve"><value>当前资源</value></data>
+  <data name="Reason" xml:space="preserve"><value>原因</value></data>
+  <data name="NoPlanVsCurrentRows" xml:space="preserve"><value>没有可显示的差异。</value></data>
+  <data name="PlanNotYetActivated" xml:space="preserve"><value>该模型尚未激活，因此没有计划基线。“资源分配”页面显示的是规划预览。</value></data>
+  <data name="PlanSnapshotNotCaptured" xml:space="preserve"><value>该模型未捕获计划基线，因此无法生成对比。</value></data>
+  <data name="PlanVsCurrentHistorical" xml:space="preserve"><value>该模型已不再处于激活状态。对比以只读历史形式显示。</value></data>
+  <data name="Planned" xml:space="preserve"><value>计划</value></data>
+  <data name="Current" xml:space="preserve"><value>当前</value></data>
+  <data name="ReplacementLink" xml:space="preserve"><value>替换</value></data>
+  <data name="TransferLink" xml:space="preserve"><value>调动</value></data>
+  <data name="ChangedAt" xml:space="preserve"><value>变更时间</value></data>
+  <data name="ChangedBy" xml:space="preserve"><value>变更人</value></data>
+  <data name="ChangedByUnavailable" xml:space="preserve"><value>分配记录中未保存</value></data>
+  <data name="AlsoDiffers" xml:space="preserve"><value>还存在差异</value></data>
+  <data name="LegacyRoleDisplayOnly" xml:space="preserve"><value>旧角色（仅显示）</value></data>
+  <data name="ChangedRows" xml:space="preserve"><value>已变更</value></data>
+  <data name="PlannedCount" xml:space="preserve"><value>计划</value></data>
+  <data name="CurrentCount" xml:space="preserve"><value>当前</value></data>
+  <data name="DiffUnchanged" xml:space="preserve"><value>未变更</value></data>
+  <data name="DiffReplaced" xml:space="preserve"><value>已替换</value></data>
+  <data name="DiffTransferredOut" xml:space="preserve"><value>调出</value></data>
+  <data name="DiffTransferredIn" xml:space="preserve"><value>调入</value></data>
+  <data name="DiffAddedAfterActivation" xml:space="preserve"><value>激活后新增</value></data>
+  <data name="DiffEndedAfterActivation" xml:space="preserve"><value>激活后结束</value></data>
+  <data name="DiffMissingCurrent" xml:space="preserve"><value>缺少当前记录</value></data>
+  <data name="DiffDateChanged" xml:space="preserve"><value>日期已变更</value></data>
+  <data name="DiffScopeChanged" xml:space="preserve"><value>范围已变更</value></data>
+  <data name="DiffPositionChanged" xml:space="preserve"><value>岗位已变更</value></data>
+  <data name="ApplyRequiresActiveModel" xml:space="preserve"><value>账户分配只能应用于已激活的区域模型。请先激活此模型。</value></data>
+  <data name="ImportExport" xml:space="preserve">
+    <value>导入 / 导出</value>
+  </data>
+  <data name="ExportXlsx" xml:space="preserve">
+    <value>导出 (XLSX)</value>
+  </data>
+  <data name="DownloadImportTemplate" xml:space="preserve">
+    <value>下载导入模板</value>
+  </data>
+  <data name="ImportDryRunFirstNotice" xml:space="preserve">
+    <value>导入始终先执行试运行。试运行不写入任何内容——不写节点、规则、分配，也不写历史记录。只有单独的“应用”操作才会写入。</value>
+  </data>
+  <data name="ImportResourceApplyNotSupported" xml:space="preserve">
+    <value>资源分配可以导出、生成模板并验证，但此版本无法通过文件应用。</value>
+  </data>
+  <data name="ImportReadModelsNotImportable" xml:space="preserve">
+    <value>Coverage Summary 与 Plan vs Current 是仅导出的读取模型，无法导入。</value>
+  </data>
+  <data name="UploadWorkbook" xml:space="preserve">
+    <value>上传工作簿</value>
+  </data>
+  <data name="DryRunWritesNothing" xml:space="preserve">
+    <value>试运行不写入任何内容</value>
+  </data>
+  <data name="SelectXlsxFile" xml:space="preserve">
+    <value>选择 .xlsx 文件</value>
+  </data>
+  <data name="StrictMode" xml:space="preserve">
+    <value>严格模式</value>
+  </data>
+  <data name="StrictModeHint" xml:space="preserve">
+    <value>任意一行阻塞错误将中止整个文件。</value>
+  </data>
+  <data name="RunDryRun" xml:space="preserve">
+    <value>执行试运行</value>
+  </data>
+  <data name="ApplyImport" xml:space="preserve">
+    <value>应用</value>
+  </data>
+  <data name="DryRunResult" xml:space="preserve">
+    <value>试运行结果</value>
+  </data>
+  <data name="ApplyResult" xml:space="preserve">
+    <value>应用结果</value>
+  </data>
+  <data name="Sheet" xml:space="preserve">
+    <value>工作表</value>
+  </data>
+  <data name="Rows" xml:space="preserve">
+    <value>行数</value>
+  </data>
+  <data name="Blocking" xml:space="preserve">
+    <value>阻塞</value>
+  </data>
+  <data name="Creates" xml:space="preserve">
+    <value>新建</value>
+  </data>
+  <data name="Updates" xml:space="preserve">
+    <value>更新</value>
+  </data>
+  <data name="Ends" xml:space="preserve">
+    <value>结束</value>
+  </data>
+  <data name="Skips" xml:space="preserve">
+    <value>跳过</value>
+  </data>
+  <data name="Outcome" xml:space="preserve">
+    <value>结果</value>
+  </data>
+  <data name="ShowOnlyBlocking" xml:space="preserve">
+    <value>仅显示阻塞行</value>
+  </data>
+  <data name="RowNumber" xml:space="preserve">
+    <value>行</value>
+  </data>
+  <data name="Severity" xml:space="preserve">
+    <value>级别</value>
+  </data>
+  <data name="Operation" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="ResolvedKey" xml:space="preserve">
+    <value>记录</value>
+  </data>
+  <data name="Message" xml:space="preserve">
+    <value>消息</value>
+  </data>
+  <data name="SuggestedFix" xml:space="preserve">
+    <value>建议修复</value>
+  </data>
+  <data name="ImportRunHistory" xml:space="preserve">
+    <value>导入运行历史</value>
+  </data>
+  <data name="AppendOnly" xml:space="preserve">
+    <value>仅追加</value>
+  </data>
+  <data name="UploadedAt" xml:space="preserve">
+    <value>上传时间</value>
+  </data>
+  <data name="FileName" xml:space="preserve">
+    <value>文件</value>
+  </data>
+  <data name="UploadedBy" xml:space="preserve">
+    <value>上传人</value>
+  </data>
+  <data name="RunStatus" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="Errors" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="Warnings" xml:space="preserve">
+    <value>警告</value>
+  </data>
+  <data name="ImportSelectFile" xml:space="preserve">
+    <value>请选择要导入的 .xlsx 文件。</value>
+  </data>
+  <data name="ImportXlsxOnly" xml:space="preserve">
+    <value>仅支持由导入模板或导出生成的 .xlsx 文件。</value>
+  </data>
+  <data name="Applied" xml:space="preserve">
+    <value>已应用</value>
+  </data>
+  <data name="NotApplied" xml:space="preserve">
+    <value>未应用</value>
+  </data>
+  <data name="NothingToApply" xml:space="preserve">
+    <value>没有可应用的内容。</value>
+  </data>
+  <data name="ApplyBlocked" xml:space="preserve">
+    <value>请先对该文件执行试运行，然后再应用。</value>
+  </data>
+  <data name="ConfirmApply" xml:space="preserve">
+    <value>要应用此次导入吗？</value>
+  </data>
+  <data name="NoImportRuns" xml:space="preserve">
+    <value>尚未对此模型应用任何导入。</value>
+  </data>
+  <data name="FileAlreadyApplied" xml:space="preserve">
+    <value>此前已应用</value>
+  </data>
+  <data name="CreateDraftVersion" xml:space="preserve"><value>创建草稿版本</value></data>
+</root>

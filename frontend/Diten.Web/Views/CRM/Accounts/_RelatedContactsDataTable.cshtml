@@ -1,0 +1,87 @@
+@model Diten.Web.Models.CRM.AccountOverviewViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.CRM.Accounts.AccountIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* MOD-0150 FU03 — Related Contacts (AccountContactLink) 360 projection, rendered as a DataTable v2
+   (data-dt-standard="v2"): inline filter, Save View, colReorder, export/colvis toolbar and an "Add Contact Link"
+   toolbar action that opens the Golden Slim canvas. Rows are projected server-side into the payload below and
+   rendered by details-contacts.js — no extra endpoint.
+   No checkbox column / bulk action bar: a link is never bulk-deleted — it is closed one by one through the End
+   canvas (historical lifecycle: Status=ended + ValidTo, never a delete). *@
+
+<div class="card" id="relatedContactsCard">
+    <div class="card-header d-flex flex-column align-items-start pb-0">
+        <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["RelatedContacts"]</h6>
+        @if (Model.RelatedContactsCanManage)
+        {
+            <p class="text-muted small mb-0"><i class="bx bx-info-circle me-1"></i>@Localizer["HistoricalLinkNotice"]</p>
+        }
+    </div>
+
+    @if (!Model.RelatedContactsAuthorized)
+    {
+        <div class="card-body text-muted">@Localizer["NotAuthorized"]</div>
+    }
+    else if (Model.RelatedContactsUnavailable)
+    {
+        <div class="card-body text-muted">@Localizer["DependencyUnavailable"]</div>
+    }
+    else
+    {
+        @* ① Inline Filter partial (mounted under the toolbar row by details-contacts.js) *@
+        @* Contract marker: <partial name="_Filter" /> *@
+        <partial name="~/Views/CRM/Accounts/_RelatedContactsFilter.cshtml" />
+
+        @* Section-scoped skeleton id: DtDefaults hides the page's `#skeleton-loader`, which belongs to the Related
+           Accounts table; this one is hidden by the section factory once its own table is ready. *@
+        <div id="skeleton-loader-contacts" class="backbone-skeleton p-4">
+            <div class="shimmer skeleton-row skeleton-row-lg"></div>
+            <div class="shimmer skeleton-row"></div>
+            <div class="shimmer skeleton-row"></div>
+            <div class="shimmer skeleton-row"></div>
+            <div class="shimmer skeleton-row skeleton-row-last"></div>
+        </div>
+
+        <div class="card-datatable table-responsive">
+            <table id="dt-account-contacts" data-dt-standard="v2" class="datatables-account-contacts table border-top">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th class="all">@Localizer["DisplayName"]</th>
+                        <th>@Localizer["ContactType"]</th>
+                        <th>@Localizer["Role"]</th>
+                        <th>@Localizer["ReportsTo"]</th>
+                        <th>@Localizer["Primary"]</th>
+                        <th>@Localizer["Phone"]</th>
+                        <th>@Localizer["Email"]</th>
+                        <th>@SharedLocalizer["Status"]</th>
+                        <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                    </tr>
+                </thead>
+                <tbody id="relatedContactsBody"></tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<script id="related-contacts-payload" type="application/json">
+    @Json.Serialize(new
+    {
+        accountId = Model.Account!.Id,
+        canManage = Model.RelatedContactsCanManage,
+        rows = Model.RelatedContacts.Select(c => new
+        {
+            linkId = c.LinkId,
+            contactId = c.ContactId,
+            displayName = c.DisplayName,
+            contactType = c.ContactType,
+            roleCode = c.RoleCode,
+            reportsToName = c.ReportsToName,
+            isPrimary = c.IsPrimary,
+            phone = c.Phone,
+            email = c.Email,
+            status = c.Status
+        })
+    })
+</script>

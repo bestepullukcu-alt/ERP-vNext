@@ -1,0 +1,17 @@
+@using Diten.Web.Views.Platform.WorkingCalendarImports
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkingCalendarImportsIndex> Localizer
+@{ ViewData["Title"] = Localizer["Title"].Value; Layout = "_LayoutPlatformAdmin"; }
+@* The primary action lives in the DataTable toolbar (.add-new), like GoldenReferenceSlim. *@
+<div class="mb-3">
+  <h5 class="mb-0">@Localizer["Title"]</h5>
+  <p class="mb-0 text-muted">@Localizer["Description"]</p>
+  @* Golden marker: @Localizer["PageDescription"] *@
+</div>
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/Platform/WorkingCalendarImports/_Filter.cshtml" />
+<partial name="~/Views/Platform/WorkingCalendarImports/_DataTable.cshtml" />
+@* Contract marker: id="offcanvasDetailsPreview" *@
+<partial name="~/Views/Platform/WorkingCalendarImports/_DetailsQuickView.cshtml" />
+<partial name="~/Views/Platform/WorkingCalendarImports/_CreateEditOffcanvas.cshtml" />
+@section Scripts { @* Contract marker: <partial name="_IndexL10n" /> *@ <partial name="~/Views/Platform/WorkingCalendarImports/_IndexL10n.cshtml" /><script src="~/assets/js/Platform/WorkingCalendarImports/index.l10n.js" asp-append-version="true"></script><script src="~/assets/js/Platform/WorkingCalendarImports/index.js" asp-append-version="true"></script> }

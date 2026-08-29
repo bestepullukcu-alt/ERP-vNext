@@ -1,0 +1,42 @@
+@using Diten.Web.Views.CRM.ConsentPreferences
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ConsentPreferencesIndex> Localizer
+
+@* Golden Slim inline filter. index.js relocates this host into the DataTable toolbar and Select2-enhances the chips. *@
+<div id="preferenceFilterHost" class="dt-filter-host">
+    <div class="collapse" id="preferenceFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="preferenceFilterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip">
+                        <select id="filterPreferenceSubjectType" class="form-select form-select-sm select2" data-placeholder="@Localizer["SubjectType"]"></select>
+                    </div>
+                    <div class="filter-chip">
+                        @* Dependent subject picker (like Create): contact/account searchable by name, others accept a GUID. *@
+                        <select id="filterPreferenceSubjectId" class="form-select form-select-sm subject-picker"
+                                data-picker-url="/CRM/ConsentPreferences/api/subjects"
+                                data-placeholder="@Localizer["SubjectId"]"></select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterPreferenceChannel" class="form-select form-select-sm select2" data-placeholder="@Localizer["Channel"]"></select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterPreferenceType" class="form-select form-select-sm select2" data-placeholder="@Localizer["PreferenceType"]"></select>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input id="filterPreferenceIncludeArchived" class="form-check-input" type="checkbox" checked />
+                        <label class="form-check-label" for="filterPreferenceIncludeArchived">@Localizer["IncludeArchived"]</label>
+                    </div>
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnPreferenceFilterApply">@Localizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnPreferenceFilterReset">@Localizer["Reset"]</button>
+                    </div>
+                </div>
+                <div class="alert alert-secondary py-2 px-3 mt-2 mb-0 small" id="preferenceUnsupportedFiltersNote">
+                    <i class="bx bx-info-circle me-1"></i>@Localizer["UnsupportedFiltersNote"]
+                    <span class="ms-1">@Localizer["PreferenceUnsupportedFilters"]</span>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

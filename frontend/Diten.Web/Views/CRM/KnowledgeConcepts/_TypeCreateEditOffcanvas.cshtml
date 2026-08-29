@@ -1,0 +1,68 @@
+@using Diten.Web.Views.CRM.KnowledgeConcepts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeConceptsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* MOD-0162-FU03 Tab 1 — ConceptType create/edit (Golden Slim: 6 user fields, so the form is an offcanvas).
+   SubjectId is mandatory and subject-scoped; the code is stable and is not part of the update contract, so both
+   are locked once the row exists. Cross-subject rejection stays a backend rule (V03/V05) — this form never fakes it. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasTypeCreateEdit" aria-labelledby="offcanvasTypeCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <div class="d-flex align-items-center flex-wrap gap-2">
+            <h5 id="offcanvasTypeCreateEditLabel" class="offcanvas-title mb-0">@Localizer["CreateType"]</h5>
+            <span id="conceptTypeRequiredTracker" class="d-flex align-items-center"></span>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="conceptTypeFormAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="conceptTypeForm" class="pt-0" novalidate
+              data-required-tracker-target="#conceptTypeRequiredTracker"
+              data-required-tracker-wrapper-class="d-flex align-items-center"
+              data-required-tracker-badge-class="badge bg-label-danger d-flex align-items-center">
+            <input type="hidden" id="typeFormId" />
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="typeSubjectId" class="form-label fw-medium">@Localizer["SubjectId"] <span class="text-danger">*</span></label>
+                    <select id="typeSubjectId" class="form-select concept-form-select2" data-placeholder="@Localizer["SelectOption"]" required></select>
+                    <div class="form-text">@Localizer["SubjectMeaningNote"]</div>
+                </div>
+
+                <div class="col-12">
+                    <label for="typeConceptTypeCode" class="form-label fw-medium">@Localizer["ConceptTypeCode"] <span class="text-danger">*</span></label>
+                    <input type="text" id="typeConceptTypeCode" class="form-control" maxlength="120" required />
+                    <div class="form-text" id="typeConceptTypeCodeHint">@Localizer["ImmutableAfterCreate"]</div>
+                </div>
+
+                <div class="col-12">
+                    <label for="typeConceptTypeName" class="form-label fw-medium">@Localizer["ConceptTypeName"] <span class="text-danger">*</span></label>
+                    <input type="text" id="typeConceptTypeName" class="form-control" maxlength="240" required />
+                </div>
+
+                <div class="col-12">
+                    <label for="typeStatus" class="form-label fw-medium">@Localizer["Status"]</label>
+                    <select id="typeStatus" class="form-select concept-form-select2" data-placeholder="@Localizer["SelectOption"]"></select>
+                </div>
+
+                <div class="col-12">
+                    <label for="typeSortOrder" class="form-label fw-medium">@Localizer["SortOrder"]</label>
+                    <input type="number" id="typeSortOrder" class="form-control" min="0" step="1" value="0" />
+                    <div class="form-text">@Localizer["TypeSortOrderNote"]</div>
+                </div>
+
+                <div class="col-12">
+                    <label for="typeDescription" class="form-label fw-medium">@Localizer["Description"]</label>
+                    <textarea id="typeDescription" class="form-control" rows="3" maxlength="2000"></textarea>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="submit" form="conceptTypeForm" id="btnSaveConceptType" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>

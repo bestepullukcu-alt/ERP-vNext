@@ -50,8 +50,17 @@ window.DitenDataTable = (function () {
         return headers;
     }
 
+    // Turns any of our list envelopes into the ROW ARRAY DataTables expects.
+    // The `items` branch is not optional: the standard list envelope is
+    // `{ data: { totalCount, items: [...] } }`, and without it the `[json.data]`
+    // fallback below hands DataTables ONE row that is the envelope itself — which
+    // surfaces as "Requested unknown parameter '<field>' for row 0" on every column,
+    // because the envelope has none of the item's fields. Keep `items` ahead of that
+    // fallback; the fallback is only for a single-object payload.
     function unwrapResponseData(json) {
         if (json?.data?.data) return json.data.data;
+        if (Array.isArray(json?.data?.items)) return json.data.items;
+        if (Array.isArray(json?.items)) return json.items;
         if (json?.data) return Array.isArray(json.data) ? json.data : [json.data];
         return Array.isArray(json) ? json : [];
     }

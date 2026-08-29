@@ -1,0 +1,51 @@
+@using Diten.Web.Views.CRM.Contacts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ContactIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* Both chips are populated at runtime from MOD-0048 published values (/CRM/Contacts/lookups) — never hardcoded. *@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Filter Chip: Status (Multi-select) *@
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Contact Type (Multi-select) *@
+                    <div class="filter-chip filter-contact-type">
+                        <select id="filterContactType" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["ContactType"]">
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Country Scope (Multi-select). Distinct scopes from Territory Management; drives the
+                       Territory Node chip below (cascade). A contact matches if ANY linked account is in the scope. *@
+                    <div class="filter-chip filter-country-scope">
+                        <select id="filterCountryScope" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["CountryScope"]">
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Territory Node (Multi-select). Nodes from Territory Management, narrowed by the
+                       selected country scope. A contact matches if ANY linked account is in the node. *@
+                    <div class="filter-chip filter-territory">
+                        <select id="filterTerritory" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["TerritoryNode"]">
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

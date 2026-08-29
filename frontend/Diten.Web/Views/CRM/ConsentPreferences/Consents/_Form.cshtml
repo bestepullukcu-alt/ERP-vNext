@@ -1,0 +1,239 @@
+@model Diten.Web.Models.CRM.ConsentEditViewModel
+@using System.Text.Json
+@using Diten.Web.Views.CRM.ConsentPreferences
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ConsentPreferencesIndex> Localizer
+@{
+    var isEdit = Model.ConsentId.HasValue;
+    var title = isEdit ? Localizer["EditConsent"].Value : Localizer["CreateConsent"].Value;
+    var action = isEdit ? "ConsentEdit" : "ConsentCreate";
+    // Common source-system suggestions for the external-reference picker. Not a canonical vocabulary — the Select2 is
+    // in tags mode, so any custom value is still allowed; these are just convenience options.
+    var sourceSystemSuggestions = new[]
+    {
+        "Veeva CRM", "Salesforce", "Microsoft Dynamics", "SAP", "Oracle", "IQVIA OneKey",
+        "Reltio MDM", "Informatica MDM", "Legacy CRM", "Excel/CSV Import", "Data Warehouse", "Manual Entry"
+    };
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/ConsentPreferences">@Localizer["PageTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/CRM/ConsentPreferences" class="btn btn-label-secondary">@Localizer["Cancel"]</a>
+        <button type="submit" form="consentForm" class="btn btn-primary">@Localizer["Save"]</button>
+    </div>
+</div>
+
+<form id="consentForm" asp-controller="ConsentPreferences" asp-action="@action" asp-route-consentId="@Model.ConsentId" method="post" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    @if (isEdit) { <input type="hidden" asp-for="ConsentId" /> }
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+    @if (!string.IsNullOrWhiteSpace(Model.ContractError))
+    {
+        <div class="alert alert-danger">@Localizer[Model.ContractError]</div>
+    }
+    @if (isEdit)
+    {
+        <div class="alert alert-info d-flex align-items-center"><i class="bx bx-lock-alt me-2"></i>@Localizer["ImmutableQuestionHelp"]</div>
+    }
+
+    <div class="row g-4">
+        <!-- Main column -->
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <label asp-for="SubjectType" class="form-label fw-medium">@Localizer["SubjectType"] <span class="text-danger">*</span></label>
+                            <select asp-for="SubjectType" class="select2 form-select" required disabled="@isEdit"><option value="">@Localizer["SelectOption"]</option>@foreach (var x in Model.SubjectTypes) { <option value="@x">@x</option> }</select>
+                            @if (isEdit) { <input type="hidden" asp-for="SubjectType" /> }
+                            <span asp-validation-for="SubjectType" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="SubjectId" class="form-label fw-medium">@Localizer["SubjectId"] <span class="text-danger">*</span></label>
+                            @if (isEdit)
+                            {
+                                @* Immutable on edit — read-only GUID display. *@
+                                <input asp-for="SubjectId" class="form-control" required readonly />
+                            }
+                            else
+                            {
+                                @* Dependent picker: for contact/account, options load by name from the Gateway; other
+                                   subject types (and no-match) fall back to GUID entry. Wired in consent-form.js. *@
+                                <select asp-for="SubjectId" id="SubjectId" class="form-select subject-picker" required
+                                        data-picker-url="/CRM/ConsentPreferences/api/subjects"
+                                        data-placeholder="@Localizer["SubjectPickerPlaceholder"]"></select>
+                            }
+                            <span asp-validation-for="SubjectId" class="text-danger small mt-1"></span>
+                            @if (!isEdit) { <small class="text-muted">@Localizer["SubjectPickerHelp"]</small> }
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="Channel" class="form-label fw-medium">@Localizer["Channel"] <span class="text-danger">*</span></label>
+                            <select asp-for="Channel" class="select2 form-select" required disabled="@isEdit"><option value="">@Localizer["SelectOption"]</option>@foreach (var x in Model.Channels) { <option value="@x">@x</option> }</select>
+                            @if (isEdit) { <input type="hidden" asp-for="Channel" /> }
+                            <span asp-validation-for="Channel" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="Purpose" class="form-label fw-medium">@Localizer["Purpose"] <span class="text-danger">*</span></label>
+                            <select asp-for="Purpose" class="select2 form-select" required disabled="@isEdit"><option value="">@Localizer["SelectOption"]</option>@foreach (var x in Model.Purposes) { <option value="@x">@x</option> }</select>
+                            @if (isEdit) { <input type="hidden" asp-for="Purpose" /> }
+                            <span asp-validation-for="Purpose" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="ScopeType" class="form-label fw-medium">@Localizer["ScopeType"]</label>
+                            <select asp-for="ScopeType" class="select2 form-select" disabled="@isEdit"><option value="">@Localizer["NoScope"]</option>@foreach (var x in Model.ScopeTypes) { <option value="@x">@x</option> }</select>
+                            @if (isEdit) { <input type="hidden" asp-for="ScopeType" /> }
+                            <span asp-validation-for="ScopeType" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="ScopeId" class="form-label fw-medium">@Localizer["ScopeId"]</label>
+                            <input asp-for="ScopeId" class="form-control" readonly="@isEdit" />
+                            <span asp-validation-for="ScopeId" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12"><small class="text-muted">@Localizer["ScopeHelp"]</small></div>
+                    </div>
+                </div>
+            </section>
+
+            @* External References — moved into Legal & Status's old place. OPTIONAL; Golden Slim DataTable + offcanvas add. *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["ExternalReferencesSection"]</h6>
+                        <small class="text-muted">@Localizer["ExternalReferencesOptionalHelp"]</small>
+                    </div>
+                    <div class="card-datatable table-responsive">
+                        <table id="dt-external-refs" data-dt-standard="v2" class="datatables-external-refs table border-top w-100">
+                            <thead><tr>
+                                <th>@Localizer["SourceSystem"]</th>
+                                <th class="all">@Localizer["ExternalId"]</th>
+                                <th>@Localizer["ExternalCode"]</th>
+                                <th>@Localizer["ExternalName"]</th>
+                                <th>@Localizer["Primary"]</th>
+                                <th class="all text-end">@Localizer["Actions"]</th>
+                            </tr></thead>
+                        </table>
+                    </div>
+                    @* Serialized hidden inputs for model binding — rendered by consent-form.js. *@
+                    <div id="externalReferencesHost" class="d-none"></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar column -->
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["EvidenceSection"]</h6>
+                    <div class="alert alert-secondary py-2 small">@Localizer["EvidencePointerHelp"]</div>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="EvidenceRefType" class="form-label fw-medium">@Localizer["EvidenceRefType"]</label>
+                            <select asp-for="EvidenceRefType" class="select2 form-select"><option value="">@Localizer["NoEvidence"]</option>@foreach (var x in Model.EvidenceRefTypes) { <option value="@x">@x</option> }</select>
+                        </div>
+                        <div class="col-12"><label asp-for="EvidenceRefId" class="form-label fw-medium">@Localizer["EvidenceRefId"]</label><input asp-for="EvidenceRefId" class="form-control" /></div>
+                        <div class="col-12">
+                            <label asp-for="EvidenceSourceModule" class="form-label fw-medium">@Localizer["EvidenceSourceModule"]</label>
+                            <select asp-for="EvidenceSourceModule" class="select2 form-select"><option value="">@Localizer["SelectOption"]</option>@foreach (var x in Model.EvidenceSourceModules) { <option value="@x">@x</option> }</select>
+                        </div>
+                        <div class="col-12"><label asp-for="EvidenceRefCode" class="form-label fw-medium">@Localizer["EvidenceRefCode"]</label><input asp-for="EvidenceRefCode" class="form-control" /></div>
+                    </div>
+                </div>
+            </section>
+
+            @* Legal & Status — moved below Evidence Pointer; fields stacked for the narrow sidebar column. *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ConsentStatusSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="LegalBasis" class="form-label fw-medium">@Localizer["LegalBasis"] <span class="text-danger">*</span></label>
+                            <select asp-for="LegalBasis" class="select2 form-select" required><option value="">@Localizer["SelectOption"]</option>@foreach (var x in Model.LegalBases) { <option value="@x">@x</option> }</select>
+                            <span asp-validation-for="LegalBasis" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="ConsentStatus" class="form-label fw-medium">@Localizer["ConsentStatus"] <span class="text-danger">*</span></label>
+                            <select asp-for="ConsentStatus" class="select2 form-select" required id="consentStatusSelect"><option value="">@Localizer["SelectOption"]</option>@foreach (var x in Model.ConsentStatuses) { <option value="@x">@x</option> }</select>
+                            <span asp-validation-for="ConsentStatus" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Source" class="form-label fw-medium">@Localizer["Source"] <span class="text-danger">*</span></label>
+                            <select asp-for="Source" class="select2 form-select" required><option value="">@Localizer["SelectOption"]</option>@foreach (var x in Model.Sources) { <option value="@x">@x</option> }</select>
+                            <span asp-validation-for="Source" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="EffectiveFrom" class="form-label fw-medium">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
+                            <input asp-for="EffectiveFrom" type="date" asp-format="{0:yyyy-MM-dd}" class="form-control" required />
+                            <span asp-validation-for="EffectiveFrom" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="EffectiveTo" class="form-label fw-medium">@Localizer["EffectiveTo"]</label>
+                            <input asp-for="EffectiveTo" type="date" asp-format="{0:yyyy-MM-dd}" class="form-control" />
+                            <span asp-validation-for="EffectiveTo" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="WithdrawalReason" class="form-label fw-medium">@Localizer["WithdrawalReason"]</label>
+                            <input asp-for="WithdrawalReason" class="form-control" id="withdrawalReason" />
+                            <small class="text-muted">@Localizer["WithdrawalReasonHelp"]</small>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Notes" class="form-label fw-medium">@Localizer["Notes"]</label>
+                            <textarea asp-for="Notes" class="form-control" rows="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>
+
+@* Existing references seed (edit) — read by consent-form.js to hydrate the table. *@
+<script id="externalRefSeed" type="application/json">@Html.Raw(JsonSerializer.Serialize(Model.ExternalReferences, new JsonSerializerOptions(JsonSerializerDefaults.Web)))</script>
+
+@* Golden Slim create canvas for adding one external reference. Kept OUTSIDE the form so its inputs never post;
+   consent-form.js reads the canvas, appends a table row + hidden inputs, then closes the canvas. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="externalRefCanvas" aria-labelledby="externalRefCanvasLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title" id="externalRefCanvasLabel">@Localizer["AddReference"]</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@Localizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="mb-3">
+            <label class="form-label fw-medium" for="erSourceSystem">@Localizer["SourceSystem"] <span class="text-danger">*</span></label>
+            <select id="erSourceSystem" class="form-select" data-placeholder="@Localizer["SourceSystemPlaceholder"]">
+                <option></option>
+                @foreach (var s in sourceSystemSuggestions) { <option value="@s">@s</option> }
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-medium" for="erExternalId">@Localizer["ExternalId"] <span class="text-danger">*</span></label>
+            <input id="erExternalId" class="form-control" maxlength="240" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-medium" for="erExternalCode">@Localizer["ExternalCode"]</label>
+            <input id="erExternalCode" class="form-control" maxlength="240" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-medium" for="erExternalName">@Localizer["ExternalName"]</label>
+            <input id="erExternalName" class="form-control" maxlength="400" />
+        </div>
+        <div class="form-check form-switch mb-4">
+            <input id="erIsPrimary" class="form-check-input" type="checkbox" role="switch" />
+            <label class="form-check-label ms-2" for="erIsPrimary">@Localizer["Primary"]</label>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" id="erSaveBtn" class="btn btn-primary"><i class="bx bx-plus me-1"></i>@Localizer["AddReference"]</button>
+            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["Cancel"]</button>
+        </div>
+    </div>
+</div>

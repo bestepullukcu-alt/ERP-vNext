@@ -39,6 +39,10 @@ public sealed class ValidateUserReferenceQueryHandler
         }
 
         return Response<TenantUserLookupValidationDto>.Success(
-            new TenantUserLookupValidationDto(user.Id, Referenceable: true));
+            new TenantUserLookupValidationDto(
+                user.Id,
+                Referenceable: true,
+                MaskedName: MaskedIdentity.MaskName(user.FirstName, user.LastName),
+                MaskedEmail: MaskedIdentity.MaskEmail(user.Email)));
     }
 }

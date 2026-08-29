@@ -1,0 +1,116 @@
+Technical Group,Permission Profile,Entity Scope,Folders Bound,Membership Approver / Owner Role,Directory Object,Members,Status
+GMG-REPO-ROOT-GOVERNANCE-GRP,PS-ROOT-GOVERNANCE,GROUP,1,Records Management / IT,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-REPO-CONTROL-GRP,PS-REPO-CONTROL,GROUP,10,Records Management / IT / QA Documentation,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-MGMT-RESTRICTED-GRP,PS-MGMT-RESTRICTED,GROUP,19,CEO / Corporate Secretary / Entity Management,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-MGMT-RESTRICTED-CH,PS-MGMT-RESTRICTED,10_GMG_AG_CH,11,CEO / Corporate Secretary / Entity Management,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-MGMT-RESTRICTED-PL,PS-MGMT-RESTRICTED,30_GM_Poland_PL,11,CEO / Corporate Secretary / Entity Management,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-MGMT-RESTRICTED-MYG,PS-MGMT-RESTRICTED,40_Miquel_y_Garriga_SL_ES,11,CEO / Corporate Secretary / Entity Management,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-MGMT-RESTRICTED-TR,PS-MGMT-RESTRICTED,50_GMG_Ilaclari_LTD_TR,11,CEO / Corporate Secretary / Entity Management,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-MGMT-RESTRICTED-XE,PS-MGMT-RESTRICTED,80_Cross_Entity,11,CEO / Corporate Secretary / Entity Management,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-MGMT-RESTRICTED-EXT,PS-MGMT-RESTRICTED,90_External_or_Joint_Ventures,11,CEO / Corporate Secretary / Entity Management,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-GQMS-DOCUMENTS-GRP,PS-GQMS-DOCUMENTS,00_Group_Shared,2784,QA Documentation,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-GQMS-RECORDS-GRP,PS-GQMS-RECORDS,00_Group_Shared,16,Company QA / Process Owner,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-OSTANDARD-GRP,PS-OPS-STANDARD,00_Group_Shared,1,Entity / Function Owners,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-WORKING-GRP,PS-WORKING,00_Group_Shared,1,Entity / Function Owners,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-WORKING-CH,PS-WORKING,10_GMG_AG_CH,19,Entity / Function Owners,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-OSTANDARD-CH,PS-OPS-STANDARD,10_GMG_AG_CH,75,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-EHS-RESTRICTED-CH,PS-EHS-RESTRICTED,10_GMG_AG_CH,7,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-FIN-RESTRICTED-CH,PS-FIN-RESTRICTED,10_GMG_AG_CH,13,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-HR-RESTRICTED-CH,PS-HR-RESTRICTED,10_GMG_AG_CH,15,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-INFOSEC-RESTRICTED-CH,PS-INFOSEC-RESTRICTED,10_GMG_AG_CH,7,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-IT-RESTRICTED-CH,PS-IT-RESTRICTED,10_GMG_AG_CH,8,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-LEGAL-PRIVILEGED-CH,PS-LEGAL-PRIVILEGED,10_GMG_AG_CH,13,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-PV-RESTRICTED-CH,PS-PV-RESTRICTED,10_GMG_AG_CH,4,QPPV,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-WORKING-PL,PS-WORKING,30_GM_Poland_PL,19,Entity / Function Owners,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-OSTANDARD-PL,PS-OPS-STANDARD,30_GM_Poland_PL,75,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-EHS-RESTRICTED-PL,PS-EHS-RESTRICTED,30_GM_Poland_PL,7,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-FIN-RESTRICTED-PL,PS-FIN-RESTRICTED,30_GM_Poland_PL,13,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-HR-RESTRICTED-PL,PS-HR-RESTRICTED,30_GM_Poland_PL,15,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-INFOSEC-RESTRICTED-PL,PS-INFOSEC-RESTRICTED,30_GM_Poland_PL,7,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-IT-RESTRICTED-PL,PS-IT-RESTRICTED,30_GM_Poland_PL,8,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-LEGAL-PRIVILEGED-PL,PS-LEGAL-PRIVILEGED,30_GM_Poland_PL,13,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-PV-RESTRICTED-PL,PS-PV-RESTRICTED,30_GM_Poland_PL,4,QPPV,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-WORKING-MYG,PS-WORKING,40_Miquel_y_Garriga_SL_ES,19,Entity / Function Owners,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-OSTANDARD-MYG,PS-OPS-STANDARD,40_Miquel_y_Garriga_SL_ES,75,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-EHS-RESTRICTED-MYG,PS-EHS-RESTRICTED,40_Miquel_y_Garriga_SL_ES,7,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-FIN-RESTRICTED-MYG,PS-FIN-RESTRICTED,40_Miquel_y_Garriga_SL_ES,13,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-HR-RESTRICTED-MYG,PS-HR-RESTRICTED,40_Miquel_y_Garriga_SL_ES,15,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-INFOSEC-RESTRICTED-MYG,PS-INFOSEC-RESTRICTED,40_Miquel_y_Garriga_SL_ES,7,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-IT-RESTRICTED-MYG,PS-IT-RESTRICTED,40_Miquel_y_Garriga_SL_ES,8,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-LEGAL-PRIVILEGED-MYG,PS-LEGAL-PRIVILEGED,40_Miquel_y_Garriga_SL_ES,13,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-PV-RESTRICTED-MYG,PS-PV-RESTRICTED,40_Miquel_y_Garriga_SL_ES,4,QPPV,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-WORKING-TR,PS-WORKING,50_GMG_Ilaclari_LTD_TR,19,Entity / Function Owners,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-OSTANDARD-TR,PS-OPS-STANDARD,50_GMG_Ilaclari_LTD_TR,75,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-EHS-RESTRICTED-TR,PS-EHS-RESTRICTED,50_GMG_Ilaclari_LTD_TR,7,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-FIN-RESTRICTED-TR,PS-FIN-RESTRICTED,50_GMG_Ilaclari_LTD_TR,13,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-HR-RESTRICTED-TR,PS-HR-RESTRICTED,50_GMG_Ilaclari_LTD_TR,15,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-INFOSEC-RESTRICTED-TR,PS-INFOSEC-RESTRICTED,50_GMG_Ilaclari_LTD_TR,7,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-IT-RESTRICTED-TR,PS-IT-RESTRICTED,50_GMG_Ilaclari_LTD_TR,8,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-LEGAL-PRIVILEGED-TR,PS-LEGAL-PRIVILEGED,50_GMG_Ilaclari_LTD_TR,13,Process Owner — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-PV-RESTRICTED-TR,PS-PV-RESTRICTED,50_GMG_Ilaclari_LTD_TR,4,QPPV,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-PRODUCT-RESTRICTED-GRP,PS-PRODUCT-RESTRICTED,GROUP,10,Portfolio / Brand / GRA / Technical Owners,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-PRODUCT-RESTRICTED-CH,PS-PRODUCT-RESTRICTED,10_GMG_AG_CH,10,Portfolio / Brand / GRA / Technical Owners,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-PRODUCT-RESTRICTED-PL,PS-PRODUCT-RESTRICTED,30_GM_Poland_PL,10,Portfolio / Brand / GRA / Technical Owners,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-PRODUCT-RESTRICTED-MYG,PS-PRODUCT-RESTRICTED,40_Miquel_y_Garriga_SL_ES,10,Portfolio / Brand / GRA / Technical Owners,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-PRODUCT-RESTRICTED-TR,PS-PRODUCT-RESTRICTED,50_GMG_Ilaclari_LTD_TR,10,Portfolio / Brand / GRA / Technical Owners,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-PRODUCT-RESTRICTED-XE,PS-PRODUCT-RESTRICTED,80_Cross_Entity,9,Portfolio / Brand / GRA / Technical Owners,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-PRODUCT-RESTRICTED-EXT,PS-PRODUCT-RESTRICTED,90_External_or_Joint_Ventures,9,Portfolio / Brand / GRA / Technical Owners,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-MARKET-GRP,PS-MARKET,GROUP,9,Commercial / GRA / Country Owners,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-MARKET-CH,PS-MARKET,10_GMG_AG_CH,10,Commercial / GRA / Country Owners,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-MARKET-PL,PS-MARKET,30_GM_Poland_PL,10,Commercial / GRA / Country Owners,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-MARKET-MYG,PS-MARKET,40_Miquel_y_Garriga_SL_ES,10,Commercial / GRA / Country Owners,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-MARKET-TR,PS-MARKET,50_GMG_Ilaclari_LTD_TR,10,Commercial / GRA / Country Owners,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-MARKET-XE,PS-MARKET,80_Cross_Entity,8,Commercial / GRA / Country Owners,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-MARKET-EXT,PS-MARKET,90_External_or_Joint_Ventures,8,Commercial / GRA / Country Owners,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-DEALS-CONFIDENTIAL-GRP,PS-DEALS-CONFIDENTIAL,GROUP,11,Commercial / Legal / Finance,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-DEALS-CONFIDENTIAL-CH,PS-DEALS-CONFIDENTIAL,10_GMG_AG_CH,11,Commercial / Legal / Finance,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-DEALS-CONFIDENTIAL-PL,PS-DEALS-CONFIDENTIAL,30_GM_Poland_PL,11,Commercial / Legal / Finance,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-DEALS-CONFIDENTIAL-MYG,PS-DEALS-CONFIDENTIAL,40_Miquel_y_Garriga_SL_ES,11,Commercial / Legal / Finance,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-DEALS-CONFIDENTIAL-TR,PS-DEALS-CONFIDENTIAL,50_GMG_Ilaclari_LTD_TR,11,Commercial / Legal / Finance,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-DEALS-CONFIDENTIAL-XE,PS-DEALS-CONFIDENTIAL,80_Cross_Entity,10,Commercial / Legal / Finance,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-DEALS-CONFIDENTIAL-EXT,PS-DEALS-CONFIDENTIAL,90_External_or_Joint_Ventures,10,Commercial / Legal / Finance,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-PROJECT-GRP,PS-PROJECT,GROUP,9,PMO / Project Sponsors,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-PROJECT-CH,PS-PROJECT,10_GMG_AG_CH,9,PMO / Project Sponsors,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-PROJECT-PL,PS-PROJECT,30_GM_Poland_PL,9,PMO / Project Sponsors,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-PROJECT-MYG,PS-PROJECT,40_Miquel_y_Garriga_SL_ES,9,PMO / Project Sponsors,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-PROJECT-TR,PS-PROJECT,50_GMG_Ilaclari_LTD_TR,9,PMO / Project Sponsors,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-PROJECT-XE,PS-PROJECT,80_Cross_Entity,8,PMO / Project Sponsors,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-PROJECT-EXT,PS-PROJECT,90_External_or_Joint_Ventures,8,PMO / Project Sponsors,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-KNOWLEDGE-READ-GRP,PS-KNOWLEDGE-READ,GROUP,10,Knowledge Owners / Records Management,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-MASTER-DATA-GRP,PS-MASTER-DATA,00_Group_Shared,4,Data Governance — TBC,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-KNOWLEDGE-READ-CH,PS-KNOWLEDGE-READ,10_GMG_AG_CH,8,Knowledge Owners / Records Management,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-KNOWLEDGE-READ-PL,PS-KNOWLEDGE-READ,30_GM_Poland_PL,8,Knowledge Owners / Records Management,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-KNOWLEDGE-READ-MYG,PS-KNOWLEDGE-READ,40_Miquel_y_Garriga_SL_ES,8,Knowledge Owners / Records Management,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-KNOWLEDGE-READ-TR,PS-KNOWLEDGE-READ,50_GMG_Ilaclari_LTD_TR,8,Knowledge Owners / Records Management,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-KNOWLEDGE-READ-XE,PS-KNOWLEDGE-READ,80_Cross_Entity,8,Knowledge Owners / Records Management,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-KNOWLEDGE-READ-EXT,PS-KNOWLEDGE-READ,90_External_or_Joint_Ventures,8,Knowledge Owners / Records Management,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-CORP-HIGHLY-RESTRICTED-GRP,PS-CORP-HIGHLY-RESTRICTED,GROUP,10,Legal / Corporate Secretary / HR / ISM,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-CORP-HIGHLY-RESTRICTED-CH,PS-CORP-HIGHLY-RESTRICTED,10_GMG_AG_CH,12,Legal / Corporate Secretary / HR / ISM,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-CORP-HIGHLY-RESTRICTED-PL,PS-CORP-HIGHLY-RESTRICTED,30_GM_Poland_PL,12,Legal / Corporate Secretary / HR / ISM,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-CORP-HIGHLY-RESTRICTED-MYG,PS-CORP-HIGHLY-RESTRICTED,40_Miquel_y_Garriga_SL_ES,12,Legal / Corporate Secretary / HR / ISM,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-CORP-HIGHLY-RESTRICTED-TR,PS-CORP-HIGHLY-RESTRICTED,50_GMG_Ilaclari_LTD_TR,12,Legal / Corporate Secretary / HR / ISM,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-CORP-HIGHLY-RESTRICTED-XE,PS-CORP-HIGHLY-RESTRICTED,80_Cross_Entity,9,Legal / Corporate Secretary / HR / ISM,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-CORP-HIGHLY-RESTRICTED-EXT,PS-CORP-HIGHLY-RESTRICTED,90_External_or_Joint_Ventures,9,Legal / Corporate Secretary / HR / ISM,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-ARCHIVE-READONLY-GRP,PS-ARCHIVE-READONLY,GROUP,8,Records Management / Legal,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-ARCHIVE-READONLY-CH,PS-ARCHIVE-READONLY,10_GMG_AG_CH,7,Records Management / Legal,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-ARCHIVE-READONLY-PL,PS-ARCHIVE-READONLY,30_GM_Poland_PL,7,Records Management / Legal,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-ARCHIVE-READONLY-MYG,PS-ARCHIVE-READONLY,40_Miquel_y_Garriga_SL_ES,7,Records Management / Legal,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-ARCHIVE-READONLY-TR,PS-ARCHIVE-READONLY,50_GMG_Ilaclari_LTD_TR,7,Records Management / Legal,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-ARCHIVE-READONLY-XE,PS-ARCHIVE-READONLY,80_Cross_Entity,7,Records Management / Legal,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-ARCHIVE-READONLY-EXT,PS-ARCHIVE-READONLY,90_External_or_Joint_Ventures,7,Records Management / Legal,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-LEGACY-READONLY-GRP,PS-LEGACY-READONLY,GROUP,7,Records Management / IT / QA,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-INTAKE-GRP,PS-INTAKE,00_Group_Shared,7,Records Management,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-LEGACY-READONLY-CH,PS-LEGACY-READONLY,10_GMG_AG_CH,9,Records Management / IT / QA,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-LEGACY-READONLY-PL,PS-LEGACY-READONLY,30_GM_Poland_PL,9,Records Management / IT / QA,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-LEGACY-READONLY-MYG,PS-LEGACY-READONLY,40_Miquel_y_Garriga_SL_ES,9,Records Management / IT / QA,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-LEGACY-READONLY-TR,PS-LEGACY-READONLY,50_GMG_Ilaclari_LTD_TR,9,Records Management / IT / QA,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-LEGACY-READONLY-XE,PS-LEGACY-READONLY,80_Cross_Entity,9,Records Management / IT / QA,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-LEGACY-READONLY-EXT,PS-LEGACY-READONLY,90_External_or_Joint_Ventures,9,Records Management / IT / QA,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-QUARANTINE-GRP,PS-QUARANTINE,GROUP,10,Records Management / IT / Source Owner,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-QUARANTINE-CH,PS-QUARANTINE,10_GMG_AG_CH,9,Records Management / IT / Source Owner,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-QUARANTINE-PL,PS-QUARANTINE,30_GM_Poland_PL,9,Records Management / IT / Source Owner,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-QUARANTINE-MYG,PS-QUARANTINE,40_Miquel_y_Garriga_SL_ES,9,Records Management / IT / Source Owner,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-QUARANTINE-TR,PS-QUARANTINE,50_GMG_Ilaclari_LTD_TR,9,Records Management / IT / Source Owner,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-QUARANTINE-XE,PS-QUARANTINE,80_Cross_Entity,9,Records Management / IT / Source Owner,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-QUARANTINE-EXT,PS-QUARANTINE,90_External_or_Joint_Ventures,9,Records Management / IT / Source Owner,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED
+GMG-REPO-ROOT-READ-GRP,PS-ROOT-READ,00_Group_Shared,1,Records Management,security group (platform-neutral),[TBC — populate from JML],NOT PROVISIONED

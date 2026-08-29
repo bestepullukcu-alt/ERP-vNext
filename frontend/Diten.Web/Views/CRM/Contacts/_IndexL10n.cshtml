@@ -1,0 +1,68 @@
+@using Diten.Web.Views.CRM.Contacts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ContactIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="contacts-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Actions = Localizer["Actions"].Value,
+        Delete = SharedLocalizer["Delete"].Value,
+        Edit = SharedLocalizer["EditRecord"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Details = SharedLocalizer["Details"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        BulkDelete = SharedLocalizer["BulkDelete"].Value,
+        BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        ComingSoon = SharedLocalizer["ComingSoon"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        Description = SharedLocalizer["Description"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
+        RecordCreated = SharedLocalizer["RecordCreated"].Value,
+        RecordUpdated = SharedLocalizer["RecordUpdated"].Value,
+        BulkDeleteSuccess = SharedLocalizer["BulkDeleteSuccess"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        Update = SharedLocalizer["Update"].Value,
+        FormValidationError = SharedLocalizer["ValidationFailed"].Value,
+        AddNew = Localizer["AddNew"].Value,
+        EditItem = Localizer["EditItem"].Value,
+        FormTitleCreate = Localizer["FormTitleCreate"].Value,
+        FormTitleEdit = Localizer["FormTitleEdit"].Value,
+        DisplayName = Localizer["DisplayName"].Value,
+        ContactType = Localizer["ContactType"].Value,
+        ProfessionalTitle = Localizer["ProfessionalTitle"].Value,
+        Email = Localizer["Email"].Value,
+        Phone = Localizer["Phone"].Value,
+        // MOD-0150 Import/Export Task 1 — template download + export options dialog.
+        DownloadTemplate = Localizer["DownloadTemplate"].Value,
+        DownloadTemplateHint = Localizer["DownloadTemplateHint"].Value,
+        ExportContacts = Localizer["ExportContacts"].Value,
+        ExportOptions = Localizer["ExportOptions"].Value,
+        ExportIncludeLinks = Localizer["ExportIncludeLinks"].Value,
+        ExportIncludeHistorical = Localizer["ExportIncludeHistorical"].Value,
+        ExportIncludeNotes = Localizer["ExportIncludeNotes"].Value,
+        ExportIncludeAccounts = Localizer["ExportIncludeAccounts"].Value,
+        ExportPiiWarning = Localizer["ExportPiiWarning"].Value,
+        ExportNotesWarning = Localizer["ExportNotesWarning"].Value,
+        ExportStarted = Localizer["ExportStarted"].Value,
+        ImportComingSoon = Localizer["ImportComingSoon"].Value,
+        Download = Localizer["Download"].Value
+    })
+</script>

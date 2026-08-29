@@ -78,7 +78,7 @@ public sealed class CommitQmsBaselineImportHandler
             DisplayOrder = d.DisplayOrder,
             Status = CollectionDefinitionStatus.Active,
             DefinitionHash = d.DefinitionHash,
-            // MOD-0028-FU06 register-backed governance metadata (additive; null for legacy imports).
+            // QMS register import extension — governance identity pending; additive metadata, null for legacy imports.
             RegisterFolderId = d.RegisterFolderId,
             RegisterParentFolderId = d.RegisterParentFolderId,
             RegisterFullPath = d.RegisterFullPath,

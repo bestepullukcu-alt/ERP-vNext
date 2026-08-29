@@ -1,0 +1,6 @@
+[
+  { "value_code": "male", "display_name": "Male", "sort_order": 10, "is_deprecated": false, "attributes": {} },
+  { "value_code": "female", "display_name": "Female", "sort_order": 20, "is_deprecated": false, "attributes": {} },
+  { "value_code": "other", "display_name": "Other", "sort_order": 30, "is_deprecated": false, "attributes": {} },
+  { "value_code": "unspecified", "display_name": "Prefer not to say", "sort_order": 40, "is_deprecated": false, "attributes": {} }
+]

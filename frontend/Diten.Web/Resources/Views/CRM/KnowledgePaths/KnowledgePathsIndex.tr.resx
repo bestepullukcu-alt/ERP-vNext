@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="Passive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ayrıntılar</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı Görünüm</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Toplu Sil</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Seçili kayıtlar silinsin mi?</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Emin misiniz?</value></data>
+  <data name="Cancel" xml:space="preserve"><value>İptal</value></data>
+  <data name="Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="Search" xml:space="preserve"><value>Ara</value></data>
+  <data name="Export" xml:space="preserve"><value>Dışa Aktar</value></data>
+  <data name="Import" xml:space="preserve"><value>İçe Aktar</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtrele</value></data>
+  <data name="Apply" xml:space="preserve"><value>Uygula</value></data>
+  <data name="Reset" xml:space="preserve"><value>Sıfırla</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Tümü</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Görünümü Kaydet</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Sütunlar</value></data>
+  <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Bilgi yolu bulunamadı.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Bir hata oluştu.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Kayıt arşivlendi.</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>Kayıt oluşturuldu.</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>Kayıt güncellendi.</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seçin…</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Listeye dön</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Arşivlenenleri dâhil et</value></data>
+  <data name="Archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncellendi</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Bitiş</value></data>
+  <data name="KnowledgePathsMenu" xml:space="preserve"><value>Bilgi Yolları</value></data>
+  <data name="KnowledgePathsTitle" xml:space="preserve"><value>Bilgi Yolları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Bilgi içeriklerini öğrenme / tanıtım yollarında sıralayın — sıra, ön koşullar ve sabitlenmiş içerik sürümleri.</value></data>
+  <data name="KnowledgePathContractUnavailable" xml:space="preserve"><value>KnowledgePath yetenek sözleşmesi kullanılamıyor. İşlemler devre dışı.</value></data>
+  <data name="PathCode" xml:space="preserve"><value>Yol Kodu</value></data>
+  <data name="PathName" xml:space="preserve"><value>Yol Adı</value></data>
+  <data name="PathVersion" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="PathStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>Konu</value></data>
+  <data name="TopicId" xml:space="preserve"><value>Başlık</value></data>
+  <data name="AudienceProfileId" xml:space="preserve"><value>Hedef Kitle Profili</value></data>
+  <data name="LanguageCode" xml:space="preserve"><value>Dil</value></data>
+  <data name="Objective" xml:space="preserve"><value>Amaç</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="Source" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="ActiveStepCount" xml:space="preserve"><value>Aktif Adım</value></data>
+  <data name="RequiredStepCount" xml:space="preserve"><value>Zorunlu Adım</value></data>
+  <data name="ContentResolution" xml:space="preserve"><value>İçerik</value></data>
+  <data name="Unresolved" xml:space="preserve"><value>Çözülemedi</value></data>
+  <data name="Resolved" xml:space="preserve"><value>Çözüldü</value></data>
+  <data name="Frozen" xml:space="preserve"><value>Donduruldu</value></data>
+  <data name="CreatePath" xml:space="preserve"><value>Yol Oluştur</value></data>
+  <data name="EditPath" xml:space="preserve"><value>Yolu Düzenle</value></data>
+  <data name="ArchivePath" xml:space="preserve"><value>Yolu Arşivle</value></data>
+  <data name="ArchivePathConfirm" xml:space="preserve"><value>Bu yol arşivlensin mi? Bu yumuşak bir yaşam döngüsü işlemidir; geçmiş okunabilir kalır.</value></data>
+  <data name="ArchivedPathReadOnly" xml:space="preserve"><value>Bu yol arşivlendi ve salt okunur.</value></data>
+  <data name="PathDetail" xml:space="preserve"><value>Yol Ayrıntısı</value></data>
+  <data name="Publish" xml:space="preserve"><value>Yayımla</value></data>
+  <data name="PublishConfirm" xml:space="preserve"><value>Bu yol yayımlansın mı? Adım seti dondurulacak; sonradan değiştirmek için yeni sürüm oluşturun.</value></data>
+  <data name="PublishSeparatelyHelp" xml:space="preserve"><value>Yayımlama ayrı bir işlemdir; bir yol asla yayımlanmış olarak oluşturulmaz.</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Yeni Sürüm</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Bu yayımlanmış yoldan yeni bir taslak sürüm oluşturulsun mu?</value></data>
+  <data name="FrozenStepsHelp" xml:space="preserve"><value>Bu sürüm yayımlandı ve adım seti donduruldu. Adımları değiştirmek için yeni sürüm oluşturun.</value></data>
+  <data name="SaveBeforeSteps" xml:space="preserve"><value>Önce yolu kaydedin, ardından adımlarını buradan ekleyin.</value></data>
+  <data name="StepsHelp" xml:space="preserve"><value>Adımları, içeriğin anlatılması / öğrenilmesi / gösterilmesi gereken sırayla ekleyin.</value></data>
+  <data name="AddStep" xml:space="preserve"><value>Adım Ekle</value></data>
+  <data name="NoSteps" xml:space="preserve"><value>Henüz adım yok.</value></data>
+  <data name="StepsSection" xml:space="preserve"><value>Adımlar</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="ClassificationSection" xml:space="preserve"><value>Sınıflandırma</value></data>
+  <data name="SchedulingSection" xml:space="preserve"><value>Zamanlama ve Yaşam Döngüsü</value></data>
+  <data name="StepOrder" xml:space="preserve"><value>Sıra</value></data>
+  <data name="StepCode" xml:space="preserve"><value>Adım Kodu</value></data>
+  <data name="StepTitle" xml:space="preserve"><value>Adım Başlığı</value></data>
+  <data name="StepType" xml:space="preserve"><value>Adım Türü</value></data>
+  <data name="ContentId" xml:space="preserve"><value>İçerik</value></data>
+  <data name="VersionPinPolicy" xml:space="preserve"><value>İçerik Sürüm Politikası</value></data>
+  <data name="CompletionRule" xml:space="preserve"><value>Tamamlama Kuralı</value></data>
+  <data name="EstimatedDurationMinutes" xml:space="preserve"><value>Süre (dk)</value></data>
+  <data name="PrerequisiteStepId" xml:space="preserve"><value>Ön Koşul Adımı</value></data>
+  <data name="ConceptNodeId" xml:space="preserve"><value>Kavram Düğümü</value></data>
+  <data name="IsRequired" xml:space="preserve"><value>Zorunlu</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notlar</value></data>
+  <data name="BranchConditions" xml:space="preserve"><value>Dal Koşulları</value></data>
+  <data name="AddBranchCondition" xml:space="preserve"><value>Koşul Ekle</value></data>
+  <data name="BranchConditionsHelp" xml:space="preserve"><value>Yalnızca yazılabilir veri — koşullar taşınır, asla değerlendirilmez. Bir yol koşullar olmadan da baştan sona yürünebilir.</value></data>
+  <data name="ConditionCode" xml:space="preserve"><value>Koşul Kodu</value></data>
+  <data name="ArchiveStepConfirm" xml:space="preserve"><value>Bu adım arşivlensin mi? Belgede geçmiş olarak kalır.</value></data>
+  <data name="CrossSubject" xml:space="preserve"><value>Konu-dışı</value></data>
+  <data name="CrossLanguage" xml:space="preserve"><value>Dil-dışı</value></data>
+</root>

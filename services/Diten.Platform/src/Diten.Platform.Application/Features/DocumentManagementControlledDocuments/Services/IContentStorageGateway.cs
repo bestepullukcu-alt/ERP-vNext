@@ -38,7 +38,8 @@ public sealed record ContentStoreRequest(
     string FileName,
     string? DeclaredMediaType,
     byte[] Content,
-    string CreatedBy);
+    string CreatedBy,
+    string? StoragePartition = null);
 
 public sealed record ContentStoreResult(
     Guid ContentId,

@@ -1,0 +1,36 @@
+@using Diten.Web.Views.CRM.Knowledge
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeIndex> Localizer
+
+<div class="card">
+    <div id="knowledgeContractError" class="alert alert-danger rounded-0 d-none mb-0" role="alert"></div>
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+    </div>
+    <div class="card-datatable table-responsive">
+        <table id="dt-knowledge" data-dt-standard="v2" class="datatables-knowledge table border-top w-100">
+            <thead><tr>
+                <th></th>
+                <th>@Localizer["ContentCode"]</th>
+                <th class="all">@Localizer["ContentTitle"]</th>
+                <th>@Localizer["ContentType"]</th>
+                <th>@Localizer["ContentStatus"]</th>
+                <th>@Localizer["SubjectId"]</th>
+                <th>@Localizer["TopicId"]</th>
+                <th>@Localizer["AudienceProfileId"]</th>
+                <th>@Localizer["LanguageCode"]</th>
+                <th>@Localizer["ContentVersion"]</th>
+                <th>@Localizer["BrandId"]</th>
+                <th>@Localizer["ProductId"]</th>
+                <th>@Localizer["EffectiveFrom"]</th>
+                <th>@Localizer["EffectiveTo"]</th>
+                <th>@Localizer["Archived"]</th>
+                <th>@Localizer["UpdatedAt"]</th>
+                <th class="all text-end">@Localizer["Actions"]</th>
+            </tr></thead>
+        </table>
+    </div>
+</div>

@@ -1,4 +1,5 @@
 using Diten.Platform.Domain.Entities;
+using Diten.Platform.Domain.Entities.WorkingCalendar;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -101,6 +102,16 @@ public static class PlatformSchemaMigrations
             database.GetCollection<ModulePageActionDescriptor>(
                 PlatformCollections.ModulePageActionDescriptors).Indexes,
             "ux_platform_module_page_actions_tenant_page_action");
+
+        // F-WC-DOC-SCHEMA-PORT (2026-08-28 main-sync) — the ux_working_calendars unique index gained a
+        // CalendarStatus clause in its partial filter (archived rows release their code). Mongo refuses to
+        // recreate an existing index name with different options (IndexOptionsConflict, code 85), which would
+        // crash-loop startup on a DB that already carries the old-options index. Drop first; a fresh DB is
+        // fine (DropIndexIfExistsAsync swallows IndexNotFound/NamespaceNotFound). The literal name matches the
+        // WorkingCalendar manifest collection (PlatformCollections.WorkingCalendars, added in this same port).
+        await DropIndexIfExistsAsync(
+            database.GetCollection<WorkingCalendar>(PlatformCollections.WorkingCalendars).Indexes,
+            "ux_working_calendars_scope_country_year_code");
     }
 
     private static async Task DropIndexIfExistsAsync<TDocument>(

@@ -1,0 +1,18 @@
+@model Diten.Web.Models.CRM.CycleCapacityEditViewModel
+@using Diten.Web.Views.CRM.CycleCapacities
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CycleCapacitiesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleEdit"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "edit";
+}
+
+<partial name="~/Views/CRM/CycleCapacities/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="~/Views/CRM/CycleCapacities/_IndexL10n.cshtml" />
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/js/CRM/CycleCapacities/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/CycleCapacities/form.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,40 @@
+@model Diten.Web.Models.CRM.KnowledgePathEditViewModel
+@using Diten.Web.Views.CRM.KnowledgePaths
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgePathsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["EditPath"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["EditPath"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/KnowledgePaths">@Localizer["KnowledgePathsTitle"]</a></li>
+                <li class="breadcrumb-item"><a href="/CRM/KnowledgePaths/Details/@Model.PathId">@Model.PathCode</a></li>
+                <li class="breadcrumb-item active text-primary">@Localizer["EditPath"]</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/CRM/KnowledgePaths/Details/@Model.PathId" class="btn btn-label-secondary">@Localizer["Cancel"]</a>
+        <button type="submit" form="knowledgePathForm" class="btn btn-primary">@Localizer["Save"]</button>
+    </div>
+</div>
+
+<form asp-action="Edit" asp-route-id="@Model.PathId" method="post" id="knowledgePathForm" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <partial name="~/Views/CRM/KnowledgePaths/_Form.cshtml" model="Model" />
+</form>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+}
+
+@section Scripts {
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/js/CRM/KnowledgePaths/form.js" asp-append-version="true"></script>
+}

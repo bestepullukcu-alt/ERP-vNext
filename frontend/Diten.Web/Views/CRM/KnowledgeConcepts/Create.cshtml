@@ -1,0 +1,39 @@
+@model Diten.Web.Models.CRM.ConceptNodeEditViewModel
+@using Diten.Web.Views.CRM.KnowledgeConcepts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeConceptsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["CreateNode"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["CreateNode"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/KnowledgeConcepts">@Localizer["ConceptsTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@Localizer["CreateNode"]</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/CRM/KnowledgeConcepts" class="btn btn-label-secondary">@Localizer["Cancel"]</a>
+        <button type="submit" form="conceptNodeForm" class="btn btn-primary">@Localizer["Save"]</button>
+    </div>
+</div>
+
+<form asp-action="Create" method="post" id="conceptNodeForm" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <partial name="~/Views/CRM/KnowledgeConcepts/_Form.cshtml" model="Model" />
+</form>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+}
+
+@section Scripts {
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/js/CRM/KnowledgeConcepts/form.js" asp-append-version="true"></script>
+}

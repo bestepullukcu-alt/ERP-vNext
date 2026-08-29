@@ -1,0 +1,163 @@
+@model Diten.Web.Models.CRM.TerritoryModelDetailPageViewModel
+@using Diten.Web.Views.CRM.TerritoryManagement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TerritoryManagementResources> L
+@inject IHtmlLocalizer<Diten.Web.SharedResource> Shared
+@{
+    var m = Model.Model;
+    var isDraft = string.Equals(m.Status, "draft", StringComparison.OrdinalIgnoreCase);
+    var isArchived = string.Equals(m.Status, "archived", StringComparison.OrdinalIgnoreCase);
+    var canEditRules = Model.CanManageModel && isDraft;
+}
+
+@* Golden Reference Compact layout: ① inline filter, ② heading + notices, ③ the DataTable card (skeleton + table
+   only — every grid action lives in the DataTable toolbar, so the card carries no header of its own). *@
+
+@* ① Inline Filter partial *@
+<partial name="~/Views/CRM/TerritoryManagement/_AssignmentRulesFilter.cshtml" />
+
+@* ② Notices — outside the card. The page heading, breadcrumb and description live in the page itself. *@
+@if (!canEditRules && !isArchived)
+{
+    <div class="alert alert-warning py-2"><i class="bx bx-lock-alt me-1"></i>@L["RulesEditableOnDraftOnly"]</div>
+}
+@if (isArchived)
+{
+    <div class="alert alert-secondary py-2"><i class="bx bx-archive me-1"></i>@L["ArchivedReadOnly"]</div>
+}
+
+@* ③ DataTable card — contract markers: id="skeleton-loader", <table id="dt-assignmentrules" data-dt-standard="v2"> *@
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-assignmentrules" data-dt-standard="v2" class="datatables-assignmentrules table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>@L["RuleCode"]</th>
+                    <th class="all">@L["Name"]</th>
+                    <th>@L["TargetNode"]</th>
+                    <th>@L["RuleType"]</th>
+                    <th>@L["Criteria"]</th>
+                    <th>@L["Priority"]</th>
+                    <th>@L["ConflictPolicy"]</th>
+                    <th>@L["Enabled"]</th>
+                    <th class="cell-fit text-end pe-3 all">@L["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+@* ── Rule create/edit offcanvas ── *@
+@if (canEditRules)
+{
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="assignment-rule-offcanvas">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title" id="assignment-rule-offcanvas-title">@L["CreateRule"]</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <form id="assignment-rule-form" novalidate>
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" id="rule-id" />
+
+                <div class="alert alert-danger d-none" id="rule-form-errors"></div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="rule-code">@L["RuleCode"] <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="rule-code" name="RuleCode" maxlength="64" required />
+                    <small class="text-muted" id="rule-code-hint">@L["RuleCodeHint"]</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="rule-name">@L["Name"] <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="rule-name" name="Name" maxlength="256" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="rule-territory">@L["TargetNode"] <span class="text-danger">*</span></label>
+                    <select class="form-select" id="rule-territory" name="TerritoryId" required data-placeholder="@L["TargetNode"]"></select>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="rule-type">@L["RuleType"] <span class="text-danger">*</span></label>
+                        <select class="form-select" id="rule-type" name="RuleType" required></select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="rule-policy">@L["ConflictPolicy"] <span class="text-danger">*</span></label>
+                        <select class="form-select" id="rule-policy" name="ConflictPolicy" required></select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="rule-priority">@L["Priority"]</label>
+                        <input type="number" class="form-control" id="rule-priority" name="Priority" value="100" min="0" max="10000" />
+                        <small class="text-muted">@L["PriorityHint"]</small>
+                    </div>
+                    <div class="col-md-6 mb-3 d-flex align-items-center">
+                        <div class="form-check form-switch mt-4">
+                            <input class="form-check-input" type="checkbox" id="rule-enabled" name="IsEnabled" value="true" checked />
+                            <label class="form-check-label" for="rule-enabled">@L["Enabled"]</label>
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+                <h6>@L["Criteria"]</h6>
+                <p class="text-muted small">@L["CriteriaHint"]</p>
+
+                @* Every criteria selector is bound to the same MOD-0048 published set the Account form uses —
+                   free text is deliberately gone, so a rule cannot reference a value no account can hold. *@
+                <div class="alert alert-warning py-2 d-none" id="rule-criteria-not-ready"></div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="rule-countries">@L["CountryRefs"]</label>
+                    <select class="form-select" id="rule-countries" name="CountryRefs" multiple data-placeholder="@L["CountryRefs"]"></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="rule-cities">@L["CityRefs"]</label>
+                    <select class="form-select" id="rule-cities" name="CityRefs" multiple data-placeholder="@L["CityRefs"]"></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="rule-districts">@L["DistrictRefs"]</label>
+                    <select class="form-select" id="rule-districts" name="DistrictRefs" multiple data-placeholder="@L["DistrictRefs"]"></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="rule-account-types">@L["AccountTypes"]</label>
+                    <select class="form-select" id="rule-account-types" name="AccountTypes" multiple data-placeholder="@L["AccountTypes"]"></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="rule-account-categories">@L["AccountCategories"]</label>
+                    <select class="form-select" id="rule-account-categories" name="AccountCategories" multiple data-placeholder="@L["AccountCategories"]"></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="rule-account-statuses">@L["AccountStatuses"]</label>
+                    <select class="form-select" id="rule-account-statuses" name="AccountStatuses" multiple data-placeholder="@L["AccountStatuses"]"></select>
+                </div>
+
+                <hr />
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="rule-from">@L["EffectiveFrom"] <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="rule-from" name="EffectiveFrom" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="rule-to">@L["EffectiveTo"]</label>
+                        <input type="date" class="form-control" id="rule-to" name="EffectiveTo" />
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 pt-2">
+                    <button type="submit" class="btn btn-primary">@Shared["Save"]</button>
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@L["Cancel"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}

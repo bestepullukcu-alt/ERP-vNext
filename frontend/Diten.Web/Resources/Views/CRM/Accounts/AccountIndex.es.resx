@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="AccountTitle" xml:space="preserve"><value>Cuentas</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gestione las cuentas de clientes, su jerarquía y su información de ubicación.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Agregar cuenta</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Editar cuenta</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Agregar cuenta</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar cuenta</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Ver</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Back" xml:space="preserve"><value>Atrás</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Creado el</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Actualizado el</value></data>
+  <data name="ReferenceDataUnavailable" xml:space="preserve"><value>Los datos de referencia no están disponibles; no se pueden seleccionar el tipo y el estado de la cuenta. Inténtelo más tarde o contacte con su administrador.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identidad</value></data>
+  <data name="LogoSection" xml:space="preserve"><value>Logotipo</value></data>
+  <data name="LogoHelp" xml:space="preserve"><value>PNG, JPG, GIF, WEBP o SVG. Máximo 256 KB.</value></data>
+  <data name="LogoSelect" xml:space="preserve"><value>Elegir imagen</value></data>
+  <data name="LogoRemove" xml:space="preserve"><value>Quitar</value></data>
+  <data name="LogoInvalidType" xml:space="preserve"><value>Tipo de archivo no válido. Elija una imagen (PNG, JPG, GIF, WEBP, SVG).</value></data>
+  <data name="LogoTooLarge" xml:space="preserve"><value>La imagen es demasiado grande. Debe ser de 256 KB o menos.</value></data>
+  <data name="LocationSection" xml:space="preserve"><value>Ubicación</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>Notas</value></data>
+  <data name="StatusSection" xml:space="preserve"><value>Estado</value></data>
+  <data name="ContactSection" xml:space="preserve"><value>Contacto</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>Integración</value></data>
+  <data name="ChildAccountsSection" xml:space="preserve"><value>Cuentas secundarias</value></data>
+  <data name="CoverageSection" xml:space="preserve"><value>Cobertura</value></data>
+  <data name="CoverageStatus" xml:space="preserve"><value>Estado de cobertura</value></data>
+  <data name="TerritorySection" xml:space="preserve"><value>Territorio</value></data>
+  <data name="TerritoryNode" xml:space="preserve"><value>Nodo de territorio</value></data>
+  <data name="AssignmentSource" xml:space="preserve"><value>Origen de asignación</value></data>
+  <data name="NoTerritoryAssignment" xml:space="preserve"><value>Sin asignación de territorio actual.</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>Ámbito de país</value></data>
+  <data name="TerritoryNodeCode" xml:space="preserve"><value>Código de nodo</value></data>
+  <data name="CurrentBadge" xml:space="preserve"><value>Actual</value></data>
+  <data name="AccountName" xml:space="preserve"><value>Nombre de la cuenta</value></data>
+  <data name="AccountNamePlaceholder" xml:space="preserve"><value>p. ej. Hospital Central</value></data>
+  <data name="AccountCode" xml:space="preserve"><value>Código de cuenta</value></data>
+  <data name="AccountCodePlaceholder" xml:space="preserve"><value>p. ej. ACC-2026-000001</value></data>
+  <data name="AccountCodeHelp" xml:space="preserve"><value>Déjelo vacío para generarlo automáticamente.</value></data>
+  <data name="AccountType" xml:space="preserve"><value>Tipo de cuenta</value></data>
+  <data name="AccountCategory" xml:space="preserve"><value>Categoría de cuenta</value></data>
+  <data name="ParentAccount" xml:space="preserve"><value>Cuenta principal</value></data>
+  <data name="ParentAccountHelp" xml:space="preserve"><value>Seleccione una cuenta principal para ubicar esta cuenta en la jerarquía.</value></data>
+  <data name="CountryRef" xml:space="preserve"><value>País</value></data>
+  <data name="CountryRefPlaceholder" xml:space="preserve"><value>p. ej. Turquía</value></data>
+  <data name="CityRef" xml:space="preserve"><value>Ciudad</value></data>
+  <data name="CityRefPlaceholder" xml:space="preserve"><value>p. ej. Estambul</value></data>
+  <data name="DistrictRef" xml:space="preserve"><value>Distrito</value></data>
+  <data name="DistrictRefPlaceholder" xml:space="preserve"><value>p. ej. Kadikoy</value></data>
+  <data name="AddressLine" xml:space="preserve"><value>Dirección</value></data>
+  <data name="AddressLinePlaceholder" xml:space="preserve"><value>Calle, edificio, piso</value></data>
+  <data name="Latitude" xml:space="preserve"><value>Latitud</value></data>
+  <data name="Longitude" xml:space="preserve"><value>Longitud</value></data>
+  <data name="ResponsiblePersonName" xml:space="preserve"><value>Persona responsable</value></data>
+  <data name="ResponsiblePersonNamePlaceholder" xml:space="preserve"><value>p. ej. Ana García</value></data>
+  <data name="ResponsiblePersonPhone" xml:space="preserve"><value>Teléfono</value></data>
+  <data name="ResponsiblePersonPhonePlaceholder" xml:space="preserve"><value>p. ej. +90 555 000 0000</value></data>
+  <data name="ResponsiblePersonEmail" xml:space="preserve"><value>Correo electrónico</value></data>
+  <data name="ResponsiblePersonEmailPlaceholder" xml:space="preserve"><value>p. ej. contacto@ejemplo.com</value></data>
+  <data name="ExternalReference" xml:space="preserve"><value>Referencia externa</value></data>
+  <data name="ExternalReferencePlaceholder" xml:space="preserve"><value>p. ej. id heredado</value></data>
+  <data name="ExternalReferenceHelp" xml:space="preserve"><value>Identificador de esta cuenta en el sistema de origen.</value></data>
+  <data name="MapSearchPlaceholder" xml:space="preserve"><value>Buscar un barrio, calle o dirección</value></data>
+  <data name="MapHelp" xml:space="preserve"><value>Haga clic en el mapa o arrastre el marcador para fijar la ubicación; la dirección se rellena automáticamente. También puede editar los campos manualmente.</value></data>
+  <data name="UseMyLocation" xml:space="preserve"><value>Usar mi ubicación</value></data>
+  <data name="RelatedContacts" xml:space="preserve"><value>Contactos relacionados</value></data>
+  <data name="NoRelatedContacts" xml:space="preserve"><value>Aún no hay contactos relacionados.</value></data>
+  <data name="RelatedAccounts" xml:space="preserve"><value>Cuentas relacionadas</value></data>
+  <data name="NoRelatedAccounts" xml:space="preserve"><value>Aún no hay cuentas relacionadas.</value></data>
+  <data name="Primary" xml:space="preserve"><value>Principal</value></data>
+  <data name="RelationshipType" xml:space="preserve"><value>Relación</value></data>
+  <data name="RelationshipDirection" xml:space="preserve"><value>Dirección</value></data>
+  <data name="NotAuthorized" xml:space="preserve"><value>No tiene autorización para ver esta sección.</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>Esta información no está disponible temporalmente.</value></data>
+  <data name="ViewContact" xml:space="preserve"><value>Ver contacto</value></data>
+  <data name="ViewAccount" xml:space="preserve"><value>Ver cuenta</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Nombre</value></data>
+  <data name="ContactType" xml:space="preserve"><value>Tipo de contacto</value></data>
+  <data name="Role" xml:space="preserve"><value>Rol</value></data>
+  <data name="Phone" xml:space="preserve"><value>Teléfono</value></data>
+  <data name="Email" xml:space="preserve"><value>Correo electrónico</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>Válido desde</value></data>
+  <data name="ValidTo" xml:space="preserve"><value>Válido hasta</value></data>
+  <data name="Notes" xml:space="preserve"><value>Notas</value></data>
+  <data name="AddContactLink" xml:space="preserve"><value>Agregar vínculo de contacto</value></data>
+  <data name="EditContactLink" xml:space="preserve"><value>Editar vínculo de contacto</value></data>
+  <data name="EndContactLink" xml:space="preserve"><value>Finalizar vínculo de contacto</value></data>
+  <data name="AddRelatedAccount" xml:space="preserve"><value>Agregar cuenta relacionada</value></data>
+  <data name="EditRelationship" xml:space="preserve"><value>Editar relación</value></data>
+  <data name="EndRelationship" xml:space="preserve"><value>Finalizar relación</value></data>
+  <data name="SelectContact" xml:space="preserve"><value>Seleccionar contacto</value></data>
+  <data name="SelectAccount" xml:space="preserve"><value>Seleccionar cuenta</value></data>
+  <data name="RoleCode" xml:space="preserve"><value>Rol</value></data>
+  <data name="RelationshipStatus" xml:space="preserve"><value>Estado de la relación</value></data>
+  <data name="PrimaryContact" xml:space="preserve"><value>Contacto principal</value></data>
+  <data name="EndDate" xml:space="preserve"><value>Fecha de fin</value></data>
+  <data name="EndReason" xml:space="preserve"><value>Motivo de finalización / Notas</value></data>
+  <data name="HistoricalLinkNotice" xml:space="preserve"><value>Los vínculos de contacto son históricos: finalizar un vínculo conserva su historial — nunca se elimina.</value></data>
+  <data name="HistoricalRelationshipNotice" xml:space="preserve"><value>Las relaciones son históricas: finalizar una relación conserva su historial — nunca se elimina.</value></data>
+  <data name="LinkWillBeEndedNotDeleted" xml:space="preserve"><value>Este vínculo no se eliminará del historial. Solo quedará inactivo a partir de la fecha que indique.</value></data>
+  <data name="RelationshipWillBeEndedNotDeleted" xml:space="preserve"><value>Esta relación no se eliminará del historial. Solo quedará inactiva a partir de la fecha que indique.</value></data>
+  <data name="SaveLink" xml:space="preserve"><value>Guardar vínculo</value></data>
+  <data name="SaveRelationship" xml:space="preserve"><value>Guardar relación</value></data>
+  <data name="ConfirmEndLink" xml:space="preserve"><value>Confirmar finalización del vínculo</value></data>
+  <data name="ConfirmEndRelationship" xml:space="preserve"><value>Confirmar finalización de la relación</value></data>
+  <data name="ManagedFromSource" xml:space="preserve"><value>Gestionado desde la cuenta de origen</value></data>
+  <data name="LinkEndedMessage" xml:space="preserve"><value>El vínculo de contacto se finalizó y se conservó en el historial.</value></data>
+  <data name="RelationshipEndedMessage" xml:space="preserve"><value>La relación se finalizó y se conservó en el historial.</value></data>
+  <data name="CrossCountryReason" xml:space="preserve"><value>Motivo comercial transfronterizo</value></data>
+  <data name="CrossCountryHelp" xml:space="preserve"><value>Obligatorio solo cuando este contacto/cuenta y la parte relacionada están en países diferentes. Los códigos de país se auditan; este motivo no se registra en los logs.</value></data>
+  <data name="NotesSafetyNotice" xml:space="preserve"><value>No introduzca datos de pacientes, de salud, diagnósticos, tratamientos, recetas ni datos personales sensibles en este campo.</value></data>
+  <data name="ReportsTo" xml:space="preserve"><value>Depende de</value></data>
+  <data name="ReportsToNone" xml:space="preserve"><value>— Ninguno (nivel superior) —</value></data>
+  <data name="ReportsToHelp" xml:space="preserve"><value>Elija un contacto ya vinculado a esta cuenta. Jerarquía dentro de la cuenta; no se permiten autodependencia ni ciclos.</value></data>
+  <data name="FormValidationError" xml:space="preserve"><value>Complete correctamente los campos obligatorios.</value></data>
+</root>

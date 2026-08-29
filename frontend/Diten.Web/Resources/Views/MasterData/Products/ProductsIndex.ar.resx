@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Apply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="Reset" xml:space="preserve"><value>إعادة تعيين</value></data>
+  <data name="Filter" xml:space="preserve"><value>تصفية</value></data>
+  <data name="Search" xml:space="preserve"><value>بحث</value></data>
+  <data name="Export" xml:space="preserve"><value>تصدير</value></data>
+  <data name="Import" xml:space="preserve"><value>استيراد</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>إظهار الكل</value></data>
+  <data name="SaveView" xml:space="preserve"><value>حفظ العرض</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>الأعمدة</value></data>
+  <data name="Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <data name="View" xml:space="preserve"><value>عرض</value></data>
+  <data name="Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>عرض التفاصيل</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>حذف جماعي</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>حذف السجلات المحددة؟</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>هل أنت متأكد؟</value></data>
+  <data name="Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="Remove" xml:space="preserve"><value>إزالة</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>اختر…</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>تضمين المؤرشفة</value></data>
+  <data name="BackToList" xml:space="preserve"><value>العودة إلى القائمة</value></data>
+  <data name="RequiredFieldsHint" xml:space="preserve"><value>الحقول المميزة بـ * مطلوبة.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>لم يتم العثور على سجلات.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>تعذر تحميل السجلات.</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل…</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>هذا الحقل مطلوب.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>تمت أرشفة السجل.</value></data>
+  <data name="EffectiveToBeforeEffectiveFrom" xml:space="preserve"><value>لا يمكن أن يسبق تاريخ الانتهاء تاريخ البدء.</value></data>
+  <data name="Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="Passive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="Unknown" xml:space="preserve"><value>غير معروف</value></data>
+  <data name="Archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="ArchivedAt" xml:space="preserve"><value>تاريخ الأرشفة</value></data>
+  <data name="ArchivedBy" xml:space="preserve"><value>أرشف بواسطة</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>أنشئ بواسطة</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>تاريخ التحديث</value></data>
+  <data name="UpdatedBy" xml:space="preserve"><value>حُدّث بواسطة</value></data>
+  <data name="SummarySection" xml:space="preserve"><value>الملخص</value></data>
+  <data name="AuditSection" xml:space="preserve"><value>التدقيق والمصدر</value></data>
+  <data name="ExternalReferencesSection" xml:space="preserve"><value>المراجع الخارجية</value></data>
+  <data name="ExternalReferencesHelp" xml:space="preserve"><value>سجلات تتبع قديمة. سجل رئيسي واحد كحد أقصى لكل نظام مصدر.</value></data>
+  <data name="AddReference" xml:space="preserve"><value>إضافة مرجع</value></data>
+  <data name="NoExternalReferences" xml:space="preserve"><value>لا توجد مراجع خارجية.</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>النظام المصدر</value></data>
+  <data name="ExternalId" xml:space="preserve"><value>المعرّف الخارجي</value></data>
+  <data name="ExternalCode" xml:space="preserve"><value>الرمز الخارجي</value></data>
+  <data name="ExternalName" xml:space="preserve"><value>الاسم الخارجي</value></data>
+  <data name="ImportedAt" xml:space="preserve"><value>تاريخ الاستيراد</value></data>
+  <data name="Primary" xml:space="preserve"><value>رئيسي</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>ساري من</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>ساري حتى</value></data>
+  <data name="TherapeuticAreaId" xml:space="preserve"><value>المجال العلاجي</value></data>
+  <data name="TherapeuticAreaHelp" xml:space="preserve"><value>المجال العلاجي مفهوم/مرجع وليس مجموعة مراجع محلية مسطحة.</value></data>
+  <data name="BrandProductContractUnavailable" xml:space="preserve"><value>عقد إمكانات العلامة/المنتج غير متاح. الإجراءات معطلة.</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Status_active" xml:space="preserve"><value>نشط</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="BrandCode" xml:space="preserve"><value>رمز العلامة</value></data>
+  <data name="BrandName" xml:space="preserve"><value>اسم العلامة</value></data>
+  <data name="ProductCode" xml:space="preserve"><value>رمز المنتج</value></data>
+  <data name="ProductName" xml:space="preserve"><value>اسم المنتج</value></data>
+  <data name="ProductStatus" xml:space="preserve"><value>حالة المنتج</value></data>
+  <data name="ProductType" xml:space="preserve"><value>نوع المنتج</value></data>
+  <data name="ProductsTitle" xml:space="preserve"><value>المنتجات</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>البيانات الرئيسية للمنتجات. تستهلكها وحدات الحملة والمعرفة والتكرار بالمرجع فقط.</value></data>
+  <data name="CreateProduct" xml:space="preserve"><value>إنشاء منتج</value></data>
+  <data name="EditProduct" xml:space="preserve"><value>تعديل المنتج</value></data>
+  <data name="ProductDetail" xml:space="preserve"><value>تفاصيل المنتج</value></data>
+  <data name="ArchiveProduct" xml:space="preserve"><value>أرشفة المنتج</value></data>
+  <data name="ArchiveProductConfirm" xml:space="preserve"><value>أرشفة هذا المنتج؟ يتم الاحتفاظ بمراجع الحملة والمعرفة والتكرار الخاصة به.</value></data>
+  <data name="ArchivedProductReadOnly" xml:space="preserve"><value>هذا المنتج مؤرشف وللقراءة فقط. تبقى المراجع التاريخية سليمة.</value></data>
+  <data name="ProductCodeImmutableHelp" xml:space="preserve"><value>رمز المنتج دائم. أعد التسمية عبر اسم المنتج.</value></data>
+  <data name="BrandId" xml:space="preserve"><value>العلامة التجارية</value></data>
+  <data name="NoBrand" xml:space="preserve"><value>بدون علامة تجارية</value></data>
+  <data name="NoBrandLinked" xml:space="preserve"><value>هذا المنتج غير مرتبط بعلامة تجارية.</value></data>
+  <data name="BrandIdOptionalHelp" xml:space="preserve"><value>اختياري. قد لا يكون للمنتجات العامة وغير الدوائية علامة تجارية. لا تُعرض العلامات المؤرشفة.</value></data>
+  <data name="BrandNotResolvedHelp" xml:space="preserve"><value>تعذر قراءة العلامة التجارية، لذا يُعرض معرّفها فقط.</value></data>
+  <data name="BrandReferenceSection" xml:space="preserve"><value>مرجع العلامة التجارية</value></data>
+  <data name="PharmaMetadataSection" xml:space="preserve"><value>بيانات وصفية دوائية</value></data>
+  <data name="DosageForm" xml:space="preserve"><value>الشكل الصيدلاني</value></data>
+  <data name="Strength" xml:space="preserve"><value>التركيز</value></data>
+  <data name="PackSize" xml:space="preserve"><value>حجم العبوة</value></data>
+  <data name="UnitOfMeasure" xml:space="preserve"><value>وحدة القياس</value></data>
+  <data name="ATCCode" xml:space="preserve"><value>رمز ATC</value></data>
+  <data name="ATCCodeHelp" xml:space="preserve"><value>رمز ATC مرجع تصنيف خارجي؛ لا يُحتفظ هنا بسجل ATC رئيسي محلي.</value></data>
+  <data name="IndicationRefs" xml:space="preserve"><value>مراجع الاستطباب</value></data>
+  <data name="IndicationRefsHelp" xml:space="preserve"><value>معرّفات مرجعية مفصولة بفواصل. لا يتم فتح سجل استطبابات رئيسي هنا.</value></data>
+  <data name="IndicationRefsInvalid" xml:space="preserve"><value>يجب أن تكون مراجع الاستطباب معرّفات صالحة.</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>الرمز أو الاسم…</value></data>
+  <data name="ProductType_medicine" xml:space="preserve"><value>دواء</value></data>
+  <data name="ProductType_medical-device" xml:space="preserve"><value>جهاز طبي</value></data>
+  <data name="ProductType_service" xml:space="preserve"><value>خدمة</value></data>
+  <data name="ProductType_training-material" xml:space="preserve"><value>مادة تدريبية</value></data>
+  <data name="ProductType_other" xml:space="preserve"><value>أخرى</value></data>
+</root>

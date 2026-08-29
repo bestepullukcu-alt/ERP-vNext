@@ -1,0 +1,178 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ContactTitle" xml:space="preserve"><value>جهات الاتصال</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>إدارة الأشخاص المرتبطين بحساباتك.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>إضافة جهة اتصال</value></data>
+  <data name="EditItem" xml:space="preserve"><value>تعديل جهة الاتصال</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>إضافة جهة اتصال</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل جهة الاتصال</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Back" xml:space="preserve"><value>رجوع</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>تاريخ التحديث</value></data>
+  <data name="ReferenceDataUnavailable" xml:space="preserve"><value>البيانات المرجعية غير متاحة حاليًا، لذا لا يمكن تحديد نوع جهة الاتصال وحالتها. يرجى المحاولة لاحقًا أو الاتصال بالمسؤول.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>الهوية</value></data>
+  <data name="NotesSection" xml:space="preserve"><value>ملاحظات</value></data>
+  <data name="StatusSection" xml:space="preserve"><value>الحالة</value></data>
+  <data name="ProfessionalSection" xml:space="preserve"><value>مهني</value></data>
+  <data name="ContactSection" xml:space="preserve"><value>جهة الاتصال</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>التكامل</value></data>
+  <data name="LinkedAccountsSection" xml:space="preserve"><value>الحسابات المرتبطة</value></data>
+  <data name="TerritorySection" xml:space="preserve"><value>المنطقة</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>نطاق الدولة</value></data>
+  <data name="TerritoryNode" xml:space="preserve"><value>عقدة المنطقة</value></data>
+  <data name="LinkedAccountsOwner" xml:space="preserve"><value>المالك: MOD-0150-FU03</value></data>
+  <data name="ConsentSection" xml:space="preserve"><value>الموافقة / التفضيلات</value></data>
+  <data name="ConsentOwner" xml:space="preserve"><value>واجهة للقراءة فقط - المالك: MOD-0164 / FU05</value></data>
+  <data name="ConsentNotAvailableYet" xml:space="preserve"><value>بيانات الموافقة والتفضيلات غير متوفرة بعد.</value></data>
+  <data name="ConsentNotAuthorized" xml:space="preserve"><value>غير مصرح لك بعرض بيانات الموافقة والتفضيلات.</value></data>
+  <data name="ConsentChannel" xml:space="preserve"><value>القناة</value></data>
+  <data name="ConsentState" xml:space="preserve"><value>الموافقة</value></data>
+  <data name="PreferenceState" xml:space="preserve"><value>التفضيل</value></data>
+  <data name="FirstName" xml:space="preserve"><value>الاسم الأول</value></data>
+  <data name="FirstNamePlaceholder" xml:space="preserve"><value>مثال: أحمد</value></data>
+  <data name="LastName" xml:space="preserve"><value>اسم العائلة</value></data>
+  <data name="LastNamePlaceholder" xml:space="preserve"><value>مثال: يلماز</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>الاسم المعروض</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>مثال: د. أحمد يلماز</value></data>
+  <data name="DisplayNameHelp" xml:space="preserve"><value>اتركه فارغًا ليُشتق من الاسم الأول واسم العائلة.</value></data>
+  <data name="ContactType" xml:space="preserve"><value>نوع جهة الاتصال</value></data>
+  <data name="ProfessionalTitle" xml:space="preserve"><value>اللقب المهني</value></data>
+  <data name="ProfessionalTitlePlaceholder" xml:space="preserve"><value>مثال: د.</value></data>
+  <data name="Specialty" xml:space="preserve"><value>التخصص</value></data>
+  <data name="SpecialtyPlaceholder" xml:space="preserve"><value>مثال: أمراض القلب</value></data>
+  <data name="Department" xml:space="preserve"><value>القسم</value></data>
+  <data name="DepartmentPlaceholder" xml:space="preserve"><value>مثال: المشتريات</value></data>
+  <data name="Phone" xml:space="preserve"><value>الهاتف</value></data>
+  <data name="PhonePlaceholder" xml:space="preserve"><value>مثال: +90 555 000 0000</value></data>
+  <data name="Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="EmailPlaceholder" xml:space="preserve"><value>مثال: contact@example.com</value></data>
+  <data name="ExternalReference" xml:space="preserve"><value>مرجع خارجي</value></data>
+  <data name="ExternalReferencePlaceholder" xml:space="preserve"><value>مثال: معرف النظام القديم</value></data>
+  <data name="ExternalReferenceHelp" xml:space="preserve"><value>معرّف جهة الاتصال هذه في النظام المصدر.</value></data>
+  <data name="AccountName" xml:space="preserve"><value>الحساب</value></data>
+  <data name="AccountCode" xml:space="preserve"><value>رمز الحساب</value></data>
+  <data name="Role" xml:space="preserve"><value>الدور</value></data>
+  <data name="Primary" xml:space="preserve"><value>أساسي</value></data>
+  <data name="LocationSection" xml:space="preserve"><value>الموقع</value></data>
+  <data name="LocationIncompleteHelp" xml:space="preserve"><value>بيانات مرجع الموقع غير متوفرة؛ قد يكون اختيار الدولة/المدينة/المنطقة محدودًا. الموقع اختياري.</value></data>
+  <data name="Country" xml:space="preserve"><value>الدولة</value></data>
+  <data name="City" xml:space="preserve"><value>المدينة</value></data>
+  <data name="District" xml:space="preserve"><value>المنطقة</value></data>
+  <data name="AddressLine" xml:space="preserve"><value>العنوان</value></data>
+  <data name="AddressLinePlaceholder" xml:space="preserve"><value>الشارع، المبنى، الرقم</value></data>
+  <data name="PostalCode" xml:space="preserve"><value>الرمز البريدي</value></data>
+  <data name="PhoneCountryCode" xml:space="preserve"><value>رمز هاتف الدولة</value></data>
+  <data name="PreferredLanguage" xml:space="preserve"><value>اللغة المفضلة</value></data>
+  <data name="PiiKvkkNotice" xml:space="preserve"><value>الاسم والهاتف والبريد الإلكتروني والعنوان بيانات شخصية (PII/KVKK). وهي محمية في السجلات والتصدير وسجلات التدقيق — أدخل ما يلزم فقط.</value></data>
+  <data name="NotesSafetyNotice" xml:space="preserve"><value>لا تُدخل بيانات المرضى أو البيانات الصحية أو التشخيص أو العلاج أو الوصفات الطبية أو البيانات الشخصية الحساسة في هذا الحقل.</value></data>
+  <data name="LocationIncomplete" xml:space="preserve"><value>الموقع غير مكتمل</value></data>
+  <data name="UseMyLocation" xml:space="preserve"><value>استخدم موقعي</value></data>
+  <data name="MapSearchPlaceholder" xml:space="preserve"><value>ابحث عن حي أو شارع أو عنوان</value></data>
+  <data name="MapHelp" xml:space="preserve"><value>انقر على الخريطة أو اسحب العلامة لتحديد الموقع؛ يُملأ العنوان تلقائيًا. يمكنك أيضًا تعديل الحقول يدويًا.</value></data>
+  <data name="Gender" xml:space="preserve"><value>الجنس</value></data>
+  <data name="Photo" xml:space="preserve"><value>الصورة</value></data>
+  <data name="PhotoUpload" xml:space="preserve"><value>رفع</value></data>
+  <data name="PhotoHelp" xml:space="preserve"><value>يُفضّل صورة مربعة؛ يُعاد تحجيمها إلى 256 بكسل. بيانات شخصية — مستبعدة من التصدير وسجلات التدقيق.</value></data>
+  <data name="DownloadTemplate" xml:space="preserve"><value>تنزيل قالب الاستيراد</value></data>
+  <data name="DownloadTemplateHint" xml:space="preserve"><value>ينزّل قالب Excel فارغًا يحتوي على ورقتي Contacts وAccountLinks وقيم البيانات المرجعية المنشورة.</value></data>
+  <data name="ExportContacts" xml:space="preserve"><value>تصدير جهات الاتصال</value></data>
+  <data name="ExportOptions" xml:space="preserve"><value>خيارات التصدير</value></data>
+  <data name="ExportIncludeLinks" xml:space="preserve"><value>تضمين الحسابات المرتبطة (روابط جهات الاتصال)</value></data>
+  <data name="ExportIncludeHistorical" xml:space="preserve"><value>تضمين الروابط المنتهية (التاريخية) أيضًا</value></data>
+  <data name="ExportIncludeNotes" xml:space="preserve"><value>تضمين الملاحظات ومبررات الروابط عبر الدول</value></data>
+  <data name="ExportIncludeAccounts" xml:space="preserve"><value>إضافة ورقة البحث عن الحسابات</value></data>
+  <data name="ExportPiiWarning" xml:space="preserve"><value>قد يحتوي هذا التصدير على بيانات شخصية. لا تقم بتنزيله إلا إذا كنت مخولًا، واحفظ الملف بأمان واحذفه عند انتهاء الحاجة إليه.</value></data>
+  <data name="ExportNotesWarning" xml:space="preserve"><value>الملاحظات نص حر وقد تتضمن بيانات شخصية حساسة، لذلك لا يتم تصديرها ما لم تطلبها صراحة.</value></data>
+  <data name="ExportStarted" xml:space="preserve"><value>جارٍ تجهيز ملفك.</value></data>
+  <data name="ImportComingSoon" xml:space="preserve"><value>سيتوفر رفع القالب المعبأ في الإصدار القادم. يمكنك الآن تنزيل القالب وتصدير بياناتك.</value></data>
+  <data name="Download" xml:space="preserve"><value>تنزيل</value></data>
+  <data name="ImportTitle" xml:space="preserve"><value>استيراد جهات الاتصال</value></data>
+  <data name="ImportPageDescription" xml:space="preserve"><value>ارفع قالبًا معبأً أو ملف تصدير بعد تصحيحه. سترى بالضبط ما الذي سيتغير قبل حفظ أي شيء.</value></data>
+  <data name="ImportFileLabel" xml:space="preserve"><value>ملف Excel ‏(.xlsx)</value></data>
+  <data name="ImportFileHelp" xml:space="preserve"><value>استخدم القالب أو ملف تصدير من هذه الشاشة. الحجم الأقصى 10 ميغابايت. الاستيراد لا يدعم CSV.</value></data>
+  <data name="ImportStrictMode" xml:space="preserve"><value>الوضع الصارم</value></data>
+  <data name="ImportStrictModeHelp" xml:space="preserve"><value>لا يتم تطبيق أي صف طالما بقي صف واحد به خطأ.</value></data>
+  <data name="ImportValidate" xml:space="preserve"><value>تحقق من الملف</value></data>
+  <data name="ImportValidating" xml:space="preserve"><value>جارٍ التحقق...</value></data>
+  <data name="ImportApplying" xml:space="preserve"><value>جارٍ التطبيق...</value></data>
+  <data name="ImportApply" xml:space="preserve"><value>تطبيق الاستيراد</value></data>
+  <data name="ImportApplyConfirm" xml:space="preserve"><value>سيؤدي هذا إلى إنشاء علاقات جهات الاتصال وتحديثها وإنهائها. الروابط المنتهية تُحفظ كسجل تاريخي ولا تُحذف أبدًا. الصفوف التي بها أخطاء لا يتم تطبيقها.</value></data>
+  <data name="ImportApplySuccess" xml:space="preserve"><value>تم تطبيق الاستيراد.</value></data>
+  <data name="ImportPreviewTitle" xml:space="preserve"><value>معاينة (لم يتم حفظ أي شيء بعد)</value></data>
+  <data name="ImportResultTitle" xml:space="preserve"><value>نتيجة الاستيراد</value></data>
+  <data name="ImportSelectFile" xml:space="preserve"><value>اختر ملف ‎.xlsx أولًا.</value></data>
+  <data name="ImportOnlyXlsx" xml:space="preserve"><value>يتم دعم ملفات ‎.xlsx فقط.</value></data>
+  <data name="ImportNothingToApply" xml:space="preserve"><value>لا يوجد شيء لتطبيقه.</value></data>
+  <data name="ImportHasErrors" xml:space="preserve"><value>بعض الصفوف بها أخطاء ولن يتم تطبيقها.</value></data>
+  <data name="ImportHistoricalNotice" xml:space="preserve"><value>إنهاء ارتباط الحساب لا يحذفه أبدًا: يُحتفظ بالسجل بحالة منتهٍ وتاريخ انتهاء، لتبقى الزيارات والطلبات والتقارير السابقة محتفظة بسياقها.</value></data>
+  <data name="ImportNoLinkPermission" xml:space="preserve"><value>لا تملك صلاحية إدارة ارتباطات الحسابات، لذلك ستُعلَّم صفوف ورقة AccountLinks بأنها غير مسموح بها.</value></data>
+  <data name="ImportPiiSafeNotice" xml:space="preserve"><value>تظهر الأسماء مُقنَّعة ولا تكرر الرسائل القيمة الخاطئة، لذا يمكن مشاركة هذه المعاينة بأمان.</value></data>
+  <data name="ImportFilterAll" xml:space="preserve"><value>كل الصفوف</value></data>
+  <data name="ImportSummaryCreates" xml:space="preserve"><value>إنشاء</value></data>
+  <data name="ImportSummaryUpdates" xml:space="preserve"><value>تحديث</value></data>
+  <data name="ImportSummaryEnds" xml:space="preserve"><value>إنهاء</value></data>
+  <data name="ImportSummarySkips" xml:space="preserve"><value>متخطّاة</value></data>
+  <data name="ImportSummaryErrors" xml:space="preserve"><value>أخطاء</value></data>
+  <data name="ImportSummaryWarnings" xml:space="preserve"><value>تحذيرات</value></data>
+  <data name="ImportSummaryConflicts" xml:space="preserve"><value>تعارضات</value></data>
+  <data name="ImportColumnSheet" xml:space="preserve"><value>الورقة</value></data>
+  <data name="ImportColumnRow" xml:space="preserve"><value>الصف</value></data>
+  <data name="ImportColumnOperation" xml:space="preserve"><value>العملية</value></data>
+  <data name="ImportColumnEntity" xml:space="preserve"><value>نوع السجل</value></data>
+  <data name="ImportColumnRecord" xml:space="preserve"><value>السجل</value></data>
+  <data name="ImportColumnChangedFields" xml:space="preserve"><value>الحقول المتغيرة</value></data>
+  <data name="ImportColumnMessage" xml:space="preserve"><value>الرسالة</value></data>
+  <data name="AvailabilitySection" xml:space="preserve"><value>التوفر</value></data>
+  <data name="AvailabilityManage" xml:space="preserve"><value>إدارة التوفر</value></data>
+  <data name="AvailabilityLookup" xml:space="preserve"><value>التحقق من التوفر</value></data>
+  <data name="AvailabilityCheck" xml:space="preserve"><value>تحقق</value></data>
+  <data name="AvailabilityDate" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="AvailabilityWeekday" xml:space="preserve"><value>اليوم</value></data>
+  <data name="AvailabilityWindow" xml:space="preserve"><value>نافذة التوفر</value></data>
+  <data name="AvailabilityPreferredWindow" xml:space="preserve"><value>النافذة المفضلة</value></data>
+  <data name="AvailabilityAvoidWindow" xml:space="preserve"><value>نافذة يجب تجنبها</value></data>
+  <data name="AvailabilityAppointmentRequired" xml:space="preserve"><value>الموعد مطلوب</value></data>
+  <data name="AvailabilityLeadTime" xml:space="preserve"><value>المهلة (أيام)</value></data>
+  <data name="AvailabilityAverageDuration" xml:space="preserve"><value>متوسط الزيارة (دقيقة)</value></data>
+  <data name="AvailabilityType" xml:space="preserve"><value>نوع التوفر</value></data>
+  <data name="AvailabilitySource" xml:space="preserve"><value>المصدر</value></data>
+  <data name="AvailabilityEffective" xml:space="preserve"><value>تواريخ السريان</value></data>
+  <data name="AvailabilityStart" xml:space="preserve"><value>البداية</value></data>
+  <data name="AvailabilityEnd" xml:space="preserve"><value>النهاية</value></data>
+  <data name="AvailabilityPreferredStart" xml:space="preserve"><value>بداية مفضلة</value></data>
+  <data name="AvailabilityPreferredEnd" xml:space="preserve"><value>نهاية مفضلة</value></data>
+  <data name="AvailabilityAvoidStart" xml:space="preserve"><value>بداية التجنب</value></data>
+  <data name="AvailabilityAvoidEnd" xml:space="preserve"><value>نهاية التجنب</value></data>
+  <data name="AvailabilityAdd" xml:space="preserve"><value>إضافة توفر</value></data>
+  <data name="AvailabilityExceptions" xml:space="preserve"><value>استثناءات التاريخ</value></data>
+  <data name="AvailabilityExceptionAdd" xml:space="preserve"><value>إضافة استثناء تاريخ</value></data>
+  <data name="AvailabilityExceptionApplied" xml:space="preserve"><value>تم تطبيق الاستثناء</value></data>
+  <data name="AvailabilityIsAvailable" xml:space="preserve"><value>متاح</value></data>
+  <data name="AvailabilityReason" xml:space="preserve"><value>السبب</value></data>
+  <data name="AvailabilityReasonCodes" xml:space="preserve"><value>رموز السبب</value></data>
+  <data name="AvailabilityDeactivate" xml:space="preserve"><value>إلغاء التنشيط</value></data>
+  <data name="AvailabilityArchive" xml:space="preserve"><value>أرشفة</value></data>
+  <data name="AvailabilityLinkInactive" xml:space="preserve"><value>الرابط غير نشط</value></data>
+  <data name="AvailabilityNoLinks" xml:space="preserve"><value>جهة الاتصال هذه غير مرتبطة بأي حساب بعد، لذلك لا يمكن تسجيل التوفر حسب الموقع.</value></data>
+  <data name="AvailabilityUnknownHint" xml:space="preserve"><value>عدم وجود بيانات التوفر يُبلغ عنه كـ "غير معروف" وليس "غير متاح".</value></data>
+  <data name="AvailabilityOwnerNote" xml:space="preserve"><value>المالك: MOD-0150. تستهلكه MOD-0151 وMOD-0155 للقراءة فقط؛ لا يتم إنتاج أي مسار أو خطة زيارة هنا.</value></data>
+  <data name="AvailabilitySelect" xml:space="preserve"><value>اختر</value></data>
+  <data name="AvailabilityYes" xml:space="preserve"><value>نعم</value></data>
+  <data name="AvailabilityNo" xml:space="preserve"><value>لا</value></data>
+  <data name="AvailabilityStatus_available" xml:space="preserve"><value>متاح</value></data>
+  <data name="AvailabilityStatus_unavailable" xml:space="preserve"><value>غير متاح</value></data>
+  <data name="AvailabilityStatus_unknown" xml:space="preserve"><value>غير معروف</value></data>
+  <data name="Weekday_monday" xml:space="preserve"><value>الاثنين</value></data>
+  <data name="Weekday_tuesday" xml:space="preserve"><value>الثلاثاء</value></data>
+  <data name="Weekday_wednesday" xml:space="preserve"><value>الأربعاء</value></data>
+  <data name="Weekday_thursday" xml:space="preserve"><value>الخميس</value></data>
+  <data name="Weekday_friday" xml:space="preserve"><value>الجمعة</value></data>
+  <data name="Weekday_saturday" xml:space="preserve"><value>السبت</value></data>
+  <data name="Weekday_sunday" xml:space="preserve"><value>الأحد</value></data>
+</root>

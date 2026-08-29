@@ -1,0 +1,53 @@
+@using Diten.Web.Views.CRM.CycleCapacities
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CycleCapacitiesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* The filters NARROW the listing and decide nothing: whether a capacity may be edited comes from its pinned period's
+   status, and reproducing that rule here would give the grid a second opinion.
+   The host carries dt-inline-filter-host — without it the chip styling, which is scoped to that class, never applies. *@
+<div id="inlineFilterHost" class="dt-inline-filter-host">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Periods, countries and statuses come from the loaded rows: a fixed list would go stale, and a
+                       hardcoded one would offer a value the runtime does not know. *@
+                    <div class="filter-chip filter-cycle-period">
+                        <select id="filterCyclePeriodId" class="form-select form-select-sm select2" data-placeholder="@Localizer["CyclePeriod"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-country">
+                        <select id="filterCalendarCountryCode" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["CalendarCountryCode"]">
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-status">
+                        <select id="filterCycleStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-archived">
+                        <select id="filterArchived" class="form-select form-select-sm select2" data-placeholder="@Localizer["ArchivedFilter"]">
+                            <option value="">@Localizer["ArchivedHidden"]</option>
+                            <option value="all">@SharedLocalizer["ShowAll"]</option>
+                            <option value="only">@Localizer["ArchivedOnly"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

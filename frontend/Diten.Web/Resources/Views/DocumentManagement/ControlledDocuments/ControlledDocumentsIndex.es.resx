@@ -518,4 +518,34 @@
   </data>
   <data name="Computing" xml:space="preserve">
     <value>Calculando…</value>
-  </data></root>
+  </data>
+  <data name="MasterRegister" xml:space="preserve"><value>Registro maestro</value></data>
+  <data name="LinkedMasterRegister" xml:space="preserve"><value>Relación gobernada con el registro maestro</value></data>
+  <data name="OpenMasterRegister" xml:space="preserve"><value>Abrir registro maestro</value></data>
+  <data name="MasterRegisterEntry" xml:space="preserve"><value>Entrada del registro maestro</value></data>
+  <data name="MasterRegisterEntryId" xml:space="preserve"><value>ID de entrada del registro</value></data>
+  <data name="MasterRegisterStatus" xml:space="preserve"><value>Estado del registro</value></data>
+  <data name="MasterRegisterLinkStatus" xml:space="preserve"><value>Compatibilidad del vínculo</value></data>
+  <data name="DocumentScope" xml:space="preserve"><value>Ámbito del documento</value></data>
+  <data name="ScopeOwner" xml:space="preserve"><value>Propietario del ámbito</value></data>
+  <data name="DocumentClass" xml:space="preserve"><value>Clase de documento</value></data>
+  <data name="LifecycleStatus" xml:space="preserve"><value>Estado del ciclo de vida</value></data>
+  <data name="LinkedAt" xml:space="preserve"><value>Fecha de vínculo</value></data>
+  <data name="NoLinkedMasterRegisterLegacyHint" xml:space="preserve"><value>No se encontró una entrada vinculada. Puede ser un registro heredado, migrado o en conciliación.</value></data>
+  <data name="ReverseLookupFailed" xml:space="preserve"><value>No se pudo cargar la relación con el registro maestro.</value></data>
+  <data name="ReverseLookupForbidden" xml:space="preserve"><value>No está autorizado para ver la entrada vinculada.</value></data>
+  <data name="ReadinessFailClosedDueToLink" xml:space="preserve"><value>El vínculo no está verificado o es incompatible. La preparación permanece bloqueada.</value></data>
+  <data name="GovernedRegistrationComplete" xml:space="preserve"><value>La relación gobernada con el registro está verificada.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando…</value></data>
+  <data name="LifecycleDraftNotForUse" xml:space="preserve"><value>BORRADOR — NO USAR</value></data>
+  <data name="LifecycleInReviewNotEffective" xml:space="preserve"><value>EN REVISIÓN — NO VIGENTE</value></data>
+  <data name="LifecycleApprovedPendingEffective" xml:space="preserve"><value>APROBADO — PENDIENTE DE VIGENCIA</value></data>
+  <data name="LifecycleEffective" xml:space="preserve"><value>VIGENTE</value></data>
+  <data name="LifecycleSuspendedDoNotUse" xml:space="preserve"><value>SUSPENDIDO — NO USAR</value></data>
+  <data name="LifecycleSuperseded" xml:space="preserve"><value>SUSTITUIDO</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>RETIRADO</value></data>
+  <data name="LifecycleUnderRevisionNotEffective" xml:space="preserve"><value>EN REVISIÓN — NO VIGENTE</value></data>
+  <data name="LegacyUnlinked" xml:space="preserve"><value>HEREDADO — SIN VINCULAR</value></data>
+  <data name="ShowNonEffectiveDocuments" xml:space="preserve"><value>Mostrar borradores / no vigentes</value></data>
+  <data name="ShowNonEffectiveDocumentsHint" xml:space="preserve"><value>Solo vista de gobernanza. Incluye borradores, documentos no vigentes y registros heredados sin vincular.</value></data>
+</root>

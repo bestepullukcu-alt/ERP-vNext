@@ -1,0 +1,181 @@
+@using Diten.Web.Views.WorkingCalendar.Overrides
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OverridesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["DetailsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    No-ViewModel: this page renders shell only. Every value is fetched by details.js through the same-origin proxy,
+    so the controller stays thin and the page cannot drift from the API contract.
+    Section order mirrors _Form.cshtml exactly (Identity → Scope → Weekend → Lifecycle) plus the read-only Days and
+    Resolution sections, which have no counterpart in the create/edit form.
+*@
+<div class="working-calendar-override-details" data-calendar-id="@ViewData["CalendarId"]">
+
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0" id="wc-title">—</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="/WorkingCalendar/Overrides">@Localizer["BreadcrumbOverrides"]</a>
+                    </li>
+                    <li class="breadcrumb-item active text-primary" id="wc-subtitle">—</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a class="btn btn-label-secondary" href="/WorkingCalendar/Overrides">@SharedLocalizer["Back"]</a>
+            <a class="btn btn-primary d-none" id="wc-btn-edit" href="#">@SharedLocalizer["EditRecord"]</a>
+            <button type="button" class="btn btn-primary d-none" id="wc-btn-activate">@Localizer["Activate"]</button>
+            <button type="button" class="btn btn-label-danger d-none" id="wc-btn-archive">@Localizer["Archive"]</button>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionIdentity"]</h6>
+                <div class="row g-4">
+                    <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-purchase-tag-alt"></i><div><div class="backbone-preview-label">@Localizer["CalendarCode"]</div><div class="backbone-preview-value mt-1" id="wc-code">—</div></div></div></div>
+                    <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-file"></i><div><div class="backbone-preview-label">@Localizer["CalendarName"]</div><div class="backbone-preview-value mt-1" id="wc-name">—</div></div></div></div>
+                    <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-align-left"></i><div><div class="backbone-preview-label">@SharedLocalizer["Description"]</div><div class="backbone-preview-value mt-1" id="wc-description">—</div></div></div></div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionWeekend"]</h6>
+                <div class="backbone-preview-field">
+                    <i class="bx bx-calendar-week"></i>
+                    <div>
+                        <div class="backbone-preview-label">@Localizer["WeekendDays"]</div>
+                        <div class="backbone-preview-value mt-1" id="wc-weekend">—</div>
+                        <div id="wc-weekend-inherited" class="mt-2 small text-muted d-none"><i class="icon-base bx bx-link icon-xs me-1"></i><span id="wc-weekend-inherited-text"></span></div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="card backbone-preview-section p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["SectionDays"]</h6>
+                    <button type="button" class="btn btn-sm btn-label-primary d-none" id="wc-btn-add-day">@Localizer["AddDay"]</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0" id="wc-days-table">
+                        <thead><tr><th>@Localizer["DayCode"]</th><th>@Localizer["DayName"]</th><th>@Localizer["DayDate"]</th><th>@Localizer["ObservedDate"]</th><th>@Localizer["DayType"]</th><th>@Localizer["IsHalfDay"]</th><th>@SharedLocalizer["Status"]</th><th class="text-end">@Localizer["Actions"]</th></tr></thead>
+                        <tbody id="wc-days-body"><tr><td colspan="8" class="text-muted">@SharedLocalizer["NotAvailable"]</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionScope"]</h6>
+                <div class="row g-4">
+                    <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-map"></i><div><div class="backbone-preview-label">@Localizer["CountryCode"]</div><div class="backbone-preview-value mt-1" id="wc-country">—</div></div></div></div>
+                    <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-calendar"></i><div><div class="backbone-preview-label">@Localizer["CalendarYear"]</div><div class="backbone-preview-value mt-1" id="wc-year">—</div></div></div></div>
+                    <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-layer"></i><div><div class="backbone-preview-label">@Localizer["ScopeType"]</div><div class="backbone-preview-value mt-1" id="wc-scope">—</div></div></div></div>
+                    <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-buildings"></i><div><div class="backbone-preview-label">@Localizer["OrganizationUnit"]</div><div class="backbone-preview-value mt-1" id="wc-org-unit">—</div></div></div></div>
+                    <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-building-house"></i><div><div class="backbone-preview-label">@Localizer["LegalEntity"]</div><div class="backbone-preview-value mt-1" id="wc-legal-entity">—</div></div></div></div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionLifecycle"]</h6>
+                <div class="row g-4">
+                    <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-check-shield"></i><div><div class="backbone-preview-label">@SharedLocalizer["Status"]</div><div class="mt-1"><span class="badge bg-label-primary" id="wc-status">—</span></div></div></div></div>
+                    <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-note"></i><div><div class="backbone-preview-label">@Localizer["Notes"]</div><div class="backbone-preview-value mt-1" id="wc-notes">—</div></div></div></div>
+                </div>
+            </section>
+
+            <div class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionResolution"]</h6>
+                <div class="mb-3"><label class="form-label fw-medium" for="wc-probe-date">@Localizer["ProbeDate"]</label><input type="date" class="form-control" id="wc-probe-date" /></div>
+                <button type="button" class="btn btn-label-primary w-100" id="wc-btn-probe">@Localizer["Probe"]</button>
+                <div id="wc-probe-result" class="d-none mt-3"><div class="mb-2"><span class="badge" id="wc-probe-badge">—</span><span class="ms-2 text-muted small" id="wc-probe-reason">—</span></div><div id="wc-probe-codes" class="d-flex flex-wrap gap-1"></div></div>
+            </div>
+        </div>
+    </div>
+
+    @*
+        Day authoring dialog. Deliberately NOT named _CreateEditOffcanvas.cshtml and NOT placed on Index: a Compact
+        module authors its aggregate through full Create/Edit pages. This edits an EMBEDDED child of an already
+        open calendar, which is a different thing and belongs on the detail page.
+        Day types are filled from the contract endpoint, so this dialog can only ever offer what the caller's layer
+        is allowed to write.
+    *@
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasDayEditor" aria-labelledby="offcanvasDayEditorLabel">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title" id="offcanvasDayEditorLabel">@Localizer["AddDay"]</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+        </div>
+        <div class="offcanvas-body">
+            <form id="dayEditorForm" novalidate>
+                <input type="hidden" id="day-id" />
+
+                <div class="mb-3">
+                    <label class="form-label fw-medium" for="day-code">@Localizer["DayCode"] <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="day-code" maxlength="64" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-medium" for="day-name">@Localizer["DayName"] <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="day-name" maxlength="200" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-medium" for="day-date">@Localizer["DayDate"] <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="day-date" required />
+                    <span class="text-muted small">@Localizer["DayDateHint"]</span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-medium" for="day-observed">@Localizer["ObservedDate"]</label>
+                    <input type="date" class="form-control" id="day-observed" />
+                    <span class="text-muted small">@Localizer["ObservedDateHint"]</span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-medium" for="day-type">@Localizer["DayType"] <span class="text-danger">*</span></label>
+                    <select class="form-select" id="day-type" required></select>
+                    <span class="text-muted small" id="day-type-hint"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-medium" for="day-recurrence">@Localizer["Recurrence"]</label>
+                    <select class="form-select" id="day-recurrence"></select>
+                    <span class="text-muted small">@Localizer["RecurrenceHint"]</span>
+                </div>
+
+                <div class="mb-3 form-check" id="day-halfday-wrapper">
+                    <input type="checkbox" class="form-check-input" id="day-half-day" />
+                    <label class="form-check-label" for="day-half-day">@Localizer["IsHalfDay"]</label>
+                    <div class="text-muted small">@Localizer["IsHalfDayHint"]</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-medium" for="day-notes">@Localizer["Notes"]</label>
+                    <textarea class="form-control" id="day-notes" rows="2" maxlength="500"></textarea>
+                </div>
+
+                @* Server-side refusals (409 duplicate, 400 reserved day type) are shown here verbatim. *@
+                <div class="alert alert-danger d-none" id="day-editor-error" role="alert"></div>
+
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-primary" id="btnSaveDay">@SharedLocalizer["Save"]</button>
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/WorkingCalendar/Overrides/_IndexL10n.cshtml" />
+    <script src="~/assets/js/WorkingCalendar/Overrides/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/WorkingCalendar/Overrides/details.js" asp-append-version="true"></script>
+}

@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Features.DocumentManagementControlledDocuments;
 using Diten.Platform.Application.Features.DocumentManagementControlledDocuments.Services;
+using Diten.Platform.Application.Features.DocumentManagementMasterRegister;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.DocumentManagement;
 using Diten.Platform.Domain.Enums.DocumentManagement;
@@ -136,9 +137,96 @@ public sealed class ControlledDocumentsExplorerTests
         Assert.True(document.IsFavorite);
     }
 
+    [Theory]
+    [InlineData(ControlledDocumentLifecycleStatus.Draft)]
+    [InlineData(ControlledDocumentLifecycleStatus.InReview)]
+    [InlineData(ControlledDocumentLifecycleStatus.Suspended)]
+    [InlineData(ControlledDocumentLifecycleStatus.Superseded)]
+    public async Task Ordinary_user_cannot_list_detail_or_download_non_effective_document(
+        ControlledDocumentLifecycleStatus lifecycleStatus)
+    {
+        var f = Build(governanceAccess: false, grantReadAction: true);
+        var documentId = SeedDoc(f, Manuals, lifecycleStatus.ToString(), lifecycleStatus);
+        var versionId = f.VersionRepo.Items.Single(x => x.DocumentId == documentId).Id;
+
+        var folder = await f.FolderDocuments.GetFolderDocumentsAsync(Manuals, true, Corr, CancellationToken.None);
+        var detail = await f.Documents.GetDetailAsync(documentId, Corr, CancellationToken.None);
+        var download = await f.Documents.DownloadAsync(documentId, versionId, Corr, CancellationToken.None);
+
+        Assert.Empty(folder.Data!.Documents); // includeNonEffective is ignored without governance permission.
+        Assert.Equal(404, detail.StatusCode);
+        Assert.Equal(404, download.StatusCode);
+    }
+
+    [Fact]
+    public async Task Ordinary_user_can_list_detail_and_download_effective_document()
+    {
+        var f = Build(governanceAccess: false, grantReadAction: true);
+        var documentId = SeedDoc(f, Manuals, "Effective", ControlledDocumentLifecycleStatus.Effective);
+        var versionId = f.VersionRepo.Items.Single(x => x.DocumentId == documentId).Id;
+
+        var folder = await f.FolderDocuments.GetFolderDocumentsAsync(Manuals, Corr, CancellationToken.None);
+        var detail = await f.Documents.GetDetailAsync(documentId, Corr, CancellationToken.None);
+        var download = await f.Documents.DownloadAsync(documentId, versionId, Corr, CancellationToken.None);
+
+        Assert.Contains(folder.Data!.Documents, x => x.Id == documentId && x.IsOfficiallyEffective);
+        Assert.True(detail.IsSuccessful);
+        Assert.True(download.IsSuccessful);
+    }
+
+    [Fact]
+    public async Task Ordinary_user_cannot_consume_legacy_unlinked_document_but_governance_actor_can()
+    {
+        var ordinary = Build(governanceAccess: false, grantReadAction: true);
+        var ordinaryDocumentId = SeedDoc(ordinary, Manuals, "Legacy", lifecycleStatus: null);
+        var ordinaryVersionId = ordinary.VersionRepo.Items.Single().Id;
+
+        Assert.Empty((await ordinary.FolderDocuments.GetFolderDocumentsAsync(Manuals, true, Corr, CancellationToken.None)).Data!.Documents);
+        Assert.Equal(404, (await ordinary.Documents.GetDetailAsync(ordinaryDocumentId, Corr, CancellationToken.None)).StatusCode);
+        Assert.Equal(404, (await ordinary.Documents.DownloadAsync(ordinaryDocumentId, ordinaryVersionId, Corr, CancellationToken.None)).StatusCode);
+
+        var governance = Build(governanceAccess: true, grantReadAction: true);
+        var governanceDocumentId = SeedDoc(governance, Manuals, "Legacy", lifecycleStatus: null);
+        var governanceVersionId = governance.VersionRepo.Items.Single().Id;
+
+        Assert.Contains(
+            (await governance.FolderDocuments.GetFolderDocumentsAsync(Manuals, true, Corr, CancellationToken.None)).Data!.Documents,
+            x => x.Id == governanceDocumentId && !x.IsOfficiallyEffective);
+        Assert.True((await governance.Documents.GetDetailAsync(governanceDocumentId, Corr, CancellationToken.None)).IsSuccessful);
+        Assert.True((await governance.Documents.DownloadAsync(governanceDocumentId, governanceVersionId, Corr, CancellationToken.None)).IsSuccessful);
+    }
+
+    [Theory]
+    [InlineData(ControlledDocumentLifecycleStatus.Draft)]
+    [InlineData(ControlledDocumentLifecycleStatus.InReview)]
+    [InlineData(ControlledDocumentLifecycleStatus.Suspended)]
+    [InlineData(ControlledDocumentLifecycleStatus.Superseded)]
+    public async Task Governance_actor_can_list_non_effective_only_when_explicitly_requested(
+        ControlledDocumentLifecycleStatus lifecycleStatus)
+    {
+        var f = Build(governanceAccess: true);
+        var documentId = SeedDoc(f, Manuals, lifecycleStatus.ToString(), lifecycleStatus);
+
+        var defaultFolder = await f.FolderDocuments.GetFolderDocumentsAsync(Manuals, false, Corr, CancellationToken.None);
+        var inclusiveFolder = await f.FolderDocuments.GetFolderDocumentsAsync(Manuals, true, Corr, CancellationToken.None);
+        var detail = await f.Documents.GetDetailAsync(documentId, Corr, CancellationToken.None);
+
+        Assert.DoesNotContain(defaultFolder.Data!.Documents, x => x.Id == documentId);
+        Assert.Contains(inclusiveFolder.Data!.Documents, x =>
+            x.Id == documentId
+            && x.MasterRegisterLifecycleStatus == lifecycleStatus.ToString()
+            && !x.IsOfficiallyEffective);
+        Assert.True(detail.IsSuccessful);
+        Assert.True(detail.Data!.CanViewNonEffective);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
-    private static Guid SeedDoc(Fixture f, Guid folderId, string title)
+    private static Guid SeedDoc(
+        Fixture f,
+        Guid folderId,
+        string title,
+        ControlledDocumentLifecycleStatus? lifecycleStatus = ControlledDocumentLifecycleStatus.Effective)
     {
         var id = Guid.NewGuid();
         var versionId = Guid.NewGuid();
@@ -170,10 +258,26 @@ public sealed class ControlledDocumentsExplorerTests
             VersionStatus = DocumentVersionStatus.Active,
             CreatedBy = "seed"
         });
+        if (lifecycleStatus is { } status)
+        {
+            f.MasterRegister.Items.Add(new DocumentMasterRegisterEntry
+            {
+                Id = Guid.NewGuid(),
+                TenantId = TenantId,
+                ControlledDocumentId = id,
+                DocumentTitle = title,
+                LifecycleStatus = status
+            });
+        }
         return id;
     }
 
-    private static Fixture Build(IReadOnlyCollection<Guid>? principalCompanies = null, Guid? folderViewUserId = null, IReadOnlyCollection<Guid>? grantedFolders = null)
+    private static Fixture Build(
+        IReadOnlyCollection<Guid>? principalCompanies = null,
+        Guid? folderViewUserId = null,
+        IReadOnlyCollection<Guid>? grantedFolders = null,
+        bool governanceAccess = true,
+        bool grantReadAction = false)
     {
         var tenantContext = new TenantContext();
         tenantContext.SetTenant(TenantId);
@@ -191,6 +295,7 @@ public sealed class ControlledDocumentsExplorerTests
         var folderPolicies = new FakeFolderDocumentAccessPolicyRepository();
         var favorites = new FakeDocumentFavoriteRepository();
         var storage = new FakeContentStorageGateway();
+        var masterRegister = new FakeDocumentMasterRegisterRepository();
 
         if (folderViewUserId is { } uid)
         {
@@ -208,10 +313,27 @@ public sealed class ControlledDocumentsExplorerTests
             }
         }
 
+        var permissions = governanceAccess ? [DocumentMasterRegisterPermissions.View] : Array.Empty<string>();
         var principal = folderViewUserId is { } u
-            ? new DocumentPrincipal(u, [], principalCompanies ?? [])
-            : new DocumentPrincipal(Guid.NewGuid(), [], principalCompanies ?? [CompanyA]);
-        var access = new DocumentAccessEvaluator(folderPolicies, shares, new FakePrincipalAccessor(principal));
+            ? new DocumentPrincipal(u, [], principalCompanies ?? [], Permissions: permissions)
+            : new DocumentPrincipal(Guid.NewGuid(), [], principalCompanies ?? [CompanyA], Permissions: permissions);
+        if (grantReadAction)
+        {
+            folderPolicies.Items.Add(new FolderDocumentAccessPolicy
+            {
+                TenantId = TenantId,
+                CollectionInstanceId = Manuals,
+                CompanyId = CompanyA,
+                TargetType = AccessTargetType.User,
+                TargetId = principal.UserId.ToString("D"),
+                FolderPermissions = new FolderPermissionSet { CanViewFolderDocuments = true }
+            });
+        }
+        var access = new DocumentAccessEvaluator(
+            folderPolicies,
+            shares,
+            new FakePrincipalAccessor(principal),
+            masterRegister: masterRegister);
         var flags = Options.Create(new ControlledDocumentsFeatureFlagOptions());
         var versioning = new DocumentVersioningService(storage, tenantContext);
         var keyFactory = new DocumentKeyFactory();
@@ -221,7 +343,7 @@ public sealed class ControlledDocumentsExplorerTests
         var documents = new ControlledDocumentService(reader, documentRepo, versionRepo, shares, favorites, versioning, access, keyFactory, currentUser, tenantContext, flags);
         var folderDocuments = new FolderDocumentService(reader, documentRepo, templateRepo, favorites, folderPolicies, access, currentUser, tenantContext);
 
-        return new Fixture(explorer, documents, folderDocuments, currentUser, favorites, reader, documentRepo, versionRepo);
+        return new Fixture(explorer, documents, folderDocuments, currentUser, favorites, reader, documentRepo, versionRepo, masterRegister);
     }
 
     private sealed record Fixture(
@@ -232,5 +354,6 @@ public sealed class ControlledDocumentsExplorerTests
         FakeDocumentFavoriteRepository Favorites,
         FakeCollectionInstanceReferenceReader Reader,
         FakeControlledDocumentRepository DocumentRepo,
-        FakeControlledDocumentVersionRepository VersionRepo);
+        FakeControlledDocumentVersionRepository VersionRepo,
+        FakeDocumentMasterRegisterRepository MasterRegister);
 }

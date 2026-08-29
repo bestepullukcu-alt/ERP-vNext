@@ -1,0 +1,10 @@
+dotnet watch 🔥 Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload.
+dotnet watch 💡 Press Ctrl+R to restart.
+dotnet watch 🔨 Building C:\Users\user\Desktop\ERP-vNext\services\Diten.Platform\src\Diten.Platform.API\Diten.Platform.API.csproj ...
+dotnet watch 🔨 Build succeeded: C:\Users\user\Desktop\ERP-vNext\services\Diten.Platform\src\Diten.Platform.API\Diten.Platform.API.csproj
+dotnet watch ⌚ Files updated: C:\Users\user\Desktop\ERP-vNext\services\Diten.Platform\src\Diten.Platform.Application\Features\BusinessReferenceData\BusinessReferenceDataExceptionBehavior.cs, .\Controllers\DocumentManagementControlledDocumentRegistrationController.cs
+dotnet watch 🔥 [Diten.Platform.API (net8.0)] Hot reload succeeded.
+dotnet watch ⌚ Files updated: C:\Users\user\Desktop\ERP-vNext\services\Diten.Platform\src\Diten.Platform.Application\Features\DocumentManagementControlledDocuments\DocumentManagementControlledDocumentsModels.cs, C:\Users\user\Desktop\ERP-vNext\services\Diten.Platform\src\Diten.Platform.Application\Features\DocumentManagementControlledDocuments\Services\ControlledDocumentMapping.cs
+dotnet watch 🔥 [Diten.Platform.API (net8.0)] Hot reload succeeded.
+dotnet watch ⌚ File updated: C:\Users\user\Desktop\ERP-vNext\services\Diten.Platform\src\Diten.Platform.Application\Features\DocumentManagementControlledDocuments\Services\ControlledDocumentMapping.cs
+dotnet watch 🔥 [Diten.Platform.API (net8.0)] Hot reload succeeded.

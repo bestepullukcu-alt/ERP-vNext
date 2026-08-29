@@ -1,0 +1,32 @@
+@using Diten.Web.Views.CRM.KnowledgeConcepts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeConceptsIndex> Localizer
+
+<div class="card">
+    <div id="templates-skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+    </div>
+    <div class="card-datatable table-responsive">
+        <table id="dt-concept-chain-templates" data-dt-standard="v2" class="datatables-concept-chain-templates table border-top w-100">
+            <thead><tr>
+                <th></th>
+                <th>@Localizer["ChainCode"]</th>
+                <th class="all">@Localizer["ChainName"]</th>
+                <th>@Localizer["SubjectId"]</th>
+                @* The expected TYPE sequence — the chain order lives here, not on the type's SortOrder. *@
+                <th>@Localizer["OrderedConceptTypes"]</th>
+                <th>@Localizer["SequenceLength"]</th>
+                <th>@Localizer["ChainVersion"]</th>
+                <th>@Localizer["Status"]</th>
+                <th>@Localizer["EffectiveFrom"]</th>
+                <th>@Localizer["EffectiveTo"]</th>
+                <th>@Localizer["Archived"]</th>
+                <th>@Localizer["UpdatedAt"]</th>
+                <th class="all text-end">@Localizer["Actions"]</th>
+            </tr></thead>
+        </table>
+    </div>
+</div>

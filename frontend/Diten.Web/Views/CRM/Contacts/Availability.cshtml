@@ -1,0 +1,531 @@
+@model Diten.Web.Models.CRM.ContactAvailabilityPageViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.CRM.Contacts.ContactIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["AvailabilitySection"].Value;
+    Layout = "_LayoutTenantShell";
+
+    // MOD-0150 FU07 — availability is edited per AccountContactLink (location). The same doctor can hold a different
+    // schedule at every account, so there is one panel per link and NO contact-level schedule anywhere on this page.
+    // This page shows WHEN someone can be visited at a location; it never builds a route or a visit plan (MOD-0155).
+    var weekdays = new[] { "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday" };
+}
+
+<div class="crm-contact-availability">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0">@Model.ContactDisplayName</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/CRM/Contacts">@Localizer["ContactTitle"]</a></li>
+                    <li class="breadcrumb-item"><a href="/CRM/Contacts/Details/@Model.ContactId">@SharedLocalizer["Details"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@Localizer["AvailabilitySection"]</li>
+                </ol>
+            </nav>
+        </div>
+        <a href="/CRM/Contacts/Details/@Model.ContactId" class="btn btn-label-secondary">@Localizer["Back"]</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] is string success)
+    {
+        <div class="alert alert-success">@success</div>
+    }
+    @if (TempData["ErrorMessage"] is string error)
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+
+    @* Tab strip follows the AssignmentRules/Preview convention: a single card-header nav-pills bar, then a
+       sibling .tab-content below. First tab is the date lookup; then one tab per AccountContactLink, because
+       the same contact keeps a distinct schedule at every account (there is no contact-level schedule). *@
+    <div class="card mb-4">
+        <div class="card-header p-3">
+            <div class="nav-align-top">
+                <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap" role="tablist">
+                    <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                        <button type="button" class="nav-link active small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#availability-lookup" role="tab" aria-selected="true">
+                            <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-calendar-check me-1 wc-tab-icon"></i>@Localizer["AvailabilityLookup"]</span>
+                            <i class="bx bx-calendar-check d-sm-none wc-tab-icon"></i>
+                        </button>
+                    </li>
+                    @foreach (var link in Model.Links)
+                    {
+                        <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                            <button type="button" class="nav-link small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#availability-link-@link.AccountContactLinkId" role="tab" aria-selected="false" tabindex="-1">
+                                <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-buildings me-1 wc-tab-icon"></i>@link.AccountDisplayName <span class="badge bg-label-primary ms-1">@link.Availability.Count</span></span>
+                                <i class="bx bx-buildings d-sm-none wc-tab-icon"></i>
+                            </button>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    @* p-0 clears the theme's forced 1.5rem tab-content inset so the panels line up with the tab strip above. *@
+    <div class="tab-content p-0">
+    <div class="tab-pane fade show active" id="availability-lookup" role="tabpanel">
+    @* Read-only preview of the readiness seam MOD-0151 FU09A / MOD-0155 consume. It answers a date, nothing else. *@
+    <div>
+        @* Lookup header card — mirrors the tenant-detail summary header: left avatar + title/subtitle, right the
+           date query form. Replaces the old standalone h6 + inline form. *@
+        <div class="card mb-4">
+            <div class="card-body p-4 d-flex flex-column flex-xl-row align-items-start align-items-xl-center justify-content-between gap-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary-subtle text-primary rounded d-flex align-items-center justify-content-center flex-shrink-0" style="width:3rem;height:3rem;">
+                        <i class="bx bx-calendar-check fs-3"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">@Localizer["AvailabilityLookup"]</h5>
+                        <small class="text-muted d-block">@Model.ContactDisplayName</small>
+                    </div>
+                </div>
+                <form method="get" action="/CRM/Contacts/Availability/@Model.ContactId" class="d-flex flex-column flex-sm-row align-items-start align-items-sm-end gap-3">
+                    <div>
+                        <label class="form-label" for="lookupDate">@Localizer["AvailabilityDate"]</label>
+                        <input type="date" class="form-control" id="lookupDate" name="lookupDate" value="@Model.LookupDate" />
+                    </div>
+                    <button type="submit" class="btn btn-primary">@Localizer["AvailabilityCheck"]</button>
+                </form>
+            </div>
+        </div>
+
+        @if (Model.Lookup is not null)
+        {
+            @* Distinct accounts present in this lookup feed the Account filter chip (value = AccountId, canonical). *@
+            var lookupAccounts = Model.Lookup.Rows
+                .Where(r => r.AccountId != Guid.Empty)
+                .GroupBy(r => r.AccountId)
+                .Select(g => new { Id = g.Key, Name = g.First().AccountDisplayName })
+                .OrderBy(a => a.Name)
+                .ToList();
+
+            @* Inline filter host (golden-slim standard). availability.js relocates this below the DataTable
+               toolbar and toggles it from the funnel button; the chips filter client-side on canonical row data. *@
+            <div id="availabilityFilterHost" class="dt-inline-filter-host mt-3">
+                <div class="collapse" id="availabilityFilterCollapse">
+                    <div class="pt-0 pb-3">
+                        <form class="m-0" id="availabilityFilterForm" data-no-tracker>
+                            <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                                <div class="filter-chip filter-availability-status">
+                                    <select id="filterAvailabilityStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                                        <option value="available">@Localizer["AvailabilityStatus_available"]</option>
+                                        <option value="unavailable">@Localizer["AvailabilityStatus_unavailable"]</option>
+                                        <option value="unknown">@Localizer["AvailabilityStatus_unknown"]</option>
+                                    </select>
+                                </div>
+                                <div class="filter-chip filter-availability-weekday">
+                                    <select id="filterAvailabilityWeekday" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["AvailabilityWeekday"]">
+                                        @foreach (var day in weekdays)
+                                        {
+                                            <option value="@day">@Localizer["Weekday_" + day]</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="filter-chip filter-availability-account">
+                                    <select id="filterAvailabilityAccount" class="form-select form-select-sm select2" data-placeholder="@Localizer["AccountName"]">
+                                        <option value="">@SharedLocalizer["ShowAll"]</option>
+                                        @foreach (var acc in lookupAccounts)
+                                        {
+                                            <option value="@acc.Id">@acc.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="ms-auto d-flex gap-3">
+                                    <button type="button" class="btn btn-sm btn-primary" id="btnAvailabilityFilterApply">@SharedLocalizer["Apply"]</button>
+                                    <button type="reset" class="btn btn-sm btn-label-danger" id="btnAvailabilityFilterReset">@SharedLocalizer["Reset"]</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            @* Golden-slim DataTable standard: card → card-datatable → table[data-dt-standard=v2] with a leading
+               responsive-control column. Rows are server-rendered; availability.js initialises a client-side
+               DataTable over them so it inherits the shared search / page-length / filter / save-view / export /
+               colvis / responsive chrome. Empty tbody lets DataTables render its own localised empty-state. *@
+            <div class="card">
+                <div class="card-datatable table-responsive">
+                    <table id="dt-availability-lookup" data-dt-standard="v2" class="datatables-availability-lookup table border-top">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th class="all">@Localizer["AccountName"]</th>
+                                <th>@Localizer["AvailabilityWeekday"]</th>
+                                <th>@Localizer["AvailabilityWindow"]</th>
+                                <th>@Localizer["AvailabilityPreferredWindow"]</th>
+                                <th>@Localizer["AvailabilityAvoidWindow"]</th>
+                                <th>@SharedLocalizer["Status"]</th>
+                                <th>@Localizer["AvailabilityReasonCodes"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in Model.Lookup.Rows)
+                            {
+                                <tr data-account="@row.AccountId" data-weekday="@row.Weekday" data-status="@row.AvailabilityStatus">
+                                    <td></td>
+                                    <td><span class="fw-medium text-heading">@(row.AccountDisplayName ?? "-")</span></td>
+                                    <td>@Localizer["Weekday_" + row.Weekday]</td>
+                                    <td>@(row.AvailableWindow ?? "-")</td>
+                                    <td>@(row.PreferredWindow ?? "-")</td>
+                                    <td>@(row.AvoidWindow ?? "-")</td>
+                                    <td>
+                                        @{
+                                            var badge = row.AvailabilityStatus switch
+                                            {
+                                                "available" => "bg-label-success",
+                                                "unavailable" => "bg-label-danger",
+                                                _ => "bg-label-secondary"
+                                            };
+                                        }
+                                        <span class="badge @badge">@Localizer["AvailabilityStatus_" + row.AvailabilityStatus]</span>
+                                        @if (row.ExceptionApplied)
+                                        {
+                                            <span class="badge bg-label-warning ms-1">@Localizer["AvailabilityExceptionApplied"]</span>
+                                        }
+                                    </td>
+                                    <td class="small text-muted">@string.Join(", ", row.ReasonCodes)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (Model.Links.Count == 0)
+    {
+        <div class="alert alert-info mt-4 mb-0">@Localizer["AvailabilityNoLinks"]</div>
+    }
+    </div>
+
+    @foreach (var link in Model.Links)
+    {
+        var addAvailTarget = Model.CanManage ? $"#oc-add-avail-{link.AccountContactLinkId}" : null;
+        var addExcTarget = Model.CanManage ? $"#oc-add-exc-{link.AccountContactLinkId}" : null;
+        <div class="tab-pane fade" id="availability-link-@link.AccountContactLinkId" role="tabpanel">
+        <div class="mb-4">
+            @* Account header removed — the account is already named by the outer tab; the link's role/primary/
+               inactive state is not repeated here. *@
+            @* Nested tab strip: weekly Availability schedule / Date exceptions. Same nav-pills convention as the
+               outer strip; ids are scoped by AccountContactLinkId so multiple account panels never collide. *@
+            <div class="card mb-4">
+                <div class="card-header p-3">
+                    <div class="nav-align-top">
+                        <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap" role="tablist">
+                            <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                                <button type="button" class="nav-link active small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#link-avail-@link.AccountContactLinkId" role="tab" aria-selected="true">
+                                    <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-calendar-week me-1 wc-tab-icon"></i>@Localizer["AvailabilitySection"] <span class="badge bg-label-primary ms-1">@link.Availability.Count</span></span>
+                                    <i class="bx bx-calendar-week d-sm-none wc-tab-icon"></i>
+                                </button>
+                            </li>
+                            <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                                <button type="button" class="nav-link small border shadow-none wc-tab-compact" data-bs-toggle="tab" data-bs-target="#link-exc-@link.AccountContactLinkId" role="tab" aria-selected="false" tabindex="-1">
+                                    <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-calendar-x me-1 wc-tab-icon"></i>@Localizer["AvailabilityExceptions"] <span class="badge bg-label-secondary ms-1">@link.Exceptions.Count</span></span>
+                                    <i class="bx bx-calendar-x d-sm-none wc-tab-icon"></i>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content p-0">
+                @* ── Availability schedule sub-tab (golden-slim DataTable; Add button opens the create offcanvas) ── *@
+                <div class="tab-pane fade show active" id="link-avail-@link.AccountContactLinkId" role="tabpanel">
+                    <div class="card">
+                        <div class="card-datatable table-responsive">
+                            <table data-dt-standard="v2" class="datatables-link-grid table border-top" data-add-target="@addAvailTarget" data-add-text="@Localizer["AvailabilityAdd"]">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th class="all">@Localizer["AvailabilityWeekday"]</th>
+                                        <th>@Localizer["AvailabilityWindow"]</th>
+                                        <th>@Localizer["AvailabilityPreferredWindow"]</th>
+                                        <th>@Localizer["AvailabilityAvoidWindow"]</th>
+                                        <th>@Localizer["AvailabilityAppointmentRequired"]</th>
+                                        <th>@Localizer["AvailabilityLeadTime"]</th>
+                                        <th>@Localizer["AvailabilityAverageDuration"]</th>
+                                        <th>@Localizer["AvailabilityType"]</th>
+                                        <th>@Localizer["AvailabilityEffective"]</th>
+                                        <th>@SharedLocalizer["Status"]</th>
+                                        <th>@Localizer["AvailabilitySource"]</th>
+                                        <th class="cell-fit text-end all">@Localizer["Actions"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var row in link.Availability)
+                                    {
+                                        <tr>
+                                            <td></td>
+                                            <td>@Localizer["Weekday_" + row.Weekday]</td>
+                                            <td>@row.StartTime–@row.EndTime</td>
+                                            <td>@(row.Preference.PreferredVisitStartTime is null ? "-" : $"{row.Preference.PreferredVisitStartTime}–{row.Preference.PreferredVisitEndTime}")</td>
+                                            <td>@(row.Preference.AvoidVisitStartTime is null ? "-" : $"{row.Preference.AvoidVisitStartTime}–{row.Preference.AvoidVisitEndTime}")</td>
+                                            <td>@(row.AppointmentRequired ? Localizer["AvailabilityYes"].Value : Localizer["AvailabilityNo"].Value)</td>
+                                            <td>@(row.AppointmentLeadTimeDays?.ToString() ?? "-")</td>
+                                            <td>@(row.AverageVisitDurationMinutes?.ToString() ?? "-")</td>
+                                            <td>@row.AvailabilityType</td>
+                                            <td>@(row.EffectiveFrom?.ToString("yyyy-MM-dd") ?? "-")@(row.EffectiveTo is null ? string.Empty : " → " + row.EffectiveTo.Value.ToString("yyyy-MM-dd"))</td>
+                                            <td><span class="badge bg-label-secondary">@row.Status</span></td>
+                                            <td class="small text-muted">@row.Source</td>
+                                            <td class="text-end">
+                                                @* Golden-slim action affordance: a kebab (btn-icon) opening a dropdown; each item submits its own
+                                                   POST form. No delete anywhere on this surface — closing is deactivate/archive only. *@
+                                                @if (Model.CanManage && row.Status != "archived")
+                                                {
+                                                    <div class="dropdown">
+                                                        <button type="button" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false" title="@Localizer["Actions"]">
+                                                            <i class="bx bx-dots-vertical-rounded icon-md"></i>
+                                                        </button>
+                                                        <div class="dropdown-menu dropdown-menu-end m-0">
+                                                            @if (row.Status == "active")
+                                                            {
+                                                                <form method="post" action="/CRM/Contacts/Availability/@Model.ContactId/@row.Id/deactivate">
+                                                                    @Html.AntiForgeryToken()
+                                                                    <button type="submit" class="dropdown-item dt-action-item"><i class="bx bx-x-circle dt-action-icon"></i>@Localizer["AvailabilityDeactivate"]</button>
+                                                                </form>
+                                                            }
+                                                            <form method="post" action="/CRM/Contacts/Availability/@Model.ContactId/@row.Id/archive">
+                                                                @Html.AntiForgeryToken()
+                                                                <button type="submit" class="dropdown-item dt-action-item"><i class="bx bx-archive dt-action-icon"></i>@Localizer["AvailabilityArchive"]</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                @* ── Date exceptions sub-tab ── *@
+                <div class="tab-pane fade" id="link-exc-@link.AccountContactLinkId" role="tabpanel">
+                    <div class="card">
+                        <div class="card-datatable table-responsive">
+                            <table data-dt-standard="v2" class="datatables-link-grid table border-top" data-add-target="@addExcTarget" data-add-text="@Localizer["AvailabilityExceptionAdd"]">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th class="all">@Localizer["AvailabilityDate"]</th>
+                                        <th>@Localizer["AvailabilityIsAvailable"]</th>
+                                        <th>@Localizer["AvailabilityWindow"]</th>
+                                        <th>@Localizer["AvailabilityReason"]</th>
+                                        <th>@SharedLocalizer["Status"]</th>
+                                        <th class="cell-fit text-end all">@Localizer["Actions"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var ex in link.Exceptions)
+                                    {
+                                        <tr>
+                                            <td></td>
+                                            <td>@ex.Date</td>
+                                            <td>@(ex.IsAvailable ? Localizer["AvailabilityYes"].Value : Localizer["AvailabilityNo"].Value)</td>
+                                            <td>@(ex.StartTime is null ? "-" : $"{ex.StartTime}–{ex.EndTime}")</td>
+                                            <td>@(ex.Reason ?? "-")</td>
+                                            <td><span class="badge bg-label-secondary">@ex.Status</span></td>
+                                            <td class="text-end">
+                                                @if (Model.CanManage && ex.Status == "active")
+                                                {
+                                                    <div class="dropdown">
+                                                        <button type="button" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false" title="@Localizer["Actions"]">
+                                                            <i class="bx bx-dots-vertical-rounded icon-md"></i>
+                                                        </button>
+                                                        <div class="dropdown-menu dropdown-menu-end m-0">
+                                                            <form method="post" action="/CRM/Contacts/Availability/@Model.ContactId/exceptions/@ex.Id/deactivate">
+                                                                @Html.AntiForgeryToken()
+                                                                <button type="submit" class="dropdown-item dt-action-item"><i class="bx bx-x-circle dt-action-icon"></i>@Localizer["AvailabilityDeactivate"]</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.CanManage)
+        {
+            @* ── Offcanvas: Add availability (golden-slim create canvas; posts to the existing MVC action) ── *@
+            <div class="offcanvas offcanvas-end" tabindex="-1" id="oc-add-avail-@link.AccountContactLinkId" aria-labelledby="oc-add-avail-title-@link.AccountContactLinkId">
+                <div class="offcanvas-header p-4">
+                    <div class="min-w-0">
+                        <h5 class="offcanvas-title mb-0 text-truncate" id="oc-add-avail-title-@link.AccountContactLinkId">@Localizer["AvailabilityAdd"]</h5>
+                        <small class="text-muted d-block text-truncate">@link.AccountDisplayName</small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+                </div>
+                <form method="post" action="/CRM/Contacts/Availability/@Model.ContactId/create" class="d-flex flex-column flex-grow-1">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="AccountContactLinkId" value="@link.AccountContactLinkId" />
+                    <div class="offcanvas-body flex-grow-1 p-4 border-top">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">@Localizer["AvailabilityWeekday"]</label>
+                                <select name="Weekday" class="form-select">
+                                    @foreach (var day in weekdays)
+                                    {
+                                        <option value="@day">@Localizer["Weekday_" + day]</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">@Localizer["AvailabilityStart"]</label>
+                                <input type="time" name="StartTime" class="form-control" required />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">@Localizer["AvailabilityEnd"]</label>
+                                <input type="time" name="EndTime" class="form-control" required />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">@Localizer["AvailabilityPreferredStart"]</label>
+                                <input type="time" name="PreferredVisitStartTime" class="form-control" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">@Localizer["AvailabilityPreferredEnd"]</label>
+                                <input type="time" name="PreferredVisitEndTime" class="form-control" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">@Localizer["AvailabilityAvoidStart"]</label>
+                                <input type="time" name="AvoidVisitStartTime" class="form-control" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">@Localizer["AvailabilityAvoidEnd"]</label>
+                                <input type="time" name="AvoidVisitEndTime" class="form-control" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">@Localizer["AvailabilityType"]</label>
+                                <select name="AvailabilityType" class="form-select" required>
+                                    <option value="">@Localizer["AvailabilitySelect"]</option>
+                                    @foreach (var option in Model.AvailabilityTypes)
+                                    {
+                                        <option value="@option.Value">@option.Text</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">@Localizer["AvailabilitySource"]</label>
+                                <select name="Source" class="form-select" required>
+                                    <option value="">@Localizer["AvailabilitySelect"]</option>
+                                    @foreach (var option in Model.AvailabilitySources)
+                                    {
+                                        <option value="@option.Value">@option.Text</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">@Localizer["AvailabilityAverageDuration"]</label>
+                                <input type="number" min="1" name="AverageVisitDurationMinutes" class="form-control" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">@Localizer["AvailabilityLeadTime"]</label>
+                                <input type="number" min="0" name="AppointmentLeadTimeDays" class="form-control" />
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="AppointmentRequired" value="true" id="appt-@link.AccountContactLinkId" />
+                                    <label class="form-check-label" for="appt-@link.AccountContactLinkId">@Localizer["AvailabilityAppointmentRequired"]</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="offcanvas-footer border-top p-4 d-flex gap-3">
+                        <button type="button" class="btn btn-label-secondary w-100" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+                        <button type="submit" class="btn btn-primary w-100">@SharedLocalizer["Save"]</button>
+                    </div>
+                </form>
+            </div>
+
+            @* ── Offcanvas: Add date exception ── *@
+            <div class="offcanvas offcanvas-end" tabindex="-1" id="oc-add-exc-@link.AccountContactLinkId" aria-labelledby="oc-add-exc-title-@link.AccountContactLinkId">
+                <div class="offcanvas-header p-4">
+                    <div class="min-w-0">
+                        <h5 class="offcanvas-title mb-0 text-truncate" id="oc-add-exc-title-@link.AccountContactLinkId">@Localizer["AvailabilityExceptionAdd"]</h5>
+                        <small class="text-muted d-block text-truncate">@link.AccountDisplayName</small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+                </div>
+                <form method="post" action="/CRM/Contacts/Availability/@Model.ContactId/exceptions/create" class="d-flex flex-column flex-grow-1">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="AccountContactLinkId" value="@link.AccountContactLinkId" />
+                    <div class="offcanvas-body flex-grow-1 p-4 border-top">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">@Localizer["AvailabilityDate"]</label>
+                                <input type="date" name="Date" class="form-control" required />
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="IsAvailable" value="true" id="exavail-@link.AccountContactLinkId" />
+                                    <label class="form-check-label" for="exavail-@link.AccountContactLinkId">@Localizer["AvailabilityIsAvailable"]</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">@Localizer["AvailabilityStart"]</label>
+                                <input type="time" name="StartTime" class="form-control" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">@Localizer["AvailabilityEnd"]</label>
+                                <input type="time" name="EndTime" class="form-control" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">@Localizer["AvailabilityReason"]</label>
+                                <input type="text" name="Reason" class="form-control" maxlength="200" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">@Localizer["AvailabilitySource"]</label>
+                                <select name="Source" class="form-select" required>
+                                    <option value="">@Localizer["AvailabilitySelect"]</option>
+                                    @foreach (var option in Model.AvailabilitySources)
+                                    {
+                                        <option value="@option.Value">@option.Text</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="offcanvas-footer border-top p-4 d-flex gap-3">
+                        <button type="button" class="btn btn-label-secondary w-100" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+                        <button type="submit" class="btn btn-primary w-100">@SharedLocalizer["Save"]</button>
+                    </div>
+                </form>
+            </div>
+        }
+        </div>
+    }
+    </div>
+
+</div>
+
+@section Scripts {
+    <script id="availability-l10n" type="application/json">
+        @Json.Serialize(new
+        {
+            Search = SharedLocalizer["Search"].Value,
+            Action = SharedLocalizer["Export"].Value,
+            Filter = SharedLocalizer["Filter"].Value,
+            Apply = SharedLocalizer["Apply"].Value,
+            Reset = SharedLocalizer["Reset"].Value,
+            ShowAll = SharedLocalizer["ShowAll"].Value,
+            SaveView = SharedLocalizer["SaveView"].Value,
+            ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+            RecordSaved = SharedLocalizer["RecordSaved"].Value,
+            ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+            Status = SharedLocalizer["Status"].Value
+        })
+    </script>
+    <script src="~/assets/js/CRM/Contacts/availability.js" asp-append-version="true"></script>
+}
