@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PpmTitle" xml:space="preserve"><value>Gestion de projets et de portefeuilles</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gérez les contextes de portefeuille, d’initiative, de programme et de projet.</value></data>
+  <data name="Phase2AContextCore" xml:space="preserve"><value>Noyau de contexte et de référençabilité de la phase 2A</value></data>
+  <data name="PortfoliosLabel" xml:space="preserve"><value>Portefeuilles</value></data>
+  <data name="InitiativesLabel" xml:space="preserve"><value>Gestion des initiatives</value></data>
+  <data name="ProgramsLabel" xml:space="preserve"><value>Programmes</value></data>
+  <data name="ProjectsLabel" xml:space="preserve"><value>Projets</value></data>
+  <data name="OpenPortfolios" xml:space="preserve"><value>Ouvrir : Portefeuilles</value></data>
+  <data name="OpenInitiatives" xml:space="preserve"><value>Ouvrir : Initiatives</value></data>
+  <data name="OpenPrograms" xml:space="preserve"><value>Ouvrir : Programmes</value></data>
+  <data name="OpenProjects" xml:space="preserve"><value>Ouvrir : Projets</value></data>
+  <data name="PpmEmptyState" xml:space="preserve"><value>Aucun contexte PPM n’est encore disponible.</value></data>
+  <data name="PpmLoadingState" xml:space="preserve"><value>Chargement de l’espace PPM…</value></data>
+  <data name="PpmErrorState" xml:space="preserve"><value>Impossible de charger l’espace PPM.</value></data>
+  <data name="InvestmentCasesLabel" xml:space="preserve"><value>Dossiers d’investissement</value></data>
+  <data name="BenefitCommitmentsLabel" xml:space="preserve"><value>Engagements de bénéfices</value></data>
+  <data name="OpenInvestmentCases" xml:space="preserve"><value>Dossiers d’investissement</value></data>
+  <data name="OpenBenefitCommitments" xml:space="preserve"><value>Engagements de bénéfices</value></data>
+</root>

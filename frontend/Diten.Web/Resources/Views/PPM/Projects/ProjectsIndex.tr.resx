@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ProjectsTitle" xml:space="preserve"><value>Projeler</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Kiracıya ait Projeler kayıtlarını, yaşam döngüsünü ve referanslanabilirliği yönetin.</value></data>
+  <data name="AddNewProject" xml:space="preserve"><value>Yeni Proje Ekle</value></data>
+  <data name="EditProject" xml:space="preserve"><value>Proje Düzenle</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Yaşam Döngüsü</value></data>
+  <data name="VisibilityPolicyKey" xml:space="preserve"><value>Görünürlük Politikası</value></data>
+  <data name="Referenceability" xml:space="preserve"><value>Referanslanabilirlik</value></data>
+  <data name="Referenceable" xml:space="preserve"><value>Yeni referanslara açık</value></data>
+  <data name="NotReferenceable" xml:space="preserve"><value>Yeni referanslara kapalı</value></data>
+  <data name="ProjectsLoadingState" xml:space="preserve"><value>Projeler yükleniyor…</value></data>
+  <data name="ProjectsEmptyState" xml:space="preserve"><value>Projeler içinde kayıt bulunamadı.</value></data>
+  <data name="ProjectsErrorState" xml:space="preserve"><value>Projeler listesi yüklenemedi.</value></data>
+  <data name="ParentType" xml:space="preserve"><value>Üst Kayıt Türü</value></data>
+  <data name="Parent" xml:space="preserve"><value>Üst Kayıt</value></data>
+  <data name="ParentInitiative" xml:space="preserve"><value>Girişim</value></data>
+  <data name="ParentProgram" xml:space="preserve"><value>Üst Program</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="LifecyclePlanned" xml:space="preserve"><value>Planlandı</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="LifecycleOnHold" xml:space="preserve"><value>Beklemede</value></data>
+  <data name="LifecycleCompleted" xml:space="preserve"><value>Tamamlandı</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>İptal Edildi</value></data>
+  <data name="CompleteProjectConfirmation" xml:space="preserve"><value>Bu Proje tamamlansın mı? Yeni referanslara artık izin verilmeyecek.</value></data>
+  <data name="CancelProjectConfirmation" xml:space="preserve"><value>Bu Proje iptal edilsin mi? Yeni referanslara artık izin verilmeyecek.</value></data>
+  <data name="OpenWorkspace" xml:space="preserve"><value>Çalışma Alanını Aç</value></data>
+</root>

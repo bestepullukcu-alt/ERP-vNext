@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader>
+  <data name="WorkspaceTitle"><value>Рабочая область проекта</value></data><data name="BackToProjects"><value>К проектам</value></data><data name="Loading"><value>Загрузка проекта…</value></data>
+  <data name="Overview"><value>Обзор</value></data><data name="CharterGeneral"><value>Устав / Общие сведения</value></data><data name="Context"><value>Контекст проекта</value></data>
+  <data name="Code"><value>Код</value></data><data name="Name"><value>Название</value></data><data name="Description"><value>Описание</value></data><data name="ParentType"><value>Тип родителя</value></data><data name="ParentId"><value>ID родителя</value></data><data name="Parent"><value>Родитель</value></data>
+  <data name="Lifecycle"><value>Жизненный цикл</value></data><data name="VisibilityPolicy"><value>Политика видимости</value></data><data name="Referenceability"><value>Доступность ссылок</value></data><data name="Version"><value>Версия</value></data>
+  <data name="Referenceable"><value>Доступно для новых ссылок</value></data><data name="NotReferenceable"><value>Недоступно для новых ссылок</value></data><data name="NotAvailable"><value>Недоступно</value></data>
+  <data name="Error400"><value>Недопустимый запрос проекта.</value></data><data name="Error401"><value>Войдите, чтобы просмотреть проект.</value></data><data name="Error403"><value>Нет разрешения на просмотр проекта.</value></data><data name="Error404"><value>Проект не найден.</value></data><data name="Error409"><value>Проект изменён. Вернитесь к списку.</value></data><data name="Error503"><value>Сервис проекта временно недоступен.</value></data><data name="ErrorGeneric"><value>Не удалось загрузить рабочую область проекта.</value></data>
+</root>

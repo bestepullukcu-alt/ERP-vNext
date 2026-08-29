@@ -1,0 +1,46 @@
+@model Diten.Web.Models.PPM.PpmListPageViewModel
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+    <div id="ppm-table-alert" class="alert alert-danger rounded-0 mb-0 d-none" role="alert"></div>
+    <div class="card-datatable table-responsive">
+        <table id="dt-@Model.Resource" data-dt-standard="v2"
+               data-ppm-resource="@Model.Resource"
+               data-ppm-singular="@Model.Singular"
+               class="datatables-ppm table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="cell-fit"><input type="checkbox" class="dt-checkboxes-select-all form-check-input"></th>
+                    <th>@ViewData["CodeText"]</th>
+                    <th class="all">@ViewData["NameText"]</th>
+                    @if (Model.HasPortfolio || Model.HasProjectParent || Model.HasInvestmentCaseParent)
+                    {
+                        <th>@ViewData["ParentText"]</th>
+                    }
+                    <th>@ViewData["LifecycleText"]</th>
+                    @if (Model.ShowsReferenceability)
+                    {
+                        <th>@ViewData["ReferenceabilityText"]</th>
+                    }
+                    <th class="cell-fit text-end pe-3 all">@ViewData["ActionsText"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="ppm-initial-loading-row" data-ppm-loading-row>
+                    <td class="text-center text-muted py-4">@ViewData["LoadingText"]</td>
+                    @for (var column = 1; column < ((Model.HasPortfolio || Model.HasProjectParent || Model.HasInvestmentCaseParent ? 7 : 6) + (Model.ShowsReferenceability ? 1 : 0)); column++)
+                    {
+                        <td aria-hidden="true"></td>
+                    }
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PortfoliosTitle" xml:space="preserve"><value>Portföyler</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Kiracıya ait Portföyler kayıtlarını, yaşam döngüsünü ve referanslanabilirliği yönetin.</value></data>
+  <data name="AddNewPortfolio" xml:space="preserve"><value>Yeni Portföy Ekle</value></data>
+  <data name="EditPortfolio" xml:space="preserve"><value>Portföy Düzenle</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Yaşam Döngüsü</value></data>
+  <data name="VisibilityPolicyKey" xml:space="preserve"><value>Görünürlük Politikası</value></data>
+  <data name="Referenceability" xml:space="preserve"><value>Referanslanabilirlik</value></data>
+  <data name="Referenceable" xml:space="preserve"><value>Yeni referanslara açık</value></data>
+  <data name="NotReferenceable" xml:space="preserve"><value>Yeni referanslara kapalı</value></data>
+  <data name="PortfoliosLoadingState" xml:space="preserve"><value>Portföyler yükleniyor…</value></data>
+  <data name="PortfoliosEmptyState" xml:space="preserve"><value>Portföyler içinde kayıt bulunamadı.</value></data>
+  <data name="PortfoliosErrorState" xml:space="preserve"><value>Portföyler listesi yüklenemedi.</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="LifecycleArchived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="ArchivePortfolioConfirmation" xml:space="preserve"><value>Bu portföy arşivlensin mi? Yeni referanslara artık izin verilmeyecek.</value></data>
+</root>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PpmTitle" xml:space="preserve"><value>项目与项目组合管理</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>管理项目组合、举措、项目群和项目上下文。</value></data>
+  <data name="Phase2AContextCore" xml:space="preserve"><value>第 2A 阶段上下文与可引用性核心</value></data>
+  <data name="PortfoliosLabel" xml:space="preserve"><value>项目组合</value></data>
+  <data name="InitiativesLabel" xml:space="preserve"><value>举措</value></data>
+  <data name="ProgramsLabel" xml:space="preserve"><value>项目群</value></data>
+  <data name="ProjectsLabel" xml:space="preserve"><value>项目</value></data>
+  <data name="OpenPortfolios" xml:space="preserve"><value>打开项目组合</value></data>
+  <data name="OpenInitiatives" xml:space="preserve"><value>打开举措</value></data>
+  <data name="OpenPrograms" xml:space="preserve"><value>打开项目群</value></data>
+  <data name="OpenProjects" xml:space="preserve"><value>打开项目</value></data>
+  <data name="PpmEmptyState" xml:space="preserve"><value>尚无可用的 PPM 上下文。</value></data>
+  <data name="PpmLoadingState" xml:space="preserve"><value>正在加载 PPM 工作区…</value></data>
+  <data name="PpmErrorState" xml:space="preserve"><value>无法加载 PPM 工作区。</value></data>
+  <data name="InvestmentCasesLabel" xml:space="preserve"><value>投资案例</value></data>
+  <data name="BenefitCommitmentsLabel" xml:space="preserve"><value>收益承诺</value></data>
+  <data name="OpenInvestmentCases" xml:space="preserve"><value>投资案例</value></data>
+  <data name="OpenBenefitCommitments" xml:space="preserve"><value>收益承诺</value></data>
+</root>

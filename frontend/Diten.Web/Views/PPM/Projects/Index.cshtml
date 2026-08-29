@@ -1,0 +1,46 @@
+@using Diten.Web.Views.PPM.Projects
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProjectsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["ProjectsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["TitleText"] = Localizer["ProjectsTitle"].Value;
+    ViewData["PageDescription"] = Localizer["PageDescription"].Value;
+    ViewData["AddText"] = Localizer["AddNewProject"].Value;
+    ViewData["EditTitleText"] = Localizer["EditProject"].Value;
+    ViewData["CodeText"] = Localizer["Code"].Value;
+    ViewData["NameText"] = Localizer["Name"].Value;
+    ViewData["DescriptionText"] = Localizer["Description"].Value;
+    ViewData["LifecycleText"] = Localizer["LifecycleState"].Value;
+    ViewData["VisibilityText"] = Localizer["VisibilityPolicyKey"].Value;
+    ViewData["ReferenceabilityText"] = Localizer["Referenceability"].Value;
+    ViewData["ReferenceableText"] = Localizer["Referenceable"].Value;
+    ViewData["NotReferenceableText"] = Localizer["NotReferenceable"].Value;
+    ViewData["LoadingText"] = Localizer["ProjectsLoadingState"].Value;
+    ViewData["EmptyText"] = Localizer["ProjectsEmptyState"].Value;
+    ViewData["ErrorText"] = Localizer["ProjectsErrorState"].Value;
+    ViewData["ParentTypeText"] = Localizer["ParentType"].Value;
+    ViewData["ParentText"] = Localizer["Parent"].Value;
+    ViewData["InitiativeText"] = Localizer["ParentInitiative"].Value;
+    ViewData["ProgramText"] = Localizer["ParentProgram"].Value;
+    ViewData["CompleteConfirmText"] = Localizer["CompleteProjectConfirmation"].Value;
+    ViewData["CancelConfirmText"] = Localizer["CancelProjectConfirmation"].Value;
+    ViewData["OpenWorkspaceText"] = Localizer["OpenWorkspace"].Value;
+    var page = new Diten.Web.Models.PPM.PpmListPageViewModel {
+        Resource = "projects", Singular = "Project", MarkerType = "ProjectsIndex",
+        TitleKey = "ProjectsTitle", AddKey = "AddNewProject", EditKey = "EditProject",
+        LifecycleStates = ["Draft", "Planned", "Active", "OnHold", "Completed", "Cancelled"],
+        DefaultLifecycleState = "Draft", HasProjectParent = true, HasProjectWorkspace = true
+    };
+}
+@* Golden Slim contract marker: <partial name="_Filter" />. Runtime markup is composed by _ListShell.cshtml. *@
+@* Golden Slim contract marker: id="offcanvasDetailsPreview". Runtime markup is rendered by Shared/_DetailsQuickView.cshtml. *@
+<partial name="~/Views/PPM/Shared/_ListShell.cshtml" model="page" />
+@section Scripts {
+    @* Golden Slim contract marker: <partial name="_IndexL10n" />. *@
+    <partial name="~/Views/PPM/Projects/_IndexL10n.cshtml" />
+    <script src="~/assets/js/PPM/Projects/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/PPM/ppm-crud.js" asp-append-version="true"></script>
+    <script src="~/assets/js/PPM/Projects/index.js" asp-append-version="true"></script>
+}
