@@ -18,6 +18,7 @@ public sealed class Role : EntityBase
     public string DisplayName { get; private set; } = string.Empty;
     public string? Description { get; private set; }
     public bool IsSystem { get; private set; }
+    public long ExplicitGrantValidationFence { get; private set; }
 
     public void MarkAsSystem() => IsSystem = true;
     
