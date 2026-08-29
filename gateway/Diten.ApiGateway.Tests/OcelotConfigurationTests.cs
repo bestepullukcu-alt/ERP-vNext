@@ -11,9 +11,14 @@ namespace Diten.ApiGateway.Tests;
 public sealed class OcelotConfigurationTests
 {
     // Known downstream services as of this test's authoring: auth(5056), platform(5057), dev-enablement(5058),
-    // mdm(5059), hcm(5060), pvg(5011), esbp/delivery-execution/uploads(5004). Adding a new backend is a deliberate, reviewed change to
+    // mdm(5059), hcm(5060), pvg(5011), crm(5061), ppm(5062), esbp/delivery-execution/uploads(5004). Adding a new backend is a deliberate, reviewed change to
     // this set — an unrecognized port is far more likely a typo than a new service.
-    private static readonly HashSet<int> KnownDownstreamPorts = new() { 5004, 5011, 5056, 5057, 5058, 5059, 5060 };
+    private static readonly HashSet<int> KnownDownstreamPorts = new() { 5004, 5011, 5056, 5057, 5058, 5059, 5060, 5061, 5062 };
+
+    private static readonly HashSet<string> PpmMethods = new(StringComparer.Ordinal)
+    {
+        "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
+    };
 
     private static FileConfiguration LoadConfiguration()
     {
@@ -145,6 +150,49 @@ public sealed class OcelotConfigurationTests
             .ToList();
 
         Assert.True(conflicts.Count == 0, "Ambiguous route method claims:\n" + string.Join("\n", conflicts));
+    }
+
+    [Fact]
+    public void PpmRoutes_HaveExactBaseAndCatchAllContractOnCanonicalPort()
+    {
+        var config = LoadConfiguration();
+        var ppmRoutes = config.Routes
+            .Where(route => route.UpstreamPathTemplate.StartsWith("/api/v1/ppm", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+        Assert.Equal(2, ppmRoutes.Length);
+        AssertPpmRoute(ppmRoutes, "/api/v1/ppm");
+        AssertPpmRoute(ppmRoutes, "/api/v1/ppm/{everything}");
+    }
+
+    [Fact]
+    public void PpmRouteMutation_WrongPortOrMissingMethodIsRejected()
+    {
+        var config = LoadConfiguration();
+        var ppmRoutes = config.Routes
+            .Where(route => route.UpstreamPathTemplate.StartsWith("/api/v1/ppm", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+        ppmRoutes[0].DownstreamHostAndPorts[0].Port = 5061;
+        Assert.ThrowsAny<Exception>(() => AssertPpmRoute(ppmRoutes, "/api/v1/ppm"));
+
+        ppmRoutes[0].DownstreamHostAndPorts[0].Port = 5062;
+        ppmRoutes[0].UpstreamHttpMethod.Remove("OPTIONS");
+        Assert.ThrowsAny<Exception>(() => AssertPpmRoute(ppmRoutes, "/api/v1/ppm"));
+    }
+
+    private static void AssertPpmRoute(IReadOnlyCollection<FileRoute> ppmRoutes, string template)
+    {
+        var route = Assert.Single(ppmRoutes, candidate =>
+            string.Equals(candidate.UpstreamPathTemplate, template, StringComparison.Ordinal));
+
+        Assert.Equal(template, route.DownstreamPathTemplate);
+        Assert.Equal("http", route.DownstreamScheme);
+        Assert.Single(route.DownstreamHostAndPorts);
+        Assert.Equal("localhost", route.DownstreamHostAndPorts[0].Host);
+        Assert.Equal(5062, route.DownstreamHostAndPorts[0].Port);
+        Assert.True(PpmMethods.SetEquals(route.UpstreamHttpMethod),
+            $"Unexpected PPM methods for {template}: {string.Join(",", route.UpstreamHttpMethod)}");
     }
 
     public static IEnumerable<object[]> CriticalRoutes()
