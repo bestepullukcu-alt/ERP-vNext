@@ -10,6 +10,8 @@ public sealed class ProductDefinitionRevision : EntityBase, IAuditIntentAggregat
     public string CreationCommandId { get; set; } = string.Empty;
     public ProductIdentityLifecycleStatus LifecycleStatus { get; set; } = ProductIdentityLifecycleStatus.Draft;
     public FirstGskuIdentityWorkflowBinding? IdentityWorkflowBinding { get; set; }
+    public Guid? RetirementOperationId { get; set; }
+    public string? RetirementOperationFingerprint { get; set; }
     public List<LocalAuditIntent> AuditIntents { get; set; } = [];
     public List<LocalAuditIntentReceipt> AuditIntentReceipts { get; set; } = [];
 }

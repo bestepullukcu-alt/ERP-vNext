@@ -44,6 +44,10 @@ public interface IProductDefinitionRevisionRepository
         Guid id, int expectedVersion, FirstGskuIdentityWorkflowBinding binding, LocalAuditIntent auditIntent,
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("FIRST_GSKU_IDENTITY_LIFECYCLE_NOT_IMPLEMENTED");
+    Task<FirstGskuIdentityRetirementWriteResult<ProductDefinitionRevision>> RetireIdentityAsync(
+        Guid id, int expectedVersion, Guid operationId, string operationFingerprint,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("FIRST_GSKU_RETIREMENT_NOT_IMPLEMENTED");
 }
 
 public sealed record ProductDefinitionRevisionCreateResult(

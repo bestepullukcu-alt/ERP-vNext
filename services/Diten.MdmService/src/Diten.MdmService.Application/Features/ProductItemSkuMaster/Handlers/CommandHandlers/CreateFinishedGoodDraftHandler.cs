@@ -8,6 +8,7 @@ using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryH
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
+using Diten.MdmService.Domain.ValueObjects;
 using Diten.Shared.Core;
 using MediatR;
 
@@ -55,6 +56,8 @@ public sealed class CreateFinishedGoodDraftHandler
         ArgumentNullException.ThrowIfNull(request.Request);
         var command = request.Request;
         var commandId = command.IdempotencyKey.Trim().ToUpperInvariant();
+        var admissionFingerprint = GskuChildCreationAdmission.ComputeRequestFingerprint(
+            command.GskuId, GskuChildIdentityKind.FinishedGood, commandId);
         var scope = await _scopeGuard.ResolveContextAsync("mdm.finished-goods.create", cancellationToken);
         if (!scope.IsSuccessful)
         {
@@ -106,13 +109,13 @@ public sealed class CreateFinishedGoodDraftHandler
                     500);
             }
 
+            if (replayReservation.BindingState == CodeReservationBindingState.Confirmed)
+            {
+                return await CompleteAdmissionAndMapAsync(
+                    replay, replayGsku.CanonicalCode, commandId, admissionFingerprint, cancellationToken);
+            }
             return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Success(
-                BuildDto(
-                    replay,
-                    replayGsku.CanonicalCode,
-                    replayReservation.BindingState,
-                    replayReservation.BindingState == CodeReservationBindingState.PendingIdentityWrite),
-                replayReservation.BindingState == CodeReservationBindingState.Confirmed ? 201 : 202);
+                BuildDto(replay, replayGsku.CanonicalCode, replayReservation.BindingState, true), 202);
         }
 
         var scopeFailure = await EvaluateGskuScopeAsync(command.GskuId, scope.Context!, cancellationToken);
@@ -125,6 +128,20 @@ public sealed class CreateFinishedGoodDraftHandler
         if (gsku is null)
         {
             return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail("GSKU_NOT_REFERENCEABLE", 404);
+        }
+
+        var admission = await _gskus.AcquireChildCreationAdmissionAsync(
+            gsku.Id,
+            GskuChildIdentityKind.FinishedGood,
+            commandId,
+            admissionFingerprint,
+            DateTimeOffset.UtcNow,
+            cancellationToken);
+        if (!admission.Succeeded)
+        {
+            return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail(
+                admission.ErrorCode ?? "GSKU_CHILD_ADMISSION_CONFLICT",
+                AdmissionStatus(admission.ErrorCode));
         }
 
         CodeReservation reservation;
@@ -167,7 +184,8 @@ public sealed class CreateFinishedGoodDraftHandler
         }
 
         var finishedGood = BuildFinishedGood(gsku.Id, reservation, identityId, commandId);
-        var createResult = await _finishedGoods.CreateDraftAsync(finishedGood, cancellationToken);
+        var createResult = await _finishedGoods.CreateDraftWithAdmissionAsync(
+            finishedGood, admissionFingerprint, cancellationToken);
         if (createResult.WriteOutcomeAmbiguous)
         {
             var persisted = await _finishedGoods.GetByReservationIdAsync(reservation.Id, cancellationToken);
@@ -220,9 +238,9 @@ public sealed class CreateFinishedGoodDraftHandler
                 {
                     return scopeFailure;
                 }
-                return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Success(
-                    BuildDto(createResult.FinishedGood, gsku.CanonicalCode, actual.BindingState, false),
-                    201);
+                return await CompleteAdmissionAndMapAsync(
+                    createResult.FinishedGood, gsku.CanonicalCode, commandId,
+                    admissionFingerprint, cancellationToken);
             }
 
             if (actual.BindingState == CodeReservationBindingState.PendingIdentityWrite)
@@ -248,10 +266,38 @@ public sealed class CreateFinishedGoodDraftHandler
             return scopeFailure;
         }
 
-        return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Success(
-            BuildDto(createResult.FinishedGood, gsku.CanonicalCode, CodeReservationBindingState.Confirmed, false),
-            201);
+        return await CompleteAdmissionAndMapAsync(
+            createResult.FinishedGood, gsku.CanonicalCode, commandId,
+            admissionFingerprint, cancellationToken);
     }
+
+    private async Task<Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>> CompleteAdmissionAndMapAsync(
+        FinishedGood finishedGood,
+        string gskuCanonicalCode,
+        string commandId,
+        string admissionFingerprint,
+        CancellationToken cancellationToken)
+    {
+        var completion = await _gskus.CompleteChildCreationAdmissionAsync(
+            finishedGood.GskuId,
+            GskuChildIdentityKind.FinishedGood,
+            commandId,
+            admissionFingerprint,
+            cancellationToken);
+        return completion.Succeeded
+            ? Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Success(
+                BuildDto(finishedGood, gskuCanonicalCode, CodeReservationBindingState.Confirmed, false), 201)
+            : Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail(
+                completion.ErrorCode ?? "FINISHED_GOOD_BINDING_RECONCILIATION_REQUIRED",
+                completion.ErrorCode == "GSKU_CHILD_ADMISSION_CONFLICT" ? 409 : 202);
+    }
+
+    private static int AdmissionStatus(string? code) => code switch
+    {
+        "GSKU_NOT_REFERENCEABLE" or "GSKU_NOT_FOUND" => 404,
+        "GSKU_CHILD_ADMISSION_CAPACITY_EXCEEDED" => 409,
+        _ => 409
+    };
 
     private async Task<Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>?> EvaluateGskuScopeAsync(
         Guid gskuId,

@@ -26,5 +26,7 @@ public enum ProductAuditOperation
     ProductDefinitionRevisionIdentityApproved = 22,
     GskuIdentityApproved = 23,
     ProductDefinitionRevisionIdentityRejected = 24,
-    GskuIdentityRejected = 25
+    GskuIdentityRejected = 25,
+    GskuIdentityRetired = 26,
+    ProductDefinitionRevisionIdentityRetired = 27
 }
