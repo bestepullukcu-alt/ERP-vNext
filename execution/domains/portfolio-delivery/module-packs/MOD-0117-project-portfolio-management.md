@@ -689,7 +689,7 @@ positive fixture or persistence participant may be created. Any path whose polic
 returns `503` before producer lookup or transaction start with zero relationship, receipt, audit-intent and
 outbox residue.
 
-Local API testing uses canonical PPM port `5061`. Auth `5056` and Platform `5057` retain their canonical local
+Local API testing uses canonical PPM port `5062`. Auth `5056` and Platform `5057` retain their canonical local
 ports. Producer URIs are environment-injected only after their canonical port-registry records and owner
 checkpoints are materialized; this amendment invents no producer port. The four Gate I flags remain committed
 as `false`. A later controlled local evidence run may set them only through process environment variables after
@@ -729,7 +729,7 @@ checkpoints are composed and the following are green:
    payload hash, transaction participant, body-retry, direct-publish, ExcludedV1 and default-off guard mutants;
 7. all owner builds/tests, MOD preflights, repository architecture tests, diff/secret/artifact/protected-scope
    scans and disposable test-process cleanup;
-8. local API smoke on `5061` using environment-only local evidence configuration and test identities that
+8. local API smoke on `5062` using environment-only local evidence configuration and test identities that
    production composition must reject.
 
 This wording does not mean browser-test ready, full Gate I, full 1.3, production-ready or parity-complete.
@@ -834,7 +834,7 @@ The local API smoke is test-owned and exact:
   `services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/GateI/DecisionTrace/GateILocalApiSmokeTests.cs`;
 - the IntegrationTests project may add only one project reference to
   `services/Diten.PpmService/src/Diten.PpmService.Api/Diten.PpmService.Api.csproj`;
-- the test launches the already compiled PPM API as a child process bound to exact `127.0.0.1:5061`; it first
+- the test launches the already compiled PPM API as a child process bound to exact `127.0.0.1:5062`; it first
   proves the port is free and fails closed without killing or reusing any listener when occupied;
 - all test configuration is process-environment-only and ephemeral. The smoke verifies `/health`, an
   authenticated Gate I route, the default-off `503` boundary and complete child-process/temp cleanup;
@@ -851,7 +851,7 @@ generated source or test artifact may remain.
 
 R4 evidence is accepted only when the focused Gate I-A unit/contract suite, disposable real-Mongo suite,
 local API smoke, mutation verifier, MOD-0117 preflight, repository architecture guard, build, diff/scope,
-secret/artifact scan and cleanup checks all pass. Any occupied `5061`, missing `/opt/homebrew/bin/mongod`,
+secret/artifact scan and cleanup checks all pass. Any occupied `5062`, missing `/opt/homebrew/bin/mongod`,
 forbidden-port selection, cleanup residue, stale mutation restore or protected-path diff is one fail-closed
 blocker. Implementation changes remain unstaged until review and require a separate checkpoint authorization;
 this governance checkpoint alone performs no activation.
@@ -1036,7 +1036,7 @@ recorded.
 - A boolean `IsApproved` or `IsReferenceable` cannot be business truth.
 - Lifecycle and referenceability states cannot be copied from mock/prototype code.
 - `init-001`, `prj-001` and any candidate/legacy identity are forbidden runtime literals.
-- Service port is `5061`. Frontend remains `5001`; browser traffic uses Gateway `5000`, never direct `5061`.
+- Service port is `5062`. Frontend remains `5001`; browser traffic uses Gateway `5000`, never direct `5062`.
 - Existing port `5004` delivery-execution routes are legacy ES evidence, not MOD-0117 route allocation.
 - Phase 2A may expose gateway-ready object CRUD/lifecycle contracts. The internal provider endpoint and
   dedicated service-credential plus delegated-actor model are authorized only as specified in §4.8; no
@@ -1256,10 +1256,10 @@ MOD-0354 revision/baseline history.
 
 ## 15. Gateway / API Routing Decision
 
-**Decision:** `Diten.PpmService` local port `5061`; frontend `5001`; browser entry Gateway `5000`.
+**Decision:** `Diten.PpmService` local port `5062`; frontend `5001`; browser entry Gateway `5000`.
 
 **Phase 2A PPM object API Gateway mapping authorized; integration-agent only.** The authorization is limited
-to `/api/v1/ppm` and `/api/v1/ppm/{everything}` → port `5061`; it does not authorize provider, DWS, Phase 2B
+to `/api/v1/ppm` and `/api/v1/ppm/{everything}` → port `5062`; it does not authorize provider, DWS, Phase 2B
 or any other Gateway route.
 
 - Future browser traffic must use Gateway `5000`; direct backend-port calls are forbidden.
@@ -1449,7 +1449,7 @@ claim a fresh test execution or production activation.
 - [x] EntityBase CLR/BSON representation and isolated real-Mongo replica-set evidence pass.
 - [ ] Full bilateral runtime compatibility/security evidence remains open. The isolated provider-side contract
   and security suite passes, but production activation and MOD-0354/DWS consumer evidence are not complete.
-- [x] Service port `5061`, frontend `5001` and browser Gateway `5000` boundaries are approved; the
+- [x] Service port `5062`, frontend `5001` and browser Gateway `5000` boundaries are approved; the
   integration-agent-owned Phase 2A mapping has targeted and end-to-end evidence.
 - [x] Explicit user approval to scaffold `Diten.PpmService` and implement Phase 2A backend/frontend is
   recorded on 2026-07-29.
@@ -1529,6 +1529,7 @@ Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separat
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-08-29 | Reconciled the canonical local PPM port to `5062`, superseding the earlier `5061` allocation while preserving CRM on `5061`. The integration-agent-owned Gateway authority remains exactly `/api/v1/ppm` plus `/api/v1/ppm/{everything}`; no production activation, deployment or broader route authority was granted. | User / Enterprise Strategy Control Tower |
 | 2026-08-29 | Reconciled the current-main semantic checkpoint chain: PPM base/contracts `a22a872f`, parent MOD-0018 governance `457edbdd`, neutral S2S request binding `92eb29ea`, and PPM-owned default-off Gate I relationship/outbox composition `8c659594`. Recorded build `0/0`, unit `286/286`, dynamic-Mongo integration `82/82` with zero skips, architecture `11/11`, mutation `6/6`, and restore SHA-256 `61e79023258a6086db98f52378a7c86bf611f309d71a83979f7368b056d68170`. This closes only backend/default-off evidence; `review`, MOD-0023 `ExcludedV1`, and full 1.3/browser/live-provider/bilateral/WorkCenter/production gates remain unchanged and open. | Enterprise Strategy Control Tower — current-main evidence reconciliation |
 | 2026-08-26 | Authorized the bounded, internal-only, default-off Gate I runtime-composition implementation handoff after exact I-A/I-B/I-C contract checkpoints were composed. Recorded dependency checkpoint order, exact source/config/test allowlist and provider ownership. MOD-0023 is `ExcludedV1`: no DTO/provider/positive fixture, and every ApprovalOutcome-required path remains zero-residue `503`. This grants no activation, secret/key, deployment, broker/live, frontend, Gateway or WorkCenter authority. | User / Enterprise Strategy Control Tower |
 | 2026-08-26 | Authorized exact pure Domain/Application and test roots for three parallel NON-RUNTIME consumer contract-test lanes: I-A MOD-0007 Decision Trace with MOD-0023 explicitly blocked/test-plan-only, atomic I-B MOD-0136+MOD-0138 Funding & Scenario, and I-C MOD-0072 Benefit Realization. Bound exact producer checkpoints, wrappers, operations, permissions, service identities, mode/error/no-copy/security/idempotency fixtures and later composition gates. No Persistence/Infrastructure/Api/runtime/frontend/Gateway/WorkCenter authority, status promotion or production activation was granted. | User / Enterprise Strategy Control Tower |

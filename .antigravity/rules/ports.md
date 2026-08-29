@@ -11,7 +11,7 @@ Yeni servis açarken “rastgele port” seçilmez. Diten ERP vNext vizyonuna sa
 ## Port Bandları
 - **5000**: Gateway (Ocelot) — dev
 - **5001**: Frontend (Diten.Web) — dev
-- **5011–5060**: Microservice bandı (Backend servis portları)
+- **5011–5062**: Microservice bandı (Backend servis portları)
 - **7000+**: Dev tools / özel (mümkünse kullanılmaz; bazı tool’lar kapabilir)
 
 ## Aktif Kullanımlar (Şu an)
@@ -22,11 +22,15 @@ Yeni servis açarken “rastgele port” seçilmez. Diten ERP vNext vizyonuna sa
 | **Diten.Auth.Api** | `5056` | Kimlik doğrulama, JWT ve RBAC yönetim servisi. |
 | **Diten.Platform.API** | `5057` | Platform shared services ve personalization. |
 | **Diten.DevEnablementService.Api** | `5058` | Golden reference ve developer enablement modülleri. |
+| **Diten.PpmService.Api** | `5062` | MOD-0117 Project & Portfolio Management; canonical PPM local service port. |
 
 > **Kural:** Frontend (5001) hiçbir zaman doğrudan servis portlarına istek atamaz. Frontend'in yapacağı tüm API çağrıları Gateway (5000) üzerinden geçmek ZORUNDADIR.
 
+> **Canonical PPM source:** `AGENTS.md` §3 ve MOD-0117 module pack ile birlikte `5062` bağlayıcıdır. Port
+> kaydı tek başına production activation veya deployment yetkisi vermez.
+
 ## Boş Port Seçme Kuralı (Yeni Servis Açarken)
-1) Yeni servis microservice bandından seçilir: **5011–5060**.
+1) Yeni servis microservice bandından seçilir: **5011–5062**.
 2) Seçmeden önce kontrol:
    - `lsof -nP -iTCP:<PORT> | grep LISTEN`
 3) Port boşsa bu dosyaya eklenir (Aktif kullanımlar listesine).

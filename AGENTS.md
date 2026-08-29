@@ -69,12 +69,14 @@ module pack `approved` / `ready-for-dev` olduktan ve açık kullanıcı onayı v
 | Frontend (Diten.Web) | 5001 | `frontend/Diten.Web` |
 | PVG Service | 5011 | Planned: `services/Diten.PvgService` |
 | Management Governance Service | 5017 | `services/Diten.ManagementGovernanceService` (default-off local-test only) |
+| PPM Service | 5062 | `services/Diten.PpmService/src/Diten.PpmService.Api` |
 | Auth Service | 5056 | `services/Diten.AuthService/src/Diten.AuthService.Api` |
 | Platform Service | 5057 | `services/Diten.Platform/src/Diten.Platform.API` |
 | DevEnablement Service | 5058 | `services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api` |
 | MongoDB | 27017 | yerel çalışmalı |
 
-`5011` yalnız `Diten.PvgService`, `5017` yalnız `Diten.ManagementGovernanceService` için ayrılmıştır. Port
+`5011` yalnız `Diten.PvgService`, `5017` yalnız `Diten.ManagementGovernanceService`, `5062` yalnız
+`Diten.PpmService` için ayrılmıştır. Port
 tahsisi tek başına Gateway rotası, production activation veya deployment yetkisi oluşturmaz.
 
 **Kural:** Frontend (5001) asla doğrudan servis portlarına istek atmaz. Her istek Gateway (5000) üzerinden geçer.

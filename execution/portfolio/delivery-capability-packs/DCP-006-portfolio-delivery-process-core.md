@@ -226,8 +226,8 @@ hazard, wherever that hazard first occurs.
 - **Phase 2A — Context & Referenceability Core (implementation authorized 2026-07-29):** user-approved
   `Diten.PpmService` scaffold, Portfolio/Initiative/Program/Project backend and tenant UI, Mongo persistence,
   tenant isolation, concurrency, lifecycle-derived referenceability, transactional producer-local audit
-  intent/outbox foundation and gateway-ready API contracts. Service port is `5061`; browser traffic remains
-  frontend `5001` → Gateway `5000`, never direct `5061`.
+  intent/outbox foundation and gateway-ready API contracts. Service port is `5062`; browser traffic remains
+  frontend `5001` → Gateway `5000`, never direct `5062`.
 - **Phase 2B — Investment & Value Linkage:** `InvestmentDecision` and `BenefitValueLink`; MOD-0136 budget,
   MOD-0138 scenario and MOD-0072 outcome/value are consumed only as typed references. Their systems of
   record are not copied into MOD-0117 and no fake budget/scenario/outcome lifecycle is permitted.
@@ -235,7 +235,7 @@ hazard, wherever that hazard first occurs.
   runtime integration, Phase 2B, Gateway-file work beyond the exact mapping authorized below and WorkCenter
   hazards remain unauthorized. MOD-0117 is not complete until separately authorized Phase 2B is complete.
 - **Phase 2A PPM object API Gateway mapping authorized; integration-agent only.** Scope is exactly
-  `/api/v1/ppm` plus `/api/v1/ppm/{everything}` to downstream port `5061`; no other route authority is
+  `/api/v1/ppm` plus `/api/v1/ppm/{everything}` to downstream port `5062`; no other route authority is
   created.
 
 ### Slice 3 — DWS Wave 1 structural mechanics
@@ -670,7 +670,7 @@ and no deferred regression debt.
 ## 19. Future follow-ups
 
 - Preserve Master 8.1 provenance and rerun canonical ID/name/parent/collision preflights when packs change.
-- Implement only the user-authorized MOD-0117 Phase 2A scaffold/backend/frontend on service port `5061`.
+- Implement only the user-authorized MOD-0117 Phase 2A scaffold/backend/frontend on service port `5062`.
 - Keep ExternalContextReference provider/transport, DWS runtime integration, Phase 2B, Gateway-file work
   beyond the authorized Phase 2A PPM mapping and all four WorkCenter hazards fail-closed until their named
   gates close.
@@ -720,6 +720,7 @@ and no deferred regression debt.
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-08-29 | Reassigned the canonical local PPM service port from superseded `5061` to `5062`, preserving CRM on `5061`; authorized only the exact `/api/v1/ppm` route pair through Gateway `5000`. No production activation or deployment authority was created. | User / Enterprise Strategy Control Tower |
 | 2026-07-28 | Enterprise Architect explicitly and singularly allocated `DCP-006`, slug `portfolio-delivery-process-core`, name `Portfolio, Delivery & Process Core`, exclusively to active subdomains 1.3, 1.4 and 1.6. Allocation was not inferred from sequence. | Enterprise Architect |
 | 2026-07-28 | Created initial CAP-001 `draft`; recorded DCP-005 non-modification, candidate guards, Gate 1/2/3 boundaries and no-code guard. | DCP author/reviewer |
 | 2026-07-28 | Correction audit added DCP-003/MOD-0117 scope reconciliation, conditional DWS/BPM domain placement, shared MOD-0018/0021/0048 ownership, precise Gate 1/2/3 provenance and Demand implementation exclusion. | DCP correction reviewer |

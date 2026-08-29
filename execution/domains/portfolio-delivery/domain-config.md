@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Portfolio Delivery (PPM) domain'inin Blueprint-kanonik kimliği `MOD-0117 — Project & Portfolio Management (PPM)`'dir. DCP-006'nın aktif 1.3 dilimi Portfolio, Initiative, Program, Project, PPM-owned InvestmentCase ve planned-benefit BenefitCommitment kayıtlarını kapsar. DCP-003 Work Records/Task/Workstream/Calendar/Effort/Meeting özellikleri deferred, non-executable legacy backlog olarak kalır. Current main üzerinde `Diten.PpmService` henüz materialize edilmemiştir; ayrı kanıt zincirindeki runtime varlığı bu governance reconciliation ile current-main runtime iddiasına dönüşmez.
+Portfolio Delivery (PPM) domain'inin Blueprint-kanonik kimliği `MOD-0117 — Project & Portfolio Management (PPM)`'dir. DCP-006'nın aktif 1.3 dilimi Portfolio, Initiative, Program, Project, PPM-owned InvestmentCase ve planned-benefit BenefitCommitment kayıtlarını kapsar. DCP-003 Work Records/Task/Workstream/Calendar/Effort/Meeting özellikleri deferred, non-executable legacy backlog olarak kalır. `Diten.PpmService` bounded/default-off implementation olarak materialize edilmiştir; canonical local service portu `5062`'dir. Bu kayıt production activation veya deployment yetkisi vermez.
 
 ## In-Scope Modules
 
@@ -28,7 +28,7 @@ Portfolio Delivery (PPM) domain'inin Blueprint-kanonik kimliği `MOD-0117 — Pr
 ## Domain-Level Repo Scope
 
 - `execution/domains/portfolio-delivery/**`
-- `services/Diten.PpmService/**` — ⚠️ henüz mevcut değil; yalnızca C1 module pack `approved`/`ready-for-dev` + açık kullanıcı onayı sonrası oluşturulur
+- `services/Diten.PpmService/**` — MOD-0117 pack ve açık kullanıcı onayıyla materialize edilmiş bounded/default-off PPM servisi
 - `frontend/Diten.Web/Views/Ppm/**` (tenant shell modülleri)
 - `frontend/Diten.Web/wwwroot/assets/js/Ppm/**`
 - `frontend/Diten.Web/Resources/Views/Ppm/**` (7 dil .resx)
@@ -71,7 +71,7 @@ Portfolio Delivery (PPM) domain'inin Blueprint-kanonik kimliği `MOD-0117 — Pr
 - **Soft delete / audit:** `IsDeleted` + `DeletedAt` zorunlu (eski `Status` bool semantiği devralınmaz); AuditEvent v1 hizalaması (APP-PPM-BUNDLE) hedeftir. Ref: [entity-base-template.md](../../../.antigravity/rules/entity-base-template.md)
 - **Id / Mongo:** GUID (subtype-4) — eski ObjectId string deseni devralınmaz; tenant-first compound index (ESR). Ref: [mongo-indexing.md](../../../.antigravity/rules/mongo-indexing.md)
 - **Concurrency:** MeetingReport/MeetingInvite `Version` tabanlı optimistic concurrency davranışı korunur (taşıma sırasında sessiz veri kaybı yasağı).
-- **Gateway:** Tüm frontend istekleri Gateway (5000) üzerinden; servis portu doğrudan çağrılamaz. Port rezervasyonu C1 module pack aşamasında `ports.md`'ye işlenir (bu scaffold'da yapılmadı). Ref: [ports.md](../../../.antigravity/rules/ports.md)
+- **Gateway:** Tüm frontend istekleri Gateway (5000) üzerinden; canonical PPM local portu `5062` doğrudan çağrılamaz. Yalnız `/api/v1/ppm` ve `/api/v1/ppm/{everything}` explicit Gateway rotaları integration-agent tarafından yönetilir. Ref: [ports.md](../../../.antigravity/rules/ports.md)
 - **Dış entegrasyonlar:** Google/SignalR/AI/SMTP bu domain'in ilk fazlarında **yoktur**; ileride External Systems Register / MOD-0027 kalıplarıyla ele alınır.
 
 ## Domain Bootstrap Notes
