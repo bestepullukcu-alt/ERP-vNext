@@ -13,6 +13,8 @@ public sealed class FinishedGoodAuthorizationTests
     [InlineData(nameof(FinishedGoodsController.GetById), "mdm.finished-goods.read")]
     [InlineData(nameof(FinishedGoodsController.GetGskuSelector), "mdm.finished-goods.create")]
     [InlineData(nameof(FinishedGoodsController.CreateDraft), "mdm.finished-goods.create")]
+    [InlineData(nameof(FinishedGoodsController.SubmitIdentity), "mdm.finished-goods.submit")]
+    [InlineData(nameof(FinishedGoodsController.RetireIdentity), "mdm.finished-goods.retire")]
     public void Every_endpoint_fails_closed_on_the_exact_named_permission(string methodName, string permission)
     {
         var method = typeof(FinishedGoodsController).GetMethod(methodName)!;
@@ -23,7 +25,7 @@ public sealed class FinishedGoodAuthorizationTests
     }
 
     [Fact]
-    public void Controller_declares_exactly_two_permission_candidates_and_no_manage_key()
+    public void Controller_declares_exact_lifecycle_permission_candidates_and_no_manage_key()
     {
         const string prefix = "Permission:";
         var permissions = typeof(FinishedGoodsController)
@@ -33,7 +35,12 @@ public sealed class FinishedGoodAuthorizationTests
             .ToHashSet(StringComparer.Ordinal);
 
         Assert.Equal(
-            ["mdm.finished-goods.create", "mdm.finished-goods.read"],
+            [
+                "mdm.finished-goods.create",
+                "mdm.finished-goods.read",
+                "mdm.finished-goods.retire",
+                "mdm.finished-goods.submit"
+            ],
             permissions.OrderBy(permission => permission, StringComparer.Ordinal));
         Assert.DoesNotContain(permissions, permission => permission.Contains("manage", StringComparison.OrdinalIgnoreCase));
     }
