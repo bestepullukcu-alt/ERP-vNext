@@ -3377,7 +3377,8 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
   kenara. Ölçüm için tarayıcıda **bölüm klonlandı** — stiller ürünün, DOM elle çoğaltıldı; açıkça yazılıyor.
 - Genel `.wcn-detail-card > section + section` kuralı **kaldırıldı**: dolgunun içinde çizgi çizen bir yedek
   kural, bu turda üç kez düzeltilen kusurun dördüncü kez doğacağı yerdi.
-- **Gelecek regresyon riski: 🟢** — yeni bir yığılma eklenirse BL-180'siz kalmaz: gardiyan test onu yakalar.
+- **Gelecek regresyon riski: 🟢** — yeni bir yığılma eklenirse gardiyan test onu yakalar.
+  <!-- ⚠ 2026-08-29: bu cümle "BL-180'siz kalmaz" diyordu; BL-180 diye bir kayıt HİÇBİR dosyada yok (ne açık ne arşiv). Neyi kastettiği ölçülemedi, o yüzden UYDURULMADI — kod kaldırıldı, cümlenin anlamı korundu: koruma gardiyan testinden geliyor. -->
 
 ### BL-182 — [ÖLÇÜM] Takvim bugünü seçtiriyor, doğrulayıcı bugünü reddediyor
 > **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ

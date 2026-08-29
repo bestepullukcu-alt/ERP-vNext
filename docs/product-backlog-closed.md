@@ -2367,7 +2367,7 @@ karşılar. Profil şimdi 8 koleksiyon / 19 mantıksal index (11 beyan + 8 ört�
 - **Sayının ikinci kopyası vardı ve bu turda temizlendi.** `BusinessReferenceDataMongoResidueSweeperTests`
   `<= 18`'i düz sayı olarak yazıyordu; sahip onayladığı artıştan sonra, ne bütçeyi ne kararı adıyla anan bir
   residue-sweeper dosyasında kırmızıya döndü. Artık `SchemaProfileBudget.BusinessReferenceData`'dan okuyor.
-- **Bu turda YAPILMADI (sahip açıkça yasakladı):** `ImportedAt` index'i (BL-299 kapsamında), global
+- **Bu turda YAPILMADI (sahip açıkça yasakladı):** `ImportedAt` index'i (BL-030 kapsamında — <!-- ⚠ 2026-08-29: burada BL-299 yazıyordu; o kayıt sahip isteğiyle BL-030'a birleştirilip kaldırıldı, atıf asılı kalmıştı -->), global
   `DateTimeOffsetSerializer` değişikliği, `DateTimeOffset` işinin bu tura karıştırılması, başka index düşürmek,
   koleksiyon bütçesini değiştirmek.
 - **Gelecek regresyon riski: 🟢** — profil tavanda ama tavan artık çivili; index'in her iki call site'ı plan
