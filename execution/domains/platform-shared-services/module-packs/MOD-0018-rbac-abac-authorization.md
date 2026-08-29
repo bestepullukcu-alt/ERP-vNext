@@ -229,9 +229,17 @@ subtree wildcards below are exact ownership roots; every adjacent/shared file is
 - `services/Diten.Platform/src/Diten.Platform.Infrastructure/Eventing/GateIAuditAdapterRegistry.cs`
 - `services/Diten.Platform/src/Diten.Platform.Infrastructure/Eventing/GateIAuditConsumerProcessor.cs`
 - `services/Diten.Platform/src/Diten.Platform.Infrastructure/Eventing/GateIAuditIntentParser.cs`
+- `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Schema/PlatformCollections.cs`
+- `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Schema/PlatformSchemaManifest.Eventing.cs`
 - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Eventing/GateIAuditBilateralFixtureTests.cs`
 - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Eventing/GateIAuditContractTests.cs`
 - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Eventing/GateIAuditDisposableReplicaSetTests.cs`
+
+The two schema files are an exact DB-010 exception only for the default-off Gate-I audit-intake evidence collection.
+`PlatformCollections` remains the single collection-name authority and `PlatformSchemaManifest.Eventing` remains the
+single Eventing-profile index authority. This exception does not authorize a second schema initializer, direct
+`EnsureIndexesAsync` use in tests, per-run databases, production DI, listener/worker activation or any non-Eventing
+schema change.
 
 Producer-owned canonical fixtures and module-specific adapter mappings remain read-only inputs. A missing producer
 mapping or fixture requires that producer/MOD-0021 owner's own authority; this parent amendment cannot invent or copy it.
@@ -418,6 +426,9 @@ Gateway route degisikligi gerekli degildir.
 19. Production key/secret/JWKS, endpoint/scheme/listener/worker/broker activation, deployment, Gateway, frontend and
     WorkCenter diffs are zero.
 20. MOD-0018-FU16 through FU20 hashes remain byte-identical to the amendment baseline.
+21. Gate-I audit persistence declares its collection name once in `PlatformCollections` and its indexes once in
+    `PlatformSchemaManifest.Eventing`; focused tests apply only `SchemaProfile.Eventing`, never the full production
+    initializer, and leave no per-run database or disposable-Mongo residue.
 
 ## 17. Test Expectations
 
@@ -450,6 +461,9 @@ Gateway route degisikligi gerekli degildir.
   active/previous-key boundary, revocation/freshness and test-only production rejection.
 - Platform Eventing tests prove exact adapter mapping, canonical payload/metadata/signing-identity conflict behavior,
   atomic inbox/outbox acceptance, cancellation zero residue and disposable replica-set cleanup.
+- Gate-I schema tests prove the audit-intake collection is declared through `PlatformCollections`, included only in
+  `SchemaProfile.Eventing`, has its exact indexes applied idempotently, and does not call the production-wide
+  `EnsureIndexesAsync` path or create a database per test run.
 - Full AuthService, Platform.Common, BuildingBlocks Eventing and relevant Platform Eventing regressions plus API/project
   builds pass before any local implementation checkpoint. Mutation evidence uses non-equivalent expected-red guards;
   unsafe port/secret/activation mutants receive explicit security-policy-forbidden disposition instead of execution.
@@ -474,6 +488,8 @@ Gateway route degisikligi gerekli degildir.
 - [ ] Data scope enum seti final onaylandi.
 - [x] Control Tower approved the parent-MOD-0018 S2S amendment without a new FU identity (2026-08-29).
 - [x] Exact AuthService, Platform.Common, BuildingBlocks Eventing, Platform Eventing and evidence allow-lists are locked.
+- [x] Exact Gate-I DB-010 schema seams are limited to `PlatformCollections.cs` and
+      `PlatformSchemaManifest.Eventing.cs`; production composition/activation remains prohibited.
 - [x] Current MOD-0018-FU16 through FU20 identities and files are protected unchanged.
 - [x] Default-off/non-production authority and production activation exclusions are explicit.
 - [ ] Current-main semantic implementation and the Section 17 evidence matrix pass before an implementation checkpoint.
@@ -532,6 +548,14 @@ Current-main implementation must reconstruct only the allowed semantics against 
 bulk cherry-pick is prohibited where it would overwrite newer UUID, Mongo-index, entitlement, module-registration or
 eventing behavior. Current canonical FU16-FU20 are unrelated product-permission follow-ups and are not superseded,
 amended or implementation dependencies of this parent amendment.
+
+### Gate-I DB-010 schema authority reconciliation — 2026-08-29
+
+The Control Tower authorized only the two exact shared schema seams listed in Section 5 so the non-activated Gate-I
+audit-intake evidence can use the current canonical Platform schema system. The runtime/evidence implementation must
+reuse the existing Eventing schema profile and single collection-name registry; it may not introduce a parallel index
+initializer, a direct collection-name literal, a per-test database, production DI wiring or any listener/broker
+activation. This is governance authority for bounded local evidence, not production authority.
 
 ## 20. Follow-up Items
 
