@@ -2956,6 +2956,496 @@ passed; the Release frontend build completed with zero errors and 13 pre-existin
 discovered 152 tests: 143 passed and nine unrelated Enterprise Strategy/Planning tests failed; no MOD-0290 or
 personalization test failed. Existing pilot records remained unchanged.
 
+### Ordered named step - `Product Identity Lifecycle & WorkCenter Onboarding — Phase 1.5`
+
+#### Planning-only authority and current code truth
+
+This named step is a **planning-only** extension of the existing MOD-0290 Product / Item / SKU Master ownership. It
+does not create a new MOD/FU/provider identity, does not change this pack's `in-progress` status and does not grant
+runtime, configuration, credential, data, process, navigation, commit or push authority. Every A-H runtime step below
+requires its own later code-start after the preceding evidence and owner gates are closed.
+
+The current repository already persists `ProductIdentityLifecycleStatus` on Global Product, Product Definition
+Revision, GSKU, LSKU and Finished Good, but exposes only draft create/read surfaces for these identities. The lifecycle
+states therefore exist as domain vocabulary without a completed submit/decision/retirement orchestration. WorkCenter
+supports both native Workflow work items and configuration-driven remote providers. The code-truth correction below
+selects the existing native Workflow path for these approval tasks and forbids an MDM-specific Platform bridge.
+
+> **Superseded candidate warning (code-truth review):** the remote-MDM-provider design below was the initial DCP-004
+> candidate. A subsequent Workflow code audit proved that Product Identity approval must use MOD-0023's existing native
+> `workflow` provider and dispatcher. The candidate block is retained only as non-authoritative planning history and is
+> hidden from rendered pack output. It grants no code-start authority. The authoritative corrected plan follows it.
+
+<!-- SUPERSEDED REMOTE-PROVIDER CANDIDATE — DO NOT IMPLEMENT
+
+#### Frozen ownership and lifecycle decisions
+
+| Decision | Frozen Phase 1.5 position |
+|---|---|
+| Business state owner | MDM/Product Data remains the sole writer and system of record for the five Product Identity lifecycle aggregates. WorkCenter displays and dispatches; it never owns or directly writes their business state. |
+| Workflow owner | MOD-0023 owns templates, assignments, maker-checker task/run state, SLA and workflow decision evidence. A Workflow record is not the Product Identity aggregate. |
+| WorkCenter owner | DCP-004 Work Aggregation owns generic aggregation, remote dispatch, resilience and operator configuration. No Product Identity business rule is added to Platform. |
+| Lifecycle vocabulary | Exact aggregate state machine is `DRAFT -> PENDING_IDENTITY_APPROVAL -> IDENTITY_APPROVED -> RETIRED`; reject returns `PENDING_IDENTITY_APPROVAL -> DRAFT` with a durable reason. No additional Product Identity state or generic task state may be persisted on the aggregate. |
+| Parent fencing | Approval and retirement revalidate same-tenant, non-deleted parent/reference facts at the final atomic write. Existing `PARENT_NOT_IDENTITY_APPROVED` and retired-parent fail-closed semantics remain authoritative. |
+| Maker-checker | The canonical human subject that submitted an identity cannot approve/reject the same request. Platform/service credentials do not become the human decision subject. |
+| Concurrency and replay | Every action carries `expectedVersion`; stale facts return `409`. A stable operation/idempotency identity is required end to end and exact replay returns the persisted outcome without a second workflow instance, audit intent or lifecycle transition. |
+| Audit | MDM writes the existing append-only local durable audit intent/receipt contract for submit, decision and retirement facts; MOD-0021 remains the central audit owner. WorkCenter telemetry is not business audit evidence. |
+| Provider topology | Exactly one remote provider row named `mdm-product-identities` serves all five identity aggregates. It is multiplied by configuration through the existing generic HTTP bridge; no aggregate-specific Platform provider/dispatcher class is allowed. |
+| Provider endpoints | MDM exposes exactly one projection endpoint and one action template compatible with DCP-004: `GET api/v1/work-items/projection?scope=self|team` and `POST api/v1/work-items/{itemId}/actions/{actionCode}`. The provider is read-only; only the action endpoint reaches lifecycle application commands. |
+| Provider address | Base URL and paths are operator-owned configuration. They are never placed in the module manifest, browser payload or a committed environment secret. |
+| Lifecycle owner projection | Every projected item sets `LifecycleOwner=mdm-product-identities`; `Source.ProviderCode` must exactly equal the configured provider code and `Source.ObjectType/ObjectId` identify the owning MDM aggregate. |
+
+#### Aggregate identity and action vocabulary
+
+One provider row does not collapse the aggregates. Items use the exact stable object types below, and every action code
+is aggregate-qualified so the single DCP-004 `Actions` map cannot silently give one aggregate another aggregate's
+permission.
+
+| Aggregate | `Source.ObjectType` | Required action-code grammar |
+|---|---|---|
+| Global Product | `global-product` | `global-product.approve`, `global-product.reject` |
+| Product Definition Revision | No independent Phase 1.5 item | The first Revision is decision-bound to its first GSKU and is projected only as GSKU metadata; it publishes no independent action. |
+| GSKU | `gsku` | `gsku.approve`, `gsku.reject` |
+| LSKU | `lsku` | `lsku.approve`, `lsku.reject` |
+| Finished Good | `finished-good` | `finished-good.approve`, `finished-good.reject` |
+
+Submit and retirement action codes are deliberately not published. Submit is a maker action on the owning MDM tenant
+screen/API that starts the idempotent MOD-0023 operation; it is not pending work and therefore is not a WorkCenter
+action. Retirement is the direct, separately authorized MDM transition frozen below and is not fabricated as a pending
+WorkCenter task. Generic unqualified `submit`, `approve`, `reject` or `retire` keys are forbidden in this provider row.
+
+The DCP-004 configuration `Actions` map is the single permission declaration for WorkCenter dispatch. Every projected
+action must exist in that map and use the same permission enforced by the MDM controller/handler; undeclared actions
+must be stripped by the generic bridge. Exact permission keys are frozen below and require the separate
+`MOD-0018-FU23 Product Identity Lifecycle Permission Onboarding` owner pack; they cannot be inferred from the earlier
+read/create onboarding packs.
+
+#### Mandatory 31-field projection deliverable
+
+Before F code-start, Product Data and WorkCenter owners must approve the following three-column mapping for **all 31**
+shared fields. “Unavailable” below means the provider returns a stable fail-closed source error; it never substitutes a
+zero, empty card, guessed actor or browser-only value.
+
+| WorkCenter field | Authoritative Product Identity source and projected value | If source is absent / not applicable |
+|---|---|---|
+| `FixtureKind` | Provider constant `workItem`. | Constant is mandatory; malformed contract is unavailable. |
+| `Id` | Stable opaque `<object-type>:<aggregate-id-D>` composed from the exact object type table and MDM aggregate ID. | Empty/invalid ID makes the source inconsistent and unavailable. |
+| `WorkIntent` | Constant `approval`; only `PENDING_IDENTITY_APPROVAL` records are projected. | Constant is mandatory; Draft/approved/retired records are not work items and are omitted. |
+| `AssignmentMode` | Constant `approval`, backed by the bound MOD-0023 approval operation. | Missing workflow binding is inconsistent; do not invent an assignment. |
+| `OwnershipState` | `notApplicable`; Product Identity approval has no separate task-ownership axis. | Always the explicit `notApplicable`, never null. |
+| `AdmissionState` | `notApplicable`; child-admission fencing remains MDM business state and is not a WorkCenter admission axis. | Always the explicit `notApplicable`, never null. |
+| `NormalizedStatus` | `Pending` for `PENDING_IDENTITY_APPROVAL`. | Any other lifecycle state is omitted from the pending-work projection. |
+| `TaskLifecycle` | `notApplicable`; MOD-0024 task lifecycle is not copied into Product Identity. | Always the explicit `notApplicable`, never null. |
+| `ExecutionState` | `notApplicable`; Product Identity approval has no task execution axis. | Always the explicit `notApplicable`, never null. |
+| `TimerState` | `notApplicable` in Phase 1.5; a workflow due date alone does not invent a timer state. | Always the explicit `notApplicable`, never null. |
+| `SystemState` | Constant `fresh`; no Product Identity-specific system-state vocabulary is introduced. | Constant is mandatory. |
+| `ActionDepth` | Constant `inline`; approve/reject returns through the action endpoint and durable reconciliation contract. | Constant is mandatory. |
+| `Title` | Display label: Global Product=`CanonicalCode · GlobalProductName`; GSKU=`CanonicalCode · RevisionIdentifier`; LSKU=`CanonicalCode · MarketCode`; Finished Good=`CanonicalCode · GskuCanonicalCode`. | Missing required aggregate/join/display fact makes the source inconsistent; never emit an empty title. |
+| `NativeStatus` | Code `PENDING_IDENTITY_APPROVAL` plus a seven-language resource label owned by the MDM frontend contract. | Missing/unknown lifecycle code is unavailable; no raw enum number or English fallback. |
+| `Source` | `{ ProviderCode=mdm-product-identities, ProviderContractVersion=<approved>, ObjectType, ObjectId=<aggregate-id-D>, DeepLink=<existing tenant page> }`. | Any missing/mismatched member drops the item and reports the provider contract failure. |
+| `LifecycleOwner` | Constant `mdm-product-identities`. | Constant is mandatory and must equal `Source.ProviderCode`. |
+| `WorkItemCapabilities` | Exact empty list `[]` for Phase 1.5; no shared detail-card capability has an approved authoritative Product Identity payload yet. | Never add a capability to compensate for missing data; future capability requires pack revision. |
+| `Actions` | Aggregate-qualified `approve` and `reject` descriptors from the approved action table, filtered by the configuration map and actor/record eligibility. | Missing config action is stripped; missing workflow/actor facts disable or fail closed as specified below, never create a dead button. |
+| `Concurrency` | `Kind=version`; token is aggregate `Version`, except the first Revision+GSKU item uses the durable pair-operation version that fences both aggregates. | Missing, negative or unparsable version makes the item unavailable. |
+| `WaitingContext` | No authoritative Phase 1.5 value. | Property is omitted, not serialized as null. |
+| `Escalation` | No authoritative Phase 1.5 escalation payload. MOD-0023 ownership alone does not prove the shared shape. | Property is omitted, not serialized as null. |
+| `DueAt` | Exact MOD-0023 bound-operation due time only when present. | Property is omitted when the workflow binding has no due time. |
+| `PrimaryActionCode` | Aggregate-qualified `.approve` only when that action is present for the actor. | Omit when approve is unavailable/disabled rather than naming an unusable primary action. |
+| `OverflowActionCodes` | Single aggregate-qualified `.reject` only when reject is present; no other overflow action. | Omit when reject is unavailable; never emit an empty/null-filled list. |
+| `Assignee` | Exact canonical MOD-0023 assigned human subject when the workflow has one; display name only from an approved identity projection. | Omit when assignment is candidate/pool based or display identity is unavailable; never guess from current user. |
+| `Requester` | Canonical human submitter stored in the durable MDM/Workflow binding; `IsCurrentUser` is an ordinal subject comparison. | Required for maker-checker. Missing requester makes the item/action source inconsistent and unavailable. |
+| `Checklist` | No Product Identity checklist contract in Phase 1.5. | Property is omitted. |
+| `Subtasks` | No Product Identity subtask contract in Phase 1.5. | Property is omitted. |
+| `ParentTaskItemId` | No separate Revision card and no parent WorkCenter item in Phase 1.5. | Property is omitted; the first Revision remains bounded GSKU display/concurrency metadata. |
+| `Gates` | Parent/reference/child-admission fences are revalidated inside MDM and do not yet have an approved shared card payload. | Property is omitted; an omitted card never weakens server enforcement. |
+| `Priority` | Exact MOD-0023 priority only after Workflow owner maps it to the shared closed vocabulary. No mapping is approved in Phase 1.5. | Property is omitted. |
+
+The gate is `31/31`, not “fields used by the first screen”. Optional absent fields are omitted rather than serialized
+as `null`. The empty capability list is deliberate: Phase 1.5 supplies a truthful approval row and actions, not empty
+detail cards. Product Definition Revision facts are bounded GSKU title/concurrency inputs, never a fifth independent
+Phase 1.5 card.
+
+#### Capability and action contract
+
+**Capability list:** `[]` for all four enabled object types. `Actions` are part of the base work-item contract and do
+not require a fabricated capability. Adding checklist, subtasks, waiting, escalation, gates or another card is blocked
+until its authoritative source, missing behavior and shared DTO shape are approved.
+
+| Action | MDM action endpoint | Offered state / record rule | Permission cross-check | Stable refusal behavior |
+|---|---|---|---|---|
+| `global-product.approve` | `POST api/v1/work-items/{itemId}/actions/global-product.approve` | Global Product `PENDING_IDENTITY_APPROVAL`; assigned eligible human is not requester; expected version matches. | `mdm.global-products.approve` | `400 WORK_ITEM_ACTION_PAYLOAD_INVALID`; `403 WORK_ITEM_ACTION_FORBIDDEN` or `PRODUCT_IDENTITY_MAKER_CHECKER_VIOLATION`; non-disclosing `404 PRODUCT_IDENTITY_NOT_FOUND`; `409 PRODUCT_IDENTITY_STATE_CONFLICT`/`PRODUCT_IDENTITY_CONCURRENCY_CONFLICT`; `503/504` workflow unavailable/timeout. |
+| `global-product.reject` | Same template with `global-product.reject` | Same state/actor/version; bounded non-empty rejection reason required. | `mdm.global-products.reject` | Same matrix; missing/invalid reason is `400 WORK_ITEM_ACTION_PAYLOAD_INVALID`. |
+| `gsku.approve` | Same template with `gsku.approve` | First GSKU uses the pending durable Revision+GSKU pair; later GSKU uses its own pending aggregate; parent Revision revalidated. | `mdm.gskus.approve` | Same matrix plus `409 PARENT_NOT_IDENTITY_APPROVED`; incomplete pair recovery is not success. |
+| `gsku.reject` | Same template with `gsku.reject` | Same pair/later-GSKU distinction; bounded non-empty reason required. | `mdm.gskus.reject` | Same matrix; rejection is not successful until the required pair state/audit intent outcome is durable. |
+| `lsku.approve` | Same template with `lsku.approve` | LSKU `PENDING_IDENTITY_APPROVAL`; approved/referenceable GSKU and verified market facts revalidated. | `mdm.lskus.approve` | Same matrix plus `409 PARENT_NOT_IDENTITY_APPROVED` or reference-data provider `503/504`. |
+| `lsku.reject` | Same template with `lsku.reject` | Same state/parent facts; bounded non-empty reason required. | `mdm.lskus.reject` | Same matrix; invalid reason `400`, stale state/version `409`. |
+| `finished-good.approve` | Same template with `finished-good.approve` | Finished Good `PENDING_IDENTITY_APPROVAL`; approved/referenceable GSKU revalidated. | `mdm.finished-goods.approve` | Same matrix plus `409 PARENT_NOT_IDENTITY_APPROVED`. |
+| `finished-good.reject` | Same template with `finished-good.reject` | Same state/parent facts; bounded non-empty reason required. | `mdm.finished-goods.reject` | Same matrix; invalid reason `400`, stale state/version `409`. |
+
+Permission cross-check is a code-start gate, not prose: for each of the eight actions, the future test must compare (1)
+the operator row's `Actions[actionCode]`, (2) the projection action actually published and (3) the MDM action handler's
+enforced key. The sets must be exactly equal. Admin is not automatically both maker and approver; FU17-FU19 explicitly
+exclude lifecycle permissions and generic entitlement sync must not grant all lifecycle keys by default. Submit and
+retire remain MDM-only actions with their corresponding resource-qualified `.submit` and `.retire` keys; Revision has
+no independent lifecycle permission because the first Revision is governed by the paired GSKU operation.
+
+The exact lifecycle permission catalog is 16 keys: `.submit`, `.approve`, `.reject` and `.retire` under each of
+`mdm.global-products`, `mdm.gskus`, `mdm.lskus` and `mdm.finished-goods`. `MOD-0018-FU23` owns their Auth onboarding.
+Tenant Admin retains only the existing four read/create pairs and Tenant Viewer the four reads; neither receives a
+lifecycle key automatically. `ProductDataSteward` receives the four resources' read/create/submit sets,
+`ProductIdentityApprover` their read/approve/reject sets, and `ProductIdentityRetirementSteward` their read/retire sets.
+No user-role assignment is automatic, and MDM canonical-human maker-checker enforcement remains mandatory even for a
+dual-role or platform actor.
+
+#### Hand-projection templates — four enabled object types
+
+The template below is filled from one real pending record before F code-start. Angle-bracket values are evidence slots,
+not permission, identity, label or due-date defaults. Fields marked `omit` must be absent from JSON.
+
+| Slot | Global Product | GSKU | LSKU | Finished Good |
+|---|---|---|---|---|
+| `Id` | `global-product:<GlobalProductId-D>` | `gsku:<GskuId-D>` | `lsku:<LskuId-D>` | `finished-good:<FinishedGoodId-D>` |
+| `Title` | `<CanonicalCode> · <GlobalProductName>` | `<CanonicalCode> · <RevisionIdentifier>` | `<CanonicalCode> · <MarketCode>` | `<CanonicalCode> · <GskuCanonicalCode>` |
+| `Source.ObjectType/ObjectId` | `global-product` / `<GlobalProductId-D>` | `gsku` / `<GskuId-D>` | `lsku` / `<LskuId-D>` | `finished-good` / `<FinishedGoodId-D>` |
+| `Source.DeepLink` | `/MasterDataManagement/GlobalProducts` | `/MasterDataManagement/Gskus` | `/MasterDataManagement/Lskus` | `/MasterDataManagement/FinishedGoods` |
+| `Concurrency.Token` | `<GlobalProduct.Version>` | First GSKU=`<PairOperation.Version>`; later=`<Gsku.Version>` | `<Lsku.Version>` | `<FinishedGood.Version>` |
+| `Actions` | qualified approve/reject after permission/actor filters | qualified approve/reject; pair recovery fence for first GSKU | qualified approve/reject; GSKU/market fence | qualified approve/reject; GSKU fence |
+| Required joined evidence | Durable workflow binding + requester | Revision identifier + pair/later binding + requester | GSKU/reference-market + binding + requester | GSKU canonical code + binding + requester |
+
+Each instantiated item additionally uses the common fixed values
+`FixtureKind=workItem`, `WorkIntent=approval`, `AssignmentMode=approval`,
+`OwnershipState=notApplicable`, `AdmissionState=notApplicable`, `NormalizedStatus=Pending`,
+`TaskLifecycle=notApplicable`, `ExecutionState=notApplicable`, `TimerState=notApplicable`, `SystemState=fresh`,
+`ActionDepth=inline`, `NativeStatus.Code=PENDING_IDENTITY_APPROVAL`,
+`LifecycleOwner=mdm-product-identities`, `WorkItemCapabilities=[]` and `Concurrency.Kind=version`.
+`WaitingContext`, `Escalation`, `Checklist`, `Subtasks`, `ParentTaskItemId`, `Gates` and unapproved `Priority` are omitted;
+`DueAt`, `Assignee`, `PrimaryActionCode` and `OverflowActionCodes` are emitted only under the 31-row rules above. The
+hand proof fails if any required join/requester/version is absent, if the returned/list/badge counts diverge, or if a
+declared action has no server-side permission and durable transition path.
+
+#### Product Definition Revision, retirement and child-admission decisions — frozen
+
+1. **Revision/first-GSKU business outcome:** the Revision created by the combined first-GSKU command and that first GSKU
+   are submitted and decided as one business outcome. They share one durable pair-operation identity and one workflow
+   binding. Approval/rejection is not reported successful until both aggregates and their local audit intents reach the
+   intended state. Because the current supported topology does not prove a cross-collection Mongo transaction, the pair
+   uses a fenced, idempotent state machine with checkpoint recovery. A crash after the first write is
+   `RECOVERY_REQUIRED`, never success. A later GSKU under an already approved Revision may be decided independently but
+   must revalidate the approved Revision at decision time. An independently approved empty Revision is forbidden.
+2. **Retirement model:** Phase 1.5 uses a separately permissioned direct MDM
+   `IDENTITY_APPROVED -> RETIRED` transition with explicit confirmation, bounded reason, expected version, exact replay
+   and durable audit evidence. It is not exposed by WorkCenter and is not mapped to MOD-0023 `Cancel`. A future
+   maker-checker retirement request requires a new approved lifecycle extension rather than a fabricated pending card.
+3. **Retire-versus-child fencing:** Global Product owns a bounded active child-creation admission list. The first-GSKU
+   facade atomically acquires/replays an admission using its existing `CreationCommandId`, completes or releases it only
+   after the child binding is durable, and recovers the same admission on retry. Global Product retirement requires an
+   empty admission list plus expected version/state in its atomic filter and separately rechecks non-deleted child facts.
+   A crash leaves retirement fail-closed until the same child operation recovers; no timer or unsafe cleanup guesses
+   business completion. Equivalent child-first, no-cascade blockers apply from Revision/GSKU to LSKU and Finished Good.
+
+#### G5 direct-action / Workflow / MDM durable reconciliation closure
+
+The older G5 text leaves callback versus secure pull/poll open. DCP-004 now adds a direct WorkCenter action call to the
+MDM endpoint. These are transport paths, not three independent business writers. The following invariant is frozen:
+
+- WorkCenter calls the MDM action endpoint with caller JWT, trusted tenant header, aggregate-qualified action,
+  `expectedVersion` and stable idempotency identity.
+- The MDM endpoint performs record-level authorization and issues or advances the owner-approved MOD-0023 operation; it
+  must not report approval success merely because Workflow accepted a command.
+- Only the MDM durable reconciliation seam applies the resulting Workflow decision to the Product Identity aggregate,
+  exactly once, with final version/parent/maker-checker checks and append-only audit intent.
+- Callback and secure pull/poll remain alternative delivery mechanisms into that **same** reconciler. Enabling both as
+  independent state mutation paths, or letting the direct action and reconciler both apply the transition, is forbidden.
+- A timeout returns an honest unknown/unavailable result. Retry is safe through idempotency/version fencing; silent
+  success, browser-only state, duplicate workflow instance and duplicate audit intent are acceptance failures.
+
+Before C code-start, Workflow/Product Data/Security owners must choose callback or secure pull/poll for the first
+delivery, define the caller/delegated-human identity binding, freeze request/decision version identities and prove the
+crash-recovery sequence. The prior G5 gate is not implicitly closed by the generic WorkCenter bridge.
+
+#### Dependency order
+
+1. Approve the exact 31-field/capability/action/permission mapping and the frozen pair/admission contracts above.
+2. Close Auth permission catalog/default-role/responsibility-role onboarding for the aggregate-qualified actions.
+3. Implement and prove the MDM aggregate transition/replay/audit primitives, starting with Global Product.
+4. Close G5 Workflow start/decision transport and the single durable MDM reconciliation seam.
+5. Enable the combined first-Revision/GSKU outcome, then later GSKU, LSKU and Finished Good;
+   no child approval may precede the required parent approval evidence.
+6. Expose the MDM provider endpoint pair and obtain one operator-owned `mdm-product-identities` row.
+7. Add lifecycle controls to existing tenant UI only after the corresponding API/action/permission evidence is green.
+8. Run Local Development projection/action/reload/crash/deny smoke; Production/Staging remains separately gated.
+
+#### A-H planning and exact allow-list draft
+
+All paths below are a **draft future allow-list**, not present authorization. Before each code-start the paths must be
+revalidated against current code truth and reduced where reuse makes a file unnecessary. Anything not listed is
+protected for that step.
+
+**A — Contract and owner-decision closure (planning only)**
+
+Exact allow-list: this Module Pack only. Deliver the 31/31 mapping table, backed capability
+list, action/state/endpoint/refusal table, permission cross-check and one hand-projected item per enabled object type.
+No runtime/test/config/data file is allowed.
+
+**B — MDM lifecycle domain, atomic transition and audit intent**
+
+Planned exact runtime allow-list:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductIdentityLifecycleStatus.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductAuditOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/AuditAggregateType.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/GlobalProduct.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/ProductDefinitionRevision.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/Gsku.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/Lsku.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/FinishedGood.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGlobalProductRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IProductDefinitionRevisionRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGskuRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/ILskuRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IFinishedGoodRepository.cs`
+- the matching five existing Mongo repository files under `Diten.MdmService.Persistence/Repositories/`
+- new ProductItemSkuMaster lifecycle command/query/handler/validator/model files whose exact filenames are frozen at
+  B code-start after the Revision and retirement decisions
+- focused Product Identity lifecycle unit and real-Mongo tests under
+  `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/`
+
+Protected: API/controllers, WorkCenter contracts, Workflow client, Gateway, frontend, Auth, Platform, config/data and
+all non-MOD-0290 entities. Acceptance requires atomic expected-version transition, exact replay, cross-tenant/soft-delete
+non-disclosure, parent fencing, maker-checker denial, one audit intent and crash-safe no-double-apply evidence.
+
+**C — MOD-0023 start/decision transport and single durable MDM reconciler**
+
+Planned exact allow-list:
+
+- new `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Workflow/IProductIdentityWorkflowClient.cs`
+- new ProductItemSkuMaster workflow request/result models, submit command/handler and durable decision reconciler files
+  under `Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/`
+- new MDM Infrastructure typed client/options/credential adapter files under
+  `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Workflow/`
+- the minimum MDM DI registration point proven at C preflight
+- focused unit/contract and real-Mongo crash/replay/reconciliation tests
+
+Protected: Workflow/Platform production code unless a separately owned MOD-0023 pack authorizes it; WorkCenter provider
+surface; Gateway/frontend; committed secrets/config/data. Acceptance requires one workflow instance per operation,
+human-subject/tenant binding, callback-or-poll single ingestion, exact decision/version fencing and restart recovery.
+
+**D — Product Identity lifecycle API and manifest actions**
+
+Planned exact allow-list:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/GlobalProductsController.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/GskusController.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/LskusController.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/FinishedGoodsController.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs`
+- matching API contract, authorization and manifest tests
+
+Protected: draft create/read contract behavior except explicit route additions; provider endpoint pair; Gateway/frontend;
+Auth/Platform/config/data. Acceptance freezes exact submit/decision/retirement routes only after A/C, strict payloads,
+permission attributes, `400/401/403/404/409/503/504`, no tenant/actor technical input and no empty Revision shell.
+
+**E — Permission catalog/grant onboarding (external owner gate)**
+
+MOD-0290 runtime allow-list: **none**. Auth owner must update an existing applicable MOD-0018 onboarding boundary or
+approve a separate child according to DCP-002; this pack cannot mutate Auth/Platform grants. Evidence must prove exact
+action permission catalog entries, Admin/Viewer/responsibility-role policy, entitlement disable/expiry revoke, replay,
+tenant isolation and no accidental grant of all lifecycle actions.
+
+**F — Remote WorkCenter provider projection and action endpoint pair**
+
+Planned exact allow-list:
+
+- new `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/ProductIdentityWorkItemsController.cs`
+- new strict API request parser/models under
+  `services/Diten.MdmService/src/Diten.MdmService.Api/Contracts/ProductIdentityWorkItems/`
+- new ProductItemSkuMaster WorkItems query/command/handler/validator/model files under
+  `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/WorkItems/`
+- existing five repository interfaces/implementations only if projection needs a bounded query not already available
+- matching projection/action/tenant-scope/contract/authorization and real-Mongo tests
+
+Protected: every Platform bridge/WorkCenter class, manifest host/address, Gateway, frontend, committed config/secret and
+business transition logic outside the B/C commands. Acceptance requires one `mdm-product-identities` contract version,
+31/31 mapping, source/provider equality, bounded tenant reads, no N+1, action stripping agreement, exact reason codes,
+expected-version replay and honest provider-down behavior.
+
+**G — Existing tenant UI lifecycle controls**
+
+Planned exact allow-list is limited to the existing GlobalProducts, Gskus, Lskus and FinishedGoods MVC controllers,
+views, module JavaScript/tests and seven locale RESX files under `frontend/Diten.Web`. No separate Product Definition
+Revision screen is added. No new register/page, generic layout, WorkCenter JavaScript, direct
+service-port call or navigation mutation is allowed. Controls render only with the matching permission/state, use
+same-origin MVC -> Gateway, preserve expected version and reload from the server after every action.
+
+**H — Operator onboarding and Local Development acceptance**
+
+Source allow-list: **none by default**. A separately authorized operator may add exactly one non-production
+`WorkAggregation:RemoteProviders` row with `ProviderCode=mdm-product-identities`, the approved contract version, MDM base
+URL, endpoint paths and aggregate-qualified `Actions` map through secret-safe environment configuration. No manifest
+address, committed appsettings secret or product data mutation outside the named pilot is allowed. Live acceptance
+must prove provider count/list count agreement, all declared cards populated, every action and refusal, full-page reload
+persistence, stale/replay/timeout/provider-down behavior, maker-checker and tenant isolation. Production/Staging,
+navigation and bulk lifecycle operations remain separate gates.
+
+#### Named-step code-start gates
+
+- [x] Phase 1.5 freezes the first Revision + first GSKU as one durable business outcome and forbids an independent empty
+  Revision approval.
+- [x] Phase 1.5 freezes retirement as a direct, permissioned MDM transition outside WorkCenter and requires
+  child-admission fencing with no cascade.
+- [ ] Product Data and WorkCenter owners approve the complete 31/31 mapping, backed capabilities and action table.
+- [ ] Security/Auth owner freezes exact aggregate-qualified permissions and responsibility/default-role policy.
+- [ ] G5 closes one decision-delivery transport and the single durable MDM reconciliation contract.
+- [ ] Every A-H step receives a separate user code-start after predecessor evidence; this Phase 1.5 approval alone is
+  not runtime authorization.
+
+-->
+
+#### Authoritative correction — native Workflow work items, secure poll and MDM reconciliation
+
+The initial remote-provider candidate above is rejected. Product Identity approvals are MOD-0023 Workflow tasks and
+already have an authoritative native WorkCenter provider/dispatcher. Creating `mdm-product-identities` would duplicate
+the same approval, introduce a second action route and make task state and Product Identity state compete. The selected
+topology is therefore:
+
+1. MDM validates the maker and atomically moves the owning aggregate (or first Revision/GSKU pair) from `DRAFT` to
+   `PENDING_IDENTITY_APPROVAL`, persists a durable workflow-start binding and requires a stable idempotency key.
+2. A trusted MOD-0023 consumer-start seam proves both the MDM service and the delegated human maker, derives tenant and
+   subject server-side, starts exactly one recoverable Workflow instance and returns immutable instance/task/template
+   binding facts. A service identity alone may not impersonate the maker.
+3. WorkCenter renders the existing native `workflow` item. Approve/reject runs through the existing native Workflow
+   dispatcher, which derives the actor from the caller JWT and enforces assignment plus maker-checker. MDM exposes no
+   duplicate approve/reject WorkCenter endpoint.
+4. MDM uses an Auth-issued short-lived service token to poll a trusted, bounded terminal-decision-evidence endpoint.
+   The evidence includes tenant, instance/template/version, object binding, task, terminal transition, monotonic log
+   sequence, canonical human decision actor, reason/evidence, action idempotency and decision time.
+5. Only the MDM reconciler changes Product Identity business state. It revalidates tenant, subject separation, scope,
+   parent/reference facts, expected version and operation binding, then applies the terminal result once with the local
+   append-only audit intent. Timeout/unavailable remains pending; no inferred or browser-only success exists.
+
+Callback is not selected for Phase 1.5. It would require an additional MDM inbound-auth/outbox/retry contract while
+secure poll reuses the approved service-token direction. Workflow completion alone is not MDM lifecycle completion.
+
+#### Exact business lifecycle decisions
+
+- Global Product, GSKU, LSKU and Finished Good are the four independently visible Product Identity workflows.
+- The Revision created with the first GSKU is not an independent task. First Revision + first GSKU share one durable
+  pair-operation/workflow binding and one business decision. Success is impossible until both aggregate states and both
+  local audit intents reach the same intended outcome; partial writes recover behind fencing.
+- A later GSKU under an approved Revision may be submitted independently and revalidates the Revision at decision time.
+- Reject returns the relevant pending aggregate/pair to `DRAFT` with a bounded durable reason.
+- Retirement is a direct, separately permissioned MDM `IDENTITY_APPROVED -> RETIRED` action with confirmation, reason,
+  expected version, exact replay and audit. It is not a Workflow/WorkCenter action and is never mapped to `Cancel`.
+- Parent retirement is child-first and no-cascade. Global Product additionally owns a bounded child-creation admission
+  fence so concurrent first-GSKU creation and retirement cannot both succeed; crash leaves retirement fail-closed until
+  the exact child operation recovers.
+
+#### Workflow start mapping and native WorkCenter verification
+
+MDM maps each submit to `StartWorkflowInstanceRequest` as follows. These are transport facts, not body-authoritative
+tenant or actor claims.
+
+| Workflow input | MDM source / rule |
+|---|---|
+| `TemplateId` / `TemplateCode` | Operator-owned published Product Identity template binding; exactly one is selected. |
+| `ObjectType` | `global-product`, `gsku`, `lsku` or `finished-good`; no Revision object type in Phase 1.5. |
+| `ObjectId` | Owning aggregate GUID in `D` format; first pair uses GSKU ID. |
+| `ObjectRef` | Immutable canonical code plus bounded Revision identifier metadata for first GSKU. |
+| `CandidatePrincipalIds` | Approved Workflow template user/position candidates. Auth responsibility-role membership alone never fabricates assignment. |
+| `ReasonCode` | Stable Product Identity submit reason code, not user free text. |
+| `IdempotencyKey` | Mandatory stable MDM lifecycle operation key; optional Workflow behavior is not accepted by this seam. |
+| `CommentRequired` | Template-owned frozen requirement. |
+| `EvidenceRequired` | Template-owned frozen requirement. |
+| `DueAt` | Template/SLA-owned value; MDM does not invent a deadline. |
+| Tenant | Derived from the independently validated delegated JWT and exact service grant; body/header claims are not trusted. |
+| Maker | Derived from the delegated human JWT and persisted in the MDM binding plus Workflow start evidence. |
+
+No new 31-field MDM projection is implemented. Before live acceptance, the existing native Workflow provider's 31-field
+projection is regression-tested with all four object types: `Source.ObjectType/ObjectId` match the binding, provider and
+lifecycle owner remain `workflow`, requester/assignment/concurrency are truthful, and only the native actions backed by
+Workflow permissions are enabled. Deep link remains absent until the Workflow owner separately approves a generic
+object-link contract; MDM does not smuggle an address into a manifest.
+
+#### Authorization and assignment boundary
+
+`MOD-0018-FU23 Product Identity Lifecycle Permission Onboarding` owns exactly eight new product permissions: `.submit`
+and `.retire` under each of `mdm.global-products`, `mdm.gskus`, `mdm.lskus` and `mdm.finished-goods`. It creates no
+product `.approve`/`.reject` permission and no Revision permission because the actual decision path is native Workflow.
+
+- Tenant Admin keeps the existing four read/create pairs; Tenant Viewer keeps the four reads. Neither gets lifecycle.
+- `ProductDataSteward`: four reads + four creates + four submits.
+- `ProductIdentityApprover`: four reads plus existing shared
+  `platform.work-aggregation.inbox.view`, `platform.workflow.tasks.approve` and
+  `platform.workflow.tasks.reject`.
+- `ProductIdentityRetirementSteward`: four reads + four retires.
+- User assignment is explicit. Workflow candidate user/position assignment is separate from Auth authorization; both
+  must pass. A dual-role user still cannot approve their own submission.
+
+#### Remaining owner-side MOD-0023 seam
+
+Current public Workflow APIs are insufficient for this cross-service contract: start idempotency is optional, partial
+multi-write start replay does not repair, public transition DTOs accept body `ActorId`, and current instance reads omit
+immutable terminal human-decision evidence. A separately identified/approved MOD-0023 follow-up must therefore own:
+
+- dual proof for trusted MDM + delegated maker on start, exact source/object/template allow-list and mandatory key;
+- crash-recoverable start across instance, task, assignment snapshot and start log;
+- body-actor binding hardening on public approve/reject routes;
+- service-token-protected, tenant-bound terminal decision evidence query with monotonic transition identity;
+- real-Mongo tests for forged actor, wrong service/audience/tenant, partial start recovery, replay/fact drift and decision
+  evidence ordering.
+
+MOD-0033-FU02 Service Identity Token Issuance is a prerequisite, not the owner of Workflow behavior. Its reviewed local
+commit must be integrated into the eventual lifecycle branch before MDM polling code starts.
+
+#### Corrected A-H dependency and future allow-list
+
+Each step requires current-code preflight and its own exact code-start; this Phase 1.5 plan alone authorizes no runtime.
+
+**A — Contract closure:** this pack only. Freeze the template/object mapping, pair/admission recovery, exact failure
+codes, Auth matrix and secure-poll evidence schema. No runtime/config/data.
+
+**B — Auth lifecycle onboarding:** external `MOD-0018-FU23`; Auth runtime is limited to the default-role entitlement-only
+set, one Product Identity lifecycle special profile, the existing entitlement sync composition seam and exact
+unit/real-Mongo tests. MDM/Platform runtime, user assignments and operational reconciliation are protected.
+
+**C — MOD-0023 trusted start/evidence seam:** separately approved Workflow follow-up only. Limit changes to Workflow
+start/transition/evidence application, API security/executor, repositories, service-token validation and exact tests.
+No MDM aggregate, Gateway/frontend, committed secret or Production configuration change is permitted.
+
+**D — Global Product lifecycle and child-admission fence:** MDM Global Product entity/repository, first-GSKU facade
+admission hook, lifecycle commands/handlers/validators/models, audit enum append, controller/manifest and focused
+unit/authorization/real-Mongo tests only. Submit/retire are MDM actions; approve/reject arrives solely through the later
+trusted reconciler. No new collection, whole-document replace, WorkCenter provider or Platform class.
+
+**E — Revision/GSKU, LSKU and Finished Good lifecycle:** implement in that order. First Revision/GSKU uses one durable
+pair operation with checkpoints/recovery; later GSKU and the two children use single-aggregate CAS plus workflow binding.
+Approval revalidates approved parent and verified reference facts. No independent Revision screen/action/permission.
+
+**F — MDM Workflow clients and reconciler:** typed trusted-start and terminal-evidence clients, durable binding/poll
+state, short-lived service-token acquisition/cache, bounded worker/one-shot recovery seam, DI and exact crash/replay
+tests. No callback, direct Workflow database read or service-token human impersonation.
+
+**G — Existing tenant UI controls:** only the existing four MVC controllers/views/scripts/tests and seven locales.
+Submit and direct retire controls are state/permission gated and same-origin; approve/reject stays in WorkCenter.
+Product pages reload from MDM after reconciliation and never claim Workflow completion equals MDM completion.
+
+**H — Local Development acceptance:** source allow-list none by default. Separately authorized operator work provisions
+the template, exact candidates/positions, FU23 roles/grants, MDM service identity/audience/tenant grant and secret-safe
+settings. Smoke proves submit -> native WorkCenter decision -> secure poll -> MDM state/audit, replay/stale/crash,
+maker-checker, parent fence, tenant isolation, provider/service down and restart recovery. Production/Staging,
+navigation, bulk lifecycle and push remain separate gates.
+
+#### Corrected code-start gates
+
+- [x] Native `workflow` WorkCenter provider is selected; duplicate MDM remote provider/action endpoint is forbidden.
+- [x] First Revision + first GSKU is one durable pair outcome; retirement is direct MDM and child-fenced.
+- [ ] `MOD-0018-FU23` exact eight-key/shared-Workflow permission profile is approved and implemented.
+- [ ] The existing MOD-0023 child identity is rechecked against current remote registry and its trusted start/evidence
+  follow-up is approved and implemented.
+- [ ] The reviewed MOD-0033-FU02 service-token commit is integrated into the lifecycle delivery base.
+- [ ] Exact Workflow template/candidate/position and secure-poll evidence contracts are frozen.
+- [ ] Every D-H runtime step receives its exact current-code allow-list and predecessor evidence before mutation.
+
 ## 20. Follow-up Items
 
 These are references to existing backlog or owner decisions; this pack creates no new identity or provider pack.
