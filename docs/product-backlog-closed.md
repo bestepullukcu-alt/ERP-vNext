@@ -3570,3 +3570,85 @@ nasıl yanlış ölçüldüğü**. İkincisi birincisinden daha pahalıya mal ol
   bekliyor. Bu turda o dosyaya hiç dokunulmadı.
 - **Gelecek regresyon riski: 🟢** — değişen şey isim ve tek bir SOFT katalog alanı; izin anahtarı,
   rota, sayfa kodu, nav görünürlüğü hiç değişmedi. Tek dikkat noktası yukarıdaki **45** sabiti.
+
+### ~~BL-016 — WorkCenter "Başlattıklarım / Outbox" (creator-scope takip)~~ ✅ KAPANDI (2026-08-29)
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+> *Geldiği bölüm:* Backlog maddeleri (WorkCenter / MOD-0024)
+
+> **Özgün kayıt, olduğu gibi** (K3 — kayıt silinmez):
+> - **Nedir:** Kullanıcının **oluşturup başkasına atadığı** (viewerRole=Creator/requester) aktif iş öğelerini takip ettiği yüzey — "Ahmet'e atadığım task'ı nerede görürüm?" sorusunun cevabı. İşlerim = yalnız kullanıcının ÜSTLENDİĞİ işler (assignee); başkasına atanan iş o kişinin İşlerim'idir. Creator-scope aktif takip için ayrı bir Outbox/"Başlattıklarım" görünümü gerekir (arama/filtre/recall/rapor).
+> - **Konuşulan yüzey:** İşlerim sorgusu (2026-07-24) — kullanıcı "sadece bana atananlar" scope'unu onayladı.
+> - **Neden ertelendi:** Spec §7 zaten "tam outbox"u **v1.5**'e koymuş; go-live için İşlerim (assignee-scope) yeter. Geçmiş'teki "Devrettiklerim" yalnız tarihsel, aktif takip değil.
+> - **Yapım tetikleyicisi:** v1.5 WorkCenter kapsam pack'i (outbox: arama/filtre/recall/rapor).
+
+- **Kusur, ölçülmüş hâliyle:** sağlayıcı (`TaskWorkItemProvider`) tam **iki** okuma yapıyordu —
+  `ListByAssigneeAsync` (üstlendiğim) ve `ListUnclaimedByPositionsAsync` (havuzumdaki, sahipsiz). Açıp
+  başkasına verdiğim iş **hiçbir sorguda yoktu**; ürünün hiçbir yüzeyinde görünmüyordu. Dev kiracıda bu
+  **21 canlı görev** demekti (13'ü adı belli bir kişide, 8'i havuzda) — hepsini açan kişiye görünmez.
+- **⚠ Alan adı:** `TaskItem.CreatedByUserId`. `CreatedBy` **denetim** alanıdır; onu sorgulamak boş döner ve
+  "veri yok" gibi okunur. Repository yorumunda yazılı.
+
+- **TESLİM EDİLDİ — üç parça:**
+  1. **Üçüncü okuma.** `ITaskItemRepository.ListByCreatorAsync` (kiracı süzmeli, terminal hariç; indeks
+     `ix_task_items_tenant_creator` zaten vardı, yorumu artık yalan değil). Sağlayıcının kendi
+     `try` + zaman bütçesi içinde koşuyor (WC-D3), yani patlarsa yalnız MOD-0024 "yanıt vermedi" olur, pano
+     boşalmaz.
+  2. **Beşinci sekme.** `baslattiklarim` — eksen yasası korundu: sekme = **SAHİPLİK**. Segment (durum) ve
+     çip (tür/sinyal) eksenlerine dokunulmadı; Başlattıklarım'ın altında segment barı **yok**.
+     7 dil: `TabInitiated`, `EmptyInitiatedTitle`, `EmptyInitiatedDesc` (en, tr, fr, es, zh, ar, ru).
+  3. **Aksiyon sınırı.** Başlattıklarım'daki iş **sende değil**. Sunulanlar yalnız başlatanın fiilleri:
+     `reassign` (satırı yönetir, yıkıcı değil → primary) ve `cancel` (yıkıcı → overflow). Gizlenenler:
+     accept · claim · start · complete · submitReview · plan · inquire · release · return.
+
+- **⚠ SIRA (precedence) — ölçülerek karar verildi, ve `viewerRelation` alanının var olma sebebi bu:**
+  `üstlendiğim` > `üstlenebileceğim (havuz)` > `başlattığım`. Aynı iş birden fazlasını sağlayabilir ve
+  yine de **tek** bir sahiplik sekmesine ait olmalıdır. Kendine atadığın iş **İşlerim**'dedir (kendi
+  masandaki işi iki yerde aramazsın); üyesi olduğun bir havuza bıraktığın iş **Havuz**'dadır (`claim`
+  basabildiğin fiil orada yaşar). Kararı **sunucu** verir, çünkü satırı hangi okumanın getirdiğini yalnız o
+  bilir — tarayıcı `requester.isCurrentUser` ile bunu türetemez: kendi açtığın sahipsiz havuz işi her iki
+  koşulu da sağlar ve iki farklı sekmeye işaret eder.
+
+- **Kontrat:** `viewerRelation` (opsiyonel, tek değer `initiator`) — `WorkAggregationModels` ve
+  `fixture-contract.js`'te iki yanlı ilan edildi. **Yalnız türetilemeyen cevap** gönderilir: üstlenen
+  (`assignee.isCurrentUser`) ve havuz (`admissionState`) zaten telde, sunucu onları tekrar etmiyor.
+  Bilinmeyen bir değer `VIEWER_RELATION_INVALID` ile **reddedilir** — sessizce yanlış sekmeye düşmez.
+
+- **⚠ Yan bulgu — muhafızın kendisi kördü.** `TABS_PRIMARY`/`TABS_SECONDARY` dizileri app.js'te vardı ve
+  **hiçbir şey okumuyordu**: sekme şeridi elle yazılmış bir literal'den, URL beyaz listesi de o kelimelerin
+  ikinci bir kopyasından çiziliyordu. Eksen yasasını koruyan tek test
+  (`workcenter-next-team-scope.test.js`) tam da o iki ölü diziyi ayrıştırıyordu — literal'e bir sekme
+  eklemek testi **yeşil** bırakırdı. Artık şerit `TABS`'ten çiziliyor ve ikinci bir test bu bağlantıyı
+  ayrıca sabitliyor.
+
+- **Muhafızlar (dördü de KIRILIP gösterildi):**
+  - `TaskOutboxTests` (12 test, backend) — (a) başkasında olan iş görünür · (b) sende olan iş görünmez,
+    `start` sunulur · (c) başkasının açtığı iş görünmez, ve iki yabancı arasındaki iş **hiçbir** okumaya
+    girmez · (d) sahiplik gerektiren 9 fiilin hiçbiri sunulmaz.
+  - `wcn-outbox-tab.test.js` (13 test, frontend) — yönlendirme, rozet, aksiyonlar, eksen yasası, kontrat.
+  - **Boşluk kontrolü anlamlı tabanla:** her olumsuz iddianın yanında bir olumlu var. "Tamamla yok" iddiası,
+    aynı görev gerçekten üstlenildiğinde `accept`'in **sunulduğunu** ölçen testle eşleşiyor — yoksa boş bir
+    pano da o iddiayı doğrular. (Bu hafta iki muhafız tam bu yüzden neredeyse hiçbir şey görmediği hâlde
+    yeşil kalmıştı.)
+  - **Kırma kaydı:** creator okuması kaldırıldı → 6 kırmızı · aksiyon dalı kapatıldı → 3 kırmızı (aralarında
+    (d)) · precedence süzmesi kaldırıldı → 3 kırmızı · okuma aktöre bağlanmadı → 1 kırmızı ((c)) ·
+    `tabFor` yönlendirmesi kaldırıldı → 4 kırmızı · kontrat doğrulaması kapatıldı → 1 kırmızı.
+
+- **Ölçüm — testler:** `dotnet test services/Diten.Platform` **23 kırmızı / 3534 yeşil** — kırmızı sayısı
+  taban ile birebir aynı (23'ü main'in, PR #60'ın kodu), yeşil 3522 → 3534 (+12). `npx vitest run`
+  (frontend/Diten.Web) **23 kırmızı / 11 dosya** — taban ile aynı, yeşil 1972 → 1986 (+14).
+  `dotnet test tests/architecture/…` **11 yeşil**.
+- **Ölçüm — CANLI (yeşil test kanıt değil):** Platform (5057) + Diten.Web (5001) yeniden derlenip
+  başlatıldı; portları tutan süreçlerin `cwd`'si **önce** ölçüldü — 5011'deki başka bir worktree'nin
+  sunucusuna dokunulmadı. `admin@diten.com` ile giriş, Görev Merkezi → **Başlattıklarım rozeti 19**,
+  satırlar gerçek. Panonun tamamı API'den ölçüldü: **19 initiator satırı**, hepsinin `requester` = ben,
+  **hiçbiri** bana atanmış değil, ekranda yalnız **`reassign` + `cancel`**, sahiplik gerektiren fiil
+  **0 satırda**. 6'sı üyesi olmadığım havuzlara bıraktığım iş (doğru: Havuz'a düşmediler); üyesi olduğum
+  havuzdaki 2 iş **Havuz'da kaldı** — 19 + 2 = 21, Mongo'daki canlı `yaratan ≠ atanan` sayısıyla birebir.
+
+- **Kapsam dışı bırakıldı, bilinçli — ve kaydedildi:** **BL-320** geri çağırma (recall, v1.5 — arkasında
+  endpoint yok) · **BL-321** kapanmış "başlattığım" iş (rapor sorusu, altıncı sekme değil) · **BL-322**
+  "herkesin başlattığını gör" (ayrı ve yetkiyle kapalı yüzey — SAP SWI1 / Oracle Administrative Tasks).
+- **Gelecek regresyon riski: 🟡** — projeksiyona bir alan ve sağlayıcıya bir okuma eklendi; ikisi de
+  **eklemeli** (opsiyonel alan, ayrı sorgu) ve mevcut iki okumanın sonucu hiç değişmedi. Riskin durduğu tek
+  yer **precedence**: yeni bir sahiplik kipi eklenirse sıranın nereye gireceğine karar verilmelidir, yoksa
+  bir satır iki sekmede görünür. Sıra `GetWorkItemsAsync`'te tek yerde ve yorumlu.

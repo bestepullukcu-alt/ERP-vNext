@@ -293,14 +293,50 @@ yalnız doğru başlığın altına gider.
 - **Yapım tetikleyicisi:** UX polish turu. Seçenek: (a) segment başına `Durum:` etiketi/ikon, (b) pasif segmentleri pill değil düz-sekme göster (yalnız aktif dolu).
 - **İlgili:** MOD-0024 WorkCenter, `.wcn-filterbar`/`.wcn-segments`.
 
-### BL-016 — WorkCenter "Başlattıklarım / Outbox" (creator-scope takip)
-> **DURUM:** ERTELENDİ · **SAHİP:** SAHİPSİZ
+### BL-320 — Görev geri çağırma (recall): başlatan işi üstlenenden geri alır
+> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
 
-- **Nedir:** Kullanıcının **oluşturup başkasına atadığı** (viewerRole=Creator/requester) aktif iş öğelerini takip ettiği yüzey — "Ahmet'e atadığım task'ı nerede görürüm?" sorusunun cevabı. İşlerim = yalnız kullanıcının ÜSTLENDİĞİ işler (assignee); başkasına atanan iş o kişinin İşlerim'idir. Creator-scope aktif takip için ayrı bir Outbox/"Başlattıklarım" görünümü gerekir (arama/filtre/recall/rapor).
-- **Konuşulan yüzey:** İşlerim sorgusu (2026-07-24) — kullanıcı "sadece bana atananlar" scope'unu onayladı.
-- **Neden ertelendi:** Spec §7 zaten "tam outbox"u **v1.5**'e koymuş; go-live için İşlerim (assignee-scope) yeter. Geçmiş'teki "Devrettiklerim" yalnız tarihsel, aktif takip değil.
-- **Yapım tetikleyicisi:** v1.5 WorkCenter kapsam pack'i (outbox: arama/filtre/recall/rapor).
-- **İlgili:** MOD-0024 WorkCenter, spec §4 (viewerRole=Creator), §7 v1.5.
+- **Nedir:** Başlattığı işi, üzerinde çalışan kişiden **geri alma** fiili. Bugün başlatanın elindeki iki
+  fiil `cancel` (işi tümden iptal) ve `reassign` (başkasına ata) — ikisi de "bunu geri istiyorum, kendim
+  yapacağım / şimdilik beklesin" demiyor. SAP bunu *withdraw*, Oracle BPM *withdraw/recall* diye adlandırır.
+- **Neden bu turda YAPILMADI:** Spec §7 recall'ı **v1.5**'e koyuyor ve ortada **hiçbir endpoint yok**.
+  Sağlayıcıya bir `recall` aksiyonu koymak, arkasında bir şey olmayan bir düğme çizmek olurdu — MOD-0024
+  sağlayıcısının kendi kuralının (`Faz 2+ komutlar kasten yok: arkasında endpoint olmayan bir aksiyonu
+  projeksiyona koymak mock döneminin kullanıcıyı yanılttığı yoldur`) doğrudan ihlali.
+- **Gerçek iş:** yeni bir lifecycle geçişi (kim, hangi durumdan, hangi duruma), `TaskTransitionCodes`'a yeni
+  bir kod, endpoint + yetki (yalnız requester), bildirim ("işi geri aldı") ve BL-016'nın sekmesine tek satır.
+- **Muhafız var:** `TaskOutboxTests.Recall_is_NOT_offered_here_because_no_endpoint_answers_it` — "sadece
+  düğmeyi ekleyelim" yolu bugün **kırmızı** teste çarpar.
+- **İlgili:** BL-016 (kapandı), MOD-0024 WorkCenter, spec §7 v1.5.
+
+### BL-321 — Başlattıklarım'da KAPANMIŞ iş: raporlama sorusu, sekme sorusu değil
+> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+
+- **Nedir:** `ListByCreatorAsync` **terminal işi dışarıda bırakıyor** (Done/Cancelled) — havuz okumasının
+  yaptığının aynısı. Yani "başlattığım ve artık kapanmış işler" hiçbir yüzeyde yok.
+- **Neden bilinçli:** Geçmiş sekmesinin bugünkü anlamı "bir zamanlar **benim panomda** olan ve kapanan iş".
+  Hiç üstlenmediğim, sadece açtığım bir işi oraya koymak o sekmeye ikinci, ilan edilmemiş bir anlam yükler.
+  Başlattıklarım'ın sorusu ise "başlattım, **hâlâ dışarıda**" — kapanmış iş o soruya da ait değil.
+- **Doğru cevabın şekli:** bu bir **rapor** ("açtığım işler, tarih aralığı, kapanış süresi"), üçüncü bir
+  ownership sekmesi değil. Ownership ekseni beş sekmeyle dolu; altıncısı ekseni filtreye çevirir.
+- **Ölçüm (2026-08-29, dev kiracı):** yaratan ≠ atanan 24 kayıttan **3'ü kapanmış** (Cancelled), 21'i canlı.
+  Yani bugünkü boşluk küçük ama gerçek.
+- **İlgili:** BL-016 (kapandı), MOD-0024 WorkCenter.
+
+### BL-322 — "Herkesin başlattığı işi gör": ayrı ve yetkiyle kapalı yüzey
+> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+
+- **Nedir:** BL-016 **kişisel** soruyu cevapladı: "ben ne başlattım". Yönetici/denetim sorusu — "bu kiracıda
+  kim ne başlattı, nerede takıldı" — ondan farklı bir yüzeydir ve bir izinle kapatılmalıdır.
+- **Sektör deseni, ve ikisinin AYRI olması tesadüf değil:** SAP'de kişisel yüzey Business Workplace / Fiori
+  My Inbox, "hepsini gör" ise **SWI1** (Work Item Selection, yetkiyle). Oracle'da kişisel yüzey BPM Worklist
+  "Initiated Tasks", "hepsini gör" ise **Administrative Tasks** rolü. İkisini tek yüzeyde birleştirmek, bir
+  kullanıcıya bir başkasının işini kişisel panosunda gösterir.
+- **Neden bu turda YAPILMADI:** kapsam kararı. BL-016'nın okuması `actor.UserId`'ye bağlıdır ve
+  `TaskOutboxTests.Work_between_two_OTHER_people_reaches_no_read_at_all` bunu **muhafaza ediyor** — bu madde
+  o muhafızın gevşetilmesi değil, **ayrı** bir okuma + ayrı bir izin demektir.
+- **Gerekecek:** yeni izin anahtarı (manifest + rol senkronu), kiracı-kapsamlı okuma, kendi ekranı.
+- **İlgili:** BL-016 (kapandı), MOD-0024 WorkCenter, `TaskPermissions`.
 
 ### BL-015 — WorkCenter alternatif görünümler (Bölünmüş / Kanban / Takvim)
 > **DURUM:** ERTELENDİ · **SAHİP:** SAHİPSİZ

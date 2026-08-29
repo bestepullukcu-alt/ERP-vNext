@@ -611,6 +611,9 @@
   <data name="TabPool" xml:space="preserve">
     <value>Pool</value>
   </data>
+  <data name="TabInitiated" xml:space="preserve">
+    <value>Initiated</value>
+  </data>
   <data name="ActClaim" xml:space="preserve">
     <value>Claim</value>
   </data>
@@ -649,6 +652,12 @@
   </data>
   <data name="EmptyPoolDesc" xml:space="preserve">
     <value>There are no items waiting for you to claim.</value>
+  </data>
+  <data name="EmptyInitiatedTitle" xml:space="preserve">
+    <value>Nothing you started</value>
+  </data>
+  <data name="EmptyInitiatedDesc" xml:space="preserve">
+    <value>You have not started any work that someone else is carrying.</value>
   </data>
   <data name="ToastClaimed" xml:space="preserve">
     <value>{0} · claimed by you (mock)</value>

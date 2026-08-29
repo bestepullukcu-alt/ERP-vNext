@@ -209,8 +209,26 @@
         if (Number.isNaN(dueDay.getTime()) || Number.isNaN(closedDay.getTime())) { return null; }
         return Math.round((dueDay - closedDay) / 86400000);
     };
+    /*
+     * WHICH OWNERSHIP TAB A ROW BELONGS IN. Exactly one, always — that is what makes the tab bar an axis rather
+     * than five filters.
+     *
+     * ⚠ THE ORDER IS THE RULE (BL-016). `viewerRelation === 'initiator'` is tested AFTER terminal and BEFORE
+     * everything else, and each of those two placements was decided, not defaulted:
+     *
+     *   after terminal  — the server never sends `initiator` on finished work (ListByCreatorAsync excludes it),
+     *                     so this changes nothing today. It is written in this order anyway so that the day
+     *                     closed initiated work does arrive, it lands in History with the rest of the past
+     *                     instead of sitting in the Outbox forever.
+     *   before the rest — because the SERVER already applied the precedence. `initiator` means "the reader holds
+     *                     no other relationship to this": not the assignee, not eligible to claim it. Re-deciding
+     *                     that here off `admissionState` would send an unclaimable pooled row to Havuz, under a
+     *                     `claim` button the reader cannot press — which is the 403-by-invitation this round
+     *                     exists to remove.
+     */
     const tabFor = (item) => {
         if (['Done', 'Cancelled'].includes(item.normalizedStatus)) { return 'history'; }
+        if (item.viewerRelation === 'initiator') { return 'baslattiklarim'; }
         if (item.admissionState === 'pendingClaim' || item.admissionState === 'pendingOffer') { return 'havuz'; }
         if (item.admissionState === 'pendingAcceptance') { return 'inbox'; }
         // Act-directly intents (approval/review/issue/exception) awaiting the viewer's
