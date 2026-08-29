@@ -3503,3 +3503,70 @@ dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --fil
 
 *(Not: `tests/strategy-*`, `tests/planning-cycles-*`, `tests/objectives-edit-hydration` altındaki **9 test bu
 turdan ÖNCE de düşüyordu** — dokunulmamış ağaçta ölçüldü, bu dilimle ilgisi yok.)*
+### BL-319 — "Görevler" modülü menüde görev vaat edip tanım ekranı veriyordu; ad ayrıldı, l10n zaten yerindeydi (2026-08-29, ölçüldü, DÜZELTİLDİ + CANLI kanıtlandı)
+
+<!-- numara çakışması önlendi 2026-08-29: bu kayıt önce BL-317 yazılmıştı. O numara BAŞKA bir dalda (docs/backlog-idpill-stash) zaten kullanılmıştı — birleşmemiş dallar main'e bakan bir ölçümle görünmüyor. CONTROL TOWER numarayı yanlış verdi; tüm dallar taranarak BL-319 seçildi. K4: bir numara bir iştir. -->
+> **DURUM:** KAPANDI · **SAHİP:** CONTROL TOWER
+
+Bu kayıt iki şeyi tutuyor: **yapılan düzeltme** ve **düzeltilmesi istenen ama zaten yapılmış olan işin
+nasıl yanlış ölçüldüğü**. İkincisi birincisinden daha pahalıya mal olabilirdi.
+
+- **Yapılan — modülün adı ayrıldı.** `TaskManifestProvider.cs` `DisplayName`
+  `"Görevler / Tasks"` → `"Görev Tanımları / Task Settings"`, ve `Nav.Module.TASKS` yedi dilde
+  yeni değere çekildi (Task Settings · Görev Tanımları · Paramètres des tâches ·
+  Configuración de tareas · 任务设置 · إعدادات المهام · Настройки задач).
+- **Gerekçe (koda da yazıldı):** bu modülün menüye çıkardığı **dört sayfanın dördü de** tanım/ayar
+  ekranı (`TASK_FIELD_DEFINITIONS`, `TASK_TYPES`, `TASK_DOCUMENT_LIST`, `TASK_RECURRENCE_RULES`).
+  İş yüzeyleri (`TASKS`, `TASK_CREATE`, `TASK_DETAIL`, `TASK_EDIT`) bilerek `IsNavigationVisible: false`.
+  Yani "Görevler" kullanıcıya liste vaat edip ayar ekranı veriyordu — ve yanındaki
+  **"Görev Merkezi"** ile ayırt edilemiyordu. Bu turda ikisi ayrıştı.
+- **⚠ Manifest'i değiştirmek TEK BAŞINA yetmiyordu — ölçüldü.**
+  `RegisterModuleManifestCommandHandler`'da katalog `DisplayName` alanı **SOFT** (bir kez tohumlanır,
+  operatörün malı, re-push **asla** ezmez). Yani modül kendini yeniden kaydedince eski ad kalırdı.
+  Bu yüzden `TaskModuleDisplayNameRenameMigration` yazıldı; canlıda koştuğu doğrulandı:
+  `Module 'tasks': DisplayName 'Görevler / Tasks' → 'Görev Tanımları / Task Settings'.`
+- **Migrasyon operatörü ezmiyor:** yalnızca **tam olarak eski tohum değerini** taşıyan satırı yazıyor.
+  Operatörün elle koyduğu bir ad da, yeni ad da dokunulmadan bırakılıyor (ikincisi = ikinci koşuda
+  sıfır yazma, yani kendinden idempotent). Beş birim testi bunu sabitliyor.
+
+**⚠ İSTENEN İKİNCİ İŞ ZATEN YAPILMIŞTI — ve "0 resx dosyasında" ölçümü YANLIŞTI.**
+
+- Dört sayfanın **yedi dilde de** karşılığı vardı ve canlı menüde Türkçe çiziliyordu. Ölçüm
+  `Nav.Page.TASK_FIELD_DEFINITIONS` diye arandığı için boş döndü; oysa `NavNameLocalizer` aramadan
+  **önce** `Normalize(code)` uyguluyor (alt çizgiler düşer, büyük harfe çıkar), yani gerçek anahtar
+  `Nav.Page.TASKFIELDDEFINITIONS`. Ham kodla grep atmak bu köprüde **her zaman** sıfır döndürür.
+- **Ders, tek cümle:** bu depoda bir nav anahtarının varlığı **manifest kodu ile değil,
+  `NavNameLocalizer.Normalize`'ın ürettiği biçimle** ölçülür.
+- Bu turda oraya dokunulan tek şey **büyük/küçük harf uyumu** oldu: `tr` ve `en` tarafında dört
+  kardeşten ikisi cümle düzeninde, ikisi başlık düzenindeydi (`Görev türleri` / `Alan Tanımları`).
+  Dördü de başlık düzenine çekildi. `fr`/`es`/`ru` zaten kendi dil kuralında tutarlıydı, `zh`/`ar`'da
+  harf düzeni kavramı yok — dokunulmadı.
+
+- **Muhafız güçlendirildi, ve KIRILARAK gösterildi.** `NavManifestL10nGuardTests`'in boşluk kontrolü
+  `Assert.NotEmpty` idi — yani tam olarak prompt'un uyardığı `> 0`. Ölçülmüş bir tabana çevrildi:
+  modül tabanı = diskteki manifest dosyası sayısı, alan adı tabanı = **sayfa ayrıştırıcısına hiç
+  uğramayan** ikinci bir regex sayımı, sayfa tabanı = ölçülmüş sabit **45**.
+  - Kırma 1 — `fr`'den `Nav.Page.TASKTYPES` silindi → `fr: MISSING Nav.Page.TASKTYPES`, KIRMIZI.
+  - Kırma 2 — ayrıştırıcının konumsal-argüman dalı devre dışı bırakıldı (gerçek bir regresyonun
+    taklidi) → anahtar kümesi **45 → 25** düştü, taban KIRMIZI verdi.
+    **Eski `Assert.NotEmpty` bunu YEŞİL geçerdi:** 25 anahtarın hepsi çeviriliydi. Görülmeyen 20
+    sayfa üzerinden yeşil rapor — bu muhafızın var olma sebebinin ta kendisi.
+  - İkisi de geri alındı; muhafız 6/6 yeşil.
+- **⚠ 45 sabitinin bedeli, açıkça:** menüden bir sayfa **gerçekten** silinirse bu sayı elle
+  düşürülecek, aynı commit'te. Bilinçli seçim — nav görünürlüğü iki ayrı argüman biçiminde
+  yazılıyor, bağımsız bir sayaç ayrıştırıcının ikinci bir kopyası olurdu (K6).
+
+- **Ölçüm — testler:** `npx vitest run` (frontend/Diten.Web) **23 kırmızı / 11 dosya** — taban ile
+  birebir aynı, hiçbiri bu işin değil. `dotnet test services/Diten.Platform` **23 kırmızı** —
+  temiz ağaçta da 23; yeşil 3517 → 3522 (bu turun 5 yeni testi). Regresyon yok.
+- **Ölçüm — canlı:** Platform + Diten.Web yeniden derlenip başlatıldı (portları tutan süreçlerin
+  `cwd`'si önce ölçüldü, hepsi bu worktree). Sol menüde **ÇALIŞMA ALANI → Görev Merkezi ·
+  Görev Tanımları → Alan Tanımları · Görev Türleri · Kontrollü Dokümanlar · Yinelenen Görev Kuralları**.
+  Fransızcaya geçilip ayrışma ikinci dilde de doğrulandı:
+  **Centre des tâches** ile **Paramètres des tâches** artık iki ayrı ad.
+
+- **Kapsam dışı bırakıldı, bilinçli:** görev listesinin kendisi (`TASKS`) menüde gizli kaldı.
+  Tam kayıt yüzeyi ayrı bir karar ve **BL-057**'nin (listelemede şirket kapsamı yok) çözülmesini
+  bekliyor. Bu turda o dosyaya hiç dokunulmadı.
+- **Gelecek regresyon riski: 🟢** — değişen şey isim ve tek bir SOFT katalog alanı; izin anahtarı,
+  rota, sayfa kodu, nav görünürlüğü hiç değişmedi. Tek dikkat noktası yukarıdaki **45** sabiti.

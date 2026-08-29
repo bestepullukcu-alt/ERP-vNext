@@ -526,7 +526,7 @@
   <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>Entidad jurídica</value></data>
   <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>Datos de referencia</value></data>
   <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>Organización</value></data>
-  <data name="Nav.Module.TASKS" xml:space="preserve"><value>Tareas</value></data>
+  <data name="Nav.Module.TASKS" xml:space="preserve"><value>Configuración de tareas</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>Flujo de trabajo</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Usuarios</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Roles</value></data>

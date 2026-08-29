@@ -537,6 +537,10 @@ public static class DependencyInjection
         // marker-gated: re-runnable and idempotent, so catalog rows that drifted after that one-shot ran
         // (two spellings of one domain → the sidebar heading rendered twice) are healed on every startup.
         ModuleCatalogDomainCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+        // FIX-TASKS-MODULE-NAME — the tasks module was renamed "Görevler" → "Görev Tanımları"; catalog
+        // DisplayName is SOFT (operator-owned) so a manifest re-push would NOT carry it. Rewrites only a
+        // row still holding the exact old seed, so it is idempotent and never clobbers an operator rename.
+        TaskModuleDisplayNameRenameMigration.MigrateAsync(database).GetAwaiter().GetResult();
         PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
 
@@ -661,6 +665,10 @@ public static class DependencyInjection
             // marker-gated: re-runnable and idempotent, so catalog rows that drifted after that one-shot ran
             // (two spellings of one domain → the sidebar heading rendered twice) are healed on every startup.
             ModuleCatalogDomainCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+            // FIX-TASKS-MODULE-NAME — the tasks module was renamed "Görevler" → "Görev Tanımları"; catalog
+            // DisplayName is SOFT (operator-owned) so a manifest re-push would NOT carry it. Rewrites only a
+            // row still holding the exact old seed, so it is idempotent and never clobbers an operator rename.
+            TaskModuleDisplayNameRenameMigration.MigrateAsync(database).GetAwaiter().GetResult();
             PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         }

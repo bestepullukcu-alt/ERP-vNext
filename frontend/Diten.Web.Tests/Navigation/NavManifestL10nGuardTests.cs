@@ -32,6 +32,10 @@ public sealed class NavManifestL10nGuardTests
 {
     private static readonly string[] SupportedLanguages = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
 
+    // Measured against the manifests on disk. Lower it only when a nav-visible page is genuinely deleted, in the
+    // same commit that deletes it — a drop that nobody chose is the parser regressing, and it must be red.
+    private const int NavVisiblePageKeyFloor = 45;
+
     // ── the guard itself ────────────────────────────────────────────────────────────────────────────────────
 
     [Fact]
@@ -43,7 +47,8 @@ public sealed class NavManifestL10nGuardTests
             .Distinct(StringComparer.Ordinal)
             .ToList();
 
-        AssertKeysUsableInEveryLanguage(expected);
+        // One provider file declares exactly one module, so the floor tracks the repo with no constant to maintain.
+        AssertKeysUsableInEveryLanguage(expected, manifests.Count);
     }
 
     [Fact]
@@ -56,7 +61,7 @@ public sealed class NavManifestL10nGuardTests
             .Distinct(StringComparer.Ordinal)
             .ToList();
 
-        AssertKeysUsableInEveryLanguage(expected);
+        AssertKeysUsableInEveryLanguage(expected, NavVisiblePageKeyFloor);
     }
 
     [Fact]
@@ -68,16 +73,36 @@ public sealed class NavManifestL10nGuardTests
             .Distinct(StringComparer.Ordinal)
             .ToList();
 
-        AssertKeysUsableInEveryLanguage(expected);
+        // Counted straight out of the raw sources, bypassing the page parser entirely: if the parser ever stops
+        // understanding a provider, these two numbers disagree and the floor turns this red.
+        AssertKeysUsableInEveryLanguage(expected, DistinctDomainCountFromRawSources());
     }
 
     // A key is only USABLE if it is present, non-empty, and not just an echo of its own name. Case 1 above is
     // exactly the echo: the localizer hands back the key name for a missing resource and the caller's
     // "is it non-empty?" check passes. A resx row whose value literally repeats the key is the same defect
     // written down, so it is rejected here too.
-    private static void AssertKeysUsableInEveryLanguage(IReadOnlyCollection<string> expectedKeys)
+    private static void AssertKeysUsableInEveryLanguage(IReadOnlyCollection<string> expectedKeys, int minimumExpected)
     {
-        Assert.NotEmpty(expectedKeys); // vacuity guard: an empty expectation set would make this test always pass.
+        /*
+         * THE FLOOR IS A MEASURED NUMBER, NOT "> 0".
+         *
+         * A vacuity guard of Assert.NotEmpty is the failure mode this guard exists to prevent, one level up: if
+         * the source parser regresses and understands ONE manifest out of fifteen, the expectation set shrinks to
+         * a single key that happens to be translated, and the test reports green over fourteen unchecked modules.
+         * That is not hypothetical — a guard in this repo went green on exactly one key this way.
+         *
+         * So each caller passes a floor measured against the manifests actually on disk. Two of the three are
+         * derived live (module keys = one per provider file; domain keys are counted from the raw sources by a
+         * regex that does NOT go through the page parser), so they track the repo by themselves. The page floor
+         * is a constant, because nav-visibility is declared in two argument shapes and any independent counter
+         * would just be a second copy of the parser. Deleting a nav-visible page is allowed — it means editing
+         * NavVisiblePageKeyFloor by hand, deliberately, in the same commit.
+         */
+        Assert.True(expectedKeys.Count >= minimumExpected,
+            $"expected at least {minimumExpected} keys to check but derived only {expectedKeys.Count} "
+            + $"({string.Join(", ", expectedKeys.OrderBy(k => k, StringComparer.Ordinal))}). The manifest parser has "
+            + "regressed: the guard would now report green over the manifests it stopped seeing.");
 
         var failures = new List<string>();
         foreach (var language in SupportedLanguages)
@@ -138,9 +163,16 @@ public sealed class NavManifestL10nGuardTests
         // named args + const-referenced page code (TaskManifestProvider)
         var tasks = Single(manifests, "TaskManifestProvider.cs");
         Assert.Equal("tasks", tasks.ModuleCode);
+        // All FOUR nav-visible Tasks pages, not a sample: they are the whole of what the "Görev Tanımları" module
+        // shows in the sidebar, and every one of them was measured untranslated at some point.
         Assert.Contains("TASK_RECURRENCE_RULES", tasks.NavVisiblePageCodes);   // live defect #2
         Assert.Contains("TASK_FIELD_DEFINITIONS", tasks.NavVisiblePageCodes);
+        Assert.Contains("TASK_TYPES", tasks.NavVisiblePageCodes);
+        Assert.Contains("TASK_DOCUMENT_LIST", tasks.NavVisiblePageCodes);
+        // The work surfaces stay out of the menu — that is what makes this module a settings module, and what the
+        // rename to "Görev Tanımları" says out loud.
         Assert.DoesNotContain("TASK_CREATE", tasks.NavVisiblePageCodes);       // IsNavigationVisible: false
+        Assert.DoesNotContain("TASKS", tasks.NavVisiblePageCodes);
 
         // positional args (AccessGovernanceManifestProvider)
         var accessGovernance = Single(manifests, "AccessGovernanceManifestProvider.cs");
@@ -169,20 +201,35 @@ public sealed class NavManifestL10nGuardTests
 
     private const string PageCtor = "new ModuleManifestPage(";
 
+    // A SECOND, DUMBER MEASUREMENT of the same fact, on purpose. It reads `Domain: "X"` straight out of the
+    // provider sources and never touches SplitTopLevelArguments/TryReadPage, so it cannot fail in the same way
+    // the parser does. Its only job is to be the floor the parser-derived set has to clear.
+    private static int DistinctDomainCountFromRawSources()
+    {
+        var domains = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var file in ProviderFiles())
+        {
+            foreach (Match match in Regex.Matches(File.ReadAllText(file), @"(?<![A-Za-z])Domain:\s*""(?<value>[^""]+)"""))
+            {
+                domains.Add(NavNameLocalizer.Normalize(match.Groups["value"].Value));
+            }
+        }
+
+        return domains.Count;
+    }
+
     private static ParsedManifest Single(IEnumerable<ParsedManifest> manifests, string fileName) =>
         manifests.Single(m => Path.GetFileName(m.File) == fileName);
 
-    private static IReadOnlyList<ParsedManifest> ReadManifests()
-    {
-        var providerFiles = Directory
-            .EnumerateFiles(Path.Combine(RepoRoot(), "services"), "*ManifestProvider.cs", SearchOption.AllDirectories)
-            .Where(p => !p.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
-            .Where(p => !Path.GetFileName(p).StartsWith("I", StringComparison.Ordinal))   // the interfaces
-            .OrderBy(p => p, StringComparer.Ordinal)
-            .ToList();
+    private static IReadOnlyList<string> ProviderFiles() => Directory
+        .EnumerateFiles(Path.Combine(RepoRoot(), "services"), "*ManifestProvider.cs", SearchOption.AllDirectories)
+        .Where(p => !p.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+        .Where(p => !Path.GetFileName(p).StartsWith("I", StringComparison.Ordinal))   // the interfaces
+        .OrderBy(p => p, StringComparer.Ordinal)
+        .ToList();
 
-        return providerFiles.Select(ParseProvider).ToList();
-    }
+    private static IReadOnlyList<ParsedManifest> ReadManifests() =>
+        ProviderFiles().Select(ParseProvider).ToList();
 
     private static ParsedManifest ParseProvider(string path)
     {
