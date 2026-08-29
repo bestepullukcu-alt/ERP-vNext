@@ -1,4 +1,5 @@
 using System.Text;
+using Diten.BuildingBlocks.Security.Secrets;
 using Diten.HcmService.Application;
 using Diten.HcmService.Infrastructure;
 using Diten.HcmService.Persistence;
@@ -57,7 +58,7 @@ builder.Services
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
             IssuerSigningKeys = jwtSigningKeys,
-            ClockSkew = TimeSpan.FromSeconds(30)
+            ClockSkew = JwtValidationDefaults.ClockSkew
         };
     });
 

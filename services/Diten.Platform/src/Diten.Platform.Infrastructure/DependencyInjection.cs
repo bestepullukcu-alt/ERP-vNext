@@ -76,7 +76,7 @@ public static class DependencyInjection
                     ValidIssuer = jwtIssuer,
                     ValidAudience = jwtAudience,
                     IssuerSigningKeys = jwtRotationResolver.GetValidationKeys(),
-                    ClockSkew = TimeSpan.FromSeconds(30)
+                    ClockSkew = JwtValidationDefaults.ClockSkew
                 };
             });
 
@@ -206,10 +206,29 @@ public static class DependencyInjection
         services.AddScoped<IPlatformLookupCache, PlatformLookupMemoryCache>();
         services.AddScoped<IPlatformAdministratorProvisioningService, PlatformAdministratorProvisioningService>();
         services.AddScoped<IPlatformAdministratorInvitationEmailService, PlatformAdministratorInvitationEmailService>();
+        /*
+         * ⚠ TenantPropagationHandler PROPAGATES NOTHING — MEASURED 2026-08-28, left in place pending a CONTROL
+         * TOWER decision, NOT because it works.
+         *
+         * IHttpClientFactory builds and CACHES a client's handler chain in its OWN scope. The handler injects the
+         * request-scoped ITenantContext, so it holds an instance that belongs to no request, reports
+         * IsResolved == false, adds no X-Tenant-Id, and logs nothing. It has never added the header on any of the
+         * three services that register it (Platform, Auth, DevEnablement).
+         *
+         * It is registered here ONLY for "TenantAwareClient", which is itself dead: no CreateClient("TenantAwareClient")
+         * exists anywhere in the repo (measured), in any of the three services. So today this pair adds one broken
+         * handler to one client nobody creates. It is named here rather than deleted because deleting a public
+         * registration across three services is CT's call, not this round's — see the round report.
+         *
+         * The two reference validators below NO LONGER carry it. They write X-Tenant-Id themselves, from the
+         * request's own scope, via TenantOnTheWire — the shape RemoteWorkItemGateway arrived at by the same
+         * measurement. Re-attaching the handler to them would be worse than useless: on the day it did resolve, it
+         * would OVERWRITE their correct value (it does Remove-then-Add) with ITenantContext.TenantId, which in a
+         * platform context is the sentinel realm and not the target tenant.
+         */
         services.AddTransient<TenantPropagationHandler>();
         services.AddHttpClient("TenantAwareClient").AddHttpMessageHandler<TenantPropagationHandler>();
-        services.AddHttpClient<ILegalEntityReferenceValidator, MdmLegalEntityReferenceValidator>()
-            .AddHttpMessageHandler<TenantPropagationHandler>();
+        services.AddHttpClient<ILegalEntityReferenceValidator, MdmLegalEntityReferenceValidator>();
         services.AddHttpClient<IWorkingCalendarLegalEntityValidator, WorkingCalendarLegalEntityValidator>(client =>
         {
             // The validator owns one linked 3-second budget across both attempts.
@@ -229,8 +248,7 @@ public static class DependencyInjection
                 ? sp.GetRequiredService<NagerDateHolidayProvider>()
                 : sp.GetRequiredService<OfflineHolidayProvider>();
         });
-        services.AddHttpClient<IUserReferenceValidator, Diten.Platform.Infrastructure.Services.Auth.AuthServiceUserReferenceValidator>()
-            .AddHttpMessageHandler<TenantPropagationHandler>();
+        services.AddHttpClient<IUserReferenceValidator, Diten.Platform.Infrastructure.Services.Auth.AuthServiceUserReferenceValidator>();
         services.AddHttpClient<
             Diten.Platform.Application.Features.DocumentManagementApproval.Services.IApprovalRoleDirectory,
             Diten.Platform.Infrastructure.Services.Auth.AuthServiceApprovalRoleDirectory>();

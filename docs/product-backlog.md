@@ -4974,7 +4974,25 @@ süiti BRD hariç arka arkaya üç kez:
 - **Gelecek regresyon riski: 🟡** — yalnız rotasyon anında görünür, yani en kötü zamanda.
 
 ### BL-296 — `ClockSkew.Zero` iki serviste, 30 sn diğerlerinde (2026-08-27, ölçüldü)
-> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+> **DURUM:** DÜZELTİLDİ — dalda (`fix/clock-skew-consistency`, 2026-08-28) · merge sonrası KAPANDI'ya taşınacak
+> · **SAHİP:** SAHİPSİZ
+
+**DÜZELTME (2026-08-28).** Dokuz gelen-istek doğrulayıcısı tek bir sabite bağlandı:
+`Diten.BuildingBlocks.Security.Secrets.JwtValidationDefaults.ClockSkew` = **30 sn**.
+
+- **Neden 30 sn, neden Zero değil** — ölçüme göre: kütüphane varsayılanı 5 dk (yani 30 sn zaten on kat
+  sıkı) · erişim belirteci ömrü 15 dk (kod varsayılanı) / 120 dk (AuthService appsettings) — 30 sn,
+  kısasının %3,3'ü · dokuz doğrulayıcının **yedisi** zaten 30 sn'deydi · Zero'da hizalamak Gateway,
+  Platform, HCM ve web kabuğunu gerçek saat kaymasına karşı **sıkılaştırırdı**, oysa hata gevşeklik değil
+  **anlaşmazlık**.
+- **Davranışı DEĞİŞEN üç yüzey (hepsi gevşedi, hiçbiri sıkılaşmadı):** MdmService · DevEnablementService ·
+  `PlatformActorHangfireAuthorizationFilter`. Zero → 30 sn. Hepsi sistemin geri kalanıyla aynı hizada.
+- `AuthService/TokenService.cs:170` kaydın sandığı gibi çelişki değildi: orada `ValidateLifetime = false`,
+  yani kütüphane `ClockSkew`'e **hiç bakmıyor**. Ölü satır kaldırıldı, yerine sebebi yazıldı.
+- **MUHAFIZ:** `tests/architecture/…/JwtClockSkewGuardTests.cs` — üretim kodunda kendi `ClockSkew`
+  değerini yazan ya da `ValidateLifetime = true` deyip sabiti hiç anmayan dosyada test kırılır. İkisi de
+  kırdırılıp kırmızıya döndüğü ölçüldü, sonra geri alındı.
+- **Gelecek regresyon riski: 🟢** — değer tek satırda; ikinci bir yere yazmak muhafızı kırmızıya çevirir.
 
 `ClockSkew = TimeSpan.Zero`: `MdmService/Program.cs:37` · `DevEnablementService/Program.cs:51`
 (ayrıca `AuthService/TokenService.cs:170` ve `PlatformActorHangfireAuthorizationFilter.cs:84` — ikisi de
@@ -4983,30 +5001,6 @@ doğrulama yardımcıları, ayrı değerlendirilmeli).
 - **Sonuç:** saatler birkaç saniye kayarsa MDM ve DevEnablement, diğer her servisin kabul ettiği bir belirteci
   reddeder. Tutarsızlık kasıtlı mı, karar verilmedi.
 - **Gelecek regresyon riski: 🟢** — tek bir değere hizalamak ucuz; hangi değer olduğu ürün/güvenlik kararı.
-
-### BL-297 — yeni bir worktree'de Platform açılmıyor; sebebi görünmüyor ve 51 dakika yedi (2026-08-27, ölçüldü, düzeltilmedi)
-> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
-
-- Yaşandı: `fix/module-datain-normalization` turu ayrı bir worktree'de çalışıyordu ve canlı doğrulamayı
-  yapamadı. 51 dakika boyunca sebebi bulunamadı. Sebep koda değil kuruluma aitti.
-- **Ne oluyor:** `git worktree add … main` ile kurulan her yeni ağaçta
-  `Diten.Platform.API/appsettings.Development.json` main'deki hâliyle geliyor — yani
-  `ModuleRegistrationCredentials:Mdm:ActiveSecret` **BOŞ**. Platform bu sırrı açılışta zorunlu
-  doğruluyor (`Infrastructure/DependencyInjection.cs:551`) ve `SecretValidationException` ile ölüyor.
-  Platform ölünce: migration koşmaz · katalog değişmez · tarayıcı doğrulaması yapılamaz.
-- ⚠ Boş iskelet (`35370ace`, `17b2e867`) **yetmiyor**. Yapıyı görünür yaptı ama değeri vermiyor —
-  ve veremez, çünkü sır commit'lenemez. Yani her yeni worktree aynı duvara çarpacak.
-- Geliştirme değeri bugün YALNIZ ana çalışma ağacında, commit edilmemiş hâlde duruyor.
-  Yeni ağaç kuran kişinin onu nereden alacağı **hiçbir yerde yazılı değil**.
-- **Ölçülen maliyet:** bir tur × 51 dakika. Tekrarlanabilir — her worktree için bir kez.
-- Seçenekler (hiçbiri seçilmedi):
-  · (a) `docs/dev-environment.md`'ye "yeni worktree kurunca şunu kopyala" adımı — en ucuz, ama disiplin
-  · (b) `git worktree add` sarmalayan bir betik — sırrı ana ağaçtan kopyalar; disiplini mimariye çevirir
-  · (c) sırrı gerçekten isteğe bağlı yapmak — ama o zaman MDM kaydı sessizce çalışmaz, ki bu daha kötü
-  · (d) dotnet user-secrets (csproj'da `UserSecretsId` ZATEN VAR: 587d48b8-25d7-414f-a302-fe1078fb12ea) —
-    makine başına bir kez, tüm worktree'ler paylaşır. ⚠ Bu, mevcut altyapının kullanılmayan yarısı.
-- **Gelecek regresyon riski: 🟡** — kod değil kurulum; ama her paralel tur bir kez ödüyor ve
-  belirti (`Platform açılmıyor`) sebebi (`sır yok`) göstermiyor. Kayıp zaman ölçüldü, tekrar edecek.
 
 ### BL-301 — yeni worktree'de frontend testleri koşulamıyor; 49 worktree'nin 43'ünde `node_modules` boş (2026-08-28, ölçüldü, düzeltilmedi)
 > **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
@@ -5203,70 +5197,6 @@ doğrulama yardımcıları, ayrı değerlendirilmeli).
 - **Gelecek regresyon riski: 🟢** — üretimde kapalı; riski unutulup "gerçek bir kaynakmış gibi" okunması,
   bu yüzden `Temporary: true` bayrağı, dosya başlığı ve bu kayıt üçü birden var.
 
-### BL-311 — 🟠 `TenantPropagationHandler` istek kapsamını GÖREMİYOR; başlık düşüyor ama SIZINTI DEĞİL (2026-08-28, ölçüldü; 2026-08-28 yeniden ölçülüp 🔴→🟠 düşürüldü)
-> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
-
-
-> **SAHİP: CONTROL TOWER (biz).** Codex'in "aynı güvenlik dalgasında paralel kapanacak"
-> kararının 2. maddesi; sahiplik 2026-08-28'de netleştirildi.
-
-**⚠ İLK DEĞERLENDİRME YANLIŞTI — düzeltmesi burada.** İlk kayıt "çapraz-kiracı veri
-görme riski" ihtimalini yazdı ve bunun ÖLÇÜLMEDİĞİNİ belirtti. Ölçüldü, öyle değil:
-
-- Her iki doğrulayıcı da **çağıranın kendi jetonunu iletiyor**
-  (`PropagateAuthorizationHeader`, her iki dosyada da mevcut).
-- `TenantResolutionMiddleware` (MDM): `var resolvedTenant = jwtTenant ?? headerTenant;`
-  → **JWT önce gelir.** İkisi de yoksa `400 Missing Tenant` — **fail-closed**.
-- AuthService'teki kontrol bir **uyuşmazlık dedektörü**: başlık yoksa "uyuşmazlık yok"
-  döner, kiracıyı yine JWT'den alır.
-- **Sonuç: kiracı doğru çözülüyor. Çapraz-kiracı sızıntısı YOK.**
-
-**Gerçekte kalan kusur — üç madde:**
-
-1. **MDM'in çapraz kontrolü SESSİZCE ÖLÜ.** `jwtTenant != headerTenant → 400 Tenant mismatch`
-   kontrolü hiç ateşlenemiyor, çünkü başlık hiç gönderilmiyor. Kodda duran bir savunma
-   hiçbir şey yapmıyor ve bunu kimse fark etmez.
-2. **Yorum yalan söylüyor.** `AuthServiceUserReferenceValidator.cs:15`:
-   *"X-Tenant-Id via the shared TenantPropagationHandler (registered in DI)"* —
-   ölçüm handler'ın onu teslim etmediğini söylüyor.
-3. **ÖLÇÜLMEDİ:** platform yöneticisi bir kiracı adına işlem yaptığında jetonunda
-   `tenant_id` claim'i var mı? Yoksa o akışlarda çağrı `400` alır — gürültülü hata,
-   sessiz zarar değil. **Düzeltmeden önce ilk ölçülecek şey budur.**
-
-**Sebep (değişmedi):** `IHttpClientFactory` handler zincirini KENDİ kapsamında kurup
-önbelleğe alıyor; zincirdeki `DelegatingHandler` istek kapsamına ait `ITenantContext`'i
-çözemiyor, `IsResolved == false` dönüyor, başlık eklenmiyor, hiçbir yerde bir şey denmiyor.
-
-**Doğru desen elimizde:** `RemoteWorkItemGateway` bunu bir kez çözdü — handler yerine
-çağıran sınıfa `ITenantContext` enjekte etmek. `RemoteWorkItemProviderRegistration.cs:75`
-handler'ın denendiğini ve ölçümle reddedildiğini yazıyor.
-
-**Etki alanı:** handler üç serviste kayıtlı (Platform, Auth, DevEnablement); Platform'da
-üç istemciye takılı — `TenantAwareClient` + iki referans doğrulayıcı.
-
-**İlk kaydın metni (2026-08-28, ÖLÇÜLDÜ) — yukarıdaki düzeltmenin neyi düzelttiği görünsün diye korunuyor.**
-
-> ⚠ Bu bir KAYIT DEĞİL, yukarıdaki BL-311'in ilk hâlidir. Ayrı bir `###` başlığı
-> olarak durursa aynı koda iki blok düşer ve biri "kapandı" diğeri "açık" görünür —
-> bu dosyada bunun 10 örneği ölçüldü. O yüzden başlık değil, alıntı.
-- **Ölçüm:** WC-D1 köprüsünün ilk hâli bu paylaşılan handler'ı yeniden kullandı ve uzak servise **hiç kiracı
-  başlığı göndermedi**. Birim testi yeşildi. Uzak servis aldığı kiracıyı ekrana geri yazdığı için görüldü:
-  "(no tenant header)".
-- **Sebep:** `IHttpClientFactory` handler zincirini KENDİ kapsamında kurar ve önbelleğe alır. Zincirdeki bir
-  `DelegatingHandler`, istek kapsamına ait `ITenantContext`'i çözemez; eline hiçbir isteğe ait olmayan bir
-  örnek geçer ve `IsResolved == false` döner. Başlık eklenmez ve hiçbir yerde bir şey söylenmez.
-- **Köprüde nasıl kapatıldı:** başlığı `RemoteWorkItemGateway` (Scoped) kendisi yazıyor; bu istemciden handler
-  kaldırıldı. Gerekçe sınıfın kendi yorumunda.
-- **Kapatılmayan:** `services.AddHttpClient<ILegalEntityReferenceValidator, …>()` ve
-  `AddHttpClient<IUserReferenceValidator, …>()` hâlâ aynı handler'ı taşıyor, ayrıca isimli `TenantAwareClient`.
-  Bu turda dokunulmadı: köprü turuydu, kiracılık turu değil — ve düzeltme, bu iki istemcinin bugün hangi
-  davranışa yaslandığının ayrıca ölçülmesini gerektirir (JWT içindeki `tenant_id` bugün başlığın yokluğunu
-  örtüyor olabilir).
-- **Yeniden bakılacak eşik:** kiracı başlığını zorunlu kılan bir uç eklendiğinde ya da bu iki istemciden biri
-  çapraz kiracı bir hata verdiğinde. Ondan önce de yapılabilir; ölçüm hazır.
-- **Gelecek regresyon riski: 🔴** — SESSİZ ve güvenlikle ilgili sınıfta. Yeşil test kanıt değil: bu kusur tam
-  olarak yeşil bir testin altında yaşıyordu.
-
 ### BL-312 — Modül adresinin OTOMATİK gelmesi (D1'in manifest yarısı) hâlâ açık (2026-08-28, bilinçli)
 > **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
 
@@ -5337,3 +5267,41 @@ handler'ın denendiğini ve ölçümle reddedildiğini yazıyor.
      yine sessiz kalmamalı
   4. Bugüne kadar "gönderildi" işaretlenmiş outbox kayıtlarının kaybı
      **ölçülsün ve raporlansın** — telafi gerekiyorsa ayrı iş olarak açılsın
+
+### BL-316 — `TenantPropagationHandler` üç serviste kayıtlı, canlı çağrı yolu SIFIR; işaretli ama silinmedi (2026-08-28, ölçüldü)
+> **DURUM:** AÇIK · **SAHİP:** CONTROL TOWER
+
+**Devraldığı kayıt: BL-311** (kapandı, arşivde). BL-311 iki referans doğrulayıcıyı handler'dan
+kurtardı; geriye handler'ın **kendisi** kaldı. Silme üç servise yayıldığı için CT 2026-08-28'de
+"kendi diff'ini hak ediyor" dedi ve bu turda yapılmadı — bu kayıt onun unutulmamasıdır.
+
+- **Ölçüm — nerede kayıtlı:** üç serviste.
+  - `Diten.Platform/…/Infrastructure/DependencyInjection.cs`
+  - `Diten.AuthService/…/Infrastructure/DependencyInjection.cs:73-74`
+  - `Diten.DevEnablementService/…/Infrastructure/DependencyInjection.cs:21-22`
+- **Ölçüm — neye takılı:** yalnızca isimli `"TenantAwareClient"`. Platform'daki diğer iki istemci
+  (iki referans doğrulayıcı) 2026-08-28'de ondan koparıldı.
+- **⚠ Ölçüm — o istemciyi kimse yaratmıyor:** repoda `CreateClient("TenantAwareClient")` **çağrısı yok**;
+  tüm `CreateClient()` kullanımları argümansız (varsayılan istemci, handler'sız). Üç servisin üçünde de.
+- **Sonuç: bu turdan sonra handler'ın canlı çağrı yolu SIFIR.** Kimsenin yaratmadığı bir istemciye
+  takılı, hiçbir şey yapmayan bir handler.
+- **Neden hiç çalışmadı (BL-311'den devralınan sebep):** `IHttpClientFactory` handler zincirini KENDİ
+  kapsamında kurup önbelleğe alıyor; zincirdeki `DelegatingHandler` istek kapsamındaki `ITenantContext`'i
+  çözemiyor, `IsResolved == false` dönüyor, başlık eklenmiyor, hiçbir yerde bir şey denmiyor.
+- **⚠ Neden "dursun" yeterli bir cevap değil:** yerinde duran bir handler, sonraki geliştiriciye
+  **"bu istemcide kiracı taşınıyor"** diye okunur — WC-D1 köprüsü tam olarak bu yanılgıyla başladı ve
+  bir tur yedi. Bugün hem sınıf yorumunda hem DI'da "bu şey kiracı taşımıyor" diye işaretli, ama
+  **işaret kalıcı çözüm değildir**: bir sonraki okuyucunun yorumu okuyacağının garantisi yok.
+- **Öneri:** üçünden de **sil** — handler sınıfı + `"TenantAwareClient"` kaydı. Düzeltmenin
+  (kurucuda enjekte edilen bağlam yerine gönderim anında `IHttpContextAccessor` okumak) müşterisi yok:
+  bugün onu isteyen tek bir çağrı yolu bile ölçülmedi.
+- **Doğru desen, silerken referans verilecek:** başlığı çağıran sınıf yazar —
+  `RemoteWorkItemGateway`, `MdmLegalEntityReferenceValidator`, `AuthServiceUserReferenceValidator`
+  (üçü de `TenantOnTheWire` ile aynı kuralı okuyor).
+- **Muhafız zaten var, silme onu bozmamalı:**
+  `Tenant_header_is_written_by_the_validator_and_not_by_a_delegating_handler` (her iki doğrulayıcıda)
+  ve `HttpWorkItemBridgeTests.The_tenant_header_and_the_callers_own_bearer_token_reach_the_module`.
+- **⚠ Kural K2:** bu iş bitince **AYNI TURDA** `DURUM: KAPANDI` yazılıp
+  `docs/product-backlog-closed.md`'ye taşınacak. "Sonra toplu temizleriz" bu dosyayı 6927 satıra çıkaran şeydir.
+- **Gelecek regresyon riski: 🟡** — bugün hiçbir şey kırılmıyor (canlı yol yok). Risk tamamen
+  **yanlış okumada**: birinin "kiracılık hallediliyor" sanıp yeni bir istemciyi bu handler'a takması.

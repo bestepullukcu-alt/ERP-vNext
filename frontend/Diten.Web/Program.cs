@@ -194,7 +194,7 @@ var validatedTokenParameters = new TokenValidationParameters
     ValidIssuer = jwtIssuer,
     ValidAudience = jwtAudience,
     IssuerSigningKeys = jwtRotationResolver.GetValidationKeys(),
-    ClockSkew = TimeSpan.FromSeconds(30)
+    ClockSkew = JwtValidationDefaults.ClockSkew
 };
 
 // FE-A-harden (A3): single-flight the eager refresh, and MOD-0014's token→User bridge. Both live in

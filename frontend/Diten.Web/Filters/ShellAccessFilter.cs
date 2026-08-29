@@ -2,6 +2,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Diten.BuildingBlocks.Security.Secrets;
 using Diten.Web.Services.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -137,7 +138,7 @@ public sealed class ShellAccessFilter : IAuthorizationFilter
                 ValidIssuer = jwtIssuer,
                 ValidAudience = jwtAudience,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
-                ClockSkew = TimeSpan.FromSeconds(30)
+                ClockSkew = JwtValidationDefaults.ClockSkew
             }, out _);
 
             context.User = principal;

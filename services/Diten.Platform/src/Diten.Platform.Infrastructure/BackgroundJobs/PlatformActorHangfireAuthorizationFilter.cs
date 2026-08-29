@@ -81,7 +81,7 @@ public sealed class PlatformActorHangfireAuthorizationFilter : IDashboardAuthori
                     ValidIssuer = issuer,
                     ValidAudience = audience,
                     IssuerSigningKeys = rotationResolver.GetValidationKeys(),
-                    ClockSkew = TimeSpan.Zero
+                    ClockSkew = JwtValidationDefaults.ClockSkew
                 },
                 out _);
 

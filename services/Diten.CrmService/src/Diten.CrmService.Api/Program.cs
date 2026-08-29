@@ -5,6 +5,7 @@ using Diten.CrmService.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Diten.BuildingBlocks.Security.Secrets;
 
 // NOTE (MOD-0149-PREREQ scaffold): This is the Diten.CrmService runtime skeleton only.
 // It intentionally hosts NO Account/CRM business endpoints. Only /health + infrastructure wiring.
@@ -59,7 +60,7 @@ builder.Services
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
             IssuerSigningKeys = jwtSigningKeys,
-            ClockSkew = TimeSpan.FromSeconds(30)
+            ClockSkew = JwtValidationDefaults.ClockSkew
         };
     });
 
