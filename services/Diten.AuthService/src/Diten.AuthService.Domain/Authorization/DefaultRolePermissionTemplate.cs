@@ -81,7 +81,13 @@ public static class DefaultRolePermissionTemplate
             "mdm.product-abbreviations.reject",
             "mdm.product-abbreviations.correct",
             "mdm.product-abbreviations.retire",
-            "mdm.product-abbreviations.audit"
+            "mdm.product-abbreviations.audit",
+            "mdm.product-legal-entity-scopes.read",
+            "mdm.product-legal-entity-scopes.configure",
+            "mdm.product-legal-entity-scopes.replace",
+            "mdm.product-legal-entity-scopes.end",
+            "mdm.product-legal-entity-scope-rollout.activate",
+            "mdm.product-legal-entity-scope-rollout.rollback"
         };
 
     /// <summary>
