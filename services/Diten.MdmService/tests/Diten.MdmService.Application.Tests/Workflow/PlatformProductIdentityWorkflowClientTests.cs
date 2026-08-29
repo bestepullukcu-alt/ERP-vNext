@@ -34,6 +34,7 @@ public sealed class PlatformProductIdentityWorkflowClientTests
     [Theory]
     [InlineData("gsku", "GSKU-IDENTITY", "GS-000000000001|REV-001")]
     [InlineData("lsku", "LSKU-IDENTITY", "LS-000000000001")]
+    [InlineData("finished-good", "FINISHED-GOOD-IDENTITY", "FG-000000000001")]
     public async Task Exact_lowercase_product_identity_profiles_are_allowed_for_start_and_machine_reads(
         string objectType,
         string templateCode,
@@ -70,7 +71,6 @@ public sealed class PlatformProductIdentityWorkflowClientTests
     [InlineData("Gsku")]
     [InlineData("GSKU")]
     [InlineData("global-product")]
-    [InlineData("finished-good")]
     [InlineData("gsku ")]
     public async Task Unapproved_object_type_profiles_fail_before_transport(string objectType)
     {

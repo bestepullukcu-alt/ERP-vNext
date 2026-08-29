@@ -3904,6 +3904,19 @@ navigation, bulk lifecycle and push remain separate gates.
   pre-existing Persistence warnings. Independent processor/security and persistence reviews report no remaining
   P0/P1; the only P2 is duplicated approval-fingerprint computation retained inside the exact allow-list. No runtime
   config, credential, data, operational execution or push occurred. E2B activation remains closed until E3A is green.
+- [x] E3A Finished Good lifecycle backend/workflow is implemented locally on 2026-08-29. It provides a dedicated,
+  strongly typed durable operation/checkpoint/lease/recovery model, tenant-first Mongo persistence, atomic lifecycle
+  CAS plus append-only audit intent/receipt replay, exact lowercase `finished-good` Workflow transport, a
+  default-disabled worker and a fail-closed explicit one-shot CLI. Reject restores Draft without GSKU or Revision
+  reads. Approve validates the same-tenant approved GSKU and Revision three times and freezes a separate immutable
+  `ApprovalValidated` parent proof; no Market provider or Market proof is used. Direct retire is parent/provider-free,
+  creates no cascade, and the existing durable GSKU retirement operation proceeds only after its Finished Good child
+  reaches Retired. Finished Good processor/runner/client tests pass **38/38**; the combined Finished Good identity
+  slice passes **30/30**, including the **9/9** fixed-shared-database real-Mongo subset, and the focused child-blocker
+  seam passes **2/2**. The full MDM Release suite passes **1009/1009**, zero skipped. MDM API Release build passes with
+  zero errors and five pre-existing Persistence warnings. Independent processor/security and persistence reviews
+  report no remaining P0/P1/P2. No API, controller, manifest, frontend, Gateway, runtime config, credential, data,
+  operational execution or push occurred. E2B/E3B combined API/manifest activation remains closed.
 - [ ] Additional-GSKU cardinality/ownership receives a separate owner decision before any implementation.
 - [ ] G2 and H receive exact current-code allow-lists and predecessor evidence before mutation/operation.
 
