@@ -5,6 +5,7 @@ using System.Text.Json;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.S2S;
 using Diten.AuthService.Domain.S2S;
+using Diten.BuildingBlocks.Security.Secrets;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Diten.AuthService.Infrastructure.S2S;
@@ -137,10 +138,10 @@ public sealed class DelegatedActorProofValidator : IDelegatedActorProofValidator
         AudienceValidator = (audiences, _, _) => audiences is not null && audiences.Count() == 1 && ValidAudiences.Contains(audiences.Single(), StringComparer.Ordinal),
         ValidateLifetime = true,
         RequireExpirationTime = true,
-        ClockSkew = TimeSpan.FromSeconds(DelegatedActorProofV1.MaximumClockSkewSeconds),
+        ClockSkew = JwtValidationDefaults.ClockSkew,
         LifetimeValidator = (notBefore, expires, _, _) => notBefore is not null && expires is not null &&
-            notBefore.Value <= now.UtcDateTime.AddSeconds(DelegatedActorProofV1.MaximumClockSkewSeconds) &&
-            expires.Value >= now.UtcDateTime.AddSeconds(-DelegatedActorProofV1.MaximumClockSkewSeconds)
+            notBefore.Value <= now.UtcDateTime + JwtValidationDefaults.ClockSkew &&
+            expires.Value >= now.UtcDateTime - JwtValidationDefaults.ClockSkew
     };
 
     private static (string? Kid, S2SAuthenticationFailureCode Failure) ReadExactHeader(string token)
@@ -184,7 +185,7 @@ public sealed class DelegatedActorProofValidator : IDelegatedActorProofValidator
         var iat = DateTimeOffset.FromUnixTimeSeconds(proof.IssuedAt);
         var nbf = DateTimeOffset.FromUnixTimeSeconds(proof.NotBefore);
         var exp = DateTimeOffset.FromUnixTimeSeconds(proof.ExpiresAt);
-        var skew = TimeSpan.FromSeconds(DelegatedActorProofV1.MaximumClockSkewSeconds);
+        var skew = JwtValidationDefaults.ClockSkew;
         return iat <= nbf && nbf < exp && exp - iat <= TimeSpan.FromSeconds(DelegatedActorProofV1.MaximumLifetimeSeconds) &&
                iat <= now + skew && nbf <= now + skew && exp >= now - skew;
     }
