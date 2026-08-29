@@ -1,0 +1,33 @@
+{
+  "schemaId": "urn:diten:management-governance:process-performance-improvement-audit-intent-submitted:v1",
+  "eventType": "ProcessPerformanceImprovementAuditIntentSubmittedV1",
+  "eventName": "management-governance.process-performance-improvement-audit-intent.submitted.v1",
+  "eventVersion": 1,
+  "producer": "Diten.ManagementGovernanceService",
+  "moduleCode": "MOD-0355",
+  "category": "Integration",
+  "canonicalPropertyOrder": ["auditIntentId", "actorId", "entityType", "entityId", "mutation", "occurredAtUtc"],
+  "positivePairs": [
+    ["ProcessKpiBinding", "Created"],
+    ["ProcessKpiBinding", "Archived"],
+    ["ProcessImprovementOpportunity", "Created"],
+    ["ProcessImprovementOpportunity", "Updated"],
+    ["ProcessImprovementOpportunity", "Qualified"],
+    ["ProcessImprovementOpportunity", "Closed"],
+    ["ProcessImprovementOutcome", "Recorded"]
+  ],
+  "negativePairs": [
+    ["ProcessKpiBinding", "Updated"],
+    ["ProcessKpiBinding", "Qualified"],
+    ["ProcessKpiBinding", "Closed"],
+    ["ProcessKpiBinding", "Recorded"],
+    ["ProcessImprovementOpportunity", "Archived"],
+    ["ProcessImprovementOpportunity", "Recorded"],
+    ["ProcessImprovementOutcome", "Created"],
+    ["ProcessImprovementOutcome", "Archived"],
+    ["ProcessImprovementOutcome", "Updated"],
+    ["ProcessImprovementOutcome", "Qualified"],
+    ["ProcessImprovementOutcome", "Closed"]
+  ],
+  "productionReject": ["identity", "keyId", "signature"]
+}

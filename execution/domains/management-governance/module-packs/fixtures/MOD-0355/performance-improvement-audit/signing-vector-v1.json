@@ -1,0 +1,8 @@
+{
+  "scheme": "HMAC-SHA256-TEST-ONLY",
+  "identity": "mod-0355-performance-improvement-fixture-v1",
+  "keyId": "test-only-mod-0355-performance-improvement-v1",
+  "keyHex": "3535353535353535353535353535353535353535353535353535353535353535",
+  "expectedSignature": "4be30586a905f1366af45f52f8ca799d4f58697676d04a85567606cdca2f3f88",
+  "productionAuthority": "none"
+}

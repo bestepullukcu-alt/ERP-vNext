@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "approval-mutation-evidence-v1",
+  "head": "7e8fe7d45ce80cb09f28c0089415d4f40400bc37",
+  "mutations": [
+    {
+      "id": "sod-requester-guard-removal",
+      "sourcePath": "src/Diten.ManagementGovernanceService.Application/Modules/ProcessModeling/Approval/PublishApprovalAuthorizationContracts.cs",
+      "restoredSha256": "757163658b8b70d8ecd2acb297bedc89739c3c49ad939686a1f5beef988809de",
+      "testType": "Diten.ManagementGovernanceService.IntegrationTests.Modules.ProcessModeling.Approval.PublishApprovalAuthorizationContractTests",
+      "testMethod": "Publisher_must_differ_from_requester_author_and_decision_actor",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "disposition": "expected-red",
+      "observedInvariant": "requester collision returned 503 instead of required 403"
+    },
+    {
+      "id": "typed-unavailable-authority-acceptance",
+      "sourcePath": "src/Diten.ManagementGovernanceService.Application/Modules/ProcessModeling/Approval/PublishApprovalAuthorizationContracts.cs",
+      "restoredSha256": "757163658b8b70d8ecd2acb297bedc89739c3c49ad939686a1f5beef988809de",
+      "testType": "Diten.ManagementGovernanceService.IntegrationTests.Modules.ProcessModeling.Approval.PublishApprovalAuthorizationContractTests",
+      "testMethod": "Entitlement_permission_and_eligibility_use_typed_authoritative_states",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "disposition": "expected-red",
+      "observedInvariant": "unavailable authority reached contract-satisfied result"
+    },
+    {
+      "id": "stale-authority-status-409-to-503",
+      "sourcePath": "src/Diten.ManagementGovernanceService.Application/Modules/ProcessModeling/Approval/PublishApprovalAuthorizationContracts.cs",
+      "restoredSha256": "757163658b8b70d8ecd2acb297bedc89739c3c49ad939686a1f5beef988809de",
+      "testType": "Diten.ManagementGovernanceService.IntegrationTests.Modules.ProcessModeling.Approval.PublishApprovalAuthorizationContractTests",
+      "testMethod": "Authority_version_fence_state_and_freshness_change_returns_409",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "disposition": "expected-red",
+      "observedInvariant": "changed authority fence returned 503 instead of required 409"
+    },
+    {
+      "id": "non-runtime-publish-503-to-200",
+      "sourcePath": "src/Diten.ManagementGovernanceService.Application/Modules/ProcessModeling/Approval/PublishApprovalAuthorizationContracts.cs",
+      "restoredSha256": "757163658b8b70d8ecd2acb297bedc89739c3c49ad939686a1f5beef988809de",
+      "testType": "Diten.ManagementGovernanceService.IntegrationTests.Modules.ProcessModeling.Approval.PublishApprovalAuthorizationContractTests",
+      "testMethod": "Both_a04_branches_satisfy_contract_gates_but_publish_stays_non_executable",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "disposition": "expected-red",
+      "observedInvariant": "both A-04 branches returned 200 instead of non-runtime 503"
+    },
+    {
+      "id": "approval-reference-duplicate-field-guard-removal",
+      "sourcePath": "src/Diten.ManagementGovernanceService.Domain/Modules/ProcessModeling/Approval/PublishApprovalContracts.cs",
+      "restoredSha256": "0f962e9c6457730da74df60616b4fcf587595ad75c0cb38a67c30c8643dc0dfc",
+      "testType": "Diten.ManagementGovernanceService.Tests.Modules.ProcessModeling.Approval.ApprovalValueContractTests",
+      "testMethod": "Approval_reference_rejects_missing_duplicate_unknown_and_noncanonical_fields",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "disposition": "expected-red",
+      "observedInvariant": "duplicate ContractName was accepted"
+    }
+  ]
+}
