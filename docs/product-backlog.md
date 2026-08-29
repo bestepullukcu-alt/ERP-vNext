@@ -4581,3 +4581,24 @@ kurtardı; geriye handler'ın **kendisi** kaldı. Silme üç servise yayıldığ
   `docs/product-backlog-closed.md`'ye taşınacak. "Sonra toplu temizleriz" bu dosyayı 6927 satıra çıkaran şeydir.
 - **Gelecek regresyon riski: 🟡** — bugün hiçbir şey kırılmıyor (canlı yol yok). Risk tamamen
   **yanlış okumada**: birinin "kiracılık hallediliyor" sanıp yeni bir istemciyi bu handler'a takması.
+
+### BL-318 — Rol İzinleri ekranı modül adlarını ham slug olarak basıyordu (2026-08-29, ölçüldü)
+
+> **DURUM:** KAPANDI · **SAHİP:** CONTROL TOWER
+
+- **Sorun:** `Governance/RoleAssignments/index.js` grup başlıklarında ve modül filtresinde
+  izin kataloğundan gelen HAM slug'ı gösteriyordu — `work-aggregation`,
+  `product-item-sku-master`, `test-beta-mod`. Kullanıcı hangisinin ne olduğunu anlamıyordu.
+- **Çözüm — yeni dize üretilmedi, çalışan kaynak tüketildi:** adlar `/TenantNavigation/api/menu`
+  üzerinden çözülüyor; o uç kiracı override'ını ve 7 dilli yerelleştirmeyi ZATEN uyguluyor
+  (kenar çubuğu da onu kullanıyor). Menünün tanımadığı kod, kodun kendisinden türetilen
+  okunur bir ada düşüyor (`test-beta-mod` → "Test Beta Mod").
+- **Kimlik korundu:** yalnız GÖRÜNEN metin değişti. Gruplama anahtarı, filtre değeri ve izin
+  anahtarının kendisi kod olarak kaldı — izlenebilirlik bozulmadı.
+- **Muhafız:** `tests/role-assignments-module-label.test.js`, 9 test. Karar mantığı
+  (`module-label.js`) DOM'suz ve saf tutuldu ki doğrudan test edilebilsin; ham slug sızdıran
+  bir regresyon derlemeyi düşürür.
+- ⚠ **CONTROL TOWER hatası, kayda geçiyor:** bu turun altı dosyası `git add -A` ile bir
+  backlog commit'ine süpürüldü (`c527ff35`). Kayıp olmadı, ama commit yanlış mesaj altında
+  duruyordu. Ayrıldı; iki commit'in dosya kümesi eskisiyle birebir doğrulandı.
+  Aynı hata bu oturumda ikinci kez oldu.
