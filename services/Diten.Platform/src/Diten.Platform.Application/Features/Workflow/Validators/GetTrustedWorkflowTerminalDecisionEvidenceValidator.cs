@@ -9,6 +9,7 @@ public sealed class GetTrustedWorkflowTerminalDecisionEvidenceValidator
     public GetTrustedWorkflowTerminalDecisionEvidenceValidator()
     {
         RuleFor(x => x.WorkflowInstanceId).NotEmpty();
+        RuleFor(x => x.TrustedConsumerClientId).NotEmpty();
         RuleFor(x => x.ExpectedObjectType)
             .NotEmpty()
             .MaximumLength(128)

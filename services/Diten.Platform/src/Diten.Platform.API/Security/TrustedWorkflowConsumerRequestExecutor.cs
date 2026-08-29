@@ -47,6 +47,17 @@ public sealed class TrustedWorkflowConsumerRequestExecutor : ITrustedWorkflowCon
             failure,
             token => ExecuteEvidenceWithinBudgetAsync(httpContext, token, dispatch, failure));
 
+    public Task<IActionResult> ExecuteStartResultAsync(
+        HttpContext httpContext,
+        CancellationToken cancellationToken,
+        Func<TrustedWorkflowStartResultTransportRequest, string, TrustedWorkflowConsumerServiceIdentity,
+            CancellationToken, Task<IActionResult>> dispatch,
+        Func<int, string, IActionResult> failure) =>
+        ExecuteWithBudgetAsync(
+            cancellationToken,
+            failure,
+            token => ExecuteStartResultWithinBudgetAsync(httpContext, token, dispatch, failure));
+
     private static async Task<IActionResult> ExecuteWithBudgetAsync(
         CancellationToken callerCancellation,
         Func<int, string, IActionResult> failure,
@@ -205,6 +216,68 @@ public sealed class TrustedWorkflowConsumerRequestExecutor : ITrustedWorkflowCon
             using (TenantScope.Begin(_tenantContext, serviceIdentity.TenantId))
             {
                 return await dispatch(request, serviceIdentity, budgetToken);
+            }
+        }
+        finally
+        {
+            httpContext.User = previousPrincipal;
+        }
+    }
+
+    private async Task<IActionResult> ExecuteStartResultWithinBudgetAsync(
+        HttpContext httpContext,
+        CancellationToken budgetToken,
+        Func<TrustedWorkflowStartResultTransportRequest, string, TrustedWorkflowConsumerServiceIdentity,
+            CancellationToken, Task<IActionResult>> dispatch,
+        Func<int, string, IActionResult> failure)
+    {
+        var preflight = Preflight(httpContext, requireDelegatedUser: false, requireIdempotencyKey: true, failure);
+        if (preflight.Failure is not null)
+        {
+            return preflight.Failure;
+        }
+
+        var authentication = await AuthenticateAsync(
+            httpContext,
+            TrustedServiceTokenValidationExtensions.WorkflowAuthenticationScheme);
+        budgetToken.ThrowIfCancellationRequested();
+        if (authentication.IsUnavailable)
+        {
+            return failure(StatusCodes.Status503ServiceUnavailable, "WORKFLOW_TRUSTED_CONSUMER_UNAVAILABLE");
+        }
+
+        if (!authentication.Result.Succeeded)
+        {
+            return failure(StatusCodes.Status401Unauthorized, "WORKFLOW_TRUSTED_CONSUMER_UNAUTHENTICATED");
+        }
+
+        if (!TryResolveServiceIdentity(authentication.Result.Principal, out var serviceIdentity))
+        {
+            return failure(StatusCodes.Status403Forbidden, "WORKFLOW_TRUSTED_CONSUMER_FORBIDDEN");
+        }
+
+        var body = await ReadBoundedBodyAsync(httpContext.Request.Body, budgetToken);
+        if (body is null)
+        {
+            return failure(StatusCodes.Status413PayloadTooLarge, "WORKFLOW_TRUSTED_CONSUMER_TOO_LARGE");
+        }
+
+        if (!_parser.TryParseStartResult(body.Value, out var request) || request is null)
+        {
+            return failure(StatusCodes.Status400BadRequest, "WORKFLOW_START_RESULT_INVALID");
+        }
+
+        var previousPrincipal = httpContext.User;
+        try
+        {
+            httpContext.User = authentication.Result.Principal!;
+            using (TenantScope.Begin(_tenantContext, serviceIdentity.TenantId))
+            {
+                return await dispatch(
+                    request,
+                    preflight.IdempotencyKey!,
+                    serviceIdentity,
+                    budgetToken);
             }
         }
         finally

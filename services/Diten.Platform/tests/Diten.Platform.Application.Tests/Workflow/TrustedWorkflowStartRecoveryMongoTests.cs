@@ -1,11 +1,14 @@
 using Diten.Platform.Application.Features.Workflow;
 using Diten.Platform.Application.Features.Workflow.Services;
+using Diten.Platform.Application.Features.Workflow.Handlers.QueryHandlers;
+using Diten.Platform.Application.Features.Workflow.Queries;
 using Diten.Platform.Application.Tests.Persistence;
 using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Enums.Workflow;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
 using Diten.Platform.Infrastructure.Persistence.Schema;
+using MongoDB.Driver;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.Workflow;
@@ -166,6 +169,126 @@ public sealed class TrustedWorkflowStartRecoveryMongoTests : IAsyncLifetime
         Assert.Equal(WorkflowInstanceStatus.Active, stored.Status);
     }
 
+    [Fact]
+    public async Task Service_only_start_result_returns_sanitized_completed_graph_and_mismatches_do_not_leak()
+    {
+        var started = await Coordinator().StartAsync(Request("trusted-result"), ClientId, MakerId, "corr-start");
+        var handler = new GetTrustedWorkflowStartResultHandler(_instances, _tasks, _snapshots, _logs);
+
+        var found = await handler.Handle(new(
+            "trusted-result", ClientId, MakerId, "GlobalProduct", "GP-0001", "corr-read"), default);
+        var wrongClient = await handler.Handle(new(
+            "trusted-result", Guid.NewGuid(), MakerId, "GlobalProduct", "GP-0001", "corr-client"), default);
+        var wrongMaker = await handler.Handle(new(
+            "trusted-result", ClientId, Guid.NewGuid(), "GlobalProduct", "GP-0001", "corr-maker"), default);
+        var wrongObject = await handler.Handle(new(
+            "trusted-result", ClientId, MakerId, "GlobalProduct", "GP-OTHER", "corr-object"), default);
+        _harness.TenantContext.SetTenant(Guid.NewGuid());
+        var crossTenant = await handler.Handle(new(
+            "trusted-result", ClientId, MakerId, "GlobalProduct", "GP-0001", "corr-tenant"), default);
+        _harness.TenantContext.SetTenant(_harness.TenantId);
+
+        Assert.True(found.IsSuccessful);
+        Assert.Equal(200, found.StatusCode);
+        Assert.True(found.Data!.IsReplay);
+        Assert.Equal(started.Data!.WorkflowInstanceId, found.Data.WorkflowInstanceId);
+        Assert.All(new[] { wrongClient, wrongMaker, wrongObject, crossTenant }, response =>
+        {
+            Assert.Equal(404, response.StatusCode);
+            Assert.Equal(WorkflowReasonCodes.NotFoundNonLeakage, response.ReasonCode);
+        });
+    }
+
+    [Fact]
+    public async Task Service_only_start_result_reports_incomplete_checkpoint_as_retryable_conflict()
+    {
+        await Assert.ThrowsAsync<InjectedCrashException>(() =>
+            Coordinator(CrashBoundary.Reservation).StartAsync(
+                Request("trusted-result-incomplete"), ClientId, MakerId, "corr-crash"));
+        var handler = new GetTrustedWorkflowStartResultHandler(_instances, _tasks, _snapshots, _logs);
+
+        var response = await handler.Handle(new(
+            "trusted-result-incomplete", ClientId, MakerId,
+            "GlobalProduct", "GP-0001", "corr-read"), default);
+
+        Assert.Equal(409, response.StatusCode);
+        Assert.Equal(WorkflowReasonCodes.WorkflowStartNotCompleted, response.ReasonCode);
+    }
+
+    [Fact]
+    public async Task Service_only_start_result_rejects_inconsistent_persisted_graph()
+    {
+        var started = await Coordinator().StartAsync(
+            Request("trusted-result-inconsistent"), ClientId, MakerId, "corr-start");
+        var task = await _tasks.GetByIdAsync(started.Data!.ApprovalTaskId);
+        Assert.NotNull(task);
+        task!.AssignmentSnapshotId = Guid.NewGuid();
+        Assert.True(await _tasks.UpdateAsync(task, task.Version));
+        var handler = new GetTrustedWorkflowStartResultHandler(_instances, _tasks, _snapshots, _logs);
+
+        var response = await handler.Handle(new(
+            "trusted-result-inconsistent", ClientId, MakerId,
+            "GlobalProduct", "GP-0001", "corr-read"), default);
+
+        Assert.Equal(409, response.StatusCode);
+        Assert.Equal(WorkflowReasonCodes.WorkflowStartRecoveryConflict, response.ReasonCode);
+    }
+
+    [Theory]
+    [InlineData(StartProofCorruption.InstanceStartedBy)]
+    [InlineData(StartProofCorruption.LogActorRef)]
+    [InlineData(StartProofCorruption.LogToState)]
+    [InlineData(StartProofCorruption.LogToStatus)]
+    [InlineData(StartProofCorruption.Combined)]
+    public async Task Service_only_start_result_rejects_corrupted_native_start_facts(
+        StartProofCorruption corruption)
+    {
+        var key = $"trusted-result-native-{corruption}";
+        var started = await Coordinator().StartAsync(Request(key), ClientId, MakerId, "corr-start");
+        Assert.True(started.IsSuccessful);
+
+        if (corruption is StartProofCorruption.InstanceStartedBy or StartProofCorruption.Combined)
+        {
+            var instance = await _instances.GetByIdAsync(started.Data!.WorkflowInstanceId);
+            Assert.NotNull(instance);
+            instance!.StartedBy = Guid.NewGuid().ToString("D");
+            Assert.True(await _instances.UpdateAsync(instance, instance.Version));
+        }
+
+        var logUpdates = new List<UpdateDefinition<WorkflowTransitionLog>>();
+        if (corruption is StartProofCorruption.LogActorRef or StartProofCorruption.Combined)
+        {
+            logUpdates.Add(Builders<WorkflowTransitionLog>.Update.Set(x => x.ActorRef, "forged-actor"));
+        }
+
+        if (corruption is StartProofCorruption.LogToState or StartProofCorruption.Combined)
+        {
+            logUpdates.Add(Builders<WorkflowTransitionLog>.Update.Set(x => x.ToState, "Pending"));
+        }
+
+        if (corruption is StartProofCorruption.LogToStatus or StartProofCorruption.Combined)
+        {
+            logUpdates.Add(Builders<WorkflowTransitionLog>.Update.Set(x => x.ToStatus, "Completed"));
+        }
+
+        if (logUpdates.Count != 0)
+        {
+            var logs = _harness.Database.GetCollection<WorkflowTransitionLog>(
+                PlatformCollections.WorkflowTransitionLogs);
+            var update = await logs.UpdateOneAsync(
+                x => x.TenantId == _harness.TenantId && x.Id == started.Data!.StartTransitionLogId,
+                Builders<WorkflowTransitionLog>.Update.Combine(logUpdates));
+            Assert.Equal(1, update.ModifiedCount);
+        }
+
+        var response = await new GetTrustedWorkflowStartResultHandler(_instances, _tasks, _snapshots, _logs)
+            .Handle(new(
+                key, ClientId, MakerId, "GlobalProduct", "GP-0001", "corr-read"), default);
+
+        Assert.Equal(409, response.StatusCode);
+        Assert.Equal(WorkflowReasonCodes.WorkflowStartRecoveryConflict, response.ReasonCode);
+    }
+
     private WorkflowInstanceStartCoordinator Coordinator(CrashBoundary? boundary = null) =>
         new(
             _templates,
@@ -205,6 +328,15 @@ public sealed class TrustedWorkflowStartRecoveryMongoTests : IAsyncLifetime
         Snapshot,
         StartLog,
         CompletedCheckpoint
+    }
+
+    public enum StartProofCorruption
+    {
+        InstanceStartedBy,
+        LogActorRef,
+        LogToState,
+        LogToStatus,
+        Combined
     }
 
     private sealed class InjectedCrashException : Exception;

@@ -43,6 +43,14 @@ public sealed class InternalTrustedWorkflowConsumerController : CustomBaseContro
             DispatchEvidenceAsync,
             EvidenceFailure);
 
+    [HttpPost("start-result")]
+    public Task<IActionResult> GetStartResult(CancellationToken cancellationToken) =>
+        _executor.ExecuteStartResultAsync(
+            HttpContext,
+            cancellationToken,
+            DispatchStartResultAsync,
+            StartFailure);
+
     private async Task<IActionResult> DispatchStartAsync(
         TrustedWorkflowStartTransportRequest request,
         string idempotencyKey,
@@ -74,9 +82,25 @@ public sealed class InternalTrustedWorkflowConsumerController : CustomBaseContro
         TrustedWorkflowConsumerServiceIdentity serviceIdentity,
         CancellationToken cancellationToken)
     {
-        _ = serviceIdentity;
         var response = await _mediator.Send(new GetTrustedWorkflowTerminalDecisionEvidenceQuery(
             request.WorkflowInstanceId,
+            serviceIdentity.ClientId,
+            request.ExpectedObjectType,
+            request.ExpectedObjectId,
+            HttpContext.TraceIdentifier), cancellationToken);
+        return CreateActionResultInstance(response);
+    }
+
+    private async Task<IActionResult> DispatchStartResultAsync(
+        TrustedWorkflowStartResultTransportRequest request,
+        string idempotencyKey,
+        TrustedWorkflowConsumerServiceIdentity serviceIdentity,
+        CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetTrustedWorkflowStartResultQuery(
+            idempotencyKey,
+            serviceIdentity.ClientId,
+            request.ExpectedMakerSubjectId,
             request.ExpectedObjectType,
             request.ExpectedObjectId,
             HttpContext.TraceIdentifier), cancellationToken);
