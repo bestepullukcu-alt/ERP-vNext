@@ -72,19 +72,49 @@ public sealed class CreateFirstGskuDraftFacadeHandler
             return Fail("PARENT_NOT_FOUND", 404);
         }
 
-        if (parent.LifecycleStatus is not ProductIdentityLifecycleStatus.Draft
-            and not ProductIdentityLifecycleStatus.IdentityApproved)
-        {
-            return Fail("PARENT_NOT_REFERENCEABLE", 409);
-        }
-
-        var existingScopeFailure = await PreflightExistingCommandScopeAsync(
+        var existingPreflight = await PreflightExistingCommandScopeAsync(
             commandId,
             scope.Context!,
             cancellationToken);
-        if (existingScopeFailure is not null)
+        if (existingPreflight.Failure is not null)
         {
-            return existingScopeFailure;
+            return existingPreflight.Failure;
+        }
+
+        if (existingPreflight.CompletedRevision is not null && existingPreflight.CompletedGsku is not null)
+        {
+            var existingReservation = await _reservations.GetByIdAsync(
+                existingPreflight.CompletedGsku.CodeReservationId,
+                cancellationToken);
+            if (existingReservation is null)
+            {
+                return Fail("CREATION_COMMAND_PAIR_CONFLICT", 409);
+            }
+
+            var replayRequest = new ProductItemSkuMasterModels.CreateFirstGskuDraftRequest
+            {
+                GlobalProductId = input.GlobalProductId,
+                GskuReservationId = existingReservation.Id,
+                ExpectedReservationVersion = existingReservation.Version,
+                CreationCommandId = commandId,
+                PackQuantity = input.PackQuantity,
+                PackUomCode = input.PackUomCode
+            };
+            var replay = await _mediator.Send(
+                new CreateFirstGskuDraftCommand(replayRequest),
+                cancellationToken);
+            return replay.IsSuccessful && replay.Data is not null
+                ? Response<ProductItemSkuMasterModels.GskuDraftResponse>.Success(
+                    Map(replay.Data, input.GlobalProductId),
+                    201)
+                : Response<ProductItemSkuMasterModels.GskuDraftResponse>.Fail(
+                    replay.Errors,
+                    replay.StatusCode);
+        }
+
+        if (parent.LifecycleStatus != ProductIdentityLifecycleStatus.IdentityApproved)
+        {
+            return Fail("PARENT_NOT_IDENTITY_APPROVED", 409);
         }
 
         var enumeration = await _resolver.EnumerateUomsAsync(cancellationToken);
@@ -220,11 +250,35 @@ public sealed class CreateFirstGskuDraftFacadeHandler
                           ?? await _reservations.GetByIdAsync(reservation.Id, cancellationToken);
         }
 
-        return reservation?.BindingState == CodeReservationBindingState.Confirmed
-            ? Response<ProductItemSkuMasterModels.GskuDraftResponse>.Success(
-                Map(revision, gsku),
-                201)
-            : null;
+        if (reservation?.BindingState != CodeReservationBindingState.Confirmed)
+        {
+            return null;
+        }
+
+        var fingerprintInput = new ProductItemSkuMasterModels.CreateFirstGskuDraftRequest
+        {
+            GlobalProductId = input.GlobalProductId,
+            GskuReservationId = reservation.Id,
+            ExpectedReservationVersion = reservation.Version,
+            CreationCommandId = commandId,
+            PackQuantity = input.PackQuantity,
+            PackUomCode = input.PackUomCode
+        };
+        var completion = await _globalProducts.CompleteChildCreationAdmissionAsync(
+            input.GlobalProductId,
+            commandId,
+            CreateFirstGskuDraftHandler.ComputeAdmissionFingerprint(fingerprintInput, commandId),
+            cancellationToken);
+        if (!completion.Succeeded)
+        {
+            return Fail(
+                completion.ErrorCode ?? "FIRST_GSKU_DRAFT_RECONCILIATION_REQUIRED",
+                completion.ErrorCode == "PRODUCT_CHILD_ADMISSION_CONFLICT" ? 409 : 202);
+        }
+
+        return Response<ProductItemSkuMasterModels.GskuDraftResponse>.Success(
+            Map(revision, gsku),
+            201);
     }
 
     private async Task<Response<ProductItemSkuMasterModels.GskuDraftResponse>?> EvaluateParentScopeAsync(
@@ -241,7 +295,7 @@ public sealed class CreateFirstGskuDraftFacadeHandler
         return decision.Allowed ? null : Fail("PARENT_NOT_FOUND", 404);
     }
 
-    private async Task<Response<ProductItemSkuMasterModels.GskuDraftResponse>?> PreflightExistingCommandScopeAsync(
+    private async Task<ExistingCommandPreflight> PreflightExistingCommandScopeAsync(
         string commandId,
         ProductLegalEntityScopeConsumerContext scopeContext,
         CancellationToken cancellationToken)
@@ -250,12 +304,12 @@ public sealed class CreateFirstGskuDraftFacadeHandler
         var gsku = await _gskus.GetByCreationCommandIdAsync(commandId, cancellationToken);
         if (revision is null && gsku is null)
         {
-            return null;
+            return new(null, null, null);
         }
 
         if (revision?.IsDeleted == true || gsku?.IsDeleted == true)
         {
-            return Fail("PARENT_NOT_FOUND", 404);
+            return new(Fail("PARENT_NOT_FOUND", 404), null, null);
         }
 
         if (revision is not null)
@@ -266,7 +320,7 @@ public sealed class CreateFirstGskuDraftFacadeHandler
                 cancellationToken);
             if (revisionScopeFailure is not null)
             {
-                return revisionScopeFailure;
+                return new(revisionScopeFailure, null, null);
             }
         }
 
@@ -276,7 +330,7 @@ public sealed class CreateFirstGskuDraftFacadeHandler
             gskuRevision = await _revisions.GetByIdAsync(gsku.ProductDefinitionRevisionId, cancellationToken);
             if (gskuRevision is null)
             {
-                return Fail("PARENT_NOT_FOUND", 404);
+                return new(Fail("PARENT_NOT_FOUND", 404), null, null);
             }
 
             var gskuScopeFailure = await EvaluateExistingRevisionScopeAsync(
@@ -285,13 +339,18 @@ public sealed class CreateFirstGskuDraftFacadeHandler
                 cancellationToken);
             if (gskuScopeFailure is not null)
             {
-                return gskuScopeFailure;
+                return new(gskuScopeFailure, null, null);
             }
         }
 
-        return revision is not null && gskuRevision is not null && revision.Id != gskuRevision.Id
-            ? Fail("CREATION_COMMAND_PAIR_CONFLICT", 409)
-            : null;
+        if (revision is not null && gskuRevision is not null && revision.Id != gskuRevision.Id)
+        {
+            return new(Fail("CREATION_COMMAND_PAIR_CONFLICT", 409), null, null);
+        }
+
+        return revision is not null && gsku is not null && gskuRevision is not null
+            ? new(null, revision, gsku)
+            : new(null, null, null);
     }
 
     private async Task<Response<ProductItemSkuMasterModels.GskuDraftResponse>?> EvaluateExistingRevisionScopeAsync(
@@ -344,4 +403,9 @@ public sealed class CreateFirstGskuDraftFacadeHandler
 
     private static Response<ProductItemSkuMasterModels.GskuDraftResponse> Fail(string code, int statusCode) =>
         Response<ProductItemSkuMasterModels.GskuDraftResponse>.Fail(code, statusCode);
+
+    private sealed record ExistingCommandPreflight(
+        Response<ProductItemSkuMasterModels.GskuDraftResponse>? Failure,
+        ProductDefinitionRevision? CompletedRevision,
+        Gsku? CompletedGsku);
 }

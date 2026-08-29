@@ -3412,10 +3412,83 @@ unit/real-Mongo tests. MDM/Platform runtime, user assignments and operational re
 start/transition/evidence application, API security/executor, repositories, service-token validation and exact tests.
 No MDM aggregate, Gateway/frontend, committed secret or Production configuration change is permitted.
 
-**D — Global Product lifecycle and child-admission fence:** MDM Global Product entity/repository, first-GSKU facade
-admission hook, lifecycle commands/handlers/validators/models, audit enum append, controller/manifest and focused
-unit/authorization/real-Mongo tests only. Submit/retire are MDM actions; approve/reject arrives solely through the later
-trusted reconciler. No new collection, whole-document replace, WorkCenter provider or Platform class.
+**D — Global Product lifecycle and child-admission fence:** current-code preflight splits delivery into D1 and D2.
+Opening submit transport before the Step F trusted Workflow client/reconciler exists would strand an aggregate in
+`PENDING_IDENTITY_APPROVAL`; therefore D2 cannot be enabled with D1.
+
+**D1 — domain/persistence lifecycle primitives (current code-start):** exact existing runtime allow-list:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/GlobalProduct.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductAuditOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGlobalProductRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GlobalProductRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/CommandHandlers/CreateFirstGskuDraftHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/CommandHandlers/CreateFirstGskuDraftFacadeHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/DependencyInjection.cs`
+
+Exact planned new runtime files:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/ProductIdentityWorkflowBinding.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/ProductChildCreationAdmission.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductIdentityDecisionKind.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/IProductIdentityLifecycleActorContext.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Security/ProductIdentityLifecycleActorContext.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/ProductIdentityLifecycleModels.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Commands/SubmitGlobalProductIdentityCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Commands/ReconcileGlobalProductIdentityDecisionCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Commands/RetireGlobalProductIdentityCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/SubmitGlobalProductIdentityHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/ReconcileGlobalProductIdentityDecisionHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/RetireGlobalProductIdentityHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Validators/SubmitGlobalProductIdentityValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Validators/ReconcileGlobalProductIdentityDecisionValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Validators/RetireGlobalProductIdentityValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/ProductIdentityLifecycleAuditIntentFactory.cs`
+
+Exact D1 test allow-list consists of new `GlobalProductLifecycleUnitTests.cs`,
+`GlobalProductLifecycleMongoTests.cs`, `GlobalProductChildAdmissionMongoTests.cs`,
+`ProductIdentityLifecycleActorContextTests.cs` and `GlobalProductLifecycleAuthorizationTests.cs`, plus run-only
+regressions `GlobalProductApiMongoTests.cs` and `ModuleRegistration/ProductItemSkuMasterManifestProviderTests.cs`.
+`ProductItemSkuMasterMongoTests.cs` is editable only for the existing first-GSKU scenarios whose old fixture assumed
+that a Draft parent was referenceable: positive/provider/cancellation/replay setups must seed
+`IDENTITY_APPROVED`, and one exact negative regression must freeze Draft-parent rejection before provider,
+reservation or child allocation. Its existing exact-pair replay test may retire the parent after the first successful
+create and must prove the lower handler returns the same pair with one Revision, one GSKU and zero active admissions.
+No unrelated assertion or fixture behavior in that file may change.
+`GskuRegisterFacadeTests.cs` is likewise editable only to set the existing positive, provider-validation,
+reconciliation and inaccessible-parent fixtures to `IDENTITY_APPROVED`; their original response, no-allocation and
+scope assertions must remain unchanged. It may add one exact same-operation completed-pair replay regression proving
+that a later parent retirement and provider unavailability do not change the original `201` result or allocate a new
+reservation/revision/GSKU/admission. Draft acceptance must not be restored to make these tests pass.
+
+D1 persists lifecycle state, version, binding/admission proof and the append-only audit intent in one atomic Mongo
+update. It must not use whole-document `ReplaceOne`. Child admission is also enforced in the lower-level
+`CreateFirstGskuDraftHandler`; the facade cannot be the only guard because direct MediatR and recovery paths exist.
+At most **32** active child-creation admissions may exist per Global Product; the limit is not tenant-configurable.
+Retirement is blocked by every non-deleted, **non-retired** Revision/GSKU child and by every active admission. Retired
+children remain historical evidence and do not permanently prevent parent retirement. There is no cascade.
+
+The existing generic `IProductIdentityActorContext` accepts a string subject and remains unchanged for existing draft
+and scope operations. D1 uses a dedicated lifecycle actor context that requires one canonical non-empty human GUID,
+rejects conflicting `sub`/`NameIdentifier`, and never treats a service identity as the maker/checker subject.
+
+**D1 implementation evidence (2026-08-29):** domain/application/persistence and security implementation is complete
+inside the exact allow-list. Lifecycle state, version, workflow binding and local audit intent are updated atomically;
+admission completion requires the durable Revision+GSKU pair. Exact completed-pair replay remains `201` after later
+parent retirement and does not call the provider or allocate a second reservation, Revision, GSKU or admission.
+Delimiter-safe audit evidence, soft-deleted-Revision/active-GSKU retirement fencing and completed-admission
+fingerprint drift are independently regression-locked. Focused lifecycle/security/GSKU regression is **59/59**;
+the complete MDM Release suite is **801/801** with zero
+skips; MDM API Release build is zero warning/zero error. The two DB-010 architecture failures remain the identical
+pre-existing Mongo test-inventory debt; neither new D1 real-Mongo test is listed. New real-Mongo lifecycle/admission
+tests use the fixed shared integration database with tenant cleanup and pass **11/11**. `git diff --check` is clean;
+no `ReplaceOne`, production data/config mutation, commit or push was performed.
+
+**D2 — API/manifest enablement (only after Step F):** exact allow-list is
+`GlobalProductsController.cs`, `ProductItemSkuMasterManifestProvider.cs`, `GlobalProductApiMongoTests.cs` and
+`ProductItemSkuMasterManifestProviderTests.cs`. D2 exposes only submit and direct retire. MDM never exposes an
+approve/reject endpoint; terminal decisions enter exclusively through the trusted reconciler. Gateway/frontend remain
+protected until their owned steps. No new collection, WorkCenter provider or Platform class is permitted.
 
 **E — Revision/GSKU, LSKU and Finished Good lifecycle:** implement in that order. First Revision/GSKU uses one durable
 pair operation with checkpoints/recovery; later GSKU and the two children use single-aggregate CAS plus workflow binding.
@@ -3439,12 +3512,17 @@ navigation, bulk lifecycle and push remain separate gates.
 
 - [x] Native `workflow` WorkCenter provider is selected; duplicate MDM remote provider/action endpoint is forbidden.
 - [x] First Revision + first GSKU is one durable pair outcome; retirement is direct MDM and child-fenced.
-- [ ] `MOD-0018-FU23` exact eight-key/shared-Workflow permission profile is approved and implemented.
-- [ ] The existing MOD-0023 child identity is rechecked against current remote registry and its trusted start/evidence
-  follow-up is approved and implemented.
-- [ ] The reviewed MOD-0033-FU02 service-token commit is integrated into the lifecycle delivery base.
+- [x] `MOD-0018-FU23` exact eight-key/shared-Workflow permission profile is approved, implemented and present in the
+  lifecycle delivery base.
+- [x] `MOD-0023-FU02 Trusted Consumer Workflow Start and Terminal Decision Evidence Foundation` is collision-checked,
+  implemented with real-Mongo/security evidence and integrated at local commit `de318743`.
+- [x] The reviewed `MOD-0033-FU02` service-token dependency is integrated into the lifecycle delivery base.
 - [ ] Exact Workflow template/candidate/position and secure-poll evidence contracts are frozen.
-- [ ] Every D-H runtime step receives its exact current-code allow-list and predecessor evidence before mutation.
+- [x] D1 current-code allow-list, actor boundary, admission bound and retirement blocker are frozen; the user's standing
+  non-push authorization grants D1 runtime code-start on 2026-08-29.
+- [x] D1 implementation, focused/full MDM tests, real-Mongo race/replay proof and Release build are complete on
+  2026-08-29; D2 remains closed pending Step F.
+- [ ] D2 and E-H each receive their exact current-code allow-list and predecessor evidence before mutation.
 
 ## 20. Follow-up Items
 

@@ -169,6 +169,63 @@ public sealed class GskuRegisterFacadeTests
         Assert.Empty(((MediatorProxy)(object)mediator).Requests);
     }
 
+    [Fact]
+    public async Task Completed_exact_replay_survives_retired_parent_and_provider_outage_without_new_reservation()
+    {
+        var parent = Parent();
+        parent.LifecycleStatus = ProductIdentityLifecycleStatus.Retired;
+        var reservation = Reservation();
+        reservation.BindingState = CodeReservationBindingState.Confirmed;
+        var commandId = "GSKU:RETIRED-REPLAY";
+        var revision = new ProductDefinitionRevision
+        {
+            Id = Guid.NewGuid(),
+            GlobalProductId = parent.Id,
+            CreationCommandId = commandId
+        };
+        var gsku = new Gsku
+        {
+            Id = Guid.NewGuid(),
+            ProductDefinitionRevisionId = revision.Id,
+            CodeReservationId = reservation.Id,
+            CreationCommandId = commandId,
+            PackQuantity = 1m,
+            PackUomCode = "C62"
+        };
+        var reservations = new ReservationRepository(reservation);
+        var resolver = new Resolver(succeed: false);
+        var mediator = DispatchProxy.Create<IMediator, MediatorProxy>();
+        var proxy = (MediatorProxy)(object)mediator;
+        proxy.Response = InternalSuccess(parent.Id, reservation);
+        var tenantContext = new TenantContext();
+        tenantContext.SetTenant(Guid.NewGuid());
+        var access = ProductLegalEntityScopeTestFixture.Preparation(tenantContext);
+        var handler = new CreateFirstGskuDraftFacadeHandler(
+            new ProductRepository(parent),
+            reservations,
+            new RevisionRepository(revision),
+            new GskuRepository(gsku),
+            resolver,
+            new Actor(),
+            mediator,
+            access.Rollouts,
+            access.Policies,
+            access.Candidates,
+            tenantContext);
+
+        var response = await handler.Handle(
+            Command(parent.Id, 1m, "C62", "retired-replay"),
+            CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(201, response.StatusCode);
+        Assert.Equal(0, resolver.EnumerationCalls);
+        Assert.Equal(0, reservations.ReserveCalls);
+        var replay = Assert.IsType<CreateFirstGskuDraftCommand>(Assert.Single(proxy.Requests));
+        Assert.Equal(reservation.Id, replay.Request.GskuReservationId);
+        Assert.Equal(commandId, replay.Request.CreationCommandId);
+    }
+
     private static CreateFirstGskuDraftFacadeHandler Handler(
         GlobalProduct parent,
         ReservationRepository reservations,
@@ -208,7 +265,7 @@ public sealed class GskuRegisterFacadeTests
     private static GlobalProduct Parent() => new()
     {
         Id = Guid.NewGuid(), CanonicalCode = "GP-1", GlobalProductName = "Product",
-        LifecycleStatus = ProductIdentityLifecycleStatus.Draft
+        LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved
     };
 
     private static CodeReservation Reservation() => new()
@@ -219,14 +276,21 @@ public sealed class GskuRegisterFacadeTests
 
     private sealed class Actor : IProductIdentityActorContext { public string ActorId => "actor"; }
 
-    private sealed class Resolver : IVerifiedGskuReferenceResolver
+    private sealed class Resolver(bool succeed = true) : IVerifiedGskuReferenceResolver
     {
+        public int EnumerationCalls { get; private set; }
+
         public Task<VerifiedGskuReferenceResolveResult> ResolveLatestAsync(string pack, string uom, CancellationToken ct = default) =>
             Task.FromResult(VerifiedGskuReferenceResolveResult.Fail(503, "NOT_USED"));
-        public Task<VerifiedGskuUomEnumerationResult> EnumerateUomsAsync(CancellationToken ct = default) =>
-            Task.FromResult(VerifiedGskuUomEnumerationResult.Success([
-                new("C62", "One", 10, 0), new("GRM", "Gram", 20, 3), new("KGM", "Kilogram", 30, 3),
-                new("MLT", "Millilitre", 40, 3), new("LTR", "Litre", 50, 3)]));
+        public Task<VerifiedGskuUomEnumerationResult> EnumerateUomsAsync(CancellationToken ct = default)
+        {
+            EnumerationCalls++;
+            return Task.FromResult(succeed
+                ? VerifiedGskuUomEnumerationResult.Success([
+                    new("C62", "One", 10, 0), new("GRM", "Gram", 20, 3), new("KGM", "Kilogram", 30, 3),
+                    new("MLT", "Millilitre", 40, 3), new("LTR", "Litre", 50, 3)])
+                : VerifiedGskuUomEnumerationResult.Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE"));
+        }
     }
 
     private sealed class ProductRepository(params GlobalProduct[] parents) : IGlobalProductRepository

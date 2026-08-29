@@ -16,5 +16,9 @@ public enum ProductAuditOperation
     ProductLegalEntityScopePolicyReplaced = 12,
     ProductLegalEntityScopePolicyEnded = 13,
     ProductLegalEntityScopeEnforcementActivated = 14,
-    ProductLegalEntityScopeEnforcementSuspended = 15
+    ProductLegalEntityScopeEnforcementSuspended = 15,
+    GlobalProductIdentitySubmitted = 16,
+    GlobalProductIdentityApproved = 17,
+    GlobalProductIdentityRejected = 18,
+    GlobalProductIdentityRetired = 19
 }

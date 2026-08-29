@@ -86,11 +86,6 @@ public sealed class CreateFirstGskuDraftHandler
             return existingScopeFailure;
         }
 
-        if (existingRevision is not null && existingGsku is not null)
-        {
-            return await BuildReplayAsync(existingRevision, existingGsku, input, commandId, cancellationToken);
-        }
-
         if (existingRevision is not null && existingRevision.GlobalProductId != input.GlobalProductId
             || existingGsku is not null && (existingGsku.CodeReservationId != input.GskuReservationId
                                              || existingGsku.CreationCommandId != commandId))
@@ -98,15 +93,44 @@ public sealed class CreateFirstGskuDraftHandler
             return Fail("CREATION_COMMAND_PAIR_CONFLICT", 409);
         }
 
-        if (parent.LifecycleStatus == ProductIdentityLifecycleStatus.Retired)
+        var admissionFingerprint = ComputeAdmissionFingerprint(input, commandId);
+        if (existingRevision is not null && existingGsku is not null)
         {
-            return Fail("PARENT_RETIRED_NOT_REFERENCEABLE", 409);
+            var replay = await BuildReplayAsync(existingRevision, existingGsku, input, commandId, cancellationToken);
+            if (!replay.IsSuccessful)
+            {
+                return replay;
+            }
+
+            var replayCompletion = await _globalProducts.CompleteChildCreationAdmissionAsync(
+                parent.Id, commandId, admissionFingerprint, cancellationToken);
+            return replayCompletion.Succeeded
+                ? replay
+                : Fail(replayCompletion.ErrorCode ?? "FIRST_GSKU_DRAFT_RECONCILIATION_REQUIRED",
+                    replayCompletion.ErrorCode == "PRODUCT_CHILD_ADMISSION_CONFLICT" ? 409 : 202);
+        }
+
+        if (parent.LifecycleStatus != ProductIdentityLifecycleStatus.IdentityApproved)
+        {
+            return Fail("PARENT_NOT_IDENTITY_APPROVED", 409);
         }
 
         var selections = await ResolveSelectionsAsync(input.PackUomCode, cancellationToken);
         if (!selections.Succeeded)
         {
             return Fail(selections.ErrorCode!, selections.StatusCode);
+        }
+
+        var admission = await _globalProducts.AcquireChildCreationAdmissionAsync(
+            parent.Id,
+            commandId,
+            admissionFingerprint,
+            DateTimeOffset.UtcNow,
+            cancellationToken);
+        if (!admission.Succeeded)
+        {
+            return Fail(admission.ErrorCode ?? "PRODUCT_CHILD_ADMISSION_CONFLICT",
+                AdmissionStatus(admission.ErrorCode));
         }
 
         FirstGskuPairAllocationResult allocation;
@@ -209,6 +233,18 @@ public sealed class CreateFirstGskuDraftHandler
         if (actualReservation.BindingState != CodeReservationBindingState.Confirmed)
         {
             return Fail("FIRST_GSKU_DRAFT_RECONCILIATION_REQUIRED", 202);
+        }
+
+        var admissionCompletion = await _globalProducts.CompleteChildCreationAdmissionAsync(
+            parent.Id,
+            commandId,
+            admissionFingerprint,
+            cancellationToken);
+        if (!admissionCompletion.Succeeded)
+        {
+            return Fail(
+                admissionCompletion.ErrorCode ?? "FIRST_GSKU_DRAFT_RECONCILIATION_REQUIRED",
+                admissionCompletion.ErrorCode == "PRODUCT_CHILD_ADMISSION_CONFLICT" ? 409 : 202);
         }
 
         return Response<ProductItemSkuMasterModels.FirstGskuDraftDto>.Success(
@@ -497,6 +533,22 @@ public sealed class CreateFirstGskuDraftHandler
             value.ResolutionMode, value.ResolvedAtUtc);
 
     private static string NormalizeCommandId(string value) => value.Trim().ToUpperInvariant();
+    internal static string ComputeAdmissionFingerprint(
+        ProductItemSkuMasterModels.CreateFirstGskuDraftRequest input,
+        string normalizedCommandId) => ProductChildCreationAdmission.ComputeRequestFingerprint(
+            input.GlobalProductId,
+            normalizedCommandId,
+            input.GskuReservationId,
+            input.PackQuantity,
+            input.PackUomCode);
+
+    private static int AdmissionStatus(string? code) => code switch
+    {
+        "PRODUCT_IDENTITY_NOT_FOUND" => 404,
+        "PRODUCT_CHILD_ADMISSION_CONTRACT_INVALID" => 400,
+        _ => 409
+    };
+
     private static Response<ProductItemSkuMasterModels.FirstGskuDraftDto> Fail(string code, int status)
         => Response<ProductItemSkuMasterModels.FirstGskuDraftDto>.Fail(code, status);
 
