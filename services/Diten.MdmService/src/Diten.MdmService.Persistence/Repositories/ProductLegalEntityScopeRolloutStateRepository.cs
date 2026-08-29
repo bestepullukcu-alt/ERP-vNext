@@ -212,10 +212,16 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
 
         requested.Generation = checked(current.WriterLeaseGeneration + 1);
         requested.EnsureValid();
+        var generationFilter = current.WriterLeaseGeneration == 0
+            ? Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.WriterLeaseGeneration, 0)
+              | Builders<ProductLegalEntityScopeRolloutState>.Filter.Exists(
+                  nameof(ProductLegalEntityScopeRolloutState.WriterLeaseGeneration), false)
+            : Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(
+                item => item.WriterLeaseGeneration, current.WriterLeaseGeneration);
         var filter = ActiveTenantFilter
                      & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Id, current.Id)
                      & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Version, current.Version)
-                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.WriterLeaseGeneration, current.WriterLeaseGeneration)
+                     & generationFilter
                      & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.ActiveWriterLease, null)
                      & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.ActiveFence, null);
         var update = Builders<ProductLegalEntityScopeRolloutState>.Update
