@@ -1,5 +1,6 @@
 using System.Text;
 using Diten.PpmService.Application.Features.InvestmentCases.GateI.FundingScenario;
+using Diten.PpmService.Application.GateI;
 using Diten.PpmService.Domain.GateI.FundingScenario;
 using Xunit;
 
@@ -72,9 +73,9 @@ public sealed class FundingScenarioValidationContractTests
     public void Request_binding_is_canonical_dimension_sensitive_and_fixed_time_checked()
     {
         var profile=FundingScenarioAtomicLane.Budgeting;var valid=Security(profile,BudgetBytes);
-        foreach(var context in new[]{valid with{TenantId=Guid.Empty},valid with{EffectiveActorId=Guid.Empty},valid with{Audience="wrong"},valid with{ClientId="wrong"},valid with{ProtocolScope="wrong"},valid with{RequestHash=new string('A',43)},valid with{Method="post"},valid with{Path="/x?query=y"},valid with{DelegatedProofValidated=false}})Assert.Equal(401,FundingScenarioContractEvaluator.EvaluateBudgetBytes(BudgetBytes,FundingScenarioValidationMode.HistoricalResolve,context,new(ProducerReferenceState.Allowed)).HttpStatus);
-        var baseline=FundingScenarioRequestBinding.Compute("POST","/test-only/gate-i-b",Tenant,profile.OperationId,BudgetBytes);
-        Assert.NotEqual(baseline,FundingScenarioRequestBinding.Compute("PUT","/test-only/gate-i-b",Tenant,profile.OperationId,BudgetBytes));Assert.NotEqual(baseline,FundingScenarioRequestBinding.Compute("POST","/other",Tenant,profile.OperationId,BudgetBytes));Assert.NotEqual(baseline,FundingScenarioRequestBinding.Compute("POST","/test-only/gate-i-b",Guid.NewGuid(),profile.OperationId,BudgetBytes));Assert.NotEqual(baseline,FundingScenarioRequestBinding.Compute("POST","/test-only/gate-i-b",Tenant,"budgeting.other",BudgetBytes));Assert.NotEqual(baseline,FundingScenarioRequestBinding.Compute("POST","/test-only/gate-i-b",Tenant,profile.OperationId,Encoding.UTF8.GetBytes("{}")));
+        foreach(var context in new[]{valid with{TenantId=Guid.Empty},valid with{EffectiveActorId=Guid.Empty},valid with{Audience="wrong"},valid with{ClientId="wrong"},valid with{ProtocolScope="wrong"},valid with{RequestHash=new string('a',64)},valid with{Method="post"},valid with{Path="/x?query=y"},valid with{DelegatedProofValidated=false}})Assert.Equal(401,FundingScenarioContractEvaluator.EvaluateBudgetBytes(BudgetBytes,FundingScenarioValidationMode.HistoricalResolve,context,new(ProducerReferenceState.Allowed)).HttpStatus);
+        var receiver=S2SOutboundReceiverProfiles.Budgeting;var baseline=FundingScenarioRequestBinding.Compute(receiver.Method,receiver.Path,Tenant,profile.OperationId,BudgetBytes);
+        Assert.NotEqual(baseline,FundingScenarioRequestBinding.Compute("PUT",receiver.Path,Tenant,profile.OperationId,BudgetBytes));Assert.NotEqual(baseline,FundingScenarioRequestBinding.Compute(receiver.Method,"/other",Tenant,profile.OperationId,BudgetBytes));Assert.NotEqual(baseline,FundingScenarioRequestBinding.Compute(receiver.Method,receiver.Path,Guid.NewGuid(),profile.OperationId,BudgetBytes));Assert.NotEqual(baseline,FundingScenarioRequestBinding.Compute(receiver.Method,receiver.Path,Tenant,profile.OperationId,Encoding.UTF8.GetBytes("{}")));
     }
 
     [Fact]
@@ -106,7 +107,7 @@ public sealed class FundingScenarioValidationContractTests
     private static S2SFundingScenarioContextV1 Security(FundingScenarioProducerProfile p,ReadOnlySpan<byte> body)
     {
         var fence=new S2SVersionFenceV1(1,1,1,"entitlement-v1");var observed=DateTimeOffset.Parse("2026-08-26T09:00:00Z");
-        return new(S2SAuthenticationState.AuthenticatedS2SFamilyValidated,S2SAuthorizationState.Allowed,S2SAuthorizationState.Allowed,S2SFreshnessState.Current,Tenant,Actor,Actor,true,p.Audience,p.ClientId,p.OwnerModule,p.OperationId,p.Permission,p.ProtocolScope,"POST","/test-only/gate-i-b",FundingScenarioRequestBinding.Compute("POST","/test-only/gate-i-b",Tenant,p.OperationId,body),fence,fence,observed,observed.AddSeconds(15),observed.AddSeconds(1));
+        var receiver=S2SOutboundReceiverProfiles.ForOwner(p.OwnerModule);return new(S2SAuthenticationState.AuthenticatedS2SFamilyValidated,S2SAuthorizationState.Allowed,S2SAuthorizationState.Allowed,S2SFreshnessState.Current,Tenant,Actor,Actor,true,p.Audience,p.ClientId,p.OwnerModule,p.OperationId,p.Permission,p.ProtocolScope,receiver.Method,receiver.Path,FundingScenarioRequestBinding.Compute(receiver.Method,receiver.Path,Tenant,p.OperationId,body),fence,fence,observed,observed.AddSeconds(15),observed.AddSeconds(1));
     }
 
     private sealed class CountingBudgetPort:IBudgetVersionReferenceValidationPort

@@ -1,10 +1,42 @@
-using System.Buffers.Binary;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Diten.PpmService.Application.GateI;
+using Diten.PpmService.Domain.Entities;
 using Diten.PpmService.Domain.GateI.DecisionTrace;
 
 namespace Diten.PpmService.Application.Features.InvestmentCases.GateI.DecisionTrace;
+
+public interface IGateIDecisionTraceLifecyclePolicy
+{
+    bool RequiresGoverningDecision { get; }
+}
+
+public sealed class DisabledGateIDecisionTraceLifecyclePolicy : IGateIDecisionTraceLifecyclePolicy
+{
+    public static DisabledGateIDecisionTraceLifecyclePolicy Instance { get; } = new();
+    private DisabledGateIDecisionTraceLifecyclePolicy() { }
+    public bool RequiresGoverningDecision => false;
+}
+
+public static class GateIDecisionTraceLifecycleGuard
+{
+    public static void Validate(
+        InvestmentCase investmentCase,
+        InvestmentCaseLifecycleState target,
+        IGateIDecisionTraceLifecyclePolicy policy)
+    {
+        ArgumentNullException.ThrowIfNull(investmentCase);
+        ArgumentNullException.ThrowIfNull(policy);
+        if (policy.RequiresGoverningDecision
+            && investmentCase.LifecycleState == InvestmentCaseLifecycleState.UnderAnalysis
+            && target == InvestmentCaseLifecycleState.Closed
+            && investmentCase.GoverningDecisionReference is null)
+        {
+            throw new InvalidOperationException(
+                "A governing decision reference is required before closing the investment case while Gate I Decision Trace is enabled.");
+        }
+    }
+}
 
 public static class DecisionTraceProducerProfile
 {
@@ -36,43 +68,26 @@ public sealed record DecisionTraceRequestBindingInput(string Method, string Path
 
 public static class DecisionTraceRequestBinding
 {
-    private static readonly byte[] DomainSeparator = Encoding.UTF8.GetBytes("DITEN-S2S-REQUEST-V1");
-
     public static string Compute(DecisionTraceRequestBindingInput input, Guid tenantId, DecisionTraceValidationRequest request)
     {
         ArgumentNullException.ThrowIfNull(input); ArgumentNullException.ThrowIfNull(request); ArgumentNullException.ThrowIfNull(request.Reference);
-        if (string.IsNullOrEmpty(input.Method) || !string.Equals(input.Method, input.Method.ToUpperInvariant(), StringComparison.Ordinal)) throw new ArgumentException("HTTP method must be exact uppercase.", nameof(input));
-        if (string.IsNullOrEmpty(input.Path) || !input.Path.StartsWith("/", StringComparison.Ordinal) || input.Path.Contains("?", StringComparison.Ordinal)) throw new ArgumentException("Request path must be exact and query-free.", nameof(input));
-        if (tenantId == Guid.Empty) throw new ArgumentException("Tenant identity is required.", nameof(tenantId));
-        using var stream = new MemoryStream();
-        stream.Write(DomainSeparator);
-        WriteField(stream, Encoding.UTF8.GetBytes(input.Method));
-        WriteField(stream, Encoding.UTF8.GetBytes(input.Path));
-        WriteField(stream, Encoding.UTF8.GetBytes(tenantId.ToString("D")));
-        WriteField(stream, Encoding.UTF8.GetBytes(DecisionTraceProducerProfile.Operation));
-        WriteField(stream, SHA256.HashData(CanonicalBody(request)));
-        return Base64Url(SHA256.HashData(stream.ToArray()));
+        return S2SOutboundCanonicalRequestBinding.Compute(
+            input.Method,
+            input.Path,
+            CanonicalBody(request),
+            tenantId,
+            DecisionTraceProducerProfile.Operation,
+            [DecisionTraceProducerProfile.Permission]);
     }
 
-    public static bool FixedTimeMatches(string? supplied, string expected)
-    {
-        if (!TryDecode(supplied, out var actual) || !TryDecode(expected, out var expectedBytes) || actual.Length != expectedBytes.Length) return false;
-        return CryptographicOperations.FixedTimeEquals(actual, expectedBytes);
-    }
+    public static bool FixedTimeMatches(string? supplied, string expected) =>
+        S2SOutboundCanonicalRequestBinding.FixedTimeMatches(supplied, expected);
 
     private static byte[] CanonicalBody(DecisionTraceValidationRequest request)
     {
         using var stream = new MemoryStream(); using var writer = new Utf8JsonWriter(stream);
         writer.WriteStartObject(); writer.WriteString("Mode", request.Mode.ToString()); writer.WritePropertyName("Reference"); writer.WriteRawValue(DecisionTraceReferenceCodec.Serialize(request.Reference)); writer.WriteEndObject(); writer.Flush();
         return stream.ToArray();
-    }
-    private static void WriteField(Stream stream, ReadOnlySpan<byte> value) { Span<byte> length = stackalloc byte[4]; BinaryPrimitives.WriteInt32BigEndian(length, value.Length); stream.Write(length); stream.Write(value); }
-    private static string Base64Url(ReadOnlySpan<byte> value) => Convert.ToBase64String(value).TrimEnd('=').Replace('+', '-').Replace('/', '_');
-    private static bool TryDecode(string? value, out byte[] bytes)
-    {
-        bytes = [];
-        if (value is null || value.Length != 43 || value.Any(character => !(char.IsAsciiLetterOrDigit(character) || character is '-' or '_'))) return false;
-        try { bytes = Convert.FromBase64String(value.Replace('-', '+').Replace('_', '/') + "="); return bytes.Length == 32; } catch (FormatException) { return false; }
     }
 }
 
@@ -100,6 +115,9 @@ public sealed class DecisionTraceValidationService(IDecisionReferenceValidationP
     {
         ArgumentNullException.ThrowIfNull(context);
         if (!Authenticated(context)) return Failure(401, DecisionTraceFailureCodes.AuthenticationFailure);
+        if (!Exact(bindingInput.Method, S2SOutboundReceiverProfiles.DecisionRegistry.Method)
+            || !Exact(bindingInput.Path, S2SOutboundReceiverProfiles.DecisionRegistry.Path))
+            return Failure(401, DecisionTraceFailureCodes.AuthenticationFailure);
         if (request?.Reference is null || request.Mode is not (DecisionTraceValidationMode.HistoricalResolve or DecisionTraceValidationMode.NewReferenceEligibility) || !IsKnownWrapper(request.Reference)) return Failure(400, DecisionTraceFailureCodes.MalformedRequest);
         string expectedHash;
         try { expectedHash = DecisionTraceRequestBinding.Compute(bindingInput, context.TenantId, request); } catch (ArgumentException) { return Failure(400, DecisionTraceFailureCodes.MalformedRequest); }

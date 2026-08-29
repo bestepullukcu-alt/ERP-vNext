@@ -6,10 +6,16 @@ using Diten.PpmService.Infrastructure.Audit;
 using Diten.PpmService.Infrastructure.Authorization;
 using Diten.PpmService.Infrastructure.Correlation;
 using Diten.PpmService.Infrastructure.Entitlements;
+using Diten.PpmService.Infrastructure.GateI;
+using Diten.PpmService.Application.Features.BenefitCommitments.GateI.BenefitRealization;
+using Diten.PpmService.Application.Features.InvestmentCases.GateI.DecisionTrace;
+using Diten.PpmService.Application.Features.InvestmentCases.GateI.FundingScenario;
 using Diten.Platform.Common.Authorization;
+using Diten.PpmService.Application.GateI;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Diten.PpmService.Infrastructure;
@@ -20,6 +26,11 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration? configuration = null)
     {
+        if (configuration is not null)
+        {
+            services.TryAddSingleton<IConfiguration>(configuration);
+        }
+
         services.AddHttpContextAccessor();
         services.AddScoped<JwtRequestContext>();
         services.AddScoped<ITenantContext>(provider => provider.GetRequiredService<JwtRequestContext>());
@@ -28,6 +39,22 @@ public static class DependencyInjection
         services.AddSingleton<IPermissionClaimEvaluator, SignedJwtPermissionClaimEvaluator>();
         services.AddScoped<IEffectivePermissionEvaluator, SharedPermissionClaimEvaluatorAdapter>();
         services.AddHttpClient<IPpmEntitlementDecisionClient, PpmEntitlementDecisionClient>();
+        services.AddSingleton<GateICompositionGate>();
+        services.AddSingleton<IGateIDecisionTraceLifecyclePolicy>(provider =>
+            provider.GetRequiredService<GateICompositionGate>());
+        services.AddScoped<GateICompositionPreflight>();
+        services.AddSingleton<IS2SOutboundProofProvider, UnavailableS2SOutboundProofProvider>();
+        services.TryAddScoped<IS2STrustedRequestContextAccessor, UnavailableS2STrustedRequestContextAccessor>();
+        services.AddScoped<IGateITrustedMutationContextAccessor, PlatformCommonGateITrustedMutationContextAccessor>();
+        services.AddHttpClient<GateIOwnerReferenceHttpClients>();
+        services.AddScoped<IDecisionReferenceValidationPort>(provider => provider.GetRequiredService<GateIOwnerReferenceHttpClients>());
+        services.AddScoped<IBudgetVersionReferenceValidationPort>(provider => provider.GetRequiredService<GateIOwnerReferenceHttpClients>());
+        services.AddScoped<IScenarioPlanningReferenceValidationPort>(provider => provider.GetRequiredService<GateIOwnerReferenceHttpClients>());
+        services.AddScoped<IOutcomeReferenceAuthorityPort>(provider => provider.GetRequiredService<GateIOwnerReferenceHttpClients>());
+        services.AddScoped<IGateIRelationshipAuthority>(provider => provider.GetRequiredService<GateIOwnerReferenceHttpClients>());
+        services.AddScoped<DecisionTraceValidationService>();
+        services.AddScoped<FundingScenarioContractValidator>();
+        services.AddScoped<BenefitCommitmentOutcomeReferenceValidator>();
 
         var externalContextSection = configuration?.GetSection(ExternalContextProviderOptions.SectionName);
         services.AddSingleton<IValidateOptions<ExternalContextProviderOptions>, ExternalContextProviderOptionsValidator>();

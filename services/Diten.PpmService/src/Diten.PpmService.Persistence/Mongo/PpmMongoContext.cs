@@ -43,6 +43,9 @@ public sealed class PpmMongoContext
     public IMongoCollection<PpmEventOutboxDocument> EventOutbox =>
         Database.GetCollection<PpmEventOutboxDocument>(PpmCollectionNames.EventOutbox);
 
+    public IMongoCollection<GateIMutationReceiptDocument> GateIMutationReceipts =>
+        Database.GetCollection<GateIMutationReceiptDocument>(PpmCollectionNames.GateIMutationReceipts);
+
     public IDisposable EnterSession(IClientSessionHandle session)
     {
         if (_ambientSession.Value is not null)
@@ -78,6 +81,22 @@ public static class PpmCollectionNames
     public const string BenefitCommitments = "ppm_benefit_commitments";
     public const string AuditIntents = "ppm_audit_intents";
     public const string EventOutbox = "ppm_event_outbox";
+    public const string GateIMutationReceipts = "ppm_gate_i_mutation_receipts";
+}
+
+public sealed class GateIMutationReceiptDocument
+{
+    public Guid Id { get; init; }
+    public Guid TenantId { get; init; }
+    public string OperationId { get; init; } = string.Empty;
+    public string IdempotencyKey { get; init; } = string.Empty;
+    public string RequestHash { get; init; } = string.Empty;
+    public string ProvenanceHash { get; init; } = string.Empty;
+    public Guid AggregateId { get; init; }
+    public int AggregateVersion { get; init; }
+    public int StatusCode { get; init; }
+    public string StableCode { get; init; } = string.Empty;
+    public DateTime CreatedAtUtc { get; init; }
 }
 
 public sealed class AuditIntentDocument

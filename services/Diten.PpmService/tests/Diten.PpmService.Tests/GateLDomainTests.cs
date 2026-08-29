@@ -1,6 +1,8 @@
 using Diten.PpmService.Domain.Entities;
 using Xunit;
 using Diten.PpmService.Application.Common;
+using Diten.PpmService.Application.Features.InvestmentCases.GateI.DecisionTrace;
+using Diten.PpmService.Domain.GateI.DecisionTrace;
 using System.Reflection;
 
 namespace Diten.PpmService.Tests;
@@ -31,6 +33,37 @@ public sealed class GateLDomainTests
     {
         Assert.Throws<ArgumentException>(() => new InvestmentCase(_tenant, _actor, "IC", "Case", null,
             Guid.NewGuid(), new DateOnly(2026, 2, 1), new DateOnly(2026, 1, 31)));
+    }
+
+    [Fact]
+    public void Gate_i_enabled_requires_governing_decision_while_default_off_preserves_gate_l()
+    {
+        var entity = new InvestmentCase(_tenant, _actor, "IC-2", "Case", null, Guid.NewGuid(), null, null);
+        entity.Transition(_actor, InvestmentCaseLifecycleState.UnderAnalysis);
+
+        GateIDecisionTraceLifecycleGuard.Validate(
+            entity,
+            InvestmentCaseLifecycleState.Closed,
+            DisabledGateIDecisionTraceLifecyclePolicy.Instance);
+        Assert.Throws<InvalidOperationException>(() => GateIDecisionTraceLifecycleGuard.Validate(
+            entity,
+            InvestmentCaseLifecycleState.Closed,
+            new EnabledGateIPolicy()));
+
+        entity.SetGoverningDecision(
+            _actor,
+            new GoverningDecisionReferenceV1(
+                new InvestmentCaseContextV1(entity.Id),
+                new DecisionRevisionReferenceV1(Guid.NewGuid(), Guid.NewGuid(), 1)));
+        GateIDecisionTraceLifecycleGuard.Validate(
+            entity,
+            InvestmentCaseLifecycleState.Closed,
+            new EnabledGateIPolicy());
+    }
+
+    private sealed class EnabledGateIPolicy : IGateIDecisionTraceLifecyclePolicy
+    {
+        public bool RequiresGoverningDecision => true;
     }
 
     [Fact]

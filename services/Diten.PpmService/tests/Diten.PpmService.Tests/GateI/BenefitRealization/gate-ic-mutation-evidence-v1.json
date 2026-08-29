@@ -1,12 +1,13 @@
 {
   "schemaVersion": 1,
   "lane": "MOD-0117-GATE-I-C",
+  "sourceCheckpoint": "2f2b86b44781fdb25af7efce4d60922b70f13a31",
   "source": "services/Diten.PpmService/src/Diten.PpmService.Application/Features/BenefitCommitments/GateI/BenefitRealization/OutcomeReferenceValidation.cs",
-  "restoredSha256": "bf4ed7f6bab9a1b5e6af916238480fc9adc34ee4489c33d0595adb93cdc2d5fd",
+  "restoredSha256": "63c971044d822de12d58546d575d641eab88501d38ca991e0a4ba32738ebf061",
   "securityPolicyDispositions": [
     {
       "id": "IC-G01",
-      "mutant": "accept-unauthenticated-or-untrusted-fu16-context",
+      "mutant": "accept-unauthenticated-or-untrusted-s2s-context",
       "disposition": "SECURITY-POLICY-FORBIDDEN",
       "rationale": "Would temporarily authorize an untrusted identity in production source.",
       "compensatingTest": "Diten.PpmService.Tests.GateI.BenefitRealization.OutcomeReferenceContractTests.Trusted_context_or_request_binding_failure_is_401_without_disclosure"

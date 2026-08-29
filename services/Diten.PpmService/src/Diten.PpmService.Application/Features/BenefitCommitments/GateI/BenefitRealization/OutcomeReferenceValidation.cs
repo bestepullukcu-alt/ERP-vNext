@@ -1,6 +1,6 @@
-using System.Buffers.Binary;
 using System.Security.Cryptography;
 using System.Text;
+using Diten.PpmService.Application.GateI;
 using Diten.PpmService.Domain.GateI.BenefitRealization;
 
 namespace Diten.PpmService.Application.Features.BenefitCommitments.GateI.BenefitRealization;
@@ -86,6 +86,8 @@ public sealed class BenefitCommitmentOutcomeReferenceValidator(IOutcomeReference
             !string.Equals(context.Audience, Audience, StringComparison.Ordinal) ||
             !string.Equals(context.ClientId, ClientId, StringComparison.Ordinal) ||
             !string.Equals(context.Scope, Scope, StringComparison.Ordinal) ||
+            !string.Equals(context.Method, S2SOutboundReceiverProfiles.OutcomeTracking.Method, StringComparison.Ordinal) ||
+            !string.Equals(context.Path, S2SOutboundReceiverProfiles.OutcomeTracking.Path, StringComparison.Ordinal) ||
             !GateICanonicalRequestBinding.IsWellFormed(context.Method, context.Path, context.RequestHash))
         {
             return OutcomeReferenceValidationResult.From(401, "gate_i_outcome_context_invalid");
@@ -163,36 +165,15 @@ public sealed class BenefitCommitmentOutcomeReferenceValidator(IOutcomeReference
 
 public static class GateICanonicalRequestBinding
 {
-    private static readonly byte[] DomainSeparator = Encoding.UTF8.GetBytes("DITEN-S2S-REQUEST-V1");
-
     public static bool IsWellFormed(string method, string path, string hash) =>
         !string.IsNullOrEmpty(method) && string.Equals(method, method.ToUpperInvariant(), StringComparison.Ordinal) &&
         !string.IsNullOrEmpty(path) && path.StartsWith("/", StringComparison.Ordinal) && !path.Contains('?', StringComparison.Ordinal) &&
-        !string.IsNullOrEmpty(hash) && hash.Length == 43 &&
-        hash.All(character => char.IsAsciiLetterOrDigit(character) || character is '-' or '_');
+        S2SOutboundCanonicalRequestBinding.IsLowerHex64(hash);
 
     public static string Compute(string method, string path, Guid tenantId, string operation, ReadOnlySpan<byte> body)
     {
-        if (!IsWellFormed(method, path, new string('A', 43)) || tenantId == Guid.Empty ||
-            string.IsNullOrEmpty(operation) || !string.Equals(operation, operation.ToLowerInvariant(), StringComparison.Ordinal))
-            throw new ArgumentException("Invalid canonical request binding input.");
-
-        using var stream = new MemoryStream();
-        stream.Write(DomainSeparator);
-        WriteField(stream, Encoding.UTF8.GetBytes(method));
-        WriteField(stream, Encoding.UTF8.GetBytes(path));
-        WriteField(stream, Encoding.UTF8.GetBytes(tenantId.ToString("D")));
-        WriteField(stream, Encoding.UTF8.GetBytes(operation));
-        WriteField(stream, SHA256.HashData(body));
-        return Convert.ToBase64String(SHA256.HashData(stream.ToArray()))
-            .TrimEnd('=').Replace('+', '-').Replace('/', '_');
-    }
-
-    private static void WriteField(Stream stream, ReadOnlySpan<byte> value)
-    {
-        Span<byte> length = stackalloc byte[4];
-        BinaryPrimitives.WriteInt32BigEndian(length, value.Length);
-        stream.Write(length);
-        stream.Write(value);
+        return S2SOutboundCanonicalRequestBinding.Compute(
+            method, path, body, tenantId, operation,
+            [BenefitCommitmentOutcomeReferenceValidator.Permission]);
     }
 }

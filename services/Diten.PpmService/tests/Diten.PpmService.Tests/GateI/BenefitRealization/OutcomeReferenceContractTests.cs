@@ -65,7 +65,7 @@ public sealed class OutcomeReferenceContractTests
     }
 
     [Fact]
-    public async Task Exact_fu16_context_and_same_reference_are_accepted_without_receipt_or_mutation()
+    public async Task Exact_s2s_context_and_same_reference_are_accepted_without_receipt_or_mutation()
     {
         var bytes = BenefitCommitmentOutcomeReferenceV1Codec.Serialize(ValidWrapper());
         var port = new StubPort(new(OutcomeReferenceAuthorityDisposition.Accepted, ValidWrapper().OutcomeReference));
@@ -178,7 +178,7 @@ public sealed class OutcomeReferenceContractTests
             "audience" => context with { Audience = "diten-fpa-service" },
             "client" => context with { ClientId = "diten.fpa" },
             "scope" => context with { Scope = "diten.s2s.invoke" },
-            _ => context with { RequestHash = new string('A', 43) }
+            _ => context with { RequestHash = new string('a', 64) }
         };
         var port = new StubPort(new(OutcomeReferenceAuthorityDisposition.Accepted));
         var result = await new BenefitCommitmentOutcomeReferenceValidator(port).ValidateAsync(
@@ -261,10 +261,10 @@ public sealed class OutcomeReferenceContractTests
         OwnerModule: BenefitCommitmentOutcomeReferenceValidator.OwnerModule,
         Scope: BenefitCommitmentOutcomeReferenceValidator.Scope,
         Method: "POST",
-        Path: "/test-only/gate-i-c/outcome-reference",
+        Path: "/internal/v1/decision-intelligence/outcome-tracking/outcome-references/validate",
         Operation: BenefitCommitmentOutcomeReferenceValidator.Operation,
         Permission: BenefitCommitmentOutcomeReferenceValidator.Permission,
-        RequestHash: GateICanonicalRequestBinding.Compute("POST", "/test-only/gate-i-c/outcome-reference", TenantId,
+        RequestHash: GateICanonicalRequestBinding.Compute("POST", "/internal/v1/decision-intelligence/outcome-tracking/outcome-references/validate", TenantId,
             BenefitCommitmentOutcomeReferenceValidator.Operation, bytes),
         EntitlementGranted: true);
 

@@ -1,8 +1,10 @@
 using Diten.BuildingBlocks.Eventing;
 using Diten.PpmService.Domain.Repositories;
 using Diten.PpmService.Application.Features.ExternalContextReferences;
+using Diten.PpmService.Application.Features.InvestmentCases.GateI.DecisionTrace;
 using Diten.PpmService.Persistence.Mongo;
 using Diten.PpmService.Persistence.Repositories;
+using Diten.PpmService.Persistence.GateI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -54,6 +56,11 @@ public static class DependencyInjection
         services.AddScoped<IEventOutboxStore>(provider =>
             provider.GetRequiredService<PpmEventOutboxStore>());
         services.AddScoped<IPpmUnitOfWork, PpmUnitOfWork>();
+        services.AddScoped<IGateICompositionPersistenceBoundary, GateICompositionPersistenceBoundary>();
+        services.AddScoped<IGateIRelationshipMutationPersistence, GateIRelationshipMutationPersistence>();
+        services.AddSingleton<IGateIRelationshipMutationFaultProbe, NullGateIRelationshipMutationFaultProbe>();
+        services.AddSingleton<IGateIRelationshipTransportMetadataProvider, UnavailableGateIRelationshipTransportMetadataProvider>();
+        services.AddHostedService<GateIMutationReceiptIndexInitializer>();
         services.AddHostedService<PpmMongoIndexInitializer>();
         services.AddHealthChecks()
             .AddCheck<PpmMongoTransactionHealthCheck>("ppm-mongo-transactions");

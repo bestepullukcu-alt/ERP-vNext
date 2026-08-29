@@ -1,3 +1,5 @@
+using Diten.PpmService.Domain.GateI.BenefitRealization;
+
 namespace Diten.PpmService.Domain.Entities;
 
 public sealed class BenefitCommitment : EntityBase
@@ -9,6 +11,9 @@ public sealed class BenefitCommitment : EntityBase
     public string TargetDescription { get; private set; } = "";
     public DateOnly? TargetDate { get; private set; }
     public BenefitCommitmentLifecycleState LifecycleState { get; private set; } = BenefitCommitmentLifecycleState.Draft;
+    public IReadOnlyList<BenefitCommitmentOutcomeReferenceV1> OutcomeReferences => _outcomeReferences;
+
+    private readonly List<BenefitCommitmentOutcomeReferenceV1> _outcomeReferences = [];
 
     private BenefitCommitment() { }
 
@@ -34,6 +39,28 @@ public sealed class BenefitCommitment : EntityBase
         Description = Optional(description, 2000, nameof(Description));
         TargetDescription = Required(targetDescription, 1000, nameof(TargetDescription));
         TargetDate = targetDate;
+    }
+
+    public void AddOutcomeReference(Guid actorId, BenefitCommitmentOutcomeReferenceV1 reference)
+    {
+        ArgumentNullException.ThrowIfNull(reference);
+        if (reference.BenefitCommitmentId != Id)
+            throw new InvalidOperationException("The outcome reference is bound to another benefit commitment.");
+        if (IsDeleted || LifecycleState is BenefitCommitmentLifecycleState.Closed or BenefitCommitmentLifecycleState.Cancelled)
+            throw new InvalidOperationException("Terminal or deleted benefit commitments cannot change outcome references.");
+        if (_outcomeReferences.Any(item => item.OutcomeReference.OutcomeId == reference.OutcomeReference.OutcomeId))
+            throw new InvalidOperationException("The outcome reference is already attached.");
+        _outcomeReferences.Add(reference);
+        MarkUpdated(actorId);
+    }
+
+    public void RemoveOutcomeReference(Guid actorId, Guid outcomeId)
+    {
+        if (IsDeleted || LifecycleState is BenefitCommitmentLifecycleState.Closed or BenefitCommitmentLifecycleState.Cancelled)
+            throw new InvalidOperationException("Terminal or deleted benefit commitments cannot change outcome references.");
+        if (_outcomeReferences.RemoveAll(item => item.OutcomeReference.OutcomeId == outcomeId) != 1)
+            throw new InvalidOperationException("The outcome reference is not attached.");
+        MarkUpdated(actorId);
     }
 
     public bool CanTransitionTo(BenefitCommitmentLifecycleState target) => LifecycleState switch
