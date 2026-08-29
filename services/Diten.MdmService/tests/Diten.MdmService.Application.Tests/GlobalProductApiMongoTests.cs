@@ -8,14 +8,19 @@ using Diten.MdmService.Application.Features.ProductItemSkuMaster;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Commands;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.CommandHandlers;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.Commands;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Queries;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Validators;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.Commands;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Infrastructure.Authorization;
 using Diten.MdmService.Persistence.Repositories;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
@@ -447,10 +452,175 @@ public sealed class GlobalProductApiMongoTests
     [InlineData(nameof(GlobalProductsController.GetById), "mdm.global-products.read")]
     [InlineData(nameof(GlobalProductsController.ReserveCode), "mdm.global-products.create")]
     [InlineData(nameof(GlobalProductsController.CreateDraft), "mdm.global-products.create")]
+    [InlineData(nameof(GlobalProductsController.SubmitIdentity), "mdm.global-products.submit")]
+    [InlineData(nameof(GlobalProductsController.RetireIdentity), "mdm.global-products.retire")]
     public void Endpoints_fail_closed_on_named_permissions(string methodName, string permission)
     {
         var attribute = typeof(GlobalProductsController).GetMethod(methodName)!.GetCustomAttribute<HasPermissionAttribute>();
         Assert.Equal($"Permission:{permission}", attribute!.Policy);
+    }
+
+    [Fact]
+    public void Lifecycle_surface_exposes_only_submit_and_direct_retire_routes()
+    {
+        var lifecycleRoutes = typeof(GlobalProductsController)
+            .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Select(method => new
+            {
+                method.Name,
+                Http = method.GetCustomAttributes<HttpMethodAttribute>().Single()
+            })
+            .Where(item => (item.Http.Template ?? string.Empty)
+                .Contains("{id:guid}/", StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.Equal(2, lifecycleRoutes.Length);
+        Assert.Contains(lifecycleRoutes, item =>
+            item.Name == nameof(GlobalProductsController.SubmitIdentity)
+            && item.Http.HttpMethods.SequenceEqual(["POST"])
+            && item.Http.Template == "{id:guid}/submit");
+        Assert.Contains(lifecycleRoutes, item =>
+            item.Name == nameof(GlobalProductsController.RetireIdentity)
+            && item.Http.HttpMethods.SequenceEqual(["POST"])
+            && item.Http.Template == "{id:guid}/retire");
+        Assert.DoesNotContain(lifecycleRoutes, item =>
+            (item.Http.Template ?? string.Empty).Contains("approve", StringComparison.OrdinalIgnoreCase)
+            || (item.Http.Template ?? string.Empty).Contains("reject", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task Lifecycle_routes_dispatch_server_bound_identifiers_to_exact_commands()
+    {
+        var mediator = DispatchProxy.Create<IMediator, CapturingMediatorProxy>();
+        var capture = (CapturingMediatorProxy)(object)mediator;
+        var controller = new GlobalProductsController(mediator);
+        var productId = Guid.NewGuid();
+        var operationId = Guid.NewGuid();
+
+        await CaptureAsync(
+            () => controller.SubmitIdentity(
+                productId,
+                new() { ExpectedVersion = 4 },
+                operationId.ToString("D"),
+                CancellationToken.None),
+            capture,
+            request =>
+            {
+                var command = Assert.IsType<StartGlobalProductIdentityWorkflowCommand>(request);
+                Assert.Equal(productId, command.Request.GlobalProductId);
+                Assert.Equal(4, command.Request.ExpectedVersion);
+                Assert.Equal(operationId, command.Request.OperationId);
+            });
+        await CaptureAsync(
+            () => controller.RetireIdentity(
+                productId,
+                new() { ExpectedVersion = 7, ReasonCode = "PRODUCT_WITHDRAWN", Comment = "Confirmed." },
+                operationId.ToString("D"),
+                CancellationToken.None),
+            capture,
+            request =>
+            {
+                var command = Assert.IsType<RetireGlobalProductIdentityCommand>(request);
+                Assert.Equal(productId, command.Request.GlobalProductId);
+                Assert.Equal(7, command.Request.ExpectedVersion);
+                Assert.Equal(operationId, command.Request.OperationId);
+                Assert.Equal("PRODUCT_WITHDRAWN", command.Request.ReasonCode);
+                Assert.Equal("Confirmed.", command.Request.Comment);
+            });
+    }
+
+    [Theory]
+    [InlineData(true, null)]
+    [InlineData(false, null)]
+    [InlineData(false, "not-a-guid")]
+    public async Task Lifecycle_unknown_fields_or_invalid_idempotency_key_fail_before_dispatch(
+        bool hasUnknownField,
+        string? idempotencyKey)
+    {
+        var mediator = DispatchProxy.Create<IMediator, CapturingMediatorProxy>();
+        var capture = (CapturingMediatorProxy)(object)mediator;
+        var controller = new GlobalProductsController(mediator);
+        var request = new GlobalProductsController.SubmitGlobalProductIdentityApiRequest
+        {
+            ExpectedVersion = 0,
+            UnmappedFields = hasUnknownField
+                ? new Dictionary<string, JsonElement> { ["tenantId"] = JsonSerializer.SerializeToElement("forbidden") }
+                : null
+        };
+
+        var result = await controller.SubmitIdentity(
+            Guid.NewGuid(),
+            request,
+            hasUnknownField ? Guid.NewGuid().ToString("D") : idempotencyKey,
+            CancellationToken.None);
+
+        var objectResult = Assert.IsAssignableFrom<ObjectResult>(result);
+        Assert.Equal(400, objectResult.StatusCode);
+        Assert.Null(capture.Request);
+    }
+
+    [Theory]
+    [InlineData(true, null)]
+    [InlineData(false, null)]
+    [InlineData(false, "not-a-guid")]
+    public async Task Retire_unknown_fields_or_invalid_idempotency_key_fail_before_dispatch(
+        bool hasUnknownField,
+        string? idempotencyKey)
+    {
+        var mediator = DispatchProxy.Create<IMediator, CapturingMediatorProxy>();
+        var capture = (CapturingMediatorProxy)(object)mediator;
+        var controller = new GlobalProductsController(mediator);
+        var request = new GlobalProductsController.RetireGlobalProductIdentityApiRequest
+        {
+            ExpectedVersion = 1,
+            ReasonCode = "PRODUCT_WITHDRAWN",
+            UnmappedFields = hasUnknownField
+                ? new Dictionary<string, JsonElement> { ["tenantId"] = JsonSerializer.SerializeToElement("forbidden") }
+                : null
+        };
+
+        var result = await controller.RetireIdentity(
+            Guid.NewGuid(),
+            request,
+            hasUnknownField ? Guid.NewGuid().ToString("D") : idempotencyKey,
+            CancellationToken.None);
+
+        var objectResult = Assert.IsAssignableFrom<ObjectResult>(result);
+        Assert.Equal(400, objectResult.StatusCode);
+        Assert.Null(capture.Request);
+    }
+
+    [Fact]
+    public void Lifecycle_public_bodies_have_only_business_fields_and_capture_unknown_input()
+    {
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true
+        };
+        var submit = JsonSerializer.SerializeToElement(
+            new GlobalProductsController.SubmitGlobalProductIdentityApiRequest { ExpectedVersion = 3 },
+            options);
+        var retire = JsonSerializer.SerializeToElement(
+            new GlobalProductsController.RetireGlobalProductIdentityApiRequest
+            {
+                ExpectedVersion = 5,
+                ReasonCode = "PRODUCT_WITHDRAWN",
+                Comment = "Confirmed."
+            },
+            options);
+        var withForbidden = JsonSerializer.Deserialize<GlobalProductsController.SubmitGlobalProductIdentityApiRequest>(
+            "{\"expectedVersion\":3,\"actorId\":\"forbidden\"}",
+            options)!;
+
+        Assert.Equal(["expectedVersion"], submit.EnumerateObject().Select(property => property.Name));
+        Assert.Equal(
+            ["comment", "expectedVersion", "reasonCode"],
+            retire.EnumerateObject().Select(property => property.Name).OrderBy(name => name, StringComparer.Ordinal));
+        Assert.Equal(["actorId"], withForbidden.UnmappedFields!.Keys);
+        Assert.DoesNotContain("tenant", retire.ToString(), StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("workflow", retire.ToString(), StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("operation", retire.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -468,6 +638,29 @@ public sealed class GlobalProductApiMongoTests
             ExpectedReservationVersion = 0,
             IdempotencyKey = "create"
         };
+
+    private static async Task CaptureAsync(
+        Func<Task<IActionResult>> action,
+        CapturingMediatorProxy capture,
+        Action<object> assertion)
+    {
+        capture.Request = null;
+        await Assert.ThrowsAsync<CapturedRequestException>(action);
+        assertion(Assert.IsAssignableFrom<object>(capture.Request));
+    }
+
+    private sealed class CapturedRequestException : Exception;
+
+    private class CapturingMediatorProxy : DispatchProxy
+    {
+        public object? Request { get; set; }
+
+        protected override object? Invoke(MethodInfo? targetMethod, object?[]? args)
+        {
+            Request = args?.FirstOrDefault();
+            throw new CapturedRequestException();
+        }
+    }
 
     private static GlobalProduct Product(Guid tenantId, string name) => new()
     {
