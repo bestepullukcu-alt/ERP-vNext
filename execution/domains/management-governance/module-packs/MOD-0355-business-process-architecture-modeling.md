@@ -2589,6 +2589,76 @@ paths for the two standard endpoints. It may not authorize Platform, WorkCenter 
 configuration or activation. Until then the authorized result is governance preparation only, with no
 provider code, endpoint, registration, read, action or browser evidence claim.
 
+### Process Improvement Local-Test API & Frontend — DEFAULT-OFF / NON-PRODUCTION / NON-MIGRATING
+
+The explicit Control Tower decision dated 2026-08-30 authorizes a bounded local-test surface for the existing
+`ProcessImprovementOpportunity` and `ProcessImprovementOutcome` contracts only. It does not authorize Process
+KPI Binding: that page and every binding operation remain exact `503 kpi_reference_contract_unavailable`
+with zero persistence invocation until MOD-0059/MOD-0060 bilateral reference contracts close.
+
+The local-test module API is hosted on the existing loopback `Diten.ManagementGovernanceService:5017` host
+and remains unreachable unless `--local-test` is present. The Diten.Web surface is same-origin and default-off;
+the browser never calls `5017`, reads a bearer cookie or creates tenant/actor/permission headers. No Gateway,
+WorkCenter, Platform, production configuration, migration, secret, deployment or activation is authorized.
+
+Exact local-test API routes are:
+
+- `GET internal/local-test/v1/process-modeling/improvements`;
+- `GET internal/local-test/v1/process-modeling/improvements/{id}`;
+- `POST internal/local-test/v1/process-modeling/improvements`;
+- `PUT internal/local-test/v1/process-modeling/improvements/{id}`;
+- `POST internal/local-test/v1/process-modeling/improvements/{id}/qualify`;
+- `POST internal/local-test/v1/process-modeling/improvements/{id}/outcomes`;
+- `POST internal/local-test/v1/process-modeling/improvements/{id}/close`.
+
+Exact tenant frontend routes are:
+
+- `GET /management-governance/process-modeling/improvements`;
+- `GET /management-governance/process-modeling/improvements/{id}`;
+- same-origin proxy `/management-governance/process-modeling/api/improvements/**`.
+
+The existing placeholder `/management-governance/modules/mod-process-improvement` remains available for
+side-by-side parity and is not redirected or deleted. The registry may change only that exact row's target to
+the new list route after browser evidence passes; the legacy URL remains directly reachable. The Process
+Performance placeholder row is byte-preserved.
+
+The slice may change only:
+
+- this pack;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Controllers/PerformanceImprovementLocalTestController.cs`;
+- the three root `DependencyInjection.cs` files under Application, Persistence and Infrastructure, additive only;
+- existing `services/Diten.ManagementGovernanceService/**/Modules/ProcessModeling/PerformanceImprovement/**` source and test roots;
+- `frontend/Diten.Web/Controllers/ProcessModelingFrontendController.cs`;
+- `frontend/Diten.Web/Config/ManagementGovernanceRegistry.cs`, exact `mod-process-improvement` row only;
+- `frontend/Diten.Web/Models/ManagementGovernance/ProcessModeling/PerformanceImprovement/**`;
+- `frontend/Diten.Web/Services/ManagementGovernance/ProcessModeling/PerformanceImprovement/**`;
+- `frontend/Diten.Web/Views/ManagementGovernance/ProcessModeling/PerformanceImprovement/**`;
+- seven marker-matched RESX files below
+  `frontend/Diten.Web/Resources/Views/ManagementGovernance/ProcessModeling/PerformanceImprovement/**`;
+- `frontend/Diten.Web/wwwroot/assets/js/pages/management-governance/process-modeling/performance-improvement/**`;
+- `frontend/Diten.Web/wwwroot/assets/css/pages/management-governance/process-modeling/performance-improvement.css`;
+- exact tests named `frontend/Diten.Web/tests/mg-process-improvement-*.test.js`.
+
+No new business field is permitted. The list/detail/form use only `ProcessModelVersionId`, `Title`,
+`ProblemStatement`, `ExpectedOutcome`, `PriorityRank`, `LifecycleState`, immutable outcome `Summary` and
+server-owned `ObservedAtUtc`, plus inherited technical identity/concurrency fields. Lifecycle remains exact
+`Open -> Qualified -> Closed`; update is Open-only, qualify requires ExpectedOutcome and positive PriorityRank,
+record-outcome is Qualified-only, and close requires at least one outcome. Delete/archive/reopen/requalify,
+project/task/workflow/evidence fields and client-supplied observed time are forbidden.
+
+The API and proxy enforce ordinal exact permissions, trusted tenant/actor context, idempotency and expected
+version. JWT/header mismatch is `400` before business reads; exact tenant-scoped missing/foreign/deleted is
+ordinary `404`; own-tenant permission denial is `403`; stale/lifecycle conflict is `409`; disabled/provider or
+transaction uncertainty is `503`. Disabled composition produces zero business reads and writes. A global read
+followed by tenant comparison is forbidden.
+
+Required evidence includes seven-locale key parity, no hardcoded user-facing JavaScript, route ownership,
+default-off zero-read, exact permission/action and lifecycle matrices, real replica-set tenant isolation/CAS/
+rollback/unknown-commit evidence, physical expected-red mutation restore, frontend contract tests, service and
+web builds, and browser loading/empty/populated/403/404/409/503 screenshots. The slice cannot be called
+production-ready and cannot close legacy parity or Process Performance.
+
 ### Governance availability versus runtime availability
 
 A contract is governance-available when its name, version, shape, ownership and failure semantics are
