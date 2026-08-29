@@ -1,0 +1,110 @@
+@model Diten.Web.Models.ManagementGovernance.Dws.DwsFrontendIndexViewModel
+@using Diten.Web.Views.ManagementGovernance.Dws
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<DwsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["DwsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<link rel="stylesheet" href="~/assets/css/pages/management-governance/dws.css" asp-append-version="true" />
+
+<main id="dws-workspace"
+      class="dws-workspace"
+      data-gateway-enabled="@Model.GatewayEnabled.ToString().ToLowerInvariant()"
+      data-can-read="@Model.CanRead.ToString().ToLowerInvariant()"
+      data-can-validate="@Model.CanValidate.ToString().ToLowerInvariant()"
+      data-can-compare="@Model.CanCompare.ToString().ToLowerInvariant()">
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
+        <div>
+            <h5 class="mb-0">@Localizer["DwsTitle"]</h5>
+            <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+        </div>
+        <a class="btn btn-label-secondary btn-sm" href="/DecompositionTreeBuilder" target="_blank" rel="noopener">
+            <i class="bx bx-git-compare me-1" aria-hidden="true"></i>@Localizer["OpenLegacy"]
+        </a>
+    </div>
+
+    <section class="card mb-3" aria-labelledby="dws-query-heading">
+        <div class="card-body d-flex flex-wrap align-items-end gap-3">
+            <div class="flex-grow-1 dws-id-input">
+                <label class="form-label" for="dws-structure-id" id="dws-query-heading">@Localizer["StructureId"]</label>
+                <input id="dws-structure-id" class="form-control" inputmode="text" autocomplete="off"
+                       placeholder="@Localizer["StructureIdPlaceholder"]" />
+            </div>
+            <div>
+                <label class="form-label" for="dws-revision-number">@Localizer["RevisionNumber"]</label>
+                <input id="dws-revision-number" class="form-control" type="number" min="1" />
+            </div>
+            <button id="dws-load" type="button" class="btn btn-primary" data-permission="management-governance.dws.read">
+                <i class="bx bx-search-alt me-1" aria-hidden="true"></i>@Localizer["LoadStructure"]
+            </button>
+            @if (Model.CanValidate)
+            {
+                <button id="dws-validate" type="button" class="btn btn-label-primary" data-permission="management-governance.dws.validate">
+                    <i class="bx bx-check-shield me-1" aria-hidden="true"></i>@Localizer["ValidateStructure"]
+                </button>
+            }
+        </div>
+    </section>
+
+    <div id="dws-state" class="alert alert-secondary d-flex align-items-start gap-2" role="status" aria-live="polite">
+        <i class="bx bx-info-circle mt-1" aria-hidden="true"></i>
+        <div><strong id="dws-state-title">@Localizer["EmptyTitle"]</strong><div id="dws-state-detail">@Localizer["Empty"]</div></div>
+    </div>
+
+    <div class="row g-3">
+        <section class="col-12 col-xl-7" aria-labelledby="dws-tree-heading">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h6 id="dws-tree-heading" class="mb-0">@Localizer["Tree"]</h6>
+                    <span id="dws-revision-badge" class="badge bg-label-secondary">@Localizer["NoRevision"]</span>
+                </div>
+                <div class="card-body">
+                    <div id="dws-tree" class="dws-tree" role="tree" aria-label="@Localizer["Tree"]" tabindex="0"></div>
+                </div>
+            </div>
+        </section>
+
+        <aside class="col-12 col-xl-5" aria-labelledby="dws-inspector-heading">
+            <div class="card mb-3">
+                <div class="card-header"><h6 id="dws-inspector-heading" class="mb-0">@Localizer["Inspector"]</h6></div>
+                <div class="card-body">
+                    <dl class="row mb-0 dws-inspector">
+                        <dt class="col-4">@Localizer["Code"]</dt><dd class="col-8" id="dws-node-code">—</dd>
+                        <dt class="col-4">@Localizer["Title"]</dt><dd class="col-8" id="dws-node-title">—</dd>
+                        <dt class="col-4">@Localizer["Description"]</dt><dd class="col-8" id="dws-node-description">—</dd>
+                        <dt class="col-4">@Localizer["SiblingOrder"]</dt><dd class="col-8" id="dws-node-order">—</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header"><h6 class="mb-0">@Localizer["Validation"]</h6></div>
+                <div class="card-body"><div id="dws-validation-result" class="text-muted">@Localizer["NotRun"]</div></div>
+            </div>
+
+            @if (Model.CanCompare)
+            {
+                <div class="card">
+                    <div class="card-header"><h6 class="mb-0">@Localizer["Comparison"]</h6></div>
+                    <div class="card-body">
+                        <div class="row g-2 mb-2">
+                            <div class="col-6"><label class="form-label" for="dws-compare-left">@Localizer["LeftRevision"]</label><input id="dws-compare-left" class="form-control" type="number" min="1" /></div>
+                            <div class="col-6"><label class="form-label" for="dws-compare-right">@Localizer["RightRevision"]</label><input id="dws-compare-right" class="form-control" type="number" min="1" /></div>
+                        </div>
+                        <button id="dws-compare" type="button" class="btn btn-label-secondary w-100" data-permission="management-governance.dws.compare">@Localizer["CompareRevisions"]</button>
+                        <div id="dws-comparison-result" class="small text-muted mt-3">@Localizer["NotRun"]</div>
+                    </div>
+                </div>
+            }
+        </aside>
+    </div>
+</main>
+
+<partial name="_IndexL10n" />
+
+@section Scripts {
+    <script src="~/assets/js/pages/management-governance/dws/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/management-governance/dws/index.js" asp-append-version="true"></script>
+}

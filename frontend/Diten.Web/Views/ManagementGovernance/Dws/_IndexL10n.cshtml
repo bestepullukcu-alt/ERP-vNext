@@ -1,0 +1,25 @@
+@using Diten.Web.Views.ManagementGovernance.Dws
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<DwsIndex> Localizer
+@inject Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper Json
+<script id="dws-l10n" type="application/json">@Html.Raw(Json.Serialize(new
+{
+    Loading = Localizer["Loading"].Value,
+    Empty = Localizer["Empty"].Value,
+    Offline = Localizer["Offline"].Value,
+    Unauthorized = Localizer["Unauthorized"].Value,
+    Forbidden = Localizer["Forbidden"].Value,
+    NotFound = Localizer["NotFound"].Value,
+    Conflict = Localizer["Conflict"].Value,
+    Unavailable = Localizer["Unavailable"].Value,
+    ValidationValid = Localizer["ValidationValid"].Value,
+    ValidationInvalid = Localizer["ValidationInvalid"].Value,
+    ComparisonEmpty = Localizer["ComparisonEmpty"].Value,
+    NodeSelected = Localizer["NodeSelected"].Value,
+    CorrelationId = Localizer["CorrelationId"].Value,
+    RevisionNumber = Localizer["RevisionNumber"].Value,
+    Nodes = Localizer["Nodes"].Value,
+    Dependencies = Localizer["Dependencies"].Value,
+    Sealed = Localizer["Sealed"].Value,
+    Working = Localizer["Working"].Value
+}))</script>

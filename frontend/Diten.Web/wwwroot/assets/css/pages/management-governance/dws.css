@@ -1,0 +1,10 @@
+.dws-workspace .dws-id-input { min-width: min(100%, 22rem); }
+.dws-workspace .dws-tree { min-height: 28rem; outline: none; }
+.dws-tree-item { border-radius: .375rem; cursor: pointer; padding: .45rem .55rem; }
+.dws-tree-item:hover, .dws-tree-item:focus-visible { background: rgba(var(--bs-primary-rgb), .08); outline: 2px solid rgba(var(--bs-primary-rgb), .35); }
+.dws-tree-item[aria-selected="true"] { background: rgba(var(--bs-primary-rgb), .12); color: var(--bs-primary); }
+.dws-tree-children { border-inline-start: 1px solid var(--bs-border-color); margin-inline-start: .75rem; padding-inline-start: .75rem; }
+.dws-tree-toggle { align-items: center; background: transparent; border: 0; color: inherit; display: inline-flex; height: 1.5rem; justify-content: center; padding: 0; width: 1.5rem; }
+.dws-inspector dd { overflow-wrap: anywhere; }
+[dir="rtl"] .dws-tree-toggle i { transform: scaleX(-1); }
+@media (max-width: 767.98px) { .dws-workspace .dws-tree { min-height: 18rem; } }
