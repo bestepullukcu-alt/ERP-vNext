@@ -21,6 +21,7 @@ form_field_count: 4
 port: 5017
 implementation_authority: explicit-user-control-tower-bounded-core-local-api-test-and-performance-improvement-contract-test
 frontend_legacy_parity_authority: explicit-user-control-tower-bounded-default-off-non-production
+workcenter_remote_provider_authority: explicit-user-control-tower-governance-preparation-only-default-off
 production_authority: none
 ---
 
@@ -48,6 +49,13 @@ production_authority: none
 > non-production and non-migrating authority. It supersedes earlier blanket frontend exclusions only for the
 > exact allowlist in that amendment. It grants no Gateway route, direct browser-to-`5017` access, production
 > activation, deployment, WorkCenter integration, legacy mutation or shared-shell modification.
+
+> **WorkCenter remote-provider preparation amendment:** The explicit Control Tower decision dated 2026-08-29
+> authorizes only the module-pack contract preparation recorded in §19. It is default-off, non-production,
+> non-migrating and non-activated. It does not authorize a remote-provider endpoint, Platform configuration
+> row, Platform/WorkCenter/frontend/Gateway change, action dispatch, permission grant or production runtime.
+> It supersedes earlier blanket WorkCenter exclusions only for this pack-file preparation; every executable
+> WorkCenter exclusion remains binding.
 
 ## 1. Module Summary
 
@@ -2421,6 +2429,127 @@ default-off behavior, exact permission/control mapping, lifecycle editor matrix,
 checks, protected-path diff zero, and browser screenshots/network logs for loading, empty, populated-read,
 Draft, Review, Published, Retired, `403`, `404`, `409` and `503`. Gateway, write activation and production
 evidence remain open after frontend tests pass.
+
+### DCP-004 WorkCenter remote-provider preparation — DEFAULT-OFF / NON-PRODUCTION / NON-ACTIVATED
+
+This amendment records the evidence-backed module-side contract needed before MOD-0355 can be connected to
+WorkCenter through the shared DCP-004 HTTP bridge. It does not implement or activate that connection. Because
+MOD-0355 runs in its own service, a future implementation must use the existing generic
+`HttpWorkItemProvider` / `HttpWorkItemActionDispatcher` pair. A MOD-0355-specific provider, dispatcher or
+bridge class in Platform is forbidden.
+
+The reserved module-side identities are:
+
+- provider code: `management-governance.process-modeling`;
+- provider contract version: `1.0`;
+- projection path: `GET /api/v1/work-items/projection?scope=self|team`;
+- action path: `POST /api/v1/work-items/{itemId}/actions/{actionCode}`;
+- projected object type: `ProcessModelVersion`;
+- lifecycle owner: `management-governance.process-modeling`.
+
+The future projection read must require
+`management-governance.process-modeling.models.read` in addition to the caller's Platform WorkCenter read
+authority. Possessing only the Platform inbox permission cannot disclose a MOD-0355 model. The service must
+derive the tenant from the validated caller context plus exact `X-Tenant-Id`; query-string/body tenant input
+is forbidden and cross-tenant/missing records are indistinguishable.
+
+No Platform `WorkAggregation:RemoteProviders` row is authorized by this amendment. The module-side endpoints,
+when separately authorized, must remain disabled by default and return typed
+`503 process_model_workcenter_provider_unavailable` with zero Mongo reads and writes while disabled. An empty
+`200` must not hide a disabled/unavailable source by claiming that the board is complete.
+
+#### Evidence-backed 31-field baseline disposition
+
+The DCP-004 onboarding note names the following 31-field baseline. The live DTO has additive fields after
+`Priority`; they are addressed separately below. `OMIT` means the JSON member is absent, never `null`, unless
+the shared contract explicitly requires the field.
+
+| DCP-004 field | MOD-0355 authoritative source / mapping | When source is absent |
+|---|---|---|
+| `FixtureKind` | constant `workItem` | Required; reject the projection, never invent another kind. |
+| `Id` | `ProcessModelVersion.Id`, lower-case `D` GUID | Required; reject the projection. |
+| `WorkIntent` | `review`; only `LifecycleState=Review` is a candidate work item | Required; Draft, Published and Retired versions are not emitted. |
+| `AssignmentMode` | **UNSUPPORTED:** no authoritative reviewer/queue assignment exists in the current entity or persistence document | Connection gate: return provider `503`; do not use `direct`, `approval` or `groupQueue` by analogy. |
+| `OwnershipState` | **UNSUPPORTED:** no reviewer ownership/admission source exists | Connection gate: return provider `503`; do not fabricate `owned`. |
+| `AdmissionState` | **UNSUPPORTED:** no acceptance/claim/offer state exists | Connection gate: return provider `503`; do not fabricate `admitted`. |
+| `NormalizedStatus` | `Review -> Pending`; no other lifecycle is emitted | Required; unmapped state is rejected. |
+| `TaskLifecycle` | `notApplicable`, because the intent is `review`, not `task` | Required constant. |
+| `ExecutionState` | `notApplicable`; MOD-0355 owns no process execution runtime | Required constant. |
+| `TimerState` | `notApplicable`; MOD-0355 owns no timer runtime | Required constant. |
+| `SystemState` | `fresh` only after the version and action authority reads succeed in the same request | Authority/read failure returns provider `503`; stale/LKG projection is forbidden. |
+| `ActionDepth` | `inline`; the future module endpoint executes the module command without a browser deep-link round trip | Required constant for projected actions. |
+| `Title` | display label from `ProcessModelVersion.Title`, locale `und` | Required; blank/invalid title rejects the item. |
+| `NativeStatus` | code `Review`; shared resource label `StatusPending` | Required; unknown lifecycle rejects the item. |
+| `Source` | provider `management-governance.process-modeling`, version `1.0`, type `ProcessModelVersion`, object id = version id; no deep link is authorized | Required core members; `deepLink` is OMIT. |
+| `LifecycleOwner` | `management-governance.process-modeling` | Required; another owner is rejected. |
+| `WorkItemCapabilities` | empty array; the current model has no WorkCenter checklist, dependency, activity, SLA, escalation or business-context container | Required container; never declare a capability without its backing data. |
+| `Actions` | future enabled/disabled entries may come only from the exact action matrix below and current caller grants | Required array; empty while no action is safely offerable. |
+| `Concurrency` | `{ kind: "version", token: ProcessModelVersion.Version }` | Required for every actionable item; absence rejects the item. |
+| `WaitingContext` | not applicable because the only projected normalized state is `Pending` | OMIT; never emit a waiting object for `Pending`. |
+| `Escalation` | no owner field or escalation lifecycle exists | OMIT. |
+| `DueAt` | no authoritative review deadline exists | OMIT; do not substitute creation/publication dates. |
+| `PrimaryActionCode` | `publish` only after its permission, localization and publish-authority gates all close | OMIT while blocked; never point to an absent action. |
+| `OverflowActionCodes` | `return-to-draft` only when that action is present | OMIT while blocked; never point to an absent action. |
+| `Assignee` | **UNSUPPORTED:** `ModelAuthorActorId` is the author, not an assigned reviewer/publisher | Connection gate: do not expose tenant-wide review work as the caller's own work. |
+| `Requester` | `ModelAuthorActorId` from the version document, without a fabricated display name | OMIT if the stored author identity is absent or schema-incompatible. |
+| `Checklist` | no source | OMIT and do not declare `checklist`. |
+| `Subtasks` | no source | OMIT and do not declare `subtasks`. |
+| `ParentTaskItemId` | no source | OMIT. |
+| `Gates` | current publish authority is evaluated on action execution; there is no approved WorkCenter gate projection | OMIT and do not declare `gates`. |
+| `Priority` | no source | OMIT; do not imply `Medium`. |
+
+The live projection DTO also contains additive `Dependencies`, `BlockedState`, `Activity`, `PlannedDate`,
+`TaskType`, `Pool`, `SlaState`, `BusinessContext`, `ClosedAt`, `Summary`, `StartAt`, `EstimateHours`,
+`SpentHours`, `Tags`, `Personal`, `Watchers`, `DelegationAllowed`, `Notifications` and `ReminderLeadDays` fields.
+MOD-0355 has no approved source contract for these fields in this slice. Every one is OMIT and every related
+capability is absent. This amendment does not freeze the shared DTO at 31 fields or copy provider examples as
+business truth.
+
+#### Exact review/publish action disposition
+
+The generic browser-to-Platform action URL is not a MOD-0355 endpoint. Platform may later dispatch only to the
+module endpoint above; the module remains lifecycle and authorization owner and maps an accepted action to the
+existing command shown here.
+
+| WorkCenter action | Module command and exact transition | Exact permission | Disposition / refusal |
+|---|---|---|---|
+| `return-to-draft` | `ReturnProcessModelToDraftCommand`, `Review -> Draft` | `management-governance.process-modeling.models.return-to-draft` | Candidate overflow action after the reviewer-assignment gate closes. Stale token or state is `409`; absent/cross-tenant is non-disclosing `404`; missing permission is `403`. Shared `ActReturn` is the only verified seven-language label available today. |
+| `publish` | `PublishProcessModelVersionCommand`, `Review -> Published` | `management-governance.process-modeling.models.publish` | Candidate primary action only after reviewer assignment and a seven-language WorkCenter action label exist. Approval-required paths remain exact `503 process_model_publish_runtime_unavailable` until MOD-0023 runtime exists; stale authority is `409 process_model_publish_authority_stale`; permission/SoD denial is `403`; missing/cross-tenant is `404`. |
+| `request-review` | `RequestProcessModelReviewCommand`, `Draft -> Review` | `management-governance.process-modeling.models.request-review` | **Not offered by this projection.** Draft is edited/submitted in the module UI; projecting it as the caller's work would require an owner/recipient contract that does not exist. |
+| `retire` | `RetireProcessModelVersionCommand`, `Published -> Retired` | `management-governance.process-modeling.models.retire` | **Not offered by this projection.** It is a catalog lifecycle operation, not pending review work. |
+| `create-revision` | `CreateProcessModelRevisionCommand`; creates a new Draft version through the model aggregate | `management-governance.process-modeling.models.create-revision` | **Not offered by this projection.** It remains a module editor/catalog action. |
+| `approve`, `reject`, `signoff`, `assign`, `claim`, `delegate`, `escalate`, `start`, `complete`, `pause` | no MOD-0355 command/transition | none | **Unsupported.** The remote endpoint must return `400` without a business mutation; these verbs must not appear in projection actions or operator configuration. |
+
+The operator `Actions` map, if later authorized, may contain only `return-to-draft` and `publish` with the
+permissions above. It must not include `request-review`, `retire`, `create-revision` or an unsupported verb.
+The module re-enforces tenant, permission, lifecycle and expected-version checks after Platform's claim check.
+No idempotency guarantee is claimed: `expectedVersion` is mandatory, and timeout/unknown outcome stays a
+refusal rather than a retry-as-success.
+
+Existing stable module failures are authoritative: `400 process_model_bad_request`,
+`401 process_model_unauthenticated`, `403 process_model_permission_denied`, non-disclosing
+`404 process_model_not_found`, `409 process_model_stale_version|process_model_lifecycle_conflict`, and
+`503 process_model_provider_unavailable|process_model_transaction_indeterminate`. Publish-specific
+authorization retains the existing `process_model_publish_*` stable codes. The shared bridge must forward
+these codes unchanged; this amendment invents no success fallback.
+
+#### Remaining connection gates and future exact module-side allowlist
+
+No remote-provider implementation is ready until all of the following close with executable evidence:
+
+1. an authoritative tenant-scoped reviewer/assignee or review-queue contract, including `self|team`
+   selection and cross-tenant non-disclosure;
+2. seven-language WorkCenter localization for every offered action, especially `publish`;
+3. provider DTO validation against the then-current shared contract, including every additive field;
+4. exact permission equality between projected actions and the operator `Actions` map;
+5. read timeout/unavailable and write refusal behavior, caller JWT plus `X-Tenant-Id` propagation, stale
+   expected-version, duplicate click and post-write reload evidence;
+6. explicit operator configuration and activation authority.
+
+After those gates close, a separate implementation amendment may name only module-side Application/API/test
+paths for the two standard endpoints. It may not authorize Platform, WorkCenter frontend, Gateway, operator
+configuration or activation. Until then the authorized result is governance preparation only, with no
+provider code, endpoint, registration, read, action or browser evidence claim.
 
 ### Governance availability versus runtime availability
 
