@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using MongoDB.Driver;
 using Xunit;
 
 namespace Diten.PpmService.IntegrationTests.GateI.DecisionTrace;
@@ -31,7 +32,7 @@ public sealed class GateILocalApiSmokeTests(GateIDisposableMongoReplicaSet mongo
     }
 
     [Fact]
-    public async Task Health_and_authenticated_Gate_I_route_prove_the_default_off_503_boundary()
+    public async Task Health_and_all_fourteen_authenticated_Gate_I_routes_prove_default_off_503_and_zero_residue()
     {
         await using var host = new LocalApiProcess(mongo);
         await host.StartAsync();
@@ -40,18 +41,54 @@ public sealed class GateILocalApiSmokeTests(GateIDisposableMongoReplicaSet mongo
         using var health = await client.GetAsync("/health");
         Assert.Equal(HttpStatusCode.OK, health.StatusCode);
 
-        using var request = new HttpRequestMessage(
-            HttpMethod.Put,
-            $"/api/v1/ppm/investment-cases/{Guid.NewGuid():D}/gate-i/governing-decision?expectedVersion=1");
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", CreateToken(host.JwtSecret));
-        request.Headers.TryAddWithoutValidation("Idempotency-Key", "gate-i-local-smoke");
-        request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
-        using var response = await client.SendAsync(request);
+        var before = await SnapshotAsync(mongo);
+        var investmentCaseId = Guid.NewGuid();
+        var benefitCommitmentId = Guid.NewGuid();
+        var referenceId = Guid.NewGuid();
+        var routes = new (HttpMethod Method, string Path, bool HasBody)[]
+        {
+            (HttpMethod.Put, $"/api/v1/ppm/investment-cases/{investmentCaseId:D}/gate-i/governing-decision?expectedVersion=1", true),
+            (HttpMethod.Delete, $"/api/v1/ppm/investment-cases/{investmentCaseId:D}/gate-i/governing-decision?expectedVersion=1", false),
+            (HttpMethod.Post, $"/api/v1/ppm/investment-cases/{investmentCaseId:D}/gate-i/supporting-decisions?expectedVersion=1", true),
+            (HttpMethod.Delete, $"/api/v1/ppm/investment-cases/{investmentCaseId:D}/gate-i/supporting-decisions/{referenceId:D}?expectedVersion=1", false),
+            (HttpMethod.Put, $"/api/v1/ppm/investment-cases/{investmentCaseId:D}/gate-i/selected-budget-version?expectedVersion=1", true),
+            (HttpMethod.Delete, $"/api/v1/ppm/investment-cases/{investmentCaseId:D}/gate-i/selected-budget-version?expectedVersion=1", false),
+            (HttpMethod.Post, $"/api/v1/ppm/investment-cases/{investmentCaseId:D}/gate-i/scenario-versions?expectedVersion=1", true),
+            (HttpMethod.Delete, $"/api/v1/ppm/investment-cases/{investmentCaseId:D}/gate-i/scenario-versions/{referenceId:D}?expectedVersion=1", false),
+            (HttpMethod.Post, $"/api/v1/ppm/investment-cases/{investmentCaseId:D}/gate-i/comparator-outputs?expectedVersion=1", true),
+            (HttpMethod.Delete, $"/api/v1/ppm/investment-cases/{investmentCaseId:D}/gate-i/comparator-outputs/{referenceId:D}?expectedVersion=1", false),
+            (HttpMethod.Put, $"/api/v1/ppm/investment-cases/{investmentCaseId:D}/gate-i/selected-scenario?expectedVersion=1", true),
+            (HttpMethod.Delete, $"/api/v1/ppm/investment-cases/{investmentCaseId:D}/gate-i/selected-scenario?expectedVersion=1", false),
+            (HttpMethod.Post, $"/api/v1/ppm/benefit-commitments/{benefitCommitmentId:D}/gate-i/outcomes?expectedVersion=1", true),
+            (HttpMethod.Delete, $"/api/v1/ppm/benefit-commitments/{benefitCommitmentId:D}/gate-i/outcomes/{referenceId:D}?expectedVersion=1", false)
+        };
 
-        Assert.True(
-            response.StatusCode == HttpStatusCode.ServiceUnavailable,
-            $"Expected 503 but received {(int)response.StatusCode}; WWW-Authenticate: {string.Join(" | ", response.Headers.WwwAuthenticate)}; Logs: {host.Logs}");
+        foreach (var (method, path, hasBody) in routes)
+        {
+            using var request = new HttpRequestMessage(method, path);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", CreateToken(host.JwtSecret));
+            request.Headers.TryAddWithoutValidation("Idempotency-Key", $"gate-i-local-smoke-{Guid.NewGuid():N}");
+            if (hasBody)
+                request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+            using var response = await client.SendAsync(request);
+
+            Assert.True(
+                response.StatusCode == HttpStatusCode.ServiceUnavailable,
+                $"Expected 503 for {method} {path} but received {(int)response.StatusCode}; WWW-Authenticate: {string.Join(" | ", response.Headers.WwwAuthenticate)}; Logs: {host.Logs}");
+        }
+
+        Assert.Equal(before, await SnapshotAsync(mongo));
         Assert.Equal(1, host.ProcessStarts);
+    }
+
+    private static async Task<string> SnapshotAsync(GateIDisposableMongoReplicaSet mongo)
+    {
+        var database = new MongoClient(mongo.ConnectionString).GetDatabase(mongo.DatabaseName);
+        var names = await (await database.ListCollectionNamesAsync()).ToListAsync();
+        var rows = new List<string>();
+        foreach (var name in names.OrderBy(value => value, StringComparer.Ordinal))
+            rows.Add($"{name}:{await database.GetCollection<MongoDB.Bson.BsonDocument>(name).CountDocumentsAsync(FilterDefinition<MongoDB.Bson.BsonDocument>.Empty)}");
+        return string.Join("|", rows);
     }
 
     private static string CreateToken(string secret)

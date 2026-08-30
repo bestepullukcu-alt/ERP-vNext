@@ -75,4 +75,48 @@ public sealed class GateIRelationshipArchitectureTests
         Assert.DoesNotContain("Permission", properties);
         Assert.DoesNotContain("ModuleCode", properties);
     }
+
+    [Fact]
+    public void Gate_I_remains_zero_WorkCenter_projection_and_action_surface()
+    {
+        var root = FindRepositoryRoot();
+        var roots = new[]
+        {
+            Path.Combine(root, "services", "Diten.PpmService", "src"),
+            Path.Combine(root, "frontend", "Diten.Web", "Controllers", "PPM"),
+            Path.Combine(root, "frontend", "Diten.Web", "Views", "PPM"),
+            Path.Combine(root, "frontend", "Diten.Web", "wwwroot", "assets", "js", "pages", "ppm")
+        };
+        var forbidden = new[]
+        {
+            "IWorkItemProvider",
+            "IWorkItemActionDispatcher",
+            "/api/v1/work-items/projection",
+            "/api/v1/work-items/{itemId}/actions",
+            "WorkCenterNext"
+        };
+
+        foreach (var file in roots.Where(Directory.Exists).SelectMany(path =>
+                     Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
+                         .Where(candidate => candidate.EndsWith(".cs", StringComparison.Ordinal)
+                             || candidate.EndsWith(".cshtml", StringComparison.Ordinal)
+                             || candidate.EndsWith(".js", StringComparison.Ordinal))))
+        {
+            var source = File.ReadAllText(file);
+            foreach (var token in forbidden)
+                Assert.DoesNotContain(token, source, StringComparison.Ordinal);
+        }
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            if (File.Exists(Path.Combine(current.FullName, "AGENTS.md")))
+                return current.FullName;
+            current = current.Parent;
+        }
+        throw new DirectoryNotFoundException("Repository root was not found.");
+    }
 }
