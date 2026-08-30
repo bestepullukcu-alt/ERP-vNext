@@ -2743,6 +2743,10 @@ The exact additive changed-file allowlist is:
 - `services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs` and focused additive
   AuthService permission seed/grant/token regression tests under
   `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Permissions/**`;
+- `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/DefaultRolePermissionTemplate.cs`
+  and focused additive role-template regression tests only to exclude MOD-0355 read permissions from the
+  generic Viewer read baseline; this exception prevents catalog registration from becoming an implicit grant
+  and does not authorize any positive default-role expansion;
 - `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs`, its
   project file, additive normal-user authentication under `Api/Authentication/**`, and additive normal-user
   controllers `Controllers/ProcessModelingController.cs` and `Controllers/PerformanceImprovementController.cs`;
