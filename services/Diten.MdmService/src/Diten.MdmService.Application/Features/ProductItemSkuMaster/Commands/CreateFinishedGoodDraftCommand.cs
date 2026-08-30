@@ -5,4 +5,4 @@ namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Commands;
 
 public sealed record CreateFinishedGoodDraftCommand(
     ProductItemSkuMasterModels.CreateFinishedGoodDraftRequest Request)
-    : IRequest<Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>>;
+    : IRequest<Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>>, global::Diten.MdmService.Application.Features.ProductLegalEntityScopes.IProductLegalEntityScopeInventoryMutation;

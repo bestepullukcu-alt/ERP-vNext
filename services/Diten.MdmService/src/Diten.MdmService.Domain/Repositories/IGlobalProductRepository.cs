@@ -36,7 +36,26 @@ public interface IGlobalProductRepository
         string? normalizedSearch,
         CancellationToken cancellationToken = default) =>
         GetPageAsync(pageNumber, pageSize, normalizedSearch, lifecycleStatus: null, cancellationToken);
+    Task<GlobalProductPage> GetEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string? normalizedSearch,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        bool referenceableOnly,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Enforced product Legal Entity scope paging is not implemented by this repository.");
     Task<GlobalProductCreateResult> CreateDraftAsync(GlobalProduct globalProduct, CancellationToken cancellationToken = default);
+    Task<GlobalProductScopeCompletenessInventory> GetProductLegalEntityScopeCompletenessInventoryAsync(
+        DateTimeOffset serverNowUtc,
+        int maximumMissingItems,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Bounded product-scope inventory is not implemented by this repository.");
 }
 
 public sealed record GlobalProductPage(IReadOnlyList<GlobalProduct> Items, long TotalCount);
+public sealed record GlobalProductScopeCompletenessInventory(
+    long EligibleGlobalProductCount,
+    long ConfiguredGlobalProductCount,
+    IReadOnlyList<Guid> MissingGlobalProductIds);

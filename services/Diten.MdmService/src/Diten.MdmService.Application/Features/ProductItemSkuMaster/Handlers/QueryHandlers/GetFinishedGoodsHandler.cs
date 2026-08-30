@@ -1,4 +1,7 @@
+using Diten.MdmService.Application.Common;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Queries;
+using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.Shared.Core;
 using MediatR;
@@ -11,11 +14,25 @@ public sealed class GetFinishedGoodsHandler
 {
     private readonly IFinishedGoodRepository _finishedGoods;
     private readonly IGskuRepository _gskus;
+    private readonly IProductDefinitionRevisionRepository _revisions;
+    private readonly IGlobalProductRepository _globalProducts;
+    private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
 
-    public GetFinishedGoodsHandler(IFinishedGoodRepository finishedGoods, IGskuRepository gskus)
+    public GetFinishedGoodsHandler(
+        IFinishedGoodRepository finishedGoods,
+        IGskuRepository gskus,
+        IProductDefinitionRevisionRepository revisions,
+        IGlobalProductRepository globalProducts,
+        IProductLegalEntityScopeRolloutStateRepository rolloutStates,
+        IProductLegalEntityScopePolicyRepository policies,
+        ProductLegalEntityScopeCandidateFacade candidates,
+        ITenantContext tenantContext)
     {
         _finishedGoods = finishedGoods;
         _gskus = gskus;
+        _revisions = revisions;
+        _globalProducts = globalProducts;
+        _scopeGuard = new(rolloutStates, policies, candidates, tenantContext);
     }
 
     public async Task<Response<ProductItemSkuMasterModels.PagedResult<ProductItemSkuMasterModels.FinishedGoodListItemDto>>> Handle(
@@ -24,18 +41,33 @@ public sealed class GetFinishedGoodsHandler
     {
         ArgumentNullException.ThrowIfNull(request);
         var search = NormalizeCodeSearch(request.Search);
+        var scope = await _scopeGuard.ResolveContextAsync("mdm.finished-goods.read", cancellationToken);
+        if (!scope.IsSuccessful)
+        {
+            return Response<ProductItemSkuMasterModels.PagedResult<ProductItemSkuMasterModels.FinishedGoodListItemDto>>
+                .Fail(scope.FailureCode!, scope.StatusCode);
+        }
         IReadOnlyList<Guid>? matchingGskuIds = null;
         if (search is not null)
         {
             matchingGskuIds = await _gskus.FindIdsByCanonicalCodeAsync(search, cancellationToken);
         }
 
-        var page = await _finishedGoods.GetPageAsync(
-            request.PageNumber,
-            request.PageSize,
-            search,
-            matchingGskuIds,
-            cancellationToken);
+        var page = scope.Context!.RolloutMode == ProductLegalEntityScopeRolloutMode.Preparation
+            ? await _finishedGoods.GetPageAsync(
+                request.PageNumber,
+                request.PageSize,
+                search,
+                matchingGskuIds,
+                cancellationToken)
+            : await _finishedGoods.GetEnforcedLegalEntityScopePageAsync(
+                request.PageNumber,
+                request.PageSize,
+                search,
+                matchingGskuIds,
+                scope.Context.EffectiveCandidateLegalEntityIds,
+                scope.Context.ServerNowUtc,
+                cancellationToken);
         var gskus = await _gskus.GetByIdsAsync(page.Items.Select(item => item.GskuId).Distinct().ToArray(), cancellationToken);
         var gskuById = gskus.ToDictionary(item => item.Id);
         if (page.Items.Any(item => !gskuById.ContainsKey(item.GskuId)))
@@ -65,4 +97,5 @@ public sealed class GetFinishedGoodsHandler
 
     private static string? NormalizeCodeSearch(string? search)
         => string.IsNullOrWhiteSpace(search) ? null : search.Trim().ToUpperInvariant();
+
 }

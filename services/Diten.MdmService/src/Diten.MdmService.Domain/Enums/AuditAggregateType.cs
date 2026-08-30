@@ -7,5 +7,7 @@ public enum AuditAggregateType
     ProductDefinitionRevision = 3,
     Gsku = 4,
     FinishedGood = 5,
-    Lsku = 6
+    Lsku = 6,
+    ProductLegalEntityScopePolicy = 7,
+    ProductLegalEntityScopeRolloutState = 8
 }

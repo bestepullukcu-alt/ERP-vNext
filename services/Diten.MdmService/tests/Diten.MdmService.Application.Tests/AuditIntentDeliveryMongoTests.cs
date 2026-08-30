@@ -3,11 +3,13 @@ using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Persistence.Repositories;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
 
 namespace Diten.MdmService.Application.Tests;
 
+[Collection(ProductLegalEntityScopeMongoCollection.Name)]
 public sealed class AuditIntentDeliveryMongoTests
 {
     private static long _codeSequence;
@@ -333,6 +335,359 @@ public sealed class AuditIntentDeliveryMongoTests
         Assert.Null(stored.AuditIntents[0].CentralAcknowledgement);
     }
 
+    public static TheoryData<AuditAggregateType> AtomicAcknowledgementAggregateTypes => new()
+    {
+        AuditAggregateType.CodeReservation,
+        AuditAggregateType.GlobalProduct,
+        AuditAggregateType.ProductDefinitionRevision,
+        AuditAggregateType.Gsku,
+        AuditAggregateType.FinishedGood,
+        AuditAggregateType.Lsku,
+        AuditAggregateType.ProductLegalEntityScopePolicy,
+        AuditAggregateType.ProductLegalEntityScopeRolloutState
+    };
+
+    [Theory]
+    [MemberData(nameof(AtomicAcknowledgementAggregateTypes))]
+    public async Task Atomic_acknowledgement_compacts_once_and_exact_replay_survives_worker_restart(
+        AuditAggregateType aggregateType)
+    {
+        await using var scope = await MongoScope.CreateAsync();
+        var aggregateId = await scope.InsertAuditAggregateAsync(aggregateType, version: 37);
+        var repository = scope.Delivery(scope.TenantA);
+        var item = Assert.Single(
+            await repository.DiscoverEligibleAsync(10),
+            candidate => candidate.Locator.AggregateType == aggregateType);
+        Assert.Equal(aggregateId, item.Locator.AggregateId);
+        var claim = Assert.IsType<AuditIntentClaim>(await repository.TryClaimAsync(
+            item.Locator,
+            item.ClaimGeneration,
+            "atomic-worker",
+            TimeSpan.FromMinutes(5)));
+        scope.Clock.Advance(TimeSpan.FromMinutes(1));
+        var acknowledgement = Acknowledgement(claim, scope.Clock.GetUtcNow());
+
+        Assert.True(await repository.AcknowledgeAndCompactAsync(
+            claim,
+            acknowledgement,
+            "atomic-receipt"));
+
+        var restartedRepository = scope.Delivery(scope.TenantA);
+        Assert.Empty(await restartedRepository.DiscoverEligibleAsync(10));
+        Assert.True(await restartedRepository.AcknowledgeAndCompactAsync(
+            claim,
+            acknowledgement,
+            "atomic-receipt"));
+        Assert.False(await restartedRepository.AcknowledgeAndCompactAsync(
+            claim,
+            acknowledgement,
+            "different-receipt"));
+        Assert.False(await restartedRepository.AcknowledgeAndCompactAsync(
+            claim,
+            acknowledgement with { CentralAcknowledgement = "different-acknowledgement" },
+            "atomic-receipt"));
+        Assert.False(await restartedRepository.AcknowledgeAndCompactAsync(
+            claim,
+            acknowledgement with { AcceptedAt = acknowledgement.AcceptedAt.AddTicks(1) },
+            "atomic-receipt"));
+        const string otherContractVersion = "owner-approved-contract-test-v2";
+        Assert.False(await restartedRepository.AcknowledgeAndCompactAsync(
+            claim,
+            acknowledgement with
+            {
+                ContractVersion = otherContractVersion,
+                CentralIdempotencyKey = AuditIntentContract.BuildCentralIdempotencyKey(
+                    claim.Locator.TenantId,
+                    claim.Locator.IntentId,
+                    otherContractVersion)
+            },
+            "atomic-receipt"));
+
+        var stored = await scope.ReadAuditAggregateAsync(aggregateType, aggregateId);
+        Assert.Equal(37, stored.Version);
+        Assert.Empty(stored.Intents);
+        var receipt = Assert.Single(stored.Receipts);
+        Assert.Equal(item.Locator.IntentId, receipt.IntentId);
+        Assert.Equal(acknowledgement.CentralAcknowledgement, receipt.CentralAcknowledgement);
+        Assert.Equal(acknowledgement.CentralIdempotencyKey, receipt.CentralIdempotencyKey);
+        Assert.Equal(acknowledgement.ContractVersion, receipt.ContractVersion);
+        Assert.Equal(acknowledgement.AcceptedAt, receipt.AcknowledgedAt);
+        Assert.Equal("atomic-receipt", receipt.CompactReceiptReference);
+    }
+
+    [Fact]
+    public async Task Atomic_acknowledgement_rejects_stale_expired_and_cross_tenant_claims_without_partial_mutation()
+    {
+        await using var scope = await MongoScope.CreateAsync();
+        var reservation = CreateReservation(scope.TenantA, version: 29);
+        await scope.Reservations.InsertOneAsync(reservation);
+        var repository = scope.Delivery(scope.TenantA);
+        var claim = Assert.IsType<AuditIntentClaim>(await repository.TryClaimAsync(
+            Locator(reservation),
+            0,
+            "atomic-worker",
+            TimeSpan.FromMinutes(1)));
+        var acknowledgement = Acknowledgement(claim, scope.Clock.GetUtcNow());
+        scope.Clock.Advance(TimeSpan.FromMinutes(2));
+
+        Assert.False(await repository.AcknowledgeAndCompactAsync(
+            claim,
+            acknowledgement,
+            "expired-receipt"));
+        Assert.False(await scope.Delivery(scope.TenantB).AcknowledgeAndCompactAsync(
+            claim,
+            acknowledgement,
+            "cross-tenant-receipt"));
+
+        var stored = await scope.Reservations.Find(item => item.Id == reservation.Id).SingleAsync();
+        Assert.Equal(29, stored.Version);
+        Assert.Single(stored.AuditIntents);
+        Assert.Empty(stored.AuditIntentReceipts);
+    }
+
+    [Fact]
+    public async Task Concurrent_atomic_acknowledgement_calls_converge_on_one_exact_receipt()
+    {
+        await using var scope = await MongoScope.CreateAsync();
+        var reservation = CreateReservation(scope.TenantA, version: 31);
+        await scope.Reservations.InsertOneAsync(reservation);
+        var repository = scope.Delivery(scope.TenantA);
+        var claim = Assert.IsType<AuditIntentClaim>(await repository.TryClaimAsync(
+            Locator(reservation),
+            0,
+            "atomic-worker",
+            TimeSpan.FromMinutes(5)));
+        var acknowledgement = Acknowledgement(claim, scope.Clock.GetUtcNow());
+
+        var results = await Task.WhenAll(
+            repository.AcknowledgeAndCompactAsync(claim, acknowledgement, "concurrent-receipt"),
+            repository.AcknowledgeAndCompactAsync(claim, acknowledgement, "concurrent-receipt"));
+
+        Assert.All(results, Assert.True);
+        var stored = await scope.Reservations.Find(item => item.Id == reservation.Id).SingleAsync();
+        Assert.Equal(31, stored.Version);
+        Assert.Empty(stored.AuditIntents);
+        Assert.Single(stored.AuditIntentReceipts);
+    }
+
+    [Fact]
+    public async Task Duplicate_claimed_intent_identity_fails_closed_without_partial_compaction()
+    {
+        await using var scope = await MongoScope.CreateAsync();
+        var reservation = CreateReservation(scope.TenantA, version: 43);
+        await scope.Reservations.InsertOneAsync(reservation);
+        var repository = scope.Delivery(scope.TenantA);
+        var claim = Assert.IsType<AuditIntentClaim>(await repository.TryClaimAsync(
+            Locator(reservation),
+            0,
+            "atomic-worker",
+            TimeSpan.FromMinutes(5)));
+        var claimed = await scope.Reservations.Find(item => item.Id == reservation.Id).SingleAsync();
+        var duplicate = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<LocalAuditIntent>(
+            Assert.Single(claimed.AuditIntents).ToBsonDocument());
+        duplicate.ClaimToken = $"{duplicate.ClaimToken}-duplicate";
+        await scope.Reservations.UpdateOneAsync(
+            item => item.Id == reservation.Id,
+            Builders<CodeReservation>.Update.Push(item => item.AuditIntents, duplicate));
+
+        Assert.False(await repository.AcknowledgeAndCompactAsync(
+            claim,
+            Acknowledgement(claim, scope.Clock.GetUtcNow()),
+            "duplicate-receipt"));
+
+        var stored = await scope.Reservations.Find(item => item.Id == reservation.Id).SingleAsync();
+        Assert.Equal(43, stored.Version);
+        Assert.Equal(2, stored.AuditIntents.Count);
+        Assert.Empty(stored.AuditIntentReceipts);
+    }
+
+    [Fact]
+    public async Task Stale_token_generation_and_conflicting_receipt_fail_closed_without_mutation()
+    {
+        await using var scope = await MongoScope.CreateAsync();
+        var reservation = CreateReservation(scope.TenantA, version: 47);
+        await scope.Reservations.InsertOneAsync(reservation);
+        var repository = scope.Delivery(scope.TenantA);
+        var claim = Assert.IsType<AuditIntentClaim>(await repository.TryClaimAsync(
+            Locator(reservation),
+            0,
+            "atomic-worker",
+            TimeSpan.FromMinutes(5)));
+        var acknowledgement = Acknowledgement(claim, scope.Clock.GetUtcNow());
+        var staleToken = claim with { ClaimToken = $"{claim.ClaimToken}-stale" };
+        var staleGeneration = claim with { ClaimGeneration = claim.ClaimGeneration + 1 };
+
+        Assert.False(await repository.AcknowledgeAndCompactAsync(
+            staleToken,
+            acknowledgement,
+            "stale-token-receipt"));
+        Assert.False(await repository.AcknowledgeAndCompactAsync(
+            staleGeneration,
+            acknowledgement,
+            "stale-generation-receipt"));
+
+        var conflictingReceipt = new LocalAuditIntentReceipt
+        {
+            SourceService = AuditIntentContract.SourceService,
+            IntentId = claim.Locator.IntentId,
+            TenantId = claim.Locator.TenantId,
+            IdempotencyKey = reservation.AuditIntents[0].IdempotencyKey,
+            CentralAcknowledgement = "conflicting-acknowledgement",
+            CentralIdempotencyKey = acknowledgement.CentralIdempotencyKey,
+            ContractVersion = acknowledgement.ContractVersion,
+            AcknowledgedAt = acknowledgement.AcceptedAt,
+            DeliveredAt = scope.Clock.GetUtcNow(),
+            CompactedAt = scope.Clock.GetUtcNow(),
+            CompactReceiptReference = "conflicting-receipt",
+            EvidenceHash = reservation.AuditIntents[0].EvidenceHash
+        };
+        await scope.Reservations.UpdateOneAsync(
+            item => item.Id == reservation.Id,
+            Builders<CodeReservation>.Update.Push(item => item.AuditIntentReceipts, conflictingReceipt));
+
+        Assert.False(await repository.AcknowledgeAndCompactAsync(
+            claim,
+            acknowledgement,
+            "expected-receipt"));
+        var stored = await scope.Reservations.Find(item => item.Id == reservation.Id).SingleAsync();
+        Assert.Equal(47, stored.Version);
+        Assert.Single(stored.AuditIntents);
+        Assert.Single(stored.AuditIntentReceipts);
+    }
+
+    [Fact]
+    public async Task Reclaim_before_atomic_CAS_fences_old_claim_and_allows_only_new_generation()
+    {
+        await using var scope = await MongoScope.CreateAsync();
+        var reservation = CreateReservation(scope.TenantA, version: 49);
+        await scope.Reservations.InsertOneAsync(reservation);
+        var repository = scope.Delivery(scope.TenantA);
+        var oldClaim = Assert.IsType<AuditIntentClaim>(await repository.TryClaimAsync(
+            Locator(reservation),
+            0,
+            "worker-old",
+            TimeSpan.FromMinutes(1)));
+        scope.Clock.Advance(TimeSpan.FromMinutes(2));
+        var staleItem = Assert.Single(await repository.DiscoverEligibleAsync(10));
+        var newClaim = Assert.IsType<AuditIntentClaim>(await repository.TryClaimAsync(
+            staleItem.Locator,
+            staleItem.ClaimGeneration,
+            "worker-new",
+            TimeSpan.FromMinutes(5)));
+
+        Assert.False(await repository.AcknowledgeAndCompactAsync(
+            oldClaim,
+            Acknowledgement(oldClaim, scope.Clock.GetUtcNow()),
+            "old-receipt"));
+        Assert.True(await repository.AcknowledgeAndCompactAsync(
+            newClaim,
+            Acknowledgement(newClaim, scope.Clock.GetUtcNow()),
+            "new-receipt"));
+
+        var stored = await scope.Reservations.Find(item => item.Id == reservation.Id).SingleAsync();
+        Assert.Equal(49, stored.Version);
+        Assert.Empty(stored.AuditIntents);
+        Assert.Equal("new-receipt", Assert.Single(stored.AuditIntentReceipts).CompactReceiptReference);
+    }
+
+    [Fact]
+    public async Task Atomic_compaction_accepts_exact_budget_document_when_result_fits()
+    {
+        await using var scope = await MongoScope.CreateAsync();
+        var aggregateId = await scope.InsertAuditAggregateAsync(
+            AuditAggregateType.ProductLegalEntityScopePolicy,
+            version: 53);
+        var repository = scope.Delivery(scope.TenantA);
+        var item = Assert.Single(await repository.DiscoverEligibleAsync(10));
+        var claim = Assert.IsType<AuditIntentClaim>(await repository.TryClaimAsync(
+            item.Locator,
+            item.ClaimGeneration,
+            "atomic-worker",
+            TimeSpan.FromMinutes(5)));
+        await scope.ProductScopePolicies.UpdateOneAsync(
+            policy => policy.Id == aggregateId,
+            Builders<ProductLegalEntityScopePolicy>.Update.Set("AuditIntents.$[intent].EvidenceHash", string.Empty),
+            new UpdateOptions
+            {
+                ArrayFilters =
+                [
+                    new BsonDocumentArrayFilterDefinition<BsonDocument>(
+                        new BsonDocument("intent.IntentId", new BsonBinaryData(
+                            item.Locator.IntentId,
+                            GuidRepresentation.Standard)))
+                ]
+            });
+        var baseline = await scope.ProductScopePolicies.Find(policy => policy.Id == aggregateId).SingleAsync();
+        var padding = ProductLegalEntityScopePolicy.MaximumSerializedBsonBytes
+            - baseline.ToBsonDocument().ToBson().Length;
+        Assert.True(padding > 0);
+        await scope.ProductScopePolicies.UpdateOneAsync(
+            policy => policy.Id == aggregateId,
+            Builders<ProductLegalEntityScopePolicy>.Update.Set(
+                "AuditIntents.$[intent].EvidenceHash",
+                new string('x', padding)),
+            new UpdateOptions
+            {
+                ArrayFilters =
+                [
+                    new BsonDocumentArrayFilterDefinition<BsonDocument>(
+                        new BsonDocument("intent.IntentId", new BsonBinaryData(
+                            item.Locator.IntentId,
+                            GuidRepresentation.Standard)))
+                ]
+            });
+        var exact = await scope.ProductScopePolicies.Find(policy => policy.Id == aggregateId).SingleAsync();
+        Assert.Equal(
+            ProductLegalEntityScopePolicy.MaximumSerializedBsonBytes,
+            exact.ToBsonDocument().ToBson().Length);
+
+        Assert.True(await repository.AcknowledgeAndCompactAsync(
+            claim,
+            Acknowledgement(claim, scope.Clock.GetUtcNow()),
+            "exact-budget-receipt"));
+        var stored = await scope.ReadAuditAggregateAsync(
+            AuditAggregateType.ProductLegalEntityScopePolicy,
+            aggregateId);
+        Assert.Equal(53, stored.Version);
+        Assert.Empty(stored.Intents);
+        Assert.Single(stored.Receipts);
+    }
+
+    [Fact]
+    public async Task Atomic_compaction_rejects_over_budget_candidate_without_partial_mutation()
+    {
+        await using var scope = await MongoScope.CreateAsync();
+        var aggregateId = await scope.InsertAuditAggregateAsync(
+            AuditAggregateType.ProductLegalEntityScopePolicy,
+            version: 59);
+        var repository = scope.Delivery(scope.TenantA);
+        var item = Assert.Single(await repository.DiscoverEligibleAsync(10));
+        var claim = Assert.IsType<AuditIntentClaim>(await repository.TryClaimAsync(
+            item.Locator,
+            item.ClaimGeneration,
+            "atomic-worker",
+            TimeSpan.FromMinutes(5)));
+        var unrelated = CreateIntent(
+            scope.TenantA,
+            AuditAggregateType.ProductLegalEntityScopePolicy,
+            aggregateId);
+        unrelated.EvidenceHash = new string('x', ProductLegalEntityScopePolicy.MaximumSerializedBsonBytes);
+        await scope.ProductScopePolicies.UpdateOneAsync(
+            policy => policy.Id == aggregateId,
+            Builders<ProductLegalEntityScopePolicy>.Update.Push(policy => policy.AuditIntents, unrelated));
+
+        Assert.False(await repository.AcknowledgeAndCompactAsync(
+            claim,
+            Acknowledgement(claim, scope.Clock.GetUtcNow()),
+            "over-budget-receipt"));
+        var stored = await scope.ReadAuditAggregateAsync(
+            AuditAggregateType.ProductLegalEntityScopePolicy,
+            aggregateId);
+        Assert.Equal(59, stored.Version);
+        Assert.Equal(2, stored.Intents.Count);
+        Assert.Empty(stored.Receipts);
+    }
+
     [Fact]
     public async Task Acknowledged_delivery_compacts_to_receipt_without_changing_business_version()
     {
@@ -509,6 +864,125 @@ public sealed class AuditIntentDeliveryMongoTests
         Assert.Single(stored.AuditIntentReceipts);
     }
 
+    [Theory]
+    [InlineData(AuditAggregateType.ProductLegalEntityScopePolicy)]
+    [InlineData(AuditAggregateType.ProductLegalEntityScopeRolloutState)]
+    public async Task Product_scope_aggregates_support_delivery_retry_dead_letter_ack_compaction_and_fencing(
+        AuditAggregateType aggregateType)
+    {
+        await using var scope = await MongoScope.CreateAsync();
+        var aggregateId = Guid.NewGuid();
+        var retryIntent = CreateIntent(scope.TenantA, aggregateType, aggregateId);
+        retryIntent.TimestampUtc = DateTimeOffset.UtcNow.AddMinutes(-2);
+        AuditIntentTemporalStorage.ApplyCurrentVersion(retryIntent);
+        var deliveryIntent = CreateIntent(scope.TenantA, aggregateType, aggregateId);
+        deliveryIntent.TimestampUtc = DateTimeOffset.UtcNow.AddMinutes(-1);
+        AuditIntentTemporalStorage.ApplyCurrentVersion(deliveryIntent);
+        var expectedVersion = aggregateType == AuditAggregateType.ProductLegalEntityScopePolicy ? 31 : 37;
+        await scope.InsertProductScopeAggregateAsync(
+            aggregateType,
+            aggregateId,
+            expectedVersion,
+            [retryIntent, deliveryIntent]);
+        var repository = scope.Delivery(scope.TenantA);
+        scope.Clock.SetUtcNow(DateTimeOffset.UtcNow);
+        var items = (await repository.DiscoverEligibleAsync(10))
+            .Where(item => item.Locator.AggregateType == aggregateType)
+            .ToArray();
+
+        Assert.Equal(2, items.Length);
+        var retryItem = Assert.Single(items, item => item.Locator.IntentId == retryIntent.IntentId);
+        var firstClaim = Assert.IsType<AuditIntentClaim>(await repository.TryClaimAsync(
+            retryItem.Locator,
+            retryItem.ClaimGeneration,
+            "product-scope-retry-worker",
+            TimeSpan.FromMinutes(5)));
+        Assert.Null(await repository.TryClaimAsync(
+            retryItem.Locator,
+            retryItem.ClaimGeneration,
+            "stale-worker",
+            TimeSpan.FromMinutes(5)));
+        scope.Clock.Advance(TimeSpan.FromMinutes(1));
+        Assert.True(await repository.MarkRetryableFailureAsync(
+            firstClaim,
+            TimeSpan.FromMinutes(3),
+            "temporary-provider-failure"));
+        Assert.False(await repository.MarkDeadLetterAsync(firstClaim, "stale-claim"));
+        scope.Clock.Advance(TimeSpan.FromMinutes(3));
+        var secondClaim = Assert.IsType<AuditIntentClaim>(await repository.TryClaimAsync(
+            retryItem.Locator,
+            firstClaim.ClaimGeneration,
+            "product-scope-dead-letter-worker",
+            TimeSpan.FromMinutes(5)));
+        Assert.True(await repository.MarkDeadLetterAsync(secondClaim, "terminal-contract-failure"));
+
+        var deliveryItem = Assert.Single(items, item => item.Locator.IntentId == deliveryIntent.IntentId);
+        var deliveryClaim = Assert.IsType<AuditIntentClaim>(await repository.TryClaimAsync(
+            deliveryItem.Locator,
+            deliveryItem.ClaimGeneration,
+            "product-scope-delivery-worker",
+            TimeSpan.FromMinutes(5)));
+        scope.Clock.Advance(TimeSpan.FromMinutes(1));
+        Assert.True(await repository.MarkDeliveredAsync(
+            deliveryClaim,
+            Acknowledgement(deliveryClaim, scope.Clock.GetUtcNow())));
+        scope.Clock.Advance(TimeSpan.FromMinutes(1));
+        Assert.True(await repository.CompactDeliveredAsync(deliveryClaim, "product-scope-receipt"));
+        Assert.True(await repository.CompactDeliveredAsync(deliveryClaim, "product-scope-receipt"));
+
+        var stored = await scope.ReadProductScopeAggregateAsync(aggregateType, aggregateId);
+        Assert.Equal(expectedVersion, stored.Version);
+        var deadLetter = Assert.Single(stored.Intents);
+        Assert.Equal(retryIntent.IntentId, deadLetter.IntentId);
+        Assert.Equal(AuditIntentDeliveryState.DeadLetter, deadLetter.DeliveryState);
+        Assert.Single(stored.Receipts);
+    }
+
+    [Theory]
+    [InlineData(AuditAggregateType.ProductLegalEntityScopePolicy)]
+    [InlineData(AuditAggregateType.ProductLegalEntityScopeRolloutState)]
+    public async Task Product_scope_audit_discovery_propagates_cancellation(AuditAggregateType aggregateType)
+    {
+        await using var scope = await MongoScope.CreateAsync();
+        var aggregateId = Guid.NewGuid();
+        await scope.InsertProductScopeAggregateAsync(
+            aggregateType,
+            aggregateId,
+            1,
+            [CreateIntent(scope.TenantA, aggregateType, aggregateId)]);
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => scope.Delivery(scope.TenantA).DiscoverEligibleAsync(10, cancellation.Token));
+    }
+
+    [Theory]
+    [InlineData(AuditAggregateType.ProductLegalEntityScopePolicy)]
+    [InlineData(AuditAggregateType.ProductLegalEntityScopeRolloutState)]
+    public async Task Product_scope_audit_update_refuses_to_cross_complete_Bson_limit_without_mutation(
+        AuditAggregateType aggregateType)
+    {
+        await using var scope = await MongoScope.CreateAsync();
+        var evidence = await scope.InsertExactLimitProductScopeAggregateAsync(aggregateType, version: 43);
+        scope.Clock.SetUtcNow(DateTimeOffset.UtcNow);
+
+        var claim = await scope.Delivery(scope.TenantA).TryClaimAsync(
+            evidence.Locator,
+            0,
+            "budget-worker",
+            TimeSpan.FromMinutes(5));
+        var stored = await scope.ReadProductScopeAggregateAsync(aggregateType, evidence.Locator.AggregateId);
+
+        Assert.Null(claim);
+        Assert.Equal(43, stored.Version);
+        var intent = Assert.Single(stored.Intents);
+        Assert.Equal(AuditIntentDeliveryState.Pending, intent.DeliveryState);
+        Assert.Equal(0, intent.ClaimGeneration);
+        Assert.Null(intent.ClaimToken);
+        Assert.Empty(stored.Receipts);
+    }
+
     [Fact]
     public async Task Cross_tenant_discovery_claim_and_completion_fail_without_disclosure()
     {
@@ -579,6 +1053,40 @@ public sealed class AuditIntentDeliveryMongoTests
         };
     }
 
+    private static ProductDefinitionRevision CreateProductDefinitionRevision(Guid tenantId)
+    {
+        var id = Guid.NewGuid();
+        return new ProductDefinitionRevision
+        {
+            Id = id,
+            TenantId = tenantId,
+            GlobalProductId = Guid.NewGuid(),
+            RevisionIdentifier = "REV-001",
+            CreationCommandId = Guid.NewGuid().ToString("N"),
+            Version = 5,
+            AuditIntents = [CreateIntent(tenantId, AuditAggregateType.ProductDefinitionRevision, id)]
+        };
+    }
+
+    private static Gsku CreateGsku(Guid tenantId)
+    {
+        var id = Guid.NewGuid();
+        return new Gsku
+        {
+            Id = id,
+            TenantId = tenantId,
+            ProductDefinitionRevisionId = Guid.NewGuid(),
+            CanonicalCode = $"GS-{Interlocked.Increment(ref _codeSequence):D12}",
+            CodeReservationId = Guid.NewGuid(),
+            CreationCommandId = Guid.NewGuid().ToString("N"),
+            PackApplicabilityCode = "STANDARD",
+            PackQuantity = 1m,
+            PackUomCode = "EA",
+            Version = 7,
+            AuditIntents = [CreateIntent(tenantId, AuditAggregateType.Gsku, id)]
+        };
+    }
+
     private static FinishedGood CreateFinishedGood(Guid tenantId)
     {
         var id = Guid.NewGuid();
@@ -618,7 +1126,8 @@ public sealed class AuditIntentDeliveryMongoTests
         Guid tenantId,
         AuditAggregateType aggregateType,
         Guid aggregateId)
-        => new()
+    {
+        var intent = new LocalAuditIntent
         {
             IntentId = Guid.NewGuid(),
             TenantId = tenantId,
@@ -627,8 +1136,15 @@ public sealed class AuditIntentDeliveryMongoTests
             Operation = aggregateType switch
             {
                 AuditAggregateType.CodeReservation => ProductAuditOperation.CodeReserved,
+                AuditAggregateType.ProductDefinitionRevision =>
+                    ProductAuditOperation.ProductDefinitionRevisionDraftCreated,
+                AuditAggregateType.Gsku => ProductAuditOperation.GskuDraftCreated,
                 AuditAggregateType.FinishedGood => ProductAuditOperation.FinishedGoodDraftCreated,
                 AuditAggregateType.Lsku => ProductAuditOperation.LskuDraftCreated,
+                AuditAggregateType.ProductLegalEntityScopePolicy =>
+                    ProductAuditOperation.ProductLegalEntityScopePolicyCreated,
+                AuditAggregateType.ProductLegalEntityScopeRolloutState =>
+                    ProductAuditOperation.ProductLegalEntityScopeEnforcementActivated,
                 _ => ProductAuditOperation.GlobalProductDraftCreated
             },
             ActorId = Guid.NewGuid().ToString("N"),
@@ -641,6 +1157,9 @@ public sealed class AuditIntentDeliveryMongoTests
             IdempotencyKey = Guid.NewGuid().ToString("N"),
             DeliveryState = AuditIntentDeliveryState.Pending
         };
+        AuditIntentTemporalStorage.ApplyCurrentVersion(intent);
+        return intent;
+    }
 
     private static AuditIntentLocator Locator(CodeReservation reservation)
         => new(
@@ -695,18 +1214,11 @@ public sealed class AuditIntentDeliveryMongoTests
 
     private sealed class MongoScope : IAsyncDisposable
     {
-        private readonly IMongoClient _client;
-        private readonly string _databaseName;
-
         private MongoScope(
-            IMongoClient client,
             IMongoDatabase database,
-            string databaseName,
             ManualTimeProvider clock)
         {
-            _client = client;
             Database = database;
-            _databaseName = databaseName;
             Clock = clock;
             TenantA = Guid.NewGuid();
             TenantB = Guid.NewGuid();
@@ -720,10 +1232,18 @@ public sealed class AuditIntentDeliveryMongoTests
             Database.GetCollection<CodeReservation>("mdm_code_reservations");
         public IMongoCollection<GlobalProduct> GlobalProducts =>
             Database.GetCollection<GlobalProduct>("mdm_global_products");
+        public IMongoCollection<ProductDefinitionRevision> ProductDefinitionRevisions =>
+            Database.GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions");
+        public IMongoCollection<Gsku> Gskus =>
+            Database.GetCollection<Gsku>("mdm_gskus");
         public IMongoCollection<FinishedGood> FinishedGoods =>
             Database.GetCollection<FinishedGood>("mdm_finished_goods");
         public IMongoCollection<Lsku> Lskus =>
             Database.GetCollection<Lsku>("mdm_lskus");
+        public IMongoCollection<ProductLegalEntityScopePolicy> ProductScopePolicies =>
+            Database.GetCollection<ProductLegalEntityScopePolicy>("mdm_product_legal_entity_scope_policies");
+        public IMongoCollection<ProductLegalEntityScopeRolloutState> ProductScopeRolloutStates =>
+            Database.GetCollection<ProductLegalEntityScopeRolloutState>("mdm_product_legal_entity_scope_rollout_states");
 
         public static async Task<MongoScope> CreateAsync()
         {
@@ -734,11 +1254,10 @@ public sealed class AuditIntentDeliveryMongoTests
             settings.GuidRepresentation = MongoDB.Bson.GuidRepresentation.Standard;
 #pragma warning restore CS0618
             var client = new MongoClient(settings);
-            var databaseName = $"diten_mdm_audit_worker_tests_{Guid.NewGuid():N}";
-            var database = client.GetDatabase(databaseName);
+            var database = client.GetDatabase(ProductLegalEntityScopeMongoCollection.DatabaseName);
             await database.RunCommandAsync<MongoDB.Bson.BsonDocument>(
                 new MongoDB.Bson.BsonDocument("ping", 1));
-            return new MongoScope(client, database, databaseName, new ManualTimeProvider(DateTimeOffset.UtcNow));
+            return new MongoScope(database, new ManualTimeProvider(DateTimeOffset.UtcNow));
         }
 
         public AuditIntentDeliveryRepository Delivery(Guid tenantId)
@@ -750,9 +1269,219 @@ public sealed class AuditIntentDeliveryMongoTests
         public GlobalProductRepository ProductBusiness(Guid tenantId)
             => new(Database, Tenant(tenantId));
 
+        public async Task<Guid> InsertAuditAggregateAsync(AuditAggregateType aggregateType, int version)
+        {
+            switch (aggregateType)
+            {
+                case AuditAggregateType.CodeReservation:
+                {
+                    var aggregate = CreateReservation(TenantA, version);
+                    await Reservations.InsertOneAsync(aggregate);
+                    return aggregate.Id;
+                }
+                case AuditAggregateType.GlobalProduct:
+                {
+                    var aggregate = CreateGlobalProduct(TenantA);
+                    aggregate.Version = version;
+                    await GlobalProducts.InsertOneAsync(aggregate);
+                    return aggregate.Id;
+                }
+                case AuditAggregateType.ProductDefinitionRevision:
+                {
+                    var aggregate = CreateProductDefinitionRevision(TenantA);
+                    aggregate.Version = version;
+                    await ProductDefinitionRevisions.InsertOneAsync(aggregate);
+                    return aggregate.Id;
+                }
+                case AuditAggregateType.Gsku:
+                {
+                    var aggregate = CreateGsku(TenantA);
+                    aggregate.Version = version;
+                    await Gskus.InsertOneAsync(aggregate);
+                    return aggregate.Id;
+                }
+                case AuditAggregateType.FinishedGood:
+                {
+                    var aggregate = CreateFinishedGood(TenantA);
+                    aggregate.Version = version;
+                    await FinishedGoods.InsertOneAsync(aggregate);
+                    return aggregate.Id;
+                }
+                case AuditAggregateType.Lsku:
+                {
+                    var aggregate = CreateLsku(TenantA);
+                    aggregate.Version = version;
+                    await Lskus.InsertOneAsync(aggregate);
+                    return aggregate.Id;
+                }
+                case AuditAggregateType.ProductLegalEntityScopePolicy:
+                case AuditAggregateType.ProductLegalEntityScopeRolloutState:
+                {
+                    var aggregateId = Guid.NewGuid();
+                    await InsertProductScopeAggregateAsync(
+                        aggregateType,
+                        aggregateId,
+                        version,
+                        [CreateIntent(TenantA, aggregateType, aggregateId)]);
+                    return aggregateId;
+                }
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(aggregateType));
+            }
+        }
+
+        public async Task<(int Version, List<LocalAuditIntent> Intents, List<LocalAuditIntentReceipt> Receipts)>
+            ReadAuditAggregateAsync(AuditAggregateType aggregateType, Guid aggregateId)
+        {
+            switch (aggregateType)
+            {
+                case AuditAggregateType.CodeReservation:
+                {
+                    var aggregate = await Reservations.Find(item => item.Id == aggregateId).SingleAsync();
+                    return (aggregate.Version, aggregate.AuditIntents, aggregate.AuditIntentReceipts);
+                }
+                case AuditAggregateType.GlobalProduct:
+                {
+                    var aggregate = await GlobalProducts.Find(item => item.Id == aggregateId).SingleAsync();
+                    return (aggregate.Version, aggregate.AuditIntents, aggregate.AuditIntentReceipts);
+                }
+                case AuditAggregateType.ProductDefinitionRevision:
+                {
+                    var aggregate = await ProductDefinitionRevisions.Find(item => item.Id == aggregateId).SingleAsync();
+                    return (aggregate.Version, aggregate.AuditIntents, aggregate.AuditIntentReceipts);
+                }
+                case AuditAggregateType.Gsku:
+                {
+                    var aggregate = await Gskus.Find(item => item.Id == aggregateId).SingleAsync();
+                    return (aggregate.Version, aggregate.AuditIntents, aggregate.AuditIntentReceipts);
+                }
+                case AuditAggregateType.FinishedGood:
+                {
+                    var aggregate = await FinishedGoods.Find(item => item.Id == aggregateId).SingleAsync();
+                    return (aggregate.Version, aggregate.AuditIntents, aggregate.AuditIntentReceipts);
+                }
+                case AuditAggregateType.Lsku:
+                {
+                    var aggregate = await Lskus.Find(item => item.Id == aggregateId).SingleAsync();
+                    return (aggregate.Version, aggregate.AuditIntents, aggregate.AuditIntentReceipts);
+                }
+                case AuditAggregateType.ProductLegalEntityScopePolicy:
+                case AuditAggregateType.ProductLegalEntityScopeRolloutState:
+                    return await ReadProductScopeAggregateAsync(aggregateType, aggregateId);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(aggregateType));
+            }
+        }
+
+        public async Task InsertProductScopeAggregateAsync(
+            AuditAggregateType aggregateType,
+            Guid aggregateId,
+            int version,
+            List<LocalAuditIntent> intents)
+        {
+            if (aggregateType == AuditAggregateType.ProductLegalEntityScopePolicy)
+            {
+                var policy = ProductLegalEntityScopePolicy.Create(
+                    TenantA,
+                    Guid.NewGuid(),
+                    Guid.NewGuid(),
+                    ProductLegalEntityScopeMode.GroupWide,
+                    [],
+                    Guid.NewGuid(),
+                    DateTimeOffset.UtcNow.AddMinutes(-3));
+                policy.Id = aggregateId;
+                policy.Version = version;
+                policy.AuditIntents = intents;
+                await ProductScopePolicies.InsertOneAsync(policy);
+                return;
+            }
+
+            var rollout = ProductLegalEntityScopeRolloutState.CreatePreparation(
+                TenantA,
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                DateTimeOffset.UtcNow.AddMinutes(-3));
+            rollout.Id = aggregateId;
+            rollout.Version = version;
+            rollout.AuditIntents = intents;
+            await ProductScopeRolloutStates.InsertOneAsync(rollout);
+        }
+
+        public async Task<(AuditIntentLocator Locator, int SerializedBytes)>
+            InsertExactLimitProductScopeAggregateAsync(
+                AuditAggregateType aggregateType,
+                int version)
+            {
+                var aggregateId = Guid.NewGuid();
+                var intent = CreateIntent(TenantA, aggregateType, aggregateId);
+                intent.EvidenceHash = string.Empty;
+                if (aggregateType == AuditAggregateType.ProductLegalEntityScopePolicy)
+            {
+                var policy = ProductLegalEntityScopePolicy.Create(
+                    TenantA,
+                    Guid.NewGuid(),
+                    Guid.NewGuid(),
+                    ProductLegalEntityScopeMode.GroupWide,
+                    [],
+                    Guid.NewGuid(),
+                    DateTimeOffset.UtcNow.AddMinutes(-3));
+                policy.Id = aggregateId;
+                policy.Version = version;
+                policy.AuditIntents = [intent];
+                var baseSize = policy.ToBsonDocument().ToBson().Length;
+                intent.EvidenceHash = new string(
+                    'x',
+                    ProductLegalEntityScopePolicy.MaximumSerializedBsonBytes - baseSize);
+                var bytes = policy.ToBsonDocument().ToBson().Length;
+                Assert.Equal(ProductLegalEntityScopePolicy.MaximumSerializedBsonBytes, bytes);
+                await ProductScopePolicies.InsertOneAsync(policy);
+                return (new AuditIntentLocator(TenantA, aggregateType, aggregateId, intent.IntentId), bytes);
+            }
+
+            var rollout = ProductLegalEntityScopeRolloutState.CreatePreparation(
+                TenantA,
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                DateTimeOffset.UtcNow.AddMinutes(-3));
+            rollout.Id = aggregateId;
+            rollout.Version = version;
+            rollout.AuditIntents = [intent];
+            var rolloutBaseSize = rollout.ToBsonDocument().ToBson().Length;
+            intent.EvidenceHash = new string(
+                'x',
+                ProductLegalEntityScopePolicy.MaximumSerializedBsonBytes - rolloutBaseSize);
+            var rolloutBytes = rollout.ToBsonDocument().ToBson().Length;
+            Assert.Equal(ProductLegalEntityScopePolicy.MaximumSerializedBsonBytes, rolloutBytes);
+            await ProductScopeRolloutStates.InsertOneAsync(rollout);
+            return (new AuditIntentLocator(TenantA, aggregateType, aggregateId, intent.IntentId), rolloutBytes);
+        }
+
+        public async Task<(int Version, List<LocalAuditIntent> Intents, List<LocalAuditIntentReceipt> Receipts)>
+            ReadProductScopeAggregateAsync(
+            AuditAggregateType aggregateType,
+            Guid aggregateId)
+        {
+            if (aggregateType == AuditAggregateType.ProductLegalEntityScopePolicy)
+            {
+                var policy = await ProductScopePolicies.Find(item => item.Id == aggregateId).SingleAsync();
+                return (policy.Version, policy.AuditIntents, policy.AuditIntentReceipts);
+            }
+
+            var rollout = await ProductScopeRolloutStates.Find(item => item.Id == aggregateId).SingleAsync();
+            return (rollout.Version, rollout.AuditIntents, rollout.AuditIntentReceipts);
+        }
+
         public async ValueTask DisposeAsync()
         {
-            await _client.DropDatabaseAsync(_databaseName);
+            await Task.WhenAll(
+                Reservations.DeleteManyAsync(item => item.TenantId == TenantA || item.TenantId == TenantB),
+                GlobalProducts.DeleteManyAsync(item => item.TenantId == TenantA || item.TenantId == TenantB),
+                ProductDefinitionRevisions.DeleteManyAsync(item => item.TenantId == TenantA || item.TenantId == TenantB),
+                Gskus.DeleteManyAsync(item => item.TenantId == TenantA || item.TenantId == TenantB),
+                FinishedGoods.DeleteManyAsync(item => item.TenantId == TenantA || item.TenantId == TenantB),
+                Lskus.DeleteManyAsync(item => item.TenantId == TenantA || item.TenantId == TenantB),
+                ProductScopePolicies.DeleteManyAsync(item => item.TenantId == TenantA || item.TenantId == TenantB),
+                ProductScopeRolloutStates.DeleteManyAsync(item => item.TenantId == TenantA || item.TenantId == TenantB));
         }
 
         private static TenantContext Tenant(Guid tenantId)
@@ -802,4 +1531,11 @@ public sealed class AuditIntentDeliveryMongoTests
             }
         }
     }
+}
+
+[CollectionDefinition(Name, DisableParallelization = true)]
+public sealed class ProductLegalEntityScopeMongoCollection
+{
+    public const string Name = "ProductLegalEntityScopeMongo";
+    public const string DatabaseName = "diten_mdm_product_scope_itest";
 }
