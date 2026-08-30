@@ -18,6 +18,7 @@
   let savedView = null;
   let saveFilterArmed = false;
   let dataTable;
+  let listFailureMessage = '';
   const statusHost = document.getElementById('performanceImprovementStatus');
 
   const escape = value => String(value ?? '').replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
@@ -96,7 +97,7 @@
 
   async function saveDefaultView(view) {
     if (!window.personalizationClient?.saveView) return;
-    const payload = { ...normalizeView(view), viewName: String(L.SaveView || 'Default').trim() || 'Default' };
+    const payload = { ...normalizeView(view), viewName: String(L.SaveView).trim() };
     await window.personalizationClient.saveView(moduleKey, pageKey, payload);
     savedView = normalizeView(payload);
     setSaveFilterVisible(false);
@@ -171,9 +172,11 @@
       try {
         const payload = await read('/management-governance/process-modeling/api/improvements');
         allRows = Array.isArray(payload?.data) ? payload.data : [];
+        listFailureMessage = '';
         setState(allRows.length ? 'ready' : 'empty', allRows.length ? '' : L.Empty);
       } catch (error) {
         const [state, message] = failureState(error);
+        listFailureMessage = message;
         setState(state, message, true);
         window.showToast?.(message, 'warning');
       }
@@ -208,7 +211,7 @@
         { data: row => row.updatedAtUtc || row.createdAtUtc, defaultContent: '' },
         { data: null, orderable: false, searchable: false, className: 'text-end pe-3', render: renderActions }
       ],
-      language: { emptyTable: gatewayReady ? L.Empty : L.GatewayNotReady },
+      language: { emptyTable: listFailureMessage || (gatewayReady ? L.Empty : L.GatewayNotReady) },
       select: { style: 'multi', selector: 'td:nth-child(2)' },
       buttons: window.DtDefaults.exportButtons(null, {}, { filterBtn, saveFilterBtn }, { exportColumns: [2, 3, 4, 5, 6], colvisColumns: [2, 3, 4, 5, 6] }),
       initComplete: function () {
@@ -259,7 +262,7 @@
       const payload = await read(`/management-governance/process-modeling/api/improvements/${encodeURIComponent(context.dataset.id)}`);
       const row = payload?.data;
       if (!row) throw Object.assign(new Error(L.Error404), { status: 404 });
-      host.innerHTML = `<h5>${escape(row.title)}</h5><div class="improvement-field"><strong>${escape(L.ProblemStatement)}</strong><div>${escape(row.problemStatement)}</div></div><div class="improvement-field"><strong>${escape(L.ExpectedOutcome)}</strong><div>${escape(row.expectedOutcome)}</div></div><div class="improvement-field"><strong>${escape(L.PriorityRank)}</strong><div>${escape(row.priorityRank)}</div></div><div class="improvement-field"><strong>${escape(L.Lifecycle)}</strong><div>${escape(row.lifecycleState)}</div></div><div class="improvement-field"><strong>${escape(L.Outcomes)}</strong><div>${(row.outcomes || []).map(item => `<div>${escape(item.summary)}</div>`).join('') || '-'}</div></div>`;
+      host.innerHTML = `<h5>${escape(row.title)}</h5><div class="improvement-field"><strong>${escape(L.ProblemStatement)}</strong><div>${escape(row.problemStatement)}</div></div><div class="improvement-field"><strong>${escape(L.ExpectedOutcome)}</strong><div>${escape(row.expectedOutcome)}</div></div><div class="improvement-field"><strong>${escape(L.PriorityRank)}</strong><div>${escape(row.priorityRank)}</div></div><div class="improvement-field"><strong>${escape(L.Lifecycle)}</strong><div>${escape(row.lifecycleState)}</div></div><div class="improvement-field"><strong>${escape(L.Outcomes)}</strong><div>${(row.outcomes || []).map(item => `<div>${escape(item.summary)}</div>`).join('') || escape(L.NotAvailable)}</div></div>`;
       setState('ready', '');
     } catch (error) {
       const [state, message] = failureState(error);

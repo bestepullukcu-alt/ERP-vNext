@@ -16,8 +16,87 @@ describe('MOD-0355 process improvement local-test surface', () => {
 
   const messages = {
     Loading: 'loading', Empty: 'empty', Error401: '401', Error403: '403', Error404: 'not-found',
-    Error409: '409', Error503: '503', ErrorOffline: 'offline'
+    Error409: '409', Error503: '503', ErrorOffline: 'offline', NotAvailable: 'not-available'
   };
+
+  function installListHarness() {
+    const jquery = target => {
+      const elements = typeof target === 'string'
+        ? Array.from(document.querySelectorAll(target))
+        : (target ? [target] : []);
+      const api = {
+        length: elements.length,
+        select2(value) { return value === 'data' ? [] : api; },
+        off() { return api; },
+        on() { return api; },
+        next() { return jquery(null); },
+        find() { return jquery(null); },
+        data(name) { return elements[0]?.dataset?.[name] || ''; },
+        val(value) {
+          if (value === undefined) return elements[0]?._testValue || [];
+          elements.forEach(element => { element._testValue = value; });
+          return api;
+        },
+        trigger() { return api; }
+      };
+      return api;
+    };
+    jquery.fn = {};
+    global.$ = window.$ = jquery;
+
+    class TestDataTable {
+      static last;
+
+      constructor(_element, options) {
+        this.options = options;
+        this.data = [];
+        this.searchValue = '';
+        this.orderValue = [[4, 'asc'], [2, 'asc']];
+        this.rows = { add: rows => { this.data = rows.slice(); return this; } };
+        this.colReorder = { order: value => value || [0, 1, 2, 3, 4, 5, 6, 7] };
+        TestDataTable.last = this;
+        options.initComplete?.call({ api: () => this });
+      }
+
+      clear() { this.data = []; return this; }
+      draw() { this.options.drawCallback?.call({ api: () => this }); return this; }
+      search(value) { if (value === undefined) return this.searchValue; this.searchValue = value; return this; }
+      columns() { return { indexes: () => ({ toArray: () => [0, 1, 2, 3, 4, 5, 6, 7] }) }; }
+      column() { return { visible: () => true }; }
+      order(value) { if (value === undefined) return this.orderValue; this.orderValue = value; return this; }
+      on() { return this; }
+    }
+
+    global.DataTable = window.DataTable = TestDataTable;
+    window.DtDefaults = {
+      create: options => options,
+      exportButtons: () => [],
+      updateVisualState: vi.fn(),
+      refreshButtonGroupRadii: vi.fn()
+    };
+    window.requestAnimationFrame = vi.fn();
+    global.bootstrap = window.bootstrap = {
+      Collapse: { getOrCreateInstance: () => ({ hide: vi.fn(), toggle: vi.fn() }) }
+    };
+    return TestDataTable;
+  }
+
+  function bootList(fetchResult) {
+    document.body.innerHTML = '<div id="performanceImprovementStatus" class="alert d-none" role="status" aria-live="polite" data-improvement-state="idle"></div>'
+      + '<div id="inlineFilterHost"></div><div id="inlineFilterCollapse"></div>'
+      + '<select id="filterLifecycle" data-placeholder="lifecycle"></select>'
+      + '<button id="btnFilterApply"></button><button id="btnFilterReset"></button>'
+      + '<div id="skeleton-loader"></div><table id="dt-performance-improvements"></table>'
+      + '<div id="performanceImprovementContext" data-mode="index" data-ready="true" data-read="true"></div>';
+    const TestDataTable = installListHarness();
+    window.PerformanceImprovementL10n = messages;
+    window.personalizationClient = undefined;
+    window.fetch = vi.fn(fetchResult);
+    window.eval(script);
+    return { status: document.getElementById('performanceImprovementStatus'), TestDataTable };
+  }
+
+  const settle = () => new Promise(resolve => setTimeout(resolve, 0));
 
   async function executeDetails(fetchResult) {
     document.body.innerHTML = '<div id="performanceImprovementStatus" class="alert d-none" data-improvement-state="idle"></div>'
@@ -107,12 +186,80 @@ describe('MOD-0355 process improvement local-test surface', () => {
     expect(host.textContent).toBe(messages.ErrorOffline);
   });
 
+  it('announces loading before the list read completes', async () => {
+    const pending = new Promise(() => {});
+    const { status } = bootList(() => pending);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(status.dataset.improvementState).toBe('loading');
+    expect(status.textContent).toBe(messages.Loading);
+    expect(status.getAttribute('aria-live')).toBe('polite');
+    expect(window.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders an authoritative empty list as empty', async () => {
+    const { status, TestDataTable } = bootList(() => Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ data: [] })
+    }));
+    await settle();
+    await settle();
+    expect(status.dataset.improvementState).toBe('empty');
+    expect(status.textContent).toBe(messages.Empty);
+    expect(TestDataTable.last.data).toEqual([]);
+    expect(TestDataTable.last.options.language.emptyTable).toBe(messages.Empty);
+  });
+
+  it('renders populated authoritative rows without an empty or error state', async () => {
+    const row = { id: '11111111-1111-4111-8111-111111111111', title: 'Measured improvement' };
+    const { status, TestDataTable } = bootList(() => Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ data: [row] })
+    }));
+    await settle();
+    await settle();
+    expect(status.dataset.improvementState).toBe('ready');
+    expect(status.textContent).toBe('');
+    expect(status.classList.contains('d-none')).toBe(true);
+    expect(TestDataTable.last.data).toEqual([row]);
+  });
+
+  it.each([
+    [403, 'error-403', messages.Error403],
+    [404, 'error-404', messages.Error404],
+    [409, 'error-409', messages.Error409],
+    [503, 'error-503', messages.Error503]
+  ])('keeps list HTTP %s distinct from an authoritative empty result', async (httpStatus, state, message) => {
+    const { status, TestDataTable } = bootList(() => Promise.resolve({ ok: false, status: httpStatus }));
+    await settle();
+    await settle();
+    expect(status.dataset.improvementState).toBe(state);
+    expect(status.textContent).toBe(message);
+    expect(TestDataTable.last.options.language.emptyTable).toBe(message);
+    expect(TestDataTable.last.options.language.emptyTable).not.toBe(messages.Empty);
+  });
+
+  it('uses localized no-value text and accessible status/filter controls without English fallback', () => {
+    expect(index).toContain('role="status"');
+    expect(index).toContain('aria-live="polite"');
+    expect(details).toContain('aria-live="polite"');
+    expect(filter).toContain('type="button"');
+    expect(filter).toContain('type="reset"');
+    expect(l10n).toContain('SharedLocalizer["NotAvailable"]');
+    expect(script).toContain('escape(L.NotAvailable)');
+    expect(script).not.toContain("L.SaveView || 'Default'");
+    expect(script).not.toContain("|| '-'");
+  });
+
   it('has exact locale key parity across seven cultures', () => {
     const base = 'Resources/Views/ManagementGovernance/ProcessModeling/PerformanceImprovement/PerformanceImprovementIndex';
     const keys = culture => [...read(`${base}.${culture}.resx`).matchAll(/<data name="([^"]+)"/g)].map(x => x[1]).sort();
     const expected = keys('en');
     expect(expected.length).toBeGreaterThan(20);
     expect(expected).toContain('ErrorOffline');
+    expect(expected).toEqual(expect.arrayContaining(['StateOpen', 'StateQualified', 'StateClosed']));
     for (const culture of ['fr', 'es', 'zh', 'ar', 'ru', 'tr']) expect(keys(culture)).toEqual(expected);
   });
 });

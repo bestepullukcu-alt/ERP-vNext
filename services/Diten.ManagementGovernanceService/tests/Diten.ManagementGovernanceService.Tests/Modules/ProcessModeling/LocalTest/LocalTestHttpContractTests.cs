@@ -37,10 +37,15 @@ public sealed class LocalTestHttpContractTests
     public async Task Tenant_permission_and_idempotency_boundaries_fail_closed()
     {
         var permission="management-governance.process-modeling.architectures.create";
-        await using var host=await LocalHost.StartAsync(new LocalTestIdentity(ActorId,TenantId,ServicePrincipalId,[permission]),new SuccessfulExecutor());
+        var executor=new SuccessfulExecutor();
+        await using var host=await LocalHost.StartAsync(new LocalTestIdentity(ActorId,TenantId,ServicePrincipalId,[permission]),executor);
 
         using var wrongTenant=Request(HttpMethod.Post,"/internal/local-test/v1/process-modeling/architectures","""{"architectureCode":"EA","name":"Enterprise Architecture","sortOrder":1}""",Guid.NewGuid(),permission,true);
-        Assert.Equal(HttpStatusCode.NotFound,(await host.Client.SendAsync(wrongTenant)).StatusCode);
+        var mismatch=await host.Client.SendAsync(wrongTenant);
+        Assert.Equal(HttpStatusCode.BadRequest,mismatch.StatusCode);
+        using(var body=JsonDocument.Parse(await mismatch.Content.ReadAsStringAsync()))
+            Assert.Equal("process_modeling_bad_request",body.RootElement.GetProperty("errors")[0].GetString());
+        Assert.Empty(executor.Requests);
 
         using var missingPermission=Request(HttpMethod.Post,"/internal/local-test/v1/process-modeling/architectures","""{"architectureCode":"EA","name":"Enterprise Architecture","sortOrder":1}""",TenantId,permission,false);
         Assert.Equal(HttpStatusCode.BadRequest,(await host.Client.SendAsync(missingPermission)).StatusCode);

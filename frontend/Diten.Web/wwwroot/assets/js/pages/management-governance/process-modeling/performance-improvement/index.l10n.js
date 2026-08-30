@@ -2,7 +2,7 @@
 
 (function () {
   const payload = document.getElementById('performance-improvement-index-l10n');
-  const required = ['Apply', 'ColumnVisibility', 'Empty', 'Error401', 'Error403', 'Error404', 'Error409', 'Error503', 'ErrorOffline', 'ExpectedOutcome', 'Export', 'Filter', 'GatewayNotReady', 'Lifecycle', 'Loading', 'Open', 'Outcomes', 'PriorityRank', 'ProblemStatement', 'Reset', 'SaveView', 'Search', 'ShowAll'];
+  const required = ['Apply', 'ColumnVisibility', 'Empty', 'Error401', 'Error403', 'Error404', 'Error409', 'Error503', 'ErrorOffline', 'ExpectedOutcome', 'Export', 'Filter', 'GatewayNotReady', 'Lifecycle', 'Loading', 'NotAvailable', 'Open', 'Outcomes', 'PriorityRank', 'ProblemStatement', 'Reset', 'SaveView', 'Search', 'ShowAll'];
   const target = {};
   if (payload) {
     try {

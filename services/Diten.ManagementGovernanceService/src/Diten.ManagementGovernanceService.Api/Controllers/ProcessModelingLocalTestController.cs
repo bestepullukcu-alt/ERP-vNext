@@ -134,7 +134,7 @@ public sealed class ProcessModelingLocalTestController(ISender sender):CustomBas
         if(!Guid.TryParse(User.FindFirstValue("tenant_id"),out var tenant)||!Guid.TryParse(User.FindFirstValue("sub"),out var actor)||!Guid.TryParse(User.FindFirstValue("service_principal_id"),out var servicePrincipalId))
             return Prepared<TBody>.Rejected(Unauthorized());
         if(!Request.Headers.TryGetValue("X-Tenant-Id",out var tenantHeader)||tenantHeader.Count!=1||!Guid.TryParse(tenantHeader[0],out var headerTenant)||headerTenant!=tenant)
-            return Prepared<TBody>.Rejected(NotFound());
+            return Prepared<TBody>.Rejected(BadRequest(Response<NoContent>.Fail("process_modeling_bad_request",400)));
         if(!Request.Headers.TryGetValue("Idempotency-Key",out var key)||key.Count!=1||string.IsNullOrEmpty(key[0]))
             return Prepared<TBody>.Rejected(BadRequest(Response<NoContent>.Fail("idempotency_key_required",400)));
         var permission=ProcessModelingPermissions.ExactCommandMap[commandName];
