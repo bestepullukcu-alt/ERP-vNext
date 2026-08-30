@@ -145,6 +145,32 @@ public sealed class ShellAccessFilterConfigurationGuardTests
          * assembly: TaskDependencyProxyRouteTests and TaskRecurrenceRuleScreenTests boot the real host through
          * WebApplicationFactory<Program> with real settings, so a guard that threw unconditionally would take
          * both classes down with it.
+         *
+         * ⚠ WHAT THIS TEST IS, AND WHAT IT IS NOT. It is a TEXT check, not a behaviour check: it reads Program.cs
+         * as a STRING and compares two IndexOf positions. The host is never booted, the call is never made. So it
+         * measures that the CALL IS WRITTEN, never that it RUNS.
+         *
+         * MEASURED 2026-08-30 — try it rather than believing it. Put `// ` in front of the call in
+         * frontend/Diten.Web/Program.cs:
+         *     // ShellAccessFilter.ValidateConfiguration(builder.Configuration);
+         * The startup gate is now gone — a deployment missing JwtSettings:Secret boots happily — and the whole
+         * Diten.Web.Tests project stays GREEN (105/105), because the text IndexOf finds is the commented-out
+         * line. Nothing in this assembly turns red. That is the limitation above (minimal hosting defeats
+         * WebApplicationFactory here) showing its price: this is the best available check of the WIRING, and it
+         * is a weak one.
+         *
+         * ⚠ SO WHAT IS ACTUALLY MEASURED BY BEHAVIOUR — in THIS file, driving real code rather than reading it:
+         *   • ValidateConfiguration_names_the_key_that_is_missing,
+         *     ValidateConfiguration_names_EVERY_missing_key_not_just_the_first and
+         *     ValidateConfiguration_never_puts_the_secret_in_the_message call the validator itself, so the thing
+         *     Program.cs is supposed to invoke is genuinely known to refuse, and to refuse informatively.
+         *   • A_missing_configuration_key_blanks_User_and_LOGS_which_key_is_missing runs the REAL filter over a
+         *     REAL request with a key omitted, so the residual per-request branch is known to fail loud and
+         *     closed.
+         * Read that pairing honestly: both ends are measured behaviourally, the WIRE BETWEEN THEM is not. If the
+         * call is ever removed, the last thing standing between a misconfigured deployment and a running host is
+         * the per-request branch in that fourth test — closed, but silent at startup, which is exactly the
+         * accident this class was written to replace.
          */
         var program = File.ReadAllText(SourcePath("Program.cs"));
 

@@ -23,6 +23,35 @@ namespace TenantArchitecture.ArchitectureTests;
  * TenantContradictionGuardTests. This one answers a question those cannot: "did a NEW tenant-resolution site
  * appear, or did an existing one quietly lose the rule?" Both sets are pinned EXACTLY — a site cannot be added to
  * either without editing this file and saying why.
+ *
+ * ⚠ AND WHAT IT CANNOT SEE — THIS IS A TEXT CHECK, NOT A BEHAVIOUR CHECK. Every assertion below reads these
+ * middleware files as STRINGS: `RefusesTheContradiction` matches the regex above and then looks for the literal
+ * "Status400BadRequest" within 800 characters. No request is ever made, no middleware is ever executed. So this
+ * guard measures the PRESENCE of the rule, never its EFFECT, and a rule switched off in place keeps every
+ * character it wants.
+ *
+ * MEASURED 2026-08-30 — try it rather than believing it. Prefix the condition in Platform.Common with `false &&`:
+ *     if (false && jwtTenant.HasValue && headerTenant.HasValue && jwtTenant.Value != headerTenant.Value)
+ * The refusal is now completely dead — that site accepts a request naming two different tenants — and all 14
+ * tests in this project STAY GREEN, because the regex still matches and the 400 is still spelled out below it.
+ * Deleting or commenting the block would be caught; neutering it in place is not. Nothing in this file can be.
+ *
+ * ⚠ SO WHAT ACTUALLY MEASURES THE RULE — named by PATH, because "the guard says so" is not an answer. One
+ * behaviour test file per site, each driving the real middleware over real requests:
+ *     gateway/Diten.ApiGateway.Tests/TenantContradictionGuardTests.cs
+ *     services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Tenancy/TenantContradictionGuardTests.cs
+ *     services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/Tenancy/TenantContradictionGuardTests.cs
+ *     services/Diten.DevEnablementService/tests/Diten.DevEnablementService.Api.Tests/Tenancy/TenantContradictionGuardTests.cs
+ *     services/Diten.HcmService/tests/Diten.HcmService.Application.Tests/Tenancy/TenantContradictionGuardTests.cs
+ *     services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Tenancy/TenantContradictionGuardTests.cs
+ *     services/Diten.Platform/tests/Diten.Platform.Application.Tests/Tenancy/TenantContradictionGuardTests.cs
+ * The same `false &&` experiment that left this project 14/14 green turned FIVE tests red in the Platform file —
+ * those are the tests that noticed. If the rule matters to you, that is the list to read and to keep alive.
+ *
+ * ⚠ THIS DOES NOT CONTRADICT THE EMPTINESS ARGUMENT made for `DecisionPendingByDesign` below; it answers a
+ * DIFFERENT question. That argument is about whether the SET of sites is measured, and it holds exactly as
+ * written: an eighth site cannot appear, and a classification cannot go stale, without a test here failing. This
+ * paragraph is about whether the RULE IS ALIVE at the seven — and to that question, this file is not evidence.
  */
 public class TenantContradictionSiteGuardTests
 {
