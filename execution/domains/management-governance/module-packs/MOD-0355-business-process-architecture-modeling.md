@@ -2706,6 +2706,64 @@ rollback/unknown-commit evidence, physical expected-red mutation restore, fronte
 web builds, and browser loading/empty/populated/403/404/409/503 screenshots. The slice cannot be called
 production-ready and cannot close legacy parity or Process Performance.
 
+### Frontend Write Closure — FRONTEND-WRITE / NON-PRODUCTION / NON-MIGRATING
+
+The explicit Control Tower decision dated 2026-08-30 authorizes the bounded local-test write closure requested
+for the Process Modeling and Process Improvement user surfaces. This authority is additive to the earlier
+Frontend & Legacy Parity and Process Improvement local-test amendments. It supersedes their read-only/write-
+activation exclusions only for the exact same-origin proxy, loopback local-test API and evidence paths listed
+below. It grants no production activation, Gateway route, deployment, migration, WorkCenter, Platform, legacy
+mutation, secret or browser-to-service access.
+
+The browser calls only same-origin Diten.Web routes. Diten.Web may use a separately configured, default-off
+server-to-server local-test transport whose resolved origin is exactly `http://127.0.0.1:5017`; any other host,
+scheme, port or missing opt-in fails closed with `503`. The server-side proxy alone may forward the HttpOnly
+bearer token and server-resolved tenant header. Browser JavaScript cannot read or construct either value and
+cannot contain or call port `5017`. Every same-origin write requires antiforgery validation, exact ordinal
+permission enforcement, an idempotency key and every applicable expected version.
+
+This slice may create or change only:
+
+- this pack;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs`, additive
+  default-off local-test composition only;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Controllers/ProcessModelingLocalTestController.cs`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Controllers/PerformanceImprovementLocalTestController.cs`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Features/ProcessModelingLocalTest/**`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/ProcessModeling/**`;
+- additive ProcessModeling-only hunks in the three service root `DependencyInjection.cs` files;
+- existing ProcessModeling module test roots under the service unit, integration and architecture test projects;
+- `frontend/Diten.Web/Controllers/ProcessModelingFrontendController.cs`;
+- `frontend/Diten.Web/Models/ManagementGovernance/ProcessModeling/**`;
+- `frontend/Diten.Web/Services/ManagementGovernance/ProcessModeling/**`;
+- `frontend/Diten.Web/Views/ManagementGovernance/ProcessModeling/**`;
+- the existing fourteen ProcessModeling RESX files and seven PerformanceImprovement RESX files named by the
+  earlier amendments;
+- `frontend/Diten.Web/wwwroot/assets/js/pages/management-governance/process-modeling/**`;
+- `frontend/Diten.Web/wwwroot/assets/css/pages/management-governance/process-modeling.css` and
+  `frontend/Diten.Web/wwwroot/assets/css/pages/management-governance/process-modeling/performance-improvement.css`;
+- exact frontend tests named `frontend/Diten.Web/tests/mg-process-modeling-*.test.js` and
+  `frontend/Diten.Web/tests/mg-process-improvement-*.test.js`;
+- `execution/domains/management-governance/evidence/MOD-0355-legacy-parity.md`.
+
+The service addition is limited to tenant-scoped model list/detail/version/graph reads and the already declared
+model create/update/draft/review/return/retire/revision commands. It may compose existing Mongo transaction,
+idempotency, audit-intent and outbox contracts; it cannot invent fields, permissions, external truth or a
+fallback approval decision. Publish remains fail-closed `503` until its exact upstream authorization evidence
+is runtime-available. The UI must still expose Publish according to permission and present that dependency
+failure distinctly; this single blocker cannot stop the other independent screens or operations.
+
+For every ID-bound operation the observable order is exact: invalid JWT/header tenant consistency is `400`;
+tenant-scoped missing, cross-tenant or deleted is ordinary non-disclosing `404`; a visible own-tenant permission
+denial is `403`; stale version or lifecycle conflict is `409`; unavailable dependency, transaction support or
+local-test composition is `503`. A global lookup followed by a tenant comparison is forbidden. No-op Improvement
+update remains `200 no_op` with zero business, receipt, audit-intent or outbox residue.
+
+Required closure evidence is service/frontend contract tests, Vitest, Web and service builds, real replica-set
+tenant-isolation/CAS/rollback tests, restored expected-red mutation campaigns, seven-language key/value parity,
+browser loading/empty/populated and `400/403/404/409/503/offline` evidence, keyboard/focus/aria-live/RTL checks,
+legacy/new side-by-side comparison, `git diff --check`, exact changed-file scope and protected-path diff zero.
+
 ### Governance availability versus runtime availability
 
 A contract is governance-available when its name, version, shape, ownership and failure semantics are
