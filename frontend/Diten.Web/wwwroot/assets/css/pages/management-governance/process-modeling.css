@@ -13,3 +13,20 @@
 .process-modeling-editor .tab-pane {
   min-block-size: 12rem;
 }
+
+.process-modeling-editor .backbone-editor-actions {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 1020;
+  overflow: visible;
+}
+
+.process-modeling-editor textarea.font-monospace {
+  direction: ltr;
+  text-align: start;
+}
+
+[dir='rtl'] .process-modeling-editor .d-flex,
+[dir='rtl'] #offcanvasCreateEdit .d-flex {
+  direction: rtl;
+}

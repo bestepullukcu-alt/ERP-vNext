@@ -4,4 +4,46 @@
   <data name="SelectAll" xml:space="preserve"><value>تحديد الكل</value></data>
   <data name="ErrorOffline" xml:space="preserve"><value>الخدمة غير متصلة حالياً. حاول مرة أخرى بعد استعادة الاتصال.</value></data>
   <data name="StateOpen" xml:space="preserve"><value>مفتوحة</value></data><data name="StateQualified" xml:space="preserve"><value>مؤهلة</value></data><data name="StateClosed" xml:space="preserve"><value>مغلقة</value></data>
+  <data name="Error400" xml:space="preserve">
+    <value>الطلب غير صالح. راجع القيم المدخلة.</value>
+  </data>
+  <data name="AddNew" xml:space="preserve">
+    <value>إضافة فرصة</value>
+  </data>
+  <data name="OpportunityFormTitle" xml:space="preserve">
+    <value>فرصة التحسين</value>
+  </data>
+  <data name="ProcessModelVersion" xml:space="preserve">
+    <value>إصدار نموذج العملية</value>
+  </data>
+  <data name="Qualify" xml:space="preserve">
+    <value>تأهيل</value>
+  </data>
+  <data name="RecordOutcome" xml:space="preserve">
+    <value>تسجيل النتيجة</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>إغلاق الفرصة</value>
+  </data>
+  <data name="OutcomeSummary" xml:space="preserve">
+    <value>ملخص النتيجة</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>تم حفظ فرصة التحسين بنجاح.</value>
+  </data>
+  <data name="NoOp" xml:space="preserve">
+    <value>الفرصة موجودة بالفعل في الحالة المطلوبة.</value>
+  </data>
+  <data name="ActionCompleted" xml:space="preserve">
+    <value>تم إكمال إجراء الفرصة بنجاح.</value>
+  </data>
+  <data name="LifecycleOpen" xml:space="preserve">
+    <value>مفتوحة</value>
+  </data>
+  <data name="LifecycleQualified" xml:space="preserve">
+    <value>مؤهلة</value>
+  </data>
+  <data name="LifecycleClosed" xml:space="preserve">
+    <value>مغلقة</value>
+  </data>
 </root>

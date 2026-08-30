@@ -28,4 +28,16 @@
   <data name="Error404" xml:space="preserve"><value>لم يتم العثور على نموذج العملية.</value></data>
   <data name="Error409" xml:space="preserve"><value>تغير نموذج العملية. حدّث الصفحة قبل المتابعة.</value></data>
   <data name="Error503" xml:space="preserve"><value>بيانات نمذجة العمليات الموثوقة غير متاحة حاليًا.</value></data>
+  <data name="Error400" xml:space="preserve">
+    <value>الطلب غير صالح. راجع القيم المدخلة.</value>
+  </data>
+  <data name="ErrorOffline" xml:space="preserve">
+    <value>انقطع الاتصال. تحقق من الشبكة وحاول مرة أخرى.</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>تم حفظ نموذج العملية بنجاح.</value>
+  </data>
+  <data name="NoOp" xml:space="preserve">
+    <value>لم يتم اكتشاف أي تغييرات.</value>
+  </data>
 </root>

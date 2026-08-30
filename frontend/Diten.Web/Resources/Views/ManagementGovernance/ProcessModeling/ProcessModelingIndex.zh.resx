@@ -28,4 +28,16 @@
   <data name="Error404" xml:space="preserve"><value>未找到流程模型。</value></data>
   <data name="Error409" xml:space="preserve"><value>流程模型已更改，请刷新后继续。</value></data>
   <data name="Error503" xml:space="preserve"><value>当前无法访问权威流程建模数据。</value></data>
+  <data name="Error400" xml:space="preserve">
+    <value>请求无效。请检查输入的值。</value>
+  </data>
+  <data name="ErrorOffline" xml:space="preserve">
+    <value>连接已中断。请检查网络后重试。</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>流程模型已成功保存。</value>
+  </data>
+  <data name="NoOp" xml:space="preserve">
+    <value>未检测到任何更改。</value>
+  </data>
 </root>

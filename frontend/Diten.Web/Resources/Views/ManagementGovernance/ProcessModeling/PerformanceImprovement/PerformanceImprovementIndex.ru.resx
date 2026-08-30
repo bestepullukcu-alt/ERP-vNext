@@ -4,4 +4,46 @@
   <data name="SelectAll" xml:space="preserve"><value>Выбрать все</value></data>
   <data name="ErrorOffline" xml:space="preserve"><value>Сервис не в сети. Повторите попытку после восстановления соединения.</value></data>
   <data name="StateOpen" xml:space="preserve"><value>Открыта</value></data><data name="StateQualified" xml:space="preserve"><value>Квалифицирована</value></data><data name="StateClosed" xml:space="preserve"><value>Закрыта</value></data>
+  <data name="Error400" xml:space="preserve">
+    <value>Запрос недействителен. Проверьте введённые значения.</value>
+  </data>
+  <data name="AddNew" xml:space="preserve">
+    <value>Добавить возможность</value>
+  </data>
+  <data name="OpportunityFormTitle" xml:space="preserve">
+    <value>Возможность улучшения</value>
+  </data>
+  <data name="ProcessModelVersion" xml:space="preserve">
+    <value>Версия модели процесса</value>
+  </data>
+  <data name="Qualify" xml:space="preserve">
+    <value>Квалифицировать</value>
+  </data>
+  <data name="RecordOutcome" xml:space="preserve">
+    <value>Зафиксировать результат</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Закрыть возможность</value>
+  </data>
+  <data name="OutcomeSummary" xml:space="preserve">
+    <value>Итоговое резюме</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>Возможность улучшения успешно сохранена.</value>
+  </data>
+  <data name="NoOp" xml:space="preserve">
+    <value>Возможность уже находится в запрошенном состоянии.</value>
+  </data>
+  <data name="ActionCompleted" xml:space="preserve">
+    <value>Действие с возможностью успешно выполнено.</value>
+  </data>
+  <data name="LifecycleOpen" xml:space="preserve">
+    <value>Открыто</value>
+  </data>
+  <data name="LifecycleQualified" xml:space="preserve">
+    <value>Квалифицировано</value>
+  </data>
+  <data name="LifecycleClosed" xml:space="preserve">
+    <value>Закрыто</value>
+  </data>
 </root>

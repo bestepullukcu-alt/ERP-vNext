@@ -4,4 +4,46 @@
   <data name="SelectAll" xml:space="preserve"><value>Tümünü seç</value></data>
   <data name="ErrorOffline" xml:space="preserve"><value>Hizmet çevrimdışı. Bağlantı yeniden kurulduğunda tekrar deneyin.</value></data>
   <data name="StateOpen" xml:space="preserve"><value>Açık</value></data><data name="StateQualified" xml:space="preserve"><value>Nitelendirildi</value></data><data name="StateClosed" xml:space="preserve"><value>Kapalı</value></data>
+  <data name="Error400" xml:space="preserve">
+    <value>İstek geçersiz. Girilen değerleri gözden geçirin.</value>
+  </data>
+  <data name="AddNew" xml:space="preserve">
+    <value>Fırsat ekle</value>
+  </data>
+  <data name="OpportunityFormTitle" xml:space="preserve">
+    <value>İyileştirme fırsatı</value>
+  </data>
+  <data name="ProcessModelVersion" xml:space="preserve">
+    <value>Süreç modeli sürümü</value>
+  </data>
+  <data name="Qualify" xml:space="preserve">
+    <value>Nitelendir</value>
+  </data>
+  <data name="RecordOutcome" xml:space="preserve">
+    <value>Sonucu kaydet</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Fırsatı kapat</value>
+  </data>
+  <data name="OutcomeSummary" xml:space="preserve">
+    <value>Sonuç özeti</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>İyileştirme fırsatı başarıyla kaydedildi.</value>
+  </data>
+  <data name="NoOp" xml:space="preserve">
+    <value>Fırsat zaten istenen durumda.</value>
+  </data>
+  <data name="ActionCompleted" xml:space="preserve">
+    <value>Fırsat işlemi başarıyla tamamlandı.</value>
+  </data>
+  <data name="LifecycleOpen" xml:space="preserve">
+    <value>Açık</value>
+  </data>
+  <data name="LifecycleQualified" xml:space="preserve">
+    <value>Nitelendirildi</value>
+  </data>
+  <data name="LifecycleClosed" xml:space="preserve">
+    <value>Kapalı</value>
+  </data>
 </root>

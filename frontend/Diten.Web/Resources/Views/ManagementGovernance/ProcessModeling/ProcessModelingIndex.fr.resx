@@ -28,4 +28,16 @@
   <data name="Error404" xml:space="preserve"><value>Le modèle est introuvable.</value></data>
   <data name="Error409" xml:space="preserve"><value>Le modèle a changé. Actualisez avant de continuer.</value></data>
   <data name="Error503" xml:space="preserve"><value>Les données de modélisation faisant autorité sont indisponibles.</value></data>
+  <data name="Error400" xml:space="preserve">
+    <value>La demande est invalide. Vérifiez les valeurs saisies.</value>
+  </data>
+  <data name="ErrorOffline" xml:space="preserve">
+    <value>La connexion a été perdue. Vérifiez votre réseau et réessayez.</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>Le modèle de processus a été enregistré.</value>
+  </data>
+  <data name="NoOp" xml:space="preserve">
+    <value>Aucune modification n’a été détectée.</value>
+  </data>
 </root>

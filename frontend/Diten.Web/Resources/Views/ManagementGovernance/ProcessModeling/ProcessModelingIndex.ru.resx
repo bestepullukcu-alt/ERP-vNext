@@ -28,4 +28,16 @@
   <data name="Error404" xml:space="preserve"><value>Модель процесса не найдена.</value></data>
   <data name="Error409" xml:space="preserve"><value>Модель изменилась. Обновите страницу.</value></data>
   <data name="Error503" xml:space="preserve"><value>Достоверные данные моделирования сейчас недоступны.</value></data>
+  <data name="Error400" xml:space="preserve">
+    <value>Запрос недействителен. Проверьте введённые значения.</value>
+  </data>
+  <data name="ErrorOffline" xml:space="preserve">
+    <value>Соединение потеряно. Проверьте сеть и повторите попытку.</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>Модель процесса успешно сохранена.</value>
+  </data>
+  <data name="NoOp" xml:space="preserve">
+    <value>Изменения не обнаружены.</value>
+  </data>
 </root>

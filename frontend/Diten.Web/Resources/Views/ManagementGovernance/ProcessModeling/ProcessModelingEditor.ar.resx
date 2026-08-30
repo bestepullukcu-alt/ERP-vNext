@@ -30,4 +30,40 @@
   <data name="Error404" xml:space="preserve"><value>لم يتم العثور على نموذج العملية.</value></data>
   <data name="Error409" xml:space="preserve"><value>تغير نموذج العملية. حدّث الصفحة قبل المتابعة.</value></data>
   <data name="Error503" xml:space="preserve"><value>بيانات نمذجة العمليات الموثوقة غير متاحة حاليًا.</value></data>
+  <data name="VersionTitle" xml:space="preserve">
+    <value>عنوان الإصدار</value>
+  </data>
+  <data name="Relationships" xml:space="preserve">
+    <value>العلاقات</value>
+  </data>
+  <data name="EditorActions" xml:space="preserve">
+    <value>إجراءات المحرر</value>
+  </data>
+  <data name="Error400" xml:space="preserve">
+    <value>الطلب غير صالح. راجع بيانات الإصدار.</value>
+  </data>
+  <data name="ErrorOffline" xml:space="preserve">
+    <value>انقطع الاتصال. تحقق من الشبكة وحاول مرة أخرى.</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>تم حفظ المسودة بنجاح.</value>
+  </data>
+  <data name="ActionCompleted" xml:space="preserve">
+    <value>تم إكمال إجراء دورة الحياة بنجاح.</value>
+  </data>
+  <data name="InvalidGraphJson" xml:space="preserve">
+    <value>يجب أن تحتوي قيم الرسم والأنشطة ونقاط التحكم والعلاقات على JSON صالح.</value>
+  </data>
+  <data name="LifecycleDraft" xml:space="preserve">
+    <value>مسودة</value>
+  </data>
+  <data name="LifecycleReview" xml:space="preserve">
+    <value>قيد المراجعة</value>
+  </data>
+  <data name="LifecyclePublished" xml:space="preserve">
+    <value>منشور</value>
+  </data>
+  <data name="LifecycleRetired" xml:space="preserve">
+    <value>متقاعد</value>
+  </data>
 </root>

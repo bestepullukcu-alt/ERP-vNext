@@ -1,4 +1,6 @@
 namespace Diten.Web.Models.ManagementGovernance.ProcessModeling.PerformanceImprovement;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 public static class PerformanceImprovementFrontendPermissions
 {
@@ -14,3 +16,9 @@ public static class PerformanceImprovementFrontendPermissions
 
 public sealed record PerformanceImprovementIndexViewModel(bool GatewayReady, IReadOnlySet<string> Permissions);
 public sealed record PerformanceImprovementDetailViewModel(Guid OpportunityId, bool GatewayReady, IReadOnlySet<string> Permissions);
+public sealed record ImprovementCreateInput([property: JsonRequired] Guid ProcessModelVersionId, [property: Required, StringLength(200)] string Title,
+    [property: Required, StringLength(4000)] string ProblemStatement, [property: StringLength(2000)] string? ExpectedOutcome, [property: Range(1, int.MaxValue)] int? PriorityRank);
+public sealed record ImprovementUpdateInput([property: Required, StringLength(200)] string Title,
+    [property: Required, StringLength(4000)] string ProblemStatement, [property: StringLength(2000)] string? ExpectedOutcome,
+    [property: Range(1, int.MaxValue)] int? PriorityRank, [property: JsonRequired, Range(0, int.MaxValue)] int ExpectedVersion);
+public sealed record ImprovementOutcomeInput([property: Required, StringLength(4000)] string Summary, [property: JsonRequired, Range(0, int.MaxValue)] int ExpectedVersion);

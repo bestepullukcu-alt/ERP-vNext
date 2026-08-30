@@ -28,4 +28,16 @@
   <data name="Error404" xml:space="preserve"><value>No se encontró el modelo.</value></data>
   <data name="Error409" xml:space="preserve"><value>El modelo cambió. Actualice antes de continuar.</value></data>
   <data name="Error503" xml:space="preserve"><value>Los datos autorizados de modelado no están disponibles.</value></data>
+  <data name="Error400" xml:space="preserve">
+    <value>La solicitud no es válida. Revise los valores introducidos.</value>
+  </data>
+  <data name="ErrorOffline" xml:space="preserve">
+    <value>Se perdió la conexión. Compruebe la red e inténtelo de nuevo.</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>El modelo de proceso se guardó correctamente.</value>
+  </data>
+  <data name="NoOp" xml:space="preserve">
+    <value>No se detectaron cambios.</value>
+  </data>
 </root>

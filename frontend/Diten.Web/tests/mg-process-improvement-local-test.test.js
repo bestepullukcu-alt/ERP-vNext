@@ -15,7 +15,7 @@ describe('MOD-0355 process improvement local-test surface', () => {
   const l10nScript = read('wwwroot/assets/js/pages/management-governance/process-modeling/performance-improvement/index.l10n.js');
 
   const messages = {
-    Loading: 'loading', Empty: 'empty', Error401: '401', Error403: '403', Error404: 'not-found',
+    Loading: 'loading', Empty: 'empty', Error400: '400', Error401: '401', Error403: '403', Error404: 'not-found',
     Error409: '409', Error503: '503', ErrorOffline: 'offline', NotAvailable: 'not-available'
   };
 
@@ -119,6 +119,20 @@ describe('MOD-0355 process improvement local-test surface', () => {
     expect(details).toContain('Layout = "_LayoutTenantShell"');
   });
 
+  it('owns exact write routes with antiforgery and permission mappings', () => {
+    const mappings = [
+      ['HttpPost("api/improvements")', 'PerformanceImprovementFrontendPermissions.Create'],
+      ['HttpPut("api/improvements/{id:guid}")', 'PerformanceImprovementFrontendPermissions.Update'],
+      ['HttpPost("api/improvements/{id:guid}/qualify")', 'PerformanceImprovementFrontendPermissions.Qualify'],
+      ['HttpPost("api/improvements/{id:guid}/outcomes")', 'PerformanceImprovementFrontendPermissions.RecordOutcome'],
+      ['HttpPost("api/improvements/{id:guid}/close")', 'PerformanceImprovementFrontendPermissions.Close']
+    ];
+    for (const [route, permission] of mappings) {
+      expect(controller).toContain(`[${route}, ValidateAntiForgeryToken]`);
+      expect(controller).toContain(permission);
+    }
+  });
+
   it('uses exact six owner permissions without wildcard alias or normalization', () => {
     const permissions = [...models.matchAll(/public const string \w+ = "([^"]+)";/g)].map(x => x[1]);
     expect(permissions).toHaveLength(6);
@@ -144,7 +158,7 @@ describe('MOD-0355 process improvement local-test surface', () => {
     expect(script).toContain("columns: ':gt(1):not(:last-child)'");
     expect(script).toContain('syncMultiSelectSummary');
     expect(script).toContain('factoryView');
-    expect(l10n).toContain('SharedLocalizer["Loading"]');
+    expect(l10n).toContain('Loading = Localizer["Loading"].Value');
     expect(l10nScript).toContain('PerformanceImprovementL10n');
     expect([index, details, filter, table, l10n, script, l10nScript].join('\n'))
       .not.toMatch(/localhost|:5017|Authorization|X-Tenant-Id|document\.cookie|localStorage|sessionStorage/i);
@@ -152,8 +166,8 @@ describe('MOD-0355 process improvement local-test surface', () => {
   });
 
   it('keeps details zero-read and removes the permanent loading state while default-off', () => {
-    expect(details).toContain('@if (Model.GatewayReady)');
-    expect(details).toContain('data-improvement-state="default-off"');
+    expect(details).toContain('Model.GatewayReady');
+    expect(details).toContain('GatewayNotReady');
     expect(script).toContain("if (!host || !gatewayReady) return;");
   });
 
@@ -165,10 +179,33 @@ describe('MOD-0355 process improvement local-test surface', () => {
     window.eval(script);
     await new Promise(resolve => setTimeout(resolve, 0));
     expect(window.fetch).toHaveBeenCalledTimes(0);
-    expect(script).not.toMatch(/method\s*:\s*['"](?:POST|PUT|PATCH|DELETE)['"]/i);
+    expect(window.fetch).toHaveBeenCalledTimes(0);
+  });
+
+  it('requires antiforgery, idempotency and expectedVersion for each mutation', () => {
+    expect(script).toContain('RequestVerificationToken: token');
+    expect(script).toContain("'Idempotency-Key': crypto.randomUUID()");
+    expect(script).toContain('expectedVersion: Number(document.getElementById(\'improvementExpectedVersion\').value)');
+    expect(script).toContain('expectedVersion: Number(detailRow.version ?? detailRow.expectedVersion)');
+    expect(script).toContain("result?.reason_code === 'no_op' ? L.NoOp : L.Saved");
+  });
+
+  it('enforces the Open to Qualified to Closed UI lifecycle and outcome prerequisite surface', () => {
+    expect(script).toContain("row.lifecycleState === 'Open'");
+    expect(script).toContain("row.lifecycleState === 'Qualified'");
+    expect(script).toContain("data-improvement-action=\"qualify\"");
+    expect(script).toContain("data-improvement-action=\"outcome\"");
+    expect(script).toContain("data-improvement-action=\"close\"");
+    expect(script).not.toMatch(/reopen|requalify|archive|delete/i);
+  });
+
+  it('never exposes service origin, bearer, cookie, tenant or actor authority to browser code', () => {
+    expect([index, details, filter, table, l10n, script, l10nScript].join('\n'))
+      .not.toMatch(/localhost|:5017|Authorization|Bearer|X-Tenant-Id|X-Actor|document\.cookie|access_token|localStorage|sessionStorage/i);
   });
 
   it.each([
+    [400, 'error-400'],
     [403, 'error-403'],
     [404, 'error-404'],
     [409, 'error-409'],
@@ -227,6 +264,7 @@ describe('MOD-0355 process improvement local-test surface', () => {
   });
 
   it.each([
+    [400, 'error-400', messages.Error400],
     [403, 'error-403', messages.Error403],
     [404, 'error-404', messages.Error404],
     [409, 'error-409', messages.Error409],

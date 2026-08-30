@@ -30,4 +30,40 @@
   <data name="Error404" xml:space="preserve"><value>No se encontró el modelo.</value></data>
   <data name="Error409" xml:space="preserve"><value>El modelo cambió. Actualice antes de continuar.</value></data>
   <data name="Error503" xml:space="preserve"><value>Los datos autorizados de modelado no están disponibles.</value></data>
+  <data name="VersionTitle" xml:space="preserve">
+    <value>Título de la versión</value>
+  </data>
+  <data name="Relationships" xml:space="preserve">
+    <value>Relaciones</value>
+  </data>
+  <data name="EditorActions" xml:space="preserve">
+    <value>Acciones del editor</value>
+  </data>
+  <data name="Error400" xml:space="preserve">
+    <value>La solicitud no es válida. Revise los datos de la versión.</value>
+  </data>
+  <data name="ErrorOffline" xml:space="preserve">
+    <value>Se perdió la conexión. Compruebe la red e inténtelo de nuevo.</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>El borrador se guardó correctamente.</value>
+  </data>
+  <data name="ActionCompleted" xml:space="preserve">
+    <value>La acción del ciclo de vida se completó correctamente.</value>
+  </data>
+  <data name="InvalidGraphJson" xml:space="preserve">
+    <value>Los valores del gráfico, las actividades, los puntos de control y las relaciones deben contener JSON válido.</value>
+  </data>
+  <data name="LifecycleDraft" xml:space="preserve">
+    <value>Borrador</value>
+  </data>
+  <data name="LifecycleReview" xml:space="preserve">
+    <value>En revisión</value>
+  </data>
+  <data name="LifecyclePublished" xml:space="preserve">
+    <value>Publicado</value>
+  </data>
+  <data name="LifecycleRetired" xml:space="preserve">
+    <value>Retirado</value>
+  </data>
 </root>

@@ -1,0 +1,11 @@
+@using Diten.Web.Views.ManagementGovernance.ProcessModeling.PerformanceImprovement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PerformanceImprovementIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="modal fade" id="outcomeModal" tabindex="-1" aria-labelledby="outcomeModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content rounded-4 shadow-lg">
+    <div class="modal-header"><h5 id="outcomeModalTitle" class="modal-title">@Localizer["RecordOutcome"]</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Cancel"]"></button></div>
+    <form id="formImprovementOutcome" novalidate>@Html.AntiForgeryToken()<div class="modal-body"><div id="outcomeFormStatus" class="alert d-none" role="alert" aria-live="assertive" tabindex="-1"></div><label for="outcomeSummary" class="form-label">@Localizer["OutcomeSummary"] <span class="text-danger">*</span></label><textarea id="outcomeSummary" class="form-control" maxlength="4000" rows="5" required></textarea></div><div class="modal-footer"><button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button><button type="submit" class="btn btn-primary">@SharedLocalizer["Save"]</button></div></form>
+  </div></div>
+</div>

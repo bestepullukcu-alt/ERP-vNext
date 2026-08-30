@@ -33,12 +33,17 @@ public sealed class PerformanceImprovementLocalTestHttpTests
             Assert.Equal(0, queries.Calls);
         }
 
-        await using (var denied = await Host.StartAsync(Identity(PerformanceImprovementPermissions.ImprovementCreate), queries, new MutationStore()))
+        var deniedQueries=new QueryStore();
+        await using (var denied = await Host.StartAsync(Identity(PerformanceImprovementPermissions.ImprovementCreate), deniedQueries, new MutationStore()))
         {
             using var request = Get(Path(), Tenant);
-            Assert.Equal(HttpStatusCode.Forbidden, (await denied.Client.SendAsync(request)).StatusCode);
-            Assert.Equal(0, queries.Calls);
+            Assert.Equal(HttpStatusCode.NotFound, (await denied.Client.SendAsync(request)).StatusCode);
+            Assert.Equal(1, deniedQueries.Calls);
         }
+
+        var visibleQueries=new QueryStore(true);
+        await using (var deniedVisible = await Host.StartAsync(Identity(PerformanceImprovementPermissions.ImprovementCreate), visibleQueries, new MutationStore()))
+        { using var request=Get(Path(),Tenant); Assert.Equal(HttpStatusCode.Forbidden,(await deniedVisible.Client.SendAsync(request)).StatusCode); Assert.Equal(1,visibleQueries.Calls); }
 
         await using (var allowed = await Host.StartAsync(Identity(PerformanceImprovementPermissions.ImprovementRead), queries, new MutationStore()))
         {
@@ -54,7 +59,7 @@ public sealed class PerformanceImprovementLocalTestHttpTests
     [InlineData(503, "performance_improvement_unavailable")]
     public async Task Mutation_maps_stale_and_unavailable_without_extra_reads(int status, string code)
     {
-        var queries = new QueryStore();
+        var queries = new QueryStore(true);
         var mutations = new MutationStore(new(false, status, code, Opportunity));
         await using var host = await Host.StartAsync(Identity(PerformanceImprovementPermissions.ImprovementUpdate), queries, mutations);
         using var request = new HttpRequestMessage(HttpMethod.Put, Path())
@@ -66,7 +71,7 @@ public sealed class PerformanceImprovementLocalTestHttpTests
         request.Headers.Add("Idempotency-Key", "http-test");
         Assert.Equal(status, (int)(await host.Client.SendAsync(request)).StatusCode);
         Assert.Equal(1, mutations.Calls);
-        Assert.Equal(0, queries.Calls);
+        Assert.Equal(1, queries.Calls);
     }
 
     [Fact]
@@ -74,7 +79,7 @@ public sealed class PerformanceImprovementLocalTestHttpTests
     {
         var mutations = new MutationStore();
         await using var host = await Host.StartAsync(
-            Identity(PerformanceImprovementPermissions.ImprovementUpdate), new QueryStore(), mutations);
+            Identity(PerformanceImprovementPermissions.ImprovementUpdate), new QueryStore(true), mutations);
         var body = """{"title":"title","problemStatement":"problem","expectedOutcome":"expected","priorityRank":1,"expectedVersion":0}""";
 
         foreach (var id in new[] { Opportunity, Guid.Parse("44444444-4444-4444-8444-444444444444") })
@@ -98,6 +103,19 @@ public sealed class PerformanceImprovementLocalTestHttpTests
         Assert.Equal(expected, mutations.Requests[0].CanonicalPayloadHash);
     }
 
+    [Fact]
+    public async Task Mutation_rejects_duplicate_json_properties_before_coordinator()
+    {
+        var mutations=new MutationStore();
+        await using var host=await Host.StartAsync(Identity(PerformanceImprovementPermissions.ImprovementUpdate),new QueryStore(true),mutations);
+        using var request=new HttpRequestMessage(HttpMethod.Put,Path())
+        { Content=new StringContent("""{"title":"a","title":"b","problemStatement":"p","expectedVersion":0}""",Encoding.UTF8,"application/json") };
+        request.Headers.Authorization=new AuthenticationHeaderValue(LocalTestAuthenticationHandler.SchemeName);
+        request.Headers.Add("X-Tenant-Id",Tenant.ToString("D"));request.Headers.Add("Idempotency-Key","duplicate-json");
+        Assert.Equal(HttpStatusCode.BadRequest,(await host.Client.SendAsync(request)).StatusCode);
+        Assert.Equal(0,mutations.Calls);
+    }
+
     private static string Path() => $"/internal/local-test/v1/process-modeling/improvements/{Opportunity:D}";
     private static HttpRequestMessage Get(string path, Guid tenant)
     {
@@ -108,14 +126,14 @@ public sealed class PerformanceImprovementLocalTestHttpTests
     }
     private static LocalTestIdentity Identity(params string[] permissions) => new(Actor, Tenant, Guid.NewGuid(), permissions);
 
-    private sealed class QueryStore : PerformanceImprovementContract.IQueryStore
+    private sealed class QueryStore(bool visible=false) : PerformanceImprovementContract.IQueryStore
     {
         public int Calls { get; private set; }
         public Guid LastTenant { get; private set; }
         public Task<IReadOnlyList<PerformanceImprovementContract.OpportunityDto>> ListAsync(Guid tenantId, CancellationToken cancellationToken = default)
         { Calls++; LastTenant = tenantId; return Task.FromResult<IReadOnlyList<PerformanceImprovementContract.OpportunityDto>>([]); }
         public Task<PerformanceImprovementContract.OpportunityDto?> GetAsync(Guid tenantId, Guid opportunityId, CancellationToken cancellationToken = default)
-        { Calls++; LastTenant = tenantId; return Task.FromResult<PerformanceImprovementContract.OpportunityDto?>(null); }
+        { Calls++; LastTenant = tenantId; return Task.FromResult<PerformanceImprovementContract.OpportunityDto?>(visible?new(opportunityId,Guid.NewGuid(),"title","problem","expected",1,"Open",0,DateTime.UtcNow,null,[]):null); }
     }
 
     private sealed class MutationStore(PerformanceImprovementContract.MutationResult? result = null) : PerformanceImprovementContract.IMutationStore

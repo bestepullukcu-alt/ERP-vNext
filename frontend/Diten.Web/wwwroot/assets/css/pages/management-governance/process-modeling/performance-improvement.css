@@ -1,3 +1,16 @@
 #dt-performance-improvements td { vertical-align: middle; }
 #performanceImprovementDetail .improvement-field { border-bottom: 1px solid var(--bs-border-color); padding: .75rem 0; }
 #performanceImprovementDetail .improvement-field:last-child { border-bottom: 0; }
+
+#performanceImprovementStatus:focus,
+#improvementFormStatus:focus,
+#outcomeFormStatus:focus,
+#offcanvasImprovementForm button:focus-visible,
+#performanceImprovementDetail button:focus-visible {
+  outline: .2rem solid var(--bs-primary);
+  outline-offset: .15rem;
+}
+
+[dir='rtl'] #performanceImprovementDetail .d-flex,
+[dir='rtl'] #offcanvasImprovementForm .d-flex,
+[dir='rtl'] #outcomeModal .modal-footer { direction: rtl; }

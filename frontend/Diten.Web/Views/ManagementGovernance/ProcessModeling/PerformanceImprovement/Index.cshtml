@@ -21,15 +21,18 @@
     <div class="alert alert-warning" role="status" data-improvement-state="default-off">@Localizer["GatewayNotReady"]</div>
 }
 
-<div id="performanceImprovementStatus" class="alert d-none" role="status" aria-live="polite"
+<div id="performanceImprovementStatus" class="alert d-none" role="status" aria-live="polite" tabindex="-1"
      data-improvement-state="idle"></div>
 
 <partial name="~/Views/ManagementGovernance/ProcessModeling/PerformanceImprovement/_DataTable.cshtml" />
+<partial name="~/Views/ManagementGovernance/ProcessModeling/PerformanceImprovement/_CreateEditOffcanvas.cshtml" />
 
 <div id="performanceImprovementContext" class="d-none"
      data-mode="index"
      data-ready="@Model.GatewayReady.ToString().ToLowerInvariant()"
-     data-read="@Model.Permissions.Contains(PerformanceImprovementFrontendPermissions.Read).ToString().ToLowerInvariant()"></div>
+     data-read="@Model.Permissions.Contains(PerformanceImprovementFrontendPermissions.Read).ToString().ToLowerInvariant()"
+     data-create="@Model.Permissions.Contains(PerformanceImprovementFrontendPermissions.Create).ToString().ToLowerInvariant()"
+     data-update="@Model.Permissions.Contains(PerformanceImprovementFrontendPermissions.Update).ToString().ToLowerInvariant()"></div>
 
 @section Styles {
     <link rel="stylesheet" href="~/assets/css/pages/management-governance/process-modeling/performance-improvement.css" asp-append-version="true" />

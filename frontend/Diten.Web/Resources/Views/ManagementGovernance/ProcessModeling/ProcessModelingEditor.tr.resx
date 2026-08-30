@@ -30,4 +30,40 @@
   <data name="Error404" xml:space="preserve"><value>Süreç modeli bulunamadı.</value></data>
   <data name="Error409" xml:space="preserve"><value>Süreç modeli değişti. Devam etmeden önce yenileyin.</value></data>
   <data name="Error503" xml:space="preserve"><value>Yetkili süreç modelleme verisine şu anda erişilemiyor.</value></data>
+  <data name="VersionTitle" xml:space="preserve">
+    <value>Sürüm başlığı</value>
+  </data>
+  <data name="Relationships" xml:space="preserve">
+    <value>İlişkiler</value>
+  </data>
+  <data name="EditorActions" xml:space="preserve">
+    <value>Editör işlemleri</value>
+  </data>
+  <data name="Error400" xml:space="preserve">
+    <value>İstek geçersiz. Sürüm verilerini gözden geçirin.</value>
+  </data>
+  <data name="ErrorOffline" xml:space="preserve">
+    <value>Bağlantı kesildi. Ağınızı kontrol edip yeniden deneyin.</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>Taslak başarıyla kaydedildi.</value>
+  </data>
+  <data name="ActionCompleted" xml:space="preserve">
+    <value>Yaşam döngüsü işlemi başarıyla tamamlandı.</value>
+  </data>
+  <data name="InvalidGraphJson" xml:space="preserve">
+    <value>Graf, aktivite, kontrol noktası ve ilişki değerleri geçerli JSON içermelidir.</value>
+  </data>
+  <data name="LifecycleDraft" xml:space="preserve">
+    <value>Taslak</value>
+  </data>
+  <data name="LifecycleReview" xml:space="preserve">
+    <value>İncelemede</value>
+  </data>
+  <data name="LifecyclePublished" xml:space="preserve">
+    <value>Yayımlandı</value>
+  </data>
+  <data name="LifecycleRetired" xml:space="preserve">
+    <value>Kullanımdan kaldırıldı</value>
+  </data>
 </root>

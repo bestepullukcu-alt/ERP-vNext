@@ -13,7 +13,7 @@ namespace Diten.ManagementGovernanceService.Api.Controllers;
 
 [Route("internal/local-test/v1/process-modeling")]
 [Authorize(AuthenticationSchemes=LocalTestAuthenticationHandler.SchemeName)]
-public sealed class ProcessModelingLocalTestController(ISender sender):CustomBaseController
+public sealed class ProcessModelingLocalTestController(ISender sender,IServiceProvider services):CustomBaseController
 {
     private static readonly JsonSerializerOptions StrictJson=new(JsonSerializerDefaults.Web)
     {
@@ -23,6 +23,40 @@ public sealed class ProcessModelingLocalTestController(ISender sender):CustomBas
 
     [AllowAnonymous,HttpGet("health")]
     public IActionResult Health()=>Ok(new{status="healthy"});
+
+    [HttpGet("models")]
+    public async Task<IActionResult> Models(CancellationToken cancellationToken)
+    {
+        var identity=Identity();if(identity.Error is not null)return identity.Error;
+        if(!HasPermission(ProcessModelingPermissions.ExactPermissions[8]))return Result(Response<NoContent>.Fail("process_model_permission_denied",403));
+        var queries=services.GetService<IProcessModelingLocalQueryStore>();
+        if(queries is null)return Result(Response<NoContent>.Fail("process_modeling_local_test_query_unavailable",503));
+        return Result(Response<IReadOnlyList<ProcessModelListItem>>.Success(await queries.ListAsync(identity.TenantId,cancellationToken)));
+    }
+
+    [HttpGet("models/{id:guid}")]
+    public async Task<IActionResult> Model(Guid id,CancellationToken cancellationToken)
+    {
+        var identity=Identity();if(identity.Error is not null)return identity.Error;
+        var queries=services.GetService<IProcessModelingLocalQueryStore>();
+        if(queries is null)return Result(Response<NoContent>.Fail("process_modeling_local_test_query_unavailable",503));
+        var value=await queries.GetAsync(identity.TenantId,id,cancellationToken);
+        if(value is null)return Result(Response<ProcessModelDetail>.Fail("process_model_not_found",404));
+        if(!HasPermission(ProcessModelingPermissions.ExactPermissions[8]))return Result(Response<ProcessModelDetail>.Fail("process_model_permission_denied",403));
+        return Result(Response<ProcessModelDetail>.Success(value));
+    }
+
+    [HttpGet("model-versions/{id:guid}")]
+    public async Task<IActionResult> Version(Guid id,CancellationToken cancellationToken)
+    {
+        var identity=Identity();if(identity.Error is not null)return identity.Error;
+        var queries=services.GetService<IProcessModelingLocalQueryStore>();
+        if(queries is null)return Result(Response<NoContent>.Fail("process_modeling_local_test_query_unavailable",503));
+        var value=await queries.GetVersionAsync(identity.TenantId,id,cancellationToken);
+        if(value is null)return Result(Response<ProcessModelVersionView>.Fail("process_model_not_found",404));
+        if(!HasPermission(ProcessModelingPermissions.ExactPermissions[8]))return Result(Response<ProcessModelVersionView>.Fail("process_model_permission_denied",403));
+        return Result(Response<ProcessModelVersionView>.Success(value));
+    }
 
     [HttpPost("architectures")]
     public Task<IActionResult> CreateArchitecture()=>Create<CreateArchitectureBody,CreateProcessArchitectureCommand>(
@@ -145,6 +179,15 @@ public sealed class ProcessModelingLocalTestController(ISender sender):CustomBas
         var execution=new ProcessModelingLocalExecutionRequest(commandName,routeId,raw,new(tenant,actor,permission,key[0]!,hash,servicePrincipalId));
         return Prepared<TBody>.Accepted(body!,execution);
     }
+
+    private (Guid TenantId,IActionResult? Error) Identity()
+    {
+        if(!Guid.TryParse(User.FindFirstValue("tenant_id"),out var tenant)||tenant==Guid.Empty)return (Guid.Empty,Unauthorized());
+        if(!Request.Headers.TryGetValue("X-Tenant-Id",out var header)||header.Count!=1||!Guid.TryParse(header[0],out var headerTenant)||headerTenant!=tenant)
+            return (Guid.Empty,Result(Response<NoContent>.Fail("process_modeling_bad_request",400)));
+        return (tenant,null);
+    }
+    private bool HasPermission(string permission)=>User.FindAll("permission").Any(x=>string.Equals(x.Value,permission,StringComparison.Ordinal));
 
     private static async Task<byte[]> ReadBody(HttpRequest request,CancellationToken cancellationToken)
     {

@@ -38,6 +38,21 @@ public interface IProcessModelingLocalCommandExecutor
     Task<ProcessModelingLocalExecutionResult> ExecuteAsync(ProcessModelingLocalExecutionRequest command,CancellationToken cancellationToken);
 }
 
+public sealed record ProcessModelListItem(Guid Id,Guid ProcessDefinitionId,string ModelCode,string Name,string? Description,
+    int LatestRevisionNumber,Guid? PublishedVersionId,Guid? OpenVersionId,int Version,DateTime CreatedAtUtc,DateTime? UpdatedAtUtc);
+public sealed record ProcessModelVersionView(Guid Id,Guid ProcessModelId,int RevisionNumber,string LifecycleState,string Title,
+    string? Description,string ContentHash,int Version,DateTime CreatedAtUtc,DateTime? UpdatedAtUtc,
+    IReadOnlyList<ProcessModelActivityInput> Activities,IReadOnlyList<ProcessModelControlPointInput> ControlPoints,
+    IReadOnlyList<ProcessModelRelationshipInput> Relationships);
+public sealed record ProcessModelDetail(ProcessModelListItem Model,IReadOnlyList<ProcessModelVersionView> Versions);
+
+public interface IProcessModelingLocalQueryStore
+{
+    Task<IReadOnlyList<ProcessModelListItem>> ListAsync(Guid tenantId,CancellationToken cancellationToken=default);
+    Task<ProcessModelDetail?> GetAsync(Guid tenantId,Guid modelId,CancellationToken cancellationToken=default);
+    Task<ProcessModelVersionView?> GetVersionAsync(Guid tenantId,Guid versionId,CancellationToken cancellationToken=default);
+}
+
 public sealed class DefaultUnavailableProcessModelingLocalCommandExecutor : IProcessModelingLocalCommandExecutor
 {
     public Task<ProcessModelingLocalExecutionResult> ExecuteAsync(ProcessModelingLocalExecutionRequest command,CancellationToken cancellationToken)

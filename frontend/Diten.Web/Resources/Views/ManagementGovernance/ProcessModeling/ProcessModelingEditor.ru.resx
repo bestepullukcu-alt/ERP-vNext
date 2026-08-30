@@ -30,4 +30,40 @@
   <data name="Error404" xml:space="preserve"><value>Модель процесса не найдена.</value></data>
   <data name="Error409" xml:space="preserve"><value>Модель изменилась. Обновите страницу.</value></data>
   <data name="Error503" xml:space="preserve"><value>Достоверные данные моделирования сейчас недоступны.</value></data>
+  <data name="VersionTitle" xml:space="preserve">
+    <value>Название версии</value>
+  </data>
+  <data name="Relationships" xml:space="preserve">
+    <value>Связи</value>
+  </data>
+  <data name="EditorActions" xml:space="preserve">
+    <value>Действия редактора</value>
+  </data>
+  <data name="Error400" xml:space="preserve">
+    <value>Запрос недействителен. Проверьте данные версии.</value>
+  </data>
+  <data name="ErrorOffline" xml:space="preserve">
+    <value>Соединение потеряно. Проверьте сеть и повторите попытку.</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>Черновик успешно сохранён.</value>
+  </data>
+  <data name="ActionCompleted" xml:space="preserve">
+    <value>Действие жизненного цикла успешно выполнено.</value>
+  </data>
+  <data name="InvalidGraphJson" xml:space="preserve">
+    <value>Значения графа, действий, контрольных точек и связей должны содержать корректный JSON.</value>
+  </data>
+  <data name="LifecycleDraft" xml:space="preserve">
+    <value>Черновик</value>
+  </data>
+  <data name="LifecycleReview" xml:space="preserve">
+    <value>На рассмотрении</value>
+  </data>
+  <data name="LifecyclePublished" xml:space="preserve">
+    <value>Опубликовано</value>
+  </data>
+  <data name="LifecycleRetired" xml:space="preserve">
+    <value>Выведено из использования</value>
+  </data>
 </root>

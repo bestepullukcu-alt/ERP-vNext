@@ -16,6 +16,9 @@
     <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
 </div>
 
+<div id="processModelingStatus" class="alert d-none" role="status" aria-live="polite"
+     data-process-modeling-state="idle" tabindex="-1"></div>
+
 @if (!Model.GatewayReady)
 {
     <div class="alert alert-warning d-flex align-items-center" role="status" data-process-modeling-state="gateway-not-ready">

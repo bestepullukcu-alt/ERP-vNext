@@ -28,4 +28,16 @@
   <data name="Error404" xml:space="preserve"><value>Süreç modeli bulunamadı.</value></data>
   <data name="Error409" xml:space="preserve"><value>Süreç modeli değişti. Devam etmeden önce yenileyin.</value></data>
   <data name="Error503" xml:space="preserve"><value>Yetkili süreç modelleme verisine şu anda erişilemiyor.</value></data>
+  <data name="Error400" xml:space="preserve">
+    <value>İstek geçersiz. Girilen değerleri gözden geçirin.</value>
+  </data>
+  <data name="ErrorOffline" xml:space="preserve">
+    <value>Bağlantı kesildi. Ağınızı kontrol edip yeniden deneyin.</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>Süreç modeli başarıyla kaydedildi.</value>
+  </data>
+  <data name="NoOp" xml:space="preserve">
+    <value>Herhangi bir değişiklik algılanmadı.</value>
+  </data>
 </root>

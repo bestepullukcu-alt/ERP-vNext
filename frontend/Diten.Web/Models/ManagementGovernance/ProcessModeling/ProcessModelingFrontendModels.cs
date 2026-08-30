@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Diten.Web.Models.ManagementGovernance.ProcessModeling;
 
@@ -57,3 +58,13 @@ public sealed record ProcessModelingFrontendFailure(
     int StatusCode,
     string ReasonCode,
     string CorrelationId);
+
+public sealed record ProcessModelUpdateInput([property: Required, StringLength(200)] string Name, [property: StringLength(4000)] string? Description, [property: JsonRequired, Range(0, int.MaxValue)] int ExpectedVersion);
+public sealed record ExpectedVersionInput([property: JsonRequired, Range(0, int.MaxValue)] int ExpectedVersion);
+public sealed record ProcessModelRevisionInput([property: Required, StringLength(200)] string Title, [property: StringLength(4000)] string? Description, [property: JsonRequired, Range(0, int.MaxValue)] int ExpectedVersion);
+public sealed record ProcessModelDraftInput([property: Required, StringLength(200)] string Title, [property: StringLength(4000)] string? Description,
+    [property: JsonRequired] IReadOnlyList<ProcessModelActivityInput> Activities, [property: JsonRequired] IReadOnlyList<ProcessModelControlPointInput> ControlPoints,
+    [property: JsonRequired] IReadOnlyList<ProcessModelRelationshipInput> Relationships, [property: JsonRequired, Range(0, int.MaxValue)] int ExpectedVersion);
+public sealed record ProcessModelActivityInput(Guid LogicalActivityId, [property: Required] string ActivityCode, [property: Required] string Name, string? Description, int SortOrder);
+public sealed record ProcessModelControlPointInput(Guid LogicalControlPointId, [property: Required] string ControlCode, [property: Required] string Name, string? Description, Guid? LogicalActivityId, int SortOrder);
+public sealed record ProcessModelRelationshipInput(Guid FromLogicalActivityId, Guid ToLogicalActivityId, string? ConditionLabel, int SortOrder);

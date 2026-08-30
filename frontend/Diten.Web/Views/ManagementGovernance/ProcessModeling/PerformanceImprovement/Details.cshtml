@@ -18,17 +18,23 @@
     <div class="alert alert-warning" role="status" data-improvement-state="default-off">@Localizer["GatewayNotReady"]</div>
 }
 
-<div id="performanceImprovementStatus" class="alert d-none" role="status" aria-live="polite"
+<div id="performanceImprovementStatus" class="alert d-none" role="status" aria-live="polite" tabindex="-1"
      data-improvement-state="idle"></div>
 
 @if (Model.GatewayReady)
 {
     <div id="performanceImprovementDetail" class="card p-4" aria-live="polite">
-        <div class="text-muted">@SharedLocalizer["Loading"]</div>
+        <div class="text-muted">@Localizer["Loading"]</div>
     </div>
 }
 <div id="performanceImprovementContext" class="d-none" data-mode="details"
-     data-id="@Model.OpportunityId.ToString("D")" data-ready="@Model.GatewayReady.ToString().ToLowerInvariant()"></div>
+     data-id="@Model.OpportunityId.ToString("D")" data-ready="@Model.GatewayReady.ToString().ToLowerInvariant()"
+     data-update="@Model.Permissions.Contains(Diten.Web.Models.ManagementGovernance.ProcessModeling.PerformanceImprovement.PerformanceImprovementFrontendPermissions.Update).ToString().ToLowerInvariant()"
+     data-qualify="@Model.Permissions.Contains(Diten.Web.Models.ManagementGovernance.ProcessModeling.PerformanceImprovement.PerformanceImprovementFrontendPermissions.Qualify).ToString().ToLowerInvariant()"
+     data-outcome="@Model.Permissions.Contains(Diten.Web.Models.ManagementGovernance.ProcessModeling.PerformanceImprovement.PerformanceImprovementFrontendPermissions.RecordOutcome).ToString().ToLowerInvariant()"
+     data-close="@Model.Permissions.Contains(Diten.Web.Models.ManagementGovernance.ProcessModeling.PerformanceImprovement.PerformanceImprovementFrontendPermissions.Close).ToString().ToLowerInvariant()"></div>
+<partial name="~/Views/ManagementGovernance/ProcessModeling/PerformanceImprovement/_CreateEditOffcanvas.cshtml" />
+<partial name="~/Views/ManagementGovernance/ProcessModeling/PerformanceImprovement/_OutcomeModal.cshtml" />
 
 @section Styles {
     <link rel="stylesheet" href="~/assets/css/pages/management-governance/process-modeling/performance-improvement.css" asp-append-version="true" />

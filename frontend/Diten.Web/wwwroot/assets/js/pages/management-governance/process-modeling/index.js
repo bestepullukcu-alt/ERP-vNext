@@ -11,11 +11,14 @@
   const canUpdate = permissionNode?.dataset.update === 'true';
   const gatewayReady = permissionNode?.dataset.gatewayReady === 'true';
   const defaultOrder = [[2, 'asc']];
-  const defaultColumnOrder = [0, 1, 2, 3, 4, 5, 6];
+  const defaultColumnOrder = [0, 1, 2, 3, 4, 5, 6, 7];
   let appliedFilters = { lifecycle: [] };
   let savedView = null;
   let saveFilterArmed = false;
   let dataTable;
+  const statusHost = document.getElementById('processModelingStatus');
+  const form = document.getElementById('formProcessModelIdentity');
+  const antiforgery = form?.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
 
   const normalizeArray = value => Array.isArray(value)
     ? value.map(item => String(item).trim()).filter(Boolean).sort()
@@ -90,6 +93,7 @@
 
   function setSaveFilterVisible(visible) {
     document.querySelector('.dt-save-filter-btn')?.classList.toggle('d-none', !visible);
+    window.DtDefaults?.refreshButtonGroupRadii?.();
   }
 
   function updateDirtyState() {
@@ -98,11 +102,50 @@
 
   function statusMessage(xhr) {
     const code = xhr?.status;
+    if (code === 400) return L.Error400;
     if (code === 401) return L.Error401;
     if (code === 403) return L.Error403;
     if (code === 404) return L.Error404;
     if (code === 409) return L.Error409;
     return L.Error503;
+  }
+
+  function setState(state, message, warning) {
+    if (!statusHost) return;
+    statusHost.dataset.processModelingState = state;
+    statusHost.textContent = message || '';
+    statusHost.className = message ? `alert alert-${warning ? 'warning' : 'info'}` : 'alert d-none';
+    if (message) statusHost.focus({ preventScroll: true });
+  }
+
+  async function write(path, method, body) {
+    let response;
+    try {
+      response = await fetch(`/management-governance/process-modeling/api/${path}`, {
+        method, credentials: 'same-origin',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json', RequestVerificationToken: antiforgery, 'Idempotency-Key': crypto.randomUUID() },
+        body: JSON.stringify(body)
+      });
+    } catch (error) { throw Object.assign(error, { offline: true }); }
+    let payload = null;
+    if (response.status !== 204) { try { payload = await response.json(); } catch (_) { payload = null; } }
+    if (!response.ok) throw Object.assign(new Error(statusMessage({ status: response.status })), { status: response.status });
+    return payload;
+  }
+
+  function openForm(row) {
+    form.reset();
+    form.dataset.mode = row ? 'edit' : 'create';
+    document.getElementById('ProcessModelId').value = row?.id || '';
+    document.getElementById('ProcessModelExpectedVersion').value = row?.version ?? row?.expectedVersion ?? '';
+    document.getElementById('ProcessDefinitionId').value = row?.processDefinitionId || '';
+    document.getElementById('ModelCode').value = row?.modelCode || '';
+    document.getElementById('Name').value = row?.name || '';
+    document.getElementById('Description').value = row?.description || '';
+    document.getElementById('ModelCode').readOnly = Boolean(row);
+    document.getElementById('ProcessDefinitionId').readOnly = Boolean(row);
+    bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasCreateEdit')).show();
+    document.getElementById('Name').focus();
   }
 
   function renderActions(_data, _type, row) {
@@ -117,7 +160,8 @@
           'aria-label': L.OpenEditor,
           title: L.OpenEditor
         }
-      }
+      },
+      ...(canUpdate ? [{ text: L.Edit, icon: 'bx bx-edit', attrs: { 'data-row-action': 'edit', 'data-id': encodeURIComponent(row.id), 'aria-label': L.Edit, title: L.Edit } }] : [])
     ]) || '';
   }
 
@@ -144,7 +188,7 @@
       stateSave: false,
       searchDelay: 350,
       order: defaultOrder,
-      colReorder: { columns: ':gt(0):not(:last-child)' },
+      colReorder: { columns: ':gt(1):not(:last-child)' },
       ajax: {
         url: '/management-governance/process-modeling/api/models',
         data: request => {
@@ -158,6 +202,7 @@
       },
       columns: [
         { data: null, defaultContent: '', orderable: false, searchable: false, className: 'control' },
+        { data: 'id', orderable: false, searchable: false, className: 'dt-checkboxes-cell cell-fit', render: value => `<input type="checkbox" class="dt-checkboxes form-check-input" value="${encodeURIComponent(value)}">` },
         { data: 'modelCode', defaultContent: '' },
         { data: 'name', defaultContent: '' },
         { data: 'currentVersion', defaultContent: '' },
@@ -193,7 +238,8 @@
             'open-editor': trigger => {
               const id = trigger.getAttribute('data-id');
               if (id) window.location.assign(`/management-governance/process-modeling/models/${id}`);
-            }
+            },
+            edit: trigger => { const row = dataTable.row(trigger.closest('tr')).data(); if (row) openForm(row); }
           }
         });
         document.querySelector('.add-new')?.addEventListener('click', event => {
@@ -202,7 +248,7 @@
             window.showToast?.(L.GatewayNotReady, 'warning');
             return;
           }
-          bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasCreateEdit')).show();
+          openForm(null);
         });
         setTimeout(() => { saveFilterArmed = true; }, 0);
       },
@@ -240,6 +286,34 @@
       setSaveFilterVisible(false);
     });
   }
+
+  form?.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+    const editing = form.dataset.mode === 'edit';
+    const id = document.getElementById('ProcessModelId').value;
+    const payload = editing ? {
+      name: document.getElementById('Name').value.trim(),
+      description: document.getElementById('Description').value.trim() || null,
+      expectedVersion: Number(document.getElementById('ProcessModelExpectedVersion').value)
+    } : {
+      processDefinitionId: document.getElementById('ProcessDefinitionId').value,
+      modelCode: document.getElementById('ModelCode').value.trim(),
+      name: document.getElementById('Name').value.trim(),
+      description: document.getElementById('Description').value.trim() || null
+    };
+    const button = document.getElementById('btnSaveProcessModel');
+    button.disabled = true;
+    try {
+      await write(editing ? `models/${encodeURIComponent(id)}` : 'models', editing ? 'PUT' : 'POST', payload);
+      bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasCreateEdit'))?.hide();
+      dataTable.ajax.reload(() => window.showToast?.(L.Saved, 'success'), false);
+      setState('ready', '');
+    } catch (error) {
+      const message = error.offline ? L.ErrorOffline : error.message;
+      setState(error.offline ? 'offline' : `error-${error.status}`, message, true);
+    } finally { button.disabled = false; }
+  });
 
   initFilters();
   initDataTable();

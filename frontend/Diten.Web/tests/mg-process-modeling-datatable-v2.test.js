@@ -33,7 +33,7 @@ describe('MOD-0355 process-model catalog', () => {
     expect(script).toContain('window.DtDefaults.create');
     expect(script).toContain('serverSide: true');
     expect(script).toContain('stateSave: false');
-    expect(script).toContain("colReorder: { columns: ':gt(0):not(:last-child)' }");
+    expect(script).toContain("colReorder: { columns: ':gt(1):not(:last-child)' }");
     expect(script).toContain("url: '/management-governance/process-modeling/api/models'");
   });
 
@@ -45,12 +45,47 @@ describe('MOD-0355 process-model catalog', () => {
     expect(gateway).toContain('X-Correlation-Id');
   });
 
-  it('is default-off and performs zero HTTP reads before an approved route is configured', () => {
-    expect(gateway).toContain('ManagementGovernance:ProcessModelingFrontend:Enabled');
-    expect(gateway).toContain('ManagementGovernance:ProcessModelingFrontend:GatewayReadPath');
-    expect(gateway).toContain('if (!IsReady)');
-    expect(gateway.indexOf('if (!IsReady)')).toBeLessThan(gateway.indexOf('httpClient.SendAsync'));
+  it('fails closed unless the exact loopback local-test transport is enabled', () => {
+    expect(gateway).toContain('ManagementGovernance:ProcessModelingFrontend:LocalTestEnabled');
+    expect(gateway).toContain('ManagementGovernance:ProcessModelingFrontend:LocalTestOrigin');
+    expect(gateway).toContain('new("http://127.0.0.1:5017/")');
+    expect(gateway).toContain('if (!IsReady || !TryGetOrigin');
+    expect(gateway.indexOf('if (!IsReady || !TryGetOrigin')).toBeLessThan(gateway.indexOf('httpClient.SendAsync'));
     expect(gateway).toContain('process_modeling_frontend_gateway_not_ready');
-    expect(controller).not.toMatch(/HttpPost|HttpPut|HttpDelete|AcceptVerbs/);
+  });
+
+  it('owns the exact model write routes with antiforgery and exact permissions', () => {
+    const routes = [
+      ['HttpPost("api/models")', 'ProcessModelingFrontendPermissions.Create'],
+      ['HttpPut("api/models/{id:guid}")', 'ProcessModelingFrontendPermissions.Update'],
+      ['HttpPut("api/model-versions/{id:guid}/draft-content")', 'ProcessModelingFrontendPermissions.Update'],
+      ['HttpPost("api/model-versions/{id:guid}/request-review")', 'ProcessModelingFrontendPermissions.RequestReview'],
+      ['HttpPost("api/model-versions/{id:guid}/return-to-draft")', 'ProcessModelingFrontendPermissions.ReturnToDraft'],
+      ['HttpPost("api/model-versions/{id:guid}/publish")', 'ProcessModelingFrontendPermissions.Publish'],
+      ['HttpPost("api/model-versions/{id:guid}/retire")', 'ProcessModelingFrontendPermissions.Retire'],
+      ['HttpPost("api/models/{id:guid}/revisions")', 'ProcessModelingFrontendPermissions.CreateRevision']
+    ];
+    for (const [route, permission] of routes) {
+      expect(controller).toContain(`[${route}, ValidateAntiForgeryToken]`);
+      expect(controller).toContain(permission);
+    }
+    expect(controller).not.toMatch(/HttpDelete|AcceptVerbs/);
+  });
+
+  it('requires same-origin antiforgery, idempotency and expected versions without browser authority fabrication', () => {
+    expect(script).toContain("credentials: 'same-origin'");
+    expect(script).toContain('RequestVerificationToken: antiforgery');
+    expect(script).toContain("'Idempotency-Key': crypto.randomUUID()");
+    expect(script).toContain('expectedVersion: Number(document.getElementById(\'ProcessModelExpectedVersion\').value)');
+    expect(gateway).toContain('Idempotency-Key');
+    expect(gateway).toContain('idempotency_key_required');
+    expect(script).not.toMatch(/localhost|:5017|document\.cookie|access_token|Authorization\s*:|X-Tenant-Id/i);
+  });
+
+  it('keeps 400, 403, 404, 409, 503 and offline write outcomes distinct', () => {
+    for (const status of [400, 401, 403, 404, 409]) expect(script).toContain(`code === ${status}`);
+    expect(script).toContain('L.Error503');
+    expect(script).toContain("{ offline: true }");
+    expect(script).toContain("error.offline ? 'offline' : `error-${error.status}`");
   });
 });

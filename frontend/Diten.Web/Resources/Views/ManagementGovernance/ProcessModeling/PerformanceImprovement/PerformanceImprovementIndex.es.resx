@@ -4,4 +4,46 @@
   <data name="SelectAll" xml:space="preserve"><value>Seleccionar todo</value></data>
   <data name="ErrorOffline" xml:space="preserve"><value>El servicio está sin conexión. Vuelva a intentarlo cuando se restablezca la conexión.</value></data>
   <data name="StateOpen" xml:space="preserve"><value>Abierta</value></data><data name="StateQualified" xml:space="preserve"><value>Calificada</value></data><data name="StateClosed" xml:space="preserve"><value>Cerrada</value></data>
+  <data name="Error400" xml:space="preserve">
+    <value>La solicitud no es válida. Revise los valores introducidos.</value>
+  </data>
+  <data name="AddNew" xml:space="preserve">
+    <value>Añadir oportunidad</value>
+  </data>
+  <data name="OpportunityFormTitle" xml:space="preserve">
+    <value>Oportunidad de mejora</value>
+  </data>
+  <data name="ProcessModelVersion" xml:space="preserve">
+    <value>Versión del modelo de proceso</value>
+  </data>
+  <data name="Qualify" xml:space="preserve">
+    <value>Calificar</value>
+  </data>
+  <data name="RecordOutcome" xml:space="preserve">
+    <value>Registrar resultado</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Cerrar oportunidad</value>
+  </data>
+  <data name="OutcomeSummary" xml:space="preserve">
+    <value>Resumen del resultado</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>La oportunidad de mejora se guardó correctamente.</value>
+  </data>
+  <data name="NoOp" xml:space="preserve">
+    <value>La oportunidad ya se encuentra en el estado solicitado.</value>
+  </data>
+  <data name="ActionCompleted" xml:space="preserve">
+    <value>La acción de la oportunidad se completó correctamente.</value>
+  </data>
+  <data name="LifecycleOpen" xml:space="preserve">
+    <value>Abierta</value>
+  </data>
+  <data name="LifecycleQualified" xml:space="preserve">
+    <value>Calificada</value>
+  </data>
+  <data name="LifecycleClosed" xml:space="preserve">
+    <value>Cerrada</value>
+  </data>
 </root>

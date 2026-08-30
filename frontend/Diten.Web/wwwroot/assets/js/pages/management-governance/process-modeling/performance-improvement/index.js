@@ -8,6 +8,11 @@
   const tableElement = document.getElementById('dt-performance-improvements');
   const gatewayReady = context.dataset.ready === 'true';
   const canRead = context.dataset.read === 'true';
+  const canCreate = context.dataset.create === 'true';
+  const canUpdate = context.dataset.update === 'true';
+  const canQualify = context.dataset.qualify === 'true';
+  const canOutcome = context.dataset.outcome === 'true';
+  const canClose = context.dataset.close === 'true';
   const defaultOrder = [[4, 'asc'], [2, 'asc']];
   const defaultColumnOrder = [0, 1, 2, 3, 4, 5, 6, 7];
   const defaultVisibleColumns = defaultColumnOrder.map(() => true);
@@ -20,6 +25,10 @@
   let dataTable;
   let listFailureMessage = '';
   const statusHost = document.getElementById('performanceImprovementStatus');
+  const form = document.getElementById('formImprovement');
+  const token = form?.querySelector('input[name="__RequestVerificationToken"]')?.value
+    || document.querySelector('#formImprovementOutcome input[name="__RequestVerificationToken"]')?.value || '';
+  let detailRow = null;
 
   const escape = value => String(value ?? '').replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
   const normalizeArray = value => Array.isArray(value)
@@ -57,6 +66,7 @@
   }
 
   function statusMessage(status) {
+    if (status === 400) return L.Error400;
     if (status === 401) return L.Error401;
     if (status === 403) return L.Error403;
     if (status === 404) return L.Error404;
@@ -71,6 +81,7 @@
     statusHost.classList.toggle('d-none', !message);
     statusHost.classList.toggle('alert-warning', warning);
     statusHost.classList.toggle('alert-info', Boolean(message) && !warning);
+    if (message) statusHost.focus({ preventScroll: true });
   }
 
   function failureState(error) {
@@ -80,8 +91,40 @@
 
   async function read(path) {
     const response = await fetch(path, { credentials: 'same-origin', headers: { Accept: 'application/json' } });
-    if (!response.ok) throw Object.assign(new Error(statusMessage(response.status)), { status: response.status });
+    if (!response.ok) {
+      let failure = null;
+      try { failure = await response.json(); } catch (_) { failure = null; }
+      const reason = failure?.reason_code || failure?.reasonCode || failure?.errors?.[0];
+      throw Object.assign(new Error(`${statusMessage(response.status)}${reason ? ` (${reason})` : ''}`), { status: response.status, reason });
+    }
     return response.json();
+  }
+
+  async function write(path, method, body) {
+    let response;
+    try {
+      response = await fetch(path, { method, credentials: 'same-origin', headers: { Accept: 'application/json', 'Content-Type': 'application/json', RequestVerificationToken: token, 'Idempotency-Key': crypto.randomUUID() }, body: JSON.stringify(body) });
+    } catch (error) { throw Object.assign(error, { offline: true }); }
+    let payload = null;
+    if (response.status !== 204) { try { payload = await response.json(); } catch (_) { payload = null; } }
+    const reason = payload?.reason_code || payload?.reasonCode || payload?.errors?.[0];
+    if (!response.ok) throw Object.assign(new Error(`${statusMessage(response.status)}${reason ? ` (${reason})` : ''}`), { status: response.status, reason });
+    return payload;
+  }
+
+  function openForm(row) {
+    form.reset();
+    form.dataset.mode = row ? 'edit' : 'create';
+    document.getElementById('improvementId').value = row?.id || '';
+    document.getElementById('improvementExpectedVersion').value = row?.version ?? row?.expectedVersion ?? '';
+    document.getElementById('improvementProcessModelVersionId').value = row?.processModelVersionId || '';
+    document.getElementById('improvementTitle').value = row?.title || '';
+    document.getElementById('improvementProblem').value = row?.problemStatement || '';
+    document.getElementById('improvementExpectedOutcome').value = row?.expectedOutcome || '';
+    document.getElementById('improvementPriority').value = row?.priorityRank ?? '';
+    document.getElementById('improvementProcessModelVersionId').readOnly = Boolean(row);
+    bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasImprovementForm')).show();
+    document.getElementById('improvementTitle').focus();
   }
 
   async function loadDefaultView() {
@@ -147,7 +190,10 @@
 
   function renderActions(_value, _type, row) {
     if (!canRead || !row?.id) return '';
-    return `<a class="btn btn-sm btn-label-primary" href="/management-governance/process-modeling/improvements/${encodeURIComponent(row.id)}">${escape(L.Open)}</a>`;
+    return window.DitenDataTable?.renderActions?.([
+      { text: L.Open, icon: 'bx bx-show', attrs: { href: `/management-governance/process-modeling/improvements/${encodeURIComponent(row.id)}` } },
+      ...(canUpdate && row.lifecycleState === 'Open' ? [{ text: L.Edit, icon: 'bx bx-edit', attrs: { 'data-row-action': 'edit-improvement', 'data-id': encodeURIComponent(row.id) } }] : [])
+    ]) || `<a class="btn btn-sm btn-label-primary" href="/management-governance/process-modeling/improvements/${encodeURIComponent(row.id)}">${escape(L.Open)}</a>`;
   }
 
   function mountFilter(api) {
@@ -207,16 +253,18 @@
         { data: 'title', defaultContent: '' },
         { data: 'problemStatement', defaultContent: '' },
         { data: 'priorityRank', defaultContent: '' },
-        { data: 'lifecycleState', defaultContent: '' },
+        { data: 'lifecycleState', defaultContent: '', render: value => escape(L[`Lifecycle${value}`] || value) },
         { data: row => row.updatedAtUtc || row.createdAtUtc, defaultContent: '' },
         { data: null, orderable: false, searchable: false, className: 'text-end pe-3', render: renderActions }
       ],
       language: { emptyTable: listFailureMessage || (gatewayReady ? L.Empty : L.GatewayNotReady) },
       select: { style: 'multi', selector: 'td:nth-child(2)' },
-      buttons: window.DtDefaults.exportButtons(null, {}, { filterBtn, saveFilterBtn }, { exportColumns: [2, 3, 4, 5, 6], colvisColumns: [2, 3, 4, 5, 6] }),
+      buttons: window.DtDefaults.exportButtons(canCreate ? L.AddNew : null, { 'aria-label': L.AddNew, title: L.AddNew }, { filterBtn, saveFilterBtn }, { exportColumns: [2, 3, 4, 5, 6], colvisColumns: [2, 3, 4, 5, 6] }),
       initComplete: function () {
         mountFilter(this.api());
         document.getElementById('skeleton-loader')?.classList.add('d-none');
+        window.DitenDataTable?.bindActionDispatcher?.({ tableEl: tableElement, onRowAction: { 'edit-improvement': trigger => { const row = dataTable.row(trigger.closest('tr')).data(); if (row) openForm(row); } } });
+        document.querySelector('.add-new')?.addEventListener('click', event => { event.preventDefault(); if (gatewayReady && canCreate) openForm(null); });
         setTimeout(() => { saveFilterArmed = true; updateDirtyState(); }, 0);
       },
       drawCallback: function () {
@@ -262,7 +310,16 @@
       const payload = await read(`/management-governance/process-modeling/api/improvements/${encodeURIComponent(context.dataset.id)}`);
       const row = payload?.data;
       if (!row) throw Object.assign(new Error(L.Error404), { status: 404 });
-      host.innerHTML = `<h5>${escape(row.title)}</h5><div class="improvement-field"><strong>${escape(L.ProblemStatement)}</strong><div>${escape(row.problemStatement)}</div></div><div class="improvement-field"><strong>${escape(L.ExpectedOutcome)}</strong><div>${escape(row.expectedOutcome)}</div></div><div class="improvement-field"><strong>${escape(L.PriorityRank)}</strong><div>${escape(row.priorityRank)}</div></div><div class="improvement-field"><strong>${escape(L.Lifecycle)}</strong><div>${escape(row.lifecycleState)}</div></div><div class="improvement-field"><strong>${escape(L.Outcomes)}</strong><div>${(row.outcomes || []).map(item => `<div>${escape(item.summary)}</div>`).join('') || escape(L.NotAvailable)}</div></div>`;
+      detailRow = row;
+      const actions = [
+        canUpdate && row.lifecycleState === 'Open' ? `<button type="button" class="btn btn-label-primary" data-improvement-action="edit">${escape(L.Edit)}</button>` : '',
+        canQualify && row.lifecycleState === 'Open' ? `<button type="button" class="btn btn-primary" data-improvement-action="qualify">${escape(L.Qualify)}</button>` : '',
+        canOutcome && row.lifecycleState === 'Qualified' ? `<button type="button" class="btn btn-label-primary" data-improvement-action="outcome">${escape(L.RecordOutcome)}</button>` : '',
+        canClose && row.lifecycleState === 'Qualified' ? `<button type="button" class="btn btn-danger" data-improvement-action="close">${escape(L.Close)}</button>` : ''
+      ].filter(Boolean).join('');
+      host.className = 'card backbone-preview-section p-4';
+      host.innerHTML = `<div class="d-flex justify-content-between gap-3 flex-wrap"><h5>${escape(row.title)}</h5><div class="d-flex gap-2 flex-wrap">${actions}</div></div><div class="improvement-field"><strong>${escape(L.ProblemStatement)}</strong><div>${escape(row.problemStatement)}</div></div><div class="improvement-field"><strong>${escape(L.ExpectedOutcome)}</strong><div>${escape(row.expectedOutcome)}</div></div><div class="improvement-field"><strong>${escape(L.PriorityRank)}</strong><div>${escape(row.priorityRank)}</div></div><div class="improvement-field"><strong>${escape(L.Lifecycle)}</strong><div>${escape(L[`Lifecycle${row.lifecycleState}`] || row.lifecycleState)}</div></div><div class="improvement-field"><strong>${escape(L.Outcomes)}</strong><div>${(row.outcomes || []).map(item => `<div>${escape(item.summary)}</div>`).join('') || escape(L.NotAvailable)}</div></div>`;
+      bindDetailActions();
       setState('ready', '');
     } catch (error) {
       const [state, message] = failureState(error);
@@ -270,6 +327,43 @@
       host.innerHTML = '';
     }
   }
+
+  async function mutateDetail(suffix, body) {
+    try {
+      await write(`/management-governance/process-modeling/api/improvements/${encodeURIComponent(detailRow.id)}/${suffix}`, 'POST', body);
+      window.showToast?.(L.ActionCompleted, 'success');
+      await initDetails();
+    } catch (error) { const [state, message] = failureState(error); setState(state, message, true); }
+  }
+
+  function bindDetailActions() {
+    document.querySelector('[data-improvement-action="edit"]')?.addEventListener('click', () => openForm(detailRow));
+    document.querySelector('[data-improvement-action="outcome"]')?.addEventListener('click', () => { bootstrap.Modal.getOrCreateInstance(document.getElementById('outcomeModal')).show(); document.getElementById('outcomeSummary').focus(); });
+    for (const action of ['qualify', 'close']) document.querySelector(`[data-improvement-action="${action}"]`)?.addEventListener('click', async event => {
+      window.showConfirm?.(event.currentTarget.textContent.trim(), async () => {
+        await mutateDetail(action, { expectedVersion: Number(detailRow.version ?? detailRow.expectedVersion) }); event.currentTarget.focus();
+      }, { type: action === 'close' ? 'danger' : 'warning', confirmButtonText: event.currentTarget.textContent.trim(), cancelButtonText: L.Cancel });
+    });
+  }
+
+  form?.addEventListener('submit', async event => {
+    event.preventDefault(); if (!form.reportValidity()) return;
+    const editing = form.dataset.mode === 'edit';
+    const id = document.getElementById('improvementId').value;
+    const payload = { title: document.getElementById('improvementTitle').value.trim(), problemStatement: document.getElementById('improvementProblem').value.trim(), expectedOutcome: document.getElementById('improvementExpectedOutcome').value.trim() || null, priorityRank: document.getElementById('improvementPriority').value ? Number(document.getElementById('improvementPriority').value) : null, ...(editing ? { expectedVersion: Number(document.getElementById('improvementExpectedVersion').value) } : { processModelVersionId: document.getElementById('improvementProcessModelVersionId').value }) };
+    try {
+      const result = await write(`/management-governance/process-modeling/api/improvements${editing ? `/${encodeURIComponent(id)}` : ''}`, editing ? 'PUT' : 'POST', payload);
+      bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasImprovementForm'))?.hide();
+      window.showToast?.(result?.reason_code === 'no_op' ? L.NoOp : L.Saved, 'success');
+      if (context.dataset.mode === 'details') await initDetails(); else { const refreshed = await read('/management-governance/process-modeling/api/improvements'); allRows = refreshed?.data || []; refreshRows(dataTable); }
+    } catch (error) { const [state, message] = failureState(error); setState(state, message, true); }
+  });
+
+  document.getElementById('formImprovementOutcome')?.addEventListener('submit', async event => {
+    event.preventDefault(); if (!event.currentTarget.reportValidity()) return;
+    await mutateDetail('outcomes', { summary: document.getElementById('outcomeSummary').value.trim(), expectedVersion: Number(detailRow.version ?? detailRow.expectedVersion) });
+    bootstrap.Modal.getInstance(document.getElementById('outcomeModal'))?.hide();
+  });
 
   if (context.dataset.mode === 'details') initDetails();
   else if (tableElement) { initFilters(); initDataTable(); }

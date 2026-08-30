@@ -4,4 +4,46 @@
   <data name="SelectAll" xml:space="preserve"><value>全选</value></data>
   <data name="ErrorOffline" xml:space="preserve"><value>服务当前离线。连接恢复后请重试。</value></data>
   <data name="StateOpen" xml:space="preserve"><value>开放</value></data><data name="StateQualified" xml:space="preserve"><value>已认定</value></data><data name="StateClosed" xml:space="preserve"><value>已关闭</value></data>
+  <data name="Error400" xml:space="preserve">
+    <value>请求无效。请检查输入的值。</value>
+  </data>
+  <data name="AddNew" xml:space="preserve">
+    <value>添加改进机会</value>
+  </data>
+  <data name="OpportunityFormTitle" xml:space="preserve">
+    <value>改进机会</value>
+  </data>
+  <data name="ProcessModelVersion" xml:space="preserve">
+    <value>流程模型版本</value>
+  </data>
+  <data name="Qualify" xml:space="preserve">
+    <value>评定</value>
+  </data>
+  <data name="RecordOutcome" xml:space="preserve">
+    <value>记录结果</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>关闭改进机会</value>
+  </data>
+  <data name="OutcomeSummary" xml:space="preserve">
+    <value>结果摘要</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>改进机会已成功保存。</value>
+  </data>
+  <data name="NoOp" xml:space="preserve">
+    <value>该改进机会已处于请求的状态。</value>
+  </data>
+  <data name="ActionCompleted" xml:space="preserve">
+    <value>改进机会操作已成功完成。</value>
+  </data>
+  <data name="LifecycleOpen" xml:space="preserve">
+    <value>开放</value>
+  </data>
+  <data name="LifecycleQualified" xml:space="preserve">
+    <value>已评定</value>
+  </data>
+  <data name="LifecycleClosed" xml:space="preserve">
+    <value>已关闭</value>
+  </data>
 </root>

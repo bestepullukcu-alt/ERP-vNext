@@ -35,12 +35,13 @@ public sealed class PerformanceImprovementLocalTestController(
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get(Guid id, CancellationToken cancellationToken)
     {
-        var context = Context(PerformanceImprovementPermissions.ImprovementRead);
+        var context = Context();
         if (context.Error is not null) return context.Error;
         var value = await queries.GetAsync(context.TenantId, id, cancellationToken);
-        return value is null
-            ? FromResponse(DwsEnvelope.Response<object>.Fail("performance_improvement_not_found", 404))
-            : FromResponse(DwsEnvelope.Response<object>.Success(value));
+        if(value is null)return FromResponse(DwsEnvelope.Response<object>.Fail("performance_improvement_not_found", 404));
+        if(!HasPermission(PerformanceImprovementPermissions.ImprovementRead))
+            return FromResponse(DwsEnvelope.Response<object>.Fail("performance_improvement_permission_denied",403));
+        return FromResponse(DwsEnvelope.Response<object>.Success(value));
     }
 
     [HttpPost]
@@ -79,23 +80,36 @@ public sealed class PerformanceImprovementLocalTestController(
         CancellationToken cancellationToken)
     {
         var permission = PerformanceImprovementPermissions.RequiredFor(command);
-        var context = Context(permission);
+        var context = Context();
         if (context.Error is not null) return context.Error;
+        if(command!=PerformanceImprovementContract.Command.CreateOpportunity)
+        {
+            var routeId=RouteData.Values.TryGetValue("id",out var rawId)&&Guid.TryParse(rawId?.ToString(),out var parsed)?parsed:Guid.Empty;
+            if(routeId==Guid.Empty||await queries.GetAsync(context.TenantId,routeId,cancellationToken) is null)
+                return FromResponse(DwsEnvelope.Response<object>.Fail("performance_improvement_not_found",404));
+        }
+        if(!HasPermission(permission))return FromResponse(DwsEnvelope.Response<object>.Fail("performance_improvement_permission_denied",403));
         if (!Request.Headers.TryGetValue("Idempotency-Key", out var key) || key.Count != 1 || string.IsNullOrWhiteSpace(key[0]))
             return FromResponse(DwsEnvelope.Response<object>.Fail("idempotency_key_required", 400));
         var raw = await ReadBody(cancellationToken);
         TBody? body;
-        try { body = JsonSerializer.Deserialize<TBody>(raw, StrictJson); }
+        try
+        {
+            using var document=JsonDocument.Parse(raw);
+            if(document.RootElement.ValueKind!=JsonValueKind.Object||HasDuplicateProperties(document.RootElement))
+                return FromResponse(DwsEnvelope.Response<object>.Fail("performance_improvement_invalid",400));
+            body = JsonSerializer.Deserialize<TBody>(raw, StrictJson);
+        }
         catch (JsonException) { return FromResponse(DwsEnvelope.Response<object>.Fail("performance_improvement_invalid", 400)); }
         if (body is null) return FromResponse(DwsEnvelope.Response<object>.Fail("performance_improvement_invalid", 400));
-        context = context with { IdempotencyKey = key[0]! };
+        context = context with { Permission=permission,IdempotencyKey = key[0]! };
         var result = await coordinator.ExecuteAsync(factory(body, context, raw), cancellationToken);
         return result.Success
             ? FromResponse(DwsEnvelope.Response<object>.Success(new { id = result.AggregateId, outcome = result.Code }, result.StatusCode))
             : FromResponse(DwsEnvelope.Response<object>.Fail(result.Code, result.StatusCode));
     }
 
-    private TrustedContext Context(string permission)
+    private TrustedContext Context(string? permission=null)
     {
         if (!Guid.TryParse(User.FindFirstValue("tenant_id"), out var tenant) || tenant == Guid.Empty ||
             !Guid.TryParse(User.FindFirstValue("sub"), out var actor) || actor == Guid.Empty)
@@ -103,9 +117,23 @@ public sealed class PerformanceImprovementLocalTestController(
         if (!Request.Headers.TryGetValue("X-Tenant-Id", out var header) || header.Count != 1 ||
             !Guid.TryParse(header[0], out var headerTenant) || headerTenant != tenant)
             return TrustedContext.Rejected(FromResponse(DwsEnvelope.Response<object>.Fail("performance_improvement_tenant_mismatch", 400)));
-        if (!User.FindAll("permission").Any(x => string.Equals(x.Value, permission, StringComparison.Ordinal)))
+        if (permission is not null&&!HasPermission(permission))
             return TrustedContext.Rejected(FromResponse(DwsEnvelope.Response<object>.Fail("performance_improvement_permission_denied", 403)));
-        return new(tenant, actor, permission, string.Empty, null);
+        return new(tenant, actor, permission ?? string.Empty, string.Empty, null);
+    }
+
+    private bool HasPermission(string permission)=>User.FindAll("permission").Any(x=>string.Equals(x.Value,permission,StringComparison.Ordinal));
+
+    private static bool HasDuplicateProperties(JsonElement element)
+    {
+        if(element.ValueKind==JsonValueKind.Object)
+        {
+            var names=new HashSet<string>(StringComparer.Ordinal);
+            foreach(var property in element.EnumerateObject())if(!names.Add(property.Name)||HasDuplicateProperties(property.Value))return true;
+        }
+        else if(element.ValueKind==JsonValueKind.Array)
+            foreach(var item in element.EnumerateArray())if(HasDuplicateProperties(item))return true;
+        return false;
     }
 
     private PerformanceImprovementContract.MutationRequest BuildRequest(

@@ -9,4 +9,46 @@
   <data name="Error401" xml:space="preserve"><value>Your session is not authorized.</value></data><data name="Error403" xml:space="preserve"><value>You do not have permission for this operation.</value></data><data name="Error404" xml:space="preserve"><value>The improvement opportunity was not found.</value></data><data name="Error409" xml:space="preserve"><value>The opportunity changed. Refresh before continuing.</value></data><data name="Error503" xml:space="preserve"><value>Authoritative improvement data is currently unavailable.</value></data>
   <data name="SelectAll" xml:space="preserve"><value>Select all</value></data><data name="ErrorOffline" xml:space="preserve"><value>The service is offline. Try again when the connection is restored.</value></data>
   <data name="StateOpen" xml:space="preserve"><value>Open</value></data><data name="StateQualified" xml:space="preserve"><value>Qualified</value></data><data name="StateClosed" xml:space="preserve"><value>Closed</value></data>
+  <data name="Error400" xml:space="preserve">
+    <value>The request is invalid. Review the entered values.</value>
+  </data>
+  <data name="AddNew" xml:space="preserve">
+    <value>Add opportunity</value>
+  </data>
+  <data name="OpportunityFormTitle" xml:space="preserve">
+    <value>Improvement opportunity</value>
+  </data>
+  <data name="ProcessModelVersion" xml:space="preserve">
+    <value>Process model version</value>
+  </data>
+  <data name="Qualify" xml:space="preserve">
+    <value>Qualify</value>
+  </data>
+  <data name="RecordOutcome" xml:space="preserve">
+    <value>Record outcome</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Close opportunity</value>
+  </data>
+  <data name="OutcomeSummary" xml:space="preserve">
+    <value>Outcome summary</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>The improvement opportunity was saved successfully.</value>
+  </data>
+  <data name="NoOp" xml:space="preserve">
+    <value>The opportunity is already in the requested state.</value>
+  </data>
+  <data name="ActionCompleted" xml:space="preserve">
+    <value>The opportunity action was completed successfully.</value>
+  </data>
+  <data name="LifecycleOpen" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="LifecycleQualified" xml:space="preserve">
+    <value>Qualified</value>
+  </data>
+  <data name="LifecycleClosed" xml:space="preserve">
+    <value>Closed</value>
+  </data>
 </root>

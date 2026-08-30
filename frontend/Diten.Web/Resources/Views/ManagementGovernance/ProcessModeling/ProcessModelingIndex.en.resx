@@ -28,4 +28,16 @@
   <data name="Error404" xml:space="preserve"><value>The process model was not found.</value></data>
   <data name="Error409" xml:space="preserve"><value>The process model changed. Refresh before continuing.</value></data>
   <data name="Error503" xml:space="preserve"><value>Authoritative process modeling data is currently unavailable.</value></data>
+  <data name="Error400" xml:space="preserve">
+    <value>The request is invalid. Review the entered values.</value>
+  </data>
+  <data name="ErrorOffline" xml:space="preserve">
+    <value>The connection was lost. Check your network and try again.</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>The process model was saved successfully.</value>
+  </data>
+  <data name="NoOp" xml:space="preserve">
+    <value>No changes were detected.</value>
+  </data>
 </root>

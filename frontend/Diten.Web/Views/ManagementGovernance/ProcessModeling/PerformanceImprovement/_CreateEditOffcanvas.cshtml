@@ -1,0 +1,24 @@
+@using Diten.Web.Views.ManagementGovernance.ProcessModeling.PerformanceImprovement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PerformanceImprovementIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasImprovementForm" aria-labelledby="improvementFormTitle">
+    <div class="offcanvas-header p-4"><h5 id="improvementFormTitle" class="offcanvas-title">@Localizer["OpportunityFormTitle"]</h5><button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button></div>
+    <div class="offcanvas-body border-top p-4">
+        <div id="improvementFormStatus" class="alert d-none" role="alert" aria-live="assertive" tabindex="-1"></div>
+        <form id="formImprovement" novalidate data-mode="create">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="improvementId" />
+            <input type="hidden" id="improvementExpectedVersion" />
+            <div class="row g-3">
+                <div class="col-12"><label for="improvementProcessModelVersionId" class="form-label">@Localizer["ProcessModelVersion"] <span class="text-danger">*</span></label><input id="improvementProcessModelVersionId" class="form-control" required /></div>
+                <div class="col-12"><label for="improvementTitle" class="form-label">@Localizer["TitleField"] <span class="text-danger">*</span></label><input id="improvementTitle" class="form-control" maxlength="200" required /></div>
+                <div class="col-12"><label for="improvementProblem" class="form-label">@Localizer["ProblemStatement"] <span class="text-danger">*</span></label><textarea id="improvementProblem" class="form-control" maxlength="4000" rows="4" required></textarea></div>
+                <div class="col-12"><label for="improvementExpectedOutcome" class="form-label">@Localizer["ExpectedOutcome"]</label><textarea id="improvementExpectedOutcome" class="form-control" maxlength="2000" rows="3"></textarea></div>
+                <div class="col-12"><label for="improvementPriority" class="form-label">@Localizer["PriorityRank"]</label><input id="improvementPriority" class="form-control" type="number" min="1" step="1" /></div>
+            </div>
+        </form>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2"><button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button><button type="submit" form="formImprovement" id="btnSaveImprovement" class="btn btn-primary">@SharedLocalizer["Save"]</button></div>
+</div>
