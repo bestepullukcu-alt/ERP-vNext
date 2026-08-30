@@ -31,4 +31,3 @@ public interface ILskuIdentityWorkflowOperationRepository
         LskuIdentityWorkflowCheckpointMutation mutation,
         CancellationToken cancellationToken = default);
 }
-

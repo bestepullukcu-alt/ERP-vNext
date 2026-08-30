@@ -8,4 +8,3 @@ public interface ILskuIdentityWorkflowTenantPartitionDiscovery
         int limit,
         CancellationToken cancellationToken = default);
 }
-
