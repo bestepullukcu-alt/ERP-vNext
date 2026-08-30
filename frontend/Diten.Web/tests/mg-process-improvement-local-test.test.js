@@ -14,6 +14,22 @@ describe('MOD-0355 process improvement local-test surface', () => {
   const script = read('wwwroot/assets/js/pages/management-governance/process-modeling/performance-improvement/index.js');
   const l10nScript = read('wwwroot/assets/js/pages/management-governance/process-modeling/performance-improvement/index.l10n.js');
 
+  const messages = {
+    Loading: 'loading', Empty: 'empty', Error401: '401', Error403: '403', Error404: 'not-found',
+    Error409: '409', Error503: '503', ErrorOffline: 'offline'
+  };
+
+  async function executeDetails(fetchResult) {
+    document.body.innerHTML = '<div id="performanceImprovementStatus" class="alert d-none" data-improvement-state="idle"></div>'
+      + '<div id="performanceImprovementDetail"></div>'
+      + '<div id="performanceImprovementContext" data-mode="details" data-ready="true" data-id="11111111-1111-4111-8111-111111111111"></div>';
+    window.PerformanceImprovementL10n = messages;
+    window.fetch = vi.fn(fetchResult);
+    window.eval(script);
+    await new Promise(resolve => setTimeout(resolve, 0));
+    return document.getElementById('performanceImprovementStatus');
+  }
+
   it('owns exact same-origin read routes and remains default-off', () => {
     expect(controller).toContain('[HttpGet("improvements")]');
     expect(controller).toContain('[HttpGet("improvements/{id:guid}")]');
@@ -62,11 +78,41 @@ describe('MOD-0355 process improvement local-test surface', () => {
     expect(script).toContain("if (!host || !gatewayReady) return;");
   });
 
+  it('executes exact zero browser reads and writes while default-off', async () => {
+    document.body.innerHTML = '<div id="performanceImprovementStatus" class="alert d-none" data-improvement-state="idle"></div>'
+      + '<div id="performanceImprovementContext" data-mode="index" data-ready="false" data-read="true"></div>';
+    window.PerformanceImprovementL10n = messages;
+    window.fetch = vi.fn();
+    window.eval(script);
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(window.fetch).toHaveBeenCalledTimes(0);
+    expect(script).not.toMatch(/method\s*:\s*['"](?:POST|PUT|PATCH|DELETE)['"]/i);
+  });
+
+  it.each([
+    [403, 'error-403'],
+    [404, 'error-404'],
+    [409, 'error-409'],
+    [503, 'error-503']
+  ])('renders HTTP %s as its own non-disclosing state', async (status, expectedState) => {
+    const host = await executeDetails(() => Promise.resolve({ ok: false, status }));
+    expect(host.dataset.improvementState).toBe(expectedState);
+    expect(host.textContent).toBe(messages[`Error${status}`]);
+    expect(host.textContent).not.toMatch(/tenant|foreign|başka kiracı/i);
+  });
+
+  it('renders transport failure as offline rather than authoritative 503', async () => {
+    const host = await executeDetails(() => Promise.reject(new TypeError('network')));
+    expect(host.dataset.improvementState).toBe('offline');
+    expect(host.textContent).toBe(messages.ErrorOffline);
+  });
+
   it('has exact locale key parity across seven cultures', () => {
     const base = 'Resources/Views/ManagementGovernance/ProcessModeling/PerformanceImprovement/PerformanceImprovementIndex';
     const keys = culture => [...read(`${base}.${culture}.resx`).matchAll(/<data name="([^"]+)"/g)].map(x => x[1]).sort();
     const expected = keys('en');
     expect(expected.length).toBeGreaterThan(20);
+    expect(expected).toContain('ErrorOffline');
     for (const culture of ['fr', 'es', 'zh', 'ar', 'ru', 'tr']) expect(keys(culture)).toEqual(expected);
   });
 });

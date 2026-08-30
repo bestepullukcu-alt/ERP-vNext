@@ -18,6 +18,7 @@
   let savedView = null;
   let saveFilterArmed = false;
   let dataTable;
+  const statusHost = document.getElementById('performanceImprovementStatus');
 
   const escape = value => String(value ?? '').replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
   const normalizeArray = value => Array.isArray(value)
@@ -60,6 +61,20 @@
     if (status === 404) return L.Error404;
     if (status === 409) return L.Error409;
     return L.Error503;
+  }
+
+  function setState(state, message, warning = false) {
+    if (!statusHost) return;
+    statusHost.dataset.improvementState = state;
+    statusHost.textContent = message || '';
+    statusHost.classList.toggle('d-none', !message);
+    statusHost.classList.toggle('alert-warning', warning);
+    statusHost.classList.toggle('alert-info', Boolean(message) && !warning);
+  }
+
+  function failureState(error) {
+    if (!Number.isInteger(error?.status)) return ['offline', L.ErrorOffline];
+    return [`error-${error.status}`, statusMessage(error.status)];
   }
 
   async function read(path) {
@@ -152,11 +167,15 @@
   async function initDataTable() {
     savedView = await loadDefaultView();
     if (gatewayReady && canRead) {
+      setState('loading', L.Loading);
       try {
         const payload = await read('/management-governance/process-modeling/api/improvements');
         allRows = Array.isArray(payload?.data) ? payload.data : [];
+        setState(allRows.length ? 'ready' : 'empty', allRows.length ? '' : L.Empty);
       } catch (error) {
-        window.showToast?.(error.message || L.Error503, 'warning');
+        const [state, message] = failureState(error);
+        setState(state, message, true);
+        window.showToast?.(message, 'warning');
       }
     }
 
@@ -235,13 +254,17 @@
   async function initDetails() {
     const host = document.getElementById('performanceImprovementDetail');
     if (!host || !gatewayReady) return;
+    setState('loading', L.Loading);
     try {
       const payload = await read(`/management-governance/process-modeling/api/improvements/${encodeURIComponent(context.dataset.id)}`);
       const row = payload?.data;
       if (!row) throw Object.assign(new Error(L.Error404), { status: 404 });
       host.innerHTML = `<h5>${escape(row.title)}</h5><div class="improvement-field"><strong>${escape(L.ProblemStatement)}</strong><div>${escape(row.problemStatement)}</div></div><div class="improvement-field"><strong>${escape(L.ExpectedOutcome)}</strong><div>${escape(row.expectedOutcome)}</div></div><div class="improvement-field"><strong>${escape(L.PriorityRank)}</strong><div>${escape(row.priorityRank)}</div></div><div class="improvement-field"><strong>${escape(L.Lifecycle)}</strong><div>${escape(row.lifecycleState)}</div></div><div class="improvement-field"><strong>${escape(L.Outcomes)}</strong><div>${(row.outcomes || []).map(item => `<div>${escape(item.summary)}</div>`).join('') || '-'}</div></div>`;
+      setState('ready', '');
     } catch (error) {
-      host.innerHTML = `<div class="alert alert-warning mb-0">${escape(error.message || L.Error503)}</div>`;
+      const [state, message] = failureState(error);
+      setState(state, message, true);
+      host.innerHTML = '';
     }
   }
 
