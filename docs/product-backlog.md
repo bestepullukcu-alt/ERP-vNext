@@ -5305,3 +5305,27 @@ kurtardı; geriye handler'ın **kendisi** kaldı. Silme üç servise yayıldığ
   `docs/product-backlog-closed.md`'ye taşınacak. "Sonra toplu temizleriz" bu dosyayı 6927 satıra çıkaran şeydir.
 - **Gelecek regresyon riski: 🟡** — bugün hiçbir şey kırılmıyor (canlı yol yok). Risk tamamen
   **yanlış okumada**: birinin "kiracılık hallediliyor" sanıp yeni bir istemciyi bu handler'a takması.
+### BL-317 — MOD-0355 normal-user Auth/Gateway/E2E closure remains partial (2026-08-30)
+> **DURUM:** AÇIK · **SAHİP:** ali.tufanoglu / management-governance-technical-owner-interim
+
+**⚠️ KAPANIŞ (KISMİ) — 2026-08-30**
+Checkpoint: final branch checkpoint from `feature/mg/mod-0355-auth-gateway-e2e` (recorded in the handoff report).
+
+Normal HS256 user/session JWT isolation, exact permission catalog onboarding, additive Gateway routing,
+tenant-first model reads and the Diten.Web same-origin proxy were prepared. FU16 S2S authority was deliberately
+not reused; no default Admin/Viewer grant was introduced; WorkCenter, PVG, deployment and production activation
+were deliberately excluded.
+
+This item remains open until all of the following are measured on the current branch:
+
+1. implement and prove the complete atomic Core Mongo command executor and normal-user create/edit/lifecycle
+   endpoints, including stale `409`;
+2. reconcile the DataTable list envelope and field contract;
+3. restore the full MG architecture/mutation gates to green without weakening sibling isolation;
+4. obtain executable FU16 acceptance for Improvement, and Prompt 2 reference readiness for Process Performance;
+5. run Auth/Web/tenant-architecture/frontend/mutation gates to completion;
+6. start the exact double-flag loopback runtime with approved local configuration and an explicitly granted
+   non-secret test user, then capture login, positive/negative, seven-language, console, Gateway-only network
+   and old/new parity evidence.
+
+---
