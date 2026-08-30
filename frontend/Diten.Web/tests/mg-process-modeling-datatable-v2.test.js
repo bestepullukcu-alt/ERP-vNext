@@ -45,12 +45,13 @@ describe('MOD-0355 process-model catalog', () => {
     expect(gateway).toContain('X-Correlation-Id');
   });
 
-  it('is default-off and performs zero HTTP reads before an approved route is configured', () => {
+  it('is configuration-gated and performs zero HTTP calls before an approved route is configured', () => {
     expect(gateway).toContain('ManagementGovernance:ProcessModelingFrontend:Enabled');
     expect(gateway).toContain('ManagementGovernance:ProcessModelingFrontend:GatewayReadPath');
     expect(gateway).toContain('if (!IsReady)');
     expect(gateway.indexOf('if (!IsReady)')).toBeLessThan(gateway.indexOf('httpClient.SendAsync'));
     expect(gateway).toContain('process_modeling_frontend_gateway_not_ready');
-    expect(controller).not.toMatch(/HttpPost|HttpPut|HttpDelete|AcceptVerbs/);
+    expect(controller).toContain('[HttpPost("api/models")]');
+    expect(controller).toContain('[HttpPut("api/models/{id:guid}")]');
   });
 });

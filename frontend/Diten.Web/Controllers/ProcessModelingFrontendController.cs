@@ -60,6 +60,29 @@ public sealed class ProcessModelingFrontendController : Controller
     public Task<IActionResult> Model(Guid id, CancellationToken cancellationToken) =>
         ProxyReadAsync($"models/{id:D}", cancellationToken);
 
+    [HttpPost("api/models")]
+    public Task<IActionResult> CreateModel(CancellationToken cancellationToken) =>
+        ProxyWriteAsync(ProcessModelingFrontendPermissions.Create, HttpMethod.Post, "models", cancellationToken);
+
+    [HttpPut("api/models/{id:guid}")]
+    public Task<IActionResult> UpdateModel(Guid id, CancellationToken cancellationToken) =>
+        ProxyWriteAsync(ProcessModelingFrontendPermissions.Update, HttpMethod.Put, $"models/{id:D}", cancellationToken);
+
+    [HttpPost("api/models/{id:guid}/{action:regex(^(request-review|return-to-draft|publish|retire|create-revision)$)}")]
+    public Task<IActionResult> ModelLifecycle(Guid id, string action, CancellationToken cancellationToken)
+    {
+        var permission = action switch
+        {
+            "request-review" => ProcessModelingFrontendPermissions.RequestReview,
+            "return-to-draft" => ProcessModelingFrontendPermissions.ReturnToDraft,
+            "publish" => ProcessModelingFrontendPermissions.Publish,
+            "retire" => ProcessModelingFrontendPermissions.Retire,
+            "create-revision" => ProcessModelingFrontendPermissions.CreateRevision,
+            _ => string.Empty
+        };
+        return ProxyWriteAsync(permission, HttpMethod.Post, $"models/{id:D}/{action}", cancellationToken);
+    }
+
     [HttpGet("improvements")]
     public IActionResult Improvements()
     {
@@ -85,6 +108,26 @@ public sealed class ProcessModelingFrontendController : Controller
     [HttpGet("api/improvements/{id:guid}")]
     public Task<IActionResult> ImprovementApi(Guid id, CancellationToken cancellationToken) =>
         ProxyImprovementReadAsync($"improvements/{id:D}", cancellationToken);
+
+    [HttpPost("api/improvements")]
+    public Task<IActionResult> CreateImprovement(CancellationToken cancellationToken) =>
+        ProxyWriteAsync(PerformanceImprovementFrontendPermissions.Create, HttpMethod.Post, "improvements", cancellationToken);
+
+    [HttpPut("api/improvements/{id:guid}")]
+    public Task<IActionResult> UpdateImprovement(Guid id, CancellationToken cancellationToken) =>
+        ProxyWriteAsync(PerformanceImprovementFrontendPermissions.Update, HttpMethod.Put, $"improvements/{id:D}", cancellationToken);
+
+    [HttpPost("api/improvements/{id:guid}/qualify")]
+    public Task<IActionResult> QualifyImprovement(Guid id, CancellationToken cancellationToken) =>
+        ProxyWriteAsync(PerformanceImprovementFrontendPermissions.Qualify, HttpMethod.Post, $"improvements/{id:D}/qualify", cancellationToken);
+
+    [HttpPost("api/improvements/{id:guid}/outcomes")]
+    public Task<IActionResult> RecordOutcome(Guid id, CancellationToken cancellationToken) =>
+        ProxyWriteAsync(PerformanceImprovementFrontendPermissions.RecordOutcome, HttpMethod.Post, $"improvements/{id:D}/outcomes", cancellationToken);
+
+    [HttpPost("api/improvements/{id:guid}/close")]
+    public Task<IActionResult> CloseImprovement(Guid id, CancellationToken cancellationToken) =>
+        ProxyWriteAsync(PerformanceImprovementFrontendPermissions.Close, HttpMethod.Post, $"improvements/{id:D}/close", cancellationToken);
 
     private async Task<IActionResult> ProxyReadAsync(string relativePath, CancellationToken cancellationToken)
     {
@@ -113,6 +156,17 @@ public sealed class ProcessModelingFrontendController : Controller
 
     private bool HasPermission(string permission) =>
         User.FindAll("permission").Any(claim => string.Equals(claim.Value, permission, StringComparison.Ordinal));
+
+    private async Task<IActionResult> ProxyWriteAsync(string permission, HttpMethod method, string path, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(permission) || !HasPermission(permission))
+        {
+            var denied = ProcessModelingFrontendProxyResult.Failure(403, "process_modeling_permission_denied", HttpContext.TraceIdentifier);
+            return new ContentResult { Content = denied.Content, ContentType = denied.ContentType, StatusCode = denied.StatusCode };
+        }
+        var result = await _gateway.SendAsync(Request, method, path, cancellationToken);
+        return new ContentResult { Content = result.Content, ContentType = result.ContentType, StatusCode = result.StatusCode };
+    }
 
     private IReadOnlySet<string> ResolvePermissions()
     {

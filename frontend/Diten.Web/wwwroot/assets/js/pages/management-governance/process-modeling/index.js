@@ -241,6 +241,31 @@
     });
   }
 
+  function initIdentityForm() {
+    const form = document.getElementById('formProcessModelIdentity');
+    if (!form || !canCreate || !gatewayReady) return;
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      const payload = {
+        processDefinitionId: form.elements.ProcessDefinitionId.value,
+        modelCode: form.elements.ModelCode.value,
+        name: form.elements.Name.value,
+        description: form.elements.Description.value || null
+      };
+      const response = await fetch('/management-governance/process-modeling/api/models', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) { window.showToast?.(statusMessage(response), 'warning'); return; }
+      bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasCreateEdit')).hide();
+      form.reset();
+      dataTable?.ajax.reload(null, false);
+    });
+  }
+
   initFilters();
+  initIdentityForm();
   initDataTable();
 })();

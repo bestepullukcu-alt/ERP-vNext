@@ -9,15 +9,14 @@ describe('MOD-0355 model/version editor', () => {
   const script = read('wwwroot/assets/js/pages/management-governance/process-modeling/editor.js');
   const form = read('Views/ManagementGovernance/ProcessModeling/_CreateEditOffcanvas.cshtml');
 
-  it('keeps the four-field identity form exact and disabled before write activation', () => {
+  it('keeps the four-field identity form exact', () => {
     for (const field of ['ProcessDefinitionId', 'ModelCode', 'Name', 'Description']) {
       const type = field === 'ProcessDefinitionId' ? 'Guid?' : field === 'Description' ? 'string?' : 'string';
       expect(models).toContain(`public ${type} ${field}`);
       expect(form).toContain(`asp-for="${field}"`);
     }
     expect(form.match(/asp-for=/g)).toHaveLength(8); // label + input/textarea for four fields
-    expect(form).toContain('WriteNotReady');
-    expect(form).toMatch(/<(input|textarea)[^>]+disabled/g);
+    expect(form).toContain('id="saveProcessModelIdentity"');
   });
 
   it('maps lifecycle controls to exact permission constants without granting authority', () => {

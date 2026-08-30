@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 namespace Diten.Web.Services.ManagementGovernance.ProcessModeling;
 
 /// <summary>
-/// Default-off, read-only MVC-to-Gateway seam for MOD-0355. The browser never receives a token or tenant header.
+/// Default-off MVC-to-Gateway seam for MOD-0355. The browser never receives a token or tenant header.
 /// No downstream route is inferred: enabling requires a separately approved Gateway route and explicit configuration.
 /// </summary>
 public sealed class ProcessModelingFrontendGateway(
@@ -25,9 +25,24 @@ public sealed class ProcessModelingFrontendGateway(
         && _readBasePath.StartsWith("/", StringComparison.Ordinal)
         && !_readBasePath.Contains("5017", StringComparison.Ordinal);
 
-    public async Task<ProcessModelingFrontendProxyResult> GetAsync(
+    public Task<ProcessModelingFrontendProxyResult> GetAsync(
         HttpRequest incoming,
         string relativePath,
+        CancellationToken cancellationToken) =>
+        SendAsync(incoming, HttpMethod.Get, relativePath, cancellationToken);
+
+    public Task<ProcessModelingFrontendProxyResult> SendAsync(
+        HttpRequest incoming,
+        HttpMethod method,
+        string relativePath,
+        CancellationToken cancellationToken) =>
+        SendAsync(incoming, method, relativePath, method == HttpMethod.Get ? null : incoming.Body, cancellationToken);
+
+    private async Task<ProcessModelingFrontendProxyResult> SendAsync(
+        HttpRequest incoming,
+        HttpMethod method,
+        string relativePath,
+        Stream? body,
         CancellationToken cancellationToken)
     {
         if (!IsReady)
@@ -42,10 +57,18 @@ public sealed class ProcessModelingFrontendGateway(
 
         var basePath = _readBasePath!.TrimEnd('/');
         var suffix = relativePath.TrimStart('/');
-        using var request = new HttpRequestMessage(HttpMethod.Get, $"{_gatewayUrl!.TrimEnd('/')}{basePath}/{suffix}");
+        using var request = new HttpRequestMessage(method, $"{_gatewayUrl!.TrimEnd('/')}{basePath}/{suffix}");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         request.Headers.TryAddWithoutValidation("X-Tenant-Id", tenantId.ToString("D"));
         request.Headers.TryAddWithoutValidation("X-Correlation-Id", incoming.HttpContext.TraceIdentifier);
+        ForwardSafeHeader(incoming, request, "Idempotency-Key");
+        ForwardSafeHeader(incoming, request, "If-Match");
+        ForwardSafeHeader(incoming, request, "X-Expected-Version");
+        if (body is not null)
+        {
+            request.Content = new StreamContent(body);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        }
 
         try
         {
@@ -59,9 +82,15 @@ public sealed class ProcessModelingFrontendGateway(
         }
         catch (HttpRequestException exception)
         {
-            logger.LogWarning(exception, "MOD-0355 read proxy is unavailable.");
+            logger.LogWarning(exception, "MOD-0355 frontend proxy is unavailable.");
             return ProcessModelingFrontendProxyResult.Failure(503, "process_modeling_frontend_gateway_unavailable", incoming.HttpContext.TraceIdentifier);
         }
+    }
+
+    private static void ForwardSafeHeader(HttpRequest incoming, HttpRequestMessage outgoing, string name)
+    {
+        if (incoming.Headers.TryGetValue(name, out var value) && value.Count == 1)
+            outgoing.Headers.TryAddWithoutValidation(name, value[0]);
     }
 
     private static bool TryResolveTenant(System.Security.Claims.ClaimsPrincipal user, out Guid tenantId)
