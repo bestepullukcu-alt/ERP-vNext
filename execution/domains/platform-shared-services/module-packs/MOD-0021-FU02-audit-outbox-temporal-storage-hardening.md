@@ -365,6 +365,13 @@ Decision: Gateway/API changes are unnecessary and forbidden.
 - The canonical `docs/product-backlog.md` currently assigns `BL-030` to Material Master Class/Grade and Generic-versus-Printed Packaging Identity. This pack records that collision and uses no backlog identity.
 - `audit_events` and other DateTimeOffset-bearing documents are follow-up/regression inventory. Any measured defect there requires its own owner decision and migration pack.
 - Runtime/test implementation completed in the isolated `feature/pss/mod-0021-fu02-audit-outbox-temporal-storage-hardening` worktree based on `origin/main` `61ffac26`; no commit, push or operational migration was performed.
+- Current integration rebase evidence (2026-08-30): `origin/main` `dcb6509f` contains 200 additional persisted
+  `DateTimeOffset` member occurrences from commit `0f71a237` across 55 files. The inventory guard therefore freezes
+  the 410-member non-target current-main remainder as explicitly unreviewed mechanical debt (ordinal SHA-256
+  `B29B5768362B1035E2412C61B6F25AF95254AF9FDC7C9ED17925F7229EEC9200`), separately requires the exact two
+  FU02-reviewed `AuditOutboxMessage` members, and freezes the full 412-member inventory at ordinal SHA-256
+  `7B1C8E30FF78CD35C46AF2EB5D9C4BF4B6C57FD074DE972E80158F21F82DA46B`. This is a baseline reconciliation only;
+  it does not claim semantic review or migration of the 410-member remainder.
 - Candidate A `{ Status, NextAttemptAtUtcTicksV1, CreatedAtUtcTicksV1, Id }` was selected after an exact repository-query real-Mongo matrix including the status OR branches and `Attempts < max`. In the 5,000-row future-heavy fixture it examined 51 keys versus Candidate B's 5,000; both candidates remained semantically correct and non-multikey, and both required the OR-plan blocking sort.
 - With `DITEN_FU02_REPLICA_MONGO` unset, the auto-provisioned replica-set migration tests passed `24/24`, focused FU02 tests passed `72/72`, and the standard full Platform suite passed `2710/2710`, with zero failures and zero skipped tests. The earlier broader Audit Outbox/worker/DI/schema regression run passed `105/105`.
 - Platform API Release build passed with zero errors and thirteen pre-existing warnings. `git diff --check` passed.

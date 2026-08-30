@@ -1209,13 +1209,29 @@ Code truth reconciled on 2026-08-26:
   the command-owned hash and therefore cannot create a permanent false delta. Canonical snapshot parsing rejects
   missing/extra/reordered facts, CR, internal/extra blank lines, drifted headers and incoherent type 7/8 facts.
 - H1b verification after the nested execution-context and independent-acceptance findings were closed: focused
-  ProductLegalEntityScope domain/runner/DI/real-Mongo tests are `166/166`; the full MDM suite is `702/702`; all have
+  ProductLegalEntityScope domain/runner/DI/real-Mongo tests are `166/166`; the current integrated full MDM suite is
+  `753/753`; all have
   zero skipped. Persisted malformed rollout state, full/stable hash recomputation, sample-independent 201+ inventory
   hashing, marker-independent writer discovery and real-Mongo commit-before-response reconciliation are covered. Crash/replay is
   proven after fence acquisition, first and second snapshot, quiesced snapshot binding and commit-before-response.
   Exact facade-to-inner reuse is installed synchronously around the MediatR `next` delegate and disposed on every
   outcome; direct inner and unrelated nested commands cannot inherit it. MDM API isolated Release build succeeds
   with zero errors and five existing persistence warnings.
+- **Current-base prerequisite integration evidence (2026-08-30):** MOD-0033-FU02 service identity issuance,
+  MOD-0021-FU01 trusted durable source audit ingestion and MOD-0021-FU02 temporal storage hardening are integrated
+  in the same local branch. Auth service-token focused tests pass `47/47`; Platform trusted-source/temporal/token/DI
+  focused tests pass `159/159`; MDM audit/manifest focused tests pass `109/109`; the DB-010 architecture guard passes
+  `6/6`; and Product Legal Entity Scope security-focused tests pass `48/48`, all with zero skipped. Auth and Platform
+  API Release builds succeed with zero errors (one existing Auth persistence warning; zero Platform warnings in the
+  final isolated build). The BL-030 inventory guard separately fingerprints 410 current-main members as unreviewed
+  mechanical debt and the two FU02-reviewed AuditOutbox members as an exact bounded subset; the combined 412-member
+  surface is independently fingerprinted. BSON representation/query behavior remains proven by the separate temporal
+  real-Mongo suite, and the inventory/serializer guard passes `2/2`.
+- Full-suite truth is intentionally not overstated: the current integrated Auth suite is `613/615` because two
+  pre-existing user-lookup tests still require a two-field DTO although current main already exposes the two masked
+  identity hints. The Platform suite is `3730/3754`; the remaining 24 failures are existing Document Management,
+  BRD seed-count and other current-main contract drift, while every named prerequisite and FU03 focused group above
+  is green. No unrelated contract was weakened to manufacture a green total.
 - H1b remains `BLOCKED_OPERATIONAL_PREREQUISITES`, not code-blocked. The default-disabled G4 provider/consumer
   prerequisites remain implemented with `68/68` + `639/639` Platform and `41/41` + `678/678` MDM evidence. No H1b
   action, operation 14/15 data mutation, credential/grant provisioning or live receipt run occurred; Production-

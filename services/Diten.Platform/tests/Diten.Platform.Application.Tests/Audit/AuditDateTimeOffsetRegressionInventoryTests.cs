@@ -15,22 +15,31 @@ public sealed class AuditDateTimeOffsetRegressionInventoryTests
     public void PersistedDateTimeOffsetInventory_HasNoUnreviewedSurfaceChange()
     {
         var inventory = Inventory();
-        var fingerprint = Convert.ToHexString(
-            SHA256.HashData(Encoding.UTF8.GetBytes(string.Join("\n", inventory))));
+        string[] reviewedAuditOutboxMembers =
+        [
+            "Diten.Platform.Infrastructure/Persistence/Models/AuditOutboxMessage.cs:CreatedAtUtc",
+            "Diten.Platform.Infrastructure/Persistence/Models/AuditOutboxMessage.cs:NextAttemptAtUtc"
+        ];
+        var actualReviewedMembers = inventory
+            .Where(item => reviewedAuditOutboxMembers.Contains(item, StringComparer.Ordinal))
+            .OrderBy(value => value, StringComparer.Ordinal)
+            .ToArray();
+        Assert.Equal(reviewedAuditOutboxMembers, actualReviewedMembers);
 
-        Assert.Contains(
-            inventory,
-            item => item.EndsWith("Persistence/Models/AuditOutboxMessage.cs:NextAttemptAtUtc", StringComparison.Ordinal));
-        Assert.Contains(
-            inventory,
-            item => item.EndsWith("Persistence/Models/AuditOutboxMessage.cs:CreatedAtUtc", StringComparison.Ordinal));
-        Assert.Equal(212, inventory.Length);
-        Assert.True(
-            string.Equals(
-                "BB2B9C2A7FE20CA64C0B229F677C5F0A7A30C70407ED0F41D3DF11D9090BE190",
-                fingerprint,
-                StringComparison.Ordinal),
-            $"inventory count={inventory.Length}; fingerprint={fingerprint}");
+        // The 410-item remainder is current-main mechanical debt, not semantically reviewed by FU02.
+        var grandfatheredBaseline = inventory
+            .Where(item => !reviewedAuditOutboxMembers.Contains(item, StringComparer.Ordinal))
+            .OrderBy(value => value, StringComparer.Ordinal)
+            .ToArray();
+        Assert.Equal(410, grandfatheredBaseline.Length);
+        Assert.Equal(
+            "B29B5768362B1035E2412C61B6F25AF95254AF9FDC7C9ED17925F7229EEC9200",
+            Fingerprint(grandfatheredBaseline));
+
+        Assert.Equal(412, inventory.Length);
+        Assert.Equal(
+            "7B1C8E30FF78CD35C46AF2EB5D9C4BF4B6C57FD074DE972E80158F21F82DA46B",
+            Fingerprint(inventory));
     }
 
     [Fact]
@@ -55,6 +64,9 @@ public sealed class AuditDateTimeOffsetRegressionInventoryTests
             .OrderBy(value => value, StringComparer.Ordinal)
             .ToArray();
     }
+
+    private static string Fingerprint(IEnumerable<string> values) => Convert.ToHexString(
+        SHA256.HashData(Encoding.UTF8.GetBytes(string.Join("\n", values))));
 
     private static IEnumerable<string> SourceFiles()
     {
