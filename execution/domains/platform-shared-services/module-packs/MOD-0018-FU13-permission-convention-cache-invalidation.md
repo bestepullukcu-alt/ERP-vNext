@@ -102,8 +102,10 @@ expires (≤15 min) or is refreshed — the `permission`/`role` claims are baked
 
 ## 5. Locked Decisions (`OD-FU13-*`) — resolved from repo evidence (AG-STEP-010 open-decision audit)
 
-> **All FU13 design decisions are LOCKED. No open decision remains.** Each lock below is grounded in read-only repo
-> evidence at HEAD `050dba4`.
+> **All FU13 design decisions are LOCKED. No open decision remains.** OD-FU13-01/02/03 are grounded in read-only repo
+> evidence at HEAD `050dba4`; OD-FU13-04 is the user-authorized entitlement-aware JWT issuance amendment recorded on
+> 2026-08-31. OD-FU13-04 narrows effective tenant-user permission claims at issuance and does not reopen the existing
+> revoke, fan-out, TTL, or request-scope decisions.
 
 ### OD-FU13-01 — Authorization-claim (C5) staleness → **LOCKED: bounded token TTL + revoke-on-privilege-removal (B-Option 1)**
 - **Repo evidence.** Access-token TTL = **15 min** (`JwtSettings.AccessTokenExpirationMinutes = 15`). The **refresh
@@ -175,6 +177,25 @@ expires (≤15 min) or is refreshed — the `permission`/`role` claims are baked
 - **Security rationale.** The simplest fail-closed posture is no scope cache (no staleness surface). Avoid premature
   optimization — request-memoization already bounds per-request cost.
 
+### OD-FU13-04 — Entitlement-aware tenant-user JWT issuance → **LOCKED: explicit-grant intersection, fail-closed**
+
+- **Problem evidence.** Tenant Login, Refresh, MFA verification, and forced-password-change issuance currently pass
+  every role permission row to the token signer. An explicit PPM grant therefore remains effective in a newly issued
+  token after the tenant's PPM entitlement is disabled, even though retaining that grant as dormant data is required.
+- **Lock.** One Application-layer effective-permission resolver is used by all four tenant-user issuance paths. For
+  ModuleCode exact ordinal `PPM`, the emitted permission set is the intersection of the tenant's explicit role grants
+  and the exact permission keys returned by the authoritative active entitlement read. Entitlement never creates or
+  widens a role grant.
+- **Fail-closed states.** Confirmed missing, disabled, expired, or empty PPM entitlement, and unavailable, timeout,
+  malformed, ambiguous, or indeterminate authority produce zero `ppm.*` claims in a newly issued tenant-user token.
+  Non-PPM permissions pass through unchanged.
+- **Lifecycle.** Explicit role-grant rows are never deleted by this resolver. Disable makes them dormant; re-enable
+  makes only the still-existing grant intersection effective. Already-issued access tokens are immutable until expiry;
+  login/refresh/MFA/forced-password issuance re-evaluates current authority.
+- **Boundary.** Platform-admin token issuance, HS256 signing/standard claims, Register's empty initial permission set,
+  and the FU16 S2S token family remain unchanged. No cache, deny-list, event contract, seed, migration, or persistence
+  model is introduced. The authoritative read occurs only at token issuance, not on the request enforcement hot path.
+
 ---
 
 ## 6. Fail-Closed Behavior (mandatory)
@@ -210,6 +231,10 @@ expires (≤15 min) or is refreshed — the `permission`/`role` claims are baked
   role-permission removal adds the **new tenant-scoped `IUserRoleRepository.GetUserIdsByRoleAsync(roleId, tenantId, ct)`**
   seam (+ Mongo impl) and loops `RevokeAllByUserAsync` per affected holder. `RolePermissionChangedV1` /
   `UserRoleChangedV1` cross-service events and any deny-list are **explicitly forbidden in v1**.
+- **AuthService tenant-user issuance (OD-FU13-04):** the existing authoritative
+  `ITenantEntitlementClient.ReadEntitledModulesWithPermissionKeysAsync` seam is read at issuance by one shared
+  Application resolver. No new synchronous call is added to the per-request enforcement path and no entitlement cache
+  is added to AuthService.
 - **Platform MOD-0288 (OD-FU13-03 = no scope cache):** **no** OrganizationUnit / Position / PositionAssignment change
   events in v1 (data-scope is request-fresh). These become required **only if** a future cross-request scope cache is
   introduced (future-guard, §5 OD-FU13-03).
@@ -238,6 +263,9 @@ expires (≤15 min) or is refreshed — the `permission`/`role` claims are baked
 6. **(OD-FU13-02)** Invalidation reaches **all running instances** via a per-instance fan-out endpoint (verified in a
    2-instance test); caches stay `IMemoryCache`; per-instance fan-out is a documented prerequisite before horizontal
    scaling. No `IDistributedCache` is introduced in v1.
+7. **(OD-FU13-04)** Login, tenant Refresh, MFA verification, and forced-password-change issuance use the same resolver;
+   active authoritative PPM entitlement emits only explicit-role-grant intersection, while all non-active or
+   non-authoritative states emit zero PPM claims. Platform-admin, Register, HS256, and FU16 S2S behavior is unchanged.
 
 ## 9. Test Expectations (locked)
 
@@ -246,6 +274,13 @@ expires (≤15 min) or is refreshed — the `permission`/`role` claims are baked
 - Fail-closed integration test (**mandatory**): revoked role-permission + stale cache ⇒ access denied at enforcement.
 - Data-scope freshness test: assignment/hierarchy change reflected on the next request (no cross-request leakage).
 - No regression in the existing 554 Platform / entitlement-consumer tests.
+- Effective-permission unit matrix: active exact intersection; entitlement cannot create a grant; missing/disabled/
+  expired/unavailable/malformed/empty produce zero PPM; non-PPM permissions are byte-for-byte behaviorally preserved;
+  tenant and cancellation propagate.
+- Four-path issuance contract: Login, tenant Refresh, MFA, and forced-password-change pass resolver output to the
+  signer; platform/partner refresh bypasses the resolver; Register remains empty-permission.
+- Local runtime evidence: the same explicit grant survives `0 → 24 → 0 → 24` across entitlement enable/disable/
+  re-enable and newly issued JWTs; the old access token remains unchanged until expiry.
 
 ## 10. Failure Paths to Verify
 
@@ -253,6 +288,8 @@ expires (≤15 min) or is refreshed — the `permission`/`role` claims are baked
 - Duplicate / out-of-order events → idempotent, last-writer-safe (eviction is monotonic-safe).
 - Partial multi-instance eviction (OD-FU13-02) → either fan-out or documented bounded inconsistency, never fail-open.
 - Malformed payload → logged `*_payload_invalid`, consumer continues.
+- Entitlement authority unavailable/malformed during tenant-user issuance → zero PPM claim; cancellation propagates;
+  no RolePermission mutation and no fallback to stale role rows.
 
 ## 11. Rollout Order (decisions locked)
 
@@ -271,7 +308,8 @@ implementation is performed here** — FU13 only ensures the events/timestamps e
 
 ## 13. Out of Scope / Non-Goals
 
-- No runtime, seed, migration, registry, roadmap, test, or `.antigravity` change by this pack (`ready-for-dev` = handoff only).
+- No seed, migration, registry, roadmap, frontend, gateway, persistence, or `.antigravity` change by the OD-FU13-04
+  amendment. Runtime/test changes are limited to its exact AuthService allowlist below.
 - No new `MOD-xxxx`; no EnterpriseStrategy / Slice-5B / Slice-7 interaction.
 - No frontend cache (visibility is UX-only, never an enforcement surface).
 - No claim-revocation deny-list / blacklist / per-request revocation cache and no cross-service role-change event are built (OD-FU13-01 = B-Option 1: existing `RevokeAllByUserAsync` for user-role removal + a new in-AuthService `IUserRoleRepository.GetUserIdsByRoleAsync` seam for role-permission removal).
@@ -288,15 +326,17 @@ implementation is performed here** — FU13 only ensures the events/timestamps e
   tolerates malformed payloads (log + continue), matching `EntitlementCacheInvalidationConsumer`.
 - **Bounded staleness.** C5 ≤ 15 min (token TTL); C1 ≤ 300s (entitlement TTL) — both documented, neither indefinite.
 - **No synchronous cross-service call on the enforcement hot path.** Propagation is event-driven (Outbox + consumer).
+  OD-FU13-04's existing authoritative read is issuance-time only and is not an enforcement-hot-path exception.
 - **Per-instance fan-out** for invalidation consumers (no shared competing-consumer queue for cache eviction).
 
 ---
 
 ## 15. Implementation Scope & Checklist (v1) — exact atomic groups
 
-**Scope summary.** Four atomic groups: (A) Platform per-instance fan-out for the entitlement invalidation consumer;
+**Scope summary.** Historical v1 has four atomic groups: (A) Platform per-instance fan-out for the entitlement invalidation consumer;
 (B) AuthService single-user revoke-on-role-removal; (C) AuthService role-permission revoke via a new users-by-role seam;
-(D) governance reconciliation. No new event contracts, no deny-list, no distributed cache, no scope cache.
+(D) governance reconciliation. The 2026-08-31 amendment adds (E) governance authority and (F) entitlement-aware
+tenant-user JWT issuance. No new event contracts, deny-list, distributed cache, or scope cache.
 
 ### Group A — Platform fan-out *(OD-FU13-02)*
 - **Goal:** per-instance temporary receive endpoint for the **entitlement invalidation consumer only**.
@@ -329,6 +369,38 @@ implementation is performed here** — FU13 only ensures the events/timestamps e
   implementation note + the roadmap AG-STEP-010 row.
 
 **Ordering:** Group A → Group B → Group C → integration audit → Group D.
+
+### Group E — OD-FU13-04 governance checkpoint *(2026-08-31 amendment)*
+
+- **Surface:** this module pack only.
+- **Gate:** canonical MOD/FU preflight, contradiction scan, relative links, `git diff --check`, exact-one staged file.
+- **Ordering:** Group E commits before Group F; it does not modify or recommit Groups A-D.
+
+### Group F — entitlement-aware tenant-user JWT issuance *(OD-FU13-04)*
+
+- **Exact production allowlist:**
+  - `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/ITenantEffectivePermissionResolver.cs`
+  - `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Authorization/TenantEffectivePermissionResolver.cs`
+  - `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Authorization/PpmEntitlementPermissionPolicy.cs`
+  - `services/Diten.AuthService/src/Diten.AuthService.Application/DependencyInjection.cs`
+  - `services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/LoginCommandHandler.cs`
+  - `services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/RefreshTokenCommandHandler.cs`
+  - `services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/VerifyMfaCommandHandler.cs`
+  - `services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/ForcedChangeTenantPasswordCommandHandler.cs`
+  - `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/ITenantEntitlementClient.cs` only if
+    the existing authoritative result contract cannot express a required fail-closed state without change.
+  - `services/Diten.AuthService/src/Diten.AuthService.Infrastructure/Services/PlatformTenantEntitlementClient.cs` and
+    `services/Diten.AuthService/src/Diten.AuthService.Infrastructure/DependencyInjection.cs` only if existing
+    authoritative read/DI cannot be reused unchanged.
+- **Test allowlist:** relevant existing constructor/regression tests plus new effective-permission and four-path issuance
+  tests under `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Auth/**`.
+- **Protected:** `TokenService`, `ITokenService`, `PlatformLoginCommandHandler`, `RegisterCommandHandler`,
+  `PlatformAuthController`, FU16/S2S, Persistence, Platform, Gateway, frontend, seeds, migrations, and runtime data.
+- **Mutation gate:** physical expected-red evidence for authority bypass, absent entitlement allow, unavailable fallback,
+  union instead of intersection, empty-key fallback, non-PPM filtering, wrong tenant, each tenant issuance-path bypass,
+  platform refresh filtering, Register permission issuance, and cancellation swallowing; every mutant is restored.
+- **Runtime gate:** supported local tenant/user administration only; exact `0 → 24 → 0 → 24`, explicit grant retained,
+  no implicit Admin/Viewer grant, real browser/HTTP matrix, no internal bootstrap or direct Mongo mutation.
 
 > **No open decision remains.** OD-FU13-01/02/03 are all locked (§5) from repo evidence; this pack is promoted to
 > **`ready-for-dev`** (implementation handoff only — no runtime code is written by this pack). AG-STEP-011 Explain Access
