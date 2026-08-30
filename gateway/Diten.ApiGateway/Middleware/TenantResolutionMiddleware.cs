@@ -1,6 +1,4 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
 using Diten.ApiGateway.Authentication;
 
 namespace Diten.ApiGateway.Middleware;
@@ -49,17 +47,30 @@ public sealed class TenantResolutionMiddleware
             return;
         }
 
-        // Ensure the authentication handler has run and context.User is populated.
-        // UseAuthentication() should have done this, but when the handler returns NoResult
-        // (e.g. cookie-only token not promoted yet), context.User may be unauthenticated.
-        await EnsureAuthenticatedUserAsync(context);
-
-        var actorType = ReadActorType(context.User) ?? ReadActorTypeFromRequestToken(context);
+        /*
+         * ⚠ EVERY CLAIM READ HERE COMES FROM context.User AND NOTHING ELSE.
+         *
+         * context.User is populated by GatewayJwtAuthenticationHandler, which VALIDATES the token (issuer,
+         * audience, lifetime, signing key). If the token failed validation, context.User is anonymous and these
+         * reads return null — which is the correct answer, because a refused token has said nothing.
+         *
+         * This file used to fall back to `?? ReadActorTypeFromRequestToken(context)`, which decoded the raw
+         * Authorization header with JwtSecurityTokenHandler.ReadJwtToken — a DECODE, not a validation. Because of
+         * the `??`, that fallback ran ONLY when the token had been REFUSED, so its entire effect was to hand a
+         * forged token the actor_type and tenant_id it asked for: a forged `actor_type: platform_admin` walked
+         * past the admin gate below, and a forged `tenant_id` was written into X-Tenant-Id for downstream.
+         *
+         * It was measured to have no legitimate case: the cookie is promoted to Authorization before
+         * UseAuthentication (Program.cs:135-145) AND the handler reads the cookie itself, so a cookie-only token
+         * is already an authenticated principal when this middleware starts. Both measurements are held by
+         * gateway/Diten.ApiGateway.Tests/RejectedTokenClaimRevivalGuardTests.cs.
+         */
+        var actorType = ReadActorType(context.User);
         var host = context.Request.Host.Host;
         var isAdminHost = IsAdminHost(host);
         var isTenantHost = IsTenantHost(host);
         var isAuthLifecyclePath = IsAuthLifecyclePath(context.Request.Path);
-        var jwtTenant = ReadJwtTenant(context.User) ?? ReadJwtTenantFromRequestToken(context);
+        var jwtTenant = ReadJwtTenant(context.User);
         var headerTenant = ReadHeaderTenant(context.Request.Headers[TenantHeader]);
         var subdomainTenant = ReadSubdomainTenant(context.Request.Host.Host);
 
@@ -291,78 +302,11 @@ public sealed class TenantResolutionMiddleware
         return FindClaimValue(user, "actor_type");
     }
 
-    private string? ReadActorTypeFromRequestToken(HttpContext context)
-    {
-        var actorType = ReadClaimFromRequestToken(context, "actor_type");
-        if (!string.IsNullOrWhiteSpace(actorType))
-        {
-            _logger.LogWarning(
-                "actor_type resolved from raw token fallback (context.User did not contain the claim). Path={Path} ActorType={ActorType}",
-                context.Request.Path,
-                actorType);
-        }
-
-        return actorType;
-    }
-
-    private static Guid? ReadJwtTenantFromRequestToken(HttpContext context)
-    {
-        var raw = ReadClaimFromRequestToken(context, "tenant_id");
-        return Guid.TryParse(raw, out var parsed) ? parsed : null;
-    }
-
-    private static async Task EnsureAuthenticatedUserAsync(HttpContext context)
-    {
-        if (context.User.Identity?.IsAuthenticated == true)
-        {
-            return;
-        }
-
-        var result = await context.AuthenticateAsync("Bearer");
-        if (result.Succeeded && result.Principal is not null)
-        {
-            context.User = result.Principal;
-        }
-    }
-
     private static string? FindClaimValue(ClaimsPrincipal user, string claimType)
     {
         return user.Claims
             .FirstOrDefault(claim => string.Equals(claim.Type, claimType, StringComparison.OrdinalIgnoreCase))
             ?.Value;
-    }
-
-    private static string? ReadClaimFromRequestToken(HttpContext context, string claimType)
-    {
-        var token = ReadBearerToken(context);
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            return null;
-        }
-
-        try
-        {
-            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
-            return jwt.Claims
-                .FirstOrDefault(claim => string.Equals(claim.Type, claimType, StringComparison.OrdinalIgnoreCase))
-                ?.Value;
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    private static string? ReadBearerToken(HttpContext context)
-    {
-        var authorization = context.Request.Headers.Authorization.FirstOrDefault();
-        if (!string.IsNullOrWhiteSpace(authorization) &&
-            authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-        {
-            return authorization["Bearer ".Length..].Trim();
-        }
-
-        return AuthTokenCookies.GetAccessToken(context.Request);
     }
 
     private static Guid? ReadHeaderTenant(string? headerValue)

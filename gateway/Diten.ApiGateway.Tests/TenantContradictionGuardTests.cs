@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using System.Text.Json;
 using Diten.ApiGateway.Middleware;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -366,11 +365,10 @@ public sealed class TenantContradictionGuardTests
 
     private static IServiceProvider BuildRequestServices()
     {
-        // The middleware calls context.AuthenticateAsync("Bearer") when context.User is unauthenticated; without
-        // an IAuthenticationService in RequestServices that throws before any tenant logic runs.
-        var services = new ServiceCollection();
-        services.AddSingleton<IAuthenticationService, NoResultAuthenticationService>();
-        return services.BuildServiceProvider();
+        // The middleware reads claims from context.User ONLY — it no longer re-runs authentication itself, so no
+        // IAuthenticationService is needed. RequestServices is still populated because WriteAsJsonAsync looks up
+        // JSON options through it.
+        return new ServiceCollection().BuildServiceProvider();
     }
 
     private sealed record Run(
@@ -381,24 +379,6 @@ public sealed class TenantContradictionGuardTests
         string? Title,
         string[]? ConflictingSignals,
         Guid? ForwardedTenant);
-
-    private sealed class NoResultAuthenticationService : IAuthenticationService
-    {
-        public Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string? scheme)
-            => Task.FromResult(AuthenticateResult.NoResult());
-
-        public Task ChallengeAsync(HttpContext context, string? scheme, AuthenticationProperties? properties)
-            => Task.CompletedTask;
-
-        public Task ForbidAsync(HttpContext context, string? scheme, AuthenticationProperties? properties)
-            => Task.CompletedTask;
-
-        public Task SignInAsync(HttpContext context, string? scheme, ClaimsPrincipal principal, AuthenticationProperties? properties)
-            => Task.CompletedTask;
-
-        public Task SignOutAsync(HttpContext context, string? scheme, AuthenticationProperties? properties)
-            => Task.CompletedTask;
-    }
 
     private sealed class StubEnvironment(string environmentName) : IHostEnvironment
     {
