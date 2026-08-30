@@ -4,6 +4,7 @@ using Diten.BuildingBlocks.Security.Secrets;
 using Diten.PpmService.Application;
 using Diten.PpmService.Infrastructure;
 using Diten.PpmService.Persistence;
+using Diten.PpmService.Api.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -86,6 +87,7 @@ else
 }
 
 app.UseAuthentication();
+app.UseMiddleware<TenantHeaderConsistencyMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/health").AllowAnonymous();
