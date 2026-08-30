@@ -5305,3 +5305,28 @@ kurtardı; geriye handler'ın **kendisi** kaldı. Silme üç servise yayıldığ
   `docs/product-backlog-closed.md`'ye taşınacak. "Sonra toplu temizleriz" bu dosyayı 6927 satıra çıkaran şeydir.
 - **Gelecek regresyon riski: 🟡** — bugün hiçbir şey kırılmıyor (canlı yol yok). Risk tamamen
   **yanlış okumada**: birinin "kiracılık hallediliyor" sanıp yeni bir istemciyi bu handler'a takması.
+
+### BL-317 — Product Identity native Workflow WorkCenter kabul kontratı eksik (2026-08-30, ölçüldü)
+> **DURUM:** AÇIK · **SAHİP:** MOD-0023 / WORKCENTER
+
+MOD-0290 Global Product, GSKU, LSKU ve Finished Good onayları için ayrı bir MDM remote provider seçmedi;
+authoritative yol mevcut native `workflow` provider/dispatcher'dır. Bu karar korunacaktır. H adımının MDM source
+allow-list'i `none` kalır; MDM remote projection/action endpoint'i, provider config satırı veya modüle özel Platform
+bridge sınıfı eklemek bu borcun çözümü değildir.
+
+Ölçülen açık kabul borçları:
+
+- reddedilmiş remote-provider adayındaki `31/31` sayısı güncel kontrat değildir; 2026-08-30 code truth'unda
+  `WorkItemProjectionDto` 50 top-level property taşır. Regression testi sabit 31 sayısına değil, DTO'nun o anki tam
+  property setine ve executable fixture/value-or-explicit-absence kurallarına bağlanmalıdır;
+- `global-product`, `gsku`, `lsku` ve `finished-good` için exact native projection regresyonu yoktur;
+- mevcut native projection `Requester` ve `Assignee` alanlarını boş bırakır; Workflow'daki maker/delegation/candidate
+  ve task assignment facts ya truthfully map edilmeli ya da owner-onaylı explicit absence olarak test edilmelidir;
+- tarayıcının gönderdiği `ExpectedVersion` native Workflow transition'a taşınıp fence edilmiyor;
+- tarayıcı retry kimliği uçtan uca sabit değildir; eksik key halinde dispatcher'ın her denemede yeni GUID üretmesi
+  lost-response replay kanıtı değildir.
+
+**Kapanış kanıtı:** MOD-0023/WorkCenter owner'ı dört exact ObjectType için current-full-contract testlerini, truthful
+requester/assignee kararını, stale-version reddini ve aynı browser idempotency identity ile exact replay'i kanıtlar.
+Ardından ayrı onaylı MOD-0290 H operasyonu submit -> native WorkCenter decision -> secure poll -> MDM state/audit
+zincirini Local Development'ta doğrular. Bu kayıt kapanmadan Product Identity lifecycle "live accepted" sayılamaz.

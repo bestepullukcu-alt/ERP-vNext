@@ -3360,11 +3360,22 @@ tenant or actor claims.
 | Tenant | Derived from the independently validated delegated JWT and exact service grant; body/header claims are not trusted. |
 | Maker | Derived from the delegated human JWT and persisted in the MDM binding plus Workflow start evidence. |
 
-No new 31-field MDM projection is implemented. Before live acceptance, the existing native Workflow provider's 31-field
-projection is regression-tested with all four object types: `Source.ObjectType/ObjectId` match the binding, provider and
-lifecycle owner remain `workflow`, requester/assignment/concurrency are truthful, and only the native actions backed by
-Workflow permissions are enabled. Deep link remains absent until the Workflow owner separately approves a generic
-object-link contract; MDM does not smuggle an address into a manifest.
+No new MDM projection is implemented. Every `31/31` statement in the rejected remote-provider candidate above is
+historical and superseded; it is not a current acceptance target. The current authority is the complete
+`WorkItemProjectionDto` contract plus its executable fixture/contract tests. Code truth on 2026-08-30 exposes 50
+top-level properties, but that measured count is not a new frozen constant: tests must enumerate the then-current DTO
+and prevent newly added properties from silently escaping a mapped value or an explicit absence rule.
+
+Before live acceptance, the native Workflow provider must be regression-tested with each exact object type
+`global-product`, `gsku`, `lsku` and `finished-good`: `Source.ObjectType/ObjectId` match the durable binding, provider and
+lifecycle owner remain `workflow`, and only native actions backed by Workflow permissions are enabled. The current
+projection leaves `Requester` and `Assignee` absent even though Workflow persists maker/delegation/candidate or task
+assignment facts; the MOD-0023/WorkCenter owner must either map those facts truthfully or approve and test an explicit
+absence rule. Likewise, `ExpectedVersion` must reach and fence the native transition, and browser retry must preserve a
+stable end-to-end idempotency key rather than permit the dispatcher to mint a new key per retry. These are shared
+MOD-0023/WorkCenter owner blockers; MDM must not compensate with a second provider or action route. Deep link remains
+absent until the Workflow owner separately approves a generic object-link contract; MDM does not smuggle an address
+into a manifest.
 
 #### Authorization and assignment boundary
 
@@ -3912,9 +3923,19 @@ settings. Smoke proves submit -> native WorkCenter decision -> secure poll -> MD
 maker-checker, parent fence, tenant isolation, provider/service down and restart recovery. Production/Staging,
 navigation, bulk lifecycle and push remain separate gates.
 
+H adds no MDM remote provider endpoints, provider configuration row or module-specific Platform bridge class. It
+remains blocked until the external MOD-0023/WorkCenter owner supplies executable evidence for the current complete
+`WorkItemProjectionDto` contract across the four exact object types, truthful requester/assignee handling,
+`ExpectedVersion` enforcement and stable browser-to-server idempotency. H is operational acceptance after those owner
+contracts close; it is not authority to add source files or to declare lifecycle delivery live accepted.
+
 #### Corrected code-start gates
 
 - [x] Native `workflow` WorkCenter provider is selected; duplicate MDM remote provider/action endpoint is forbidden.
+- [ ] External MOD-0023/WorkCenter owner closes the current full projection-contract regression for `global-product`,
+  `gsku`, `lsku` and `finished-good`, including explicit requester/assignee value-or-absence evidence.
+- [ ] External MOD-0023/WorkCenter owner propagates and enforces `ExpectedVersion` and preserves one stable idempotency
+  identity across browser retry; a dispatcher-generated per-attempt key is not acceptable evidence.
 - [x] First Revision + first GSKU is one durable pair outcome; retirement is direct MDM and child-fenced.
 - [x] `MOD-0018-FU23` exact eight-key/shared-Workflow permission profile is approved, implemented and present in the
   lifecycle delivery base.
