@@ -428,27 +428,40 @@ public sealed class TenantsController : Controller
         };
     }
 
+    /*
+     * ⚠ TWO JOBS, AND ONLY ONE OF THEM MAY READ THE COOKIE.
+     *
+     * DECIDING who the caller is comes from User — the principal ShellAccessFilter (a GLOBAL MVC
+     * authorization filter, Program.cs) produced with ValidateIssuer / ValidateAudience / ValidateLifetime /
+     * ValidateIssuerSigningKey all true. CARRYING the token downstream still reads the raw cookie, because a
+     * Bearer header needs the token STRING and the gateway validates it again at the other end.
+     *
+     * What this used to do was ReadJwtToken — parse the cookie and believe it. That checks no signature, so
+     * `actor_type: platform_admin` was true for anyone who could set a cookie; the `ValidTo` check it did
+     * perform read an expiry out of the same unauthenticated payload. Same split the gateway made in
+     * e28aa858: PromoteAccessTokenCookieToBearer stayed because it CARRIES; the deciding moved to the
+     * verified principal.
+     *
+     * The lifetime check is not lost — ShellAccessFilter validates `exp` against JwtValidationDefaults.ClockSkew
+     * before it will hand over a principal at all, and blanks User when it fails.
+     */
     private bool TryGetPlatformAccessToken(out string token)
     {
-        token = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request) ?? string.Empty;
-        if (string.IsNullOrWhiteSpace(token))
+        token = string.Empty;
+        if (!IsPlatformActor())
         {
             return false;
         }
 
-        try
-        {
-            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
-            var actorType = FindClaim(jwt.Claims, "actor_type");
-            return jwt.ValidTo > DateTime.UtcNow &&
-                   (string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase));
-        }
-        catch
-        {
-            token = string.Empty;
-            return false;
-        }
+        token = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request) ?? string.Empty;
+        return !string.IsNullOrWhiteSpace(token);
+    }
+
+    private bool IsPlatformActor()
+    {
+        var actorType = User?.FindFirst("actor_type")?.Value?.Trim();
+        return string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase);
     }
 
     private void AddAuthHeader(HttpRequestMessage request)
@@ -459,29 +472,21 @@ public sealed class TenantsController : Controller
         }
     }
 
+    /*
+     * ⚠ THE DELETED FALLBACK WAS THE WHOLE BUG. This already asked the verified principal first — and then,
+     * when the answer was no, decoded the cookie and asked the unverified payload instead. A fallback that
+     * only ever runs after a refusal, and can only ever turn it into an allow, is not a fallback.
+     *
+     * Claim types, measured against ShellAccessFilter's real output (UnverifiedTokenAuthorizationGuardTests):
+     * "permission" and "actor_type" are not in JwtSecurityTokenHandler's default inbound map and arrive
+     * untouched; the wire claim "role" IS mapped, and lands as ClaimTypes.Role — exactly what
+     * ClaimsContainPlatformRole looks for. Note ReadJwtToken did NO mapping, so the deleted path was in fact
+     * unable to match a platform role at all.
+     */
     private bool HasPermission(string permission)
     {
         var claims = User?.Claims ?? Enumerable.Empty<Claim>();
-        if (ClaimsContainPermission(claims, permission) || ClaimsContainPlatformRole(claims))
-        {
-            return true;
-        }
-
-        var token = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request);
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            return false;
-        }
-
-        try
-        {
-            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
-            return ClaimsContainPermission(jwt.Claims, permission) || ClaimsContainPlatformRole(jwt.Claims);
-        }
-        catch
-        {
-            return false;
-        }
+        return ClaimsContainPermission(claims, permission) || ClaimsContainPlatformRole(claims);
     }
 
     private static bool ClaimsContainPermission(IEnumerable<Claim> claims, string permission) =>
@@ -652,30 +657,24 @@ public sealed class TenantsController : Controller
             _ => "Quota"
         };
 
+    /*
+     * Identity for display (ViewData CurrentActorId / CurrentActorDisplay), not an authorization decision —
+     * but it read the same unverified cookie, so it moves to the verified principal with the rest. The claim
+     * names below are unchanged and already list both spellings of each: ShellAccessFilter's principal comes
+     * through JwtSecurityTokenHandler's default inbound map, which turns "sub" into ClaimTypes.NameIdentifier,
+     * "email" into ClaimTypes.Email and so on, while ReadJwtToken mapped nothing.
+     */
     private (string Id, string Display) ResolveCurrentActor()
     {
-        var token = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request);
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            return (string.Empty, string.Empty);
-        }
-
-        try
-        {
-            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
-            var id = FindClaim(jwt.Claims, JwtRegisteredClaimNames.Sub, ClaimTypes.NameIdentifier);
-            var email = FindClaim(jwt.Claims, JwtRegisteredClaimNames.Email, ClaimTypes.Email, "email");
-            var name = FindClaim(jwt.Claims, ClaimTypes.Name, "name", "preferred_username");
-            var givenName = FindClaim(jwt.Claims, JwtRegisteredClaimNames.GivenName, ClaimTypes.GivenName);
-            var familyName = FindClaim(jwt.Claims, JwtRegisteredClaimNames.FamilyName, ClaimTypes.Surname);
-            var fullName = string.Join(' ', new[] { givenName, familyName }.Where(part => !string.IsNullOrWhiteSpace(part)));
-            var display = email ?? name ?? (string.IsNullOrWhiteSpace(fullName) ? null : fullName) ?? string.Empty;
-            return (id ?? string.Empty, display);
-        }
-        catch
-        {
-            return (string.Empty, string.Empty);
-        }
+        var claims = User?.Claims ?? Enumerable.Empty<Claim>();
+        var id = FindClaim(claims, JwtRegisteredClaimNames.Sub, ClaimTypes.NameIdentifier);
+        var email = FindClaim(claims, JwtRegisteredClaimNames.Email, ClaimTypes.Email, "email");
+        var name = FindClaim(claims, ClaimTypes.Name, "name", "preferred_username");
+        var givenName = FindClaim(claims, JwtRegisteredClaimNames.GivenName, ClaimTypes.GivenName);
+        var familyName = FindClaim(claims, JwtRegisteredClaimNames.FamilyName, ClaimTypes.Surname);
+        var fullName = string.Join(' ', new[] { givenName, familyName }.Where(part => !string.IsNullOrWhiteSpace(part)));
+        var display = email ?? name ?? (string.IsNullOrWhiteSpace(fullName) ? null : fullName) ?? string.Empty;
+        return (id ?? string.Empty, display);
     }
 
     private static string? FindClaim(IEnumerable<Claim> claims, params string[] claimTypes)
