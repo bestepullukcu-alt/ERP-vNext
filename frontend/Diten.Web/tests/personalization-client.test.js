@@ -17,6 +17,7 @@ describe('shared personalization client', () => {
             headers: { get: vi.fn().mockReturnValue('application/json; charset=utf-8') },
             json: vi.fn().mockResolvedValue([])
         });
+        loadScript('wwwroot/assets/js/shared/http-media-type.js');
         loadScript('wwwroot/assets/js/personalization-client.js');
     });
 

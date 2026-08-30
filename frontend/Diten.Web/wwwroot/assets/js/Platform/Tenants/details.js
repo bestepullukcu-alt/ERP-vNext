@@ -176,7 +176,7 @@ const TenantDetails = (function () {
             headers
         });
 
-        const contentType = response.headers.get('content-type') || '';
+        const contentType = response.headers.get('content-type');
         const redirectedToLogin = response.redirected && /\/(account|platform)\/login/i.test(response.url || '');
         if (response.status === 401 || redirectedToLogin) {
             window.DtDefaults?.handleUnauthorized?.();
@@ -204,7 +204,10 @@ const TenantDetails = (function () {
         }
 
         if (response.status === 204) return null;
-        if (!contentType.toLowerCase().includes('application/json')) {
+        // The shared rule from shared/http-media-type.js. The substring test this replaced rejected every `+json` media
+        // type — so a success answered as `application/vnd.*+json` would have been thrown away as
+        // "non-JSON" despite parsing fine two lines above.
+        if (!window.DitenHttp.isJsonMediaType(contentType)) {
             throw new Error('Unexpected non-JSON response.');
         }
 

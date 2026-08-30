@@ -249,6 +249,13 @@ public sealed class TenantContradictionGuardTests
         Assert.Equal(StatusCodes.Status400BadRequest, run.StatusCode);
         Assert.Equal("Missing Tenant", run.Title);
         Assert.Null(run.ConflictingSignals);
+
+        // ⚠ THE OTHER HELPER'S MEDIA TYPE. The contradiction refusal below is written by WriteTenantMismatch,
+        // which has passed `contentType:` since e28aa858; THIS refusal comes from WriteProblemDetails, which
+        // feeds nine call sites here and answered "application/json; charset=utf-8" until 2026-08-30 because
+        // it assigned Response.ContentType before WriteAsJsonAsync overwrote it. Two helpers, so two
+        // assertions — a green test on one of them was never evidence about the other.
+        Assert.Equal("application/problem+json", run.ContentType);
     }
 
     /// <summary>

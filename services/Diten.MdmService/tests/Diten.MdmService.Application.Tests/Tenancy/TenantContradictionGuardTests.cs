@@ -67,14 +67,15 @@ public sealed class TenantContradictionGuardTests
         Assert.Equal("Tenant mismatch", body.GetProperty("title").GetString());
         Assert.Equal(StatusCodes.Status400BadRequest, body.GetProperty("status").GetInt32());
 
-        // ⚠ MEASURED 2026-08-30, REPORTED AND LEFT ALONE — this round only adds tests. WriteProblemDetails assigns
-        // `Response.ContentType = "application/problem+json"` and THEN calls WriteAsJsonAsync, which overwrites it
-        // with "application/json; charset=utf-8" unconditionally. The declared problem+json media type therefore
-        // never reaches the wire — here or at the five other sites that copy this helper (gateway, AuthService,
-        // CrmService, DevEnablementService, HcmService). Only the media type is affected; the status and the body
-        // shape are correct. Pinned AS IT ACTUALLY IS so a later fix fails here and gets noticed, instead of the
-        // source and the wire disagreeing with nobody measuring which one is true.
-        Assert.Equal("application/json; charset=utf-8", context.Response.ContentType);
+        // ⚠ THE MEDIA TYPE, ON THE WIRE — pinned because it was WRONG here until 2026-08-30 and the source did
+        // not show it. WriteProblemDetails used to assign `Response.ContentType = "application/problem+json"`
+        // and THEN call WriteAsJsonAsync, which overwrites Response.ContentType UNCONDITIONALLY: the wire
+        // answered "application/json; charset=utf-8" while the source claimed problem+json, at this site and at
+        // the five others that copy this helper (gateway, AuthService, CrmService, DevEnablementService,
+        // HcmService). The declaration now travels as WriteAsJsonAsync's `contentType` PARAMETER, the only way
+        // it survives. This assertion is what keeps it there: assigning the property again instead would pass
+        // every other test in this file and silently put the old value back on the wire.
+        Assert.Equal("application/problem+json", context.Response.ContentType);
     }
 
     [Fact]

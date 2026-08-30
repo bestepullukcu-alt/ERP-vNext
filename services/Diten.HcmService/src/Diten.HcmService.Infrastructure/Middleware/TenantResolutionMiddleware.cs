@@ -80,13 +80,19 @@ public sealed class TenantResolutionMiddleware
     private static async Task WriteProblemDetails(HttpContext context, int statusCode, string title, string detail)
     {
         context.Response.StatusCode = statusCode;
-        context.Response.ContentType = "application/problem+json";
-        await context.Response.WriteAsJsonAsync(new
-        {
-            title,
-            status = statusCode,
-            detail,
-            traceId = context.TraceIdentifier
-        });
+        // ⚠ contentType PASSED IN, never assigned to Response.ContentType beforehand. WriteAsJsonAsync sets
+        // Response.ContentType UNCONDITIONALLY — an earlier assignment is overwritten, which is exactly how
+        // this helper spent its whole life declaring problem+json and answering "application/json;
+        // charset=utf-8" on the wire. The declaration only reaches the caller through this parameter.
+        await context.Response.WriteAsJsonAsync(
+            new
+            {
+                title,
+                status = statusCode,
+                detail,
+                traceId = context.TraceIdentifier
+            },
+            options: null,
+            contentType: "application/problem+json");
     }
 }

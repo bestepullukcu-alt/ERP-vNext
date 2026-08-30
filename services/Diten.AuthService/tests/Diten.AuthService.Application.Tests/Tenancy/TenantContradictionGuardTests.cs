@@ -42,6 +42,28 @@ public sealed class TenantContradictionGuardTests
         Assert.False(tenantContext.IsResolved, "a tenant was resolved from a contradicting request");
     }
 
+    /// <summary>
+    /// THE MEDIA TYPE, ON THE WIRE. Until 2026-08-30 this refusal DECLARED problem+json in the source and
+    /// answered "application/json; charset=utf-8" to the caller: WriteProblemDetails assigned
+    /// <c>Response.ContentType</c> and then called <c>WriteAsJsonAsync</c>, which overwrites it
+    /// UNCONDITIONALLY. The declaration only survives as WriteAsJsonAsync's <c>contentType</c> PARAMETER.
+    ///
+    /// <para>⚠ This is asserted because the source cannot be read for it. Someone "tidying" the helper back
+    /// into a <c>Response.ContentType = ...</c> assignment would leave every other test in this file green
+    /// and silently put the wrong media type back on the wire — which is exactly how it went unnoticed the
+    /// first time.</para>
+    /// </summary>
+    [Fact]
+    public async Task The_refusal_declares_problem_json_on_the_wire()
+    {
+        var (context, _, handlerRan) = await RunTenantMiddleware(Guid.NewGuid(), Guid.NewGuid());
+
+        // Vacuity guard: a middleware that never refused would leave ContentType null and "not json" would
+        // be true for the wrong reason.
+        Assert.False(handlerRan(), "the contradiction was not refused at all");
+        Assert.Equal("application/problem+json", context.Response.ContentType);
+    }
+
     [Fact]
     public async Task Contradiction_is_refused_and_the_refusal_is_never_403_or_404()
     {

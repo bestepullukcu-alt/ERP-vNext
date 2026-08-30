@@ -111,8 +111,7 @@ window.DtDefaults = (function () {
             }
         })
             .then(function (res) {
-                var contentType = res.headers.get('content-type') || '';
-                var isJson = contentType.indexOf('application/json') !== -1;
+                var isJson = window.DitenHttp.isJsonMediaType(res.headers.get('content-type'));
                 if (res.ok) {
                     return res.json().then(function (data) {
                         return { success: true, data: data };
