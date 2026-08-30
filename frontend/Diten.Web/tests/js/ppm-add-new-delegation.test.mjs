@@ -29,10 +29,14 @@ window.DtDefaults = {
 };
 const dt = {
     on: () => dt,
-    search: () => dt,
+    search: value => value === undefined ? '' : dt,
     columns: () => ({ visible: () => ({ toArray: () => [] }) }),
-    order: () => [],
-    draw: () => dt
+    column: () => ({ visible: () => dt }),
+    row: () => ({ data: () => null }),
+    order: value => value === undefined ? [] : dt,
+    draw: () => dt,
+    colReorder: { order: () => [] },
+    ajax: { reload: callback => callback?.() }
 };
 let crudOptions;
 window.DitenDataTable = {
