@@ -21,11 +21,11 @@ public sealed class TrustedLegalEntityScopeCredentialAuthenticatorTests
     }
 
     [Fact]
-    public void Exact_canonical_22_pair_configuration_accepts_every_pair_and_no_other_pair()
+    public void Exact_canonical_30_pair_configuration_accepts_every_pair_and_no_other_pair()
     {
         var authenticator = Create();
 
-        Assert.Equal(22, CanonicalPermissions.Length);
+        Assert.Equal(30, CanonicalPermissions.Length);
         Assert.All(CanonicalPermissions, permission =>
             Assert.True(authenticator.AllowsPair("product-item-sku-master", permission)));
         Assert.False(authenticator.AllowsPair("other-module", CanonicalPermissions[0]));
@@ -73,7 +73,7 @@ public sealed class TrustedLegalEntityScopeCredentialAuthenticatorTests
     public void More_than_exact_maximum_pairs_fails_closed()
     {
         var options = Options();
-        options.Mdm.AllowedPairs = Enumerable.Range(0, 23)
+        options.Mdm.AllowedPairs = Enumerable.Range(0, 31)
             .Select(i => new TrustedLegalEntityScopeAllowedPair { ModuleCode = "product-item-sku-master", PermissionKey = $"mdm.x{i}.read" })
             .ToList();
 
@@ -113,6 +113,10 @@ public sealed class TrustedLegalEntityScopeCredentialAuthenticatorTests
     [
         "mdm.global-products.read", "mdm.global-products.create", "mdm.gskus.read", "mdm.gskus.create",
         "mdm.lskus.read", "mdm.lskus.create", "mdm.finished-goods.read", "mdm.finished-goods.create",
+        "mdm.global-products.submit", "mdm.global-products.retire",
+        "mdm.gskus.submit", "mdm.gskus.retire",
+        "mdm.lskus.submit", "mdm.lskus.retire",
+        "mdm.finished-goods.submit", "mdm.finished-goods.retire",
         "mdm.product-abbreviations.read", "mdm.product-abbreviations.request",
         "mdm.product-abbreviations.approve", "mdm.product-abbreviations.reject",
         "mdm.product-abbreviations.correct", "mdm.product-abbreviations.cancel",

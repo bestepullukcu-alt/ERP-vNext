@@ -2,8 +2,11 @@ using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Contracts.Workflow;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.Commands;
 using Diten.MdmService.Domain.Enums;
+using Diten.MdmService.Domain.Repositories;
 using Diten.Shared.Core;
 using MediatR;
 
@@ -13,6 +16,13 @@ public sealed class StartLskuIdentityWorkflowHandler(
     ITenantContext tenantContext,
     IProductIdentityLifecycleActorContext actorContext,
     IProductIdentityDelegatedTokenAccessor delegatedTokenAccessor,
+    ILskuRepository lskus,
+    IGskuRepository gskus,
+    IProductDefinitionRevisionRepository revisions,
+    IGlobalProductRepository products,
+    IProductLegalEntityScopeRolloutStateRepository rolloutStates,
+    IProductLegalEntityScopePolicyRepository scopePolicies,
+    ProductLegalEntityScopeCandidateFacade scopeCandidates,
     LskuIdentityWorkflowProcessor processor,
     LskuIdentityWorkflowExecutionConfiguration executionConfiguration)
     : IRequestHandler<StartLskuIdentityWorkflowCommand, Response<LskuIdentityWorkflowResult>>
@@ -32,6 +42,21 @@ public sealed class StartLskuIdentityWorkflowHandler(
 
         var input = command.Request;
         if (input is null) return Fail("LSKU_IDENTITY_WORKFLOW_START_INVALID", 400);
+        var scopeGuard = new ProductLegalEntityScopeConsumerGuard(
+            rolloutStates, scopePolicies, scopeCandidates, tenantContext);
+        var scope = await scopeGuard.ResolveContextAsync(
+            LskuIdentityLifecyclePermissions.Submit, cancellationToken);
+        if (!scope.IsSuccessful) return Fail(scope.FailureCode!, scope.StatusCode);
+        var lsku = await lskus.GetByIdAsync(input.LskuId, cancellationToken);
+        var gsku = lsku is null ? null : await gskus.GetByIdAsync(lsku.GskuId, cancellationToken);
+        var revision = gsku is null ? null
+            : await revisions.GetByIdAsync(gsku.ProductDefinitionRevisionId, cancellationToken);
+        var product = revision is null ? null
+            : await products.GetByIdAsync(revision.GlobalProductId, cancellationToken);
+        if (lsku is null || gsku is null || revision is null || product is null)
+            return Fail("LSKU_IDENTITY_NOT_FOUND", 404);
+        var decision = await scopeGuard.EvaluateAsync(scope.Context!, product.Id, cancellationToken);
+        if (!decision.Allowed) return Fail("LSKU_IDENTITY_NOT_FOUND", 404);
         var result = await processor.StartInteractiveAsync(
             tenantContext.TenantId, input.LskuId, input.ExpectedVersion, input.OperationId,
             maker, token, executionConfiguration.LeaseDuration, executionConfiguration.RetryDelay,

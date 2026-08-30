@@ -63,7 +63,11 @@ public sealed class GlobalProductLifecycleAuthorizationTests
         var handler = new RetireGlobalProductIdentityHandler(
             repository,
             new LifecycleTestActor(LifecycleTestData.Approver),
-            TimeProvider.System);
+            TimeProvider.System,
+            new ScopeRolloutRepository(null),
+            new ScopePolicyRepository(),
+            null!,
+            new LifecycleScopeTenantContext(LifecycleTestData.TenantId));
 
         var response = await handler.Handle(
             new RetireGlobalProductIdentityCommand(new(

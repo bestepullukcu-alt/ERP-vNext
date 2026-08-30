@@ -337,7 +337,7 @@ Exact consumer contract inherited from FU21:
 Exact MDM configuration section: `TrustedLegalEntityScopeProvider`. It contains only `PlatformBaseAddress`,
 `Timeout`, `CredentialIdentifier` and `CredentialSecret`; environment names therefore use the exact
 `TrustedLegalEntityScopeProvider__*` prefix. Timeout is positive and no greater than two seconds. Audience, module and
-the provider's 22 allowed pairs are code-truth constants, not weakenable MDM configuration. No value or secret is
+the provider's 30 allowed pairs are code-truth constants, not weakenable MDM configuration. No value or secret is
 committed. `LegalEntityMongoRoundTripTests` must be converted in its already-listed path from skippable/per-run GUID
 database use to the fixed shared database, serialized collection, fresh-tenant isolation and tenant-owned cleanup.
 
@@ -361,7 +361,7 @@ permissions never become generic consumer row-access permissions.
 
 Read-only provider code-truth evidence remains owned by FU21 and is not writable under FU03. The MDM adapter must not
 reuse the verified GSKU/Market credential, accept tenant/subject/Legal Entity IDs from the browser, weaken the exact
-22-pair provider allow-list, add cross-request caching, or call Platform from inside a Platform callback.
+ 30-pair provider allow-list, add cross-request caching, or call Platform from inside a Platform callback.
 
 ### E — Global Product consumer enforcement
 
@@ -450,6 +450,56 @@ Test paths:
 - `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationRegisterMongoTests.cs`
 - `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationRegisterAuthorizationTests.cs`
 - `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationApiContractTests.cs`
+
+#### F1 — Product identity lifecycle current-scope hardening
+
+Standing user non-push authorization on 2026-08-30 closes the measured lifecycle bypass. Every public submit/start and
+direct-retire handler must resolve the exact lifecycle permission, derive the current Global Product through the
+tenant-safe repository chain and evaluate the existing consumer guard before processor entry, audit creation, business
+write or replay read-back. Broken/deleted/cross-tenant parent chains and denied decisions use the same non-disclosing
+resource `404`; provider/tenant failures retain the existing fail-closed status mapping.
+
+Exact runtime allow-list:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/StartGlobalProductIdentityWorkflowHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/StartFirstGskuIdentityWorkflowHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/StartLskuIdentityWorkflowHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/StartFinishedGoodIdentityWorkflowHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/RetireGlobalProductIdentityHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/RetireGskuIdentityPairHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/RetireLskuIdentityHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/RetireFinishedGoodIdentityHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/ProductIdentityWorkflowRecoveryRunner.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/FirstGskuIdentityWorkflowRecoveryRunner.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/LskuIdentityWorkflowRecoveryRunner.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/FinishedGoodIdentityWorkflowRecoveryRunner.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/FirstGskuIdentityRetirementRecoveryRunner.cs`
+
+Exact test allow-list:
+
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductIdentityLifecycleScopeEnforcementTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductLifecycleAuthorizationTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductLifecycleUnitTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductIdentityWorkflowRecoveryRunnerTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductIdentityWorkflowRecoveryWorkerMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FirstGskuIdentityWorkflowRecoveryRunnerTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuIdentityWorkflowRecoveryRunnerTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodIdentityWorkflowRecoveryRunnerTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FirstGskuIdentityLifecycleUnitTests.cs`
+
+Background recovery has no delegated human Bearer and may not assert the stored maker subject through a service-only
+bypass. Missing rollout and `Preparation` retain the existing recovery behavior. `Enforced`,
+`FailClosedSuspended`, malformed or unreadable rollout state defers without calling a scope-sensitive processor; a
+fresh interactive replay with the original actor, delegated Bearer, exact lifecycle permission and current scope may
+continue. Tokens and candidate sets are never persisted. Configuration, secrets, data, Production/Staging, commit and
+push remain outside this amendment.
+
+Implementation evidence on 2026-08-30: MDM API and test-project Release builds passed with zero errors; the exact
+lifecycle/scope/recovery matrix passed **59/59** with zero skipped, and the existing real-Mongo Global Product recovery
+worker regression passed **1/1**. The matrix locks all eight exact submit/retire permission-to-scope orderings, all
+five background recovery gates, executable `Enforced -> AwaitingMakerReplay` behavior for GSKU retirement and
+executable Enforced fail-closed results for the four API recovery runners. `git diff --check` passed. No config,
+secret, data, Production/Staging, commit or push operation was performed.
 
 ### G — Manifest, permissions, Gateway and Golden Slim UI
 

@@ -54,9 +54,12 @@ public sealed class LskuIdentityWorkflowRecoveryRunner(
                         .DiscoverRecoverableAsync(timeProvider.GetUtcNow().UtcTicks,
                             settings.OperationPageSize, cursor, cancellationToken);
                     var processor = scope.ServiceProvider.GetRequiredService<LskuIdentityWorkflowProcessor>();
+                    var recoveryAllowed = await IsBackgroundRecoveryAllowedAsync(
+                        scope.ServiceProvider, tenantId, cancellationToken);
                     foreach (var operation in page.Operations)
                     {
                         operations++;
+                        if (!recoveryAllowed) { deferred++; continue; }
                         try
                         {
                             var result = await processor.RecoverAsync(operation, settings.LeaseOwner,
@@ -86,4 +89,21 @@ public sealed class LskuIdentityWorkflowRecoveryRunner(
     private static string Safe(string? value) => !string.IsNullOrWhiteSpace(value)
         && value.Length <= 100 && value.All(c => c is >= 'A' and <= 'Z' or >= '0' and <= '9' or '_')
             ? value : "UNEXPECTED_FAILURE";
+
+    private static async Task<bool> IsBackgroundRecoveryAllowedAsync(
+        IServiceProvider services, Guid tenantId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var rollout = await services
+                .GetRequiredService<IProductLegalEntityScopeRolloutStateRepository>()
+                .GetAsync(cancellationToken);
+            if (rollout is null) return true;
+            rollout.EnsureValid();
+            return rollout.TenantId == tenantId && !rollout.IsDeleted
+                   && rollout.Mode == ProductLegalEntityScopeRolloutMode.Preparation;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
+        catch { return false; }
+    }
 }

@@ -1,6 +1,7 @@
 using Diten.MdmService.Api.Configuration;
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
+using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Microsoft.Extensions.Options;
 
@@ -65,10 +66,19 @@ public sealed class ProductIdentityWorkflowRecoveryRunner(
                         cancellationToken);
                     var processor = tenantScope.ServiceProvider
                         .GetRequiredService<GlobalProductIdentityWorkflowProcessor>();
+                    var recoveryAllowed = await IsBackgroundRecoveryAllowedAsync(
+                        tenantScope.ServiceProvider,
+                        tenantId,
+                        cancellationToken);
                     foreach (var operation in page.Operations)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         operationCount++;
+                        if (!recoveryAllowed)
+                        {
+                            deferredCount++;
+                            continue;
+                        }
                         try
                         {
                             var result = await processor.RecoverAsync(
@@ -110,5 +120,35 @@ public sealed class ProductIdentityWorkflowRecoveryRunner(
         } while (tenantCursor.HasValue);
 
         return new(tenantCount, operationCount, completedCount, deferredCount, failedCount);
+    }
+
+    private static async Task<bool> IsBackgroundRecoveryAllowedAsync(
+        IServiceProvider services,
+        Guid tenantId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var rollout = await services
+                .GetRequiredService<IProductLegalEntityScopeRolloutStateRepository>()
+                .GetAsync(cancellationToken);
+            if (rollout is null)
+            {
+                return true;
+            }
+
+            rollout.EnsureValid();
+            return rollout.TenantId == tenantId
+                   && !rollout.IsDeleted
+                   && rollout.Mode == ProductLegalEntityScopeRolloutMode.Preparation;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

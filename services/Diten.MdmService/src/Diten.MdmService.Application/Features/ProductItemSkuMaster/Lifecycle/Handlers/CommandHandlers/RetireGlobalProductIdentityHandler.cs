@@ -1,5 +1,8 @@
 using Diten.MdmService.Application.Contracts;
+using Diten.MdmService.Application.Common;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.Commands;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Domain.Repositories;
 using Diten.Shared.Core;
 using MediatR;
@@ -12,15 +15,21 @@ public sealed class RetireGlobalProductIdentityHandler
     private readonly IGlobalProductRepository _products;
     private readonly IProductIdentityLifecycleActorContext _actorContext;
     private readonly TimeProvider _clock;
+    private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
 
     public RetireGlobalProductIdentityHandler(
         IGlobalProductRepository products,
         IProductIdentityLifecycleActorContext actorContext,
-        TimeProvider clock)
+        TimeProvider clock,
+        IProductLegalEntityScopeRolloutStateRepository rolloutStates,
+        IProductLegalEntityScopePolicyRepository scopePolicies,
+        ProductLegalEntityScopeCandidateFacade scopeCandidates,
+        ITenantContext tenantContext)
     {
         _products = products;
         _actorContext = actorContext;
         _clock = clock;
+        _scopeGuard = new(rolloutStates, scopePolicies, scopeCandidates, tenantContext);
     }
 
     public async Task<Response<GlobalProductIdentityLifecycleResult>> Handle(
@@ -41,11 +50,17 @@ public sealed class RetireGlobalProductIdentityHandler
             return Fail("PRODUCT_IDENTITY_RETIRE_REQUEST_INVALID", 400);
         }
 
+        var scope = await _scopeGuard.ResolveContextAsync(
+            ProductIdentityLifecyclePermissions.GlobalProductRetire, cancellationToken);
+        if (!scope.IsSuccessful) return Fail(scope.FailureCode!, scope.StatusCode);
+
         var product = await _products.GetByIdAsync(input.GlobalProductId, cancellationToken);
         if (product is null)
         {
             return Fail("PRODUCT_IDENTITY_NOT_FOUND", 404);
         }
+        var decision = await _scopeGuard.EvaluateAsync(scope.Context!, product.Id, cancellationToken);
+        if (!decision.Allowed) return Fail("PRODUCT_IDENTITY_NOT_FOUND", 404);
 
         var auditIntent = ProductIdentityLifecycleAuditIntentFactory.CreateRetire(
             product,

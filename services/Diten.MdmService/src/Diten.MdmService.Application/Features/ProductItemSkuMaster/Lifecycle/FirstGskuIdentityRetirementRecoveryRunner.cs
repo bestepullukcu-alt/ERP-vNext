@@ -1,9 +1,11 @@
 using Diten.MdmService.Domain.Repositories;
+using Diten.MdmService.Domain.Enums;
 
 namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
 
 public sealed class FirstGskuIdentityRetirementRecoveryRunner(
     IFirstGskuIdentityRetirementOperationRepository operations,
+    IProductLegalEntityScopeRolloutStateRepository rolloutStates,
     FirstGskuIdentityRetirementProcessor processor)
 {
     public async Task<GskuPairRetirementProcessingResult> RunAsync(
@@ -19,9 +21,30 @@ public sealed class FirstGskuIdentityRetirementRecoveryRunner(
             return new(false, null, "FIRST_GSKU_RETIREMENT_RECOVERY_REQUEST_INVALID", 400, false);
         }
         var operation = await operations.GetByOperationIdAsync(operationId, cancellationToken);
-        return operation is null
-            ? new(false, null, "FIRST_GSKU_RETIREMENT_OPERATION_NOT_FOUND", 404, false)
-            : await processor.RecoverAsync(
-                operation, leaseOwner, leaseDuration, cancellationToken);
+        if (operation is null)
+        {
+            return new(false, null, "FIRST_GSKU_RETIREMENT_OPERATION_NOT_FOUND", 404, false);
+        }
+
+        if (!await IsBackgroundRecoveryAllowedAsync(cancellationToken))
+        {
+            operation.RecoveryDisposition = ProductIdentityWorkflowRecoveryDisposition.AwaitingMakerReplay;
+            return new(false, operation, "FIRST_GSKU_RETIREMENT_MAKER_REPLAY_REQUIRED", 409, true);
+        }
+
+        return await processor.RecoverAsync(operation, leaseOwner, leaseDuration, cancellationToken);
+    }
+
+    private async Task<bool> IsBackgroundRecoveryAllowedAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var rollout = await rolloutStates.GetAsync(cancellationToken);
+            if (rollout is null) return true;
+            rollout.EnsureValid();
+            return !rollout.IsDeleted && rollout.Mode == ProductLegalEntityScopeRolloutMode.Preparation;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
+        catch { return false; }
     }
 }

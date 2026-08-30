@@ -151,6 +151,9 @@ public sealed class GlobalProductIdentityWorkflowRecoveryWorkerMongoTests : IAsy
         services.AddScoped<IGlobalProductIdentityWorkflowOperationRepository>(provider =>
             new GlobalProductIdentityWorkflowOperationRepository(
                 _database, provider.GetRequiredService<ITenantContext>()));
+        services.AddScoped<IProductLegalEntityScopeRolloutStateRepository>(provider =>
+            new ProductLegalEntityScopeRolloutStateRepository(
+                _database, provider.GetRequiredService<ITenantContext>()));
         services.AddSingleton<IGlobalProductIdentityWorkflowTenantPartitionDiscovery>(
             new GlobalProductIdentityWorkflowTenantPartitionDiscoveryRepository(_database));
         services.AddScoped<IGlobalProductRepository>(provider =>

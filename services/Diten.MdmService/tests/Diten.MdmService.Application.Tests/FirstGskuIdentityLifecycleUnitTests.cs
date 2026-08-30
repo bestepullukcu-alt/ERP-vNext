@@ -4,6 +4,7 @@ using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.Comman
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.Validators;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
+using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Domain.ValueObjects;
 using Xunit;
 
@@ -55,6 +56,31 @@ public sealed class FirstGskuIdentityLifecycleUnitTests
         Assert.NotEqual(first.IntentId, gsku.IntentId);
         Assert.Equal(ProductAuditOperation.ProductDefinitionRevisionIdentitySubmitted, first.Operation);
         Assert.Equal(ProductAuditOperation.GskuIdentitySubmitted, gsku.Operation);
+    }
+
+    [Fact]
+    public async Task Enforced_rollout_defers_background_retirement_to_fresh_maker_replay()
+    {
+        var operation = new FirstGskuIdentityRetirementOperation
+        {
+            Id = Guid.NewGuid(), TenantId = TenantId, OperationId = OperationId
+        };
+        var rollout = ProductLegalEntityScopeRolloutState.CreatePreparation(
+            TenantId, Guid.NewGuid(), MakerId, Now);
+        rollout.Mode = ProductLegalEntityScopeRolloutMode.Enforced;
+        var runner = new FirstGskuIdentityRetirementRecoveryRunner(
+            new RetirementOperationRepository(operation),
+            new ScopeRolloutRepository(rollout),
+            null!);
+
+        var result = await runner.RunAsync(
+            OperationId, "test-worker", TimeSpan.FromSeconds(30));
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Equal("FIRST_GSKU_RETIREMENT_MAKER_REPLAY_REQUIRED", result.ErrorCode);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.AwaitingMakerReplay,
+            result.Operation!.RecoveryDisposition);
     }
 
     private static FirstGskuIdentityWorkflowStartRequestFactory Factory() => new(
@@ -120,6 +146,27 @@ public sealed class FirstGskuIdentityLifecycleUnitTests
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => now;
+    }
+
+    private sealed class RetirementOperationRepository(FirstGskuIdentityRetirementOperation operation)
+        : IFirstGskuIdentityRetirementOperationRepository
+    {
+        public Task<FirstGskuIdentityRetirementOperation?> GetByOperationIdAsync(
+            Guid operationId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<FirstGskuIdentityRetirementOperation?>(
+                operation.OperationId == operationId ? operation : null);
+        public Task<FirstGskuIdentityRetirementReserveResult> ReserveAsync(
+            FirstGskuIdentityRetirementOperation value, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+        public Task<FirstGskuIdentityRetirementClaim?> TryClaimAsync(
+            FirstGskuIdentityRetirementClaimRequest request, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+        public Task<bool> AdvanceAsync(FirstGskuIdentityRetirementClaim claim,
+            FirstGskuIdentityRetirementMutation mutation, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+        public Task<FirstGskuIdentityRetirementRecoverablePage> DiscoverRecoverableAsync(
+            long nowUtcTicks, int limit, FirstGskuIdentityRetirementRecoveryCursor? after = null,
+            CancellationToken cancellationToken = default) => throw new NotSupportedException();
     }
 
     private static readonly DateTimeOffset Now = new(2026, 8, 29, 8, 0, 0, TimeSpan.Zero);
