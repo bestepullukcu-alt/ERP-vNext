@@ -17,6 +17,7 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IRoleRepository _roleRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
+    private readonly ITenantEffectivePermissionResolver _effectivePermissionResolver;
     private readonly ITokenService _tokenService;
     private readonly IRefreshTokenHasher _refreshTokenHasher;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
@@ -29,6 +30,7 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
         IUserRoleRepository userRoleRepository,
         IRoleRepository roleRepository,
         IRolePermissionRepository rolePermissionRepository,
+        ITenantEffectivePermissionResolver effectivePermissionResolver,
         ITokenService tokenService,
         IRefreshTokenHasher refreshTokenHasher,
         IRefreshTokenRepository refreshTokenRepository,
@@ -40,6 +42,7 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
         _userRoleRepository = userRoleRepository;
         _roleRepository = roleRepository;
         _rolePermissionRepository = rolePermissionRepository;
+        _effectivePermissionResolver = effectivePermissionResolver;
         _tokenService = tokenService;
         _refreshTokenHasher = refreshTokenHasher;
         _refreshTokenRepository = refreshTokenRepository;
@@ -73,10 +76,14 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var roleIds = await ResolveRoleIdsAsync(roles, challenge.TenantId, ct);
-        var permissions = (await _rolePermissionRepository.GetPermissionsByRolesAsync(roleIds, challenge.TenantId, ct))
+        var rolePermissions = (await _rolePermissionRepository.GetPermissionsByRolesAsync(roleIds, challenge.TenantId, ct))
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        var permissions = await _effectivePermissionResolver.ResolveAsync(
+            challenge.TenantId,
+            rolePermissions,
+            ct);
 
         var accessToken = _tokenService.GenerateAccessToken(user, roles, permissions, settings.SessionTimeoutMinutes);
         var refreshTokenStr = _tokenService.GenerateRefreshToken();

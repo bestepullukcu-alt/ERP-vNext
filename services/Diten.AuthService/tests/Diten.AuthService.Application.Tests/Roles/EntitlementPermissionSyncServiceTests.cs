@@ -1,3 +1,4 @@
+using Diten.AuthService.Application.Common.Authorization;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Domain.Entities;
@@ -683,7 +684,7 @@ public sealed class EntitlementPermissionSyncServiceTests
     {
         var roles = new FakeRoleRepository(TenantA, TenantB);
         var rolePerms = new FakeRolePermissionRepository();
-        var svc = new EntitlementPermissionSyncService(new FakePermissionRepository(catalog), roles, rolePerms, NullLogger<EntitlementPermissionSyncService>.Instance);
+        var svc = new EntitlementPermissionSyncService(new FakePermissionRepository(catalog), roles, rolePerms, new PpmEntitlementPermissionPolicy(), NullLogger<EntitlementPermissionSyncService>.Instance);
         return (svc, roles, rolePerms);
     }
 
@@ -695,7 +696,7 @@ public sealed class EntitlementPermissionSyncServiceTests
         var catalog = SharedCatalog;
         var roles = new FakeRoleRepository(TenantA, TenantB);
         var rolePerms = new FakeRolePermissionRepository();
-        var svc = new EntitlementPermissionSyncService(new FakePermissionRepository(catalog), roles, rolePerms, NullLogger<EntitlementPermissionSyncService>.Instance);
+        var svc = new EntitlementPermissionSyncService(new FakePermissionRepository(catalog), roles, rolePerms, new PpmEntitlementPermissionPolicy(), NullLogger<EntitlementPermissionSyncService>.Instance);
         return (svc, roles, rolePerms, catalog);
     }
 

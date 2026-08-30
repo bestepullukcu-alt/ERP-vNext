@@ -1,4 +1,5 @@
 using Diten.AuthService.Application.Common;
+using Diten.AuthService.Application.Common.Authorization;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Domain.Entities;
@@ -39,6 +40,7 @@ public sealed class ProductAbbreviationPermissionOnboardingMongoTests
                 permissions,
                 roles,
                 rolePermissions,
+                new PpmEntitlementPermissionPolicy(),
                 NullLogger<EntitlementPermissionSyncService>.Instance);
 
             var catalog = ProductItemSkuMasterCatalog();
