@@ -136,6 +136,7 @@ public sealed class FinishedGoodIdentityWorkflowRecoveryRunnerTests
             .AddSingleton(tenantDiscovery)
             .AddSingleton(operationRepository)
             .AddSingleton(processor)
+            .AddSingleton<IProductLegalEntityScopeRolloutStateRepository>(new ScopeRolloutRepository(null))
             .AddScoped<ITenantContext, TestTenantContext>()
             .BuildServiceProvider();
         await using var provider = services;

@@ -2,8 +2,11 @@ using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Contracts.Workflow;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.Commands;
 using Diten.MdmService.Domain.Enums;
+using Diten.MdmService.Domain.Repositories;
 using Diten.Shared.Core;
 using MediatR;
 
@@ -13,6 +16,10 @@ public sealed class StartGlobalProductIdentityWorkflowHandler(
     ITenantContext tenantContext,
     IProductIdentityLifecycleActorContext actorContext,
     IProductIdentityDelegatedTokenAccessor delegatedTokenAccessor,
+    IGlobalProductRepository products,
+    IProductLegalEntityScopeRolloutStateRepository rolloutStates,
+    IProductLegalEntityScopePolicyRepository scopePolicies,
+    ProductLegalEntityScopeCandidateFacade scopeCandidates,
     GlobalProductIdentityWorkflowProcessor processor,
     ProductIdentityWorkflowExecutionConfiguration executionConfiguration)
     : IRequestHandler<StartGlobalProductIdentityWorkflowCommand,
@@ -44,6 +51,15 @@ public sealed class StartGlobalProductIdentityWorkflowHandler(
         {
             return Fail("PRODUCT_IDENTITY_WORKFLOW_START_INVALID", 400);
         }
+        var scopeGuard = new ProductLegalEntityScopeConsumerGuard(
+            rolloutStates, scopePolicies, scopeCandidates, tenantContext);
+        var scope = await scopeGuard.ResolveContextAsync(
+            ProductIdentityLifecyclePermissions.GlobalProductSubmit, cancellationToken);
+        if (!scope.IsSuccessful) return Fail(scope.FailureCode!, scope.StatusCode);
+        var product = await products.GetByIdAsync(input.GlobalProductId, cancellationToken);
+        if (product is null) return Fail("PRODUCT_IDENTITY_NOT_FOUND", 404);
+        var decision = await scopeGuard.EvaluateAsync(scope.Context!, product.Id, cancellationToken);
+        if (!decision.Allowed) return Fail("PRODUCT_IDENTITY_NOT_FOUND", 404);
         var result = await processor.StartInteractiveAsync(
             tenantContext.TenantId,
             input.GlobalProductId,

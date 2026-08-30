@@ -1,4 +1,5 @@
 using Diten.MdmService.Application.Contracts;
+using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.Commands;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.Handlers.CommandHandlers;
@@ -105,7 +106,14 @@ public sealed class GlobalProductLifecycleUnitTests
         };
         var actor = new LifecycleTestActor(LifecycleTestData.Approver,
             ProductIdentityLifecyclePermissions.GlobalProductRetire);
-        var handler = new RetireGlobalProductIdentityHandler(repository, actor, TimeProvider.System);
+        var handler = new RetireGlobalProductIdentityHandler(
+            repository,
+            actor,
+            TimeProvider.System,
+            new ScopeRolloutRepository(null),
+            new ScopePolicyRepository(),
+            null!,
+            new LifecycleScopeTenantContext(LifecycleTestData.TenantId));
         var operationId = Guid.Parse("8a000000-0000-0000-0000-00000000008a");
 
         var response = await handler.Handle(new(new(
@@ -180,6 +188,13 @@ public sealed class GlobalProductLifecycleUnitTests
         Assert.Equal(first.IdempotencyKey, second.IdempotencyKey);
         Assert.NotEqual(first.EvidenceHash, second.EvidenceHash);
     }
+}
+
+internal sealed class LifecycleScopeTenantContext(Guid tenantId) : ITenantContext
+{
+    public Guid TenantId { get; private set; } = tenantId;
+    public bool IsResolved => TenantId != Guid.Empty;
+    public void SetTenant(Guid tenantId) => TenantId = tenantId;
 }
 
 internal static class LifecycleTestData

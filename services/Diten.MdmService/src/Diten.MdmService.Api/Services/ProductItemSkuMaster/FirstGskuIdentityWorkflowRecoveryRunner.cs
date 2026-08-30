@@ -67,10 +67,19 @@ public sealed class FirstGskuIdentityWorkflowRecoveryRunner(
                         cancellationToken);
                     var processor = tenantScope.ServiceProvider
                         .GetRequiredService<FirstGskuIdentityWorkflowProcessor>();
+                    var recoveryAllowed = await IsBackgroundRecoveryAllowedAsync(
+                        tenantScope.ServiceProvider,
+                        tenantId,
+                        cancellationToken);
                     foreach (var operation in page.Operations)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         operationCount++;
+                        if (!recoveryAllowed)
+                        {
+                            deferredCount++;
+                            continue;
+                        }
                         try
                         {
                             var result = await processor.RecoverAsync(
@@ -136,5 +145,35 @@ public sealed class FirstGskuIdentityWorkflowRecoveryRunner(
                                       || character == '_')
             ? value
             : "UNEXPECTED_FAILURE";
+    }
+
+    private static async Task<bool> IsBackgroundRecoveryAllowedAsync(
+        IServiceProvider services,
+        Guid tenantId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var rollout = await services
+                .GetRequiredService<IProductLegalEntityScopeRolloutStateRepository>()
+                .GetAsync(cancellationToken);
+            if (rollout is null)
+            {
+                return true;
+            }
+
+            rollout.EnsureValid();
+            return rollout.TenantId == tenantId
+                   && !rollout.IsDeleted
+                   && rollout.Mode == ProductLegalEntityScopeRolloutMode.Preparation;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

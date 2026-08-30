@@ -332,7 +332,7 @@ wildcards, prefixes and aliases are prohibited.
 This internal endpoint does not use a tenant UI role or add a new permission. It validates the exact business permission
 already requested by the consuming operation.
 
-The first consumer uses exactly `module_code = product-item-sku-master` and the following bounded 22-key permission
+The first consumer uses exactly `module_code = product-item-sku-master` and the following bounded 30-key permission
 set; configuration may enable a strict subset but cannot introduce another pair without a separately approved pack
 amendment:
 
@@ -340,6 +340,10 @@ amendment:
 - `mdm.gskus.read`, `mdm.gskus.create`
 - `mdm.lskus.read`, `mdm.lskus.create`
 - `mdm.finished-goods.read`, `mdm.finished-goods.create`
+- `mdm.global-products.submit`, `mdm.global-products.retire`
+- `mdm.gskus.submit`, `mdm.gskus.retire`
+- `mdm.lskus.submit`, `mdm.lskus.retire`
+- `mdm.finished-goods.submit`, `mdm.finished-goods.retire`
 - `mdm.product-abbreviations.read`, `mdm.product-abbreviations.request`
 - `mdm.product-abbreviations.approve`, `mdm.product-abbreviations.reject`
 - `mdm.product-abbreviations.correct`, `mdm.product-abbreviations.cancel`
@@ -347,6 +351,21 @@ amendment:
 - `mdm.product-legal-entity-scopes.read`, `mdm.product-legal-entity-scopes.configure`
 - `mdm.product-legal-entity-scopes.replace`, `mdm.product-legal-entity-scopes.end`
 - `mdm.product-legal-entity-scope-rollout.activate`, `mdm.product-legal-entity-scope-rollout.rollback`
+
+### Lifecycle-scope hardening amendment — exact runtime/test allow-list
+
+The standing user non-push authorization on 2026-08-30 adds only the eight lifecycle pairs above. Runtime writes are
+restricted to:
+
+- `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeCredentialAuthenticator.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Authorization/TrustedLegalEntityScopeCredentialAuthenticatorTests.cs`
+
+The canonical universe and maximum configured-pair bound move together from 22 to 30. Configuration remains an
+explicit non-empty strict subset; this amendment does not provision a pair, secret, credential or tenant grant.
+
+The amended credential/authenticator focused regression passed **10/10** on 2026-08-30 with zero skipped. It proves
+the exact 30-pair universe, strict subset behavior and rejection of a 31st pair. Platform runtime configuration,
+credentials, grants and operational data were not changed.
 
 Authorization is conjunctive:
 
@@ -431,7 +450,7 @@ Frontend, RESX and DataTable verification are N/A.
 - [x] Delegated Bearer plus dedicated rotatable S2S model recorded; credential has no tenant authority.
 - [x] JWT claim/signed-scope-token and single-value context changes rejected for foundation.
 - [x] Exact no-glob future runtime/test allow-list and protected paths recorded.
-- [x] Exact maximum 200, 1,024-byte body, 100/200-character string bounds and first-consumer 22-pair set approved on 2026-08-26.
+- [x] Exact maximum 200, 1,024-byte body, 100/200-character string bounds and amended first-consumer 30-pair set approved through 2026-08-30.
 - [x] Confirmed-empty 200, unavailable 503, inconsistent contract 409/provider-to-MDM 503 and timeout 504 mapping approved.
 - [x] User approved the Phase 1.5 architecture on 2026-08-26; this approval does not grant runtime code-start.
 - [x] Pack promoted to `ready-for-dev` after the two Platform-Security decisions were frozen.
@@ -452,7 +471,7 @@ Frontend, RESX and DataTable verification are N/A.
   tenant scope and candidate resolution. The parser reads at most 1,025 bytes to enforce the 1,024-byte contract.
 - Module and permission keys use exact lowercase kebab/dotted-kebab grammar. Claim type names and permission values use
   ordinal matching; aliases and case variants fail closed. Allowed-pair configuration rejects empty, duplicate,
-  malformed, unknown or over-22 sets before serving an authenticated request.
+  malformed, unknown or over-30 sets before serving an authenticated request.
 - Timeout mapping requires the internal budget to be cancelled while the caller token is not cancelled. Caller and
   unrelated dependency cancellation propagate. Programming exceptions are not converted to 503; only the explicit
   candidate-unavailable contract is mapped to 503.
@@ -493,7 +512,7 @@ Frontend, RESX and DataTable verification are N/A.
   Application dependency injection were integrated surgically, preserving current-main WorkCenter, Tasks, Document,
   CRM, startup-validation and module-registration changes.
 - Pre-acceptance security/quality audit found and closed two real issues. Allowed-pair configuration now accepts an
-  explicit non-empty strict subset of the frozen 22-pair universe and denies every unconfigured canonical pair. The
+  explicit non-empty strict subset of the amended 30-pair universe and denies every unconfigured canonical pair. The
   candidate traversal now uses a dedicated FU21 fact reader with tenant-scoped server-side filters, projections and
   `max + 1` limits instead of materializing three complete tenant collections.
 - The current focused security/candidate/FU15/DI matrix passes **84/84**, zero skipped. Real Mongo proves tenant
