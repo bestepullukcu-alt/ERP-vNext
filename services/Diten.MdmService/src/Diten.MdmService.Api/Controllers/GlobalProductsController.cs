@@ -62,7 +62,7 @@ public sealed class GlobalProductsController : CustomBaseController
         [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
         CancellationToken cancellationToken)
     {
-        if (request is null || HasUnknownFields(request.UnmappedFields))
+        if (request is null || request.ExpectedVersion is null || HasUnknownFields(request.UnmappedFields))
         {
             return InvalidLifecycleRequest();
         }
@@ -73,7 +73,7 @@ public sealed class GlobalProductsController : CustomBaseController
 
         return CreateActionResultInstance(await _mediator.Send(
             new StartGlobalProductIdentityWorkflowCommand(
-                new(id, request.ExpectedVersion, operationId)),
+                new(id, request.ExpectedVersion.Value, operationId)),
             cancellationToken));
     }
 
@@ -85,7 +85,7 @@ public sealed class GlobalProductsController : CustomBaseController
         [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
         CancellationToken cancellationToken)
     {
-        if (request is null || HasUnknownFields(request.UnmappedFields))
+        if (request is null || request.ExpectedVersion is null || HasUnknownFields(request.UnmappedFields))
         {
             return InvalidLifecycleRequest();
         }
@@ -96,7 +96,7 @@ public sealed class GlobalProductsController : CustomBaseController
 
         return CreateActionResultInstance(await _mediator.Send(
             new RetireGlobalProductIdentityCommand(
-                new(id, request.ExpectedVersion, operationId, request.ReasonCode, request.Comment)),
+                new(id, request.ExpectedVersion.Value, operationId, request.ReasonCode, request.Comment)),
             cancellationToken));
     }
 
@@ -114,7 +114,7 @@ public sealed class GlobalProductsController : CustomBaseController
 
     public sealed class SubmitGlobalProductIdentityApiRequest
     {
-        public int ExpectedVersion { get; init; }
+        public int? ExpectedVersion { get; init; }
 
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? UnmappedFields { get; init; }
@@ -122,7 +122,7 @@ public sealed class GlobalProductsController : CustomBaseController
 
     public sealed class RetireGlobalProductIdentityApiRequest
     {
-        public int ExpectedVersion { get; init; }
+        public int? ExpectedVersion { get; init; }
         public string ReasonCode { get; init; } = string.Empty;
         public string? Comment { get; init; }
 

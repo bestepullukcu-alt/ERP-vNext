@@ -590,6 +590,42 @@ public sealed class GlobalProductApiMongoTests
         Assert.Null(capture.Request);
     }
 
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"expectedVersion\":null}")]
+    public async Task Lifecycle_missing_or_null_expected_version_fails_before_dispatch(string json)
+    {
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var submitRequest = JsonSerializer.Deserialize<GlobalProductsController.SubmitGlobalProductIdentityApiRequest>(
+            json,
+            options)!;
+        var retireRequest = JsonSerializer.Deserialize<GlobalProductsController.RetireGlobalProductIdentityApiRequest>(
+            json,
+            options)!;
+        var operationId = Guid.NewGuid().ToString("D");
+
+        var submitMediator = DispatchProxy.Create<IMediator, CapturingMediatorProxy>();
+        var submitCapture = (CapturingMediatorProxy)(object)submitMediator;
+        var submitResult = await new GlobalProductsController(submitMediator).SubmitIdentity(
+            Guid.NewGuid(),
+            submitRequest,
+            operationId,
+            CancellationToken.None);
+
+        var retireMediator = DispatchProxy.Create<IMediator, CapturingMediatorProxy>();
+        var retireCapture = (CapturingMediatorProxy)(object)retireMediator;
+        var retireResult = await new GlobalProductsController(retireMediator).RetireIdentity(
+            Guid.NewGuid(),
+            retireRequest,
+            operationId,
+            CancellationToken.None);
+
+        Assert.Equal(400, Assert.IsAssignableFrom<ObjectResult>(submitResult).StatusCode);
+        Assert.Equal(400, Assert.IsAssignableFrom<ObjectResult>(retireResult).StatusCode);
+        Assert.Null(submitCapture.Request);
+        Assert.Null(retireCapture.Request);
+    }
+
     [Fact]
     public void Lifecycle_public_bodies_have_only_business_fields_and_capture_unknown_input()
     {
