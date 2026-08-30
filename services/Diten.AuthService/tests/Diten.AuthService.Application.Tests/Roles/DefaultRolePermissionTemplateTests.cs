@@ -105,6 +105,9 @@ public sealed class DefaultRolePermissionTemplateTests
         Assert.DoesNotContain("mdm.product-abbreviations.read", adminKeys);
         Assert.Equal(
             [
+                "management-governance.process-modeling.architectures.read",
+                "management-governance.process-modeling.definitions.read",
+                "management-governance.process-modeling.models.read",
                 "mdm.finished-goods.create",
                 "mdm.finished-goods.read",
                 "mdm.global-products.create",

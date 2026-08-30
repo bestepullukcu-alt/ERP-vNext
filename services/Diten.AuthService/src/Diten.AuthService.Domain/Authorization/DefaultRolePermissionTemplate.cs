@@ -83,7 +83,12 @@ public static class DefaultRolePermissionTemplate
             "mdm.product-abbreviations.reject",
             "mdm.product-abbreviations.correct",
             "mdm.product-abbreviations.retire",
-            "mdm.product-abbreviations.audit"
+            "mdm.product-abbreviations.audit",
+            // MOD-0355 normal-user catalog onboarding is explicit-grant-only. Catalog presence must not make
+            // the generic Viewer baseline authoritative for any Process Modeling read surface.
+            "management-governance.process-modeling.architectures.read",
+            "management-governance.process-modeling.definitions.read",
+            "management-governance.process-modeling.models.read"
         };
 
     /// <summary>

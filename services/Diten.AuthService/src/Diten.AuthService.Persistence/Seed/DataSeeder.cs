@@ -250,6 +250,25 @@ public static class DataSeeder
             new("crm", "territory.node", "read", "CRM Territory Node Read", "Permission to view CRM territory hierarchy nodes", moduleOverride: "crm-territory"),
             new("crm", "territory.node", "manage", "CRM Territory Node Manage", "Permission to create/update draft CRM territory nodes", moduleOverride: "crm-territory"),
 
+            // MOD-0355 — Business Process Architecture & Modeling Core. These tenant-scoped catalog rows are
+            // explicitly assignable through the existing role/grant mechanisms; they do not broaden a default role.
+            new("management-governance", "process-modeling.architectures", "read", "Read Process Architectures", "Permission to view process architectures, domains, and families", moduleOverride: "MOD-0355", scope: PermissionScope.Tenant),
+            new("management-governance", "process-modeling.architectures", "create", "Create Process Architectures", "Permission to create process architectures, domains, and families", moduleOverride: "MOD-0355", scope: PermissionScope.Tenant),
+            new("management-governance", "process-modeling.architectures", "update", "Update Process Architectures", "Permission to update process architectures, domains, and families", moduleOverride: "MOD-0355", scope: PermissionScope.Tenant),
+            new("management-governance", "process-modeling.architectures", "archive", "Archive Process Architectures", "Permission to archive process architectures, domains, and families", moduleOverride: "MOD-0355", scope: PermissionScope.Tenant),
+            new("management-governance", "process-modeling.definitions", "read", "Read Process Definitions", "Permission to view process definitions", moduleOverride: "MOD-0355", scope: PermissionScope.Tenant),
+            new("management-governance", "process-modeling.definitions", "create", "Create Process Definitions", "Permission to create process definitions", moduleOverride: "MOD-0355", scope: PermissionScope.Tenant),
+            new("management-governance", "process-modeling.definitions", "update", "Update Process Definitions", "Permission to update process definitions", moduleOverride: "MOD-0355", scope: PermissionScope.Tenant),
+            new("management-governance", "process-modeling.definitions", "archive", "Archive Process Definitions", "Permission to archive process definitions", moduleOverride: "MOD-0355", scope: PermissionScope.Tenant),
+            new("management-governance", "process-modeling.models", "read", "Read Process Models", "Permission to view process models and versions", moduleOverride: "MOD-0355", scope: PermissionScope.Tenant),
+            new("management-governance", "process-modeling.models", "create", "Create Process Models", "Permission to create process models", moduleOverride: "MOD-0355", scope: PermissionScope.Tenant),
+            new("management-governance", "process-modeling.models", "update", "Update Process Models", "Permission to update process models and draft content", moduleOverride: "MOD-0355", scope: PermissionScope.Tenant),
+            new("management-governance", "process-modeling.models", "request-review", "Request Process Model Review", "Permission to move a process model version to review", moduleOverride: "MOD-0355", scope: PermissionScope.Tenant),
+            new("management-governance", "process-modeling.models", "return-to-draft", "Return Process Model to Draft", "Permission to return a process model version to draft", moduleOverride: "MOD-0355", scope: PermissionScope.Tenant),
+            new("management-governance", "process-modeling.models", "publish", "Publish Process Model", "Permission to publish a process model version subject to independent authorization gates", moduleOverride: "MOD-0355", scope: PermissionScope.Tenant),
+            new("management-governance", "process-modeling.models", "retire", "Retire Process Model", "Permission to retire a published process model version", moduleOverride: "MOD-0355", scope: PermissionScope.Tenant),
+            new("management-governance", "process-modeling.models", "create-revision", "Create Process Model Revision", "Permission to create a new process model revision", moduleOverride: "MOD-0355", scope: PermissionScope.Tenant),
+
             new("mod0251", "employee", "search", "Search Employees", "Permission to search MOD-0251 employee registry records"),
             new("mod0251", "employee", "view", "View Employee", "Permission to view MOD-0251 employee records"),
             new("mod0251", "employee", "view_sensitive", "View Sensitive Employee Fields", "Permission to view sensitive MOD-0251 employee fields when masking policy allows"),
