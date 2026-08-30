@@ -118,6 +118,49 @@ public sealed class LskuDraftFoundationMongoTests
     }
 
     [Fact]
+    public async Task Enforced_scope_denial_precedes_replay_payload_drift_and_second_mutation()
+    {
+        await using var scope = await MongoScope.CreateAsync();
+        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft);
+        var market = new MarketResolver();
+        var preparation = scope.Handler(scope.TenantA, market: market);
+        Assert.True((await preparation.Handle(Command(gsku.Id, "TR", "scope-drift"), default)).IsSuccessful);
+
+        var revision = await scope.Database
+            .GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions")
+            .Find(item => item.Id == gsku.ProductDefinitionRevisionId)
+            .SingleAsync();
+        var candidateLegalEntityId = Guid.NewGuid();
+        var policy = ProductLegalEntityScopePolicy.Create(
+            scope.TenantA,
+            revision.GlobalProductId,
+            Guid.NewGuid(),
+            ProductLegalEntityScopeMode.Scoped,
+            [Guid.NewGuid()],
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow);
+        await scope.Database
+            .GetCollection<ProductLegalEntityScopePolicy>("mdm_product_legal_entity_scope_policies")
+            .InsertOneAsync(policy);
+        var tenant = scope.Tenant(scope.TenantA);
+        var policies = new ProductLegalEntityScopePolicyRepository(scope.Database, tenant);
+        var enforced = ProductLegalEntityScopeTestFixture.Enforced(
+            tenant,
+            [candidateLegalEntityId],
+            policies);
+
+        var drift = await scope.Handler(scope.TenantA, market: market, access: enforced)
+            .Handle(Command(gsku.Id, "US", "scope-drift"), default);
+
+        Assert.False(drift.IsSuccessful);
+        Assert.Equal(404, drift.StatusCode);
+        Assert.Contains("GSKU_NOT_REFERENCEABLE", drift.Errors);
+        Assert.Equal(1, market.Calls);
+        Assert.Equal(1, await scope.Lskus.CountDocumentsAsync(FilterDefinition<Lsku>.Empty));
+        Assert.Equal(1, await scope.Reservations.CountDocumentsAsync(FilterDefinition<CodeReservation>.Empty));
+    }
+
+    [Fact]
     public async Task Concurrent_different_commands_have_one_winner_and_replayable_pending_reconciliation_loser()
     {
         await using var scope = await MongoScope.CreateAsync();
@@ -349,10 +392,35 @@ public sealed class LskuDraftFoundationMongoTests
             ProductIdentityLifecycleStatus lifecycle,
             Guid? id = null)
         {
+            var product = new GlobalProduct
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+                CanonicalCode = "GP-" + Guid.NewGuid().ToString("N"),
+                GlobalProductName = "LSKU Parent",
+                GlobalProductNameNormalized = "LSKU PARENT " + Guid.NewGuid().ToString("N"),
+                CodeReservationId = Guid.NewGuid(),
+                LifecycleStatus = ProductIdentityLifecycleStatus.Draft,
+                IsDeleted = false
+            };
+            var revision = new ProductDefinitionRevision
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+                GlobalProductId = product.Id,
+                RevisionIdentifier = "REV-001",
+                CreationCommandId = "REV:" + Guid.NewGuid().ToString("N"),
+                LifecycleStatus = ProductIdentityLifecycleStatus.Draft,
+                IsDeleted = false
+            };
+            await Database.GetCollection<GlobalProduct>("mdm_global_products").InsertOneAsync(product);
+            await Database.GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions")
+                .InsertOneAsync(revision);
             var gsku = new Gsku
             {
                 Id = id ?? Guid.NewGuid(),
                 TenantId = tenantId,
+                ProductDefinitionRevisionId = revision.Id,
                 CanonicalCode = "GS-" + Guid.NewGuid().ToString("N"),
                 LifecycleStatus = lifecycle,
                 Version = 0
@@ -366,21 +434,28 @@ public sealed class LskuDraftFoundationMongoTests
         public CreateLskuDraftHandler Handler(
             Guid tenantId,
             ILskuRepository? lskus = null,
-            IVerifiedMarketReferenceResolver? market = null)
+            IVerifiedMarketReferenceResolver? market = null,
+            ProductLegalEntityScopeTestDependencies? access = null)
         {
             var tenant = Tenant(tenantId);
+            access ??= ProductLegalEntityScopeTestFixture.Preparation(tenant);
             return new CreateLskuDraftHandler(
                 new CodeReservationRepository(Database, tenant),
                 lskus ?? new LskuRepository(Database, tenant),
                 new GskuRepository(Database, tenant),
+                new ProductDefinitionRevisionRepository(Database, tenant),
+                new GlobalProductRepository(Database, tenant),
                 market ?? new MarketResolver(),
                 tenant,
-                new ActorContext());
+                new ActorContext(),
+                access.Rollouts,
+                access.Policies,
+                access.Candidates);
         }
 
         public async ValueTask DisposeAsync() => await _client.DropDatabaseAsync(_databaseName);
 
-        private static TenantContext Tenant(Guid tenantId)
+        internal TenantContext Tenant(Guid tenantId)
         {
             var context = new TenantContext();
             context.SetTenant(tenantId);

@@ -4,4 +4,4 @@ using MediatR;
 namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Commands;
 
 public sealed record CreateFirstGskuDraftCommand(ProductItemSkuMasterModels.CreateFirstGskuDraftRequest Request)
-    : IRequest<Response<ProductItemSkuMasterModels.FirstGskuDraftDto>>;
+    : IRequest<Response<ProductItemSkuMasterModels.FirstGskuDraftDto>>, global::Diten.MdmService.Application.Features.ProductLegalEntityScopes.IProductLegalEntityScopeInventoryMutation;

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Reflection;
+using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Features.ProductAbbreviationRegister.Commands;
 using Diten.MdmService.Application.Features.ProductAbbreviationRegister.Handlers.CommandHandlers;
@@ -50,8 +51,9 @@ public sealed class ProductAbbreviationRegisterUnitTests
             subject: "human-1",
             actorType: "service",
             permissions: new HashSet<string>(StringComparer.Ordinal) { ProductAbbreviationPermissions.Request });
-        var workflow = CreateWorkflow(actor, Proxy<IProductAbbreviationRegisterRepository>());
-        var handler = new RequestProductAbbreviationAllocationHandler(workflow);
+        var register = Proxy<IProductAbbreviationRegisterRepository>();
+        var workflow = CreateWorkflow(actor, register);
+        var handler = RequestHandler(workflow, register, actor.TenantId);
 
         var response = await handler.Handle(
             new RequestProductAbbreviationAllocationCommand(Guid.NewGuid(), "ABC", "request-1"),
@@ -68,8 +70,9 @@ public sealed class ProductAbbreviationRegisterUnitTests
             subject: string.Empty,
             actorType: "tenant_user",
             permissions: new HashSet<string>(StringComparer.Ordinal) { ProductAbbreviationPermissions.Request });
-        var workflow = CreateWorkflow(actor, Proxy<IProductAbbreviationRegisterRepository>());
-        var handler = new RequestProductAbbreviationAllocationHandler(workflow);
+        var register = Proxy<IProductAbbreviationRegisterRepository>();
+        var workflow = CreateWorkflow(actor, register);
+        var handler = RequestHandler(workflow, register, actor.TenantId);
 
         var response = await handler.Handle(
             new RequestProductAbbreviationAllocationCommand(Guid.NewGuid(), "ABC", "request-invalid-subject"),
@@ -100,7 +103,11 @@ public sealed class ProductAbbreviationRegisterUnitTests
             Guid.NewGuid().ToString("D"),
             "tenant_user",
             new HashSet<string>(StringComparer.Ordinal) { ProductAbbreviationPermissions.Cancel });
-        var handler = new CancelProductAbbreviationAllocationHandler(CreateWorkflow(actor, register));
+        var access = ScopeAccess(actor.TenantId);
+        var handler = new CancelProductAbbreviationAllocationHandler(
+            CreateWorkflow(actor, register), register, Proxy<IGlobalProductRepository>(),
+            access.Dependencies.Rollouts, access.Dependencies.Policies,
+            access.Dependencies.Candidates, access.TenantContext);
 
         var response = await handler.Handle(
             new CancelProductAbbreviationAllocationCommand(register.Entry.Id, 0, "cancel-not-owner"),
@@ -133,7 +140,11 @@ public sealed class ProductAbbreviationRegisterUnitTests
             "tenant_user",
             new HashSet<string>(StringComparer.Ordinal) { ProductAbbreviationPermissions.Approve });
         var workflow = CreateWorkflow(actor, register);
-        var handler = new ApproveProductAbbreviationAllocationHandler(workflow);
+        var access = ScopeAccess(actor.TenantId);
+        var handler = new ApproveProductAbbreviationAllocationHandler(
+            workflow, register, Proxy<IGlobalProductRepository>(),
+            access.Dependencies.Rollouts, access.Dependencies.Policies,
+            access.Dependencies.Candidates, access.TenantContext);
 
         var response = await handler.Handle(
             new ApproveProductAbbreviationAllocationCommand(register.Entry.Id, 0, "approve-1"),
@@ -141,6 +152,51 @@ public sealed class ProductAbbreviationRegisterUnitTests
 
         Assert.False(response.IsSuccessful);
         Assert.Equal("ABBREVIATION_MAKER_CHECKER_VIOLATION", Assert.Single(response.Errors));
+        Assert.Equal(0, register.TransitionCalls);
+    }
+
+    [Fact]
+    public async Task Enforced_scope_hides_register_entry_when_global_product_parent_is_missing()
+    {
+        var register = new RegisterSpy
+        {
+            Entry = new ProductAbbreviationRegisterEntry
+            {
+                Id = Guid.NewGuid(),
+                TenantId = Guid.NewGuid(),
+                GlobalProductId = Guid.NewGuid(),
+                NormalizedAbbreviation = "MIS",
+                LifecycleStatus = ProductAbbreviationLifecycleStatus.REQUESTED,
+                RequestedByCanonicalSubjectId = "owner",
+                Version = 0
+            }
+        };
+        var actor = Actor(
+            "owner",
+            "tenant_user",
+            new HashSet<string>(StringComparer.Ordinal) { ProductAbbreviationPermissions.Cancel });
+        var tenantContext = new TenantContext();
+        tenantContext.SetTenant(actor.TenantId);
+        var policies = ProductLegalEntityScopeTestFixture.Preparation(tenantContext).Policies;
+        var access = ProductLegalEntityScopeTestFixture.Enforced(
+            tenantContext,
+            [Guid.NewGuid()],
+            policies);
+        var handler = new CancelProductAbbreviationAllocationHandler(
+            CreateWorkflow(actor, register),
+            register,
+            new MissingProductRepository(),
+            access.Rollouts,
+            access.Policies,
+            access.Candidates,
+            tenantContext);
+
+        var response = await handler.Handle(
+            new CancelProductAbbreviationAllocationCommand(register.Entry.Id, 0, "missing-parent"),
+            default);
+
+        Assert.Equal(404, response.StatusCode);
+        Assert.Contains("ABBREVIATION_NOT_FOUND", response.Errors);
         Assert.Equal(0, register.TransitionCalls);
     }
 
@@ -155,6 +211,30 @@ public sealed class ProductAbbreviationRegisterUnitTests
             actor,
             new ProductAbbreviationAuthorization(actor));
 
+    private static RequestProductAbbreviationAllocationHandler RequestHandler(
+        ProductAbbreviationWorkflow workflow,
+        IProductAbbreviationRegisterRepository register,
+        Guid tenantId)
+    {
+        var access = ScopeAccess(tenantId);
+        return new(
+            workflow,
+            register,
+            Proxy<IGlobalProductRepository>(),
+            access.Dependencies.Rollouts,
+            access.Dependencies.Policies,
+            access.Dependencies.Candidates,
+            access.TenantContext);
+    }
+
+    private static (TenantContext TenantContext, ProductLegalEntityScopeTestDependencies Dependencies) ScopeAccess(
+        Guid tenantId)
+    {
+        var tenantContext = new TenantContext();
+        tenantContext.SetTenant(tenantId);
+        return (tenantContext, ProductLegalEntityScopeTestFixture.Preparation(tenantContext));
+    }
+
     private static TestActorContext Actor(
         string subject,
         string actorType,
@@ -162,6 +242,30 @@ public sealed class ProductAbbreviationRegisterUnitTests
         => new(Guid.NewGuid(), true, true, actorType, subject, permissions, "correlation");
 
     private static T Proxy<T>() where T : class => DispatchProxy.Create<T, ThrowingProxy>();
+
+    private sealed class MissingProductRepository : IGlobalProductRepository
+    {
+        public Task<GlobalProduct?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+            Task.FromResult<GlobalProduct?>(null);
+
+        public Task<GlobalProduct?> GetByReservationIdAsync(Guid reservationId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<GlobalProduct?>(null);
+
+        public Task<bool> NameExistsAsync(string normalizedName, CancellationToken cancellationToken = default) =>
+            Task.FromResult(false);
+
+        public Task<GlobalProductPage> GetPageAsync(
+            int pageNumber,
+            int pageSize,
+            string? search,
+            ProductIdentityLifecycleStatus? lifecycleStatus,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new GlobalProductPage([], 0));
+
+        public Task<GlobalProductCreateResult> CreateDraftAsync(
+            GlobalProduct globalProduct,
+            CancellationToken cancellationToken = default) => throw new NotSupportedException();
+    }
 
     private class ThrowingProxy : DispatchProxy
     {

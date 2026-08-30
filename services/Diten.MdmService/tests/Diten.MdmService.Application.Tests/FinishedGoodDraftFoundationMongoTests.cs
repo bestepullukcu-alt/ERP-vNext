@@ -135,12 +135,18 @@ public sealed class FinishedGoodDraftFoundationMongoTests
         await using var scope = await MongoScope.CreateAsync();
         var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft);
         var context = scope.Context(scope.TenantA);
+        var access = ProductLegalEntityScopeTestFixture.Preparation(context);
         var handler = new CreateFinishedGoodDraftHandler(
             new CodeReservationRepository(scope.Database, context),
             new FinishedGoodRepository(scope.Database, context),
             new GskuRepository(scope.Database, context),
+            new ProductDefinitionRevisionRepository(scope.Database, context),
+            new GlobalProductRepository(scope.Database, context),
             context,
-            new ActorContext());
+            new ActorContext(),
+            access.Rollouts,
+            access.Policies,
+            access.Candidates);
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
 
@@ -221,12 +227,22 @@ public sealed class FinishedGoodDraftFoundationMongoTests
         var first = await scope.Create(scope.TenantA, approved.Id, "list-b");
         var second = await scope.Create(scope.TenantA, draft.Id, "list-a");
 
+        var context = scope.Context(scope.TenantA);
+        var access = ProductLegalEntityScopeTestFixture.Preparation(context);
         var repositories = scope.Repositories(scope.TenantA);
-        var list = await new GetFinishedGoodsHandler(repositories.FinishedGoods, repositories.Gskus).Handle(
+        var revisions = new ProductDefinitionRevisionRepository(scope.Database, context);
+        var products = new GlobalProductRepository(scope.Database, context);
+        var list = await new GetFinishedGoodsHandler(
+            repositories.FinishedGoods, repositories.Gskus, revisions, products,
+            access.Rollouts, access.Policies, access.Candidates, context).Handle(
             new GetFinishedGoodsQuery { Search = approved.CanonicalCode, PageSize = 20 }, CancellationToken.None);
-        var detail = await new GetFinishedGoodByIdHandler(repositories.FinishedGoods, repositories.Gskus).Handle(
+        var detail = await new GetFinishedGoodByIdHandler(
+            repositories.FinishedGoods, repositories.Gskus, revisions, products,
+            access.Rollouts, access.Policies, access.Candidates, context).Handle(
             new GetFinishedGoodByIdQuery(first.Data!.FinishedGoodId), CancellationToken.None);
-        var selector = await new GetFinishedGoodGskuSelectorHandler(repositories.Gskus).Handle(
+        var selector = await new GetFinishedGoodGskuSelectorHandler(
+            repositories.Gskus, revisions, products,
+            access.Rollouts, access.Policies, access.Candidates, context).Handle(
             new GetFinishedGoodGskuSelectorQuery { PageSize = 20 }, CancellationToken.None);
 
         Assert.Single(list.Data!.Items);
@@ -321,11 +337,35 @@ public sealed class FinishedGoodDraftFoundationMongoTests
             bool isDeleted = false)
         {
             _ = new GskuRepository(Database, Context(tenantId));
+            var product = new GlobalProduct
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+                CanonicalCode = "GP-" + Guid.NewGuid().ToString("N")[..12].ToUpperInvariant(),
+                GlobalProductName = "Finished Good Parent",
+                GlobalProductNameNormalized = "FINISHED GOOD PARENT " + Guid.NewGuid().ToString("N"),
+                CodeReservationId = Guid.NewGuid(),
+                LifecycleStatus = ProductIdentityLifecycleStatus.Draft,
+                IsDeleted = false
+            };
+            var revision = new ProductDefinitionRevision
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+                GlobalProductId = product.Id,
+                RevisionIdentifier = "REV-001",
+                CreationCommandId = "REV:" + Guid.NewGuid().ToString("N"),
+                LifecycleStatus = ProductIdentityLifecycleStatus.Draft,
+                IsDeleted = false
+            };
+            await Database.GetCollection<GlobalProduct>("mdm_global_products").InsertOneAsync(product);
+            await Database.GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions")
+                .InsertOneAsync(revision);
             var gsku = new Gsku
             {
                 Id = Guid.NewGuid(),
                 TenantId = tenantId,
-                ProductDefinitionRevisionId = Guid.NewGuid(),
+                ProductDefinitionRevisionId = revision.Id,
                 CanonicalCode = code ?? "GS-" + Guid.NewGuid().ToString("N")[..12].ToUpperInvariant(),
                 CodeReservationId = Guid.NewGuid(),
                 CreationCommandId = Guid.NewGuid().ToString("N"),
@@ -346,12 +386,18 @@ public sealed class FinishedGoodDraftFoundationMongoTests
             string idempotencyKey)
         {
             var context = Context(tenantId);
+            var access = ProductLegalEntityScopeTestFixture.Preparation(context);
             var handler = new CreateFinishedGoodDraftHandler(
                 new CodeReservationRepository(Database, context),
                 new FinishedGoodRepository(Database, context),
                 new GskuRepository(Database, context),
+                new ProductDefinitionRevisionRepository(Database, context),
+                new GlobalProductRepository(Database, context),
                 context,
-                new ActorContext());
+                new ActorContext(),
+                access.Rollouts,
+                access.Policies,
+                access.Candidates);
             return handler.Handle(new CreateFinishedGoodDraftCommand(new()
             {
                 GskuId = gskuId,

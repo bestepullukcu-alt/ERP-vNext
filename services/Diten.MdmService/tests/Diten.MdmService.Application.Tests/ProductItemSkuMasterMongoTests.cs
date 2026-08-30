@@ -1,7 +1,9 @@
 using System.Text.Json;
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
+using Diten.MdmService.Application.Contracts.Authorization;
 using Diten.MdmService.Application.Contracts.ReferenceData;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Commands;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.CommandHandlers;
@@ -59,12 +61,18 @@ public sealed class ProductItemSkuMasterMongoTests
         Assert.Equal(1, await scope.Database.GetCollection<Gsku>("mdm_gskus")
             .CountDocumentsAsync(Builders<Gsku>.Filter.Empty));
 
+        var scopeDependencies = ScopeDependencies(scope, scope.TenantA);
         var updater = new UpdateGskuDraftHandler(
             new GskuRepository(scope.Database, scope.Context(scope.TenantA)),
             new ProductDefinitionRevisionRepository(scope.Database, scope.Context(scope.TenantA)),
+            scope.GlobalProducts(scope.TenantA),
             scope.Reservations(scope.TenantA),
             resolver,
-            new TestActorContext());
+            new TestActorContext(),
+            scopeDependencies.Rollout,
+            scopeDependencies.Policies,
+            scopeDependencies.Candidates,
+            scopeDependencies.Context);
         var updateRequest = new ProductItemSkuMasterModels.UpdateGskuDraftRequest
         {
             GskuId = first.Data.GskuId,
@@ -194,6 +202,127 @@ public sealed class ProductItemSkuMasterMongoTests
             .CountDocumentsAsync(Builders<Gsku>.Filter.Empty));
         var unchanged = await scope.Reservations(scope.TenantB).GetByIdAsync(reservation.Id);
         Assert.Equal(CodeReservationState.Reserved, unchanged!.ReservationState);
+    }
+
+    [Fact]
+    public async Task First_gsku_replay_denies_soft_deleted_identity_and_inaccessible_actual_parent()
+    {
+        await using var scope = await MongoTestScope.CreateAsync();
+        var hiddenParent = await InsertParentAsync(scope, scope.TenantA);
+        var accessibleParent = await InsertParentAsync(scope, scope.TenantA);
+        var reservation = await scope.Reservations(scope.TenantA).ReserveAsync(
+            CodeBearingEntityType.Gsku, "replay-scope-reserve", "actor", "corr");
+        var request = new ProductItemSkuMasterModels.CreateFirstGskuDraftRequest
+        {
+            GlobalProductId = hiddenParent.Id,
+            GskuReservationId = reservation.Id,
+            ExpectedReservationVersion = reservation.Version,
+            CreationCommandId = "replay-scope-command",
+            PackQuantity = 1m,
+            PackUomCode = "C62"
+        };
+        var created = await CreateFirstGskuHandler(scope, scope.TenantA, new VerifiedResolver())
+            .Handle(new CreateFirstGskuDraftCommand(request), CancellationToken.None);
+        Assert.True(created.IsSuccessful);
+
+        var legalEntityId = Guid.NewGuid();
+        var policy = ProductLegalEntityScopePolicy.Create(
+            scope.TenantA,
+            accessibleParent.Id,
+            Guid.NewGuid(),
+            ProductLegalEntityScopeMode.Scoped,
+            [legalEntityId],
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow);
+        await scope.Database.GetCollection<ProductLegalEntityScopePolicy>("mdm_product_legal_entity_scope_policies")
+            .InsertOneAsync(policy);
+        var tenantContext = scope.Context(scope.TenantA);
+        var access = ProductLegalEntityScopeTestFixture.Enforced(
+            tenantContext,
+            [legalEntityId],
+            new ProductLegalEntityScopePolicyRepository(scope.Database, tenantContext));
+        var enforcedHandler = new CreateFirstGskuDraftHandler(
+            scope.GlobalProducts(scope.TenantA),
+            new ProductDefinitionRevisionRepository(scope.Database, tenantContext),
+            new GskuRepository(scope.Database, tenantContext),
+            scope.Reservations(scope.TenantA),
+            new VerifiedResolver(),
+            tenantContext,
+            new TestActorContext(),
+            access.Rollouts,
+            access.Policies,
+            access.Candidates);
+        var driftedRequest = new ProductItemSkuMasterModels.CreateFirstGskuDraftRequest
+        {
+            GlobalProductId = accessibleParent.Id,
+            GskuReservationId = request.GskuReservationId,
+            ExpectedReservationVersion = request.ExpectedReservationVersion,
+            CreationCommandId = request.CreationCommandId,
+            PackQuantity = request.PackQuantity,
+            PackUomCode = request.PackUomCode
+        };
+
+        var inaccessibleReplay = await enforcedHandler.Handle(
+            new CreateFirstGskuDraftCommand(driftedRequest),
+            CancellationToken.None);
+        Assert.Equal(404, inaccessibleReplay.StatusCode);
+        Assert.Contains("PARENT_NOT_FOUND", inaccessibleReplay.Errors);
+
+        await scope.Database.GetCollection<Gsku>("mdm_gskus").UpdateOneAsync(
+            item => item.Id == created.Data!.GskuId,
+            Builders<Gsku>.Update
+                .Set(item => item.IsDeleted, true)
+                .Set(item => item.DeletedAt, DateTimeOffset.UtcNow));
+        var tombstoneReplay = await CreateFirstGskuHandler(scope, scope.TenantA, new VerifiedResolver())
+            .Handle(new CreateFirstGskuDraftCommand(request), CancellationToken.None);
+        Assert.Equal(404, tombstoneReplay.StatusCode);
+        Assert.Contains("PARENT_NOT_FOUND", tombstoneReplay.Errors);
+    }
+
+    [Fact]
+    public async Task First_gsku_and_update_provider_cancellation_propagate()
+    {
+        await using var scope = await MongoTestScope.CreateAsync();
+        var parent = await InsertParentAsync(scope, scope.TenantA);
+        var reservation = await scope.Reservations(scope.TenantA).ReserveAsync(
+            CodeBearingEntityType.Gsku, "cancel-reserve", "actor", "corr");
+        var request = new ProductItemSkuMasterModels.CreateFirstGskuDraftRequest
+        {
+            GlobalProductId = parent.Id,
+            GskuReservationId = reservation.Id,
+            ExpectedReservationVersion = reservation.Version,
+            CreationCommandId = "cancel-command",
+            PackQuantity = 1m,
+            PackUomCode = "C62"
+        };
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            CreateFirstGskuHandler(scope, scope.TenantA, new VerifiedResolver(cancel: true))
+                .Handle(new CreateFirstGskuDraftCommand(request), CancellationToken.None));
+
+        var created = await CreateFirstGskuHandler(scope, scope.TenantA, new VerifiedResolver())
+            .Handle(new CreateFirstGskuDraftCommand(request), CancellationToken.None);
+        var dependencies = ScopeDependencies(scope, scope.TenantA);
+        var updater = new UpdateGskuDraftHandler(
+            new GskuRepository(scope.Database, dependencies.Context),
+            new ProductDefinitionRevisionRepository(scope.Database, dependencies.Context),
+            scope.GlobalProducts(scope.TenantA),
+            scope.Reservations(scope.TenantA),
+            new VerifiedResolver(cancel: true),
+            new TestActorContext(),
+            dependencies.Rollout,
+            dependencies.Policies,
+            dependencies.Candidates,
+            dependencies.Context);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => updater.Handle(
+            new UpdateGskuDraftCommand(new ProductItemSkuMasterModels.UpdateGskuDraftRequest
+            {
+                GskuId = created.Data!.GskuId,
+                ExpectedVersion = 0,
+                PackQuantity = 2m,
+                PackUomCode = "C62"
+            }),
+            CancellationToken.None));
     }
 
     [Fact]
@@ -986,16 +1115,117 @@ public sealed class ProductItemSkuMasterMongoTests
         MongoTestScope scope,
         Guid tenantId,
         IVerifiedGskuReferenceResolver resolver)
-        => new(
+    {
+        var dependencies = ScopeDependencies(scope, tenantId);
+        return new(
             scope.GlobalProducts(tenantId),
             new ProductDefinitionRevisionRepository(scope.Database, scope.Context(tenantId)),
             new GskuRepository(scope.Database, scope.Context(tenantId)),
             scope.Reservations(tenantId),
             resolver,
-            scope.Context(tenantId),
-            new TestActorContext());
+            dependencies.Context,
+            new TestActorContext(),
+            dependencies.Rollout,
+            dependencies.Policies,
+            dependencies.Candidates);
+    }
 
-    private sealed class VerifiedResolver(bool succeeds = true) : IVerifiedGskuReferenceResolver
+    private static ScopeDependencySet ScopeDependencies(MongoTestScope scope, Guid tenantId)
+    {
+        var context = scope.Context(tenantId);
+        var rollout = ProductLegalEntityScopeRolloutState.CreatePreparation(
+            tenantId,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow);
+        var candidates = new ProductLegalEntityScopeCandidateFacade(
+            new NoCallTrustedScopeProvider(),
+            new LegalEntityRepository(scope.Database, context),
+            context,
+            new ScopeActorContext());
+        return new(
+            context,
+            new FixedRolloutRepository(rollout),
+            new EmptyPolicyRepository(),
+            candidates);
+    }
+
+    private sealed record ScopeDependencySet(
+        TenantContext Context,
+        IProductLegalEntityScopeRolloutStateRepository Rollout,
+        IProductLegalEntityScopePolicyRepository Policies,
+        ProductLegalEntityScopeCandidateFacade Candidates);
+
+    private sealed class ScopeActorContext : IProductIdentityActorContext
+    {
+        public string ActorId { get; } = Guid.NewGuid().ToString("D");
+    }
+
+    private sealed class NoCallTrustedScopeProvider : ITrustedLegalEntityScopeProvider
+    {
+        public Task<TrustedLegalEntityScopeProviderResult> ResolveAsync(
+            Guid expectedTenantId,
+            Guid expectedSubjectId,
+            string moduleCode,
+            string permissionKey,
+            CancellationToken cancellationToken = default)
+            => throw new InvalidOperationException("Preparation must not call the trusted scope provider.");
+    }
+
+    private sealed class FixedRolloutRepository(ProductLegalEntityScopeRolloutState state)
+        : IProductLegalEntityScopeRolloutStateRepository
+    {
+        public Task<ProductLegalEntityScopeRolloutState?> GetAsync(
+            CancellationToken cancellationToken = default)
+            => Task.FromResult<ProductLegalEntityScopeRolloutState?>(state);
+
+        public Task<ProductLegalEntityScopeRolloutState?> GetByCreationCommandIdAsync(
+            Guid creationCommandId,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult<ProductLegalEntityScopeRolloutState?>(null);
+
+        public Task<ProductLegalEntityScopeRolloutStateWriteResult> CreateAsync(
+            ProductLegalEntityScopeRolloutState requested,
+            CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+
+        public Task<ProductLegalEntityScopeRolloutStateWriteResult> UpdateAsync(
+            ProductLegalEntityScopeRolloutState requested,
+            int expectedVersion,
+            CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+    }
+
+    private sealed class EmptyPolicyRepository : IProductLegalEntityScopePolicyRepository
+    {
+        public Task<ProductLegalEntityScopePolicy?> GetByGlobalProductIdAsync(
+            Guid globalProductId,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult<ProductLegalEntityScopePolicy?>(null);
+
+        public Task<ProductLegalEntityScopePolicy?> GetByCreationCommandIdAsync(
+            Guid creationCommandId,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult<ProductLegalEntityScopePolicy?>(null);
+
+        public Task<ProductLegalEntityScopePolicyWriteResult> CreateAsync(
+            ProductLegalEntityScopePolicy policy,
+            CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+
+        public Task<ProductLegalEntityScopePolicyWriteResult> UpdateAsync(
+            ProductLegalEntityScopePolicy policy,
+            int expectedVersion,
+            CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+
+        public Task<IReadOnlyList<Guid>> GetConfiguredGlobalProductIdsAsync(
+            IReadOnlyCollection<Guid> globalProductIds,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Guid>>([]);
+    }
+
+    private sealed class VerifiedResolver(bool succeeds = true, bool cancel = false) : IVerifiedGskuReferenceResolver
     {
         private int _callCount;
         public int CallCount => _callCount;
@@ -1006,6 +1236,10 @@ public sealed class ProductItemSkuMasterMongoTests
             CancellationToken cancellationToken = default)
         {
             Interlocked.Increment(ref _callCount);
+            if (cancel)
+            {
+                throw new OperationCanceledException(cancellationToken);
+            }
             if (!succeeds)
             {
                 return Task.FromResult(VerifiedGskuReferenceResolveResult.Fail(503, "REFERENCE_DATA_CONTRACT_UNAVAILABLE"));

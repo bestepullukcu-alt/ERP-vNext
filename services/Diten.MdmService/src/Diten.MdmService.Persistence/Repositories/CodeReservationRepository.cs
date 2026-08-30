@@ -494,7 +494,9 @@ public sealed class CodeReservationRepository : ICodeReservationRepository
         string commandId,
         long sequence,
         string evidence)
-        => new()
+    {
+        var timestamp = DateTimeOffset.UtcNow;
+        return new LocalAuditIntent
         {
             IntentId = Guid.NewGuid(),
             TenantId = _tenantId,
@@ -508,12 +510,15 @@ public sealed class CodeReservationRepository : ICodeReservationRepository
             CausationId = commandId,
             CommandId = commandId,
             Sequence = sequence,
-            TimestampUtc = DateTimeOffset.UtcNow,
+            TimestampUtc = timestamp,
+            TimestampUtcTicksV1 = timestamp.UtcTicks,
+            TemporalStorageVersion = AuditIntentTemporalStorage.CurrentVersion,
             EvidenceHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(evidence))),
             SnapshotReference = $"{aggregateType}/{aggregateId:N}/{postVersion}",
             DeliveryState = AuditIntentDeliveryState.Pending,
             IdempotencyKey = $"{_tenantId:N}:{aggregateType}:{aggregateId:N}:{commandId}"
         };
+    }
 
     private void EnsureIndexes()
     {

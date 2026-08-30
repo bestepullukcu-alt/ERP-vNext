@@ -15,6 +15,15 @@ public interface IFinishedGoodRepository
         string? canonicalCodeSearch,
         IReadOnlyCollection<Guid>? matchingGskuIds,
         CancellationToken cancellationToken = default);
+    Task<FinishedGoodPage> GetEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string? canonicalCodeSearch,
+        IReadOnlyCollection<Guid>? matchingGskuIds,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("FINISHED_GOOD_LEGAL_ENTITY_SCOPE_READ_CONTRACT_NOT_IMPLEMENTED");
     Task<FinishedGoodCreateResult> CreateDraftAsync(
         FinishedGood finishedGood,
         CancellationToken cancellationToken = default);
