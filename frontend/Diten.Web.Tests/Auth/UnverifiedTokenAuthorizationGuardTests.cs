@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
 
@@ -262,7 +263,7 @@ public sealed class UnverifiedTokenAuthorizationGuardTests
         http.Request.Path = "/Platform/Tenants";
         http.Request.Cookies = new FakeCookies(new Dictionary<string, string> { ["access_token"] = token });
 
-        new ShellAccessFilter(Configuration()).OnAuthorization(
+        new ShellAccessFilter(Configuration(), NullLogger<ShellAccessFilter>.Instance).OnAuthorization(
             new AuthorizationFilterContext(
                 new ActionContext(http, new RouteData(), new ActionDescriptor()),
                 new List<IFilterMetadata>()));
