@@ -2053,6 +2053,46 @@
       "UpstreamScheme": "http"
     },
     {
+      "DownstreamPathTemplate": "/internal/local-test/v1/process-modeling",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "127.0.0.1",
+          "Port": 5017
+        }
+      ],
+      "UpstreamPathTemplate": "/api/management-governance/process-modeling",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/internal/local-test/v1/process-modeling/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "127.0.0.1",
+          "Port": 5017
+        }
+      ],
+      "UpstreamPathTemplate": "/api/management-governance/process-modeling/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
       "DownstreamPathTemplate": "/api/v1/pv-case-intake-triage",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
