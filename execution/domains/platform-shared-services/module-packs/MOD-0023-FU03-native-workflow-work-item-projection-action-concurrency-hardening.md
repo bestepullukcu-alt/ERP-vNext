@@ -6,9 +6,9 @@ service: Diten.Platform
 shell: none
 golden_reference: none
 entity_base: BaseEntity
-status: draft
+status: review
 owner: platform-workflow-workcenter-owner
-branch: feature/pss/mod-0023-fu03-native-workflow-work-item-hardening
+branch: feature/mdm/product-identity-lifecycle-integration
 started: 2026-08-30
 target: 2026-09-03
 form_field_count: 0
@@ -16,9 +16,9 @@ form_field_count: 0
 
 # MOD-0023-FU03 — Native Workflow Work Item Projection and Action Concurrency Hardening
 
-> **Planning-only gate:** This pack is `draft`. It authorizes no runtime/test edit, branch operation, commit,
-> push, configuration, credential or data mutation. After owner review it must become `approved` or
-> `ready-for-dev`, followed by a separate exact code-start.
+> **Code-start gate:** The user approved the Phase 1.5 plan, promoted this pack to `ready-for-dev`, and authorized
+> the Section 5 exact runtime/test allow-list on 2026-08-30. Local commits are allowed. Push, configuration,
+> credentials, data mutation and Production/Staging remain forbidden.
 
 > **DCP-002 identity:** This is a backend/shared-WorkCenter follow-up child of Master 8.1
 > `MOD-0023 — Workflow Designer (Approvals/SLAs/Escalations)`. Preflight evidence is recorded in Section 18.
@@ -41,7 +41,7 @@ items rendered by provider code `workflow` and acted on by the native Workflow d
 ### This FU owns
 
 - Native Workflow approval projection truth against the complete current `WorkItemProjectionDto` property set.
-- Exact projection regressions for `global-product`, `gsku`, `lsku` and `finished-good`.
+- Exact projection regressions for `GlobalProduct`, `gsku`, `lsku` and `finished-good`.
 - Truthful `Assignee` and `Requester` value-or-explicit-absence rules using existing Workflow records.
 - WorkCenter browser -> generic action endpoint -> native Workflow dispatcher propagation of `ExpectedVersion`.
 - Native transition stale-version fencing without weakening existing assignment, permission, SOD or idempotency gates.
@@ -242,21 +242,21 @@ No lookup/reference-data dependency exists.
 
 ## 16. Acceptance Criteria
 
-- [ ] The then-current complete `WorkItemProjectionDto` property set has an executable mapped-or-explicit-absence
+- [x] The then-current complete `WorkItemProjectionDto` property set has an executable mapped-or-explicit-absence
   inventory; the historical number 31 is not used as authority and the measured 50 is not frozen as a magic count.
-- [ ] `global-product`, `gsku`, `lsku` and `finished-good` native Workflow projections pass the C# contract and the
+- [x] `GlobalProduct`, `gsku`, `lsku` and `finished-good` native Workflow projections pass the C# contract and the
   existing browser executable fixture contract with exact source binding and native action map.
-- [ ] Assignee equals `ApprovalTask.AssigneeRef`; requester equals trusted delegated maker then human `StartedBy`
+- [x] Assignee equals `ApprovalTask.AssigneeRef`; requester equals trusted delegated maker then human `StartedBy`
   fallback; current-user flags are correct; unavailable facts are omitted, not invented.
-- [ ] WorkCenter copies the projected version into all four Workflow actions and supplies one stable bounded
+- [x] WorkCenter copies the projected version into all four Workflow actions and supplies one stable bounded
   idempotency identity reused by double-click and retry.
-- [ ] Dispatcher rejects absent/invalid version or key, carries both unchanged to Workflow, and never calls
+- [x] Dispatcher rejects absent/invalid version or key, carries both unchanged to Workflow, and never calls
   `Guid.NewGuid()` for action idempotency.
-- [ ] Native transition checks exact idempotency replay first, then fences the caller's expected task version before
+- [x] Native transition checks exact idempotency replay first, then fences the caller's expected task version before
   mutation. Stale new operations return 409; exact replay returns the original result.
-- [ ] Existing permission, assignment, SOD, evidence, terminal-state and tenant-isolation behavior remains green.
-- [ ] No MDM/runtime remote provider, provider row, bridge, route, schema, config, data or permission delta exists.
-- [ ] Focused Platform and frontend tests, full Workflow/WorkAggregation regressions, Platform Release build, frontend
+- [x] Existing permission, assignment, SOD, evidence, terminal-state and tenant-isolation behavior remains green.
+- [x] No MDM/runtime remote provider, provider row, bridge, route, schema, config, data or permission delta exists.
+- [x] Focused Platform and frontend tests, full Workflow/WorkAggregation regressions, Platform Release build, frontend
   Release build and applicable architecture guards pass with zero new failure/skip.
 
 ## 17. Test Expectations
@@ -303,9 +303,9 @@ No lookup/reference-data dependency exists.
 - [x] Collision scan found no existing FU03. FU01 reservation and implemented/review FU02 remain distinct.
 - [x] Native Workflow provider decision, current complete DTO authority and exact four ObjectTypes are frozen.
 - [x] Exact runtime/test allow-list, protected paths, validation, failures, authorization and test matrix are written.
-- [ ] MOD-0023 and WorkCenter owners accept requester/assignee source precedence and stable key derivation.
-- [ ] User reviews this draft and promotes it to `approved` or `ready-for-dev`.
-- [ ] Separate exact runtime code-start is granted.
+- [x] MOD-0023 and WorkCenter owner plan acceptance is recorded by the user's Phase 1.5 approval on 2026-08-30.
+- [x] User reviewed the plan and promoted it to `ready-for-dev` on 2026-08-30.
+- [x] Separate Section 5 exact runtime code-start was granted on 2026-08-30.
 
 ## 19. Implementation Notes
 
@@ -315,11 +315,13 @@ No lookup/reference-data dependency exists.
   candidate's 31-field count is stale; this pack uses the full property set, not either number as a permanent rule.
 - `WorkItemProjectionService` already has `ApprovalTask` and `WorkflowInstance`, so assignee/requester mapping needs no
   repository, remote lookup or MDM call.
-- Current projection emits exact source/concurrency/actions but omits `Assignee` and `Requester`.
+- Before this implementation, projection emitted exact source/concurrency/actions but omitted `Assignee` and `Requester`.
 - Browser already posts projected `expectedVersion`; `WorkItemActionPayloadDto` already carries both version and
   idempotency, and the same-origin proxy preserves JSON unchanged.
-- Native Workflow dispatcher currently ignores expected version and creates `Guid.NewGuid()` when key is absent.
-- Workflow request DTOs currently omit expected version. Transition support uses the repository-read task version,
+- Before this implementation, the native Workflow dispatcher ignored expected version and created `Guid.NewGuid()`
+  when the key was absent.
+- Before this implementation, Workflow request DTOs omitted expected version. Transition support used the
+  repository-read task version,
   so a stale caller can succeed unless this follow-up fences the projected version explicitly.
 - Existing repository conditional updates are sufficient. No schema/index/repository change is justified.
 
@@ -331,6 +333,25 @@ No lookup/reference-data dependency exists.
 4. Add the stable WorkCenter browser attempt identity and double-click/retry tests.
 5. Run focused, full Platform/frontend, build, architecture and protected-path gates.
 6. Record evidence, close BL-317 only if every acceptance item passes, then move pack to `review`.
+
+### Implementation evidence (2026-08-30)
+
+- Exact ObjectType code truth is `GlobalProduct`, `gsku`, `lsku`, `finished-good`; the earlier planning spelling
+  `global-product` was rejected and no protected MDM source was changed.
+- The current full projection property ledger is reflection-derived and every property is mapped or explicitly absent.
+  `AssigneeRef` and delegated-maker/human-starter requester precedence are executable; trusted service-client identity
+  is omitted even when its GUID string uses a different format or case.
+- WorkCenter derives a bounded stable key from provider/item/action/projected-version. The dispatcher requires positive
+  expected version and a non-empty key of at most 128 characters, carries both ordinal-exactly, and has no random fallback.
+- Native approve/reject/requestInfo/delegate perform exact replay lookup before the stale-version fence. A new stale
+  attempt returns 409 with zero task/instance/snapshot/log mutation; exact lost-response replay returns the prior result.
+- Platform Workflow + WorkAggregation: 301/301 passed, zero skipped. This includes actor-bound replay and forced
+  concurrent delegate same-key/payload-drift regressions. Focused WorkCenter frontend: 45/45 passed.
+- Full Platform: 3850/3873; the same 23 pre-existing Document Management/BRD failures remain and no target test failed.
+  Full frontend: 1998/2023; the same 25 pre-existing cross-domain failures remain and the ten new FU03 tests passed.
+- Platform API Release build: 0 warnings / 0 errors. Frontend Release build: 0 errors / 14 existing unrelated warnings.
+- `git diff --check`, JavaScript syntax, conflict-marker, trailing-whitespace, UTF-8 BOM and final-newline gates passed.
+- No MDM runtime, remote provider, Gateway, config, credential, data, Production/Staging or push operation occurred.
 
 ## 20. Follow-up Items
 

@@ -5212,3 +5212,18 @@ Sonra iade et → talep edende `pendingAcceptance`.
 - **Sebep:** dolgu medya sorgusuyla genişliğe bağlı, şeridin varlığına değil.
 - **Yapılacak:** dolguyu şeridin varlığına bağla (şerit çizilirken sayfaya bir sınıf, ya da `:has()`).
 - **Gelecek regresyon riski: 🟢.**
+### BL-332 — Product Identity native Workflow WorkCenter kabul kontratı (2026-08-30)
+> **DURUM:** KAPALI · **SAHİP:** MOD-0023-FU03 / WORKCENTER
+
+- Native `workflow` provider korunarak current-full `WorkItemProjectionDto` mapped-or-explicit-absence ledger'i
+  executable hâle getirildi; eski `31/31` varsayımı kullanılmadı.
+- Exact ObjectType code truth `GlobalProduct`, `gsku`, `lsku`, `finished-good` olarak test edildi. MDM remote provider,
+  MDM action endpoint'i, provider config satırı veya modüle özel Platform bridge eklenmedi.
+- `AssigneeRef` ve delegated-maker/human-starter requester kaynakları truthfully map edildi; trusted service-client
+  kimliği requester olarak sızmıyor.
+- Dört native aksiyon `ExpectedVersion` ve stabil bounded browser idempotency identity taşıyor. Exact replay kontrolü
+  stale-version fence'den önce; yeni stale deneme 409 ve sıfır mutation, lost-response replay tek sonuç veriyor.
+- Kanıt: Workflow + WorkAggregation 301/301; WorkCenter focused 45/45; Platform Release 0/0; frontend Release 0 hata.
+  Tam Platform ve frontend paketlerinde yalnız aynı önceden mevcut 23 ve 25 kapsam-dışı hata kaldı.
+- Bu kapanış source contract içindir. MOD-0290 H Local Development canlı browser/runtime kabulü ve kullanıcı ekran
+ kontrolü ayrı kapıdır; push yalnız kullanıcı açıkça onayladıktan sonra yapılacaktır.

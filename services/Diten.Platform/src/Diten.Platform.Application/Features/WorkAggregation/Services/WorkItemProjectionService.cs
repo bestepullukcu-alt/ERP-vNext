@@ -100,6 +100,19 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
             ? new WorkItemEscalationDto(Escalated: true, Level: task.EscalationLevel, Since: task.EscalatedAt)
             : null;
 
+        var actorId = actor.UserId.ToString("D");
+        var assignee = string.IsNullOrWhiteSpace(task.AssigneeRef)
+            ? null
+            : new WorkItemPersonDto(
+                task.AssigneeRef,
+                IsCurrentUser: string.Equals(task.AssigneeRef, actorId, StringComparison.Ordinal));
+        var requesterId = ResolveRequesterId(instance);
+        var requester = requesterId is null
+            ? null
+            : new WorkItemPersonDto(
+                requesterId,
+                IsCurrentUser: string.Equals(requesterId, actorId, StringComparison.Ordinal));
+
         return new WorkItemProjectionDto(
             FixtureKind: WorkItemContract.FixtureKindWorkItem,
             Id: task.Id.ToString(),
@@ -124,6 +137,8 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
             WaitingContext: waitingContext,
             Escalation: escalation,
             DueAt: task.DueAt,
+            Assignee: assignee,
+            Requester: requester,
             /*
              * BL-046 applies here too, and for the same reason it does in MOD-0024's provider: a decided
              * approval was still being measured against today, so it went on getting later every morning it sat
@@ -135,6 +150,29 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
              */
             SlaState: _sla.Resolve(task.DueAt, (isTerminal ? task.CompletedAt : null) ?? DateTimeOffset.UtcNow),
             ClosedAt: isTerminal ? task.CompletedAt : null);
+    }
+
+    private static string? ResolveRequesterId(WorkflowInstance instance)
+    {
+        if (instance.DelegatedMakerUserId is { } makerId && makerId != Guid.Empty)
+        {
+            return makerId.ToString("D");
+        }
+
+        var startedBy = string.IsNullOrWhiteSpace(instance.StartedBy) ? null : instance.StartedBy.Trim();
+        if (startedBy is null)
+        {
+            return null;
+        }
+
+        if (instance.TrustedConsumerClientId is { } clientId &&
+            Guid.TryParse(startedBy, out var startedByClientId) &&
+            startedByClientId == clientId)
+        {
+            return null;
+        }
+
+        return startedBy;
     }
 
     // Charter §10.1 — raw ApprovalTaskStatus is mapped by the enum, never by parsing status text.

@@ -66,6 +66,16 @@ public sealed class WorkflowApprovalWorkItemActionDispatcher : IWorkItemActionDi
          */
         var actorId = request.Actor.UserId.ToString();
 
+        if (payload.ExpectedVersion is null or <= 0)
+        {
+            return WorkItemActionDispatchResults.PayloadInvalid(request, nameof(payload.ExpectedVersion));
+        }
+
+        if (string.IsNullOrWhiteSpace(payload.IdempotencyKey) || payload.IdempotencyKey.Length > 128)
+        {
+            return WorkItemActionDispatchResults.PayloadInvalid(request, nameof(payload.IdempotencyKey));
+        }
+
         /*
          * The transition log wants a reason CODE and MOD-0023 requires one. When the caller has not sent a code,
          * the surface it was pressed on is the honest answer — the log then says a decision came from the Task
@@ -76,11 +86,9 @@ public sealed class WorkflowApprovalWorkItemActionDispatcher : IWorkItemActionDi
             ? $"WORKCENTER_{request.ActionCode.ToUpperInvariant()}"
             : payload.ReasonCode!.Trim();
 
-        // A retried click must not become a second decision. The caller supplies a key when it has one; otherwise
-        // one is minted, because the endpoint requires the field and refusing the write would be worse.
-        var idempotencyKey = string.IsNullOrWhiteSpace(payload.IdempotencyKey)
-            ? Guid.NewGuid().ToString("N")
-            : payload.IdempotencyKey!.Trim();
+        // The browser owns one stable attempt identity. The dispatcher carries it unchanged: creating a fallback
+        // here would turn a retry or double-click into a second business decision.
+        var idempotencyKey = payload.IdempotencyKey!;
 
         var comment = string.IsNullOrWhiteSpace(payload.Comment) ? payload.Reason : payload.Comment;
 
@@ -90,14 +98,16 @@ public sealed class WorkflowApprovalWorkItemActionDispatcher : IWorkItemActionDi
                 return Map(await _mediator.Send(
                     new ApproveWorkflowTaskCommand(
                         request.ItemId,
-                        new ApproveWorkflowTaskRequest(actorId, reasonCode, idempotencyKey, comment, payload.EvidenceRef),
+                        new ApproveWorkflowTaskRequest(actorId, reasonCode, idempotencyKey, comment, payload.EvidenceRef,
+                            payload.ExpectedVersion),
                         request.CorrelationId), ct), request);
 
             case "reject":
                 return Map(await _mediator.Send(
                     new RejectWorkflowTaskCommand(
                         request.ItemId,
-                        new RejectWorkflowTaskRequest(actorId, reasonCode, idempotencyKey, comment, payload.EvidenceRef),
+                        new RejectWorkflowTaskRequest(actorId, reasonCode, idempotencyKey, comment, payload.EvidenceRef,
+                            payload.ExpectedVersion),
                         request.CorrelationId), ct), request);
 
             case "requestInfo":
@@ -105,7 +115,8 @@ public sealed class WorkflowApprovalWorkItemActionDispatcher : IWorkItemActionDi
                     new RequestInfoWorkflowTaskCommand(
                         request.ItemId,
                         new RequestInfoWorkflowTaskRequest(
-                            actorId, payload.TargetPrincipalId, reasonCode, idempotencyKey, comment, payload.EvidenceRef),
+                            actorId, payload.TargetPrincipalId, reasonCode, idempotencyKey, comment, payload.EvidenceRef,
+                            payload.ExpectedVersion),
                         request.CorrelationId), ct), request);
 
             case "delegate":
@@ -119,7 +130,8 @@ public sealed class WorkflowApprovalWorkItemActionDispatcher : IWorkItemActionDi
                     new DelegateWorkflowTaskCommand(
                         request.ItemId,
                         new DelegateWorkflowTaskRequest(
-                            actorId, payload.TargetPrincipalId!.Trim(), reasonCode, idempotencyKey, comment),
+                            actorId, payload.TargetPrincipalId!.Trim(), reasonCode, idempotencyKey, comment,
+                            payload.ExpectedVersion),
                         request.CorrelationId), ct), request);
 
             default:
