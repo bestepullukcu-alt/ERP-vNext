@@ -214,7 +214,23 @@ public sealed class TenantResolutionMiddleware
      *
      * WITHOUT A TOKEN THERE IS NO CONTRADICTION — nothing authenticated has named a tenant, so header and
      * subdomain disagreeing is just precedence, and today's `header ?? subdomain` order is preserved exactly.
-     * (Login and register carry no token and therefore cannot reach the refusal.)
+     *
+     * ⚠ LOGIN HAS NO EXEMPTION, IT IS SIMPLY TOKENLESS — AND THAT IS AN ASSUMPTION, NOT A PROPERTY OF THIS FILE.
+     * A login request that DID carry a token naming another tenant would be refused 400 here, and the user could
+     * not recover, because signing in again is the request being refused. Two things outside this middleware keep
+     * that from happening, and BOTH must hold:
+     *
+     *   1. The gateway receives login server-to-server from Diten.Web, with no Cookie header and no bearer
+     *      (frontend/Diten.Web/Services/Auth/AuthGateway.cs:56-66 and :203-230).
+     *   2. The auth cookie is HOST-ONLY — AuthCookieService.BuildCookieOptions never sets `Domain`
+     *      (frontend/Diten.Web/Services/Auth/AuthCookieService.cs:21-31), so tenant A's token is never sent to
+     *      tenant B's host at all.
+     *
+     * Assumption 2 is one added line away from being false, so it is GUARDED where it lives:
+     *   frontend/Diten.Web.Tests/Auth/AuthCookieDomainScopeGuardTests.cs   ← breaks, and says why, if Domain is set
+     * The refusal itself is measured by
+     *   gateway/Diten.ApiGateway.Tests/TenantContradictionGuardTests.cs
+     *     → Login_that_DOES_carry_a_token_is_refused_like_any_other_path
      */
     private TenantResolution Resolve(Guid? jwtTenant, Guid? headerTenant, Guid? subdomainTenant, HttpContext context)
     {
