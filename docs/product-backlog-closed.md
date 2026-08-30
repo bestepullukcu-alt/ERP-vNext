@@ -3815,3 +3815,257 @@ davranış değişikliğidir ve kendi turunu hak eder. Kapsamı sessizce genişl
 **Gelecek regresyon riski: 🟡** — köprünün kendi ucu artık davranışsal muhafızla kapalı, ama
 kuralın diğer modüllerdeki tek dayanağı §7'nin okunmasıdır; bunu bir teste bağlamanın yolu yok
 ve not bunu saklamıyor.
+
+### BL-042 — 🔴 Planlanmış + kişiye atanmış görev Gelen Kutusu'nda kalıcı kilitleniyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** Kod ölçümü 2026-08-30: kaydın alıntıladığı satır YOK. `ITaskAssignmentResolver.cs:82` artık `IsAccepted(task) => task.AcceptedByUserId is not null` — yaşam döngüsüne bakmıyor. Kabul işleyicisi `CloseAcceptanceGate`i koşulsuz çağırıyor (`TaskItemTransitionHandlers.cs:73`) ve `Planned`a dokunmuyor. "No-op için başarı döner" yarısı da düzeltilmiş: artık **409 AlreadyAccepted**. Eski kayıtlar için migrasyon ve gerçek-Mongo testi de var (`TaskAcceptanceBackfillMigration.cs:40`, `TaskAcceptanceBackfillMongoTests.cs:67`).
+
+- **Belirti (canlı, 2026-07-31):** Gelen Kutusu satırında **Planla → Kabul et** sırası izlenirse görev
+  Gelen Kutusu'ndan **hiç çıkmıyor**. `POST {id}/accept` **204** dönüyor, `admissionState` `pendingAcceptance`
+  kalıyor. Altı ardışık denemenin altısı da 204 döndü ve hiçbiri durumu değiştirmedi.
+- **Kök neden — kabul ayrı bir bayrak değil, yaşam döngüsünden çıkarsanıyor:**
+  `Features/Tasks/Services/ITaskAssignmentResolver.cs:73-74` → `IsAccepted = Lifecycle not (Open or Planned)`;
+  `Handlers/CommandHandlers/TaskItemTransitionHandlers.cs:52-55` yalnız `Open → InProgress` terfisi yapıyor.
+  `Planned` görev `Open` olmadığı için terfi etmiyor, `Planned` olduğu için de kabul edilmiş sayılmıyor.
+- **İkinci doğruluk kaynağı zaten yazılıyor ama okunmuyor:** aynı handler `TaskAssignment` kaydını
+  `EventType = Accepted` ile oluşturuyor (`:66-76`); projeksiyon o kaydı hiç okumuyor.
+- **Neden ucu keskin:** tuzağa **iki tıkla** ulaşılıyor — `Planla` butonu Gelen Kutusu satırında
+  `Kabul et`in yanında duruyor. Ve uç nokta **başarı raporluyor**: ekran yalan söylemiyor, API söylüyor.
+- **Yön (CT):** kabul, lifecycle'dan çıkarsanmayı bırakıp **kendi kalıcı işaretini** taşımalı
+  (`AcceptedAt`/`AcceptedByUserId` alanı ya da mevcut `TaskAssignment` Accepted olayının okunması).
+  Lifecycle'a bindirilen her ikinci anlam bu sınıfı yeniden üretir.
+- **Yeniden ölçüm:** `rg -n "IsAccepted" services/Diten.Platform/src` · canlı: bir kalemi planla, sonra kabul et,
+  `admissionState`'e bak.
+
+### BL-050 — 🔴 Devretme kişi seçicisi yanlış alanı okuyor: seçilemez liste
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** Kod ölçümü 2026-08-30: `person.id` gitti — `app.js:345` `personUserId(person) => person?.userId`. Devretme diyaloğu onu kullanıyor (`app.js:8036`), sunucu DTO'su `Guid UserId` (`TaskModels.cs:804`). Kaydın istediği iki-taraflı sözleşme testi de yazılmış: `tests/task-transition-contract.test.js:199-240`, boşluk kontrolüyle birlikte. Kayıtta zaten `✅ KAPANIŞ bb82b4f8` ve canlı doğrulama tablosu var.
+
+- **Belirti (canlı, 2026-07-31):** Devretme diyaloğu iki kişiyi doğru gösteriyor (*Agent Sub*,
+  *Diten Admin*) ama **her `<option>`'ın `value`'su boş**. Kullanıcı bir kişi seçse bile
+  `assigneeUserId` boş kalıyor, doğrulama devreye giriyor ve diyalog *"Görevin kime devredileceğini
+  seçin."* diyor — **seçmiş olan kullanıcıya seçmediğini söylüyor.** Hiçbir ağ çağrısı yapılmıyor.
+- **Kök neden:** `app.js:3885` `person.id` okuyor; sunucu DTO'su
+  `AssignablePersonDto(Guid UserId, string? DisplayName, …)` (`TaskModels.cs:462-463`), yani
+  JSON'da alan **`userId`**. `person.id` diye bir alan yok → `undefined` → boş `value`.
+  Ad doğru geliyor çünkü `displayName` doğru okunuyor; **kusuru gizleyen şey tam olarak bu** —
+  liste dolu ve sağlıklı görünüyor.
+- **Aynı depoda doğrusu zaten iki yerde yazılı:** `app.js:2256` → `person.userId || person.id` ·
+  `assets/js/Tasks/form.js:226` → `option.value = row.userId;`
+- **Neden sözleşme testi yakalamadı:** `task-transition-contract.test.js` `TRANSITION_BODIES`
+  haritasını ve `assignablePeople()` çağrısının **varlığını** karşılaştırıyor; seçicinin **lookup
+  DTO'sunun alan adını** hiç okumuyor. Yani BL-043'te kurulan iki-taraflı sözleşme testi geçiş
+  gövdelerini kapsıyor, **lookup gövdelerini kapsamıyor.**
+- **Bu, BL-043'ün kendisiyle aynı kusur sınıfı:** bir değer iki yerde yaşıyor, sözleşme hiçbirini
+  bildirmiyor, sessizce kayıyor. Düzeltme yalnız `person.id → person.userId` değil; **lookup
+  DTO'ları da aynı iki-taraflı teste alınmalı**, yoksa bu üçüncü kez olur.
+- **Yeniden ölçüm:** `rg -n "person\.id|row\.userId|person\.userId" frontend/Diten.Web/wwwroot/assets/js` ·
+  canlı: devretme diyaloğunu aç, `document.getElementById('wcnReassignAssignee').value` boş mu?
+
+
+#### ✅ KAPANIŞ — `bb82b4f8` · 2026-07-31 · *(kod; canlı tur CT'de)*
+
+**Ne yapıldı.** `AssignablePersonDto` `userId` gönderiyor; seçici `person.id` okuyordu — olmayan bir
+alan. `undefined` şablon dizesinde **boş dize** olarak render olur, hata fırlatmaz: her `<option>`
+`value=""` aldı, doğrulama kullanıcının her seçimini reddetti, hiçbir istek gitmedi. Ad doğru
+görünüyordu çünkü `displayName` doğru okunuyordu — kusuru gizleyen tam olarak buydu.
+
+**Kararlar ve gerekçeleri:**
+- **Tek okuma noktası:** `personUserId(person)` (`app.js`). Depoda doğru cevap **zaten iki yerde**
+  yazılıydı (`app.js`'in kendi oluşturma formu, `Tasks/form.js`) ve üçüncüsü yine yanlış gönderildi.
+  Bir olgunun üç yazılışı bu kusuru üreten koşuldur; artık bir tane var.
+- **`|| person.id` yedeği kaldırıldı.** Olmayan bir alanın savunmacı okuması, `person.id`'yi makul
+  gösteren şeydi. Yedek kalsaydı kusur "çalışıyor gibi" görünmeye devam ederdi.
+- **Asıl iş tek satır değil, sözleşme testinin genişletilmesi.** `task-transition-contract.test.js`
+  **istek gövdelerini** iki taraftan okuyor — BL-043 bu yüzden bir daha kayamaz. BL-050 ise bir
+  **yanıt** alanı, o yüzden testten geçti. Aynı iki-taraflı yöntem lookup'lara uygulandı: sunucu
+  record'unun alanları ve istemcinin `<option>` **değer** okumaları ikisi de dosyadan ayrıştırılıyor,
+  hiçbiri elle yazılmıyor. Kapsam: `AssignablePersonDto` (app.js + Tasks/form.js) ve
+  `AssignablePositionDto` (Tasks/form.js).
+- **Tarama `<option>` değerine daraltıldı**, her `person.X` okumasına değil. Geniş tarama ilk denemede
+  ilgisiz `person.name/role/status`'u ve `form.js`'in iki farklı lookup için kullandığı aynı `row`
+  adını yakalayıp gürültü üretti. Kusur sınıfı **değerin kendisi**; orada `undefined` sessizce `""`
+  olur. Ayrıca taramanın gerçekten bir şeye baktığını kanıtlayan bir vacuity testi var.
+
+**KIRMIZI→YEŞİL kanıtı (düzeltmeden ÖNCE ölçüldü):**
+```
+× no <option> takes its value from a field no lookup DTO declares
+  → app.js builds an <option> value from id, which no lookup DTO declares: expected ['id'] to deeply equal []
+```
+düzeltmeden sonra: `Tests  22 passed (22)`.
+
+**KASTEN yapılmayanlar:**
+- **`Tasks/form.js` değiştirilmedi** — `row.userId` / `row.positionId` zaten doğru. Doğru olanı
+  "tek noktaya taşımak" için değiştirmek, çalışan kodu kanıtsız riske atmak olurdu; test onu
+  **kapsıyor**, yani kayarsa yakalanır.
+- **Canlı tur koşulmadı** — servis başlatma CT'de.
+
+**Yeniden ölçüm (sayı değil, komut):**
+```
+rg -n "person\.id" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js
+rg -n "personUserId" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js
+cd frontend/Diten.Web && npx vitest run tests/task-transition-contract.test.js
+```
+Canlı: devretme diyaloğunu aç → kişi seç → onayla. Doğrulama uyarısı **çıkmamalı**, ağ çağrısı
+**gitmeli**, görev yeni kişide `pendingAcceptance` belirmeli.
+
+#### 🔬 CT CANLI DOĞRULAMASI — `4e111132` sonrası, 2026-07-31
+
+| Ölçüm | Sonuç |
+|---|---|
+| Seçenek değerleri | ✅ `Agent Sub → 93bcb22e-…` · `Diten Admin → 11111111-…` — artık dolu |
+| Kişi seç → Onayla | ✅ doğrulama uyarısı yok, diyalog kapandı |
+| Gönderilen gövde | ✅ `{expectedVersion, assigneeUserId, reason}` → **204** |
+| Görev benim listemden çıktı | ✅ İşlerim 13→12, projeksiyondan düştü |
+| Sunucu durumu | ✅ `assigneeUserId` = Agent Sub |
+| **Ama:** devredilen görev yeni sahibinde **Gelen Kutusu'na düşmüyor** | 🔴 **BL-051** |
+
+`return` canlı koşulamadı — mevcut hiçbir kalem `return` aksiyonu sunmuyor
+(`(x.actions||[]).some(a => a.code === 'return')` → boş). Sözleşme testi gerçek C# record'unu
+okuyarak kapsıyor, ama uçtan uca doğrulanmadı; kayda böyle geçiyor.
+
+### BL-051 — 🔴 Kabul kapısı devretme/iadede yeniden AÇILMIYOR: BL-042'nin ürettiği regresyon
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** Kod ölçümü 2026-08-30: `TaskItem.cs:76 ReopenAcceptanceGate()` var ve **üç** işleyicide çağrılıyor (release/return/reassign). ⚠ Kaydın uyardığı kısayol artık İMKÂNSIZ: `AcceptedByUserId` **private setter** taşıyor (`TaskItem.cs:49`), varlık dışından değiştirilemez. Test boşluğu da kapanmış — `TaskHandoverTests.cs:409,433,451` kabul edilmiş görevden başlıyor, `:496` yapısal olarak kilitliyor.
+
+- **Belirti (CT canlı, 2026-07-31):** kabul edilmiş bir görev (`sasasa`, `owned/admitted`) Agent Sub'a
+  devredildi, sonra bana geri devredildi. Sonuç: **`owned/admitted`** — yani görev doğrudan İşlerim'e
+  düştü, Gelen Kutusu'na hiç uğramadı. Beklenen: `assigned/pendingAcceptance`.
+- **Kök neden — BL-042 anlamı taşıdı, taşıyanları güncellemedi.** `AcceptedByUserId` depoda **tek bir
+  yerde** yazılıyor (`TaskItemTransitionHandlers.cs:73`, accept) ve **hiçbir yerde temizlenmiyor**
+  (`rg -n "AcceptedByUserId\s*=" services/Diten.Platform/src` → 1 sonuç). Kapıyı yeniden açmayı
+  amaçlayan üç handler ise hâlâ **eski sinyali** sıfırlıyor:
+  - `:1020` `ReassignTaskItemHandler` — *"Unaccepted on arrival: the acceptance gate reopens…"* 🔴 **canlı doğrulandı**
+  - `:887` `ReturnTaskItemHandler` — *"…the acceptance gate reopens…"* 🔴 aynı desen (canlı koşulamadı, `return` sunulmuyor)
+  - `:151` `ReleaseTaskItemHandler` — havuz dalı `AssigneeUserId is null`'dan projekte ettiği için bugün
+    görünür bir kırılma üretmiyor; yine de bayat alan geride kalıyor.
+  Eski kuralda `Lifecycle = Open` yazmak kapıyı **gerçekten** açıyordu (`IsAccepted = Lifecycle not
+  (Open|Planned)`). Yeni kuralda (`IsAccepted = AcceptedByUserId is not null`) aynı satır hiçbir şey
+  yapmıyor. **Üç yorum artık kodun yapmadığı bir şeyi iddia ediyor.**
+- **Neden testler yakalamadı:** `TaskAssignmentResolverTests` **resolver'ı** ölçüyor, handler'ları değil;
+  `task-transition-contract.test.js` **istek gövdelerini** ölçüyor, durum geçişini değil. Aradaki boşluk
+  tam olarak "handler yeni sinyali doğru yazıyor mu" sorusu — hiçbir test bunu sormuyor.
+- **Güvenlik/yetki boyutu:** devredilen iş, alan kişinin kabulü olmadan onun iş listesine giriyor.
+  Kabul kapısı yalnız UX değil, **sorumluluğun devredildiği an**; SAP/Oracle'da da iş kabul edilene
+  kadar devredene aittir.
+- **Düzeltme yönü (CT):** tek satır `AcceptedByUserId = null` eklemek **yetmez** — bu, aynı sınıfın
+  dördüncü tekrarını davet eder. Kabul kapısını açma/kapama **tek bir yerden** yapılsın (ör. domain
+  üzerinde `ReopenAcceptanceGate()` / `CloseAcceptanceGate()`), üç handler da onu çağırsın, ve
+  **handler seviyesinde** test edilsin: "devret → yeni kişide pendingAcceptance", "iade et → talep
+  edende pendingAcceptance". Bayat üç yorum da düzeltilsin.
+- **Yeniden ölçüm:** `rg -n "AcceptedByUserId\s*=" services/Diten.Platform/src` (accept + kapı açıcılar
+  görünmeli) · `rg -n "Lifecycle = TaskLifecycle.Open" services/…/TaskItemTransitionHandlers.cs` ·
+  canlı: kabul edilmiş bir görevi devret, karşı tarafta `admissionState` `pendingAcceptance` olmalı.
+
+
+#### ✅ KAPANIŞ — `8579df87` (kod) · CT canlı doğrulaması 2026-08-01
+
+> **Kapatan ölçüm.** Kabul edilmiş `sasasa` Agent Sub'a devredildi, sonra geri devredildi →
+> `assigned/pendingAcceptance` (düzeltmeden önce aynı ölçüm `owned/admitted` veriyordu). Ardından
+> kabul → `owned/admitted`: kapı açılıp **kapanıyor** da. Toplu regresyon yok — dağılım devretmede
+> tam **bir** kalem kaydı (`admitted 12→11 · pending 2→3`) ve kabulden sonra tabana döndü; fazla
+> hevesli bir reopen 12 görevi birden Gelen Kutusu'na dökerdi, dökmedi. Havuz üstlen↔bırak ×2 temiz.
+> Üç kapı regresyonu 409.
+>
+> **CT notu — ajanın istenenden fazlası:** `AcceptedByUserId` setter'ı **private** yapıldı, yani kural
+> belgeye değil **dile** yazıldı; doğrudan atama yapan mevcut bir testi derleyici anında yakaladı. Bu
+> kusur sınıfının dördüncü tekrarı artık unutulamaz, çünkü alana erişilemiyor.
+
+**Ne yapıldı.** Kabul kapısı artık **tek bir yerden** hareket ediyor: `TaskItem.CloseAcceptanceGate()` /
+`ReopenAcceptanceGate()`. `accept` kapatıyor; `reassign` · `return` · `release` açıyor.
+`AcceptedByUserId` setter'ı **private** — kapıyı doğrudan alan ataması ile oynatan kod artık
+**derlenmiyor**. Üç bayat yorum, kodun gerçekte yaptığını söyleyecek şekilde düzeltildi.
+
+**Kararlar ve gerekçeleri:**
+- **Tek satır `= null` eklenmedi.** BL-042 ve BL-051 aynı kusurun iki tekrarı: *bir olgu, birden çok
+  yazar, biri unutulmuş.* Dördüncü tekrarı davet etmemek için kapı bir **alan** değil, adıyla niyeti
+  söyleyen bir **işlem** oldu. Private setter bunu derleyiciye zorlatıyor — ve buna rağmen testle de
+  iddia ediliyor, çünkü "bir anlığına public yapayım" üçüncü tekrarın geleceği yol tam olarak budur.
+- **`release` de kapsandı.** Havuz dalı `AssigneeUserId is null`'dan projekte ettiği için bugün
+  görünür bir kırılma üretmiyor. Bırakılma gerekçesi değil, tam tersi: **görünmeyen bayat alan**, bir
+  sonraki projeksiyon değişikliğinde kimsenin izini süremeyeceği bir kusura dönüşür.
+- **Yorumlar kusur sayıldı.** Üçü de "the acceptance gate reopens" diyordu; kod bunu yapmıyordu.
+  Kodun yapmadığını iddia eden yorum, bir sonraki okuyucuyu yanlış yöne gönderir.
+
+**Test boşluğu — asıl iş.** Mevcut iki test **zaten** `…lands in the … inbox unaccepted` adını
+taşıyordu ve baştan sona geçti: ikisi de **hiç kabul edilmemiş** bir görevden başlıyor, dolayısıyla
+"sonrasında hâlâ kabul edilmemiş" **kendiliğinden doğru**. Yeni testlerin hepsi **KABUL EDİLMİŞ** bir
+görevden başlıyor ve alanı değil **projeksiyonu** ölçüyor (kullanıcının gördüğü şey o).
+Eklenen dördüncü test ters yönü koruyor: kabul edilmiş görev kabul edilmiş kalmalı — fazla hevesli
+bir reopen, aynı büyüklükte bir kusurdur.
+
+**KIRMIZI→YEŞİL kanıtı (üç `ReopenAcceptanceGate()` çağrısı kaldırılarak, 0 derleme hatasıyla):**
+```
+[FAIL] An_ACCEPTED_task_released_to_the_pool_leaves_no_acceptance_behind
+[FAIL] An_ACCEPTED_task_that_is_reassigned_waits_in_the_new_holders_inbox
+[FAIL] An_ACCEPTED_task_that_is_returned_waits_in_the_requesters_inbox
+Başarısız: 3, Başarılı: 15, Toplam: 18
+```
+Geri alındıktan sonra: `18/18` · tüm Platform paketi `2059/2059`.
+
+**KASTEN yapılmayanlar:**
+- **Canlı tur koşulmadı** — servis başlatma CT'de.
+- **BL-042 `⚠️ KISMİ` kalıyor.** BL-051 onun ürettiği regresyondu; kabul akışının bütünü canlıda
+  doğrulanmadan `✅`'e dönmez.
+
+**Yeniden ölçüm (sayı değil, komut):**
+```
+rg -n "AcceptedByUserId\s*=" services/Diten.Platform/src        # yalnız entity içi olmalı
+rg -n "ReopenAcceptanceGate\(\)" services/Diten.Platform/src    # 3 handler
+dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~TaskHandoverTests"
+```
+Canlı: kabul edilmiş bir görevi devret → **yeni kişide Gelen Kutusu'nda, `pendingAcceptance`**.
+Sonra iade et → talep edende `pendingAcceptance`.
+
+### BL-052 — 🟠 Yinelenen görev kuralının ekranı yok: motor çalışıyor, kullanıcı erişemiyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** Kod ölçümü 2026-08-30: ekran **tam** — `TaskRecurrenceRulesController.cs` (Index/Create/Edit/Details), 9 view dosyası, **7 dil resx**, manifest'te `IsNavigationVisible: true`, erişilebilirlik testi `TaskRecurrenceRuleScreenTests.cs:119`. Kaydın "dil engeli" gerekçesi de kapanmış.
+- ⚠ **Bu kayıt zaten kapanmıştı, ama iki yerde yaşıyordu:** `product-backlog-closed.md:3364` kapanışı yazıyor (CT canlı 2026-08-10), açık dosyadaki kopya kalmış. Dosyanın kendi hakkında yazdığı "bir gerçek iki yerde" kusurunun örneği.
+
+- **Ölçüm (CT, 2026-08-01):** Faz 4 motoru **tam** — `TaskRecurrenceRule` (Günlük/Haftalık/Aylık/
+  Çeyreklik/Yıllık + `Interval` + `StartsAt`/`EndsAt` + isteğe bağlı `TaskTemplateId`),
+  `TaskRecurrenceSweepJob` **saatte bir** koşuyor ve dönem başına **tam bir kez** üretiyor, beş CRUD
+  uç noktası ve Diten.Web proxy'si yerinde (`Controllers/TasksController.cs:155-173`).
+  **Ama ekran yok:** `rg -rl "ecurrence" frontend/Diten.Web/Views` → boş ·
+  `rg -rl "recurrence" frontend/Diten.Web/wwwroot/assets/js` → boş.
+- **Bugünkü sonuç:** kullanıcı yinelenen kural **oluşturamıyor**; yalnız API çağırarak yapılabiliyor.
+  Aynı fazda Alan Tanımları'na yönetim ekranı yapıldı, buna yapılmadı — **kapanış kaydı bu boşluğu
+  hiç anmadı**, çünkü o zaman kayıt "motor bitti"yi ölçüyordu, "kullanıcı yapabiliyor mu"yu değil.
+  (Demir kural #10'un yeni eşiği tam olarak bunun için var.)
+- **Kopyalanacak desen hazır:** Alan Tanımları ekranı (`Views/Tasks/FieldDefinitions`) aynı şekle
+  sahip — golden DataTable + tam sayfa CRUD formu.
+- **⚠ SIRA BAĞIMLILIĞI — GÜNCELLENDİ (CT ölçümü 2026-08-10):** iki engel vardı, **biri kalktı**.
+  - *Menü engeli kalktı:* yönetim ekranı **doğrudan URL ile çalışıyor** — `GET /Tasks/FieldDefinitions`
+    → **200**, tablo ve "Tanım Ekle" düğmesi geliyor. Yani `TASKS` yetkilendirmesi ekranı
+    **erişilemez yapmıyor**, yalnız menüde **bulunamaz** yapıyor. Yeni ekran yetkilendirme
+    beklemeden yapılabilir **ve canlı doğrulanabilir**.
+  - *Dil engeli duruyor ve KANITLANDI:* aynı ekranda **"No data available in table"** ve
+    **"Showing 0 to 0 of 0 entries"** yazıyor. BL-047 dil paketini yalnız **WorkCenterNext**
+    payload'ına bağladı; yönetim ekranları kendi sayfaları olduğu için almıyor. Ajanın ölçtüğü
+    "61 dosya DataTable kuruyor, hiçbiri paketi beslemiyor" tespitinin **canlı ikinci örneği**.
+  - **Sonuç:** tekrarlama ekranı, yönetim ekranlarının dil paketiyle **aynı dilimde** yapılmalı;
+    ayrı yapılırsa İngilizce metinlerle doğar.
+
+### BL-124 — 🟠 [ALT GÖREVLER] Detaylı oluşturma paneli tekrar açılmıyor — Enter canlı doğrulanamadı
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** Kod ölçümü 2026-08-30: düzeltilmiş (`18bea72c`, 2026-08-14). `openSubtaskCreatePanel` artık await sonrası yeniden çizmiyor — `showPanel(...)` (`app.js:5190`) sonra `fillAssigneeSelect` canlı `<select>`i **yerinde** yamalıyor, Offcanvas'ın bağlı olduğu düğümü değiştirmiyor.
+- ⚠ **Yeni ve küçük bir kalıntı:** `app.js:5166-5183` yorumu "arama panelden ÖNCE beklenir, düzeltme budur" diyor; hemen altındaki `:5195` yorumu "panel HEMEN açılır, hep açıldığı gibi" diyor. Aynı commit'ten iki yorum, ikisi farklı düzeltme anlatıyor; kodla uyuşan ikincisi. Ayrı ve çok küçük bir iş.
+
+- **Ne yapıldı:** `#wcnSubtaskTitle` ve `#wcnNewSubtaskTitle` artık Enter'ı bağlıyor, düğmenin çağırdığı **aynı**
+  save yoluna gidiyor (doğrulama, meşgul bayrağı ve hata yolu tek uygulama).
+- **Canlı kanıt — hızlı düzenleme paneli ✓:** gerçek `Enter` tuşuyla panel kapandı, yeni başlık listeye düştü,
+  "Alt görev kaydedildi." bildirimi çıktı.
+- **Canlı kanıt — detaylı oluşturma paneli ✗ YAPILAMADI:** `+ Detaylı görev ekle` düğmesi ilk denemede paneli
+  açtı, sonraki denemelerin **hiçbirinde** açmadı — sayfa yenilendikten sonra bile. Ölçüm: offcanvas DOM'da,
+  `show` sınıfı yok, `visibility: hidden`, `transform: translateX(400px)`. Enter dalı bu yüzden yalnız **testle**
+  ve düğmeyle kod-özdeşliğiyle kanıtlandı, canlı tuşla değil.
+- **Yapılacak:** panelin açılma yolu (`openSubtaskCreatePanel` → Bootstrap Offcanvas örneği) neden ikinci
+  çağrıda sessiz kalıyor, ayrı bir tur olarak incelenmeli. Bu, Enter'dan bağımsız bir kusur.
+- **Not (ölçüm aracı):** tarayıcı panelinde `key: "Return"` `keydown` üretmiyor, `key: "Enter"` üretiyor; ayrıca
+  programatik `.focus()` sonrası tuş enjeksiyonu panele ulaşmıyor — önce gerçek tıklama gerekiyor.
+- **Gelecek regresyon riski: 🟡** — Enter dalı testle kilitli, panel açılışı açık.
