@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddTransient<IDwsFunctionalValidator<CompareStructureRevisionsQuery>, CompareStructureRevisionsValidator>();
         services.AddTransient<IDwsFunctionalValidator<CompareStructureBaselinesQuery>, CompareStructureBaselinesValidator>();
         services.AddScoped<PerformanceImprovementCoordinator>();
+        services.AddScoped<ProcessKpiBindingDependencyGate>();
         return services;
     }
 }

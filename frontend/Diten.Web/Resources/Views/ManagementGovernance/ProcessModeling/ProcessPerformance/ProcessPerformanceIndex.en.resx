@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Title" xml:space="preserve"><value>Process Performance</value></data>
+  <data name="ProcessPerformanceTitle" xml:space="preserve"><value>Process Performance</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Review metric bindings and performance observations by process model and version.</value></data>
+  <data name="AddNewProcessPerformance" xml:space="preserve"><value>Add KPI Binding</value></data>
+  <data name="ProviderUnavailable" xml:space="preserve"><value>The authoritative metric provider is unavailable. KPI bindings remain disabled.</value></data>
+  <data name="ObservationUnavailable" xml:space="preserve"><value>Performance observations are unavailable until the authoritative metric contract is available.</value></data>
+  <data name="MetricReference" xml:space="preserve"><value>Metric Reference</value></data>
+  <data name="ProcessModel" xml:space="preserve"><value>Process Model</value></data>
+  <data name="ProcessVersion" xml:space="preserve"><value>Process Version</value></data>
+  <data name="ReferenceStatus" xml:space="preserve"><value>Reference Status</value></data>
+  <data name="StateActive" xml:space="preserve"><value>Active Reference</value></data>
+  <data name="StateDisabled" xml:space="preserve"><value>Disabled Reference</value></data>
+  <data name="StateMissing" xml:space="preserve"><value>Missing Reference</value></data>
+  <data name="StateUnavailable" xml:space="preserve"><value>Provider Unavailable</value></data>
+  <data name="MutationUnavailable" xml:space="preserve"><value>Create and archive operations are unavailable until the authoritative contract is available.</value></data>
+  <data name="Error401" xml:space="preserve"><value>Your session could not be verified. Sign in again.</value></data>
+  <data name="Error403" xml:space="preserve"><value>You do not have permission to view Process Performance.</value></data>
+  <data name="Error404" xml:space="preserve"><value>The requested process or metric reference was not found.</value></data>
+  <data name="Error409" xml:space="preserve"><value>The metric reference is disabled or stale. Refresh before continuing.</value></data>
+  <data name="Error503" xml:space="preserve"><value>The authoritative metric contract is currently unavailable.</value></data>
+  <data name="NoRecords" xml:space="preserve"><value>No metric bindings are available.</value></data>
+  <data name="EditBtn" xml:space="preserve"><value>Edit Binding</value></data>
+  <data name="QuickView" xml:space="preserve"><value>View Binding</value></data>
+  <data name="PerformanceObservation" xml:space="preserve"><value>Performance Observation</value></data>
+</root>

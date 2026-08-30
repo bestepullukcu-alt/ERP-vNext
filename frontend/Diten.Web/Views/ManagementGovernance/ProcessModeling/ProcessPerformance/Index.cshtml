@@ -1,0 +1,42 @@
+@model Diten.Web.Models.ManagementGovernance.ProcessModeling.ProcessPerformance.ProcessPerformanceIndexViewModel
+@using Diten.Web.Views.ManagementGovernance.ProcessModeling.ProcessPerformance
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProcessPerformanceIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["ProcessPerformanceTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<partial name="~/Views/ManagementGovernance/ProcessModeling/ProcessPerformance/_Filter.cshtml" />
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ProcessPerformanceTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+<div id="processPerformanceStatus" class="alert alert-warning" role="status" aria-live="polite" data-performance-state="unavailable">
+    @Localizer["ProviderUnavailable"]
+</div>
+<div class="card mb-3"><div class="card-body"><label class="form-label" for="metricReference">@Localizer["MetricReference"]</label>
+    <select id="metricReference" class="form-select" disabled aria-disabled="true"><option>@Localizer["StateUnavailable"]</option></select>
+    <div class="mt-3 d-flex gap-2"><button type="button" class="btn btn-primary" disabled>@SharedLocalizer["Create"]</button><button type="button" class="btn btn-label-danger" disabled>@SharedLocalizer["Archive"]</button></div>
+    <small class="text-muted">@Localizer["MutationUnavailable"]</small>
+</div></div>
+<div class="row g-3 mb-3">
+    <div class="col-lg-8"><partial name="~/Views/ManagementGovernance/ProcessModeling/ProcessPerformance/_DataTable.cshtml" /></div>
+    <div class="col-lg-4">
+        <section class="card h-100" aria-labelledby="observationHeading">
+            <div class="card-body">
+                <h6 id="observationHeading">@Localizer["PerformanceObservation"]</h6>
+                <p class="text-muted mb-0" data-observation-state="unavailable">@Localizer["ObservationUnavailable"]</p>
+            </div>
+        </section>
+    </div>
+</div>
+<div id="processPerformanceContext" class="d-none" data-read="@Model.Permissions.Contains("management-governance.process-modeling.kpi-bindings.read").ToString().ToLowerInvariant()"></div>
+
+@section Styles { <link rel="stylesheet" href="~/assets/css/pages/management-governance/process-modeling/process-performance.css" asp-append-version="true" /> }
+@section Scripts {
+    <partial name="~/Views/ManagementGovernance/ProcessModeling/ProcessPerformance/_IndexL10n.cshtml" />
+    <script src="~/assets/js/pages/management-governance/process-modeling/process-performance/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/management-governance/process-modeling/process-performance/index.js" asp-append-version="true"></script>
+}

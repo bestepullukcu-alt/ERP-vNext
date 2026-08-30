@@ -22,6 +22,7 @@ port: 5017
 implementation_authority: explicit-user-control-tower-bounded-core-local-api-test-and-performance-improvement-contract-test
 frontend_legacy_parity_authority: explicit-user-control-tower-bounded-default-off-non-production
 workcenter_remote_provider_authority: explicit-user-control-tower-governance-preparation-only-default-off
+process_performance_authority: explicit-user-control-tower-bounded-non-production-non-migrating
 production_authority: none
 ---
 
@@ -56,6 +57,14 @@ production_authority: none
 > row, Platform/WorkCenter/frontend/Gateway change, action dispatch, permission grant or production runtime.
 > It supersedes earlier blanket WorkCenter exclusions only for this pack-file preparation; every executable
 > WorkCenter exclusion remains binding.
+
+> **Process Performance closure amendment:** The explicit Control Tower decision dated 2026-08-30 authorizes
+> the bounded `PROCESS-PERFORMANCE / NON-PRODUCTION / NON-MIGRATING` implementation and evidence slice defined
+> in §19. It supersedes prior API/frontend exclusions only for its exact allowlist. MOD-0355 continues to own
+> only process-version-to-metric binding; MOD-0059/MOD-0060 continue to own metric definition, calculation and
+> certified value. Because no executable bilateral producer reference contract exists at this base, successful
+> KPI binding remains fail-closed `503`; this authority grants no inferred reference fields, copied payload,
+> local metric truth, WorkCenter, Gateway, production activation, migration, deployment or secret.
 
 ## 1. Module Summary
 
@@ -2705,6 +2714,159 @@ default-off zero-read, exact permission/action and lifecycle matrices, real repl
 rollback/unknown-commit evidence, physical expected-red mutation restore, frontend contract tests, service and
 web builds, and browser loading/empty/populated/403/404/409/503 screenshots. The slice cannot be called
 production-ready and cannot close legacy parity or Process Performance.
+
+### Process Performance closure — PROCESS-PERFORMANCE / NON-PRODUCTION / NON-MIGRATING
+
+The explicit Control Tower decision dated 2026-08-30 authorizes this exact bounded closure. WorkCenter is
+outside the slice. The closure is user-testable only as a default-off local-test surface and cannot be called
+production-ready or complete while the upstream reference contract blocker remains open.
+
+#### Read-only upstream executable-contract result
+
+Repository-wide read-only verification found no executable MOD-0059 or MOD-0060 module pack, versioned
+reference DTO/schema, authoritative provider endpoint/adapter, or bilateral serialization fixture defining
+all required identity, version, freshness, tenant/applicability and availability semantics. Existing
+Enterprise Strategy KPI controllers, DTOs, services, repositories and prototype pages do not declare exact
+`ModuleCode = MOD-0059|MOD-0060` ownership and do not provide the required bilateral contract; they are not an
+authoritative substitute. The executable contract name, version and serialized reference fields are therefore
+**unresolved**, not inferred.
+
+Until a producer-owned executable contract and immutable bilateral fixture close this dependency:
+
+- no successful `ProcessKpiBinding` create, archive, list or detail result exists;
+- no metric selector option, metric definition, formula, calculation payload, certified value, scorecard or
+  dashboard datum is materialized or copied;
+- no cache, last-known-good, opaque guessed UUID, free-text code/name or local fallback can produce allow;
+- every binding and observation read/write operation returns exact
+  `503 kpi_reference_contract_unavailable` with zero provider, business-collection, receipt, audit-intent and
+  outbox residue;
+- the UI renders the localized unavailable state and disables selection/mutation without synthesizing an
+  empty-success result.
+
+When the dependency is later closed, a separate versioned amendment must record the producer's exact contract
+name/version/fields, owner ModuleCode, identity/version/freshness rules, tenant/applicability rules, bilateral
+fixture checkpoint and this closed failure matrix before any success path is authored:
+
+| Authoritative producer result | Required MOD-0355 result |
+|---|---|
+| exact active, fresh, applicable reference | Eligible for a future separately authorized binding operation |
+| disabled reference | `409 kpi_reference_disabled`; never silently treated as missing or active |
+| missing, cross-tenant or non-disclosable reference | ordinary `404 kpi_reference_not_found` |
+| stale reference or producer contract/version changed after validation | `409 kpi_reference_stale` |
+| provider unavailable, timed out, malformed or indeterminate | `503 kpi_reference_contract_unavailable` |
+| malformed/unsupported client contract shape | `400 process_performance_bad_request` |
+| own-tenant permission denial after resource visibility is established | `403 process_performance_permission_denied` |
+
+The table freezes failure categories, not currently absent producer field names or transport. No state may be
+collapsed into another to manufacture success.
+
+#### Exact ownership, entity and reference matrix
+
+| Concern | Exact owner | Executable state in this slice |
+|---|---|---|
+| Process model/version and binding relationship | `MOD-0355` | Model/version is read through the existing same-tenant ProcessModeling contract; binding success remains dependency-blocked |
+| `ProcessKpiBinding` entity | `MOD-0355` | Type name is reserved; no entity/schema/repository/collection is authorized until exact reference fields close |
+| Metric definition and metric identity | `MOD-0059` | External unresolved typed reference; no local field or payload copy |
+| Calculation contract, calculation version and certified metric value | `MOD-0060` | External unresolved typed reference; no local formula/value/history |
+| Dashboard/scorecard truth | `MOD-0061` | Not read, stored or projected |
+| Performance observation projection | Source owners above; MOD-0355 may later correlate by binding | Unavailable projection only; no observation row or success payload until both reference and certified-value contracts are executable |
+| Permission grants/effective authorization | `MOD-0018` | Exact local-test permission gate only; no grant calculation or reused Core permission |
+| Audit truth | `MOD-0021` | No new event is emitted while every operation fails before mutation |
+| WorkCenter aggregation | DCP-004 canonical owner | Excluded without exception |
+
+The exact permissions and operation IDs are the existing ordinal pairs only:
+
+- `management-governance.process-modeling.kpi-bindings.read`;
+- `management-governance.process-modeling.kpi-bindings.create`;
+- `management-governance.process-modeling.kpi-bindings.archive`.
+
+Aliases, wildcard/prefix matching, case folding, reuse of a Core permission and successful authorization under
+the current FU16 sixteen-entry manifest are forbidden. Until a bilateral FU16 25/25 fixture is accepted, the
+three operations return `503` before business persistence even when the local-test identity requests them.
+
+#### Exact routes and default-off behavior
+
+The only authorized API routes are loopback/local-test and require the existing `--local-test` host gate:
+
+- `GET /internal/local-test/v1/process-modeling/kpi-bindings`;
+- `GET /internal/local-test/v1/process-modeling/kpi-bindings/{id}`;
+- `POST /internal/local-test/v1/process-modeling/kpi-bindings`;
+- `POST /internal/local-test/v1/process-modeling/kpi-bindings/{id}/archive`;
+- `GET /internal/local-test/v1/process-modeling/performance-observations`.
+
+Every route returns the exact dependency-unavailable `503` contract before provider or persistence access.
+The only authorized tenant frontend routes are:
+
+- `GET /management-governance/process-modeling/process-performance`;
+- same-origin proxy `/management-governance/process-modeling/api/kpi-bindings/**`;
+- same-origin proxy `/management-governance/process-modeling/api/performance-observations`.
+
+The browser never calls port `5017`, handles a bearer credential, or supplies trusted tenant, actor or
+permission headers. The existing legacy Process Performance placeholder remains byte-preserved, directly
+reachable and unredirected. No registry-row change is authorized by this amendment.
+
+#### Exact implementation allowlist
+
+Only these paths may change for this closure:
+
+- this module pack;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs`, additive local-test composition only;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Controllers/ProcessPerformanceLocalTestController.cs`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/LocalTestSecurity/LocalTestAuthenticationHandler.cs`, limited to ordinal recognition of the exact three permissions above without granting them;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/DependencyInjection.cs`, additive local-test registration only;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Modules/ProcessModeling/PerformanceImprovement/ProcessKpiBindingDependencyGate.cs`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Modules/ProcessModeling/PerformanceImprovement/ProcessPerformanceUnavailableContract.cs`;
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/Modules/ProcessModeling/PerformanceImprovement/ProcessPerformance*Tests.cs`;
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Modules/ProcessModeling/PerformanceImprovement/ProcessPerformance*Tests.cs`;
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Modules/ProcessModeling/PerformanceImprovement/ProcessPerformance*Tests.cs`;
+- `frontend/Diten.Web/Controllers/ProcessModelingFrontendController.cs`, additive Process Performance actions only;
+- `frontend/Diten.Web/Models/ManagementGovernance/ProcessModeling/ProcessPerformance/**`;
+- `frontend/Diten.Web/Services/ManagementGovernance/ProcessModeling/ProcessPerformance/**`;
+- `frontend/Diten.Web/Views/ManagementGovernance/ProcessModeling/ProcessPerformance/**`;
+- seven marker-matched RESX files under `frontend/Diten.Web/Resources/Views/ManagementGovernance/ProcessModeling/ProcessPerformance/**`;
+- `frontend/Diten.Web/wwwroot/assets/js/pages/management-governance/process-modeling/process-performance/**`;
+- `frontend/Diten.Web/wwwroot/assets/css/pages/management-governance/process-modeling/process-performance.css`;
+- exact tests named `frontend/Diten.Web/tests/mg-process-performance-*.test.js`.
+
+No Mongo collection or index is authorized for KPI bindings or observations. The exact collection allowlist is
+empty; tests must prove absence of `mg_process_kpi_bindings`, performance-observation, metric-definition,
+metric-value and calculation collections. Existing Improvement collections are not Process Performance
+storage and cannot be reused.
+
+#### Exact user surface and evidence gates
+
+The tenant-shell, DataTables v2 Process Performance page shows process model/version context, localized
+`active`, `disabled`, `missing` and `unavailable` presentation vocabulary, and the unavailable observation
+panel. Because the authoritative provider is absent, `active`, `disabled` and `missing` are display contracts
+for future exact producer results and test fixtures only; the live local-test result is always `unavailable`.
+Create/archive controls and metric selection are disabled and submit no request. No free-text metric identity
+control is rendered. All user-facing content exists with key parity in `en`, `fr`, `es`, `zh`, `ar`, `ru`,
+`tr`; JavaScript contains no hard-coded user-facing fallback.
+
+Required evidence is:
+
+- dependency-gate serialization, unknown-member rejection and exact reason/status mapping;
+- owner/non-copy architecture tests proving no MOD-0059/MOD-0060 DTO/entity/repository or MOD-0061 payload is duplicated;
+- exact three-operation/permission ordinal mapping and current-FU16 rejection;
+- trusted tenant resolution, header/token disagreement `400`, cross-tenant ordinary `404`, own-tenant denial
+  `403`, synthetic future stale fixture `409`, and absent-provider `503` ordering;
+- zero business/provider/persistence/receipt/audit/outbox calls for every current `503` path;
+- collection/index snapshots proving the exact empty Process Performance persistence allowlist and DB-010
+  compliance without a database-per-test pattern;
+- transaction harness regression proving existing real-Mongo rollback/concurrency and unknown-commit body-once
+  behavior is not weakened, although no Process Performance transaction body is authorized;
+- exact audit-fixture regression proving no Process Performance audit intent/event is emitted;
+- a security expected-red campaign that attempts Core-permission reuse, `503` weakening, free-text identity,
+  upstream payload copy and collection creation; each invariant must fail the mutant and restore byte-identically;
+- backend/API/frontend tests, seven-locale parity, service/web builds, full Management Governance regression,
+  `git diff --check`, and browser smoke for loading, unavailable, disabled controls and `403/404/409/503`
+  fixture presentation;
+- read-only side-by-side browser comparison with the legacy Process Performance placeholder, with zero legacy
+  modification, redirect or migration.
+
+This amendment does not authorize a successful binding fixture, fake authoritative provider or successful
+observation payload. The unresolved MOD-0059/MOD-0060 executable bilateral contract is an explicit completion
+blocker and must remain in the final report.
 
 ### Governance availability versus runtime availability
 

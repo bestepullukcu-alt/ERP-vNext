@@ -1,0 +1,11 @@
+@using Diten.Web.Views.ManagementGovernance.ProcessModeling.ProcessPerformance
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProcessPerformanceIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+<script id="process-performance-index-l10n" type="application/json">@Json.Serialize(new {
+Search=SharedLocalizer["Search"].Value, Export=SharedLocalizer["Export"].Value, Filter=SharedLocalizer["Filter"].Value, Apply=SharedLocalizer["Apply"].Value,
+Reset=SharedLocalizer["Reset"].Value, SaveView=SharedLocalizer["SaveView"].Value, ColumnVisibility=SharedLocalizer["ColumnVisibility"].Value, ShowAll=SharedLocalizer["ShowAll"].Value,
+Loading=SharedLocalizer["Loading"].Value, Archive=SharedLocalizer["Archive"].Value, Create=SharedLocalizer["Create"].Value,
+NoRecords=Localizer["NoRecords"].Value, ProviderUnavailable=Localizer["ProviderUnavailable"].Value, MutationUnavailable=Localizer["MutationUnavailable"].Value,
+Error401=Localizer["Error401"].Value, Error403=Localizer["Error403"].Value, Error404=Localizer["Error404"].Value, Error409=Localizer["Error409"].Value, Error503=Localizer["Error503"].Value
+})</script>

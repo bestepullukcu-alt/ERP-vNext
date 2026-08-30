@@ -1,0 +1,2 @@
+.datatables-process-performance .badge { white-space: nowrap; }
+[data-performance-state="unavailable"] { border-inline-start: .25rem solid var(--bs-warning); }

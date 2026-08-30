@@ -1,6 +1,7 @@
 using Diten.Web.Models.ManagementGovernance.ProcessModeling;
 using Diten.Web.Services.ManagementGovernance.ProcessModeling;
 using Diten.Web.Models.ManagementGovernance.ProcessModeling.PerformanceImprovement;
+using Diten.Web.Models.ManagementGovernance.ProcessModeling.ProcessPerformance;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -86,6 +87,23 @@ public sealed class ProcessModelingFrontendController : Controller
     public Task<IActionResult> ImprovementApi(Guid id, CancellationToken cancellationToken) =>
         ProxyImprovementReadAsync($"improvements/{id:D}", cancellationToken);
 
+    [HttpGet("process-performance")]
+    public IActionResult ProcessPerformance()
+    {
+        if (!HasPermission(ProcessPerformanceFrontendPermissions.Read))
+            return StatusCode(StatusCodes.Status403Forbidden);
+        return View("~/Views/ManagementGovernance/ProcessModeling/ProcessPerformance/Index.cshtml",
+            new ProcessPerformanceIndexViewModel(ResolveProcessPerformancePermissions()));
+    }
+
+    [AcceptVerbs("GET", "POST")]
+    [Route("api/kpi-bindings")]
+    [Route("api/kpi-bindings/{**path}")]
+    public IActionResult ProcessPerformanceBindingsApi() => ProcessPerformanceUnavailable();
+
+    [HttpGet("api/performance-observations")]
+    public IActionResult ProcessPerformanceObservationsApi() => ProcessPerformanceUnavailable();
+
     private async Task<IActionResult> ProxyReadAsync(string relativePath, CancellationToken cancellationToken)
     {
         if (!HasPermission(ProcessModelingFrontendPermissions.Read))
@@ -138,4 +156,20 @@ public sealed class ProcessModelingFrontendController : Controller
         .Select(x => x.Value)
         .Where(PerformanceImprovementFrontendPermissions.Exact.Contains)
         .ToHashSet(StringComparer.Ordinal);
+
+    private IReadOnlySet<string> ResolveProcessPerformancePermissions() => User.FindAll("permission")
+        .Select(x => x.Value)
+        .Where(ProcessPerformanceFrontendPermissions.Exact.Contains)
+        .ToHashSet(StringComparer.Ordinal);
+
+    private IActionResult ProcessPerformanceUnavailable()
+    {
+        if (!HasPermission(ProcessPerformanceFrontendPermissions.Read))
+            return StatusCode(StatusCodes.Status403Forbidden);
+        var unavailable = ProcessModelingFrontendProxyResult.Failure(
+            StatusCodes.Status503ServiceUnavailable,
+            "kpi_reference_contract_unavailable",
+            HttpContext.TraceIdentifier);
+        return new ContentResult { Content = unavailable.Content, ContentType = unavailable.ContentType, StatusCode = unavailable.StatusCode };
+    }
 }

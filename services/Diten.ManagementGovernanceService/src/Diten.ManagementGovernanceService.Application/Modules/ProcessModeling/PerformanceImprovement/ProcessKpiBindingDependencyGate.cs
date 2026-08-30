@@ -2,16 +2,26 @@ namespace Diten.ManagementGovernanceService.Application.Modules.ProcessModeling.
 
 public sealed class ProcessKpiBindingDependencyGate
 {
+    public int ProviderInvocationCount { get; private set; }
+    public int BusinessStoreInvocationCount { get; private set; }
     public int StoreInvocationCount { get; private set; }
 
-    public PerformanceImprovementContract.MutationResult Evaluate(string operation, Guid requestId)
+    public ProcessPerformanceUnavailableContract.Result Evaluate(string operation)
     {
-        if (requestId == Guid.Empty) return PerformanceImprovementContract.MutationResult.Invalid(requestId);
         if (operation is not PerformanceImprovementPermissions.KpiRead and
             not PerformanceImprovementPermissions.KpiCreate and
             not PerformanceImprovementPermissions.KpiArchive)
-            return PerformanceImprovementContract.MutationResult.Invalid(requestId, "kpi_operation_forbidden");
+            throw new ArgumentOutOfRangeException(nameof(operation), "kpi_operation_forbidden");
 
-        return PerformanceImprovementContract.MutationResult.Unavailable(requestId, "kpi_reference_contract_unavailable");
+        return ProcessPerformanceUnavailableContract.Result.DependencyUnavailable;
+    }
+
+    public PerformanceImprovementContract.MutationResult Evaluate(string operation, Guid requestId)
+    {
+        if (requestId == Guid.Empty)
+            return PerformanceImprovementContract.MutationResult.Invalid(requestId);
+
+        var result = Evaluate(operation);
+        return PerformanceImprovementContract.MutationResult.Unavailable(requestId, result.Code);
     }
 }
