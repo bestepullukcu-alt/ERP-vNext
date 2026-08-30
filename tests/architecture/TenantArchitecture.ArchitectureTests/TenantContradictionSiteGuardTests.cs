@@ -13,7 +13,8 @@ namespace TenantArchitecture.ArchitectureTests;
  * green would have turned the deviation into something "accepted". That objection is answered here by SHRINKING
  * the list rather than by writing one: three of those five sites are fixed in this round, and the two that remain
  * are not a convenience list — they are a single named, owner-level decision (below) that this guard now keeps
- * VISIBLE instead of letting it be forgotten.
+ * VISIBLE instead of letting it be forgotten. UPDATE 2026-08-30: the guard did its job — the gateway's decision
+ * was made, it moved into EnforcesTheRule, and one site remains pending.
  *
  * ⚠ WHAT THIS GUARD IS FOR, precisely. It is a CLASSIFICATION guard, not a behaviour test: the behaviour is
  * asserted per service by the real middleware, over real requests, in each service's own
@@ -45,25 +46,32 @@ public class TenantContradictionSiteGuardTests
         "services/Diten.DevEnablementService/src/Diten.DevEnablementService.Infrastructure/Middleware/TenantResolutionMiddleware.cs",
         "services/Diten.AuthService/src/Diten.AuthService.Infrastructure/Middleware/TenantResolutionMiddleware.cs",
         "services/Diten.CrmService/src/Diten.CrmService.Infrastructure/Middleware/TenantResolutionMiddleware.cs",
-        "services/Diten.HcmService/src/Diten.HcmService.Infrastructure/Middleware/TenantResolutionMiddleware.cs"
+        "services/Diten.HcmService/src/Diten.HcmService.Infrastructure/Middleware/TenantResolutionMiddleware.cs",
+        // MOVED HERE 2026-08-30 from DecisionPendingByDesign. The ordering question that reserved it was answered
+        // by the owner: the contradiction is refused BEFORE the actor_type boundary, because a request naming two
+        // tenants cannot be evaluated for access at all. The third source it named — the subdomain — is covered by
+        // the SAME rule rather than a second one: if the token names a tenant, EVERY other signal must agree.
+        // Behaviour test: gateway/Diten.ApiGateway.Tests/TenantContradictionGuardTests.cs.
+        "gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs"
     ];
 
     /// <summary>
-    /// ⚠ NOT AN EXEMPTION LIST — AN OPEN DECISION, NAMED. These two are the only tenant-resolution sites that also
-    /// arbitrate PLATFORM-ACTOR requests, and in both the contradiction check would have to be ordered against an
-    /// existing actor_type boundary that already answers 403. Choosing which refusal wins is an owner decision
-    /// about an access boundary, not a cleanup, so BL-324 leaves them measured and open rather than guessed.
-    /// Turning either one green belongs to that decision's round, together with deleting its line here.
+    /// ⚠ NOT AN EXEMPTION LIST — AN OPEN DECISION, NAMED. One site is left: it arbitrates PLATFORM-ACTOR requests,
+    /// so the contradiction check would have to be ordered against an existing actor_type boundary that already
+    /// answers 403. Choosing which refusal wins is an owner decision about an access boundary, not a cleanup, so
+    /// BL-324 leaves it measured and open rather than guessed. Turning it green belongs to that decision's round,
+    /// together with deleting its line here.
+    ///
+    /// The gateway left this list on 2026-08-30 when the owner made exactly that decision FOR THE GATEWAY ONLY.
+    /// It is deliberately NOT generalised to the entry below: Platform.Common is answered per service and in
+    /// process, and the owner has not ruled on it.
     /// </summary>
     private static readonly string[] DecisionPendingByDesign =
     [
         // Ordinary tenant path resolves the tenant BEFORE the actor_type 403 ("Tenant endpoints require
         // tenant_user tokens"), so refusing the contradiction first would answer 400 where a platform actor is
         // deliberately answered 403 today.
-        "services/Diten.Platform.Common/src/Diten.Platform.Common/Tenancy/TenantResolutionMiddleware.cs",
-        // Same ordering question, plus a THIRD tenant source the rule does not mention at all: the request's
-        // subdomain. "Contradiction" is not yet defined for three-way disagreement.
-        "gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs"
+        "services/Diten.Platform.Common/src/Diten.Platform.Common/Tenancy/TenantResolutionMiddleware.cs"
     ];
 
     [Fact]
@@ -81,7 +89,7 @@ public class TenantContradictionSiteGuardTests
     }
 
     [Fact]
-    public void SitesThatEnforceTheRule_AreExactlyTheMeasuredFive()
+    public void SitesThatEnforceTheRule_AreExactlyTheMeasuredSix()
     {
         var repoRoot = FindRepoRoot();
 

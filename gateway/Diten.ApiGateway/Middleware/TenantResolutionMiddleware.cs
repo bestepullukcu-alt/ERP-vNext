@@ -8,6 +8,12 @@ namespace Diten.ApiGateway.Middleware;
 public sealed class TenantResolutionMiddleware
 {
     private const string TenantHeader = "X-Tenant-Id";
+
+    // The names reported in `conflictingSignals`. ⚠ A ROUTING signal for the caller ("send me to the right host"
+    // vs "sign in again"), NOT display text — it is deliberately not a reason code and is not bridged to resx.
+    private const string HeaderSignal = "header";
+    private const string SubdomainSignal = "subdomain";
+
     private readonly RequestDelegate _next;
     private readonly ILogger<TenantResolutionMiddleware> _logger;
     private readonly IConfiguration _configuration;
@@ -92,8 +98,17 @@ public sealed class TenantResolutionMiddleware
                 return;
             }
 
-            var personalizationTenant = Resolve(jwtTenant, headerTenant, subdomainTenant, context);
-            if (personalizationTenant is null && TryGetDevelopmentBypassTenant(out var personalizationBypassTenant))
+            var personalizationResolution = Resolve(jwtTenant, headerTenant, subdomainTenant, context);
+            if (personalizationResolution.IsConflict)
+            {
+                await WriteTenantMismatch(context, personalizationResolution);
+                return;
+            }
+
+            // ⚠ The bypass is ordered AFTER the conflict check on purpose: it stands in for an ABSENT tenant, and
+            // must never fill in — and thereby conceal — a request whose signals contradict each other.
+            var personalizationTenant = personalizationResolution.TenantId;
+            if (personalizationResolution.IsMissing && TryGetDevelopmentBypassTenant(out var personalizationBypassTenant))
             {
                 personalizationTenant = personalizationBypassTenant;
                 _logger.LogWarning(
@@ -140,8 +155,15 @@ public sealed class TenantResolutionMiddleware
             return;
         }
 
-        var resolvedTenant = Resolve(jwtTenant, headerTenant, subdomainTenant, context);
-        if (resolvedTenant is null && TryGetDevelopmentBypassTenant(out var bypassTenant))
+        var resolution = Resolve(jwtTenant, headerTenant, subdomainTenant, context);
+        if (resolution.IsConflict)
+        {
+            await WriteTenantMismatch(context, resolution);
+            return;
+        }
+
+        var resolvedTenant = resolution.TenantId;
+        if (resolution.IsMissing && TryGetDevelopmentBypassTenant(out var bypassTenant))
         {
             resolvedTenant = bypassTenant;
             _logger.LogWarning(
@@ -158,15 +180,11 @@ public sealed class TenantResolutionMiddleware
                 return;
             }
 
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            context.Response.ContentType = "application/problem+json";
-            await context.Response.WriteAsJsonAsync(new
-            {
-                title = "Missing Tenant",
-                status = 400,
-                detail = $"'{TenantHeader}' or JWT tenant_id claim is required for tenant endpoints.",
-                traceId = context.TraceIdentifier
-            });
+            await WriteProblemDetails(
+                context,
+                StatusCodes.Status400BadRequest,
+                "Missing Tenant",
+                $"'{TenantHeader}' or JWT tenant_id claim is required for tenant endpoints.");
             return;
         }
 
@@ -185,37 +203,65 @@ public sealed class TenantResolutionMiddleware
         await _next(context);
     }
 
-    private Guid? Resolve(Guid? jwtTenant, Guid? headerTenant, Guid? subdomainTenant, HttpContext context)
+    /*
+     * BL-324 — ONE RULE FOR EVERY SIGNAL. If the token names a tenant, every OTHER tenant signal on the request
+     * must name the SAME one; otherwise the request is malformed and is refused 400. The gateway previously
+     * logged "JWT tenant wins" for the header AND for the subdomain and carried on, which produced a session
+     * addressed at one tenant's host while operating on another's data.
+     *
+     * The rule is deliberately signal-agnostic: a per-signal exception is what gets forgotten the day a fourth
+     * tenant signal appears.
+     *
+     * WITHOUT A TOKEN THERE IS NO CONTRADICTION — nothing authenticated has named a tenant, so header and
+     * subdomain disagreeing is just precedence, and today's `header ?? subdomain` order is preserved exactly.
+     * (Login and register carry no token and therefore cannot reach the refusal.)
+     */
+    private TenantResolution Resolve(Guid? jwtTenant, Guid? headerTenant, Guid? subdomainTenant, HttpContext context)
     {
-        if (jwtTenant.HasValue)
+        // Fixed order — the refusal body is machine-read by the caller, which must be able to compare it.
+        var conflictingSignals = new List<string>(2);
+
+        if (jwtTenant.HasValue && headerTenant.HasValue && jwtTenant.Value != headerTenant.Value)
         {
-            if (headerTenant.HasValue && headerTenant != jwtTenant)
-            {
-                _logger.LogWarning(
-                    "Tenant conflict in gateway. JWT tenant wins. HeaderTenant={HeaderTenant}, JwtTenant={JwtTenant}, Path={Path}",
-                    headerTenant,
-                    jwtTenant,
-                    context.Request.Path);
-            }
-
-            if (subdomainTenant.HasValue && subdomainTenant != jwtTenant)
-            {
-                _logger.LogWarning(
-                    "Tenant conflict in gateway. JWT tenant wins over subdomain. SubdomainTenant={SubdomainTenant}, JwtTenant={JwtTenant}, Host={Host}",
-                    subdomainTenant,
-                    jwtTenant,
-                    context.Request.Host.Host);
-            }
-
-            return jwtTenant;
+            conflictingSignals.Add(HeaderSignal);
         }
 
-        if (headerTenant.HasValue)
+        if (jwtTenant.HasValue && subdomainTenant.HasValue && jwtTenant.Value != subdomainTenant.Value)
         {
-            return headerTenant;
+            conflictingSignals.Add(SubdomainSignal);
         }
 
-        return subdomainTenant;
+        if (conflictingSignals.Count > 0)
+        {
+            _logger.LogWarning(
+                "Tenant contradiction refused in gateway. Signals={Signals} Path={Path}",
+                string.Join(',', conflictingSignals),
+                context.Request.Path);
+
+            return TenantResolution.Conflict(conflictingSignals, StatusCodes.Status400BadRequest);
+        }
+
+        return TenantResolution.Resolved(jwtTenant ?? headerTenant ?? subdomainTenant);
+    }
+
+    /// <summary>
+    /// The outcome of tenant resolution. A CONTRADICTION IS ITS OWN OUTCOME — it cannot be expressed as a null
+    /// tenant, because the caller would then answer "Missing Tenant" for a request that named two of them. The
+    /// refusal status travels with the result so the two call sites cannot drift apart on how they answer it.
+    /// </summary>
+    private readonly record struct TenantResolution(
+        Guid? TenantId,
+        IReadOnlyList<string>? ConflictingSignals,
+        int RefusalStatusCode)
+    {
+        public static TenantResolution Resolved(Guid? tenantId) => new(tenantId, null, 0);
+
+        public static TenantResolution Conflict(IReadOnlyList<string> conflictingSignals, int refusalStatusCode)
+            => new(null, conflictingSignals, refusalStatusCode);
+
+        public bool IsConflict => ConflictingSignals is { Count: > 0 };
+
+        public bool IsMissing => TenantId is null && !IsConflict;
     }
 
     private static Guid? ReadJwtTenant(ClaimsPrincipal user)
@@ -453,6 +499,30 @@ public sealed class TenantResolutionMiddleware
             detail,
             traceId = context.TraceIdentifier
         });
+    }
+
+    /// <summary>
+    /// The contradiction refusal: the shared problem+json shape plus `conflictingSignals`, which is what lets the
+    /// caller tell "you are on the wrong host" from "your session belongs to another tenant" WITHOUT parsing the
+    /// prose in `detail`. The prose is for humans reading logs; the array is the only machine-readable part.
+    /// </summary>
+    private static async Task WriteTenantMismatch(HttpContext context, TenantResolution resolution)
+    {
+        context.Response.StatusCode = resolution.RefusalStatusCode;
+        await context.Response.WriteAsJsonAsync(
+            new
+            {
+                title = "Tenant mismatch",
+                status = resolution.RefusalStatusCode,
+                detail = "The authenticated tenant and the request's other tenant signals name different tenants. "
+                         + $"'{TenantHeader}' and the request host must match the token's tenant_id claim.",
+                traceId = context.TraceIdentifier,
+                conflictingSignals = resolution.ConflictingSignals
+            },
+            options: null,
+            // ⚠ Passed to WriteAsJsonAsync rather than assigned to Response.ContentType first: the assignment is
+            // OVERWRITTEN by the serializer, which is why the other refusals here still answer application/json.
+            contentType: "application/problem+json");
     }
 
     private bool TryGetDevelopmentBypassTenant(out Guid tenantId)
