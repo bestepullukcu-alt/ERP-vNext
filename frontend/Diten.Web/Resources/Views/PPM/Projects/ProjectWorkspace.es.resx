@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader>
+  <data name="WorkspaceTitle"><value>Espacio del proyecto</value></data><data name="BackToProjects"><value>Volver a proyectos</value></data><data name="Loading"><value>Cargando proyecto…</value></data>
+  <data name="Overview"><value>Resumen</value></data><data name="CharterGeneral"><value>Acta / General</value></data><data name="Context"><value>Contexto del proyecto</value></data>
+  <data name="Code"><value>Código</value></data><data name="Name"><value>Nombre</value></data><data name="Description"><value>Descripción</value></data><data name="ParentType"><value>Tipo superior</value></data><data name="ParentId"><value>ID superior</value></data><data name="Parent"><value>Registro superior</value></data>
+  <data name="Lifecycle"><value>Ciclo de vida</value></data><data name="VisibilityPolicy"><value>Política de visibilidad</value></data><data name="Referenceability"><value>Referenciabilidad</value></data><data name="Version"><value>Versión</value></data>
+  <data name="Referenceable"><value>Disponible para nuevas referencias</value></data><data name="NotReferenceable"><value>No disponible para nuevas referencias</value></data><data name="NotAvailable"><value>No disponible</value></data>
+  <data name="Error400"><value>La solicitud del proyecto no es válida.</value></data><data name="Error401"><value>Inicia sesión para ver este proyecto.</value></data><data name="Error403"><value>No tienes permiso para ver este proyecto.</value></data><data name="Error404"><value>No se encontró el proyecto.</value></data><data name="Error409"><value>El proyecto cambió. Vuelve a la lista.</value></data><data name="Error503"><value>El servicio del proyecto no está disponible temporalmente.</value></data><data name="ErrorGeneric"><value>No se pudo cargar el espacio del proyecto.</value></data>
+</root>

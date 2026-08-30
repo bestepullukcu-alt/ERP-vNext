@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader>
+  <data name="WorkspaceTitle"><value>Project Workspace</value></data><data name="BackToProjects"><value>Back to Projects</value></data><data name="Loading"><value>Loading Project…</value></data>
+  <data name="Overview"><value>Overview</value></data><data name="CharterGeneral"><value>Charter / General</value></data><data name="Context"><value>Project Context</value></data>
+  <data name="Code"><value>Code</value></data><data name="Name"><value>Name</value></data><data name="Description"><value>Description</value></data><data name="ParentType"><value>Parent Type</value></data><data name="ParentId"><value>Parent ID</value></data><data name="Parent"><value>Parent</value></data>
+  <data name="Lifecycle"><value>Lifecycle</value></data><data name="VisibilityPolicy"><value>Visibility Policy</value></data><data name="Referenceability"><value>Referenceability</value></data><data name="Version"><value>Version</value></data>
+  <data name="Referenceable"><value>Available for new references</value></data><data name="NotReferenceable"><value>Not available for new references</value></data><data name="NotAvailable"><value>Not available</value></data>
+  <data name="Error400"><value>The Project request is invalid.</value></data><data name="Error401"><value>Please sign in to view this Project.</value></data><data name="Error403"><value>You do not have permission to view this Project.</value></data><data name="Error404"><value>The Project was not found.</value></data><data name="Error409"><value>The Project changed. Return to the list and try again.</value></data><data name="Error503"><value>The Project service is temporarily unavailable.</value></data><data name="ErrorGeneric"><value>The Project Workspace could not be loaded.</value></data>
+</root>

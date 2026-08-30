@@ -1,0 +1,70 @@
+{
+  "schema": "ppm.mod-0117.gate-i-b.mutation-evidence.v1",
+  "baseCommit": "c954984d00ad43bc3127bbd0ada09da2b2721768",
+  "sourceCheckpoint": "2f2b86b44781fdb25af7efce4d60922b70f13a31",
+  "sourcePath": "services/Diten.PpmService/src/Diten.PpmService.Application/Features/InvestmentCases/GateI/FundingScenario/FundingScenarioValidationContracts.cs",
+  "restoredSha256": "bcf5c3f7e5eebda09555becb6f6e8f6c1161ba92f07cd8341dbc816edce7bf0a",
+  "testProject": "services/Diten.PpmService/tests/Diten.PpmService.Tests/Diten.PpmService.Tests.csproj",
+  "entries": [
+    {
+      "runId": "gateib-final-20260826-m01-request-binding",
+      "mutation": "fixed-time-request-hash-recompute-removed",
+      "testIdentity": "Diten.PpmService.Tests.GateI.FundingScenario.FundingScenarioSecurityMutationTests.Request_hash_guard_rejects_well_formed_changed_hash",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "rawOutputSha256": "cc944b9dd414689423deff7d17c7495e8528aef3f81480d7209407ae9b6eaa35",
+      "failureIdentity": "Expected 401; Actual 503",
+      "commandFilter": "FullyQualifiedName~FundingScenarioSecurityMutationTests.Request_hash_guard_rejects_well_formed_changed_hash"
+    },
+    {
+      "runId": "gateib-final-20260826-m02-freshness",
+      "mutation": "stale-freshness-409-guard-removed",
+      "testIdentity": "Diten.PpmService.Tests.GateI.FundingScenario.FundingScenarioSecurityMutationTests.Freshness_guard_rejects_stale_fence",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "rawOutputSha256": "f450ef3488abc1bbf626fea5a8fc1da41907d6ea4176c958526f9bffd0acb9ec",
+      "failureIdentity": "Expected 409; Actual 503",
+      "commandFilter": "FullyQualifiedName~FundingScenarioSecurityMutationTests.Freshness_guard_rejects_stale_fence"
+    },
+    {
+      "runId": "gateib-final-20260826-m03-current-selection",
+      "mutation": "analytical-current-selection-400-guard-removed",
+      "testIdentity": "Diten.PpmService.Tests.GateI.FundingScenario.FundingScenarioSecurityMutationTests.Current_selection_guard_rejects_analytical_scenario",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "rawOutputSha256": "bd9a1cff8da1b4bfcf6c21292f26e5cb0c14d0b90903b09054b6bc7529fea4d7",
+      "failureIdentity": "Expected 400; Actual 503",
+      "commandFilter": "FullyQualifiedName~FundingScenarioSecurityMutationTests.Current_selection_guard_rejects_analytical_scenario"
+    },
+    {
+      "runId": "gateib-final-20260826-m04-owner",
+      "mutation": "exact-producer-owner-guard-removed",
+      "testIdentity": "Diten.PpmService.Tests.GateI.FundingScenario.FundingScenarioSecurityMutationTests.Owner_guard_rejects_cross_module_context",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "rawOutputSha256": "062baf4332380fba1d4f08117037bb39086bac0a800adfadacd0160178567681",
+      "failureIdentity": "Expected 403; Actual 503",
+      "commandFilter": "FullyQualifiedName~FundingScenarioSecurityMutationTests.Owner_guard_rejects_cross_module_context"
+    },
+    {
+      "runId": "gateib-final-20260826-m05-non-runtime",
+      "mutation": "allowed-contract-returned-http-200",
+      "testIdentity": "Diten.PpmService.Tests.GateI.FundingScenario.FundingScenarioSecurityMutationTests.Runtime_guard_keeps_allowed_contract_non_executable",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "rawOutputSha256": "a465964f58fded56be487351197a0d188beeace32b890828487800867053ba33",
+      "failureIdentity": "Expected 503; Actual 200",
+      "commandFilter": "FullyQualifiedName~FundingScenarioSecurityMutationTests.Runtime_guard_keeps_allowed_contract_non_executable"
+    },
+    {
+      "runId": "gateib-final-20260826-m06-delegated-actor-binding",
+      "mutation": "delegated-actor-effective-actor-equality-removed",
+      "testIdentity": "Diten.PpmService.Tests.GateI.FundingScenario.FundingScenarioSecurityMutationTests.Delegated_actor_binding_guard_rejects_effective_actor_mismatch",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "rawOutputSha256": "0bc645d3cf6c4a1443191d0586133b1863f2a6e76bbf1fc870f867ae7f1df238",
+      "failureIdentity": "Expected 401; Actual 503",
+      "commandFilter": "FullyQualifiedName~FundingScenarioSecurityMutationTests.Delegated_actor_binding_guard_rejects_effective_actor_mismatch"
+    }
+  ]
+}

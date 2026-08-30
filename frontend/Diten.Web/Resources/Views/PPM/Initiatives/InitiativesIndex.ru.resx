@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="InitiativesTitle" xml:space="preserve"><value>Инициативы</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Управляйте объектами «Инициативы» арендатора, их жизненным циклом и возможностью ссылок.</value></data>
+  <data name="AddNewInitiative" xml:space="preserve"><value>Добавить: инициатива</value></data>
+  <data name="EditInitiative" xml:space="preserve"><value>Изменить: инициатива</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="Name" xml:space="preserve"><value>Наименование</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Жизненный цикл</value></data>
+  <data name="VisibilityPolicyKey" xml:space="preserve"><value>Политика видимости</value></data>
+  <data name="Referenceability" xml:space="preserve"><value>Возможность ссылок</value></data>
+  <data name="Referenceable" xml:space="preserve"><value>Доступно для новых ссылок</value></data>
+  <data name="NotReferenceable" xml:space="preserve"><value>Недоступно для новых ссылок</value></data>
+  <data name="InitiativesLoadingState" xml:space="preserve"><value>Загрузка: Инициативы…</value></data>
+  <data name="InitiativesEmptyState" xml:space="preserve"><value>Объекты «Инициативы» не найдены.</value></data>
+  <data name="InitiativesErrorState" xml:space="preserve"><value>Не удалось загрузить список «Инициативы».</value></data>
+  <data name="Portfolio" xml:space="preserve"><value>Портфель</value></data>
+  <data name="LifecycleProposed" xml:space="preserve"><value>Предложена</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>Активный</value></data>
+  <data name="LifecycleOnHold" xml:space="preserve"><value>Приостановлен</value></data>
+  <data name="LifecycleCompleted" xml:space="preserve"><value>Завершён</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>Отменён</value></data>
+  <data name="CompleteInitiativeConfirmation" xml:space="preserve"><value>Завершить объект «инициатива»? Новые ссылки будут запрещены.</value></data>
+  <data name="CancelInitiativeConfirmation" xml:space="preserve"><value>Отменить объект «инициатива»? Новые ссылки будут запрещены.</value></data>
+</root>
