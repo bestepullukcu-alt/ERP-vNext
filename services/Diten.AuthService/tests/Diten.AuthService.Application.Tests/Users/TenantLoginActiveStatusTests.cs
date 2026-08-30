@@ -1,4 +1,5 @@
 using Diten.AuthService.Application.Common;
+using Diten.AuthService.Application.Common.Authorization;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Auth.Commands;
 using Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers;
@@ -72,11 +73,18 @@ public sealed class TenantLoginActiveStatusTests
             audit,
             new FakeTenantLoginSettingsClient(),
             new FakeMfaChallengeService(),
+            new PassthroughEffectivePermissionResolver(),
             tenantContext,
             NullLogger<LoginCommandHandler>.Instance);
     }
 
     // ── Fakes ──
+    private sealed class PassthroughEffectivePermissionResolver : ITenantEffectivePermissionResolver
+    {
+        public Task<IReadOnlyList<string>> ResolveAsync(Guid tenantId, IEnumerable<string>? rolePermissions, CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyList<string>>(rolePermissions?.ToArray() ?? []);
+    }
+
     private sealed class FakePasswordHasher : IPasswordHasher
     {
         public string Hash(string password) => "hash:" + password;

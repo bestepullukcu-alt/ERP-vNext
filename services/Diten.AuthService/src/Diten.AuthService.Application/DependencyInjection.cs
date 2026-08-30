@@ -27,6 +27,7 @@ public static class DependencyInjection
         services.AddScoped<IRoleProvisioningService, RoleProvisioningService>();
         services.AddScoped<IEntitlementPermissionSyncService, EntitlementPermissionSyncService>();
         services.AddSingleton<IPpmEntitlementPermissionPolicy, PpmEntitlementPermissionPolicy>();
+        services.AddScoped<ITenantEffectivePermissionResolver, TenantEffectivePermissionResolver>();
         services.AddScoped<IPasswordPolicyService, PasswordPolicyService>();
         services.AddScoped<IFullCatalogPermissionGrantService, FullCatalogPermissionGrantService>();
         services.AddScoped<IRbacAuditRecorder, RbacAuditRecorder>(); // FEAT-AUDIT-RBAC

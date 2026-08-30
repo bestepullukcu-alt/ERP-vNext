@@ -22,6 +22,7 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IRoleRepository _roleRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
+    private readonly ITenantEffectivePermissionResolver _effectivePermissionResolver;
     private readonly ITokenService _tokenService;
     private readonly IRefreshTokenHasher _refreshTokenHasher;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
@@ -37,6 +38,7 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
         IUserRoleRepository userRoleRepository,
         IRoleRepository roleRepository,
         IRolePermissionRepository rolePermissionRepository,
+        ITenantEffectivePermissionResolver effectivePermissionResolver,
         ITokenService tokenService,
         IRefreshTokenHasher refreshTokenHasher,
         IRefreshTokenRepository refreshTokenRepository,
@@ -51,6 +53,7 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
         _userRoleRepository = userRoleRepository;
         _roleRepository = roleRepository;
         _rolePermissionRepository = rolePermissionRepository;
+        _effectivePermissionResolver = effectivePermissionResolver;
         _tokenService = tokenService;
         _refreshTokenHasher = refreshTokenHasher;
         _refreshTokenRepository = refreshTokenRepository;
@@ -111,11 +114,15 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
             ?? [];
 
         var roleIds = await ResolveRoleIdsAsync(roles, request.TenantId, ct);
-        var permissions = (await _rolePermissionRepository.GetPermissionsByRolesAsync(roleIds, request.TenantId, ct))
+        var rolePermissions = (await _rolePermissionRepository.GetPermissionsByRolesAsync(roleIds, request.TenantId, ct))
             ?.Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray()
             ?? [];
+        var permissions = await _effectivePermissionResolver.ResolveAsync(
+            request.TenantId,
+            rolePermissions,
+            ct);
 
         // MustChangePassword is now cleared, so the re-issued token carries pwd_change_required=false.
         var accessToken = _tokenService.GenerateAccessToken(user, roles, permissions, settings.SessionTimeoutMinutes);
