@@ -2,7 +2,9 @@ using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Notifications;
 using Diten.Platform.Application.Features.Notifications.Services;
 using Diten.Platform.Common.Tenancy;
+using Diten.Platform.Domain.Entities.Notifications;
 using Diten.Platform.Domain.Entities.Tasks;
+using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Enums.Tasks;
 using Diten.Platform.Domain.Repositories;
 using Microsoft.Extensions.Logging;
@@ -160,6 +162,7 @@ public sealed class TaskNotificationService : ITaskNotificationService
     private readonly INotificationLocaleResolver _localeResolver;
     private readonly ITaskNotificationRecipientResolver _recipients;
     private readonly ITaskSeatDirectory _seats;
+    private readonly IUserNotificationRepository _userNotifications;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<TaskNotificationService> _logger;
 
@@ -168,6 +171,7 @@ public sealed class TaskNotificationService : ITaskNotificationService
         INotificationLocaleResolver localeResolver,
         ITaskNotificationRecipientResolver recipients,
         ITaskSeatDirectory seats,
+        IUserNotificationRepository userNotifications,
         ITenantContext tenantContext,
         ILogger<TaskNotificationService> logger)
     {
@@ -175,6 +179,7 @@ public sealed class TaskNotificationService : ITaskNotificationService
         _localeResolver = localeResolver;
         _recipients = recipients;
         _seats = seats;
+        _userNotifications = userNotifications;
         _tenantContext = tenantContext;
         _logger = logger;
     }
@@ -228,6 +233,28 @@ public sealed class TaskNotificationService : ITaskNotificationService
                     eventCode, task.Id, audience.Count);
                 return TaskNotificationOutcome.NoRecipients;
             }
+
+            /*
+             * ── THE SECOND CHANNEL ───────────────────────────────────────────────────────────────────────
+             *
+             * BL-025. This is where the recipient's USER ID stops being thrown away. The projection two
+             * statements below — `new EmailRecipientDto(r.Email, r.DisplayName)` — is the exact line at which
+             * a resolved TaskNotificationRecipient(UserId, Email, DisplayName) loses its id, and with it any
+             * chance of ever answering "what are MY unread notifications?".
+             *
+             * ⚠ PLACED HERE, AFTER THE FILTERS, DELIBERATELY. Everything that decides whether anybody hears
+             * about this event has already run: the task's master switch and its per-event preference (in
+             * TaskNotificationPolicy, above), the actor exclusion, and the address resolution. A second
+             * channel that re-derived those rules would be a second place for them to drift; a second channel
+             * placed BEFORE them would notify people who switched notifications off. There is no separate
+             * in-app preference and there must not be one — the task's answer is the task's answer.
+             *
+             * ⚠ AND IT RUNS BEFORE THE DISPATCH, GUARDED SEPARATELY. Both orderings were available and this
+             * one is the survivable half: written first behind its own try/catch, an in-app row exists even
+             * when the mail transport is down, and a database that refuses cannot stop the e-mail — the
+             * enclosing catch would otherwise swallow the write attempt and never reach the send.
+             */
+            await WriteInAppNotificationsAsync(task, eventCode, recipients, ct);
 
             var response = await _notifications.DispatchByEventCodeAsync(
                 new NotificationEventDispatchRequest(
@@ -304,6 +331,69 @@ public sealed class TaskNotificationService : ITaskNotificationService
 
         return await _seats.HoldersOfAsync(new HashSet<Guid> { positionId }, ct);
     }
+
+    /// <summary>
+    /// BL-025 — one in-app row per resolved recipient, carrying the id the e-mail projection drops.
+    ///
+    /// <para><b>Never throws, and never affects the e-mail.</b> Its own try/catch, not the caller's: the
+    /// enclosing handler treats any exception as "the whole notification failed", which would mean a Mongo
+    /// hiccup silently costing the e-mail that would otherwise have gone out. A failure here is logged and
+    /// the round continues.</para>
+    ///
+    /// <para><b>What is written, and what deliberately is not.</b> The row carries the stable event code and
+    /// the task's OWN title — data the tenant typed. No sentence is composed here, because the reader's
+    /// language is not known at write time and a row written in one language cannot be re-read in another;
+    /// a surface resolves its label from the event code instead. <c>Severity</c> is <c>Info</c> for every
+    /// task event: a per-event severity is a product decision nobody has made, and inventing a mapping now
+    /// would ship one by accident.</para>
+    /// </summary>
+    private async Task WriteInAppNotificationsAsync(
+        TaskItem task,
+        string eventCode,
+        IReadOnlyList<TaskNotificationRecipient> recipients,
+        CancellationToken ct)
+    {
+        try
+        {
+            foreach (var recipient in recipients)
+            {
+                if (recipient.UserId == Guid.Empty)
+                {
+                    continue;
+                }
+
+                await _userNotifications.CreateAsync(
+                    new UserNotification
+                    {
+                        TenantId = _tenantContext.TenantId,
+                        UserId = recipient.UserId,
+                        EventCode = eventCode,
+                        Title = task.Title,
+                        TargetUrl = TaskDeepLink(task.Id),
+                        Severity = UserNotificationSeverity.Info
+                    },
+                    ct);
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "task.notification.in_app_write_failed EventCode={EventCode} TaskId={TaskId} Recipients={Recipients}",
+                eventCode, task.Id, recipients.Count);
+        }
+    }
+
+    /// <summary>
+    /// Where an in-app notification about a task points. Mirrors the deep link
+    /// <c>TaskWorkItemProvider</c> already publishes for the same records, so the bell and the work list send
+    /// the reader to the same place.
+    /// </summary>
+    private static string TaskDeepLink(Guid taskId) => $"/Tasks/{taskId}";
 
     /// <summary>
     /// The variables every task event declares. Kept in ONE place so a template rendering a blank is a

@@ -111,6 +111,40 @@ public sealed class PlatformLookupProviderTests
     }
 
     [Fact]
+    public async Task The_channel_lookup_still_offers_ONLY_Email_after_InApp_was_added_to_the_enum()
+    {
+        /*
+         * BL-025 — the enum gained a second member and this dropdown deliberately did not.
+         *
+         * WHAT THIS PREVENTS. The lookup enumerates NotificationChannelCode generically, so adding InApp = 1
+         * would have put a new option on the Platform Admin notification TEMPLATE and EVENT screens for free.
+         * Two things would then be wrong at once: the option renders as the bare literal "InApp" in all seven
+         * languages (the enum carries no [Display] and there is no resx key for channel VALUES), and choosing
+         * it authors a template that nothing will ever read — the in-app channel writes a UserNotification row
+         * from the event code and the record's own title, and never resolves a template at all.
+         *
+         * ⚠ MUTATION GUARD, NOT DECORATION: delete the excludeCodes argument in PlatformLookupProvider and
+         * this goes red naming InApp. That is the conversation that has to happen before the option appears —
+         * it appears when a template-rendering in-app pipeline exists, not when the enum grows.
+         */
+        var provider = CreateProvider();
+
+        var options = await provider.GetLookupOptionsAsync(
+            PlatformLookupKeys.NotificationChannels, CancellationToken.None);
+
+        Assert.NotNull(options);
+        var option = Assert.Single(options!);
+        Assert.Equal("Email", option.Code);
+
+        // Non-vacuity: the enum really does carry a second member, so "only Email came back" is the exclusion
+        // working rather than the enum still having one value.
+        Assert.Equal(2, Enum.GetValues<Diten.Platform.Domain.Enums.NotificationChannelCode>().Length);
+        Assert.Contains(
+            Enum.GetValues<Diten.Platform.Domain.Enums.NotificationChannelCode>(),
+            value => value == Diten.Platform.Domain.Enums.NotificationChannelCode.InApp);
+    }
+
+    [Fact]
     public async Task Unknown_lookup_key_returns_controlled_not_found_response()
     {
         var handler = new GetLookupOptionsHandler(CreateProvider());

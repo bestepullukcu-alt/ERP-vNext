@@ -160,6 +160,43 @@ public static partial class PlatformSchemaManifest
          * created best-effort at construction"; that code does not exist. This is where it lives now.
          * Partial on IsDeleted:false so a deprecated definition does not block re-registering its code.
          */
+        /*
+         * BL-025 — the in-app inbox. ONE index, and it is the only read this collection has.
+         *
+         * The read is always the same shape: "my notifications, unread first, newest first, one page" — an
+         * equality on TenantId and UserId, then a sort. So the index leads with the two equality keys and
+         * continues with the sort keys in sort order: {TenantId:1, UserId:1, IsRead:1, CreatedAt:-1}.
+         *
+         * ⚠ THE READ-STATE KEY IS IsRead AND NOT ReadAt, AND THAT IS NOT A STYLE CHOICE. The obvious index
+         * is {TenantId, UserId, ReadAt, CreatedAt}: a null ReadAt sorts before every date, so one walk gives
+         * unread-then-read with each group newest-first, and nothing extra has to be stored. MongoDB cannot
+         * build it. BL-030 is open, so no DateTimeOffsetSerializer is registered and every DateTimeOffset is
+         * persisted as a BSON ARRAY [ticks, offsetMinutes]; ReadAt and CreatedAt are therefore two array
+         * fields in one compound index, which is "cannot index parallel arrays", and the matching sort is
+         * "cannot sort with keys that are parallel arrays". Both fail against a real database only —
+         * DateTimeOffsetSortGuardTests is what catches it in CI, and it did catch exactly this.
+         *
+         * So UserNotification carries IsRead as a materialised mirror of "ReadAt is not null", written in the
+         * same operation and never on its own, purely so the read state can be a key. When BL-030 lands, this
+         * index becomes {…, ReadAt:1, CreatedAt:-1} and the boolean goes away with it.
+         *
+         * "Unread first" is still a SORT rather than a second query: false sorts before true, so one index
+         * walk returns unread ahead of read and each group newest-first. The unread COUNT is served by the
+         * {TenantId, UserId, IsRead} prefix of this same index, which is why it needs no index of its own.
+         */
+        Collection<UserNotification>(
+            SchemaProfile.Notification,
+            PlatformCollections.UserNotifications,
+            () => new CreateIndexModel<UserNotification>[]
+            {
+                    new CreateIndexModel<UserNotification>(
+                        Builders<UserNotification>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.UserId)
+                            .Ascending(x => x.IsRead)
+                            .Descending(x => x.CreatedAt),
+                        new CreateIndexOptions { Name = "ix_user_notifications_tenant_user_read_created" })
+            }),
         Collection<NotificationEventDefinition>(
             SchemaProfile.Notification,
             PlatformCollections.NotificationEventDefinitions,

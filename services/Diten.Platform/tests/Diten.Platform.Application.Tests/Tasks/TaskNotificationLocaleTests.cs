@@ -322,6 +322,7 @@ public sealed class TaskNotificationLocaleTests
                 localeResolver,
                 resolver,
                 new FakePositionAssignmentRepository(),
+                new FakeUserNotificationRepository(),
                 new FakeTenantContext(tenant),
                 NullLogger<TaskNotificationService>.Instance);
 

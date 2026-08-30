@@ -306,6 +306,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationTemplateRepository, NotificationTemplateRepository>();
         services.AddScoped<INotificationDispatchRepository, NotificationDispatchRepository>();
         services.AddScoped<INotificationEventDefinitionRepository, NotificationEventDefinitionRepository>();
+        services.AddScoped<IUserNotificationRepository, UserNotificationRepository>();
         services.AddScoped<IOrganizationUnitRepository, OrganizationUnitRepository>();
         services.AddScoped<IPositionRepository, PositionRepository>();
         services.AddScoped<IPositionAssignmentRepository, PositionAssignmentRepository>();

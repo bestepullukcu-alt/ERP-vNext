@@ -5,6 +5,7 @@ using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Common.Authorization;
 using Diten.Platform.Common.Tenancy;
+using Diten.Platform.Domain.Entities.Notifications;
 using Diten.Platform.Domain.Entities.Organization;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
@@ -1752,4 +1753,58 @@ internal sealed class FakeTaskTypeRepository : ITaskTypeRepository
         if (at >= 0) { _types[at] = type; }
         return Task.CompletedTask;
     }
+}
+
+/// <summary>
+/// BL-025 — the in-app inbox in memory, behaving like the Mongo one where behaviour is observable.
+///
+/// <para>Ordering, tenant/user scoping and the once-only mark are all reproduced here rather than simplified
+/// away: a double that returns rows in insertion order would let a "unread first" assertion pass without the
+/// production sort existing, and a double that ignores the user would make the scoping tests vacuous.</para>
+/// </summary>
+internal sealed class FakeUserNotificationRepository : IUserNotificationRepository
+{
+    /// <summary>Everything ever written, in write order — assertions read it directly.</summary>
+    public List<UserNotification> Written { get; } = [];
+
+    /// <summary>Set to make every write throw, to prove the e-mail path survives an in-app failure.</summary>
+    public Exception? ThrowOnCreate { get; set; }
+
+    public Task<UserNotification> CreateAsync(UserNotification notification, CancellationToken ct = default)
+    {
+        if (ThrowOnCreate is not null) { throw ThrowOnCreate; }
+
+        Written.Add(notification);
+        return Task.FromResult(notification);
+    }
+
+    public Task<IReadOnlyList<UserNotification>> ListForUserAsync(
+        Guid tenantId, Guid userId, int skip, int take, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<UserNotification>>(
+            Owned(tenantId, userId)
+                // The production sort, reproduced: unread (IsRead false) first, newest first inside each
+                // group — and on the SAME key production uses, so a double cannot certify a sort Mongo
+                // would reject (DateTimeOffsetSortGuardTests, BL-030).
+                .OrderBy(x => x.IsRead)
+                .ThenByDescending(x => x.CreatedAt)
+                .Skip(Math.Max(0, skip))
+                .Take(take <= 0 ? 0 : take)
+                .ToList());
+
+    public Task<long> CountUnreadForUserAsync(Guid tenantId, Guid userId, CancellationToken ct = default)
+        => Task.FromResult(Owned(tenantId, userId).LongCount(x => !x.IsRead));
+
+    public Task<bool> MarkReadAsync(
+        Guid tenantId, Guid userId, Guid notificationId, DateTimeOffset readAt, CancellationToken ct = default)
+    {
+        var row = Owned(tenantId, userId).FirstOrDefault(x => x.Id == notificationId);
+        return Task.FromResult(row is not null && row.TryMarkRead(readAt));
+    }
+
+    public Task<long> MarkAllReadAsync(
+        Guid tenantId, Guid userId, DateTimeOffset readAt, CancellationToken ct = default)
+        => Task.FromResult(Owned(tenantId, userId).LongCount(x => x.TryMarkRead(readAt)));
+
+    private IEnumerable<UserNotification> Owned(Guid tenantId, Guid userId)
+        => Written.Where(x => !x.IsDeleted && x.TenantId == tenantId && x.UserId == userId);
 }
