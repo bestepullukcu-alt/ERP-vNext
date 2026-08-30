@@ -65,4 +65,3 @@ public sealed class LskuIdentityWorkflowTenantPartitionDiscoveryRepository
         return new(page, candidates.Count == limit ? candidates[^1] : null);
     }
 }
-

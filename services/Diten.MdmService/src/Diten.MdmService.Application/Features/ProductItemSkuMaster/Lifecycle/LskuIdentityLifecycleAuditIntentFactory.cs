@@ -169,4 +169,3 @@ public static class LskuIdentityLifecycleAuditIntentFactory
         return new Guid(guidBytes);
     }
 }
-
