@@ -1,0 +1,32 @@
+@using Diten.Web.Views.ManagementGovernance.ProcessModeling.PerformanceImprovement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PerformanceImprovementIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="performance-improvement-index-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        Empty = Localizer["Empty"].Value,
+        Loading = SharedLocalizer["Loading"].Value,
+        Open = Localizer["Open"].Value,
+        ProblemStatement = Localizer["ProblemStatement"].Value,
+        ExpectedOutcome = Localizer["ExpectedOutcome"].Value,
+        PriorityRank = Localizer["PriorityRank"].Value,
+        Lifecycle = Localizer["Lifecycle"].Value,
+        Outcomes = Localizer["Outcomes"].Value,
+        GatewayNotReady = Localizer["GatewayNotReady"].Value,
+        Error401 = Localizer["Error401"].Value,
+        Error403 = Localizer["Error403"].Value,
+        Error404 = Localizer["Error404"].Value,
+        Error409 = Localizer["Error409"].Value,
+        Error503 = Localizer["Error503"].Value
+    })
+</script>

@@ -30,6 +30,13 @@ public sealed class PerformanceImprovementMongoTests
         Assert.True((await store.ExecuteAsync(Request(tenant, actor, opportunity, version, PerformanceImprovementContract.Command.RecordOutcome, 2, "outcome") with { OutcomeId = outcome, Title = null, ProblemStatement = null, Summary = "measured result" })).Success);
         Assert.True((await store.ExecuteAsync(Request(tenant, actor, opportunity, version, PerformanceImprovementContract.Command.CloseOpportunity, 3, "close") with { Title = null, ProblemStatement = null })).Success);
 
+        var query = new PerformanceImprovementQueryStore(context);
+        var listed = Assert.Single(await query.ListAsync(tenant));
+        Assert.Equal(opportunity, listed.Id);
+        Assert.Equal("Closed", listed.LifecycleState);
+        Assert.Single(listed.Outcomes);
+        Assert.Null(await query.GetAsync(Guid.NewGuid(), opportunity));
+
         var final = await context.Collection(PerformanceImprovementMongoPersistence.Opportunities).Find(new BsonDocument("TenantId", G(tenant))).SingleAsync();
         Assert.Equal("Closed", final["LifecycleState"].AsString);
         Assert.Equal(4, final["Version"].AsInt32);

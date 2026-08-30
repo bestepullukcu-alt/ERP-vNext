@@ -1,0 +1,37 @@
+@model Diten.Web.Models.ManagementGovernance.ProcessModeling.PerformanceImprovement.PerformanceImprovementDetailViewModel
+@using Diten.Web.Views.ManagementGovernance.ProcessModeling.PerformanceImprovement
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PerformanceImprovementIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["DetailsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div><h5 class="mb-0">@Localizer["DetailsTitle"]</h5><p class="mb-0 text-muted">@Localizer["DetailsDescription"]</p></div>
+    <a class="btn btn-label-secondary" href="/management-governance/process-modeling/improvements">@SharedLocalizer["Back"]</a>
+</div>
+
+@if (!Model.GatewayReady)
+{
+    <div class="alert alert-warning" role="status" data-improvement-state="default-off">@Localizer["GatewayNotReady"]</div>
+}
+
+@if (Model.GatewayReady)
+{
+    <div id="performanceImprovementDetail" class="card p-4" aria-live="polite">
+        <div class="text-muted">@SharedLocalizer["Loading"]</div>
+    </div>
+}
+<div id="performanceImprovementContext" class="d-none" data-mode="details"
+     data-id="@Model.OpportunityId.ToString("D")" data-ready="@Model.GatewayReady.ToString().ToLowerInvariant()"></div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/pages/management-governance/process-modeling/performance-improvement.css" asp-append-version="true" />
+}
+@section Scripts {
+    <partial name="~/Views/ManagementGovernance/ProcessModeling/PerformanceImprovement/_IndexL10n.cshtml" />
+    <script src="~/assets/js/pages/management-governance/process-modeling/performance-improvement/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/management-governance/process-modeling/performance-improvement/index.js" asp-append-version="true"></script>
+}

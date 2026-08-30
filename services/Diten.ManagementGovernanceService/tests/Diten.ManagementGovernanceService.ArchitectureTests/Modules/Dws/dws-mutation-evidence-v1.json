@@ -50,7 +50,7 @@
       "id": "G02-bind-live-mongo-27017",
       "disposition": "security-policy-forbidden",
       "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs",
-      "restoredSha256": "5871db6f15d7db9a044fe4afe9955bbfc9967721b9887156d8dbbeedcc7c0715",
+      "restoredSha256": "8b911212c42c4f5a257aa5d3eb3d029cf5e63879ea0261be4469b87cd827f76b",
       "failureText": "mutant would bind or reuse protected Mongo ports 27017, 27018 or 27019",
       "testType": "Diten.ManagementGovernanceService.ArchitectureTests.Modules.Dws.DwsArchitectureTests",
       "testMethod": "Default_off_boundary_exits_without_runtime_activation"

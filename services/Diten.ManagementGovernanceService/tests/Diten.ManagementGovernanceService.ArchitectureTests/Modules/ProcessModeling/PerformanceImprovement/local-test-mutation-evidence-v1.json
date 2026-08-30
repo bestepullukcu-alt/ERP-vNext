@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "moduleCode": "MOD-0355",
+  "physicalMutations": [
+    {
+      "id": "query-tenant-predicate-removal",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/ProcessModeling/PerformanceImprovement/PerformanceImprovementQueryStore.cs",
+      "expectedRedTest": "Dynamic_replica_set_proves_exact_indexes_and_full_lifecycle",
+      "compileExitCode": 0,
+      "targetedExitCode": 1,
+      "expectedFailure": "foreign tenant query returned an existing OpportunityDto instead of null",
+      "restoredSha256": "76a5a501e9a0a0e38593cdfb8de34e55b0fd04917a92ba683d8d84440739c325"
+    }
+  ],
+  "securityPolicyForbiddenDispositions": [
+    {
+      "id": "browser-direct-service-url",
+      "materialized": false,
+      "compiled": false,
+      "executed": false,
+      "reason": "Replacing the same-origin proxy URL with direct 127.0.0.1:5017 access violates the browser/Gateway trust boundary even as a temporary mutant.",
+      "testSourcePath": "frontend/Diten.Web/tests/mg-process-improvement-local-test.test.js",
+      "executableInvariantTest": "uses the v2 table, same-origin fetch and no direct service or token handling"
+    }
+  ]
+}

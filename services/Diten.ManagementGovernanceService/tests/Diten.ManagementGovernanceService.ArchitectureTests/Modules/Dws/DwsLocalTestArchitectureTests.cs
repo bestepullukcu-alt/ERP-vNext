@@ -33,6 +33,23 @@ public sealed class DwsLocalTestArchitectureTests
     }
 
     [Fact]
+    public void Module_composition_cannot_remove_a_mandatory_shared_pipeline_registration()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddDwsApplication();
+        var behaviors = services
+            .Where(x => x.ServiceType.IsGenericType && x.ServiceType.GetGenericTypeDefinition() == typeof(IPipelineBehavior<,>))
+            .Select(x => x.ImplementationType)
+            .ToArray();
+        Assert.Equal(new[]
+        {
+            typeof(ValidationBehavior<,>), typeof(LoggingBehavior<,>),
+            typeof(ExceptionBehavior<,>), typeof(PerformanceBehavior<,>)
+        }, behaviors);
+    }
+
+    [Fact]
     public void Production_infrastructure_composition_does_not_activate_local_executor()
     {
         var services=new ServiceCollection();

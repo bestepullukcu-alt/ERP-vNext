@@ -17,8 +17,8 @@ public sealed class DwsLocalTestMutationEvidenceTests
         var entries=json.RootElement.GetProperty("mutations").EnumerateArray().ToArray();
         Assert.Equal(10,entries.Length);
         Assert.Equal(10,entries.Select(x=>x.GetProperty("id").GetString()).Distinct(StringComparer.Ordinal).Count());
-        Assert.Equal(9,entries.Count(x=>x.GetProperty("disposition").GetString()=="expected-red"));
-        Assert.Single(entries,x=>x.GetProperty("disposition").GetString()=="security-policy-forbidden");
+        Assert.Equal(8,entries.Count(x=>x.GetProperty("disposition").GetString()=="expected-red"));
+        Assert.Equal(2,entries.Count(x=>x.GetProperty("disposition").GetString()=="security-policy-forbidden"));
         var configuration=new DirectoryInfo(AppContext.BaseDirectory).Parent?.Name??throw new InvalidOperationException("configuration_not_found");
         foreach(var entry in entries)
         {

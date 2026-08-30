@@ -8,7 +8,7 @@ namespace Diten.ManagementGovernanceService.ArchitectureTests.Modules.ProcessMod
 public sealed class PerformanceImprovementArchitectureTests
 {
     [Fact]
-    public void Slice_is_default_off_and_has_zero_host_reachability()
+    public void Local_test_slice_is_composed_only_on_existing_host_and_has_exact_route()
     {
         var service = ServiceRoot();
         var hostFiles = new[]
@@ -18,10 +18,19 @@ public sealed class PerformanceImprovementArchitectureTests
             Path.Combine(service, "src", "Diten.ManagementGovernanceService.Persistence", "DependencyInjection.cs"),
             Path.Combine(service, "src", "Diten.ManagementGovernanceService.Infrastructure", "DependencyInjection.cs")
         };
-        Assert.All(hostFiles, path => Assert.DoesNotContain("PerformanceImprovement", File.ReadAllText(path), StringComparison.Ordinal));
-        Assert.DoesNotContain(
-            Directory.GetFiles(Path.Combine(service, "src", "Diten.ManagementGovernanceService.Api", "Controllers"), "*.cs"),
-            path => File.ReadAllText(path).Contains("PerformanceImprovement", StringComparison.Ordinal));
+        Assert.Contains("PerformanceImprovement", File.ReadAllText(hostFiles[0]), StringComparison.Ordinal);
+        Assert.Contains("PerformanceImprovement", File.ReadAllText(hostFiles[1]), StringComparison.Ordinal);
+        Assert.Contains("PerformanceImprovement", File.ReadAllText(hostFiles[2]), StringComparison.Ordinal);
+        var controller = File.ReadAllText(Path.Combine(service, "src", "Diten.ManagementGovernanceService.Api", "Controllers", "PerformanceImprovementLocalTestController.cs"));
+        Assert.Contains("internal/local-test/v1/process-modeling/improvements", controller, StringComparison.Ordinal);
+        Assert.Contains("LocalTestAuthenticationHandler.SchemeName", controller, StringComparison.Ordinal);
+        Assert.Contains("ProcessModelingLocalRequestHash.Compute", controller, StringComparison.Ordinal);
+        Assert.Contains("ExactResolvedPath", controller, StringComparison.Ordinal);
+        Assert.Contains("ExactCommandName", controller, StringComparison.Ordinal);
+        Assert.Contains(": CustomBaseController", controller, StringComparison.Ordinal);
+        Assert.DoesNotContain("AllowAnonymous", controller, StringComparison.Ordinal);
+        Assert.DoesNotContain("SHA256.HashData(raw)", controller, StringComparison.Ordinal);
+        Assert.DoesNotContain("IEventBus", controller, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -86,14 +95,33 @@ public sealed class PerformanceImprovementArchitectureTests
     }
 
     [Fact]
-    public void Additive_permissions_and_event_identity_are_not_in_current_host_composition()
+    public void Local_test_mutation_evidence_is_bound_to_restored_query_and_forbidden_browser_boundary()
+    {
+        var path = Path.Combine(TestRoot(), "local-test-mutation-evidence-v1.json");
+        using var manifest = JsonDocument.Parse(File.ReadAllBytes(path));
+        var mutation = Assert.Single(manifest.RootElement.GetProperty("physicalMutations").EnumerateArray());
+        var source = Path.Combine(RepositoryRoot(), mutation.GetProperty("sourcePath").GetString()!);
+        Assert.Equal(mutation.GetProperty("restoredSha256").GetString(),
+            Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(source))).ToLowerInvariant());
+        Assert.Equal(0, mutation.GetProperty("compileExitCode").GetInt32());
+        Assert.NotEqual(0, mutation.GetProperty("targetedExitCode").GetInt32());
+
+        var forbidden = Assert.Single(manifest.RootElement.GetProperty("securityPolicyForbiddenDispositions").EnumerateArray());
+        Assert.False(forbidden.GetProperty("materialized").GetBoolean());
+        var testSource = Path.Combine(RepositoryRoot(), forbidden.GetProperty("testSourcePath").GetString()!);
+        Assert.Contains(forbidden.GetProperty("executableInvariantTest").GetString()!, File.ReadAllText(testSource), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Additive_permissions_and_event_identity_are_exact_and_host_is_non_production()
     {
         Assert.Equal(9, PerformanceImprovementPermissions.ExactOperationMap.Count);
         Assert.Equal("MOD-0355", PerformanceImprovementContract.ModuleCode);
         Assert.Equal(1, PerformanceImprovementContract.EventVersion);
-        var api = Path.Combine(ServiceRoot(), "src", "Diten.ManagementGovernanceService.Api");
-        Assert.DoesNotContain(Directory.GetFiles(api, "*.cs", SearchOption.AllDirectories),
-            path => File.ReadAllText(path).Contains(PerformanceImprovementContract.EventName, StringComparison.Ordinal));
+        var program = File.ReadAllText(Path.Combine(ServiceRoot(), "src", "Diten.ManagementGovernanceService.Api", "Program.cs"));
+        Assert.Contains("--local-test", program, StringComparison.Ordinal);
+        Assert.Contains("UseUrls(\"http://127.0.0.1:5017\")", program, StringComparison.Ordinal);
+        Assert.True(program.IndexOf("--local-test", StringComparison.Ordinal) < program.IndexOf("UseUrls", StringComparison.Ordinal));
     }
 
     private static (string Domain, string Application, string Persistence) SourceRoots()

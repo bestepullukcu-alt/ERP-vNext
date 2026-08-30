@@ -1,5 +1,6 @@
 using Diten.Web.Models.ManagementGovernance.ProcessModeling;
 using Diten.Web.Services.ManagementGovernance.ProcessModeling;
+using Diten.Web.Models.ManagementGovernance.ProcessModeling.PerformanceImprovement;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -59,6 +60,32 @@ public sealed class ProcessModelingFrontendController : Controller
     public Task<IActionResult> Model(Guid id, CancellationToken cancellationToken) =>
         ProxyReadAsync($"models/{id:D}", cancellationToken);
 
+    [HttpGet("improvements")]
+    public IActionResult Improvements()
+    {
+        if (!HasPermission(PerformanceImprovementFrontendPermissions.Read))
+            return StatusCode(StatusCodes.Status403Forbidden);
+        return View("~/Views/ManagementGovernance/ProcessModeling/PerformanceImprovement/Index.cshtml",
+            new PerformanceImprovementIndexViewModel(_gateway.IsReady, ResolveImprovementPermissions()));
+    }
+
+    [HttpGet("improvements/{id:guid}")]
+    public IActionResult Improvement(Guid id)
+    {
+        if (!HasPermission(PerformanceImprovementFrontendPermissions.Read))
+            return StatusCode(StatusCodes.Status403Forbidden);
+        return View("~/Views/ManagementGovernance/ProcessModeling/PerformanceImprovement/Details.cshtml",
+            new PerformanceImprovementDetailViewModel(id, _gateway.IsReady, ResolveImprovementPermissions()));
+    }
+
+    [HttpGet("api/improvements")]
+    public Task<IActionResult> ImprovementsApi(CancellationToken cancellationToken) =>
+        ProxyImprovementReadAsync("improvements", cancellationToken);
+
+    [HttpGet("api/improvements/{id:guid}")]
+    public Task<IActionResult> ImprovementApi(Guid id, CancellationToken cancellationToken) =>
+        ProxyImprovementReadAsync($"improvements/{id:D}", cancellationToken);
+
     private async Task<IActionResult> ProxyReadAsync(string relativePath, CancellationToken cancellationToken)
     {
         if (!HasPermission(ProcessModelingFrontendPermissions.Read))
@@ -95,4 +122,20 @@ public sealed class ProcessModelingFrontendController : Controller
                 || string.Equals(value, ProcessModelingFrontendPermissions.Read, StringComparison.Ordinal));
         return granted.ToHashSet(StringComparer.Ordinal);
     }
+
+    private async Task<IActionResult> ProxyImprovementReadAsync(string relativePath, CancellationToken cancellationToken)
+    {
+        if (!HasPermission(PerformanceImprovementFrontendPermissions.Read))
+        {
+            var denied = ProcessModelingFrontendProxyResult.Failure(403, "performance_improvement_permission_denied", HttpContext.TraceIdentifier);
+            return new ContentResult { Content = denied.Content, ContentType = denied.ContentType, StatusCode = denied.StatusCode };
+        }
+        var result = await _gateway.GetAsync(Request, relativePath, cancellationToken);
+        return new ContentResult { Content = result.Content, ContentType = result.ContentType, StatusCode = result.StatusCode };
+    }
+
+    private IReadOnlySet<string> ResolveImprovementPermissions() => User.FindAll("permission")
+        .Select(x => x.Value)
+        .Where(PerformanceImprovementFrontendPermissions.Exact.Contains)
+        .ToHashSet(StringComparer.Ordinal);
 }

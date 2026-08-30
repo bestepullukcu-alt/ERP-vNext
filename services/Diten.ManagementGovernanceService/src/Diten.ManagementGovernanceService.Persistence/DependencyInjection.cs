@@ -2,6 +2,8 @@ using Diten.ManagementGovernanceService.Persistence.Modules.Dws;
 using Diten.ManagementGovernanceService.Application.Features.Dws;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
+using Diten.ManagementGovernanceService.Persistence.Modules.ProcessModeling.PerformanceImprovement;
+using Diten.ManagementGovernanceService.Application.Modules.ProcessModeling.PerformanceImprovement;
 
 namespace Diten.ManagementGovernanceService.Persistence;
 
@@ -30,6 +32,13 @@ public static class DependencyInjection
         services.AddSingleton<IDwsStructureVisibilityPort, DwsStructureVisibilityPort>();
         services.AddSingleton<IDwsFunctionalCommandPort, DwsFunctionalCommandPort>();
         services.AddSingleton<IDwsFunctionalQueryPort, DwsFunctionalQueryPort>();
+        services.AddSingleton(sp => new PerformanceImprovementMongoPersistence.Context(
+            sp.GetRequiredService<DwsMongoContext>().Client,
+            databaseName));
+        services.AddSingleton<PerformanceImprovementMongoPersistence.IndexInitializer>();
+        services.AddSingleton<PerformanceImprovementMongoPersistence.Writer>();
+        services.AddSingleton<PerformanceImprovementContract.IMutationStore, PerformanceImprovementMongoPersistence.Store>();
+        services.AddSingleton<PerformanceImprovementContract.IQueryStore, PerformanceImprovementQueryStore>();
         return services;
     }
 }

@@ -5,6 +5,7 @@ using Diten.ManagementGovernanceService.Application.Features.Dws.Commands;
 using Diten.ManagementGovernanceService.Application.Features.Dws.Queries;
 using Diten.ManagementGovernanceService.Application.Features.Dws.Validators;
 using FluentValidation;
+using Diten.ManagementGovernanceService.Application.Modules.ProcessModeling.PerformanceImprovement;
 
 namespace Diten.ManagementGovernanceService.Application;
 
@@ -39,6 +40,7 @@ public static class DependencyInjection
         services.AddTransient<IDwsFunctionalValidator<ValidateStructureQuery>, ValidateStructureValidator>();
         services.AddTransient<IDwsFunctionalValidator<CompareStructureRevisionsQuery>, CompareStructureRevisionsValidator>();
         services.AddTransient<IDwsFunctionalValidator<CompareStructureBaselinesQuery>, CompareStructureBaselinesValidator>();
+        services.AddScoped<PerformanceImprovementCoordinator>();
         return services;
     }
 }

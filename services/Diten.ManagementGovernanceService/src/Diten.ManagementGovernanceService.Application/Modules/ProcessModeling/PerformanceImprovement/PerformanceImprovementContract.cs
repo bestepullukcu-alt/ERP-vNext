@@ -49,4 +49,25 @@ public static class PerformanceImprovementContract
     {
         Task<MutationResult> ExecuteAsync(MutationRequest request, CancellationToken cancellationToken = default);
     }
+
+    public sealed record OpportunityDto(
+        Guid Id,
+        Guid ProcessModelVersionId,
+        string Title,
+        string ProblemStatement,
+        string? ExpectedOutcome,
+        int? PriorityRank,
+        string LifecycleState,
+        int Version,
+        DateTime CreatedAtUtc,
+        DateTime? UpdatedAtUtc,
+        IReadOnlyList<OutcomeDto> Outcomes);
+
+    public sealed record OutcomeDto(Guid Id, string Summary, DateTime ObservedAtUtc);
+
+    public interface IQueryStore
+    {
+        Task<IReadOnlyList<OpportunityDto>> ListAsync(Guid tenantId, CancellationToken cancellationToken = default);
+        Task<OpportunityDto?> GetAsync(Guid tenantId, Guid opportunityId, CancellationToken cancellationToken = default);
+    }
 }

@@ -8,6 +8,7 @@ using Diten.ManagementGovernanceService.Persistence.Modules.Dws;
 using Diten.ManagementGovernanceService.Application.Features.ProcessModelingLocalTest;
 using Diten.ManagementGovernanceService.Api.LocalTestSecurity;
 using Microsoft.AspNetCore.Authentication;
+using Diten.ManagementGovernanceService.Persistence.Modules.ProcessModeling.PerformanceImprovement;
 
 namespace Diten.ManagementGovernanceService.Api;
 
@@ -21,6 +22,7 @@ public static class Program
         var databaseName=Environment.GetEnvironmentVariable("DWS_LOCAL_TEST_DATABASE") ?? "diten_mg_dws_local_test";
         var app=BuildLocalTestApp(mongoUri,databaseName);
         await app.Services.GetRequiredService<DwsMongoIndexInitializer>().InitializeAsync();
+        await app.Services.GetRequiredService<PerformanceImprovementMongoPersistence.IndexInitializer>().InitializeAsync();
         await app.RunAsync();
     }
 
