@@ -13,8 +13,10 @@ namespace TenantArchitecture.ArchitectureTests;
  * green would have turned the deviation into something "accepted". That objection is answered here by SHRINKING
  * the list rather than by writing one: three of those five sites are fixed in this round, and the two that remain
  * are not a convenience list — they are a single named, owner-level decision (below) that this guard now keeps
- * VISIBLE instead of letting it be forgotten. UPDATE 2026-08-30: the guard did its job — the gateway's decision
- * was made, it moved into EnforcesTheRule, and one site remains pending.
+ * VISIBLE instead of letting it be forgotten. UPDATE 2026-08-30: the guard did its job — BOTH reserved decisions
+ * were made on the same day (the gateway, then Platform.Common), both sites moved into EnforcesTheRule, and the
+ * pending list is now EMPTY. Read `DecisionPendingByDesign` below before assuming that emptiness is vacuous: it is
+ * asserted directly, because a loop over an empty list measures nothing.
  *
  * ⚠ WHAT THIS GUARD IS FOR, precisely. It is a CLASSIFICATION guard, not a behaviour test: the behaviour is
  * asserted per service by the real middleware, over real requests, in each service's own
@@ -52,27 +54,28 @@ public class TenantContradictionSiteGuardTests
         // tenants cannot be evaluated for access at all. The third source it named — the subdomain — is covered by
         // the SAME rule rather than a second one: if the token names a tenant, EVERY other signal must agree.
         // Behaviour test: gateway/Diten.ApiGateway.Tests/TenantContradictionGuardTests.cs.
-        "gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs"
+        "gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs",
+        // MOVED HERE 2026-08-30 from DecisionPendingByDesign — THE LAST SITE. The ordering question that reserved
+        // it (contradiction 400 vs. the actor_type 403 that IsTenantScopedOrgPath deliberately answers for
+        // platform actors) was answered by the owner with the SAME answer as the gateway: the contradiction is
+        // refused FIRST, because a request naming two tenants cannot be evaluated for access at all. The designed
+        // 403 survives — with no X-Tenant-Id there is no contradiction.
+        // Behaviour test: services/Diten.Platform/tests/Diten.Platform.Application.Tests/Tenancy/TenantContradictionGuardTests.cs.
+        "services/Diten.Platform.Common/src/Diten.Platform.Common/Tenancy/TenantResolutionMiddleware.cs"
     ];
 
     /// <summary>
-    /// ⚠ NOT AN EXEMPTION LIST — AN OPEN DECISION, NAMED. One site is left: it arbitrates PLATFORM-ACTOR requests,
-    /// so the contradiction check would have to be ordered against an existing actor_type boundary that already
-    /// answers 403. Choosing which refusal wins is an owner decision about an access boundary, not a cleanup, so
-    /// BL-324 leaves it measured and open rather than guessed. Turning it green belongs to that decision's round,
-    /// together with deleting its line here.
+    /// ⚠ THIS LIST IS EMPTY, AND THAT IS A MEASURED STATE — NOT AN ABSENCE OF MEASUREMENT. All seven
+    /// tenant-resolution sites now refuse the contradiction; the last one (Platform.Common) left this list on
+    /// 2026-08-30 when the owner answered its ordering question, and the gateway left it earlier the same day.
     ///
-    /// The gateway left this list on 2026-08-30 when the owner made exactly that decision FOR THE GATEWAY ONLY.
-    /// It is deliberately NOT generalised to the entry below: Platform.Common is answered per service and in
-    /// process, and the owner has not ruled on it.
+    /// <para>It is kept rather than deleted because it is where a FUTURE site would be classified. Emptiness does
+    /// not make the guard vacuous: <see cref="EveryTenantResolutionSite_IsClassified_AndTheSetsAreExact"/> pins
+    /// <see cref="KnownTenantResolutionSites"/> as an exact floor and ceiling, so an eighth site cannot appear
+    /// without failing that test and forcing whoever added it to classify it here or in
+    /// <see cref="EnforcesTheRule"/>.</para>
     /// </summary>
-    private static readonly string[] DecisionPendingByDesign =
-    [
-        // Ordinary tenant path resolves the tenant BEFORE the actor_type 403 ("Tenant endpoints require
-        // tenant_user tokens"), so refusing the contradiction first would answer 400 where a platform actor is
-        // deliberately answered 403 today.
-        "services/Diten.Platform.Common/src/Diten.Platform.Common/Tenancy/TenantResolutionMiddleware.cs"
-    ];
+    private static readonly string[] DecisionPendingByDesign = [];
 
     [Fact]
     public void EveryTenantResolutionSite_IsClassified_AndTheSetsAreExact()
@@ -89,7 +92,7 @@ public class TenantContradictionSiteGuardTests
     }
 
     [Fact]
-    public void SitesThatEnforceTheRule_AreExactlyTheMeasuredSix()
+    public void SitesThatEnforceTheRule_AreExactlyTheMeasuredSeven()
     {
         var repoRoot = FindRepoRoot();
 
@@ -102,22 +105,25 @@ public class TenantContradictionSiteGuardTests
         Assert.Equal(EnforcesTheRule.OrderBy(x => x, StringComparer.Ordinal), actuallyEnforcing);
     }
 
+    /// <summary>
+    /// ⚠ THIS TEST REPLACED A `foreach` OVER <see cref="DecisionPendingByDesign"/> (previously
+    /// <c>SitesPendingADecision_StillDoNotEnforceIt_SoTheListCannotGoStale</c>). That test asserted, for each
+    /// pending site, that it did NOT yet refuse the contradiction — a mirror that demanded the line be deleted
+    /// once the decision was made. On 2026-08-30 the last decision WAS made and the list went empty, and a
+    /// `foreach` over an empty list ASSERTS NOTHING: it would have stayed green forever while measuring nothing.
+    /// Deleting it and asserting the emptiness DIRECTLY is the only way the fact stays measured.
+    ///
+    /// <para>So: the list is empty because seven sites out of seven enforce the rule. If a NEW tenant-resolution
+    /// site is ever added, <see cref="KnownTenantResolutionSites"/> stops matching the scan and
+    /// <see cref="EveryTenantResolutionSite_IsClassified_AndTheSetsAreExact"/> fails, forcing the new site to be
+    /// classified — at which point, if it is pending a decision, this test fails too and demands the reason be
+    /// written down here.</para>
+    /// </summary>
     [Fact]
-    public void SitesPendingADecision_StillDoNotEnforceIt_SoTheListCannotGoStale()
+    public void NoSiteIsPendingADecision_BecauseAllSevenEnforceTheRule()
     {
-        var repoRoot = FindRepoRoot();
-
-        // The mirror of the test above, and the reason the pending list cannot quietly outlive its decision: if
-        // someone DOES make one of these refuse the contradiction, this fails and demands the line be deleted.
-        foreach (var site in DecisionPendingByDesign)
-        {
-            var full = Path.Combine(repoRoot, site);
-            Assert.True(File.Exists(full), $"Pending site no longer exists — update BL-324's list: {site}");
-            Assert.False(
-                RefusesTheContradiction(full),
-                $"{site} now refuses the contradiction. That is the owner decision BL-324 reserved: remove it " +
-                "from DecisionPendingByDesign, add it to EnforcesTheRule, and give it a behaviour test.");
-        }
+        Assert.Empty(DecisionPendingByDesign);
+        Assert.Equal(KnownTenantResolutionSites, EnforcesTheRule.Length);
     }
 
     /// <summary>

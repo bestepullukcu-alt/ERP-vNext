@@ -8,6 +8,12 @@ namespace Diten.Platform.Common.Tenancy;
 public sealed class TenantResolutionMiddleware
 {
     private const string TenantHeader = "X-Tenant-Id";
+
+    /// <summary>
+    /// The machine-read name of the contradicting signal in the refusal body. Deliberately NOT a ReasonCode and
+    /// NOT bridged to the resx layer: it is a routing signal for the caller, not screen text.
+    /// </summary>
+    private const string HeaderSignal = "header";
     private readonly RequestDelegate _next;
     private readonly ILogger<TenantResolutionMiddleware> _logger;
     private readonly IConfiguration _configuration;
@@ -68,7 +74,17 @@ public sealed class TenantResolutionMiddleware
 
             var personalizationJwtTenant = ReadJwtTenant(context);
             var personalizationHeaderTenant = ReadHeaderTenant(context);
-            var personalizationTenant = ResolveTenant(personalizationJwtTenant, personalizationHeaderTenant, context);
+            var personalizationResolution = ResolveTenant(personalizationJwtTenant, personalizationHeaderTenant, context);
+
+            // BEFORE the dev bypass (which fills an ABSENT tenant, it does not reconcile two named ones) and
+            // BEFORE the actor_type 403 below — see the rule comment on ResolveTenant.
+            if (personalizationResolution.IsConflict)
+            {
+                await WriteTenantMismatch(context, personalizationResolution);
+                return;
+            }
+
+            var personalizationTenant = personalizationResolution.TenantId;
             if (personalizationTenant is null && TryGetDevelopmentBypassTenant(out var personalizationBypassTenant))
             {
                 personalizationTenant = personalizationBypassTenant;
@@ -116,7 +132,19 @@ public sealed class TenantResolutionMiddleware
 
         var jwtTenant = ReadJwtTenant(context);
         var headerTenant = ReadHeaderTenant(context);
-        var resolvedTenant = ResolveTenant(jwtTenant, headerTenant, context);
+        var resolution = ResolveTenant(jwtTenant, headerTenant, context);
+
+        // BEFORE the dev bypass and BEFORE the actor_type 403 below. THIS ORDERING IS THE OWNER DECISION:
+        // IsTenantScopedOrgPath routes some /api/platform/* groups here to be answered 403 for a platform actor,
+        // and a CONTRADICTING X-Tenant-Id on those paths is now answered 400 instead. The designed 403 is not
+        // lost — with no header there is no contradiction and it still answers 403.
+        if (resolution.IsConflict)
+        {
+            await WriteTenantMismatch(context, resolution);
+            return;
+        }
+
+        var resolvedTenant = resolution.TenantId;
         if (resolvedTenant is null && TryGetDevelopmentBypassTenant(out var bypassTenant))
         {
             resolvedTenant = bypassTenant;
@@ -149,21 +177,63 @@ public sealed class TenantResolutionMiddleware
         await _next(context);
     }
 
-    private Guid? ResolveTenant(Guid? jwtTenant, Guid? headerTenant, HttpContext context)
+    /*
+     * BL-324 — THE CONTRADICTION IS REFUSED BEFORE ACCESS IS JUDGED (owner decision 2026-08-30, the same decision
+     * and the same reasoning already applied in the gateway). If the token names a tenant and `X-Tenant-Id` names a
+     * DIFFERENT one, the request is malformed and is refused 400. It is not an access verdict: a request that names
+     * two tenants cannot be evaluated for access at all, so the refusal is ordered BEFORE the actor_type 403.
+     *
+     * This file previously logged "Tenant conflict. JWT tenant wins." and CARRIED ON. A warning is not a refusal.
+     *
+     * WITHOUT A TOKEN THERE IS NO CONTRADICTION — nothing authenticated has named a tenant, so a header alone is
+     * just the only signal there is, and today's `jwtTenant ?? headerTenant` precedence is preserved exactly.
+     *
+     * ⚠ THE ONE DELIBERATE BEHAVIOUR CHANGE. IsTenantScopedOrgPath (below) routes /api/platform/organization-units,
+     * /positions, /position-assignments, /navigation, /tenant-security and /working-calendars/overrides down the
+     * TENANT branch specifically so a platform_admin token is answered 403 there. Platform tokens always carry
+     * PlatformTenantId (…0001), so a platform_admin hitting those paths with a CONTRADICTING X-Tenant-Id now gets
+     * 400 instead of 403. With no header there is no contradiction and the designed 403 is unchanged. Both halves
+     * are measured — see TenantContradictionGuardTests in Diten.Platform.Application.Tests.
+     *
+     * ⚠ There is no subdomain signal in this middleware (unlike the gateway), so `conflictingSignals` is today
+     * always ["header"]. It stays an ARRAY anyway, so the refusal body is the same shape the gateway answers and
+     * the frontend does not have to learn two services separately.
+     */
+    private TenantResolution ResolveTenant(Guid? jwtTenant, Guid? headerTenant, HttpContext context)
     {
-        if (jwtTenant.HasValue)
+        if (jwtTenant.HasValue && headerTenant.HasValue && jwtTenant.Value != headerTenant.Value)
         {
-            if (headerTenant.HasValue && headerTenant != jwtTenant)
-            {
-                _logger.LogWarning(
-                    "Tenant conflict. JWT tenant wins. HeaderTenant={HeaderTenant} JwtTenant={JwtTenant} Path={Path}",
-                    headerTenant,
-                    jwtTenant,
-                    context.Request.Path);
-            }
-            return jwtTenant;
+            _logger.LogWarning(
+                "Tenant contradiction refused. Signals={Signals} HeaderTenant={HeaderTenant} JwtTenant={JwtTenant} Path={Path}",
+                HeaderSignal,
+                headerTenant,
+                jwtTenant,
+                context.Request.Path);
+
+            // The refusal status travels WITH the result, exactly as it does in the gateway: the two call sites
+            // below cannot then drift apart on how a contradiction is answered, and the 400 is visible at the
+            // point the decision is made rather than only inside the writer.
+            return TenantResolution.Conflict([HeaderSignal], StatusCodes.Status400BadRequest);
         }
-        return headerTenant;
+
+        return TenantResolution.Resolved(jwtTenant ?? headerTenant);
+    }
+
+    /// <summary>
+    /// The outcome of tenant resolution. A CONTRADICTION IS ITS OWN OUTCOME — it cannot be expressed as a null
+    /// tenant, because the caller would then answer "Missing Tenant" for a request that named two of them.
+    /// </summary>
+    private readonly record struct TenantResolution(
+        Guid? TenantId,
+        IReadOnlyList<string>? ConflictingSignals,
+        int RefusalStatusCode)
+    {
+        public static TenantResolution Resolved(Guid? tenantId) => new(tenantId, null, 0);
+
+        public static TenantResolution Conflict(IReadOnlyList<string> conflictingSignals, int refusalStatusCode)
+            => new(null, conflictingSignals, refusalStatusCode);
+
+        public bool IsConflict => ConflictingSignals is { Count: > 0 };
     }
 
     private static Guid? ReadJwtTenant(HttpContext context)
@@ -244,6 +314,26 @@ public sealed class TenantResolutionMiddleware
     {
         return string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase)
                || string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// The contradiction refusal. Same title, status and body shape as the gateway answers, INCLUDING
+    /// `conflictingSignals` as an array even though this middleware only ever has one signal to report.
+    /// </summary>
+    private static async Task WriteTenantMismatch(HttpContext context, TenantResolution resolution)
+    {
+        var conflictingSignals = resolution.ConflictingSignals!;
+        context.Response.StatusCode = resolution.RefusalStatusCode;
+        context.Response.ContentType = "application/problem+json";
+        var json = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            title = "Tenant mismatch",
+            status = resolution.RefusalStatusCode,
+            detail = $"The authenticated token and '{TenantHeader}' name different tenants. The request names two tenants and cannot be evaluated.",
+            traceId = context.TraceIdentifier,
+            conflictingSignals
+        });
+        await context.Response.WriteAsync(json);
     }
 
     private static async Task WriteProblemDetails(HttpContext context, int statusCode, string title, string detail)
