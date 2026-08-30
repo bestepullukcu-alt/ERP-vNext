@@ -2241,6 +2241,52 @@ Missing or indeterminate authority is `503`; malformed/unsupported contract is `
 non-disclosable resource is `404`; stale version/reference conflict is `409`. Cache, last-known-good,
 free-text reference, copied upstream payload and local fallback truth are forbidden.
 
+#### Performance Improvement local-test and read-frontend reconciliation — NON-PRODUCTION / DEFAULT-OFF
+
+The Control Tower authorizes the already bounded Opportunity/Outcome slice to participate in the existing
+loopback-only Local API-Test composition. This authority is additive to, and inherits every identity,
+tenant, permission, request-binding, Mongo transaction, default-off and production-rejection invariant of,
+the Local API-Test amendment above. It does not make the slice reachable in default or production
+composition and does not authorize a Gateway route or normal-JWT activation.
+
+The exact additional service allowlist is limited to:
+
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Controllers/PerformanceImprovementLocalTestController.cs`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Modules/ProcessModeling/PerformanceImprovement/PerformanceImprovementContract.cs`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/ProcessModeling/PerformanceImprovement/PerformanceImprovementQueryStore.cs`;
+- the existing shared `Program.cs`, API local-test authentication handler, Application/Persistence
+  `DependencyInjection.cs` files and project composition files only where additive registration is required;
+- exact Performance Improvement unit, architecture and integration test roots plus their local-test mutation
+  evidence manifest;
+- existing DWS architecture/mutation evidence files only to reconcile the shared-host byte-level guards.
+
+The closed local HTTP surface is `GET|POST /internal/local-test/v1/process-modeling/improvements`,
+`GET|PUT /internal/local-test/v1/process-modeling/improvements/{id}`, and exact `POST` suffixes
+`qualify`, `outcomes` and `close`. Mutation request hashes use the existing
+`ProcessModelingLocalRequestHash` framing and bind the exact resolved lowercase-`D` route, exact pack command
+name, method, tenant, actor, permission and unmodified raw body. Route, command, tenant, actor and permission
+are server-owned. Cross-tenant/missing records are non-disclosing `404`; header/token tenant disagreement is
+`400`; owned-resource permission denial is `403`; stale state is `409`; unavailable authority or
+infrastructure is `503`. No direct broker publish is added.
+
+A separate default-off read-only tenant UI is authorized only at:
+
+- `frontend/Diten.Web/Controllers/ProcessModelingFrontendController.cs`;
+- `frontend/Diten.Web/Models/ManagementGovernance/ProcessModeling/PerformanceImprovement/**`;
+- `frontend/Diten.Web/Views/ManagementGovernance/ProcessModeling/PerformanceImprovement/**`;
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/ProcessModeling/PerformanceImprovement/**`;
+- `frontend/Diten.Web/wwwroot/assets/js/pages/management-governance/process-modeling/performance-improvement/**`;
+- `frontend/Diten.Web/wwwroot/assets/css/pages/management-governance/process-modeling/performance-improvement.css`;
+- `frontend/Diten.Web/tests/mg-process-improvement-local-test.test.js`.
+
+The UI may reuse the existing same-origin `ProcessModelingFrontendGateway` read seam but cannot change that
+gateway, call `5017` from the browser, expose a bearer token or synthesize tenant/actor/permission values.
+Until separately approved Gateway and FU16-compatible Management Governance authentication composition
+exist, the read proxy remains exact `503` with zero service reads. Create/edit offcanvas, mutation actions,
+write proxy, antiforgery wiring and populated browser evidence remain a later gate; this read-only checkpoint
+must not claim them. The list still uses DataTables v2, tenant shell, seven-language resources and distinct
+loading/empty/`403`/`404`/`409`/`503` presentation contracts.
+
 #### Exact contract-test and mutation gates
 
 The bounded implementation is not a PASS until all of these executable gates pass:
