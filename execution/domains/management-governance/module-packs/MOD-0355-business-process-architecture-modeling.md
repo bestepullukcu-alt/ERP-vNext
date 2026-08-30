@@ -2706,6 +2706,82 @@ rollback/unknown-commit evidence, physical expected-red mutation restore, fronte
 web builds, and browser loading/empty/populated/403/404/409/503 screenshots. The slice cannot be called
 production-ready and cannot close legacy parity or Process Performance.
 
+### User-Acceptance Auth/Gateway/E2E Runtime — NON-PRODUCTION / DEFAULT-OFF
+
+The explicit Control Tower decision dated 2026-08-30 authorizes a bounded
+`USER-ACCEPTANCE-RUNTIME / NON-PRODUCTION` composition for normal signed-in tenant users. This amendment
+does not change `production_authority: none`; it authorizes no deployment, production secret, migration,
+push, merge, WorkCenter or Platform WorkAggregation change. The service remains loopback-only on `5017`
+and the browser may reach it only through the Diten.Web same-origin proxy and Gateway `5000`.
+
+The normal-user token family is the existing HS256 user/session JWT family. The MOD-0018/FU16 delegated
+S2S family, its client/audience/profile, proofs and manifests must not be accepted or reused as user/session
+authority. Tenant, actor and exact ordinal permissions are resolved only from the validated server-side JWT
+context. `X-Tenant-Id` is an agreement header added by the server-side proxy: missing/invalid or JWT/header
+mismatch is `400`; missing/deleted/cross-tenant data is ordinary non-disclosing `404`; an own-tenant exact
+permission denial is `403`; stale expected version or lifecycle conflict is `409`; provider, configuration,
+transaction or infrastructure unavailability/indeterminacy is `503`. Permission comparison is ordinal with
+no alias, wildcard, case-fold or trim acceptance.
+
+Runtime activation requires both exact switches `--local-test` and `--user-acceptance-runtime`; default
+composition still starts no listener. The host binds only `http://127.0.0.1:5017`. Current and previous JWT
+secret validation must match the existing AuthService/Gateway contract and must fail closed when required
+local configuration is absent. No real credential or secret is committed or logged.
+
+AuthService authority is limited to registering the exact MOD-0355 user permission catalog. It does not
+authorize a default-role expansion, wildcard grant, implicit tenant grant or a JWT/login/refresh/S2S contract
+change. Test access uses the existing explicit tenant role/grant mechanisms after the catalog is present.
+Core retains its exact sixteen permissions. The six requested Improvement permissions
+(`improvements.read|create|update|qualify|record-outcome|close`) remain host-unavailable with exact `503`
+until their separate FU16 bilateral executable acceptance is present at the composition base. The three KPI
+permissions and Process Performance remain exact `503 kpi_reference_contract_unavailable` until Prompt 2's
+certified metric/calculation reference result is executable.
+
+The exact additive changed-file allowlist is:
+
+- this module-pack file;
+- `services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs` and focused additive
+  AuthService permission seed/grant/token regression tests under
+  `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Permissions/**`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs`, its
+  project file, additive normal-user authentication under `Api/Authentication/**`, and additive normal-user
+  controllers `Controllers/ProcessModelingController.cs` and `Controllers/PerformanceImprovementController.cs`;
+- additive `Application/Features/ProcessModelingUserAcceptance/**`, and only the existing ProcessModeling
+  persistence/infrastructure dependency-injection or repository files required for tenant-first list/detail,
+  lifecycle and Improvement composition;
+- focused additive MG unit/integration/architecture tests under existing ProcessModeling test roots and
+  `Modules/ProcessModeling/UserAcceptance/**`;
+- `gateway/Diten.ApiGateway/ocelot.json`,
+  `gateway/Diten.ApiGateway.Tests/OcelotConfigurationTests.cs`, and
+  `gateway/Diten.ApiGateway.Tests/Mod0355AuthGatewayRouteCoverageTests.cs`; only `integration-agent` may edit
+  the protected Gateway route file;
+- the existing MOD-0355 frontend allowlist in this section, including the controller, models, ProcessModeling
+  gateway service, views/resources/page assets and focused frontend tests; additive Diten.Web configuration
+  is limited to the existing `ManagementGovernance:ProcessModelingFrontend` keys in
+  `frontend/Diten.Web/appsettings.Development.json` and focused web test files;
+- additive Browser/Playwright evidence under `frontend/Diten.Web/tests/smoke/**`, the MOD-0355 legacy-parity
+  evidence file, a MOD-0355 audit report, and the required partial closure record in `docs/product-backlog.md`.
+
+The exact Gateway family is additive and ordered before any matching catch-all:
+`/api/management-governance/process-modeling` and
+`/api/management-governance/process-modeling/{everything}` map respectively to
+`/internal/local-test/v1/process-modeling` and
+`/internal/local-test/v1/process-modeling/{everything}` on `127.0.0.1:5017`, with only
+`GET, POST, PUT, PATCH, OPTIONS, DELETE`. No route or byte under PVG `5011` or WorkCenter is changed.
+
+The same-origin frontend proxy reads the HttpOnly access-token cookie server-side, forwards it as Bearer to
+Gateway, derives the canonical tenant header from the validated signed-in principal, rejects browser
+attempts to override tenant/token/permission authority, forwards safe request bodies and idempotency/version
+headers only, and preserves stable downstream status/reason codes. Browser JavaScript cannot read cookies or
+tokens and cannot call `5017` directly.
+
+Required closure evidence is Auth regression, exact Gateway route tests, full MG tests, Diten.Web build and
+frontend tests, tenant architecture tests, expected-red mutation restore, Browser/Playwright login and
+positive/negative flows, seven-language rendering, console/network capture, old/new side-by-side parity,
+`git diff --check`, secret/artifact scan and exact changed-file allowlist verification. Missing local secrets,
+Mongo replica-set capability, executable Improvement FU16 authority or Prompt 2 remains a named fail-closed
+blocker while all independent tests continue.
+
 ### Governance availability versus runtime availability
 
 A contract is governance-available when its name, version, shape, ownership and failure semantics are
