@@ -237,7 +237,10 @@ public sealed class WorkItemActionDispatchTests
             taskId, actionCode,
             new WorkItemActionRequestDto(
                 WorkItemContract.ProviderCodeWorkflow,
-                new WorkItemActionPayloadDto(Reason: "because")),
+                new WorkItemActionPayloadDto(
+                    ExpectedVersion: 7,
+                    Reason: "because",
+                    IdempotencyKey: "workflow-action-attempt")),
             CancellationToken.None));
 
         Assert.True(response.IsSuccessful);
@@ -260,12 +263,17 @@ public sealed class WorkItemActionDispatchTests
 
         await controller.DispatchAction(
             Guid.NewGuid(), "approve",
-            new WorkItemActionRequestDto(WorkItemContract.ProviderCodeWorkflow), CancellationToken.None);
+            new WorkItemActionRequestDto(
+                WorkItemContract.ProviderCodeWorkflow,
+                new WorkItemActionPayloadDto(ExpectedVersion: 7, IdempotencyKey: "workflow-action-attempt")),
+            CancellationToken.None);
 
         var command = Assert.IsType<ApproveWorkflowTaskCommand>(Assert.Single(mediator.Sent));
         Assert.Equal(me.ToString(), command.Request.ActorId);
         Assert.False(string.IsNullOrWhiteSpace(command.Request.IdempotencyKey));
         Assert.False(string.IsNullOrWhiteSpace(command.Request.ReasonCode));
+        Assert.Equal(7, command.Request.ExpectedVersion);
+        Assert.Equal("workflow-action-attempt", command.Request.IdempotencyKey);
     }
 
     [Fact]
@@ -275,10 +283,78 @@ public sealed class WorkItemActionDispatchTests
         var dispatcher = new WorkflowApprovalWorkItemActionDispatcher(mediator);
 
         var response = await dispatcher.DispatchAsync(new WorkItemActionDispatchRequest(
-            Guid.NewGuid(), "delegate", new WorkItemActionPayloadDto(), PlatformActor(), "corr"));
+            Guid.NewGuid(), "delegate",
+            new WorkItemActionPayloadDto(ExpectedVersion: 1, IdempotencyKey: "delegate-attempt"),
+            PlatformActor(), "corr"));
 
         Assert.Equal(WorkItemActionReasonCodes.PayloadInvalid, response.ReasonCode);
         Assert.Empty(mediator.Sent);
+    }
+
+    [Theory]
+    [InlineData(null, "attempt")]
+    [InlineData(0, "attempt")]
+    [InlineData(1, null)]
+    [InlineData(1, "")]
+    public async Task Workflow_dispatch_refuses_missing_version_or_stable_identity_before_MediatR(
+        int? expectedVersion,
+        string? idempotencyKey)
+    {
+        var mediator = new RecordingMediator();
+        var dispatcher = new WorkflowApprovalWorkItemActionDispatcher(mediator);
+
+        var response = await dispatcher.DispatchAsync(new WorkItemActionDispatchRequest(
+            Guid.NewGuid(), "approve",
+            new WorkItemActionPayloadDto(ExpectedVersion: expectedVersion, IdempotencyKey: idempotencyKey),
+            PlatformActor(), "corr"));
+
+        Assert.Equal(WorkItemActionReasonCodes.PayloadInvalid, response.ReasonCode);
+        Assert.Empty(mediator.Sent);
+    }
+
+    [Fact]
+    public async Task Workflow_dispatch_refuses_an_overlong_stable_identity_before_MediatR()
+    {
+        var mediator = new RecordingMediator();
+        var dispatcher = new WorkflowApprovalWorkItemActionDispatcher(mediator);
+
+        var response = await dispatcher.DispatchAsync(new WorkItemActionDispatchRequest(
+            Guid.NewGuid(), "approve",
+            new WorkItemActionPayloadDto(ExpectedVersion: 1, IdempotencyKey: new string('k', 129)),
+            PlatformActor(), "corr"));
+
+        Assert.Equal(WorkItemActionReasonCodes.PayloadInvalid, response.ReasonCode);
+        Assert.Empty(mediator.Sent);
+    }
+
+    [Theory]
+    [InlineData("approve", typeof(ApproveWorkflowTaskCommand))]
+    [InlineData("reject", typeof(RejectWorkflowTaskCommand))]
+    [InlineData("requestInfo", typeof(RequestInfoWorkflowTaskCommand))]
+    [InlineData("delegate", typeof(DelegateWorkflowTaskCommand))]
+    public async Task Workflow_dispatch_carries_version_and_key_unchanged(
+        string actionCode,
+        Type commandType)
+    {
+        var mediator = new RecordingMediator();
+        var dispatcher = new WorkflowApprovalWorkItemActionDispatcher(mediator);
+        const string key = "  ordinal-key-is-not-trimmed  ";
+
+        var response = await dispatcher.DispatchAsync(new WorkItemActionDispatchRequest(
+            Guid.NewGuid(), actionCode,
+            new WorkItemActionPayloadDto(
+                ExpectedVersion: 19,
+                Reason: "reason",
+                TargetPrincipalId: actionCode == "delegate" ? "delegate-user" : null,
+                IdempotencyKey: key),
+            PlatformActor(), "corr"));
+
+        Assert.True(response.IsSuccessful);
+        var sent = Assert.Single(mediator.Sent);
+        Assert.IsType(commandType, sent);
+        var request = sent.GetType().GetProperty("Request")!.GetValue(sent)!;
+        Assert.Equal(19, request.GetType().GetProperty("ExpectedVersion")!.GetValue(request));
+        Assert.Equal(key, request.GetType().GetProperty("IdempotencyKey")!.GetValue(request));
     }
 
     // ── MOD-0024 keeps reaching its OWN commands, unchanged ───────────────────

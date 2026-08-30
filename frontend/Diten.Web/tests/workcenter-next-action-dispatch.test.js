@@ -19,6 +19,14 @@ const { loadScript } = require("./load-script");
 const APP = fs.readFileSync(
   path.resolve(__dirname, "..", "wwwroot", "assets", "js", "WorkCenterNext", "app.js"), "utf8");
 
+const actionAttemptHelpers = () => {
+  const start = APP.indexOf("const hashActionAttemptTuple");
+  const end = APP.indexOf("const submitRealTransition", start);
+  expect(start).toBeGreaterThan(-1);
+  expect(end).toBeGreaterThan(start);
+  return Function(`${APP.slice(start, end)}; return { stableWorkItemActionIdentity };`)();
+};
+
 describe("the routing decision no longer names a provider", () => {
   it("has no `providerCode === 'tasks'` comparison anywhere in the write path", () => {
     /*
@@ -108,6 +116,54 @@ describe("every provider's action leaves the browser through ONE address", () =>
 
     expect(result.ok).toBe(false);
     expect(result.reasonCode).toBe("UNAVAILABLE");
+  });
+});
+
+describe("a projected action keeps one bounded attempt identity", () => {
+  const tuple = [
+    "workflow",
+    "ac65ce1d-7d3a-46c3-a3e9-fd8c54f6b2b0",
+    "approve",
+    17
+  ];
+
+  it("reuses the exact same identity for double-click and retry", () => {
+    const { stableWorkItemActionIdentity } = actionAttemptHelpers();
+
+    const first = stableWorkItemActionIdentity(...tuple);
+    const doubleClick = stableWorkItemActionIdentity(...tuple);
+    const lostResponseRetry = stableWorkItemActionIdentity(...tuple);
+
+    expect(first).toBe(doubleClick);
+    expect(first).toBe(lostResponseRetry);
+    expect(first.length).toBeLessThanOrEqual(128);
+  });
+
+  it.each([
+    ["provider", ["tasks", tuple[1], tuple[2], tuple[3]]],
+    ["item", [tuple[0], "another-item", tuple[2], tuple[3]]],
+    ["action", [tuple[0], tuple[1], "reject", tuple[3]]],
+    ["projected version", [tuple[0], tuple[1], tuple[2], 18]]
+  ])("changes when the %s changes", (_label, changedTuple) => {
+    const { stableWorkItemActionIdentity } = actionAttemptHelpers();
+    expect(stableWorkItemActionIdentity(...changedTuple))
+      .not.toBe(stableWorkItemActionIdentity(...tuple));
+  });
+
+  it.each([0, -1, 1.5, "not-a-version"])("refuses invalid expected version %s", (version) => {
+    const { stableWorkItemActionIdentity } = actionAttemptHelpers();
+    expect(stableWorkItemActionIdentity(tuple[0], tuple[1], tuple[2], version)).toBeNull();
+  });
+
+  it("places both concurrency facts in the single dispatch payload", () => {
+    const submit = APP.slice(
+      APP.indexOf("const submitRealTransition"),
+      APP.indexOf("/*\n     * ── Phase 2 writes", APP.indexOf("const submitRealTransition")));
+
+    expect(submit).toContain("expectedVersion");
+    expect(submit).toContain("idempotencyKey");
+    expect(submit).toContain("WorkCenterNextApi.dispatchAction");
+    expect(submit).not.toMatch(/5056|5057|5059|localhost/);
   });
 });
 

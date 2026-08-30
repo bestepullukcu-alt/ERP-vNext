@@ -26,6 +26,7 @@ public sealed class DelegateWorkflowTaskHandler
             request.Request.DelegatePrincipalId,
             request.Request.ReasonCode,
             request.Request.IdempotencyKey,
+            request.Request.ExpectedVersion,
             request.Request.Comment,
             request.CorrelationId,
             ct);

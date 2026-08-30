@@ -254,14 +254,16 @@ public sealed record ApproveWorkflowTaskRequest(
     string ReasonCode,
     string IdempotencyKey,
     string? Comment,
-    string? EvidenceRef);
+    string? EvidenceRef,
+    int? ExpectedVersion = null);
 
 public sealed record RejectWorkflowTaskRequest(
     string ActorId,
     string ReasonCode,
     string IdempotencyKey,
     string? Comment,
-    string? EvidenceRef);
+    string? EvidenceRef,
+    int? ExpectedVersion = null);
 
 public sealed record WorkflowTaskTransitionResponse(
     Guid WorkflowInstanceId,
@@ -280,7 +282,8 @@ public sealed record DelegateWorkflowTaskRequest(
     string DelegatePrincipalId,
     string ReasonCode,
     string IdempotencyKey,
-    string? Comment);
+    string? Comment,
+    int? ExpectedVersion = null);
 
 public sealed record RequestInfoWorkflowTaskRequest(
     string ActorId,
@@ -288,7 +291,8 @@ public sealed record RequestInfoWorkflowTaskRequest(
     string ReasonCode,
     string IdempotencyKey,
     string? Comment,
-    string? EvidenceRef);
+    string? EvidenceRef,
+    int? ExpectedVersion = null);
 
 public sealed record CancelWorkflowTaskRequest(
     string ActorId,

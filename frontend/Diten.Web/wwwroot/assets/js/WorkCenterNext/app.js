@@ -6503,6 +6503,34 @@
     const buildTransitionBody = (actionCode, parts) =>
         (TRANSITION_BODIES[actionCode] || TRANSITION_BODIES.__default)(parts);
 
+    /*
+     * One browser attempt must keep one identity across a double-click, retry or lost response. The identity is
+     * derived from the exact projected tuple rather than generated at click time, so rebuilding the payload does
+     * not create a second business attempt. The digest is deliberately non-secret and bounded; the server still
+     * owns authorization, assignment, maker-checker and replay decisions.
+     */
+    const hashActionAttemptTuple = (value) => {
+        const hashes = [0x811c9dc5, 0x9e3779b9, 0x85ebca6b, 0xc2b2ae35];
+        const primes = [0x01000193, 0x27d4eb2d, 0x165667b1, 0x1b873593];
+        for (let index = 0; index < value.length; index += 1) {
+            const code = value.charCodeAt(index);
+            for (let slot = 0; slot < hashes.length; slot += 1) {
+                hashes[slot] = Math.imul(hashes[slot] ^ (code + slot), primes[slot]);
+            }
+        }
+        return hashes.map((hash) => (hash >>> 0).toString(16).padStart(8, '0')).join('');
+    };
+
+    const stableWorkItemActionIdentity = (providerCode, itemId, actionCode, projectedVersion) => {
+        const parts = [providerCode, itemId, actionCode].map((part) => typeof part === 'string' ? part : '');
+        const version = Number(projectedVersion);
+        if (parts.some((part) => !part.trim()) || !Number.isInteger(version) || version <= 0) { return null; }
+
+        // Length prefixes make tuple boundaries unambiguous without normalizing the ordinal source facts.
+        const tuple = parts.map((part) => `${part.length}:${part}`).concat(`v:${version}`).join('|');
+        return `wcn-action-v1:${hashActionAttemptTuple(tuple)}`;
+    };
+
     const submitRealTransition = async (item, action, reason, assigneeUserId, waitingOnUserId) => {
         const label = actionLabel(action);
         state.submittingItemId = item.id;
@@ -6511,6 +6539,20 @@
 
         // The concurrency token from the projection — an expected-version write, so a stale screen loses cleanly.
         const expectedVersion = Number(item.concurrency?.token ?? 0);
+        const idempotencyKey = stableWorkItemActionIdentity(
+            item.source?.providerCode,
+            item.id,
+            action.code,
+            expectedVersion);
+
+        // A missing/stale projection contract is not a writable attempt. Refuse it before the same-origin seam.
+        if (!Number.isInteger(expectedVersion) || expectedVersion <= 0 || !idempotencyKey) {
+            state.submittingItemId = null;
+            state.submittingActionCode = null;
+            render();
+            toast(t('ErrorOccurred'), 'error');
+            return;
+        }
         /*
          * WC-D2 — ONE ADDRESS, EVERY PROVIDER. This used to be TasksApi.transition(), which posts to
          * /Tasks/api/{id}/{verb} — MOD-0024's own route, and the reason only MOD-0024's items could be acted on.
@@ -6524,7 +6566,10 @@
             item.id,
             action.code,
             item.source?.providerCode,
-            buildTransitionBody(action.code, { expectedVersion, reason, assigneeUserId, waitingOnUserId }));
+            {
+                ...buildTransitionBody(action.code, { expectedVersion, reason, assigneeUserId, waitingOnUserId }),
+                idempotencyKey
+            });
 
         state.submittingItemId = null;
         state.submittingActionCode = null;

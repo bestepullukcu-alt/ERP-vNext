@@ -35,6 +35,7 @@ public sealed class ApproveWorkflowTaskHandler
             request.Request.ActorId,
             request.Request.ReasonCode,
             request.Request.IdempotencyKey,
+            request.Request.ExpectedVersion,
             request.Request.Comment,
             request.Request.EvidenceRef,
             request.CorrelationId,
