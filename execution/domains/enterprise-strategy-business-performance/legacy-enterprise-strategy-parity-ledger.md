@@ -38,7 +38,7 @@ browser rows: all 14 still require an approved new browser URL, real backend evi
 | 1.6 Process Architecture | `/management-governance/modules/mod-process-architecture` | Registry placeholder only | No proven backend lifecycle | MOD-0355 | TBD | No legacy entity migration evidenced | Replaced | None | Pending |
 | 1.6 Process Design & Modeling | `/management-governance/modules/mod-process-design` | Registry placeholder only | No proven backend lifecycle | MOD-0355 | TBD | New model/version/activity/control-point contract is authoritative | Replaced | None | Pending |
 | 1.6 Process Performance | `/management-governance/modules/mod-process-performance` | Registry placeholder only | No proven legacy backend lifecycle | MOD-0355 bounded performance contract; no browser/API surface | TBD | MOD-0355 owns the bounded KPI-binding contract, but the mandatory reference contract and user surface remain unavailable | Missing | No placeholder-data migration; browser/API delivery remains a separate bounded slice | Pending |
-| 1.6 Process Improvement | `/management-governance/modules/mod-process-improvement` | Registry placeholder only | No proven legacy backend lifecycle | MOD-0355 Process Improvement Opportunity/Outcome; no browser/API surface | TBD | MOD-0355 owns the bounded opportunity/outcome contract, nine exact operations/permissions and two collections | Missing | No placeholder-data migration; browser/API delivery remains a separate bounded slice | Pending |
+| 1.6 Process Improvement | `/management-governance/modules/mod-process-improvement` | Registry placeholder only | No proven legacy backend lifecycle | MOD-0355 Process Improvement Opportunity/Outcome | `/management-governance/process-modeling/improvements` | MOD-0355 owns the bounded opportunity/outcome contract, nine exact operations/permissions and two collections; the new page is read-only and Gateway-default-off | Missing full parity; route-backed bounded replacement exists | No placeholder-data migration; write UI, activated Gateway/auth and populated browser evidence remain separate gates | Pending: compare placeholder with permission-denied/default-off read states; no write-parity claim |
 
 ## Focused parity audit — Capital Allocation and Delivery Map
 
@@ -271,9 +271,11 @@ where no approved contract exists; this annex creates no URL, wire contract, per
 
 ## Static target contract evidence
 
-These are executable backend or default-off local-test contracts at checkpoint
-`91321bc4ce87fdda6bfdcf6656d555daae11e40d`. They are not browser URLs, migration evidence or proof that a
-legacy page has been replaced. Consequently they do not populate the page ledger's `New URL` column.
+These are executable backend or default-off local-test contracts from the static baseline
+`91321bc4ce87fdda6bfdcf6656d555daae11e40d`, reconciled through the bounded MOD-0355 checkpoint
+`846fcfb7b585a38dafaa6ad1f34690d013240588`. A contract alone is not migration evidence or proof that a
+legacy page has been replaced. Only an actual bounded browser route may populate `New URL`, and it remains
+unaccepted until the browser/user gates pass.
 
 | Capability | Static target contract | Current limitation |
 |---|---|---|
@@ -286,7 +288,7 @@ legacy page has been replaced. Consequently they do not populate the page ledger
 | Delivery structure | MOD-0354 `api/dws/structures` | Local-test/default-off structural API; no task/scheduling ownership or accepted browser page. |
 | Process Architecture / Design | MOD-0355 `internal/local-test/v1/process-modeling` | Default-off local-test contract; not a production or browser URL. |
 | Process Performance | MOD-0355 bounded KPI-binding contract | Mandatory reference contract unresolved; no successful handler/API/browser surface. |
-| Process Improvement | MOD-0355 bounded opportunity/outcome contract and persistence evidence | Contract-test/persistence evidence only; no API/browser surface. |
+| Process Improvement | MOD-0355 bounded opportunity/outcome contract, persistence, local-test API and read-only tenant route | API is loopback local-test only; the browser read is Gateway-default-off and has no populated/write/user-acceptance evidence. |
 
 Static summary: 14 page rows, 142 field rows, zero browser-closed rows. Five page rows retain `Replaced`, one
 retains `Out of Scope`, and eight retain `Missing`. The twelve narrow DTO target names above reduce `TBD`
@@ -306,6 +308,7 @@ For each row:
 
 ## Current retirement verdict
 
-**BLOCKED.** The Initiative/Project legacy inventory is complete, but approved target properties, new URLs and
-browser evidence remain incomplete. Process Performance and Process Improvement remain open under MOD-0355.
+**BLOCKED.** The Initiative/Project legacy inventory is complete, but approved target properties, remaining
+new URLs and browser evidence remain incomplete. Process Performance remains without a target route;
+Process Improvement now has a bounded route but remains open for populated/write/browser/user acceptance.
 Legacy retirement, deletion and “full parity complete” are prohibited.

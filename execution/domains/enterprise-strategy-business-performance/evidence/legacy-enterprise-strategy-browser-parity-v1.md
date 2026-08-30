@@ -36,7 +36,7 @@ Route existence is not feature parity, browser PASS or user acceptance.
 | 11 | 1.6 Process Architecture | `/management-governance/modules/mod-process-architecture` | `/management-governance/process-modeling/models` | Registry placeholder maps to MOD-0355 process-model catalog only; no legacy entity is assumed. | Replaced | None. | Pending: compare placeholder with list, permissions and default-off empty/503 state. | Pending |
 | 12 | 1.6 Process Design & Modeling | `/management-governance/modules/mod-process-design` | List: `/management-governance/process-modeling/models`; editor: `/management-governance/process-modeling/models/{id:guid}` | MOD-0355 model/version/activity/control/topology contract is authoritative. | Replaced | None. | Pending: open editor only with a real model GUID; compare lifecycle and read-only published state. | Pending |
 | 13 | 1.6 Process Performance | `/management-governance/modules/mod-process-performance` | **Missing** | MOD-0355 KPI Binding is dependency-gated; exact MOD-0059/MOD-0060 reference contracts are absent and successful handling remains 503/zero-residue. | Missing | No placeholder migration; reference contracts, host/API and browser slice required. | Pending: no approved new browser route exists. | Pending |
-| 14 | 1.6 Process Improvement | `/management-governance/modules/mod-process-improvement` | **Missing** | MOD-0355 owns bounded Opportunity/Outcome contracts and persistence, but they are not host- or browser-reachable. | Missing | No placeholder migration; host/API and browser slice required. | Pending: no approved new browser route exists. | Pending |
+| 14 | 1.6 Process Improvement | `/management-governance/modules/mod-process-improvement` | `/management-governance/process-modeling/improvements` | MOD-0355 owns bounded Opportunity/Outcome contracts and persistence. The new tenant page is read-only and its same-origin Gateway read remains default-off; it does not establish write or production parity. | Missing full parity; route-backed bounded replacement exists | No placeholder migration; write UI, Gateway/auth activation and populated evidence remain separate gates. | Pending: compare legacy placeholder with exact permission-denied and default-off zero-read states; do not claim write parity. | Pending |
 
 ## Route and source evidence
 
@@ -50,7 +50,7 @@ Route existence is not feature parity, browser PASS or user acceptance.
   lines 8–52.
 - MOD-0355 model list/editor routes:
   [`ProcessModelingFrontendController.cs`](../../../../frontend/Diten.Web/Controllers/ProcessModelingFrontendController.cs)
-  lines 8–60.
+  including the bounded Process Improvement list/detail/read-proxy routes.
 - Legacy module placeholders:
   [`ManagementGovernanceRegistry.cs`](../../../../frontend/Diten.Web/Config/ManagementGovernanceRegistry.cs)
   lines 108–111 and 171–174. These rows are navigation metadata, not implementation evidence.
@@ -62,7 +62,7 @@ Route existence is not feature parity, browser PASS or user acceptance.
 | Capital Allocation | MOD-0136 Budgeting is financial SoR. Current materialization has no `Diten.FpaService`, MOD-0136 pack or Capital Allocation controller/page; only MOD-0117 Gate I-B typed BudgetVersion reference and Auth/Eventing contracts are present. | Proposed future owner slice must name the materialized MOD-0136 pack, FPA API/controller, tenant UI and tests. No exact route/source/test path can be inferred here. | **No.** Current FU01/MOD-0117 authority permits typed references, not a Capital Allocation UI/API. | Fail closed; separate materialization and bounded frontend/API amendment required. |
 | Delivery Map / Dependencies | MOD-0354 owns pure structure/hierarchy/order/dependency. Task/status/due-date/owner remain MOD-0024/MOD-0117; FS/SS/FF/SF scheduling ownership is unresolved. | Existing route `/management-governance/delivery-execution/structures`; source `DwsStructuresFrontendController.cs`, `Models/ManagementGovernance/Dws/**`, `Services/ManagementGovernance/Dws/**`, `Views/ManagementGovernance/Dws/**`; tests `mg-dws-frontend-contract.test.js`, `mg-dws-legacy-parity.test.js`; owner ledger `execution/domains/management-governance/evidence/MOD-0354-legacy-parity.md`. | **Yes, bounded/default-off/non-production.** MOD-0354 §19 exact frontend allowlist is implemented, but Gateway, populated browser evidence and user acceptance remain open. | Route is not Missing; **parity remains Missing** until browser/user evidence and ambiguous dependency disposition close. |
 | Process Performance | MOD-0355 owns the bounded KPI-binding contract, but the exact MOD-0059/MOD-0060 metric/calculation reference contracts are absent. `ProcessKpiBindingDependencyGate` returns 503 and no KPI entity/collection/success handler is authorized. | Existing source/test authority is only `Modules/ProcessModeling/PerformanceImprovement/**`; no controller, DI, host route or frontend path is authorized for this subpath. | **No successful executable/browser authority.** Only dependency-gate contracts/tests are authorized. | Separate producer-contract closure, host/API amendment, frontend allowlist and tests required. |
-| Process Improvement | MOD-0355 owns bounded Opportunity/Outcome Domain/Application/Persistence and tests under `Modules/ProcessModeling/PerformanceImprovement/**`. | Existing tests: `PerformanceImprovementContractTests.cs`, `PerformanceImprovementFixtureTests.cs`, `PerformanceImprovementMongoTests.cs`, `PerformanceImprovementArchitectureTests.cs`; no controller/DI/browser route exists. | **Partial only.** Contract/persistence implementation is authorized and present, explicitly not composed into a host. | Separate local API/DI/controller amendment plus tenant frontend route/resources/tests required before browser evidence. |
+| Process Improvement | MOD-0355 owns bounded Opportunity/Outcome Domain/Application/Persistence and tests under `Modules/ProcessModeling/PerformanceImprovement/**`. | Local-test controller/query composition and the default-off tenant route `/management-governance/process-modeling/improvements` now exist with focused HTTP, architecture, Mongo and frontend contract tests. | **Bounded partial.** Local API-test and read-only frontend are implemented, default-off and non-production; normal-JWT/Gateway activation and browser writes are absent. | Static route gap closed. Populated read, write UI, activated Gateway/auth, browser evidence and user acceptance remain required. |
 
 ## Mongo-free same-origin security checklist
 
@@ -98,8 +98,8 @@ User/date: Pending
 ## Gate result
 
 - Page rows: **14/14 documented**.
-- Route-backed candidate target: **11/14**.
-- No approved new browser route: **3/14** — Capital Allocation, Process Performance, Process Improvement.
+- Route-backed candidate target: **12/14**.
+- No approved new browser route: **2/14** — Capital Allocation and Process Performance.
 - Browser accepted: **0/14**.
 - User accepted: **0/14; all Pending**.
 - Legacy retirement, delete, redirect and `full parity complete`: **BLOCKED**.
