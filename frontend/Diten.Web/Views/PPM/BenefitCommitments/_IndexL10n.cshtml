@@ -1,0 +1,28 @@
+@using Diten.Web.Views.PPM.BenefitCommitments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<BenefitCommitmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+<script id="ppm-l10n" type="application/json">
+@Json.Serialize(new {
+    AddNew = Localizer["AddNewBenefitCommitment"].Value, EditTitle = Localizer["EditBenefitCommitment"].Value,
+    Loading = Localizer["BenefitCommitmentsLoadingState"].Value, Empty = Localizer["BenefitCommitmentsEmptyState"].Value,
+    Error = Localizer["BenefitCommitmentsErrorState"].Value,
+    States = new { Draft = Localizer["LifecycleDraft"].Value, Planned = Localizer["LifecyclePlanned"].Value,
+        Active = Localizer["LifecycleActive"].Value, Closed = Localizer["LifecycleClosed"].Value,
+        Cancelled = Localizer["LifecycleCancelled"].Value },
+    CloseConfirm = Localizer["CloseBenefitCommitmentConfirmation"].Value,
+    CancelConfirm = Localizer["CancelBenefitCommitmentConfirmation"].Value,
+    Search = SharedLocalizer["Search"].Value, Export = SharedLocalizer["Export"].Value,
+    Filter = SharedLocalizer["Filter"].Value, SaveView = SharedLocalizer["SaveView"].Value,
+    ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value, Active = SharedLocalizer["Active"].Value,
+    Passive = SharedLocalizer["Passive"].Value, Unknown = SharedLocalizer["Unknown"].Value,
+    Actions = SharedLocalizer["ViewDetails"].Value, QuickView = SharedLocalizer["ViewDetails"].Value,
+    BulkDelete = SharedLocalizer["BulkDelete"].Value, BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+    Edit = SharedLocalizer["EditRecord"].Value, Delete = SharedLocalizer["Delete"].Value,
+    ViewDetails = SharedLocalizer["ViewDetails"].Value, AreYouSure = SharedLocalizer["AreYouSure"].Value,
+    Cancel = SharedLocalizer["Cancel"].Value, Save = SharedLocalizer["Save"].Value,
+    RecordSaved = SharedLocalizer["RecordSaved"].Value, RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
+    ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value, Unauthorized = SharedLocalizer["Unauthorized"].Value,
+    NotAvailable = SharedLocalizer["NotAvailable"].Value
+})
+</script>

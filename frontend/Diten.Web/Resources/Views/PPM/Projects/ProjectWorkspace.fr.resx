@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader>
+  <data name="WorkspaceTitle"><value>Espace projet</value></data><data name="BackToProjects"><value>Retour aux projets</value></data><data name="Loading"><value>Chargement du projet…</value></data>
+  <data name="Overview"><value>Vue d’ensemble</value></data><data name="CharterGeneral"><value>Charte / Général</value></data><data name="Context"><value>Contexte du projet</value></data>
+  <data name="Code"><value>Code</value></data><data name="Name"><value>Nom</value></data><data name="Description"><value>Description</value></data><data name="ParentType"><value>Type parent</value></data><data name="ParentId"><value>ID parent</value></data><data name="Parent"><value>Parent</value></data>
+  <data name="Lifecycle"><value>Cycle de vie</value></data><data name="VisibilityPolicy"><value>Politique de visibilité</value></data><data name="Referenceability"><value>Référençabilité</value></data><data name="Version"><value>Version</value></data>
+  <data name="Referenceable"><value>Disponible pour de nouvelles références</value></data><data name="NotReferenceable"><value>Indisponible pour de nouvelles références</value></data><data name="NotAvailable"><value>Non disponible</value></data>
+  <data name="Error400"><value>La demande de projet est invalide.</value></data><data name="Error401"><value>Connectez-vous pour voir ce projet.</value></data><data name="Error403"><value>Vous n’avez pas l’autorisation de voir ce projet.</value></data><data name="Error404"><value>Projet introuvable.</value></data><data name="Error409"><value>Le projet a changé. Revenez à la liste.</value></data><data name="Error503"><value>Le service projet est temporairement indisponible.</value></data><data name="ErrorGeneric"><value>Impossible de charger l’espace projet.</value></data>
+</root>

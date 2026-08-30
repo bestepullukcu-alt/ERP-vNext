@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader>
+  <data name="WorkspaceTitle"><value>项目工作区</value></data><data name="BackToProjects"><value>返回项目</value></data><data name="Loading"><value>正在加载项目…</value></data>
+  <data name="Overview"><value>概览</value></data><data name="CharterGeneral"><value>项目章程 / 常规</value></data><data name="Context"><value>项目上下文</value></data>
+  <data name="Code"><value>代码</value></data><data name="Name"><value>名称</value></data><data name="Description"><value>描述</value></data><data name="ParentType"><value>父级类型</value></data><data name="ParentId"><value>父级 ID</value></data><data name="Parent"><value>父级记录</value></data>
+  <data name="Lifecycle"><value>生命周期</value></data><data name="VisibilityPolicy"><value>可见性策略</value></data><data name="Referenceability"><value>可引用性</value></data><data name="Version"><value>版本</value></data>
+  <data name="Referenceable"><value>可用于新引用</value></data><data name="NotReferenceable"><value>不可用于新引用</value></data><data name="NotAvailable"><value>不可用</value></data>
+  <data name="Error400"><value>项目请求无效。</value></data><data name="Error401"><value>请登录后查看此项目。</value></data><data name="Error403"><value>您无权查看此项目。</value></data><data name="Error404"><value>未找到项目。</value></data><data name="Error409"><value>项目已更改，请返回列表。</value></data><data name="Error503"><value>项目服务暂时不可用。</value></data><data name="ErrorGeneric"><value>无法加载项目工作区。</value></data>
+</root>

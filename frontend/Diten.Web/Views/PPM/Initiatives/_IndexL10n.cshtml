@@ -1,0 +1,27 @@
+@using Diten.Web.Views.PPM.Initiatives
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<InitiativesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+<script id="ppm-l10n" type="application/json">
+@Json.Serialize(new {
+    AddNew = Localizer["AddNewInitiative"].Value, EditTitle = Localizer["EditInitiative"].Value,
+    Loading = Localizer["InitiativesLoadingState"].Value, Empty = Localizer["InitiativesEmptyState"].Value,
+    Error = Localizer["InitiativesErrorState"].Value, Referenceable = Localizer["Referenceable"].Value,
+    NotReferenceable = Localizer["NotReferenceable"].Value,
+    States = new { Proposed = Localizer["LifecycleProposed"].Value, Active = Localizer["LifecycleActive"].Value,
+        OnHold = Localizer["LifecycleOnHold"].Value, Completed = Localizer["LifecycleCompleted"].Value, Cancelled = Localizer["LifecycleCancelled"].Value },
+    CompleteConfirm = Localizer["CompleteInitiativeConfirmation"].Value, CancelConfirm = Localizer["CancelInitiativeConfirmation"].Value,
+    Search = SharedLocalizer["Search"].Value, Export = SharedLocalizer["Export"].Value,
+    Filter = SharedLocalizer["Filter"].Value, SaveView = SharedLocalizer["SaveView"].Value,
+    ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value, Active = SharedLocalizer["Active"].Value,
+    Passive = SharedLocalizer["Passive"].Value, Unknown = SharedLocalizer["Unknown"].Value,
+    Actions = SharedLocalizer["ViewDetails"].Value, QuickView = SharedLocalizer["ViewDetails"].Value,
+    BulkDelete = SharedLocalizer["BulkDelete"].Value, BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+    Edit = SharedLocalizer["EditRecord"].Value,
+    Delete = SharedLocalizer["Delete"].Value, ViewDetails = SharedLocalizer["ViewDetails"].Value,
+    AreYouSure = SharedLocalizer["AreYouSure"].Value, Cancel = SharedLocalizer["Cancel"].Value,
+    Save = SharedLocalizer["Save"].Value, RecordSaved = SharedLocalizer["RecordSaved"].Value,
+    RecordDeleted = SharedLocalizer["RecordDeleted"].Value, ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+    NotAvailable = SharedLocalizer["NotAvailable"].Value
+})
+</script>

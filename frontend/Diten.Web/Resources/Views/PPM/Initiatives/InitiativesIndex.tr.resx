@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="InitiativesTitle" xml:space="preserve"><value>Girişimler</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Kiracıya ait Girişimler kayıtlarını, yaşam döngüsünü ve referanslanabilirliği yönetin.</value></data>
+  <data name="AddNewInitiative" xml:space="preserve"><value>Yeni Girişim Ekle</value></data>
+  <data name="EditInitiative" xml:space="preserve"><value>Girişim Düzenle</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Yaşam Döngüsü</value></data>
+  <data name="VisibilityPolicyKey" xml:space="preserve"><value>Görünürlük Politikası</value></data>
+  <data name="Referenceability" xml:space="preserve"><value>Referanslanabilirlik</value></data>
+  <data name="Referenceable" xml:space="preserve"><value>Yeni referanslara açık</value></data>
+  <data name="NotReferenceable" xml:space="preserve"><value>Yeni referanslara kapalı</value></data>
+  <data name="InitiativesLoadingState" xml:space="preserve"><value>Girişimler yükleniyor…</value></data>
+  <data name="InitiativesEmptyState" xml:space="preserve"><value>Girişimler içinde kayıt bulunamadı.</value></data>
+  <data name="InitiativesErrorState" xml:space="preserve"><value>Girişimler listesi yüklenemedi.</value></data>
+  <data name="Portfolio" xml:space="preserve"><value>Portföy</value></data>
+  <data name="LifecycleProposed" xml:space="preserve"><value>Önerildi</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="LifecycleOnHold" xml:space="preserve"><value>Beklemede</value></data>
+  <data name="LifecycleCompleted" xml:space="preserve"><value>Tamamlandı</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>İptal Edildi</value></data>
+  <data name="CompleteInitiativeConfirmation" xml:space="preserve"><value>Bu Girişim tamamlansın mı? Yeni referanslara artık izin verilmeyecek.</value></data>
+  <data name="CancelInitiativeConfirmation" xml:space="preserve"><value>Bu Girişim iptal edilsin mi? Yeni referanslara artık izin verilmeyecek.</value></data>
+</root>

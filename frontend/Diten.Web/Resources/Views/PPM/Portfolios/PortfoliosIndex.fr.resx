@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PortfoliosTitle" xml:space="preserve"><value>Portefeuilles</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gérez les Portefeuilles du locataire, leur cycle de vie et leur référençabilité.</value></data>
+  <data name="AddNewPortfolio" xml:space="preserve"><value>Ajouter portefeuille</value></data>
+  <data name="EditPortfolio" xml:space="preserve"><value>Modifier portefeuille</value></data>
+  <data name="Code" xml:space="preserve"><value>Code du portefeuille</value></data>
+  <data name="Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="Description" xml:space="preserve"><value>Description du portefeuille</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Cycle de vie</value></data>
+  <data name="VisibilityPolicyKey" xml:space="preserve"><value>Politique de visibilité</value></data>
+  <data name="Referenceability" xml:space="preserve"><value>Référençabilité</value></data>
+  <data name="Referenceable" xml:space="preserve"><value>Disponible pour de nouvelles références</value></data>
+  <data name="NotReferenceable" xml:space="preserve"><value>Indisponible pour de nouvelles références</value></data>
+  <data name="PortfoliosLoadingState" xml:space="preserve"><value>Chargement des Portefeuilles…</value></data>
+  <data name="PortfoliosEmptyState" xml:space="preserve"><value>Aucun élément dans Portefeuilles.</value></data>
+  <data name="PortfoliosErrorState" xml:space="preserve"><value>Impossible de charger la liste des Portefeuilles.</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>Actif</value></data>
+  <data name="LifecycleArchived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="ArchivePortfolioConfirmation" xml:space="preserve"><value>Archiver ce portefeuille ? Les nouvelles références ne seront plus autorisées.</value></data>
+</root>
