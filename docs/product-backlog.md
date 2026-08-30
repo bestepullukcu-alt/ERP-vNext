@@ -4623,7 +4623,9 @@ doğrulama yardımcıları, ayrı değerlendirilmeli).
 
 ### BL-324 — kiracı çelişkisi (BL-323 durum 1) DÖRT kiracı-çözüm noktasında hâlâ dayatılmıyor (2026-08-29, ölçüldü)
 
-> **DURUM:** AÇIK · **SAHİP:** CONTROL TOWER
+> **DURUM:** KISMEN KAPANDI (2026-08-30) — beş uyumsuz noktanın ÜÇÜ kapandı (AuthService,
+> CrmService, HcmService); İKİSİ açık kalıyor (`Platform.Common`, gateway) ve aşağıda tam olarak
+> hangi karara bağlı oldukları yazılı. · **SAHİP:** CONTROL TOWER
 > *Geldiği kayıt:* BL-323 (kapandı, arşivde) — kural onaylandı, kapsamı köprüydü; bu, kural
 > yazılırken ÖLÇÜLEN artıktır.
 
@@ -4635,21 +4637,60 @@ Aynı turda yedi kiracı-çözüm noktasının hepsi okundu; sonuç:
 |---|---|
 | `Diten.MdmService/.../TenantResolutionMiddleware.cs` | **400** ✅ kurala uygun |
 | `Diten.DevEnablementService/.../TenantResolutionMiddleware.cs` | **400** ✅ BL-323'te düzeltildi |
-| `Diten.AuthService/.../TenantResolutionMiddleware.cs` | ⚠ "JWT kazanır" + uyarı logu |
-| `Diten.Platform.Common/src/.../Tenancy/TenantResolutionMiddleware.cs` | ⚠ "JWT kazanır" + uyarı logu |
-| `gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs` | ⚠ "JWT kazanır" + uyarı logu (alt alan adı için de aynısı) |
-| `Diten.HcmService/.../TenantResolutionMiddleware.cs` | ⚠ **JWT'yi HİÇ okumuyor** — yalnız başlık; çelişki kavramı yok |
-| `Diten.CrmService/.../TenantResolutionMiddleware.cs` | ⚠ **JWT'yi HİÇ okumuyor** — yalnız başlık; çelişki kavramı yok |
+| `Diten.AuthService/.../TenantResolutionMiddleware.cs` | **400** ✅ 2026-08-30'da kapandı (önce: "JWT kazanır" + uyarı logu) |
+| `Diten.Platform.Common/src/.../Tenancy/TenantResolutionMiddleware.cs` | ⚠ "JWT kazanır" + uyarı logu — **AÇIK, karar bekliyor** |
+| `gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs` | ⚠ "JWT kazanır" + uyarı logu (alt alan adı için de aynısı) — **AÇIK, karar bekliyor** |
+| `Diten.HcmService/.../TenantResolutionMiddleware.cs` | **400** ✅ 2026-08-30'da kapandı (önce: JWT'yi HİÇ okumuyordu) |
+| `Diten.CrmService/.../TenantResolutionMiddleware.cs` | **400** ✅ 2026-08-30'da kapandı (önce: JWT'yi HİÇ okumuyordu) |
 
-- **Neden BL-323 turunda yapılmadı:** BL-323'ün kapsamı köprüdür. Gateway ile
-  `Platform.Common`'ı çelişkide reddetmeye çevirmek SİSTEM GENELİNDE bir kiracılık davranış
-  değişikliğidir — o iki dosya platform-admin `X-Tenant-Id` akışlarını ayrıca ele alıyor — ve
-  kendi ölçümünü, kendi turunu hak eder. Kapsamı sessizce genişletmek yerine kayda geçirildi.
-- **Hcm/Crm ayrı ve daha ağır bir sorudur:** oradaki eksik "çelişkide ne yapılır" değil,
-  **JWT ile başlığın hiç karşılaştırılmamasıdır** — başlık tek başına kiracıyı belirliyor.
-  Bu bir çelişki kuralı değil, bir güven kararıdır; BL-323'ün cümlesiyle kapanmaz.
-- **Repo genelinde statik muhafız BİLEREK yazılmadı:** bugün yazılsaydı beş noktada kırmızı
-  olurdu; yeşil kalması için bir istisna listesi gerekirdi, o liste de sapmayı "kabul edilmiş"
-  hâline getirirdi. Muhafız, düzeltmeyle AYNI turda gelmeli.
-- **Gelecek regresyon riski: 🟡** — davranış bugün değişmedi, ama kural artık DCP-004 §7.4'te
-  YAZILI; yazılı bir kuralın beş noktada tutmaması, okuyanın "tutuyor" varsayması demektir.
+#### ✅ KAPANAN KISIM — 2026-08-30 (`fix/tenant-contradiction-remaining-sites`)
+
+- **AuthService:** çelişkide artık 400. Önceki `ResolveTenant` ("JWT kazanır" + uyarı logu)
+  SİLİNDİ — bir uyarı logu reddetme değildir; istek yine çalışıyordu ve aşağıdaki handler'ın iki
+  çelişen değerden hangisini okuduğu sessizdi. Login etkilenmez: çelişki İKİ değeri gerektirir,
+  login'de henüz token yoktur.
+- **CrmService / HcmService:** çelişkide artık 400. Bu ikisinde kapatılan açık şuydu — servis
+  kimlik doğruluyor (`UseAuthentication`, 38/38 ve 3/3 controller'da `[Authorize]`) ve middleware
+  `UseAuthentication`'dan SONRA çalışıyor, yani token'ın kiracısı elin altındaydı ve hiç
+  okunmuyordu. `[Authorize]` kimin olduğunu kanıtlar, hangi kiracı adına hareket edebileceğini
+  değil.
+  ⚠ **Kapsam çizgisi, bilerek:** JWT burada çelişkiyi SAPTAMAK için okunuyor, kiracıyı ÇÖZMEK
+  için değil. Çözüm eskisi gibi başlık-güdümlü kaldı; başlık yokken `Clear()` davranışı da
+  aynen korundu. "JWT ikinci bir kiracı kaynağı olmalı mı" sorusu ayrı bir güven kararıdır ve
+  AÇIK kalır (aşağıda).
+- **Muhafızlar (davranış, gerçek middleware üzerinde):** üç serviste
+  `Tenancy/TenantContradictionGuardTests.cs`. Her biri isteğin GERÇEKTEN reddedildiğini
+  (handler çalışmadı) doğruluyor — "403 değil ve 404 değil" tek başına yetmez, hiçbir şey
+  yapmayan middleware 200 döner ve o iddiayı yanlış sebeple geçer; dünkü BL-323 muhafızında
+  bulunan zafiyet tam olarak buydu. Kontroller (çelişmeyen istekler geçmeli) her şeyi reddeden
+  bir middleware'in de kırmızı olmasını sağlıyor.
+- **Repo genelinde statik muhafız ARTIK YAZILDI:**
+  `tests/architecture/.../TenantContradictionSiteGuardTests.cs`. Önceki turun itirazı (istisna
+  listesi sapmayı "kabul edilmiş" yapar) listeyi YAZMAYARAK değil KÜÇÜLTEREK karşılandı: liste
+  artık bir kolaylık listesi değil, aşağıdaki TEK adlandırılmış karardan ibaret. Yedi nokta
+  sayısı tam olarak sabitlendi (ne `> 0` ne "boş değil") — sekizinci bir nokta ne kuralı ne
+  kararı devralmadan ortaya çıkarsa kırmızı olur. Reddetmeyi yapısal olarak ölçüyor: koşulu
+  yazıp 400 döndürmeyen (yalnız loglayan) bir dosya "uyguluyor" sayılmıyor — ölçüldü.
+
+#### ⚠ AÇIK KALAN KISIM — iki nokta, tek karar
+
+`Platform.Common` ve gateway **tahminle değil, ölçümle** açık bırakıldı:
+
+- **Korkulan kırılma yok:** `Platform.Common`'ın middleware'ini gerçekten kullanan TEK uygulama
+  `Diten.Platform.API` (diğer altı servisin her birinin kendi yerel kopyası var). Platform
+  admin'in "bir kiracı adına hareket etmesi" akışı `X-Tenant-Id` KULLANMIYOR — rota parametresi
+  üzerinden gidiyor (`/api/admin/tenants/{id}/...`), middleware'e hiç uğramıyor. `admin` yolları
+  başlığın varlığında zaten 400 veriyor; `TenantOnTheWire.cs` de CT'nin 2026-08-28 kararını
+  kayda geçiriyor: acting-for-a-tenant İNŞA EDİLMEYECEK.
+- **Ama gerçek bir karar var — SIRALAMA:** olağan kiracı yolunda kiracı, `actor_type` 403
+  sınırından ÖNCE çözülüyor. Çelişki reddi öne konursa, platform aktörünün çelişen başlıkla
+  geldiği istek bugünkü **403**'ün ("Tenant endpoints require tenant_user tokens") yerine
+  **400** alır. Hangi reddin kazanacağı bir ERİŞİM SINIRI kararıdır, temizlik değil.
+- **Gateway'de ek olarak:** kuralın hiç bahsetmediği ÜÇÜNCÜ bir kiracı kaynağı var — istek alt
+  alan adı. Üç yönlü uyuşmazlıkta "çelişki" henüz tanımlı değil.
+- **CrmService/HcmService'te açık kalan:** JWT'nin kiracı KAYNAĞI olup olmayacağı ve başlık
+  yokken `Clear()` yerine reddedilip reddedilmeyeceği. Bu turda bilerek dokunulmadı.
+
+- **Gelecek regresyon riski: 🟡 → 🟢'ye yakın** — kural artık yedi noktanın beşinde dayatılıyor
+  ve kalan ikisi statik muhafızla adlandırılmış durumda, yani "yazılı ama tutmuyor" sessizliği
+  bitti. Kalan risk yalnızca yukarıdaki sıralama kararının verilmemiş olmasıdır.
