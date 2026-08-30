@@ -36,7 +36,32 @@ public sealed class TenantResolutionMiddleware
 
         var jwtTenant = ReadJwtTenant(context);
         var headerTenant = ReadHeaderTenant(context);
-        var resolvedTenant = ResolveTenant(jwtTenant, headerTenant, context);
+
+        // BL-324 case 1 — the header and the token NAME DIFFERENT TENANTS. That is a malformed request, not an
+        // access decision, so it is refused 400 and nothing is concealed: the caller wrote both values.
+        //
+        // ⚠ This used to let the JWT win with a warning (see the deleted ResolveTenant). A warning is not a
+        // refusal: the request still ran, and which of the two contradicting values a handler downstream read
+        // was silent. The rule is DCP-004 §7.4 (owner decision 2026-08-29, BL-323).
+        //
+        // A contradiction needs BOTH values, so this cannot fire on the public auth paths below — at login there
+        // is no bearer token yet, hence no JWT tenant, hence nothing to contradict.
+        if (jwtTenant.HasValue && headerTenant.HasValue && jwtTenant.Value != headerTenant.Value)
+        {
+            _logger.LogWarning(
+                "Tenant mismatch in AuthService. HeaderTenant={HeaderTenant} JwtTenant={JwtTenant} Path={Path}",
+                headerTenant,
+                jwtTenant,
+                context.Request.Path);
+            await WriteProblemDetails(
+                context,
+                StatusCodes.Status400BadRequest,
+                "Tenant mismatch",
+                $"JWT tenant and '{TenantHeader}' must match.");
+            return;
+        }
+
+        var resolvedTenant = jwtTenant ?? headerTenant;
         if (resolvedTenant is null && TryGetDevelopmentBypassTenant(out var bypassTenant))
         {
             resolvedTenant = bypassTenant;
@@ -61,25 +86,6 @@ public sealed class TenantResolutionMiddleware
 
         tenantContext.SetTenant(resolvedTenant.Value);
         await _next(context);
-    }
-
-    private Guid? ResolveTenant(Guid? jwtTenant, Guid? headerTenant, HttpContext context)
-    {
-        if (jwtTenant.HasValue)
-        {
-            if (headerTenant.HasValue && headerTenant != jwtTenant)
-            {
-                _logger.LogWarning(
-                    "Tenant conflict in AuthService. JWT tenant wins. HeaderTenant={HeaderTenant} JwtTenant={JwtTenant} Path={Path}",
-                    headerTenant,
-                    jwtTenant,
-                    context.Request.Path);
-            }
-
-            return jwtTenant;
-        }
-
-        return headerTenant;
     }
 
     private static Guid? ReadJwtTenant(HttpContext context)
