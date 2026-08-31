@@ -44,6 +44,10 @@ using Hangfire;
 using Hangfire.Mongo;
 using Hangfire.Mongo.Migration.Strategies;
 using Hangfire.Mongo.Migration.Strategies.Backup;
+using EventOutboxStore = Diten.BuildingBlocks.Eventing.IEventOutboxStore;
+using EventOutboxWriter = Diten.BuildingBlocks.Eventing.IEventOutboxWriter;
+using TrustedTransportMetadataProvider = Diten.BuildingBlocks.Eventing.ITrustedTransportMetadataProvider;
+using EmptyTrustedTransportMetadataProvider = Diten.BuildingBlocks.Eventing.EmptyTrustedTransportMetadataProvider;
 
 namespace Diten.Platform.Infrastructure;
 
@@ -532,6 +536,9 @@ public static class DependencyInjection
         PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
 
         services.AddScoped<IOutboxEventRepository, OutboxEventRepository>();
+        services.AddScoped<EventOutboxWriter>(sp => sp.GetRequiredService<IOutboxEventRepository>());
+        services.AddScoped<EventOutboxStore>(sp => sp.GetRequiredService<IOutboxEventRepository>());
+        services.AddSingleton<TrustedTransportMetadataProvider, EmptyTrustedTransportMetadataProvider>();
         services.AddScoped<IOutboxObservabilityReader>(sp => (IOutboxObservabilityReader)sp.GetRequiredService<IOutboxEventRepository>());
         services.AddScoped<IConsumedEventRepository, ConsumedEventRepository>();
         services.AddScoped<IJobExecutionLogRepository, JobExecutionLogRepository>();
