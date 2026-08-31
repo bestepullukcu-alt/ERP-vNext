@@ -2,15 +2,19 @@ using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Common.Tenancy;
+using Diten.Platform.Domain.Repositories;
 using MongoDB.Driver;
 
 namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 
-public sealed class OutboxEventRepository : RepositoryBase<OutboxEvent>, IOutboxEventRepository, IOutboxObservabilityReader
+public sealed class OutboxEventRepository : RepositoryBase<OutboxEvent>, IOutboxEventRepository, ITransactionalOutboxEventWriter, IOutboxObservabilityReader
 {
+    private readonly IPlatformDbContext _platformDbContext;
+
     public OutboxEventRepository(IPlatformDbContext platformDbContext, ITenantContext tenantContext)
         : base(platformDbContext, tenantContext, PlatformCollections.OutboxEvents)
     {
+        _platformDbContext = platformDbContext;
     }
 
     public Task AddAsync(OutboxEvent outboxEvent, CancellationToken cancellationToken = default)
@@ -39,6 +43,22 @@ public sealed class OutboxEventRepository : RepositoryBase<OutboxEvent>, IOutbox
 
             throw new EventOutboxConflictException(candidate.EventId);
         }
+    }
+
+    public async Task<EventOutboxWriteResult> EnqueueAsync(
+        IPlatformTransactionSession session,
+        EventOutboxWriteRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        ArgumentNullException.ThrowIfNull(request);
+
+        var mongoSession = PlatformMongoTransactionSession.Require(session, _platformDbContext);
+        var candidate = OutboxEvent.FromWriteRequest(request);
+        // A duplicate write aborts a Mongo transaction. Transaction-owned mutations therefore require
+        // a fresh, exact-one intent and deliberately do not use the legacy idempotent duplicate path.
+        await Collection.InsertOneAsync(mongoSession, candidate, cancellationToken: cancellationToken);
+        return EventOutboxWriteResult.Inserted;
     }
 
     public async Task<IReadOnlyList<OutboxEvent>> GetPendingAsync(DateTimeOffset nowUtc, int batchSize, CancellationToken cancellationToken = default)

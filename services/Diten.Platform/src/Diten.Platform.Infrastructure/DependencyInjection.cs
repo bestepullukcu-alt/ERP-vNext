@@ -10,6 +10,7 @@ using Diten.Platform.Application.Features.WorkingCalendarImport;
 using Diten.Platform.Application.Features.TenantOrganization.Services;
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Application.Services;
+using Diten.Platform.Application.Services.Eventing;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Eventing;
 using Diten.Platform.Infrastructure.Authorization;
@@ -280,6 +281,9 @@ public static class DependencyInjection
 
         services.AddSingleton<IMongoClient>(mongoClient);
         services.AddSingleton<IPlatformDbContext>(new PlatformDbContext(mongoClient, database));
+        services.AddSingleton<IPlatformTransactionFaultProbe, NoOpPlatformTransactionFaultProbe>();
+        services.AddScoped<IPlatformTransactionExecutor, PlatformTransactionExecutor>();
+        services.AddScoped<IEntitlementStateVersionRepository, EntitlementStateVersionRepository>();
         services.AddScoped<IMongoDatabase>(_ => database);
         services.AddScoped<ISavedViewRepository, SavedViewRepository>();
         services.AddScoped<ITenantRegistryRepository, TenantRegistryRepository>();
@@ -474,6 +478,7 @@ public static class DependencyInjection
         services.AddScoped<IMessagingProviderResolver, MessagingProviderResolver>();
         services.AddScoped<AuditOutboxRepository>();
         services.AddScoped<IAuditOutboxWriter>(provider => provider.GetRequiredService<AuditOutboxRepository>());
+        services.AddScoped<ITransactionalAuditOutboxWriter>(provider => provider.GetRequiredService<AuditOutboxRepository>());
         services.AddScoped<IAuditOutboxProcessingRepository>(provider => provider.GetRequiredService<AuditOutboxRepository>());
         services.AddSingleton<AuditOutboxWorkerOptions>();
         services.AddScoped<AuditOutboxPayloadMapper>();
@@ -539,6 +544,9 @@ public static class DependencyInjection
         services.AddScoped<EventOutboxWriter>(sp => sp.GetRequiredService<IOutboxEventRepository>());
         services.AddScoped<EventOutboxStore>(sp => sp.GetRequiredService<IOutboxEventRepository>());
         services.AddSingleton<TrustedTransportMetadataProvider, EmptyTrustedTransportMetadataProvider>();
+        services.AddScoped<ITransactionalOutboxEventWriter>(sp =>
+            (ITransactionalOutboxEventWriter)sp.GetRequiredService<IOutboxEventRepository>());
+        services.AddScoped<ITransactionalIntegrationEventWriter, TransactionalIntegrationEventWriter>();
         services.AddScoped<IOutboxObservabilityReader>(sp => (IOutboxObservabilityReader)sp.GetRequiredService<IOutboxEventRepository>());
         services.AddScoped<IConsumedEventRepository, ConsumedEventRepository>();
         services.AddScoped<IJobExecutionLogRepository, JobExecutionLogRepository>();

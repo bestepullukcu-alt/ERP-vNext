@@ -4,6 +4,11 @@ namespace Diten.Platform.Domain.Repositories;
 
 public interface IQuotaUsageRepository
 {
+    Task<QuotaMutationResult> TryConsumeAtomicAsync(IPlatformTransactionSession session, Guid tenantId, string quotaKey, decimal amount, DateTimeOffset now, CancellationToken ct = default);
+    Task<QuotaMutationResult> TryReleaseAtomicAsync(IPlatformTransactionSession session, Guid tenantId, string quotaKey, decimal amount, DateTimeOffset now, CancellationToken ct = default);
+    Task<QuotaUsage?> SetCurrentValueAsync(IPlatformTransactionSession session, Guid tenantId, string quotaKey, decimal currentValue, DateTimeOffset now, CancellationToken ct = default);
+    Task<QuotaUsage?> GetByTenantAndKeyAsync(IPlatformTransactionSession session, Guid tenantId, string quotaKey, CancellationToken ct = default) =>
+        throw new PlatformTransactionUnavailableException("The quota repository does not implement transaction-bound reads.");
     Task<QuotaUsage> CreateAsync(QuotaUsage usage, CancellationToken ct = default);
     Task<QuotaUsage?> GetByTenantAndKeyAsync(Guid tenantId, string quotaKey, CancellationToken ct = default);
     Task<IReadOnlyList<QuotaUsage>> GetByTenantAsync(Guid tenantId, CancellationToken ct = default);

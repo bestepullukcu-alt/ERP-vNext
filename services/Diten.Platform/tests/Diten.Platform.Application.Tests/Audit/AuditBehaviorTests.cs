@@ -4,6 +4,7 @@ using Diten.Platform.Application.Contracts.Behaviors;
 using Diten.Platform.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.Audit;
@@ -57,6 +58,73 @@ public sealed class AuditBehaviorTests
         Assert.Equal(AuditCategory.Security, appendRequest.Category);
         Assert.Equal(AuditOperation.Update, appendRequest.Operation);
         Assert.Equal("TestEntity", appendRequest.EntityType);
+    }
+
+    [Fact]
+    public async Task AuthorizedTransactionOwnedCommand_BypassesPipelineAuditAndRunsHandlerOnce()
+    {
+        var auditService = new CapturingAuditService();
+        var behavior = new AuditBehavior<
+            global::Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands.AddTenantModuleEntitlementCommand,
+            Response<Guid>>(auditService, new AuditBehaviorOptions(), NullLogger<AuditBehavior<
+                global::Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands.AddTenantModuleEntitlementCommand,
+                Response<Guid>>>.Instance);
+        var handlerCalls = 0;
+        var command = new global::Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands.AddTenantModuleEntitlementCommand(
+            Guid.NewGuid(),
+            new global::Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.TenantModuleEntitlementRequest(
+                "PPM", EntitlementSource.Addon, true, null, null, null));
+
+        var response = await behavior.Handle(
+            command,
+            () =>
+            {
+                handlerCalls++;
+                return Task.FromResult(Response<Guid>.Success(Guid.NewGuid()));
+            },
+            CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(1, handlerCalls);
+        Assert.Empty(auditService.Requests);
+    }
+
+    [Fact]
+    public async Task UnauthorizedMarkerImplementation_FailsClosedBeforeHandler()
+    {
+        var auditService = new CapturingAuditService();
+        var behavior = CreateBehavior<TransactionOwnedAuditableCommand>(auditService);
+        var handlerCalls = 0;
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => behavior.Handle(
+            new TransactionOwnedAuditableCommand(),
+            () =>
+            {
+                handlerCalls++;
+                return Task.FromResult(Response<NoContent>.Success());
+            },
+            CancellationToken.None));
+
+        Assert.Equal(0, handlerCalls);
+        Assert.Empty(auditService.Requests);
+    }
+
+    [Theory]
+    [InlineData(typeof(global::Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands.AddTenantModuleEntitlementCommand))]
+    [InlineData(typeof(global::Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands.EnableTenantModuleEntitlementCommand))]
+    [InlineData(typeof(global::Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands.DisableTenantModuleEntitlementCommand))]
+    [InlineData(typeof(global::Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands.UpdateTenantModuleEntitlementExpiryCommand))]
+    [InlineData(typeof(global::Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands.RemoveTenantManualModuleOverrideCommand))]
+    public void ExactPhysicalCommands_OwnTheirTransactionAudit(Type commandType)
+    {
+        Assert.True(typeof(ITransactionOwnedAuditCommand).IsAssignableFrom(commandType));
+    }
+
+    [Fact]
+    public void ProjectionRefresh_DoesNotOwnTransactionAudit()
+    {
+        Assert.False(typeof(ITransactionOwnedAuditCommand).IsAssignableFrom(
+            typeof(global::Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands.RefreshTenantModuleEntitlementProjectionCommand)));
     }
 
     [Fact]
@@ -334,6 +402,12 @@ public sealed class AuditBehaviorTests
     }
 
     private sealed record AuditableCommandMissingMetadataProvider : IRequest<Response<NoContent>>, IAuditableCommand;
+
+    private sealed record TransactionOwnedAuditableCommand
+        : IRequest<Response<NoContent>>, IAuditableCommand, IAuditMetadataProvider, ITransactionOwnedAuditCommand
+    {
+        public AuditRequestMetadata GetAuditMetadata() => Metadata();
+    }
 
     private sealed record UpdateTenantHealthMetricsCommand : IRequest<Response<NoContent>>;
     private sealed record RetryFailedPaymentCommand : IRequest<Response<NoContent>>;

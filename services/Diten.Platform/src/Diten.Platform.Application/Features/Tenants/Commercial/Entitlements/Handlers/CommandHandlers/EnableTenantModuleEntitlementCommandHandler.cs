@@ -1,6 +1,9 @@
 using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Contracts.Eventing;
+using Diten.Platform.Application.Contracts.Audit;
+using Diten.Platform.Domain.Enums;
 using Diten.Platform.Application.Features.Quotas;
 using Diten.Platform.Application.Features.Quotas.Services;
 using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands;
@@ -14,18 +17,27 @@ public sealed class EnableTenantModuleEntitlementCommandHandler : IRequestHandle
 {
     private readonly ITenantModuleEntitlementRepository _repository;
     private readonly IQuotaService _quotaService;
-    private readonly IEventBus _eventBus;
+    private readonly IPlatformTransactionExecutor _transactions;
+    private readonly IEntitlementStateVersionRepository _versions;
+    private readonly ITransactionalIntegrationEventWriter _events;
+    private readonly ITransactionalAuditOutboxWriter _audit;
     private readonly ICurrentUserContext _currentUser;
 
     public EnableTenantModuleEntitlementCommandHandler(
         ITenantModuleEntitlementRepository repository,
         IQuotaService quotaService,
-        IEventBus eventBus,
+        IPlatformTransactionExecutor transactions,
+        IEntitlementStateVersionRepository versions,
+        ITransactionalIntegrationEventWriter events,
+        ITransactionalAuditOutboxWriter audit,
         ICurrentUserContext currentUser)
     {
         _repository = repository;
         _quotaService = quotaService;
-        _eventBus = eventBus;
+        _transactions = transactions;
+        _versions = versions;
+        _events = events;
+        _audit = audit;
         _currentUser = currentUser;
     }
 
@@ -40,13 +52,19 @@ public sealed class EnableTenantModuleEntitlementCommandHandler : IRequestHandle
         try
         {
             var wasEnabled = entitlement.IsEnabled;
-            if (!wasEnabled)
+            if (wasEnabled)
+            {
+                return Response<NoContent>.Success(204);
+            }
+
+            var auditIntentId = Guid.NewGuid();
+            await _transactions.ExecuteAsync(async (session, transactionCt) =>
             {
                 // FIX-QUOTA-DRIFT — reconcile modules.max CurrentValue to the REAL enabled-entitlement count
                 // (RecalculateAsync → ComputeCurrentUsageAsync) BEFORE the atomic consume, so a historically drifted
                 // counter self-heals and a legitimate enable is not blocked by a phantom +1. Best-effort: the consume
                 // that follows is the authoritative limit check, so a genuine over-limit still returns 409.
-                await _quotaService.RecalculateAsync(new RecalculateQuotaUsageRequest(
+                await _quotaService.RecalculateEntitlementAsync(session, new RecalculateQuotaUsageRequest(
                     request.TenantId,
                     QuotaKeys.ModulesMax,
                     "ModuleEntitlement",
@@ -54,9 +72,9 @@ public sealed class EnableTenantModuleEntitlementCommandHandler : IRequestHandle
                     entitlement.ModuleCode,
                     "Reconcile modules.max to the real enabled count before enforcing.",
                     null,
-                    Guid.NewGuid().ToString()), ct);
+                    Guid.NewGuid().ToString()), transactionCt);
 
-                var consume = await _quotaService.TryConsumeAsync(new TryConsumeQuotaRequest(
+                var consume = await _quotaService.TryConsumeEntitlementAsync(session, new TryConsumeQuotaRequest(
                     request.TenantId,
                     QuotaKeys.ModulesMax,
                     1,
@@ -70,24 +88,23 @@ public sealed class EnableTenantModuleEntitlementCommandHandler : IRequestHandle
                     entitlement.ModuleCode,
                     "Tenant module entitlement enabled.",
                     null,
-                    Guid.NewGuid().ToString()), ct);
+                    Guid.NewGuid().ToString()), transactionCt);
 
                 if (!consume.IsSuccessful)
                 {
-                    return Response<NoContent>.Fail(consume.Errors, consume.StatusCode);
+                    throw new PhysicalEntitlementMutationRejectedException(consume.Errors, consume.StatusCode);
                 }
-            }
 
-            entitlement.IsEnabled = true;
-            await _repository.UpdateAsync(entitlement, request.RowVersion, ct);
-            if (!wasEnabled)
-            {
+                entitlement.IsEnabled = true;
+                await _repository.UpdateAsync(session, entitlement, request.RowVersion, transactionCt);
+                await _versions.IncrementPhysicalEntitlementVersionAsync(session, request.TenantId, entitlement.ModuleCode, transactionCt);
                 var eventId = Guid.NewGuid();
                 var correlationId = Guid.NewGuid();
                 var occurredAtUtc = DateTimeOffset.UtcNow;
                 var actorId = _currentUser.UserId == Guid.Empty ? null : (Guid?)_currentUser.UserId;
 
-                await _eventBus.PublishAsync(
+                await _events.EnqueueAsync(
+                    session,
                     new TenantEntitlementEnabledV1(
                         eventId,
                         occurredAtUtc,
@@ -103,10 +120,18 @@ public sealed class EnableTenantModuleEntitlementCommandHandler : IRequestHandle
                         Producer = "Diten.Platform",
                         OccurredAtUtc = occurredAtUtc
                     },
-                    ct);
-            }
+                    transactionCt);
+                await PhysicalEntitlementAuditIntent.EnqueueAsync(_audit, session, request.TenantId, correlationId,
+                    auditIntentId, nameof(EnableTenantModuleEntitlementCommand), AuditOperation.Activate,
+                    entitlement.Id, entitlement.ModuleCode, transactionCt);
+                return true;
+            }, ct);
 
             return Response<NoContent>.Success(204);
+        }
+        catch (PhysicalEntitlementMutationRejectedException exception)
+        {
+            return Response<NoContent>.Fail(exception.Errors, exception.StatusCode);
         }
         catch (TenantModuleEntitlementConcurrencyException)
         {
