@@ -15,18 +15,15 @@ namespace Diten.Platform.Infrastructure.Persistence.Configurations;
 public sealed class SubscriptionPlanStartupInitializer : IHostedService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IMongoDatabase _database;
     private readonly MongoDbSettings _settings;
     private readonly ILogger<SubscriptionPlanStartupInitializer> _logger;
 
     public SubscriptionPlanStartupInitializer(
         IServiceScopeFactory scopeFactory,
-        IMongoDatabase database,
         MongoDbSettings settings,
         ILogger<SubscriptionPlanStartupInitializer> logger)
     {
         _scopeFactory = scopeFactory;
-        _database = database;
         _settings = settings;
         _logger = logger;
     }
@@ -35,10 +32,19 @@ public sealed class SubscriptionPlanStartupInitializer : IHostedService
     {
         try
         {
-            // Legacy quota BSON datatype repair is maintenance, not a catalog/applicability mutation.
-            await SubscriptionPlanSeed.RepairQuotaDataTypesAsync(_database, cancellationToken);
-
+            /*
+             * ⚠ IMongoDatabase is SCOPED and this class is an IHostedService, which the container
+             * builds as a SINGLETON. Taking it as a constructor parameter fails DI validation at
+             * startup — the app does not boot at all, and no unit test sees it because unit tests
+             * never build the container. It is resolved from the scope below instead, next to the
+             * mediator that already was.
+             */
             await using var scope = _scopeFactory.CreateAsyncScope();
+            var database = scope.ServiceProvider.GetRequiredService<IMongoDatabase>();
+
+            // Legacy quota BSON datatype repair is maintenance, not a catalog/applicability mutation.
+            await SubscriptionPlanSeed.RepairQuotaDataTypesAsync(database, cancellationToken);
+
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
             var response = await mediator.Send(new SeedDefaultSubscriptionPlansCommand(), cancellationToken);
             if (!response.IsSuccessful)

@@ -7865,6 +7865,7 @@ tags.diten-tags .tagify__input {
         position: static;
         box-shadow: none;
     }
+}
 .wcn-trigger-stack { display: grid; gap: .75rem; margin-bottom: 1rem; }
 .wcn-trigger-card { align-items: center; display: flex; flex-direction: row; gap: 1rem; justify-content: space-between; padding: 1rem 1.25rem; }
 .wcn-trigger-card h6 { margin: .45rem 0 .2rem; }
