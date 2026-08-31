@@ -87,7 +87,7 @@ else
 }
 
 app.UseAuthentication();
-app.UseMiddleware<TenantHeaderConsistencyMiddleware>();
+app.UseMiddleware<TenantResolutionMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/health").AllowAnonymous();
