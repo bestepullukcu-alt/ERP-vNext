@@ -1,8 +1,6 @@
-using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tenants.Commercial.Subscriptions.Commands;
-using Diten.Platform.Contracts.Events;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -15,20 +13,20 @@ public sealed class SuspendTenantSubscriptionCommandHandler : IRequestHandler<Su
     private readonly ITenantRegistryRepository _tenantRepository;
     private readonly ISubscriptionPlanRepository _planRepository;
     private readonly ICurrentUserContext _currentUser;
-    private readonly IEventBus _eventBus;
+    private readonly TenantSubscriptionTransactionWriter _writer;
 
     public SuspendTenantSubscriptionCommandHandler(
         ITenantSubscriptionRepository subscriptionRepository,
         ITenantRegistryRepository tenantRepository,
         ISubscriptionPlanRepository planRepository,
         ICurrentUserContext currentUser,
-        IEventBus eventBus)
+        TenantSubscriptionTransactionWriter writer)
     {
         _subscriptionRepository = subscriptionRepository;
         _tenantRepository = tenantRepository;
         _planRepository = planRepository;
         _currentUser = currentUser;
-        _eventBus = eventBus;
+        _writer = writer;
     }
 
     public async Task<Response<NoContent>> Handle(SuspendTenantSubscriptionCommand request, CancellationToken ct)
@@ -53,46 +51,7 @@ public sealed class SuspendTenantSubscriptionCommandHandler : IRequestHandler<Su
         subscription.UpdatedBy = _currentUser.ActorName;
         TenantSubscriptionLifecycle.AddHistory(subscription, "suspended", reason, _currentUser.ActorName, now);
 
-        try
-        {
-            await _subscriptionRepository.UpdateAsync(subscription, request.Request.RowVersion, ct);
-        }
-        catch (TenantSubscriptionConcurrencyException)
-        {
-            return Response<NoContent>.Fail("Tenant subscription was modified by another process.", 409);
-        }
-
-        var snapshotResponse = await TenantSubscriptionCommandSupport.UpdateTenantSnapshotAsync(subscription, _tenantRepository, _planRepository, _currentUser, ct);
-        if (!snapshotResponse.IsSuccessful)
-        {
-            return snapshotResponse;
-        }
-
-        var eventId = Guid.NewGuid();
-        var correlationId = Guid.NewGuid();
-        var actorId = _currentUser.UserId == Guid.Empty ? null : (Guid?)_currentUser.UserId;
-
-        await _eventBus.PublishAsync(
-            new TenantSubscriptionChangedV1(
-                eventId,
-                now,
-                request.TenantId,
-                correlationId,
-                actorId,
-                previousPlanId,
-                subscription.PlanId,
-                previousStatus,
-                subscription.Status.ToString()),
-            new EventPublishOptions
-            {
-                EventId = eventId,
-                CorrelationId = correlationId,
-                TenantId = request.TenantId,
-                Producer = "Diten.Platform",
-                OccurredAtUtc = now
-            },
-            ct);
-
-        return snapshotResponse;
+        return await _writer.UpdateAsync(subscription, request.Request.RowVersion, previousPlanId, previousStatus,
+            nameof(SuspendTenantSubscriptionCommand), AuditOperation.Suspend, false, null, ct);
     }
 }

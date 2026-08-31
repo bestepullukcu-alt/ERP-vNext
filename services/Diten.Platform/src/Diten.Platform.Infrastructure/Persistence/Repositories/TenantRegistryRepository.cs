@@ -9,8 +9,12 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 
 public sealed class TenantRegistryRepository : GlobalRepository<Tenant>, ITenantRegistryRepository
 {
-    public TenantRegistryRepository(IPlatformDbContext dbContext, ITenantContext tenantContext) 
-        : base(dbContext.Database, tenantContext, PlatformCollections.Tenants) { }
+    private readonly IPlatformDbContext _dbContext;
+    public TenantRegistryRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : base(dbContext.Database, tenantContext, PlatformCollections.Tenants)
+    {
+        _dbContext = dbContext;
+    }
 
     public async Task<Tenant?> GetByCodeAsync(string code, CancellationToken ct = default)
     {
@@ -70,6 +74,19 @@ public sealed class TenantRegistryRepository : GlobalRepository<Tenant>, ITenant
             Builders<Tenant>.Filter.Eq(x => x.Id, tenant.Id));
 
         await Collection.ReplaceOneAsync(filter, tenant, cancellationToken: ct);
+    }
+
+    public async Task UpdateAsync(IPlatformTransactionSession session, Tenant tenant, CancellationToken ct = default)
+    {
+        var filter = Builders<Tenant>.Filter.And(
+            ExecutionFilter,
+            Builders<Tenant>.Filter.Eq(x => x.Id, tenant.Id));
+        var result = await Collection.ReplaceOneAsync(
+            PlatformMongoTransactionSession.Require(session, _dbContext), filter, tenant, cancellationToken: ct);
+        if (result.MatchedCount != 1)
+        {
+            throw new PlatformTransactionUnavailableException("Transactional tenant binding update did not match exactly one tenant.");
+        }
     }
 
     public async Task<(IReadOnlyList<Tenant> Items, long TotalCount)> QueryAsync(TenantListQuery query, CancellationToken ct = default)

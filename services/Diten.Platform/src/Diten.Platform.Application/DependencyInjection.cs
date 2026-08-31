@@ -25,6 +25,7 @@ using Diten.Platform.Contracts.Events;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Diten.Platform.Application.Features.Tenants.Commercial.Subscriptions;
 
 namespace Diten.Platform.Application;
 
@@ -73,6 +74,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantModuleAccessService, TenantModuleAccessService>();
         services.AddScoped<IActorSafetyGuard, ActorSafetyGuard>();
         services.AddScoped<IQuotaService, QuotaService>();
+        services.AddScoped<TenantSubscriptionTransactionWriter>();
         services.AddScoped<IPlatformLookupProvider, PlatformLookupProvider>();
         // Working Calendar read-only working-day seam — the capability's actual product; consumers call THIS in-process.
         services.AddScoped<Features.WorkingCalendar.Provider.IWorkingCalendarProvider, Features.WorkingCalendar.Provider.WorkingCalendarProvider>();

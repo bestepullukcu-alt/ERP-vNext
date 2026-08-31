@@ -85,8 +85,8 @@ public sealed class ActivateTenantSubscriptionTenantStatusTests
             .Setup(x => x.GetByTenantIdAsync(TenantId, SubscriptionId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(CreateSubscription(subscriptionStatus));
         subscriptionRepository
-            .Setup(x => x.UpdateAsync(It.IsAny<TenantSubscription>(), It.IsAny<byte[]?>(), It.IsAny<CancellationToken>()))
-            .Callback<TenantSubscription, byte[]?, CancellationToken>((s, _, _) => capturedSubscription = s)
+            .Setup(x => x.UpdateAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<TenantSubscription>(), It.IsAny<byte[]?>(), It.IsAny<CancellationToken>()))
+            .Callback<IPlatformTransactionSession, TenantSubscription, byte[]?, CancellationToken>((_, s, _, _) => capturedSubscription = s)
             .Returns(Task.CompletedTask);
 
         var tenantRepository = CreateTenantRepository(CreateTenant(tenantStatus), t => capturedTenant = t);
@@ -95,16 +95,25 @@ public sealed class ActivateTenantSubscriptionTenantStatusTests
 
         var quotaService = new Mock<IQuotaService>();
         quotaService
+            .Setup(x => x.InitializeSubscriptionQuotasAsync(
+                It.IsAny<IPlatformTransactionSession>(), It.IsAny<TenantSubscription>(), It.IsAny<SubscriptionPlan>(),
+                It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response<IReadOnlyList<QuotaStatusDto>>.Success(new List<QuotaStatusDto>()));
+        quotaService
             .Setup(x => x.InitializeTenantQuotasAsync(
                 It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Response<IReadOnlyList<QuotaStatusDto>>.Success(new List<QuotaStatusDto>()));
 
+        var transactions = new SubscriptionTransactionTestDependencies(subscriptionRepository.Object,
+            tenantRepository.Object, planRepository.Object, currentUser.Object);
         var handler = new ActivateTenantSubscriptionCommandHandler(
             subscriptionRepository.Object,
             tenantRepository.Object,
             planRepository.Object,
             currentUser.Object,
-            quotaService.Object);
+            quotaService.Object,
+            transactions.Writer);
 
         return new ActivateFixture(handler, () => capturedTenant, () => capturedSubscription);
     }
@@ -118,35 +127,22 @@ public sealed class ActivateTenantSubscriptionTenantStatusTests
             .Setup(x => x.GetByTenantIdAsync(TenantId, SubscriptionId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(CreateSubscription(TenantSubscriptionStatus.Active));
         subscriptionRepository
-            .Setup(x => x.UpdateAsync(It.IsAny<TenantSubscription>(), It.IsAny<byte[]?>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.UpdateAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<TenantSubscription>(), It.IsAny<byte[]?>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         var tenantRepository = CreateTenantRepository(CreateTenant(tenantStatus), t => capturedTenant = t);
         var planRepository = CreatePlanRepository();
         var currentUser = CreateCurrentUser();
 
-        var eventBus = new Mock<IEventBus>();
-        eventBus
-            .Setup(x => x.PublishAsync(It.IsAny<TenantSubscriptionChangedV1>(), It.IsAny<EventPublishOptions>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((TenantSubscriptionChangedV1 @event, EventPublishOptions options, CancellationToken _) =>
-                new EventEnvelope<TenantSubscriptionChangedV1>(
-                    new EventMetadata(
-                        options.EventId ?? Guid.NewGuid(),
-                        @event.EventName,
-                        @event.EventVersion,
-                        options.CorrelationId ?? Guid.NewGuid(),
-                        options.CausationId,
-                        options.TenantId,
-                        options.Producer ?? "Diten.Platform",
-                        options.OccurredAtUtc ?? DateTimeOffset.UtcNow),
-                    @event));
+        var transactions = new SubscriptionTransactionTestDependencies(subscriptionRepository.Object,
+            tenantRepository.Object, planRepository.Object, currentUser.Object);
 
         var handler = new SuspendTenantSubscriptionCommandHandler(
             subscriptionRepository.Object,
             tenantRepository.Object,
             planRepository.Object,
             currentUser.Object,
-            eventBus.Object);
+            transactions.Writer);
 
         return new SuspendFixture(handler, () => capturedTenant);
     }
@@ -158,8 +154,8 @@ public sealed class ActivateTenantSubscriptionTenantStatusTests
             .Setup(x => x.GetByIdAsync(TenantId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(tenant);
         repository
-            .Setup(x => x.UpdateAsync(It.IsAny<Tenant>(), It.IsAny<CancellationToken>()))
-            .Callback<Tenant, CancellationToken>((t, _) => capture(t))
+            .Setup(x => x.UpdateAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<Tenant>(), It.IsAny<CancellationToken>()))
+            .Callback<IPlatformTransactionSession, Tenant, CancellationToken>((_, t, _) => capture(t))
             .Returns(Task.CompletedTask);
         return repository;
     }
