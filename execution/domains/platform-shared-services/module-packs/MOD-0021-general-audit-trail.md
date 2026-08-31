@@ -729,6 +729,34 @@ AuditRetention.SaveError
 Magic string yasaktır — view/JS tarafında string literal text yerine bu key'ler render edilir.
 
 ## Follow-up Items
+- **PPM Minimal Mutation Audit v1 acceptance seam (2026-08-31):** the bounded PSS preparation
+  authorizes only consumer-side contract fixtures and negative compatibility tests for
+  `PpmAuditIntentSubmittedV1` / `ppm.audit-intent.submitted.v1`.  It does not authorize a live
+  broker, credentials, a key/secret provider, consumer registration, replay UI/API, public endpoint,
+  or a production audit append path.  The consumer remains structurally absent/default-off until all
+  of the following are available and reviewed together:
+  1. a PPM-owned, independently referenceable contracts artifact at the planned
+     `services/Diten.PpmService/src/Diten.PpmService.Contracts/Events/**` boundary (PSS must not
+     reference `Diten.PpmService.Application` types or recreate that event DTO);
+  2. an authenticated publisher-identity binding that supplies trusted producer, tenant and actor
+     context and is owned by the shared eventing/security boundary; and
+  3. an explicitly approved `AuditCategory` and `AuditOperation` mapping for every supported PPM
+     mutation/entity pair.  This pack does not infer that mapping from an entity name or from
+     `lifecycle-changed`.
+
+  The locked payload shape is exactly `auditIntentId`, `actorId`, `entityType`, `entityId`,
+  `mutation`, and `occurredAtUtc`; unknown/missing/nested payload fields, invalid identifiers, and
+  non-UTC timestamps are rejection cases.  The six fields are not authorization evidence: actor and
+  tenant may be appended only after they agree with authenticated transport context.  No aggregate
+  allowlist is introduced here: any PPM entity coverage (including Investment Case or Benefit
+  Commitment) must be resolved by the approved mapping, not silently quarantined by a four-type
+  consumer restriction.
+
+  Once enabled in a separately authorized change, the consumer must use `ConsumerName + EventId`
+  idempotency together with the local audit append/outbox transaction.  Same-`EventId` replay is
+  accepted only for identical canonical bytes and may create at most one `AuditEvent`; changed bytes
+  and untrusted publishers are rejected.  The historic PPM HMAC-specific consumer is not a baseline
+  and must not be copied into this path.
 - Tenant-facing audit viewer and tenant permission boundary.
 - Tenant-side ERP UI for audit retention preference, if product decides tenants can self-manage it.
 - Retrofitting existing Platform modules to emit richer audit payloads after MOD-0021 core is merged.

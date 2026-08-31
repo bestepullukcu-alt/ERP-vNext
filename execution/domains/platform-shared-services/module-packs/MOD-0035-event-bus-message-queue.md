@@ -401,6 +401,19 @@ This is a backend/infrastructure module, not a CRUD DataTable module. `golden_re
 - No code was written as part of module-pack preparation.
 
 ## 20. Follow-up Items
+- [ ] **PPM Audit Transport Slice acceptance seam (2026-08-31):** PSS has a default-off
+  compatibility fixture and negative contract test for the PPM-owned
+  `ppm.audit-intent.submitted.v1` payload.  No PPM audit consumer is registered by this note, and
+  no RabbitMQ configuration, live broker proof, credential/key provisioning, replay surface, or
+  runtime activation is implied.  The future consumer must reference the PPM contracts artifact,
+  not `Diten.PpmService.Application` and not a PSS-owned duplicate payload type.
+- [ ] Wire the authenticated publisher-identity/key-provider seam only after its owner and concrete
+  credential lifecycle are approved.  Fixture data must contain no key, secret, signature, or
+  credential material; historic HMAC-specific transport code is not the PSS acceptance baseline.
+- [ ] Before registration, approve the MOD-0021 audit category/operation mapping and prove that
+  inbox `ConsumerName + EventId` and the resulting audit append/outbox commit form one idempotent
+  local outcome.  This is required to satisfy at-least-once delivery without claiming distributed
+  exactly-once behavior.
 - [ ] Update `execution/domains/platform-shared-services/domain-config.md` Event Bus runtime decision after user approval.
 - [ ] Update `docs/platform/master-plan.md` MOD-0035 status after implementation begins.
 - [ ] Prepare/update MOD-0009 Tenant Registry Lifecycle Events pack to emit events through `IEventBus`.
