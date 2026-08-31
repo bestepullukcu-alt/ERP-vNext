@@ -61,9 +61,33 @@
     const ROLE_KEY = { Owner: 'RoleOwner', Approver: 'RoleApprover', Reviewer: 'RoleReviewer', Creator: 'RoleCreator' };
 
     // Axis law (spec v3): OWNERSHIP→tab · STATUS→segment · TYPE→chip.
+    /*
+     * THE TAB STRIP, IN ORDER — and these two arrays are what RENDERS it (buildTabs) and what the URL
+     * whitelist validates against (STATE_VALUES.tab).
+     *
+     * ⚠ THEY USED TO BE DEAD. Both were declared here and read by nothing: the strip was built from a hand-typed
+     * literal `['inbox', 'islerim', 'havuz', 'history']` and the whitelist from a second copy of the same words.
+     * `workcenter-next-team-scope.test.js` guards the axis law by PARSING these arrays — so the one guard
+     * standing between this surface and a fifth tab was measuring two constants the running page never read.
+     * Adding a tab to the literal and not to the array would have left that guard green.
+     */
     const TABS_PRIMARY = ['inbox', 'islerim'];
-    const TABS_SECONDARY = ['havuz', 'history'];
-    const TAB_KEY = { inbox: 'TabInbox', islerim: 'TabMine', havuz: 'TabPool', history: 'TabHistory' };
+    const TABS_SECONDARY = ['havuz', 'baslattiklarim', 'history'];
+    const TABS = [...TABS_PRIMARY, ...TABS_SECONDARY];
+    /*
+     * ⚠ `baslattiklarim` — THE OUTBOX (BL-016) — IS AN OWNERSHIP TAB, WHICH IS WHY IT IS A TAB AT ALL.
+     *
+     * The axis law is unchanged: OWNERSHIP→tab · STATUS→segment · TYPE→chip. "What did I start that somebody
+     * else is carrying" is an ownership question — the third one, after "what do I hold" and "what may I take" —
+     * so it belongs on this axis and nowhere else. It is not a filter over İşlerim: nothing in İşlerim is in it.
+     *
+     * The shape is SAP's and Oracle's. SAP Business Workplace / Fiori My Inbox put the Outbox inside the same
+     * personal surface as the inbox; Oracle BPM Worklist calls the same view "Initiated Tasks". In both, "show me
+     * everything anyone started" is a DIFFERENT, permission-gated surface (SAP SWI1, Oracle Administrative
+     * Tasks). This is the first one. The second is not in this round and is not a widening of this tab.
+     */
+    const TAB_KEY = { inbox: 'TabInbox', islerim: 'TabMine', havuz: 'TabPool',
+        baslattiklarim: 'TabInitiated', history: 'TabHistory' };
     const SEGMENTS = { islerim: ['aktif', 'bekleyen', 'planli'] };
     const SEGMENT_KEY = { aktif: 'SegActive', bekleyen: 'SegWaiting', planli: 'SegPlanned' };
     /*
@@ -93,7 +117,7 @@
         tab: 'inbox',
         segment: 'aktif',        // meaningful within İşlerim
         view: 'list',
-        viewsByTab: { inbox: 'list', islerim: 'list', havuz: 'list', history: 'list' },
+        viewsByTab: { inbox: 'list', islerim: 'list', havuz: 'list', baslattiklarim: 'list', history: 'list' },
         /*
          * 'mine' | 'all' | <delegator name> (N-way delegation) | 'team' (BL-023).
          *
@@ -198,7 +222,7 @@
     state.triggers.forEach((trigger) => { trigger.isUnread = !seenIds.has(trigger.id); });
 
     const STATE_VALUES = {
-        tab: ['inbox', 'islerim', 'havuz', 'history'],
+        tab: TABS,
         segment: ['aktif', 'bekleyen', 'planli'],
         view: ['list', 'table', 'split', 'kanban', 'calendar', 'focus'],
         priority: ['all', 'High', 'Medium', 'Low'],
@@ -1089,7 +1113,8 @@
     // Standard Sneat `nav nav-pills` (like the legacy WorkCenter), with icon +
     // count. Inbox is default so new work is seen on open. Click drives state
     // (data-wcn-tab) + re-render — not Bootstrap tab-panes.
-    const TAB_ICON = { inbox: 'bx-envelope', islerim: 'bx-briefcase-alt-2', havuz: 'bx-collection', history: 'bx-history' };
+    const TAB_ICON = { inbox: 'bx-envelope', islerim: 'bx-briefcase-alt-2', havuz: 'bx-collection',
+        baslattiklarim: 'bx-paper-plane', history: 'bx-history' };
     // Views are tab-appropriate, not all six everywhere: Inbox = triage (list/
     // split/table), İşlerim = full work management, Havuz = claim list, Geçmiş =
     // read-only archive. Kanban/Calendar/Bugün only make sense for active work.
@@ -1110,6 +1135,10 @@
         inbox: ['list', 'table', 'split', 'calendar'],
         islerim: ['list', 'table', 'split', 'kanban', 'calendar', 'focus'],
         havuz: ['list', 'table', 'split', 'kanban', 'calendar'],
+        // The Outbox gets İşlerim's views MINUS Bugün: "what should I do today" is a question about work the
+        // reader holds, and this tab holds none of it. Kanban stays — its columns are lifecycle stages, and how
+        // far along the work you handed over has got is the tab's whole question.
+        baslattiklarim: ['list', 'table', 'split', 'kanban', 'calendar'],
         history: ['list', 'table', 'split', 'kanban', 'calendar']
     };
     const buildTabs = () => {
@@ -1140,7 +1169,7 @@
         return `<div class="card mb-3 wcn-tabcard">
             <div class="card-body p-3 d-flex align-items-center gap-3 flex-wrap">
                 <ul class="nav nav-pills gap-2 flex-wrap mb-0 wcn-tabs" role="tablist" aria-label="${esc(t('TabsLabel'))}">
-                    ${['inbox', 'islerim', 'havuz', 'history'].map(tab).join('')}
+                    ${TABS.map(tab).join('')}
                 </ul>
                 ${views}
             </div>
@@ -5895,6 +5924,7 @@
         const byTab = {
             inbox: ['EmptyInboxZeroTitle', 'EmptyInboxZeroDesc', 'bx-check-circle'],
             havuz: ['EmptyPoolTitle', 'EmptyPoolDesc', 'bx-time'],
+            baslattiklarim: ['EmptyInitiatedTitle', 'EmptyInitiatedDesc', 'bx-paper-plane'],
             history: ['EmptyHistoryTitle', 'EmptyHistoryDesc', 'bx-history'],
             islerim: ['EmptyMineTitle', 'EmptyMineDesc', 'bx-briefcase-alt-2']
         };
@@ -6315,9 +6345,25 @@
                 item.claimed = false; item.assignee = null;
                 item.admissionState = 'pendingClaim';
                 item.ownershipState = 'unowned';
-                // No queue name here: the projection never says WHICH pool an item belongs to, and inventing one
-                // ("Operasyon Kuyruğu") put a non-existent team's name on real work. The ungrouped state gets its
-                // own translated label instead. Naming the queue is WC-3 contract work (BL-031 a/b).
+                /*
+                 * ⚠ THE OLD COMMENT HERE SAID THE PROJECTION "NEVER SAYS WHICH POOL AN ITEM BELONGS TO", and
+                 * that naming the queue was still WC-3 contract work. MEASURED, AND NO LONGER TRUE: the wire
+                 * carries `WorkItemPoolDto? Pool` on every work item (WorkAggregationModels.cs:402) as
+                 * `{ Id, Label? }` (:660), and `TaskWorkItemProvider` resolves the names in one batched read
+                 * (:341, :642, :1394) — a position that cannot be read still yields the id with a null label,
+                 * never a printed GUID. The fixtures answer it too (`pool.id` is REQUIRED of every groupQueue
+                 * fixture, fixture-contract.js:347), and the surface already reads it: mock-data.js maps
+                 * `pool.label.text` onto `item.group`, which is what `buildGroupSelector` draws its buttons from.
+                 *
+                 * NO QUEUE NAME IS WRITTEN HERE ANYWAY, for a reason that outlived the wrong one: this argument
+                 * is the item's STATUS TEXT, not its queue. Released work is back in the queue and held by
+                 * nobody, which is what `PoolUnassigned` says ("Unassigned — in the pool", all seven languages).
+                 * The nameless state keeps a TRANSLATED label and never a team name — "Operasyon Kuyruğu" once
+                 * put a non-existent team's name on real work (BL-031).
+                 *
+                 * FIXTURE-ONLY, like the whole of `applyTransition`: `applyAction` hands every real item to
+                 * `submitRealTransition` before this branch is reachable, so what it writes is a simulated row.
+                 */
                 setProjectionState(item, 'Pending', item.itemType === 'task' ? 'Open' : null, t('PoolUnassigned'));
                 return 'released';
             case 'approve': setProjectionState(item, 'Done', null, 'Onaylandı'); return 'resolved';

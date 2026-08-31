@@ -1,6 +1,4 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
 using Diten.ApiGateway.Authentication;
 
 namespace Diten.ApiGateway.Middleware;
@@ -8,6 +6,12 @@ namespace Diten.ApiGateway.Middleware;
 public sealed class TenantResolutionMiddleware
 {
     private const string TenantHeader = "X-Tenant-Id";
+
+    // The names reported in `conflictingSignals`. ⚠ A ROUTING signal for the caller ("send me to the right host"
+    // vs "sign in again"), NOT display text — it is deliberately not a reason code and is not bridged to resx.
+    private const string HeaderSignal = "header";
+    private const string SubdomainSignal = "subdomain";
+
     private readonly RequestDelegate _next;
     private readonly ILogger<TenantResolutionMiddleware> _logger;
     private readonly IConfiguration _configuration;
@@ -43,17 +47,30 @@ public sealed class TenantResolutionMiddleware
             return;
         }
 
-        // Ensure the authentication handler has run and context.User is populated.
-        // UseAuthentication() should have done this, but when the handler returns NoResult
-        // (e.g. cookie-only token not promoted yet), context.User may be unauthenticated.
-        await EnsureAuthenticatedUserAsync(context);
-
-        var actorType = ReadActorType(context.User) ?? ReadActorTypeFromRequestToken(context);
+        /*
+         * ⚠ EVERY CLAIM READ HERE COMES FROM context.User AND NOTHING ELSE.
+         *
+         * context.User is populated by GatewayJwtAuthenticationHandler, which VALIDATES the token (issuer,
+         * audience, lifetime, signing key). If the token failed validation, context.User is anonymous and these
+         * reads return null — which is the correct answer, because a refused token has said nothing.
+         *
+         * This file used to fall back to `?? ReadActorTypeFromRequestToken(context)`, which decoded the raw
+         * Authorization header with JwtSecurityTokenHandler.ReadJwtToken — a DECODE, not a validation. Because of
+         * the `??`, that fallback ran ONLY when the token had been REFUSED, so its entire effect was to hand a
+         * forged token the actor_type and tenant_id it asked for: a forged `actor_type: platform_admin` walked
+         * past the admin gate below, and a forged `tenant_id` was written into X-Tenant-Id for downstream.
+         *
+         * It was measured to have no legitimate case: the cookie is promoted to Authorization before
+         * UseAuthentication (Program.cs:135-145) AND the handler reads the cookie itself, so a cookie-only token
+         * is already an authenticated principal when this middleware starts. Both measurements are held by
+         * gateway/Diten.ApiGateway.Tests/RejectedTokenClaimRevivalGuardTests.cs.
+         */
+        var actorType = ReadActorType(context.User);
         var host = context.Request.Host.Host;
         var isAdminHost = IsAdminHost(host);
         var isTenantHost = IsTenantHost(host);
         var isAuthLifecyclePath = IsAuthLifecyclePath(context.Request.Path);
-        var jwtTenant = ReadJwtTenant(context.User) ?? ReadJwtTenantFromRequestToken(context);
+        var jwtTenant = ReadJwtTenant(context.User);
         var headerTenant = ReadHeaderTenant(context.Request.Headers[TenantHeader]);
         var subdomainTenant = ReadSubdomainTenant(context.Request.Host.Host);
 
@@ -92,8 +109,17 @@ public sealed class TenantResolutionMiddleware
                 return;
             }
 
-            var personalizationTenant = Resolve(jwtTenant, headerTenant, subdomainTenant, context);
-            if (personalizationTenant is null && TryGetDevelopmentBypassTenant(out var personalizationBypassTenant))
+            var personalizationResolution = Resolve(jwtTenant, headerTenant, subdomainTenant, context);
+            if (personalizationResolution.IsConflict)
+            {
+                await WriteTenantMismatch(context, personalizationResolution);
+                return;
+            }
+
+            // ⚠ The bypass is ordered AFTER the conflict check on purpose: it stands in for an ABSENT tenant, and
+            // must never fill in — and thereby conceal — a request whose signals contradict each other.
+            var personalizationTenant = personalizationResolution.TenantId;
+            if (personalizationResolution.IsMissing && TryGetDevelopmentBypassTenant(out var personalizationBypassTenant))
             {
                 personalizationTenant = personalizationBypassTenant;
                 _logger.LogWarning(
@@ -140,8 +166,15 @@ public sealed class TenantResolutionMiddleware
             return;
         }
 
-        var resolvedTenant = Resolve(jwtTenant, headerTenant, subdomainTenant, context);
-        if (resolvedTenant is null && TryGetDevelopmentBypassTenant(out var bypassTenant))
+        var resolution = Resolve(jwtTenant, headerTenant, subdomainTenant, context);
+        if (resolution.IsConflict)
+        {
+            await WriteTenantMismatch(context, resolution);
+            return;
+        }
+
+        var resolvedTenant = resolution.TenantId;
+        if (resolution.IsMissing && TryGetDevelopmentBypassTenant(out var bypassTenant))
         {
             resolvedTenant = bypassTenant;
             _logger.LogWarning(
@@ -158,15 +191,11 @@ public sealed class TenantResolutionMiddleware
                 return;
             }
 
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            context.Response.ContentType = "application/problem+json";
-            await context.Response.WriteAsJsonAsync(new
-            {
-                title = "Missing Tenant",
-                status = 400,
-                detail = $"'{TenantHeader}' or JWT tenant_id claim is required for tenant endpoints.",
-                traceId = context.TraceIdentifier
-            });
+            await WriteProblemDetails(
+                context,
+                StatusCodes.Status400BadRequest,
+                "Missing Tenant",
+                $"'{TenantHeader}' or JWT tenant_id claim is required for tenant endpoints.");
             return;
         }
 
@@ -185,37 +214,81 @@ public sealed class TenantResolutionMiddleware
         await _next(context);
     }
 
-    private Guid? Resolve(Guid? jwtTenant, Guid? headerTenant, Guid? subdomainTenant, HttpContext context)
+    /*
+     * BL-324 — ONE RULE FOR EVERY SIGNAL. If the token names a tenant, every OTHER tenant signal on the request
+     * must name the SAME one; otherwise the request is malformed and is refused 400. The gateway previously
+     * logged "JWT tenant wins" for the header AND for the subdomain and carried on, which produced a session
+     * addressed at one tenant's host while operating on another's data.
+     *
+     * The rule is deliberately signal-agnostic: a per-signal exception is what gets forgotten the day a fourth
+     * tenant signal appears.
+     *
+     * WITHOUT A TOKEN THERE IS NO CONTRADICTION — nothing authenticated has named a tenant, so header and
+     * subdomain disagreeing is just precedence, and today's `header ?? subdomain` order is preserved exactly.
+     *
+     * ⚠ LOGIN HAS NO EXEMPTION, IT IS SIMPLY TOKENLESS — AND THAT IS AN ASSUMPTION, NOT A PROPERTY OF THIS FILE.
+     * A login request that DID carry a token naming another tenant would be refused 400 here, and the user could
+     * not recover, because signing in again is the request being refused. Two things outside this middleware keep
+     * that from happening, and BOTH must hold:
+     *
+     *   1. The gateway receives login server-to-server from Diten.Web, with no Cookie header and no bearer
+     *      (frontend/Diten.Web/Services/Auth/AuthGateway.cs:56-66 and :203-230).
+     *   2. The auth cookie is HOST-ONLY — AuthCookieService.BuildCookieOptions never sets `Domain`
+     *      (frontend/Diten.Web/Services/Auth/AuthCookieService.cs:21-31), so tenant A's token is never sent to
+     *      tenant B's host at all.
+     *
+     * Assumption 2 is one added line away from being false, so it is GUARDED where it lives:
+     *   frontend/Diten.Web.Tests/Auth/AuthCookieDomainScopeGuardTests.cs   ← breaks, and says why, if Domain is set
+     * The refusal itself is measured by
+     *   gateway/Diten.ApiGateway.Tests/TenantContradictionGuardTests.cs
+     *     → Login_that_DOES_carry_a_token_is_refused_like_any_other_path
+     */
+    private TenantResolution Resolve(Guid? jwtTenant, Guid? headerTenant, Guid? subdomainTenant, HttpContext context)
     {
-        if (jwtTenant.HasValue)
+        // Fixed order — the refusal body is machine-read by the caller, which must be able to compare it.
+        var conflictingSignals = new List<string>(2);
+
+        if (jwtTenant.HasValue && headerTenant.HasValue && jwtTenant.Value != headerTenant.Value)
         {
-            if (headerTenant.HasValue && headerTenant != jwtTenant)
-            {
-                _logger.LogWarning(
-                    "Tenant conflict in gateway. JWT tenant wins. HeaderTenant={HeaderTenant}, JwtTenant={JwtTenant}, Path={Path}",
-                    headerTenant,
-                    jwtTenant,
-                    context.Request.Path);
-            }
-
-            if (subdomainTenant.HasValue && subdomainTenant != jwtTenant)
-            {
-                _logger.LogWarning(
-                    "Tenant conflict in gateway. JWT tenant wins over subdomain. SubdomainTenant={SubdomainTenant}, JwtTenant={JwtTenant}, Host={Host}",
-                    subdomainTenant,
-                    jwtTenant,
-                    context.Request.Host.Host);
-            }
-
-            return jwtTenant;
+            conflictingSignals.Add(HeaderSignal);
         }
 
-        if (headerTenant.HasValue)
+        if (jwtTenant.HasValue && subdomainTenant.HasValue && jwtTenant.Value != subdomainTenant.Value)
         {
-            return headerTenant;
+            conflictingSignals.Add(SubdomainSignal);
         }
 
-        return subdomainTenant;
+        if (conflictingSignals.Count > 0)
+        {
+            _logger.LogWarning(
+                "Tenant contradiction refused in gateway. Signals={Signals} Path={Path}",
+                string.Join(',', conflictingSignals),
+                context.Request.Path);
+
+            return TenantResolution.Conflict(conflictingSignals, StatusCodes.Status400BadRequest);
+        }
+
+        return TenantResolution.Resolved(jwtTenant ?? headerTenant ?? subdomainTenant);
+    }
+
+    /// <summary>
+    /// The outcome of tenant resolution. A CONTRADICTION IS ITS OWN OUTCOME — it cannot be expressed as a null
+    /// tenant, because the caller would then answer "Missing Tenant" for a request that named two of them. The
+    /// refusal status travels with the result so the two call sites cannot drift apart on how they answer it.
+    /// </summary>
+    private readonly record struct TenantResolution(
+        Guid? TenantId,
+        IReadOnlyList<string>? ConflictingSignals,
+        int RefusalStatusCode)
+    {
+        public static TenantResolution Resolved(Guid? tenantId) => new(tenantId, null, 0);
+
+        public static TenantResolution Conflict(IReadOnlyList<string> conflictingSignals, int refusalStatusCode)
+            => new(null, conflictingSignals, refusalStatusCode);
+
+        public bool IsConflict => ConflictingSignals is { Count: > 0 };
+
+        public bool IsMissing => TenantId is null && !IsConflict;
     }
 
     private static Guid? ReadJwtTenant(ClaimsPrincipal user)
@@ -229,78 +302,11 @@ public sealed class TenantResolutionMiddleware
         return FindClaimValue(user, "actor_type");
     }
 
-    private string? ReadActorTypeFromRequestToken(HttpContext context)
-    {
-        var actorType = ReadClaimFromRequestToken(context, "actor_type");
-        if (!string.IsNullOrWhiteSpace(actorType))
-        {
-            _logger.LogWarning(
-                "actor_type resolved from raw token fallback (context.User did not contain the claim). Path={Path} ActorType={ActorType}",
-                context.Request.Path,
-                actorType);
-        }
-
-        return actorType;
-    }
-
-    private static Guid? ReadJwtTenantFromRequestToken(HttpContext context)
-    {
-        var raw = ReadClaimFromRequestToken(context, "tenant_id");
-        return Guid.TryParse(raw, out var parsed) ? parsed : null;
-    }
-
-    private static async Task EnsureAuthenticatedUserAsync(HttpContext context)
-    {
-        if (context.User.Identity?.IsAuthenticated == true)
-        {
-            return;
-        }
-
-        var result = await context.AuthenticateAsync("Bearer");
-        if (result.Succeeded && result.Principal is not null)
-        {
-            context.User = result.Principal;
-        }
-    }
-
     private static string? FindClaimValue(ClaimsPrincipal user, string claimType)
     {
         return user.Claims
             .FirstOrDefault(claim => string.Equals(claim.Type, claimType, StringComparison.OrdinalIgnoreCase))
             ?.Value;
-    }
-
-    private static string? ReadClaimFromRequestToken(HttpContext context, string claimType)
-    {
-        var token = ReadBearerToken(context);
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            return null;
-        }
-
-        try
-        {
-            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
-            return jwt.Claims
-                .FirstOrDefault(claim => string.Equals(claim.Type, claimType, StringComparison.OrdinalIgnoreCase))
-                ?.Value;
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    private static string? ReadBearerToken(HttpContext context)
-    {
-        var authorization = context.Request.Headers.Authorization.FirstOrDefault();
-        if (!string.IsNullOrWhiteSpace(authorization) &&
-            authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-        {
-            return authorization["Bearer ".Length..].Trim();
-        }
-
-        return AuthTokenCookies.GetAccessToken(context.Request);
     }
 
     private static Guid? ReadHeaderTenant(string? headerValue)
@@ -445,14 +451,45 @@ public sealed class TenantResolutionMiddleware
     private static async Task WriteProblemDetails(HttpContext context, int statusCode, string title, string detail)
     {
         context.Response.StatusCode = statusCode;
-        context.Response.ContentType = "application/problem+json";
-        await context.Response.WriteAsJsonAsync(new
-        {
-            title,
-            status = statusCode,
-            detail,
-            traceId = context.TraceIdentifier
-        });
+        // ⚠ contentType PASSED IN, never assigned to Response.ContentType beforehand. WriteAsJsonAsync sets
+        // Response.ContentType UNCONDITIONALLY — an earlier assignment is overwritten, which is exactly how
+        // this helper spent its whole life declaring problem+json and answering "application/json;
+        // charset=utf-8" on the wire. The declaration only reaches the caller through this parameter.
+        await context.Response.WriteAsJsonAsync(
+            new
+            {
+                title,
+                status = statusCode,
+                detail,
+                traceId = context.TraceIdentifier
+            },
+            options: null,
+            contentType: "application/problem+json");
+    }
+
+    /// <summary>
+    /// The contradiction refusal: the shared problem+json shape plus `conflictingSignals`, which is what lets the
+    /// caller tell "you are on the wrong host" from "your session belongs to another tenant" WITHOUT parsing the
+    /// prose in `detail`. The prose is for humans reading logs; the array is the only machine-readable part.
+    /// </summary>
+    private static async Task WriteTenantMismatch(HttpContext context, TenantResolution resolution)
+    {
+        context.Response.StatusCode = resolution.RefusalStatusCode;
+        await context.Response.WriteAsJsonAsync(
+            new
+            {
+                title = "Tenant mismatch",
+                status = resolution.RefusalStatusCode,
+                detail = "The authenticated tenant and the request's other tenant signals name different tenants. "
+                         + $"'{TenantHeader}' and the request host must match the token's tenant_id claim.",
+                traceId = context.TraceIdentifier,
+                conflictingSignals = resolution.ConflictingSignals
+            },
+            options: null,
+            // ⚠ Passed to WriteAsJsonAsync rather than assigned to Response.ContentType first: the assignment is
+            // OVERWRITTEN by the serializer. This was the first site to get it right; WriteProblemDetails above
+            // — and its five copies in the other services — now declare the media type the same way.
+            contentType: "application/problem+json");
     }
 
     private bool TryGetDevelopmentBypassTenant(out Guid tenantId)

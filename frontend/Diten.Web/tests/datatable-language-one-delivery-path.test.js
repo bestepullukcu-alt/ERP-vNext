@@ -90,6 +90,7 @@ describe("BL-047b: the shared language payload reaches the table config", () => 
      * delivery path existed this produced DataTables' English defaults, which is what the owner read on screen.
      */
     seedSharedPayload(TR);
+    loadScript("wwwroot/assets/js/shared/http-media-type.js");
     loadScript("wwwroot/assets/js/dt-defaults.js");
 
     const l = language();
@@ -109,6 +110,7 @@ describe("BL-047b: the shared language payload reaches the table config", () => 
      * and asserting it would have been the file's third vacuity this round.
      */
     seedSharedPayload(TR);
+    loadScript("wwwroot/assets/js/shared/http-media-type.js");
     loadScript("wwwroot/assets/js/dt-defaults.js");
 
     const l = language();
@@ -124,6 +126,7 @@ describe("BL-047b: the shared language payload reaches the table config", () => 
      * keeps it. Reversing this would silently overwrite wording somebody chose on purpose.
      */
     seedSharedPayload(TR);
+    loadScript("wwwroot/assets/js/shared/http-media-type.js");
     loadScript("wwwroot/assets/js/dt-defaults.js");
     window.L10n = { DtEmptyTable: "Bu ekranda henüz kural yok" };
 
@@ -134,6 +137,7 @@ describe("BL-047b: the shared language payload reaches the table config", () => 
     // Half a dictionary must not disable the other half — that is how one localized string and five English
     // ones end up on the same table.
     seedSharedPayload(TR);
+    loadScript("wwwroot/assets/js/shared/http-media-type.js");
     loadScript("wwwroot/assets/js/dt-defaults.js");
     window.L10n = { DtEmptyTable: "Bu ekranda henüz kural yok" };
 
@@ -146,6 +150,7 @@ describe("BL-047b: the shared language payload reaches the table config", () => 
      * If the payload were read at load time, moving one tag would silently restore the English defaults — the
      * exact class of failure that made this a live defect rather than a caught one.
      */
+    loadScript("wwwroot/assets/js/shared/http-media-type.js");
     loadScript("wwwroot/assets/js/dt-defaults.js");
     seedSharedPayload(TR);
 
@@ -157,6 +162,7 @@ describe("BL-047b: the shared language payload reaches the table config", () => 
      * NON-VACUITY for the whole file. With no payload and no L10n, DataTables' own defaults must remain — if
      * this test could not tell the difference, every assertion above would pass against a hard-coded string.
      */
+    loadScript("wwwroot/assets/js/shared/http-media-type.js");
     loadScript("wwwroot/assets/js/dt-defaults.js");
 
     const l = language();
@@ -172,6 +178,7 @@ describe("BL-047b: the shared language payload reaches the table config", () => 
     el.type = "application/json";
     el.textContent = "{ this is not json";
     document.head.appendChild(el);
+    loadScript("wwwroot/assets/js/shared/http-media-type.js");
     loadScript("wwwroot/assets/js/dt-defaults.js");
 
     expect(() => language()).not.toThrow();

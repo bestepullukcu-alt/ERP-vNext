@@ -16,8 +16,9 @@ namespace Diten.Platform.Infrastructure.Services.Mdm;
 /// MOD-0220 read-only reference check against MDM (GET /api/legal-entities/{id}/lookup-validation).
 /// Fail-closed on every failure: a Legal Entity is referenceable only when MDM says so, out loud.
 ///
-/// <para><b>⚠ Tenancy is written HERE, not by <c>TenantPropagationHandler</c>, MEASURED 2026-08-28.</b>
-/// The handler was registered on this client and never did anything: <c>IHttpClientFactory</c> builds and CACHES
+/// <para><b>⚠ Tenancy is written HERE, not by a <c>DelegatingHandler</c>, MEASURED 2026-08-28.</b>
+/// A shared tenant-propagation handler was registered on this client and never did anything (it was detached in
+/// BL-311 and the class deleted in BL-316): <c>IHttpClientFactory</c> builds and CACHES
 /// the handler chain in its OWN scope, so a <c>DelegatingHandler</c> resolving the request-scoped
 /// <see cref="ITenantContext"/> gets an instance belonging to no request, answers <c>IsResolved == false</c>, and
 /// adds no header — silently. The unit tests could not see it because they never went through the factory. The

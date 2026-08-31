@@ -611,6 +611,9 @@
   <data name="TabPool" xml:space="preserve">
     <value>Havuz</value>
   </data>
+  <data name="TabInitiated" xml:space="preserve">
+    <value>Başlattıklarım</value>
+  </data>
   <data name="ActClaim" xml:space="preserve">
     <value>Üzerime al</value>
   </data>
@@ -649,6 +652,12 @@
   </data>
   <data name="EmptyPoolDesc" xml:space="preserve">
     <value>Üzerinize alabileceğiniz bekleyen bir öğe yok.</value>
+  </data>
+  <data name="EmptyInitiatedTitle" xml:space="preserve">
+    <value>Başlattığın iş yok</value>
+  </data>
+  <data name="EmptyInitiatedDesc" xml:space="preserve">
+    <value>Başlattığın ve şu anda başkasında olan bir iş yok.</value>
   </data>
   <data name="ToastClaimed" xml:space="preserve">
     <value>{0} · üzerinize alındı (mock)</value>

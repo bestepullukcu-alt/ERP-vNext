@@ -611,6 +611,9 @@
   <data name="TabPool" xml:space="preserve">
     <value>任务池</value>
   </data>
+  <data name="TabInitiated" xml:space="preserve">
+    <value>我发起的</value>
+  </data>
   <data name="ActClaim" xml:space="preserve">
     <value>认领</value>
   </data>
@@ -649,6 +652,12 @@
   </data>
   <data name="EmptyPoolDesc" xml:space="preserve">
     <value>没有等待您认领的项目。</value>
+  </data>
+  <data name="EmptyInitiatedTitle" xml:space="preserve">
+    <value>没有你发起的工作</value>
+  </data>
+  <data name="EmptyInitiatedDesc" xml:space="preserve">
+    <value>你没有发起任何由他人负责的工作。</value>
   </data>
   <data name="ToastClaimed" xml:space="preserve">
     <value>{0} · 已由您认领（模拟）</value>

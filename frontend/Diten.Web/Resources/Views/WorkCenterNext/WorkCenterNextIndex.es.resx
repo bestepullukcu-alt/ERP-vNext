@@ -611,6 +611,9 @@
   <data name="TabPool" xml:space="preserve">
     <value>Bandeja común</value>
   </data>
+  <data name="TabInitiated" xml:space="preserve">
+    <value>Iniciadas</value>
+  </data>
   <data name="ActClaim" xml:space="preserve">
     <value>Reclamar</value>
   </data>
@@ -649,6 +652,12 @@
   </data>
   <data name="EmptyPoolDesc" xml:space="preserve">
     <value>No hay elementos esperando que los reclames.</value>
+  </data>
+  <data name="EmptyInitiatedTitle" xml:space="preserve">
+    <value>Nada que hayas iniciado</value>
+  </data>
+  <data name="EmptyInitiatedDesc" xml:space="preserve">
+    <value>No has iniciado ningún trabajo que esté en manos de otra persona.</value>
   </data>
   <data name="ToastClaimed" xml:space="preserve">
     <value>{0} · reclamado por ti (mock)</value>

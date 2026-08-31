@@ -259,19 +259,24 @@ describe("the list surface renders at all", () => {
 
 /*
  * THE AXIS LAW (spec v3), the most basic rule this screen has and — until now — the one with no test at all:
- *   tab     = OWNERSHIP  (Inbox · Mine · Pool · History)
+ *   tab     = OWNERSHIP  (Inbox · Mine · Pool · Initiated · History)
  *   segment = STATUS     (Active · Waiting · Planned), at most three, and only under "Mine"
  *   chip    = TYPE + SIGNAL
  * Mixing the axes is how a task-centre turns into an unreadable grid, so each axis is pinned separately.
+ *
+ * ⚠ FIVE TABS SINCE BL-016, NOT FOUR — and the count moving is not a weakening of the law, it is the law
+ * being obeyed. "What did I start that somebody else is carrying" is an OWNERSHIP question, the third one
+ * after "what do I hold" and "what may I take", so it takes a tab. What would have broken the law is putting
+ * it on the segment bar or in a chip, and the two assertions below still pin both of those at their old size.
  */
 describe("the axis law: ownership is the tab, status is the segment", () => {
-  it("offers exactly the four ownership tabs, in order", async () => {
+  it("offers exactly the five ownership tabs, in order", async () => {
     await bootListPage([item(1)]);
 
     const keys = Array.from(app().querySelectorAll("[data-wcn-tab]"))
       .map((el) => el.getAttribute("data-wcn-tab"));
 
-    expect(keys).toEqual(["inbox", "islerim", "havuz", "history"]);
+    expect(keys).toEqual(["inbox", "islerim", "havuz", "baslattiklarim", "history"]);
   });
 
   it("offers at most three status segments, and only under Mine", async () => {

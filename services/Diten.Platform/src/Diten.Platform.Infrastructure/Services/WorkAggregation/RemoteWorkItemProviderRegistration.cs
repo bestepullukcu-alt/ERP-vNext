@@ -72,11 +72,12 @@ public static class RemoteWorkItemProviderRegistration
          * the dispatcher on the write path. A 100-second default sitting underneath would be a second, invisible
          * answer to the operator's one question about how long a reader waits.
          *
-         * ⚠ NO TenantPropagationHandler here, and it is not an omission — it was tried and MEASURED not to work
-         * (2026-08-28). IHttpClientFactory caches its handler chain in its own scope, so that handler's
+         * ⚠ NO tenant DelegatingHandler here, and it is not an omission — one was tried and MEASURED not to work
+         * (2026-08-28). IHttpClientFactory caches its handler chain in its own scope, so such a handler's
          * request-scoped ITenantContext is never resolved and the header is silently dropped. RemoteWorkItemGateway
-         * writes the header itself, from the request scope. See its class comment, and BL-311 for the two clients
-         * that still carry the handler.
+         * writes the header itself, from the request scope. See its class comment, and TenantOnTheWire for the one
+         * answer to which tenant may travel. The shared handler this warns about was detached from the last two
+         * clients in BL-311 and deleted outright in BL-316 — do not re-create it.
          */
         services.AddHttpClient(RemoteWorkItemGateway.HttpClientName, client =>
         {

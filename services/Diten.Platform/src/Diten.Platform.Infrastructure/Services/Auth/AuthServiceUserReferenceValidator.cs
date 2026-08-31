@@ -18,8 +18,9 @@ namespace Diten.Platform.Infrastructure.Services.Auth;
 /// validator: typed HttpClient, the caller's own bearer forwarded, fail-closed on any failure.
 ///
 /// <para><b>⚠ CORRECTION 2026-08-28 — this class used to claim "X-Tenant-Id via the shared
-/// TenantPropagationHandler (registered in DI)". That was false for the whole life of the sentence.</b> The
-/// handler WAS registered on this client and never added the header once. <c>IHttpClientFactory</c> builds and
+/// tenant-propagation handler (registered in DI)". That was false for the whole life of the sentence.</b> The
+/// handler WAS registered on this client and never added the header once (detached in BL-311; the class itself
+/// was deleted from all three services in BL-316). <c>IHttpClientFactory</c> builds and
 /// CACHES its handler chain in its OWN scope, so a <c>DelegatingHandler</c> that injects the request-scoped
 /// <see cref="ITenantContext"/> receives an instance belonging to no request; it answers
 /// <c>IsResolved == false</c>, adds nothing, and says nothing anywhere. The unit tests never saw it because they

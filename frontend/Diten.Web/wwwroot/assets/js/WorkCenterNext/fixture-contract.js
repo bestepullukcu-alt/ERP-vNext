@@ -64,6 +64,23 @@
      */
     const SLA_STATES = ['overdue', 'due-soon', 'on-track', 'no-sla'];
     /*
+     * WHAT THE READER IS TO THIS WORK, when the item cannot say it for itself (BL-016).
+     *
+     * ONE value, and the shortness is the honest part rather than a stub. The other two ownership answers are
+     * ALREADY on the wire and are derived, never restated: the holder case from `assignee.isCurrentUser`, the
+     * pool case from `admissionState === 'pendingClaim'`. A provider that repeated those here would give the
+     * shell two sources for one answer and a way for them to disagree.
+     *
+     * `initiator` is the one that cannot be derived. It means: the reader OPENED this work, does not hold it, and
+     * cannot claim it. The shell cannot work that out from `requester.isCurrentUser` — an unclaimed pooled task
+     * the reader created satisfies both "I made this" and "I may take this", and those two answers belong in
+     * different tabs. Only the provider knows which of its reads put the row on the board.
+     *
+     * Validated WHEN PRESENT and never required — the BL-038 rule: validateItems DROPS what it rejects, so
+     * requiring this would delete every item from every provider that has never heard of it.
+     */
+    const VIEWER_RELATIONS = ['initiator'];
+    /*
      * A typed dependency edge, in the ENGINE's vocabulary (TaskDependencyType) for the same reason priority is:
      * one canonical spelling on the wire, display abbreviations ("FS") built in the shell where the 7 languages
      * live. Fixtures said 'FS' and the engine said 'FinishToStart', so a real dependency would have reached the
@@ -360,6 +377,18 @@
             push(errors, fixture, 'PRIORITY_INVALID', 'priority');
         }
         /*
+         * viewerRelation — validated WHEN PRESENT (BL-016), like priority and slaState above.
+         *
+         * An unknown value here is not a cosmetic miss: `tabFor` routes on this string, so a value the shell does
+         * not know would silently fall through to the tab the row would have gone to anyway — the row would be in
+         * the WRONG OWNERSHIP TAB and nothing would say so. That is worse than a dropped row, which is visibly
+         * absent, so this one is an error rather than a shrug.
+         */
+        if (fixture.viewerRelation !== undefined && fixture.viewerRelation !== null
+            && !VIEWER_RELATIONS.includes(fixture.viewerRelation)) {
+            push(errors, fixture, 'VIEWER_RELATION_INVALID', 'viewerRelation');
+        }
+        /*
          * slaState — validated WHEN PRESENT, never required (WC-2).
          *
          * The distinction is load-bearing, and BL-038 is why it is written down. validateItems DROPS an item
@@ -540,7 +569,7 @@
 
     global.WorkCenterNextContract = {
         MINIMUM_VISIBLE_ROW,
-        enums: { WORK_INTENTS, ASSIGNMENT_MODES, OWNERSHIP_STATES, ADMISSION_STATES, NORMALIZED_STATUSES, TASK_LIFECYCLES, EXECUTION_STATES, TIMER_STATES, SYSTEM_STATES, ACTION_DEPTHS, REVIEW_MEETING_REQUIREMENTS, WAITING_CONTEXT_TYPES, SUBTASK_STATUSES, PRIORITIES, SLA_STATES, DEPENDENCY_TYPES, DEPENDENCY_DIRECTIONS, ACTIVITY_KINDS, ACTIVITY_EVENT_CODES, CAPABILITIES, VALUE_TYPES },
+        enums: { WORK_INTENTS, ASSIGNMENT_MODES, OWNERSHIP_STATES, ADMISSION_STATES, NORMALIZED_STATUSES, TASK_LIFECYCLES, EXECUTION_STATES, TIMER_STATES, SYSTEM_STATES, ACTION_DEPTHS, REVIEW_MEETING_REQUIREMENTS, WAITING_CONTEXT_TYPES, SUBTASK_STATUSES, PRIORITIES, SLA_STATES, VIEWER_RELATIONS, DEPENDENCY_TYPES, DEPENDENCY_DIRECTIONS, ACTIVITY_KINDS, ACTIVITY_EVENT_CODES, CAPABILITIES, VALUE_TYPES },
         limits: LIMITS,
         isLabel,
         isSafeLink,

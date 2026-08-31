@@ -145,6 +145,10 @@ public static class WorkItemContract
     // drift apart — the workflow provider holds the same property.
     public const string ProviderCodeTasks = "tasks";
 
+    // viewerRelation (BL-016). The C# mirror of fixture-contract.js VIEWER_RELATIONS — declared on both sides for
+    // the reason slaState above is: a value spelled differently across this seam is a row in the wrong tab.
+    public const string ViewerRelationInitiator = "initiator";
+
     public static readonly string[] NormalizedStatuses =
         [StatusPending, StatusInProgress, StatusWaiting, StatusDone, StatusCancelled];
 }
@@ -551,7 +555,28 @@ public sealed record WorkItemProjectionDto(
     /// other four is how a field ends up somewhere nobody looks for it.</para>
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    int? ReminderLeadDays = null);
+    int? ReminderLeadDays = null,
+    /// <summary>
+    /// WHAT THE READER IS TO THIS WORK, when the item itself cannot say (BL-016).
+    ///
+    /// <para>Today the only value is <c>initiator</c>: the reader OPENED this work, does not hold it, and cannot
+    /// claim it. That is the Outbox — "Başlattıklarım" — and it is the one ownership answer the surface could not
+    /// derive for itself. The holder case it CAN derive (<c>assignee.isCurrentUser</c>) and the pool case it can
+    /// derive (<c>admissionState == pendingClaim</c>), so the server stays silent on both rather than repeating
+    /// what is already on the wire.</para>
+    ///
+    /// <para><b>Why the shell cannot work this out from <c>requester.isCurrentUser</c>.</b> It can tell that the
+    /// reader created the task; it cannot tell whether the row reached the board because of that or because the
+    /// reader may claim it. An unclaimed pool task the reader opened satisfies BOTH, and the two answers put it in
+    /// two different tabs — one where <c>claim</c> is pressable and one where it is not. Only the provider knows
+    /// which read produced the row, so only the provider can answer.</para>
+    ///
+    /// <para>Optional and omitted when null, the rule every field here follows: a provider with no concept of an
+    /// initiator says nothing, and — the BL-038 lesson — the executable contract validates this only when PRESENT,
+    /// so a silent provider's items are never dropped.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? ViewerRelation = null);
 
 /// <summary>
 /// WC-1 — the personal overlay, projected. Private to ONE reader: the server filters it, the client does not hide

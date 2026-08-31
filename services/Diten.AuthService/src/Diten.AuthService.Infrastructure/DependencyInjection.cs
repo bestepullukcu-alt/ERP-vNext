@@ -70,8 +70,6 @@ public static class DependencyInjection
         services.AddScoped<ITenantUserInvitationEmailService, TenantUserInvitationEmailService>();
         services.AddScoped<IMfaChallengeService, MfaChallengeService>();
         services.AddScoped<IOtpDeliveryService, SmtpOtpDeliveryService>();
-        services.AddTransient<TenantPropagationHandler>();
-        services.AddHttpClient("TenantAwareClient").AddHttpMessageHandler<TenantPropagationHandler>();
         services.AddHttpClient<ITenantLoginSettingsClient, PlatformTenantLoginSettingsClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;

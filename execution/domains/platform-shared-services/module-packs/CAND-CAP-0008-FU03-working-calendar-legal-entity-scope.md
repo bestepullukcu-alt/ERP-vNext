@@ -90,8 +90,16 @@ Bu çalışma yeni bir merge motoru veya ikinci aggregate açmaz. FU01'in `count
 FU01'de `OrganizationUnitId` doğrulaması aynı servis içinde ve in-process idi. FU03, aynı shipped aggregate'in
 **ilk cross-service HTTP FK bağımlılığıdır**. Bağımlılık yalnız read-only doğrulama/lookup içindir; MDM verisi
 kopyalanmaz, legal entity SoR'u değişmez. HTTP çağrısı Application handler içine gömülmez; mevcut
-`ILegalEntityReferenceValidator` / `MdmLegalEntityReferenceValidator` ve `TenantPropagationHandler` deseni
-yeniden kullanılır veya WorkingCalendar'a özel dar bir Application seam'i bu altyapı client'ına delege eder.
+`ILegalEntityReferenceValidator` / `MdmLegalEntityReferenceValidator` deseni yeniden kullanılır veya
+WorkingCalendar'a özel dar bir Application seam'i bu altyapı client'ına delege eder.
+
+> **⚠ DÜZELTME 2026-08-29 (BL-316).** Bu paragraf daha önce `TenantPropagationHandler` desenini de yeniden
+> kullanmayı söylüyordu. O sınıf **SİLİNDİ** ve bir daha yazılmamalıdır: `IHttpClientFactory` handler zincirini
+> KENDİ kapsamında önbelleğe alır, dolayısıyla istek kapsamlı `ITenantContext`'i enjekte eden bir
+> `DelegatingHandler` hiçbir isteğe ait olmayan bir örnek tutar, `IsResolved == false` döner ve `X-Tenant-Id`
+> başlığını **sessizce eklemez** (ölçüldü 2026-08-28, BL-311). `X-Tenant-Id` **çağıran sınıfın kendisi**
+> tarafından, kendi istek kapsamından yazılır; hangi kiracının tele çıkacağına dair tek cevap
+> `TenantOnTheWire`'dır.
 
 FU01 provider yüzeyi genişler ama kırılmaz: metot sayısı, sonuç DTO'ları ve `country + tek override` çözümleme
 motoru aynıdır. FU02 yalnız country takvimlerine uygulanır; legal-entity override'ları manuel kalır.
@@ -177,7 +185,7 @@ Runtime flip verilirse yalnız aşağıdaki mevcut yüzeylerde dar değişiklik 
 | FU01 WorkingCalendar | Aggregate/provider/write guard additive genişleme | Mevcut ülke/org/tenant davranışı regresyona uğrayamaz |
 | MDM `GET /api/legal-entities/lookup` | Tenant-scoped aktif dropdown listesi | Boş/erişilemez → dropdown boş + kayıt yapılamaz; fallback yok |
 | MDM `GET /api/legal-entities/{id}/lookup-validation` | Persist öncesi gerçek FK doğrulama | 404/401/403/5xx/timeout/bozuk envelope → doğrulanmamış kayıt yok |
-| `TenantPropagationHandler` | `X-Tenant-Id`; çağıran bearer/correlation bağlamı | Tenant eksik/mismatch → MDM fail-closed |
+| `TenantOnTheWire` + çağıran sınıf | `X-Tenant-Id` çağıran sınıfın kendi istek kapsamından yazılır (DelegatingHandler ile DEĞİL — BL-316); çağıran bearer/correlation bağlamı | Tenant eksik/mismatch → MDM fail-closed |
 | Mevcut Gateway route | `/api/legal-entities` + catch-all child route | Route yoksa validation dependency unavailable |
 | FU02 | Yalnız country auto-fetch boundary | Legal-entity satırına fetch/apply yasak |
 

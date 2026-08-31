@@ -24,6 +24,10 @@ const RoleAssignments = (function () {
     let moduleCanonicalLabel = {}; // normalizedKey -> first-seen raw module string
     let rolesById = {};            // id -> role object (for the panel subtitle)
 
+    // FIX-ROLEPERMS-MODULE-LABEL — { NORMALIZEDCODE: friendly label }. Starts from the resx names alone (present
+    // synchronously) and is REBUILT once the nav menu arrives, so the screen never waits on that call.
+    let moduleLabelMap = {};
+
     const normalizeModuleKey = (module) => (module || '').trim().toLowerCase();
 
     // FIX-ROLEPERMS-ROLENAME-L10N-STICKY — a SYSTEM role's display name is localized from its CODE (role.name) so the
@@ -68,6 +72,7 @@ const RoleAssignments = (function () {
 
     const els = {};
     const cacheEls = () => {
+        els.root = document.getElementById('raRoot');
         els.roleSelect = document.getElementById('raRoleSelect');
         els.moduleFilter = document.getElementById('raModuleFilter');
         els.search = document.getElementById('raSearch');
@@ -158,7 +163,18 @@ const RoleAssignments = (function () {
         return L.LockedHint || '';
     };
 
-    const groupLabel = (moduleKey) => moduleCanonicalLabel[moduleKey] || moduleKey || (L.ModuleUngrouped || 'Other');
+    /*
+     * FIX-ROLEPERMS-MODULE-LABEL — the group header / filter option shows the module's FRIENDLY name, resolved by
+     * window.ModuleLabel (tenant override → resx Nav.Module.{CODE} → nav default → humanized code). A raw slug
+     * ("work-aggregation") can no longer reach the screen: an unknown code still humanizes to "Work Aggregation".
+     *
+     * DISPLAY ONLY. `moduleKey` stays the grouping key, the <option value>, the row's data-module and the filter
+     * value — the permission key column keeps showing platform.work-aggregation.* verbatim.
+     */
+    const groupLabel = (moduleKey) => {
+        const label = window.ModuleLabel?.resolve?.(moduleKey, moduleLabelMap, humanize);
+        return label || moduleCanonicalLabel[moduleKey] || moduleKey || (L.ModuleUngrouped || 'Other');
+    };
 
     const renderRow = (perm) => {
         const grant = grantsByPermissionId[perm.id] || null;
@@ -381,13 +397,60 @@ const RoleAssignments = (function () {
         });
 
         if (!els.moduleFilter) return;
-        const keys = Object.keys(moduleCanonicalLabel).sort((a, b) => a.localeCompare(b));
+        // Sorted by the VISIBLE label so the dropdown reads alphabetically to the user; the option VALUE stays the
+        // normalized module code, which is what applyFilters() matches against each row's data-module.
+        const keys = Object.keys(moduleCanonicalLabel)
+            .sort((a, b) => groupLabel(a).localeCompare(groupLabel(b)));
         keys.forEach((key) => {
             const opt = document.createElement('option');
             opt.value = key;
-            opt.textContent = moduleCanonicalLabel[key];
+            opt.textContent = groupLabel(key);
             els.moduleFilter.appendChild(opt);
         });
+    };
+
+    /*
+     * FIX-ROLEPERMS-MODULE-LABEL — re-label what is already on screen after the nav map lands. Text only: no
+     * re-render, no re-fetch, and the option VALUES (= the filter's selected codes) are never touched, so an
+     * in-flight selection survives the upgrade.
+     *
+     * select2 mirrors the <option> text into its own rendered markup, so it needs a nudge — 'change.select2' is
+     * select2's own namespace: it re-renders without firing our namespace-less change handler (which would
+     * re-run applyFilters and, worse, look like a user selection).
+     */
+    const refreshModuleLabels = () => {
+        els.groups?.querySelectorAll('.ra-group-name').forEach((el) => {
+            const key = el.closest('[data-module]')?.dataset.module;
+            if (key) el.textContent = groupLabel(key);
+        });
+        if (!els.moduleFilter) return;
+        Array.from(els.moduleFilter.options).forEach((opt) => {
+            if (opt.value) opt.textContent = groupLabel(opt.value);
+        });
+        if (window.jQuery && window.jQuery(els.moduleFilter).hasClass('select2-hidden-accessible')) {
+            window.jQuery(els.moduleFilter).trigger('change.select2');
+        }
+    };
+
+    /*
+     * Best-effort, NEVER blocking: the entitled nav menu supplies tenant overrides + the catalog's own module
+     * names for codes the resx doesn't cover. It is deliberately NOT awaited on the render path — the screen
+     * draws first from the resx map, and this only upgrades the labels when (and if) it answers. A 403, a 401,
+     * a timeout or a shape change leaves the screen exactly as it rendered.
+     *
+     * Own fetch, not the shared helper: the nav proxy's 401 must NOT bounce this page to /account/login.
+     */
+    const upgradeModuleLabelsFromNav = () => {
+        const url = els.root?.dataset?.menuUrl || '/TenantNavigation/api/menu';
+        fetch(url, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
+            .then((res) => (res.ok ? res.json() : null))
+            .then((json) => {
+                const nav = (json && (json.data !== undefined ? json.data : json.Data)) ?? json;
+                if (!Array.isArray(nav) || nav.length === 0) return;
+                moduleLabelMap = window.ModuleLabel.buildMap(L.ModuleNames || {}, nav);
+                refreshModuleLabels();
+            })
+            .catch(() => { /* label upgrade is optional — the resx/humanize labels already on screen stand. */ });
     };
 
     // Search text, module multi-select, and the assignment-state chip stack as AND conditions over each row.
@@ -561,6 +624,12 @@ const RoleAssignments = (function () {
         if (!els.roleSelect || !els.groups || !els.rowTpl) return;
         if (!apiUrl) { console.error('[RoleAssignments] window.API.auth is required.'); return; }
         L = window.L10n || {};
+
+        // FIX-ROLEPERMS-MODULE-LABEL — the synchronous half of the label map (resx Nav.Module.* via the page's
+        // L10n bridge). Built BEFORE the first render so the very first paint already shows friendly names; the
+        // nav call below only adds tenant overrides / non-resx modules on top.
+        moduleLabelMap = window.ModuleLabel.buildMap(L.ModuleNames || {}, []);
+        upgradeModuleLabelsFromNav();
 
         // select2 emits selection via jQuery's .trigger('change'), which does NOT reach vanilla
         // addEventListener('change') handlers — the two select2-backed selects MUST bind through jQuery.

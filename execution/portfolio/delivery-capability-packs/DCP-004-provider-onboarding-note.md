@@ -266,10 +266,56 @@ shown to somebody who may not read the language it is in.
 | Decision | Who | Note |
 |---|---|---|
 | Is this caller signed in, and who are they | **your service**, from the bearer token | Platform forwards the CALLER's own JWT, never a service key |
-| Which tenant | **`X-Tenant-Id`**, written by Platform from the request scope | your own tenant middleware reads it as usual |
+| Which tenant | **`X-Tenant-Id`**, written by Platform from the request scope | your own tenant middleware reads it as usual — and **refuses a contradiction 400**, see below |
 | May this caller press this button | **Platform**, from CLAIMS + the row's `Actions` map | an action the caller lacks is disabled with `PERMISSION_DENIED` whatever your `enabled` said |
 | May this caller do this to THIS record | **your service**, underneath | being permitted to press `approve` is not being the assigned approver |
+| **Another tenant's record was asked for** | **your service** — **404**, never 403 | see below; the bridge forwards your status unchanged, so this answer is yours to give |
 | How long is too long | **Platform**, one budget, `WorkAggregation:Resilience:ProviderTimeout` | applied per provider on read and per action on write |
+
+#### Another tenant's work — the two answers (owner decision, 2026-08-29, BL-323)
+
+Until this was written the row above said only *"your own tenant middleware reads it as
+usual"*. It said how to READ the tenant and never what to ANSWER for a foreign one, and
+the repo already held two different answers to two different questions. Both are now rules:
+
+| What happened | Answer | Why |
+|---|---|---|
+| **1. `X-Tenant-Id` and the JWT name DIFFERENT tenants** | **400** | A malformed request, not an access decision. The caller wrote both values, so there is nothing to conceal — and refusing here is what makes it safe for your handlers to read either one. |
+| **2. They agree, but the RECORD belongs to another tenant** | **404** | It does not exist for you. |
+
+⚠ **NEVER 403 for case 2, and this is the line that gets "simplified" away, so here is its
+reason: a 403 confirms the record exists, which is exactly the leak the 404 is chosen to
+prevent.** In a multi-tenant system a record you may not see does not exist for you — the
+same shape SAP and Oracle worklists use. 403 stays what it already is: the verdict on an
+ACTION the caller may not perform on a record that is theirs.
+
+⚠ **The 404 carries your ordinary absent-record `reason_code`** (the reference consumer
+sends `REFERENCE_ITEM_NOT_FOUND`). **Do not mint a cross-tenant code**, and no new
+user-facing string is added for this anywhere — that is part of the decision, not an
+oversight. A distinct code needs a distinct sentence on screen, and that sentence would
+announce the record's existence to the one reader who must not learn it. A foreign record
+must read exactly like any absent one.
+
+⚠ **The shape that produces this is a tenant-SCOPED lookup, not a cross-tenant branch.**
+Scope the query by the caller's tenant and the foreign record is simply absent, so your
+ordinary not-found path answers it. If you find yourself writing
+`if (record.TenantId != mine) return Forbid()`, you have written case 2 as a permission
+check and will leak through it.
+
+**What is guarded and what is not — stated plainly rather than implied.**
+
+- **Guarded, by real assertions over real code:** this service's tenant middleware (case 1)
+  and the reference consumer in §7.6 (case 2), in
+  `Diten.DevEnablementService.Api.Tests/WorkItemBridge/CrossTenantContractGuardTests.cs`.
+  Every case-2 assertion there is differential — the same item id and the same action code
+  must answer 200 to its owner and 404 to a stranger — so the guard cannot pass by refusing
+  everything.
+- **NOT guarded, and cannot be:** what YOUR module answers. Your code is not in this repo,
+  and Platform will not rewrite your status into a 404 — `RemoteWorkItemGateway` forwards a
+  module's own verdict and status deliberately, because a bridge that rewrote 403 into 404
+  would also erase the legitimate 403 in the row above. **For your module this section is
+  documentation, and the only thing standing between it and a third invented answer is you
+  reading it.** Assert both cases in your own test suite.
 
 ### 7.5 What happens when you are down — read this before you ship
 
@@ -293,6 +339,14 @@ names, a real state transition and a real refusal code.
 endpoint on the day the bridge was written. Copy its SHAPE; do not copy its in-memory
 store, and expect it to be deleted.
 
+⚠ **It reads the RAW `X-Tenant-Id` header rather than the resolved tenant context, and that
+is only safe because this service refuses a contradiction first (case 1).** The raw read is
+kept deliberately — the `(no tenant header)` echo in the item title is what caught the §7.7
+propagation defect — but until 2026-08-29 the middleware here let the JWT win with a
+warning, and the two together let a caller holding tenant A's token read and MUTATE tenant
+B's item by sending B's header. Measured, not guessed, and now closed at the middleware
+(BL-323). If you copy this file, copy the refusal with it.
+
 ### 7.7 Verified live, 2026-08-28
 
 Not inferred from green tests. Platform (`:5057`) reaching DevEnablement (`:5058`):
@@ -315,8 +369,11 @@ shared `TenantPropagationHandler` and sent **no tenant header at all**, while it
 passed: `IHttpClientFactory` caches its handler chain in its own scope, so a
 `DelegatingHandler` resolving a request-scoped `ITenantContext` never sees a resolved one.
 It was visible only because the far service echoed back "(no tenant header)". The header is
-now written by the request-scoped gateway. The two other clients still using that handler
-are the same defect unfixed — **BL-311**.
+now written by the request-scoped gateway. **Closed out 2026-08-29:** the two other clients
+were moved off the handler the same way (**BL-311**), and the handler class itself — dead on
+all three services, attached only to a named client nobody created — was deleted (**BL-316**).
+The surviving rule is `TenantOnTheWire`: the calling class writes `X-Tenant-Id` from its own
+request scope, never a `DelegatingHandler`.
 
 ---
 
