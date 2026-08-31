@@ -14,10 +14,12 @@ namespace Diten.PpmService.Tests.GateI.FundingScenario;
 public sealed class FundingScenarioArchitectureAndFixtureTests
 {
     [Fact]
-    public void Authorized_lane_has_exact_two_source_files_and_no_runtime_dependencies()
+    public void Authorized_lane_is_split_by_contract_and_keeps_forbidden_runtime_dependencies_out()
     {
         var root=ServiceRoot();var files=Directory.GetFiles(root,"*",SearchOption.AllDirectories).Where(x=>x.Contains($"{Path.DirectorySeparatorChar}GateI{Path.DirectorySeparatorChar}FundingScenario{Path.DirectorySeparatorChar}",StringComparison.Ordinal)&&!x.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}")&&!x.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}")).ToArray();
-        var source=files.Where(x=>x.Contains($"{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}")).ToArray();Assert.Equal(2,source.Length);
+        var source=files.Where(x=>x.Contains($"{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}")).ToArray();
+        var expectedFiles=new[]{"BudgetReferenceValidationRequest.cs","BudgetVersionReferenceV1.cs","ComparatorOutputReferenceV1.cs","FundingScenarioAtomicLane.cs","FundingScenarioContractEvaluator.cs","FundingScenarioContractResult.cs","FundingScenarioContractValidator.cs","FundingScenarioFailureCodes.cs","FundingScenarioProducerProfile.cs","FundingScenarioReferenceKind.cs","FundingScenarioRequestBinding.cs","FundingScenarioValidationMode.cs","IBudgetVersionReferenceValidationPort.cs","IScenarioPlanningReferenceValidationPort.cs","InvestmentCaseComparatorOutputReferenceV1.cs","InvestmentCaseContextV1.cs","InvestmentCaseScenarioVersionReferenceV1.cs","ProducerReferenceState.cs","ProducerReferenceValidationResult.cs","S2SAuthenticationState.cs","S2SAuthorizationState.cs","S2SFreshnessState.cs","S2SFundingScenarioContextV1.cs","S2SVersionFenceV1.cs","ScenarioReferenceValidationRequest.cs","ScenarioVersionReferenceV1.cs","SelectedBudgetVersionReferenceV1.cs","SelectedScenarioReferenceV1.cs"};
+        Assert.Equal(expectedFiles.Order(StringComparer.Ordinal),source.Select(Path.GetFileName).Order(StringComparer.Ordinal));
         Assert.All(source,path=>Assert.True(path.Contains("Diten.PpmService.Domain/GateI/FundingScenario/",StringComparison.Ordinal)||path.Contains("Diten.PpmService.Application/Features/InvestmentCases/GateI/FundingScenario/",StringComparison.Ordinal),path));
         var text=string.Join('\n',source.Select(File.ReadAllText));foreach(var forbidden in new[]{"MongoDB","IMongo","DbContext","HttpClient","IServiceCollection","Controller","Endpoint","IEventBus","PublishAsync","RabbitMQ","MassTransit","BackgroundService","appsettings"})Assert.DoesNotContain(forbidden,text,StringComparison.OrdinalIgnoreCase);
     }
@@ -86,7 +88,8 @@ public sealed class FundingScenarioArchitectureAndFixtureTests
         using var manifest=JsonDocument.Parse(File.ReadAllText(path));
         Assert.Equal("ppm.mod-0117.gate-i-b.mutation-evidence.v1",manifest.RootElement.GetProperty("schema").GetString());
         Assert.Equal("c954984d00ad43bc3127bbd0ada09da2b2721768",manifest.RootElement.GetProperty("baseCommit").GetString());
-        var sourcePath=manifest.RootElement.GetProperty("sourcePath").GetString()!;var source=Path.Combine(RepoRoot(),sourcePath);Assert.True(File.Exists(source),source);var sha=Convert.ToHexString(SHA256.HashData(GitShowBytes(manifest.RootElement.GetProperty("sourceCheckpoint").GetString()!,sourcePath))).ToLowerInvariant();Assert.Equal(manifest.RootElement.GetProperty("restoredSha256").GetString(),sha);
+        var sourcePath=manifest.RootElement.GetProperty("sourcePath").GetString()!;var sha=Convert.ToHexString(SHA256.HashData(GitShowBytes(manifest.RootElement.GetProperty("sourceCheckpoint").GetString()!,sourcePath))).ToLowerInvariant();Assert.Equal(manifest.RootElement.GetProperty("restoredSha256").GetString(),sha);
+        Assert.False(File.Exists(Path.Combine(RepoRoot(),sourcePath)),"Historical combined source must remain replaced by the authoritative split-file architecture.");
         var entries=manifest.RootElement.GetProperty("entries").EnumerateArray().ToArray();Assert.Equal(6,entries.Length);Assert.Equal(entries.Length,entries.Select(x=>x.GetProperty("mutation").GetString()).Distinct(StringComparer.Ordinal).Count());Assert.Equal(entries.Length,entries.Select(x=>x.GetProperty("runId").GetString()).Distinct(StringComparer.Ordinal).Count());
         foreach(var entry in entries)
         {
