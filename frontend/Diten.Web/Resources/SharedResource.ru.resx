@@ -526,7 +526,7 @@
   <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>Юридическое лицо</value></data>
   <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>Справочные данные</value></data>
   <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>Организация</value></data>
-  <data name="Nav.Module.TASKS" xml:space="preserve"><value>Задачи</value></data>
+  <data name="Nav.Module.TASKS" xml:space="preserve"><value>Настройки задач</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>Рабочий процесс</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Пользователи</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Роли</value></data>

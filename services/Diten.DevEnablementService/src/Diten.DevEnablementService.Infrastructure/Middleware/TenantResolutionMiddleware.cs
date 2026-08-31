@@ -36,7 +36,32 @@ public sealed class TenantResolutionMiddleware
 
         var jwtTenant = ReadJwtTenant(context);
         var headerTenant = ReadHeaderTenant(context);
-        var resolvedTenant = ResolveTenant(jwtTenant, headerTenant, context);
+
+        // BL-323 case 1 — the header and the token NAME DIFFERENT TENANTS. That is a malformed request, not an
+        // access decision, so it is refused 400 and nothing is concealed: the caller already knows both values,
+        // they wrote them. Refusing here is what makes it safe for a handler downstream to read either one.
+        //
+        // ⚠ This used to let the JWT win with a warning, and the reference work-item consumer keys its state by
+        // the RAW HEADER (deliberately — that echo is how the missing-tenant-header defect in §7.7 was caught).
+        // The two together meant a caller holding tenant A's token could read and MUTATE tenant B's record by
+        // sending B's header. Measured, not guessed. Refusing the contradiction closes it at the one place that
+        // owns the rule, so no handler has to re-implement it (BL-323, owner decision 2026-08-29).
+        if (jwtTenant.HasValue && headerTenant.HasValue && jwtTenant.Value != headerTenant.Value)
+        {
+            _logger.LogWarning(
+                "Tenant mismatch in DevEnablementService. HeaderTenant={HeaderTenant} JwtTenant={JwtTenant} Path={Path}",
+                headerTenant,
+                jwtTenant,
+                context.Request.Path);
+            await WriteProblemDetails(
+                context,
+                StatusCodes.Status400BadRequest,
+                "Tenant mismatch",
+                $"JWT tenant and '{TenantHeader}' must match.");
+            return;
+        }
+
+        var resolvedTenant = jwtTenant ?? headerTenant;
         if (resolvedTenant is null && TryGetDevelopmentBypassTenant(out var bypassTenant))
         {
             resolvedTenant = bypassTenant;
@@ -55,25 +80,6 @@ public sealed class TenantResolutionMiddleware
 
         tenantContext.SetTenant(resolvedTenant.Value);
         await _next(context);
-    }
-
-    private Guid? ResolveTenant(Guid? jwtTenant, Guid? headerTenant, HttpContext context)
-    {
-        if (jwtTenant.HasValue)
-        {
-            if (headerTenant.HasValue && headerTenant != jwtTenant)
-            {
-                _logger.LogWarning(
-                    "Tenant conflict in DevEnablementService. JWT tenant wins. HeaderTenant={HeaderTenant} JwtTenant={JwtTenant} Path={Path}",
-                    headerTenant,
-                    jwtTenant,
-                    context.Request.Path);
-            }
-
-            return jwtTenant;
-        }
-
-        return headerTenant;
     }
 
     private static Guid? ReadJwtTenant(HttpContext context)
@@ -102,14 +108,20 @@ public sealed class TenantResolutionMiddleware
     private static async Task WriteProblemDetails(HttpContext context, int statusCode, string title, string detail)
     {
         context.Response.StatusCode = statusCode;
-        context.Response.ContentType = "application/problem+json";
-        await context.Response.WriteAsJsonAsync(new
-        {
-            title,
-            status = statusCode,
-            detail,
-            traceId = context.TraceIdentifier
-        });
+        // ⚠ contentType PASSED IN, never assigned to Response.ContentType beforehand. WriteAsJsonAsync sets
+        // Response.ContentType UNCONDITIONALLY — an earlier assignment is overwritten, which is exactly how
+        // this helper spent its whole life declaring problem+json and answering "application/json;
+        // charset=utf-8" on the wire. The declaration only reaches the caller through this parameter.
+        await context.Response.WriteAsJsonAsync(
+            new
+            {
+                title,
+                status = statusCode,
+                detail,
+                traceId = context.TraceIdentifier
+            },
+            options: null,
+            contentType: "application/problem+json");
     }
 
     private bool TryGetDevelopmentBypassTenant(out Guid tenantId)

@@ -611,6 +611,9 @@
   <data name="TabPool" xml:space="preserve">
     <value>Пул</value>
   </data>
+  <data name="TabInitiated" xml:space="preserve">
+    <value>Мои инициированные</value>
+  </data>
   <data name="ActClaim" xml:space="preserve">
     <value>Взять</value>
   </data>
@@ -649,6 +652,12 @@
   </data>
   <data name="EmptyPoolDesc" xml:space="preserve">
     <value>Нет элементов, ожидающих, что вы их возьмёте.</value>
+  </data>
+  <data name="EmptyInitiatedTitle" xml:space="preserve">
+    <value>Вы ничего не начинали</value>
+  </data>
+  <data name="EmptyInitiatedDesc" xml:space="preserve">
+    <value>Нет работы, которую вы начали и которую ведёт кто-то другой.</value>
   </data>
   <data name="ToastClaimed" xml:space="preserve">
     <value>{0} · взято вами (макет)</value>

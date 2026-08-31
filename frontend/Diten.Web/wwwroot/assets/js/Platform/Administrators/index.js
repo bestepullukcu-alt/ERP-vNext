@@ -751,8 +751,13 @@ const AdministratorsList = (function () {
     };
     const readErrorMessage = async (response, fallback) => {
         try {
-            const contentType = response.headers.get('content-type') || '';
-            if (contentType.includes('application/json')) {
+            // ⚠ THE REFUSALS THIS READS ARE problem+json. The gateway's TenantResolutionMiddleware answers
+            // `application/problem+json` on these admin routes (400 Invalid Tenant Header, 403 Forbidden
+            // Actor), AdministratorsController forwards that media type VERBATIM, and the old substring
+            // test `contentType.includes('application/json')` is false for it — which sent every one of
+            // those refusals down the response.text() path and put a raw JSON document in the toast
+            // instead of the localized `detail`. One shared rule now, in DitenHttp.
+            if (window.DitenHttp.isJsonMediaType(response.headers.get('content-type'))) {
                 const json = await response.json();
                 if (Array.isArray(json?.errors) && json.errors.length) return localizeServerError(json.errors[0]);
                 if (json?.errors && typeof json.errors === 'object') {

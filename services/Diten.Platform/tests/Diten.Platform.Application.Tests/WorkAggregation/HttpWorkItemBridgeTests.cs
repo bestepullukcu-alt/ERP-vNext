@@ -271,8 +271,9 @@ public sealed class HttpWorkItemBridgeTests
     /// named client and its real gateway, but the tenant context it registers is a SINGLETON — so it proves the
     /// header is written, and cannot prove it is written from the right SCOPE. An earlier version of this bridge
     /// passed this exact test while sending no tenant header at all in production, because the shared
-    /// <c>TenantPropagationHandler</c> resolves its context from the HttpClientFactory's cached handler scope
-    /// rather than the request's. That was found by calling a real module and reading the tenant it received back
+    /// tenant-propagation <c>DelegatingHandler</c> it then used resolved its context from the HttpClientFactory's
+    /// cached handler scope rather than the request's (that handler was deleted in BL-316). That was found by
+    /// calling a real module and reading the tenant it received back
     /// on the screen. The fix moved the header into the request-scoped gateway; the live read stays the proof.
     /// </summary>
     [Fact]

@@ -13,7 +13,9 @@
         // FEAT-ROLEPERMS-LABEL-DERIVE — nested { action: verb } map for key-derived row labels.
         'ActionVerbs',
         // FIX-ROLEPERMS-ROLENAME-L10N-STICKY — nested { roleCode: localizedName } map for system roles.
-        'RoleNames'
+        'RoleNames',
+        // FIX-ROLEPERMS-MODULE-LABEL — nested { NORMALIZEDMODULECODE: localizedName } map for module headers/filter.
+        'ModuleNames'
     ];
 
     const logMissingKeys = (dictionary) => {

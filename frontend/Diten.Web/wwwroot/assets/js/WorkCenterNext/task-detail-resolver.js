@@ -104,8 +104,7 @@
                 visibleBlocks: [],
                 notices: [],
                 criticalBanner: { code: 'fixtureInvalid', labelKey: 'FixtureInvalidTitle' },
-                personalActions: [],
-                sourceNavigation: null
+                personalActions: []
             };
         }
         const terminal = ['Done', 'Cancelled'].includes(fixture.normalizedStatus);
@@ -128,10 +127,25 @@
             notices: resolveNotices(fixture, criticalCode),
             criticalBanner: criticalCode ? { code: criticalCode, labelKey: `Banner${criticalCode.charAt(0).toUpperCase()}${criticalCode.slice(1)}` } : null,
             personalActions: terminal ? [] : ['pin', 'snooze', 'note'],
-            sourceNavigation: fixture.source?.deepLink ? {
-                label: { kind: 'resource', key: 'OpenInSource', args: {} },
-                deepLink: fixture.source.deepLink
-            } : null,
+            /*
+             * ⚠ NO `sourceNavigation` HERE — BL-309, and it is deliberate rather than forgotten.
+             *
+             * This used to return `{ label: { kind: 'resource', key: 'OpenInSource' }, deepLink }` for every
+             * fixture carrying `source.deepLink`, and MEASURED: no surface in the repo read it. Source
+             * navigation is already rendered, three times over, and none of it came through here:
+             *   · the Source card's button        — `DetailOpenSource`     (app.js, `data-wcn-open`)
+             *   · the inbox row's button          — `DetailOpenSource`     (app.js)
+             *   · the `deeplink` lead link        — `ActionCompleteInSource` (action rail + mobile bar)
+             * All three are in the seven resx files; `OpenInSource` never was, because nothing drew it.
+             *
+             * So this was a SECOND model of a decision the shell already makes — and a narrower one: the render
+             * sites accept `item.source?.deepLink || item.deepLink || item.sourceDeepLink`, because the
+             * presentation mapper flattens the link, while this only ever looked at `source.deepLink`. Reviving
+             * it means wiring a surface to it AND adding `OpenInSource` to all seven resx.
+             *
+             * What the resolver still owns is the DECISION: `surfaceMode === 'deeplink'` is what the action rail
+             * asks before it turns its primary into a link. One model, consumed.
+             */
             submittingActionCode,
             interactionLocked: !!submittingActionCode
         };

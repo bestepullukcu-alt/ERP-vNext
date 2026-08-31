@@ -117,7 +117,8 @@ public sealed class MdmLegalEntityReferenceValidatorTests
 
     // ── Tenancy on the wire (2026-08-28) ──────────────────────────────────────
     //
-    // These four are the guards for the defect that TenantPropagationHandler hid: the header was silently absent,
+    // These four are the guards for the defect that a shared tenant-propagation DelegatingHandler hid (detached
+    // in BL-311, class deleted in BL-316): the header was silently absent,
     // so MDM resolved the caller's JWT tenant alone. For a platform caller that is the login SENTINEL realm,
     // where the record does not exist — an existing reference reported as "not found", with nothing logged.
 
@@ -208,7 +209,7 @@ public sealed class MdmLegalEntityReferenceValidatorTests
     /// <summary>
     /// (d) The header is written by THIS class, from the request scope — not by a DelegatingHandler. The client
     /// below has no handler chain at all beyond the stub, so if anyone moves tenancy back into
-    /// TenantPropagationHandler this fails. That is the whole point: the handler cannot see the request scope
+    /// a DelegatingHandler this fails. That is the whole point: such a handler cannot see the request scope
     /// (IHttpClientFactory caches its chain in its own scope), so the move would be silent in production and
     /// invisible to every other test here. Precedent:
     /// HttpWorkItemBridgeTests.The_tenant_header_and_the_callers_own_bearer_token_reach_the_module.

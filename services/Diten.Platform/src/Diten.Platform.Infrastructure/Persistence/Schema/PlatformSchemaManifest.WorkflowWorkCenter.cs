@@ -258,7 +258,7 @@ public static partial class PlatformSchemaManifest
                             .Ascending(x => x.OrganizationUnitId)
                             .Ascending(x => x.IsDeleted),
                         new CreateIndexOptions { Name = "ix_task_items_tenant_org_unit" }),
-                    // Creator scope (feeds the later Outbox surface) + due-date sweeps.
+                    // Creator scope — this is what ListByCreatorAsync reads (BL-016, the Outbox tab) + due-date sweeps.
                     new CreateIndexModel<TaskItem>(
                         Builders<TaskItem>.IndexKeys
                             .Ascending(x => x.TenantId)

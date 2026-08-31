@@ -2367,7 +2367,7 @@ karşılar. Profil şimdi 8 koleksiyon / 19 mantıksal index (11 beyan + 8 ört�
 - **Sayının ikinci kopyası vardı ve bu turda temizlendi.** `BusinessReferenceDataMongoResidueSweeperTests`
   `<= 18`'i düz sayı olarak yazıyordu; sahip onayladığı artıştan sonra, ne bütçeyi ne kararı adıyla anan bir
   residue-sweeper dosyasında kırmızıya döndü. Artık `SchemaProfileBudget.BusinessReferenceData`'dan okuyor.
-- **Bu turda YAPILMADI (sahip açıkça yasakladı):** `ImportedAt` index'i (BL-299 kapsamında), global
+- **Bu turda YAPILMADI (sahip açıkça yasakladı):** `ImportedAt` index'i (BL-030 kapsamında — <!-- ⚠ 2026-08-29: burada BL-299 yazıyordu; o kayıt sahip isteğiyle BL-030'a birleştirilip kaldırıldı, atıf asılı kalmıştı -->), global
   `DateTimeOffsetSerializer` değişikliği, `DateTimeOffset` işinin bu tura karıştırılması, başka index düşürmek,
   koleksiyon bütçesini değiştirmek.
 - **Gelecek regresyon riski: 🟢** — profil tavanda ama tavan artık çivili; index'in her iki call site'ı plan
@@ -2742,3 +2742,2473 @@ tarif ettiği 51 dakikalık duvar bu ağaçlarda artık yok.
     makine başına bir kez, tüm worktree'ler paylaşır. ⚠ Bu, mevcut altyapının kullanılmayan yarısı.
 - **Gelecek regresyon riski: 🟡** — kod değil kurulum; ama her paralel tur bir kez ödüyor ve
   belirti (`Platform açılmıyor`) sebebi (`sır yok`) göstermiyor. Kayıp zaman ölçüldü, tekrar edecek.
+
+### BL-028 — Görev bağımlılıkları: komut + `blockedState` projeksiyonu (yarım kalmış yetenek)
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-29.** Kod ölçümü 2026-08-29: `inquire` · `return` · `reassign` üçü de hem `TaskWorkItemActionDispatcher` (`:50-52`, `:117`) hem `TasksController` (`:162`, `:177`, `:189`) içinde var. Kayıt "sunucuda hiç çalışmıyor" diyordu; ölçüm aksini gösteriyor.
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-29.** Kod ölçümü 2026-08-29: projeksiyon havuz kimliğini TAŞIYOR — `WorkAggregationModels.cs:402` `WorkItemPoolDto? Pool`, `:660` `(string Id, WorkItemLabelDto? Label)`; sağlayıcı toplu çözüyor (`TaskWorkItemProvider.cs:341,642,1394`), çözülemeyen pozisyonda id kalıyor, GUID basılmıyor. Arayüz ad uydurmuyor: adsız kova `t('GroupUnnamed')`, 7 dilde mevcut. Uydurma ad yalnız YORUMLARDA kaldı.
+- ⚠ **Kalan (ayrı, küçük):** `app.js:6318-6320` yorumu hâlâ "projeksiyon hangi havuza ait olduğunu asla söylemez" diyor — bugün YANLIŞ. Belge çürümesi, davranış değil.
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-29.** Kod ölçümü 2026-08-29: kuralı YÜZEY uyguluyor — `mock-data.js:582` terminal öğede `deeplink` dışındaki her aksiyonu düşürüyor, tek `isTerminal` tanımı (`:558`) tüm yüzeylerce okunuyor, kontrol listesi/alt görev/yorum/sürükleme ayrıca kapalı. Testler: `workcenter-next-list-page.test.js:429`, `…detail-page.test.js:1913`.
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-29.** Kod ölçümü 2026-08-29: komutlar (`AddTaskDependencyCommand`/`Remove…`), uçlar (`TasksController:411,421`), projeksiyon (`WorkItemBlockedStateDto`), sunucu reddi (409 `DEPENDENCY_BLOCKED`) ve ekran afişi (`app.js:3550`) — hepsi var, `fixture-contract.js:473` şekli doğruluyor. Gövde zaten "YAPILDI (2026-07-29)" diyordu; yalnız DURUM başlığı çevrilmemişti.
+
+- **Nedir:** `TaskDependency` şeması MOD-0024 Faz 1'de kuruldu ve **tipli** (`FinishToStart` vb.); detay sorgusu bağımlılıkları okuyor, `TASK_DEPENDENCY_INVALID` hata kodu tanımlı. **Ama:** bağımlılık kurma/kaldırma komutu YOK ve sağlayıcı `blockedState` üretmiyor. Yani "bu görev bitmeden şu başlayamaz" kuralı hiçbir yerde uygulanmıyor; bağımlılık okunabiliyor, kurulamıyor, hiçbir aksiyonu bloklamıyor.
+- **Gerekenler:** (a) bağımlılık ekle/kaldır komutları (yalnız MOD-0024'ün kendi görevleri arasında — pack §12 Y3); (b) sağlayıcı `blockedState` doldursun (`blocked`, `blockers[]`, `affectedActionCodes`) ki kontrat gereği ilgili aksiyon **disabled + sebepli** gelsin; (c) döngü tespiti (A→B→A reddedilmeli); (d) WorkCenter'da **salt-okunur** gösterim + tipli sebep ("FS: X bitmeden başlayamaz"); (e) 7-dil.
+- **Sınır:** bağımlılık **editörü** aggregator'da olmaz (spec ASLA listesi: dependency graph/Gantt kaynağa deep-link). MOD-0024 kendi görevlerinin kaynağı olduğu için kendi kenarlarını yönetebilir; WorkCenter yalnız render eder.
+- **Neden ertelendi:** Faz planında (1-5) hiçbir yerde yok — şema kurulmuş ama runtime planlanmamıştı; CT taramasında ortaya çıktı (2026-07-26). Bloklama semantiği checklist'le karışmasın diye ayrı tutuldu: **checklist tamamlamayı bloklar, alt görev bloklamaz, bağımlılık başlatmayı/tamamlamayı bloklar** — üçünün sınırı net yazılmalı.
+- **YAPILDI (2026-07-29):** (a) `AddTaskDependencyCommand`/`RemoveTaskDependencyCommand` + `POST|DELETE /api/v1/tasks/{id}/dependencies[/{depId}]` + Diten.Web proxy rotaları; (b) döngü tespiti — kendine bağımlılık, A→B→A ve daha uzun zincirler reddediliyor (elmas deseni reddedilmiyor), yinelenen kenar 409; (c) sağlayıcı `blockedState` üretiyor, ilgili aksiyon **disabled + sebepli** geliyor (gizlenmiyor); (d) bağımlılık listesi + kırmızı engel banner'ı tipli cümleyle ("FS: X kapanmadan başlanamaz") + hangi aksiyonu engellediği; (e) 7 dil. Bloklama semantiği tek yerde: `TaskDependencyRules` (FS/SS → başlatma, FF/SF → tamamlama; **iptal edilen öncül bloklamaz**). Sözleşme dağarcığı bildirildi: `DEPENDENCY_TYPES` motorun PascalCase yazımı, durum `SUBTASK_STATUSES`'i paylaşıyor. `TaskDependencyType` artık string serialize ediliyor — guard testi sayısal gitmesini yakaladı. Aksiyonu teklif edilmeyen bir blocker (Open görevde FF) düşürülüyor: kontrat her `affectedActionCode`'un görünür-devre-dışı bir aksiyonu adlandırmasını şart koşuyor.
+- **YARIM KALMIŞTI, TAMAMLANDI (2026-07-29, aynı gün):** ilk turda kural **yalnız projeksiyonda** vardı — `blockedState` doğru, buton kapalı ve sebepli, ama `POST /api/v1/tasks/{id}/start` 204 dönüyordu ve görev açık öncülüne rağmen başlıyordu (CT canlı kanıtı: görev 2c3896fc). 22 test yeşildi çünkü hepsi **projeksiyonu** doğruluyordu; hiçbiri geçişi POST etmiyordu. `TransitionTaskItemHandler` artık `TaskDependencyRules`'u çağırıp **409 + `DEPENDENCY_BLOCKED`** ile reddediyor (onay kapısından sonra, sebep önceliği projeksiyonla aynı olsun diye). Sebep kodu bilerek projeksiyonunkiyle **aynı string**. Testler artık gerçek `TasksController` eylemini çağırıyor — URL→hedef eşlemesi de kapsam içinde. Ders, `cancel` guard'ındakinin aynısı: **gizli/kapalı buton sunumdur, red kuraldır.**
+- **CT CANLI DOĞRULAMA (2026-07-29, `764cb01c`):** 8 vaka gerçek HTTP ile geçildi — FS: `start` **409 `DEPENDENCY_BLOCKED`** · FF: `start` 204 ama `complete` 409 · SS: `start` 409, öncül başlayınca 204 · SF: `start` serbest, `complete` 409, öncül başlayınca 204 · öncül `Done` olunca ardıl `start` 204 · **iptal edilmiş öncül bloklamıyor** (204). Yön ayrımı doğru: tamamlamayı kapatan kenar başlatmayı kapatmıyor. Kapanış: DOĞRULANDI.
+- **Yapım tetikleyicisi:** ~~Ayrı onaylı dilim~~ → yapıldı.
+- **İlgili:** MOD-0024 create pack §3 (`TaskDependency`), §12 Y3 · `fixture-contract.js` `blockedState` invariantları (`BLOCKER_ACTION_REFERENCE_INVALID`) · DCP-004 §10.2 (actions[] projeksiyon kuralı) · BL-035 (alt görev bloklaması aynı `blockedState` şeklini kullanacak — blocker'ın bağımlılık alanları opsiyonel bırakıldı).
+
+### BL-038 — Geçmiş'in salt-okunurluğunu yüzey uygulamıyor, yalnız sağlayıcı sağlıyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+- **Ölçüm (2026-07-30, BL-033 harness'iyle):** terminal bir kaleme **disabled** bir aksiyon verildiğinde liste o butonu **Geçmiş'te basıyor**. Sözleşme buna izin veriyor: `TERMINAL_STATE_CHANGING_ACTION` yalnız **`enabledInlineActions`**'ı reddediyor (`fixture-contract.js:126,302`), disabled olan geçiyor. `rowHtml`'de `terminal` değişkeni **yalnız pin butonunu** bastırıyor (`app.js:825`), aksiyon kümesini süzmüyor.
+- **Bugün neden görünmüyor:** `TaskWorkItemProvider` terminal görev için boş aksiyon kümesi döndürüyor. Yani kuralı **motor** sağlıyor, yüzeyin kendi kuralı yok — bir sağlayıcı hatası kadar uzakta ve yüzey yakalamaz.
+- **CT ilk kararı (SÜPERSEDE EDİLDİ):** sözleşmeyi sıkılaştırmak — `enabled inline` yerine `any inline`. Gerekçe doğruydu: "Geçmiş salt okunur" bir **aggregation** özelliği, tek yüzeyin değil; listede süzersek detay · kanban · takvim · her yeni yüzey aynı süzgeci ayrı taşır ve ayrışırlar. **Mekanizma yanlıştı.**
+- **Neden değişti (CT ölçümü, aynı gün):** `work-items-api.js:56-62` — `validateItems` yalnız geçerli kalemleri `valid`'e alıyor, **gerisini sessizce düşürüyor**. Sözleşmeye konsaydı hatalı bir sağlayıcı o görevi Geçmiş'ten **kaybettirirdi**. Kaybolan görev, sızan kapalı butondan kötüdür — ve bu kod tabanı gerçek kalemleri bir kez zaten böyle kaybetti (`catalogVisible`).
+- **YAPILDI (2026-07-30, `1f9047e1`):** kural **`getActions`**'ta (`mock-data.js`) — sözleşmeye **dokunulmadı** (`git diff` boş, teyitli). Terminal kalemde **inline** aksiyon dönmüyor, **`deeplink`** dönüyor (kapanmış bir görevin kaynak kaydını açmak meşru; `depth` zaten "burada eyler / başka yere gider" proxy'si). Derinlik çözüm sırası sözleşmeninkiyle birebir: `action.depth || item.actionDepth || 'inline'` — bunun için `actionForPresentation`'ın sessizce düşürdüğü `depth` alanı geçirildi. **Tek erişim zinciri** ilk kararın gerekçesini karşılıyor: `app.js:266 itemActions → data.getActions`, ve ona bağlı olan her şey kuralı bedava alıyor (satırlar 908/961, tablo kartı 1193, toplu çubuk 2487, birincil aksiyon 286/291, `actionByKey`/`actionByRole` 295-296, detay rayı). Kanban/Takvim bağlandığında süzgeci ayrıca yazmadan alacak — mekanizmanın seçilme sebebi buydu.
+- **`isTerminal` tek tanıma indirildi:** `mock-data.js`'e taşındı ve dışa açıldı; `app.js:340` artık `data.isTerminal(item)` diyor, 7 çağrı yeri (sekme yönlendirme, satır, checklist salt-okunur, alt görev, composer ×2, seçim) aynı tanımı okuyor. Tek-tanım şartını bir mutasyon koruyor.
+- **Mutasyon karnesi (141 test):** kural çıkarıldı → 2 · `deeplink` istisnası kaldırıldı → 2 · süzgeç ters çevrildi → 4 · `isTerminal` yalnız `normalizedStatus` okur → 1 · `depth` mapper'da düşürüldü → 2. İkinci satır sıfır değil, yani **yön ayrımının** gerçek testi var.
+- **Kalem düşmüyor, ayrıca testli:** terminal + disabled inline aksiyonlu kalem Geçmiş listesinde **görünüyor**, yalnız butonu yok. Bu testin varlığı, biletin sözleşme yerine `getActions`'ı seçmesinin sebebidir.
+- **İlgili:** BL-033 harness'i (kusuru buldu ve mevcut davranışı pinledi, sonra yeni kurala çevirdi) · DCP-004 §10.2 (actions[] projeksiyon kuralı) · `catalogVisible` regresyonu (aynı kayıp-kalem sınıfı).
+
+### BL-031 — Havuz kimliği projeksiyonda yok; grup adı uydurma
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+- **Nedir:** Havuz sekmesinin tüm anlamı "bu iş hangi kuyrukta bekliyor" sorusudur, ama WC-1 projeksiyonu havuz kimliğini **hiç taşımıyor** — kalemde yalnız `assignmentMode: "groupQueue"` var, havuz pozisyonunun adı/id'si yok. Frontend bu boşluğu **sabit bir Türkçe metinle** dolduruyor: `mock-data.js:197` her groupQueue kalemine `group = 'Operasyon Kuyruğu'` yazıyor, `app.js:2245` de `'Atanmadı — Operasyon Kuyruğu'` metnini gömüyor.
+- **Neden ciddi:** (a) ekranda **yanlış bilgi** var — CFO havuzundaki iş "Operasyon Kuyruğu" diye etiketleniyor; (b) birden fazla havuz varken (bugün CFO, Muhasebe Md, E2E Engineer) hepsi tek uydurma grupta çöküyor, yani kullanıcı işin hangi kuyrukta olduğunu **hiçbir şekilde** göremiyor; (c) sabit Türkçe metin l10n kuralını ihlal ediyor (resx'ten gelmiyor, 7 dil yok); (d) fixture-devri mantığının GERÇEK kalemlere uygulanması — `catalogVisible` hatasıyla aynı şekil (bkz [[feedback_live_verification_gap]]).
+- **Gerekenler:** (a) sağlayıcı havuz kimliğini projekte etsin (pozisyon id + görüntü adı, kontrat etiketi olarak); (b) frontend grubu bu alandan alsın; (c) iki sabit metin kaldırılsın — alan yoksa grup **gösterilmesin**, uydurulmasın; (d) grup adı görüntü metni olduğu için çeviri gerektirmez, ama "gruplanmamış" durumunun etiketi resx'e 7 dil girsin.
+- **Neden ertelendi:** Kontrat eklemesi gerektiriyor, yani WC-3 (pozisyon tabanlı atama seam'i) ile aynı yeri açıyor — iki kez açmak yerine WC-3 ile birlikte yapılmalı. **Ancak (c) maddesi — uydurma etiketin kaldırılması — beklemez:** yanlış etiket, etiketsizlikten kötüdür.
+- **Tespit:** CT canlı doğrulaması, 2026-07-26 (CFO havuzuna iki gerçek kalem konduğunda ortaya çıktı).
+- **YAPILDI (2026-07-30, `4ded9c82`) — WC-3 ile birlikte:** sözleşmeye `pool: { id, label }` eklendi; `label` **display** (pozisyon adı kullanıcının verisi), üç kural: `POOL_REQUIRED_FOR_GROUP_QUEUE` · `POOL_ON_NON_QUEUE_ITEM` · `POOL_LABEL_INVALID`. Sağlayıcı `TaskItem.PoolPositionId`'den etiketi **toplu** çözüyor (sayfa başına 2 okuma: pozisyonlar + birimler, kalem başına sorgu yok), biçim `"{pozisyon} — {birim}"`. Frontend grubu bu alandan alıyor; uydurma yok, alan yoksa grup gösterilmiyor. `GroupUnnamed` 7 dilde.
+- **Sıra hayat kurtardı:** provider → frontend → **ancak sonra** kurallar. Kural önce konsaydı, alan gelene kadar **her havuz kalemi Havuz sekmesinden düşerdi** (`validateItems` doğrulayamadığını atıyor — BL-038'in dersi). Kural eklendiğinde 4 eski fixture testi kırıldı: sıra doğru olduğu için bunlar test düzeltmesiydi, kayıp görev değil.
+- **Okunamayan pozisyon — seçilen üçüncü yol:** `pool` gönderilir, `id` dolu, `label` **null**. İki tuzağın ikisi de kurulmadı (GUID'i etiket yerine basmak · kalemi düşürmek). **Yarım isim de reddediliyor**: pozisyon okunup birimi okunamazsa etiket yine null — *"'CFO — ???' bilinmeyen bir yerdeki gerçek bir kuyruk gibi görünür"*. `label`'ın sözleşmede opsiyonel olmasının tek sebebi bu.
+- **Arşivlenmiş pozisyon dahil:** atanabilir-pozisyon lookup'ı arşivlenmişi eler (*"nereye havuzlanabilir"*), bu sorgu elemez (*"nerede havuzlanmış"*) — arşivlenmiş bir kuyruktaki iş hâlâ adını hak ediyor.
+- **CT CANLI DOĞRULAMA (2026-07-30):** `pool.label = {kind:'display', text:'CFO — Finans'}` telde · havuz olmayan **0** kalemde `pool` · ekranda **GUID yok** · grup seçicisi "Tüm gruplar / CFO — Finans" · Havuz sekmesi 3 kalem, sayaç tutuyor · kalem düşmedi. **Üç ayrı havuz üç ayrı etiket** vakası tek aktörle canlıda **ulaşılamıyor** (sağlayıcı havuz kalemlerini aktörün aktif pozisyonlarına göre süzüyor — doğru davranış); o vaka **testle kapsanmış**, canlı doğrulanmış değil — ayrım kayıtlı.
+- **WC-3 seam'i zaten mevcuttu:** `ITaskAssignmentResolver` atama niyetini sözleşme üçlüsüne çeviriyor ve kendi doc'u gerekçesini taşıyor; **dokunulmadı** (`git diff` boş). WC-3 için yeni seam kurmaya gerek kalmadı.
+
+### BL-043 — 🔴 `inquire` · `return` · `reassign` sunucuda hiç çalışmıyor (alan adı sözleşmesi kaymış)
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+- **Belirti (canlı, 2026-07-31):** istemci her geçişe aynı gövdeyi yolluyor —
+  `{"expectedVersion":N,"reasonCode":null,"note":"…"}` (`wwwroot/assets/js/WorkCenterNext/app.js:3186-3190`).
+  Bu üç uç nokta farklı bir sözleşme istiyor (`Features/Tasks/TaskModels.cs:338/344/350`):
+  `InquireTaskItemRequest(ExpectedVersion, Reason)` · `ReturnTaskItemRequest(ExpectedVersion, Reason)` ·
+  `ReassignTaskItemRequest(ExpectedVersion, AssigneeUserId, Reason)`.
+  Sonuç: **400 · `errors.Reason: "The Reason field is required."`** — `inquire` ve `reassign` canlı ölçüldü;
+  `return` aynı DTO ailesinde ve aynı istemci yolundan geçiyor.
+- **İkinci katman — alan adı düzelse bile `reassign` çalışmaz:** diyalog yalnız gerekçe soruyor,
+  **kime atanacağını hiç sormuyor**, yani `AssigneeUserId` hiçbir zaman gönderilmiyor.
+- **Üçüncü katman — hata sebebi kayboluyor:** kullanıcıya dönen tek şey *"İşlem sırasında bir hata oluştu."*
+  Model-binding hatası `Response<T>` zarfı taşımadığı için `failureMessage` sebep kodu çıkaramıyor.
+  **BL-040 ile aynı aile**, farklı giriş kapısı (model binding, FluentValidation değil) — ikisi birlikte çözülmeli.
+- **Ürün etkisi:** `Bekleyen` segmenti arayüzden **hiç doldurulamıyor**; iade ve devretme akışlarının tamamı ölü.
+- **Yön (CT):** üç uç noktanın gövdesini tek bir dağarcığa bağla ve **her iki tarafı da aynı kaynaktan test et**
+  (`fixture-contract.js` dağarcığı, WC-1 dersi). Kaymanın nedeni "istemci genel, sunucu özel" ayrımının
+  hiçbir yerde yazılı olmaması.
+- **Yeniden ölçüm:** `rg -n "record (Inquire|Return|Reassign)TaskItemRequest" services/Diten.Platform/src` ·
+  `rg -n "reasonCode: null" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js`
+
+#### ✅ KAPANIŞ — `d71a3529` (kod) · CT canlı doğrulaması 2026-08-01 · BL-042 + BL-043
+
+> **Ders, kayıtta kalıyor.** Bu başlık ilk yazıldığında `✅` idi, sonra `⚠️ KISMİ`'ye indirildi, ve
+> ancak **üç tur sonra** gerçekten kapandı. Kod ilk günden doğruydu, testler yeşildi — ve akış yine
+> çalışmıyordu: önce kişi seçici boş değer üretiyordu (BL-050), sonra kabul kapısı devretmede
+> yeniden açılmıyordu (BL-051). İki kusur da **yalnız canlı turda** göründü. Demir kural #10'un
+> "kapanış = kod değil, doğrulama" maddesi bu iki vakadan doğdu.
+>
+> **Kapatan ölçümler (CT, 2026-08-01, `ed527d52` sonrası):**
+> Planlanmış+atanmış görev kabul edildi → `owned/admitted`, `lifecycle` `Planned` **kaldı** ·
+> ikinci accept → `409 TASK_ALREADY_ACCEPTED` · backfill sonrası dağılım turdan önceki hâlinde
+> (`admitted 12 · pending 2 · havuz 2`) · `inquire` gövdesi `{expectedVersion, reason}` → 204,
+> `Waiting`, gerekçe sunucuda, **sekme değişmedi** · devretme gövdesi `+assigneeUserId` → 204,
+> kişi seçici değerleri dolu · devret→geri devret sonrası `assigned/pendingAcceptance`, kabul
+> sonrası `owned/admitted` (tam gidiş-dönüş) · havuz üstlen↔bırak ×2 · üç kapı 409.
+>
+> **Kapsam dışında kalan tek davranış:** `return` uçtan uca **koşulamadı**. Kusur değil, koşul
+> eksikliği: `TaskWorkItemProvider.cs:1152` iadeyi yalnız **ayrı bir talep eden varsa** sunuyor
+> (kendine iade no-op'tur), bu ortamda talep eden = atanan. İkinci bir kullanıcı oturumu gerektirir;
+> `⬜` olarak MOD-0024 pack'inde duruyor.
+
+**BL-042 — ne yapıldı.** Kabul artık yaşam döngüsünden çıkarsanmıyor; `TaskItem.AcceptedByUserId`
+taşıyor ve **varlığı** kabul demek. `AcceptTaskItemHandler` bunu yazıyor, `ITaskAssignmentResolver`
+bunu okuyor, bayat yorum güncellendi.
+
+**Kararlar ve gerekçeleri:**
+- **Zaman damgası eklenmedi** — BL-030: `DateTimeOffset` BSON dizisi olarak yazılıyor ve sorgu/sıralama
+  kırıyor. Kabul anı zaten `TaskAssignment` (EventType=Accepted) satırında; ikinci kez saklamak
+  hiçbir şey kazandırmaz, o riski geri getirir.
+- **Lifecycle terfisi ayrı karar olarak kaldı** — `Open → InProgress` sürüyor ama `Planned` görev
+  planlı kalıyor. Kabul, planı silmemeli; iki anlamı tek alana bindirmek bu kusurun ta kendisiydi.
+- **Sonuç değiştirmeyen accept artık 204 dönmüyor** — `409 · TASK_ALREADY_ACCEPTED`. İdempotent-sessiz
+  başarı yerine tipli ret seçildi: ikinci kez soran istemci bayat bir görüntüyle çalışıyordur ve tek
+  yararlı cevap bunu söylemektir (eşzamanlılık çakışmasıyla aynı şekil, istemci onu zaten yönetiyor).
+  "Başarı dönüp hiçbir şey yapmamak" kusuru altı tur boyunca görünmez kılan şeydi.
+- **Backfill kodla birlikte gönderildi, ayrı adım değil** — `TaskAcceptanceBackfillMigration`, her iki
+  startup yolunda. Yüklem **eski kuralın birebir kendisi** (`Person` && assignee != null && lifecycle
+  ∉ {Open, Planned}); uydurma bir kural değil, kopyalanmış bir tanım — davranışın korunduğu bu yüzden
+  bir umut değil, bir olgu. `AcceptedByUserId = AssigneeUserId`: eski kuralın kastedebileceği tek kişi
+  odur (accept zaten yalnız atanana açık). İdempotent — yalnız damgasız satırlara dokunuyor.
+
+> ⛔ **BL-043'ÜN KAPANIŞI GERİ ALINDI (CT canlı doğrulaması, 2026-07-31).** Aşağıdaki kayıt
+> yapılan işi doğru anlatıyor, ama madde **kapanmadı**: devretme hâlâ çalışmıyor. Ayrıntı
+> BL-050'de. Kapanış kaydı, iş bittiğinde değil **doğrulandığında** yazılmalıydı; bu satır o
+> dersin kaydıdır.
+
+**BL-043 — ne yapıldı.** Gövde şekli tek bir yerde bildirildi (`TRANSITION_BODIES`, `app.js`).
+`inquire`/`return` → `{expectedVersion, reason}`, `reassign` → `+ assigneeUserId`; diğer yedi geçiş
+doğru olan jenerik gövdede kaldı. Devretme diyaloğuna kişi seçici eklendi (kaynak: oluşturma
+formuyla **aynı** `TasksApi.assignablePeople` listesi — sunucunun doğruladığı liste), kişi
+seçilmeden onaylanamıyor. 4 yeni dize **7 dilde** tam.
+
+**Kararlar ve gerekçeleri:**
+- **Sunucu gevşetilmedi, istemci düzeltildi.** `Reason`'ın zorunluluğu bilinçli bir kural
+  (`TaskModels.cs:341-343`); gövdeyi opsiyonel yapmak onu sessizce silerdi.
+- **Eşleme bir yorumla değil, İKİ TARAFI DA okuyan bir testle bağlandı.** WC-1 dersi: iki yerde
+  yaşayıp hiçbir yerde bildirilmeyen değer kayar. `task-transition-contract.test.js` gerçek C#
+  record'larını ve gerçek istemci haritasını ayrıştırıp alan alan karşılaştırıyor — hiçbirini
+  yeniden yazmıyor.
+
+**KASTEN yapılmayanlar:**
+- **BL-040'ın tamamı (model-binding hatalarının sebep kodu taşıması) çözülmedi.** Bu tur istemciyi
+  400 üretmeyecek hâle getirdi, yani bu iki maddenin kullanıcıya dönük etkisi kalktı; ama zarfsız
+  model-binding hatası hâlâ sebep kodu taşımıyor. İki maddenin **aynı çatlaktan** geldiği
+  `TRANSITION_BODIES` yorumunda kayıtlı ki sonraki tur ikisini birlikte görsün.
+- **HTTP seviyesinde canlı gidiş-dönüş testi yazılmadı** — servisleri başlatmam yasak. Yerine
+  **gerçek MongoDB + gerçek migration + gerçek resolver** ile 8 test yazıldı
+  (`TaskAcceptanceBackfillMongoTests`). Bu, birim testinden güçlü ama canlı HTTP turundan zayıf;
+  **kabul/inquire/return/reassign'ın uçtan uca çalıştığını canlıda CT doğrulamalı.**
+
+**Yeniden ölçüm (sayı değil, komut):**
+```
+rg -n "IsAccepted" services/Diten.Platform/src
+rg -n "AcceptedByUserId" services/Diten.Platform/src | rg -v Tests
+dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~TaskAcceptanceBackfillMongoTests"
+cd frontend/Diten.Web && npx vitest run tests/task-transition-contract.test.js
+```
+Canlı: bir görevi **Planla → Kabul et**, `admissionState` `admitted` olmalı; ikinci accept **409
+TASK_ALREADY_ACCEPTED**. `inquire` gerekçeyle → `Waiting` + Bekleyen segmenti. `reassign` → kişi
+seçici geliyor, seçmeden onaylanamıyor, sonra görev yeni kişide `pendingAcceptance`.
+
+#### 🔬 CT CANLI DOĞRULAMASI — `d858bb36` sonrası, 2026-07-31
+
+Servisler yeniden başlatılıp ölçüldü (aşağıya bak: **süreç canlıydı ama ikili 4 saat eskiydi**).
+
+| Ölçüm | Sonuç |
+|---|---|
+| Backfill regresyonu — dağılım turdan önceki hâlinde mi | ✅ `owned/admitted 18 · assigned/pendingAcceptance 3 · unowned/pendingClaim 2` — birebir aynı, kimsenin İşlerim'i boşalmadı |
+| Planlanmış görev (`asda`: Planned + pendingAcceptance) → Kabul et | ✅ `owned/admitted`, **`lifecycle` `Planned` KALDI** — kabul planı silmedi, tasarım kararı canlıda tuttu |
+| İkinci accept | ✅ `409 · TASK_ALREADY_ACCEPTED`, durum değişmedi |
+| `inquire` gerekçeyle | ✅ gövde `{expectedVersion, reason}` → **204**; `Waiting`; `waitingContext.reason.text` = kullanıcının cümlesi; Bekleyen 1→2; **sekme değişmedi** (aks yasası) |
+| `reassign` | 🔴 **BL-050** — kişi seçici geliyor ama seçilemiyor |
+| Üç kapı regresyonu | ✅ `CHECKLIST_INCOMPLETE` · `WORKFLOW_PENDING_APPROVAL` · `DEPENDENCY_BLOCKED`, üçünde de 409 ve durum değişmedi |
+
+**⚠ Doğrulamanın kendisi hakkında bir ders:** ilk ölçümde accept **hâlâ 204 dönüp hiçbir şey
+yapmıyordu** ve bu, düzeltmenin çalışmadığı sonucuna götürüyordu. Ölçüm yanlıştı: `5057` süreci
+`18:12`'de başlamıştı, yeni ikili `22:55`'te derlenmişti ve Platform `--no-build` ile **watch'sız**
+koşuyordu. Yani dosyada doğru kod, bellekte eski kod. `strings … | grep AcceptedByUserId` ikilide
+alanı gösterdi, süreç başlangıç saati farkı açıkladı. **`/health` 200 ≠ güncel ikili; süreç canlı ≠
+kod canlı.** Doğrulama, süreç başlangıç saatini ikili tarihiyle karşılaştırmadan başlamamalı.
+
+#### ⚠️ KAPANIŞ (KISMİ) — BL-044 · BL-046 · BL-047 · BL-048 — 2026-08-01 — **CANLI DOĞRULAMA BEKLİYOR**
+
+> Demir kural #10, yeni eşik: kod yazıldı ve testler yeşil — bu **kapanış değil**. `✅` yalnız CT canlı turundan
+> sonra yazılır. BL-043 bu dersin kaydıydı; aynı hatayı tekrarlamıyoruz.
+
+#### 🔬 CT CANLI TURU — 2026-08-01, `ce9aa7ba` sonrası (süreç 00:21 > ikili 00:20)
+
+| Madde | Sonuç |
+|---|---|
+| **BL-044** | ✅ **DOĞRULANDI.** `kapanış` · `KAPANIŞ` · `kapanis` · `KAPANIS` · `KaPaNiŞ` — beşi de aynı kalemi buluyor. |
+| **BL-047** | ❌ **ULAŞMADI.** Türkçe sayfada hâlâ *"Showing 1 to 8 of 8 entries"*. |
+| **BL-046** | ❌ **DAHA KÖTÜ.** Geçmiş'te artık *"-2g kaldı"* · *"-1g kaldı"* yazıyor. |
+| **BL-048** | ⚠️ Kayıttaki gerekçe **yanlış** — aşağıda düzeltildi. |
+
+**BL-047 — arz düzeldi, teslimat yok.** Payload artık altı `Dt*` anahtarını Türkçe taşıyor (canlı ölçüm:
+`#workcenternext-l10n` içinde `DtInfo = "_TOTAL_ kayıttan _START_ - _END_ arasındaki kayıtlar gösteriliyor"`).
+Ama `dt-defaults.js:8` → `var L = function () { return window.L10n || {}; }` — tüketici **yalnız
+`window.L10n`'a** bakıyor, modül payload'ına değil. `app.js:2506-2508` `window.L10n`'a yalnız **iki**
+anahtar tohumluyor (`Search`, `Action`). Canlı ölçüm: `Object.keys(window.L10n)` → 9 anahtar,
+`Dt*` sayısı **0**. Yani zincirin son halkası hâlâ kopuk; düzeltme yanlış uçtan yapıldı.
+**Bu, BL-050 ile aynı sınıf:** kaynak doğru, tüketicinin okuduğu yer başka.
+
+**BL-046 — sunucu yarısı doğru, istemci yarısı okunamaz metin üretiyor.** Sunucu `slaState`'i artık
+kapanış anına göre hesaplıyor (ölçüm: *Ay sonu kapanış*, son tarih 2026-07-30, iptal → `on-track` ✓).
+Ama gün sayısını **istemci** hâlâ `dueAt` ile **bugünden** türetiyor, ve `slaLabel`'ın `on-track`
+dalında `d <= 0` koruması yok → `tf('SlaDueInDays', -2)` → **"-2g kaldı"**. Değişiklikten önce bu
+kalemler `overdue` olduğu için "2g gecikmiş" yazıyordu: yanlıştı ama **okunabilirdi**. Şimdi anlamsız.
+Hâlâ `overdue` olanlarda kayma da sürüyor (dün 11g/9g/5g → bugün 12g/10g/6g).
+**Ders:** sözleşme alanı (`closedAt`) olmadan "sunucunun sahibi olduğu yarıyı" göndermek, kusuru
+düzeltmedi — **görünür hâlini bozdu.** Yarım düzeltme, bekleyen düzeltmeden kötü olabilir.
+
+**BL-048 — kayıttaki "`RequestTitle` diye bir özellik repoda hiç yok" ifadesi YANLIŞ.** Ad bir özellik
+adı değil, FluentValidation'ın **ifade yolundan türettiği** görünen ad:
+`CreateTaskItemValidator.cs:16` → `RuleFor(x => x.Request.Title)` → görünen ad `"Request Title"`.
+CT'nin ölçtüğü mesaj (`400 · "'Request Title', 200 karakterden küçük veya eşit olmalıdır. 224 karakter
+girdiniz."`) doğrudan bu koddan geliyor ve **sunucudan** üretiliyor — ajan istemcide (`Tasks/api.js`)
+aradığı için bulamadı. **Sonuç değişmiyor:** madde yine BL-040'a bağlı; yalnız gerekçesi bu.
+
+**BL-044 — Türkçe büyük harf araması** · `4ce30d29`
+Arama iki tarafta da **yerelden bağımsız** katlanıyor: NFD ile birleşen işaretler ayrılıyor (ş→s, ü→u, é→e)
+ve I/İ/ı/i ailesi `i`'ye iniyor. Bu tek değişiklik `KAPANIŞ`'ı da aksansız `kapanis`'i de çözüyor.
+`toLocaleLowerCase('tr')` **reddedildi**: bir dili düzeltip diğer altısını bozardı; testler ru ve ar vakalarını
+da koşuyor. Dört arama noktasının hepsi katlanıyor (kalem araması + tetik araması).
+**Vacuity kanıtı testin içinde:** bir test **eski** uygulamayı koşturup raporlanan yanlış cevabı verdiğini
+gösteriyor — yazımı doğru, davranışı yanlış bir katlama böylece geçemez.
+
+**BL-046 — kapanmış görevin canlı SLA sayacı** · `70c0912e`
+Terminal görevde SLA saati **kapanış anında** duruyor (`CompletedAt` → `CancelledAt` → bugün).
+Rozet **silinmedi**, donduruldu: gecikmeyle kapanmış iş raporlamada değerlidir.
+**KIRMIZI kanıtı:** düzeltme geri alındığında `Work_finished_ON_TIME_does_not_drift_into_overdue_as_the_calendar_moves`
+düşüyor (diğer üçü doğru şekilde yeşil kalıyor — mutasyon tam da değişen davranışı vurdu).
+**⚠ YARIM:** `slaState` bir **dize**; kullanıcının okuduğu **gün sayısı** (`slaDiffDays`) istemcide
+`dueAt` ile bugün'den türetiliyor ve projeksiyon **kapanış zamanını göndermiyor**. Yani "11g → 12g" kayması
+için sözleşmeye bir `closedAt` alanı gerekiyor. Sunucunun sahibi olduğu yarı düzeltildi; istemci yarısı açık.
+
+**BL-047 — DataTable metinleri İngilizce** · `4ce30d29`
+**Mekanizma zaten merkezî ve zaten doğruydu:** `dt-defaults.js:462-466` altı `Dt*` anahtarını sayfa
+payload'ından okuyup DataTables'a veriyor, ve `SharedResource` altısını da **yedi dilde** taşıyor.
+Eksik olan tek halka `_L10n.cshtml`'di: yalnız **modül** resx'ini numaralandırıyordu, dolayısıyla `Dt*`
+anahtarları istemciye hiç ulaşmıyor ve merkezî kod çalışacak veri bulamıyordu. Modül anahtarları çakışmada
+kazanmaya devam ediyor.
+**KAPSAM ÖLÇÜMÜ (istenen tarama):** `Dt*` anahtarlarını payload'ına koyan sayfa sayısı **repo genelinde 0**'dı
+— yani bu WorkCenterNext'e özgü değil, **her DataTable sayfası** aynı durumda. 61 dosya DataTable kuruyor.
+**Önerilen kontrol:** payload üreten her `_L10n.cshtml`'in `Dt*` anahtarlarını enjekte ettiğini doğrulayan
+tek bir kaynak-taraması testi (bu turda WorkCenterNext için yazıldı; genelleştirilmesi ayrı dilim).
+
+**BL-048 — doğrulama mesajında ham alan adı** — **DOKUNULMADI, ölçüm gereği**
+İstenen ölçüm yapıldı: `TasksApi.failureMessage` (`Tasks/api.js:122-135`) mesajı **yalnız `reasonCode`**
+üzerinden resx'e çeviriyor; sunucunun ham `errors` metnini **hiç göstermiyor**. Yani BL-040 (sebep kodu
+köprüsü) çözülünce bu yol tamamen yerelleşir → **BL-048 kendiliğinden kapanır**. Ayrıca `RequestTitle`
+diye bir özellik **repoda hiç yok** (`rg` → 0 sonuç), yani CT'nin gördüğü ekran bu koddan üretilmiyor;
+hangi yüzey olduğu ölçülemedi. **Kayıt: BL-040'a bağlı.**
+
+**CANLI DOĞRULAMA ADIMLARI (CT):**
+1. **BL-044** — Türkçe sayfada aramaya sırayla `kapanış` · `KAPANIŞ` · `kapanis` · `KAPANIS` yaz;
+   dördü de **aynı** kalemi bulmalı. Sonra `Überprüfung` içeren bir kalemde `uberprufung` dene.
+2. **BL-046** — Geçmiş sekmesi: gecikmeyle kapanmış bir kalemin rozeti **hâlâ gecikmiş** demeli
+   (silinmemeli). Zamanında kapanmış bir kalem **gecikmiş görünmemeli**. *(Gün sayısının donması bu turda
+   YOK — yukarıdaki yarım madde.)*
+3. **BL-047** — Türkçe sayfada tablo görünümüne geç: alt bilgi satırı, sayfalama ve boş-tablo metni
+   **Türkçe** olmalı ("Showing 1 to 9 of 9 entries" **görünmemeli**).
+4. **BL-045 / BL-049** — bu turda **yapılmadı**, aşağıya bakın.
+
+**BU TURDA YAPILMAYANLAR — açıkça:**
+- **BL-045 (çip sayacı ↔ segment sayaçları)** — **yapılmadı.** Karar (segment sayaçlarının çip etkinken
+  yeniden hesaplanması) anlaşıldı ama `app.js`'te sayaç hesabı üç ayrı yerden besleniyor ve doğru dilim
+  kendi turunu hak ediyor; yarım bir faceted sayaç, bugünkü tutarsızlığı başka bir yere taşırdı.
+- **BL-049 (ham GUID)** — **yapılmadı.** Yer tespit edildi (`app.js` `renderSourceContext`,
+  `previewField('bx-hash', 'DetailSourceId', item.sourceId)`); GUID'i kopyala-düğmesine taşımak + 7 dilde
+  yeni anahtar gerekiyor.
+
+**Yeniden ölçüm (sayı değil, komut):**
+```
+rg -n "toLowerCase\(\)" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js   # arama yolunda olmamalı
+rg -n "dtKeys" frontend/Diten.Web/Views/WorkCenterNext/_L10n.cshtml
+rg -n "SlaReferenceInstant" services/Diten.Platform/src
+cd frontend/Diten.Web && npx vitest run tests/workcenter-next-search-and-chrome.test.js
+dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~TaskHandoverTests"
+```
+
+#### ⚠️ KAPANIŞ (KISMİ) — BL-046 · BL-047 · BL-049 — 2026-08-01 · `a786d194`
+
+> **Bugünün iki dersi bu turda uygulandı.** (1) *Arz düzeldi, teslimat yok:* BL-047 için bu kez **tüketicinin
+> sözlüğü** test ediliyor, payload değil. (2) *Yarım düzeltme kusurdan kötü olabilir:* BL-046'nın gün sayısı
+> için sözleşme alanı **hâlâ yok**, o yüzden o yarı **yapılmadı** — ama önceki turda benim ürettiğim
+> `-2g kaldı` regresyonu kapatıldı.
+
+#### 🔬 CT CANLI TURU — 2026-08-01, `9574fce2` sonrası (süreç 00:36 > ikili 00:36)
+
+| Madde | Sonuç |
+|---|---|
+| **BL-047** | ✅ **DOĞRULANDI.** Tablo alt bilgisi *"8 kayıttan 1 - 8 arasındaki kayıtlar gösteriliyor"*; sayfada İngilizce kalıntı **yok**. Tablo monte edildikten sonra `window.L10n`'da **6** `Dt*` anahtarı. *(İlk okumamda 0 çıktı — tohumlama montaj sırasında olduğu için; ölçüm sırası benim hatamdı, kusur değil.)* |
+| **BL-049** | ✅ **DOĞRULANDI.** Ekranda tam GUID **yok**; kısaltılmış `523a954e…8237` + *"Referansı kopyala"* düğmesi. Başarısızlık yolu da çalışıyor: pano reddedince **görünür** *"Referans kopyalanamadı"* çıkıyor. **Başarı yolu ölçülmedi** — betikle yapılan tıklama güvenilir kullanıcı hareketi sayılmadığı için tarayıcı `NotAllowedError` verdi; gerçek tıklamayla sahibin doğrulaması gerekiyor. |
+| **BL-046** | ❌ **AÇIK KALIYOR.** `-Ng kaldı` gitti ✓ ama yeni bir tutarsızlık ölçüldü — aşağıda. |
+| **BL-045** | ⬜ Yapılmadı (ikinci kez, bilinçli). |
+
+**BL-046 — ölçülen yeni sonuç: ekran artık SUNUCUYLA ÇELİŞİYOR.**
+Negatif koruması, geçmiş tarihli her kalemi `slaState`'ten **bağımsız olarak** "gecikmiş" ifadesine
+yönlendiriyor. Sonuç, zamanında kapanmış işin geç kapanmış gibi görünmesi:
+
+| kalem | son tarih | sunucu `slaState` | ekranda |
+|---|---|---|---|
+| Ay sonu kapanış kontrol listesi (İptal) | 2026-07-30 | **on-track** | **"2g gecikmiş"** |
+| Üretim tesisi 2 kapasite raporu (Tamam) | 2026-07-31 | **on-track** | **"1g gecikmiş"** |
+
+Yani madde bir adım ilerledi (**okunamaz** → **okunabilir**) ama hedefine varmadı: rozet hâlâ kapanmış
+iş hakkında **yanlış** konuşuyor, üstelik artık sunucunun kendi kararına da aykırı. Kalan iş değişmedi:
+projeksiyona kapanış zamanı alanı + dağarcığa bildirim + istemcinin gün sayısını ondan türetmesi.
+`Done`/`Cancelled` kalemde istemci, sunucunun `slaState`'ini **ezmemeli**.
+
+**BL-047 — tablo dili, TÜKETİCİ tarafı**
+`dt-defaults.js:8` `window.L10n` okuyor; `app.js` oraya yalnız `Search` ve `Action` tohumluyordu. Altı `Dt*`
+anahtarı iki uçta da vardı ve **hiç buluşmuyordu**. Artık modül payload'ından `window.L10n`'a tohumlanıyorlar,
+**çevirmenden geçirilerek** (`t(key) === key` ise yazılmıyor — yoksa ekranda `DtInfo` yazardı).
+**Seçim (a), gerekçesi:** (b) — dt-defaults'un modül payload'ını okuması — daha genel ve 61 dosyanın ihtiyacı;
+ama tek ekranın kusuru yüzünden **ürünün tamamının** tablo bootstrap'ini değiştirmek kendi regresyon turunu
+hak eden bir platform dilimidir. (a) yerel ve geri alınabilir.
+**KIRMIZI kanıtı:** tohumlama satırları silinince 2 test düşüyor.
+*(Not: ilk mutasyon denemem regex uyuşmadığı için **hiç uygulanmadı** ve "0 düştü" yanıltıcı çıktı — satır
+bazlı yeniden ölçtüm. Uygulanmayan mutasyonun sayısı geçersizdir.)*
+
+**BL-046 — etiket sınırı** *(gün sayısı YARIM kaldı, bilerek)*
+`slaLabel`'ın `on-track` dalında negatif/sıfır koruması yoktu; sunucu tarafı donunca Geçmiş'te **`-2g kaldı`**
+çıktı. Gelecekte olmayan bir tarih artık **hangi durum gelirse gelsin** gecikmiş ifadesine gidiyor; bu aynı
+zamanda eski `on-track + d===0 → "0g kaldı"` sınır kusurunu ve `dueAt` yokken oluşan `NaN`'ı da kapatıyor.
+**KIRMIZI kanıtı:** koruma kaldırılınca 2 test düşüyor.
+**⚠ YAPILMADI:** gün sayısının **donması**. Projeksiyon hâlâ kapanış zamanını göndermiyor; `closedAt` benzeri
+bir sözleşme alanı + `fixture-contract` dağarcığına bildirim + istemci hesabının ona geçmesi gerekiyor.
+Bugün hâlâ overdue kalemlerde sayı kayıyor (dün 11g → bugün 12g). **Bunu yarım göndermek bu turun ilk
+dersiydi; tekrarlamadım.**
+
+**BL-049 — ham GUID**
+Kimlik ana yüzeyden kalktı: kısaltılmış gösterim (`31a44983…b2b0`), **tam değer** başlıkta ve kopyala
+düğmesinde, pano yoksa **görünür hata**. Silinmedi — destek konuşmasının ihtiyacı olan şey tam olarak o.
+Kısa iş anahtarları (`INV-2026-0042` gibi) kısaltılmıyor. 3 yeni dize **7 dilde**.
+**KIRMIZI kanıtı:** `previewField('bx-hash', 'DetailSourceId'` geri konunca test düşüyor.
+
+**BL-045 — YAPILMADI (bilinçli, ikinci kez).**
+Karar anlaşıldı (faceted segment sayaçları). Sayaç hesabı hâlâ üç ayrı yerden besleniyor ve bu turda ona
+hakkını verecek yer kalmadı. Talimatınız net: *"sığmazsa yapma"*. Bugün yarım bir düzeltmenin kusurdan kötü
+çıktığını iki kez ölçtük; üçüncüsünü üretmiyorum.
+
+**CANLI DOĞRULAMA ADIMLARI (CT):**
+1. **BL-047** — Türkçe sayfada tablo görünümü: alt bilgi, sayfalama ve boş-tablo metni **Türkçe**.
+   Konsolda `Object.keys(window.L10n).filter(k => k.startsWith('Dt'))` → **6 anahtar** dönmeli (bugün 0'dı).
+2. **BL-046** — Geçmiş'te **`-Ng kaldı` ifadesi HİÇ görünmemeli**. Gecikmeyle kapanmış kalem hâlâ
+   "gecikmiş" demeli. *(Gün sayısı hâlâ kayacak — o yarı yapılmadı.)*
+3. **BL-049** — Detay → Kaynak Bağlamı: tam GUID yerine kısaltılmış kimlik + kopyala düğmesi;
+   düğmeye basınca "Referans kopyalandı" ve pano gerçekten dolmalı.
+
+**Yeniden ölçüm (sayı değil, komut):**
+```
+rg -n "global.L10n\[key\]" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js
+rg -n "d < 0|d === 0" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js | head
+rg -n "previewField\('bx-hash'" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js   # boş olmalı
+cd frontend/Diten.Web && npx vitest run tests/workcenter-next-search-and-chrome.test.js
+```
+
+#### ✅ KAPANIŞ — BL-046 · BL-045 — `7b2f3772` + CT sınır düzeltmesi · CT canlı doğrulaması 2026-08-09
+
+> **BL-045 — canlı ölçüm, tam geçti.** Çip kapalı: `Aktif 8 · Bekleyen 2 · Planlı 2 = 12` = sekme sayacı.
+> Çip AÇIK: `Aktif 3 · Bekleyen 1 · Planlı 1 = 5` = çip sayacı (**SLA riski 5**), liste 3 (aktif segment).
+> Sekme rozetleri değişmedi (`2·12·2·6`), çipi kapatınca her şey birebir eski hâline döndü. Kullanıcı artık
+> *"SLA riski 5 — 1'i Bekleyen'de, 1'i Planlı'da"* bilgisini görüyor; sinyal ekseni segmentin altına inmedi.
+>
+> **BL-046 — canlı ölçüm.** Gün sayıları `dueAt ↔ closedAt` farkına eşit, bugünle ilgisi kalmadı (yarın
+> değişmeyecek); negatif ifade yok; ekran sunucunun `slaState`'i ile **çelişmiyor**:
+> `6g/7g gecikmeyle kapandı` (overdue) · `Zamanında kapandı` ×3 (on-track). Turun asıl kusuru — zamanında
+> biten işin "gecikmiş" demesi — kapandı.
+>
+> **CT'nin bulduğu sınır vakası ve düzeltmesi (aynı oturumda).** Canlı ölçüm: *Tedarikçi sözleşme…*
+> son tarih `2026-07-26 18:00`, kapanış `21:04` — **aynı gün, 3 saat 4 dakika geç**. Sunucu doğru biçimde
+> `overdue` diyor, ama gün granülaritesinde fark `0`'a yuvarlanınca ekran **"0g gecikmeyle kapandı"** yazıyordu.
+> Bu cümle insana "gecikmemiş" diye okunur; durum ise "gecikmiş" — yani **durum ile cümle yine ayrışmıştı**,
+> bu dalın var oluş sebebi tam olarak bunu bitirmekti. Bu turda üçüncü kez görülen sınır ailesi
+> (`0g kaldı` · `-2g kaldı` · `0g gecikmeyle kapandı`).
+> **Düzeltme:** `app.js` `slaLabel` terminal-geç dalında `Math.abs(d) >= 1` koşulu; gün altı aşım sayıyı
+> düşürüp zaten var olan sayısız etiketi kullanıyor (`SlaClosedLate` — 7 dilde hazırdı, **yeni dize gerekmedi**).
+> **Kırmızı kanıtı:** koşul mutasyonla kaldırıldı → yalnız yeni test düştü (1 başarısız / 17 geçti); geri
+> konunca `workcenter-next-sla-closed-freeze` + `workcenter-next-faceted-counters` = **29/29**.
+> **Canlı teyit:** ekranda `"Gecikmeyle kapandı"`, `"0g gecikmeyle"` ifadesi **hiç yok**, diğer beş satır aynı.
+>
+> **Yeniden ölçüm:** `cd frontend/Diten.Web && npx vitest run tests/workcenter-next-sla-closed-freeze.test.js tests/workcenter-next-faceted-counters.test.js` ·
+> canlı: Geçmiş'te gün sayısı yarın değişmemeli; çipe tıklayınca segment sayaçları yeniden hesaplanmalı.
+
+> **Bu turun iki dersi, uygulandığı yer.** (1) *Yarım düzeltme kusurdan kötü olabilir:* BL-046 bu kez üç
+> parçanın **üçü birden** gönderildi — sözleşme alanı, dağarcık bildirimi, istemci hesabı. İkisi gönderilseydi
+> yine yeni bir yalan çıkardı, o yüzden bölünmedi. (2) *Arz düzeldi, teslimat yok:* alanı üreten tarafın
+> testi **yetmez** sayıldı; `ClosedAt`'in tel üstüne çıktığı sunucu tarafında, proxy'nin gövdeyi olduğu gibi
+> geçirdiği ise okunarak ayrıca doğrulandı.
+
+**BL-046 — kapanmış görevin gün sayısı** *(üç parça, tek dilim)*
+
+| parça | ne yapıldı |
+|---|---|
+| (a) sözleşme alanı | `WorkItemProjectionDto.ClosedAt` — opsiyonel, null'ken **hiç yazılmaz**, kuyrukta. `TaskWorkItemProvider` `CompletedAt ?? CancelledAt` gönderir (terminal değilse **null**); `WorkItemProjectionService` (MOD-0023) `CompletedAt` gönderir ve **kendi slaState'ini de** kapanışta dondurur — orada hâlâ `UtcNow` ile ölçülüyordu. |
+| (a) dağarcık | `fixture-contract.js` `closedAt`'i **tanır**: varsa doğrulanır, asla zorunlu değil (BL-038). İki hata: `CLOSED_AT_INVALID` (ayrıştırılamaz an) ve `CLOSED_AT_ON_OPEN_ITEM` (açık işte kapanış anı — çelişki). |
+| (b) gün sayısı | `mock-data.js daysLateAtClose(dueAt, closedAt)`. Terminal kalemde sayı **bugüne hiç bakmaz**. Kapanış anı yoksa canlı sayıya düşer ama **etikete çıkmaz**. |
+| (c) ezme yok | `app.js slaLabel` terminal dalı **önce** döner: durum sunucunun, sayı iki tarihin farkı. `on-track` diyen kapanmış iş artık "gecikmiş" **diyemez**. |
+
+**Rozet silinmedi, donduruldu.** Yeni 3 dize, **7 dilde**: `SlaClosedLateByDays` ("{0}g gecikmeyle kapandı"),
+`SlaClosedLate` (sayı yokken), `SlaClosedOnTime`.
+**Terminal olmayan kalemdeki `d<=0` boşluğu korundu** (`0g kaldı` / `-Ng kaldı` geri gelemez) — ve orada
+"gecikmiş" demek sunucuyla çelişmez, çünkü iş hâlâ canlı.
+**Showcase da hizalandı:** `computeShowcaseSla` terminal fixture'ı kapanış gününden ölçüyor; Geçmiş
+fixture'larının üçüne kendi etkinlik kayıtlarındaki kapanış anı yazıldı. Biri **bilerek geç kapatıldı**, yoksa
+donmuş "geç kapandı" rozetinin gösterecek örneği kalmıyordu.
+
+**KIRMIZI kanıtı (vacuity değil):** düzeltmeden önce iki yeni dosya birlikte **14 test düşürdü**; kalan 12'si
+(ölçülen şeklin yeniden üretimi, canlı geri sayımın sürmesi, sekme rozetinin sabitliği) o anda da geçiyordu —
+yani kırmızıların hepsi gerçek davranış farkı. Sunucu yarısı ayrıca **mutasyonla** ölçüldü: `ClosedAt: null`
+yapılınca 2 test düşüyor (null bekleyen 2'si doğal olarak ayakta kalıyor). 7 dil kapısı da mutasyonla ölçüldü:
+`ru.resx`'ten tek anahtar silinince l10n testi düşüyor.
+
+**BL-045 — çip ↔ segment sayaçları (faceted)** *(üçüncü turda yapıldı)*
+
+Karar uygulandı: **segment sayaçları çip/arama altında yeniden hesaplanıyor**. Çip "SLA riski 3" derken segment
+barı artık *2 · 1 · 0* diyor — "1'i Bekleyen'de" bilgisi **fazladan bir gösterim icat etmeden** oradan okunuyor.
+Süsleme yapılmadı; nihai gösterim sahibin UX turunda karara bağlanacak.
+
+**Reddedilen alternatif teste çakıldı:** çip sayacı aktif segmente **daraltılmıyor** — Bekleyen'e geçince de 3
+diyor. Sinyal, statüden bağımsız bir eksendir.
+
+**Üç yolun üçü birden hizalandı** (talimatın şartı): `segmentCount` · `typeCount` · `signalCount` artık tek bir
+`facetItems(except)` tabanından besleniyor; bir sayaç **kendi eksenini** hiç uygulamaz, diğer hepsini uygular.
+"Tümü" çipi de aynı tabana alındı — tip ekseninin sıfır durumu olduğu için yanındaki çiplerle çelişmesi
+kaçınılmazdı. **Sekme rozetleri değişmedi ve değişmemeli:** başka sekmeden okunan bir sayıdır; `app.js`'teki o
+yorum silinmedi, **daraltıldı**.
+
+**CANLI DOĞRULAMA ADIMLARI (CT):**
+1. **BL-046 / sunucuyla çelişki** — Geçmiş'te *"Ay sonu kapanış kontrol listesi"* (İptal) ve *"Üretim tesisi 2
+   kapasite raporu"* (Tamam): ikisi de **"Zamanında kapandı"** demeli. `SlaOverdueByDays` metni ("Ng gecikmiş")
+   Geçmiş sekmesinde **hiç görünmemeli**.
+2. **BL-046 / donma** — Geçmiş'te gecikmeyle kapanmış bir kalemin sayısını not al; **ertesi gün aynı sayı**
+   olmalı. (Aynı şey ağ yanıtından da okunabilir: kalem `closedAt` taşıyor mu?)
+3. **BL-046 / rozet duruyor** — gecikmeyle kapanmış kalem hâlâ **"{N}g gecikmeyle kapandı"** demeli; rozet
+   silinmiş olmamalı.
+4. **BL-046 / eski veri** — `CompletedAt`/`CancelledAt` taşımayan eski bir kapanmış kalem varsa: **sayısız**
+   "Gecikmeyle kapandı" demeli, uydurulmuş bir sayı değil.
+5. **BL-045** — İşlerim'de "SLA riski" çipini aç: segment sayaçları **değişmeli** ve toplamları çipin sayısına
+   **eşit** olmalı. Bekleyen'e geç: satır sayısı o segmentin sayacına eşit, çip hâlâ **3**.
+6. **BL-045 / sekme** — çip açıkken üstteki sekme rozetleri **değişmemeli**.
+7. **l10n** — sayfayı 7 dilde aç; yeni üç ifade hiçbirinde ham anahtar (`SlaClosed…`) olarak görünmemeli.
+
+**Yeniden ölçüm (sayı değil, komut):**
+```
+rg -n "ClosedAt" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Providers/TaskWorkItemProvider.cs
+rg -n "ClosedAt" services/Diten.Platform/src/Diten.Platform.Application/Features/WorkAggregation/Services/WorkItemProjectionService.cs
+rg -n "CLOSED_AT_" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/fixture-contract.js
+rg -n "daysLateAtClose" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/mock-data.js
+rg -n "facetItems" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js
+rg -n "SlaClosedOnTime" frontend/Diten.Web/Resources/Views/WorkCenterNext/   # 7 dosya
+cd frontend/Diten.Web && npx vitest run tests/workcenter-next-sla-closed-freeze.test.js tests/workcenter-next-faceted-counters.test.js
+dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~TaskHandoverTests"
+```
+
+*(Not: depoda `tests/strategy-*`, `tests/planning-cycles-*`, `tests/objectives-edit-hydration` altında **9 test
+bu turdan ÖNCE de düşüyordu** — dokunulmamış ağaçta ölçüldü, bu dilimle ilgisi yok.)*
+
+#### ✅ KAPANIŞ — yapılandırılabilir alanlar: **başka modülün kayıtları** — `be7918ed` · CT canlı doğrulaması 2026-08-10
+
+> **Uçtan uca ölçüldü.** `"Fin"` yazıldı → `GET .../delivery.department/records?term=Fin` →
+> `{value:"967a6cd5-…", label:"Finans", secondary:"OU-FIN"}` → liste tek satıra daraldı → kaydet **201**
+> → sunucuda **kimlik** saklandı (ad değil) → düzenlemede **"Finans — OU-FIN" dolu geldi**.
+> Sözleşmenin en kritik iddiası tuttu: **ekranda ad+kod, veritabanında kimlik.**
+>
+> **Hata yolları:** olmayan kayıt kimliği → `400 TASK_FIELD_VALUE_INVALID` · olmayan tanım →
+> `404 TASK_FIELD_DEFINITION_UNKNOWN`.
+>
+> **İŞ 1 doğrulandı:** kaynak anahtarı artık açılır liste (`Yok · Platform listesi · İş referans
+> verisi · Başka modülün kayıtları` → `Organizasyon birimleri · Pozisyonlar`) **ve düzenlemede
+> seçili geliyor** — ajanın ölçemediği madde buydu.
+>
+> **Arapça/RTL doğrulandı:** `dir="rtl"`, başlık ve yer tutucular Arapça, ham anahtar yok,
+> **`—` ayıracı bozulmadı** (`Finans — OU-FIN`). *Ekrandaki "Faz/Pazar/Departman/Regulatory"
+> çeviri değil **tenant içeriğidir**; çevrilmemeleri doğru davranış.*
+>
+> **CT'nin ölçmediği tek madde:** 5000 kayıt. İki kaynak da bellek içi süzüyor — ajan bunu bilinçli
+> sınır olarak beyan etti ve sözleşmenin parçası olmadığını yazdı. Asıl sınav ürün modülüyle.
+>
+> **Ajanın kendi turunda bulduğu kusur, kayda değer:** `/Tasks/Create` ve `/Edit`, `form-page.js`'in
+> çağırdığı `premium-modal.js`'i **hiç yüklemiyordu**. 201 döndükten sonra sayfa ne bildirim veriyor
+> ne yönlendiriyordu — tur tekrar Kaydet'e bastı ve **tek niyetten iki görev** çıktı. Bu, SOP K5'in
+> ("arz düzeldi ≠ teslimat oldu") ders kitabı vakası. Düzeltildi ve *"sayfa kendi betiğinin
+> çağırdığını yüklüyor mu"* testiyle sabitlendi.
+>
+> **UX turuna devredilen gözlem (kusur değil):** aramalı alanda arama kutusu ile seçim listesi ayrı
+> ayrı duruyor (etiket → arama → liste); çalışıyor ama iki alan gibi okunuyor.
+
+> **Desen icat edilmedi.** SAP'ın *check table + F4 search help*'i, Oracle'ın *table-validated value set*'i,
+> ServiceNow'ın *reference field*'ı aynı cümleyi söylüyor: **alanı yönetici tanımlar, değerleri başka modül
+> sahiplenir.** Uygulanan budur; `TaskFieldOptionsSourceKind` üçüncü üyesini aldı: `ModuleRecord`.
+>
+> **⛔ ZOR OLAN KOD DEĞİLDİ, SÖZLEŞMEYDİ — ve önce o yazıldı.** `TaskRecordDto(Id · Code · Name · Secondary?)`:
+> kimlik · iş anahtarı · görünen ad · isteğe bağlı ikincil satır. `Id` **string**, çünkü anahtarları GUID
+> olmayan bir modül sözleşmeyi bozmamalı; yolun hiçbir yerinde parse edilmiyor, yalnız sahibi yorumluyor.
+>
+> **Kaynak koda gömülü değil.** `ITaskRecordSource` uygulamak KAYDIN TAMAMI: genişletilecek `switch` yok,
+> eklenecek anahtar listesi yok. `TaskRecordSourceRegistry` konteynerdeki uygulamalardan kurulur, her tüketici
+> ona sorar. Ürün modülü geldiğinde `DependencyInjection.cs`'e **bir satır** + yedi resx satırı; başka hiçbir
+> dosya değişmez. İki modül aynı anahtarı isterse **açılışta patlar** — kazananı kayıt sırası belirlerdi.
+>
+> **Tek çözüm yolu, üç kaynak türü.** Kayıt araması ayrı bir uca konmadı: `term`/`ids`/`take` **ortak sorguda**,
+> kısa kaynaklar bunları zaten ellerindeki listeye uyguluyor. İkinci yol, ikinci kaynağın sözleşmeden çıktığı
+> yerdir — WC-1 dersi.
+
+**İŞ 1 — kaynak anahtarı artık seçiliyor (CANLI DOĞRULANDI)**
+
+Serbest metin kutusu gitti; `GET .../field-definitions/option-sources?kind=` besliyor. Ekranda ölçüldü:
+tür *"Başka modülün kayıtları"* → anahtar listesi **Organizasyon birimleri · Pozisyonlar**; tür
+*"Platform listesi"*'ne çevrildiğinde liste **Ülkeler · Para birimleri · Diller · Saat dilimleri** oldu ve
+**eski seçim temizlendi** (taşınsaydı, kaydedilen ama hiç çözülmeyen bir eşleşme olurdu — aynı kaybolan alan,
+başka yoldan). Koruma kaldırılmadı: çözülemeyen kaynak hâlâ alanı düşürüyor; **kaldırılan, oraya varma yolu.**
+
+Kaynak adları **önek** ile geliyor (`OptionSource.<key>`, `GetAllStrings`), listeyle değil — yeni kaynak
+`_Form.cshtml`'i düzenletmiyor. Platform tenant resx taşımadığı için kaynak **kararlı anahtar** taşıyor, sözcükler
+yedi dosyada: nav l10n köprüsünün aynısı.
+
+**İŞ 2 — aramalı seçici, saklanan kimlik**
+
+`Reference` + `ModuleRecord` → `record` kontrolü: arama kutusu + seçim listesi. Açılır liste **değil**, çünkü
+beş bin kayıt `<option>` listesine dökülmez; kullanıcı yazar, **sunucu arar** (250 ms debounce + sıra numarası:
+"Kal" için geç gelen yanıt "Kalite"nin üstüne yazmaz). Saklanan **kimlik**, gösterilen **ad + iş anahtarı** —
+ham GUID hiçbir yerde yok (BL-049).
+
+**Bir alan tipi kısıtı bilerek eklendi:** `ModuleRecord` yalnız `Reference` üstünde. Sayı/tarih üstünde sunucu
+değeri reddedeceği için form kontrolü **hiç üretmiyor** — sunulan tek şey bir ret olurdu.
+
+**Değer artık gerçekten kontrol ediliyor** (check table'ın asıl işi): önceden `Reference` yalnız *GUID gibi
+görünmek* zorundaydı, herhangi bir GUID geçiyordu. Şimdi kaynağa çözülüyor; çözülmezse
+`400 · TASK_FIELD_VALUE_INVALID`. Tanım yazarken de: kayıtsız kaynak → `400 · FIELD_OPTION_SOURCE_INVALID`,
+çünkü kaydedip bir daha göremeyen yöneticinin elinde teşhis kalmıyor.
+
+**İŞ 3 — iki kaynak, tek yol (ürün YOK)**
+
+Organizasyon birimleri ve pozisyonlar. İkisi de aynı rotadan, aynı şekilde:
+```
+organization-unit → {value: <id>, label: "Finans",  secondary: "OU-FIN"}
+position          → {value: <id>, label: "CFO",     secondary: "P-CFO · Finans"}
+```
+Pozisyonun ikincil satırı **org birimini** taşıyor — iki tesisin ikisi de "Kalite Uzmanı" tutabilir, etiketsiz
+girdi işi yanlış tesise gönderir; `GetTaskAssignmentPositionLookupHandler`'ın kuralı, aynı sözcüklerle.
+Her ikisi de **bellek içi** filtreliyor (yüzlerce kayıt): bilinçli ve sınırlı bir seçim, sözleşme değil —
+`SearchAsync` terimi ve tavanı aldığı için büyük tablolu bir kaynak ikisini kendi sorgusuna iter.
+
+**DOĞRULAMA — testin kusuru yakaladığı KANITLANDI, sayı yazılmadı**
+
+Yeni JS paketi **önce 12 kırmızı** ile yazıldı (`customFieldControlKind` `record` yerine `null` dönüyordu).
+Backend'de yeni tip için kırmızı derleme hatasından ibaret olurdu, o yüzden **mutasyonla** kanıtlandı — her biri
+tek başına çalıştırıldı ve testleri düşürdü:
+
+| Mutasyon | Ne kırıldı |
+|---|---|
+| kimlik yerine iş anahtarı saklansın | 3 test |
+| kayıt varlık kontrolü atlansın | 2 test |
+| iki modül aynı anahtarı alabilsin | 1 test |
+| terim kaynağa gitmesin (sonradan filtrele) | 1 test |
+| saklanan kimlik çözümü kaldırılsın | düzenleme turu |
+| arama kutusu bağlanmasın | sunucu-arar turu |
+| çözülemeyen kaynak boş seçici versin | gizleme turu |
+| `choice.secondary` yeniden adlandırılsın | BL-050 muhafızı |
+| yönetici seçicisi olmayan alanı okusun | BL-050 muhafızı |
+
+**Yeniden ölçüm:**
+```bash
+cd frontend/Diten.Web && npx vitest run tests/tasks-record-fields.test.js tests/tasks-record-fields-round-trip.test.js tests/task-transition-contract.test.js
+cd services/Diten.Platform && dotnet test --filter "FullyQualifiedName~TaskModuleRecordFieldTests"
+```
+
+**BL-050 iki-taraflı muhafızı genişletildi.** `TaskFieldOptionDto` üçüncü alanını (`Secondary`) kazandı ve
+`TaskFieldOptionSourceDto` yeni. İkisinin de okuma yerleri kayıt listesine girdi — biri etiket biçimleyicisinin
+içinde, diğeri element kuran yardımcının içinde, ikisi de eski `option.value =` taramasının göremeyeceği yerde.
+Ayrıca ayrıştırıcıda sessiz bir kusur düzeltildi: `string? Secondary = null` **"null"** diye okunuyordu, yani
+isteğe bağlı parametre adını taşıyan her istemci alanı mazur görülecekti.
+
+**CANLI DOĞRULANDI — uçtan uca, tarayıcıda**
+
+```
+tanımla  → Departman (Reference ← organization-unit) · Pozisyon (Reference ← position)
+formda   → "EK ALANLAR › Teslimat" · Departman [Aramak için yazın…] + seçici
+ara      → "Finans" yazıldı → GET .../records?term=Finans → liste "Finans — OU-FIN"e indi
+kaydet   → 201
+sunucuda → fieldValues: [{delivery.department, Reference, 967a6cd5-…}]   ← KİMLİK
+düzenle  → Departman "Finans — OU-FIN" DOLU geldi, ham GUID YOK
+ret      → olmayan kimlik → 400 · TASK_FIELD_VALUE_INVALID
+ret      → kayıtsız kaynakla tanım → 400 · FIELD_OPTION_SOURCE_INVALID
+```
+
+**CANLI TUR BİR KUSUR BULDU VE DÜZELTİLDİ (bu turun işi değildi, ama turu bloklardı).**
+`/Tasks/Create` ve `/Tasks/{id}/Edit` `shared/premium-modal.js`'i **hiç yüklemiyordu**, oysa `form-page.js` her
+sonucu `DitenModal` üzerinden bildiriyor. Sonuç: **201 döndükten sonra** `DitenModal.success` fırlatıyor, sayfa
+ne bildirim veriyor ne yönleniyor — kullanıcının makul tek hamlesi tekrar Kaydet'e basmak, ve canlı tur tam
+bunu yapıp **tek niyetten iki görev** üretti. Hata yolu daha kötüydü: `DitenModal.error` de fırlattığı için
+sunucunun sebep kodu hiç kimseye ulaşmıyordu. Script eklendi, test **"sayfa, kendi betiğinin çağırdığını
+yüklüyor mu"** biçiminde yazıldı (aynı listeyi kopyalayan üçüncü sayfa da düşsün diye). Bu, 1500+ yeşil testin
+göremediği sınıfın bir örneği daha: **canlı doğrulama pazarlık konusu değil.**
+
+**⚠️ NEDEN KISMİ — doğrulanacaklar:**
+1. **Türkçe dışında hiçbir dil ekranda görülmedi.** Yedi resx dolduruldu ve parite testi İngilizce kopyasını
+   reddediyor (tr/ru/zh karşılaştırması), ama fr/es/zh/ar/ru **ekranda** ölçülmedi. Özellikle **ar** (RTL)
+   ve `—` ayıracının Arapça'da nasıl okunduğu.
+2. **Düzenlemede kaynak anahtarı** ekranda ölçülmedi: `data-selected` ile taşınıyor ve testte var, ama mevcut
+   bir tanımı açıp kaynağın **seçili geldiği** tarayıcıda görülmedi.
+3. **"Kayıt bulunamıyor"** yolu ekranda ölçülmedi — yukarı akışta silinmiş bir kayda işaret eden görev
+   üretmek gerekiyor.
+4. **Beş bin kayıt** denenmedi. Tavan (50) ve arama var, ama iki kaynağın ikisi de yüzlerce satırlık; ilk
+   gerçek büyük kaynak geldiğinde bellek içi filtre kendi sorgusuna itilmeli.
+5. **`option-sources` yetkisi** yalnız kodda okundu: yönetim izni OLMAYAN bir kullanıcıyla 403 alındığı
+   görülmedi.
+6. **Kiracıda bırakılan veri:** `delivery.department` ve `delivery.position` tanımları dev kiracısında
+   **duruyor** (sahibin kendi turu için bilerek). İstenmiyorsa Alan Tanımları ekranından emekliye ayrılır.
+   Turda üretilen görevler silindi.
+
+**Yapılmadı (bilinçli):** ürün modülü diye bir şey kodlanmadı. `Person` tipi kayıt sözleşmesine taşınmadı —
+kendi listesini kullanmaya devam ediyor; birleştirmek ayrı bir tur.
+
+---
+
+#### ✅ KAPANIŞ — BL-047 (ikinci yarı) · BL-052 · BL-040 · BL-048 · yapılandırılabilir alanlar — CT canlı doğrulaması 2026-08-10
+
+> **BL-047b — merkezi teslimat doğrulandı.** Payload artık layout seviyesinde: `/Positions`,
+> `/OrganizationUnits`, `/LegalEntities`, `/Tasks/FieldDefinitions`, `/Tasks/RecurrenceRules`,
+> `/WorkCenterNext` — **6/6** taşıyor. Alan Tanımları sabah İngilizceydi, şimdi *"0 kayıttan 0 - 0
+> arasındaki kayıtlar gösteriliyor"* · *"Tabloda veri bulunmuyor"*, İngilizce kalıntı **sıfır**.
+>
+> **BL-052 — kural ekranı uçtan uca.** Bir kural oluşturuldu, listede
+> `Aylık │ 01.09.2026 │ Süresiz │ Bir kişiye │ Henüz yok` olarak göründü. "Kime" listesinde **Kendim
+> yok**; bitiş boş kaydedildi ve boş hücre değil **"Süresiz"** olarak yazıldı.
+> **CT'nin bulduğu iki dil kalıntısı aynı oturumda düzeltildi:** satır aksiyonu `Edit` → **Düzenle**
+> (kök neden: `Edit` anahtarı **7 dilin hiçbirinde yoktu**, localizer anahtarın kendi adını basıyordu
+> — `SharedResource.*.resx`'e eklendi) ve dışa aktarma menüsü `Action` → **Dışa Aktar**.
+>
+> **BL-040 — sebep kodu canlıda taşınıyor** (bu alan dört aydır hiç yoktu):
+> 224 karakterlik başlık → `400 · VALIDATION_REQUEST_TITLE_MAXIMUM_LENGTH` ·
+> boş başlık → `400 · VALIDATION_REQUEST_TITLE_NOT_EMPTY`.
+> **CT notu:** reflection'ı düzeltmek yerine **kaldırması** doğru karardı — kusur imza uyuşmazlığı
+> değil **sessiz null**'du; imza düzeltilseydi aynı arıza bir sonraki değişiklikte geri gelirdi.
+> Önce kapsamı ölçüp kusurun **yalnız Platform'da** olduğunu göstermesi, diğer dört servise
+> gereksiz dokunmayı önledi.
+>
+> **BL-048 — kapandı.** Türkçe ekranda *"Başlık en fazla 200 karakter olabilir."*;
+> **"Request Title" hiçbir yerde yok.**
+>
+> **Yapılandırılabilir alanlar — uçtan uca doğrulandı.** CT'nin bulduğu boşluk (konteyner var,
+> dolduran kod yok) kapandı:
+> ```
+> tanımla  → regulatory.phase (Metin) · regulatory.market (Durum ← ülke seti)
+> formda   → "EK ALANLAR › Regulatory" · Faz [metin] · Pazar [23 ülke DOLU]
+> kaydet   → 201 · sunucuda fieldValues: [{regulatory.phase:"Faz II"},{regulatory.market:"TR"}]
+> düzenle  → Faz "Faz II" · Pazar "Turkey" — DOLU GELDİ, veri kaybı yok
+> ```
+> Bilinçli kapsam dışı: `Reference` tipi alan **hiç gösterilmiyor** (jenerik çözücü yok; gösterilse
+> çıplak GUID kutusu olurdu — yarım kontrol yerine hiç göstermemek doğru).
+>
+> **Sıradaki tura devredilen, bu turda düzeltilmeyen:** `errors` alan-haritası tele hiç çıkmıyor
+> (`ProblemDetails` statik tipiyle serileşiyor, türetilmiş tipin alanı düşüyor). Ajan düzeltmedi,
+> **testle sabitledi** — paylaşılan hata yolunun serileştirmesi kendi turunu hak ediyor.
+
+> **Tek dilim, çünkü ayrılırlarsa yeni ekran İngilizce doğardı.** Sıra bağımlılığı gerçek çıktı: tekrarlama
+> ekranının tablosu, dil paketi teslimat yolu olmadan aynı `No data available in table` ile doğacaktı.
+
+**1) BL-047'nin ikinci yarısı — yönetim ekranlarının DataTable dili**
+
+**Karar: (b)**, ve gerekçesi. Dil paketi `dt-defaults.js`'in KENDİSİNE, tek bir ortak payload'dan
+(`Views/Shared/_DataTableL10n.cshtml`, iki layout da render ediyor) bağlandı.
+(a) — her yönetim sayfasının dahil ettiği bir kısmi görünüm — **reddedildi**, çünkü *"her sayfa hatırlamak
+zorunda"* kusurun ta kendisi: WorkCenterNext hatırladı, Alan Tanımları hatırlamadı, depoda **61 dosya**
+DataTable kuruyor. Yerel çözüm üçüncü ve dördüncü örneği davet ederdi.
+
+- Payload **geç** okunuyor ve önbelleğe alınıyor: `dt-defaults.js` layout'ta bir `<script>`; erken okunsaydı
+  iki etiketin sırası çevirileri sessizce geri alırdı.
+- Öncelik BL-047'nin kuralı: **sayfanın kendi sözcüğü kazanır**, anahtar anahtar. Bir anahtarı ezen sayfa
+  diğer beşini kaybetmiyor.
+- Kaynağı olmayan anahtar **yazılmıyor** (`IsResourceNotFound`): eksik kayıt kendi adını basar, ki bu
+  yerini aldığı İngilizceden beter olurdu.
+
+**⛔ DERSİN UYGULANDIĞI YER — testin iddiası TÜKETİCİNİN sözlüğünde.** Yedi iddianın hepsi
+`DtDefaults.create()` üzerinden geçiyor — 61 sayfanın çağırdığı gerçek fonksiyon — ve DataTables'a
+gerçekten verilecek `language` nesnesini okuyor. *"Payload'da anahtar var"* kanıt sayılmadı; ekran
+İngilizceyken de doğruydu.
+*Bir vacuity yakalandı ve düzeltildi:* "render edilen config'te İngilizce yok" iddiası **ekran tamamen
+İngilizceyken de geçiyordu** (İngilizce cümleler vendor'ın kendi varsayılanları, config'e hiç yazılmıyor).
+İddia **doluluk** üzerinden yeniden yazıldı: boş bırakılan her slot, İngilizcenin geldiği yerdir.
+
+**2) BL-052 — yinelenen görev kuralı ekranı**
+
+Desen icat edilmedi: Alan Tanımları ekranı kopyalandı (golden DataTable + tam sayfa CRUD + inline filtre +
+save-view). **Sunucu farklı olduğu için** iki bilinçli sapma var: toplu-silme ucu olmadığından **bulk bar
+yok** (olmayan uca bağlı düğme = başarısız düğme), ve sıklık kolonu `interval` ile birlikte *"Haftalık · Her 2"*
+diye okunuyor — kuralı yazan kişinin seçtiği cümle budur.
+
+**"Kendim" iki yerde birden yasak.** Form seçeneği sunmuyor **ve** model reddediyor
+(`RecurrenceAssignmentTargetInvalid`) — gizli bir `<option>` bir devtools düzenlemesi uzaktadır, tarayıcının
+GÖNDERDİĞİ değer tek gerçektir. Sunucu zaten `allowSelfAssigned: false` ile reddediyordu; bu ön kontrol
+hatayı kullanıcının dilinde söyletiyor.
+
+**Bitiş tarihi boş = süresiz**, ve bu bir cevap olarak gösteriliyor: listede boş hücre değil *"Süresiz"*,
+detayda da öyle. Boş hücre eksik veri gibi okunur.
+
+**Şablon bağlama gerçek oldu.** Şablonları listeleyen bir uç **yoktu** — depo `ListActiveAsync` ile
+listeleyebiliyordu, hiçbir şey açığa çıkarmıyordu. Doldurulamayan bir seçici, kimsenin okumadığı bir payload
+ile aynı sınıftır; bu yüzden `GET /api/v1/tasks/lookups/task-templates` + Diten.Web proxy'si **aynı dilimde**
+eklendi.
+
+**Menü + yetki — ve neden yeni bir anahtar.** Kural uçları `Read/Create/Update/Delete` ile korunuyordu;
+dördü de `PersonalWorkSurfaceScoped` içinde, yani menüde görünen bir sayfa Görev Merkezi'ni **parçalardı**
+(manifest testinin yasakladığı şey). Yeni anahtar `platform.tasks.recurrence-rules.manage` eklendi, beş
+kural ucu + şablon lookup'ı ona taşındı ve sayfa manifest'e `IsNavigationVisible: true` ile kaydedildi.
+**Kimseyi kilitlemez:** bu uçlara bugüne kadar hiçbir ekrandan ulaşılamıyordu, taşımak için doğru an tam
+olarak buydu. Ekran menü kaydı olmadan da doğrudan URL ile çalışır — menü onu **bulunur** yapar, erişilir
+değil.
+
+**KIRMIZI kanıtı (vacuity değil):**
+- BL-047b: düzeltmeden önce **4 test düştü**; kalan 3'ü (payload yokken İngilizce varsayılan korunuyor,
+  bozuk JSON tabloyu düşürmüyor, sayfanın kendi sözcüğü kazanıyor) o anda da geçiyordu.
+- BL-052: düzeltmeden önce **7 test düştü**; geçen 3'ü kasıtlı non-vacuity (geçerli kural kabul ediliyor,
+  bitiş tarihi boş kabul ediliyor, olmayan sayfa 404).
+- Manifest: sayfa eklenmeden önce **2 test düştü** (menü kaydı + "her yetki anahtarının bir manifest evi
+  olmalı" kapısı).
+
+**7 dil:** yeni ekranın **46 anahtarı × 7 dil**, parite doğrulandı.
+
+**BU TURDA YAPILMAYANLAR — açıkça:**
+- **Canlı doğrulama yok.** Tam yığın (Gateway + Platform + Diten.Web + oturum) ayağa kaldırılmadı.
+- **`platform.tasks.recurrence-rules.manage` yetkisi canlıda hiçbir role verilmiş değil.** Katalog→Auth
+  senkronu Alan Tanımları anahtarında çalıştığı için aynı yolu izlemesi bekleniyor, ama **ölçülmedi**;
+  aşağıdaki 6. adım tam olarak bunu ölçüyor. 403 alınırsa kusur budur, ekran değil.
+- **WorkCenterNext'in kendi `Dt*` tohumlaması silinmedi.** Artık gereksiz (ortak yol aynı değerleri
+  taşıyor, sayfa sözlüğü zaten kazanıyor) ama BL-047 testleri onu sabitliyor; kaldırılması kendi turunu
+  ve kendi kırmızısını hak eden ayrı bir adım.
+- **Sweep hâlâ konfigürasyona bağlı:** `BackgroundJobs:RegisterStandardJobs` ve
+  `EnabledJobs["Diten.Platform.MOD-0024.TaskRecurrenceSweepJob"]` ikisi de açık değilse kural kaydedilir
+  ama hiçbir şey üretmez. Ekranın kusuru değil, ama 5. adımda görülecek şey budur.
+
+**CANLI DOĞRULAMA ADIMLARI (CT):**
+1. **BL-047b** — Türkçe `/Tasks/FieldDefinitions`: tablo alt bilgisi, sayfalama ve boş-tablo metni
+   **Türkçe**. *"No data available in table"* ve *"Showing 0 to 0 of 0 entries"* **hiç görünmemeli**.
+   Konsolda: `JSON.parse(document.getElementById('datatable-l10n').textContent)` → **6 anahtar**.
+2. **BL-047b / yayılım** — aynı kontrol rastgele iki yönetim ekranında daha (ör. bir platform tarafı
+   tablosu): dil paketi artık layout'tan geldiği için hepsi Türkçe olmalı.
+3. **BL-052 / ekran** — `/Tasks/RecurrenceRules` **200**; tablo ve *"Kural Ekle"* düğmesi gelmeli.
+4. **BL-052 / form** — "Kime" listesinde **yalnız** *Bir kişiye* ve *Bir havuza* olmalı; **"Kendim" YOK**.
+   Kişi seçilince kişi seçicisi, havuz seçilince pozisyon seçicisi görünmeli (diğeri **temizlenmeli**).
+   Bitiş tarihi **boş bırakılıp** kaydedilebilmeli.
+5. **BL-052 / liste** — kaydedilen kural listede *"Aylık"* (veya *"Haftalık · Her 2"*), bitişi boşsa
+   **"Süresiz"**, hiç üretmediyse **"Henüz yok"** demeli.
+6. **BL-052 / yetki** — 3-5 adımları 403 verirse: `platform.tasks.recurrence-rules.manage` role verilmemiş
+   demektir. Erişim Yönetimi'nde anahtarın **var olup olmadığına** bak (manifest self-registration onu
+   oluşturmalı), sonra role ver.
+7. **BL-052 / menü** — Görevler altında *"Yinelenen Görev Kuralları"* girdisi görünmeli; görünmüyorsa
+   sebep 6. adımdır, ekran değil.
+8. **l10n** — yeni ekranı 7 dilde aç; hiçbirinde ham anahtar (`RecurrenceRulesTitle` gibi) görünmemeli.
+
+**Yeniden ölçüm (sayı değil, komut):**
+```
+rg -n "datatable-l10n" frontend/Diten.Web/Views/Shared/                      # partial + iki layout
+rg -n "sharedL10n|dtText" frontend/Diten.Web/wwwroot/assets/js/dt-defaults.js
+rg -rl "ecurrence" frontend/Diten.Web/Views frontend/Diten.Web/wwwroot/assets/js   # artık BOŞ OLMAMALI
+rg -n "RecurrenceManage" services/Diten.Platform/src                          # sabit + 6 uç + manifest
+rg -n "lookups/task-templates" services/Diten.Platform/src frontend/Diten.Web/Controllers
+cd frontend/Diten.Web && npx vitest run tests/datatable-language-one-delivery-path.test.js
+dotnet test frontend/Diten.Web.Tests --filter "FullyQualifiedName~TaskRecurrenceRuleScreenTests"
+dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~TaskManifestProviderTests"
+```
+
+*(Not: `tests/strategy-*`, `tests/planning-cycles-*`, `tests/objectives-edit-hydration` altındaki **9 test bu
+turdan ÖNCE de düşüyordu** — dokunulmamış ağaçta ölçüldü, bu dilimle ilgisi yok.)*
+### BL-319 — "Görevler" modülü menüde görev vaat edip tanım ekranı veriyordu; ad ayrıldı, l10n zaten yerindeydi (2026-08-29, ölçüldü, DÜZELTİLDİ + CANLI kanıtlandı)
+
+<!-- numara çakışması önlendi 2026-08-29: bu kayıt önce BL-317 yazılmıştı. O numara BAŞKA bir dalda (docs/backlog-idpill-stash) zaten kullanılmıştı — birleşmemiş dallar main'e bakan bir ölçümle görünmüyor. CONTROL TOWER numarayı yanlış verdi; tüm dallar taranarak BL-319 seçildi. K4: bir numara bir iştir. -->
+> **DURUM:** KAPANDI · **SAHİP:** CONTROL TOWER
+
+Bu kayıt iki şeyi tutuyor: **yapılan düzeltme** ve **düzeltilmesi istenen ama zaten yapılmış olan işin
+nasıl yanlış ölçüldüğü**. İkincisi birincisinden daha pahalıya mal olabilirdi.
+
+- **Yapılan — modülün adı ayrıldı.** `TaskManifestProvider.cs` `DisplayName`
+  `"Görevler / Tasks"` → `"Görev Tanımları / Task Settings"`, ve `Nav.Module.TASKS` yedi dilde
+  yeni değere çekildi (Task Settings · Görev Tanımları · Paramètres des tâches ·
+  Configuración de tareas · 任务设置 · إعدادات المهام · Настройки задач).
+- **Gerekçe (koda da yazıldı):** bu modülün menüye çıkardığı **dört sayfanın dördü de** tanım/ayar
+  ekranı (`TASK_FIELD_DEFINITIONS`, `TASK_TYPES`, `TASK_DOCUMENT_LIST`, `TASK_RECURRENCE_RULES`).
+  İş yüzeyleri (`TASKS`, `TASK_CREATE`, `TASK_DETAIL`, `TASK_EDIT`) bilerek `IsNavigationVisible: false`.
+  Yani "Görevler" kullanıcıya liste vaat edip ayar ekranı veriyordu — ve yanındaki
+  **"Görev Merkezi"** ile ayırt edilemiyordu. Bu turda ikisi ayrıştı.
+- **⚠ Manifest'i değiştirmek TEK BAŞINA yetmiyordu — ölçüldü.**
+  `RegisterModuleManifestCommandHandler`'da katalog `DisplayName` alanı **SOFT** (bir kez tohumlanır,
+  operatörün malı, re-push **asla** ezmez). Yani modül kendini yeniden kaydedince eski ad kalırdı.
+  Bu yüzden `TaskModuleDisplayNameRenameMigration` yazıldı; canlıda koştuğu doğrulandı:
+  `Module 'tasks': DisplayName 'Görevler / Tasks' → 'Görev Tanımları / Task Settings'.`
+- **Migrasyon operatörü ezmiyor:** yalnızca **tam olarak eski tohum değerini** taşıyan satırı yazıyor.
+  Operatörün elle koyduğu bir ad da, yeni ad da dokunulmadan bırakılıyor (ikincisi = ikinci koşuda
+  sıfır yazma, yani kendinden idempotent). Beş birim testi bunu sabitliyor.
+
+**⚠ İSTENEN İKİNCİ İŞ ZATEN YAPILMIŞTI — ve "0 resx dosyasında" ölçümü YANLIŞTI.**
+
+- Dört sayfanın **yedi dilde de** karşılığı vardı ve canlı menüde Türkçe çiziliyordu. Ölçüm
+  `Nav.Page.TASK_FIELD_DEFINITIONS` diye arandığı için boş döndü; oysa `NavNameLocalizer` aramadan
+  **önce** `Normalize(code)` uyguluyor (alt çizgiler düşer, büyük harfe çıkar), yani gerçek anahtar
+  `Nav.Page.TASKFIELDDEFINITIONS`. Ham kodla grep atmak bu köprüde **her zaman** sıfır döndürür.
+- **Ders, tek cümle:** bu depoda bir nav anahtarının varlığı **manifest kodu ile değil,
+  `NavNameLocalizer.Normalize`'ın ürettiği biçimle** ölçülür.
+- Bu turda oraya dokunulan tek şey **büyük/küçük harf uyumu** oldu: `tr` ve `en` tarafında dört
+  kardeşten ikisi cümle düzeninde, ikisi başlık düzenindeydi (`Görev türleri` / `Alan Tanımları`).
+  Dördü de başlık düzenine çekildi. `fr`/`es`/`ru` zaten kendi dil kuralında tutarlıydı, `zh`/`ar`'da
+  harf düzeni kavramı yok — dokunulmadı.
+
+- **Muhafız güçlendirildi, ve KIRILARAK gösterildi.** `NavManifestL10nGuardTests`'in boşluk kontrolü
+  `Assert.NotEmpty` idi — yani tam olarak prompt'un uyardığı `> 0`. Ölçülmüş bir tabana çevrildi:
+  modül tabanı = diskteki manifest dosyası sayısı, alan adı tabanı = **sayfa ayrıştırıcısına hiç
+  uğramayan** ikinci bir regex sayımı, sayfa tabanı = ölçülmüş sabit **45**.
+  - Kırma 1 — `fr`'den `Nav.Page.TASKTYPES` silindi → `fr: MISSING Nav.Page.TASKTYPES`, KIRMIZI.
+  - Kırma 2 — ayrıştırıcının konumsal-argüman dalı devre dışı bırakıldı (gerçek bir regresyonun
+    taklidi) → anahtar kümesi **45 → 25** düştü, taban KIRMIZI verdi.
+    **Eski `Assert.NotEmpty` bunu YEŞİL geçerdi:** 25 anahtarın hepsi çeviriliydi. Görülmeyen 20
+    sayfa üzerinden yeşil rapor — bu muhafızın var olma sebebinin ta kendisi.
+  - İkisi de geri alındı; muhafız 6/6 yeşil.
+- **⚠ 45 sabitinin bedeli, açıkça:** menüden bir sayfa **gerçekten** silinirse bu sayı elle
+  düşürülecek, aynı commit'te. Bilinçli seçim — nav görünürlüğü iki ayrı argüman biçiminde
+  yazılıyor, bağımsız bir sayaç ayrıştırıcının ikinci bir kopyası olurdu (K6).
+
+- **Ölçüm — testler:** `npx vitest run` (frontend/Diten.Web) **23 kırmızı / 11 dosya** — taban ile
+  birebir aynı, hiçbiri bu işin değil. `dotnet test services/Diten.Platform` **23 kırmızı** —
+  temiz ağaçta da 23; yeşil 3517 → 3522 (bu turun 5 yeni testi). Regresyon yok.
+- **Ölçüm — canlı:** Platform + Diten.Web yeniden derlenip başlatıldı (portları tutan süreçlerin
+  `cwd`'si önce ölçüldü, hepsi bu worktree). Sol menüde **ÇALIŞMA ALANI → Görev Merkezi ·
+  Görev Tanımları → Alan Tanımları · Görev Türleri · Kontrollü Dokümanlar · Yinelenen Görev Kuralları**.
+  Fransızcaya geçilip ayrışma ikinci dilde de doğrulandı:
+  **Centre des tâches** ile **Paramètres des tâches** artık iki ayrı ad.
+
+- **Kapsam dışı bırakıldı, bilinçli:** görev listesinin kendisi (`TASKS`) menüde gizli kaldı.
+  Tam kayıt yüzeyi ayrı bir karar ve **BL-057**'nin (listelemede şirket kapsamı yok) çözülmesini
+  bekliyor. Bu turda o dosyaya hiç dokunulmadı.
+- **Gelecek regresyon riski: 🟢** — değişen şey isim ve tek bir SOFT katalog alanı; izin anahtarı,
+  rota, sayfa kodu, nav görünürlüğü hiç değişmedi. Tek dikkat noktası yukarıdaki **45** sabiti.
+
+### ~~BL-016 — WorkCenter "Başlattıklarım / Outbox" (creator-scope takip)~~ ✅ KAPANDI (2026-08-29)
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+> *Geldiği bölüm:* Backlog maddeleri (WorkCenter / MOD-0024)
+
+> **Özgün kayıt, olduğu gibi** (K3 — kayıt silinmez):
+> - **Nedir:** Kullanıcının **oluşturup başkasına atadığı** (viewerRole=Creator/requester) aktif iş öğelerini takip ettiği yüzey — "Ahmet'e atadığım task'ı nerede görürüm?" sorusunun cevabı. İşlerim = yalnız kullanıcının ÜSTLENDİĞİ işler (assignee); başkasına atanan iş o kişinin İşlerim'idir. Creator-scope aktif takip için ayrı bir Outbox/"Başlattıklarım" görünümü gerekir (arama/filtre/recall/rapor).
+> - **Konuşulan yüzey:** İşlerim sorgusu (2026-07-24) — kullanıcı "sadece bana atananlar" scope'unu onayladı.
+> - **Neden ertelendi:** Spec §7 zaten "tam outbox"u **v1.5**'e koymuş; go-live için İşlerim (assignee-scope) yeter. Geçmiş'teki "Devrettiklerim" yalnız tarihsel, aktif takip değil.
+> - **Yapım tetikleyicisi:** v1.5 WorkCenter kapsam pack'i (outbox: arama/filtre/recall/rapor).
+
+- **Kusur, ölçülmüş hâliyle:** sağlayıcı (`TaskWorkItemProvider`) tam **iki** okuma yapıyordu —
+  `ListByAssigneeAsync` (üstlendiğim) ve `ListUnclaimedByPositionsAsync` (havuzumdaki, sahipsiz). Açıp
+  başkasına verdiğim iş **hiçbir sorguda yoktu**; ürünün hiçbir yüzeyinde görünmüyordu. Dev kiracıda bu
+  **21 canlı görev** demekti (13'ü adı belli bir kişide, 8'i havuzda) — hepsini açan kişiye görünmez.
+- **⚠ Alan adı:** `TaskItem.CreatedByUserId`. `CreatedBy` **denetim** alanıdır; onu sorgulamak boş döner ve
+  "veri yok" gibi okunur. Repository yorumunda yazılı.
+
+- **TESLİM EDİLDİ — üç parça:**
+  1. **Üçüncü okuma.** `ITaskItemRepository.ListByCreatorAsync` (kiracı süzmeli, terminal hariç; indeks
+     `ix_task_items_tenant_creator` zaten vardı, yorumu artık yalan değil). Sağlayıcının kendi
+     `try` + zaman bütçesi içinde koşuyor (WC-D3), yani patlarsa yalnız MOD-0024 "yanıt vermedi" olur, pano
+     boşalmaz.
+  2. **Beşinci sekme.** `baslattiklarim` — eksen yasası korundu: sekme = **SAHİPLİK**. Segment (durum) ve
+     çip (tür/sinyal) eksenlerine dokunulmadı; Başlattıklarım'ın altında segment barı **yok**.
+     7 dil: `TabInitiated`, `EmptyInitiatedTitle`, `EmptyInitiatedDesc` (en, tr, fr, es, zh, ar, ru).
+  3. **Aksiyon sınırı.** Başlattıklarım'daki iş **sende değil**. Sunulanlar yalnız başlatanın fiilleri:
+     `reassign` (satırı yönetir, yıkıcı değil → primary) ve `cancel` (yıkıcı → overflow). Gizlenenler:
+     accept · claim · start · complete · submitReview · plan · inquire · release · return.
+
+- **⚠ SIRA (precedence) — ölçülerek karar verildi, ve `viewerRelation` alanının var olma sebebi bu:**
+  `üstlendiğim` > `üstlenebileceğim (havuz)` > `başlattığım`. Aynı iş birden fazlasını sağlayabilir ve
+  yine de **tek** bir sahiplik sekmesine ait olmalıdır. Kendine atadığın iş **İşlerim**'dedir (kendi
+  masandaki işi iki yerde aramazsın); üyesi olduğun bir havuza bıraktığın iş **Havuz**'dadır (`claim`
+  basabildiğin fiil orada yaşar). Kararı **sunucu** verir, çünkü satırı hangi okumanın getirdiğini yalnız o
+  bilir — tarayıcı `requester.isCurrentUser` ile bunu türetemez: kendi açtığın sahipsiz havuz işi her iki
+  koşulu da sağlar ve iki farklı sekmeye işaret eder.
+
+- **Kontrat:** `viewerRelation` (opsiyonel, tek değer `initiator`) — `WorkAggregationModels` ve
+  `fixture-contract.js`'te iki yanlı ilan edildi. **Yalnız türetilemeyen cevap** gönderilir: üstlenen
+  (`assignee.isCurrentUser`) ve havuz (`admissionState`) zaten telde, sunucu onları tekrar etmiyor.
+  Bilinmeyen bir değer `VIEWER_RELATION_INVALID` ile **reddedilir** — sessizce yanlış sekmeye düşmez.
+
+- **⚠ Yan bulgu — muhafızın kendisi kördü.** `TABS_PRIMARY`/`TABS_SECONDARY` dizileri app.js'te vardı ve
+  **hiçbir şey okumuyordu**: sekme şeridi elle yazılmış bir literal'den, URL beyaz listesi de o kelimelerin
+  ikinci bir kopyasından çiziliyordu. Eksen yasasını koruyan tek test
+  (`workcenter-next-team-scope.test.js`) tam da o iki ölü diziyi ayrıştırıyordu — literal'e bir sekme
+  eklemek testi **yeşil** bırakırdı. Artık şerit `TABS`'ten çiziliyor ve ikinci bir test bu bağlantıyı
+  ayrıca sabitliyor.
+
+- **Muhafızlar (dördü de KIRILIP gösterildi):**
+  - `TaskOutboxTests` (12 test, backend) — (a) başkasında olan iş görünür · (b) sende olan iş görünmez,
+    `start` sunulur · (c) başkasının açtığı iş görünmez, ve iki yabancı arasındaki iş **hiçbir** okumaya
+    girmez · (d) sahiplik gerektiren 9 fiilin hiçbiri sunulmaz.
+  - `wcn-outbox-tab.test.js` (13 test, frontend) — yönlendirme, rozet, aksiyonlar, eksen yasası, kontrat.
+  - **Boşluk kontrolü anlamlı tabanla:** her olumsuz iddianın yanında bir olumlu var. "Tamamla yok" iddiası,
+    aynı görev gerçekten üstlenildiğinde `accept`'in **sunulduğunu** ölçen testle eşleşiyor — yoksa boş bir
+    pano da o iddiayı doğrular. (Bu hafta iki muhafız tam bu yüzden neredeyse hiçbir şey görmediği hâlde
+    yeşil kalmıştı.)
+  - **Kırma kaydı:** creator okuması kaldırıldı → 6 kırmızı · aksiyon dalı kapatıldı → 3 kırmızı (aralarında
+    (d)) · precedence süzmesi kaldırıldı → 3 kırmızı · okuma aktöre bağlanmadı → 1 kırmızı ((c)) ·
+    `tabFor` yönlendirmesi kaldırıldı → 4 kırmızı · kontrat doğrulaması kapatıldı → 1 kırmızı.
+
+- **Ölçüm — testler:** `dotnet test services/Diten.Platform` **23 kırmızı / 3534 yeşil** — kırmızı sayısı
+  taban ile birebir aynı (23'ü main'in, PR #60'ın kodu), yeşil 3522 → 3534 (+12). `npx vitest run`
+  (frontend/Diten.Web) **23 kırmızı / 11 dosya** — taban ile aynı, yeşil 1972 → 1986 (+14).
+  `dotnet test tests/architecture/…` **11 yeşil**.
+- **Ölçüm — CANLI (yeşil test kanıt değil):** Platform (5057) + Diten.Web (5001) yeniden derlenip
+  başlatıldı; portları tutan süreçlerin `cwd`'si **önce** ölçüldü — 5011'deki başka bir worktree'nin
+  sunucusuna dokunulmadı. `admin@diten.com` ile giriş, Görev Merkezi → **Başlattıklarım rozeti 19**,
+  satırlar gerçek. Panonun tamamı API'den ölçüldü: **19 initiator satırı**, hepsinin `requester` = ben,
+  **hiçbiri** bana atanmış değil, ekranda yalnız **`reassign` + `cancel`**, sahiplik gerektiren fiil
+  **0 satırda**. 6'sı üyesi olmadığım havuzlara bıraktığım iş (doğru: Havuz'a düşmediler); üyesi olduğum
+  havuzdaki 2 iş **Havuz'da kaldı** — 19 + 2 = 21, Mongo'daki canlı `yaratan ≠ atanan` sayısıyla birebir.
+
+- **Kapsam dışı bırakıldı, bilinçli — ve kaydedildi:** **BL-320** geri çağırma (recall, v1.5 — arkasında
+  endpoint yok) · **BL-321** kapanmış "başlattığım" iş (rapor sorusu, altıncı sekme değil) · **BL-322**
+  "herkesin başlattığını gör" (ayrı ve yetkiyle kapalı yüzey — SAP SWI1 / Oracle Administrative Tasks).
+- **Gelecek regresyon riski: 🟡** — projeksiyona bir alan ve sağlayıcıya bir okuma eklendi; ikisi de
+  **eklemeli** (opsiyonel alan, ayrı sorgu) ve mevcut iki okumanın sonucu hiç değişmedi. Riskin durduğu tek
+  yer **precedence**: yeni bir sahiplik kipi eklenirse sıranın nereye gireceğine karar verilmelidir, yoksa
+  bir satır iki sekmede görünür. Sıra `GetWorkItemsAsync`'te tek yerde ve yorumlu.
+
+### BL-316 — `TenantPropagationHandler` üç serviste kayıtlı, canlı çağrı yolu SIFIR; işaretli ama silinmedi (2026-08-28, ölçüldü)
+> **DURUM:** KAPANDI · **SAHİP:** CONTROL TOWER
+> *Geldiği bölüm:* Açık kararlar
+
+**Devraldığı kayıt: BL-311** (kapandı, arşivde). BL-311 iki referans doğrulayıcıyı handler'dan
+kurtardı; geriye handler'ın **kendisi** kaldı. Silme üç servise yayıldığı için CT 2026-08-28'de
+"kendi diff'ini hak ediyor" dedi ve bu turda yapılmadı — bu kayıt onun unutulmamasıdır.
+
+- **Ölçüm — nerede kayıtlı:** üç serviste.
+  - `Diten.Platform/…/Infrastructure/DependencyInjection.cs`
+  - `Diten.AuthService/…/Infrastructure/DependencyInjection.cs:73-74`
+  - `Diten.DevEnablementService/…/Infrastructure/DependencyInjection.cs:21-22`
+- **Ölçüm — neye takılı:** yalnızca isimli `"TenantAwareClient"`. Platform'daki diğer iki istemci
+  (iki referans doğrulayıcı) 2026-08-28'de ondan koparıldı.
+- **⚠ Ölçüm — o istemciyi kimse yaratmıyor:** repoda `CreateClient("TenantAwareClient")` **çağrısı yok**;
+  tüm `CreateClient()` kullanımları argümansız (varsayılan istemci, handler'sız). Üç servisin üçünde de.
+- **Sonuç: bu turdan sonra handler'ın canlı çağrı yolu SIFIR.** Kimsenin yaratmadığı bir istemciye
+  takılı, hiçbir şey yapmayan bir handler.
+- **Neden hiç çalışmadı (BL-311'den devralınan sebep):** `IHttpClientFactory` handler zincirini KENDİ
+  kapsamında kurup önbelleğe alıyor; zincirdeki `DelegatingHandler` istek kapsamındaki `ITenantContext`'i
+  çözemiyor, `IsResolved == false` dönüyor, başlık eklenmiyor, hiçbir yerde bir şey denmiyor.
+- **⚠ Neden "dursun" yeterli bir cevap değil:** yerinde duran bir handler, sonraki geliştiriciye
+  **"bu istemcide kiracı taşınıyor"** diye okunur — WC-D1 köprüsü tam olarak bu yanılgıyla başladı ve
+  bir tur yedi. Bugün hem sınıf yorumunda hem DI'da "bu şey kiracı taşımıyor" diye işaretli, ama
+  **işaret kalıcı çözüm değildir**: bir sonraki okuyucunun yorumu okuyacağının garantisi yok.
+- **Öneri:** üçünden de **sil** — handler sınıfı + `"TenantAwareClient"` kaydı. Düzeltmenin
+  (kurucuda enjekte edilen bağlam yerine gönderim anında `IHttpContextAccessor` okumak) müşterisi yok:
+  bugün onu isteyen tek bir çağrı yolu bile ölçülmedi.
+- **Doğru desen, silerken referans verilecek:** başlığı çağıran sınıf yazar —
+  `RemoteWorkItemGateway`, `MdmLegalEntityReferenceValidator`, `AuthServiceUserReferenceValidator`
+  (üçü de `TenantOnTheWire` ile aynı kuralı okuyor).
+- **Muhafız zaten var, silme onu bozmamalı:**
+  `Tenant_header_is_written_by_the_validator_and_not_by_a_delegating_handler` (her iki doğrulayıcıda)
+  ve `HttpWorkItemBridgeTests.The_tenant_header_and_the_callers_own_bearer_token_reach_the_module`.
+- **⚠ Kural K2:** bu iş bitince **AYNI TURDA** `DURUM: KAPANDI` yazılıp
+  `docs/product-backlog-closed.md`'ye taşınacak. "Sonra toplu temizleriz" bu dosyayı 6927 satıra çıkaran şeydir.
+- **Gelecek regresyon riski: 🟡** — bugün hiçbir şey kırılmıyor (canlı yol yok). Risk tamamen
+  **yanlış okumada**: birinin "kiracılık hallediliyor" sanıp yeni bir istemciyi bu handler'a takması.
+
+- **KAPANIŞ (2026-08-29) — ÖNERİ UYGULANDI: üçünden de silindi.** Handler sınıfı üç serviste de kaldırıldı
+  (`Diten.Platform/…/Services/Http/TenantPropagationHandler.cs`,
+  `Diten.AuthService/…/Services/TenantPropagationHandler.cs`,
+  `Diten.DevEnablementService/…/Services/TenantPropagationHandler.cs`) ve üç DI dosyasındaki
+  `AddTransient<TenantPropagationHandler>()` + `AddHttpClient("TenantAwareClient")` çiftleri silindi.
+  Silme öncesi yeniden ölçüldü: repoda **tek bir** `CreateClient("TenantAwareClient")` yok — canlı çağrı
+  yolu gerçekten SIFIR'dı, yani davranış değişimi yok.
+- **⚠ Bilgi orphan bırakılmadı — kaydın asıl bedeli buydu.** Sınıfı ve DI'ı silmek, "neden çalışmıyor"
+  bilgisini taşıyan ~8 yorumu öksüz bırakırdı. Kural: **artık var olmayan bir tipi adlandıran yorum,
+  yorumsuzluktan kötüdür.** Yapılanlar:
+  - **TAŞINDI → `TenantOnTheWire`** (kalıcı ev, zaten "hangi kiracı tele çıkar" sorusunun tek cevabı):
+    (a) mekanizma — `IHttpClientFactory` zinciri KENDİ kapsamında önbelleğe alır, handler istek kapsamını
+    göremez; (b) **birim testi bunu yakalayamaz** — test konteyneri bağlamı SINGLETON kaydeder, yani
+    kabloyu kanıtlar ömrü değil; canlı okuma yakaladı; (c) **çözülseydi bile yanlış olurdu** —
+    Remove-then-Add ile çağıranın doğru hesapladığı değeri platform sentinel'iyle EZERDİ. (c) yalnızca
+    silinen DI blokunda vardı; kaybolacaktı.
+  - **YERİNDE TUTULDU, tip adı ayıklandı:** `RemoteWorkItemGateway`, `MdmLegalEntityReferenceValidator`,
+    `AuthServiceUserReferenceValidator`, `RemoteWorkItemProviderRegistration` ve üç test dosyası
+    (`…ValidatorTests` ×2, `HttpWorkItemBridgeTests`). Hepsi artık ölü tipi değil `DelegatingHandler`
+    desenini adlandırıyor — kural (başlığı çağıran sınıf yazar) hâlâ geçerli olduğu için yorumlar kaldı.
+  - **YENİ İŞARET, tam cazibe noktasında:** Platform DI'da iki doğrulayıcı istemcisinin ÜSTÜNE kısa bir
+    blok kondu ("buraya handler ekleme, ve nedeni"). Kaydın 🟡 riski tam olarak orasıydı.
+  - **SİLİNDİ:** yalnız ölü kaydın kendi gerekçe bloğu (Platform DI) ve sınıfın kendi XML yorumu —
+    ikisi de "bu ölü şey neden hâlâ duruyor" sorusunu cevaplıyordu; soru ortadan kalktı.
+- **Kod dışı sürükleme referansları da temizlendi** (derlenmeyen ama yalan söyleyen kayıtlar):
+  `CAND-CAP-0008-FU03` (**ready-for-dev, runtime_code_allowed: true** — silinmiş bir sınıfı "yeniden kullan"
+  diyordu; en tehlikelisi buydu), `MOD-0018-FU15` (ready-for-dev), `MOD-0288-FU01` §7 Runtime Constraints
+  ("Existing `TenantPropagationHandler` behavior should be reused" — diğer pack'lerin işaret ettiği desen
+  kaynağı), `access-governance-completion-plan` AG-STEP-003, `DCP-004-mod-0290-…` iki dosya-yolu atıfı,
+  ve iki `DCP-004` notunun **"iki istemci hâlâ o handler'ı taşıyor — BL-311"** cümlesi (BL-311 kapandığında
+  zaten yanlıştı). Geçmiş anlatılar (BL-311 arşiv kaydı, DCP-004'lerin geçmiş zamanlı hikâyesi) **DEĞİŞTİRİLMEDİ** —
+  var olmuş bir sınıfı geçmiş zamanda anmak kayıt tutmaktır, yalan değildir.
+- **Ölçüm — testler:** `dotnet test services/Diten.Platform` **23 kırmızı / 3534 yeşil / 3557 toplam** —
+  taban ile **birebir aynı** (23'ü main'in, PR #60'ın kodu; bu turun değil). `dotnet build` üç serviste de
+  **0 hata**. `dotnet test tests/architecture/…` **11 yeşil**. Muhafızlar korundu ve hâlâ yeşil:
+  `Tenant_header_is_written_by_the_validator_and_not_by_a_delegating_handler` (iki doğrulayıcıda) ve
+  `HttpWorkItemBridgeTests.The_tenant_header_and_the_callers_own_bearer_token_reach_the_module`.
+- **Gelecek regresyon riski: 🟢** — silinen şeyin canlı çağrı yolu yoktu, davranış değişmedi. Kaydın açılış
+  riski (birinin "kiracılık hallediliyor" sanması) artık yalnızca sınıfın YOKLUĞUYLA değil, DI'daki açık
+  işaretle ve `TenantOnTheWire`'ın üç paragrafıyla kapatıldı.
+
+### BL-323 — köprüde cross-tenant davranışı TANIMSIZ'dı; kural yazıldı, muhafıza bağlandı, örnek uygulamada bir SIZINTI bulundu (2026-08-29, ölçüldü, KAPANDI)
+
+> **DURUM:** KAPANDI · **SAHİP:** CONTROL TOWER
+> *Geldiği bölüm:* Açık kararlar
+
+**Kapanış gerekçesi:** kaydın kendi kapanış koşulu üçtü — (1) karar verilecek, (2) onboarding
+notu §7'ye yazılacak, (3) bir muhafıza bağlanacak. Üçü de yapıldı. Dördüncüsü istenmemişti ama
+ölçüm sırasında çıktı: kuralın MODEL ALINDIĞI referans tüketici, kuralın kendisini ihlal
+ediyordu (aşağıda).
+
+**SAHİP KARARI (2026-08-29) — onaylandı ve yazıldı:**
+1. Başlık kiracısı ile JWT kiracısı **ÇELİŞİYORSA → 400.** Bozuk istektir; gizlenecek bir şey
+   yok, iki değeri de çağıran yazdı.
+2. Anlaşıyorlar ama **İSTENEN KAYIT başka kiracınınsa → 404**, yokmuş gibi.
+3. **Durum 2 için ASLA 403.** Gerekçe kuralla birlikte yazıldı, çünkü gerekçesi silinen kural
+   sonradan "sadeleştiriliyor": 403 kaydın VAR olduğunu doğrular, yani 404'ün tam olarak
+   engellemek için seçildiği sızıntıyı yapar.
+
+**§7'ye ne yazıldı** (`DCP-004-provider-onboarding-note.md` §7.4, kaydın işaret ettiği satır 269'un
+tam olarak orası): iki durumun tablosu; 403-yerine-404'ün tek satırlık gerekçesi; **yeni bir
+kullanıcı dizesi ÜRETİLMEDİĞİ** ve üretilmemesi gerektiği (ayrı bir `reason_code` ayrı bir cümle
+ister, o cümle de 404'ün sakladığı şeyi duyurur — yabancı kayıt, herhangi bir yok kayıt gibi
+okunmalı); ve **doğru şeklin kiracıya-KAPSANMIŞ sorgu olduğu, cross-tenant dalı olmadığı**
+(`if (record.TenantId != mine) return Forbid()` yazan kişi durum 2'yi izin kontrolü olarak
+yazmıştır ve oradan sızdırır).
+
+**⚠ ÖRNEK UYGULAMADA SIZINTI BULUNDU — kural yazılırken ölçüldü.** Referans tüketici durum 2'ye
+zaten uyuyordu (durumu kiracıya göre anahtarlıyor, yabancı kayıt yok sayılıyor → 404). Ama:
+- `ReferenceWorkItemProviderController.TenantKey` **HAM BAŞLIĞI** okuyor (bilerek — "(no tenant
+  header)" yankısı §7.7'deki propagation kusurunu yakalayan şeydi), buna karşılık
+- `Diten.DevEnablementService`'in `TenantResolutionMiddleware`'i çelişkide **"JWT kazanır" + uyarı
+  logu** yapıyordu (durum 1'i dayatmıyordu).
+- İkisi birlikte: **kiracı A'nın token'ını taşıyan çağıran, B'nin başlığını göndererek B'nin
+  kaydını OKUYABİLİYOR ve DEĞİŞTİREBİLİYORDU.** Ölçüldü, tahmin değil — muhafız düzeltmeden
+  ÖNCE çalıştırıldı ve çelişkili istek handler'a ulaşıyordu.
+- **Düzeltme kuralın sahibi olan TEK yere kondu** (middleware 400 döner), handler'a kopyalanmadı;
+  ham başlık okuması korundu, çünkü teşhis değeri gerçek bir kusuru yakalamıştı.
+
+**MUHAFIZ — ne kapsıyor, ne kapsamıyor (§7.4'te de bu sözlerle yazılı):**
+`Diten.DevEnablementService.Api.Tests/WorkItemBridge/CrossTenantContractGuardTests.cs`, **9 test**
+(dosya toplamı 7 → 16).
+- **Kapsıyor:** bu servisin GERÇEK middleware'i (durum 1) ve GERÇEK referans tüketicisi (durum 2)
+  — ikisi de bizim kodumuz, ikisi de iddia edilebilir.
+- **KAPSAMIYOR ve kapsayamaz:** BAŞKA ekiplerin modüllerinin ne cevapladığı. O kod bu depoda değil
+  ve Platform onu 404'e çeviremez: `RemoteWorkItemGateway` modülün durum kodunu bilerek olduğu gibi
+  taşır, çünkü 403'ü 404'e çeviren bir köprü **meşru** 403'ü (kaydı senin olan ama yapamayacağın
+  eylem) de silerdi. Onlar için kural BELGEDİR; not bunu "kapsanıyormuş" gibi ima etmek yerine
+  düpedüz öyle yazıyor.
+- **Boş muhafız DEĞİL:** durum-2 iddialarının hepsi FARKSAL — aynı item id, aynı action code,
+  sahibine **200**, yabancıya **404**. Her şeye 404 diyen bir controller (ör. `Enabled=false` ile
+  kapatılmış olan — bu muhafızın sessizce yeşil kalabileceği tam yol) her çiftin sahip yarısında
+  düşer.
+
+**MUTASYON ÖLÇÜMÜ — dördü de öldürüldü, sonra geri alındı (16/16 yeşil):**
+| Mutasyon | Sonuç |
+|---|---|
+| Middleware düzeltmesi geri alındı ("JWT kazanır") | **2 kırmızı** — çelişki handler'a ulaştı (kapanış öncesi GERÇEK durum) |
+| Yabancı kayıt 404 → 403 (`REFERENCE_ITEM_FORBIDDEN`) | **2 kırmızı** |
+| `WorkItemReferenceProvider:Enabled` = false (boşluk tuzağı) | **4 kırmızı** — dördü de |
+| Kiracı kapsamı kaldırıldı (herkese tek kova) | **4 kırmızı** — dördü de |
+
+⚠ Mutasyon sırasında muhafızın kendisinde bir zayıflık bulundu ve düzeltildi:
+`Case1_..._never_403_or_404` testi, hiçbir şey yapmayan bir middleware'de de yeşil kalıyordu
+(200 ne 403'tür ne 404). Teste "reddedildi mi" iddiası eklendi; ikinci mutasyon turunda iki
+durum-1 testi de kırmızıya döndü.
+
+**ÖLÇÜM — testler:** `dotnet test services/Diten.Platform` **23 kırmızı / 3534 yeşil / 3557 toplam**
+— taban ile **birebir aynı** (23'ü main'in, PR #60'ın kodu; bu turun değil).
+`dotnet test tests/architecture/TenantArchitecture.ArchitectureTests` **11 yeşil.**
+`dotnet test services/.../Diten.DevEnablementService.Api.Tests` **16 yeşil** (taban 7).
+`dotnet build` iki projede **0 hata, 0 uyarı.** Frontend dosyası değişmedi → vitest çalıştırılmadı.
+
+**Yeni kullanıcı dizesi: SIFIR.** Hiçbir resx'e dokunulmadı; yabancı kayıt zaten var olan
+`REFERENCE_ITEM_NOT_FOUND` ile, herhangi bir yok kayıt gibi cevaplanıyor.
+
+**Devreden artık: BL-324** — çelişki kuralı (durum 1) dört kiracı-çözüm noktasında hâlâ
+dayatılmıyor, ikisinde ise JWT hiç okunmuyor. BL-323'ün kapsamı köprüydü; bu sistem geneli bir
+davranış değişikliğidir ve kendi turunu hak eder. Kapsamı sessizce genişletmek yerine kayda geçti.
+
+**Gelecek regresyon riski: 🟡** — köprünün kendi ucu artık davranışsal muhafızla kapalı, ama
+kuralın diğer modüllerdeki tek dayanağı §7'nin okunmasıdır; bunu bir teste bağlamanın yolu yok
+ve not bunu saklamıyor.
+
+### BL-042 — 🔴 Planlanmış + kişiye atanmış görev Gelen Kutusu'nda kalıcı kilitleniyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** Kod ölçümü 2026-08-30: kaydın alıntıladığı satır YOK. `ITaskAssignmentResolver.cs:82` artık `IsAccepted(task) => task.AcceptedByUserId is not null` — yaşam döngüsüne bakmıyor. Kabul işleyicisi `CloseAcceptanceGate`i koşulsuz çağırıyor (`TaskItemTransitionHandlers.cs:73`) ve `Planned`a dokunmuyor. "No-op için başarı döner" yarısı da düzeltilmiş: artık **409 AlreadyAccepted**. Eski kayıtlar için migrasyon ve gerçek-Mongo testi de var (`TaskAcceptanceBackfillMigration.cs:40`, `TaskAcceptanceBackfillMongoTests.cs:67`).
+
+- **Belirti (canlı, 2026-07-31):** Gelen Kutusu satırında **Planla → Kabul et** sırası izlenirse görev
+  Gelen Kutusu'ndan **hiç çıkmıyor**. `POST {id}/accept` **204** dönüyor, `admissionState` `pendingAcceptance`
+  kalıyor. Altı ardışık denemenin altısı da 204 döndü ve hiçbiri durumu değiştirmedi.
+- **Kök neden — kabul ayrı bir bayrak değil, yaşam döngüsünden çıkarsanıyor:**
+  `Features/Tasks/Services/ITaskAssignmentResolver.cs:73-74` → `IsAccepted = Lifecycle not (Open or Planned)`;
+  `Handlers/CommandHandlers/TaskItemTransitionHandlers.cs:52-55` yalnız `Open → InProgress` terfisi yapıyor.
+  `Planned` görev `Open` olmadığı için terfi etmiyor, `Planned` olduğu için de kabul edilmiş sayılmıyor.
+- **İkinci doğruluk kaynağı zaten yazılıyor ama okunmuyor:** aynı handler `TaskAssignment` kaydını
+  `EventType = Accepted` ile oluşturuyor (`:66-76`); projeksiyon o kaydı hiç okumuyor.
+- **Neden ucu keskin:** tuzağa **iki tıkla** ulaşılıyor — `Planla` butonu Gelen Kutusu satırında
+  `Kabul et`in yanında duruyor. Ve uç nokta **başarı raporluyor**: ekran yalan söylemiyor, API söylüyor.
+- **Yön (CT):** kabul, lifecycle'dan çıkarsanmayı bırakıp **kendi kalıcı işaretini** taşımalı
+  (`AcceptedAt`/`AcceptedByUserId` alanı ya da mevcut `TaskAssignment` Accepted olayının okunması).
+  Lifecycle'a bindirilen her ikinci anlam bu sınıfı yeniden üretir.
+- **Yeniden ölçüm:** `rg -n "IsAccepted" services/Diten.Platform/src` · canlı: bir kalemi planla, sonra kabul et,
+  `admissionState`'e bak.
+
+### BL-050 — 🔴 Devretme kişi seçicisi yanlış alanı okuyor: seçilemez liste
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** Kod ölçümü 2026-08-30: `person.id` gitti — `app.js:345` `personUserId(person) => person?.userId`. Devretme diyaloğu onu kullanıyor (`app.js:8036`), sunucu DTO'su `Guid UserId` (`TaskModels.cs:804`). Kaydın istediği iki-taraflı sözleşme testi de yazılmış: `tests/task-transition-contract.test.js:199-240`, boşluk kontrolüyle birlikte. Kayıtta zaten `✅ KAPANIŞ bb82b4f8` ve canlı doğrulama tablosu var.
+
+- **Belirti (canlı, 2026-07-31):** Devretme diyaloğu iki kişiyi doğru gösteriyor (*Agent Sub*,
+  *Diten Admin*) ama **her `<option>`'ın `value`'su boş**. Kullanıcı bir kişi seçse bile
+  `assigneeUserId` boş kalıyor, doğrulama devreye giriyor ve diyalog *"Görevin kime devredileceğini
+  seçin."* diyor — **seçmiş olan kullanıcıya seçmediğini söylüyor.** Hiçbir ağ çağrısı yapılmıyor.
+- **Kök neden:** `app.js:3885` `person.id` okuyor; sunucu DTO'su
+  `AssignablePersonDto(Guid UserId, string? DisplayName, …)` (`TaskModels.cs:462-463`), yani
+  JSON'da alan **`userId`**. `person.id` diye bir alan yok → `undefined` → boş `value`.
+  Ad doğru geliyor çünkü `displayName` doğru okunuyor; **kusuru gizleyen şey tam olarak bu** —
+  liste dolu ve sağlıklı görünüyor.
+- **Aynı depoda doğrusu zaten iki yerde yazılı:** `app.js:2256` → `person.userId || person.id` ·
+  `assets/js/Tasks/form.js:226` → `option.value = row.userId;`
+- **Neden sözleşme testi yakalamadı:** `task-transition-contract.test.js` `TRANSITION_BODIES`
+  haritasını ve `assignablePeople()` çağrısının **varlığını** karşılaştırıyor; seçicinin **lookup
+  DTO'sunun alan adını** hiç okumuyor. Yani BL-043'te kurulan iki-taraflı sözleşme testi geçiş
+  gövdelerini kapsıyor, **lookup gövdelerini kapsamıyor.**
+- **Bu, BL-043'ün kendisiyle aynı kusur sınıfı:** bir değer iki yerde yaşıyor, sözleşme hiçbirini
+  bildirmiyor, sessizce kayıyor. Düzeltme yalnız `person.id → person.userId` değil; **lookup
+  DTO'ları da aynı iki-taraflı teste alınmalı**, yoksa bu üçüncü kez olur.
+- **Yeniden ölçüm:** `rg -n "person\.id|row\.userId|person\.userId" frontend/Diten.Web/wwwroot/assets/js` ·
+  canlı: devretme diyaloğunu aç, `document.getElementById('wcnReassignAssignee').value` boş mu?
+
+
+#### ✅ KAPANIŞ — `bb82b4f8` · 2026-07-31 · *(kod; canlı tur CT'de)*
+
+**Ne yapıldı.** `AssignablePersonDto` `userId` gönderiyor; seçici `person.id` okuyordu — olmayan bir
+alan. `undefined` şablon dizesinde **boş dize** olarak render olur, hata fırlatmaz: her `<option>`
+`value=""` aldı, doğrulama kullanıcının her seçimini reddetti, hiçbir istek gitmedi. Ad doğru
+görünüyordu çünkü `displayName` doğru okunuyordu — kusuru gizleyen tam olarak buydu.
+
+**Kararlar ve gerekçeleri:**
+- **Tek okuma noktası:** `personUserId(person)` (`app.js`). Depoda doğru cevap **zaten iki yerde**
+  yazılıydı (`app.js`'in kendi oluşturma formu, `Tasks/form.js`) ve üçüncüsü yine yanlış gönderildi.
+  Bir olgunun üç yazılışı bu kusuru üreten koşuldur; artık bir tane var.
+- **`|| person.id` yedeği kaldırıldı.** Olmayan bir alanın savunmacı okuması, `person.id`'yi makul
+  gösteren şeydi. Yedek kalsaydı kusur "çalışıyor gibi" görünmeye devam ederdi.
+- **Asıl iş tek satır değil, sözleşme testinin genişletilmesi.** `task-transition-contract.test.js`
+  **istek gövdelerini** iki taraftan okuyor — BL-043 bu yüzden bir daha kayamaz. BL-050 ise bir
+  **yanıt** alanı, o yüzden testten geçti. Aynı iki-taraflı yöntem lookup'lara uygulandı: sunucu
+  record'unun alanları ve istemcinin `<option>` **değer** okumaları ikisi de dosyadan ayrıştırılıyor,
+  hiçbiri elle yazılmıyor. Kapsam: `AssignablePersonDto` (app.js + Tasks/form.js) ve
+  `AssignablePositionDto` (Tasks/form.js).
+- **Tarama `<option>` değerine daraltıldı**, her `person.X` okumasına değil. Geniş tarama ilk denemede
+  ilgisiz `person.name/role/status`'u ve `form.js`'in iki farklı lookup için kullandığı aynı `row`
+  adını yakalayıp gürültü üretti. Kusur sınıfı **değerin kendisi**; orada `undefined` sessizce `""`
+  olur. Ayrıca taramanın gerçekten bir şeye baktığını kanıtlayan bir vacuity testi var.
+
+**KIRMIZI→YEŞİL kanıtı (düzeltmeden ÖNCE ölçüldü):**
+```
+× no <option> takes its value from a field no lookup DTO declares
+  → app.js builds an <option> value from id, which no lookup DTO declares: expected ['id'] to deeply equal []
+```
+düzeltmeden sonra: `Tests  22 passed (22)`.
+
+**KASTEN yapılmayanlar:**
+- **`Tasks/form.js` değiştirilmedi** — `row.userId` / `row.positionId` zaten doğru. Doğru olanı
+  "tek noktaya taşımak" için değiştirmek, çalışan kodu kanıtsız riske atmak olurdu; test onu
+  **kapsıyor**, yani kayarsa yakalanır.
+- **Canlı tur koşulmadı** — servis başlatma CT'de.
+
+**Yeniden ölçüm (sayı değil, komut):**
+```
+rg -n "person\.id" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js
+rg -n "personUserId" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js
+cd frontend/Diten.Web && npx vitest run tests/task-transition-contract.test.js
+```
+Canlı: devretme diyaloğunu aç → kişi seç → onayla. Doğrulama uyarısı **çıkmamalı**, ağ çağrısı
+**gitmeli**, görev yeni kişide `pendingAcceptance` belirmeli.
+
+#### 🔬 CT CANLI DOĞRULAMASI — `4e111132` sonrası, 2026-07-31
+
+| Ölçüm | Sonuç |
+|---|---|
+| Seçenek değerleri | ✅ `Agent Sub → 93bcb22e-…` · `Diten Admin → 11111111-…` — artık dolu |
+| Kişi seç → Onayla | ✅ doğrulama uyarısı yok, diyalog kapandı |
+| Gönderilen gövde | ✅ `{expectedVersion, assigneeUserId, reason}` → **204** |
+| Görev benim listemden çıktı | ✅ İşlerim 13→12, projeksiyondan düştü |
+| Sunucu durumu | ✅ `assigneeUserId` = Agent Sub |
+| **Ama:** devredilen görev yeni sahibinde **Gelen Kutusu'na düşmüyor** | 🔴 **BL-051** |
+
+`return` canlı koşulamadı — mevcut hiçbir kalem `return` aksiyonu sunmuyor
+(`(x.actions||[]).some(a => a.code === 'return')` → boş). Sözleşme testi gerçek C# record'unu
+okuyarak kapsıyor, ama uçtan uca doğrulanmadı; kayda böyle geçiyor.
+
+### BL-051 — 🔴 Kabul kapısı devretme/iadede yeniden AÇILMIYOR: BL-042'nin ürettiği regresyon
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** Kod ölçümü 2026-08-30: `TaskItem.cs:76 ReopenAcceptanceGate()` var ve **üç** işleyicide çağrılıyor (release/return/reassign). ⚠ Kaydın uyardığı kısayol artık İMKÂNSIZ: `AcceptedByUserId` **private setter** taşıyor (`TaskItem.cs:49`), varlık dışından değiştirilemez. Test boşluğu da kapanmış — `TaskHandoverTests.cs:409,433,451` kabul edilmiş görevden başlıyor, `:496` yapısal olarak kilitliyor.
+
+- **Belirti (CT canlı, 2026-07-31):** kabul edilmiş bir görev (`sasasa`, `owned/admitted`) Agent Sub'a
+  devredildi, sonra bana geri devredildi. Sonuç: **`owned/admitted`** — yani görev doğrudan İşlerim'e
+  düştü, Gelen Kutusu'na hiç uğramadı. Beklenen: `assigned/pendingAcceptance`.
+- **Kök neden — BL-042 anlamı taşıdı, taşıyanları güncellemedi.** `AcceptedByUserId` depoda **tek bir
+  yerde** yazılıyor (`TaskItemTransitionHandlers.cs:73`, accept) ve **hiçbir yerde temizlenmiyor**
+  (`rg -n "AcceptedByUserId\s*=" services/Diten.Platform/src` → 1 sonuç). Kapıyı yeniden açmayı
+  amaçlayan üç handler ise hâlâ **eski sinyali** sıfırlıyor:
+  - `:1020` `ReassignTaskItemHandler` — *"Unaccepted on arrival: the acceptance gate reopens…"* 🔴 **canlı doğrulandı**
+  - `:887` `ReturnTaskItemHandler` — *"…the acceptance gate reopens…"* 🔴 aynı desen (canlı koşulamadı, `return` sunulmuyor)
+  - `:151` `ReleaseTaskItemHandler` — havuz dalı `AssigneeUserId is null`'dan projekte ettiği için bugün
+    görünür bir kırılma üretmiyor; yine de bayat alan geride kalıyor.
+  Eski kuralda `Lifecycle = Open` yazmak kapıyı **gerçekten** açıyordu (`IsAccepted = Lifecycle not
+  (Open|Planned)`). Yeni kuralda (`IsAccepted = AcceptedByUserId is not null`) aynı satır hiçbir şey
+  yapmıyor. **Üç yorum artık kodun yapmadığı bir şeyi iddia ediyor.**
+- **Neden testler yakalamadı:** `TaskAssignmentResolverTests` **resolver'ı** ölçüyor, handler'ları değil;
+  `task-transition-contract.test.js` **istek gövdelerini** ölçüyor, durum geçişini değil. Aradaki boşluk
+  tam olarak "handler yeni sinyali doğru yazıyor mu" sorusu — hiçbir test bunu sormuyor.
+- **Güvenlik/yetki boyutu:** devredilen iş, alan kişinin kabulü olmadan onun iş listesine giriyor.
+  Kabul kapısı yalnız UX değil, **sorumluluğun devredildiği an**; SAP/Oracle'da da iş kabul edilene
+  kadar devredene aittir.
+- **Düzeltme yönü (CT):** tek satır `AcceptedByUserId = null` eklemek **yetmez** — bu, aynı sınıfın
+  dördüncü tekrarını davet eder. Kabul kapısını açma/kapama **tek bir yerden** yapılsın (ör. domain
+  üzerinde `ReopenAcceptanceGate()` / `CloseAcceptanceGate()`), üç handler da onu çağırsın, ve
+  **handler seviyesinde** test edilsin: "devret → yeni kişide pendingAcceptance", "iade et → talep
+  edende pendingAcceptance". Bayat üç yorum da düzeltilsin.
+- **Yeniden ölçüm:** `rg -n "AcceptedByUserId\s*=" services/Diten.Platform/src` (accept + kapı açıcılar
+  görünmeli) · `rg -n "Lifecycle = TaskLifecycle.Open" services/…/TaskItemTransitionHandlers.cs` ·
+  canlı: kabul edilmiş bir görevi devret, karşı tarafta `admissionState` `pendingAcceptance` olmalı.
+
+
+#### ✅ KAPANIŞ — `8579df87` (kod) · CT canlı doğrulaması 2026-08-01
+
+> **Kapatan ölçüm.** Kabul edilmiş `sasasa` Agent Sub'a devredildi, sonra geri devredildi →
+> `assigned/pendingAcceptance` (düzeltmeden önce aynı ölçüm `owned/admitted` veriyordu). Ardından
+> kabul → `owned/admitted`: kapı açılıp **kapanıyor** da. Toplu regresyon yok — dağılım devretmede
+> tam **bir** kalem kaydı (`admitted 12→11 · pending 2→3`) ve kabulden sonra tabana döndü; fazla
+> hevesli bir reopen 12 görevi birden Gelen Kutusu'na dökerdi, dökmedi. Havuz üstlen↔bırak ×2 temiz.
+> Üç kapı regresyonu 409.
+>
+> **CT notu — ajanın istenenden fazlası:** `AcceptedByUserId` setter'ı **private** yapıldı, yani kural
+> belgeye değil **dile** yazıldı; doğrudan atama yapan mevcut bir testi derleyici anında yakaladı. Bu
+> kusur sınıfının dördüncü tekrarı artık unutulamaz, çünkü alana erişilemiyor.
+
+**Ne yapıldı.** Kabul kapısı artık **tek bir yerden** hareket ediyor: `TaskItem.CloseAcceptanceGate()` /
+`ReopenAcceptanceGate()`. `accept` kapatıyor; `reassign` · `return` · `release` açıyor.
+`AcceptedByUserId` setter'ı **private** — kapıyı doğrudan alan ataması ile oynatan kod artık
+**derlenmiyor**. Üç bayat yorum, kodun gerçekte yaptığını söyleyecek şekilde düzeltildi.
+
+**Kararlar ve gerekçeleri:**
+- **Tek satır `= null` eklenmedi.** BL-042 ve BL-051 aynı kusurun iki tekrarı: *bir olgu, birden çok
+  yazar, biri unutulmuş.* Dördüncü tekrarı davet etmemek için kapı bir **alan** değil, adıyla niyeti
+  söyleyen bir **işlem** oldu. Private setter bunu derleyiciye zorlatıyor — ve buna rağmen testle de
+  iddia ediliyor, çünkü "bir anlığına public yapayım" üçüncü tekrarın geleceği yol tam olarak budur.
+- **`release` de kapsandı.** Havuz dalı `AssigneeUserId is null`'dan projekte ettiği için bugün
+  görünür bir kırılma üretmiyor. Bırakılma gerekçesi değil, tam tersi: **görünmeyen bayat alan**, bir
+  sonraki projeksiyon değişikliğinde kimsenin izini süremeyeceği bir kusura dönüşür.
+- **Yorumlar kusur sayıldı.** Üçü de "the acceptance gate reopens" diyordu; kod bunu yapmıyordu.
+  Kodun yapmadığını iddia eden yorum, bir sonraki okuyucuyu yanlış yöne gönderir.
+
+**Test boşluğu — asıl iş.** Mevcut iki test **zaten** `…lands in the … inbox unaccepted` adını
+taşıyordu ve baştan sona geçti: ikisi de **hiç kabul edilmemiş** bir görevden başlıyor, dolayısıyla
+"sonrasında hâlâ kabul edilmemiş" **kendiliğinden doğru**. Yeni testlerin hepsi **KABUL EDİLMİŞ** bir
+görevden başlıyor ve alanı değil **projeksiyonu** ölçüyor (kullanıcının gördüğü şey o).
+Eklenen dördüncü test ters yönü koruyor: kabul edilmiş görev kabul edilmiş kalmalı — fazla hevesli
+bir reopen, aynı büyüklükte bir kusurdur.
+
+**KIRMIZI→YEŞİL kanıtı (üç `ReopenAcceptanceGate()` çağrısı kaldırılarak, 0 derleme hatasıyla):**
+```
+[FAIL] An_ACCEPTED_task_released_to_the_pool_leaves_no_acceptance_behind
+[FAIL] An_ACCEPTED_task_that_is_reassigned_waits_in_the_new_holders_inbox
+[FAIL] An_ACCEPTED_task_that_is_returned_waits_in_the_requesters_inbox
+Başarısız: 3, Başarılı: 15, Toplam: 18
+```
+Geri alındıktan sonra: `18/18` · tüm Platform paketi `2059/2059`.
+
+**KASTEN yapılmayanlar:**
+- **Canlı tur koşulmadı** — servis başlatma CT'de.
+- **BL-042 `⚠️ KISMİ` kalıyor.** BL-051 onun ürettiği regresyondu; kabul akışının bütünü canlıda
+  doğrulanmadan `✅`'e dönmez.
+
+**Yeniden ölçüm (sayı değil, komut):**
+```
+rg -n "AcceptedByUserId\s*=" services/Diten.Platform/src        # yalnız entity içi olmalı
+rg -n "ReopenAcceptanceGate\(\)" services/Diten.Platform/src    # 3 handler
+dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~TaskHandoverTests"
+```
+Canlı: kabul edilmiş bir görevi devret → **yeni kişide Gelen Kutusu'nda, `pendingAcceptance`**.
+Sonra iade et → talep edende `pendingAcceptance`.
+
+### BL-052 — 🟠 Yinelenen görev kuralının ekranı yok: motor çalışıyor, kullanıcı erişemiyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** Kod ölçümü 2026-08-30: ekran **tam** — `TaskRecurrenceRulesController.cs` (Index/Create/Edit/Details), 9 view dosyası, **7 dil resx**, manifest'te `IsNavigationVisible: true`, erişilebilirlik testi `TaskRecurrenceRuleScreenTests.cs:119`. Kaydın "dil engeli" gerekçesi de kapanmış.
+- ⚠ **Bu kayıt zaten kapanmıştı, ama iki yerde yaşıyordu:** `product-backlog-closed.md:3364` kapanışı yazıyor (CT canlı 2026-08-10), açık dosyadaki kopya kalmış. Dosyanın kendi hakkında yazdığı "bir gerçek iki yerde" kusurunun örneği.
+
+- **Ölçüm (CT, 2026-08-01):** Faz 4 motoru **tam** — `TaskRecurrenceRule` (Günlük/Haftalık/Aylık/
+  Çeyreklik/Yıllık + `Interval` + `StartsAt`/`EndsAt` + isteğe bağlı `TaskTemplateId`),
+  `TaskRecurrenceSweepJob` **saatte bir** koşuyor ve dönem başına **tam bir kez** üretiyor, beş CRUD
+  uç noktası ve Diten.Web proxy'si yerinde (`Controllers/TasksController.cs:155-173`).
+  **Ama ekran yok:** `rg -rl "ecurrence" frontend/Diten.Web/Views` → boş ·
+  `rg -rl "recurrence" frontend/Diten.Web/wwwroot/assets/js` → boş.
+- **Bugünkü sonuç:** kullanıcı yinelenen kural **oluşturamıyor**; yalnız API çağırarak yapılabiliyor.
+  Aynı fazda Alan Tanımları'na yönetim ekranı yapıldı, buna yapılmadı — **kapanış kaydı bu boşluğu
+  hiç anmadı**, çünkü o zaman kayıt "motor bitti"yi ölçüyordu, "kullanıcı yapabiliyor mu"yu değil.
+  (Demir kural #10'un yeni eşiği tam olarak bunun için var.)
+- **Kopyalanacak desen hazır:** Alan Tanımları ekranı (`Views/Tasks/FieldDefinitions`) aynı şekle
+  sahip — golden DataTable + tam sayfa CRUD formu.
+- **⚠ SIRA BAĞIMLILIĞI — GÜNCELLENDİ (CT ölçümü 2026-08-10):** iki engel vardı, **biri kalktı**.
+  - *Menü engeli kalktı:* yönetim ekranı **doğrudan URL ile çalışıyor** — `GET /Tasks/FieldDefinitions`
+    → **200**, tablo ve "Tanım Ekle" düğmesi geliyor. Yani `TASKS` yetkilendirmesi ekranı
+    **erişilemez yapmıyor**, yalnız menüde **bulunamaz** yapıyor. Yeni ekran yetkilendirme
+    beklemeden yapılabilir **ve canlı doğrulanabilir**.
+  - *Dil engeli duruyor ve KANITLANDI:* aynı ekranda **"No data available in table"** ve
+    **"Showing 0 to 0 of 0 entries"** yazıyor. BL-047 dil paketini yalnız **WorkCenterNext**
+    payload'ına bağladı; yönetim ekranları kendi sayfaları olduğu için almıyor. Ajanın ölçtüğü
+    "61 dosya DataTable kuruyor, hiçbiri paketi beslemiyor" tespitinin **canlı ikinci örneği**.
+  - **Sonuç:** tekrarlama ekranı, yönetim ekranlarının dil paketiyle **aynı dilimde** yapılmalı;
+    ayrı yapılırsa İngilizce metinlerle doğar.
+
+### BL-124 — 🟠 [ALT GÖREVLER] Detaylı oluşturma paneli tekrar açılmıyor — Enter canlı doğrulanamadı
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** Kod ölçümü 2026-08-30: düzeltilmiş (`18bea72c`, 2026-08-14). `openSubtaskCreatePanel` artık await sonrası yeniden çizmiyor — `showPanel(...)` (`app.js:5190`) sonra `fillAssigneeSelect` canlı `<select>`i **yerinde** yamalıyor, Offcanvas'ın bağlı olduğu düğümü değiştirmiyor.
+- ⚠ **Yeni ve küçük bir kalıntı:** `app.js:5166-5183` yorumu "arama panelden ÖNCE beklenir, düzeltme budur" diyor; hemen altındaki `:5195` yorumu "panel HEMEN açılır, hep açıldığı gibi" diyor. Aynı commit'ten iki yorum, ikisi farklı düzeltme anlatıyor; kodla uyuşan ikincisi. Ayrı ve çok küçük bir iş.
+
+- **Ne yapıldı:** `#wcnSubtaskTitle` ve `#wcnNewSubtaskTitle` artık Enter'ı bağlıyor, düğmenin çağırdığı **aynı**
+  save yoluna gidiyor (doğrulama, meşgul bayrağı ve hata yolu tek uygulama).
+- **Canlı kanıt — hızlı düzenleme paneli ✓:** gerçek `Enter` tuşuyla panel kapandı, yeni başlık listeye düştü,
+  "Alt görev kaydedildi." bildirimi çıktı.
+- **Canlı kanıt — detaylı oluşturma paneli ✗ YAPILAMADI:** `+ Detaylı görev ekle` düğmesi ilk denemede paneli
+  açtı, sonraki denemelerin **hiçbirinde** açmadı — sayfa yenilendikten sonra bile. Ölçüm: offcanvas DOM'da,
+  `show` sınıfı yok, `visibility: hidden`, `transform: translateX(400px)`. Enter dalı bu yüzden yalnız **testle**
+  ve düğmeyle kod-özdeşliğiyle kanıtlandı, canlı tuşla değil.
+- **Yapılacak:** panelin açılma yolu (`openSubtaskCreatePanel` → Bootstrap Offcanvas örneği) neden ikinci
+  çağrıda sessiz kalıyor, ayrı bir tur olarak incelenmeli. Bu, Enter'dan bağımsız bir kusur.
+- **Not (ölçüm aracı):** tarayıcı panelinde `key: "Return"` `keydown` üretmiyor, `key: "Enter"` üretiyor; ayrıca
+  programatik `.focus()` sonrası tuş enjeksiyonu panele ulaşmıyor — önce gerçek tıklama gerekiyor.
+- **Gelecek regresyon riski: 🟡** — Enter dalı testle kilitli, panel açılışı açık.
+
+### BL-022 — Görev Merkezi tenant modül manifest'i + katalog self-registration
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `WorkAggregationManifestProvider.cs:20` + DI `:400` + testi. Kalıntı: kapsam-zehirleme testi yok.
+
+- **Nedir:** WorkCenter/Görev Merkezi'nin tenant modül katalogunda görünmesi, navigasyona düşmesi, izninin (`platform.work-aggregation.inbox.view`) tanımlanıp seed edilmesi ve tenant'a atanabilmesi (entitlement) için bir `WorkAggregation` **manifest provider'ı** gerekir — mevcut 6 tenant modülü (Organization/Workflow/ReferenceData/DocumentManagement/AccessGovernance/TenantSettings) gibi. ~~Bugün WorkCenter'ın manifest'i **YOK**.~~ **DÜZELTME (2026-07-31):** manifest **VAR** ve DI'a kayıtlı — `WorkAggregationManifestProvider` (`work-aggregation`, `/WorkCenterNext`, `IsTenantAssignable: true`), commit `ee0dbb50`. Kayıt kodun gerisinde kalmıştı. **Kalan açık:** manifest'in beyan ettiği izinlerin tenant scope-zehirlenmesine karşı kontrol edildiğine dair kanıt bulunamadı — o kısım hâlâ doğrulanmadı.
+
+  **DÜZELTME (2026-07-25, kodda doğrulandı):** Bu maddenin ilk halinde "manifest + catalog→auth sync izin seed'ini de çözer" yazıyordu — **yanlış**. Gerçek: izin **anahtarı** otomatik oluşuyor (`PlatformPermissionAutoRegistrationWorker` her `[HasPermission]` anahtarını senkronize eder), ama tenant kullanıcısına **verilmesi (grant)** otomatik değil — tenant-Admin baseline'ı küratörlü bir allow-list ve `work-aggregation` orada yok. **Karar (EA 2026-07-25): entitlement** (`IsTenantAssignable: true`, non-baseline) — modül tenant'a atanınca entitlement→permission köprüsü izni tenant Admin'e verir, korumalı `Diten.AuthService` dosyasına dokunulmaz; bedeli, operatör modülü atayana kadar WorkCenter'ın görünmemesi.
+
+  **⚠ TEHLİKE (B2 — scope zehirlenmesi):** A1 worker `moduleCode/scope = null` ile senkronize ettiği için anahtar `Module="platform"`, `Scope=PlatformAdmin` olarak oluşabilir; sonradan gelen manifest `Module`'ü düzeltebilir ama `Scope`'u **asla Tenant'a düşüremez** (`InternalPermissionsController.cs:146-151` — "most restrictive wins"). `PlatformAdmin` kapsamlı bir anahtar hiçbir tenant rolüne atanamaz. WC-1 attribute'u zaten shipped (`866bcbf3`) olduğu için, saklanan `Module`/`Scope` değerinin **doğrulanması/onarılması WC-1b'de zorunlu kabul kriteridir**.
+- **Yapım tetikleyicisi:** **WC-1b** (frontend wiring) dilimi — manifest + sayfa + nav + l10n birlikte gider. WC-1 backend projeksiyonundan bağımsız; onu bloklamaz. Additive (self-reg reconcile asla revoke etmez) → WC-1 sonrası yapmak regresyon çıkarmaz, çünkü stabil kimlikler (ModuleCode/permission/shell) zaten kilitli.
+- **İlgili:** DCP-004 §8 (WC-1b slice) · CAND-CAP-0006 WC-1 pack §3 (permission note) · module self-registration manifest sistemi (`IModuleManifestProvider`) · catalog→auth permission sync · nav l10n bridge (stable-code).
+
+### BL-032 — `priority`: sözleşmede bildirilmemiş alan (sözleşme değişikliği, implementasyon değil)
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `fixture-contract.js:50` PRIORITIES, `:376` doğruluyor; sağlayıcı `TaskWorkItemProvider.cs:660` yayınlıyor.
+
+- **Nedir:** WorkCenterNext tablo görünümü **ÖNCELİK** kolonu basıyor ve fixture'lar `priority` taşıyor (`islerim-showcase-fixtures.js:59+`, değerler **küçük harf**: `'high'`, `'medium'`). Ama `priority` **`fixture-contract.js`'te hiç tanımlı değil** — `validateWorkItem` onu bilmiyor, `VALUE_TYPES`/enum listelerinde yok. Backend projeksiyonunda da yok (`WorkAggregation` özelliğinin tamamında geçmiyor). Sonuç: gerçek kalemde `undefined` → çip sınıfı `wcn-chip-undefined`, etiket `t(undefined)`; ekranda boş bayrak ikonu.
+- **Neden implementasyon değil:** MOD-0024 `TaskPriority` enum'u **PascalCase** (`Low`/`Medium`/`High`). Sağlayıcı bunu olduğu gibi projekte ederse çip sınıfı `wcn-chip-High`, fixture'lar `wcn-chip-high` → bu oturumda üç kez yakalanan casing sınıfı hatanın aynısı, bu kez **sözleşmenin onayı olmadan**. Alan sözleşmeye girmeden projekte edilmemeli; sözleşme tek yetkili (DCP-004 kararı).
+- **Gerekenler:** (a) `priority` sözleşmeye bildirilsin — değer kümesi + **casing kuralı** (tek doğru: sözleşme hangisini derse fixture'lar VE sağlayıcı ona uyar; bugün ikisi ayrık); (b) `validateWorkItem` alanı doğrulasın (bilinmeyen değer = hata); (c) sağlayıcı projekte etsin; (d) çip etiketleri 7 dil; (e) fixture'lar sözleşmenin casing'ine hizalanır.
+- **Ara karar (uygulandı):** sözleşme değişene kadar ÖNCELİK kolonu gerçek kalemlerde **gösterilmez** — boş bayrak ikonu basmak, alanı hiç göstermemekten kötüdür ve test turunun yargısını bozar ("bu görevin önceliği yok mu?").
+- **YAPILDI (2026-07-29, sahip kararı):** üç seviye, **PascalCase** kanonik (`Low`/`Medium`/`High`) — motor zaten bunu tutuyor ve iki yazma yüzeyi de bunu gönderiyor. Gerekçe: SLA motoru yokken (WC-2) daha fazla seviye sahte hassasiyet; "P1" tutamayacağımız bir müdahale sözü verir; üçten beşe çıkmak additive, beşten üçe inmek migrasyon. Gösterim ayrı tutuldu (TR ekranda Düşük/Orta/Yüksek). Yapılanlar: sözleşmede `PRIORITIES` + `PRIORITY_INVALID` doğrulaması; tüm fixture'lar ve iki gizli yazıcı (`app.js` toplantı/not → görev) PascalCase'e hizalandı; projeksiyon alanı taşıyor (opsiyonel — sıralamayan sağlayıcı hiçbir şey söylemez, `Medium` varsayılmaz); çip/kolon/filtre/sıralama geri geldi; motor↔sözleşme yazım eşitliği testle sabitlendi.
+- **Neden ertelendi:** CT canlı doğrulaması + mock-dikiş denetiminde çıktı (2026-07-26). Sözleşme değişikliği ayrı ve onaylı dilim olmalı; implementasyon prompt'unun içine kaçak sokulmamalı.
+- **İlgili:** `docs/workcenter-mock-seam-audit.md` bulgu #3 · [[feedback_live_verification_gap]] (casing sınıfı) · DCP-004 §12 DEC-9 (sözleşme tek yetkili).
+
+### BL-033 — `app.js` test koşum düzeni yok: döngünün yapısal nedeni
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `tests/wcn-boot.js:1-15` gerçek app.js'i açıyor, yalnız ağ taklit ediliyor; 29 wcn-*.test.js dosyası var.
+
+- **Nedir:** `WorkCenterNext/app.js` **büyük tek dosya** (`wc -l frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js` — 2026-07-31'de 4655) ve bu repoda test koşum düzeni **yok** (kodun kendi notu: *"app.js itself has no test coverage"*). Yardımcı modüller (`work-items-api.js`, `mock-data.js`, `fixture-contract.js`) test edilebiliyor; **render, aksiyon yönlendirme, guard'lar ve durum makinesi** edilemiyor.
+- **Neden kaydedildi:** Bu oturumda kaçan defektlerin **tamamının** kanıtı canlı tarayıcıda bulundu, hiçbiri testte: MVC `action` parametresi · enum JSON · derlenmemiş view · l10n casing · `catalogVisible` eleme · uydurma kuyruk adı · mock kullanıcı unvanı · hayalet vekiller · donmuş bugün · `priority` boş çip. Ajanlar "yeşil build + yeşil test" raporluyor, CT canlıda defekt buluyor — **bu döngünün nedeni yetenek değil, ölçüm boşluğu.** Bugün render tarafı düzeltmelerinin (öncelik çipinin gizlenmesi, kapsam menüsünün daralması, `runBulk` guard'ı) otomatik kanıtı yok; hepsi CT'nin canlı doğrulamasına bağlı ve bu ölçeklenmiyor.
+- **Gerekenler:** (a) app.js için DOM'lu bir test koşum düzeni (jsdom + gerçek `render()` çağrısı); (b) sözleşme fixture'larından beslenen render anlık-görüntü testleri (uydurma alan girerse kırılır); (c) guard testleri: gerçek kalem `applyTransition`'a **asla** girmez, gerçek kalemde uydurma alan **asla** basılmaz; (d) uzun vadede app.js'in bölünmesi — tek dosyada binlerce satır, test edilebilirliğin de önündeki engel.
+- **Neden ertelendi:** Test altyapısı kurmak, WorkCenter'ı bitirmekle aynı dilim değil; ama **her tur bir defektle geri döndüğümüz için** faizi ödenen bir borç. Kanban/Takvim'den (BL-015) ÖNCE ele alınmalı.
+- **İlgili:** [[feedback_live_verification_gap]] · `docs/workcenter-mock-seam-audit.md` (yöntem sınırı bölümü).
+- **YAPILDI (2026-07-30, `8e71a212`) — iki aşamada:** (1) detay yüzeyi için `bootDetailPage` (113 test, gerçek script sırası, ağ yalnız `fetchWorkItems` dikişinde sabit); (2) liste yüzeyi için `bootListPage` (22 test). İkisi **ortak** `tests/wcn-boot.js#bootSurface` üzerinden koşuyor — kopya değil, çünkü kopya olsa biri düzeltilip diğeri geride kalırdı; detayın 113 testi ortak yola taşındıktan sonra **aynen** geçiyor (davranış-koruyucu çıkarımın kanıtı). Liste harness'i `rootAttrs`'ı **boş** veriyor, çünkü production `Index.cshtml` `data-wcn-page` niteliğini hiç taşımıyor (`Details.cshtml` `="detail"` taşıyor) — uydurma bir `"list"` değeri gerçek sayfada olmayanı test etmek olurdu. **CT teyidi:** iki cshtml okundu, iddia doğru; 135/135 test yeşil.
+- **Harness'in kendi bulduğu tuzak:** app.js durumu query string'e yazıyor (`syncUrl` → `replaceState`) ve boot'ta geri okuyor (`hydrateStateFromUrl`), dolayısıyla sekme değiştiren bir test arkasında `?tab=…` bırakıp **sonraki testi istemediği sekmede açıyordu** — izole koşuda görünmez, yalnız tam koşuda patlar. Harness artık URL'i sıfırlıyor. Bu sınıf (testler arası sızan durum) yeşil bir suite'in yalan söylemesinin en sessiz yolu.
+- **Pinlenen kurallar:** aks yasası (sekme=sahiplik · segment=durum ≤3 · dördüncü segment/beşinci sekme bir testi düşürür) · sayaç tutarlılığı (sekme=segment toplamı, filtreler dahil) · sekme ayrımı (kabul edilmemiş→Gelen, sahipsiz havuz→Havuz, terminal→Geçmiş). Mutasyon karnesi: 12 mutasyon, hepsi ısırıyor. İki mutasyon ilk turda ısırmadı ve **ikisi de testin zayıflığıydı**, düzeltildi: çift-sayım guard'ı statik fixture'la ulaşılamıyordu (gerçek amacı `normalizedStatus: InProgress` + `taskLifecycle: Done` gibi **iki durum alanının çeliştiği** kalem — telden gelebilir bir şekil), ve Geçmiş salt-okunurluk testi **boştu** (fixture'ı `actions: []` taşıdığı için geçiyordu).
+- **Kasten pinlenmeyen:** çip ekseni — aks yasasının çip yarısı için sekme/segment kadar net bir "en fazla N" kuralı yok ve uydurulmadı. Kanban/Takvim yalnız "patlamıyor" düzeyinde (BL-015, tasarım değişecek).
+
+### BL-035 — Alt görev üst görevi bloklamalı + alt görev oluşturmanın tam formu
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `TaskItemTransitionHandlers.cs:424` 409 SUBTASK_BLOCKED; sağlayıcı `:1215`; istemci köprüsü `Tasks/api.js:133`.
+
+- **Karar (sahip, 2026-07-28):** açık alt görev varken üst görev **tamamlanamaz**. **İptal edilen alt görev saymaz** — yoksa gereksizleşen bir alt görev üst görevi süresiz kilitler. Bugün hiç bloklamıyor.
+- **İki kavram, karıştırılmamalı** (sahip bunu açıkça vurguladı): **checklist** = tek görevin *içinde* işaret kutuları, sahibi/tarihi/yaşam döngüsü YOK; **alt görev** = kendi atananı, tarihi, yaşam döngüsü ve detay sayfası olan **gerçek bir görev**. İkisi de tamamlamayı bloklar ama farklı mekanizmayla; biri diğerinin yerine geçmez.
+- **Gerekçe:** *"iş üçe bölündü, ikisi yapılmadı, ama bütünü tamamlandı"* tutarsız bir cümle. Mockup da bu tarafı almış (*"2 subtasks still open — Prevents completion"*). CT'nin test dokümanına yazdığı eski "alt görev bloklamaz" kuralı bu kararla **düzeltildi**.
+- **Uluslararası durum:** Jira/Asana bloklamaz (uyarır), ServiceNow genelde engeller, MS Project'te üst görevin durumu alt görevlerden **türetilir**. Ayrım "alt görev işin parçalara ayrılması mı, yardımcı liste mi" sorusundan çıkıyor; burada **parçalara ayrılma** kabul edildi.
+- **YAPILDI (2026-07-29):** (a) `complete` açık alt görev varken **409 + `SUBTASK_BLOCKED`** ile reddediliyor, kod istemci köprüsünde + 7 dil; (b) iptal edilen alt görev saymıyor; (c) sağlayıcı her açık alt görev için **ayrı bir blocker** üretiyor (toplu değil — kimlik kaybolmasın), `complete` görünür ama kapalı geliyor. Kural `TaskBlockingRules`'ta, bağımlılıkla aynı yerde (sınıf `TaskDependencyRules`'tan yeniden adlandırıldı, adı içeriğinden dar kalmıştı). Blocker sırası sözleşmesel: **önce bağımlılık, sonra alt görev** — buton sebebi ilk blocker'dan alınıyor ve handler de aynı sırada kontrol ediyor, yoksa ekran ile 409 farklı engeli suçlardı. `start` ve `cancel` bloklanmıyor; cancel bloklansaydı açık çocuğu olan istenmeyen bir görev hiç iptal edilemezdi. **Ters çevrilen karar:** eski kod "açık alt görev asla bloklamaz, iki mekanizma 'neden bitiremiyorum'u cevapsız bırakır" diyordu; itirazın cevabı artık `blockedState.blockers[]` (o yorum yazıldığında yoktu). Uluslararası uygulama bölünmüş: Jira/Asana uyarır, ServiceNow engeller, MS Project üst görevi çocuklardan türetir — burada **engelleme** seçildi.
+- **Gerekenler:** ~~(a)(b)(c)(d) — hepsi yapıldı.~~ (d) "detaylı ekle" bu turdan önce tamamlanmıştı (`subtaskCreatePanel`, başkasına atama dahil).
+- **Zaten doğru olan, değiştirilmeyecek:** alt görevi **tamamlamak** atananın, **iptal etmek** oluşturanın hakkı — genel kural alt görevi de kapsıyor, yeni kural gerekmiyor.
+- **Sıra sözleşmesel:** hem projeksiyon hem handler **önce bağımlılık, sonra alt görev**. Ters olsaydı ekran alt görevi, 409 ise öncülü suçlardı. Mutasyon testinde sıra ters çevrilince 1 test düşüyor — yani sıra davranış olarak sabit, kozmetik değil. Handler kuralı boşaltılınca 4 test düşüyor (BL-028'de bu sayı sıfırdı ve kural yoktu).
+- **CT CANLI DOĞRULAMA (2026-07-29):** açık alt görev → `complete` **409 `SUBTASK_BLOCKED`**, `start` **204** (yön ayrımı) · çocuk Done → 204 · **iptal edilmiş çocuk bloklamıyor** → 204 · karışık (biri Done biri açık) → 409 · bağımlılık+alt görev birlikteyken hem ekran hem handler **`DEPENDENCY_BLOCKED`**, öncül kapanınca ikisi birden **`SUBTASK_BLOCKED`**'a düşüyor · ekranda çevrili cümle ("*"CTB cocuk-hala-acik" alt görevi kapanmadan tamamlanamaz*"), ham anahtar yok, Tamamla **görünür + disabled**. Kapanış: DOĞRULANDI.
+- **Kasten kapatılmadı:** blocker `code` dağarcığı **açık liste** — WorkCenter çok sağlayıcılı, her sağlayıcı kendi engelini adlandırır (`VALIDATION_BLOCKED` gibi); kapalı liste WorkCenter'ı her yeni modülde değiştirmeye zorlardı. Aksiyon kodları ve bağımlılık tipleri kapalı kalır (onlar MOD-0024'ün kendi motoru), blocker sebebi kalmaz.
+
+### BL-039 — Toplu seçim yolu ölü: kaldırılacak mı, bağlanacak mı?
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `app.js:8980` — zincir şeritle birlikte silinmiş. CT ölçtü: bulkBar/runBulk/performBulk = **0**.
+
+- **Ölçüm (2026-07-30, zincirin her halkası ayrı ayrı):** `bulkBar` **tanımlı, hiç çağrılmıyor** (`grep -n 'bulkBar' app.js` — tek eşleşme tanımın kendisi) · `data-wcn-check` ve `data-wcn-check-all` **hiçbir markup'ta üretilmiyor**, yalnız handler'larda `closest()` ile okunuyor (`grep -n 'data-wcn-check' app.js`) · dolayısıyla `state.tableSelected` kullanıcı tarafından doldurulamıyor, boşken `bulkBar` `''` dönüyor, `data-wcn-bulk` butonu hiç doğmuyor, `performBulk → runBulkWithProgress → runBulk` girilemiyor. **CT canlı gözlemi (0 checkbox, 0 toplu buton) ile birebir uyumlu.** BL-033 bunu üç testle pinledi; kod eklenmedi.
+- **Neden şimdi düzeltilmiyor:** risk kapalı — `runBulk` içinde gerçek kalemi simüle etmek yerine başarısız sayan bir guard var, ve seçim bir gün bağlanırsa bu testler **önce** düşer, bağlayan kişi guard'ı yeniden okur.
+- **Karar gerekiyor:** (a) ölü yolu **kaldır** (checkbox/bulkBar/runBulk zinciri) — canlı görünen ölü kod bir tuzaktır; (b) seçimi **bağla** ve toplu aksiyonu gerçek yap. **CT önerisi: (b)'yi UX turundan sonra değerlendir, (a)'yı şimdi yapma** — toplu aksiyon gerçek bir ihtiyaç (10 kalemi tek tek kabul etmek), ve zinciri silip sonra yeniden yazmak israf. Testler zinciri dondurdu, acele yok.
+- **Yan bulgu (kusur değil):** `tabFor`'daki `if (['Done','Cancelled']…) return 'history'` **ölü mantık** — `inTab` (`app.js:341`) Geçmiş üyeliğini `isTerminal(item)`'dan karar veriyor, `item.tab`'dan değil, ve diğer sekmelerden `&& !isTerminal(item)` ile bağımsız olarak dışlıyor. Silinse davranış bitişik aynı kalır. Temizlik, düzeltme değil.
+
+### BL-141 — [KİŞİSEL KATMAN] "Kişisel plan tarihi" aslında kişisel değil; ekrandaki etiket yanlış
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** Plan tarihi Kişisel karttan çıkmış — `app.js:2841-2849` özet önizlemede; kişisel kart `:3887` yalnız not/erteleme/sabitleme.
+
+- **ÖLÇÜM (2026-08-14).** İş 0 "plan tarihi nerede saklanıyor, not ve erteleme de oraya gitsin" diye soruyordu.
+  Ölçüldü: `PlannedDate` **`TaskItem` üzerinde** — paylaşılan görev kaydında, `TaskWorkItemProvider.cs:551`'de
+  üst düzey bir alan olarak yansıtılıyor ve `plan` eylemi paylaşılan yaşam döngüsünü Open→Planned oynatıyor.
+  Görevi okuyabilen **herkes** görüyor.
+- Yani üç şey değil **iki** kişisel şey var. Not ve erteleme (kişi başına, gizli) tek bir yere — yeni
+  `task_personal_overlays` belgesine — gitti. Plan tarihi yerinde kaldı: oraya taşımak **nerede durduğunu değil
+  ne anlama geldiğini** değiştirirdi (talep eden yeniden planlamayı artık göremezdi).
+- **Kusur depoda değil, ekranda:** Kişisel kartı plan tarihini "Kişisel" başlığı altında gösteriyor. Etiket
+  düzeltilmeli ya da satır Özet'e taşınmalı. **Bu tur yapılmadı — yer kararı CT'nin.**
+- **Gelecek regresyon riski: 🟡** — birisi tutarlılık adına plan tarihini overlay'e taşımaya kalkarsa sessizce
+  bir görünürlük kaybı üretir. `WorkAggregationModels.cs`'teki yorum bunu artık açıkça yazıyor.
+
+### BL-144 — [KİŞİSEL KATMAN] Kişisel not düzenlenemiyor (karar), ve sabitleme (pin) hâlâ hiçbir yere yazmıyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `app.js:7658` → `TasksController.cs:398` → `TaskSupportingEntities.cs:489`, projeksiyona çıkıyor `:798`.
+
+- Not için **düzenleme yok**, karar: sil + yeniden yaz. Bir uç, bir eşzamanlılık sorusu, bir denetim hikâyesi az.
+- **Pin bilerek dışarıda bırakıldı:** ne ön yüzde ne arkada bir davranışı var. Hiçbir şeyin yazmadığı ve hiçbir
+  şeyin okumadığı bir alanı yansıtmak, bu turun kapattığı yarımın aynısını yeniden üretirdi.
+  `WorkAggregationModels.cs`'teki yorum bunu da yazıyor.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-146 — [MODAL] On ham `Swal.fire` kaldı; ortak sarmalayıcı bu şekilleri desteklemiyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** ⚠ Kayıt "on ham modal" diyor; **bir** kaldı (`app.js:8060`). Seam artık ikon/tarih/girdi seçeneklerini taşıyor. CT doğruladı: ikinci eşleşme **yorumun içinde** (`:7248`).
+
+- **ÖLÇÜM (2026-08-14).** `app.js`'te **on beş** doğrudan `Swal.fire(` vardı (brifing on diyordu; on beş ölçüldü,
+  beşi bu turda taşındı, geriye **on** kaldı — brifingin sayısı taşımadan SONRAKİ duruma denk geliyor).
+- **Taşınanlar (5):** eylem onayı · toplu eylem onayı · tetikleyici gerekçesi · toplu gerekçe · hızlı not.
+  Hepsi `window.showConfirm` üzerinden; canlı doğrulandı (`.swal-icon-circle`, `btn btn-danger … px-5`,
+  `btn btn-label-secondary … px-5` = sarmalayıcının kendi parmak izleri).
+- **⚠ `window.DitenModal` bu sayfada TANIMSIZ** — premium-modal.js WorkCenterNext görünümlerine yüklenmiyor.
+  `DitenModal.confirm` zaten `showConfirm`'e devrediyor, o yüzden doğrudan `showConfirm` aynı uygulamaya varıyor;
+  yüklenmemiş bir global üzerinden gitmek sessiz bir no-op olurdu.
+- **Taşınamayanlar (10) — sarmalayıcı yalnız TEXTAREA girdisi sunuyor:**
+  | # | diyalog | ihtiyaç duyduğu şekil |
+  |---|---|---|
+  | 1 | plan tarihi | flatpickr tarih |
+  | 2 | toplantı zamanı | flatpickr tarih+saat |
+  | 3 | süre gir | `input: number` |
+  | 4 | ertele | flatpickr tarih |
+  | 5 | "+ Yeni" menüsü | iki düğmeli menü (onay değil) |
+  | 6 | kaynakta oluştur | `input: select` |
+  | 7 | toplantı formu | 4 alanlı form |
+  | 8 | yeniden atama | select + textarea |
+  | 9 | toplu sonuç | bilgilendirme (onay değil) |
+  | 10 | toplu ilerleme | ilerleme çubuğu |
+- **KARAR CT'DE.** Seçenekler: (a) sarmalayıcıya `input` tipi + `didOpen` seamı eklemek — ortak bileşen büyür,
+  tek modülün ihtiyacıyla değil bir tasarım kararıyla; (b) bunları ham bırakmak ve kuralı "yalnız onay diyalogları
+  sarmalayıcıdan geçer" diye daraltmak; (c) diyalog dışı bir yüzeye taşımak (offcanvas form).
+
+- **GÜNCELLEME (2026-08-23) — seçenek (a) alındı, ama BÜYÜTEREK DEĞİL: sabit bir varsayım parametreye çevrildi.**
+  `swalConfig.input = 'textarea'` artık `options.inputType || 'textarea'`. Yeni yetenek yok, varsayılan bugünkü
+  davranış. `showInput` kullanan **altı** mevcut çağıran (Tenants ×3, AuditLog ×1, TemplateMasters ×1,
+  WorkCenterNext seamı ×1) hiçbir tip vermiyor, dolayısıyla altısı da textarea almaya devam ediyor — bu, view'in
+  scripti gerçek bir Swal taklidiyle çalıştırılarak ÖLÇÜLDÜ, kaynak metnine bakılarak değil.
+- **Ertele taşındı** → `app.js`'te kalan ham diyalog sayısı **10 → 8**. Kalanların taşınabilirliği yeniden ölçüldü:
+  | # | diyalog | durum |
+  |---|---|---|
+  | 1 | plan tarihi (`app.js:6263`) | ✅ **artık taşınabilir** — ertelemenin birebir aynı şekli (`inputType:'text'` + flatpickr + `validate`) |
+  | 2 | toplantı zamanı (`app.js:6413`) | ✅ **artık taşınabilir** — aynı şekil, flatpickr `enableTime` ile |
+  | 3 | süre gir (`app.js:6438`) | ✅ **artık taşınabilir** — `inputType: 'number'` |
+  | 4 | kaynakta oluştur (`app.js:6736`) | ⚠ **hâlâ değil** — `input: 'select'` çalışır ama sarmalayıcı `inputOptions`'ı iletmiyor; TEK bir parametre daha gerekiyor |
+  | 5 | "+ Yeni" menüsü (`app.js:6615`) | ❌ onay diyaloğu değil — iki düğmeli menü, onay düğmesi yok |
+  | 6 | toplantı formu (`app.js:6762`) | ❌ dört alanlı form — tek girdilik şekle sığmaz |
+  | 7 | gerekçe + atanan + beklenen kişi (`app.js:6887`) | ❌ çok alanlı form |
+  | 8 | toplu ilerleme (`app.js:7065`) | ❌ ilerleme çubuğu; düğmesi yok, kapatılamaz |
+- **BU TURDA TAŞIMA YAPILMADI** (sahibin talimatı). Üçü hazır bekliyor; dördüncüsü için `inputOptions`
+  kararı CT'de.
+  **Ajan kendi başına genişletmedi.** **Gelecek regresyon riski: 🟡** — kural bugünkü hâliyle kısmen ihlal görünüyor.
+
+### BL-147 — [MODAL] Toplu sonuç bildirimi hâlâ ham modal; `DitenModal` yüklenmediği için taşınamadı
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** Engel kalkmış (`Index.cshtml:26` premium-modal.js yükleniyor) ve konusu yok olmuş (toplu sonuç modalı şeritle gitti). ⚠ `app.js:7254` hâlâ eski iddiayı yazıyor.
+
+- Toplu işlem kısmi başarısızlığında açılan `icon: error|warning` modali bir ONAY değil, bir BİLDİRİM.
+  Ürünün bildirim seamı `DitenModal.error/warning` — ama o global bu sayfalarda yok (BL-146).
+- Seçenekler: premium-modal.js'i WorkCenterNext görünümlerine eklemek · sayfanın kendi `toast(...,'error')`'ına
+  çevirmek (davranış değişikliği, sorulmadan yapılmadı).
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-154 — [ARTIK] `Unsnooze` ve `PersonalActionsLabel` anahtarlarının durumu
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** Ölçüm istenmişti, cevabı: `Unsnooze` **kullanımda** (`app.js:7689`, etkinlik günlüğü etiketi).
+
+- Erteleme satırı gelince `Unsnooze` ("Ertelemeyi kaldır") artık hiçbir yerde çizilmiyor; yerini satırdaki
+  `SnoozeClear` ("Kaldır") aldı. **Silinmedi** — liste yüzeyinde hâlâ kullanılıyor olabilir, ölçülmedi.
+- `PersonalActionsLabel` yalnız ertelenmemiş durumdaki grup etiketinde kaldı.
+- **Yapılacak:** liste yüzeyinde `Unsnooze` kullanımı var mı ölç; yoksa ölü işaretle. Bu turda ölçülmedi.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-155 — ⚠ ÇELİŞKİ DÜZELTİLDİ — Bildirilen "grip çelişkisi" bir çelişki değildi
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** Bildirilen çelişki **çürütüldü** — `diten-checkitem.js:132` ve `:262` aynı tutamağı ekliyor.
+
+- **Bildirim:** `diten-checkitem.js:121` yorumu "Drawn in BOTH modes now" diyor ama `:139` kodu
+  `if (!working) { el.appendChild(grip); }` — yorum mu bayat, kod mu yanlış?
+- **ÖLÇÜM: İKİSİ DE DOĞRU.** Grip kaynakta **iki kez** ekleniyor. `:139` yazma kipinin sırası için erken ekliyor
+  ("bunları düzenle" — tutamak önde); `:262` çalışma kipinin `if (working)` bloğu içinde geç ekliyor (metin ve
+  seviye çipinden sonra, "bunları işaretle" sırası). `if (!working)` "yalnız yazma kipinde" demek değil, "burada,
+  yazma kipinin sırasında" demek. Tek başına okunduğunda tersi görünüyor.
+- **Canlı doğrulama (çalışma kipi, detay sayfası):** satırın çocukları `box · text · level · GRIP · move` —
+  tutamak var, dolayısıyla `bindChecklistDrag`'in `handle: '[data-diten-check-grip]'` seçicisi bir şey buluyor.
+- **Kod değiştirilmedi.** İki satırın tek tek okunamayacağını sabitleyen iki test eklendi.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-164 — ⚠ BULUNAN KUSUR — "bekleme sona erince temizlenir" iki yorumda yazıyordu, kodda YOKTU
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `TaskItem.cs:318 ClearWaiting()`, `TaskItemTransitionHandlers.cs:450`de çağrılıyor.
+
+- `TaskItem.WaitingReason` özeti: "Cleared when the task resumes, so a stale reason never outlives the wait."
+  `InquireTaskItemHandler`: gerekçe geçmişe kopyalanıyor "because WaitingReason is CLEARED when the task resumes".
+- **ÖLÇÜM (2026-08-15): kod tabanında hiçbir yer bu alanı null'a döndürmüyordu.** Mart'ta beklemeye alınıp
+  Nisan'da devam eden bir görev Mart'ın cümlesini süresiz taşıyordu.
+- Zararsız değil, GÖRÜNMEZdi: `ResolveWaitingContext` alanı yalnız yaşam döngüsü Waiting iken okuyor, o yüzden
+  bayat değer saklı kalıyordu — ta ki görev ikinci kez beklemeye alınana kadar; o an eski cümle, yenisi
+  yazılmadan önceki pencerede yüzeye çıkıyordu. Ve alana başka hiçbir şey güvenemiyordu.
+- **Düzeltildi:** `TaskItem.ClearWaiting()` (gerekçe + kişi birlikte), `TransitionTaskItemHandler` içinde
+  Waiting'den çıkan HER geçişte çağrılıyor. Dal başına değil tek yerde, çünkü Waiting'den üç çıkış var ve
+  unutulan hep üçüncüsü olur. İki yorum da gerçeğe göre yeniden yazıldı.
+- Canlı doğrulandı: devam ettikten sonra `WaitingReason = None`, `WaitingOnUserId = None` (Mongo'dan okundu).
+- **Gelecek regresyon riski: 🟢** — mutasyon testi (temizlemeyi kaldır) iki testi kırmızıya çeviriyor.
+
+### BL-165 — ⚠ BULUNAN KUSUR — Kişi bilindiğinde GEREKÇE düşüyordu (iki yüzeyde)
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** Tek cümle üç yüzeyi besliyor — tanım `app.js:1919`, tüketim `:1470,:1934,:2568,:4363`.
+
+- Eski kod: `item.waitingOn ? tf('WaitingOn', item.waitingOn) : item.waitingReason` — yani birini seçmek,
+  okuyucuya neyin beklendiğini söyleyen cümleyi KAYBETTİRİYORDU. Detay notunda ve liste çipinde aynı hata.
+- Bugüne kadar görünmüyordu çünkü `waitingOn` her zaman null'dı; bu tur onu doldurunca kusur canlanacaktı.
+- **Düzeltildi:** tek bir `waitingSentence(item)` — üç yüzey (detay notu · liste çipi · yaşam döngüsü şeridi)
+  aynı yerden alıyor. İkisi birden varsa `WaitingOnWithReason` ile ikisi de gösteriliyor.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-166 — [TEST ALTYAPISI] Fixture `tf` yalnız `{0}`'ı dolduruyordu — iki yuvalı mesajlar sessizce yarım kalıyordu
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `wcn-detail-three-regions.test.js:504` — tf artık her yuvayı dolduruyor.
+
+- `wcn-detail-three-regions` fixture'ındaki `tf` tohumu `` `${key}:{0}` `` idi; iki argümanlı bir mesajın
+  İKİNCİ değeri hiçbir zaman görünmüyordu. Yani "iki olgudan birini düşüren cümle" kusuru — bu turun tam da
+  test ettiği şey — testte geçerdi.
+- `WaitingOnWithReason` yakaladı. Tohum artık argüman sayısı kadar yuva üretiyor.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-167 — [TEST ALTYAPISI] Geçiş sözleşmesi guard'ı "her builder tek satır" kuralını gizlice dayatıyordu
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `task-transition-contract.test.js:56-58` sonraki anahtara kadar okuyor, yorumları ayıklıyor.
+
+- `task-transition-contract.test.js` her eylemin girdisini TEK SATIR olarak okuyordu; `inquire` ikinci
+  parametresini alıp satır kaydırınca guard "builder bir nesne döndürmüyor" diye düştü — kodun değil, biçimin
+  hatası. Ayrıca sonraki girdiyi açıklayan `//` yorumu da eşleşmeyi bozuyordu.
+- Guard artık girdiyi bir sonraki anahtara kadar okuyor ve önce yorumları soyuyor. Bu oturumda dördüncü kez bir
+  guard kendi prozasına takıldı.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-169 — ⚠ CANLIDA BULUNAN KUSUR — alan geçmişi "kim" diyemiyordu
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `TaskItemWriteHandlers.cs:246` aktörü bildiriyor; boş-kayıt koruması `TaskRepositories.cs:223`.
+
+- İlk canlı ölçümde satırlar **"Öncelik: High → Low · İsim bulunamadı"** diyordu; yanındaki `created` satırı
+  kişiyi adıyla söylüyordu.
+- **Sebep:** geçmişi COMMIT anında depo yazıyor ve deponun kullanıcı bağlamı yok — aktör her zaman yazan
+  tarafından `Declare` edilmek zorunda. `UpdateTaskItemHandler` hiçbir şey declare etmiyordu, çünkü alan
+  günlüğünden ÖNCE zaten hiç kayıt üretmiyordu.
+- "Son tarihi kim değiştirdi" bu turun tek sorusu; kişiyi söyleyemeyen bir kayıt sorunun yarısını cevaplıyor.
+- **Düzeltildi** (`task.Declare(TaskTransitionKind.Edited, _currentUser.UserId)`) ve yan etkisi kapatıldı:
+  boş bir "Kaydet" artık satır yazmıyor (`editedWithNothingToSay`). İkisi de testli.
+- **Testle değil, canlı ölçümle bulundu.** **Gelecek regresyon riski: 🟢.**
+
+### BL-178 — [ÖLÇÜLEMEDİ] Bölünmüş görünüm yüzeyi arayüzden açılamıyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `app.js:1134` TAB_VIEWS split sunuyor, çizici `:5677`. Ölçüm engeli kalkmış.
+
+- `[data-wcn-view]` yalnızca `list` ve `table` üretiyor; `.wcn-split-detail` hiçbir tıklamayla açılmıyor.
+- Sonuç: o yüzeydeki ayırıcılar (`.wcn-split-detail .wcn-detail-tabs`, `.wcn-detail-command .wcn-personal`
+  kenar boşluğu) canlı ölçülemedi. Kişisel kartın bu turdaki yapı değişikliği o yüzeyi de etkiliyor olabilir.
+- **Gelecek regresyon riski: 🟡** — bölünmüş görünüm geri geldiğinde kişisel blok orada yeniden ölçülmeli.
+
+### BL-179 — [ÖLÇÜM NOTU] Üst üste bölüm ayırıcısı canlı hiçbir görevde çizilmiyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** Ayraç yığılan kart ailesine taşınmış — `backbone-custom.css:6223`; genel yedek kural kaldırılmış (`:5926` notu).
+
+- `renderBusinessContext` N bölümü tek karta yığıyor, ama canlı verideki **hiçbir görev iki bölüm taşımıyor**
+  (60 görevin 2'sinde iş bağlamı var, ikisi de tek bölüm). Fixture'larda da yok.
+- Yine de düzeltildi (`.wcn-bizctx-card`): kart dolgu ödemiyor, her bölüm kendi 1rem'ini ödüyor, çizgi kenardan
+  kenara. Ölçüm için tarayıcıda **bölüm klonlandı** — stiller ürünün, DOM elle çoğaltıldı; açıkça yazılıyor.
+- Genel `.wcn-detail-card > section + section` kuralı **kaldırıldı**: dolgunun içinde çizgi çizen bir yedek
+  kural, bu turda üç kez düzeltilen kusurun dördüncü kez doğacağı yerdi.
+- **Gelecek regresyon riski: 🟢** — yeni bir yığılma eklenirse gardiyan test onu yakalar.
+  <!-- ⚠ 2026-08-29: bu cümle "BL-180'siz kalmaz" diyordu; BL-180 diye bir kayıt HİÇBİR dosyada yok (ne açık ne arşiv). Neyi kastettiği ölçülemedi, o yüzden UYDURULMADI — kod kaldırıldı, cümlenin anlamı korundu: koruma gardiyan testinden geliyor. -->
+
+### BL-182 — [ÖLÇÜM] Takvim bugünü seçtiriyor, doğrulayıcı bugünü reddediyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `app.js:7793` minDate + `:7808` doğrulama artık uyuşuyor; muhafız `wcn-snooze-dialog.test.js:133`.
+
+- `minDate: data.todayIso` bugünü **seçilebilir** bırakıyor; doğrulayıcı ise `value <= todayIso` diyerek onu
+  **reddediyor**. Yani bugüne tıklayan biri sessizce çalışmayan bir tarih seçip "Gelecek bir tarih seçin"
+  uyarısını yiyor.
+- Doğrulayıcıya bu turda dokunulmadı (brifing: "doğrulayıcı olduğu gibi kalsın"). Sunucu ertelemeyi günün
+  **23:59:59**'una yazdığı için bugün aslında anlamlı bir seçim olurdu ("bu akşama kadar").
+- **Karar senin:** ya `minDate` yarına çekilsin, ya doğrulayıcı bugünü kabul etsin. İkisi bugün aynı şeyi
+  söylemiyor.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-183 — [YAPILMADI] "İptal" kelimesi WorkCenter'ın diğer diyaloglarında da aksiyonla çakışıyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** CT ölçtü: `ReasonCancel` **0** kullanım. DialogDismiss `:5368,:7395,:7752,:8090`; mutasyon muhafızı `wcn-text-in-boxes.test.js:326`.
+
+- Ertele diyaloğunun vazgeçme düğmesi artık `DialogDismiss` ("Vazgeç") — çünkü sarmalayıcının varsayılanı ortak
+  `Cancel` dizesi ve Türkçesi "İptal", bu sayfada ise **"Görevi iptal et"** diye bir AKSİYON var.
+- Aynı çakışma WorkCenterNext'in diğer diyaloglarında da duruyor: `t('ReasonCancel')` = "İptal", modül seamının
+  varsayılanı ve **dört ayrı ham diyalogda** doğrudan geçiliyor.
+- Bu turda yalnız ertele değiştirildi (sahip sırayla gidiyor). Modül geneline yayılması ayrı bir karar.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-197 — [ÖLÇÜM] Testte "bugün" UTC'den alınırsa günün üç saati kırmızı olur
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `wcn-snooze-dialog.test.js:275-281` "bugün"ü üründen okuyor, UTC'den değil.
+
+- Bu turda yakalandı: modülün `todayIso`'su **2026-08-24** derken `new Date().toISOString()` **2026-08-23**
+  veriyordu — okuyucunun saati UTC'nin önünde (UTC+3) ve o üç saat boyunca UTC'den türetilen tarih bu
+  doğrulayıcıya göre **dün**.
+- Ürün tutarlı: takvimin `minDate`'i de doğrulayıcı da aynı `data.todayIso`'yu okuyor. Yanlış olan **testti**;
+  düzeltildi ve gerekçesi testin içine yazıldı.
+- Aynı tuzak zamana dayanan her yeni test için geçerli: "bugün"ü üründen sor, saatten değil.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-202 — [ÖLÇÜM] "Görevi iptal et" diyaloğunun vazgeçme düğmesi de "İptal" diyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `app.js:5368` cancelButtonText = `DialogDismiss`; gerekçe `:7386-7395`.
+
+- BL-183'te modül geneli için not edilmişti; bu turda **tek karede** görüldü: başlık "Görevi iptal et",
+  vazgeçme düğmesi "İptal", onay düğmesi "Evet, uygula". Yani aynı diyalogda "iptal" iki farklı şey demek.
+- Ertele diyaloğu bunu `DialogDismiss` ("Vazgeç") ile çözmüştü; aksiyon onayları hâlâ `t('ReasonCancel')`
+  varsayılanını kullanıyor.
+- **Karar senin:** `DialogDismiss` modül geneline yayılsın mı?
+- **Gelecek regresyon riski: 🟢.**
+
+### ⚠ KAYIT (2026-08-24) — BL-204…BL-212 bu dosyada YOK
+- Bu turda ölçüldü: dosyanın en büyük numarası **BL-203**. Oysa son iki turda BL-206…BL-212 bu dosyaya
+  yazılmıştı ve bu turun şartnamesi **BL-205 ile BL-211'e numarayla atıfta bulunuyor** — yani sahip tarafında
+  o kayıtlar var, diskteki dosyada yok.
+- `git status`: `docs/product-backlog.md` **değişmemiş** görünüyor; yani kayıtlar commit'lenmedi, geri alındı.
+- Çakışmayı önlemek için bu tur **BL-213'ten** devam ediyor. BL-204…BL-212 aralığı **kullanılmadı ve
+  yeniden kullanılmayacak** — sahibin elindeki numaralar korunsun diye.
+- ⚠ Bu bir tahmin değil ölçüm: kaybolan kayıtların içeriği bu turda yeniden yazılmadı; yalnız durum bildirildi.
+
+### BL-205 — [YAPILMADI] Panel kapatma düğmeleri "İptal" diye adlandırılıyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `app.js:4956` ve `:5107` aria-label `PanelClose`.
+
+- `app.js:4473` ve `4603`: offcanvas kapatma (×) düğmelerinin `aria-label`'ı `t('ReasonCancel')` = "İptal".
+  Ekran okuyucu bir KAPATMA düğmesini "İptal" diye duyuyor.
+- Doğru karşılık büyük olasılıkla `PanelClose` ("Paneli kapat") — modülde zaten var.
+- BL-202'nin kapsamı diyalog düğmeleriydi; bu ikisi ayrı bir yüzey, bu turda **değiştirilmedi**.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-234 — [YAPILMADI] Çalışan sayaç sayfa yenilemesinde sıfırlanıyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** CT ölçtü: WorkCenterNext altında **0** setInterval. CSS'te yalnız iki iz kalmış (`backbone-custom.css:6334,6339`).
+
+- ✅ **KAPANDI — CT DOĞRULADI 2026-08-24 (Tur C).** Tik tak eden gösterge ve saniyelik `setInterval` kaldırıldı; canlı ölçüm: kart yalnız "3sa 45dk girildi" diyor, `wcn-ts-live`/`wcnTimerValue` DOM'da yok. Entity alanı eklenmedi — doğru çözüm MOD-0280'e ait (blueprint, HCM, EA-TBD).
+- Ölçüldü: canlı sayaç 37:29 → yenile → 37:15. Devam etmiyor, **yeniden başlıyor**.
+- Sebep iki katmanlı: mapper `startedAt: Date.now() - (37 * 60000)` ile sabit bir başlangıç uyduruyor, VE
+  `TaskItem`'da gerçek bir sayaç başlangıcı alanı **yok** — DTO yalnız `TimerState` (running/paused) taşıyor.
+- Yani tiklayan sayı bugün fixture tiyatrosu; gerçek bir görevde de doğru olamaz.
+- Gereken: `TaskItem`'a bir `TimerStartedAt`, projeksiyona taşınması, mapper'ın uydurmayı bırakması.
+- TOPLAM etkilenmiyor — o saklanan `loggedMinutes`'tan geliyor ve yenilemede korunuyor.
+- **Gelecek regresyon riski: 🟡** — kullanıcı sayaca güvenip yanlış süre bildirebilir.
+
+
+**BL-234 GÜNCELLEME (2026-08-24, Tur C) — tik tak eden gösterge GEÇİCİ OLARAK KALDIRILDI**
+
+**↑ bu kaydın ÖNCEKİ bloğu — birleştirildi 2026-08-28, silinmedi.**
+
+> ⚠ Bu bir KAYIT DEĞİL, yukarıdaki kaydın daha eski bir hâlidir. Ayrı bir `###` başlığı
+> olarak dururken aynı koda iki blok düşüyordu ve biri "kapandı" diğeri "açık" görünüyordu —
+> bu dosyada bunun 10 örneği ölçüldü (2026-08-28). O yüzden başlık değil, alıntı.
+
+- Durum: **[GEÇİCİ ÇÖZÜM UYGULANDI]** — özellik yazılmadı, yalan söylemek durduruldu.
+- Kaldırılan: `wcn-ts-live` / `wcnTimerValue` göstergesi ve onu boyayan bir saniyelik `setInterval`.
+- **Kalanlar (hepsi gerçek):** TOPLAM (`loggedMinutes`, saklanıyor, yenilemede korunuyor) · görevin DURUMU ·
+  **"Süre gir"** — kalıcı olan tek yazma yolu.
+- İpucu cümlesi artık dürüst: *"Geçen süre kaydedilmiyor — harcadığınız süreyi elle girin."* (7 dil).
+- ⚠ **DURUM CÜMLESİ DE DÜZELTİLDİ:** "Devam ediyor — sayaç işliyor" diyordu; gösterge kalkınca bu cümle bir
+  alt satırdaki ipucuyla ÇELİŞİR hâle geldi (biri sayaç işliyor diyor, diğeri kaydedilmiyor). Artık yalnız
+  görevin kendi durumunu söylüyor: "Devam ediyor" / "Duraklatıldı". 7 dil.
+- ⚠ **ENTITY ALANI EKLENMEDİ, MIGRATION YAZILMADI** (testle kilitli: DTO'da `TimerStartedAt` yok). Doğru çözüm
+  **MOD-0280**'e ait (blueprint, EA-TBD) — orada gerçek bir sayaç başlangıcı saklanınca gösterge geri gelir.
+- **CANLI:** toplam 3sa 45dk · durum "Devam ediyor" · tik tak **yok** · yenileme öncesi/sonrası **birebir aynı**.
+- **Gelecek regresyon riski: 🟢** (artık yanlış bir sayı gösterilmiyor).
+
+### BL-241 — [ÖLÇÜLDÜ, AÇIK] Engelleyici kontrol listesi maddesi `complete`i engellemedi
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `TaskItemTransitionHandlers.cs:264-268` 409 ChecklistIncomplete; seviye projeksiyonda `WorkAggregationModels.cs:894`; yeni maddeler Optional (`diten-checkitem.js:102`).
+
+- ✅ **KAPANDI — KUSUR YOK, CT ÖLÇTÜ 2026-08-24.** Kural sunucuda UYGULANIYOR: `TaskItemTransitionHandlers.cs:261` — `Done` hedefinde `BlocksCompletion(checklist)` doğruysa **409 `ChecklistIncomplete`**. Kuralın kapsamı da kodun kendi yorumunda yazılı: *"Only **Blocking** items gate completion — an unfinished `Required` item is an expectation, not a barrier."* Yeni eklenen maddenin varsayılan seviyesi **`Optional`** (`diten-checkitem.js:102`) ve ekleme satırındaki çip bunu ekranda "İsteğe bağlı" diye söylüyor. Yani seviyesi değiştirilmemiş bir madde engellemez ve `204` **beklenen** cevaptır. Ekran zorunlu olmayan bir adımı zorunlu göstermiyor.
+- Ölçüm (2026-08-25, görev `de76acfa`): `addChecklistItem` ile `{ text, required: true, blocking: true }`
+  eklendi (204 döndü), ardından aynı görev `complete` edildi — **204, ret yok**.
+- ⚠ Bu tek başına kanıt DEĞİL: `addChecklistItem` isteğinin `required`/`blocking` bayraklarını okuyup
+  okumadığı ölçülmedi; bayraklar sessizce düşmüş de olabilir. İki olasılıktan hangisi olduğu bilinmiyor,
+  bu yüzden kapatılmadı ve "kural uygulanmıyor" diye YAZILMADI.
+- Yapılacak ölçüm: maddeyi ekledikten sonra projeksiyonun `checklist.items[]` çıktısında `blocking: true`
+  görünüyor mu; görünüyorsa `CHECKLIST_INCOMPLETE` neden dönmüyor.
+- `CHECKLIST_INCOMPLETE` istemci tarafında zaten haritalı ve engelleyici sayılıyor — yani kopuk halka
+  istemcide değil.
+- **Gelecek regresyon riski: 🟡** — eğer kural gerçekten uygulanmıyorsa, ekran zorunlu bir adımı zorunluymuş
+  gibi gösteriyor demektir; veri bozulmaz ama söz tutulmaz.
+
+### BL-245 — [ÖLÇÜLDÜ, AÇIK] `cancel` menüde genel ok ikonuyla çiziliyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `app.js:1552` — `cancel: 'bx-x-circle'` haritada.
+
+- Ölçüm (`848a624f`, şerit menüsü): `inboxActionIcon` haritasında `cancel` yok, geri düşüş
+  `bx-right-arrow-alt` — yani "Görevi iptal et" **ileri oku** takıyor. Metin kırmızı, ikon nötr ve yanlış yönde.
+- ⚠ `inquire: bx-question-mark` DOKUNULMADI: sahibin bir tur önce onayladığı ikon.
+- İkon seçimi sahibin ilgilendiği bir karar olduğu için düzeltilmedi, öneri olarak bırakıldı: `bx-x` veya
+  `bx-block`. Sahibin seçmesi gerekiyor.
+- **Gelecek regresyon riski: 🟢**
+
+
+**BL-245 güncelleme (2026-08-25) — KAPANDI: `cancel: 'bx-x-circle'`**
+
+**↑ bu kaydın ÖNCEKİ bloğu — birleştirildi 2026-08-28, silinmedi.**
+
+> ⚠ Bu bir KAYIT DEĞİL, yukarıdaki kaydın daha eski bir hâlidir. Ayrı bir `###` başlığı
+> olarak dururken aynı koda iki blok düşüyordu ve biri "kapandı" diğeri "açık" görünüyordu —
+> bu dosyada bunun 10 örneği ölçüldü (2026-08-28). O yüzden başlık değil, alıntı.
+
+- CT kararı uygulandı, **haritaya** eklendi (`inboxActionIcon`), çağrı yerinde seçilmedi.
+- `reject` ve `decline` zaten bu glifi taşıyordu; üçü bir aile — "bu iş ilerlemiyor". Anlamı ETİKET taşıyor,
+  ikon TONU. Reddedilenler koda yazıldı: `bx-x` (kapat/vazgeç, kapatma düğmesinin glifi) · `bx-block`
+  (yasak; iptal bir karar, yasak değil).
+- **CANLI ÖLÇÜM:** listede dört menü birden açıldı — 40 menü satırı, **kod başına tam bir ikon**:
+  `cancel → bx-x-circle` · `inquire → bx-question-mark` · `plan → bx-calendar-plus` · `reassign → bx-user-pin`.
+  Aynı kodun iki ikonlu olduğu tek bir yer yok.
+- ⚠ **RAYDA İKON YOK** — "ikisinde de aynı" koşulu rayda karşılanamıyor çünkü ray ikon çizmiyor. Ölçüldü:
+  `complete` · `inquire` · `reassign` · `cancel`, dördü de metin-yalnız (`wcn-act-btn` içinde tek `<span>`).
+  Bu katman tasarımı, bu turda değiştirilmedi.
+- ⚠ **DİYALOG FARKLI BİR GLİF KULLANIYOR VE BU KUSUR DEĞİL.** "Görevi iptal et" onay diyaloğu
+  `bx-error-circle text-danger` gösteriyor. Bu glif aksiyondan değil, diyaloğun TÜRÜNDEN geliyor
+  (`_GlobalConfirmation` → `iconHtml(type)`), yani ürünün tamamındaki ~74 onay diyaloğuyla ortak dil:
+  daire "bu yıkıcı bir onaydır" der, menü ikonu "bu aksiyon bir iptaldir" der. **İki eksen, eksen başına tek
+  glif.** Birini diğerine benzetmek, sahibin onayladığı tek-diyalog-dili kararını bozardı.
+
+#### İKON HARİTASI SAYIMI (CT kararı bekliyor — bu turda doldurulmadı)
+- Çizilebilir kod sayısı **26** (sunucunun `BuildActions`'ı + showcase fixture'ları). Haritada **12**.
+  **14'ü varsayılana (`bx-right-arrow-alt`, genel ileri oku) düşüyor:**
+
+  | Kod | Kaynak | Kod | Kaynak |
+  |---|---|---|---|
+  | `claim` | sunucu + fixture | `acceptMeeting` | fixture |
+  | `release` | sunucu | `acceptOffer` | fixture |
+  | `start` | sunucu + fixture | `declineMeeting` | fixture |
+  | `resume` | sunucu + fixture | `delegate` | fixture |
+  | `complete` | sunucu + fixture | `dispute` | fixture |
+  | `submitReview` | sunucu | `replan` | fixture |
+  | *(`cancel` bu turda dolduruldu)* | — | `resolve` | fixture |
+
+- ⚠ Ters yönde bir bulgu daha: **`reviewMeeting` haritada var, hiçbir kaynak üretmiyor** — ölü harita girdisi.
+- ⚠ Bunların hepsi her yerde görünmüyor: ray ikon çizmiyor, yani varsayılan glif yalnız MENÜ satırlarında ve
+  onay diyaloğunun başlığında görünür. Yine de `complete` ve `start` gibi en sık kodların menüde genel ileri
+  oku takıması, `cancel` ile aynı sınıftan bir kusur.
+- **Gelecek regresyon riski: 🟡** — yanlış bilgi vermiyor ama ikon dili yarım; okuyucu şekilden bilgi almayı
+  bırakıyor.
+
+
+**BL-245 güncelleme (2026-08-25) — yaşam döngüsü fiilleri haritaya alındı**
+
+**↑ bu kaydın ÖNCEKİ bloğu — birleştirildi 2026-08-28, silinmedi.**
+
+> ⚠ Bu bir KAYIT DEĞİL, yukarıdaki kaydın daha eski bir hâlidir. Ayrı bir `###` başlığı
+> olarak dururken aynı koda iki blok düşüyordu ve biri "kapandı" diğeri "açık" görünüyordu —
+> bu dosyada bunun 10 örneği ölçüldü (2026-08-28). O yüzden başlık değil, alıntı.
+
+- CT kararı: `start`+`resume → bx-play` · `complete → bx-check-double` · `claim → bx-user-plus` ·
+  `release → bx-user-minus` · `submitReview → bx-send`. Kalan yedisi (acceptMeeting · acceptOffer ·
+  declineMeeting · delegate · dispute · replan · resolve) **bilerek** varsayılanda; gerekçe koda yazıldı.
+- Ölü `reviewMeeting` girdisi silindi (`scheduleReviewMeeting` canlı olan).
+- ⚠ **GLİF VARLIĞI ÖLÇÜLDÜ**, ada bakılmadı: test artık her glifi `iconify-icons.css` içinde arıyor.
+  Mutasyonla kanıtlandı — `bx-send` yerine uydurma bir glif konunca test kırmızıya döndü.
+- **CANLIDA GÖRÜLEN DÖRT**: `bx-play` (Başlat) · `bx-check-double` (Tamamla) · `bx-send` (İncelemeye gönder) ·
+  `bx-user-plus` (Havuz/Üstlen). ⚠ **`release` ve `resume` GÖRÜLEMEDİ** — 76 canlı görevin hiçbirinde ve
+  hiçbir fixture'da yok. "Doğrulandı" yazılmadı.
+- ⚠ Ara ölçümde bir kez yanıldım ve düzelttim: detay sayfasının rayı ikon çizmiyor, ama **liste satırının
+  birincil düğmesi çiziyor** — beş glifin görünür olduğu yüzey orası.
+
+### BL-267 — [ÖLÇÜLDÜ, AÇIK — TASARIM TUZAĞI] Yanlış bir liste yüklemesi geri alınamıyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `DocumentReferenceListHandlers.cs:207-221` geri çekme (sebep+aktör) + `TaskRepositories.cs:581` yalnız çekilmemişleri buluyor.
+
+- Doğrulama sırasında kendi kendine ortaya çıktı: ekranı sınamak için küçük bir `TEST-1` dosyası yükledim ve o
+  **güncel liste** oldu (arama en yeni sürümü okuyor). Gerçek 358 satırlık listeyi yeniden güncel yapmak için
+  tekrar yüklemeyi denedim → **409, "bu dosya zaten 2026-08-24 sürümü olarak duruyor"**.
+- **İki kural tek başına doğru, birlikte tuzak:**
+  (1) aynı baytlar tanınır, kopyalanmaz — iki kişinin aynı öğleden sonra yüklemesi iki "güncel" liste üretmesin
+  diye; (2) en yeni sürüm kazanır.
+  Birlikte: **yanlış bir dosya doğrunun ARDINDAN yüklenirse, doğru liste eski sürüm olarak mahsur kalır** ve
+  onu geri getirmenin yolu yoktur.
+- ⚠ Bu, geçen tur sorduğum sorunun canlı hâli ("sürüm silinemiyor — eski sürümü pasifleştirme gerekir mi?").
+  CT `WithdrawnAt`'i sahibin kararına bıraktı ve bu turda yapılmamasını söyledi; **yapılmadı**.
+- **Bugünkü durum dürüstçe:** geliştirme kiracısında güncel liste benim `TEST-1` satırım (1 kayıt), gerçek 358
+  satırlık liste `2026-08-24` sürümü olarak duruyor ama güncel değil. Elle düzeltilemez.
+- Seçenekler: (a) sürüm geri çekme (`WithdrawnAt`) — geri çekilen sürüm "en yeni" sayılmaz; (b) "güncel sürümü
+  seç" işlemi — en yeni kuralını elle geçersiz kılar; (c) aynı baytların yeniden yüklenmesine izin ver — ama o
+  zaman (1)'in koruduğu şey kaybolur.
+- **Gelecek regresyon riski: 🔴 kısıtlı** — veri kaybı yok, ama yanlış yükleme yapan bir kiracı, dilim 3
+  geldiğinde yanlış listeye karşı atıf yapar.
+
+### BL-269 — ortak onay kutusunun çağıran sayımı tavan değil nüfus sayımıydı (2026-08-26)
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `global-confirm-input-type.test.js:56` sayımı **dinamik** yapıyor (`:71-73`) — altıdan yediye çıkışı kendi yazıyor.
+
+- `global-confirm-input-type.test.js` ürünün tamamındaki `showInput:` çağrılarını **altı**ya sabitliyordu;
+  amacı doğru (bir modülün turu başka modülün diyaloğunu oynatmasın), sayıyı okuma biçimi eksikti.
+- Doküman listesi geri çekmesi meşru bir YEDİNCİ çağıran olarak geldi ve muhafız kırmızıya döndü.
+- **Çözüm ikili:** (a) sayım yediye taşındı ve yeni çağıran adıyla yazıldı — muhafızın koruduğu kural
+  (hiçbir ÖNCEDEN VAR OLAN çağıran değişmedi) hiç oynamadı; (b) yeni çağıran `inputType` **vermiyor** —
+  gerekçe düz yazıdır, bileşenin öntanımlısı da düz yazıdır; tip adlandırmak ürünün ikinci sapması olurdu.
+- **Ders:** büyüyemeyen bir nüfus sayımı, ortak bileşeni bir sonraki modül için kullanılamaz kılar. Muhafızın
+  yorumuna bu ayrım yazıldı ki gelecek tur sayıyı "düzeltmek" yerine anlasın.
+
+### BL-294 — 6 yer belirteci doğrudan `Request.Cookies`'ten okuyor: bayat VE parçasız (2026-08-27, ölçüldü)
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** Altı okuyucunun altısı da `AuthTokenCookies` üzerinden (`UsersController.cs:288`, Roles `:165`, Permissions `:69`, RoleAssignments `:127`, UserRoleAssignments `:124`, GoldenReferenceSlim `:246`). ⚠ `AuthTokenCookies.cs:23-27` hâlâ eski boşluğu ilan ediyor.
+
+`AuthTokenCookies`'i atlayıp `Request.Cookies["access_token"]` diye indeksleyen **6** yer:
+`UsersController:283` · `RolesController:165` · `PermissionsController:69` ·
+`RoleAssignmentsController:127` · `UserRoleAssignmentsController:124` · `GoldenReferenceSlimController:246`.
+
+İki ayrı kusur, aynı satırlarda:
+1. **Bayat** — BL-293'ün tamponunu görmezler, yenilemenin olduğu istekte eski belirteci kullanırlar.
+2. **Parçasız** — canlı ölçüm belirtecin `chunks-4` + 4 parça olarak taşındığını gösterdi. Bu satırlar
+   `access_token` çerezini okuyup literal `"chunks-4"` dizgisini belirteç sanır: yani bu 6 uç yalnız
+   yenilemede değil, **belirteç 3800 karakteri aştığı her durumda** kırık. Bugün her giriş bu durumda.
+- **Düzeltme:** hepsi `AuthTokenCookies.GetAccessToken(Request)` çağırsın. Tek satırlık değişiklikler; bu
+  turda yapılmadı çünkü kapsam merkezî düzeltmeydi.
+- **Gelecek regresyon riski: 🔴** — (2) ölçülmüş bir kırıklık, teorik değil.
+
+### BL-309 — `task-detail-resolver.js` `sourceNavigation` üretiyor, hiçbir yüzey okumuyor (2026-08-28, ölçüldü)
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `task-detail-resolver.js:131` üretmiyor; muhafız sıfır üretici olduğunu iddia ediyor (`workcenter-next-l10n-key-guard.test.js:348`).
+
+- Çözümleyici her fixture için `sourceNavigation: { label: { kind: 'resource', key: 'OpenInSource' }, deepLink }`
+  döndürüyor. `sourceNavigation` deposunda **başka hiçbir yerde geçmiyor** — üretilen çıktı okunmuyor.
+- Sonucu: `OpenInSource` anahtarı 7 dilde **yok** ve olmaması doğru — hiçbir yüzey onu çizmiyor, eklemek ölü
+  metin olurdu (aynı sebeple `WatcherRoleWatcher` de yok).
+- Muhafız testi bu istisnayı **gerekçesiyle** taşıyor ve gerekçenin geçerliliğini ayrıca ölçüyor: bir gün bir
+  render sitesi `sourceNavigation`'ı okursa test kırmızıya döner ve anahtar 7 dilde istenir.
+- **Karar gerektiren soru:** kaynak bağlantısı çizilecek mi (o zaman anahtar gerekir) yoksa çözümleyiciden
+  kaldırılacak mı? Bu bir ürün kararı; kod tarafı iki yönde de hazır.
+- **Gelecek regresyon riski: 🟢** — bugün hiçbir şey kırılmıyor; ölü çıktı.
+
+### BL-044 — 🟡 Türkçe büyük harfle arama sıfır sonuç veriyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `app.js:365-369` foldForSearch (NFD + işaret ayıklama + I/İ/ı→i), `:851`de kullanılıyor. Arşivde kapanış zaten var (`product-backlog-closed.md:2928`).
+
+- **Ölçüm:** `kapanış` → 1 eşleşme ✅ · `KAPANIŞ` → **0** ❌ · `kapanis` (aksansız) → 0.
+- **Kök neden:** `app.js:372,374,391,397` **invariant** `toLowerCase()` kullanıyor. `'I'.toLowerCase()` noktalı
+  `'i'` veriyor; metindeki harf noktasız `'ı'`. Yani içinde I/ı geçen her Türkçe kelime büyük harfle aranınca kaybolur.
+- **Neden gerçek bir kullanım:** caps lock ve mobil otomatik büyük harf sıradan; kullanıcı "arama bozuk" der, nedenini bilemez.
+- **Yön (CT):** iki tarafı da **yerelden bağımsız katlama** ile normalize et (NFD ile aksan ayır + I/İ/ı/i'yi ortak forma indir).
+  Bu tek değişiklik aksansız aramayı da (`kapanis`) çözer. `toLocaleLowerCase('tr')` **yanlış yol** — 7 dilli üründe diğer dilleri bozar.
+
+### BL-045 — 🟡 Sinyal çipi sayacı sekme kapsamlı, liste segment kapsamlı
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `app.js:773-775` facetItems/segmentCount/signalCount — CT'nin önerdiği (b) seçeneği uygulanmış. Arşiv kapanışı `:3099`.
+
+- **Ölçüm:** İşlerim'de çip *"SLA riski **3**"* diyor, tıklanınca **2** satır süzülüyor. Üçüncüsü
+  (`Yeni maliyet merkezi açılış talebi`) **Bekleyen** segmentinde. Çip etkinken segment sayaçları
+  (Aktif 9 · Bekleyen 1 · Planlı 1) **hiç değişmiyor** → kullanıcı kaybolan kalemi bulamıyor.
+- **Neden tasarım gereği böyle:** sayaçlar sekme içi filtreleri yok sayıyor (`app.js:343` yorumu bunu beyan ediyor),
+  liste ise segment + çip + arama süzgecini uyguluyor.
+- **Karar gerekiyor:** (a) çip sayacını **aktif segmente** daralt — sayı ile liste her zaman tutar, ama sinyal
+  başka segmentte saklıysa görünmez olur; (b) çip etkinken **segment sayaçlarını yeniden hesapla** (faceted search
+  davranışı — SAP/Oracle worklist'lerinin yaptığı), kullanıcı "3'ün 1'i Bekleyen'de" bilgisini görür.
+  **CT önerisi: (b)** — sinyal, segmentten bağımsız bir eksendir; onu segmente daraltmak aks yasasını sinyal aleyhine bozar.
+
+### BL-046 — 🟡 Kapanmış görevler Geçmiş'te canlı SLA sayacı gösteriyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `app.js:458-462` terminal dalı → `SlaClosedOnTime`, sayaç donuyor. Arşiv kapanışı `:3104`.
+
+- **Ölçüm:** Geçmiş sekmesinde *"Haziran KDV beyannamesini gönder · **Tamamlandı** · 11g gecikmiş"*.
+  Sayaç bugüne göre işlemeye devam ediyor; yarın "12g gecikmiş" olacak.
+- **Neden yanlış:** biten iş gecikmez. SAP/Oracle worklist'lerinde kapanmış kalem **tamamlanma tarihini**
+  ve varsa "son tarihi X gün aştı" **donmuş** ölçüsünü gösterir, ilerleyen bir sayaç değil.
+- **Yön (CT):** terminal durumda SLA çipi ya tamamlanma tarihine dönmeli ya da kapanış anındaki değere donmalı.
+  Karar noktası: gecikmeyle kapanmış iş için "geciken kapanış" rozeti raporlamada değerlidir — silmek yerine dondurmak yeğ.
+
+### BL-047 — 🟡 Tablo görünümünde DataTable bilgi metni İngilizce
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `Views/Shared/_DataTableL10n.cshtml`, iki layout'tan da yükleniyor; testi `datatable-language-one-delivery-path.test.js`.
+
+- **Ölçüm:** Türkçe sayfada tablo altında **"Showing 1 to 9 of 9 entries"**.
+- **Kapsam:** yalnız görünen metin değil — sayfalama, arama kutusu ve boş-tablo metinleri de aynı l10n paketinden gelir.
+- **Neden kapı görmedi:** l10n kapısı resx dosyalarını denetliyor; bu metin **vendor bileşeninin kendi paketinden**
+  geliyor, resx'te hiç görünmüyor. `[[feedback_tenant_l10n_seven_langs]]` kuralının göremediği bir sınıf.
+- **Yön (CT):** tenant tarafındaki her DataTable için dil paketi bağlanmalı — **7 dil**. Tek sayfalık düzeltme değil,
+  bir kural: yeni tablo eklendiğinde paketi bağlanmamışsa İngilizce sızar.
+
+### BL-048 — 🟢 Sunucu doğrulama mesajı Türkçe, alan adı ham İngilizce
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `Tasks/api.js:148-149` + `TasksIndex.tr.resx:120-121`; testi `validation-reason-code-bridge.test.js`. Platform kaynağında "Request Title" **sıfır** eşleşme.
+- ⚠ **BL-052 ile aynı kusur:** kapanışı arşivde yazılı (`product-backlog-closed.md:3379`), açık kopya burada kalmış.
+
+- **Ölçüm:** 224 karakterlik başlıkla oluşturma → `400 · "'Request Title', 200 karakterden küçük veya eşit olmalıdır. 224 karakter girdiniz."`
+  Cümle çevrilmiş, alan adı (`Request Title`) çevrilmemiş — FluentValidation property adını olduğu gibi basıyor.
+- **İlgili:** BL-040 (sebep kodu köprüsü). Kod taşınırsa alan adı da frontend tarafında çevrilebilir hale gelir;
+  bu madde BL-040 çözülünce **kendiliğinden** kapanabilir — ayrı iş açmadan önce oraya bakılmalı.
+
+### BL-049 — 🟢 Görev detayında ham GUID gösteriliyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `app.js:4306-4317` — 8 karakter…4 karakter + `CopyReference` düğmesi. Arşiv kapanışı `:3031`.
+
+- **Ölçüm:** "KAYNAK BAĞLAMI → Kaynak kaydı `31a44983-40cc-4252-ac49-3fa2766e4014`". Hemen altında zaten
+  **"Kaynak kaydını aç"** bağlantısı var, yani GUID kullanıcıya hiçbir yetenek kazandırmıyor.
+- **Neden kayda değer:** SAP/Oracle'da kaynak kaydı **iş anahtarıyla** (belge numarası) gösterilir; teknik kimlik
+  destek/hata ayıklama içindir, ana yüzeyde değil.
+- **Yön (CT):** ya iş anahtarı göster, ya da GUID'i destek amaçlı bir yere (kopyala düğmesi / geliştirici katmanı) taşı.
+
+---
+
+## WorkCenter ön-koşulları (seam register — WorkCenter branch'ından ÖNCE karar/stub)
+
+> **DURUM GÜNCELLENDİ (2026-07-31 mutabakatı) — BEŞ SEAM DE KURULDU.** Bu bölüm uzun süre "Bu branch'te YAPILMIYOR" diyordu; ölçüm beşinin de shipped olduğunu gösterdi. Kayıt kodun gerisinde kalmıştı.
+>
+> | Seam | Durum | Kod |
+> |---|---|---|
+> | **WC-1** Birleşik Work-Item kontratı | ✅ | `Features/WorkAggregation/Providers/IWorkItemProvider.cs` (`866bcbf3`) |
+> | **WC-2** Çalışma-zamanı / takvim seam'i | ✅ | `Features/WorkAggregation/Services/IWorkingTimeCalculator.cs` + `WorkItemSlaCalculator` (`be0cc190`) |
+> | **WC-3** Assignee çözümleme seam'i | ✅ | `Features/Tasks/Services/ITaskAssignmentResolver.cs` |
+> | **WC-4** Notification seam'i | ✅ | `Features/Tasks/Services/TaskNotificationService.cs` (`7e7e8c40`) |
+> | **WC-5** Görev-kaynağı kaydı | ✅ | `IWorkItemProvider` kayıt yolu, 2 sağlayıcı DI'da (`DependencyInjection.cs`) |
+>
+> Aşağıdaki özgün gerekçeler **tarihsel kayıt** olarak duruyor — seam'lerin neden bu şekilde kurulduğunu anlatıyorlar. "YAPILMIYOR" ifadesi artık geçersizdir.
+
+- **WC-1 — Birleşik Work-Item kontratı:** WorkCenter çok modülden görev toplar. Bugün `ApprovalTask` (workflow) var; ama workflow-dışı modüller de görev üretecekse tek bir "WorkItem" kontratı (id/tip/başlık/modül/entity-ref/assignee/due/durum/aksiyon) gerekir. Yanlış kurulursa her modül entegrasyonu yeniden yazılır. **En kritik seam.**
+- **WC-2 — Çalışma-zamanı / takvim seam'i:** SLA/son-tarih hesabı (`SlaEscalationRule`) koda gömülmesin, bir "çalışma-zamanı" arayüzünden geçsin; şimdilik naive 7/24 dönsün. İleride gerçek çalışma saatleri + tatil (BL: Calendar) sadece arayüzü değiştirir, WorkCenter'a dokunmaz. (Kullanıcıların şirket çalışma saatleri bu seam sayesinde regresyonsuz eklenir.)
+- **WC-3 — Assignee çözümleme seam'i:** `GetMyWorkflowTasks` bugün görevi user'a göre çözüyor. İleride position-based ([BL-008]) gelince atama pozisyondan türeyecek → atama bir "assignee resolver" arkasından geçsin ki WorkCenter yeniden yazılmasın.
+- **WC-4 — Notification seam'i:** Görev bildirimleri (bell/email) bir arayüzden çıksın; gerçek notification (ertelenmiş/başka ekip) sonradan additive takılsın.
+- **WC-5 — Görev-kaynağı kaydı:** Workflow için `WorkflowManifestProvider` var; workflow-dışı modüllerin de WorkCenter'a görev katkısı yapabilmesi için benzer bir kayıt yolu.
+
+---
+
+### BL-053 — 🟡 İzleyiciler rollü katılımcı listesine dönüşsün (RACI'nin "danışılan"ı)
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `TaskEnums.cs:176-180` (Watcher|Consultant) → `TaskSupportingEntities.cs:190` → `WorkAggregationModels.cs:619` → `app.js:2795` rolü çiziyor; 7 dil resx; sözleşme testi `TaskJsonContractTests.cs:98`.
+
+- **Nereden çıktı:** sahibin create prototipinde ayrı bir **"Danışman (Consultant)"** bölümü var;
+  bizde yalnız düz bir **İzleyiciler** listesi mevcut (`Views/Tasks/_Form.cshtml` `taskWatchers`).
+- **Kavramın adı RACI:** Responsible · Accountable · **Consulted** · Informed. Sahibin "Danışman"ı
+  bunun **C**'si. Oracle Fusion Projects'te "Project Team Members" listesi üyelere **rol** verir;
+  SAP tarafında iş akışı "involved parties" rolleriyle aynı işi görür. **Hiçbirinde ayrı bir alan
+  değil** — katılımcı listesindeki bir rol.
+- **Yön (CT):** düz izleyici listesini **rollü katılımcı listesine** çevir: *İzleyici · Danışman ·
+  Onaylayan*. Böylece ileride "Bilgilendirilen" istendiğinde yeni alan açılmaz, rol eklenir.
+- **Neden bugün yapılmadı:** küçük değil. Projeksiyonu (katılımcı + rol), detay sayfasını ve
+  bildirim hedeflemesini etkiler; kendi dilimini hak ediyor. Ayrıca **onaylayan** rolü MOD-0023'ün
+  karar verdiği kişiyle karışmamalı — MOD-0024 onayı raporlar, karar vermez.
+- **Yeniden ölçüm:** `rg -n "taskWatchers|watchers" frontend/Diten.Web/Views/Tasks/_Form.cshtml` ·
+  projeksiyonda `watchers` alanının şekli.
+
+### BL-059 — 🟠 Platform sistem kiracısı entitlement kapısını geçmeli (KARAR VERİLDİ, YAPILMADI)
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `TenantModuleAccessService.cs:84-96` IsSystemTenantId + Source="PlatformSystemTenant"; testi `PlatformSystemTenantModuleAccessTests.cs`. ⚠ "Canlı doğrulama bekliyor" diyordu — kod ve test yerinde, yalnız tık eksik.
+
+- **Sorun (CT canlı ölçümü 2026-08-10):** Platform Admin Tenant'ta menü **eksik**. Ölçüm:
+  `work-aggregation` (IsBaseline:false) menüde **var** → *Görev Merkezi*; `tasks` (IsBaseline:false)
+  menüde **yok** → *Alan Tanımları* ve *Yinelenen Kurallar* görünmüyor. `document-management`'ın dört
+  sayfası da manifest'te **var** ama katalogdan **gelmiyor** — menüde yalnız elle yazılmış (LEGACY-NAV)
+  hâlleriyle duruyorlar. Yani her yeni modül için **elle entitlement** açmak gerekiyor.
+- **⚠ KARAR ZATEN VERİLDİ (2026-08-10, sahip + Codex incelemesi) AMA HİÇBİR YERE YAZILMAMIŞTI.** Bu madde
+  o boşluğu kapatıyor. Karar metni:
+  > Platform Admin Tenant, katalogda **aktif ve tenant-assignable** bütün modüllerde entitlement kapısını
+  > geçer; **permission kontrolü devam eder**. Sonraki modüllerde ayrı entitlement açılmaz.
+- **Anlaşılmış güvenlik sınırları (Codex incelemesinden, aynen korunur):**
+  - yalnız **tam** `SystemTenantRules.PlatformSystemTenantId` (`…0001`); GUID elle yazılmaz,
+  - baypas **kendi içinde** doğrular: modül mevcut · soft-deleted değil · `Active` · `IsTenantAssignable`
+    (üstteki `GetAssignableAsync` süzgecine **güvenilmez** — defense-in-depth),
+  - **müşteri kiracılarının** entitlement davranışı birebir korunur (negatif test zorunlu),
+  - `IsBaseline` semantiği **değişmez** (bir modülü baseline yapmak onu tüm müşterilere açardı),
+  - **permission kontrolü asla atlanmaz**,
+  - sonuç "baseline" değil, ayrı bir **`PlatformSystemTenant`** erişim nedeni olarak raporlanır.
+- **⚠ CT'nin eklediği ve karar sırasında kabul edilen uyarı — yan etki, kendiliğinden oluşuyor:** baypas
+  + `FullCatalogPermissionGrantService` (her yeni permission'ı `…0001` SuperAdmin'e otomatik verir)
+  birlikte, platform yöneticisine her iş modülünün ekranlarında **görme değil işletme** yetkisi verir.
+  Sahip bunu bilerek kabul etti ("bütün modülleri oradan kontrol ediyoruz"), **ama domain seviyesindeki
+  SoD / maker-checker / lifecycle / actor kuralları asla baypas edilmez** — permission sahibi olmak
+  onaysız geçişe izin vermez.
+- **Neden önemli — menü temizliğinin ÖN KOŞULU:** LEGACY-NAV'daki elle yazılmış bağlantıları silmek
+  ancak aynı sayfalar **katalogdan geldikten sonra** güvenlidir. Baypas olmadan silinirse beş sayfa
+  menüden tamamen kaybolur (URL ile erişilebilir kalır, menüden bulunamaz).
+- **Durum (2026-08-10): KOD YAZILDI, CANLI DOĞRULAMA BEKLİYOR.** Baypas `TenantModuleAccessService`
+  `GetEffectiveAccessDetailAsync` içinde, baseline kontrolünün **hemen ardından**: yalnız tam
+  `SystemTenantRules.IsSystemTenantId(tenantId)` + modül kendi içinde doğrulanır (mevcut · `IsDeleted:false` ·
+  `Status:Active` · `IsTenantAssignable`). Erişim `Source = "PlatformSystemTenant"` olarak raporlanır;
+  baseline modüller sistem kiracısında da `"Baseline"` demeye devam eder (semantik değişmedi). Permission
+  kapısı el değmemiş — bu yalnız kiracı entitlement duvarını kaldırır.
+  Testler `tests/Diten.Platform.Application.Tests/AccessGovernance/PlatformSystemTenantModuleAccessTests.cs`:
+  pozitif (entitlement'sız erişim + sebep alanı) **düzeltmeden önce kırmızıydı**; negatifler (müşteri kiracısı ·
+  pasif · soft-deleted · tenant-assignable değil · katalogda yok · baseline korunumu) düzeltmeden önce de
+  sonra da yeşil — regresyon nöbetçisi olarak yazıldılar.
+- **Yeniden ölçüm:** `rg -n "IsSystemTenantId|PlatformSystemTenantId" services/Diten.Platform/src/Diten.Platform.Application/Services/TenantModuleAccessService.cs` ·
+  `dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~PlatformSystemTenantModuleAccessTests"` ·
+  canlı: platform kiracısında menüde *Alan Tanımları* ve *Yinelenen Kurallar* görünmeli.
+
+### BL-060 — 🟡 Sol menüde elle yazılmış bağlantılar ve çift bölüm başlığı (BL-059'dan SONRA)
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `_LayoutTenantShell.cshtml` — çift başlık gitmiş, kalan iki bağlantı (`:259`, `:284`) kaydın "kalsın" dediği ikisi.
+
+- **Ölçüm (CT canlı, 2026-08-10) — menünün bugünkü hâli:**
+  ```
+  ── Çalışma Alanı              ← ELLE (LEGACY-NAV)
+     Kontrollü Belgeler · Kurumsal Şablonlar · Şablon Varyantları · Erişim Matrisi · Mutabakat
+  ── İnsan Sermayesi Yönetimi   ← ELLE
+     Çalışan Taslakları
+  ── Geliştirici Etkinleştirme  ← KATALOG
+  ── Çalışma Alanı              ← KATALOG  (aynı başlık İKİNCİ kez)
+     Görev Merkezi
+  ── Yönetim                    ← KATALOG
+  ```
+  **"Çalışma Alanı" başlığı iki kez basılıyor** — biri elle blok, biri dinamik menü.
+- **Altı bağlantının ölçülmüş durumu:**
+  | Bağlantı | Manifest | Bugün katalogdan geliyor mu | Yapılacak |
+  |---|---|---|---|
+  | Kontrollü Belgeler · Kurumsal Şablonlar · Şablon Varyantları · Erişim Matrisi | ✓ var | ✗ (entitlement yok) | BL-059'dan sonra **sil** |
+  | Mutabakat (`/DocumentManagementReconciliation`) | ✗ **yok** | ✗ | önce **manifest'e eklenmeli** (sahibi), sonra sil |
+  | Çalışan Taslakları (`/HCM/Employees/Create`) | ✗ **yok** | ✗ | **HCM sahibinin işi**, dokunulmaz |
+- **⛔ SIRA ŞARTI:** bir bağlantı ancak **manifest'te var VE menüde katalogdan görünüyor** ise silinir.
+  Yalnız manifest yeterli değil — bugün dördü manifest'te olduğu hâlde entitlement kapısında duruyor.
+  Ölçmeden silmek, çalışan bir menüyü kırmaktır.
+- **Sahibin duruşu (2026-08-10):** *"silsek ne olur, modül silinmeyecek sonuçta; diğer developer'a
+  söyledim, o düzeltsin."* **Meşru bir risk tercihi** ve bir üstünlüğü var: elle yazılmış bağlantı,
+  sahibin manifest eksiğini **gizliyor**; silinince eksik görünür hale gelir ve sahibi düzeltir.
+  Bedeli: sahibi düzeltene kadar sayfa menüden bulunamaz (URL çalışmaya devam eder).
+- **CT önerisi:** BL-059 önce → çiftler görünür → sonra sil. Böylece kayıp penceresi hiç oluşmaz.
+- **Durum (2026-08-10): KOD YAZILDI, CANLI DOĞRULAMA BEKLİYOR.** BL-059 canlı doğrulandıktan sonra dört
+  çift bağlantı `_LayoutTenantShell.cshtml`'den `@if (Perms.Has(...))` sarmalayıcılarıyla birlikte silindi
+  (`/DocumentManagementControlledDocuments` · `/DocumentManagementTemplateMasters` ·
+  `/DocumentManagementTemplateVariants` · `/DocumentManagementAccessMatrix`) — dördü de katalogdan
+  `Doküman Yönetimi` grubu altında geliyor, sayfa başına `RequiredPermission` katalogda taşındığı için kapı
+  kaybı yok. **Mutabakat ve HCM Çalışan Taslakları silinmedi**; her ikisinin üstünde ölçülebilir silme koşulu
+  yazılı (manifest'te nav-visible sayfa **ve** menüde görülmesi — ikisi birden). LEGACY-NAV çiti duruyor.
+  **Çift "Çalışma Alanı" başlığı:** elle bloktaki başlık **kaldırıldı** — `Workspace` resx anahtarı ile dinamik
+  menünün `Nav.Domain.WORKSPACE` anahtarı aynı metni ("Çalışma Alanı") basıyordu ve silmelerden sonra elle
+  başlığın altında yalnız bir **doküman** sayfası kalıyordu (yanlış domain + çift ad). `Nav.Domain.DOCUMENTMANAGEMENT`
+  ile değiştirilmedi: bu yalnız çakışmayı "Doküman Yönetimi"ne taşırdı. Kalan tek elle bağlantı başlıksız duruyor —
+  olduğu şey bu: bölüm değil, kataloglanmayı bekleyen tekil bir giriş.
+- **Yeniden ölçüm:** `rg -n 'menu-header-text|href="/(Document|HCM)[^"]*"' frontend/Diten.Web/Views/Shared/_LayoutTenantShell.cshtml` ·
+  `rg -c 'Perms.Has\("platform.document-management' frontend/Diten.Web/Views/Shared/_LayoutTenantShell.cshtml` (1 olmalı) ·
+  canlı: `dotnet build frontend/Diten.Web` + yeniden başlat, sonra kiracı menüsünde dört rotanın **katalogdan**
+  geldiğini ve "Çalışma Alanı" başlığının **tek** kaldığını gör.
+
+### BL-061 — 🟢 Görev formu golden referansa hizalandı (KOD YAZILDI, CANLI DOĞRULAMA BEKLİYOR)
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `Views/Tasks/_Form.cshtml:19-23` başlık+breadcrumb, `:37` submit, bölüm kartları `:49,128,198,303,367,383,457`; `form.js:1290` enhanceSelects; testi `tasks-form-golden-alignment.test.js`.
+
+- **Kapsam:** yalnız `/Tasks/Create` + `/Tasks/{id}/Edit`. Alan eklenmedi/çıkarılmadı; yerleşim, gruplama ve
+  kontrol tipi değişti. Referans: `Views/DevEnablement/GoldenReferenceCompact/_Form.cshtml` (desen icat edilmedi).
+- **Yapılanlar:** tüm select'ler `select2 form-select`; tek kart → **beş** `<section class="card">`
+  (Temel bilgiler · Atama · Planlama · Ek alanlar | sağ sütun: Yönetişim); açıklama cümlesi yerine
+  **h5 + breadcrumb** (başlık `_Form.cshtml`'e taşındı, Create/Edit tek başlık paylaşıyor); Kaydet/İptal
+  **başlık satırında, tek kopya** (`<button type="submit" form="taskForm">`, kayıt artık form submit'i — Enter da
+  kaydediyor); `#taskCustomFields` kendi kartı.
+- **KARAR — dinamik select'ler (K4):** yapılandırılabilir alanların select'leri JS ile üretildiği için markup'ı
+  düzeltmek yetmezdi. `TaskForm.enhanceSelects(root)` eklendi ve **renderCustomFields + hidrasyondan SONRA**
+  çağrılıyor; üretilen select'ler `select2` sınıfını kendileri taşıyor.
+- **KARAR — zorunlu alan rozeti (#5):** rozet **eklendi**, çünkü yapılandırılabilir zorunlu alanları da sayıyor.
+  Paylaşılan `required-fields-tracker.js` yalnız `<form>` içinde çalışıyordu (form artık gerçek `<form>`) ve
+  sonradan eklenen kontrollere dinlemez bağlamıyordu; MutationObserver ile hem **eklenen** hem **görünür olan**
+  (`d-none` kalkan) alanlar sayılıyor. Sayamasaydı hiç eklenmeyecekti. Yan bulgu: gözlemciye "kendi rozetini
+  yoksay" koruması şart — testte iki rozet birbirini tetikleyip sonsuz döngü yaptı, `data-required-tracker` ile
+  kapatıldı.
+- **KARAR — arama kutusu + açılır liste (#6, sahibin sorusu):** ayrı arama kutusu **kaldırılamaz**. Ölçüm:
+  record alanı sunucuda arıyor (`TasksApi.fieldRecords(code, {term})`) ve kontrol kaynağın **tek sayfasını**
+  tutuyor; select2'nin kendi araması yalnız DOM'daki option'ları süzer, yani var olan bir kayıt için "sonuç yok"
+  derdi — yalan söyleyen bir arama kutusu. Çözüm: sunucu araması kalır, **select2'nin kendi arama kutusu
+  kapatılır** (`data-select2-search="off"` → `minimumResultsForSearch: Infinity`), böylece kullanıcı tek arama
+  görür.
+- **Inline CSS:** yok (FG-003 temiz). **Yeni l10n stringi yok** — mevcut anahtarlar kullanıldı
+  (`TasksTitle · FormTitleCreate/Edit · Section* · Action*`, yedi dilde mevcut). `PageDescription` artık
+  kullanılmıyor, silinmedi (zararsız).
+- **Yeniden ölçüm:** `npx vitest run tests/tasks-form-golden-alignment.test.js` (frontend/Diten.Web içinden) ·
+  `dotnet build frontend/Diten.Web` · canlı: forma bir görev kaydet, düzenlemede geri gel — yapılandırılabilir
+  alan değerleri yerinde olmalı.
+
+### BL-065 — 🟡 Görev başına bildirim tercihi: ekranda yeri var, sözleşmede karşılığı YOK
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** Üç katman: `TaskItem.cs:209,218,229` + `TaskDueSoonSweepJob` (`PlatformRecurringJobRegistrar.cs:193`) + iki test dosyası.
+
+- **Sahibin mockup'ı** e-posta kartında iki tercih istiyor: **hangi olaylarda** bildirim (son tarih
+  yaklaşınca · durum değişince · yorum eklenince · gecikmede) ve **ne zaman hatırlatılsın**
+  (1 gün / 3 gün / 1 hafta / 2 hafta / aynı gün).
+- **ÖLÇÜM (2026-08-11) — karşılığı yok:** `TaskItem`'da bildirimle ilgili **tek** alan var:
+  `EmailNotificationsEnabled` (bool, `TaskItem.cs:146`). `CreateTaskItemRequest`/`UpdateTaskItemRequest`
+  da yalnız onu taşıyor. `TaskNotificationEvents` (`TaskModels.cs:257`) beş olay **kodu** tanımlıyor
+  (`assigned · claimed · duesoon · completed · approvalrequested`) ama bunlar **manifest/dispatch
+  seviyesi** — görev başına "bu olayda haber ver" tercihi değil. Depoda `NotificationPreference` diye bir
+  varlık **yok**.
+- **Karar: kart bugünkü hâlinde bırakıldı (yalnız aç/kapa).** Seçtirip hiçbir yere yazmayan kontrol koymak,
+  bu turlarda defalarca düzelttiğimiz *"ekran tamam der, arkada bir şey yok"* kusurunun ta kendisi olurdu.
+- **Ne gerekiyor:** görev başına bildirim tercihi **sözleşmesi** — (a) olay seçimi: `TaskNotificationEvents`
+  kodlarından bir alt küme (`IReadOnlyList<string> NotifyOnEvents`), (b) hatırlatma önceliği: `duesoon`
+  olayının kaç gün önce tetikleneceği (`int? ReminderLeadDays`), (c) ikisinin de `TaskItem`'da saklanması ve
+  dispatch tarafında **okunması** — saklanıp okunmayan tercih de aynı kusur. Mevcut `EmailNotificationsEnabled`
+  ana anahtar olarak kalır (kapalıysa hiçbiri gönderilmez).
+- **DURUM (2026-08-11): ÜÇ KATMAN DA YAZILDI, CANLI DOĞRULAMA BEKLİYOR.**
+  - **Saklama:** `TaskItem.NotifyOnEvents` (`IReadOnlyList<string>?`) · `ReminderLeadDays` (`int?`) ·
+    `LastDueSoonReminderKey` (`string?`). **Neden nullable:** `null` = "hiç seçilmedi" → bugünkü davranış (her
+    olay gider). Boş liste = "hiçbiri", ayrı bir seçim. Non-nullable boş liste varsayılanı, deploy anında
+    **mevcut her görevi susturur** — varsayılan kılığına girmiş bir veri göçü olurdu; bu yüzden **backfill YOK**,
+    anlamlı varsayılan var. Hatırlatma **gün sayısı** olarak (BL-030: DateTimeOffset dizi olarak saklanıyor,
+    sorgu kırıyor). `EmailNotificationsEnabled` ana anahtar olarak duruyor ve önce kontrol ediliyor.
+  - **Sözleşme + form:** create/update istekleri iki tercihi taşıyor (update'te `null` = "bu çağıran bu alanı
+    düzenlemiyor", `ApprovalRequired` ile aynı kural — gidiş-dönüşte veri kaybını önler). E-posta kartında beş
+    olay çoklu seçimi + hatırlatma tekli seçimi; **yalnız gerçekten gönderilebilen olaylar** listeleniyor ve
+    `duesoon` bu listeye **ancak göndericisi aynı turda yazıldığı için** girdi. Ana anahtar kapalıyken blok
+    gizleniyor ve payload'da tercih **gönderilmiyor**; hatırlatma süresi de `duesoon` seçili değilken gizli.
+  - **Gönderici:** `TaskNotificationService` tercihi ana anahtarın **yanında** okuyor.
+    `SendDueSoonRemindersHandler` + `TaskDueSoonSweepJob` (yeni) — `TaskRecurrenceSweepJob` ile birebir aynı
+    şekil: aktif kiracıları dolaşır, `TenantScope.Begin` içinde tenant-scoped komutu çalıştırır.
+    **Idempotency görevin üstünde:** son tarih başına claim anahtarı (`LastDueSoonReminderKey`), **gönderimden
+    ÖNCE** expected-version yazımıyla damgalanıyor (recurrence claim'inin aynısı) — elle çalıştırılan komut da
+    korunur. Anahtar **son tarihe** bağlı, böylece ertelenen görev yeni tarihinde yeniden hatırlatılır.
+  - **⚠ İŞİ NE KAPALI TUTUYOR — sevkiyattaki gerçek (2026-08-11 düzeltmesi):** kodda iki bayrak var
+    (`RegisterStandardJobs` **VE** `EnabledJobs[...]`) ama **`RegisterStandardJobs` hem `appsettings.json` hem
+    `appsettings.Development.json` içinde TRUE**. Yani **Development'ta işi kapalı tutan TEK şey per-job
+    `false`** — "iki kez kapalı" ifadesi boolean için doğru, sevkiyat için yanlıştı ve düzeltildi.
+    **Production'da ayrı ve gerçek bir kapı var:** `BackgroundJobs:Enabled = false` (base appsettings) —
+    zamanlayıcının tamamı kapalı. "Hatırlatma gelmedi" önce bir yapılandırma sorusudur (BL-055 dersi).
+  - **Bilinen sınır (dürüstçe):** süpürme `GetAllForTenantAsync` + bellek içi süzme kullanıyor ve tur başına
+    `MaxTasksPerTenant`=200 ile sınırlı — depoda son-tarih sorgusu yok. Kiracı başına görev sayısı büyüdüğünde
+    indeksli bir sorgu gerekir.
+  - **Kapanış turu (2026-08-11) — doğrulamada çıkan altı bulgu kapatıldı:**
+    1. **Hatırlatma kapatılamıyordu.** Sözleşme "düzenlemiyorum" ile "temizliyorum"u aynı `null` ile
+       söylüyordu → form "Hatırlatma yok" derdi, hiçbir şey kaydolmazdı, süpürme e-posta atmaya devam ederdi.
+       **Karar: tercihler TEK BLOK olarak düzenlenir**; `NotifyOnEvents` non-null ise çağıran bloğu
+       düzenliyordur ve `ReminderLeadDays` **olduğu gibi** uygulanır (null = temizle). Sentinel (-1) veya ikinci
+       bir "temizle" alanı **seçilmedi**: sözleşmeye sihirli sayı sokardı, blok ise tek formda tek karttır ve
+       `ReviewRequired` + reviewer emsali zaten bu şekli kullanıyor. **Yalnız süreyi güncelleyen çağıran:**
+       bloğu düzenlemiyor sayılır, **yok sayılır** — korumak istediği olay listesini birlikte göndermelidir
+       (form her kayıtta bunu yapar). Frontend'de `buildUpdatePayload` eklendi: düzenleme her zaman olay
+       listesini taşır, yoksa temizleme sessizce kaybolurdu.
+    2. **Claim-before-send sırası artık ölçülüyor.** `FakeTaskItemRepository.ForcedUpdateConflicts` ile sürüm
+       çakışması enjekte ediliyor; test "hiç e-posta gitmedi + AlreadyReminded=1" diyor. Sıra ters çevrildiğinde
+       **kırmızı** oluyor (kanıtlandı).
+    3. **Vacuous test kaldırıldı.** Süpürme testleri artık **gerçek** `TaskNotificationService` üzerinde koşuyor;
+       filtreyi yeniden yazan sahte silindi (kopya ayrıca kaymıştı: varsayılan karşılaştırıcı ↔ `StringComparer.Ordinal`).
+       Üretim filtresi silinince ilgili test artık **kırmızı** oluyor (kanıtlandı).
+    4. **Test double'ın `Detach`'i sığdı** — `Tags`/`FieldValues` paylaşılan referanstı. Derin kopya eklendi;
+       sızıntıyı gösteren test var.
+    5. **`Failed` sayacı düşüyordu** — hem due-soon hem **recurrence** süpürmesi komutun `Failed` alanını
+       okumuyordu, yani her gönderimi patlayan kiracı temiz koşu olarak loglanıyordu. **İkisi de düzeltildi**
+       (recurrence sadık bir kopya olduğu için yeni kusur değildi ama aynı yalanı söylüyordu; ayrı backlog
+       maddesi açmak yerine iki satırla kapatmak dürüst olanıydı).
+- **Yeniden ölçüm:** `dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~TaskNotificationPreferenceTests"` ·
+  `npx vitest run tests/tasks-notification-preferences.test.js` (frontend/Diten.Web içinden) ·
+  `rg -n "TaskDueSoonSweepJob" services/Diten.Platform/src/Diten.Platform.Application/BackgroundJobs/PlatformRecurringJobRegistrar.cs`
+  - **Son tur (2026-08-11) — bir 🔴 ve dört 🟡 daha kapatıldı:**
+    1. **Vazgeçen görev claim'i yakıyordu.** `IsDue` yalnız tarihe/yaşam döngüsüne bakıyor, tercih süzgeci bir kat
+       altta — ve damga süzgeçten **önce** atılıyordu. "Son tarih yaklaştığında" tikini kaldır → damga atılır,
+       e-posta gitmez → tiki geri koy → **o son tarih için hatırlatma bir daha asla gelmez**. Varsayılan süre
+       seçili geldiği için olağan yoldu. **Çözüm tek-sahip kuralına uyarak:** süzgeç `IsDue`'ya
+       **kopyalanmadı**; kural `TaskNotificationPolicy`'ye çıkarıldı, `ITaskNotificationService.WouldNotify`
+       **default interface** üyesi olarak ona devrediyor (böylece 13 dosyadaki sahte de aynayı kopyalamak zorunda
+       kalmadı), süpürme **damgalamadan önce soruyor**. Üç test: tik yokken damga **null kalıyor** · fikir
+       değişince aynı son tarih için hatırlatma geliyor · ana anahtar için aynısı. Guard silindiğinde üçü de
+       kırmızı (kanıtlandı).
+    2. **"Derin kopya" fazla iddiaydı.** Liste yeniden ayrılıyordu ama `TaskFieldValue` mutable — `Value` yerinde
+       değiştirilince depoya sızıyordu; ayrıca başarılı `UpdateAsync` çağıranın listelerini depoya veriyordu.
+       **Karar: vaadi daraltmak yerine tutmak** — elemanlar da klonlanıyor, hem okumada hem yazımda. İki test.
+    3. **Kardeş işteki bayat "twice" metni** (recurrence job + registrar) due-soon ile aynı gerçeğe uyduruldu.
+    4. **Yinelenen görevler hatırlatma alamıyor** → **BL-067** açıldı (Priority/Tags sabitliği de aynı maddede).
+       Bu turda taşınmadı: tercihlerin yeri şablon, şablon ekranı yok (BL-054) — düzenlenemeyen bir alana yazmak
+       aynı kusurun tekrarı olurdu. Koda da açıklama satırı bırakıldı.
+    5. **Ana anahtar kapalıyken eski tercihler korunuyor** — davranış **kasıtlı** (geçici sessizlik, kullanıcının
+       hiç dönmediği ayarları yok etmemeli) ve artık **testi var**, bir sonraki tur kusur sanıp bozmasın diye.
+  - **Kapanış kalemi (2026-08-11): `TaskFieldValue` klonu bir üyeyi düşürüyordu.** `DetachCollections` altı
+    yazılabilir üyeden **beşini** elle sayıyordu; **`Classification`** düşüyordu — yani `Confidential` bir alan
+    değeri depodan **`Normal`** olarak dönüyordu. Bu, `Redacted` ile birlikte BL-024'ün "tarayıcı payload'ından
+    çıkar" kuralını taşıyan alan.
+    **Asıl bulgu tek alan değil, aynı dosyadaki disiplin farkıydı:** `CopyWritableFields` **yansıma** kullanıyor
+    (yeni alan kendiliğinden taşınır), eleman klonu **elle liste** idi (yeni alan sessizce düşer).
+    **Karar: (a) + (b) birlikte.** (a) eleman klonu da **yansımaya** çevrildi — tek yöntem, tek disiplin, sınıfın
+    tamamını kapatır. (b) üye listesini **yansımayla türeten** bir guard testi eklendi
+    (`EVERY_writable_member_of_a_field_value_survives_detachment`): her yazılabilir üyeye varsayılanından
+    **farklı** bir değer verip geri okuyor. Yalnız (a) yapılsaydı, yarın yansımanın yetmediği bir üye tipi
+    (ör. iç içe mutable nesne) eklendiğinde yine sessizce kaybederdik; yalnız (b) yapılsaydı elle listeyi her
+    seferinde biri güncellemek zorunda kalırdı. Test ayrıca bilmediği bir üye tipiyle karşılaşınca
+    **kapsamı daraltmak yerine** açık bir hata veriyor.
+    Kanıt: klondan bir üye düşürüldüğünde **iki test de kırmızı** (biri somut alanı, biri sınıfı yakalıyor).
+  - **Kapanış kalemi B (2026-08-11): sahte bildirim servisi kuralın YARISINI uyguluyordu.**
+    `TaskTestDoubles.FakeTaskNotificationService.NotifyAsync` yorumu *"gerçek servisin AYNI iki atlama kuralını
+    uygular"* diyordu; kod yalnız `EmailNotificationsEnabled`'a bakıyordu. BL-065 ikinci kuralı
+    (`NotifyOnEvents`) eklediğinde sahte güncellenmedi → **yorum yanlış hale geldi** ve bu sahteyi kullanan
+    **13 test dosyası**, üretimin artık kullanmadığı bir politikayı ölçmeye başladı. "Bildirim gitmedi" diyen bir
+    iddianın üretimden **farklı bir sebeple** doğru olması, izinli bir sahteden daha kötüdür: test kanıt gibi
+    okunur.
+    **Düzeltme tek satır:** sahte de `TaskNotificationPolicy.WouldNotify(task, eventCode)` çağırıyor — ayna bitti,
+    yorum doğrulandı, politikaya eklenecek bir sonraki kural bu metodu kimse düzenlemeden 13 dosyaya ulaşır.
+    Test **eşdeğerlik** olarak yazıldı (sahte ile gerçek servisin aynı girdiye aynı cevabı vermesi), tek tek
+    beklenti olarak değil — önemli olan hangisinin ne dediği değil, **ayrışamamaları**.
+    **Beklenen sonuç doğrulandı:** 13 dosyanın hiçbiri kırmızıya dönmedi (hiçbiri `NotifyOnEvents` set etmiyor),
+    yani sahte bugüne kadar yanlış bir şey ölçmemişti — yalnız yeni kuralı ölçmüyordu.
+  - **CANLI DOĞRULAMA TURU (2026-08-11) — iki kusur, ikisi de bu turun kodunun merkezinde:**
+    - **A. Başarısız gönderim claim'i yakıyordu.** Canlı kanıt: `PROVIDER_REJECTED` (Mailpit AUTH duyurmuyor,
+      dev config dummy kimlik gönderiyor) → damga atılmıştı → o son tarih **kalıcı sessizleşti**, ancak tarih
+      değiştirilerek kurtarıldı. Dosyanın "belgelenmiş ödünleşim" dediği şey ilk canlı koşuda gerçekleşti.
+      **Seçilen tasarım: (a) claim teslimle kesinleşir.** Damga hâlâ gönderimden **önce** atılıyor (çökme
+      durumunda çift gönderim yerine sessizliğe düşmek doğrusu), ama sonuç `Dispatched` değilse damga
+      **expected-version ile geri alınıyor** ve sonraki süpürme aynı son tarihi yeniden deniyor.
+      **Reddedilen alternatif (b) "denendi/teslim edildi" + sınırlı yeniden deneme:** ikinci bir alan ve bir
+      yeniden deneme politikası gerektiriyor, ve terminal durumu **yine kalıcı kayıp** — sadece önünde daha çok
+      makine var. (a) tek yazımla aynı kurtarmayı sağlıyor; kurşun penceresi günler genişliğinde olduğu için
+      saatlik süpürmenin içinde bol şans var. **Geri alma yazımı da başarısız olursa bugünkü davranışa düşer —
+      yani hiçbir durumda öncekinden kötü değil.** Yarış kaybı (`ForcedUpdateConflicts`) **ayrı tutuldu**:
+      "yarışı kaybettim" claim'i serbest bırakmaz, çünkü onu başka bir koşucu tutuyor.
+    - **B. Süpürme kaybolan hatırlatmayı temiz koşu diye raporluyordu** (`Sent=0 AlreadyReminded=0 FailedTasks=0
+      FailedTenants=0`). Sebep: yalnız `Dispatched` sayılıyordu ve yalnız **exception** hata sayılıyordu; arada
+      kalan her sonuç hiçbir sayaca girmiyordu. **Düzeltme:** `SendDueSoonRemindersResponse` sonuçları ayırıyor
+      (`RemindersSent · AlreadyReminded · NotDelivered · Failed`) ve **her değerlendirilen görev tam olarak bir
+      sayaca** giriyor — testi bu toplamı iddia ediyor. Süpürme işi hepsini topluyor ve **kayıp varsa log satırı
+      Warning**, yoksa Information. Aynı boşluk **recurrence süpürmesinde de vardı** (`SkippedUnassigned` hiç
+      toplanmıyordu) — o da düzeltildi.
+    - **C. Bildirimler yanlış dilde** → ölçüldü, **BL-068** açıldı (kapsam: beş görev bildiriminin hepsi).
+    - **Ortam notu (ürün kusuru değil):** Mailpit varsayılan olarak AUTH duyurmuyor; dev config dummy kimlik
+      gönderdiği için MailKit `NotSupportedException` atıyor. Çözüm
+      `mailpit --smtp-auth-accept-any --smtp-auth-allow-insecure`. Depoda dev kurulum belgesi **yoktu**;
+      `docs/dev-environment.md` oluşturuldu (Mailpit + RabbitMQ + işlerin varsayılan kapalılığı + bildirim dili).
+- **EK — 🟡 F. Süpürme, alıcısı olmayan görevde SÜRÜM ŞİŞİRİYOR (CT, 2026-08-11, açık kalem):**
+  - **Ne yapıldı, doğru olan:** yukarıdaki A maddesiyle süpürme artık gönderim `Dispatched` değilse claim'i
+    geri alıyor (`SendDueSoonRemindersHandler.cs:136-143` → `ReleaseClaimAsync:176-192`). Kaybolan
+    hatırlatma sorununu bu çözdü.
+  - **⚠ Yan etki — ölçüm:** geri alma da bir **expected-version yazımıdır** (`:180-181`, tıpkı claim'in
+    kendisi gibi `:105-106`). Ve alıcı çözümü claim'den **SONRA** yapılıyor (`:117-118`). Yani alıcısı
+    **kalıcı olarak** çözülemeyen bir görevde her süpürmede:
+    ```
+    damgala (v5) → NoRecipients → geri al (v6) → [bir saat] → damgala (v7) → …
+    ```
+    Sürüm saatte **2 artıyor**, görevde hiçbir şey değişmeden.
+  - **Kullanıcıya yansıması:** görevi açar, bir saat sonra kaydeder, **"bu görev siz bakarken değişti"**
+    eşzamanlılık uyarısını alır — oysa **kimse değiştirmemiştir**. Hata mesajı doğru ama olay yanlış.
+  - **Bugün patlamıyor** (öyle bir görev yok), **ama olacak:** e-posta adresi olmayan kullanıcı ·
+    arşivlenmiş havuz pozisyonu (`ResolvePoolHoldersAsync` boş döner) · tüm tutucuları çıkmış havuz.
+  - **Öneri — mekanizma zaten orada:** `WouldNotify` claim'den **önce** soruluyor (`:89`) ve gerekçesi
+    satırın kendi yorumunda yazılı (*"ASK BEFORE CLAIMING"*). **Alıcı çözümü de aynı yere alınsın:**
+    gönderilemeyeceği önceden bilinen görev için damga **hiç atılmasın**. Yeni makine değil, var olan
+    sıranın genişletilmesi.
+  - **Yeniden ölçüm:** `rg -n "var audience" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/CommandHandlers/SendDueSoonRemindersHandler.cs`
+    → bugün **117**, `WouldNotify`'ın (89) ve claim yazımının (105) **altında**; düzeltince 89-105
+    arasına çıkmalı. Canlı: alıcısız bir görev bırak, iki süpürme sonrası `version` +4 olmamalı.
+
+### BL-072 — 🟡 Aday seçicide SESSİZCE eleniyor: beş sebep var, hiçbiri kullanıcıya söylenmiyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `TaskModels.cs:829-839` + `GetTaskAssignmentPersonLookupHandler.cs:178-181` + `form.js:397-401`; 7 dil; testi `tasks-assignment-scope.test.js:111`.
+
+- **⚠ ÖLÇÜM (CT, 2026-08-11):** `GetTaskAssignmentPersonLookupHandler.cs:60-92` bir kişiyi listeden
+  **beş** sebepten biriyle atıyor ve **hiçbirini** söylemiyor:
+
+  | # | Sebep | Satır |
+  |---|---|---|
+  | 1 | Aktif pozisyon ataması yok (hiç kayıt yok) | `:60-66` (döngüye hiç girmez) |
+  | 2 | `EffectiveFrom` gelecekte / `EffectiveTo` geçmişte | `:62-63` |
+  | 3 | Pozisyon `Draft` (veya `Active` değil) | `:80-81` |
+  | 4 | Pozisyon ya da birim arşivli | `:80`, `:89` |
+  | 5 | Atama iptal (`IsCancelled`) | `:61` |
+
+- **Kullanıcının gördüğü:** hiçbir şey. Liste kısa gelir, sebep yok. **Somut vaka:** Ahmet sisteme eklenir,
+  pozisyonu **Draft** bırakılır → *"Bir kişi"* listesinde **yok**, ve ekranda bunu açıklayan tek kelime yok.
+  Bu, bu oturumda bizzat yaşanan sınıftan bir kusur.
+- **Öneri:** seçicinin altında bir ipucu — *"N kişi aktif pozisyonu olmadığı için listelenmedi."* Sayı
+  sunucudan gelir (elenen satır zaten sayılıyor olur); **kimlerin** elendiği **söylenmez** (o, kapsam
+  dışı bilgi sızdırmak olurdu).
+- **⛔ BAĞIMLILIK — [BL-057] ile AYNI TURDA yapılmalı.** Kapsam kuralı geldiğinde *"neden yok"* sorusunun
+  cevabına **altıncı** bir madde eklenir (*"farklı şirkette"*). Ayrı turlarda yapılırsa aynı metin iki kez
+  yazılır ve ikincisi birincisini bozar.
+- **⚠ Bu, Create formuna DÖNMEK demektir.** Kapanış turunda *"bu sayfadan sonra dönmeyeceğiz"* denmişti;
+  bu kalem için o söz **tutmuyor** ve bilerek kayda geçiriliyor. Gerekçe: ipucunun metni kapsam kuralının
+  cevabına bağlı, dolayısıyla kapanış turunda yazılamazdı.
+- **Yeniden ölçüm:** `rg -n "continue;" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/QueryHandlers/GetTaskAssignmentPersonLookupHandler.cs`
+  (bugün elenen her dal sessiz) · canlı: bir kişiye Draft pozisyon ver, `/Tasks/Create` → *"Bir kişi"*
+  listesinde yok ve ekranda gerekçe yok.
+- **İlgili:** [BL-057] (aynı tur) · [BL-073] (SOP'un sessiz başarısızlık tablosu bu beş sebebi belgeliyor).
+
+**✅ YAPILDI (2026-08-11) — [BL-057] ile aynı turda, planlandığı gibi.**
+- Sunucu artık **kırılımı döndürüyor** (istemci tahmin etmiyor): `ExcludedCandidateSummary(Total,
+  NoActivePosition, PositionNotActive, OutOfScope)`. Altıncı sebep — **kapsam dışı** — kapsam kuralıyla
+  birlikte aynı anda eklendi, yani "neden yok" metni bir kez yazıldı.
+- Beş sebep **üç kovaya** indi, çünkü kullanıcı için ayrımı olan budur: *aktif pozisyonu yok* (atama yok /
+  tarih dışı / iptal) · *pozisyonu aktif değil* (Draft / arşivli / birimi arşivli) · *kapsam dışı*.
+  Birden çok pozisyonu olan kişi **en iyi** sonucuyla raporlanıyor.
+- **⚠ Güvenlik sınırı tutuldu:** `ExcludedCandidateSummary`'nin **her örnek üyesi `int`** ve bunu bir test
+  çiviliyor (`The_exclusion_summary_NEVER_carries_a_name_or_an_identity`). Tarayıcı tarafında
+  `describeExcludedCandidates` yalnız dört tam sayıyı okuyor — isim/kimlik taşıyan bir payload verilse bile
+  aynı cümleyi üretiyor, ve bunun da testi var.
+- **Ekranda (canlı, tr):** *"1 kişi listelenmedi: 1 kişi kapsamınız dışında"* — atanan seçicisinin altında,
+  `d-none` sınıf geçişiyle (FG-003), `textContent` ile yazılıyor. Sıfır elenmişte **hiçbir şey** görünmüyor.
+- **l10n:** 4 yeni anahtar × 7 dil (`ExcludedHint` · `ExcludedNoActivePosition` ·
+  `ExcludedPositionNotActive` · `ExcludedOutOfScope`), hepsi `{0}` sayaç yer tutucusu taşıyor.
+- **Create formuna dönüldü** — maddede yazılı olduğu gibi, ve sebebi buydu.
+
+### BL-076 — 🟢 Alan bazlı denetim izi: WC-1 YAŞAM DÖNGÜSÜNÜ kaydeder, alan değişikliklerini değil
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `TaskFieldDiff.cs:21` + `TaskSupportingEntities.cs:97` FieldChanges + `TaskRepositories.cs:215-243`; ekranda `app.js:591-621`.
+- ⚠ **Kayıt hâlâ "alan bazlı denetim bilerek dışarıda" diye tartışıyor**; deponun kendi yorumu kararın **2026-08-23'te geri alındığını** yazıyor.
+
+- **Ölçüm (2026-08-12):** WC-1 ile `task_transitions` koleksiyonu geldi ve her yaşam döngüsü hareketi
+  (oluştur · kabul · planla · başlat · devam · beklet · incelemeye gönder · inceleme iptali · tamamla ·
+  iptal · üstlen · havuza bırak · başkasına ata · geri gönder) kayda giriyor. **Kapsam dışı bırakılan:**
+  başlığın, bitiş tarihinin, önceliğin, etiketlerin veya ek alan değerlerinin değişmesi. `UpdateAsync`
+  yalnız üç alanı (lifecycle · assignee · kabul işareti) diff'liyor; bir başlık düzenlemesi hiç kayıt üretmiyor.
+- **Neden bilerek:** görevin hikâyesini anlatan altı satırı, onu anlatmayan altmış satırın altına gömmemek
+  için. Alan bazlı izleme **ayrı** bir iş: kim hangi alanı ne zaman ne yaptı sorusunun kendi ekranı,
+  kendi saklama maliyeti ve kendi yetki kuralı olur (bir maaş alanının eski değerini herkes göremez).
+- **Gelecek regresyon riski: 🟢 katmerlenmez.** `TaskTransition` ayrı bir koleksiyon ve `Kind` enum'u
+  append-only; alan denetimi geldiğinde kendi koleksiyonuna yazar, bu logu değiştirmez. Projeksiyon
+  `kind` ile ayrıştığı için üçüncü bir kind eklemek de sözleşmeyi bozmaz — `ACTIVITY_KINDS` genişler.
+- **Tetikleyici:** MOD-0024'te `IAuditableCommand` altyapısı kullanılmaya başlandığında (bugün Tasks
+  tarafında hiç kullanılmıyor — bu, WC-1 ölçümünün ikinci bulgusuydu).
+
+### BL-087 — 🟢 Detay sekmesi seçimi URL'de tutulmuyor (yalnız #etkinlik ile açılış var)
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `app.js:6700-6706` writeDetailTabToAddress, `:8749`de çağrılıyor; testi `wcn-detail-three-regions.test.js:3263`.
+
+- **Ölçüm (2026-08-13):** `#etkinlik` ile açılış **çalışıyor** (canlı doğrulandı: hash → Etkinlik sekmesi seçili,
+  panel görünür). Ama sekme değiştirmek URL'i **güncellemiyor**: kullanıcı Etkinlik'e geçip bağlantıyı kopyalarsa
+  karşı taraf Genel'de açar. Liste sayfası kendi durumunu `syncUrl`/`replaceState` ile yansıtıyor; detay sayfası
+  yansıtmıyor.
+- **Neden bu turda yapılmadı:** brief **kalıcılık istemiyorum** dedi ve URL yazımı kalıcılığın bir biçimi;
+  ayrıca `#etkinlik`'in bugünkü tek tüketicisi D7'de gelecek yorum bildirimi. Kapsamı kendiliğinden genişletmedim.
+- **Yapılacak (D7 ile birlikte değerlendirilmeli):** sekme değişiminde `history.replaceState(null,'','#etkinlik')`
+  / hash temizleme — üç satır, ama "paylaşılan bağlantı ne göstermeli" kararı sahibin.
+- **Gelecek regresyon riski: 🟢 eklemeli.**
+
+### BL-088 — 🟡 `renderSplit` / `.wcn-split-detail` ölü kod; ad çakışmasının kaynağı burası
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** ⚠ **Kayıt "renderSplit hiç çağrılmıyor" diyor — YANLIŞ.** `app.js:6199` `case 'split': main = renderSplit(items)`. Düğmeler `:1167-1168`, TAB_VIEWS `:1135-1142`. Kapanış arşivde BL-233 altında (`product-backlog-closed.md:1479`).
+
+- **Ölçüm (2026-08-13):** `renderSplit` (app.js:1342) **hiçbir yerden çağrılmıyor** — grep ile tek eşleşme
+  tanımın kendisi. Görünüm düğmeleri yalnız `list` ve `table` üretiyor (canlı ölçüm: `data-wcn-view=list`,
+  `data-wcn-view=table`). Yani `splitCard`, `.wcn-split-detail` ve ona bağlı CSS bloğu çalışmayan koddur.
+- **Neden önemli:** bu tur kaybedilen zamanın tamamı buradan çıktı. `.wcn-detail-tabs` adı **bu ölü bileşene**
+  aitti ve `position: sticky` + kenarlık + yarıçap + `backdrop-filter` + `margin-block-start: 1rem` taşıyordu.
+  Detay şeridine aynı adı verince şerit bunların hepsini giydi: iki kılpayı çizgi ve rayla 16px hizasızlık.
+  Kusur hiçbir zaman detay sayfasının dosyasında değildi. **Çalışmayan kod da isim alanını işgal eder.**
+- **Yapılacak:** ya split görünümü gerçekten bağlanır ya `renderSplit`/`splitCard`/`.wcn-split-detail` kaldırılır.
+  Karar sahibin: split görünümü ürün planında mı, değil mi?
+- **Gelecek regresyon riski: 🟢 eklemeli** — bugün hiçbir şey çizmiyor; silinmesi ekranı değiştirmez.
+
+### BL-089 — 🟢 Kart yüzeyi CSS değişkenleriyle okunamıyor (`--bs-card-bg` boş dönüyor)
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `core.css:8056/8123` `--bs-paper-bg`; `backbone-custom.css:7944-7948` BL-089'u adıyla anıp benimsiyor; ~20 çağrı yeri.
+
+- **Ölçüm (2026-08-13):** `getComputedStyle(root).getPropertyValue('--bs-card-bg' | '--bs-card-border-radius' |
+  '--bs-card-box-shadow')` **üçü de boş dize** döndürüyor; değerler yalnız `.card` kuralının içinde yaşıyor.
+- **Sonuç:** "var olan kart yüzeyini kullan" demek pratikte "`.card` sınıfını kullan" demek — bir bileşen yüzeyi
+  değişkenle **alıntılayamıyor**, sınıfı giymek zorunda. Bu turda doğru sonuca çıktı (şerit `card` + `card-body p-3`,
+  liste sayfasının kendi şeridiyle aynı iki satır), ama sınıf giyilemeyen bir yerde tek yol elle renk yazmak olur —
+  FG-003'ün korumadığı, ikinci bir kart tonunun doğduğu yer tam burasıdır.
+- **Yapılacak:** Sneat kart değişkenlerini `:root`'a köprüle (`--dt-card-bg: …` vb.), tek kaynak kalsın.
+- **Gelecek regresyon riski: 🟢 eklemeli.**
+
+### BL-104 — 🟡 [YAŞAM DÖNGÜSÜ KARTI] Tek engelleyici varken adı artık görünmüyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `app.js:3577` BANNER_SUPPRESSED_CODES + `:3488-3505`. Kapanışı başka bir kaydın içinde yazılı (`product-backlog-closed.md:808-810`).
+
+- **Karar ve bedeli:** engel uyarısı N alt görevi tek cümleye indirdi ("{0} alt görev kapanmadan tamamlanamaz")
+  ve Alt Görevler kartına bağlantı verdi. Üç engelleyicide bu net kazanç: aynı cümle dört kez yazılıyordu.
+  **Tek engelleyicide ise kayıp var** — eski uyarı adı söylüyordu ("Bütçe kalemini doğrula tamamlamayı
+  engelliyor"), yenisi "1 alt görev" diyor ve adı bağlantının arkasına koyuyor.
+- **Yapılacak (karar sahibin):** `n === 1` için adı yazan bir dal. Tek satır kod, ama iki farklı cümle şekli
+  demek; tutarlılık ile bilgi arasında bir tercih ve bu benim değil sahibin kararı.
+- **Gelecek regresyon riski: 🟢 eklemeli.**
+
+### BL-111 — 🟢 [MEVCUT AKSİYONLAR] Kebap düğmesi artık çizilmiyor; Kural 6 (aria-label) konusuz kaldı
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `app.js:2315-2318` — taşma katmanı geri gelmiş ve `aria-label` taşıyor.
+- ⚠ Geride iki ölü sınıf kalmış (`backbone-custom.css:8119`, `:8190`) — açık tutmayı gerektirmez, ayrı temizlik.
+
+- **Kural 6** kebap düğmesine `aria-label` istiyordu ("ekran okuyucu 'Diğer, düğme' diyor").
+- **Ölçüm:** kebabın tek sakini yıkıcı aksiyondu; Kural 1 gereği o açığa çıkınca menü boş kaldı ve hiç
+  render edilmiyor (canlı: `.wcn-actrail-menu` yok). Başka bir "overflow" kademesi bu kartta hiç yoktu.
+- **Sonuç:** eklenecek `aria-label` taşıyacak bir düğme kalmadı. `ActionsOther` anahtarı **silinmedi**;
+  `.wcn-actrail-other` CSS'i ölü olarak işaretlendi.
+- **Yapılacak:** ileride gerçek bir overflow kademesi gelirse desen hazır — alt görev satır kebabı hem `title`
+  hem `aria-label` taşıyor, kopyalanacak yer orası.
+- **Gelecek regresyon riski: 🟢.**
+
+### BL-130 — 🟡 [ALT GÖREV PANELİ] Detaylı panelde son tarih zorunlu ama işaretli değil
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `app.js:5131-5132` yıldız + `Tasks/api.js:88` sebep kodu cümlesi + 7 dil (`TasksIndex.*.resx:114`).
+- ⚠ Kapanışı arşivde **BL-134 numarası altında** yazılı (`product-backlog-closed.md:315-327`); açık kopya burada kalmış.
+
+- **Ölçüm:** panelde başlık dışında hiçbir alan yıldızlı değil, ama son tarih boş bırakılınca oluşturma
+  **başarısız** oluyor ve bildirim yalnız "İşlem sırasında bir hata oluştu." diyor. Gerçek sebep API'de:
+  `VALIDATION_REQUEST_DUE_AT_NOT_NULL` ("A due date is required.").
+- **İki kusur birden:** (a) zorunlu alan UI'da işaretsiz — orchestrator kuralı "Backend Validator'daki zorunlu
+  alanlara UI label'larında kırmızı yıldız" ihlali; (b) sunucunun anlaşılır reason_code'u generic bir mesajla
+  maskeleniyor.
+- **Yapılacak:** son tarihe `*` ve `required`; `failureMessage` bu reason_code'u kendi diline çevirsin.
+- **Gelecek regresyon riski: 🟢** — bugün de başarısız oluyor, yalnız sebebi görünmüyor.
+
+### BL-133 — 🟡 [KONTROL LİSTESİ] Kapak yok: 6 maddede 294px, 20 maddede ~1000px olur
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `app.js:3072` `cappedList('checklist', …)`.
+- ⚠ Kapanışı arşivde **BL-139 numarası altında** (`product-backlog-closed.md:355-362`).
+
+- **Ölçüm:** Alt Görevler kartı 561px = 320px kapak + **241px** kapak dışı (başlık 22, çubuk 6, ekleme satırı 38,
+  ipucu 17, "Tümünü gör" 30, engel uyarısı 44, dolgu 32, boşluklar ~52). Bu 241'in çoğu işlevsel.
+- **Kontrol Listesi 597px ve kapağı HİÇ YOK** — listesi 294px olarak sınırsız çiziliyor. `cappedList` yardımcısı
+  mevcut ve alt görevlerle etkinlik akışında kullanılıyor; kontrol listesi kullanmıyor.
+- **Sonuç:** 20 maddelik bir kontrol listesi kartı tek başına ~1300px olur ve sayfa 3+ ekrana çıkar.
+- **Yapılacak:** kontrol listesine de `cappedList('checklist', …)` — yardımcı zaten `aria-label` için
+  `ChecklistLabel`'ı biliyor.
+- **Gelecek regresyon riski: 🟢** — eklemeli.
+
+### BL-138 — 🟢 [DAR EKRAN] Şerit yokken de 80px alt dolgu uygulanıyor
+> **DURUM:** KAPANDI · **SAHİP:** SAHİPSİZ
+
+**⚠ KAPANIŞ — KOD ÖLÇÜMÜYLE, 2026-08-30.** `backbone-custom.css:8010-8017` BL-138'i adıyla anıyor; dolgu artık `:has(.wcn-actionbar)` ile çubuğa bağlı, genişliğe değil.
+
+- **Ölçüm:** kapanmış görevde (`ad7f9af3`) şerit çizilmiyor ama `.wcn-details-page` yine `padding-block-end: 80px`
+  alıyor → sayfanın altında 80px ölü boşluk.
+- **Sebep:** dolgu medya sorgusuyla genişliğe bağlı, şeridin varlığına değil.
+- **Yapılacak:** dolguyu şeridin varlığına bağla (şerit çizilirken sayfaya bir sınıf, ya da `:has()`).
+- **Gelecek regresyon riski: 🟢.**

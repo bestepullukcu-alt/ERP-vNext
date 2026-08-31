@@ -132,8 +132,12 @@ sent **no tenant header at all** while its unit test passed:
 `DelegatingHandler` resolving a request-scoped `ITenantContext` gets one that is
 never resolved, and the header is dropped in silence. It was visible only because
 the far service echoed the tenant it received back onto the screen. The gateway
-now writes the header from the request scope. **The MDM and Auth clients still
-carry that handler and are the same defect, unfixed — BL-311.**
+now writes the header from the request scope. **Closed out 2026-08-29:** the MDM
+and Auth clients were moved off that handler the same way (**BL-311**), and the
+handler class itself was deleted from all three services (**BL-316**) — it was
+attached only to a named client nobody ever created. `TenantOnTheWire` is where
+the rule now lives: the calling class writes `X-Tenant-Id` from its own request
+scope, never a `DelegatingHandler`.
 
 ⚠ **The reference consumer is TEMPORARY (BL-310).** No module had opened a
 projection endpoint on the day the bridge was written. Waiting for one would have

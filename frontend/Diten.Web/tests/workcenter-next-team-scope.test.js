@@ -77,6 +77,17 @@ describe("the axis law survives", () => {
     /*
      * The earlier version counted resx keys, which is why it passed while nothing existed. The tab strip is
      * built from two arrays in app.js; those are what a fifth tab would have to appear in.
+     *
+     * ⚠ AND UNTIL BL-016 THOSE TWO ARRAYS WERE DEAD. The strip was rendered from a hand-typed literal and the
+     * URL whitelist from a second copy, so this guard was reading constants the running page never touched — a
+     * new tab added to the literal alone would have left it green. app.js now renders from `TABS`, which is
+     * these two arrays concatenated, so what is parsed here is what is drawn.
+     *
+     * ⚠ THE EXPECTED SET IS FIVE, NOT FOUR, SINCE BL-016 — and that is this law being obeyed rather than
+     * bent. "What did I start that somebody else is carrying" is an OWNERSHIP question, so it takes a tab.
+     * What this test exists to refuse is a tab that is NOT an ownership question, and `team` is the case in
+     * point: "my team's work" is the same ownership question asked about somebody else, so it belongs in the
+     * scope dropdown beside delegation. That assertion is unchanged and is the load-bearing one.
      */
     const app = APP_JS();
     const primary = /const TABS_PRIMARY = \[([^\]]*)\]/.exec(app);
@@ -88,8 +99,21 @@ describe("the axis law survives", () => {
     const tabs = [...primary[1].matchAll(/'([^']+)'/g), ...secondary[1].matchAll(/'([^']+)'/g)]
       .map((m) => m[1]);
 
-    expect(tabs, "the tab set changed").toEqual(["inbox", "islerim", "havuz", "history"]);
+    expect(tabs, "the tab set changed").toEqual(["inbox", "islerim", "havuz", "baslattiklarim", "history"]);
     expect(tabs, "'team' became a TAB — that breaks the axis law").not.toContain("team");
+  });
+
+  test("the strip the reader sees is built from those arrays, not from a second hand-typed copy", () => {
+    /*
+     * The guard above is only worth its runtime if the arrays it parses are the ones that render. They were not
+     * until BL-016 — so this pins the wiring rather than trusting it, and a literal creeping back into
+     * buildTabs fails HERE instead of silently blinding the test above.
+     */
+    const app = APP_JS();
+    const buildTabs = app.slice(app.indexOf("const buildTabs"), app.indexOf("const buildSegments"));
+
+    expect(buildTabs, "buildTabs renders a hand-typed tab list again").toMatch(/TABS\.map\(tab\)/);
+    expect(buildTabs, "a literal tab list is back in buildTabs").not.toMatch(/\['inbox',\s*'islerim'/);
   });
 });
 

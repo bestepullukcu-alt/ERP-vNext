@@ -47,6 +47,7 @@ describe("DtDefaults refresh token and reload / retry logic", () => {
 
     // Clear and load DtDefaults
     delete window.DtDefaults;
+    loadScript("wwwroot/assets/js/shared/http-media-type.js");
     loadScript("wwwroot/assets/js/dt-defaults.js");
   });
 
