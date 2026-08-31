@@ -144,6 +144,7 @@
   <data name="AuditLog.Category.DataPrivacy" xml:space="preserve"><value>Data Privacy</value></data>
   <data name="AuditLog.Category.Integration" xml:space="preserve"><value>Integration</value></data>
   <data name="AuditLog.Category.System" xml:space="preserve"><value>System</value></data>
+  <data name="AuditLog.Category.PortfolioDelivery" xml:space="preserve"><value>Portfolio Delivery</value></data>
   <data name="AuditLog.Operation.Create" xml:space="preserve"><value>Create</value></data>
   <data name="AuditLog.Operation.Update" xml:space="preserve"><value>Update</value></data>
   <data name="AuditLog.Operation.Delete" xml:space="preserve"><value>Delete</value></data>
@@ -159,6 +160,7 @@
   <data name="AuditLog.Operation.Logout" xml:space="preserve"><value>Logout</value></data>
   <data name="AuditLog.Operation.PermissionDenied" xml:space="preserve"><value>Permission Denied</value></data>
   <data name="AuditLog.Operation.Execute" xml:space="preserve"><value>Execute</value></data>
+  <data name="AuditLog.Operation.LifecycleTransition" xml:space="preserve"><value>Lifecycle Transition</value></data>
   <data name="Common.Active" xml:space="preserve"><value>Active</value></data>
   <data name="Common.Passive" xml:space="preserve"><value>Passive</value></data>
   <data name="Common.Unknown" xml:space="preserve"><value>Unknown</value></data>

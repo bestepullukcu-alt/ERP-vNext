@@ -16,7 +16,8 @@ public enum AuditCategory
     Integration = 11,
     System = 12,
     DocumentManagement = 13,
-    MasterData = 14
+    MasterData = 14,
+    PortfolioDelivery = 15
 }
 
 public enum AuditOperation
@@ -39,7 +40,8 @@ public enum AuditOperation
     Login = 12,
     Logout = 13,
     PermissionDenied = 14,
-    Execute = 15
+    Execute = 15,
+    LifecycleTransition = 16
 }
 
 public enum AuditOutcome

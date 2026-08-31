@@ -11,6 +11,11 @@ public sealed class PpmAuditIntentV1DefaultOffArchitectureTests
     private const string EventName = "ppm.audit-intent.submitted.v1";
     private const string EventTypeName = "PpmAuditIntentSubmittedV1";
     private const string PpmAssemblyPrefix = "Diten.PpmService";
+    private static readonly string[] DefaultOffFoundationPaths =
+    [
+        "services/Diten.Platform/src/Diten.Platform.Infrastructure/Eventing/PpmAuditIntentV1AuditMapping.cs",
+        "services/Diten.Platform/src/Diten.Platform.Infrastructure/Eventing/PpmAuditIntentV1TransportShapeValidator.cs"
+    ];
 
     private static readonly string[] RequiredPayloadProperties =
     [
@@ -23,19 +28,23 @@ public sealed class PpmAuditIntentV1DefaultOffArchitectureTests
     ];
 
     [Fact]
-    public void Ppm_audit_identity_is_absent_from_every_current_platform_runtime_source()
+    public void Ppm_audit_identity_exists_only_in_the_unregistered_default_off_foundation()
     {
-        var offenders = PlatformRuntimeSources()
+        var identitySources = PlatformRuntimeSources()
             .Where(source => source.Body.Contains(EventName, StringComparison.Ordinal)
                              || source.Body.Contains(EventTypeName, StringComparison.Ordinal))
-            .Select(source => source.RelativePath)
             .ToArray();
 
-        Assert.True(
-            offenders.Length == 0,
-            "PPM audit consumer activation is default-off until the PPM Contracts artifact, trusted publisher "
-            + "binding, and approved audit mapping exist. Offending runtime paths:\n"
-            + string.Join("\n", offenders));
+        Assert.Equal(
+            DefaultOffFoundationPaths.OrderBy(path => path),
+            identitySources.Select(source => source.RelativePath).OrderBy(path => path));
+        Assert.All(identitySources, source =>
+        {
+            Assert.DoesNotContain("AddScoped", source.Body, StringComparison.Ordinal);
+            Assert.DoesNotContain("AddSingleton", source.Body, StringComparison.Ordinal);
+            Assert.DoesNotContain("IConsumer<", source.Body, StringComparison.Ordinal);
+            Assert.DoesNotContain("IPublishEndpoint", source.Body, StringComparison.Ordinal);
+        });
     }
 
     [Fact]
