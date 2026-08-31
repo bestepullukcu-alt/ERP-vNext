@@ -9,6 +9,7 @@ using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Diten.Platform.Application.Features.GlobalApplicability;
 using MongoDB.Driver;
 
 namespace Diten.Platform.Application.Features.ModuleRegistration;
@@ -34,22 +35,26 @@ public sealed class RegisterModuleManifestCommandHandler
     private const string ProtectedService = "DITENMDMSERVICE";
     private const string ProtectedOwner = "DITENMDMSERVICE";
 
-    private readonly IModuleCatalogRepository _catalogRepository;
+    private readonly ITransactionalModuleCatalogRepository _catalogRepository;
     private readonly IModulePageDescriptorRepository _pageRepository;
     private readonly IModulePageActionDescriptorRepository _actionRepository;
     private readonly ICatalogPermissionSyncService _permissionSyncService;
     private readonly Features.ModuleCatalog.Services.IModuleTaxonomyResolver _taxonomyResolver;
     private readonly IModuleDomainRepository _domainRepository;
     private readonly ILogger<RegisterModuleManifestCommandHandler> _logger;
+    private readonly IGlobalApplicabilityTransactionCoordinator _transaction;
+    private readonly IGlobalApplicabilityStateRepository _applicabilityState;
 
     public RegisterModuleManifestCommandHandler(
-        IModuleCatalogRepository catalogRepository,
+        ITransactionalModuleCatalogRepository catalogRepository,
         IModulePageDescriptorRepository pageRepository,
         IModulePageActionDescriptorRepository actionRepository,
         ICatalogPermissionSyncService permissionSyncService,
         Features.ModuleCatalog.Services.IModuleTaxonomyResolver taxonomyResolver,
         IModuleDomainRepository domainRepository,
-        ILogger<RegisterModuleManifestCommandHandler> logger)
+        ILogger<RegisterModuleManifestCommandHandler> logger,
+        IGlobalApplicabilityTransactionCoordinator transaction,
+        IGlobalApplicabilityStateRepository applicabilityState)
     {
         _catalogRepository = catalogRepository;
         _pageRepository = pageRepository;
@@ -58,6 +63,8 @@ public sealed class RegisterModuleManifestCommandHandler
         _taxonomyResolver = taxonomyResolver;
         _domainRepository = domainRepository;
         _logger = logger;
+        _transaction = transaction;
+        _applicabilityState = applicabilityState;
     }
 
     public async Task<Response<ModuleManifestReconcileResult>> Handle(RegisterModuleManifestCommand request, CancellationToken ct)
@@ -268,14 +275,18 @@ public sealed class RegisterModuleManifestCommandHandler
         // (e.g. Access Governance, Settings) that were added to the enum AFTER the one-time ModuleDomainSeed ran.
         var seededDomain = await ResolveOrRegisterDomainCodeAsync(manifest.Domain, ct);
 
-        var existing = await _catalogRepository.GetByCodeAsync(moduleCode, ct);
+        var seededService = await _taxonomyResolver.ResolveServiceCodeAsync(manifest.Service, ct);
+        return await _transaction.ExecuteAsync(
+            new(nameof(RegisterModuleManifestCommand), AuditOperation.Update, "ModuleCatalogItem", DeterministicEntityId(moduleCode)),
+            async (session, transactionCt) =>
+            {
+        var existing = await _catalogRepository.GetByCodeAsync(session, moduleCode, transactionCt);
         if (existing is null)
         {
             // First registration: HARD identity + SOFT metadata seeded once from the manifest. FIX-DOMAIN-SERVICE-
             // CANONICAL — the manifest carries enum-names (e.g. "PlatformSharedServices"); resolve them to the
             // canonical lookup Code at seed time so the catalog never stores an enum-name/DisplayName variant.
-            var seededService = await _taxonomyResolver.ResolveServiceCodeAsync(manifest.Service, ct);
-            await _catalogRepository.CreateAsync(new ModuleCatalogItem
+            var created = new ModuleCatalogItem
             {
                 ModuleCode = moduleCode,
                 ModuleName = manifest.ModuleName.Trim(),
@@ -293,20 +304,35 @@ public sealed class RegisterModuleManifestCommandHandler
                 // FEAT-BASELINE-MODULES — HARD (code-owned): baseline is a code decision, refreshed on every push.
                 IsBaseline = manifest.IsBaseline,
                 Origin = ModuleCatalogOrigin.SelfRegistered // MC-4 — code-owned
-            }, ct);
-            return "created";
+            };
+            await _catalogRepository.CreateAsync(session, created, transactionCt);
+            return new GlobalApplicabilityMutation<string>("created", true,
+                (s, version, token) => _applicabilityState.UpsertModuleCatalogAsync(s, created, version, token));
         }
 
         // Re-push: refresh only HARD fields. SOFT metadata (Domain/Service/DisplayName/SortOrder/IsTenantAssignable/Status)
         // belongs to the operator and is NEVER overwritten here.
-        existing.ModuleName = manifest.ModuleName.Trim();
-        existing.ModuleVersion = string.IsNullOrWhiteSpace(manifest.ModuleVersion) ? existing.ModuleVersion : manifest.ModuleVersion.Trim();
+        var moduleName = manifest.ModuleName.Trim();
+        var moduleVersion = string.IsNullOrWhiteSpace(manifest.ModuleVersion) ? existing.ModuleVersion : manifest.ModuleVersion.Trim();
+        var changed = existing.ModuleName != moduleName || existing.ModuleVersion != moduleVersion
+            || existing.IsBaseline != manifest.IsBaseline || existing.Origin != ModuleCatalogOrigin.SelfRegistered;
+        if (!changed) return new GlobalApplicabilityMutation<string>("updated", false);
+        existing.ModuleName = moduleName;
+        existing.ModuleVersion = moduleVersion;
         // FEAT-BASELINE-MODULES — HARD (code-owned): refreshed on every re-push (unlike SOFT Icon/Domain/Service).
         existing.IsBaseline = manifest.IsBaseline;
         // MC-4 — a manual placeholder that later self-registers flips to code-owned (Manual → SelfRegistered).
         existing.Origin = ModuleCatalogOrigin.SelfRegistered;
-        await _catalogRepository.UpdateAsync(existing, ct);
-        return "updated";
+        await _catalogRepository.UpdateAsync(session, existing, transactionCt);
+        return new GlobalApplicabilityMutation<string>("updated", true,
+            (s, version, token) => _applicabilityState.UpsertModuleCatalogAsync(s, existing, version, token));
+            }, ct);
+    }
+
+    private static Guid DeterministicEntityId(string moduleCode)
+    {
+        var hash = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(moduleCode));
+        return new Guid(hash.AsSpan(0, 16));
     }
 
     /// <summary>

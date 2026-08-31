@@ -2,6 +2,9 @@ using System.Reflection;
 using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands;
+using Diten.Platform.Application.Features.SubscriptionPlans.Commands;
+using Diten.Platform.Application.Features.ModuleCatalog.Commands;
+using Diten.Platform.Application.Features.ModuleRegistration;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -83,7 +86,19 @@ public sealed class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequ
         || requestType == typeof(EnableTenantModuleEntitlementCommand)
         || requestType == typeof(DisableTenantModuleEntitlementCommand)
         || requestType == typeof(UpdateTenantModuleEntitlementExpiryCommand)
-        || requestType == typeof(RemoveTenantManualModuleOverrideCommand);
+        || requestType == typeof(RemoveTenantManualModuleOverrideCommand)
+        || requestType == typeof(CreateSubscriptionPlanCommand)
+        || requestType == typeof(UpdateSubscriptionPlanCommand)
+        || requestType == typeof(ActivateSubscriptionPlanCommand)
+        || requestType == typeof(DeactivateSubscriptionPlanCommand)
+        || requestType == typeof(SeedDefaultSubscriptionPlansCommand)
+        || requestType == typeof(CreateModuleCatalogItemCommand)
+        || requestType == typeof(UpdateModuleCatalogItemCommand)
+        || requestType == typeof(ActivateModuleCatalogItemCommand)
+        || requestType == typeof(DeactivateModuleCatalogItemCommand)
+        || requestType == typeof(DeleteModuleCatalogItemCommand)
+        || requestType == typeof(BulkDeleteModuleCatalogItemsCommand)
+        || requestType == typeof(RegisterModuleManifestCommand);
 
     private AuditPlan BuildAuditPlan(TRequest request)
     {

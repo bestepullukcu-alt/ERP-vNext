@@ -284,12 +284,14 @@ public static class DependencyInjection
         services.AddSingleton<IPlatformTransactionFaultProbe, NoOpPlatformTransactionFaultProbe>();
         services.AddScoped<IPlatformTransactionExecutor, PlatformTransactionExecutor>();
         services.AddScoped<IEntitlementStateVersionRepository, EntitlementStateVersionRepository>();
+        services.AddScoped<IGlobalApplicabilityStateRepository, GlobalApplicabilityStateRepository>();
         services.AddScoped<IMongoDatabase>(_ => database);
         services.AddScoped<ISavedViewRepository, SavedViewRepository>();
         services.AddScoped<ITenantRegistryRepository, TenantRegistryRepository>();
         services.AddScoped<ITenantDomainRepository, TenantDomainRepository>();
         services.AddScoped<ITenantLoginSettingsRepository, TenantLoginSettingsRepository>();
         services.AddScoped<IModuleCatalogRepository, ModuleCatalogRepository>();
+        services.AddScoped<ITransactionalModuleCatalogRepository>(sp => (ModuleCatalogRepository)sp.GetRequiredService<IModuleCatalogRepository>());
         services.AddScoped<IModuleDomainRepository, ModuleDomainRepository>();
         services.AddScoped<IModuleServiceRepository, ModuleServiceRepository>();
         services.AddScoped<IModulePageDescriptorRepository, ModulePageDescriptorRepository>();
@@ -298,6 +300,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantNavDomainPreferenceRepository, TenantNavDomainPreferenceRepository>();
         services.AddScoped<IPlatformAdministratorRepository, PlatformAdministratorRepository>();
         services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
+        services.AddScoped<ITransactionalSubscriptionPlanRepository>(sp => (SubscriptionPlanRepository)sp.GetRequiredService<ISubscriptionPlanRepository>());
         services.AddScoped<ITenantSubscriptionRepository, TenantSubscriptionRepository>();
         services.AddScoped<ITenantModuleEntitlementRepository, TenantModuleEntitlementRepository>();
         services.AddScoped<IQuotaUsageRepository, QuotaUsageRepository>();
@@ -504,7 +507,6 @@ public static class DependencyInjection
             .Get<AuditRetentionSeedOptions>()
             ?? throw new InvalidOperationException($"Configuration error: '{AuditRetentionSeedOptions.SectionName}' is missing in appsettings.json.");
         AuditRetentionPolicySeed.EnsureSeededAsync(database, auditRetentionSeedOptions).GetAwaiter().GetResult();
-        SubscriptionPlanSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
@@ -591,6 +593,7 @@ public static class DependencyInjection
         }
 
         services.AddHostedService<OutboxPublisherWorker>();
+        services.AddHostedService<SubscriptionPlanStartupInitializer>();
 
         RunMongoStartupInitialization(
             database,
@@ -641,7 +644,6 @@ public static class DependencyInjection
             // partial index (ux_platform_module_domains_code_key) is (re)created, else the index build would fail.
             ModuleDomainDeduplicationMigration.MigrateAsync(database).GetAwaiter().GetResult();
             MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
-            SubscriptionPlanSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();

@@ -6,6 +6,7 @@ using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
+using static Diten.Platform.Application.Tests.GlobalApplicability.GlobalApplicabilityTestDependencies;
 
 namespace Diten.Platform.Application.Tests.ModuleRegistration;
 
@@ -334,8 +335,9 @@ public sealed class RegisterModuleManifestCommandHandlerTests
         // The GoldenSlim manifest's "DevEnablement" domain is already a known (seeded) lookup row, so the reconcile
         // reuses it (matching the real seeded DB) rather than auto-registering — keeps the existing assertions valid.
         domains.Items.Add(new ModuleDomain { Code = "DevEnablement", DisplayName = "DevEnablement", IsActive = true });
-        var handler = new RegisterModuleManifestCommandHandler(catalog, pages, actions, sync,
-            new PassthroughTaxonomyResolver(), domains, NullLogger<RegisterModuleManifestCommandHandler>.Instance);
+        var handler = new RegisterModuleManifestCommandHandler(Module(catalog), pages, actions, sync,
+            new PassthroughTaxonomyResolver(), domains, NullLogger<RegisterModuleManifestCommandHandler>.Instance,
+            Coordinator, State);
         return (handler, catalog, pages, actions, sync, domains);
     }
 
