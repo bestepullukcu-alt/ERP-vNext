@@ -12,6 +12,7 @@ using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using Moq;
 using Xunit;
+using Diten.Platform.Application.Tests.Authorization;
 
 namespace Diten.Platform.Application.Tests.Tenants.Commercial.Entitlements;
 
@@ -43,9 +44,12 @@ public sealed class TenantModuleEntitlementReEnableQuotaTests
         var eventBus = BuildEventBus();
         var currentUser = new Mock<ICurrentUserContext>();
         currentUser.SetupGet(x => x.UserId).Returns(Guid.Empty);
+        var dependencies = PhysicalHandlerTestDependencies.Create(repo, quota, eventBus);
 
-        var enable = new EnableTenantModuleEntitlementCommandHandler(repo, quota, eventBus, currentUser.Object);
-        var disable = new DisableTenantModuleEntitlementCommandHandler(repo, moduleRepo, quota, eventBus, currentUser.Object);
+        var enable = new EnableTenantModuleEntitlementCommandHandler(repo.Object, quota, dependencies.Executor,
+            dependencies.Versions, dependencies.Events, dependencies.Audit, currentUser.Object);
+        var disable = new DisableTenantModuleEntitlementCommandHandler(repo.Object, moduleRepo, quota, dependencies.Executor,
+            dependencies.Versions, dependencies.Events, dependencies.Audit, currentUser.Object);
 
         // 1) Enable (from disabled) — consumes one ModulesMax slot.
         var r1 = await enable.Handle(new EnableTenantModuleEntitlementCommand(TenantId, EntitlementId, entity.RowVersion), CancellationToken.None);
@@ -89,8 +93,10 @@ public sealed class TenantModuleEntitlementReEnableQuotaTests
         var eventBus = BuildEventBus();
         var currentUser = new Mock<ICurrentUserContext>();
         currentUser.SetupGet(x => x.UserId).Returns(Guid.Empty);
+        var dependencies = PhysicalHandlerTestDependencies.Create(repo, quota, eventBus);
 
-        var enable = new EnableTenantModuleEntitlementCommandHandler(repo, quota, eventBus, currentUser.Object);
+        var enable = new EnableTenantModuleEntitlementCommandHandler(repo.Object, quota, dependencies.Executor,
+            dependencies.Versions, dependencies.Events, dependencies.Audit, currentUser.Object);
 
         var result = await enable.Handle(new EnableTenantModuleEntitlementCommand(TenantId, EntitlementId, entity.RowVersion), CancellationToken.None);
 
@@ -102,7 +108,7 @@ public sealed class TenantModuleEntitlementReEnableQuotaTests
 
     // Moq repo whose UpdateAsync bumps RowVersion (mirroring the real repo) and whose GetByIdAsync returns a clone
     // of the CURRENT persisted state, so each enable/disable cycle observes a fresh RowVersion.
-    private static ITenantModuleEntitlementRepository BuildStatefulRepo(TenantModuleEntitlement current)
+    private static Mock<ITenantModuleEntitlementRepository> BuildStatefulRepo(TenantModuleEntitlement current)
     {
         var repo = new Mock<ITenantModuleEntitlementRepository>();
         repo.Setup(x => x.GetByIdAsync(TenantId, EntitlementId, It.IsAny<CancellationToken>()))
@@ -117,7 +123,7 @@ public sealed class TenantModuleEntitlementReEnableQuotaTests
                 current.RowVersion = bumped;    // persist
                 return Task.CompletedTask;
             });
-        return repo.Object;
+        return repo;
     }
 
     private static TenantModuleEntitlement Clone(TenantModuleEntitlement e) => new()
@@ -194,6 +200,10 @@ public sealed class TenantModuleEntitlementReEnableQuotaTests
             => Task.FromResult(Response<QuotaStatusDto>.Success(new QuotaStatusDto(
                 request.TenantId, "modules.max", Consumed, 10, 0, false, false,
                 DateTimeOffset.UnixEpoch, DateTimeOffset.UnixEpoch, "Test", null, null, null, false, false, null, null)));
+
+        public Task<Response<QuotaMutationDto>> TryConsumeEntitlementAsync(IPlatformTransactionSession session, TryConsumeQuotaRequest request, CancellationToken ct) => TryConsumeAsync(request, ct);
+        public Task<Response<QuotaMutationDto>> ReleaseEntitlementAsync(IPlatformTransactionSession session, ReleaseQuotaRequest request, CancellationToken ct) => ReleaseAsync(request, ct);
+        public Task<Response<QuotaStatusDto>> RecalculateEntitlementAsync(IPlatformTransactionSession session, RecalculateQuotaUsageRequest request, CancellationToken ct) => RecalculateAsync(request, ct);
 
         // Unused by the enable/disable handlers.
         public Task<bool> TryConsumeAsync(Guid tenantId, string quotaKey, decimal amount, CancellationToken ct) => throw new NotImplementedException();

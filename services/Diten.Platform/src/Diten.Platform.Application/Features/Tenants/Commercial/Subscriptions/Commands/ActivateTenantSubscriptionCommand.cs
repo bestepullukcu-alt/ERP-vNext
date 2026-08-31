@@ -6,7 +6,7 @@ using MediatR;
 namespace Diten.Platform.Application.Features.Tenants.Commercial.Subscriptions.Commands;
 
 public sealed record ActivateTenantSubscriptionCommand(Guid TenantId, Guid SubscriptionId, ActivateTenantSubscriptionRequest Request)
-    : IRequest<Response<NoContent>>, IAuditableCommand, IAuditMetadataProvider
+    : IRequest<Response<NoContent>>, IAuditableCommand, IAuditMetadataProvider, ITransactionOwnedAuditCommand
 {
     public AuditRequestMetadata GetAuditMetadata() => new(
         Category: AuditCategory.SubscriptionBilling, Operation: AuditOperation.Activate, EntityType: "TenantSubscription",

@@ -149,6 +149,41 @@ public sealed class QuotaService : IQuotaService
         return Response<IReadOnlyList<QuotaStatusDto>>.Success(statuses);
     }
 
+    public async Task<Response<IReadOnlyList<QuotaStatusDto>>> InitializeSubscriptionQuotasAsync(
+        IPlatformTransactionSession session, TenantSubscription subscription, SubscriptionPlan plan,
+        bool synchronizeExisting, string source, string reason, string actorId, string correlationId, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        var now = DateTimeOffset.UtcNow;
+        var statuses = new List<QuotaStatusDto>();
+        if (plan.DefaultQuotas is null || plan.DefaultQuotas.Count == 0)
+            return Response<IReadOnlyList<QuotaStatusDto>>.Fail(QuotaErrorCodes.ConfigurationMissing, 400);
+        foreach (var item in plan.DefaultQuotas.Where(x => QuotaKeys.IsKnown(x.Key)))
+        {
+            var key = NormalizeKey(item.Key);
+            var usage = synchronizeExisting
+                ? await _usageRepository.UpdateLimitAsync(session, subscription.TenantId, key, item.Value,
+                    subscription.Id, plan.Id, QuotaLimitSources.PlanDefault, null, now, ct)
+                : await _usageRepository.GetByTenantAndKeyAsync(session, subscription.TenantId, key, ct);
+            if (usage is null)
+            {
+                usage = new QuotaUsage
+                {
+                    TenantId = subscription.TenantId, QuotaKey = key, CurrentValue = 0, LimitValue = item.Value,
+                    PeriodStart = subscription.CurrentPeriodStartUtc ?? now,
+                    PeriodEnd = subscription.CurrentPeriodEndUtc ?? now.AddMonths(1), LastUpdatedUtc = now,
+                    Source = QuotaLimitSources.PlanDefault, SubscriptionId = subscription.Id, PlanId = plan.Id,
+                    CreatedBy = actorId
+                };
+                await _usageRepository.CreateAsync(session, usage, ct);
+            }
+            await WriteEventAsync(session, subscription.TenantId, key, 0, source, reason,
+                correlationId, subscription.Id.ToString("D"), false, null, ct);
+            statuses.Add(ToStatus(usage));
+        }
+        return Response<IReadOnlyList<QuotaStatusDto>>.Success(statuses);
+    }
+
     public async Task<Response<IReadOnlyList<QuotaStatusDto>>> SyncTenantQuotaLimitsAsync(Guid tenantId, string source, string reason, string actorId, string correlationId, CancellationToken ct)
     {
         var limits = await ResolveLimitsAsync(tenantId, false, ct);
@@ -199,43 +234,59 @@ public sealed class QuotaService : IQuotaService
         return Response<IReadOnlyList<QuotaStatusDto>>.Success(statuses);
     }
 
-    public async Task<Response<QuotaMutationDto>> TryConsumeAsync(TryConsumeQuotaRequest request, CancellationToken ct)
+    public Task<Response<QuotaMutationDto>> TryConsumeAsync(TryConsumeQuotaRequest request, CancellationToken ct) =>
+        TryConsumeCoreAsync(null, request, ct);
+
+    public Task<Response<QuotaMutationDto>> TryConsumeEntitlementAsync(IPlatformTransactionSession session, TryConsumeQuotaRequest request, CancellationToken ct) =>
+        TryConsumeCoreAsync(session ?? throw new ArgumentNullException(nameof(session)), request, ct);
+
+    private async Task<Response<QuotaMutationDto>> TryConsumeCoreAsync(IPlatformTransactionSession? session, TryConsumeQuotaRequest request, CancellationToken ct)
     {
         var validation = ValidateMutationRequest(request.TenantId, request.QuotaKey, request.Amount, true);
         if (validation is not null)
         {
-            await WriteEventAsync(request.TenantId, request.QuotaKey, request.Amount, request.Source, ReasonOrDefault(request.Reason, "Rejected quota consume."), request.OperationId, request.SourceReference, true, validation, ct);
+            await WriteEventAsync(session, request.TenantId, request.QuotaKey, request.Amount, request.Source, ReasonOrDefault(request.Reason, "Rejected quota consume."), request.OperationId, request.SourceReference, true, validation, ct);
             return Response<QuotaMutationDto>.Fail(validation, validation == QuotaErrorCodes.LimitExceeded ? 409 : 400);
         }
 
         var limits = await ResolveLimitsAsync(request.TenantId, true, ct);
         if (!limits.IsSuccessful)
         {
-            await WriteEventAsync(request.TenantId, request.QuotaKey, request.Amount, request.Source, ReasonOrDefault(request.Reason, "Rejected quota consume."), request.OperationId, request.SourceReference, true, limits.ErrorCode, ct);
+            await WriteEventAsync(session, request.TenantId, request.QuotaKey, request.Amount, request.Source, ReasonOrDefault(request.Reason, "Rejected quota consume."), request.OperationId, request.SourceReference, true, limits.ErrorCode, ct);
             return Response<QuotaMutationDto>.Fail(limits.ErrorCode ?? QuotaErrorCodes.ConfigurationMissing, limits.StatusCode);
         }
 
-        if (await IsDuplicateAsync(request.TenantId, request.QuotaKey, request.Source, request.OperationId, request.SourceReference, false, ct))
+        if (await IsDuplicateAsync(session, request.TenantId, request.QuotaKey, request.Source, request.OperationId, request.SourceReference, false, ct))
         {
             return Response<QuotaMutationDto>.Fail(QuotaErrorCodes.DuplicateOperation, 409);
         }
 
         var now = DateTimeOffset.UtcNow;
-        var result = await _usageRepository.TryConsumeAtomicAsync(request.TenantId, NormalizeKey(request.QuotaKey), request.Amount, now, ct);
+        var result = session is null
+            ? await _usageRepository.TryConsumeAtomicAsync(request.TenantId, NormalizeKey(request.QuotaKey), request.Amount, now, ct)
+            : await _usageRepository.TryConsumeAtomicAsync(session, request.TenantId, NormalizeKey(request.QuotaKey), request.Amount, now, ct);
         if (!result.Applied)
         {
-            var existing = await _usageRepository.GetByTenantAndKeyAsync(request.TenantId, NormalizeKey(request.QuotaKey), ct);
+            var existing = session is null
+                ? await _usageRepository.GetByTenantAndKeyAsync(request.TenantId, NormalizeKey(request.QuotaKey), ct)
+                : await _usageRepository.GetByTenantAndKeyAsync(session, request.TenantId, NormalizeKey(request.QuotaKey), ct);
             var error = existing is null ? QuotaErrorCodes.UsageNotFound : QuotaErrorCodes.LimitExceeded;
-            await WriteEventAsync(request.TenantId, request.QuotaKey, request.Amount, request.Source, ReasonOrDefault(request.Reason, "Rejected quota consume."), request.OperationId, request.SourceReference, true, error, ct);
+            await WriteEventAsync(session, request.TenantId, request.QuotaKey, request.Amount, request.Source, ReasonOrDefault(request.Reason, "Rejected quota consume."), request.OperationId, request.SourceReference, true, error, ct);
             return Response<QuotaMutationDto>.Fail(error, existing is null ? 404 : 409);
         }
 
-        var usage = await SyncNotificationStateAsync(result.Usage!, request.Source, request.Reason, request.OperationId, request.SourceReference, ct);
-        await WriteEventAsync(request.TenantId, request.QuotaKey, request.Amount, request.Source, ReasonOrDefault(request.Reason, "Quota consume."), request.OperationId, request.SourceReference, false, null, ct);
+        var usage = await SyncNotificationStateAsync(session, result.Usage!, request.Source, request.Reason, request.OperationId, request.SourceReference, ct);
+        await WriteEventAsync(session, request.TenantId, request.QuotaKey, request.Amount, request.Source, ReasonOrDefault(request.Reason, "Quota consume."), request.OperationId, request.SourceReference, false, null, ct);
         return Response<QuotaMutationDto>.Success(ToMutation(usage, request.Amount, true, null));
     }
 
-    public async Task<Response<QuotaMutationDto>> ReleaseAsync(ReleaseQuotaRequest request, CancellationToken ct)
+    public Task<Response<QuotaMutationDto>> ReleaseAsync(ReleaseQuotaRequest request, CancellationToken ct) =>
+        ReleaseCoreAsync(null, request, ct);
+
+    public Task<Response<QuotaMutationDto>> ReleaseEntitlementAsync(IPlatformTransactionSession session, ReleaseQuotaRequest request, CancellationToken ct) =>
+        ReleaseCoreAsync(session ?? throw new ArgumentNullException(nameof(session)), request, ct);
+
+    private async Task<Response<QuotaMutationDto>> ReleaseCoreAsync(IPlatformTransactionSession? session, ReleaseQuotaRequest request, CancellationToken ct)
     {
         var validation = ValidateMutationRequest(request.TenantId, request.QuotaKey, request.Amount, false);
         if (validation is not null)
@@ -243,22 +294,26 @@ public sealed class QuotaService : IQuotaService
             return Response<QuotaMutationDto>.Fail(validation, 400);
         }
 
-        if (await IsDuplicateAsync(request.TenantId, request.QuotaKey, request.Source, request.OperationId, request.SourceReference, false, ct))
+        if (await IsDuplicateAsync(session, request.TenantId, request.QuotaKey, request.Source, request.OperationId, request.SourceReference, false, ct))
         {
             return Response<QuotaMutationDto>.Fail(QuotaErrorCodes.DuplicateOperation, 409);
         }
 
         var now = DateTimeOffset.UtcNow;
-        var result = await _usageRepository.TryReleaseAtomicAsync(request.TenantId, NormalizeKey(request.QuotaKey), request.Amount, now, ct);
+        var result = session is null
+            ? await _usageRepository.TryReleaseAtomicAsync(request.TenantId, NormalizeKey(request.QuotaKey), request.Amount, now, ct)
+            : await _usageRepository.TryReleaseAtomicAsync(session, request.TenantId, NormalizeKey(request.QuotaKey), request.Amount, now, ct);
         if (!result.Applied)
         {
-            var existing = await _usageRepository.GetByTenantAndKeyAsync(request.TenantId, NormalizeKey(request.QuotaKey), ct);
+            var existing = session is null
+                ? await _usageRepository.GetByTenantAndKeyAsync(request.TenantId, NormalizeKey(request.QuotaKey), ct)
+                : await _usageRepository.GetByTenantAndKeyAsync(session, request.TenantId, NormalizeKey(request.QuotaKey), ct);
             var error = existing is null ? QuotaErrorCodes.UsageNotFound : QuotaErrorCodes.ReleaseExceedsCurrentUsage;
-            await WriteEventAsync(request.TenantId, request.QuotaKey, -request.Amount, request.Source, ReasonOrDefault(request.Reason, "Rejected quota release."), request.OperationId, request.SourceReference, true, error, ct);
+            await WriteEventAsync(session, request.TenantId, request.QuotaKey, -request.Amount, request.Source, ReasonOrDefault(request.Reason, "Rejected quota release."), request.OperationId, request.SourceReference, true, error, ct);
             return Response<QuotaMutationDto>.Fail(error, existing is null ? 404 : 400);
         }
 
-        await WriteEventAsync(request.TenantId, request.QuotaKey, -request.Amount, request.Source, ReasonOrDefault(request.Reason, "Quota release."), request.OperationId, request.SourceReference, false, null, ct);
+        await WriteEventAsync(session, request.TenantId, request.QuotaKey, -request.Amount, request.Source, ReasonOrDefault(request.Reason, "Quota release."), request.OperationId, request.SourceReference, false, null, ct);
         return Response<QuotaMutationDto>.Success(ToMutation(result.Usage!, -request.Amount, true, null));
     }
 
@@ -289,7 +344,13 @@ public sealed class QuotaService : IQuotaService
         return Response<QuotaStatusDto>.Success(ToStatus(usage));
     }
 
-    public async Task<Response<QuotaStatusDto>> RecalculateAsync(RecalculateQuotaUsageRequest request, CancellationToken ct)
+    public Task<Response<QuotaStatusDto>> RecalculateAsync(RecalculateQuotaUsageRequest request, CancellationToken ct) =>
+        RecalculateCoreAsync(null, request, ct);
+
+    public Task<Response<QuotaStatusDto>> RecalculateEntitlementAsync(IPlatformTransactionSession session, RecalculateQuotaUsageRequest request, CancellationToken ct) =>
+        RecalculateCoreAsync(session ?? throw new ArgumentNullException(nameof(session)), request, ct);
+
+    private async Task<Response<QuotaStatusDto>> RecalculateCoreAsync(IPlatformTransactionSession? session, RecalculateQuotaUsageRequest request, CancellationToken ct)
     {
         if (request.TenantId == Guid.Empty)
         {
@@ -301,13 +362,15 @@ public sealed class QuotaService : IQuotaService
             return Response<QuotaStatusDto>.Fail(QuotaErrorCodes.KeyUnknown, 400);
         }
 
-        var usage = await _usageRepository.GetByTenantAndKeyAsync(request.TenantId, NormalizeKey(request.QuotaKey), ct);
+        var usage = session is null
+            ? await _usageRepository.GetByTenantAndKeyAsync(request.TenantId, NormalizeKey(request.QuotaKey), ct)
+            : await _usageRepository.GetByTenantAndKeyAsync(session, request.TenantId, NormalizeKey(request.QuotaKey), ct);
         if (usage is null)
         {
             return Response<QuotaStatusDto>.Fail(QuotaErrorCodes.UsageNotFound, 404);
         }
 
-        var computed = await ComputeCurrentUsageAsync(request.TenantId, NormalizeKey(request.QuotaKey), ct);
+        var computed = await ComputeCurrentUsageAsync(session, request.TenantId, NormalizeKey(request.QuotaKey), ct);
         if (computed is null)
         {
             return Response<QuotaStatusDto>.Fail(QuotaErrorCodes.RecalculationNotSupported, 400);
@@ -316,14 +379,16 @@ public sealed class QuotaService : IQuotaService
         var delta = computed.Value - usage.CurrentValue;
         var updated = delta == 0
             ? usage
-            : await _usageRepository.SetCurrentValueAsync(request.TenantId, NormalizeKey(request.QuotaKey), computed.Value, DateTimeOffset.UtcNow, ct);
+            : session is null
+                ? await _usageRepository.SetCurrentValueAsync(request.TenantId, NormalizeKey(request.QuotaKey), computed.Value, DateTimeOffset.UtcNow, ct)
+                : await _usageRepository.SetCurrentValueAsync(session, request.TenantId, NormalizeKey(request.QuotaKey), computed.Value, DateTimeOffset.UtcNow, ct);
 
         if (updated is null)
         {
             return Response<QuotaStatusDto>.Fail(QuotaErrorCodes.UsageNotFound, 404);
         }
 
-        await WriteEventAsync(request.TenantId, request.QuotaKey, delta, request.Source, ReasonOrDefault(request.Reason, "Quota usage recalculated."), request.OperationId, request.SourceReference, false, null, ct);
+        await WriteEventAsync(session, request.TenantId, request.QuotaKey, delta, request.Source, ReasonOrDefault(request.Reason, "Quota usage recalculated."), request.OperationId, request.SourceReference, false, null, ct);
         return Response<QuotaStatusDto>.Success(ToStatus(updated));
     }
 
@@ -369,10 +434,15 @@ public sealed class QuotaService : IQuotaService
         return false;
     }
 
-    private async Task<decimal?> ComputeCurrentUsageAsync(Guid tenantId, string quotaKey, CancellationToken ct)
+    private async Task<decimal?> ComputeCurrentUsageAsync(IPlatformTransactionSession? session, Guid tenantId, string quotaKey, CancellationToken ct)
     {
         if (string.Equals(quotaKey, QuotaKeys.ModulesMax, StringComparison.OrdinalIgnoreCase))
         {
+            if (session is not null)
+            {
+                return await _entitlementRepository.CountEnabledAsync(session, tenantId, ct);
+            }
+
             var entitlements = await _entitlementRepository.GetByTenantIdAsync(tenantId, ct);
             return entitlements.Count(x => x.IsEnabled);
         }
@@ -407,7 +477,7 @@ public sealed class QuotaService : IQuotaService
         return null;
     }
 
-    private async Task<QuotaUsage> SyncNotificationStateAsync(QuotaUsage usage, string source, string? reason, string? operationId, string? sourceReference, CancellationToken ct)
+    private async Task<QuotaUsage> SyncNotificationStateAsync(IPlatformTransactionSession? session, QuotaUsage usage, string source, string? reason, string? operationId, string? sourceReference, CancellationToken ct)
     {
         var usagePercent = CalculateUsagePercent(usage.CurrentValue, usage.LimitValue);
         var warningDue = usagePercent >= 80 && !usage.WarningNotificationSentForPeriod;
@@ -418,7 +488,11 @@ public sealed class QuotaService : IQuotaService
         }
 
         var now = DateTimeOffset.UtcNow;
-        var updated = await _usageRepository.MarkNotificationStateAsync(usage.TenantId, usage.QuotaKey, warningDue, breachDue, now, ct) ?? usage;
+        // Notification-state writes are not part of physical entitlement accounting. Avoid an
+        // unrelated sessionless write while an entitlement transaction is active.
+        var updated = session is null
+            ? await _usageRepository.MarkNotificationStateAsync(usage.TenantId, usage.QuotaKey, warningDue, breachDue, now, ct) ?? usage
+            : usage;
 
         if (warningDue)
         {
@@ -441,14 +515,17 @@ public sealed class QuotaService : IQuotaService
         return updated;
     }
 
-    private async Task WriteEventAsync(Guid tenantId, string quotaKey, decimal delta, string source, string reason, string? operationId, string? sourceReference, bool isRejected, string? errorCode, CancellationToken ct)
+    private Task WriteEventAsync(Guid tenantId, string quotaKey, decimal delta, string source, string reason, string? operationId, string? sourceReference, bool isRejected, string? errorCode, CancellationToken ct) =>
+        WriteEventAsync(null, tenantId, quotaKey, delta, source, reason, operationId, sourceReference, isRejected, errorCode, ct);
+
+    private async Task WriteEventAsync(IPlatformTransactionSession? session, Guid tenantId, string quotaKey, decimal delta, string source, string reason, string? operationId, string? sourceReference, bool isRejected, string? errorCode, CancellationToken ct)
     {
         if (tenantId == Guid.Empty || string.IsNullOrWhiteSpace(quotaKey) || string.IsNullOrWhiteSpace(source))
         {
             return;
         }
 
-        await _eventRepository.CreateAsync(new QuotaEvent
+        var quotaEvent = new QuotaEvent
         {
             TenantId = tenantId,
             QuotaKey = NormalizeKey(quotaKey),
@@ -459,17 +536,30 @@ public sealed class QuotaService : IQuotaService
             SourceReference = string.IsNullOrWhiteSpace(sourceReference) ? null : sourceReference.Trim(),
             IsRejected = isRejected,
             ErrorCode = errorCode
-        }, ct);
+        };
+        if (session is null)
+        {
+            await _eventRepository.CreateAsync(quotaEvent, ct);
+        }
+        else
+        {
+            await _eventRepository.CreateAsync(session, quotaEvent, ct);
+        }
     }
 
-    private async Task<bool> IsDuplicateAsync(Guid tenantId, string quotaKey, string source, string? operationId, string? sourceReference, bool isRejected, CancellationToken ct)
+    private Task<bool> IsDuplicateAsync(Guid tenantId, string quotaKey, string source, string? operationId, string? sourceReference, bool isRejected, CancellationToken ct) =>
+        IsDuplicateAsync(null, tenantId, quotaKey, source, operationId, sourceReference, isRejected, ct);
+
+    private async Task<bool> IsDuplicateAsync(IPlatformTransactionSession? session, Guid tenantId, string quotaKey, string source, string? operationId, string? sourceReference, bool isRejected, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(operationId) && string.IsNullOrWhiteSpace(sourceReference))
         {
             return false;
         }
 
-        return await _eventRepository.ExistsAsync(tenantId, NormalizeKey(quotaKey), source, operationId, sourceReference, isRejected, ct);
+        return session is null
+            ? await _eventRepository.ExistsAsync(tenantId, NormalizeKey(quotaKey), source, operationId, sourceReference, isRejected, ct)
+            : await _eventRepository.ExistsAsync(session, tenantId, NormalizeKey(quotaKey), source, operationId, sourceReference, isRejected, ct);
     }
 
     private static string? ValidateMutationRequest(Guid tenantId, string quotaKey, decimal amount, bool consume)

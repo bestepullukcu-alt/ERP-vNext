@@ -1,6 +1,10 @@
 using System.Reflection;
 using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Domain.Enums;
+using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands;
+using Diten.Platform.Application.Features.SubscriptionPlans.Commands;
+using Diten.Platform.Application.Features.ModuleCatalog.Commands;
+using Diten.Platform.Application.Features.ModuleRegistration;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -29,6 +33,17 @@ public sealed class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequ
         RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
+        if (request is ITransactionOwnedAuditCommand)
+        {
+            if (!IsAuthorizedTransactionOwnedAuditCommand(typeof(TRequest)))
+            {
+                throw new InvalidOperationException(
+                    $"Transaction-owned audit is not authorized for {typeof(TRequest).Name}.");
+            }
+
+            return await next();
+        }
+
         var auditPlan = BuildAuditPlan(request);
         if (!auditPlan.ShouldAudit)
         {
@@ -65,6 +80,25 @@ public sealed class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequ
         EnforceAppendResult(appendResult, auditPlan.Metadata!, auditPlan.RequestTypeName);
         return response;
     }
+
+    private static bool IsAuthorizedTransactionOwnedAuditCommand(Type requestType) =>
+        requestType == typeof(AddTenantModuleEntitlementCommand)
+        || requestType == typeof(EnableTenantModuleEntitlementCommand)
+        || requestType == typeof(DisableTenantModuleEntitlementCommand)
+        || requestType == typeof(UpdateTenantModuleEntitlementExpiryCommand)
+        || requestType == typeof(RemoveTenantManualModuleOverrideCommand)
+        || requestType == typeof(CreateSubscriptionPlanCommand)
+        || requestType == typeof(UpdateSubscriptionPlanCommand)
+        || requestType == typeof(ActivateSubscriptionPlanCommand)
+        || requestType == typeof(DeactivateSubscriptionPlanCommand)
+        || requestType == typeof(SeedDefaultSubscriptionPlansCommand)
+        || requestType == typeof(CreateModuleCatalogItemCommand)
+        || requestType == typeof(UpdateModuleCatalogItemCommand)
+        || requestType == typeof(ActivateModuleCatalogItemCommand)
+        || requestType == typeof(DeactivateModuleCatalogItemCommand)
+        || requestType == typeof(DeleteModuleCatalogItemCommand)
+        || requestType == typeof(BulkDeleteModuleCatalogItemsCommand)
+        || requestType == typeof(RegisterModuleManifestCommand);
 
     private AuditPlan BuildAuditPlan(TRequest request)
     {

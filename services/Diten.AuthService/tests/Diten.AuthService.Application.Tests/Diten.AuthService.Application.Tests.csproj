@@ -21,5 +21,6 @@
     <ProjectReference Include="..\..\src\Diten.AuthService.Domain\Diten.AuthService.Domain.csproj" />
     <ProjectReference Include="..\..\src\Diten.AuthService.Persistence\Diten.AuthService.Persistence.csproj" />
     <ProjectReference Include="..\..\src\Diten.AuthService.Infrastructure\Diten.AuthService.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Diten.Platform\src\Diten.Platform.Application\Diten.Platform.Application.csproj" Aliases="PlatformProducer" />
   </ItemGroup>
 </Project>

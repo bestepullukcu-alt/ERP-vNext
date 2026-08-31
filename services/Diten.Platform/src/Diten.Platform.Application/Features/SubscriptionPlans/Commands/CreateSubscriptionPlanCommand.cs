@@ -6,7 +6,7 @@ using MediatR;
 namespace Diten.Platform.Application.Features.SubscriptionPlans.Commands;
 
 public sealed record CreateSubscriptionPlanCommand(CreateSubscriptionPlanRequest Request)
-    : IRequest<Response<Guid>>, IAuditableCommand, IAuditMetadataProvider
+    : IRequest<Response<Guid>>, IAuditableCommand, IAuditMetadataProvider, ITransactionOwnedAuditCommand
 {
     public AuditRequestMetadata GetAuditMetadata() => new(
         Category: AuditCategory.SubscriptionBilling, Operation: AuditOperation.Create, EntityType: "SubscriptionPlan",

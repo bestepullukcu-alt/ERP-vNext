@@ -15,6 +15,20 @@ public sealed class MassTransitRabbitMqEventPublisher : IEventTransportPublisher
     public Task PublishAsync(EventTransportMessage message, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
-        return _publishEndpoint.Publish(message, cancellationToken);
+        return _publishEndpoint.Publish(
+            message,
+            context =>
+            {
+                if (message.TransportHeaders is null)
+                {
+                    return;
+                }
+
+                foreach (var header in message.TransportHeaders)
+                {
+                    context.Headers.Set(header.Key, header.Value);
+                }
+            },
+            cancellationToken);
     }
 }

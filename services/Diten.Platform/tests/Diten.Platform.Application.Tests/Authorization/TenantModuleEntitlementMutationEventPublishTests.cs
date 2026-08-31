@@ -1,6 +1,8 @@
 using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Contracts.Audit;
+using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Application.Features.Quotas;
 using Diten.Platform.Application.Features.Quotas.Services;
 using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements;
@@ -30,7 +32,7 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         fixture.Repository.Setup(x => x.GetByIdAsync(TenantId, EntitlementId, It.IsAny<CancellationToken>())).ReturnsAsync(entitlement);
         TenantEntitlementEnabledV1? publishedEvent = null;
         EventPublishOptions? publishOptions = null;
-        SetupPublish(fixture.EventBus, (TenantEntitlementEnabledV1 @event, EventPublishOptions options) =>
+        SetupPublish(fixture.Events, (TenantEntitlementEnabledV1 @event, EventPublishOptions options) =>
         {
             publishedEvent = @event;
             publishOptions = options;
@@ -38,7 +40,10 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         var handler = new EnableTenantModuleEntitlementCommandHandler(
             fixture.Repository.Object,
             fixture.QuotaService.Object,
-            fixture.EventBus.Object,
+            fixture.Transactions,
+            fixture.Versions.Object,
+            fixture.Events.Object,
+            fixture.Audit.Object,
             fixture.CurrentUser.Object);
 
         var result = await handler.Handle(new EnableTenantModuleEntitlementCommand(TenantId, EntitlementId, RowVersion), CancellationToken.None);
@@ -55,13 +60,31 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         var handler = new EnableTenantModuleEntitlementCommandHandler(
             fixture.Repository.Object,
             fixture.QuotaService.Object,
-            fixture.EventBus.Object,
+            fixture.Transactions,
+            fixture.Versions.Object,
+            fixture.Events.Object,
+            fixture.Audit.Object,
             fixture.CurrentUser.Object);
 
         var result = await handler.Handle(new EnableTenantModuleEntitlementCommand(TenantId, EntitlementId, RowVersion), CancellationToken.None);
 
         Assert.True(result.IsSuccessful);
-        VerifyPublishNever(fixture.EventBus);
+        Assert.Equal(0, fixture.Transactions.InvocationCount);
+        fixture.Versions.Verify(x => x.IncrementPhysicalEntitlementVersionAsync(
+            It.IsAny<IPlatformTransactionSession>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        fixture.QuotaService.Verify(x => x.TryConsumeEntitlementAsync(
+            It.IsAny<IPlatformTransactionSession>(), It.IsAny<TryConsumeQuotaRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+        fixture.QuotaService.Verify(x => x.ReleaseEntitlementAsync(
+            It.IsAny<IPlatformTransactionSession>(), It.IsAny<ReleaseQuotaRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+        fixture.QuotaService.Verify(x => x.RecalculateEntitlementAsync(
+            It.IsAny<IPlatformTransactionSession>(), It.IsAny<RecalculateQuotaUsageRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+        VerifyPublishNever(fixture.Events);
+        fixture.Audit.Verify(x => x.TryEnqueueAsync(
+            It.IsAny<IPlatformTransactionSession>(), It.IsAny<AuditOutboxWriteRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+        fixture.EventBus.Verify(x => x.PublishAsync(
+            It.IsAny<IIntegrationEvent>(), It.IsAny<EventPublishOptions>(), It.IsAny<CancellationToken>()), Times.Never);
+        fixture.Repository.Verify(x => x.UpdateAsync(
+            It.IsAny<IPlatformTransactionSession>(), It.IsAny<TenantModuleEntitlement>(), It.IsAny<byte[]?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -72,13 +95,16 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         var handler = new EnableTenantModuleEntitlementCommandHandler(
             fixture.Repository.Object,
             fixture.QuotaService.Object,
-            fixture.EventBus.Object,
+            fixture.Transactions,
+            fixture.Versions.Object,
+            fixture.Events.Object,
+            fixture.Audit.Object,
             fixture.CurrentUser.Object);
 
         var result = await handler.Handle(new EnableTenantModuleEntitlementCommand(TenantId, EntitlementId, RowVersion), CancellationToken.None);
 
         Assert.False(result.IsSuccessful);
-        VerifyPublishNever(fixture.EventBus);
+        VerifyPublishNever(fixture.Events);
     }
 
     [Fact]
@@ -88,7 +114,7 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         fixture.Repository.Setup(x => x.GetByIdAsync(TenantId, EntitlementId, It.IsAny<CancellationToken>())).ReturnsAsync(CreateEntitlement(isEnabled: true));
         TenantEntitlementDisabledV1? publishedEvent = null;
         EventPublishOptions? publishOptions = null;
-        SetupPublish(fixture.EventBus, (TenantEntitlementDisabledV1 @event, EventPublishOptions options) =>
+        SetupPublish(fixture.Events, (TenantEntitlementDisabledV1 @event, EventPublishOptions options) =>
         {
             publishedEvent = @event;
             publishOptions = options;
@@ -97,7 +123,10 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
             fixture.Repository.Object,
             fixture.ModuleRepository.Object,
             fixture.QuotaService.Object,
-            fixture.EventBus.Object,
+            fixture.Transactions,
+            fixture.Versions.Object,
+            fixture.Events.Object,
+            fixture.Audit.Object,
             fixture.CurrentUser.Object);
 
         var result = await handler.Handle(CreateDisableCommand(EntitlementId), CancellationToken.None);
@@ -110,18 +139,38 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
     public async Task DisableTenantModuleEntitlementCommandHandler_DoesNotPublishWhenAlreadyDisabled()
     {
         var fixture = CreateFixture(ActorId);
-        fixture.Repository.Setup(x => x.GetByIdAsync(TenantId, EntitlementId, It.IsAny<CancellationToken>())).ReturnsAsync(CreateEntitlement(isEnabled: false));
+        var alreadyDisabled = CreateEntitlement(isEnabled: false);
+        alreadyDisabled.Reason = "disable";
+        fixture.Repository.Setup(x => x.GetByIdAsync(TenantId, EntitlementId, It.IsAny<CancellationToken>())).ReturnsAsync(alreadyDisabled);
         var handler = new DisableTenantModuleEntitlementCommandHandler(
             fixture.Repository.Object,
             fixture.ModuleRepository.Object,
             fixture.QuotaService.Object,
-            fixture.EventBus.Object,
+            fixture.Transactions,
+            fixture.Versions.Object,
+            fixture.Events.Object,
+            fixture.Audit.Object,
             fixture.CurrentUser.Object);
 
         var result = await handler.Handle(CreateDisableCommand(EntitlementId), CancellationToken.None);
 
         Assert.True(result.IsSuccessful);
-        VerifyPublishNever(fixture.EventBus);
+        VerifyPublishNever(fixture.Events);
+        Assert.Equal(0, fixture.Transactions.InvocationCount);
+        fixture.Versions.Verify(x => x.IncrementPhysicalEntitlementVersionAsync(
+            It.IsAny<IPlatformTransactionSession>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        fixture.QuotaService.Verify(x => x.TryConsumeEntitlementAsync(
+            It.IsAny<IPlatformTransactionSession>(), It.IsAny<TryConsumeQuotaRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+        fixture.QuotaService.Verify(x => x.ReleaseEntitlementAsync(
+            It.IsAny<IPlatformTransactionSession>(), It.IsAny<ReleaseQuotaRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+        fixture.QuotaService.Verify(x => x.RecalculateEntitlementAsync(
+            It.IsAny<IPlatformTransactionSession>(), It.IsAny<RecalculateQuotaUsageRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+        fixture.Audit.Verify(x => x.TryEnqueueAsync(
+            It.IsAny<IPlatformTransactionSession>(), It.IsAny<AuditOutboxWriteRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+        fixture.EventBus.Verify(x => x.PublishAsync(
+            It.IsAny<IIntegrationEvent>(), It.IsAny<EventPublishOptions>(), It.IsAny<CancellationToken>()), Times.Never);
+        fixture.Repository.Verify(x => x.UpdateAsync(
+            It.IsAny<IPlatformTransactionSession>(), It.IsAny<TenantModuleEntitlement>(), It.IsAny<byte[]?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -133,13 +182,16 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
             fixture.Repository.Object,
             fixture.ModuleRepository.Object,
             fixture.QuotaService.Object,
-            fixture.EventBus.Object,
+            fixture.Transactions,
+            fixture.Versions.Object,
+            fixture.Events.Object,
+            fixture.Audit.Object,
             fixture.CurrentUser.Object);
 
         var result = await handler.Handle(CreateDisableCommand(EntitlementId), CancellationToken.None);
 
         Assert.False(result.IsSuccessful);
-        VerifyPublishNever(fixture.EventBus);
+        VerifyPublishNever(fixture.Events);
     }
 
     // FEAT-BASELINE-MODULES — a baseline module is entitlement-free; disabling it via a manual override is
@@ -162,14 +214,17 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
             fixture.Repository.Object,
             fixture.ModuleRepository.Object,
             fixture.QuotaService.Object,
-            fixture.EventBus.Object,
+            fixture.Transactions,
+            fixture.Versions.Object,
+            fixture.Events.Object,
+            fixture.Audit.Object,
             fixture.CurrentUser.Object);
 
         var result = await handler.Handle(CreateDisableCommand(EntitlementId), CancellationToken.None);
 
         Assert.False(result.IsSuccessful);
         Assert.Equal(409, result.StatusCode);
-        VerifyPublishNever(fixture.EventBus);
+        VerifyPublishNever(fixture.Events);
     }
 
     [Fact]
@@ -179,14 +234,17 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         fixture.Repository.Setup(x => x.GetByIdAsync(TenantId, EntitlementId, It.IsAny<CancellationToken>())).ReturnsAsync(CreateEntitlement(isEnabled: true, expiryDateUtc: DateTimeOffset.UtcNow.AddDays(1)));
         TenantEntitlementExpiryUpdatedV1? publishedEvent = null;
         EventPublishOptions? publishOptions = null;
-        SetupPublish(fixture.EventBus, (TenantEntitlementExpiryUpdatedV1 @event, EventPublishOptions options) =>
+        SetupPublish(fixture.Events, (TenantEntitlementExpiryUpdatedV1 @event, EventPublishOptions options) =>
         {
             publishedEvent = @event;
             publishOptions = options;
         });
         var handler = new UpdateTenantModuleEntitlementExpiryCommandHandler(
             fixture.Repository.Object,
-            fixture.EventBus.Object,
+            fixture.Transactions,
+            fixture.Versions.Object,
+            fixture.Events.Object,
+            fixture.Audit.Object,
             fixture.CurrentUser.Object);
 
         var result = await handler.Handle(
@@ -205,10 +263,15 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
     {
         var fixture = CreateFixture(ActorId);
         var expiry = DateTimeOffset.UtcNow.AddDays(1);
-        fixture.Repository.Setup(x => x.GetByIdAsync(TenantId, EntitlementId, It.IsAny<CancellationToken>())).ReturnsAsync(CreateEntitlement(isEnabled: true, expiryDateUtc: expiry));
+        var unchanged = CreateEntitlement(isEnabled: true, expiryDateUtc: expiry);
+        unchanged.Reason = "reason only";
+        fixture.Repository.Setup(x => x.GetByIdAsync(TenantId, EntitlementId, It.IsAny<CancellationToken>())).ReturnsAsync(unchanged);
         var handler = new UpdateTenantModuleEntitlementExpiryCommandHandler(
             fixture.Repository.Object,
-            fixture.EventBus.Object,
+            fixture.Transactions,
+            fixture.Versions.Object,
+            fixture.Events.Object,
+            fixture.Audit.Object,
             fixture.CurrentUser.Object);
 
         var result = await handler.Handle(
@@ -219,7 +282,22 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
             CancellationToken.None);
 
         Assert.True(result.IsSuccessful);
-        VerifyPublishNever(fixture.EventBus);
+        VerifyPublishNever(fixture.Events);
+        Assert.Equal(0, fixture.Transactions.InvocationCount);
+        fixture.Versions.Verify(x => x.IncrementPhysicalEntitlementVersionAsync(
+            It.IsAny<IPlatformTransactionSession>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        fixture.QuotaService.Verify(x => x.TryConsumeEntitlementAsync(
+            It.IsAny<IPlatformTransactionSession>(), It.IsAny<TryConsumeQuotaRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+        fixture.QuotaService.Verify(x => x.ReleaseEntitlementAsync(
+            It.IsAny<IPlatformTransactionSession>(), It.IsAny<ReleaseQuotaRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+        fixture.QuotaService.Verify(x => x.RecalculateEntitlementAsync(
+            It.IsAny<IPlatformTransactionSession>(), It.IsAny<RecalculateQuotaUsageRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+        fixture.Audit.Verify(x => x.TryEnqueueAsync(
+            It.IsAny<IPlatformTransactionSession>(), It.IsAny<AuditOutboxWriteRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+        fixture.EventBus.Verify(x => x.PublishAsync(
+            It.IsAny<IIntegrationEvent>(), It.IsAny<EventPublishOptions>(), It.IsAny<CancellationToken>()), Times.Never);
+        fixture.Repository.Verify(x => x.UpdateAsync(
+            It.IsAny<IPlatformTransactionSession>(), It.IsAny<TenantModuleEntitlement>(), It.IsAny<byte[]?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -229,7 +307,10 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         fixture.Repository.Setup(x => x.GetByIdAsync(TenantId, EntitlementId, It.IsAny<CancellationToken>())).ReturnsAsync((TenantModuleEntitlement?)null);
         var handler = new UpdateTenantModuleEntitlementExpiryCommandHandler(
             fixture.Repository.Object,
-            fixture.EventBus.Object,
+            fixture.Transactions,
+            fixture.Versions.Object,
+            fixture.Events.Object,
+            fixture.Audit.Object,
             fixture.CurrentUser.Object);
 
         var result = await handler.Handle(
@@ -240,7 +321,7 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
             CancellationToken.None);
 
         Assert.False(result.IsSuccessful);
-        VerifyPublishNever(fixture.EventBus);
+        VerifyPublishNever(fixture.Events);
     }
 
     [Fact]
@@ -250,7 +331,7 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         fixture.Repository.Setup(x => x.GetByIdAsync(TenantId, EntitlementId, It.IsAny<CancellationToken>())).ReturnsAsync(CreateEntitlement(isEnabled: false));
         TenantEntitlementOverrideRemovedV1? publishedEvent = null;
         EventPublishOptions? publishOptions = null;
-        SetupPublish(fixture.EventBus, (TenantEntitlementOverrideRemovedV1 @event, EventPublishOptions options) =>
+        SetupPublish(fixture.Events, (TenantEntitlementOverrideRemovedV1 @event, EventPublishOptions options) =>
         {
             publishedEvent = @event;
             publishOptions = options;
@@ -259,7 +340,10 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
             fixture.Repository.Object,
             fixture.ModuleRepository.Object,
             fixture.QuotaService.Object,
-            fixture.EventBus.Object,
+            fixture.Transactions,
+            fixture.Versions.Object,
+            fixture.Events.Object,
+            fixture.Audit.Object,
             fixture.CurrentUser.Object);
 
         var result = await handler.Handle(
@@ -282,7 +366,10 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
             fixture.Repository.Object,
             fixture.ModuleRepository.Object,
             fixture.QuotaService.Object,
-            fixture.EventBus.Object,
+            fixture.Transactions,
+            fixture.Versions.Object,
+            fixture.Events.Object,
+            fixture.Audit.Object,
             fixture.CurrentUser.Object);
 
         var result = await handler.Handle(
@@ -293,7 +380,7 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
             CancellationToken.None);
 
         Assert.False(result.IsSuccessful);
-        VerifyPublishNever(fixture.EventBus);
+        VerifyPublishNever(fixture.Events);
     }
 
     // FEAT-BASELINE-MODULES — defense in depth: even a (stray/pre-existing) baseline override row cannot be removed
@@ -317,7 +404,10 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
             fixture.Repository.Object,
             fixture.ModuleRepository.Object,
             fixture.QuotaService.Object,
-            fixture.EventBus.Object,
+            fixture.Transactions,
+            fixture.Versions.Object,
+            fixture.Events.Object,
+            fixture.Audit.Object,
             fixture.CurrentUser.Object);
 
         var result = await handler.Handle(
@@ -329,7 +419,7 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
 
         Assert.False(result.IsSuccessful);
         Assert.Equal(409, result.StatusCode);
-        VerifyPublishNever(fixture.EventBus);
+        VerifyPublishNever(fixture.Events);
         fixture.Repository.Verify(
             x => x.SoftDeleteAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<byte[]?>(), It.IsAny<CancellationToken>()),
             Times.Never);
@@ -344,7 +434,10 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
             fixture.Repository.Object,
             fixture.ModuleRepository.Object,
             fixture.QuotaService.Object,
-            fixture.EventBus.Object,
+            fixture.Transactions,
+            fixture.Versions.Object,
+            fixture.Events.Object,
+            fixture.Audit.Object,
             fixture.CurrentUser.Object);
 
         var result = await handler.Handle(
@@ -355,7 +448,7 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
             CancellationToken.None);
 
         Assert.False(result.IsSuccessful);
-        VerifyPublishNever(fixture.EventBus);
+        VerifyPublishNever(fixture.Events);
     }
 
     private static TestFixture CreateFixture(Guid currentUserId)
@@ -370,6 +463,15 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         repository
             .Setup(x => x.CreateAsync(It.IsAny<TenantModuleEntitlement>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((TenantModuleEntitlement entitlement, CancellationToken _) => entitlement);
+        repository
+            .Setup(x => x.UpdateAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<TenantModuleEntitlement>(), It.IsAny<byte[]?>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        repository
+            .Setup(x => x.SoftDeleteAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<byte[]?>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        repository
+            .Setup(x => x.CreateAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<TenantModuleEntitlement>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((IPlatformTransactionSession _, TenantModuleEntitlement entitlement, CancellationToken _) => entitlement);
 
         var moduleRepository = new Mock<IModuleCatalogRepository>();
         moduleRepository
@@ -389,12 +491,32 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         quotaService
             .Setup(x => x.ReleaseAsync(It.IsAny<ReleaseQuotaRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Response<QuotaMutationDto>.Success(CreateQuotaMutation()));
+        quotaService
+            .Setup(x => x.TryConsumeEntitlementAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<TryConsumeQuotaRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response<QuotaMutationDto>.Success(CreateQuotaMutation()));
+        quotaService
+            .Setup(x => x.ReleaseEntitlementAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<ReleaseQuotaRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response<QuotaMutationDto>.Success(CreateQuotaMutation()));
+        quotaService
+            .Setup(x => x.RecalculateEntitlementAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<RecalculateQuotaUsageRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response<QuotaStatusDto>.Success(new QuotaStatusDto(
+                TenantId, QuotaKeys.ModulesMax, 0, 10, 0, false, false,
+                DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddMonths(1), "test",
+                null, null, null, false, false, null, null)));
 
-        var eventBus = new Mock<IEventBus>();
+        var events = new Mock<ITransactionalIntegrationEventWriter>();
+        var versions = new Mock<IEntitlementStateVersionRepository>();
+        versions.Setup(x => x.IncrementPhysicalEntitlementVersionAsync(
+                It.IsAny<IPlatformTransactionSession>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1UL);
+        var audit = new Mock<ITransactionalAuditOutboxWriter>();
+        audit.Setup(x => x.TryEnqueueAsync(
+                It.IsAny<IPlatformTransactionSession>(), It.IsAny<AuditOutboxWriteRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
         var currentUser = new Mock<ICurrentUserContext>();
         currentUser.SetupGet(x => x.UserId).Returns(currentUserId);
 
-        return new TestFixture(repository, moduleRepository, quotaService, eventBus, currentUser);
+        return new TestFixture(repository, moduleRepository, quotaService, new CountingTransactionExecutor(), versions, events, audit, new Mock<IEventBus>(), currentUser);
     }
 
     private static TenantModuleEntitlement CreateEntitlement(
@@ -427,17 +549,18 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
     }
 
     private static void SetupPublish<TEvent>(
-        Mock<IEventBus> eventBus,
+        Mock<ITransactionalIntegrationEventWriter> eventBus,
         Action<TEvent, EventPublishOptions> capture)
         where TEvent : IIntegrationEvent
     {
         eventBus
-            .Setup(x => x.PublishAsync(
+            .Setup(x => x.EnqueueAsync(
+                It.IsAny<IPlatformTransactionSession>(),
                 It.IsAny<TEvent>(),
                 It.IsAny<EventPublishOptions>(),
                 It.IsAny<CancellationToken>()))
-            .Callback<TEvent, EventPublishOptions, CancellationToken>((@event, options, _) => capture(@event, options))
-            .ReturnsAsync((TEvent @event, EventPublishOptions options, CancellationToken _) => CreateEnvelope(@event, options));
+            .Callback<IPlatformTransactionSession, TEvent, EventPublishOptions, CancellationToken>((_, @event, options, _) => capture(@event, options))
+            .ReturnsAsync((IPlatformTransactionSession _, TEvent @event, EventPublishOptions options, CancellationToken _) => CreateEnvelope(@event, options));
     }
 
     private static EventEnvelope<TEvent> CreateEnvelope<TEvent>(TEvent @event, EventPublishOptions options)
@@ -478,17 +601,38 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         Assert.Equal(TenantId, publishOptions.TenantId);
     }
 
-    private static void VerifyPublishNever(Mock<IEventBus> eventBus)
+    private static void VerifyPublishNever(Mock<ITransactionalIntegrationEventWriter> eventBus)
     {
         Assert.DoesNotContain(
             eventBus.Invocations,
-            invocation => invocation.Method.Name == nameof(IEventBus.PublishAsync));
+            invocation => invocation.Method.Name == nameof(ITransactionalIntegrationEventWriter.EnqueueAsync));
     }
 
     private sealed record TestFixture(
         Mock<ITenantModuleEntitlementRepository> Repository,
         Mock<IModuleCatalogRepository> ModuleRepository,
         Mock<IQuotaService> QuotaService,
+        CountingTransactionExecutor Transactions,
+        Mock<IEntitlementStateVersionRepository> Versions,
+        Mock<ITransactionalIntegrationEventWriter> Events,
+        Mock<ITransactionalAuditOutboxWriter> Audit,
         Mock<IEventBus> EventBus,
         Mock<ICurrentUserContext> CurrentUser);
+
+    private sealed class CountingTransactionExecutor : IPlatformTransactionExecutor
+    {
+        private static readonly IPlatformTransactionSession Session = new TestSession();
+        public int InvocationCount { get; private set; }
+
+        public Task<T> ExecuteAsync<T>(Func<IPlatformTransactionSession, CancellationToken, Task<T>> body, CancellationToken cancellationToken = default)
+        {
+            InvocationCount++;
+            return body(Session, cancellationToken);
+        }
+
+        private sealed class TestSession : IPlatformTransactionSession
+        {
+            public Guid TransactionId { get; } = Guid.NewGuid();
+        }
+    }
 }

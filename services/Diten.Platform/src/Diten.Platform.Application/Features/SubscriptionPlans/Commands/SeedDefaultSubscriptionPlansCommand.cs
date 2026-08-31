@@ -6,7 +6,7 @@ using MediatR;
 namespace Diten.Platform.Application.Features.SubscriptionPlans.Commands;
 
 public sealed record SeedDefaultSubscriptionPlansCommand()
-    : IRequest<Response<NoContent>>, IAuditableCommand, IAuditMetadataProvider
+    : IRequest<Response<NoContent>>, IAuditableCommand, IAuditMetadataProvider, ITransactionOwnedAuditCommand
 {
     // Operator/system-triggered baseline seed — recorded under System, not billing lifecycle.
     public AuditRequestMetadata GetAuditMetadata() => new(

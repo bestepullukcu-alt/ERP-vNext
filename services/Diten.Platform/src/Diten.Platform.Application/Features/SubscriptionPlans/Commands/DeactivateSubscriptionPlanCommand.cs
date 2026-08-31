@@ -6,7 +6,7 @@ using MediatR;
 namespace Diten.Platform.Application.Features.SubscriptionPlans.Commands;
 
 public sealed record DeactivateSubscriptionPlanCommand(Guid Id)
-    : IRequest<Response<NoContent>>, IAuditableCommand, IAuditMetadataProvider
+    : IRequest<Response<NoContent>>, IAuditableCommand, IAuditMetadataProvider, ITransactionOwnedAuditCommand
 {
     public AuditRequestMetadata GetAuditMetadata() => new(
         Category: AuditCategory.SubscriptionBilling, Operation: AuditOperation.Deactivate, EntityType: "SubscriptionPlan",

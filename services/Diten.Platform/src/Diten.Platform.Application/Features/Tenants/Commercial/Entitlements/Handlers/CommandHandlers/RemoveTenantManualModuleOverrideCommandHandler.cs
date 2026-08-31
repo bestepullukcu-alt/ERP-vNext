@@ -1,6 +1,8 @@
 using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Contracts.Eventing;
+using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Application.Features.Quotas;
 using Diten.Platform.Application.Features.Quotas.Services;
 using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands;
@@ -16,20 +18,29 @@ public sealed class RemoveTenantManualModuleOverrideCommandHandler : IRequestHan
     private readonly ITenantModuleEntitlementRepository _repository;
     private readonly IModuleCatalogRepository _moduleRepository;
     private readonly IQuotaService _quotaService;
-    private readonly IEventBus _eventBus;
+    private readonly IPlatformTransactionExecutor _transactions;
+    private readonly IEntitlementStateVersionRepository _versions;
+    private readonly ITransactionalIntegrationEventWriter _events;
+    private readonly ITransactionalAuditOutboxWriter _audit;
     private readonly ICurrentUserContext _currentUser;
 
     public RemoveTenantManualModuleOverrideCommandHandler(
         ITenantModuleEntitlementRepository repository,
         IModuleCatalogRepository moduleRepository,
         IQuotaService quotaService,
-        IEventBus eventBus,
+        IPlatformTransactionExecutor transactions,
+        IEntitlementStateVersionRepository versions,
+        ITransactionalIntegrationEventWriter events,
+        ITransactionalAuditOutboxWriter audit,
         ICurrentUserContext currentUser)
     {
         _repository = repository;
         _moduleRepository = moduleRepository;
         _quotaService = quotaService;
-        _eventBus = eventBus;
+        _transactions = transactions;
+        _versions = versions;
+        _events = events;
+        _audit = audit;
         _currentUser = currentUser;
     }
 
@@ -58,11 +69,13 @@ public sealed class RemoveTenantManualModuleOverrideCommandHandler : IRequestHan
 
         try
         {
-            var wasEnabled = entitlement.IsEnabled;
-            await _repository.SoftDeleteAsync(request.TenantId, request.EntitlementId, request.Request.RowVersion, ct);
-            if (wasEnabled)
+            var auditIntentId = Guid.NewGuid();
+            await _transactions.ExecuteAsync(async (session, transactionCt) =>
             {
-                var release = await _quotaService.ReleaseAsync(new ReleaseQuotaRequest(
+                await _repository.SoftDeleteAsync(session, request.TenantId, request.EntitlementId, request.Request.RowVersion, transactionCt);
+                if (entitlement.IsEnabled)
+                {
+                    var release = await _quotaService.ReleaseEntitlementAsync(session, new ReleaseQuotaRequest(
                     request.TenantId,
                     QuotaKeys.ModulesMax,
                     1,
@@ -71,20 +84,22 @@ public sealed class RemoveTenantManualModuleOverrideCommandHandler : IRequestHan
                     entitlement.ModuleCode,
                     "Tenant manual module override removed.",
                     null,
-                    Guid.NewGuid().ToString()), ct);
+                    Guid.NewGuid().ToString()), transactionCt);
 
-                if (!release.IsSuccessful)
-                {
-                    return Response<NoContent>.Fail(release.Errors, release.StatusCode);
+                    if (!release.IsSuccessful)
+                    {
+                        throw new PhysicalEntitlementMutationRejectedException(release.Errors, release.StatusCode);
+                    }
                 }
-            }
 
-            var eventId = Guid.NewGuid();
-            var correlationId = Guid.NewGuid();
-            var occurredAtUtc = DateTimeOffset.UtcNow;
-            var actorId = _currentUser.UserId == Guid.Empty ? null : (Guid?)_currentUser.UserId;
+                await _versions.IncrementPhysicalEntitlementVersionAsync(session, request.TenantId, entitlement.ModuleCode, transactionCt);
+                var eventId = Guid.NewGuid();
+                var correlationId = Guid.NewGuid();
+                var occurredAtUtc = DateTimeOffset.UtcNow;
+                var actorId = _currentUser.UserId == Guid.Empty ? null : (Guid?)_currentUser.UserId;
 
-            await _eventBus.PublishAsync(
+                await _events.EnqueueAsync(
+                session,
                 new TenantEntitlementOverrideRemovedV1(
                     eventId,
                     occurredAtUtc,
@@ -100,9 +115,18 @@ public sealed class RemoveTenantManualModuleOverrideCommandHandler : IRequestHan
                     Producer = "Diten.Platform",
                     OccurredAtUtc = occurredAtUtc
                 },
-                ct);
+                transactionCt);
+                await PhysicalEntitlementAuditIntent.EnqueueAsync(_audit, session, request.TenantId, correlationId,
+                    auditIntentId, nameof(RemoveTenantManualModuleOverrideCommand), AuditOperation.Revoke,
+                    entitlement.Id, entitlement.ModuleCode, transactionCt);
+                return true;
+            }, ct);
 
             return Response<NoContent>.Success(204);
+        }
+        catch (PhysicalEntitlementMutationRejectedException exception)
+        {
+            return Response<NoContent>.Fail(exception.Errors, exception.StatusCode);
         }
         catch (TenantModuleEntitlementConcurrencyException)
         {

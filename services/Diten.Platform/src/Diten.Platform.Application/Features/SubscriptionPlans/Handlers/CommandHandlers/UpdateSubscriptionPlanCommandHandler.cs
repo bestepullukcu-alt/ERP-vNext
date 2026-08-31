@@ -3,60 +3,76 @@ using Diten.Platform.Application.Features.SubscriptionPlans.Commands;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Diten.Platform.Application.Features.GlobalApplicability;
+using Diten.Platform.Domain.Enums;
 
 namespace Diten.Platform.Application.Features.SubscriptionPlans.Handlers.CommandHandlers;
 
 public sealed class UpdateSubscriptionPlanCommandHandler : IRequestHandler<UpdateSubscriptionPlanCommand, Response<NoContent>>
 {
-    private readonly ISubscriptionPlanRepository _repository;
+    private readonly ITransactionalSubscriptionPlanRepository _repository;
     private readonly ILogger<UpdateSubscriptionPlanCommandHandler> _logger;
+    private readonly IGlobalApplicabilityTransactionCoordinator _transaction;
+    private readonly IGlobalApplicabilityStateRepository _state;
 
-    public UpdateSubscriptionPlanCommandHandler(ISubscriptionPlanRepository repository, ILogger<UpdateSubscriptionPlanCommandHandler> logger)
+    public UpdateSubscriptionPlanCommandHandler(ITransactionalSubscriptionPlanRepository repository, ILogger<UpdateSubscriptionPlanCommandHandler> logger,
+        IGlobalApplicabilityTransactionCoordinator transaction, IGlobalApplicabilityStateRepository state)
     {
         _repository = repository;
         _logger = logger;
+        _transaction = transaction;
+        _state = state;
     }
 
     public async Task<Response<NoContent>> Handle(UpdateSubscriptionPlanCommand request, CancellationToken ct)
     {
-        var plan = await _repository.GetByIdAsync(request.Id, ct);
-        if (plan is null)
-        {
-            return Response<NoContent>.Fail("Subscription plan not found.", 404);
-        }
-
         var normalizedCode = SubscriptionPlanCodeNormalizer.Normalize(request.Request.Code);
-        if (await _repository.ExistsByCodeAsync(normalizedCode, excludeId: plan.Id, ct: ct))
-        {
-            return Response<NoContent>.Fail("Code already exists.", 409);
-        }
-
-        if (request.Request.IsDefault && request.Request.IsActive)
-        {
-            var existingDefault = await _repository.GetActiveDefaultAsync(excludeId: plan.Id, ct);
-            if (existingDefault is not null)
+        return await _transaction.ExecuteAsync<Response<NoContent>>(
+            new(nameof(UpdateSubscriptionPlanCommand), AuditOperation.Update, "SubscriptionPlan", request.Id),
+            async (session, transactionCt) =>
             {
-                return Response<NoContent>.Fail("Only one active default plan is allowed.", 409);
-            }
-        }
+                var plan = await _repository.GetByIdAsync(session, request.Id, transactionCt);
+                if (plan is null) return new(Response<NoContent>.Fail("Subscription plan not found.", 404), false);
+                if (await _repository.ExistsByCodeAsync(session, normalizedCode, plan.Id, transactionCt))
+                    return new(Response<NoContent>.Fail("Code already exists.", 409), false);
+                if (request.Request.IsDefault && request.Request.IsActive
+                    && await _repository.GetActiveDefaultAsync(session, plan.Id, transactionCt) is not null)
+                    return new(Response<NoContent>.Fail("Only one active default plan is allowed.", 409), false);
 
-        plan.Code = normalizedCode;
-        plan.Name = request.Request.Name.Trim();
-        plan.Description = string.IsNullOrWhiteSpace(request.Request.Description) ? null : request.Request.Description.Trim();
-        plan.IsActive = request.Request.IsActive;
-        plan.IsDefault = request.Request.IsDefault;
-        plan.SortOrder = request.Request.SortOrder ?? 0;
-        plan.PriceMonthly = request.Request.PriceMonthly;
-        plan.PriceYearly = request.Request.PriceYearly;
-        plan.Currency = string.IsNullOrWhiteSpace(request.Request.Currency) ? null : request.Request.Currency.Trim().ToUpperInvariant();
-        plan.IsTrialPlan = request.Request.IsTrialPlan;
-        plan.TrialDurationDays = request.Request.IsTrialPlan ? request.Request.TrialDurationDays : null;
-        plan.DefaultQuotas = request.Request.DefaultQuotas is null ? null : new Dictionary<string, decimal>(request.Request.DefaultQuotas, StringComparer.OrdinalIgnoreCase);
-        plan.IncludedFeatures = request.Request.IncludedFeatures?.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToList() ?? [];
-        plan.IncludedModuleKeys = request.Request.IncludedModuleKeys?.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim().ToUpperInvariant()).Distinct(StringComparer.OrdinalIgnoreCase).ToList() ?? [];
+                var includedFeatures = request.Request.IncludedFeatures?.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToList() ?? [];
+                var includedModules = request.Request.IncludedModuleKeys?.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim().ToUpperInvariant()).Distinct(StringComparer.OrdinalIgnoreCase).ToList() ?? [];
+                var name = request.Request.Name.Trim();
+                var description = string.IsNullOrWhiteSpace(request.Request.Description) ? null : request.Request.Description.Trim();
+                var currency = string.IsNullOrWhiteSpace(request.Request.Currency) ? null : request.Request.Currency.Trim().ToUpperInvariant();
+                var noOp = plan.Code == normalizedCode && plan.Name == name && plan.Description == description
+                    && plan.IsActive == request.Request.IsActive && plan.IsDefault == request.Request.IsDefault
+                    && plan.SortOrder == (request.Request.SortOrder ?? 0) && plan.PriceMonthly == request.Request.PriceMonthly
+                    && plan.PriceYearly == request.Request.PriceYearly && plan.Currency == currency
+                    && plan.IsTrialPlan == request.Request.IsTrialPlan
+                    && plan.TrialDurationDays == (request.Request.IsTrialPlan ? request.Request.TrialDurationDays : null)
+                    && DictionaryEqual(plan.DefaultQuotas, request.Request.DefaultQuotas)
+                    && plan.IncludedFeatures.SequenceEqual(includedFeatures, StringComparer.OrdinalIgnoreCase)
+                    && plan.IncludedModuleKeys.SequenceEqual(includedModules, StringComparer.OrdinalIgnoreCase);
+                if (noOp) return new(Response<NoContent>.Success(204), false);
 
-        await _repository.UpdateAsync(plan, ct);
-        _logger.LogInformation("AUDIT SubscriptionPlanUpdated PlanId={PlanId} Code={Code}", plan.Id, plan.Code);
-        return Response<NoContent>.Success(204);
+                plan.Code = normalizedCode; plan.Name = name; plan.Description = description;
+                plan.IsActive = request.Request.IsActive; plan.IsDefault = request.Request.IsDefault;
+                plan.SortOrder = request.Request.SortOrder ?? 0; plan.PriceMonthly = request.Request.PriceMonthly;
+                plan.PriceYearly = request.Request.PriceYearly; plan.Currency = currency;
+                plan.IsTrialPlan = request.Request.IsTrialPlan;
+                plan.TrialDurationDays = request.Request.IsTrialPlan ? request.Request.TrialDurationDays : null;
+                plan.DefaultQuotas = request.Request.DefaultQuotas is null ? null : new Dictionary<string, decimal>(request.Request.DefaultQuotas, StringComparer.OrdinalIgnoreCase);
+                plan.IncludedFeatures = includedFeatures; plan.IncludedModuleKeys = includedModules;
+                await _repository.UpdateAsync(session, plan, transactionCt);
+                _logger.LogInformation("SubscriptionPlan updated PlanId={PlanId} Code={Code}", plan.Id, plan.Code);
+                return new(Response<NoContent>.Success(204), true,
+                    (s, version, token) => _state.UpsertSubscriptionPlanAsync(s, plan, version, token));
+            }, ct);
+    }
+
+    private static bool DictionaryEqual(IReadOnlyDictionary<string, decimal>? left, IReadOnlyDictionary<string, decimal>? right)
+    {
+        left ??= new Dictionary<string, decimal>(); right ??= new Dictionary<string, decimal>();
+        return left.Count == right.Count && left.All(pair => right.TryGetValue(pair.Key, out var value) && value == pair.Value);
     }
 }

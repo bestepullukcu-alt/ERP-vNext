@@ -1,9 +1,11 @@
 using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Quotas.Services;
 using Diten.Platform.Application.Features.Tenants;
 using Diten.Platform.Application.Features.Tenants.Commands;
 using Diten.Platform.Application.Features.Tenants.Handlers;
+using Diten.Platform.Application.Tests.Tenants.Commercial.Subscriptions;
 using Diten.Platform.Contracts.Events;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Repositories;
@@ -48,6 +50,8 @@ public sealed class TenantHandlersTests
         // provisioning finalize) never mutate the instance CreateAsync captured for the It.Is<> verifies.
         _repository.Setup(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Guid id, CancellationToken _) => createdTenant?.Id == id ? CloneForRead(createdTenant) : null);
+        _repository.Setup(x => x.UpdateAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<Tenant>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
         _domainRepository = new Mock<ITenantDomainRepository>();
         _domainRepository.Setup(x => x.GetByDomainNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -72,6 +76,8 @@ public sealed class TenantHandlersTests
             .ReturnsAsync(false);
         _tenantSubscriptionRepository.Setup(x => x.CreateAsync(It.IsAny<TenantSubscription>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((TenantSubscription subscription, CancellationToken _) => subscription);
+        _tenantSubscriptionRepository.Setup(x => x.CreateAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<TenantSubscription>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((IPlatformTransactionSession _, TenantSubscription subscription, CancellationToken _) => subscription);
 
         _loginSettingsRepository = new Mock<ITenantLoginSettingsRepository>();
         _loginSettingsRepository.Setup(x => x.GetByTenantRefIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -102,10 +108,17 @@ public sealed class TenantHandlersTests
             .ReturnsAsync((Guid tenantId, CancellationToken _) => new TenantSubscription { TenantId = tenantId, PlanId = Guid.NewGuid() });
 
         _quotaService = new Mock<IQuotaService>();
+        _quotaService.Setup(x => x.InitializeSubscriptionQuotasAsync(It.IsAny<IPlatformTransactionSession>(),
+                It.IsAny<TenantSubscription>(), It.IsAny<SubscriptionPlan>(), It.IsAny<bool>(), It.IsAny<string>(),
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Response<IReadOnlyList<Diten.Platform.Application.Features.Quotas.QuotaStatusDto>>.Success(
+                new List<Diten.Platform.Application.Features.Quotas.QuotaStatusDto>()));
         _tenantActivationNotifier = new Mock<ITenantActivationNotifier>();
 
         _logger = new Mock<ILogger<RegisterTenantCommandHandler>>();
 
+        var transactions = new SubscriptionTransactionTestDependencies(_tenantSubscriptionRepository.Object,
+            _repository.Object, _subscriptionPlanRepository.Object, _currentUser.Object);
         _handler = new RegisterTenantCommandHandler(
             _repository.Object,
             _subscriptionPlanRepository.Object,
@@ -117,7 +130,8 @@ public sealed class TenantHandlersTests
             _eventBus.Object,
             _quotaService.Object,
             _tenantActivationNotifier.Object,
-            _logger.Object);
+            _logger.Object,
+            transactions.Writer);
     }
 
     [Fact]
