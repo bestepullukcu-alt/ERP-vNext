@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PortfoliosTitle" xml:space="preserve"><value>项目组合</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>管理租户的项目组合、生命周期和可引用性。</value></data>
+  <data name="AddNewPortfolio" xml:space="preserve"><value>新增项目组合</value></data>
+  <data name="EditPortfolio" xml:space="preserve"><value>编辑项目组合</value></data>
+  <data name="Code" xml:space="preserve"><value>代码</value></data>
+  <data name="Name" xml:space="preserve"><value>名称</value></data>
+  <data name="Description" xml:space="preserve"><value>说明</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>生命周期</value></data>
+  <data name="VisibilityPolicyKey" xml:space="preserve"><value>可见性策略</value></data>
+  <data name="Referenceability" xml:space="preserve"><value>可引用性</value></data>
+  <data name="Referenceable" xml:space="preserve"><value>可建立新引用</value></data>
+  <data name="NotReferenceable" xml:space="preserve"><value>不可建立新引用</value></data>
+  <data name="PortfoliosLoadingState" xml:space="preserve"><value>正在加载项目组合…</value></data>
+  <data name="PortfoliosEmptyState" xml:space="preserve"><value>未找到项目组合。</value></data>
+  <data name="PortfoliosErrorState" xml:space="preserve"><value>无法加载项目组合列表。</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>活动中</value></data>
+  <data name="LifecycleArchived" xml:space="preserve"><value>已归档</value></data>
+  <data name="ArchivePortfolioConfirmation" xml:space="preserve"><value>要归档此项目组合吗？归档后将不允许建立新引用。</value></data>
+</root>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader>
+  <data name="WorkspaceTitle"><value>Proje Çalışma Alanı</value></data><data name="BackToProjects"><value>Projelere dön</value></data><data name="Loading"><value>Proje yükleniyor…</value></data>
+  <data name="Overview"><value>Genel Bakış</value></data><data name="CharterGeneral"><value>Proje Tanımı / Genel</value></data><data name="Context"><value>Proje Bağlamı</value></data>
+  <data name="Code"><value>Kod</value></data><data name="Name"><value>Ad</value></data><data name="Description"><value>Açıklama</value></data><data name="ParentType"><value>Üst Türü</value></data><data name="ParentId"><value>Üst Kimliği</value></data><data name="Parent"><value>Üst Kayıt</value></data>
+  <data name="Lifecycle"><value>Yaşam Döngüsü</value></data><data name="VisibilityPolicy"><value>Görünürlük Politikası</value></data><data name="Referenceability"><value>Referanslanabilirlik</value></data><data name="Version"><value>Sürüm</value></data>
+  <data name="Referenceable"><value>Yeni referanslara açık</value></data><data name="NotReferenceable"><value>Yeni referanslara kapalı</value></data><data name="NotAvailable"><value>Mevcut değil</value></data>
+  <data name="Error400"><value>Proje isteği geçersiz.</value></data><data name="Error401"><value>Bu projeyi görmek için giriş yapın.</value></data><data name="Error403"><value>Bu projeyi görme yetkiniz yok.</value></data><data name="Error404"><value>Proje bulunamadı.</value></data><data name="Error409"><value>Proje değişti. Listeye dönüp yeniden deneyin.</value></data><data name="Error503"><value>Proje servisi geçici olarak kullanılamıyor.</value></data><data name="ErrorGeneric"><value>Proje Çalışma Alanı yüklenemedi.</value></data>
+</root>

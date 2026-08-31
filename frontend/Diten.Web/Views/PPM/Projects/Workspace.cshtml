@@ -1,0 +1,101 @@
+@using Diten.Web.Views.PPM.Projects
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProjectWorkspace> Localizer
+@{
+    ViewData["Title"] = Localizer["WorkspaceTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var projectId = (Guid)ViewData["ProjectId"]!;
+}
+
+<div id="project-workspace" data-project-id="@projectId">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div>
+            <a class="small text-muted" href="/ppm/projects">
+                <i class="bx bx-arrow-back me-1"></i>@Localizer["BackToProjects"]
+            </a>
+            <h4 id="workspace-name" class="mb-1 mt-2">@Localizer["Loading"]</h4>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <span id="workspace-code" class="text-muted"></span>
+                <span id="workspace-lifecycle" class="badge bg-label-secondary d-none"></span>
+                <span id="workspace-referenceability" class="badge bg-label-secondary d-none"></span>
+            </div>
+        </div>
+    </div>
+
+    <div id="workspace-alert" class="alert alert-danger d-none" role="alert"></div>
+
+    <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#workspace-overview"
+                    type="button" role="tab">@Localizer["Overview"]</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#workspace-charter"
+                    type="button" role="tab">@Localizer["CharterGeneral"]</button>
+        </li>
+    </ul>
+
+    <div class="tab-content p-0 bg-transparent shadow-none">
+        <section id="workspace-overview" class="tab-pane fade show active" role="tabpanel">
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="card h-100">
+                        <div class="card-header"><h5 class="mb-0">@Localizer["Overview"]</h5></div>
+                        <div class="card-body">
+                            <div class="text-muted small mb-2">@Localizer["Description"]</div>
+                            <p id="workspace-description" class="mb-0"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-header"><h5 class="mb-0">@Localizer["Context"]</h5></div>
+                        <div class="card-body">
+                            <dl class="row mb-0">
+                                <dt class="col-5">@Localizer["ParentType"]</dt>
+                                <dd id="workspace-parent-type" class="col-7"></dd>
+                                <dt class="col-5">@Localizer["Parent"]</dt>
+                                <dd id="workspace-parent" class="col-7"></dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="workspace-charter" class="tab-pane fade" role="tabpanel">
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">@Localizer["CharterGeneral"]</h5></div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-md-3">@Localizer["Code"]</dt><dd id="charter-code" class="col-md-9"></dd>
+                        <dt class="col-md-3">@Localizer["Name"]</dt><dd id="charter-name" class="col-md-9"></dd>
+                        <dt class="col-md-3">@Localizer["Lifecycle"]</dt><dd id="charter-lifecycle" class="col-md-9"></dd>
+                        <dt class="col-md-3">@Localizer["VisibilityPolicy"]</dt><dd id="charter-visibility" class="col-md-9"></dd>
+                        <dt class="col-md-3">@Localizer["Referenceability"]</dt><dd id="charter-referenceability" class="col-md-9"></dd>
+                        <dt class="col-md-3">@Localizer["Version"]</dt><dd id="charter-version" class="col-md-9"></dd>
+                    </dl>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script id="project-workspace-l10n" type="application/json">
+@Json.Serialize(new {
+    Loading = Localizer["Loading"].Value,
+    NotAvailable = Localizer["NotAvailable"].Value,
+    Referenceable = Localizer["Referenceable"].Value,
+    NotReferenceable = Localizer["NotReferenceable"].Value,
+    Error400 = Localizer["Error400"].Value,
+    Error401 = Localizer["Error401"].Value,
+    Error403 = Localizer["Error403"].Value,
+    Error404 = Localizer["Error404"].Value,
+    Error409 = Localizer["Error409"].Value,
+    Error503 = Localizer["Error503"].Value,
+    ErrorGeneric = Localizer["ErrorGeneric"].Value
+})
+</script>
+
+@section Scripts {
+    <script src="~/assets/js/PPM/Projects/workspace.js" asp-append-version="true"></script>
+}

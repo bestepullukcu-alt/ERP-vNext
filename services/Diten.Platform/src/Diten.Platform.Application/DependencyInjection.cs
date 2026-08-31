@@ -394,6 +394,7 @@ public static class DependencyInjection
         // MOD-0149 — Commercial Suite CRM (Account Foundation). Reconciles the CRM catalog identity + /CRM/Accounts page
         // descriptor (nav-visible=false; static tenant-shell menu owns nav until the MOD-0285 migration).
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.Crm.SelfRegistration.CrmManifestProvider>();
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.Ppm.SelfRegistration.PpmManifestProvider>();
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.WorkingCalendar.SelfRegistration.WorkingCalendarManifestProvider>();
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.WorkingCalendarImport.WorkingCalendarImportManifestProvider>();
         // WC-1b (DCP-004) — Görev Merkezi / Task Center tenant module (entitlement-gated, NOT baseline).

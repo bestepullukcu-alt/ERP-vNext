@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "lane": "MOD-0117-GATE-I-C",
+  "sourceCheckpoint": "2f2b86b44781fdb25af7efce4d60922b70f13a31",
+  "source": "services/Diten.PpmService/src/Diten.PpmService.Application/Features/BenefitCommitments/GateI/BenefitRealization/OutcomeReferenceValidation.cs",
+  "restoredSha256": "63c971044d822de12d58546d575d641eab88501d38ca991e0a4ba32738ebf061",
+  "securityPolicyDispositions": [
+    {
+      "id": "IC-G01",
+      "mutant": "accept-unauthenticated-or-untrusted-s2s-context",
+      "disposition": "SECURITY-POLICY-FORBIDDEN",
+      "rationale": "Would temporarily authorize an untrusted identity in production source.",
+      "compensatingTest": "Diten.PpmService.Tests.GateI.BenefitRealization.OutcomeReferenceContractTests.Trusted_context_or_request_binding_failure_is_401_without_disclosure"
+    },
+    {
+      "id": "IC-G02",
+      "mutant": "accept-missing-entitlement-or-wrong-owner-permission",
+      "disposition": "SECURITY-POLICY-FORBIDDEN",
+      "rationale": "Would temporarily bypass explicit entitlement and permission authorization.",
+      "compensatingTest": "Diten.PpmService.Tests.GateI.BenefitRealization.OutcomeReferenceContractTests.Permission_manifest_or_entitlement_failure_is_403"
+    }
+  ],
+  "campaign": [
+    {
+      "id": "IC-M01",
+      "invariant": "exact-operation-permission",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "test": "Diten.PpmService.Tests.GateI.BenefitRealization.GateICArchitectureTests.Exact_operation_permission_and_identity_constants_are_closed",
+      "failureIdentity": "Assert.Equal() Failure: Strings differ"
+    },
+    {
+      "id": "IC-M02",
+      "invariant": "request-hash-binding",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "test": "Diten.PpmService.Tests.GateI.BenefitRealization.OutcomeReferenceContractTests.Trusted_context_or_request_binding_failure_is_401_without_disclosure",
+      "failureIdentity": "Assert.Equal() Failure: Values differ"
+    },
+    {
+      "id": "IC-M03",
+      "invariant": "current-selection-400",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "test": "Diten.PpmService.Tests.GateI.BenefitRealization.OutcomeReferenceContractTests.Current_selection_is_400_and_never_calls_authority",
+      "failureIdentity": "Assert.Equal() Failure: Values differ"
+    },
+    {
+      "id": "IC-M04",
+      "invariant": "no-copy-reference-equality",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "test": "Diten.PpmService.Tests.GateI.BenefitRealization.OutcomeReferenceContractTests.Changed_authority_tuple_is_malformed_503",
+      "failureIdentity": "Assert.Equal() Failure: Values differ"
+    }
+  ]
+}

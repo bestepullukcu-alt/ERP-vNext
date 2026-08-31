@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PortfoliosTitle" xml:space="preserve"><value>المحافظ</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>إدارة المحافظ الخاصة بالمستأجر ودورة حياتها وقابلية الإسناد إليها.</value></data>
+  <data name="AddNewPortfolio" xml:space="preserve"><value>إضافة محفظة</value></data>
+  <data name="EditPortfolio" xml:space="preserve"><value>تحرير محفظة</value></data>
+  <data name="Code" xml:space="preserve"><value>الرمز</value></data>
+  <data name="Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>دورة الحياة</value></data>
+  <data name="VisibilityPolicyKey" xml:space="preserve"><value>سياسة الظهور</value></data>
+  <data name="Referenceability" xml:space="preserve"><value>قابلية الإسناد</value></data>
+  <data name="Referenceable" xml:space="preserve"><value>متاح للإسنادات الجديدة</value></data>
+  <data name="NotReferenceable" xml:space="preserve"><value>غير متاح للإسنادات الجديدة</value></data>
+  <data name="PortfoliosLoadingState" xml:space="preserve"><value>جارٍ تحميل المحافظ…</value></data>
+  <data name="PortfoliosEmptyState" xml:space="preserve"><value>لم يتم العثور على عناصر في المحافظ.</value></data>
+  <data name="PortfoliosErrorState" xml:space="preserve"><value>تعذر تحميل قائمة المحافظ.</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>نشط</value></data>
+  <data name="LifecycleArchived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="ArchivePortfolioConfirmation" xml:space="preserve"><value>هل تريد أرشفة هذه المحفظة؟ لن يُسمح بإسنادات جديدة بعدها.</value></data>
+</root>

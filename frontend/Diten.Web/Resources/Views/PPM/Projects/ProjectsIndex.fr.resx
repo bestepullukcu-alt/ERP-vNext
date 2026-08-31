@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ProjectsTitle" xml:space="preserve"><value>Projets</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gérez les Projets du locataire, leur cycle de vie et leur référençabilité.</value></data>
+  <data name="AddNewProject" xml:space="preserve"><value>Ajouter projet</value></data>
+  <data name="EditProject" xml:space="preserve"><value>Modifier projet</value></data>
+  <data name="Code" xml:space="preserve"><value>Code du projet</value></data>
+  <data name="Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="Description" xml:space="preserve"><value>Description du projet</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Cycle de vie</value></data>
+  <data name="VisibilityPolicyKey" xml:space="preserve"><value>Politique de visibilité</value></data>
+  <data name="Referenceability" xml:space="preserve"><value>Référençabilité</value></data>
+  <data name="Referenceable" xml:space="preserve"><value>Disponible pour de nouvelles références</value></data>
+  <data name="NotReferenceable" xml:space="preserve"><value>Indisponible pour de nouvelles références</value></data>
+  <data name="ProjectsLoadingState" xml:space="preserve"><value>Chargement des Projets…</value></data>
+  <data name="ProjectsEmptyState" xml:space="preserve"><value>Aucun élément dans Projets.</value></data>
+  <data name="ProjectsErrorState" xml:space="preserve"><value>Impossible de charger la liste des Projets.</value></data>
+  <data name="ParentType" xml:space="preserve"><value>Type de parent</value></data>
+  <data name="Parent" xml:space="preserve"><value>Élément parent</value></data>
+  <data name="ParentInitiative" xml:space="preserve"><value>Initiative parente</value></data>
+  <data name="ParentProgram" xml:space="preserve"><value>Programme</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="LifecyclePlanned" xml:space="preserve"><value>Planifié</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>Actif</value></data>
+  <data name="LifecycleOnHold" xml:space="preserve"><value>En attente</value></data>
+  <data name="LifecycleCompleted" xml:space="preserve"><value>Terminé</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>Annulé</value></data>
+  <data name="CompleteProjectConfirmation" xml:space="preserve"><value>Terminer cet élément (projet) ? Les nouvelles références ne seront plus autorisées.</value></data>
+  <data name="CancelProjectConfirmation" xml:space="preserve"><value>Annuler cet élément (projet) ? Les nouvelles références ne seront plus autorisées.</value></data>
+  <data name="OpenWorkspace" xml:space="preserve"><value>Ouvrir l’espace projet</value></data>
+</root>

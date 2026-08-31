@@ -1,0 +1,69 @@
+@model Diten.Web.Models.PPM.PpmListPageViewModel
+
+<div class="offcanvas offcanvas-end backbone-preview-offcanvas" tabindex="-1" id="offcanvasDetailsPreview"
+     aria-labelledby="offcanvasDetailsPreviewLabel">
+    <div class="offcanvas-header p-4">
+        <div class="d-flex align-items-center min-w-0">
+            <div class="backbone-preview-avatar d-flex align-items-center justify-content-center me-3 flex-shrink-0">
+                <i class="bx bx-briefcase-alt-2 fs-4"></i>
+            </div>
+            <div class="min-w-0">
+                <h5 id="oc-title" class="offcanvas-title mb-0 text-truncate">-</h5>
+                <small id="oc-subtitle" class="text-muted d-block text-truncate">-</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                aria-label="@ViewData["CancelText"]"></button>
+    </div>
+    <div class="offcanvas-body flex-grow-1 p-4 border-top">
+        <div class="d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <div class="row g-4">
+                    <div class="col-12"><div class="backbone-preview-label">@ViewData["CodeText"]</div><div id="oc-code" class="backbone-preview-value mt-1">-</div></div>
+                    <div class="col-12"><div class="backbone-preview-label">@ViewData["NameText"]</div><div id="oc-name" class="backbone-preview-value mt-1">-</div></div>
+                    <div class="col-12"><div class="backbone-preview-label">@ViewData["LifecycleText"]</div><span id="oc-lifecycle" class="badge bg-label-secondary mt-1">-</span></div>
+                    @if (Model.ShowsReferenceability)
+                    {
+                        <div class="col-12"><div class="backbone-preview-label">@ViewData["ReferenceabilityText"]</div><span id="oc-referenceability" class="badge bg-label-secondary mt-1">-</span></div>
+                    }
+                    @if (Model.HasPortfolio || Model.HasProjectParent || Model.HasInvestmentCaseParent)
+                    {
+                        <div class="col-12"><div class="backbone-preview-label">@ViewData["ParentText"]</div><div id="oc-parent" class="backbone-preview-value mt-1">-</div></div>
+                    }
+                    @if (Model.HasPlanningDates)
+                    {
+                        <div class="col-6"><div class="backbone-preview-label">@ViewData["PlannedStartDateText"]</div><div id="oc-planned-start" class="backbone-preview-value mt-1">-</div></div>
+                        <div class="col-6"><div class="backbone-preview-label">@ViewData["PlannedEndDateText"]</div><div id="oc-planned-end" class="backbone-preview-value mt-1">-</div></div>
+                    }
+                    @if (Model.HasBenefitTarget)
+                    {
+                        <div class="col-12"><div class="backbone-preview-label">@ViewData["TargetDateText"]</div><div id="oc-target-date" class="backbone-preview-value mt-1">-</div></div>
+                    }
+                </div>
+            </section>
+            @if (Model.HasBenefitTarget)
+            {
+                <section class="card backbone-preview-section p-4">
+                    <div class="backbone-preview-label">@ViewData["TargetDescriptionText"]</div>
+                    <div id="oc-target-description" class="backbone-preview-description mt-2">-</div>
+                </section>
+            }
+            <section class="card backbone-preview-section p-4">
+                <div class="backbone-preview-label">@ViewData["DescriptionText"]</div>
+                <div id="oc-description" class="backbone-preview-description mt-2">-</div>
+            </section>
+        </div>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2 bg-white">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@ViewData["CancelText"]</button>
+        <div class="d-flex gap-2">
+            @if (Model.HasProjectWorkspace)
+            {
+                <a id="oc-open-workspace" class="btn btn-label-primary" href="#">
+                    <i class="bx bx-folder-open me-1"></i>@ViewData["OpenWorkspaceText"]
+                </a>
+            }
+            <button type="button" id="oc-btn-edit" class="btn btn-primary">@ViewData["EditText"]</button>
+        </div>
+    </div>
+</div>

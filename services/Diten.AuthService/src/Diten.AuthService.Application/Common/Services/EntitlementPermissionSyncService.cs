@@ -1,4 +1,5 @@
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Common.Authorization;
 using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using Microsoft.Extensions.Logging;
@@ -32,22 +33,26 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
     private readonly IPermissionRepository _permissions;
     private readonly IRoleRepository _roles;
     private readonly IRolePermissionRepository _rolePermissions;
+    private readonly IPpmEntitlementPermissionPolicy _ppmPolicy;
     private readonly ILogger<EntitlementPermissionSyncService> _logger;
 
     public EntitlementPermissionSyncService(
         IPermissionRepository permissions,
         IRoleRepository roles,
         IRolePermissionRepository rolePermissions,
+        IPpmEntitlementPermissionPolicy ppmPolicy,
         ILogger<EntitlementPermissionSyncService> logger)
     {
         _permissions = permissions;
         _roles = roles;
         _rolePermissions = rolePermissions;
+        _ppmPolicy = ppmPolicy;
         _logger = logger;
     }
 
     public async Task GrantModuleAsync(Guid tenantId, string moduleCode, string actor, CancellationToken ct = default)
     {
+        if (_ppmPolicy.Applies(moduleCode)) return;
         var code = ModulePermissionResolver.NormalizeModuleCode(moduleCode);
         if (code.Length == 0)
         {
@@ -67,6 +72,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         string actor,
         CancellationToken ct = default)
     {
+        if (_ppmPolicy.Applies(moduleCode)) return;
         var code = ModulePermissionResolver.NormalizeModuleCode(moduleCode);
         if (code.Length == 0)
         {
@@ -176,6 +182,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
 
     public async Task RevokeModuleAsync(Guid tenantId, string moduleCode, string actor, CancellationToken ct = default)
     {
+        if (_ppmPolicy.Applies(moduleCode)) return;
         var code = ModulePermissionResolver.NormalizeModuleCode(moduleCode);
         if (code.Length == 0)
         {
