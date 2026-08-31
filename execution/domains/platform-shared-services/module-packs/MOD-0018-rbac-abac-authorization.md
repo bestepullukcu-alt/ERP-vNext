@@ -1,6 +1,6 @@
 ---
 id: MOD-0018
-name: RBAC / Entitlement Production Wiring
+name: RBAC / ABAC Authorization
 domain: platform-shared-services
 service: Diten.Platform.Common
 shell: none
@@ -14,7 +14,7 @@ target: 2026-06-05
 form_field_count: 0
 ---
 
-# MOD-0018 - RBAC / Entitlement Production Wiring
+# MOD-0018 - RBAC / ABAC Authorization
 
 > **Draft note:** Bu pack, mevcut MOD-0018 enforcement altyapisini yeni kapsam kararina gore yeniden sozlesmelestirir. Kod yazimi bu pack `approved` veya `ready-for-dev` yapilmadan baslamaz.
 
