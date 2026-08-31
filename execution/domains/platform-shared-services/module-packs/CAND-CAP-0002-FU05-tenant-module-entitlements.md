@@ -306,6 +306,7 @@ Bu özellik geliştirilirken dokunulacak ve dokunulmaması gereken öncelikli he
 ---
 
 ## Revision Summary
+- **Model-A attestation reconciliation (bounded):** The historical entitlement-attestation foundation is not imported as a second authority. Any future attestation decision must be tenant/module/request-bound, distinguish authoritative business results from unavailable or indeterminate authority, carry a monotonic state fence, and fail closed when the fence cannot be revalidated. It remains default-disabled and does not add a production signing key, endpoint, cache/LKG allow path, migration or activation through this amendment.
 - **Physical Source ile Projection Source Ayrımı:** `Source` enumunun fiziksel kayıtlarda (`ManualOverride`, `Addon`, `Trial`, `System`) kullanılması ile read-model/UI üzerinde görüntülenen (`Plan` dahil) ayrımı netleştirildi.
 - **Plan Kayıt Persistansı:** Plan source’un fiziksel `TenantModuleEntitlement` entity'si olarak asla DB'ye kaydedilmeyeceği açıklandı ve `TenantModuleEntitlementRowDto` eklendi.
 - **Sync Command Yanlış Anlaşılması:** Plandan fiziksel bir kayıt aktarımı (sync) olmadığı için eski `Sync` komutu, yanlış anlaşılmayı engellemek amacıyla `RefreshTenantModuleEntitlementProjectionCommand` olarak güncellendi.

@@ -298,6 +298,13 @@ Politika:
 
 Bu revize MOD-0018 freeze'ini bozmaz; "imza degismez" literal kuralini "yuzey korunur + additive izinli" semantik kuralina cevirir. Revize tarihi pack'in `Implementation Notes` bolumunde audit kaydidir; pack `done` olduktan sonra silinmez.
 
+**S2S / attestation reconciliation amendment (bounded):**
+
+- `MOD-0018-FU16` current registry identity remains reserved for **Global Product Permission Onboarding**. Historical S2S material that used the same FU16 identity is not carried forward under that identity and creates no replacement FU identifier.
+- The S2S authorization, delegated-proof and entitlement-attestation foundation is a bounded MOD-0018 parent amendment. It remains default-disabled, non-production and non-activating until separately reconciled executable slices prove their own scope and evidence gates.
+- This amendment does not authorize a production key, secret, vault configuration, endpoint, authentication-scheme activation, deployment, Gateway route or automatic permission grant. User/session HS256 and current FU16 Product behavior remain separate and unchanged.
+- Future executable work must preserve: exact tenant/module/request binding; explicit tenant-scoped grants only; dormant-grant semantics on entitlement disable; authoritative indeterminacy as fail-closed; and no cache or last-known-good allow path.
+
 ## 20. Follow-up Items
 
 Canonical follow-up identity source: `execution/registries/module-id-registry.md`. This parent pack does not create or rename follow-up packs; it only mirrors the registry-controlled chain.
@@ -310,5 +317,7 @@ Canonical follow-up identity source: `execution/registries/module-id-registry.md
 - MOD-0018-FU13: Permission Convention + Cache Invalidation Events.
 - MOD-0018-FU14: Effective Access Explain + Allow Audit.
 - MOD-0018-FU15: Real DataScopeResolver; replacement for deprecated `NEW-MOD-0041` alias.
+
+`MOD-0018-FU16` is registry-owned by Global Product Permission Onboarding. The bounded S2S / attestation reconciliation amendment above intentionally does not mint or claim another FU identity.
 
 The older FU1-FU9 notes are historical planning shorthand and are superseded for registry-controlled identity by the MOD-0018-FU10..FU15 chain above. No implementation status is changed by this reconciliation note.
