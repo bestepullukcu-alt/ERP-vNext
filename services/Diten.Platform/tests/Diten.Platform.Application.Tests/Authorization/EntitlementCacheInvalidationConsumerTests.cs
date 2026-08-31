@@ -11,6 +11,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit;
+using EventTransportMessage = Diten.Platform.Application.Contracts.Eventing.EventTransportMessage;
 
 namespace Diten.Platform.Application.Tests.Authorization;
 

@@ -30,6 +30,8 @@
     <ProjectReference Include="..\..\..\Diten.Platform.Common\src\Diten.Platform.Common\Diten.Platform.Common.csproj" />
     <ProjectReference Include="..\..\..\Diten.Platform.Contracts\Diten.Platform.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
+    <!-- PPM publishes this independently versioned V1 audit-intent contract; do not reference PPM application/runtime projects. -->
+    <ProjectReference Include="..\..\..\Diten.PpmService\src\Diten.PpmService.Contracts\Diten.PpmService.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

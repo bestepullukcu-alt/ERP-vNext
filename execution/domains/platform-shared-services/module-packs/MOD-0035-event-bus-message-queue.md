@@ -401,12 +401,23 @@ This is a backend/infrastructure module, not a CRUD DataTable module. `golden_re
 - No code was written as part of module-pack preparation.
 
 ## 20. Follow-up Items
-- [ ] **PPM Audit Transport Slice acceptance seam (2026-08-31):** PSS has a default-off
-  compatibility fixture and negative contract test for the PPM-owned
-  `ppm.audit-intent.submitted.v1` payload.  No PPM audit consumer is registered by this note, and
-  no RabbitMQ configuration, live broker proof, credential/key provisioning, replay surface, or
-  runtime activation is implied.  The future consumer must reference the PPM contracts artifact,
-  not `Diten.PpmService.Application` and not a PSS-owned duplicate payload type.
+- [ ] **Bounded PPM Audit Consumer V1 transport amendment (2026-08-31):** the only accepted event
+  is PPM-owned `ppm.audit-intent.submitted.v1` / version `1`, from the independent PPM Contracts
+  artifact (never `Diten.PpmService.Application` and never a PSS-owned duplicate payload). Its
+  payload is exactly `auditIntentId`, `actorId`, `entityType`, `entityId`, `mutation`, and
+  `occurredAtUtc`. The V1 consumer mapping is `PortfolioDelivery = 15` and
+  `created/Create`, `updated/Update`, `lifecycle-changed/LifecycleTransition = 16`, and
+  `soft-deleted/Delete`. It must not derive a target state, read PPM state, or silently restrict
+  PPM entity coverage.
+
+  The transport slice remains default-off: this amendment does not register a consumer or authorize
+  RabbitMQ configuration, live broker proof, credential/key provisioning, signing material, replay
+  surface, endpoint, runtime activation, or direct production audit append. Any later registration
+  must first prove authenticated publisher identity, trusted tenant/actor context, and atomic local
+  `ConsumerName + EventId` inbox plus audit-outbox idempotency. The retained policy-seed consequence
+  of adding `PortfolioDelivery` requires bounded regression evidence: exact-one missing-policy
+  insert, no existing-policy change, and zero insert on repeat. Only a test-owned disposable
+  database may be created and it must be completely removed; schema-wide setup is not allowed.
 - [ ] Wire the authenticated publisher-identity/key-provider seam only after its owner and concrete
   credential lifecycle are approved.  Fixture data must contain no key, secret, signature, or
   credential material; historic HMAC-specific transport code is not the PSS acceptance baseline.
