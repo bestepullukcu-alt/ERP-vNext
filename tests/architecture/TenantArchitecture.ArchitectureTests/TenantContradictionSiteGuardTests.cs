@@ -45,13 +45,14 @@ namespace TenantArchitecture.ArchitectureTests;
  *     services/Diten.HcmService/tests/Diten.HcmService.Application.Tests/Tenancy/TenantContradictionGuardTests.cs
  *     services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Tenancy/TenantContradictionGuardTests.cs
  *     services/Diten.Platform/tests/Diten.Platform.Application.Tests/Tenancy/TenantContradictionGuardTests.cs
+ *     services/Diten.PpmService/tests/Diten.PpmService.Tests/TenantResolutionMiddlewareTests.cs
  * The same `false &&` experiment that left this project 14/14 green turned FIVE tests red in the Platform file —
  * those are the tests that noticed. If the rule matters to you, that is the list to read and to keep alive.
  *
  * ⚠ THIS DOES NOT CONTRADICT THE EMPTINESS ARGUMENT made for `DecisionPendingByDesign` below; it answers a
  * DIFFERENT question. That argument is about whether the SET of sites is measured, and it holds exactly as
  * written: an eighth site cannot appear, and a classification cannot go stale, without a test here failing. This
- * paragraph is about whether the RULE IS ALIVE at the seven — and to that question, this file is not evidence.
+ * paragraph is about whether the RULE IS ALIVE at the eight — and to that question, this file is not evidence.
  */
 public class TenantContradictionSiteGuardTests
 {
@@ -64,11 +65,11 @@ public class TenantContradictionSiteGuardTests
         RegexOptions.Compiled);
 
     /// <summary>
-    /// MEASURED 2026-08-29: seven files in the repo resolve a tenant from the header and/or the token. The count is
-    /// pinned as an exact floor AND ceiling on purpose — the failure this prevents is an eighth site appearing and
+    /// MEASURED 2026-08-31: eight files in the repo resolve a tenant from the header and/or the token. The count is
+    /// pinned as an exact floor AND ceiling on purpose — the failure this prevents is a ninth site appearing and
     /// inheriting neither the rule nor the decision, which is exactly how the five-site drift happened.
     /// </summary>
-    private const int KnownTenantResolutionSites = 7;
+    private const int KnownTenantResolutionSites = 8;
 
     /// <summary>Sites that refuse the contradiction. Measured, not aspirational.</summary>
     private static readonly string[] EnforcesTheRule =
@@ -90,11 +91,15 @@ public class TenantContradictionSiteGuardTests
         // refused FIRST, because a request naming two tenants cannot be evaluated for access at all. The designed
         // 403 survives — with no X-Tenant-Id there is no contradiction.
         // Behaviour test: services/Diten.Platform/tests/Diten.Platform.Application.Tests/Tenancy/TenantContradictionGuardTests.cs.
-        "services/Diten.Platform.Common/src/Diten.Platform.Common/Tenancy/TenantResolutionMiddleware.cs"
+        "services/Diten.Platform.Common/src/Diten.Platform.Common/Tenancy/TenantResolutionMiddleware.cs",
+        // MOD-0117 PPM reads tenant identity from the authenticated JWT and refuses a contradicting header before
+        // its application-level tenant context is consumed. Behaviour test: services/Diten.PpmService/tests/
+        // Diten.PpmService.Tests/TenantResolutionMiddlewareTests.cs.
+        "services/Diten.PpmService/src/Diten.PpmService.Api/Security/TenantResolutionMiddleware.cs"
     ];
 
     /// <summary>
-    /// ⚠ THIS LIST IS EMPTY, AND THAT IS A MEASURED STATE — NOT AN ABSENCE OF MEASUREMENT. All seven
+    /// ⚠ THIS LIST IS EMPTY, AND THAT IS A MEASURED STATE — NOT AN ABSENCE OF MEASUREMENT. All eight
     /// tenant-resolution sites now refuse the contradiction; the last one (Platform.Common) left this list on
     /// 2026-08-30 when the owner answered its ordering question, and the gateway left it earlier the same day.
     ///
@@ -121,7 +126,7 @@ public class TenantContradictionSiteGuardTests
     }
 
     [Fact]
-    public void SitesThatEnforceTheRule_AreExactlyTheMeasuredSeven()
+    public void SitesThatEnforceTheRule_AreExactlyTheMeasuredEight()
     {
         var repoRoot = FindRepoRoot();
 
@@ -142,14 +147,14 @@ public class TenantContradictionSiteGuardTests
     /// `foreach` over an empty list ASSERTS NOTHING: it would have stayed green forever while measuring nothing.
     /// Deleting it and asserting the emptiness DIRECTLY is the only way the fact stays measured.
     ///
-    /// <para>So: the list is empty because seven sites out of seven enforce the rule. If a NEW tenant-resolution
+    /// <para>So: the list is empty because eight sites out of eight enforce the rule. If a NEW tenant-resolution
     /// site is ever added, <see cref="KnownTenantResolutionSites"/> stops matching the scan and
     /// <see cref="EveryTenantResolutionSite_IsClassified_AndTheSetsAreExact"/> fails, forcing the new site to be
     /// classified — at which point, if it is pending a decision, this test fails too and demands the reason be
     /// written down here.</para>
     /// </summary>
     [Fact]
-    public void NoSiteIsPendingADecision_BecauseAllSevenEnforceTheRule()
+    public void NoSiteIsPendingADecision_BecauseAllEightEnforceTheRule()
     {
         Assert.Empty(DecisionPendingByDesign);
         Assert.Equal(KnownTenantResolutionSites, EnforcesTheRule.Length);

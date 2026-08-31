@@ -33,7 +33,10 @@ public sealed class TenantResolutionMiddleware(RequestDelegate next)
             return;
         }
 
-        if (!Guid.TryParse(claimValue, out var jwtTenant) || jwtTenant == Guid.Empty)
+        Guid? jwtTenant = Guid.TryParse(claimValue, out var parsedJwtTenant) && parsedJwtTenant != Guid.Empty
+            ? parsedJwtTenant
+            : null;
+        if (!jwtTenant.HasValue)
         {
             await WriteProblemDetails(
                 context,
@@ -49,7 +52,10 @@ public sealed class TenantResolutionMiddleware(RequestDelegate next)
         }
 
         var headerValue = headerValues.FirstOrDefault();
-        if (!Guid.TryParse(headerValue, out var headerTenant) || headerTenant == Guid.Empty)
+        Guid? headerTenant = Guid.TryParse(headerValue, out var parsedHeaderTenant) && parsedHeaderTenant != Guid.Empty
+            ? parsedHeaderTenant
+            : null;
+        if (!headerTenant.HasValue)
         {
             await WriteProblemDetails(
                 context,
@@ -58,7 +64,7 @@ public sealed class TenantResolutionMiddleware(RequestDelegate next)
             return;
         }
 
-        if (jwtTenant != headerTenant)
+        if (jwtTenant.HasValue && headerTenant.HasValue && jwtTenant.Value != headerTenant.Value)
         {
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             await context.Response.WriteAsJsonAsync(
