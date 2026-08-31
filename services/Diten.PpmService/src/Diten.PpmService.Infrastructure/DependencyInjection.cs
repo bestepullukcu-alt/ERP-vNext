@@ -1,6 +1,6 @@
 using Diten.BuildingBlocks.Eventing;
 using Diten.PpmService.Application.Common;
-using Diten.PpmService.Application.Events;
+using Diten.PpmService.Contracts.Events;
 using Diten.PpmService.Application.Features.ExternalContextReferences;
 using Diten.PpmService.Infrastructure.Audit;
 using Diten.PpmService.Infrastructure.Authorization;

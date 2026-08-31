@@ -17,6 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.Eventing\Diten.BuildingBlocks.Eventing.csproj" />
     <ProjectReference Include="..\..\src\Diten.PpmService.Application\Diten.PpmService.Application.csproj" />
+    <ProjectReference Include="..\..\src\Diten.PpmService.Contracts\Diten.PpmService.Contracts.csproj" />
     <ProjectReference Include="..\..\src\Diten.PpmService.Infrastructure\Diten.PpmService.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Diten.PpmService.Api\Diten.PpmService.Api.csproj" />
   </ItemGroup>

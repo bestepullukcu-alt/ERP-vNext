@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Diten.BuildingBlocks.Eventing;
-using Diten.PpmService.Application.Events;
+using Diten.PpmService.Contracts.Events;
 using Diten.PpmService.Domain.Repositories;
 using Diten.PpmService.Infrastructure.Audit;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -23,7 +23,13 @@ public sealed class PpmAuditProducerSecurityTests
             repository,
             Options.Create(EnabledOptions()));
         var candidate = FixtureCandidate();
-        var @event = new PpmAuditIntentSubmittedV1(candidate);
+        var @event = new PpmAuditIntentSubmittedV1(
+            candidate.Id,
+            candidate.ActorId,
+            candidate.EntityType,
+            candidate.EntityId,
+            candidate.Mutation,
+            candidate.OccurredAtUtc);
         var canonical = ((ICanonicalIntegrationEvent)@event).CanonicalPayloadUtf8;
         var metadata = FixtureMetadata();
 

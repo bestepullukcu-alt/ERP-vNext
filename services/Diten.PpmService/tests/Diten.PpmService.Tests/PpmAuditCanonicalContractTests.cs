@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Diten.BuildingBlocks.Eventing;
-using Diten.PpmService.Application.Events;
+using Diten.PpmService.Contracts.Events;
 using Diten.PpmService.Domain.Repositories;
 using Diten.PpmService.Infrastructure.Audit;
 using Xunit;
@@ -74,6 +74,20 @@ public sealed class PpmAuditCanonicalContractTests
     }
 
     [Fact]
+    public void Contract_layer_has_no_PPM_application_or_domain_assembly_dependency()
+    {
+        var referencedAssemblies = typeof(PpmAuditIntentSubmittedV1)
+            .Assembly
+            .GetReferencedAssemblies()
+            .Select(assembly => assembly.Name);
+
+        Assert.DoesNotContain(
+            referencedAssemblies,
+            name => name?.StartsWith("Diten.PpmService.Application", StringComparison.Ordinal) == true
+                    || name?.StartsWith("Diten.PpmService.Domain", StringComparison.Ordinal) == true);
+    }
+
+    [Fact]
     public void Producer_options_are_fail_closed_and_disabled_without_secret_is_valid()
     {
         var validator = new PpmAuditProducerOptionsValidator();
@@ -88,6 +102,20 @@ public sealed class PpmAuditCanonicalContractTests
             secret: Convert.ToBase64String(new byte[16]))).Succeeded);
         Assert.False(validator.Validate(null, EnabledOptions(
             keyId: "bad\r\nkey")).Succeeded);
+    }
+
+    [Theory]
+    [InlineData("Portfolio")]
+    [InlineData("Initiative")]
+    [InlineData("Program")]
+    [InlineData("Project")]
+    [InlineData("InvestmentCase")]
+    [InlineData("BenefitCommitment")]
+    public void Each_PPM_audit_intent_aggregate_has_a_canonical_contract_fixture(string entityType)
+    {
+        var @event = CreateEvent(entityType: entityType);
+
+        Assert.Equal(entityType, @event.EntityType);
     }
 
     [Theory]
@@ -125,7 +153,7 @@ public sealed class PpmAuditCanonicalContractTests
     public void Correlation_is_not_part_of_payload_but_remains_dispatch_candidate_metadata()
     {
         var candidate = CreateCandidate();
-        var @event = new PpmAuditIntentSubmittedV1(candidate);
+        var @event = CreateEvent();
 
         Assert.Equal(CorrelationId, candidate.CorrelationId);
         Assert.DoesNotContain(
@@ -139,7 +167,13 @@ public sealed class PpmAuditCanonicalContractTests
         string entityType = "Project",
         string mutation = "created",
         DateTime? occurredAtUtc = null) =>
-        new(CreateCandidate(entityType, mutation, occurredAtUtc));
+        new(
+            AuditIntentId,
+            ActorId,
+            entityType,
+            EntityId,
+            mutation,
+            occurredAtUtc ?? OccurredAtUtc);
 
     private static AuditIntentDispatchCandidate CreateCandidate(
         string entityType = "Project",
