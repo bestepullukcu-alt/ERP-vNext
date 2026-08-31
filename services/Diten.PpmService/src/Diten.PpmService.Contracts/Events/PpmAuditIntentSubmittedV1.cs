@@ -3,9 +3,8 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using Diten.BuildingBlocks.Eventing;
-using Diten.PpmService.Domain.Repositories;
 
-namespace Diten.PpmService.Application.Events;
+namespace Diten.PpmService.Contracts.Events;
 
 public sealed class PpmAuditIntentSubmittedV1 : IIntegrationEvent, ICanonicalIntegrationEvent
 {
@@ -14,30 +13,44 @@ public sealed class PpmAuditIntentSubmittedV1 : IIntegrationEvent, ICanonicalInt
     public const int MaximumPayloadBytes = 2048;
 
     private static readonly HashSet<string> EntityTypes =
-        new(["Portfolio", "Initiative", "Program", "Project"], StringComparer.Ordinal);
+        new(
+            [
+                "Portfolio",
+                "Initiative",
+                "Program",
+                "Project",
+                "InvestmentCase",
+                "BenefitCommitment"
+            ],
+            StringComparer.Ordinal);
 
     private static readonly HashSet<string> Mutations =
         new(["created", "updated", "lifecycle-changed", "soft-deleted"], StringComparer.Ordinal);
 
-    public PpmAuditIntentSubmittedV1(AuditIntentDispatchCandidate intent)
+    public PpmAuditIntentSubmittedV1(
+        Guid auditIntentId,
+        Guid actorId,
+        string entityType,
+        Guid entityId,
+        string mutation,
+        DateTime occurredAtUtc)
     {
-        ArgumentNullException.ThrowIfNull(intent);
-        if (intent.Id == Guid.Empty
-            || intent.ActorId == Guid.Empty
-            || intent.EntityId == Guid.Empty
-            || !EntityTypes.Contains(intent.EntityType)
-            || !Mutations.Contains(intent.Mutation)
-            || intent.OccurredAtUtc.Kind != DateTimeKind.Utc)
+        if (auditIntentId == Guid.Empty
+            || actorId == Guid.Empty
+            || entityId == Guid.Empty
+            || !EntityTypes.Contains(entityType)
+            || !Mutations.Contains(mutation)
+            || occurredAtUtc.Kind != DateTimeKind.Utc)
         {
             throw new EventValidationException("PPM audit intent is invalid.");
         }
 
-        AuditIntentId = intent.Id;
-        ActorId = intent.ActorId;
-        EntityId = intent.EntityId;
-        EntityType = intent.EntityType;
-        Mutation = intent.Mutation;
-        OccurredAtUtc = intent.OccurredAtUtc;
+        AuditIntentId = auditIntentId;
+        ActorId = actorId;
+        EntityType = entityType;
+        EntityId = entityId;
+        Mutation = mutation;
+        OccurredAtUtc = occurredAtUtc;
         _canonicalPayloadUtf8 = CreateCanonicalPayload();
     }
 
@@ -45,11 +58,13 @@ public sealed class PpmAuditIntentSubmittedV1 : IIntegrationEvent, ICanonicalInt
     public int EventVersion => CanonicalEventVersion;
     public Guid AuditIntentId { get; }
     public Guid ActorId { get; }
-    public Guid EntityId { get; }
     public string EntityType { get; }
+    public Guid EntityId { get; }
     public string Mutation { get; }
     public DateTime OccurredAtUtc { get; }
+
     private readonly byte[] _canonicalPayloadUtf8;
+
     ReadOnlyMemory<byte> ICanonicalIntegrationEvent.CanonicalPayloadUtf8 => _canonicalPayloadUtf8;
 
     private byte[] CreateCanonicalPayload()

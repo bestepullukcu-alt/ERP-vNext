@@ -1,5 +1,5 @@
 using Diten.BuildingBlocks.Eventing;
-using Diten.PpmService.Application.Events;
+using Diten.PpmService.Contracts.Events;
 using Diten.PpmService.Domain.Repositories;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -63,7 +63,13 @@ public sealed class PpmAuditIntentDispatcher(
             PpmAuditIntentSubmittedV1 @event;
             try
             {
-                @event = new PpmAuditIntentSubmittedV1(candidate);
+                @event = new PpmAuditIntentSubmittedV1(
+                    candidate.Id,
+                    candidate.ActorId,
+                    candidate.EntityType,
+                    candidate.EntityId,
+                    candidate.Mutation,
+                    candidate.OccurredAtUtc);
             }
             catch (EventValidationException)
             {
