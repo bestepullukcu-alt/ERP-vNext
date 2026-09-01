@@ -161,7 +161,12 @@ public sealed class TenantModuleEntitlementRepository : GlobalRepository<TenantM
         TenantModuleEntitlement entity,
         CancellationToken ct = default)
     {
-        if (entity.TenantId != TenantContext.TenantId)
+        // Platform actors (PlatformActor policy) operate cross-tenant: the middleware sets the platform
+        // context (TenantContext.TenantId == Guid.Empty) and the authoritative target tenant is carried on
+        // the entity itself (set by the handler from the route's {tenantId}). Only a genuine tenant-scoped
+        // caller must be pinned to its own tenant — comparing a platform actor's Guid.Empty context against a
+        // real target tenant would (and did) reject every manual entitlement add with a bogus concurrency error.
+        if (!TenantContext.IsPlatformContext && entity.TenantId != TenantContext.TenantId)
         {
             throw new TenantModuleEntitlementConcurrencyException();
         }
