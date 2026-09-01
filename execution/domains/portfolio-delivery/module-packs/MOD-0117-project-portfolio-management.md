@@ -40,6 +40,13 @@ implementation_authority: explicit-user-control-tower
 > **Composite-pack UI decision:** `form_field_count: 7` is the maximum create/edit field count across the
 > four authorized Phase 2A surfaces, not a single composite form. All four select Golden Slim.
 
+> **Initiative surface reconciliation — 2026-09-01, GOVERNANCE-ONLY:** The legacy Enterprise Strategy
+> Initiative wizard was audited field by field against the Blueprint and current repository code. It is not
+> a PPM template: its persistent `InitiativeStrategyLinkAggregate` and several browser-only mock actions
+> are neither a second PPM system of record nor implementation authority. The existing Initiative surface
+> remains six-field Golden Slim. This amendment creates no runtime code, entity field, DTO, API, Gateway
+> route, reference-data set, external client, browser card, migration, activation or completion claim.
+
 ## 1. Module Summary
 
 MOD-0117 is the Blueprint-canonical PPM parent and the future authoritative system of record for Portfolio,
@@ -303,6 +310,40 @@ soft-delete, never from a stored standalone boolean.
 
 Index direction: unique active `(TenantId, Code)`; relationship index
 `(TenantId, PortfolioId, IsDeleted)` if the relationship is approved.
+
+#### 4.3.1 Initiative cross-module detail registry — GOVERNANCE-ONLY / DEFAULT-UNAVAILABLE
+
+The Initiative create/edit contract remains exactly the fields in §4.3. No legacy wizard field is copied
+into an Initiative entity, DTO, command, API payload or local lookup merely because it appeared on a legacy
+screen. `LifecycleState` remains an owner-controlled transition, not an ordinary metadata selector; a
+non-null `VisibilityPolicyKey` remains unavailable for free-form UI entry until its authoritative
+MOD-0018 validation path is promoted.
+
+The following is a future **detail-card registry**, not authority to render a card now. If a later bounded
+amendment authorizes a card, it must consume only the named owner contract and preserve these states:
+
+| Future detail concept | Owner / authority state | PPM behavior until an approved contract exists |
+|---|---|---|
+| Strategy alignment (objective, goal, period, horizon) | MOD-0352; no Initiative reference contract | Unavailable; no objective/goal field, free-text alignment note or local strategy copy |
+| Ownership and organization (org, person, position, sponsor) | MOD-0288; relationship semantics and cardinality open | Unavailable; no owner/sponsor text, person snapshot or organization collection |
+| Planning context (priority, phase, dates, cadence, readiness) | PPM candidate decisions are open; taxonomy/period semantics are not approved | Unavailable; no second status truth, hardcoded enum or inferred readiness |
+| Metric and contribution | Canonical owner requires reconciliation; legacy MOD-0004 evidence is not an executable MOD-0059/MOD-0060 contract | Unavailable; no metric text, unit, calculation or contribution-plan copy |
+| Investment, funding, scenario and benefits | InvestmentCase/BenefitCommitment are separate MOD-0117 aggregates; MOD-0136/MOD-0138/MOD-0072 links remain Gate I boundaries | Unavailable unless a later exact Initiative cardinality and producer contract are approved; no amount, currency, scenario or realized-value copy |
+| Decision and approval | MOD-0007 decision links remain Gate I-A; MOD-0023 is `ExcludedV1` | Unavailable; no approval state, decision note or inferred governing status |
+| Evidence and documents | MOD-0028 document ownership and MOD-0031 evidence relationship ownership | Unavailable; no binary, document list, evidence count or local fallback |
+| Structural dependencies | MOD-0354 | Unavailable; no boolean dependency flag, dependency graph or local DWS copy |
+
+`available` is permitted only after the owner contract, same-tenant/referenceability rule and required
+permission are all approved and executable. `unauthorized` is reserved for a same-tenant resource the actor
+may know exists but cannot use. Missing, deleted, invisible and cross-tenant records remain indistinguishable
+`404`; provider timeout, unavailable authority or malformed authoritative data remains `503` and must never
+be collapsed to `404`. A future card must not show mock rows, synthetic zero counts, stale local cache,
+free-text external identifiers or a browser-only fallback.
+
+A later Initiative-card implementation requires a separate approved amendment defining, for each card: owner
+module, contract name/version, cardinality, source of truth, tenant/actor propagation, permission, error
+matrix, snapshot/freshness decision, bilateral fixture and browser acceptance evidence. A Blueprint row or a
+legacy field alone is insufficient.
 
 ### 4.4 Program — Phase 2A fields
 
@@ -1206,6 +1247,10 @@ For each surface:
   DataTable v2 and Golden Slim create/edit offcanvas. BenefitCommitment selectors display `Code — Title`,
   never a raw InvestmentCase Guid.
 - Browser code cannot embed mock rows or fallback to ES prototype endpoints.
+- Initiative remains a Golden Slim surface. Its current quick view may show only the §4.3 core plus its
+  resolvable Portfolio relationship. The §4.3.1 registry grants no new card markup, disabled input, mock
+  value, client call or endpoint; a later owner-approved amendment is required before any cross-module card
+  is rendered.
 
 The four Phase 2A frontend surfaces remain in `review`. Gate L frontend/backend implementation exists at
 `536aa68556f165db45d9860444d3de39757b5e58`, including separate InvestmentCase and BenefitCommitment
@@ -1413,6 +1458,9 @@ or any other Gateway route.
   `_LayoutTenantShell`, DataTable v2, Golden Slim, SweetAlert2 and seven-language RESX parity.
 - [x] UI shows lifecycle badge, parent and derived referenceability; has no bulk delete/lifecycle or Approve
   action and excludes tenant/audit fields.
+- [x] Legacy Initiative wizard reconciliation is recorded: the current six-field Golden Slim surface is
+  retained, and every cross-module concern is either a named future owner contract or default-unavailable;
+  no legacy field became an implicit PPM entity field or UI requirement.
 - [x] Browser traffic uses Gateway 5000 only; no direct service-port JavaScript call exists.
 - [x] Loading/empty/400/401/403/404/409/503 states are testable without existence disclosure.
 - [x] Real Mongo evidence proves tenant isolation, unique indexes, concurrency and required transactions.
@@ -1616,11 +1664,15 @@ Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separat
 2. Later composite Project Workspace integrations are tracked in the
    [R1 PPM MVP backlog](../../../release/release-backlog/R1-ppm-mvp-backlog.md); Phase 2A keeps PPM,
    DWS, WorkCenter, finance, resource/capacity, document, compliance and audit ownership separate.
+3. Initiative cross-module detail cards remain a future, owner-by-owner decision under §4.3.1. The first
+   implementation amendment must choose only contracts that are executable, tenant-safe and bilaterally
+   evidenced; it cannot promote the whole registry at once.
 
 ### Change log
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-09-01 | Reconciled the Initiative legacy wizard against Blueprint ownership and current PPM code. Retained the six-field Golden Slim form; registered future strategy, organization, planning, metric, investment, funding, decision, evidence and dependency detail concepts as governance-only/default-unavailable. No PPM field, runtime card, producer call, mock fallback or activation authority was created. | User / Portfolio Governance Process Owner |
 | 2026-08-30 | Recorded the DCP-004 Gate-2 current-state disposition as governance-only, default-off and non-production: exact eligible type count `0`, empty action map, six owned-type dispositions, all 31 projection fields and eleven future decision gates. No provider/endpoint/configuration/runtime/activation authority or WorkCenter completion claim was created. | User / Enterprise Strategy Control Tower |
 | 2026-08-29 | Reconciled the canonical local PPM port to `5062`, superseding the earlier `5061` allocation while preserving CRM on `5061`. The integration-agent-owned Gateway authority remains exactly `/api/v1/ppm` plus `/api/v1/ppm/{everything}`; no production activation, deployment or broader route authority was granted. | User / Enterprise Strategy Control Tower |
 | 2026-08-29 | Reconciled the current-main semantic checkpoint chain: PPM base/contracts `a22a872f`, parent MOD-0018 governance `457edbdd`, neutral S2S request binding `92eb29ea`, and PPM-owned default-off Gate I relationship/outbox composition `8c659594`. Recorded build `0/0`, unit `286/286`, dynamic-Mongo integration `82/82` with zero skips, architecture `11/11`, mutation `6/6`, and restore SHA-256 `61e79023258a6086db98f52378a7c86bf611f309d71a83979f7368b056d68170`. This closes only backend/default-off evidence; `review`, MOD-0023 `ExcludedV1`, and full 1.3/browser/live-provider/bilateral/WorkCenter/production gates remain unchanged and open. | Enterprise Strategy Control Tower — current-main evidence reconciliation |
@@ -1663,3 +1715,5 @@ Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separat
 - MOD-0354 promotion only after its MOD-0117 provider blocker and other OD-04 subsets close.
 - Any legacy mock/prototype containment or migration through a separate approved pack.
 - Any future WorkCenter-related behavior through DCP-004 and the applicable Gate 2 process.
+- For every Initiative detail concept in §4.3.1, obtain an owner-approved executable contract and a separate
+  MOD-0117 consumer amendment before adding UI, entity fields, DTOs, API routes or data relationships.
