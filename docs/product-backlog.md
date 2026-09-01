@@ -3438,3 +3438,37 @@ Aynı turda yedi kiracı-çözüm noktasının hepsi okundu; sonuç:
 - **Gelecek regresyon riski: 🟡 → 🟢'ye yakın** — kural artık yedi noktanın beşinde dayatılıyor
   ve kalan ikisi statik muhafızla adlandırılmış durumda, yani "yazılı ama tutmuyor" sessizliği
   bitti. Kalan risk yalnızca yukarıdaki sıralama kararının verilmemiş olmasıdır.
+
+### BL-325 — Oluştur'a iki kez basmak iki görev yaratıyor (2026-08-31, CANLI HATA, sahip gördü)
+
+> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+
+**Belirti (sahip canlıda gördü):** Görev oluşturma sırasında "Oluştur"a iki kez
+basılınca modal kapanmadan istek iki kez gidiyor ve **iki ayrı görev** oluşuyor.
+
+**Ölçüm (2026-08-31):**
+- `frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/quick-create.js` — çift
+  gönderim koruması **sıfır**: `disabled = true`, `isSubmitting`, `submitting`
+  desenlerinin hiçbiri yok. Düğme basılabilir kalıyor, modal açık kalıyor.
+- `frontend/Diten.Web/wwwroot/assets/js/Tasks/form-page.js` — koruma sinyali **0**.
+- `frontend/Diten.Web/wwwroot/assets/js/Tasks/form.js` — 2 sinyal var; iki oluşturma
+  yolu **aynı korumaya sahip değil**.
+- `services/Diten.Platform/src/Diten.Platform.API/Controllers/TasksController.cs` —
+  oluşturma ucunda `IdempotencyKey` **yok**. Yani sunucu da aynı isteği iki kez
+  kabul ediyor; koruma tamamen istemcinin refleksine bağlı.
+
+**Neden önemli:** kullanıcının yavaş ağda iki kez basması olağan. Sonuç, sessizce
+çoğalan görev — kimse hata görmüyor, iş listesinde iki kopya beliriyor.
+
+⚠ **Yalnız düğmeyi kilitlemek YETMEZ.** İstemci kilidi sekme yenilemesini, ağ
+tekrarını veya iki sekmeden aynı formu göndermeyi engellemez. Kalıcı çözüm
+sunucuda idempotency anahtarıdır; düğme kilidi onun yerine geçmez, yanına gelir.
+
+**Kardeş kayıt:** [[BL-306]] — MOD-0023 dispatch'inde idempotency anahtarı sunucuda
+üretiliyor, aynı sınıf kusur, farklı yüzey. İkisi birlikte ele alınmalı: anahtarı
+İSTEMCİ üretmeli ki tekrar gönderim aynı anahtarı taşısın.
+
+**Kapanış ölçütü:** (a) iki oluşturma yolunda da düğme kilidi + modal kapanışı,
+(b) sunucuda idempotency anahtarı, (c) aynı anahtarla iki kez gönderilen isteğin
+TEK görev ürettiğini ölçen test — ve o testin, korumayı geri alınca kırmızıya
+döndüğü kanıtlanmış olmalı.
