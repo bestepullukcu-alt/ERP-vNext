@@ -28,12 +28,56 @@ production_authority: none
 
 # MOD-0354 — Decomposition & Work Structuring Engine
 
-> **Ready-for-dev authority reconciliation:** The explicit user decision dated 2026-09-01 reconciles the
-> already verified authority/status record from
-> `feature/mg/mod-0354-decomposition-work-structuring-engine` onto current `origin/main`. This governance-only
-> checkpoint does not itself authorize service scaffolding, code transfer, runtime tests, Gateway, frontend,
-> WorkCenter, deployment, secrets/keys, push or merge. Existing bounded authority fields above remain
-> descriptive provenance; `production_authority: none` is binding.
+> **Current-main reconciliation:** The explicit user decision dated 2026-09-01 reconciles this already
+> verified authority/status record and its bounded DWS core chain onto current `origin/main`. The transfer
+> remains limited to this pack plus `services/Diten.ManagementGovernanceService/**`; it does not authorize
+> Gateway, frontend, WorkCenter, deployment, secrets/keys, push, merge or production activation.
+
+> **Ready-for-dev bounded implementation guard:** `status: ready-for-dev`,
+> `implementation_authority: explicit-user-control-tower-bounded-core-scaffold-contract-test` and
+> `production_authority: none` are binding. The explicit user decision dated 2026-08-26 authorizes only the
+> exact Core Scaffold & Contract-Test paths in §5. It does not authorize a listener, endpoint, route, port
+> binding, Gateway, frontend, WorkCenter, credential, external adapter, migration, deployment or production
+> activation.
+
+> **B-02 non-runtime evidence guard:** The explicit user decision dated 2026-08-26 additionally authorizes
+> only the B-02 Mongo Persistence & Integration Evidence slice recorded in §5. It permits a governance
+> checkpoint for this pack followed by implementation under the exact Dws Persistence and
+> IntegrationTests paths. It does not authorize a host, listener, endpoint, port binding, runtime DI,
+> configuration, production database, migration, deployment, credential, secret, frontend, Gateway,
+> WorkCenter or production activation. The separately approved non-runtime implementation checkpoint is
+> `6dfbaa5b1218a1d236360830db1e8c5db71bba87`; it grants no broader runtime authority.
+
+> **Backend Local-Testability amendment:** The explicit user decision dated 2026-08-27 authorizes a
+> non-production, default-off local API host for this module under the exact paths in §5. This bounded slice
+> permits action-based CQRS through MediatR, the four mandatory pipeline behaviors, service-local
+> `Response<T>`/`CustomBaseController`, health and Dws endpoints bound only to loopback port `5017`, the
+> existing Dws Mongo persistence boundary, typed MOD-0117 and FU16 adapter ports, a test-only audit simulator
+> and a self-registration contract. It does not authorize Gateway routing, browser access, production
+> credentials/keys, live external providers, live broker delivery, deployment or production activation.
+
+> **Functional Local DWS API amendment:** The explicit Control Tower decision dated 2026-08-28 authorizes
+> the bounded, non-production and default-off replacement of the B-11A generic dispatch/storage smoke with
+> the exact ten command and five query contracts in this pack. The authority is limited to the exact paths,
+> DTOs, projections, transaction participants, provider fixtures and executable tests recorded below. The
+> B-11A generic `DwsDispatchRequest`, `DwsLocalResult`, operation-string dispatch and generic `Value` storage
+> remain historical smoke evidence only; they are not functional DWS truth and may be retired only after the
+> typed replacement and all replacement/regression tests pass. This amendment grants no production
+> activation, Gateway, frontend, WorkCenter, PVG, live MOD-0117/FU16/MOD-0021 provider, key, secret, broker,
+> deployment, migration or legacy-retirement authority.
+
+> **B-11B entitlement identity correction:** The explicit Control Tower decision dated 2026-08-28 binds
+> the two independent FU16 identity fields to the exact values `ModuleCode=MOD-0354` and
+> `ModuleEntitlementCode=MOD-0354`. Equality of their current values does not merge their semantics and does
+> not establish a general owner/module/entitlement equality convention. The shared
+> `management-governance` value, the descriptive `decomposition-work-structuring-engine` value and every
+> other alias are forbidden for this binding. This correction authorizes only local fixture/application-port
+> exact-value validation; it creates no entitlement, automatic grant, catalog registration, activation or
+> production authority.
+
+> **Port reservation:** `Diten.ManagementGovernanceService:5017` is the canonical governance reservation.
+> It supersedes the historical Management Governance `5011` assignment; `5011` belongs exclusively to
+> `Diten.PvgService`. The reservation grants no listener, route, scaffold, runtime or production authority.
 
 > **Planning date:** `target: 2026-08-14` is a provisional planning date, not a delivery commitment or
 > implementation authorization.
@@ -43,6 +87,20 @@ production_authority: none
 Wave 1 delivers tenant-isolated structural decomposition mechanics: a structure can be defined, arranged as
 a hierarchy, checked for structural integrity, frozen into an immutable baseline and compared across
 versions/baselines. It deliberately does not execute work.
+
+Delivery is divided into five independently gated slices:
+
+1. Core Scaffold & Contract-Test;
+2. Security & MOD-0117 Provider Integration;
+3. Audit Delivery;
+4. Frontend & Legacy Parity; and
+5. Runtime Activation.
+
+Present authority covers the bounded Core, closed B-02 persistence evidence, B-11A local-host smoke and the
+B-11B Functional Local DWS API amendment, each under its own exact §5 paths. B-11A/B-11B remain
+non-production and default-off. A missing live MOD-0117 provider, reusable MOD-0018 adapter or MOD-0021
+delivery path cannot be treated as locally available; only the exact test-owned fixtures in the authorized
+local slices may be composed.
 
 The primary user is a tenant planning architect who structures an already-authoritative external context
 such as an initiative, program, project or portfolio by typed reference. This is a tree/hierarchy workspace,
@@ -143,10 +201,37 @@ events, jobs or configuration.
 
 No command, DTO or entity may contain task/approval fields or actions listed in §2.
 
+### Exact operation-to-permission manifest
+
+The Core manifest contains exactly 15 ordinal operation mappings and exactly six permission keys. Case,
+trim, wildcard, prefix, suffix, role-name and alias matching are forbidden.
+
+| Operation | Exact permission |
+|---|---|
+| `CreateStructureCommand` | `management-governance.dws.create` |
+| `UpdateStructureMetadataCommand` | `management-governance.dws.update` |
+| `AddStructureNodeCommand` | `management-governance.dws.update` |
+| `MoveStructureNodeCommand` | `management-governance.dws.update` |
+| `ReorderStructureNodeCommand` | `management-governance.dws.update` |
+| `RemoveStructureNodeCommand` | `management-governance.dws.update` |
+| `AddStructuralDependencyCommand` | `management-governance.dws.update` |
+| `RemoveStructuralDependencyCommand` | `management-governance.dws.update` |
+| `CreateStructureBaselineCommand` | `management-governance.dws.baseline` |
+| `CreateNextStructureRevisionCommand` | `management-governance.dws.update` |
+| `GetStructureByIdQuery` | `management-governance.dws.read` |
+| `GetStructureTreeQuery` | `management-governance.dws.read` |
+| `ValidateStructureQuery` | `management-governance.dws.validate` |
+| `CompareStructureRevisionsQuery` | `management-governance.dws.compare` |
+| `CompareStructureBaselinesQuery` | `management-governance.dws.compare` |
+
+Registration is catalog-only and grants no role, entitlement or effective access. The bounded Core may
+persist and test this manifest, but live AuthService catalog/grant provisioning and reusable MOD-0018
+enforcement remain later-slice runtime blockers.
+
 ## 4. Entity Fields
 
 All operational entities are tenant-owned and conceptually inherit local `EntityBase`. Inherited `Id`,
-`TenantId`, `IsDeleted`, `DeletedAt`, `CreatedAt`, `UpdatedAt` and technical concurrency `Version` are not
+`TenantId`, `IsDeleted`, `DeletedAtUtc`, `CreatedAtUtc`, `UpdatedAtUtc` and technical concurrency `Version` are not
 redeclared. DCP-005 OD-03 closes the greenfield local base/BSON decision; exact UTC field names and types are
 fixed in §8, while real-Mongo round-trip, sort/index and cold-start checks remain implementation evidence.
 
@@ -440,36 +525,187 @@ Alice's replay after permission revocation returns `403`.
 
 ### Mongo index contract
 
-All business-entity unique indexes are tenant-first and use an `IsDeleted = false` partial filter:
+The single authoritative persistence-owner manifest is
+`Persistence/Modules/Dws/DwsPersistenceOwnershipManifest.cs`. It owns exactly eight local collections; no
+collection is shared with `DecisionRegistry`, `ProcessModeling`, Platform, PPM or another service:
 
-| Collection | Unique index |
+| Exact collection | Owner/document family |
 |---|---|
-| Structure revisions | `TenantId + StructureDefinitionId + RevisionNumber` |
-| Structure nodes | `TenantId + StructureRevisionId + LogicalNodeId` |
-| Structure nodes | `TenantId + StructureRevisionId + normalized Code` |
-| Structure nodes | `TenantId + StructureRevisionId + ParentLogicalNodeId + SiblingOrder` |
-| Structural dependencies | `TenantId + StructureRevisionId + FromLogicalNodeId + ToLogicalNodeId` |
-| Structure baselines | `TenantId + StructureDefinitionId + BaselineNumber` |
-| Idempotency receipts | `TenantId + CommandFamily + IdempotencyKey` |
+| `mg_dws_structure_definitions` | StructureDefinition |
+| `mg_dws_structure_revisions` | StructureRevision |
+| `mg_dws_structure_nodes` | StructureNode |
+| `mg_dws_structural_dependencies` | StructuralDependency |
+| `mg_dws_structure_baselines` | StructureBaseline |
+| `mg_dws_idempotency_receipts` | IdempotencyReceipt |
+| `mg_dws_audit_intents` | producer-local technical audit intent |
+| `mg_dws_outbox_messages` | producer-local technical outbox |
 
-Wave 1 receipt indexes have no TTL. Real Mongo integration tests must prove index creation, uniqueness,
-tenant separation, logical-identity behavior and the business-entity partial-filter behavior.
+The manifest declares exactly the following 14 named indexes. Every index begins with `TenantId`; business
+unique indexes use an `IsDeleted = false` partial filter where the document supports technical soft delete.
+No index has TTL or expiry semantics.
+
+| Name | Collection | Ordered keys | Unique / filter |
+|---|---|---|---|
+| `ix_dws_definitions_tenant_context` | definitions | `TenantId, ExternalContextReference.ContractName, ExternalContextReference.ContractVersion, ExternalContextReference.ContextKind, ExternalContextReference.ContextId, IsDeleted` | no |
+| `ux_dws_revisions_tenant_definition_number` | revisions | `TenantId, StructureDefinitionId, RevisionNumber` | yes / `IsDeleted=false` |
+| `ux_dws_revisions_tenant_definition_open` | revisions | `TenantId, StructureDefinitionId` | yes / `IsDeleted=false, IsSealed=false` |
+| `ux_dws_nodes_tenant_revision_logical` | nodes | `TenantId, StructureRevisionId, LogicalNodeId` | yes / `IsDeleted=false` |
+| `ux_dws_nodes_tenant_revision_code` | nodes | `TenantId, StructureRevisionId, Code` | yes / `IsDeleted=false` |
+| `ux_dws_nodes_tenant_revision_parent_order` | nodes | `TenantId, StructureRevisionId, ParentLogicalNodeId, SiblingOrder` | yes / `IsDeleted=false` |
+| `ux_dws_dependencies_tenant_revision_edge` | dependencies | `TenantId, StructureRevisionId, FromLogicalNodeId, ToLogicalNodeId` | yes / `IsDeleted=false` |
+| `ux_dws_baselines_tenant_definition_number` | baselines | `TenantId, StructureDefinitionId, BaselineNumber` | yes / `IsDeleted=false` |
+| `ix_dws_baselines_tenant_definition_hash` | baselines | `TenantId, StructureDefinitionId, CanonicalizationVersion, ContentHash` | no |
+| `ux_dws_receipts_tenant_family_key` | receipts | `TenantId, CommandFamily, IdempotencyKey` | yes |
+| `ix_dws_receipts_tenant_created` | receipts | `TenantId, CreatedAtUtc` | no |
+| `ux_dws_audit_intents_tenant_identity` | audit intents | `TenantId, AuditIntentId` | yes |
+| `ux_dws_outbox_tenant_event` | outbox | `TenantId, EventId` | yes |
+| `ix_dws_outbox_tenant_delivery` | outbox | `TenantId, DeliveryState, NextAttemptAtUtc` | no |
+
+Audit intent exposes a server-generated `AuditIntentId`. Outbox exposes a server-generated `EventId`,
+technical `DeliveryState` and nullable `NextAttemptAtUtc`. These are technical delivery fields only; they
+cannot appear as StructureDefinition/Revision lifecycle or business truth.
+
+The manifest also declares exactly ten command transaction families. “Business collections” below are the
+only mutable domain participants; every successful non-no-op transaction additionally includes receipt,
+audit-intent and outbox exactly once.
+
+| Transaction family | Exact business collections |
+|---|---|
+| `CreateStructure` | definitions, revisions |
+| `UpdateStructureMetadata` | revisions |
+| `AddStructureNode` | revisions, nodes |
+| `MoveStructureNode` | revisions, nodes |
+| `ReorderStructureNode` | revisions, nodes |
+| `RemoveStructureNode` | revisions, nodes, dependencies |
+| `AddStructuralDependency` | revisions, dependencies |
+| `RemoveStructuralDependency` | revisions, dependencies |
+| `CreateStructureBaseline` | definitions, revisions, baselines |
+| `CreateNextStructureRevision` | definitions, revisions, nodes, dependencies |
+
+No-op, validation, authorization, visibility, conflict or retryable-infrastructure results persist no
+receipt, audit intent or outbox. Transaction body execution is at most once after the durable mutation body
+begins. `UnknownTransactionCommitResult` permits only same-session commit retry followed by exact receipt
+reconciliation; the body is never blindly replayed. Matching durable receipt resolves success, payload or
+subject mismatch resolves `409`, and absent/indeterminate reconciliation resolves `503`.
+
+Real Mongo integration tests must compare the full collection/index/transaction manifest snapshot, prove
+tenant separation, partial-filter behavior, no TTL, atomic rollback at every participant boundary,
+same-session commit-only retry and unknown-commit reconciliation.
 
 ## 5. Repo Scope
 
-This `draft` authoring task creates only this pack.
+The explicit 2026-08-26 authorization permits the bounded Core Scaffold & Contract-Test slice to create or
+update only:
 
-Future implementation scope may be authorized only after §18 closes:
+- `services/Diten.ManagementGovernanceService/Diten.ManagementGovernanceService.sln`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Diten.ManagementGovernanceService.Api.csproj`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Diten.ManagementGovernanceService.Application.csproj`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Diten.ManagementGovernanceService.Domain.csproj`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Diten.ManagementGovernanceService.Persistence.csproj`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/Diten.ManagementGovernanceService.Infrastructure.csproj`
+- compile/test-only `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs`
+- service-local composition files:
+  `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/DependencyInjection.cs`,
+  `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/DependencyInjection.cs`
+  and
+  `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/DependencyInjection.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Modules/Dws/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Modules/Dws/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/Dws/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/Modules/Dws/**`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/Diten.ManagementGovernanceService.Tests.csproj`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Diten.ManagementGovernanceService.IntegrationTests.csproj`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Diten.ManagementGovernanceService.ArchitectureTests.csproj`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/Modules/Dws/**`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Modules/Dws/**`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Modules/Dws/**`
 
-- `services/Diten.ManagementGovernanceService/**` — new service only after explicit scaffold approval.
-- `frontend/Diten.Web/Controllers/DwsStructuresController.cs`.
-- `frontend/Diten.Web/Views/ManagementGovernance/Dws/**`.
-- `frontend/Diten.Web/wwwroot/assets/js/pages/management-governance/dws/**`.
-- `frontend/Diten.Web/Resources/Views/ManagementGovernance/Dws/**`.
-- Repo-standard service, architecture, integration and frontend tests.
+The solution, five source projects, compile/test-only `Program.cs` and three root composition files are shared
+service-shell artifacts. MOD-0354 may create an absent artifact or make an additive-only Dws composition
+change. It may not overwrite, replace, remove or weaken existing content, registrations or references owned
+by MOD-0007 `DecisionRegistry`, MOD-0355 `ProcessModeling` or another authorized sibling. An incompatible
+shell state or ambiguous owner blocks scaffolding fail closed and requires a separate topology amendment.
 
-Exact paths must be revalidated when service scaffold and route decisions are approved. This list grants no
-present write authority.
+The compile/test-only `Program.cs` cannot call `Run`, `RunAsync`, `Start`, `StartAsync` or equivalent host
+activation; bind a port; expose an endpoint; start a listener/worker; or load runtime configuration. No
+`appsettings*`, `launchSettings.json`, controller, endpoint, worker, broker, migration or deployment file is
+authorized.
+
+The Backend Local-Testability amendment supersedes that `Program.cs` restriction only when the exact
+`--local-test` switch is present. In that mode the host binds only `http://127.0.0.1:5017`, exposes
+`GET /health` and the exact Dws resource family in §15, and composes only default-off/test-owned provider,
+authorization, audit and self-registration seams. Without `--local-test` the executable exits without
+starting a host. No `appsettings*`, launch profile, worker or external listener is authorized.
+
+The amendment additionally permits only these existing or additive service-local paths:
+
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Controllers/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/LocalTest/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Diten.ManagementGovernanceService.Api.csproj`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/DependencyInjection.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Features/Dws/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Modules/Dws/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Diten.ManagementGovernanceService.Application.csproj`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/DependencyInjection.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/Dws/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/DependencyInjection.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/Modules/Dws/**`
+- the three existing Dws test project files and their exact `Modules/Dws/**` roots already listed above.
+
+The Functional Local DWS API amendment may create or update only the following action-specific paths and
+the exact shared composition/controller files listed here:
+
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Controllers/DwsStructuresController.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/DependencyInjection.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/DependencyInjection.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/DependencyInjection.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Features/Dws/Commands/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Features/Dws/Queries/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Features/Dws/Handlers/CommandHandlers/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Features/Dws/Handlers/QueryHandlers/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Features/Dws/Validators/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Features/Dws/DwsModels.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Features/Dws/DwsTrustedActorContext.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Features/Dws/DwsFunctionalPorts.cs`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Modules/Dws/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/Dws/**`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/Modules/Dws/**`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/Modules/Dws/**`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Modules/Dws/**`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Modules/Dws/**`
+
+The existing generic smoke files
+`Application/Features/Dws/DwsLocalContracts.cs`,
+`Application/Features/Dws/DwsDispatchHandler.cs`,
+`Infrastructure/Modules/Dws/DwsLocalTestAdapters.cs` and their existing tests may be changed only to remove
+or quarantine the generic path after the typed replacement is green. No new generic request, result,
+dictionary, collection alias, operation selector or storage field may be added. Project files may be changed
+only when a reference/package already approved by this pack is mechanically required by the typed
+replacement; adding another service, broker, production authentication scheme or provider package is
+forbidden.
+
+Security/provider adapters, audit delivery adapters, frontend, Gateway and runtime/deployment paths require
+separate explicit slice authority. The exact Core paths above grant no authority outside their bounded
+compile/test-only purpose.
+
+The explicit B-02 evidence authorization permits only:
+
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Diten.ManagementGovernanceService.Persistence.csproj`
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/Dws/**`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Diten.ManagementGovernanceService.IntegrationTests.csproj`
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Modules/Dws/**`
+
+This non-runtime slice may add Mongo driver dependencies, Dws-owned documents/repositories, a Dws-only
+session/transaction coordinator, manifest-driven index initialization and test-owned disposable replica-set
+evidence. Tests must allocate a dynamic loopback port `>=27022`; ports `27017`, `27018` and `27019` are
+protected. The test harness must terminate the process and remove its data/log/temp directory. No production
+connection string, second runtime composition, service activation or migration is authorized. The evidence
+must prove the exact eight collections, 14 tenant-first named indexes with no TTL, same-client/same-session
+transaction ownership, CAS, tenant isolation, participant-by-participant rollback, body-once commit-only
+retry and durable-receipt reconciliation. These executable proofs passed and were recorded in checkpoint
+`6dfbaa5b1218a1d236360830db1e8c5db71bba87`; no runtime composition or activation was introduced.
 
 ## 6. Protected Paths
 
@@ -510,6 +746,24 @@ requires Control Tower Gate 2 before the change.
   consumed in Wave 1. `MOD-0048` is `N/A` because `NodeKindReference` is excluded.
 - DCP-004 for any future WorkCenter projection.
 - `MOD-0355` only as a prohibited-reference boundary; DWS does not use its domain types.
+
+### Core versus later runtime dependency disposition
+
+- **MOD-0117 in Core:** the exact `ppm.external-context-reference` v1 shape, typed authority port and
+  deterministic test-only provider fixtures are authorized. No local cache, inferred existence or allow
+  fallback exists. The real provider module/service, S2S identity, transport, timeout/retry policy and live
+  compatibility evidence belong to Security & Provider Integration.
+- **MOD-0018 in Core:** the exact six-permission/fifteen-operation manifest, fail-closed enforcement port and
+  negative contract/architecture tests are authorized. There is no bypass or local RBAC calculation. The
+  reusable PSS implementation, catalog/grant provisioning and live JWT freshness evidence belong to
+  Security & Provider Integration.
+- **MOD-0021 in Core:** producer-local audit-intent and outbox documents are mandatory local transaction
+  participants. The signed/versioned event schema, publisher credential, MOD-0035 delivery adapter,
+  consumer compatibility, retry/DLQ/alarm/replay and live acceptance evidence belong to Audit Delivery.
+
+No live adapter may be registered by the bounded Core composition. Missing runtime adapters therefore fail
+closed if invoked, while compile/test-only fixtures prove the ports and local atomicity without asserting
+runtime availability.
 
 ## 8. Runtime Constraints
 
@@ -639,6 +893,34 @@ services/Diten.ManagementGovernanceService/src/
 - `Dws` cannot reference `ProcessModeling` domain types, repositories or collections.
 - Task, approval or workflow helpers and `TaskAggregate` references are forbidden.
 
+### Exact co-host isolation matrix
+
+The 12-test matrix below is parameterized and must pass independently for both co-hosted siblings:
+`ProcessModeling` and `DecisionRegistry`. ProcessModeling roots are the exact `Modules/ProcessModeling/**`
+paths recorded by MOD-0355. DecisionRegistry retains its MOD-0007-owned physical roots and cannot be moved,
+renamed or wrapped by this pack.
+
+1. Source/test project-reference graphs contain no reciprocal module implementation dependency.
+2. Domain, Application, Persistence and Infrastructure type/namespace scans contain no sibling types.
+3. DI composition registers only Dws-owned handlers, repositories and adapters; no sibling registration is
+   replaced, decorated, captured or weakened.
+4. Repository interfaces and implementations are module-owned and cannot accept a sibling context.
+5. Mongo collection names, mappings, serializers, named indexes and ownership manifests are disjoint.
+6. No business entity, aggregate, value object or mutable persistence document is shared.
+7. Permission families are disjoint and Dws contains only the exact six approved keys.
+8. No shared task, approval, workflow, audit-intent or outbox business helper exists.
+9. Cross-module communication is limited to opaque IDs, versioned query contracts or versioned events.
+10. Mongo sessions and transactions are module-local; no Dws transaction spans sibling collections.
+11. Migration/bootstrap/index initialization cannot create, rename, adopt or mutate sibling persistence.
+12. Negative architecture and mutation tests prove representative project/type, DI, repository,
+    collection/index, session/transaction, permission, audit-outbox and migration violations fail closed.
+
+If any mandatory isolation test fails, same-host Dws composition is blocked. The fallback is independently
+owned and deployed service boundaries with separate projects, DI containers, persistence manifests,
+collection namespaces and credentials. Exact fallback service name, port, route and deployment topology are
+later owner/runtime decisions; no partial, hybrid, dual-write or simultaneous primary/fallback activation is
+authorized.
+
 ## 11. Frontend File Contract
 
 This workspace does not use the Slim/Compact DataTable file contract. Planned surface:
@@ -699,6 +981,22 @@ meaning. It rejects commands/actions for start, block, review, complete, close, 
 
 ## 13. Failure Path to Verify
 
+The API/contract layer uses the following exact stable codes. Matching is ordinal; localized display text is
+not a code. Unknown codes and aliases fail contract tests.
+
+| HTTP | Exact stable codes |
+|---:|---|
+| `400` | `dws_invalid_request`, `dws_invalid_context_reference`, `dws_invalid_unicode`, `dws_invalid_structure`, `dws_unsupported_contract_version`, `dws_unknown_canonicalization_version`, `dws_invalid_stable_outcome` |
+| `401` | `dws_authentication_required` |
+| `403` | `dws_permission_denied` |
+| `404` | `dws_resource_not_found` |
+| `409` | `dws_concurrency_conflict`, `dws_hierarchy_cycle`, `dws_dependency_cycle`, `dws_duplicate_sibling_order`, `dws_duplicate_node_code`, `dws_node_has_children`, `dws_sealed_revision_immutable`, `dws_working_revision_exists`, `dws_external_context_immutable`, `dws_external_context_conflict`, `dws_idempotency_conflict`, `idempotency_key_owned_by_different_subject`, `dws_comparison_requires_sealed_revision` |
+| `503` | `dws_external_context_authority_unavailable`, `dws_authorization_authority_unavailable`, `dws_transaction_unavailable`, `dws_commit_indeterminate`, `dws_audit_intent_unavailable` |
+
+Authentication middleware may translate `dws_authentication_required` into the repository-standard response
+envelope, but it cannot expose missing/malformed subject detail. All absent, soft-deleted, cross-tenant or
+actor-invisible owned resources use the same non-disclosing `dws_resource_not_found` result.
+
 | Failure | Expected result |
 |---|---|
 | Self-parent | 400 validation response; hierarchy unchanged |
@@ -712,6 +1010,8 @@ meaning. It rejects commands/actions for start, block, review, complete, close, 
 | Invalid Unicode/unpaired surrogate or NFC property collision | 400 before persistence/hash/receipt; no last-value-wins |
 | Duplicate sibling order | 409 conflict; existing order remains intact |
 | Duplicate NFC-normalized Code in one revision | 409; exact ordinal/case-sensitive uniqueness preserved |
+| Remove node that has one or more active children | 409 `dws_node_has_children`; node, descendants, revision, receipt, audit intent and outbox unchanged |
+| Exact metadata, move or reorder same-state request | 200 typed no-op; zero version/counter/receipt/audit/outbox delta |
 | Stale concurrency version | 409 conflict; client prompted to reload; no silent overwrite |
 | Immutable baseline mutation | 409; baseline bytes/hash unchanged |
 | Sealed revision mutation | 409; no node, metadata or dependency mutation |
@@ -721,6 +1021,10 @@ meaning. It rejects commands/actions for start, block, review, complete, close, 
 | Unsupported MOD-0117 contract name/version or invalid GUID/kind | 400; no structure created |
 | MOD-0117 context is absent, soft-deleted, cross-tenant or not visible/referenceable to the actor | 404; no existence disclosed and no structure created |
 | Authoritative MOD-0117 validator temporarily unavailable | 503; no structure created |
+| Authoritative MOD-0117 version/fence or identity changed during validation | 409 `dws_external_context_conflict`; no structure created |
+| FU16 proof/authentication is invalid | 401; no handler, receipt or persistence access |
+| FU16 entitlement, explicit grant or exact permission is denied | 403; no handler, receipt or persistence access |
+| FU16 freshness/authorization authority is unavailable, stale or indeterminate | 503 `dws_authorization_authority_unavailable`; no handler, receipt or persistence access |
 | Canonical hash drift for identical snapshot | Test/build failure; no baseline accepted |
 | Copied revision changes row IDs only | Same `ContentHash`; logical comparison reports no structural change |
 | Duplicate idempotency key, same subject/payload | Permission and visibility are rechecked; stable outcome returned; exactly one mutation |
@@ -774,89 +1078,131 @@ meaning. It rejects commands/actions for start, block, review, complete, close, 
 
 ## 15. Gateway / API Routing Decision
 
-Decision: a gateway integration decision is required, but this `draft` does not allocate a service port or
-change a route.
+Decision: the canonical service reservation is `Diten.ManagementGovernanceService:5017`; a separate gateway
+integration decision is still required and this bounded `ready-for-dev` Core authority does not authorize a
+port binding or route change.
 
-- `Diten.ManagementGovernanceService` does not yet exist.
-- Service scaffold requires this pack to be approved/ready-for-dev, explicit user approval, architecture-test
-  design, port allocation and an integration-agent gateway decision.
+- `Diten.ManagementGovernanceService` exists only as the bounded local non-production scaffold and evidence
+  checkpoints recorded in this pack; no production service, deployment or activation exists.
+- The shared shell, Dws Core module and exact B-11A/B-11B local-test paths are authorized only under §5.
+  Any non-local-test runtime host activation still requires live dependency evidence, production authority
+  and an integration-agent Gateway decision.
 - Browser traffic uses Gateway `5000`, never a direct service port.
 - After port allocation, integration-agent must inspect existing routes and, if necessary, add explicit
   `/api/dws/structures` and `/api/dws/structures/{everything}` mappings including `OPTIONS`.
 - `gateway/Diten.ApiGateway/**/ocelot.json` remains protected.
 
+The non-production Local-Testability host has no Gateway route and is callable only on loopback `5017`.
+Its exact action/query map is:
+
+| Method and path | CQRS request |
+|---|---|
+| `POST /api/dws/structures` | `CreateStructureCommand` |
+| `PUT /api/dws/structures/{id}/metadata` | `UpdateStructureMetadataCommand` |
+| `POST /api/dws/structures/{id}/nodes` | `AddStructureNodeCommand` |
+| `POST /api/dws/structures/{id}/nodes/{logicalNodeId}/move` | `MoveStructureNodeCommand` |
+| `POST /api/dws/structures/{id}/nodes/{logicalNodeId}/reorder` | `ReorderStructureNodeCommand` |
+| `DELETE /api/dws/structures/{id}/nodes/{logicalNodeId}` | `RemoveStructureNodeCommand` |
+| `POST /api/dws/structures/{id}/dependencies` | `AddStructuralDependencyCommand` |
+| `DELETE /api/dws/structures/{id}/dependencies` | `RemoveStructuralDependencyCommand` |
+| `POST /api/dws/structures/{id}/baselines` | `CreateStructureBaselineCommand` |
+| `POST /api/dws/structures/{id}/revisions` | `CreateNextStructureRevisionCommand` |
+| `GET /api/dws/structures/{id}` | `GetStructureByIdQuery` |
+| `GET /api/dws/structures/{id}/tree` | `GetStructureTreeQuery` |
+| `GET /api/dws/structures/{id}/validation` | `ValidateStructureQuery` |
+| `GET /api/dws/structures/{id}/revision-comparison` | `CompareStructureRevisionsQuery` |
+| `GET /api/dws/structures/{id}/baseline-comparison` | `CompareStructureBaselinesQuery` |
+
+This table is a local-test contract only. It does not reserve a Gateway path or activate a production API.
+
 ## 16. Acceptance Criteria
 
-- [ ] A tenant actor with `management-governance.dws.create` can create one structure whose tenant is taken
+- [x] A tenant actor with `management-governance.dws.create` can create one structure whose tenant is taken
   only from server context, creates mutable Working Revision #1 and stores a validated
   immutable `ExternalContextReference`; definition pointers are both 1.
-- [ ] Structure `Name` and `Description` exist only in revision metadata; definition holds no duplicate
+- [x] Structure `Name` and `Description` exist only in revision metadata; definition holds no duplicate
   truth.
-- [ ] `UpdateStructureMetadataCommand` updates only the current unsealed revision metadata.
-- [ ] External context accepts only the exact versioned MOD-0117 contract and
+- [x] `UpdateStructureMetadataCommand` updates only the current unsealed revision metadata.
+- [x] External context accepts only the exact versioned MOD-0117 contract and
   Portfolio/Initiative/Program/Project; arbitrary discriminators and Demand are rejected.
-- [ ] Node add/move/reorder/remove preserves a valid parent/child tree and applies mutation atomically.
-- [ ] Each new node receives a server-generated `LogicalNodeId`; next-revision copy regenerates row `Id`,
+- [x] Node add/move/reorder/remove preserves a valid parent/child tree and applies mutation atomically.
+- [x] Functional local API uses ten action-specific command request/result pairs and five typed query
+  projections; no generic operation dispatch/result or generic persistence `Value` remains on its call graph.
+- [x] Metadata, move and reorder exact same-state requests return typed no-op with zero version, receipt,
+  audit-intent, outbox or business-document delta; no other failure is silently reclassified as no-op.
+- [x] Node removal is leaf-only: an active child returns `409 dws_node_has_children` with zero residue, while
+  successful leaf removal deletes its incident structural dependency edges in the same transaction and does
+  not cascade to descendants.
+- [x] Each new node receives a server-generated `LogicalNodeId`; next-revision copy regenerates row `Id`,
   preserves logical identity and rewrites no parent/dependency/snapshot/comparison contract to persistence ID.
-- [ ] Comparison joins by `LogicalNodeId` and deterministically reports added/removed/moved/reordered,
+- [x] Comparison joins by `LogicalNodeId` and deterministically reports added/removed/moved/reordered,
   structural metadata changes and logical dependency set differences.
-- [ ] Validation identifies self-parent, cycle, missing parent and duplicate sibling order without inventing
+- [x] Validation identifies self-parent, cycle, missing parent and duplicate sibling order without inventing
   task/execution state.
-- [ ] Pure structural dependency accepts only same-tenant/same-revision node pairs and contains no
+- [x] Pure structural dependency accepts only same-tenant/same-revision node pairs and contains no
   self/duplicate/cyclic edges, FS/SS/FF/SF, lag, critical-path or scheduling semantics. DAG validation
   grants no scheduling authority.
-- [ ] `CreateStructureBaselineCommand` atomically validates all structural rules, seals the current revision
+- [x] `CreateStructureBaselineCommand` atomically validates all structural rules, seals the current revision
   creates the immutable baseline, and clears the working pointer; any mutation of the sealed revision
   returns 409.
-- [ ] `CreateNextStructureRevisionCommand` copies a selected sealed revision/baseline into the next mutable
+- [x] `CreateNextStructureRevisionCommand` copies a selected sealed revision/baseline into the next mutable
   revision only when no working revision exists, then atomically advances both definition pointers.
-- [ ] Exactly one unsealed working revision exists at a time; a second attempt returns 409.
-- [ ] External context is immutable; changing MOD-0117 context requires a new definition.
-- [ ] Revision comparison accepts sealed revisions only; working revisions are preview-validation inputs,
+- [x] Exactly one unsealed working revision exists at a time; a second attempt returns 409.
+- [x] External context is immutable; changing MOD-0117 context requires a new definition.
+- [x] Revision comparison accepts sealed revisions only; working revisions are preview-validation inputs,
   not historical evidence.
-- [ ] `dws.structural-baseline.v1` produces deterministic SHA-256 lowercase 64 hex over canonical structural
+- [x] `dws.structural-baseline.v1` produces deterministic SHA-256 lowercase 64 hex over canonical structural
   content; definition/revision/row IDs are excluded, unchanged copied content hashes identically, and a
   future version cannot invalidate or reinterpret existing hashes.
-- [ ] Revision and baseline comparison reports only structural changes.
-- [ ] Stale technical versions return 409 and cannot overwrite newer state.
-- [ ] Idempotent replay produces exactly one mutation; payload or subject mismatch on the same tenant-scoped
+- [x] Revision and baseline comparison reports only structural changes.
+- [x] Stale technical versions return 409 and cannot overwrite newer state.
+- [x] Idempotent replay produces exactly one mutation; payload or subject mismatch on the same tenant-scoped
   key returns generic 409 without outcome disclosure.
-- [ ] Receipt stores server-bound Guid `SecuritySubjectId`, closed `CommandFamily`,
+- [x] Receipt stores server-bound Guid `SecuritySubjectId`, closed `CommandFamily`,
   tenant+command-family+key, request hash, lowercase `succeeded|no-op` `OutcomeKind`, stable ASCII
   `DomainCode` and canonical `StableOutcomeJson` atomically with the mutation; it has no `ExpiresAtUtc`/TTL
   and is not a DWS business aggregate.
-- [ ] `StableOutcomeJson` matches the `dws.idempotency-outcome.v1` envelope, uses only command allowlist
+- [x] `StableOutcomeJson` matches the `dws.idempotency-outcome.v1` envelope, uses only command allowlist
   result fields, is BOM-less/minified/canonical and at most 4096 UTF-8 bytes; failures write no receipt.
-- [ ] Missing, empty, `Guid.Empty` or unparseable JWT `sub`/fallback NameIdentifier fails authentication
+- [x] Missing, empty, `Guid.Empty` or unparseable JWT `sub`/fallback NameIdentifier fails authentication
   before command execution or receipt lookup.
-- [ ] Request hashing uses exact command-specific `dws.request-canonical-json.v1` projections, excludes
+- [x] Request hashing uses exact command-specific `dws.request-canonical-json.v1` projections, excludes
   server context and rejects arbitrary DTO serialization, unsupported types and unknown versions.
-- [ ] Strict decode, Trim → NFC, normalized validation/uniqueness/persistence and normalized-property
+- [x] Strict decode, Trim → NFC, normalized validation/uniqueness/persistence and normalized-property
   collision rejection are identical across validation, indexes, storage and canonical projection.
-- [ ] The approved Mongo atomicity design leaves no partial state after persistence failure or process crash.
-- [ ] Required tenant-first partial unique indexes exist and enforce uniqueness in real Mongo.
-- [ ] Cross-tenant structure, parent, node, dependency, revision and baseline access returns 404 without
+- [x] The approved Mongo atomicity design leaves no partial state after persistence failure or process crash.
+- [x] Required tenant-first partial unique indexes exist and enforce uniqueness in real Mongo.
+- [x] Cross-tenant structure, parent, node, dependency, revision and baseline access returns 404 without
   disclosing existence.
-- [ ] DWS code has no `TaskAggregate`, task/approval/workflow helper, task-like field/action or BPM domain
+- [x] DWS code has no `TaskAggregate`, task/approval/workflow helper, task-like field/action or BPM domain
   type/repository/collection reference.
-- [ ] DWS and `ProcessModeling` use separate repositories, Mongo collections and domain models.
-- [ ] Runtime literal scan finds no deprecated alias `CAND-CAP-0008`.
-- [ ] Permissions use only `management-governance.dws.*` and consume MOD-0018 evaluation.
-- [ ] Every required audited mutation persists a producer-local technical audit intent in the same
-  transaction; failure rolls back the mutation, while post-commit delivery failure uses
-  retry/dead-letter/alarm/authorized replay without reverting the baseline.
+- [x] DWS and `ProcessModeling` use separate repositories, Mongo collections and domain models.
+- [x] Runtime literal scan finds no deprecated alias `CAND-CAP-0008`.
+- [x] Permissions use only `management-governance.dws.*`; the B-11B test-owned enforcement port consumes a
+  fail-closed MOD-0018-shaped result, while live MOD-0018 enforcement remains the separate B-01 gate.
+- [x] Trusted context keeps `SecuritySubjectId`, `EffectiveActorId` and optional `DelegatedActorId` separate,
+  binds all three fail closed and never synthesizes one identity from another.
+- [x] Local MOD-0117 fixtures prove exact tenant/actor/reference/fence binding and 400/404/409/503 zero-residue
+  dispositions; local FU16 fixtures prove exact entitlement/grant/freshness binding and 401/403/503
+  zero-residue dispositions.
+- [x] Functional local audit outbox remains explicitly non-deliverable test evidence and makes no MOD-0021
+  live-acceptance claim; self-registration remains contract-only with no cross-service write or activation.
+- [x] Every required audited mutation persists a producer-local technical audit intent in the same
+  transaction; an insert failure rolls back the mutation.
+- [ ] Post-commit live delivery failure uses retry/dead-letter/alarm/authorized replay without reverting the
+  baseline.
 - [ ] Versioned asynchronous MOD-0021 delivery is duplicate-safe, uses server-bound publisher/tenant/actor
   identity and emits only the approved minimal bounded payload.
-- [ ] DWS neither accesses Platform audit collections nor uses the shared-key internal audit endpoint as its
+- [x] DWS neither accesses Platform audit collections nor uses the shared-key internal audit endpoint as its
   authoritative integration.
-- [ ] `AuditIntentPersisted` and `AuditEventAcceptedByMOD0021` remain technical observability only and do not
+- [x] `AuditIntentPersisted` and `AuditEventAcceptedByMOD0021` remain technical observability only and do not
   create DWS aggregate/revision business status, task lifecycle, workflow or approval state.
 - [ ] Every Razor page explicitly uses `Layout = "_LayoutTenantShell"`; FROZEN `_Layout.cshtml` and
   `_ViewStart.cshtml` remain unchanged.
 - [ ] Tenant UI contains no approve/assign/escalate or task lifecycle controls and has seven-language RESX
   parity.
 - [ ] Browser requests travel through Gateway `5000`; no direct service-port URL exists.
-- [ ] Existing `/DecompositionTreeBuilder`, Management Governance prototype and legacy DWS persistence are
+- [x] Existing `/DecompositionTreeBuilder`, Management Governance prototype and legacy DWS persistence are
   unchanged.
 
 ## 17. Test Expectations
@@ -878,6 +1224,19 @@ change a route.
 
 ### Unit and integration tests
 
+- Exact action-specific completeness for all ten commands and five queries: request DTO, MediatR request,
+  validator, handler, controller binding and typed result/projection.
+- Functional call-graph test rejects generic `DwsDispatchRequest`, operation-string selection,
+  `DwsLocalResult`, unrestricted dictionaries and generic persistence `Value` writes.
+- Exact same-state metadata/move/reorder no-op matrix proves no business, technical-version, receipt,
+  audit-intent or outbox delta; representative guard-removal mutants must turn the tests red.
+- Leaf-only remove tests cover zero, one and multiple children, incident dependency cleanup, no descendant
+  cascade, cross-tenant non-disclosure, rollback and concurrent child insertion/removal fences.
+- MOD-0117 local fixture executes accepted plus exact 400/404/409/503 cases; FU16 local fixture executes
+  accepted plus exact 401/403/503 cases. Every negative case proves handler/persistence/read/write residue
+  zero and exact trusted identity/freshness binding.
+- Query projection tests cover every allowlisted field, logical rather than row identity, deterministic
+  ordering, sealed-only compare and a persistence-write probe fixed at zero.
 - Hierarchy self-parent, cycle, orphan and duplicate-order validators.
 - Stable logical-node identity across next-revision copy; new row IDs cannot change parent/dependency links,
   baseline hash or revision comparison.
@@ -945,6 +1304,22 @@ change a route.
 
 ## 18. Ready-for-dev Checklist
 
+### Core ready-for-dev gates
+
+- [x] Interim accountable roles are recorded: business and legacy parity
+  `ali.tufanoglu / delivery-structure-governance-owner-interim`; technical
+  `ali.tufanoglu / management-governance-technical-owner-interim`.
+- [x] Structural identity, unchanged-copy hash equality, normalization, subject-bound idempotency and closed
+  command/outcome contracts in the §19 human-review questions are accepted for the bounded Core.
+- [x] Exact 15-operation/six-permission manifest is approved.
+- [x] Exact eight-collection, 14-index and ten-transaction-family persistence manifest is approved.
+- [x] Exact stable 400/401/403/404/409/503 code matrix is approved.
+- [x] Exact shared-shell paths and 12-dimension sibling-isolation matrix are approved.
+- [x] Live MOD-0117, MOD-0018 and MOD-0021 adapters are classified as later runtime gates rather than
+  scaffold-precondition evidence.
+- [x] Explicit user authorization dated 2026-08-26 permits only the bounded Core Scaffold & Contract-Test
+  slice recorded in frontmatter and §5.
+
 - [x] Canonical preflight passes for `MOD-0354 — Decomposition & Work Structuring Engine` on 2026-07-28.
 - [x] All required frontmatter fields and 20 sections are present.
 - [x] `golden_reference: none` / `form_field_count: 0` justified as a non-DataTable tree workspace.
@@ -973,36 +1348,95 @@ change a route.
 - [x] PSS owner/Enterprise Architect approved the MOD-0021 producer-local transactional audit-intent,
   asynchronous at-least-once/idempotent-consumer and bounded-payload governance design; this is not runtime
   evidence or production authority.
-- [x] Human approved promotion to `ready-for-dev` and current-main authority reconciliation on 2026-09-01;
-  this governance-only checkpoint grants none of the excluded runtime/service delivery authorities.
-- [ ] DWS Wave 1's DCP-006 OD-04 subset closes with exact MOD-0117, MOD-0018 and MOD-0021 contracts.
+- [x] Human approved the bounded Core and promoted it to `ready-for-dev` on 2026-08-26.
+- [x] Core contract seams for MOD-0117, MOD-0018 and MOD-0021 are exact; their live adapters remain B-class
+  later-slice/runtime blockers.
 - [x] MOD-0117 `ppm.external-context-reference` v1 shape received Control Tower governance approval on
   2026-07-29.
-- [ ] MOD-0117 authoritative provider/module pack/service/runtime, S2S identity/actor delegation,
+- [ ] **B-01:** MOD-0117 authoritative provider/module pack/service/runtime, S2S identity/actor delegation,
   compatibility and runtime/security evidence are approved and proven.
-- [ ] Replica-set environment/readiness and real Mongo crash/rollback tests prove the selected transaction
-  strategy; no standalone fallback or partial commit exists.
-- [ ] Exact versioned MOD-0021 semantic provider/consumer contract is approved and implemented.
-- [ ] Transactional producer-local audit-outbox and real Mongo crash/rollback evidence are proven.
-- [ ] Idempotent consumer duplicate-delivery and consumer-crash evidence are proven.
-- [ ] Unknown-major-version fail-closed/dead-letter evidence is proven.
-- [ ] Publisher service identity, tenant and actor binding negative tests pass.
-- [ ] Payload allowlist, redaction and byte/depth/count/string-limit evidence passes.
-- [ ] Dead-letter alarm, authorized replay and acceptance-observability evidence passes.
-- [ ] Architecture test proves no direct Platform collection access or authoritative use of the shared-key
-  internal audit endpoint.
-- [ ] `Diten.ManagementGovernanceService` scaffold receives explicit user approval.
-- [ ] Service port is allocated without collision.
-- [ ] Integration-agent approves and owns the gateway route task.
-- [ ] Exact future repo scope is revalidated after service placement/port decisions.
-- [ ] Gate 2 PASS exists before any implementation touches, removes, migrates or deprecates a legacy
-  task/approval hazard; pure structural-only work does not itself trigger Gate 2.
+- [x] **B-02:** Replica-set environment/readiness and real Mongo crash/rollback tests prove the selected transaction
+  strategy; no standalone fallback or partial commit exists. Implementation checkpoint
+  `6dfbaa5b1218a1d236360830db1e8c5db71bba87` records exact eight collections, 14 tenant-first named indexes
+  with zero TTL, ten transaction families, 53 participant-boundary rollback points, CAS and tenant-isolation
+  failures, body-once commit-only retry, durable receipt reconciliation, standalone fail-closed behavior and
+  dynamic-port cleanup. Revalidation passed build with zero warnings/errors and `62/62` tests.
+- [x] **B-02 authority:** The exact non-runtime Dws Persistence/Integration evidence paths and disposable
+  dynamic-port replica-set constraints received explicit user authorization on 2026-08-26. The executable
+  evidence is closed by the checkpoint above; this authority does not extend to runtime activation.
+- [ ] **B-03:** Exact versioned MOD-0021 semantic provider/consumer contract is approved and implemented.
+- [ ] **B-04:** Transactional producer-local audit-outbox and real Mongo crash/rollback evidence are proven.
+- [ ] **B-05:** Idempotent consumer duplicate-delivery and consumer-crash evidence are proven.
+- [ ] **B-06:** Unknown-major-version fail-closed/dead-letter evidence is proven.
+- [ ] **B-07:** Publisher service identity, tenant and actor binding negative tests pass.
+- [ ] **B-08:** Payload allowlist, redaction and byte/depth/count/string-limit evidence passes.
+- [ ] **B-09:** Dead-letter alarm, authorized replay and acceptance-observability evidence passes.
+- [x] **B-10:** Architecture test proves no direct Platform collection access or authoritative use of the shared-key
+  internal audit endpoint. Implementation checkpoint `3c27a6884b16f230e97bc09f3fac1f706b2e3f6f` records the
+  exact five-layer project graph, absence of foreign persistence/surfaces and live event publication/provider
+  activation, default-off loopback-only composition and explicit classification of B-11A dispatch/storage as
+  local smoke rather than functional DWS truth. Verification passed the repo-wide architecture gate `2/2`, the
+  service solution `78/78` (`22` unit, `39` architecture, `17` integration), build with zero warnings/errors,
+  MOD-0354 preflight and diff checks. A safe regression mutant reintroduced direct API-layer `MongoClient`
+  construction, compiled successfully and was killed by the global architecture guard; restore returned
+  `Program.cs` to SHA-256 `81dbf9eda082b698e200301d8bd419420514b4fc13f5444e363256b722d163ec`.
+  This evidence does not close B-03 through B-09 or authorize functional DWS completion, production, frontend,
+  Gateway or WorkCenter activation.
+- [x] Bounded compile/test-only `Diten.ManagementGovernanceService` shared shell and Dws module paths received
+  explicit user approval; this is not runtime scaffold or host activation authority.
+- [x] **B-11:** Service port `5017` is allocated without collision; `5011` remains exclusively assigned to
+  `Diten.PvgService`. This is reservation evidence only, not runtime binding authority.
+- [x] **B-11A:** Backend Local-Testability authority defines a loopback-only, `--local-test`-gated host on
+  `5017`, exact action/query routes, four pipeline behaviors, response envelope/base-controller, typed
+  default-off adapters, audit simulator, self-registration contract and executable local smoke/mutation
+  evidence. Implementation checkpoint `ef8ec9d0da8605213ac34e4a833d98b38ed18b75` records 24 exact-scope
+  service/test files, build with zero warnings/errors, `73/73` tests, disposable Mongo plus HTTP smoke and
+  `10/10` physically killed/restored non-equivalent mutants. It grants no production or Gateway activation.
+- [x] **B-11B authority:** The Functional Local DWS API / NON-PRODUCTION / DEFAULT-OFF amendment received
+  explicit Control Tower approval on 2026-08-28 for the exact §5 paths and exact semantic decisions in §19.
+  This authority permits typed local implementation and verified local checkpoint commits only.
+- [x] **B-11B entitlement identity correction:** FU16 consumes independent exact fields
+  `ModuleCode=MOD-0354` and `ModuleEntitlementCode=MOD-0354`. Neither `management-governance` nor
+  `decomposition-work-structuring-engine` is an allowed entitlement alias. The correction grants no catalog
+  registration, tenant grant, entitlement creation or activation authority.
+- [x] **B-11B evidence:** Exact ten-command/five-query typed functional implementation, leaf-only removal,
+  three-family zero-write no-op matrix, trusted actor split, MOD-0117/FU16 fixture matrices and typed
+  persistence are implemented by `1ab588cfe3c5b93d89f3ffc4abd9295fde822769`; executable functional,
+  isolation, real-Mongo, HTTP and mutation evidence is recorded by
+  `07a0013a4c9e0460f74990c4678591a3599ab9e8`. Reconciliation reran build with zero warnings/errors and
+  `135/135` tests (`40` unit, `53` architecture, `42` integration); the evidence manifest contains `23`
+  physically killed/restored expected-red mutants and `3` SECURITY-POLICY-FORBIDDEN dispositions with
+  executable invariant coverage. This closes only B-11B non-production/default-off evidence.
+- [ ] **B-12:** Integration-agent approves and owns the gateway route task.
+- [x] Exact bounded Core repo scope is recorded in §5; later runtime/frontend paths require revalidation.
+- [x] Gate 2 is not triggered by the isolated structural-only Core. A future implementation that touches,
+  removes, migrates or deprecates a legacy task/approval hazard must obtain Gate 2 before mutation.
 
-The pack is `ready-for-dev` only under its explicitly bounded authority record. Every unchecked item remains
-a fail-closed gate for its corresponding later slice; production implementation and activation remain
-forbidden because `production_authority: none`.
+Unchecked B-class items do not block bounded Core Scaffold & Contract-Test `ready-for-dev`. They block their
+named Security/Provider, Audit Delivery, Frontend/Parity or Runtime Activation slice. Production
+implementation and activation remain forbidden while `production_authority: none`.
 
 ## 19. Implementation Notes
+
+### Staged-slice contract
+
+| Slice | Bounded scope | Readiness relationship |
+|---|---|---|
+| Core Scaffold & Contract-Test | Structural domain/application contracts, deterministic canonicalization, exact permission/persistence manifests, local transaction seams and architecture/contract tests | Present `ready-for-dev` authority |
+| B-02 Mongo Persistence & Integration Evidence | Dws-owned Mongo documents/repositories, index initialization, same-session transaction execution and disposable real-Mongo evidence under the exact §5 paths | Closed by `6dfbaa5b1218a1d236360830db1e8c5db71bba87`; non-runtime only, no activation authority |
+| Backend Local-Testability | Exact 15 action/query endpoints, MediatR and four behaviors, response envelope/base controller, loopback health host, existing Dws Mongo composition, typed default-off MOD-0117/FU16 adapters, test-only audit simulator and module self-registration contract | Explicitly authorized non-production/default-off implementation slice; no Gateway or production activation |
+| Functional Local DWS API | Exact ten typed command and five typed query handlers/projections, functional Mongo persistence, leaf-only removal, exact no-op semantics, split trusted actor identities and executable local MOD-0117/FU16 fixtures | Closed by `1ab588cfe3c5b93d89f3ffc4abd9295fde822769` plus `07a0013a4c9e0460f74990c4678591a3599ab9e8`; non-production/default-off only. Live provider, audit delivery, frontend, Gateway and activation gates remain open. |
+| Security & MOD-0117 Provider Integration | Live context validator, S2S/delegated actor, MOD-0018 enforcement and permission provisioning | Separate later gate |
+| Audit Delivery | Signed/versioned event contract, MOD-0035 adapter, MOD-0021 consumer compatibility, retry/DLQ/alarm/replay | Separate later gate |
+| Frontend & Legacy Parity | Tenant UI, seven-language resources, page-by-page legacy matrix and user acceptance | Separate later gate |
+| Runtime Activation | Port, Gateway, configuration, credentials, deployment, observability and production authority | Final separate gate |
+
+- Core `Program.cs` remains inactive by default; only exact `--local-test` starts the loopback `5017` host.
+- Test-only provider/security/audit fixtures cannot be accepted by production composition.
+- No missing live dependency can be replaced by local truth, cache/LKG allow, hard-coded permission,
+  shared-key audit append or inferred MOD-0117 visibility.
+- Legacy pages and records remain unchanged until the parity owner and user complete a later explicit parity
+  disposition. Core completion is not legacy-parity completion.
 
 - DCP-006 is the active 1.3/1.4/1.6 orchestration contract; DCP-005 remains historical/foundation governance
   and Gate provenance.
@@ -1015,6 +1449,167 @@ forbidden because `production_authority: none`.
 - The `CAND-CAP-0008 → MOD-0354` identity transition is governance-only because the candidate was forbidden
   from runtime literals; any contrary runtime evidence must fail closed.
 - The implementation target date is provisional and must be replanned when blockers close.
+
+### Functional Local DWS API / NON-PRODUCTION / DEFAULT-OFF amendment
+
+This amendment is an implementation handoff for local executable business behavior. It does not change
+`production_authority: none`. The host still starts only with exact `--local-test`, binds only
+`http://127.0.0.1:5017`, has no Gateway route and cannot accept production provider/key identities. The
+bounded implementation must retain all B-02, B-10 and B-11A evidence; those checkpoints are prerequisites,
+not substitutes for the functional tests below.
+
+#### Trusted actor and request boundary
+
+Every command and query receives one server-resolved `DwsTrustedActorContext` with exact required
+`TenantId`, `SecuritySubjectId` and `EffectiveActorId`, optional `DelegatedActorId`, and command-only
+`IdempotencyKey`. All Guid values except optional `DelegatedActorId` must be non-empty. The three actor
+identities are distinct concepts and cannot be copied into one another as fallback:
+
+- `SecuritySubjectId` is the authenticated JWT/service-principal subject and binds receipt ownership;
+- `EffectiveActorId` is the authoritative business actor used for visibility and audit attribution;
+- `DelegatedActorId` is present only after validated delegation and cannot replace either identity.
+
+Headers/body cannot select tenant, subject, effective actor, delegated actor, permission, entitlement,
+provider outcome or freshness. The local-test identity fixture may populate the context only through its
+explicit test-owned composition, and that identity must be rejected by non-test composition.
+
+#### Exact action-specific CQRS and projection allowlist
+
+Each row is one MediatR request, one validator, one handler and one typed result/projection. A generic
+`Operation`, `IDwsRequestContract` dispatcher, unrestricted dictionary or generic persistence `Value` is
+not an acceptable implementation of a row.
+
+| Action | Exact request DTO | Exact success projection |
+|---|---|---|
+| `CreateStructureCommand` | `CreateStructureRequest` = `ExternalContextReference`, normalized `Name`, normalized nullable `Description` | `CreateStructureResult` = `StructureDefinitionId`, `RevisionNumber`, `DefinitionVersion`, `RevisionVersion` |
+| `UpdateStructureMetadataCommand` | `UpdateStructureMetadataRequest` = `StructureDefinitionId`, `Name`, nullable `Description`, `ExpectedRevisionVersion` | `UpdateStructureMetadataResult` = `StructureDefinitionId`, `RevisionNumber`, `RevisionVersion`, `OutcomeKind` |
+| `AddStructureNodeCommand` | `AddStructureNodeRequest` = `StructureDefinitionId`, nullable `ParentLogicalNodeId`, `Code`, `Title`, nullable `Description`, `SiblingOrder`, `ExpectedRevisionVersion` | `AddStructureNodeResult` = `StructureDefinitionId`, `RevisionNumber`, `LogicalNodeId`, `RevisionVersion` |
+| `MoveStructureNodeCommand` | `MoveStructureNodeRequest` = `StructureDefinitionId`, `LogicalNodeId`, nullable `NewParentLogicalNodeId`, `NewSiblingOrder`, `ExpectedRevisionVersion` | `MoveStructureNodeResult` = `StructureDefinitionId`, `RevisionNumber`, `LogicalNodeId`, nullable `ParentLogicalNodeId`, `SiblingOrder`, `RevisionVersion`, `OutcomeKind` |
+| `ReorderStructureNodeCommand` | `ReorderStructureNodeRequest` = `StructureDefinitionId`, `LogicalNodeId`, `SiblingOrder`, `ExpectedRevisionVersion` | `ReorderStructureNodeResult` = `StructureDefinitionId`, `RevisionNumber`, `LogicalNodeId`, `SiblingOrder`, `RevisionVersion`, `OutcomeKind` |
+| `RemoveStructureNodeCommand` | `RemoveStructureNodeRequest` = `StructureDefinitionId`, `LogicalNodeId`, `ExpectedRevisionVersion` | `RemoveStructureNodeResult` = `StructureDefinitionId`, `RevisionNumber`, `LogicalNodeId`, `Removed=true`, `RevisionVersion` |
+| `AddStructuralDependencyCommand` | `AddStructuralDependencyRequest` = `StructureDefinitionId`, `FromLogicalNodeId`, `ToLogicalNodeId`, `ExpectedRevisionVersion` | `AddStructuralDependencyResult` = `StructureDefinitionId`, `RevisionNumber`, `FromLogicalNodeId`, `ToLogicalNodeId`, `RevisionVersion` |
+| `RemoveStructuralDependencyCommand` | `RemoveStructuralDependencyRequest` = `StructureDefinitionId`, `FromLogicalNodeId`, `ToLogicalNodeId`, `ExpectedRevisionVersion` | `RemoveStructuralDependencyResult` = `StructureDefinitionId`, `RevisionNumber`, `FromLogicalNodeId`, `ToLogicalNodeId`, `Removed=true`, `RevisionVersion` |
+| `CreateStructureBaselineCommand` | `CreateStructureBaselineRequest` = `StructureDefinitionId`, `ExpectedRevisionVersion` | `CreateStructureBaselineResult` = `StructureDefinitionId`, `SourceRevisionNumber`, `BaselineNumber`, `ContentHash`, `CanonicalizationVersion`, `DefinitionVersion` |
+| `CreateNextStructureRevisionCommand` | `CreateNextStructureRevisionRequest` = `StructureDefinitionId`, exactly one of `SourceRevisionNumber`/`SourceBaselineNumber`, `ExpectedDefinitionVersion` | `CreateNextStructureRevisionResult` = `StructureDefinitionId`, `NewRevisionNumber`, `DefinitionVersion`, `RevisionVersion` |
+| `GetStructureByIdQuery` | route `StructureDefinitionId` only | `StructureSummaryDto` = definition identity, exact `ExternalContextReference`, current/latest revision pointers, technical definition version |
+| `GetStructureTreeQuery` | `StructureDefinitionId`, optional positive `RevisionNumber` | `StructureTreeDto` = summary, revision metadata, sealed marker, ordered `StructureNodeDto[]`, ordered `StructuralDependencyDto[]`; no persistence row IDs |
+| `ValidateStructureQuery` | `StructureDefinitionId`, optional positive `RevisionNumber` | `StructureValidationDto` = definition/revision identity, `IsValid`, deterministic closed `StructureValidationIssueDto[]`; no task/execution status |
+| `CompareStructureRevisionsQuery` | `StructureDefinitionId`, distinct positive `LeftRevisionNumber`, `RightRevisionNumber` | `StructureComparisonDto` with deterministic logical-node and dependency differences only |
+| `CompareStructureBaselinesQuery` | `StructureDefinitionId`, distinct positive `LeftBaselineNumber`, `RightBaselineNumber` | `BaselineComparisonDto` = baseline identities/hashes plus the same deterministic structural differences only |
+
+Entities remain exactly the §3/§4 domain objects. The functional slice may add action-specific persistence
+documents/mappers only for those objects and the existing receipt/audit/outbox technical families; it may
+not add a generic dispatch document, generic operation result collection, task/workflow/approval entity or
+query-side business truth.
+
+#### Exact no-op and removal semantics
+
+Only these same-state cases are business no-ops:
+
+1. metadata after normalization is byte-for-byte equal to the current unsealed revision metadata;
+2. move target parent and sibling order equal the current node values; and
+3. reorder target sibling order equals the current node value.
+
+Each returns `200`, typed `OutcomeKind=no-op`, the current projection/version and writes **zero** definition,
+revision, node, dependency, baseline, receipt, counter/version increment, audit-intent or outbox delta.
+Idempotent replay of an earlier successful/no-op receipt is replay, not a new no-op mutation. Duplicate node
+code/order, duplicate dependency, missing remove target, second working revision and duplicate baseline are
+their existing 404/409 contracts and cannot be silently converted to no-op.
+
+`RemoveStructureNodeCommand` is leaf-only. The handler checks the current tenant/revision using logical
+identity. If any active child has `ParentLogicalNodeId` equal to the target, it returns exact
+`409 dws_node_has_children` with zero writes. For a leaf, all incident pure structural dependency edges are
+removed with the node in the same transaction; the revision version, receipt, local audit intent and local
+outbox are committed exactly once. The command never cascades to descendant nodes.
+
+#### Exact functional transaction and read model
+
+The ten existing transaction-family participant lists in §4 remain authoritative. Functional handlers must
+materialize typed BSON documents for every listed participant and never use a generic `Value` update.
+Successful non-no-op commands add exact receipt + local audit intent + local outbox participants once.
+Same-state no-op writes none. Validation/authentication/authorization/visibility/conflict/503 writes none.
+All queries read tenant-first with `IsDeleted=false`, apply majority/snapshot-appropriate read semantics,
+return DTOs rather than entities, and never persist projections. Query ordering follows the canonical logical
+ordering in §4. Cross-tenant, soft-deleted or missing objects are the same non-disclosing 404.
+
+`DwsPersistenceOwnershipManifest` remains the single persistence owner with exactly eight collections,
+14 indexes and ten transaction families. The functional slice cannot add a collection/index/TTL or access
+`DecisionRegistry`, `ProcessModeling`, Platform, PPM, PVG or another service database. B-02 same-client,
+same-session, CAS, rollback, body-once, commit-only retry and reconciliation evidence must remain green.
+
+#### Bounded local provider fixtures
+
+The MOD-0117 fixture validates exact `TenantId`, `EffectiveActorId`, optional `DelegatedActorId`, contract
+name/version, context kind and context ID, plus its fixture version/fence. Its only typed dispositions are:
+
+- accepted;
+- malformed/unsupported reference → `400 dws_invalid_context_reference`;
+- absent, soft-deleted, cross-tenant or actor-invisible → `404 dws_resource_not_found`;
+- changed/stale provider fence or conflicting authoritative identity →
+  `409 dws_external_context_conflict`; and
+- unavailable/timeout/malformed/indeterminate authority →
+  `503 dws_external_context_authority_unavailable`.
+
+The fixture cannot infer existence, visibility or ownership from the GUID and cannot use cache/LKG allow.
+
+The FU16 fixture and its application port validate exact `TenantId`, `SecuritySubjectId`, `EffectiveActorId`,
+optional `DelegatedActorId`, independent `ModuleCode=MOD-0354` and
+`ModuleEntitlementCode=MOD-0354` fields, exact operation/permission pair, explicit tenant-scoped grant,
+principal/credential generation and authorization/entitlement freshness vectors. The fields remain
+semantically separate even though their bound values are equal. `management-governance`,
+`decomposition-work-structuring-engine`, normalized aliases and fallback values must fail closed. Its
+typed dispositions are authentication/proof invalid → `401 dws_authentication_required`; entitlement,
+explicit grant or exact permission denied → `403 dws_permission_denied`; and unavailable, timeout, malformed,
+indeterminate or stale freshness authority → `503 dws_authorization_authority_unavailable`. There is no
+role-name, wildcard, alias, cache/LKG, local RBAC calculation or fail-open path.
+
+Both fixtures are test-owned, default-off and non-production. They create no endpoint, service-to-service
+credential, key, secret or live provider authority.
+
+#### Audit and self-registration dispositions
+
+Functional non-no-op commands persist the existing producer-local audit intent and outbox in their Mongo
+transaction. In this slice the outbox is explicitly `NON-DELIVERABLE-LOCAL-TEST`: there is no broker
+publisher, retry worker, MOD-0035 activation or MOD-0021 acceptance claim. The local simulator can inspect
+the committed intent/outbox for tests but cannot mark live delivery or authoritative acceptance. B-03
+through B-09 remain open.
+
+`DwsSelfRegistrationContract` is contract-test evidence only. It must exactly expose `ModuleCode=MOD-0354`,
+tenant shell, the planned route and six permissions, and must have two-way completeness with the operation
+manifest. It cannot register against Platform/AuthService, seed grants, enable an entitlement or activate a
+route until a separately authorized cross-service implementation/activation slice exists.
+
+The B-11B entitlement correction does not add `ModuleEntitlementCode` to self-registration and cannot be
+used to infer an active Platform catalog row. Only the local FU16 fixture/application port owns the exact
+two-field assertion in this slice; any future registration or entitlement mutation requires a separately
+authorized bilateral Platform/AuthService implementation and activation gate.
+
+#### Functional evidence gate
+
+The functional implementation is not complete until all of the following executable gates pass:
+
+- exact 10 command + 5 query handler/validator/controller action completeness and action-specific type scan;
+- rejection of `DwsDispatchRequest`, unrestricted `Operation`, generic `DwsLocalResult` and generic
+  persistence `Value` on the functional call graph;
+- all no-op cases above with zero participant/version/receipt/audit/outbox delta;
+- leaf removal success and child-present `409 dws_node_has_children` zero-residue proof;
+- full typed create/update/node/dependency/baseline/next-revision success and negative matrices;
+- exact query projections, deterministic ordering, sealed-only comparisons, tenant non-disclosure and a
+  scan proving queries persist nothing;
+- MOD-0117 400/404/409/503 and FU16 401/403/503 executable fixture matrices with exact trusted-context
+  binding and zero residue;
+- every non-no-op transaction participant rollback boundary, CAS/concurrency, cancellation, standalone
+  fail-closed and unknown-before/after/exhaustion body-once reconciliation on disposable replica-set Mongo;
+- B-02, B-10 and B-11A full regression plus co-host isolation, global architecture and runtime-literal scans;
+- loopback `5017` local-test health and all 15 route smoke tests, while no listener starts without
+  `--local-test`; and
+- a physical non-equivalent mutation campaign covering tenant predicate, leaf guard, each no-op zero-write
+  guard, typed dispatch, query no-write, MOD-0117/FU16 disposition mapping, transaction participant, CAS,
+  unknown-commit body-once, local-test production rejection and audit non-delivery. Unsafe mutants receive an
+  explicit security-policy-forbidden disposition; they are never silently counted as executed.
+
+Passing this gate closes only the Functional Local DWS API amendment. B-03 through B-09, live provider
+integration, production, frontend, Gateway, WorkCenter, migration and legacy retirement remain open.
 
 ### Human review questions
 
