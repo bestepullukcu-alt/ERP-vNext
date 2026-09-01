@@ -36,8 +36,36 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
         var filter = Builders<TaskItem>.Filter.And(
             ExecutionFilter,
             Builders<TaskItem>.Filter.Eq(x => x.AssigneeUserId, userId));
-        return await Collection.Find(filter).SortBy(x => x.DueAt).ToListAsync(ct);
+        return ByDueDate(await Collection.Find(filter).ToListAsync(ct));
     }
+
+    /*
+     * ⚠ ORDERED IN MEMORY, ON PURPOSE — DO NOT "OPTIMISE" THIS BACK INTO .SortBy(x => x.DueAt).
+     *
+     * DueAt is the one timestamp on this entity that does NOT come from DateTimeOffset.UtcNow: it is a due
+     * date the user picks, so it carries the BROWSER's offset. No DateTimeOffsetSerializer is registered
+     * (BL-030), so it lands as the BSON array [localTicks, offsetMinutes] — and MongoDB sorts an array by its
+     * extremum, which for ASCENDING is the offset (-300..+180), never the ticks. Server-side ascending
+     * therefore orders these lists BY TIME ZONE.
+     *
+     * ⚠ MEASURED 2026-08-28 in diten_personalization_dev: task_items.DueAt holds 22 rows at offset 0 and 144
+     * at +180, and the ascending query was non-monotonic from row 4. This is not a future risk; it is what
+     * the deadline lists have been returning.
+     *
+     * Sorting DESCENDING instead would not fix it — descending compares the LOCAL WALL-CLOCK ticks and still
+     * ignores the offset (measured: inverted at row 14) — and "furthest deadline first" is not what a
+     * deadline list means anyway. Ordering by the true instant is only possible off the server while the
+     * representation stands, so it happens here.
+     *
+     * Both callers are bounded by construction — one assignee's tasks, or one position pool's unclaimed
+     * tasks — so there is no unbounded list being pulled into memory. A NULL DueAt sorts last, which is what
+     * SortBy did.
+     */
+    private static IReadOnlyList<TaskItem> ByDueDate(IEnumerable<TaskItem> tasks)
+        => tasks
+            .OrderBy(x => x.DueAt is null)
+            .ThenBy(x => x.DueAt?.UtcDateTime ?? DateTime.MaxValue)
+            .ToList();
 
     public async Task<IReadOnlyList<TaskItem>> ListByParentAsync(
         Guid parentTaskItemId,
@@ -96,7 +124,7 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
             Builders<TaskItem>.Filter.In(x => x.PoolPositionId, positionIds.Cast<Guid?>()),
             Builders<TaskItem>.Filter.Eq(x => x.AssigneeUserId, (Guid?)null),
             Builders<TaskItem>.Filter.Nin(x => x.Lifecycle, new[] { TaskLifecycle.Done, TaskLifecycle.Cancelled }));
-        return await Collection.Find(filter).SortBy(x => x.DueAt).ToListAsync(ct);
+        return ByDueDate(await Collection.Find(filter).ToListAsync(ct));
     }
 
     /// <summary>

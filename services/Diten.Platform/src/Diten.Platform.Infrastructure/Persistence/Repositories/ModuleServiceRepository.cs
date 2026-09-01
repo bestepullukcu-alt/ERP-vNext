@@ -103,8 +103,8 @@ public sealed class ModuleServiceRepository : GlobalRepository<ModuleService>, I
             "code" => descending ? Builders<ModuleService>.Sort.Descending(x => x.Code) : Builders<ModuleService>.Sort.Ascending(x => x.Code),
             "displayname" => descending ? Builders<ModuleService>.Sort.Descending(x => x.DisplayName) : Builders<ModuleService>.Sort.Ascending(x => x.DisplayName),
             "isactive" => descending ? Builders<ModuleService>.Sort.Descending(x => x.IsActive) : Builders<ModuleService>.Sort.Ascending(x => x.IsActive),
-            "createdat" => descending ? Builders<ModuleService>.Sort.Descending(x => x.CreatedAt) : Builders<ModuleService>.Sort.Ascending(x => x.CreatedAt),
-            "updatedat" => descending ? Builders<ModuleService>.Sort.Descending(x => x.UpdatedAt) : Builders<ModuleService>.Sort.Ascending(x => x.UpdatedAt),
+            "createdat" => TimestampSortPolicy.NewestFirstOnly(descending, Builders<ModuleService>.Sort.Descending(x => x.CreatedAt), "createdAt"),
+            "updatedat" => TimestampSortPolicy.NewestFirstOnly(descending, Builders<ModuleService>.Sort.Descending(x => x.UpdatedAt), "updatedAt"),
             _ => descending ? Builders<ModuleService>.Sort.Descending(x => x.SortOrder) : Builders<ModuleService>.Sort.Ascending(x => x.SortOrder)
         };
     }

@@ -157,8 +157,8 @@ public sealed class ModuleCatalogRepository : GlobalRepository<ModuleCatalogItem
             "service" => descending ? Builders<ModuleCatalogItem>.Sort.Descending(x => x.Service) : Builders<ModuleCatalogItem>.Sort.Ascending(x => x.Service),
             "status" => descending ? Builders<ModuleCatalogItem>.Sort.Descending(x => x.Status) : Builders<ModuleCatalogItem>.Sort.Ascending(x => x.Status),
             "version" => descending ? Builders<ModuleCatalogItem>.Sort.Descending(x => x.Version) : Builders<ModuleCatalogItem>.Sort.Ascending(x => x.Version),
-            "createdat" => descending ? Builders<ModuleCatalogItem>.Sort.Descending(x => x.CreatedAt) : Builders<ModuleCatalogItem>.Sort.Ascending(x => x.CreatedAt),
-            "updatedat" => descending ? Builders<ModuleCatalogItem>.Sort.Descending(x => x.UpdatedAt) : Builders<ModuleCatalogItem>.Sort.Ascending(x => x.UpdatedAt),
+            "createdat" => TimestampSortPolicy.NewestFirstOnly(descending, Builders<ModuleCatalogItem>.Sort.Descending(x => x.CreatedAt), "createdAt"),
+            "updatedat" => TimestampSortPolicy.NewestFirstOnly(descending, Builders<ModuleCatalogItem>.Sort.Descending(x => x.UpdatedAt), "updatedAt"),
             _ => descending ? Builders<ModuleCatalogItem>.Sort.Descending(x => x.SortOrder) : Builders<ModuleCatalogItem>.Sort.Ascending(x => x.SortOrder)
         };
     }

@@ -221,9 +221,9 @@ public sealed class PlatformAdministratorRepository
             "actortype" => descending ? Builders<PlatformAdministrator>.Sort.Descending(x => x.ActorType) : Builders<PlatformAdministrator>.Sort.Ascending(x => x.ActorType),
             "status" => descending ? Builders<PlatformAdministrator>.Sort.Descending(x => x.Status) : Builders<PlatformAdministrator>.Sort.Ascending(x => x.Status),
             "invitationstatus" => descending ? Builders<PlatformAdministrator>.Sort.Descending(x => x.InvitationStatus) : Builders<PlatformAdministrator>.Sort.Ascending(x => x.InvitationStatus),
-            "lastloginatutc" => descending ? Builders<PlatformAdministrator>.Sort.Descending(x => x.LastLoginAtUtc) : Builders<PlatformAdministrator>.Sort.Ascending(x => x.LastLoginAtUtc),
-            "createdat" => descending ? Builders<PlatformAdministrator>.Sort.Descending(x => x.CreatedAt) : Builders<PlatformAdministrator>.Sort.Ascending(x => x.CreatedAt),
-            "updatedat" => descending ? Builders<PlatformAdministrator>.Sort.Descending(x => x.UpdatedAt) : Builders<PlatformAdministrator>.Sort.Ascending(x => x.UpdatedAt),
+            "lastloginatutc" => TimestampSortPolicy.NewestFirstOnly(descending, Builders<PlatformAdministrator>.Sort.Descending(x => x.LastLoginAtUtc), "lastLoginAtUtc"),
+            "createdat" => TimestampSortPolicy.NewestFirstOnly(descending, Builders<PlatformAdministrator>.Sort.Descending(x => x.CreatedAt), "createdAt"),
+            "updatedat" => TimestampSortPolicy.NewestFirstOnly(descending, Builders<PlatformAdministrator>.Sort.Descending(x => x.UpdatedAt), "updatedAt"),
             _ => descending ? Builders<PlatformAdministrator>.Sort.Descending(x => x.DisplayName) : Builders<PlatformAdministrator>.Sort.Ascending(x => x.DisplayName)
         };
     }

@@ -108,8 +108,8 @@ public sealed class ModuleDomainRepository : GlobalRepository<ModuleDomain>, IMo
             "code" => descending ? Builders<ModuleDomain>.Sort.Descending(x => x.Code) : Builders<ModuleDomain>.Sort.Ascending(x => x.Code),
             "displayname" => descending ? Builders<ModuleDomain>.Sort.Descending(x => x.DisplayName) : Builders<ModuleDomain>.Sort.Ascending(x => x.DisplayName),
             "isactive" => descending ? Builders<ModuleDomain>.Sort.Descending(x => x.IsActive) : Builders<ModuleDomain>.Sort.Ascending(x => x.IsActive),
-            "createdat" => descending ? Builders<ModuleDomain>.Sort.Descending(x => x.CreatedAt) : Builders<ModuleDomain>.Sort.Ascending(x => x.CreatedAt),
-            "updatedat" => descending ? Builders<ModuleDomain>.Sort.Descending(x => x.UpdatedAt) : Builders<ModuleDomain>.Sort.Ascending(x => x.UpdatedAt),
+            "createdat" => TimestampSortPolicy.NewestFirstOnly(descending, Builders<ModuleDomain>.Sort.Descending(x => x.CreatedAt), "createdAt"),
+            "updatedat" => TimestampSortPolicy.NewestFirstOnly(descending, Builders<ModuleDomain>.Sort.Descending(x => x.UpdatedAt), "updatedAt"),
             _ => descending ? Builders<ModuleDomain>.Sort.Descending(x => x.SortOrder) : Builders<ModuleDomain>.Sort.Ascending(x => x.SortOrder)
         };
     }

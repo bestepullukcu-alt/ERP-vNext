@@ -159,8 +159,8 @@ public sealed class SubscriptionPlanRepository : GlobalRepository<SubscriptionPl
             "name" => descending ? Builders<SubscriptionPlan>.Sort.Descending(x => x.Name) : Builders<SubscriptionPlan>.Sort.Ascending(x => x.Name),
             "isactive" => descending ? Builders<SubscriptionPlan>.Sort.Descending(x => x.IsActive) : Builders<SubscriptionPlan>.Sort.Ascending(x => x.IsActive),
             "isdefault" => descending ? Builders<SubscriptionPlan>.Sort.Descending(x => x.IsDefault) : Builders<SubscriptionPlan>.Sort.Ascending(x => x.IsDefault),
-            "createdat" => descending ? Builders<SubscriptionPlan>.Sort.Descending(x => x.CreatedAt) : Builders<SubscriptionPlan>.Sort.Ascending(x => x.CreatedAt),
-            "updatedat" => descending ? Builders<SubscriptionPlan>.Sort.Descending(x => x.UpdatedAt) : Builders<SubscriptionPlan>.Sort.Ascending(x => x.UpdatedAt),
+            "createdat" => TimestampSortPolicy.NewestFirstOnly(descending, Builders<SubscriptionPlan>.Sort.Descending(x => x.CreatedAt), "createdAt"),
+            "updatedat" => TimestampSortPolicy.NewestFirstOnly(descending, Builders<SubscriptionPlan>.Sort.Descending(x => x.UpdatedAt), "updatedAt"),
             _ => descending ? Builders<SubscriptionPlan>.Sort.Descending(x => x.SortOrder) : Builders<SubscriptionPlan>.Sort.Ascending(x => x.SortOrder)
         };
     }

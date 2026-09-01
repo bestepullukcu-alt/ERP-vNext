@@ -1,82 +1,177 @@
-using System.Text;
-using System.Text.RegularExpressions;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.Persistence;
 
-// Guard against the regression that killed the MOD-0023 transition gate.
+// Guard against the two ways BL-030 bites, both of which compile, pass every fake-repository test, and are
+// wrong only against a real database.
 //
-// No DateTimeOffsetSerializer is registered anywhere (BL-030), so the Mongo driver stores every
-// DateTimeOffset as a BSON array [ticks, offsetMinutes]. A server-side sort whose keys include TWO such
-// fields is rejected at runtime with "cannot sort with keys that are parallel arrays" — it compiles, it
-// passes every fake-repository test, and it fails only against a real database.
+// No DateTimeOffsetSerializer is registered anywhere, so the Mongo driver stores every DateTimeOffset as the
+// BSON array [localTicks, offsetMinutes]. Two consequences, and one test each:
 //
-// This test scans the actual repository sources across all services and fails on any
-// .SortBy*(...).ThenBy*(...) chain with two or more DateTimeOffset keys. When BL-030 lands and a global
-// serializer is registered, this guard becomes unnecessary and should be removed together with the
-// in-memory ordering it protects.
+//   1. A sort whose keys include TWO such fields is REJECTED at runtime — "cannot sort with keys that are
+//      parallel arrays". Loud, but only in production. That is the original guard, below.
+//
+//   2. An ASCENDING sort on ONE such field is ACCEPTED and returns the wrong order, silently. MongoDB
+//      compares an array by its extremum, and ascending takes the SMALLEST element — which is the offset
+//      (-300..+180), never the ticks (~6.4e17). Ascending orders BY TIME ZONE. That is the second guard.
+//
+// ⚠ WHY THE OLD REGEX SAW NONE OF CASE 2 — measured 2026-08-28, both blind spots confirmed against the tree:
+//   · it only knew the `.SortBy(...)` fluent form, so all 15 `Builders<T>.Sort.Ascending(...)` sites were
+//     invisible — the regex had ZERO matches on that shape;
+//   · its `(?<rest>…)+` quantifier made a `.ThenBy` link MANDATORY, so single-key ascending never matched.
+//   Between them, 26 of 26 real cases went unseen.
+//
+// ⚠ DESCENDING IS NOT FORBIDDEN, and deliberately so — but nor is it correct. Descending compares the LARGEST
+// element, which IS the ticks, so it beats ascending; the ticks are LOCAL WALL-CLOCK ticks, however, so it
+// still ignores the offset. Measured on diten_personalization_dev, a descending DueAt query inverted at row
+// 14. Banning descending would be wrong (it is the best the representation allows and every list depends on
+// it); calling it correct would also be wrong. See DateTimeOffsetAscendingSortMongoTests, which pins both.
 public sealed class DateTimeOffsetSortGuardTests
 {
-    // .SortBy(x => x.A).ThenByDescending(x => x.B)... — the driver's fluent sort chain, in one match.
-    private static readonly Regex SortChain = new(
-        @"\.SortBy(?:Descending)?\s*\(\s*\w+\s*=>\s*\w+\.(?<first>\w+)\s*\)(?<rest>(?:\s*\.ThenBy(?:Descending)?\s*\(\s*\w+\s*=>\s*\w+\.\w+\s*\))+)",
-        RegexOptions.Compiled);
+    /*
+     * THE ALLOW-LIST. Every entry is an ascending sort on a DateTimeOffset that is CORRECT, and correct for
+     * one reason only: the field is stamped exclusively from DateTimeOffset.UtcNow, so its offset element is
+     * invariably 0, the array comparison degenerates to a comparison of ticks, and ascending means what it
+     * says.
+     *
+     * ⚠ THAT IS A CLAIM ABOUT WRITES, NOT ABOUT THIS QUERY. It holds while nothing ever assigns the field a
+     * value carrying a non-zero offset — a user-supplied date, a parsed client string, DateTimeOffset.Now.
+     * Measured 2026-08-28: across 95 collections and 2761 sampled documents in diten_personalization_dev,
+     * every non-zero offset (164 of 5930 timestamp fields) sat on a user-chosen business date — DueAt,
+     * StartAt, PlannedDate, EffectiveFrom, StartsAt — and none on a machine-stamped one. If that ever stops
+     * being true for a field below, its entry is wrong, not merely stale.
+     *
+     * Adding a line here is a claim you must be able to defend. Removing one must turn this test red.
+     */
+    private static readonly HashSet<string> MachineStampedAscendingSorts =
+    [
+        // Outbox drains and retry queues: FIFO is the REQUIREMENT, not a preference — oldest work first.
+        // Flipping these to descending would process the newest message first and starve the backlog.
+        "Diten.Platform.Common/src/Diten.Platform.Common/Events/Outbox/OutboxRepository.cs|OutboxMessage.CreatedAt",
+        "Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/AuditOutboxRepository.cs|AuditOutboxMessage.CreatedAtUtc",
 
-    private static readonly Regex ThenByKey = new(
-        @"\.ThenBy(?:Descending)?\s*\(\s*\w+\s*=>\s*\w+\.(?<key>\w+)\s*\)",
-        RegexOptions.Compiled);
+        // NextRetryAt is a SCHEDULE the server computes (UtcNow + backoff), so due-soonest-first is both
+        // correct and the point; it is never a date anybody types.
+        "Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/NotificationDispatchRepository.cs|NotificationDispatch.NextRetryAt",
 
-    private static readonly Regex DateTimeOffsetProperty = new(
-        @"\b(?:public|internal|protected)\s+(?:virtual\s+|required\s+|override\s+)*DateTimeOffset\??\s+(?<name>\w+)\s*(?:\{|=>)",
-        RegexOptions.Compiled);
+        // History and audit trails, read oldest-first because that is the order they happened in. Each of
+        // these fields defaults to UtcNow on the entity and is never set from input.
+        "Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductAbbreviationHistoryRepository.cs|ProductAbbreviationHistoryEntry.OccurredAtUtc",
+        "Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/TaskRepositories.cs|TaskAssignment.OccurredAt",
 
+        // Subtask listings ordered by creation. CreatedAt comes from BaseEntity's UtcNow initialiser.
+        "Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/TaskRepositories.cs|TaskItem.CreatedAt",
+        "Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/WorkflowRepositories.cs|ApprovalTask.CreatedAt",
+
+        /*
+         * ⚠ THE ONE ENTRY THAT IS A JUDGEMENT CALL, NOT AN INVARIANT. ApprovalTask.DueAt IS user-supplied,
+         * and diten_personalization_dev holds 5 such rows at offset +180 — so this ascending sort really can
+         * misorder. It stays on the server anyway, for a reason the other DueAt sorts did not have: the query
+         * is `.Limit(maxItems)` over a set ALREADY filtered to overdue tasks, so the sort chooses which
+         * overdue items a bounded escalation batch takes first. Ordering after the fact cannot change a
+         * selection the server already made, and over-fetching to reorder would change what "batch" means.
+         *
+         * What is actually at stake is FAIRNESS INSIDE ONE BATCH, not correctness of the outcome: every
+         * overdue task remains in the candidate set and is escalated by a later pass. The residual is a
+         * bounded jitter in escalation order, recorded in BL-030 rather than hidden here.
+         */
+        "Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/WorkflowRepositories.cs|ApprovalTask.DueAt",
+    ];
+
+    [Fact]
+    public void No_ascending_server_side_sort_on_a_date_time_offset_outside_the_allow_list()
+    {
+        var root = RepoPaths.Services();
+        var allSources = MongoSortSourceScanner.AllSources(root);
+        var productionSources = MongoSortSourceScanner.ProductionSources(root);
+
+        Assert.NotEmpty(allSources);
+        Assert.NotEmpty(productionSources);
+
+        var propertiesByType = MongoSortSourceScanner.DateTimeOffsetPropertiesByType(allSources);
+
+        // Sanity checks: if type resolution silently found nothing, every assertion below would pass
+        // vacuously — exactly the failure mode this slice is about.
+        Assert.Contains("CreatedAt", propertiesByType["BaseEntity"]);
+        Assert.Contains("DueAt", propertiesByType["TaskItem"]);
+        // Inherited, never redeclared on TaskItem — proves the base-class walk runs.
+        Assert.Contains("CreatedAt", propertiesByType["TaskItem"]);
+        // ⚠ And the negative: OutboxEvent.CreatedAt is a plain DateTime, so it is NOT a violation however
+        // many other entities call a DateTimeOffset "CreatedAt". A name-only guard condemned it.
+        Assert.DoesNotContain("CreatedAt", propertiesByType["OutboxEvent"]);
+
+        var violations = MongoSortSourceScanner
+            .AscendingSortSites(productionSources, root)
+            .Where(site => propertiesByType.GetValueOrDefault(site.EntityType)?.Contains(site.Key) == true)
+            .Select(site => new
+            {
+                Site = site,
+                Key = $"{site.RelativePath.Replace(Path.DirectorySeparatorChar, '/')}|{site.EntityType}.{site.Key}",
+            })
+            .Where(x => !MachineStampedAscendingSorts.Contains(x.Key))
+            .DistinctBy(x => x.Key)
+            .OrderBy(x => x.Key, StringComparer.Ordinal)
+            .ToList();
+
+        Assert.True(
+            violations.Count == 0,
+            "An ASCENDING MongoDB sort on a DateTimeOffset does not order by time — the value is stored as "
+            + "[localTicks, offsetMinutes] and ascending compares the SMALLEST element, which is the offset. "
+            + "The rows come back ordered by TIME ZONE, with no error (BL-030)."
+            + Environment.NewLine
+            + Environment.NewLine
+            + "Order these in memory by the true instant instead — see TaskItemRepository.ByDueDate — or, if "
+            + "the field is stamped only ever from DateTimeOffset.UtcNow, add it to "
+            + $"{nameof(MachineStampedAscendingSorts)} WITH the reason:"
+            + Environment.NewLine
+            + string.Join(
+                Environment.NewLine,
+                violations.Select(v => $"  {v.Key}  (line {v.Site.Line}, via {v.Site.Form})")));
+    }
+
+    [Fact]
+    public void Allow_list_has_no_stale_entries()
+    {
+        // An allow-list nobody prunes is how exceptions outlive the code they excused: the next reader cannot
+        // tell a live exemption from a fossil, so they trust none of them.
+        var root = RepoPaths.Services();
+        var live = MongoSortSourceScanner
+            .AscendingSortSites(MongoSortSourceScanner.ProductionSources(root), root)
+            .Select(s => $"{s.RelativePath.Replace(Path.DirectorySeparatorChar, '/')}|{s.EntityType}.{s.Key}")
+            .ToHashSet(StringComparer.Ordinal);
+
+        var stale = MachineStampedAscendingSorts.Where(entry => !live.Contains(entry)).OrderBy(x => x).ToList();
+
+        Assert.True(
+            stale.Count == 0,
+            "These allow-list entries no longer match any ascending sort in the tree. The sort was fixed or "
+            + "moved; delete the entry:" + Environment.NewLine + string.Join(Environment.NewLine, stale));
+    }
+
+    // The original guard, unchanged in intent: TWO DateTimeOffset keys in one server-side sort is rejected by
+    // the server outright. Kept separate from the ascending check because the failure mode is different — this
+    // one throws rather than lying.
     [Fact]
     public void No_repository_sorts_on_two_date_time_offset_keys()
     {
-        var servicesRoot = LocateServicesRoot();
-        var sourceFiles = Directory
-            .EnumerateFiles(servicesRoot, "*.cs", SearchOption.AllDirectories)
-            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
-            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
-            .ToList();
+        var root = RepoPaths.Services();
+        var propertiesByType = MongoSortSourceScanner.DateTimeOffsetPropertiesByType(MongoSortSourceScanner.AllSources(root));
 
-        // Property harvesting reads everything; the chain scan below is production code only. Test code is
-        // exempt on purpose: WorkflowInstanceLookupMongoTests issues the forbidden two-key sort deliberately,
-        // to assert the server still rejects it and thus that the in-memory ordering is still required.
-        var productionFiles = sourceFiles
-            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}tests{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
-            .ToList();
-
-        Assert.NotEmpty(sourceFiles);
-
-        var dateTimeOffsetProperties = CollectDateTimeOffsetPropertyNames(sourceFiles);
-
-        // Sanity check: if the property harvest silently found nothing, the guard below would pass
-        // vacuously — exactly the failure mode this whole slice is about.
-        Assert.Contains("CreatedAt", dateTimeOffsetProperties);
-        Assert.Contains("UpdatedAt", dateTimeOffsetProperties);
-        Assert.Contains("StartedAt", dateTimeOffsetProperties);
-
-        var violations = new List<string>();
-
-        Assert.NotEmpty(productionFiles);
-
-        foreach (var path in productionFiles)
-        {
-            var source = StripFullLineComments(File.ReadAllText(path));
-
-            foreach (Match chain in SortChain.Matches(source))
+        // Test code is exempt on purpose: WorkflowInstanceLookupMongoTests issues the forbidden two-key sort
+        // deliberately, to assert the server still rejects it and thus that the in-memory ordering is required.
+        var violations = MongoSortSourceScanner
+            .AllSortChains(MongoSortSourceScanner.ProductionSources(root), root)
+            .Select(chain => new
             {
-                var keys = new List<string> { chain.Groups["first"].Value };
-                keys.AddRange(ThenByKey.Matches(chain.Groups["rest"].Value).Select(m => m.Groups["key"].Value));
-
-                var dateKeys = keys.Where(dateTimeOffsetProperties.Contains).ToList();
-                if (dateKeys.Count >= 2)
-                {
-                    violations.Add($"{Path.GetRelativePath(servicesRoot, path)}: sorts on {string.Join(" + ", dateKeys)}");
-                }
-            }
-        }
+                chain.RelativePath,
+                chain.Line,
+                DateKeys = chain.Keys
+                    .Where(k => propertiesByType.GetValueOrDefault(chain.EntityType)?.Contains(k) == true)
+                    .ToList(),
+            })
+            .Where(x => x.DateKeys.Count >= 2)
+            .Select(x => $"{x.RelativePath}:{x.Line}: sorts on {string.Join(" + ", x.DateKeys)}")
+            .ToList();
 
         Assert.True(
             violations.Count == 0,
@@ -87,40 +182,4 @@ public sealed class DateTimeOffsetSortGuardTests
             + Environment.NewLine
             + string.Join(Environment.NewLine, violations));
     }
-
-    private static HashSet<string> CollectDateTimeOffsetPropertyNames(IEnumerable<string> sourceFiles)
-    {
-        var names = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var path in sourceFiles)
-        {
-            foreach (Match match in DateTimeOffsetProperty.Matches(File.ReadAllText(path)))
-            {
-                names.Add(match.Groups["name"].Value);
-            }
-        }
-
-        return names;
-    }
-
-    // Only whole-line comments are removed, so that a `//` inside a string literal (connection strings)
-    // is left alone. The comments that document this very rule quote the forbidden sort chain verbatim
-    // and would otherwise report themselves as violations.
-    private static string StripFullLineComments(string source)
-    {
-        var builder = new StringBuilder(source.Length);
-        foreach (var line in source.Split('\n'))
-        {
-            if (!line.TrimStart().StartsWith("//", StringComparison.Ordinal))
-            {
-                builder.Append(line).Append('\n');
-            }
-        }
-
-        return builder.ToString();
-    }
-
-    // Walked up to the AGENTS.md marker, not to a `.git` DIRECTORY: in a git worktree `.git` is a FILE, so
-    // the old check never matched and this threw instead of finding the root. See RepoPaths.
-    private static string LocateServicesRoot()
-        => RepoPaths.Services();
 }

@@ -550,9 +550,103 @@ göremedi çünkü yedi dosya da eşit biçimde yinelenmişti — artık ayrı b
   kanıtlayan guard ekleyin ve ayrı migration/serializer planı hazırlayın. Bu iş BRD index değişikliğine
   karıştırılmasın."* Ayrıca: *"Yeni backlog kimliği açmayın; mevcut BL-030'a ek bulgu ve guard genişletmesi
   olarak yazın."* — BL-299 olarak açılan kayıt bu yüzden buraya taşındı ve kaldırıldı.
-- **Sıradaki iş (tek tur, ikisi ayrılamaz):** (1) muhafızı genişlet — `Builders<T>.Sort.Ascending` desenini
-  ve tek anahtarlı sıralamayı da tanısın; (2) 26 vakayı karara bağla (bellekte sırala · azalana çevir ·
-  kabul et). ⚠ (1)'i (2)'siz yapmak süiti kırmızıya döndürür.
+- ~~**Sıradaki iş (tek tur, ikisi ayrılamaz):** (1) muhafızı genişlet; (2) 26 vakayı karara bağla.~~
+  → **YAPILDI (2026-08-28), `fix/datetimeoffset-ascending-sorts`.** Aşağıdaki üç madde o turun ölçümü.
+
+- ⚠⚠ **ÖLÇÜM BU KAYITTAKİ BİR İDDİAYI ÇÜRÜTTÜ: "AZALAN TESADÜFEN DOĞRU" YANLIŞ.**
+  Yukarıda *"AZALAN en büyük elemanı alır (= `ticks`) → tesadüfen doğru"* yazıyor. İlk yarısı doğru, ikinci
+  yarısı değil: sürücünün yazdığı `ticks` **UTC değil, YEREL DUVAR SAATİ** tick'i. Ölçüldü — `12:00+03:00`
+  diske `[639079632000000000, 180]` olarak iniyor ve o sayı tam olarak `DateTime(2026-03-01 12:00).Ticks`,
+  yani `09:00Z` anı **değil** duvardaki okuma.
+  · Sonuç: **AZALAN da yanlış.** Duvar saatine göre sıralıyor, offset'i yok sayıyor.
+  · Sentetik kanıt: gerçek ters-kronoloji `v4·v2·v1·v3` iken Mongo `v4·v1·v2·v3` döndü.
+  · **Canlı kanıt (`diten_personalization_dev`, salt-okunur):** `task_items.DueAt` üzerinde ARTAN sorgu
+    **4. satırda**, AZALAN sorgu **14. satırda** monotonluğu kırdı — azalan liste `2026-09-29 21:00Z`'yi
+    `2026-09-30 00:00Z`'nin **önüne** koydu.
+  · ⚠ Bunun sahip kararına etkisi: *"azalan zaten doğru çalışıyor; bedeli sıfır, riski sıfır"* gerekçesi
+    ayakta değil. Azalana çevirmek sıralamayı **düzeltmiyor**, hatayı daraltıyor (saat dilimi sırası →
+    duvar saati sırası). Gerçek düzeltme hâlâ temsil değişikliği; o da bu turda **yasaklıydı**.
+  · İkinci düzeltme: ARTAN, offsetler eşitken de "doğru" değil — tüm en-küçük elemanlar eşitlenince
+    karşılaştırma **berabere** kalıyor ve sunucu **ekleme sırasını** döndürüyor. Ölçüldü: eşit offsetli
+    fixture'da kronolojik `v3·v1·v2·v4` iken sonuç `v1·v2·v3·v4` (ekleme sırası). Yani "dev'de doğru
+    görünüyordu" değil, "ekleme sırası genelde kronolojiye benziyordu".
+
+- **KAPSAM DÜZELTMESİ — 26 doğrulandı, ama tespit yöntemi düzeltildi.** Bağımsız sayım önce **28** verdi;
+  fark, sıralama anahtarını **isimle** eşleştirmekten geliyordu. `OutboxEvent.CreatedAt` bir `DateTime`,
+  ama başka bir entity'de aynı adlı bir `DateTimeOffset` var — isim tabanlı tarama o iki çağrıyı haksız yere
+  suçluyordu (yukarıda "yanıltıcı tek vaka" diye geçen şey tam olarak budur). Yeni tarayıcı
+  (`MongoSortSourceScanner`) **tanımlayan tipi çözüyor**: `Builders<T>` için tip zaten yazılı, akıcı
+  `.SortBy` için çağrının içinde bulunduğu repository sınıfının `TenantRepository<T>` / `IMongoCollection<T>`
+  bağı okunuyor; miras zinciri düzleştiriliyor (`BaseEntity.CreatedAt` böyle görülüyor). Sonuç **tam 26**.
+  ⚠ **Asıl ayrım çağrı biçimi değil, ALANIN KAYNAĞI:** `diten_personalization_dev`'de 95 koleksiyon /
+  2761 doküman örneklendi → 5930 zaman damgası alanının **164'ü sıfırdan farklı offset** taşıyor ve
+  **hepsi kullanıcının seçtiği iş tarihi**: `task_items.DueAt` (22 satır offset 0, **144 satır +180**),
+  `task_items.StartAt` · `PlannedDate` · `approval_tasks.DueAt` · `workflow_instances.DueAt` ·
+  `positions.EffectiveFrom` · `position_assignments.EffectiveFrom` · `task_recurrence_rules.StartsAt`.
+  Makinenin damgaladığı hiçbir alanda (867 çağrı `DateTimeOffset.UtcNow`, tek `DateTimeOffset.Now` bir
+  testte ve o da `throw` bekliyor) sıfırdan farklı offset **yok**.
+  ⚠ Yani *"çok bölgeli veri geldiği gün bozulur"* geçmiş zaman: **bugün bozuk**, dev veritabanında.
+
+- **KARARLAR ve GEREKÇELERİ (26 vaka):**
+  · **1–15, API parametresiyle sürülen** → sahip kararı uygulandı: **artan dal kaldırıldı**. Yeni
+    `TimestampSortPolicy.NewestFirstOnly` yalnız azalanı döndürüyor, artan istendiğinde **400 + sabit
+    `reason_code`** (`SORT_TIMESTAMP_OLDEST_FIRST_UNSUPPORTED`) fırlatıyor.
+    ⚠ **Sessizce yön çevirmek yerine REDDETMEK seçildi**, çünkü istemciye istediğinden başkasını sessizce
+    vermek bu oturumun avladığı hata sınıfının ta kendisi; ayrıca uygulanan yönü yanıta iliştirmek 7
+    repository × servis × controller × DTO boyunca sızdırılacak bir alan demekti.
+    ⚠ `TenantRegistryRepository`'nin `_` (varsayılan) dalı **fırlatmıyor**: oraya tanınmayan bir alan adı
+    (`sort=renk`) düşüyor, yani çağıran zaten tarih sırası istememiş — orada reddetmek bir yazım hatasını
+    kırık tenant listesine çevirirdi. Belgelenmiş varsayılana (`-createdAt`) düşüyor.
+    ⚠ **Bedeli ölçüldü: bugün sıfır, ama kazancı da sıfır.** Bu 15 alanın hepsi `UtcNow` damgalı (offset
+    daima 0) → artan sıralama **bugün doğru çalışıyor**; kaldırılan şey çalışan bir davranış, kapatılan şey
+    gizil bir risk. Ve hiçbir istemci bu yolu tetiklemiyor: Platform ekranlarının tamamı `sort` parametresini
+    `-createdAt` / `sortOrder` olarak **sabit** gönderiyor, `createdAt` sütunu tabloda yok, dolayısıyla
+    kullanıcı tıklamasıyla artan tarih sırası **istenemiyor**. Red yolu bu yüzden bugün ulaşılamaz —
+    l10n köprüsüne (`reason_code` → resx) karşılık gelen frontend eşlemesi de bu nedenle **yazılmadı**;
+    istemci bu sıralamayı göndermeye başlarsa **önce o eşleme gerekir** (Platform = en, tr).
+  · **16–26, sabit artan** → tek tek değerlendirildi, **hiçbiri azalana çevrilmedi** (kuyruk semantiğini
+    bozardı). İki gruba ayrıldı:
+    – **Makine damgalı (8)** → sunucuda artan **bırakıldı**, muhafızın izin listesine gerekçesiyle yazıldı:
+      `OutboxMessage.CreatedAt` · `AuditOutboxMessage.CreatedAtUtc` (FIFO drenaj — en eski iş önce, gereklilik)
+      · `NotificationDispatch.NextRetryAt` (sunucunun hesapladığı zamanlama) · `TaskAssignment.OccurredAt` ·
+      `ProductAbbreviationHistoryEntry.OccurredAtUtc` (tarihçe, olduğu sırada okunur) · `TaskItem.CreatedAt`
+      (×2) · `ApprovalTask.CreatedAt`. Hepsinin offset elemanı değişmez biçimde 0 olduğu için dizi
+      karşılaştırması `ticks` karşılaştırmasına indirgeniyor. ⚠ Bu bir **yazma iddiası**, sorgu iddiası değil.
+    – **Kullanıcı tarihli (2)** → **bellekte, gerçek ana göre** sıralanıyor
+      (`TaskItemRepository.ByDueDate`): `ListByAssigneeAsync` ve `ListUnclaimedByPositionsAsync`. Ölçülen
+      bozukluk tam olarak buradaydı (144 satır +180). İki çağrı da yapısı gereği sınırlı (tek atanan / tek
+      pozisyon havuzu), yani sınırsız liste belleğe çekilmiyor. `DueAt = null` sona düşüyor (eski davranış).
+  · **Bilinçli istisna — `ApprovalTask.DueAt` (WorkflowRepositories:270)**: kullanıcı tarihli **ve** dev'de
+    5 satırı +180, yani gerçekten yanlış sıralanabiliyor; yine de sunucuda bırakıldı. Sebep: sorgu
+    `.Limit(maxItems)` ile **zaten gecikmiş** kümenin sınırlı bir yığınını alıyor; sunucu seçimi yaptıktan
+    sonra bellekte sıralamak o seçimi değiştiremez, fazladan çekip yeniden sıralamak da "yığın"ın tanımını
+    değiştirir. Riskteki şey sonucun doğruluğu değil **tek yığın içindeki adalet**: gecikmiş her görev
+    kümede kalır ve sonraki geçişte yükseltilir. Kalan risk: yükseltme sırasında sınırlı bir kayma.
+
+- **MUHAFIZ GENİŞLETİLDİ** (`DateTimeOffsetSortGuardTests` + `MongoSortSourceScanner`): artık hem
+  `.SortBy(...)` hem `Builders<T>.Sort.Ascending(...)` biçimini, **tek anahtarlı** artanı ve çok anahtarlı
+  `Sort.Ascending(a).Ascending(b)` zincirlerini (üründeki 11 tanesi — üçüncü kör nokta) tanıyor. AZALAN'ı
+  **yakalamıyor** (yasaklamak yanlış olurdu; doğru olduğu için değil, temsilin izin verdiği en iyi şey
+  olduğu için — bkz. yukarıdaki çürütme). İzin listesindeki bir satırı silmek testi kırmızıya döndürür;
+  ikinci bir test (`Allow_list_has_no_stale_entries`) artık eşleşmeyen istisnaları da kırmızıya döndürür.
+  ⚠ Blok yorumları da taranmadan önce siliniyor: bu kuralı anlatan yorumlar yasak zinciri **kelimesi
+  kelimesine** alıntılıyor ve muhafız ilk koşuda kendi açıklamasını ihlal olarak raporladı.
+  **Mutasyonla doğrulandı (4/4):** yeni `Sort.Ascending(x => x.CreatedAt)` → kırmızı · yeni tek anahtarlı
+  `.SortBy(x => x.DueAt)` → kırmızı · yeni `Sort.Descending` → **yeşil** (yanlış pozitif yok) · izin
+  listesinden bir satır silmek → kırmızı.
+
+- **CANLI KANIT KALICI:** `DateTimeOffsetAscendingSortMongoTests` gerçek MongoDB'ye karışık offset
+  (+03:00 · UTC · -05:00) yazıp temsili (`[ticks, offsetMinutes]`), artanın saat dilimine göre sıralamasını,
+  azalanın duvar saatine göre sıralamasını ve eşit-offset'te ekleme sırasına düşmesini **dördü ayrı test**
+  olarak sabitliyor. Sabit adlı bir scratch veritabanı kullanıyor ve hem girişte hem çıkışta düşürüyor
+  (üretim/dev verisine yazılmadı; kapsam ölçümleri salt-okunur örneklemeydi).
+
+- ⚠ **AÇIK KALAN, BU TURDA YASAKLIYDI:** gerçek çözüm hâlâ temsil değişikliği (`DateTimeOffsetSerializer`
+  + veri göçü). Ona kadar **hiçbir yön** kronolojik değil: artan saat dilimine, azalan duvar saatine göre
+  sıralıyor. `_id` bir kaçış yolu **değil** — `BaseEntity.Id` rastgele `Guid`, `ObjectId` değil, yani zaman
+  sırası taşımıyor (ölçüldü). ⚠ Ayrıca `$lte` gibi **aralık filtreleri** sıralamayla aynı kuralı
+  izlemiyor: dizi-diziye sözlüksel karşılaştırma yapıyor (`ticks` önce), test edildi ve doğru davrandı —
+  yani filtreler bu hatadan etkilenmiyor, yalnız sıralama etkileniyor.
 
 ### BL-031 — Havuz kimliği projeksiyonda yok; grup adı uydurma
 - **Nedir:** Havuz sekmesinin tüm anlamı "bu iş hangi kuyrukta bekliyor" sorusudur, ama WC-1 projeksiyonu havuz kimliğini **hiç taşımıyor** — kalemde yalnız `assignmentMode: "groupQueue"` var, havuz pozisyonunun adı/id'si yok. Frontend bu boşluğu **sabit bir Türkçe metinle** dolduruyor: `mock-data.js:197` her groupQueue kalemine `group = 'Operasyon Kuyruğu'` yazıyor, `app.js:2245` de `'Atanmadı — Operasyon Kuyruğu'` metnini gömüyor.
@@ -2737,6 +2831,16 @@ BL-001/BL-002'yi **şimdi** disabled satır-action'ı olarak göstermek (yol har
 - **Gelecek regresyon riski: 🟢 tek satırlık düzeltme** — `TaskTransitionRepository.Order` ile birebir
   aynı desen (bellekte, `Id` ile eşitlik bozma). BL-030 asıl çözümü (`DateTimeOffsetSerializer` + veri
   göçü) gelirse bu madde de onunla birlikte kapanır.
+- **KARARA BAĞLANDI (2026-08-28, BL-030 muhafız turu) — bu çağrı sunucuda ARTAN bırakıldı.** Sebep,
+  o turda ölçülen ayrım: `TaskAssignment.OccurredAt` **makine damgalı** (`= DateTimeOffset.UtcNow`,
+  entity varsayılanı) ve hiçbir giriş yolundan yazılmıyor, dolayısıyla offset elemanı değişmez biçimde 0
+  ve dizi karşılaştırması `ticks` karşılaştırmasına iniyor. `diten_personalization_dev`'de
+  `task_assignments` koleksiyonunda sıfırdan farklı offset **yok** (95 koleksiyon örneklendi; sıfırdan
+  farklı offset taşıyan 8 alanın hepsi kullanıcının seçtiği iş tarihi). ⚠ *"Farklı saat dilimlerinden
+  yazılmış iki kayıt geldiğinde sıra sessizce bozulur"* teşhisi doğru ama bu alan için ulaşılamaz: kayıt
+  girişten gelmiyor. Çağrı artık `DateTimeOffsetSortGuardTests` izin listesinde **gerekçesiyle** duruyor;
+  o gerekçe bir **yazma iddiası** olduğu için, `OccurredAt`'e dışarıdan değer yazan ilk kod bu satırı
+  geçersiz kılar — madde o yüzden kapatılmadı, 🟢 olarak açık bırakıldı.
 
 ### BL-079 — 🟡 Kontrol listesi ŞABLONLARI: model var, okuma yolu YOK (düğme bu yüzden çizilmedi)
 - **Ölçüm (2026-08-13):** `ChecklistTemplate` + `ChecklistTemplateItem` entity'leri, `IChecklistTemplateRepository`

@@ -128,8 +128,8 @@ public sealed class FeatureDefinitionRepository : GlobalRepository<FeatureDefini
             "featureslug" => descending ? Builders<FeatureDefinition>.Sort.Descending(x => x.FeatureSlug) : Builders<FeatureDefinition>.Sort.Ascending(x => x.FeatureSlug),
             "displayname" => descending ? Builders<FeatureDefinition>.Sort.Descending(x => x.DisplayName) : Builders<FeatureDefinition>.Sort.Ascending(x => x.DisplayName),
             "status" => descending ? Builders<FeatureDefinition>.Sort.Descending(x => x.Status) : Builders<FeatureDefinition>.Sort.Ascending(x => x.Status),
-            "createdat" => descending ? Builders<FeatureDefinition>.Sort.Descending(x => x.CreatedAt) : Builders<FeatureDefinition>.Sort.Ascending(x => x.CreatedAt),
-            "updatedat" => descending ? Builders<FeatureDefinition>.Sort.Descending(x => x.UpdatedAt) : Builders<FeatureDefinition>.Sort.Ascending(x => x.UpdatedAt),
+            "createdat" => TimestampSortPolicy.NewestFirstOnly(descending, Builders<FeatureDefinition>.Sort.Descending(x => x.CreatedAt), "createdAt"),
+            "updatedat" => TimestampSortPolicy.NewestFirstOnly(descending, Builders<FeatureDefinition>.Sort.Descending(x => x.UpdatedAt), "updatedAt"),
             _ => descending ? Builders<FeatureDefinition>.Sort.Descending(x => x.SortOrder) : Builders<FeatureDefinition>.Sort.Ascending(x => x.SortOrder).Ascending(x => x.FeatureCode)
         };
     }

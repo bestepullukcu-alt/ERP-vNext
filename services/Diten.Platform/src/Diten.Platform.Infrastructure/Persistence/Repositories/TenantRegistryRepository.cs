@@ -159,12 +159,14 @@ public sealed class TenantRegistryRepository : GlobalRepository<Tenant>, ITenant
             "status" => descending
                 ? Builders<Tenant>.Sort.Descending(x => x.Status)
                 : Builders<Tenant>.Sort.Ascending(x => x.Status),
-            "updatedat" => descending
-                ? Builders<Tenant>.Sort.Descending(x => x.UpdatedAt)
-                : Builders<Tenant>.Sort.Ascending(x => x.UpdatedAt),
-            _ => descending
-                ? Builders<Tenant>.Sort.Descending(x => x.CreatedAt)
-                : Builders<Tenant>.Sort.Ascending(x => x.CreatedAt)
+            "updatedat" => TimestampSortPolicy.NewestFirstOnly(descending, Builders<Tenant>.Sort.Descending(x => x.UpdatedAt), "updatedAt"),
+            // ⚠ THE FALLBACK ARM DOES NOT THROW, unlike the named ones above. It is reached for an
+            // UNRECOGNISED field ("sort=colour"), where the caller never asked for a timestamp order at all
+            // — refusing there would turn a typo into a broken tenant list. It answers with the documented
+            // default instead, which is the "-createdAt" this method already substitutes for a missing sort,
+            // and it is unconditionally descending because oldest-first on CreatedAt is exactly what BL-030
+            // cannot serve.
+            _ => Builders<Tenant>.Sort.Descending(x => x.CreatedAt)
         };
     }
 }
