@@ -140,7 +140,7 @@ task, approval, demand or workflow systems.
 | 1 | `MOD-0352` | Enterprise Strategy Management | Blueprint 8.1 canonical; subdomain 1.1 and outside active DCP-006 scope |
 | 2 | `MOD-0117` | Canonical Demand/PPM owner | Blueprint canonical; Demand FU/pack identity still required |
 | 3 | `MOD-0354` | Standalone DWS structural engine | Blueprint 8.1 canonical; draft pack; applicable Gate 2 + approval required |
-| 4 | `MOD-0355` | BPM process model/version | Blueprint 8.1 canonical; module pack not yet authored |
+| 4 | `MOD-0355` | BPM process model/version | Blueprint 8.1 canonical; ready-for-dev only for bounded Core Model & Contract-Test; no runtime or production authority |
 | 5 | `CAND-CAP-0006` | WorkCenter aggregation consumer boundary | DCP-004-owned dependency; not implemented by this DCP |
 
 Shared modules are dependencies, not reimplemented members:
