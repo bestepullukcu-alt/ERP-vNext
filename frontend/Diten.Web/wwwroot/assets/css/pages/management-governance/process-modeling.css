@@ -1,0 +1,32 @@
+.process-modeling-editor .nav-pills .nav-link:focus-visible,
+.datatables-process-modeling a:focus-visible,
+.datatables-process-modeling button:focus-visible {
+  outline: 0.2rem solid var(--bs-primary);
+  outline-offset: 0.15rem;
+}
+
+[dir='rtl'] .process-modeling-editor .bx {
+  margin-inline-end: 0.25rem;
+  margin-right: 0 !important;
+}
+
+.process-modeling-editor .tab-pane {
+  min-block-size: 12rem;
+}
+
+.process-modeling-editor .backbone-editor-actions {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 1020;
+  overflow: visible;
+}
+
+.process-modeling-editor textarea.font-monospace {
+  direction: ltr;
+  text-align: start;
+}
+
+[dir='rtl'] .process-modeling-editor .d-flex,
+[dir='rtl'] #offcanvasCreateEdit .d-flex {
+  direction: rtl;
+}

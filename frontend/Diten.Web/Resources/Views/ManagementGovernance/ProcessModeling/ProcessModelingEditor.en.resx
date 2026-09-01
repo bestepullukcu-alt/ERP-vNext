@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Title" xml:space="preserve"><value>Process model editor</value></data>
+  <data name="BreadcrumbLabel" xml:space="preserve"><value>Process model navigation</value></data>
+  <data name="Models" xml:space="preserve"><value>Process models</value></data>
+  <data name="Editor" xml:space="preserve"><value>Editor</value></data>
+  <data name="LifecycleActions" xml:space="preserve"><value>Lifecycle actions</value></data>
+  <data name="RequestReview" xml:space="preserve"><value>Request review</value></data>
+  <data name="ReturnToDraft" xml:space="preserve"><value>Return to draft</value></data>
+  <data name="Publish" xml:space="preserve"><value>Publish</value></data>
+  <data name="Retire" xml:space="preserve"><value>Retire</value></data>
+  <data name="CreateRevision" xml:space="preserve"><value>Create revision</value></data>
+  <data name="GatewayNotReady" xml:space="preserve"><value>The editor is read-only until the Gateway activation gate is approved.</value></data>
+  <data name="VersionSummary" xml:space="preserve"><value>Version summary</value></data>
+  <data name="NoAuthoritativeVersion" xml:space="preserve"><value>No authoritative version was loaded.</value></data>
+  <data name="WorkspaceTabs" xml:space="preserve"><value>Model workspace</value></data>
+  <data name="Graph" xml:space="preserve"><value>Graph</value></data>
+  <data name="Activities" xml:space="preserve"><value>Activities</value></data>
+  <data name="ControlPoints" xml:space="preserve"><value>Control points</value></data>
+  <data name="NoAuthoritativeGraph" xml:space="preserve"><value>No authoritative graph was loaded.</value></data>
+  <data name="NoAuthoritativeActivities" xml:space="preserve"><value>No authoritative activities were loaded.</value></data>
+  <data name="NoAuthoritativeControls" xml:space="preserve"><value>No authoritative control points were loaded.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Loading authoritative model…</value></data>
+  <data name="Error401" xml:space="preserve"><value>Your session is not authorized.</value></data>
+  <data name="Error403" xml:space="preserve"><value>You do not have permission for this operation.</value></data>
+  <data name="Error404" xml:space="preserve"><value>The process model was not found.</value></data>
+  <data name="Error409" xml:space="preserve"><value>The process model changed. Refresh before continuing.</value></data>
+  <data name="Error503" xml:space="preserve"><value>Authoritative process modeling data is currently unavailable.</value></data>
+  <data name="VersionTitle" xml:space="preserve">
+    <value>Version title</value>
+  </data>
+  <data name="Relationships" xml:space="preserve">
+    <value>Relationships</value>
+  </data>
+  <data name="EditorActions" xml:space="preserve">
+    <value>Editor actions</value>
+  </data>
+  <data name="Error400" xml:space="preserve">
+    <value>The request is invalid. Review the version data.</value>
+  </data>
+  <data name="ErrorOffline" xml:space="preserve">
+    <value>The connection was lost. Check your network and try again.</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>The draft was saved successfully.</value>
+  </data>
+  <data name="ActionCompleted" xml:space="preserve">
+    <value>The lifecycle action was completed successfully.</value>
+  </data>
+  <data name="InvalidGraphJson" xml:space="preserve">
+    <value>Graph, activity, control point, and relationship values must contain valid JSON.</value>
+  </data>
+  <data name="LifecycleDraft" xml:space="preserve">
+    <value>Draft</value>
+  </data>
+  <data name="LifecycleReview" xml:space="preserve">
+    <value>In review</value>
+  </data>
+  <data name="LifecyclePublished" xml:space="preserve">
+    <value>Published</value>
+  </data>
+  <data name="LifecycleRetired" xml:space="preserve">
+    <value>Retired</value>
+  </data>
+</root>

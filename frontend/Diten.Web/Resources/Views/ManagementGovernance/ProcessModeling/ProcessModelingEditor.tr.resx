@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Title" xml:space="preserve"><value>Süreç modeli düzenleyicisi</value></data>
+  <data name="BreadcrumbLabel" xml:space="preserve"><value>Süreç modeli gezintisi</value></data>
+  <data name="Models" xml:space="preserve"><value>Süreç modelleri</value></data>
+  <data name="Editor" xml:space="preserve"><value>Düzenleyici</value></data>
+  <data name="LifecycleActions" xml:space="preserve"><value>Yaşam döngüsü işlemleri</value></data>
+  <data name="RequestReview" xml:space="preserve"><value>İnceleme iste</value></data>
+  <data name="ReturnToDraft" xml:space="preserve"><value>Taslağa döndür</value></data>
+  <data name="Publish" xml:space="preserve"><value>Yayımla</value></data>
+  <data name="Retire" xml:space="preserve"><value>Kullanımdan kaldır</value></data>
+  <data name="CreateRevision" xml:space="preserve"><value>Yeni revizyon oluştur</value></data>
+  <data name="GatewayNotReady" xml:space="preserve"><value>Gateway etkinleştirme kapısı onaylanana kadar düzenleyici salt okunurdur.</value></data>
+  <data name="VersionSummary" xml:space="preserve"><value>Sürüm özeti</value></data>
+  <data name="NoAuthoritativeVersion" xml:space="preserve"><value>Yetkili sürüm yüklenmedi.</value></data>
+  <data name="WorkspaceTabs" xml:space="preserve"><value>Model çalışma alanı</value></data>
+  <data name="Graph" xml:space="preserve"><value>Grafik</value></data>
+  <data name="Activities" xml:space="preserve"><value>Aktiviteler</value></data>
+  <data name="ControlPoints" xml:space="preserve"><value>Kontrol noktaları</value></data>
+  <data name="NoAuthoritativeGraph" xml:space="preserve"><value>Yetkili grafik yüklenmedi.</value></data>
+  <data name="NoAuthoritativeActivities" xml:space="preserve"><value>Yetkili aktivite yüklenmedi.</value></data>
+  <data name="NoAuthoritativeControls" xml:space="preserve"><value>Yetkili kontrol noktası yüklenmedi.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yetkili model yükleniyor…</value></data>
+  <data name="Error401" xml:space="preserve"><value>Oturumunuz yetkili değil.</value></data>
+  <data name="Error403" xml:space="preserve"><value>Bu işlem için izniniz yok.</value></data>
+  <data name="Error404" xml:space="preserve"><value>Süreç modeli bulunamadı.</value></data>
+  <data name="Error409" xml:space="preserve"><value>Süreç modeli değişti. Devam etmeden önce yenileyin.</value></data>
+  <data name="Error503" xml:space="preserve"><value>Yetkili süreç modelleme verisine şu anda erişilemiyor.</value></data>
+  <data name="VersionTitle" xml:space="preserve">
+    <value>Sürüm başlığı</value>
+  </data>
+  <data name="Relationships" xml:space="preserve">
+    <value>İlişkiler</value>
+  </data>
+  <data name="EditorActions" xml:space="preserve">
+    <value>Editör işlemleri</value>
+  </data>
+  <data name="Error400" xml:space="preserve">
+    <value>İstek geçersiz. Sürüm verilerini gözden geçirin.</value>
+  </data>
+  <data name="ErrorOffline" xml:space="preserve">
+    <value>Bağlantı kesildi. Ağınızı kontrol edip yeniden deneyin.</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>Taslak başarıyla kaydedildi.</value>
+  </data>
+  <data name="ActionCompleted" xml:space="preserve">
+    <value>Yaşam döngüsü işlemi başarıyla tamamlandı.</value>
+  </data>
+  <data name="InvalidGraphJson" xml:space="preserve">
+    <value>Graf, aktivite, kontrol noktası ve ilişki değerleri geçerli JSON içermelidir.</value>
+  </data>
+  <data name="LifecycleDraft" xml:space="preserve">
+    <value>Taslak</value>
+  </data>
+  <data name="LifecycleReview" xml:space="preserve">
+    <value>İncelemede</value>
+  </data>
+  <data name="LifecyclePublished" xml:space="preserve">
+    <value>Yayımlandı</value>
+  </data>
+  <data name="LifecycleRetired" xml:space="preserve">
+    <value>Kullanımdan kaldırıldı</value>
+  </data>
+</root>

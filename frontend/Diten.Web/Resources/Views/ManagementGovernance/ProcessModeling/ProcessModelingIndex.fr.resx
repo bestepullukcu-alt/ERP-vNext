@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Title" xml:space="preserve"><value>Modèles de processus</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Définissez les identités des modèles et consultez les graphes versionnés.</value></data>
+  <data name="GatewayNotReady" xml:space="preserve"><value>La modélisation n&apos;est pas connectée à la passerelle. Aucune donnée faisant autorité n&apos;a été lue.</value></data>
+  <data name="Lifecycle" xml:space="preserve"><value>Cycle de vie</value></data>
+  <data name="Draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="Review" xml:space="preserve"><value>Révision</value></data>
+  <data name="Published" xml:space="preserve"><value>Publié</value></data>
+  <data name="Retired" xml:space="preserve"><value>Retiré</value></data>
+  <data name="ModelCode" xml:space="preserve"><value>Code du modèle</value></data>
+  <data name="Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="CurrentVersion" xml:space="preserve"><value>Version actuelle</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Mis à jour le</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="IdentityFormTitle" xml:space="preserve"><value>Identité du modèle</value></data>
+  <data name="WriteNotReady" xml:space="preserve"><value>Les écritures restent désactivées jusqu&apos;à l&apos;approbation de la passerelle.</value></data>
+  <data name="ProcessDefinition" xml:space="preserve"><value>Définition du processus</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Ajouter un modèle</value></data>
+  <data name="OpenEditor" xml:space="preserve"><value>Ouvrir l&apos;éditeur</value></data>
+  <data name="Empty" xml:space="preserve"><value>Aucun modèle trouvé.</value></data>
+  <data name="Error401" xml:space="preserve"><value>Votre session n&apos;est pas autorisée.</value></data>
+  <data name="Error403" xml:space="preserve"><value>Vous n&apos;avez pas l&apos;autorisation requise.</value></data>
+  <data name="Error404" xml:space="preserve"><value>Le modèle est introuvable.</value></data>
+  <data name="Error409" xml:space="preserve"><value>Le modèle a changé. Actualisez avant de continuer.</value></data>
+  <data name="Error503" xml:space="preserve"><value>Les données de modélisation faisant autorité sont indisponibles.</value></data>
+  <data name="Error400" xml:space="preserve">
+    <value>La demande est invalide. Vérifiez les valeurs saisies.</value>
+  </data>
+  <data name="ErrorOffline" xml:space="preserve">
+    <value>La connexion a été perdue. Vérifiez votre réseau et réessayez.</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>Le modèle de processus a été enregistré.</value>
+  </data>
+  <data name="NoOp" xml:space="preserve">
+    <value>Aucune modification n’a été détectée.</value>
+  </data>
+</root>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Title" xml:space="preserve"><value>Process models</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Define process model identities and inspect versioned process graphs.</value></data>
+  <data name="GatewayNotReady" xml:space="preserve"><value>Process modeling is not connected to the Gateway. No authoritative data was read.</value></data>
+  <data name="Lifecycle" xml:space="preserve"><value>Lifecycle</value></data>
+  <data name="Draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="Review" xml:space="preserve"><value>Review</value></data>
+  <data name="Published" xml:space="preserve"><value>Published</value></data>
+  <data name="Retired" xml:space="preserve"><value>Retired</value></data>
+  <data name="ModelCode" xml:space="preserve"><value>Model code</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="CurrentVersion" xml:space="preserve"><value>Current version</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Updated at</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="IdentityFormTitle" xml:space="preserve"><value>Process model identity</value></data>
+  <data name="WriteNotReady" xml:space="preserve"><value>Write operations remain disabled until the Gateway activation gate is approved.</value></data>
+  <data name="ProcessDefinition" xml:space="preserve"><value>Process definition</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Add process model</value></data>
+  <data name="OpenEditor" xml:space="preserve"><value>Open editor</value></data>
+  <data name="Empty" xml:space="preserve"><value>No process models found.</value></data>
+  <data name="Error401" xml:space="preserve"><value>Your session is not authorized.</value></data>
+  <data name="Error403" xml:space="preserve"><value>You do not have permission for this operation.</value></data>
+  <data name="Error404" xml:space="preserve"><value>The process model was not found.</value></data>
+  <data name="Error409" xml:space="preserve"><value>The process model changed. Refresh before continuing.</value></data>
+  <data name="Error503" xml:space="preserve"><value>Authoritative process modeling data is currently unavailable.</value></data>
+  <data name="Error400" xml:space="preserve">
+    <value>The request is invalid. Review the entered values.</value>
+  </data>
+  <data name="ErrorOffline" xml:space="preserve">
+    <value>The connection was lost. Check your network and try again.</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>The process model was saved successfully.</value>
+  </data>
+  <data name="NoOp" xml:space="preserve">
+    <value>No changes were detected.</value>
+  </data>
+</root>

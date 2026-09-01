@@ -1,0 +1,108 @@
+@model Diten.Web.Models.ManagementGovernance.ProcessModeling.ProcessModelingEditorViewModel
+@using Diten.Web.Models.ManagementGovernance.ProcessModeling
+@using Diten.Web.Views.ManagementGovernance.ProcessModeling
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProcessModelingEditor> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["Title"].Value;
+    Layout = "_LayoutTenantShell";
+    var readOnly = !Model.GatewayReady;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3 row-gap-4 flex-wrap">
+    <div>
+        <h5 class="mb-0">@Localizer["Title"]</h5>
+        <nav aria-label="@Localizer["BreadcrumbLabel"]">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/management-governance/process-modeling/models">@Localizer["Models"]</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@Localizer["Editor"]</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex gap-2 flex-wrap" aria-label="@Localizer["LifecycleActions"]">
+        @if (Model.Permissions.Contains(ProcessModelingFrontendPermissions.RequestReview))
+        { <button type="button" class="btn btn-label-primary" data-lifecycle-action="request-review" disabled="@readOnly">@Localizer["RequestReview"]</button> }
+        @if (Model.Permissions.Contains(ProcessModelingFrontendPermissions.ReturnToDraft))
+        { <button type="button" class="btn btn-label-secondary" data-lifecycle-action="return-to-draft" disabled="@readOnly">@Localizer["ReturnToDraft"]</button> }
+        @if (Model.Permissions.Contains(ProcessModelingFrontendPermissions.Publish))
+        { <button type="button" class="btn btn-primary" data-lifecycle-action="publish" disabled="@readOnly">@Localizer["Publish"]</button> }
+        @if (Model.Permissions.Contains(ProcessModelingFrontendPermissions.Retire))
+        { <button type="button" class="btn btn-label-danger" data-lifecycle-action="retire" disabled="@readOnly">@Localizer["Retire"]</button> }
+        @if (Model.Permissions.Contains(ProcessModelingFrontendPermissions.CreateRevision))
+        { <button type="button" class="btn btn-label-info" data-lifecycle-action="create-revision" disabled="@readOnly">@Localizer["CreateRevision"]</button> }
+    </div>
+</div>
+
+<div id="processModelEditor"
+     class="process-modeling-editor"
+     data-model-id="@Model.ProcessModelId"
+     data-gateway-ready="@Model.GatewayReady.ToString().ToLowerInvariant()"
+     data-read-only="@readOnly.ToString().ToLowerInvariant()"
+     data-can-update="@Model.Permissions.Contains(ProcessModelingFrontendPermissions.Update).ToString().ToLowerInvariant()">
+    @Html.AntiForgeryToken()
+    <div class="alert alert-warning" role="status" aria-live="polite" tabindex="-1" data-editor-state="gateway-not-ready">
+        @Localizer["GatewayNotReady"]
+    </div>
+    <div class="card mb-4">
+        <div class="card-header"><h6 class="mb-0">@Localizer["VersionSummary"]</h6></div>
+        <div class="card-body" aria-live="polite" id="processModelVersionSummary"><span class="text-muted">@Localizer["NoAuthoritativeVersion"]</span></div>
+    </div>
+    <div class="card mb-4">
+        <div class="card-header p-3">
+            <nav class="nav nav-pills d-inline-flex gap-2 flex-wrap" aria-label="@Localizer["WorkspaceTabs"]">
+                <button class="nav-link active wc-tab-compact" type="button" data-bs-toggle="pill" data-bs-target="#modelGraph"><i class="bx bx-git-branch me-1" aria-hidden="true"></i>@Localizer["Graph"]</button>
+                <button class="nav-link wc-tab-compact" type="button" data-bs-toggle="pill" data-bs-target="#modelActivities"><i class="bx bx-list-check me-1" aria-hidden="true"></i>@Localizer["Activities"]</button>
+                <button class="nav-link wc-tab-compact" type="button" data-bs-toggle="pill" data-bs-target="#modelControls"><i class="bx bx-shield me-1" aria-hidden="true"></i>@Localizer["ControlPoints"]</button>
+            </nav>
+        </div>
+        <div class="card-body tab-content">
+            <section id="modelGraph" class="tab-pane fade show active" tabindex="0" aria-label="@Localizer["Graph"]">
+                <div class="row g-3">
+                    <div class="col-12"><label for="versionTitle" class="form-label">@Localizer["VersionTitle"] <span class="text-danger">*</span></label><input id="versionTitle" class="form-control" maxlength="200" required /></div>
+                    <div class="col-12"><label for="versionDescription" class="form-label">@SharedLocalizer["Description"]</label><textarea id="versionDescription" class="form-control" maxlength="4000" rows="3"></textarea></div>
+                    <div class="col-12"><label for="modelRelationshipsJson" class="form-label">@Localizer["Relationships"]</label><textarea id="modelRelationshipsJson" class="form-control font-monospace" rows="8" spellcheck="false"></textarea></div>
+                </div>
+            </section>
+            <section id="modelActivities" class="tab-pane fade" tabindex="0" aria-label="@Localizer["Activities"]"><label for="modelActivitiesJson" class="form-label">@Localizer["Activities"]</label><textarea id="modelActivitiesJson" class="form-control font-monospace" rows="14" spellcheck="false"></textarea></section>
+            <section id="modelControls" class="tab-pane fade" tabindex="0" aria-label="@Localizer["ControlPoints"]"><label for="modelControlsJson" class="form-label">@Localizer["ControlPoints"]</label><textarea id="modelControlsJson" class="form-control font-monospace" rows="14" spellcheck="false"></textarea></section>
+        </div>
+    </div>
+    <div class="backbone-editor-actions d-flex justify-content-end border-top bg-body p-3" role="region" aria-label="@Localizer["EditorActions"]">
+        <button type="button" id="btnSaveDraft" class="btn btn-primary" disabled>@SharedLocalizer["Save"]</button>
+    </div>
+</div>
+
+<script id="process-modeling-editor-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Loading = Localizer["Loading"].Value,
+        GatewayNotReady = Localizer["GatewayNotReady"].Value,
+        Error401 = Localizer["Error401"].Value,
+        Error400 = Localizer["Error400"].Value,
+        Error403 = Localizer["Error403"].Value,
+        Error404 = Localizer["Error404"].Value,
+        Error409 = Localizer["Error409"].Value,
+        Error503 = Localizer["Error503"].Value,
+        ErrorOffline = Localizer["ErrorOffline"].Value,
+        ConfirmAction = SharedLocalizer["ConfirmAction"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        Saved = Localizer["Saved"].Value,
+        ActionCompleted = Localizer["ActionCompleted"].Value,
+        InvalidGraphJson = Localizer["InvalidGraphJson"].Value,
+        VersionTitle = Localizer["VersionTitle"].Value,
+        LifecycleDraft = Localizer["LifecycleDraft"].Value,
+        LifecycleReview = Localizer["LifecycleReview"].Value,
+        LifecyclePublished = Localizer["LifecyclePublished"].Value,
+        LifecycleRetired = Localizer["LifecycleRetired"].Value
+    })
+</script>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/pages/management-governance/process-modeling.css" asp-append-version="true" />
+}
+@section Scripts {
+    <script src="~/assets/js/pages/management-governance/process-modeling/editor.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/management-governance/process-modeling/editor.js" asp-append-version="true"></script>
+}

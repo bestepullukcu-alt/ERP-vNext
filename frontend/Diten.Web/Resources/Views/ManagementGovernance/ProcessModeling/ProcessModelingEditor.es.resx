@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Title" xml:space="preserve"><value>Editor de modelos</value></data>
+  <data name="BreadcrumbLabel" xml:space="preserve"><value>Navegación del modelo</value></data>
+  <data name="Models" xml:space="preserve"><value>Modelos de procesos</value></data>
+  <data name="Editor" xml:space="preserve"><value>Editor</value></data>
+  <data name="LifecycleActions" xml:space="preserve"><value>Acciones del ciclo de vida</value></data>
+  <data name="RequestReview" xml:space="preserve"><value>Solicitar revisión</value></data>
+  <data name="ReturnToDraft" xml:space="preserve"><value>Volver a borrador</value></data>
+  <data name="Publish" xml:space="preserve"><value>Publicar</value></data>
+  <data name="Retire" xml:space="preserve"><value>Retirar</value></data>
+  <data name="CreateRevision" xml:space="preserve"><value>Crear revisión</value></data>
+  <data name="GatewayNotReady" xml:space="preserve"><value>El editor es de solo lectura hasta aprobar la puerta de enlace.</value></data>
+  <data name="VersionSummary" xml:space="preserve"><value>Resumen de versión</value></data>
+  <data name="NoAuthoritativeVersion" xml:space="preserve"><value>No se cargó una versión autorizada.</value></data>
+  <data name="WorkspaceTabs" xml:space="preserve"><value>Área del modelo</value></data>
+  <data name="Graph" xml:space="preserve"><value>Gráfico</value></data>
+  <data name="Activities" xml:space="preserve"><value>Actividades</value></data>
+  <data name="ControlPoints" xml:space="preserve"><value>Puntos de control</value></data>
+  <data name="NoAuthoritativeGraph" xml:space="preserve"><value>No se cargó un gráfico autorizado.</value></data>
+  <data name="NoAuthoritativeActivities" xml:space="preserve"><value>No se cargaron actividades autorizadas.</value></data>
+  <data name="NoAuthoritativeControls" xml:space="preserve"><value>No se cargaron puntos de control autorizados.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando modelo autorizado…</value></data>
+  <data name="Error401" xml:space="preserve"><value>Su sesión no está autorizada.</value></data>
+  <data name="Error403" xml:space="preserve"><value>No tiene permiso para esta operación.</value></data>
+  <data name="Error404" xml:space="preserve"><value>No se encontró el modelo.</value></data>
+  <data name="Error409" xml:space="preserve"><value>El modelo cambió. Actualice antes de continuar.</value></data>
+  <data name="Error503" xml:space="preserve"><value>Los datos autorizados de modelado no están disponibles.</value></data>
+  <data name="VersionTitle" xml:space="preserve">
+    <value>Título de la versión</value>
+  </data>
+  <data name="Relationships" xml:space="preserve">
+    <value>Relaciones</value>
+  </data>
+  <data name="EditorActions" xml:space="preserve">
+    <value>Acciones del editor</value>
+  </data>
+  <data name="Error400" xml:space="preserve">
+    <value>La solicitud no es válida. Revise los datos de la versión.</value>
+  </data>
+  <data name="ErrorOffline" xml:space="preserve">
+    <value>Se perdió la conexión. Compruebe la red e inténtelo de nuevo.</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>El borrador se guardó correctamente.</value>
+  </data>
+  <data name="ActionCompleted" xml:space="preserve">
+    <value>La acción del ciclo de vida se completó correctamente.</value>
+  </data>
+  <data name="InvalidGraphJson" xml:space="preserve">
+    <value>Los valores del gráfico, las actividades, los puntos de control y las relaciones deben contener JSON válido.</value>
+  </data>
+  <data name="LifecycleDraft" xml:space="preserve">
+    <value>Borrador</value>
+  </data>
+  <data name="LifecycleReview" xml:space="preserve">
+    <value>En revisión</value>
+  </data>
+  <data name="LifecyclePublished" xml:space="preserve">
+    <value>Publicado</value>
+  </data>
+  <data name="LifecycleRetired" xml:space="preserve">
+    <value>Retirado</value>
+  </data>
+</root>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Title" xml:space="preserve"><value>Süreç modelleri</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Süreç modeli kimliklerini tanımlayın ve sürümlü süreç grafiklerini inceleyin.</value></data>
+  <data name="GatewayNotReady" xml:space="preserve"><value>Süreç modelleme Gateway&apos;e bağlı değil. Yetkili veri okunmadı.</value></data>
+  <data name="Lifecycle" xml:space="preserve"><value>Yaşam döngüsü</value></data>
+  <data name="Draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="Review" xml:space="preserve"><value>İnceleme</value></data>
+  <data name="Published" xml:space="preserve"><value>Yayımlandı</value></data>
+  <data name="Retired" xml:space="preserve"><value>Kullanımdan kaldırıldı</value></data>
+  <data name="ModelCode" xml:space="preserve"><value>Model kodu</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="CurrentVersion" xml:space="preserve"><value>Güncel sürüm</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncelleme zamanı</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="IdentityFormTitle" xml:space="preserve"><value>Süreç modeli kimliği</value></data>
+  <data name="WriteNotReady" xml:space="preserve"><value>Yazma işlemleri Gateway etkinleştirme kapısı onaylanana kadar kapalıdır.</value></data>
+  <data name="ProcessDefinition" xml:space="preserve"><value>Süreç tanımı</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Süreç modeli ekle</value></data>
+  <data name="OpenEditor" xml:space="preserve"><value>Düzenleyiciyi aç</value></data>
+  <data name="Empty" xml:space="preserve"><value>Süreç modeli bulunamadı.</value></data>
+  <data name="Error401" xml:space="preserve"><value>Oturumunuz yetkili değil.</value></data>
+  <data name="Error403" xml:space="preserve"><value>Bu işlem için izniniz yok.</value></data>
+  <data name="Error404" xml:space="preserve"><value>Süreç modeli bulunamadı.</value></data>
+  <data name="Error409" xml:space="preserve"><value>Süreç modeli değişti. Devam etmeden önce yenileyin.</value></data>
+  <data name="Error503" xml:space="preserve"><value>Yetkili süreç modelleme verisine şu anda erişilemiyor.</value></data>
+  <data name="Error400" xml:space="preserve">
+    <value>İstek geçersiz. Girilen değerleri gözden geçirin.</value>
+  </data>
+  <data name="ErrorOffline" xml:space="preserve">
+    <value>Bağlantı kesildi. Ağınızı kontrol edip yeniden deneyin.</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>Süreç modeli başarıyla kaydedildi.</value>
+  </data>
+  <data name="NoOp" xml:space="preserve">
+    <value>Herhangi bir değişiklik algılanmadı.</value>
+  </data>
+</root>
