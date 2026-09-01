@@ -54,8 +54,7 @@
 
                 <div class="col-12 d-none" id="userActiveRow">
                     <div class="form-check form-switch">
-                        <input type="hidden" name="IsActive" value="false" />
-                        <input type="checkbox" id="userIsActive" name="IsActive" class="form-check-input" role="switch" value="true" />
+                        <input asp-for="IsActive" id="userIsActive" class="form-check-input" role="switch" />
                         <label for="userIsActive" class="form-check-label ms-2">@SharedLocalizer["Active"]</label>
                     </div>
                 </div>
