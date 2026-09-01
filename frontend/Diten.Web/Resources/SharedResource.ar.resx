@@ -588,6 +588,12 @@
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>مركز المهام</value>
   </data>
+  <data name="Nav.Page.TASKCHECKLISTTEMPLATES" xml:space="preserve">
+    <value>قوالب قوائم التحقق</value>
+  </data>
+  <data name="Nav.Page.TASKTEMPLATES" xml:space="preserve">
+    <value>قوالب المهام</value>
+  </data>
   <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
     <value>قواعد المهام المتكررة</value>
   </data>

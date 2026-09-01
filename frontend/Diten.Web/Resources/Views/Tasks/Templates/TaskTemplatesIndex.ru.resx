@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="TaskTemplatesTitle" xml:space="preserve"><value>Шаблоны задач</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Переиспользуемые формы задач. Повторяющееся правило, привязанное к одной из них, создаёт задачу с приоритетом, сроком и чек-листом, а не голый заголовок.</value></data>
+  <data name="AddNewTemplate" xml:space="preserve"><value>Добавить шаблон</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Изменить шаблон</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Добавить шаблон задачи</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить шаблон задачи</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Name" xml:space="preserve"><value>Название</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>напр. Закрытие месяца</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>напр. MONTHLY-CLOSE</value></data>
+  <data name="CodeHint" xml:space="preserve"><value>После сохранения изменить нельзя: именно по нему на шаблон ссылаются вне базы данных.</value></data>
+  <data name="ShapeSection" xml:space="preserve"><value>Форма</value></data>
+  <data name="TitleTemplate" xml:space="preserve"><value>Заголовок задачи</value></data>
+  <data name="TitleTemplatePlaceholder" xml:space="preserve"><value>напр. Закрытие месяца</value></data>
+  <data name="TitleTemplateHint" xml:space="preserve"><value>Оставьте пустым — созданная задача возьмёт название этого шаблона.</value></data>
+  <data name="TitleFallsBackToName" xml:space="preserve"><value>Берёт название шаблона</value></data>
+  <data name="DescriptionTemplate" xml:space="preserve"><value>Описание</value></data>
+  <data name="DefaultPriority" xml:space="preserve"><value>Приоритет</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Низкий</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Средний</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>Высокий</value></data>
+  <data name="DefaultDueInDays" xml:space="preserve"><value>Срок (дней)</value></data>
+  <data name="DefaultDueInDaysHint" xml:space="preserve"><value>Отсчитывается со дня создания задачи. Оставьте пустым для работы без срока.</value></data>
+  <data name="DueInDaysValue" xml:space="preserve"><value>{0} дн.</value></data>
+  <data name="NoDueDate" xml:space="preserve"><value>Без срока</value></data>
+  <data name="ChecklistSection" xml:space="preserve"><value>Чек-лист</value></data>
+  <data name="Checklist" xml:space="preserve"><value>Чек-лист</value></data>
+  <data name="ChecklistBound" xml:space="preserve"><value>Привязан</value></data>
+  <data name="ChecklistNone" xml:space="preserve"><value>Без чек-листа</value></data>
+  <data name="ChecklistHint" xml:space="preserve"><value>Необязательно. С чек-листом каждая созданная задача несёт его шаги; без него это просто напоминание.</value></data>
+  <data name="ViewChecklist" xml:space="preserve"><value>Открыть чек-лист</value></data>
+  <data name="NoChecklistsYet" xml:space="preserve"><value>Ни один шаблон чек-листа ещё не создан.</value></data>
+  <data name="CreateChecklistFirst" xml:space="preserve"><value>Сначала создайте его.</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>Область компании</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Компания</value></data>
+  <data name="LegalEntityAll" xml:space="preserve"><value>Все компании</value></data>
+  <data name="LegalEntityHint" xml:space="preserve"><value>Оставьте пустым — шаблон действует во всех компаниях. Указание одной ограничивает его ею; форма, общая для трёх компаний, — это три шаблона, каждый правится отдельно.</value></data>
+  <data name="DefaultAssignmentSection" xml:space="preserve"><value>Назначение по умолчанию</value></data>
+  <data name="DefaultAssignmentTarget" xml:space="preserve"><value>Владелец по умолчанию</value></data>
+  <data name="AssignmentSelf" xml:space="preserve"><value>Тот, кто создаёт задачу</value></data>
+  <data name="AssignmentPool" xml:space="preserve"><value>Пул (должность)</value></data>
+  <data name="PoolPosition" xml:space="preserve"><value>Должность</value></data>
+  <data name="PoolPositionHint" xml:space="preserve"><value>Созданная работа предлагается держателям этой должности для взятия в работу.</value></data>
+  <data name="DivisionOfLabourHint" xml:space="preserve"><value>Шаблон говорит, КАК ВЫГЛЯДИТ РАБОТА, — заголовок, описание, приоритет, срок, чек-лист. Повторяющееся правило говорит, КОМУ И КОГДА, — человек, должность, подразделение, периодичность.</value></data>
+  <data name="DefaultAssignmentHint" xml:space="preserve"><value>Используется, только если повторяющееся правило оставило собственное назначение пустым. Если правило кого-то называет, побеждает правило.</value></data>
+  <data name="NoDepartmentHint" xml:space="preserve"><value>Подразделение здесь не задаётся: оно принадлежит повторяющемуся правилу — единственному месту, где сказано, кому предназначена работа.</value></data>
+  <data name="IsActiveHint" xml:space="preserve"><value>Приостановленный шаблон остаётся здесь, но больше не предлагается повторяющимся правилам.</value></data>
+  <data name="TemplatePriorityInvalid" xml:space="preserve"><value>Выберите один из перечисленных приоритетов.</value></data>
+  <data name="TemplateAssignmentTargetInvalid" xml:space="preserve"><value>Шаблон не может назвать человека: у него нет поля исполнителя, и работа никому не достанется. Укажите человека в повторяющемся правиле.</value></data>
+  <data name="TemplatePoolRequired" xml:space="preserve"><value>Выберите должность, которой предлагается созданная работа.</value></data>
+</root>

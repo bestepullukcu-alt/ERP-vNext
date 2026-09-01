@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ChecklistTemplatesTitle" xml:space="preserve"><value>Шаблоны чек-листов</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Переиспользуемые списки шагов. Шаблон задачи привязывает один из них, и каждая созданная задача несёт эти шаги как активный чек-лист.</value></data>
+  <data name="AddNewTemplate" xml:space="preserve"><value>Добавить шаблон</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Изменить шаблон</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Добавить шаблон чек-листа</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить шаблон чек-листа</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Name" xml:space="preserve"><value>Название</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>напр. Проверка выпуска партии</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>напр. QA-RELEASE</value></data>
+  <data name="CodeHint" xml:space="preserve"><value>После сохранения изменить нельзя: именно по нему отмеченный шаг сопоставляется с этим шаблоном.</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="ItemsSection" xml:space="preserve"><value>Шаги</value></data>
+  <data name="AddItem" xml:space="preserve"><value>Добавить шаг</value></data>
+  <data name="RequirementHint" xml:space="preserve"><value>Только БЛОКИРУЮЩИЙ шаг действительно не даёт завершить задачу. Необязательные шаги — это заметки; чек-лист только из них ничего не контролирует.</value></data>
+  <data name="ItemCode" xml:space="preserve"><value>Код шага</value></data>
+  <data name="ItemCodePlaceholder" xml:space="preserve"><value>напр. coa-checked</value></data>
+  <data name="ItemLabel" xml:space="preserve"><value>Шаг</value></data>
+  <data name="ItemLabelPlaceholder" xml:space="preserve"><value>Что нужно сделать</value></data>
+  <data name="Requirement" xml:space="preserve"><value>Обязательность</value></data>
+  <data name="RequirementOptional" xml:space="preserve"><value>Необязательный</value></data>
+  <data name="RequirementRequired" xml:space="preserve"><value>Обязательный</value></data>
+  <data name="RequirementBlocking" xml:space="preserve"><value>Блокирующий</value></data>
+  <data name="EvidenceRequired" xml:space="preserve"><value>Подтверждение</value></data>
+  <data name="ItemCount" xml:space="preserve"><value>Шагов</value></data>
+  <data name="BlockingCount" xml:space="preserve"><value>Блокирующих</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Последнее изменение</value></data>
+  <data name="NeverEdited" xml:space="preserve"><value>Пока нет</value></data>
+  <data name="Gating" xml:space="preserve"><value>Контроль</value></data>
+  <data name="GatingBlocking" xml:space="preserve"><value>Есть блокирующий шаг</value></data>
+  <data name="GatingAdvisory" xml:space="preserve"><value>Только рекомендательный</value></data>
+  <data name="GatingSection" xml:space="preserve"><value>Контроль</value></data>
+  <data name="NoItems" xml:space="preserve"><value>В этом шаблоне нет шагов.</value></data>
+  <data name="NoBlockingHint" xml:space="preserve"><value>Ни один шаг не блокирует завершение — этот чек-лист фиксирует работу, а не контролирует её.</value></data>
+  <data name="IsActiveHint" xml:space="preserve"><value>Приостановленный шаблон остаётся здесь, но больше не предлагается шаблонам задач.</value></data>
+  <data name="NextStepSection" xml:space="preserve"><value>Следующий шаг</value></data>
+  <data name="NextStepHint" xml:space="preserve"><value>Чек-лист попадает в задачу через шаблон задачи. Сначала опишите чек-лист, затем привяжите его там.</value></data>
+  <data name="GoToTaskTemplates" xml:space="preserve"><value>Шаблоны задач</value></data>
+  <data name="ChecklistTemplateEmpty" xml:space="preserve"><value>Добавьте хотя бы один шаг: пустой чек-лист поместит пустой список в каждую задачу.</value></data>
+  <data name="ChecklistItemLabelRequired" xml:space="preserve"><value>Каждому шагу нужен текст: по пустому флажку невозможно действовать.</value></data>
+  <data name="ChecklistItemCodeRequired" xml:space="preserve"><value>Каждому шагу нужен код: именно по нему отмеченный шаг сопоставляется с шаблоном.</value></data>
+  <data name="ChecklistItemCodeDuplicate" xml:space="preserve"><value>Два шага имеют одинаковый код. Отметку одного будет не отличить от отметки другого.</value></data>
+  <data name="ChecklistItemRequirementInvalid" xml:space="preserve"><value>Выберите один из перечисленных уровней обязательности.</value></data>
+</root>

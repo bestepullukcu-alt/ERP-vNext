@@ -588,6 +588,12 @@
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>任务中心</value>
   </data>
+  <data name="Nav.Page.TASKCHECKLISTTEMPLATES" xml:space="preserve">
+    <value>检查清单模板</value>
+  </data>
+  <data name="Nav.Page.TASKTEMPLATES" xml:space="preserve">
+    <value>任务模板</value>
+  </data>
   <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
     <value>重复任务规则</value>
   </data>

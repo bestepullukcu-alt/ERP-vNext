@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="TaskTemplatesTitle" xml:space="preserve"><value>Modèles de tâche</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Formes de tâche réutilisables. Une règle récurrente qui en utilise une génère une tâche avec priorité, échéance et liste de contrôle, au lieu d&#x27;un simple titre.</value></data>
+  <data name="AddNewTemplate" xml:space="preserve"><value>Ajouter un modèle</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Modifier le modèle</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Ajouter un modèle de tâche</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Modifier le modèle de tâche</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Voir</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>p. ex. Clôture de fin de mois</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>p. ex. MONTHLY-CLOSE</value></data>
+  <data name="CodeHint" xml:space="preserve"><value>Non modifiable après enregistrement : c&#x27;est ainsi que ce modèle est référencé hors de la base.</value></data>
+  <data name="ShapeSection" xml:space="preserve"><value>Forme</value></data>
+  <data name="TitleTemplate" xml:space="preserve"><value>Titre de la tâche</value></data>
+  <data name="TitleTemplatePlaceholder" xml:space="preserve"><value>p. ex. Clôture de fin de mois</value></data>
+  <data name="TitleTemplateHint" xml:space="preserve"><value>Laissez vide : la tâche générée prend le nom de ce modèle.</value></data>
+  <data name="TitleFallsBackToName" xml:space="preserve"><value>Reprend le nom du modèle</value></data>
+  <data name="DescriptionTemplate" xml:space="preserve"><value>Description</value></data>
+  <data name="DefaultPriority" xml:space="preserve"><value>Priorité</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Basse</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Moyenne</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>Haute</value></data>
+  <data name="DefaultDueInDays" xml:space="preserve"><value>Échéance (jours)</value></data>
+  <data name="DefaultDueInDaysHint" xml:space="preserve"><value>Compté à partir du jour de création de la tâche. Laissez vide pour un travail sans échéance.</value></data>
+  <data name="DueInDaysValue" xml:space="preserve"><value>{0} jours</value></data>
+  <data name="NoDueDate" xml:space="preserve"><value>Sans échéance</value></data>
+  <data name="ChecklistSection" xml:space="preserve"><value>Liste de contrôle</value></data>
+  <data name="Checklist" xml:space="preserve"><value>Liste de contrôle</value></data>
+  <data name="ChecklistBound" xml:space="preserve"><value>Associée</value></data>
+  <data name="ChecklistNone" xml:space="preserve"><value>Aucune liste de contrôle</value></data>
+  <data name="ChecklistHint" xml:space="preserve"><value>Facultatif. Avec une liste, chaque tâche générée porte ses étapes ; sans elle, c&#x27;est un simple rappel.</value></data>
+  <data name="ViewChecklist" xml:space="preserve"><value>Voir la liste de contrôle</value></data>
+  <data name="NoChecklistsYet" xml:space="preserve"><value>Aucun modèle de liste de contrôle n&#x27;a encore été défini.</value></data>
+  <data name="CreateChecklistFirst" xml:space="preserve"><value>Créez-en un d&#x27;abord.</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>Portée société</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Société</value></data>
+  <data name="LegalEntityAll" xml:space="preserve"><value>Toutes les sociétés</value></data>
+  <data name="LegalEntityHint" xml:space="preserve"><value>Laissez vide : le modèle s&#x27;applique à toutes les sociétés. En nommer une le limite à celle-ci ; une forme partagée par trois sociétés fait trois modèles, modifiables séparément.</value></data>
+  <data name="DefaultAssignmentSection" xml:space="preserve"><value>Affectation par défaut</value></data>
+  <data name="DefaultAssignmentTarget" xml:space="preserve"><value>Détenteur par défaut</value></data>
+  <data name="AssignmentSelf" xml:space="preserve"><value>La personne qui crée la tâche</value></data>
+  <data name="AssignmentPool" xml:space="preserve"><value>Un pool (poste)</value></data>
+  <data name="PoolPosition" xml:space="preserve"><value>Poste</value></data>
+  <data name="PoolPositionHint" xml:space="preserve"><value>Le travail généré est proposé aux titulaires de ce poste, qui peuvent le prendre.</value></data>
+  <data name="DivisionOfLabourHint" xml:space="preserve"><value>Un modèle dit À QUOI RESSEMBLE LE TRAVAIL — titre, description, priorité, délai, liste de contrôle. Une règle récurrente dit POUR QUI ET QUAND — personne, poste, service, fréquence.</value></data>
+  <data name="DefaultAssignmentHint" xml:space="preserve"><value>Utilisé uniquement si la règle récurrente laisse sa propre affectation vide. Si la règle désigne quelqu&#x27;un, la règle l&#x27;emporte.</value></data>
+  <data name="NoDepartmentHint" xml:space="preserve"><value>Le service ne se règle pas ici : il appartient à la règle récurrente, seul endroit qui dit à qui le travail revient.</value></data>
+  <data name="IsActiveHint" xml:space="preserve"><value>Un modèle en pause reste ici mais n&#x27;est plus proposé aux règles récurrentes.</value></data>
+  <data name="TemplatePriorityInvalid" xml:space="preserve"><value>Choisissez l&#x27;une des priorités proposées.</value></data>
+  <data name="TemplateAssignmentTargetInvalid" xml:space="preserve"><value>Un modèle ne peut pas désigner une personne : il n&#x27;a pas de champ destinataire, le travail n&#x27;atteindrait personne. Désignez la personne dans la règle récurrente.</value></data>
+  <data name="TemplatePoolRequired" xml:space="preserve"><value>Sélectionnez le poste auquel le travail généré est proposé.</value></data>
+</root>

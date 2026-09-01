@@ -80,6 +80,8 @@ public static class TaskItemMapper
         task.ReminderLeadDays,
         task.DelegationAllowed,
         task.ProcessInstanceId,
+        // BL-054 — null for a hand-made task, and that absence is itself the answer.
+        task.TemplateSnapshotAt,
         /*
          * BL-024 Phase 2 — the value a caller may not see NEVER LEAVES THE SERVER.
          *

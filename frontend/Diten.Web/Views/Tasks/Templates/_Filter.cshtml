@@ -1,0 +1,59 @@
+@using Diten.Web.Views.Tasks.Templates
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskTemplatesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                            <option value="Active">@SharedLocalizer["Active"]</option>
+                            <option value="Passive">@SharedLocalizer["Passive"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-priority">
+                        <select id="filterPriority" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["DefaultPriority"]">
+                            <option value="Low">@Localizer["PriorityLow"]</option>
+                            <option value="Medium">@Localizer["PriorityMedium"]</option>
+                            <option value="High">@Localizer["PriorityHigh"]</option>
+                        </select>
+                    </div>
+
+                    @*
+                        "Does this template actually carry a checklist?" is the question this screen exists to
+                        answer, so it is filterable rather than something a reader has to open each row to see.
+                    *@
+                    <div class="filter-chip filter-checklist">
+                        <select id="filterChecklist" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Checklist"]">
+                            <option value="With">@Localizer["ChecklistBound"]</option>
+                            <option value="Without">@Localizer["ChecklistNone"]</option>
+                        </select>
+                    </div>
+
+                    @*
+                        Options are built from the ROWS this table already holds — see populateFilterOptions. A
+                        lookup endpoint would be a second source that can disagree with what is on screen.
+                    *@
+                    <div class="filter-chip filter-legalentity">
+                        <select id="filterLegalEntity" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["LegalEntity"]">
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

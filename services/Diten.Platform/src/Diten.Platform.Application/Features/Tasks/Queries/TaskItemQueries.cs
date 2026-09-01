@@ -74,6 +74,28 @@ public sealed record GetTaskRecurrenceRuleListQuery(string CorrelationId)
 public sealed record GetTaskRecurrenceRuleByIdQuery(Guid Id, string CorrelationId)
     : IRequest<Response<TaskRecurrenceRuleDto>>;
 
+// ── BL-054: the template chain ───────────────────────────────────────────────
+
+public sealed record GetChecklistTemplateListQuery(string CorrelationId)
+    : IRequest<Response<IReadOnlyList<ChecklistTemplateDto>>>;
+
+public sealed record GetChecklistTemplateByIdQuery(Guid Id, string CorrelationId)
+    : IRequest<Response<ChecklistTemplateDto>>;
+
+/// <summary>
+/// Checklist templates the TASK-TEMPLATE form's picker is filled from. Its own query rather than reusing the
+/// list: a picker offers only what may still be bound (active, not retired), while the management list has to
+/// show a paused template or it could never be switched back on.
+/// </summary>
+public sealed record GetChecklistTemplateLookupQuery(string CorrelationId)
+    : IRequest<Response<IReadOnlyList<ChecklistTemplateLookupDto>>>;
+
+public sealed record GetTaskTemplateListQuery(string CorrelationId)
+    : IRequest<Response<IReadOnlyList<TaskTemplateDto>>>;
+
+public sealed record GetTaskTemplateByIdQuery(Guid Id, string CorrelationId)
+    : IRequest<Response<TaskTemplateDto>>;
+
 /// <summary>
 /// Every field definition the tenant can see, ACTIVE OR NOT — a retired definition must stay visible so the
 /// values already stored under it keep an explanation, and so it can be switched back on.

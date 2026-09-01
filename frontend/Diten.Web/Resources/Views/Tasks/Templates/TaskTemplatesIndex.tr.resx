@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="TaskTemplatesTitle" xml:space="preserve"><value>Görev Şablonları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Yeniden kullanılabilir görev biçimleri. Bir yinelenen kural bunlardan birine bağlandığında, çıplak bir başlık yerine önceliği, son tarihi ve kontrol listesi olan bir görev üretir.</value></data>
+  <data name="AddNewTemplate" xml:space="preserve"><value>Şablon Ekle</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Şablonu Düzenle</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Görev Şablonu Ekle</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Görev Şablonunu Düzenle</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>örn. Ay sonu kapanış</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>örn. MONTHLY-CLOSE</value></data>
+  <data name="CodeHint" xml:space="preserve"><value>Kaydettikten sonra değiştirilemez: bu şablona veritabanı dışından bu kodla atıf yapılır.</value></data>
+  <data name="ShapeSection" xml:space="preserve"><value>Biçim</value></data>
+  <data name="TitleTemplate" xml:space="preserve"><value>Görev başlığı</value></data>
+  <data name="TitleTemplatePlaceholder" xml:space="preserve"><value>örn. Ay sonu kapanış</value></data>
+  <data name="TitleTemplateHint" xml:space="preserve"><value>Boş bırakırsanız üretilen görev bu şablonun adını alır.</value></data>
+  <data name="TitleFallsBackToName" xml:space="preserve"><value>Şablonun adını alır</value></data>
+  <data name="DescriptionTemplate" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="DefaultPriority" xml:space="preserve"><value>Öncelik</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Düşük</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Orta</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>Yüksek</value></data>
+  <data name="DefaultDueInDays" xml:space="preserve"><value>Süre (gün)</value></data>
+  <data name="DefaultDueInDaysHint" xml:space="preserve"><value>Görevin açıldığı günden itibaren sayılır. Süreye bağlı olmayan işler için boş bırakın.</value></data>
+  <data name="DueInDaysValue" xml:space="preserve"><value>{0} gün</value></data>
+  <data name="NoDueDate" xml:space="preserve"><value>Son tarih yok</value></data>
+  <data name="ChecklistSection" xml:space="preserve"><value>Kontrol listesi</value></data>
+  <data name="Checklist" xml:space="preserve"><value>Kontrol listesi</value></data>
+  <data name="ChecklistBound" xml:space="preserve"><value>Bağlı</value></data>
+  <data name="ChecklistNone" xml:space="preserve"><value>Kontrol listesi yok</value></data>
+  <data name="ChecklistHint" xml:space="preserve"><value>İsteğe bağlı. Bağlanırsa üretilen her görev adımları canlı kontrol listesi olarak taşır; bağlanmazsa yalın bir hatırlatmadır.</value></data>
+  <data name="ViewChecklist" xml:space="preserve"><value>Kontrol listesini görüntüle</value></data>
+  <data name="NoChecklistsYet" xml:space="preserve"><value>Henüz hiç kontrol listesi şablonu tanımlanmadı.</value></data>
+  <data name="CreateChecklistFirst" xml:space="preserve"><value>Önce bir tane oluşturun.</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>Şirket kapsamı</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Şirket</value></data>
+  <data name="LegalEntityAll" xml:space="preserve"><value>Tüm şirketler</value></data>
+  <data name="LegalEntityHint" xml:space="preserve"><value>Boş bırakırsanız şablon tüm şirketlerde geçerlidir. Bir şirket seçmek onu yalnız o şirkete bağlar; üç şirketin paylaştığı bir biçim üç şablondur ve her biri kendi başına değiştirilebilir.</value></data>
+  <data name="DefaultAssignmentSection" xml:space="preserve"><value>Varsayılan atama</value></data>
+  <data name="DefaultAssignmentTarget" xml:space="preserve"><value>Varsayılan sahip</value></data>
+  <data name="AssignmentSelf" xml:space="preserve"><value>Görevi açan kişi</value></data>
+  <data name="AssignmentPool" xml:space="preserve"><value>Bir havuz (pozisyon)</value></data>
+  <data name="PoolPosition" xml:space="preserve"><value>Pozisyon</value></data>
+  <data name="PoolPositionHint" xml:space="preserve"><value>Üretilen iş, o pozisyonu tutanlara üstlenmeleri için sunulur.</value></data>
+  <data name="DivisionOfLabourHint" xml:space="preserve"><value>Şablon İŞİN NEYE BENZEDİĞİNİ söyler — başlık, açıklama, öncelik, süre, kontrol listesi. Yinelenen kural KİME VE NE ZAMAN olduğunu söyler — kişi, pozisyon, departman, sıklık.</value></data>
+  <data name="DefaultAssignmentHint" xml:space="preserve"><value>Yalnızca yinelenen kural kendi atamasını boş bırakırsa kullanılır. Kural birini adlandırırsa kural geçerlidir.</value></data>
+  <data name="NoDepartmentHint" xml:space="preserve"><value>Departman burada belirlenmez: o, işin kime ait olduğunu söyleyen tek yer olan yinelenen kurala aittir.</value></data>
+  <data name="IsActiveHint" xml:space="preserve"><value>Duraklatılmış şablon burada kalır ama artık yinelenen kurallara sunulmaz.</value></data>
+  <data name="TemplatePriorityInvalid" xml:space="preserve"><value>Listelenen önceliklerden birini seçin.</value></data>
+  <data name="TemplateAssignmentTargetInvalid" xml:space="preserve"><value>Şablon bir kişi adlandıramaz: atanan alanı yoktur, iş kimseye ulaşmaz. Kişiyi yinelenen kuralda adlandırın.</value></data>
+  <data name="TemplatePoolRequired" xml:space="preserve"><value>Üretilen işin sunulacağı pozisyonu seçin.</value></data>
+</root>

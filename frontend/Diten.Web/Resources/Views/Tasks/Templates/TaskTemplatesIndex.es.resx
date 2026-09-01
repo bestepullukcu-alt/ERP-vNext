@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="TaskTemplatesTitle" xml:space="preserve"><value>Plantillas de tarea</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Formas de tarea reutilizables. Una regla periódica vinculada a una de ellas genera una tarea con prioridad, fecha de vencimiento y lista de verificación, en vez de un simple título.</value></data>
+  <data name="AddNewTemplate" xml:space="preserve"><value>Añadir plantilla</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Editar plantilla</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Añadir plantilla de tarea</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar plantilla de tarea</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Ver</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Name" xml:space="preserve"><value>Nombre</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>p. ej. Cierre de fin de mes</value></data>
+  <data name="Code" xml:space="preserve"><value>Código</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>p. ej. MONTHLY-CLOSE</value></data>
+  <data name="CodeHint" xml:space="preserve"><value>No se puede cambiar tras guardar: así se referencia esta plantilla fuera de la base de datos.</value></data>
+  <data name="ShapeSection" xml:space="preserve"><value>Forma</value></data>
+  <data name="TitleTemplate" xml:space="preserve"><value>Título de la tarea</value></data>
+  <data name="TitleTemplatePlaceholder" xml:space="preserve"><value>p. ej. Cierre de fin de mes</value></data>
+  <data name="TitleTemplateHint" xml:space="preserve"><value>Déjelo vacío y la tarea generada tomará el nombre de esta plantilla.</value></data>
+  <data name="TitleFallsBackToName" xml:space="preserve"><value>Toma el nombre de la plantilla</value></data>
+  <data name="DescriptionTemplate" xml:space="preserve"><value>Descripción</value></data>
+  <data name="DefaultPriority" xml:space="preserve"><value>Prioridad</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Baja</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Media</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>Alta</value></data>
+  <data name="DefaultDueInDays" xml:space="preserve"><value>Vencimiento (días)</value></data>
+  <data name="DefaultDueInDaysHint" xml:space="preserve"><value>Se cuenta desde el día en que se crea la tarea. Déjelo vacío si el trabajo no tiene plazo.</value></data>
+  <data name="DueInDaysValue" xml:space="preserve"><value>{0} días</value></data>
+  <data name="NoDueDate" xml:space="preserve"><value>Sin vencimiento</value></data>
+  <data name="ChecklistSection" xml:space="preserve"><value>Lista de verificación</value></data>
+  <data name="Checklist" xml:space="preserve"><value>Lista de verificación</value></data>
+  <data name="ChecklistBound" xml:space="preserve"><value>Vinculada</value></data>
+  <data name="ChecklistNone" xml:space="preserve"><value>Sin lista de verificación</value></data>
+  <data name="ChecklistHint" xml:space="preserve"><value>Opcional. Con una, cada tarea generada lleva sus pasos; sin ella, es un simple recordatorio.</value></data>
+  <data name="ViewChecklist" xml:space="preserve"><value>Ver lista de verificación</value></data>
+  <data name="NoChecklistsYet" xml:space="preserve"><value>Aún no se ha definido ninguna plantilla de lista de verificación.</value></data>
+  <data name="CreateChecklistFirst" xml:space="preserve"><value>Cree una primero.</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>Ámbito de empresa</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Empresa</value></data>
+  <data name="LegalEntityAll" xml:space="preserve"><value>Todas las empresas</value></data>
+  <data name="LegalEntityHint" xml:space="preserve"><value>Déjelo vacío y la plantilla se aplica a todas las empresas. Nombrar una la limita a esa empresa; una forma compartida por tres empresas son tres plantillas, editables por separado.</value></data>
+  <data name="DefaultAssignmentSection" xml:space="preserve"><value>Asignación predeterminada</value></data>
+  <data name="DefaultAssignmentTarget" xml:space="preserve"><value>Titular predeterminado</value></data>
+  <data name="AssignmentSelf" xml:space="preserve"><value>Quien cree la tarea</value></data>
+  <data name="AssignmentPool" xml:space="preserve"><value>Un grupo (puesto)</value></data>
+  <data name="PoolPosition" xml:space="preserve"><value>Puesto</value></data>
+  <data name="PoolPositionHint" xml:space="preserve"><value>El trabajo generado se ofrece a quienes ocupan ese puesto para que lo tomen.</value></data>
+  <data name="DivisionOfLabourHint" xml:space="preserve"><value>Una plantilla dice CÓMO ES EL TRABAJO — título, descripción, prioridad, plazo, lista de verificación. Una regla periódica dice PARA QUIÉN Y CUÁNDO — persona, puesto, departamento, frecuencia.</value></data>
+  <data name="DefaultAssignmentHint" xml:space="preserve"><value>Se usa solo cuando la regla periódica deja vacía su propia asignación. Si la regla nombra a alguien, prevalece la regla.</value></data>
+  <data name="NoDepartmentHint" xml:space="preserve"><value>El departamento no se define aquí: pertenece a la regla periódica, el único lugar que dice a quién corresponde el trabajo.</value></data>
+  <data name="IsActiveHint" xml:space="preserve"><value>Una plantilla pausada permanece aquí pero ya no se ofrece a las reglas periódicas.</value></data>
+  <data name="TemplatePriorityInvalid" xml:space="preserve"><value>Elija una de las prioridades indicadas.</value></data>
+  <data name="TemplateAssignmentTargetInvalid" xml:space="preserve"><value>Una plantilla no puede nombrar a una persona: no tiene campo de destinatario, así que el trabajo no llegaría a nadie. Nombre a la persona en la regla periódica.</value></data>
+  <data name="TemplatePoolRequired" xml:space="preserve"><value>Seleccione el puesto al que se ofrece el trabajo generado.</value></data>
+</root>

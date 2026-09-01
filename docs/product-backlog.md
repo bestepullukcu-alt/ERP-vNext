@@ -3472,3 +3472,33 @@ sunucuda idempotency anahtarıdır; düğme kilidi onun yerine geçmez, yanına 
 (b) sunucuda idempotency anahtarı, (c) aynı anahtarla iki kez gönderilen isteğin
 TEK görev ürettiğini ölçen test — ve o testin, korumayı geri alınca kırmızıya
 döndüğü kanıtlanmış olmalı.
+
+### BL-326 — Alt görev kartı sessizce yok oluyor, sebebi söylenmiyor (2026-09-01, sahip gördü)
+
+> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+
+**Belirti:** Sahip bir görev açtı, detayına gitti, alt görev kartını göremedi ve
+hata sandı. Ekran hiçbir açıklama vermiyor.
+
+**Ölçüm (2026-09-01) — davranış DOĞRU, açıklama YOK:**
+- `TaskItem.cs:244` kuralı yazıyor: *"One level only. A task carrying a parent
+  may not itself be a parent; the server enforces it."*
+- `TaskWorkItemProvider.cs:545` —
+  `var subtasks = task.ParentTaskItemId is null ? ToSubtasks(...) : null;`
+- `:875-878` — `subtasks` null ise `"subtasks"` yeteneği bildirilmiyor
+- `app.js:3400` — `if (!hasCap(item, 'subtasks') || !item.subtasks) { return ''; }`
+
+Yani üstü olan bir görevde kart **doğru** biçimde çizilmiyor. Ama kullanıcı
+bunu bilmiyor ve eksiklik sanıyor.
+
+⚠ **Bu, bu üründe tekrar eden kusur sınıfı:** ekran bir şeyin NEDEN olmadığını
+söylemiyor. Aynı sınıf: [[BL-072]] (kişi seçicide "neden kısa" ipucu sunucuda
+hesaplanıp tarayıcıda ölüyor), ve kurulmamış kiracıda Görev Merkezi'nin
+"Her şey tamam ✓" demesi.
+
+**Kapanış ölçütü:** üstü olan bir görevde, alt görev kartının yerinde tek cümle:
+*"Bu görev bir alt görev. Alt görevler tek seviyedir; bunun altına başka görev
+eklenemez."* — 7 dilde, ve kartın çizilmediği durumu ölçen bir test.
+
+⚠ **l10n kapısı AÇIK** (yeni metin, 7 dil). Tek başına bir tur değil; bir sonraki
+l10n paketine katılmalı.

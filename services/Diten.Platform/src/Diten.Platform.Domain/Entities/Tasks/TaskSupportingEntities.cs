@@ -387,6 +387,24 @@ public sealed class TaskTemplate : TenantScopedEntity
     public int? DefaultDueInDays { get; set; }
     public Guid? ChecklistTemplateId { get; set; }
     public List<TaskFieldValue> DefaultFieldValues { get; set; } = [];
+
+    /// <summary>
+    /// WHICH COMPANY this template belongs to. Null means it applies to every legal entity in the tenant.
+    ///
+    /// <para><b>ONE entity, not a list, and that is the whole decision.</b> A multi-select rots: the day a new
+    /// company is opened, every template that should also cover it has to be found and edited one at a time, and
+    /// nobody does that — so the list silently means "the companies we had when somebody last looked". A single
+    /// nullable owner has no such drift: either the template is global or it names exactly one company, and a
+    /// shape three companies share is three templates, each editable in its own company without touching the
+    /// other two. That is the shape the larger systems settle on for the same reason.</para>
+    ///
+    /// <para>⚠ Stored and displayed; it is NOT a read filter yet. MOD-0024 carries no "current legal entity"
+    /// context to filter against, and inventing one here would be a second answer to which company a user is
+    /// acting for. Scoping the pickers is a follow-on that needs that context first — recording the intent now
+    /// is what lets it arrive without a migration.</para>
+    /// </summary>
+    public Guid? LegalEntityId { get; set; }
+
     public bool IsActive { get; set; } = true;
     public DateTimeOffset? DeletedAt { get; set; }
 }

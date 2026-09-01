@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ChecklistTemplatesTitle" xml:space="preserve"><value>قوالب قوائم التحقق</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>قوائم خطوات قابلة لإعادة الاستخدام. يربط قالب المهمة إحداها، وكل مهمة يولّدها تحمل الخطوات كقائمة تحقق حيّة.</value></data>
+  <data name="AddNewTemplate" xml:space="preserve"><value>إضافة قالب</value></data>
+  <data name="EditItem" xml:space="preserve"><value>تعديل القالب</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>إضافة قالب قائمة تحقق</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل قالب قائمة التحقق</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>مثال: فحص الإفراج عن الدفعة</value></data>
+  <data name="Code" xml:space="preserve"><value>الرمز</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>مثال: QA-RELEASE</value></data>
+  <data name="CodeHint" xml:space="preserve"><value>لا يمكن تغييره بعد الحفظ: به تُطابَق الخطوة المُعلَّمة مع هذا القالب.</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>الهوية</value></data>
+  <data name="ItemsSection" xml:space="preserve"><value>الخطوات</value></data>
+  <data name="AddItem" xml:space="preserve"><value>إضافة خطوة</value></data>
+  <data name="RequirementHint" xml:space="preserve"><value>الخطوة «المانعة» وحدها هي التي تمنع فعليًا إنهاء المهمة. الخطوات الاختيارية ملاحظات، وقائمة مكوّنة منها فقط لا تفرض أي بوابة.</value></data>
+  <data name="ItemCode" xml:space="preserve"><value>رمز الخطوة</value></data>
+  <data name="ItemCodePlaceholder" xml:space="preserve"><value>مثال: coa-checked</value></data>
+  <data name="ItemLabel" xml:space="preserve"><value>الخطوة</value></data>
+  <data name="ItemLabelPlaceholder" xml:space="preserve"><value>ما يجب إنجازه</value></data>
+  <data name="Requirement" xml:space="preserve"><value>الإلزام</value></data>
+  <data name="RequirementOptional" xml:space="preserve"><value>اختياري</value></data>
+  <data name="RequirementRequired" xml:space="preserve"><value>مطلوب</value></data>
+  <data name="RequirementBlocking" xml:space="preserve"><value>مانع</value></data>
+  <data name="EvidenceRequired" xml:space="preserve"><value>دليل</value></data>
+  <data name="ItemCount" xml:space="preserve"><value>الخطوات</value></data>
+  <data name="BlockingCount" xml:space="preserve"><value>المانعة</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>آخر تعديل</value></data>
+  <data name="NeverEdited" xml:space="preserve"><value>لا بعد</value></data>
+  <data name="Gating" xml:space="preserve"><value>البوابة</value></data>
+  <data name="GatingBlocking" xml:space="preserve"><value>يحتوي خطوة مانعة</value></data>
+  <data name="GatingAdvisory" xml:space="preserve"><value>إرشادي فقط</value></data>
+  <data name="GatingSection" xml:space="preserve"><value>البوابة</value></data>
+  <data name="NoItems" xml:space="preserve"><value>لا يحتوي هذا القالب على خطوات.</value></data>
+  <data name="NoBlockingHint" xml:space="preserve"><value>لا توجد خطوة تمنع الإنهاء، لذا تسجّل هذه القائمة العمل بدل أن تفرض بوابة عليه.</value></data>
+  <data name="IsActiveHint" xml:space="preserve"><value>يبقى القالب المتوقّف هنا لكنه لم يعد يُعرَض على قوالب المهام.</value></data>
+  <data name="NextStepSection" xml:space="preserve"><value>الخطوة التالية</value></data>
+  <data name="NextStepHint" xml:space="preserve"><value>تصل قائمة التحقق إلى المهمة عبر قالب مهمة. عرِّف القائمة أولًا ثم اربطها هناك.</value></data>
+  <data name="GoToTaskTemplates" xml:space="preserve"><value>قوالب المهام</value></data>
+  <data name="ChecklistTemplateEmpty" xml:space="preserve"><value>أضف خطوة واحدة على الأقل؛ قائمة فارغة ستضع قائمة فارغة على كل مهمة.</value></data>
+  <data name="ChecklistItemLabelRequired" xml:space="preserve"><value>كل خطوة تحتاج نصًا؛ مربع اختيار بلا كلمات لا يمكن التصرّف بناءً عليه.</value></data>
+  <data name="ChecklistItemCodeRequired" xml:space="preserve"><value>كل خطوة تحتاج رمزًا؛ به تُطابَق الخطوة المُعلَّمة مع هذا القالب.</value></data>
+  <data name="ChecklistItemCodeDuplicate" xml:space="preserve"><value>خطوتان تحملان الرمز نفسه. لن يمكن تمييز تعليم إحداهما عن الأخرى.</value></data>
+  <data name="ChecklistItemRequirementInvalid" xml:space="preserve"><value>اختر أحد مستويات الإلزام المدرجة.</value></data>
+</root>

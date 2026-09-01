@@ -279,6 +279,9 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
             ReminderLeadDays = request.ReminderLeadDays,
             DelegationAllowed = request.DelegationAllowed,
             FieldValues = fields.Values.ToList(),
+            // BL-054 — null for a hand-made task, and that absence is itself the answer: nothing claims this
+            // task came from a template.
+            TemplateSnapshotAt = command.TemplateSnapshotAt,
             CreatedBy = _currentUser.ActorName
         };
 

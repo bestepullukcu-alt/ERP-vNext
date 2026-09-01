@@ -1,0 +1,123 @@
+@model Diten.Web.Models.TaskChecklistTemplates.ChecklistTemplateEditViewModel
+@using Diten.Web.Views.Tasks.ChecklistTemplates
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskChecklistTemplatesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Model.Name;
+    Layout = "_LayoutTenantShell";
+
+    var items = Model.Items.Where(item => !item.IsBlank).ToList();
+    var blocking = items.Count(item => item.Requirement == "Blocking");
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@Model.Name</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a asp-controller="TaskChecklistTemplates" asp-action="Index">@Localizer["ChecklistTemplatesTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@Model.Name</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-controller="TaskChecklistTemplates" asp-action="Index" class="btn btn-label-secondary">
+            @SharedLocalizer["Cancel"]
+        </a>
+        <a asp-controller="TaskChecklistTemplates" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+            @Localizer["EditItem"]
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 fw-medium">@Localizer["Code"]</dt>
+                    <dd class="col-sm-8">@Model.Code</dd>
+
+                    <dt class="col-sm-4 fw-medium">@Localizer["Description"]</dt>
+                    <dd class="col-sm-8">
+                        @(string.IsNullOrWhiteSpace(Model.Description)
+                            ? SharedLocalizer["NotAvailable"].Value
+                            : Model.Description)
+                    </dd>
+                </dl>
+            </div>
+        </section>
+
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ItemsSection"]</h6>
+                @if (items.Count == 0)
+                {
+                    @* Cannot normally happen — the write path refuses an empty template — so it is SAID rather
+                       than rendered as a blank table, which reads as a screen that failed to load. *@
+                    <p class="mb-0 text-muted">@Localizer["NoItems"]</p>
+                }
+                else
+                {
+                    <ol class="dt-checklist-preview mb-0">
+                        @foreach (var item in items)
+                        {
+                            <li class="dt-checklist-preview__item">
+                                <span class="fw-medium text-heading">@item.LabelText</span>
+                                <span class="badge ms-2 @(item.Requirement switch
+                                {
+                                    "Blocking" => "bg-label-danger",
+                                    "Required" => "bg-label-warning",
+                                    _ => "bg-label-secondary"
+                                })">
+                                    @Localizer["Requirement" + item.Requirement]
+                                </span>
+                                @if (item.EvidenceRequired)
+                                {
+                                    <span class="badge bg-label-info ms-1">@Localizer["EvidenceRequired"]</span>
+                                }
+                                <span class="d-block text-muted small">@item.Code</span>
+                            </li>
+                        }
+                    </ol>
+                }
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@SharedLocalizer["Status"]</h6>
+                <span class="badge @(Model.IsActive ? "bg-label-success" : "bg-label-secondary")">
+                    @(Model.IsActive ? SharedLocalizer["Active"].Value : SharedLocalizer["Passive"].Value)
+                </span>
+            </div>
+        </section>
+
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["GatingSection"]</h6>
+                @*
+                    The one number that says whether this checklist actually gates anything. A template of purely
+                    optional steps looks identical to a gating one everywhere else on the screen.
+                *@
+                <dl class="row mb-0">
+                    <dt class="col-7 fw-medium">@Localizer["ItemCount"]</dt>
+                    <dd class="col-5 text-end">@items.Count</dd>
+
+                    <dt class="col-7 fw-medium">@Localizer["BlockingCount"]</dt>
+                    <dd class="col-5 text-end">@blocking</dd>
+                </dl>
+                @if (blocking == 0)
+                {
+                    <p class="mb-0 mt-3 text-muted small">@Localizer["NoBlockingHint"]</p>
+                }
+            </div>
+        </section>
+    </div>
+</div>

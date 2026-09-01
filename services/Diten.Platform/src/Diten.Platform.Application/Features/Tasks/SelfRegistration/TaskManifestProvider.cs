@@ -39,6 +39,8 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
     private const string PageTaskTypes = "TASK_TYPES";
     private const string PageDocumentList = "TASK_DOCUMENT_LIST";
     private const string PageTaskRecurrenceRules = "TASK_RECURRENCE_RULES";
+    private const string PageChecklistTemplates = "TASK_CHECKLIST_TEMPLATES";
+    private const string PageTaskTemplates = "TASK_TEMPLATES";
 
     public ModuleManifestDocument GetManifest() =>
         new(
@@ -259,6 +261,63 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                             IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("DELETE", "Delete Recurrence Rule",
                             TaskPermissions.RecurrenceManage, "Row", 30,
+                            IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
+                    ]),
+
+                /*
+                 * BL-054 — the two template surfaces that make a recurrence rule produce a task worth receiving.
+                 *
+                 * ⚠ THE CHECKLIST SCREEN SORTS BEFORE THE TASK-TEMPLATE ONE, and that is not decoration. The
+                 * task-template form carries a checklist picker; an administrator who meets these menu entries in
+                 * the other order fills that picker's source in AFTERWARDS, having already saved a template with
+                 * no gate. The menu is the only instruction most people will ever read, so it states the order
+                 * the work actually has.
+                 *
+                 * Both nav-visible, and both may be: these keys configure what work LOOKS LIKE rather than
+                 * showing anybody their own work, so neither is in PersonalWorkSurfaceScoped and neither
+                 * fragments the Task Center. TaskManifestProviderTests derives that from the permission.
+                 */
+                new ModuleManifestPage(
+                    PageCode: PageChecklistTemplates,
+                    DisplayName: "Checklist Templates",
+                    RoutePath: "/Tasks/ChecklistTemplates",
+                    RequiredPermission: TaskPermissions.ChecklistTemplatesManage,
+                    ParentPageCode: PageTasks,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 31,
+                    Actions:
+                    [
+                        new ModuleManifestAction("CREATE", "Create Checklist Template",
+                            TaskPermissions.ChecklistTemplatesManage, "Toolbar", 10,
+                            IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("EDIT", "Edit Checklist Template",
+                            TaskPermissions.ChecklistTemplatesManage, "Row", 20,
+                            IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("DELETE", "Delete Checklist Template",
+                            TaskPermissions.ChecklistTemplatesManage, "Row", 30,
+                            IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
+                    ]),
+
+                new ModuleManifestPage(
+                    PageCode: PageTaskTemplates,
+                    DisplayName: "Task Templates",
+                    RoutePath: "/Tasks/Templates",
+                    RequiredPermission: TaskPermissions.TemplatesManage,
+                    ParentPageCode: PageTasks,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 32,
+                    Actions:
+                    [
+                        new ModuleManifestAction("CREATE", "Create Task Template",
+                            TaskPermissions.TemplatesManage, "Toolbar", 10,
+                            IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("EDIT", "Edit Task Template",
+                            TaskPermissions.TemplatesManage, "Row", 20,
+                            IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("DELETE", "Delete Task Template",
+                            TaskPermissions.TemplatesManage, "Row", 30,
                             IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
                     ])
             ],

@@ -649,6 +649,12 @@
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>Görev Merkezi</value>
   </data>
+  <data name="Nav.Page.TASKCHECKLISTTEMPLATES" xml:space="preserve">
+    <value>Kontrol Listesi Şablonları</value>
+  </data>
+  <data name="Nav.Page.TASKTEMPLATES" xml:space="preserve">
+    <value>Görev Şablonları</value>
+  </data>
   <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
     <value>Yinelenen Görev Kuralları</value>
   </data>

@@ -1,0 +1,37 @@
+@using Diten.Web.Views.Tasks.Templates
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskTemplatesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@*
+    No select-all checkbox and no bulk bar, like both siblings: MOD-0024 exposes five CRUD endpoints for
+    templates and NO bulk-delete. A bulk button wired to an endpoint that does not exist is a button that fails.
+*@
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-tasktemplates" data-dt-standard="v2" class="datatables-tasktemplates table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="all">@Localizer["Name"]</th>
+                    <th>@Localizer["Code"]</th>
+                    <th>@Localizer["DefaultPriority"]</th>
+                    <th>@Localizer["DefaultDueInDays"]</th>
+                    @* The two columns that say whether a generated task will be worth receiving. *@
+                    <th>@Localizer["Checklist"]</th>
+                    <th>@Localizer["LegalEntity"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

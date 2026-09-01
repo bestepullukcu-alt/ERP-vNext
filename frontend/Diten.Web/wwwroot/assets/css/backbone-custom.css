@@ -8652,3 +8652,56 @@ tags.diten-tags .tagify__input {
 .search-degraded-wrapper {
     block-size: 28.75rem;
 }
+
+
+/* ──────────────────────────────────────────────────────────────────────────────
+ * MOD-0024 / BL-054 — the checklist-template step editor and its read-only preview.
+ *
+ * FG-003: every rule here exists because the markup carries NO style="" and no JS touches element.style. The
+ * step editor is a table whose columns have to hold their width while rows are added and removed — without
+ * fixed widths the code column collapses under a long step label the moment somebody types one, and the
+ * controls move under the user's cursor mid-edit.
+ * ────────────────────────────────────────────────────────────────────────────── */
+
+.dt-checklist-items__code {
+    inline-size: 12rem;
+}
+
+.dt-checklist-items__requirement {
+    inline-size: 10rem;
+}
+
+.dt-checklist-items__evidence {
+    inline-size: 6rem;
+}
+
+.dt-checklist-items__actions {
+    inline-size: 3.5rem;
+}
+
+/*
+ * The narrow columns stop being helpful below the point where the label column would be squeezed to nothing,
+ * so on small screens they give their width back and the table scrolls instead (its wrapper is
+ * .table-responsive). A fixed 12rem code column on a phone leaves no room for the step itself.
+ */
+@media (max-width: 767.98px) {
+    .dt-checklist-items__code,
+    .dt-checklist-items__requirement,
+    .dt-checklist-items__evidence,
+    .dt-checklist-items__actions {
+        inline-size: auto;
+    }
+}
+
+/*
+ * The DETAIL preview — an ordered list rather than a table, because there is nothing to edit and the numbering
+ * is the point: a reader is checking the ORDER the steps will appear in on a live task.
+ */
+.dt-checklist-preview {
+    padding-inline-start: 1.25rem;
+    margin-block-end: 0;
+}
+
+.dt-checklist-preview__item + .dt-checklist-preview__item {
+    margin-block-start: 0.75rem;
+}

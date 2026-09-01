@@ -1,0 +1,190 @@
+@model Diten.Web.Models.TaskChecklistTemplates.ChecklistTemplateEditViewModel
+@using Diten.Web.Views.Tasks.ChecklistTemplates
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskChecklistTemplatesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var action = isEdit ? "Edit" : "Create";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a asp-controller="TaskChecklistTemplates" asp-action="Index">@Localizer["ChecklistTemplatesTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-controller="TaskChecklistTemplates" asp-action="Index" class="btn btn-label-secondary">
+            @SharedLocalizer["Cancel"]
+        </a>
+        <button type="submit" form="checklistTemplateForm" class="btn btn-primary">
+            @(isEdit ? SharedLocalizer["Update"] : SharedLocalizer["Save"])
+        </button>
+    </div>
+</div>
+
+<form id="checklistTemplateForm" asp-controller="TaskChecklistTemplates" asp-action="@action" asp-route-id="@Model.Id"
+      method="post" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="ExpectedVersion" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <label asp-for="Code" class="form-label fw-medium">@Localizer["Code"] <span class="text-danger">*</span></label>
+                            @*
+                                READ-ONLY once saved. The code is how a ticked step is matched back to its
+                                template and how the template is named outside the database; moving it would
+                                silently re-point every one of those references. The server refuses a changed
+                                code rather than ignoring it, so this control and that rule agree.
+                            *@
+                            <input asp-for="Code" class="form-control" maxlength="60" placeholder="@Localizer["CodePlaceholder"]"
+                                   required readonly="@isEdit" />
+                            <div class="form-text">@Localizer["CodeHint"]</div>
+                            <span asp-validation-for="Code" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-8">
+                            <label asp-for="Name" class="form-label fw-medium">@Localizer["Name"] <span class="text-danger">*</span></label>
+                            <input asp-for="Name" class="form-control" maxlength="200" placeholder="@Localizer["NamePlaceholder"]" required />
+                            <span asp-validation-for="Name" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label fw-medium">@Localizer["Description"]</label>
+                            <textarea asp-for="Description" class="form-control" rows="2" maxlength="1000"></textarea>
+                            <span asp-validation-for="Description" class="text-danger small mt-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["ItemsSection"]</h6>
+                        <button type="button" class="btn btn-sm btn-label-primary" data-checklist-add>
+                            <i class="icon-base bx bx-plus icon-sm me-1"></i>@Localizer["AddItem"]
+                        </button>
+                    </div>
+
+                    @*
+                        The rule said out loud, because it is not guessable from the control: an OPTIONAL step is
+                        a note, and a BLOCKING one is the only kind that actually stops a task being completed.
+                        A checklist whose every step is optional gates nothing while looking exactly like one
+                        that does.
+                    *@
+                    <div class="alert alert-info" role="note">@Localizer["RequirementHint"]</div>
+
+                    <div class="table-responsive">
+                        <table class="table dt-checklist-items align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="dt-checklist-items__code">@Localizer["ItemCode"]</th>
+                                    <th>@Localizer["ItemLabel"]</th>
+                                    <th class="dt-checklist-items__requirement">@Localizer["Requirement"]</th>
+                                    <th class="dt-checklist-items__evidence text-center">@Localizer["EvidenceRequired"]</th>
+                                    <th class="dt-checklist-items__actions"></th>
+                                </tr>
+                            </thead>
+                            <tbody data-checklist-rows>
+                                @for (var i = 0; i < Model.Items.Count; i++)
+                                {
+                                    <tr data-checklist-row>
+                                        <td>
+                                            <input asp-for="Items[i].Code" class="form-control form-control-sm"
+                                                   maxlength="60" placeholder="@Localizer["ItemCodePlaceholder"]" />
+                                        </td>
+                                        <td>
+                                            <input asp-for="Items[i].LabelText" class="form-control form-control-sm"
+                                                   maxlength="300" placeholder="@Localizer["ItemLabelPlaceholder"]" />
+                                        </td>
+                                        <td>
+                                            <select asp-for="Items[i].Requirement" class="form-select form-select-sm">
+                                                <option value="Optional">@Localizer["RequirementOptional"]</option>
+                                                <option value="Required">@Localizer["RequirementRequired"]</option>
+                                                <option value="Blocking">@Localizer["RequirementBlocking"]</option>
+                                            </select>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="form-check d-inline-block">
+                                @*
+                                    ⚠ NO MANUAL hidden "false" companion, and its absence is the fix.
+
+                                    MEASURED: with one, the browser posted `false,true` and MVC's binder takes
+                                    the FIRST value — so a ticked switch saved as UNTICKED, silently, every time.
+                                    `asp-for` on a bool already emits its own hidden `false`, and the tag helper
+                                    emits it at FORM CLOSE, i.e. AFTER the checkbox: `true,false` binds true and
+                                    a bare `false` binds false. Adding a second one in front inverts the control.
+                                *@
+                                                <input asp-for="Items[i].EvidenceRequired" class="form-check-input"
+                                                       aria-label="@Localizer["EvidenceRequired"]" />
+                                            </div>
+                                        </td>
+                                        <td class="text-end">
+                                            <button type="button" class="btn btn-icon btn-text-danger" data-checklist-remove
+                                                    title="@SharedLocalizer["Delete"]" aria-label="@SharedLocalizer["Delete"]">
+                                                <i class="icon-base bx bx-trash icon-sm"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <span asp-validation-for="Items" class="text-danger small mt-2 d-block"></span>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right) -->
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@SharedLocalizer["Status"]</h6>
+                    @*
+                        ⚠ NO MANUAL hidden "false" companion — see the step editor above. MEASURED: with one, a
+                        ticked switch posted `false,true` and bound to FALSE, so every template saved passive
+                        however the switch was left.
+                    *@
+                    <div class="form-check form-switch">
+                        <input asp-for="IsActive" class="form-check-input" role="switch" />
+                        <label asp-for="IsActive" class="form-check-label ms-2">@SharedLocalizer["Active"]</label>
+                    </div>
+                    @* Paused ≠ deleted, and the difference decides whether the picker still offers it. *@
+                    <div class="form-text mt-2">@Localizer["IsActiveHint"]</div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["NextStepSection"]</h6>
+                    @*
+                        The ORDER, stated where somebody is standing in it. A task template's checklist picker is
+                        filled from this screen, so an administrator who meets the two the other way round saves a
+                        template with no gate and only finds out later.
+                    *@
+                    <p class="mb-3 text-muted">@Localizer["NextStepHint"]</p>
+                    <a asp-controller="TaskTemplates" asp-action="Index" class="btn btn-label-secondary w-100">
+                        @Localizer["GoToTaskTemplates"]
+                    </a>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

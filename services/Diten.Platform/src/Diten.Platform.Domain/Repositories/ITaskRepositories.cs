@@ -213,7 +213,21 @@ public interface IChecklistTemplateRepository
 {
     Task<ChecklistTemplate> CreateAsync(ChecklistTemplate template, CancellationToken ct = default);
     Task<ChecklistTemplate?> GetByIdAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>Templates a task or a task template may be built from — active and not retired.</summary>
     Task<IReadOnlyList<ChecklistTemplate>> ListActiveAsync(CancellationToken ct = default);
+
+    /// <summary>The template carrying this code, or null. Backs the tenant-uniqueness check on create/edit.</summary>
+    Task<ChecklistTemplate?> GetByCodeAsync(string code, CancellationToken ct = default);
+
+    /// <summary>
+    /// Every template, retired ones included — the management screen. Same reason its three siblings state:
+    /// a template that vanished when it was switched off could never be switched back on.
+    /// </summary>
+    Task<IReadOnlyList<ChecklistTemplate>> ListAllAsync(CancellationToken ct = default);
+
+    /// <summary>Expected-version write, like every other MOD-0024 edit.</summary>
+    Task<bool> UpdateAsync(ChecklistTemplate template, int expectedVersion, CancellationToken ct = default);
 }
 
 public interface IChecklistRunRepository
@@ -232,7 +246,18 @@ public interface ITaskTemplateRepository
 {
     Task<TaskTemplate> CreateAsync(TaskTemplate template, CancellationToken ct = default);
     Task<TaskTemplate?> GetByIdAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>Templates a recurrence rule or a manual create may be built from — active and not retired.</summary>
     Task<IReadOnlyList<TaskTemplate>> ListActiveAsync(CancellationToken ct = default);
+
+    /// <summary>The template carrying this code, or null. Backs the tenant-uniqueness check on create/edit.</summary>
+    Task<TaskTemplate?> GetByCodeAsync(string code, CancellationToken ct = default);
+
+    /// <summary>Every template, retired ones included — the management screen and the uniqueness check.</summary>
+    Task<IReadOnlyList<TaskTemplate>> ListAllAsync(CancellationToken ct = default);
+
+    /// <summary>Expected-version write, like every other MOD-0024 edit.</summary>
+    Task<bool> UpdateAsync(TaskTemplate template, int expectedVersion, CancellationToken ct = default);
 }
 
 public interface ITaskRecurrenceRuleRepository

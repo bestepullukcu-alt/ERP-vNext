@@ -1,0 +1,25 @@
+@using Diten.Web.Views.Tasks.ChecklistTemplates
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskChecklistTemplatesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["ChecklistTemplatesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/Tasks/ChecklistTemplates/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ChecklistTemplatesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-taskchecklisttemplates" data-dt-standard="v2"> *@
+<partial name="~/Views/Tasks/ChecklistTemplates/_DataTable.cshtml" />
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Tasks/ChecklistTemplates/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Tasks/ChecklistTemplates/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Tasks/ChecklistTemplates/index.js" asp-append-version="true"></script>
+}
