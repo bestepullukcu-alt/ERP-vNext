@@ -20,6 +20,7 @@ target: 2026-09-15
 form_field_count: 0
 port: TBD
 implementation_authority: explicit-user-control-tower-bounded-core-model-contract-test
+closure_implementation_authority: explicit-user-current-main-frontend-local-test-closure
 production_authority: none
 ---
 
@@ -31,11 +32,13 @@ production_authority: none
 > only for the bounded Core Model & Contract-Test slice and grants no runtime or production authority.
 
 > **Ready-for-dev bounded implementation guard:** `status: ready-for-dev`,
-> `implementation_authority: explicit-user-control-tower-bounded-core-model-contract-test` and
-> `production_authority: none` are binding. The explicit user decision dated 2026-08-25 authorizes only the
-> exact Core scaffold, module and test paths in §5. It does not authorize a listener, endpoint, route, port
-> binding, Gateway, frontend, WorkCenter, credential, migration, deployment, external adapter, production
-> activation or modification of another internal module.
+> `implementation_authority: explicit-user-control-tower-bounded-core-model-contract-test`,
+> `closure_implementation_authority: explicit-user-current-main-frontend-local-test-closure` and
+> `production_authority: none` are binding. The explicit user decision dated 2026-08-25 authorizes the exact
+> Core scaffold, module and test paths in §5. The explicit 2026-09-01 amendment authorizes only the additional
+> ProcessModeling frontend/local-test paths in §5. It does not authorize a Gateway route, tracked runtime
+> configuration, production listener/port binding, WorkCenter, credential, migration, deployment, external
+> adapter, production activation or modification of another internal module.
 
 > **Planning boundary:** `target` is provisional planning metadata, not a delivery commitment or authority.
 
@@ -771,24 +774,73 @@ Later slices require separate explicit scope activation:
 
 - Approval/Auth/Audit adapters.
 - Optional reference adapters.
-- Frontend ProcessModeling surface.
 - Gateway routing.
 - Runtime deployment and configuration.
 
 The exact Core paths above grant present bounded write authority only; every later-slice path remains
 unauthorized.
 
+### Current-main Frontend & Local-Test Closure amendment — 2026-09-01
+
+The accountable owner explicitly authorizes a bounded current-main reconciliation slice for the
+ProcessModeling frontend and local-test candidates. This amendment does not authorize historical closure
+branches to be merged or cherry-picked wholesale. Every candidate change must be reconciled against current
+`main`, and any change outside the exact allowlist below must be rejected rather than carried incidentally.
+
+The slice is `NON-PRODUCTION`, `DEFAULT-OFF`, `NON-MIGRATING` and `FAIL-CLOSED`:
+
+- It may provide tenant-shell presentation, seven-language resources, same-origin frontend proxy contracts,
+  ProcessModeling-only local-test API/controller code and their tests.
+- `Program.cs` and existing shared DI/composition files may receive only minimal additive ProcessModeling
+  local-test registration. Existing Dws, DecisionRegistry or other sibling registration and behavior must be
+  preserved byte-for-byte outside that additive hunk.
+- An absent, disabled, indeterminate or unavailable local-test executor/provider returns the stable `503`
+  unavailable outcome. It must not silently fall back to an in-memory, cross-tenant or production-like
+  executor.
+- Local-test runtime remains disabled by default. This amendment allocates no port, Gateway route, credential,
+  tracked configuration, environment setting or deployment topology.
+
+In addition to the Core paths above, later implementation may touch only these exact paths:
+
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs`
+  (additive ProcessModeling local-test composition only);
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Controllers/CustomBaseController.cs`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Controllers/ProcessModelingLocalTestController.cs`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Controllers/PerformanceImprovementLocalTestController.cs`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/LocalTestSecurity/**`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Modules/ProcessModeling/**`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/ProcessModeling/**`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/Modules/ProcessModeling/**`;
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/Modules/ProcessModeling/**`;
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Modules/ProcessModeling/**`;
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Modules/ProcessModeling/**`;
+- `frontend/Diten.Web/Controllers/ProcessModelingFrontendController.cs`;
+- `frontend/Diten.Web/Models/ManagementGovernance/ProcessModeling/**`;
+- `frontend/Diten.Web/Services/ManagementGovernance/ProcessModeling/**`;
+- `frontend/Diten.Web/Views/ManagementGovernance/ProcessModeling/**`;
+- `frontend/Diten.Web/Resources/Views/ManagementGovernance/ProcessModeling/**`;
+- `frontend/Diten.Web/wwwroot/assets/js/pages/management-governance/process-modeling/**`;
+- `frontend/Diten.Web/wwwroot/assets/css/pages/management-governance/process-modeling.css`;
+- `frontend/Diten.Web/tests/mg-process-modeling-*.test.js`; and
+- `frontend/Diten.Web/tests/mg-process-improvement-*.test.js`.
+
+The following remain outside this amendment without exception: `gateway/**`, `appsettings*`,
+`launchSettings.json`, frontend navigation/manifests/shared resources, PPM/Dws/DecisionRegistry files,
+`services/Diten.Platform/**`, `services/Diten.AuthService/**`, WorkCenter, real broker delivery, migration,
+index/seed execution, production credentials, deployment, production activation and legacy mutation.
+
 ## 6. Protected Paths
 
 - `.antigravity/**`
 - `gateway/Diten.ApiGateway/**/ocelot.json`
-- `frontend/**` during the Core Model & Contract-Test slice
+- `frontend/**` except the exact ProcessModeling paths authorized by §5.1
 - WorkCenter files, providers, projections, routes, views and controllers
 - `frontend/Diten.Web/Views/Shared/_Layout.cshtml`
 - `frontend/Diten.Web/Views/_ViewStart.cshtml`
 - `frontend/Diten.Web/Controllers/Archive/**`
 - `frontend/Diten.Web/Views/Archive/**`
-- Existing Management Governance, Delivery Execution, ESBP, BPM or process-modeling prototype files
+- Existing Management Governance, Delivery Execution, ESBP, BPM or process-modeling prototype files except
+  exact current-main reconciliation candidates inside the §5.1 allowlist
 - Existing legacy controllers, views, routes, collections and migrations
 - `services/Diten.EnterpriseStrategyService/**`
 - `services/Diten.PpmService/**`
@@ -848,7 +900,8 @@ Contract-Test `ready-for-dev`.
 - Service is `Diten.ManagementGovernanceService`.
 - Internal module is exactly `Modules/ProcessModeling`.
 - Service port is `TBD`; this draft allocates no port.
-- No frontend or Gateway route is allocated.
+- No Gateway or direct browser-to-service route is allocated. A same-origin tenant-shell frontend route may
+  exist only inside the exact §5.1 controller/view allowlist and remains local-test/default-off.
 - Tenant identity comes only from authenticated server context.
 - Client-supplied tenant, actor, permission or approval authority is rejected.
 - Every query and mutation applies the server-resolved tenant boundary fail-closed.
@@ -883,10 +936,10 @@ Contract-Test `ready-for-dev`.
 ## 9. Layout & Shell Contract
 
 - `shell: tenant`.
-- Minimal Core v1 has no frontend.
-- A future frontend must use `_LayoutTenantShell` explicitly on every Razor page.
+- Minimal Core v1 itself has no frontend; §5.1 separately authorizes the bounded local-test frontend closure.
+- The §5.1 frontend must use `_LayoutTenantShell` explicitly on every Razor page.
 - `_Layout.cshtml` and `_ViewStart.cshtml` remain unchanged.
-- The future route family is not allocated by this draft.
+- No Gateway or direct service route family is allocated by this pack.
 - Existing legacy/prototype screens are evidence for parity review only.
 - No legacy page is an implementation template or production authority.
 - A future frontend requires seven-language localization:
@@ -1193,8 +1246,12 @@ Authorization rules:
 ### Frontend & Legacy Parity
 
 - [ ] Core readiness does not claim frontend completion.
-- [ ] A later frontend uses tenant shell and seven-language localization.
-- [ ] Legacy parity is inventoried before frontend implementation.
+- [ ] The bounded §5.1 frontend uses tenant shell and seven-language localization.
+- [ ] Browser JavaScript uses only the same-origin frontend contract and contains no service port, bearer
+      token, tenant/actor-header generation or direct backend call.
+- [ ] Missing/disabled/indeterminate local-test runtime renders a stable unavailable state backed by exact
+      `503`; no sample or invented business result is displayed as runtime truth.
+- [ ] Legacy parity is inventoried read-only before accepting the frontend reconciliation.
 - [ ] Legacy files remain unchanged without a separate approved migration/deprecation pack.
 - [ ] No WorkCenter surface or projection is introduced.
 
@@ -1315,7 +1372,21 @@ owner/runtime decisions. This fallback grants no runtime authority.
 - Owner/interface input fails closed without approved adapters.
 - Provider unavailable/indeterminate returns `503`.
 
-Frontend and runtime activation tests become mandatory only in their separately approved slices.
+### Frontend & local-test closure tests
+
+- Exact allowlist guard: every changed path belongs to §5.1 and no PPM/Dws/DecisionRegistry path changes.
+- Tenant-shell layout and seven-language RESX parity.
+- ProcessModeling list/editor DataTable or workspace contract tests as applicable to the reconciled surface.
+- Same-origin proxy and browser-secret boundary tests.
+- Exact `400 / 401 / 403 / 404 / 409 / 503` presentation contract; a test does not claim a live success path
+  when its authoritative dependency is unavailable.
+- Default-off and stable `503` tests for missing, disabled, unavailable and indeterminate local-test runtime.
+- Frontend build and targeted JavaScript tests.
+- Management Governance build plus targeted ProcessModeling unit, integration and architecture tests.
+- `git diff --check` and protected-path scan.
+
+Production runtime activation, Gateway and deployment tests remain mandatory only in their separately
+approved slices.
 
 ## 18. Ready-for-dev Checklist
 
@@ -1385,7 +1456,8 @@ Frontend and runtime activation tests become mandatory only in their separately 
 - [ ] **B-10:** Owner-reference producer contract and adapter.
 - [ ] **B-11:** Interface-reference producer contract and adapter.
 - [ ] **B-12:** Binary artifact/evidence storage and reference contracts.
-- [ ] **B-13:** Frontend route, UX, localization and legacy-parity approval.
+- [ ] **B-13:** The bounded §5.1 local-test frontend is approved; production route, Gateway transport,
+      production UX acceptance and legacy migration/disposition remain blocked.
 - [ ] **B-14:** Runtime credentials, observability, deployment and rollback evidence.
 - [ ] **B-15:** Explicit runtime activation and production authority.
 
@@ -1401,7 +1473,8 @@ named later slice or runtime activation.
 | Core Model & Contract-Test | Minimal unclassified definition model, lifecycle, revision, topology, tenancy, concurrency, hashing, idempotency, local audit-intent/outbox and architecture tests | Independent of external producer integrations |
 | Approval/Auth/Audit | Permission/SoD runtime enforcement, approval policy, authoritative outcome binding and MOD-0021 delivery | Separate second slice |
 | Optional reference integrations | Classification, KPI/Metric, owner, interface, document, evidence and artifact references | Independent later slices |
-| Frontend & Legacy Parity | Tenant UI, localization, parity inventory and approved disposition | Separate later slice |
+| Frontend & Local-Test Closure | Tenant UI, localization, same-origin proxy contracts, ProcessModeling-only local-test API/controller and read-only parity inventory | Authorized only by §5.1; default-off/non-production/non-migrating |
+| Legacy migration/disposition | Any legacy mutation, replacement, deprecation or migration | Separate later slice |
 | Runtime activation | Port, Gateway, transport, credentials, deployment, observability and production authorization | Separate final gate |
 
 ### Core transaction boundary
@@ -1473,8 +1546,8 @@ Governance availability cannot become local fallback, hard-coded truth or inferr
 - Add MOD-0021 delivery only after its signed/versioned contract and operational evidence exist.
 - Add classification, KPI/Metric, owner, interface, document, evidence and artifact references through
   separately approved producer contracts.
-- Define and approve tenant frontend and seven-language resources.
-- Complete the read-only legacy parity inventory and owner-approved disposition.
+- Reconcile the bounded tenant frontend and seven-language resources only through the §5.1 allowlist.
+- Complete the read-only legacy parity inventory; legacy disposition/mutation remains a separate approval.
 - Allocate service port and Gateway route only during separately authorized runtime activation.
 - Define any process-instance/runtime engine as a separate canonical capability.
 - Preserve the bounded Core implementation authority recorded in frontmatter and §5. Runtime activation,
@@ -1500,6 +1573,7 @@ Governance availability cannot become local fallback, hard-coded truth or inferr
 - Vector recomputations: `PASS / PASS / PASS`
 - Status: `ready-for-dev`
 - Implementation authority: `explicit-user-control-tower-bounded-core-model-contract-test`
+- Closure implementation authority: `explicit-user-current-main-frontend-local-test-closure`
 - Production authority: `none`
 - Initial materialization scope: exact-one MOD-0355 module-pack file
 - Ready-for-dev promotion reconciliation scope: exact four governance files (this pack, DCP-005, DCP-006
