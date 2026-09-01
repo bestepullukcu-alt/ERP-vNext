@@ -3502,3 +3502,67 @@ eklenemez."* — 7 dilde, ve kartın çizilmediği durumu ölçen bir test.
 
 ⚠ **l10n kapısı AÇIK** (yeni metin, 7 dil). Tek başına bir tur değil; bir sonraki
 l10n paketine katılmalı.
+
+### BL-327 — Birim ve pozisyon TASLAK doğuyor, hiçbiri aktif değil, ekran sebebini söylemiyor (2026-09-01, CANLI, sahip gördü)
+
+> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+
+**MODÜL:** ORGANIZATION (Organizasyon) + TASKS (Görevler)
+**SAYFA:** Organizasyon Birimleri `/OrganizationUnits` · Pozisyonlar `/Positions`
+          · Görev Oluştur `/Tasks/Create`
+
+**Belirti (sahip canlıda, yönetim sunumu sırasında):** Görev oluştururken
+İngilizce bir uyarı:
+*"No organization unit could be determined for this task. Ask an administrator
+to assign you a position or define a root organization unit."*
+
+**Ölçüm (2026-09-01, dev veritabanı):**
+
+    organization_units:  15 kayıt
+        Status = 0 (taslak) → 13
+        Status = null       →  2
+        Status = 1 (AKTİF)  →  0     ⚠ HİÇBİRİ AKTİF DEĞİL
+
+    positions:           14 kayıt · aktif 6 · taslak 3 · null 5
+
+Kod `CreateTaskItemHandler.cs:170-176` kademeli düşüyor:
+    1. formda seçilen birim
+    2. atananın AKTİF pozisyonunun birimi
+    3. kiracının AKTİF kök birimi
+    4. yoksa hata
+
+`ResolveTenantRootUnitAsync` (:558-567) üç şart arıyor: üstü yok + arşivsiz +
+`Status == Active`. Kök birim VAR (8 tane, üstü yok, arşivsiz) ama **hiçbiri
+Active değil** → 3. basamak boş dönüyor → hata.
+
+**Üç ayrı kusur, tek belirti:**
+
+1. ⚠ **Varsayılan taslak.** Birim ve pozisyon `Draft` doğuyor. Kullanıcı
+   oluşturur, kaydeder, ve farkında olmadan KULLANILAMAZ bir kayıt yaratır.
+   ⚠ "Taslak birim" kavramının bir karşılığı yok — bir birim ya vardır ya
+   yoktur. Pozisyon için taslak anlamlı olabilir, birim için değil.
+
+2. ⚠ **Liste yalan söylüyor.** `Positions/index.js:51-53` rozeti yalnız
+   `IsArchived`'dan türetiyor, `Status`'ü HİÇ okumuyor. Taslak pozisyon
+   listede yeşil "Aktif" görünüyor, kişi seçicide yok. Sessiz değil,
+   AKTİF OLARAK YANILTICI.
+
+3. ⚠ **Mesaj 7 dilin 1'inde.** `ErrorOrganizationUnitUnresolved` yalnız
+   `Views/Tasks/TasksIndex.en.resx`'te. tr/fr/es/zh/ar/ru: yok. Türkçe
+   arayüzde İngilizce uyarı çıkıyor.
+   Ve mesaj DOĞRU şeyi söylemiyor: "bir kök birim tanımlayın" diyor, ama
+   15 kök birim VAR — eksik olan AKTİF olmaları. Kullanıcı olmayan bir şeyi
+   yaratmaya çalışıyor.
+
+**Önerilen çözüm (sahip tercihi bekliyor):**
+- ⭐ (a) Kök birim varsayılan olarak AKTİF doğsun — "taslak birim"in karşılığı yok
+- (b) Rozet `Status`'ten türetilsin (XS, l10n gerekmez —
+      `StatusDraft`/`StatusActive`/`StatusFrozen`/`StatusClosed` `details.js:40-41`'de
+      zaten kullanımda)
+- (c) Mesaj 7 dile çevrilsin VE gerçek durumu söylesin:
+      "15 biriminiz var ama hiçbiri aktif değil" — "kök birim tanımlayın" değil
+
+**Geçici çözüm (bugün uygulandı):** `/OrganizationUnits` → bir kök birimi
+Düzenle → Durum: Aktif → Kaydet.
+
+**Kardeş kayıtlar:** [[BL-073]] ana veri zinciri · [[BL-071]] Employee↔PositionAssignment
