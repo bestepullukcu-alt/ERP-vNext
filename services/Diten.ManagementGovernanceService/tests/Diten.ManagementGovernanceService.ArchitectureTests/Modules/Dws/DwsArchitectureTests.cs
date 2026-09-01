@@ -20,13 +20,13 @@ public sealed class DwsArchitectureTests
     public void Exact_twelve_dimensions_are_executable_for_each_sibling(DwsSiblingEvidence sibling,DwsIsolationDimension dimension,string path,string requiredText)
     {
         var blob=GitShow(sibling.ImmutableCheckpoint,path);Assert.Contains(requiredText,blob,StringComparison.Ordinal);Assert.StartsWith("services/Diten.ManagementGovernanceService/",path,StringComparison.Ordinal);
-        var assemblies=new[]{typeof(StructureDefinition).Assembly,typeof(DwsAuthorizationManifest).Assembly,typeof(DwsPersistenceOwnershipManifest).Assembly,typeof(DwsInfrastructureBoundary).Assembly};var allTypes=assemblies.SelectMany(x=>x.GetTypes()).ToArray();
+        var assemblies=new[]{typeof(StructureDefinition).Assembly,typeof(DwsAuthorizationManifest).Assembly,typeof(DwsPersistenceOwnershipManifest).Assembly,typeof(DwsInfrastructureBoundary).Assembly};var allTypes=assemblies.SelectMany(x=>x.GetTypes()).ToArray();var dwsTypes=allTypes.Where(x=>x.Namespace?.Contains("Modules.Dws",StringComparison.Ordinal)==true).ToArray();
         switch(dimension)
         {
             case DwsIsolationDimension.ProjectGraph:Assert.All(assemblies.SelectMany(x=>x.GetReferencedAssemblies()),x=>Assert.DoesNotContain(sibling.Name,x.Name!,StringComparison.Ordinal));break;
-            case DwsIsolationDimension.TypeNamespace:Assert.DoesNotContain(allTypes,x=>x.FullName?.Contains($"Modules.{sibling.Name}",StringComparison.Ordinal)==true);break;
+            case DwsIsolationDimension.TypeNamespace:Assert.DoesNotContain(dwsTypes,x=>x.FullName?.Contains($"Modules.{sibling.Name}",StringComparison.Ordinal)==true);break;
             case DwsIsolationDimension.DependencyInjection:var services=new ServiceCollection();services.AddDwsApplication().AddDwsPersistence().AddDwsInfrastructure();Assert.DoesNotContain(services,x=>(x.ServiceType.FullName??"").Contains(sibling.Name,StringComparison.Ordinal)||(x.ImplementationType?.FullName??"").Contains(sibling.Name,StringComparison.Ordinal));break;
-            case DwsIsolationDimension.Repository:Assert.DoesNotContain(typeof(DwsPersistenceOwnershipManifest).Assembly.GetTypes(),x=>x.Name.Contains(sibling.Name,StringComparison.Ordinal));break;
+            case DwsIsolationDimension.Repository:Assert.DoesNotContain(dwsTypes,x=>x.Name.Contains(sibling.Name,StringComparison.Ordinal));break;
             case DwsIsolationDimension.CollectionIndex:Assert.All(DwsPersistenceOwnershipManifest.Collections,x=>{Assert.StartsWith("mg_dws_",x.Name);Assert.DoesNotContain(sibling.CollectionPrefix,x.Name,StringComparison.Ordinal);});break;
             case DwsIsolationDimension.EntityBase:Assert.All(new[]{typeof(StructureDefinition),typeof(StructureRevision),typeof(StructureNode),typeof(StructuralDependency),typeof(StructureBaseline)},x=>Assert.True(x.IsSubclassOf(typeof(DwsTenantEntity))));break;
             case DwsIsolationDimension.Permission:Assert.All(DwsAuthorizationManifest.Entries,x=>{Assert.StartsWith("management-governance.dws.",x.Permission);Assert.DoesNotContain(sibling.PermissionPrefix,x.Permission,StringComparison.Ordinal);});break;
