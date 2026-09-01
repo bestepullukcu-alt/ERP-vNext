@@ -2,23 +2,38 @@
 id: MOD-0354
 name: Decomposition & Work Structuring Engine
 domain: management-governance
+dcp: DCP-006
 service: Diten.ManagementGovernanceService
+internal_module: Modules/Dws
+module_code: MOD-0354
 shell: tenant
 golden_reference: none
 entity_base: EntityBase
-status: draft
+status: ready-for-dev
 owner: ali.tufanoglu / enterprise-architect-interim
+business_owner: ali.tufanoglu / delivery-structure-governance-owner-interim
+technical_owner: ali.tufanoglu / management-governance-technical-owner-interim
+legacy_parity_owner: ali.tufanoglu / delivery-structure-governance-owner-interim
 branch: feature/mg/mod-0354-decomposition-work-structuring-engine
 started: 2026-07-28
 target: 2026-08-14
 form_field_count: 0
+port: 5017
+implementation_authority: explicit-user-control-tower-bounded-core-scaffold-contract-test
+b02_evidence_authority: explicit-user-control-tower-non-runtime-persistence-integration-evidence
+backend_local_testability_authority: explicit-user-control-tower-non-production-default-off
+functional_local_dws_api_authority: explicit-user-control-tower-non-production-default-off
+production_authority: none
 ---
 
 # MOD-0354 — Decomposition & Work Structuring Engine
 
-> **Draft / no-code guard:** This pack is a planning contract for human review. It does not authorize
-> production code, service scaffolding, port allocation, gateway changes, migration, deletion or
-> deprecation. Implementation requires `approved` / `ready-for-dev` status and every open gate in §18.
+> **Ready-for-dev authority reconciliation:** The explicit user decision dated 2026-09-01 reconciles the
+> already verified authority/status record from
+> `feature/mg/mod-0354-decomposition-work-structuring-engine` onto current `origin/main`. This governance-only
+> checkpoint does not itself authorize service scaffolding, code transfer, runtime tests, Gateway, frontend,
+> WorkCenter, deployment, secrets/keys, push or merge. Existing bounded authority fields above remain
+> descriptive provenance; `production_authority: none` is binding.
 
 > **Planning date:** `target: 2026-08-14` is a provisional planning date, not a delivery commitment or
 > implementation authorization.
@@ -958,7 +973,8 @@ change a route.
 - [x] PSS owner/Enterprise Architect approved the MOD-0021 producer-local transactional audit-intent,
   asynchronous at-least-once/idempotent-consumer and bounded-payload governance design; this is not runtime
   evidence or production authority.
-- [ ] Human approves this draft and promotes it to `approved` / `ready-for-dev`.
+- [x] Human approved promotion to `ready-for-dev` and current-main authority reconciliation on 2026-09-01;
+  this governance-only checkpoint grants none of the excluded runtime/service delivery authorities.
 - [ ] DWS Wave 1's DCP-006 OD-04 subset closes with exact MOD-0117, MOD-0018 and MOD-0021 contracts.
 - [x] MOD-0117 `ppm.external-context-reference` v1 shape received Control Tower governance approval on
   2026-07-29.
@@ -982,8 +998,9 @@ change a route.
 - [ ] Gate 2 PASS exists before any implementation touches, removes, migrates or deprecates a legacy
   task/approval hazard; pure structural-only work does not itself trigger Gate 2.
 
-Until every unchecked blocker is closed, this pack remains `draft` and production implementation is
-forbidden.
+The pack is `ready-for-dev` only under its explicitly bounded authority record. Every unchecked item remains
+a fail-closed gate for its corresponding later slice; production implementation and activation remain
+forbidden because `production_authority: none`.
 
 ## 19. Implementation Notes
 
