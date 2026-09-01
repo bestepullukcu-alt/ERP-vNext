@@ -144,7 +144,7 @@ approval and Enterprise Architect approval.
 | P | MOD-0138 | Scenario/comparator adapter | Blueprint 8.1 canonical |
 | P | MOD-0072 | Outcome/value adapter | Blueprint 8.1 canonical |
 | D | MOD-0354 | DWS Wave 1 structural mechanics | Blueprint 8.1 canonical; draft pack |
-| B | MOD-0355 | BPM Wave 1 process model/version/publish | Blueprint 8.1 canonical; pack not yet authored |
+| B | MOD-0355 | BPM Wave 1 process model/version/publish | Blueprint 8.1 canonical; ready-for-dev only for bounded Core Model & Contract-Test; no runtime or production authority |
 | S | MOD-0018/0021/0023/0024/0029/0031/0048/0059–0061/0288 | Shared typed contracts | Dependencies; not reimplemented |
 
 Blueprint Master 8.1 contains `MOD-0354` and `MOD-0355`; the Enterprise Architect has canonicalized the
