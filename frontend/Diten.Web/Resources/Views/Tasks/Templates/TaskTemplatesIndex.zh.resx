@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="TaskTemplatesTitle" xml:space="preserve"><value>任务模板</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>可复用的任务形态。绑定其中一个的周期规则会生成带有优先级、到期日和检查清单的任务，而不是只有一个标题。</value></data>
+  <data name="AddNewTemplate" xml:space="preserve"><value>新增模板</value></data>
+  <data name="EditItem" xml:space="preserve"><value>编辑模板</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>新增任务模板</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑任务模板</value></data>
+  <data name="QuickView" xml:space="preserve"><value>查看</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="Name" xml:space="preserve"><value>名称</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>例如：月末结账</value></data>
+  <data name="Code" xml:space="preserve"><value>代码</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>例如：MONTHLY-CLOSE</value></data>
+  <data name="CodeHint" xml:space="preserve"><value>保存后不可更改：数据库之外正是通过它引用本模板。</value></data>
+  <data name="ShapeSection" xml:space="preserve"><value>形态</value></data>
+  <data name="TitleTemplate" xml:space="preserve"><value>任务标题</value></data>
+  <data name="TitleTemplatePlaceholder" xml:space="preserve"><value>例如：月末结账</value></data>
+  <data name="TitleTemplateHint" xml:space="preserve"><value>留空时，生成的任务将采用本模板的名称。</value></data>
+  <data name="TitleFallsBackToName" xml:space="preserve"><value>采用模板名称</value></data>
+  <data name="DescriptionTemplate" xml:space="preserve"><value>描述</value></data>
+  <data name="DefaultPriority" xml:space="preserve"><value>优先级</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>低</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>中</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>高</value></data>
+  <data name="DefaultDueInDays" xml:space="preserve"><value>到期（天）</value></data>
+  <data name="DefaultDueInDaysHint" xml:space="preserve"><value>自任务创建之日起计算。若工作没有时限，请留空。</value></data>
+  <data name="DueInDaysValue" xml:space="preserve"><value>{0} 天</value></data>
+  <data name="NoDueDate" xml:space="preserve"><value>无到期日</value></data>
+  <data name="ChecklistSection" xml:space="preserve"><value>检查清单</value></data>
+  <data name="Checklist" xml:space="preserve"><value>检查清单</value></data>
+  <data name="ChecklistBound" xml:space="preserve"><value>已绑定</value></data>
+  <data name="ChecklistNone" xml:space="preserve"><value>无检查清单</value></data>
+  <data name="ChecklistHint" xml:space="preserve"><value>可选。绑定后，生成的每个任务都会携带其步骤；不绑定则只是一个提醒。</value></data>
+  <data name="ViewChecklist" xml:space="preserve"><value>查看检查清单</value></data>
+  <data name="NoChecklistsYet" xml:space="preserve"><value>尚未定义任何检查清单模板。</value></data>
+  <data name="CreateChecklistFirst" xml:space="preserve"><value>请先创建一个。</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>公司范围</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>公司</value></data>
+  <data name="LegalEntityAll" xml:space="preserve"><value>所有公司</value></data>
+  <data name="LegalEntityHint" xml:space="preserve"><value>留空时模板适用于所有公司。选定一家则仅限该公司；三家公司共享的形态即三个模板，各自独立编辑。</value></data>
+  <data name="DefaultAssignmentSection" xml:space="preserve"><value>默认指派</value></data>
+  <data name="DefaultAssignmentTarget" xml:space="preserve"><value>默认承接方</value></data>
+  <data name="AssignmentSelf" xml:space="preserve"><value>创建任务的人</value></data>
+  <data name="AssignmentPool" xml:space="preserve"><value>一个池（岗位）</value></data>
+  <data name="PoolPosition" xml:space="preserve"><value>岗位</value></data>
+  <data name="PoolPositionHint" xml:space="preserve"><value>生成的工作会提供给该岗位的在任者认领。</value></data>
+  <data name="DivisionOfLabourHint" xml:space="preserve"><value>模板说明「工作是什么样子」——标题、描述、优先级、期限、检查清单。周期规则说明「给谁、何时」——人员、岗位、部门、频率。</value></data>
+  <data name="DefaultAssignmentHint" xml:space="preserve"><value>仅当周期规则未填写自己的指派时才使用。若规则指定了对象，以规则为准。</value></data>
+  <data name="NoDepartmentHint" xml:space="preserve"><value>此处不设置部门：部门属于周期规则，那里才是说明工作归属的唯一位置。</value></data>
+  <data name="IsActiveHint" xml:space="preserve"><value>已暂停的模板仍留在此处，但不再提供给周期规则。</value></data>
+  <data name="TemplatePriorityInvalid" xml:space="preserve"><value>请选择列出的优先级之一。</value></data>
+  <data name="TemplateAssignmentTargetInvalid" xml:space="preserve"><value>模板无法指定具体人员：它没有承接人字段，工作将无人接收。请在周期规则中指定人员。</value></data>
+  <data name="TemplatePoolRequired" xml:space="preserve"><value>请选择生成的工作将提供给哪个岗位。</value></data>
+</root>

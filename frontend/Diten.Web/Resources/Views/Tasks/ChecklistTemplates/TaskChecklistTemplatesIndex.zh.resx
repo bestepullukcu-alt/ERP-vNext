@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ChecklistTemplatesTitle" xml:space="preserve"><value>检查清单模板</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>可复用的步骤清单。任务模板绑定其中一个，其生成的每个任务都会将这些步骤作为实时检查清单携带。</value></data>
+  <data name="AddNewTemplate" xml:space="preserve"><value>新增模板</value></data>
+  <data name="EditItem" xml:space="preserve"><value>编辑模板</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>新增检查清单模板</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑检查清单模板</value></data>
+  <data name="QuickView" xml:space="preserve"><value>查看</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="Name" xml:space="preserve"><value>名称</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>例如：批次放行检查</value></data>
+  <data name="Code" xml:space="preserve"><value>代码</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>例如：QA-RELEASE</value></data>
+  <data name="CodeHint" xml:space="preserve"><value>保存后不可更改：已勾选的步骤正是通过它匹配回本模板。</value></data>
+  <data name="Description" xml:space="preserve"><value>描述</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>标识</value></data>
+  <data name="ItemsSection" xml:space="preserve"><value>步骤</value></data>
+  <data name="AddItem" xml:space="preserve"><value>新增步骤</value></data>
+  <data name="RequirementHint" xml:space="preserve"><value>只有「阻止」步骤才真正阻止任务被完成。可选步骤只是提示；仅由可选步骤组成的清单不构成任何关卡。</value></data>
+  <data name="ItemCode" xml:space="preserve"><value>步骤代码</value></data>
+  <data name="ItemCodePlaceholder" xml:space="preserve"><value>例如：coa-checked</value></data>
+  <data name="ItemLabel" xml:space="preserve"><value>步骤</value></data>
+  <data name="ItemLabelPlaceholder" xml:space="preserve"><value>需要完成的事项</value></data>
+  <data name="Requirement" xml:space="preserve"><value>要求</value></data>
+  <data name="RequirementOptional" xml:space="preserve"><value>可选</value></data>
+  <data name="RequirementRequired" xml:space="preserve"><value>必填</value></data>
+  <data name="RequirementBlocking" xml:space="preserve"><value>阻止</value></data>
+  <data name="EvidenceRequired" xml:space="preserve"><value>证据</value></data>
+  <data name="ItemCount" xml:space="preserve"><value>步骤数</value></data>
+  <data name="BlockingCount" xml:space="preserve"><value>阻止步骤</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>最后编辑</value></data>
+  <data name="NeverEdited" xml:space="preserve"><value>尚未</value></data>
+  <data name="Gating" xml:space="preserve"><value>关卡</value></data>
+  <data name="GatingBlocking" xml:space="preserve"><value>含阻止步骤</value></data>
+  <data name="GatingAdvisory" xml:space="preserve"><value>仅供参考</value></data>
+  <data name="GatingSection" xml:space="preserve"><value>关卡</value></data>
+  <data name="NoItems" xml:space="preserve"><value>此模板没有步骤。</value></data>
+  <data name="NoBlockingHint" xml:space="preserve"><value>没有步骤会阻止完成，因此该清单只是记录工作，而非设置关卡。</value></data>
+  <data name="IsActiveHint" xml:space="preserve"><value>已暂停的模板仍留在此处，但不再提供给任务模板。</value></data>
+  <data name="NextStepSection" xml:space="preserve"><value>下一步</value></data>
+  <data name="NextStepHint" xml:space="preserve"><value>检查清单通过任务模板到达任务。请先定义清单，再在那里绑定。</value></data>
+  <data name="GoToTaskTemplates" xml:space="preserve"><value>任务模板</value></data>
+  <data name="ChecklistTemplateEmpty" xml:space="preserve"><value>请至少添加一个步骤；空清单会在每个任务上放置一个空列表。</value></data>
+  <data name="ChecklistItemLabelRequired" xml:space="preserve"><value>每个步骤都需要文字说明；没有文字的勾选框无法据以行动。</value></data>
+  <data name="ChecklistItemCodeRequired" xml:space="preserve"><value>每个步骤都需要代码；已勾选的步骤正是通过它匹配回本模板。</value></data>
+  <data name="ChecklistItemCodeDuplicate" xml:space="preserve"><value>两个步骤使用了相同代码。勾选其一将无法与勾选另一个区分。</value></data>
+  <data name="ChecklistItemRequirementInvalid" xml:space="preserve"><value>请选择列出的要求级别之一。</value></data>
+</root>

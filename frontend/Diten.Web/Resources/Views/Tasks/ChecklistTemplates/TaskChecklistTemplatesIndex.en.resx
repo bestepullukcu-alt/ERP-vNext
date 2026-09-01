@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ChecklistTemplatesTitle" xml:space="preserve"><value>Checklist Templates</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Reusable step lists. A task template binds one of these, and every task it generates carries the steps as a live checklist.</value></data>
+  <data name="AddNewTemplate" xml:space="preserve"><value>Add Template</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Edit Template</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Add Checklist Template</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit Checklist Template</value></data>
+  <data name="QuickView" xml:space="preserve"><value>View</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>e.g. Batch release check</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>e.g. QA-RELEASE</value></data>
+  <data name="CodeHint" xml:space="preserve"><value>Cannot be changed after saving: it is how a ticked step is matched back to this template.</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identity</value></data>
+  <data name="ItemsSection" xml:space="preserve"><value>Steps</value></data>
+  <data name="AddItem" xml:space="preserve"><value>Add step</value></data>
+  <data name="RequirementHint" xml:space="preserve"><value>Only a BLOCKING step actually stops a task being completed. Optional steps are notes, and a checklist made only of them gates nothing.</value></data>
+  <data name="ItemCode" xml:space="preserve"><value>Step code</value></data>
+  <data name="ItemCodePlaceholder" xml:space="preserve"><value>e.g. coa-checked</value></data>
+  <data name="ItemLabel" xml:space="preserve"><value>Step</value></data>
+  <data name="ItemLabelPlaceholder" xml:space="preserve"><value>What has to be done</value></data>
+  <data name="Requirement" xml:space="preserve"><value>Requirement</value></data>
+  <data name="RequirementOptional" xml:space="preserve"><value>Optional</value></data>
+  <data name="RequirementRequired" xml:space="preserve"><value>Required</value></data>
+  <data name="RequirementBlocking" xml:space="preserve"><value>Blocking</value></data>
+  <data name="EvidenceRequired" xml:space="preserve"><value>Evidence</value></data>
+  <data name="ItemCount" xml:space="preserve"><value>Steps</value></data>
+  <data name="BlockingCount" xml:space="preserve"><value>Blocking</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Last edited</value></data>
+  <data name="NeverEdited" xml:space="preserve"><value>Not yet</value></data>
+  <data name="Gating" xml:space="preserve"><value>Gating</value></data>
+  <data name="GatingBlocking" xml:space="preserve"><value>Has a blocking step</value></data>
+  <data name="GatingAdvisory" xml:space="preserve"><value>Advisory only</value></data>
+  <data name="GatingSection" xml:space="preserve"><value>Gating</value></data>
+  <data name="NoItems" xml:space="preserve"><value>This template has no steps.</value></data>
+  <data name="NoBlockingHint" xml:space="preserve"><value>No step blocks completion, so this checklist records work rather than gating it.</value></data>
+  <data name="IsActiveHint" xml:space="preserve"><value>A paused template stays here but is no longer offered to task templates.</value></data>
+  <data name="NextStepSection" xml:space="preserve"><value>Next step</value></data>
+  <data name="NextStepHint" xml:space="preserve"><value>A checklist reaches a task through a task template. Define the checklist first, then bind it there.</value></data>
+  <data name="GoToTaskTemplates" xml:space="preserve"><value>Task templates</value></data>
+  <data name="ChecklistTemplateEmpty" xml:space="preserve"><value>Add at least one step; an empty checklist would put an empty list on every task.</value></data>
+  <data name="ChecklistItemLabelRequired" xml:space="preserve"><value>Every step needs wording; a checkbox with no words cannot be acted on.</value></data>
+  <data name="ChecklistItemCodeRequired" xml:space="preserve"><value>Every step needs a code; it is how a ticked step is matched back to this template.</value></data>
+  <data name="ChecklistItemCodeDuplicate" xml:space="preserve"><value>Two steps share a code. Ticking one would be indistinguishable from ticking the other.</value></data>
+  <data name="ChecklistItemRequirementInvalid" xml:space="preserve"><value>Choose one of the listed requirement levels.</value></data>
+</root>

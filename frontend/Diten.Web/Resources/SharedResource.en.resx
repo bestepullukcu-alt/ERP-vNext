@@ -649,6 +649,12 @@
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>Task Center</value>
   </data>
+  <data name="Nav.Page.TASKCHECKLISTTEMPLATES" xml:space="preserve">
+    <value>Checklist Templates</value>
+  </data>
+  <data name="Nav.Page.TASKTEMPLATES" xml:space="preserve">
+    <value>Task Templates</value>
+  </data>
   <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
     <value>Recurring Task Rules</value>
   </data>

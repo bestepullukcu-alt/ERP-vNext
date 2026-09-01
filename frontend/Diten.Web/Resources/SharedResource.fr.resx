@@ -589,6 +589,12 @@
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>Centre des tâches</value>
   </data>
+  <data name="Nav.Page.TASKCHECKLISTTEMPLATES" xml:space="preserve">
+    <value>Modèles de liste de contrôle</value>
+  </data>
+  <data name="Nav.Page.TASKTEMPLATES" xml:space="preserve">
+    <value>Modèles de tâche</value>
+  </data>
   <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
     <value>Règles de tâches récurrentes</value>
   </data>

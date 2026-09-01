@@ -278,6 +278,23 @@ public sealed class TaskItem : TenantScopedEntity
     /// <summary>Separates recurring instances of the same rule (contract `processInstanceId`).</summary>
     public string? ProcessInstanceId { get; set; }
 
+    /// <summary>
+    /// HOW OLD THE TEMPLATE WAS when this task was made from it — the template's own last-changed instant,
+    /// copied at generation time. Null for a task nobody built from a template.
+    ///
+    /// <para><b>Why it exists.</b> A template is edited in place, so six months after a task was generated there
+    /// is no way to tell whether the steps it carries are the steps the template had then, or whether somebody
+    /// has since rewritten it. "Why does this task have these items?" had no answer at all — and a checklist a
+    /// reader cannot account for is one they stop trusting.</para>
+    ///
+    /// <para><b>Deliberately ONE DATE, not a version table.</b> Full versioning stores every historical shape and
+    /// points each task at the one it used; it is the right long-term answer and it is not this round's. There is
+    /// no versioned history to preserve — the template editor is being introduced in the same slice as this field,
+    /// so nothing exists yet to version. A single stamp answers the question that is actually being asked ("was
+    /// the template touched after this task was born?") and costs no migration when the table does arrive.</para>
+    /// </summary>
+    public DateTimeOffset? TemplateSnapshotAt { get; set; }
+
     // ── Configurable fields (pack §12 K1 — never hard-coded columns) ─────────
     public List<TaskFieldValue> FieldValues { get; set; } = [];
 

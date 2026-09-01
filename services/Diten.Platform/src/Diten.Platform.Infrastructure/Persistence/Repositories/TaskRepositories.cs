@@ -675,8 +675,35 @@ public sealed class ChecklistTemplateRepository : TenantRepository<ChecklistTemp
     {
         var filter = Builders<ChecklistTemplate>.Filter.And(
             ExecutionFilter,
-            Builders<ChecklistTemplate>.Filter.Eq(x => x.IsActive, true));
+            Builders<ChecklistTemplate>.Filter.Eq(x => x.IsActive, true),
+            // A retired template is still IsActive=true if nobody flipped it, so the soft-delete stamp is checked
+            // here as well: the offer list must not name a template the editor has already withdrawn.
+            Builders<ChecklistTemplate>.Filter.Eq(x => x.DeletedAt, null));
         return await Collection.Find(filter).SortBy(x => x.Name).ToListAsync(ct);
+    }
+
+    public Task<ChecklistTemplate?> GetByCodeAsync(string code, CancellationToken ct = default)
+    {
+        var filter = Builders<ChecklistTemplate>.Filter.And(
+            ExecutionFilter,
+            Builders<ChecklistTemplate>.Filter.Eq(x => x.Code, code));
+        return Collection.Find(filter).FirstOrDefaultAsync(ct)!;
+    }
+
+    public async Task<IReadOnlyList<ChecklistTemplate>> ListAllAsync(CancellationToken ct = default)
+        => await Collection.Find(ExecutionFilter).SortBy(x => x.Name).ToListAsync(ct);
+
+    public async Task<bool> UpdateAsync(
+        ChecklistTemplate template, int expectedVersion, CancellationToken ct = default)
+    {
+        template.Version = expectedVersion + 1;
+        template.UpdatedAt = DateTimeOffset.UtcNow;
+        var filter = Builders<ChecklistTemplate>.Filter.And(
+            ExecutionFilter,
+            Builders<ChecklistTemplate>.Filter.Eq(x => x.Id, template.Id),
+            Builders<ChecklistTemplate>.Filter.Eq(x => x.Version, expectedVersion));
+        var result = await Collection.ReplaceOneAsync(filter, template, new ReplaceOptions(), ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
     }
 }
 
@@ -734,8 +761,33 @@ public sealed class TaskTemplateRepository : TenantRepository<TaskTemplate>, ITa
     {
         var filter = Builders<TaskTemplate>.Filter.And(
             ExecutionFilter,
-            Builders<TaskTemplate>.Filter.Eq(x => x.IsActive, true));
+            Builders<TaskTemplate>.Filter.Eq(x => x.IsActive, true),
+            // Same reason as the checklist sibling: a withdrawn template must not keep being offered.
+            Builders<TaskTemplate>.Filter.Eq(x => x.DeletedAt, null));
         return await Collection.Find(filter).SortBy(x => x.Name).ToListAsync(ct);
+    }
+
+    public Task<TaskTemplate?> GetByCodeAsync(string code, CancellationToken ct = default)
+    {
+        var filter = Builders<TaskTemplate>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskTemplate>.Filter.Eq(x => x.Code, code));
+        return Collection.Find(filter).FirstOrDefaultAsync(ct)!;
+    }
+
+    public async Task<IReadOnlyList<TaskTemplate>> ListAllAsync(CancellationToken ct = default)
+        => await Collection.Find(ExecutionFilter).SortBy(x => x.Name).ToListAsync(ct);
+
+    public async Task<bool> UpdateAsync(TaskTemplate template, int expectedVersion, CancellationToken ct = default)
+    {
+        template.Version = expectedVersion + 1;
+        template.UpdatedAt = DateTimeOffset.UtcNow;
+        var filter = Builders<TaskTemplate>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskTemplate>.Filter.Eq(x => x.Id, template.Id),
+            Builders<TaskTemplate>.Filter.Eq(x => x.Version, expectedVersion));
+        var result = await Collection.ReplaceOneAsync(filter, template, new ReplaceOptions(), ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
     }
 }
 

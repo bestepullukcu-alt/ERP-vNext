@@ -1,0 +1,37 @@
+@using Diten.Web.Views.Tasks.ChecklistTemplates
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskChecklistTemplatesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@*
+    No select-all checkbox and no bulk bar, like the recurrence-rule sibling and for the same reason: MOD-0024
+    exposes five CRUD endpoints for checklist templates and NO bulk-delete. A bulk bar wired to an endpoint that
+    does not exist is a button that fails, and a client-side loop would be a second bulk shape in one module.
+*@
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-taskchecklisttemplates" data-dt-standard="v2" class="datatables-taskchecklisttemplates table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="all">@Localizer["Name"]</th>
+                    <th>@Localizer["Code"]</th>
+                    @* The one column that answers "is this gate real?" without opening the template. *@
+                    <th>@Localizer["ItemCount"]</th>
+                    <th>@Localizer["BlockingCount"]</th>
+                    <th>@Localizer["UpdatedAt"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

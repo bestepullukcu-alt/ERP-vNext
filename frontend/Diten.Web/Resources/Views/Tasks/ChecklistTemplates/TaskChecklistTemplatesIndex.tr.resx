@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ChecklistTemplatesTitle" xml:space="preserve"><value>Kontrol Listesi Şablonları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Yeniden kullanılabilir adım listeleri. Bir görev şablonu bunlardan birini bağlar ve ürettiği her görev adımları canlı kontrol listesi olarak taşır.</value></data>
+  <data name="AddNewTemplate" xml:space="preserve"><value>Şablon Ekle</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Şablonu Düzenle</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Kontrol Listesi Şablonu Ekle</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Kontrol Listesi Şablonunu Düzenle</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>örn. Parti serbest bırakma kontrolü</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>örn. QA-RELEASE</value></data>
+  <data name="CodeHint" xml:space="preserve"><value>Kaydettikten sonra değiştirilemez: işaretlenen bir adım bu şablona bu kodla eşlenir.</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="ItemsSection" xml:space="preserve"><value>Adımlar</value></data>
+  <data name="AddItem" xml:space="preserve"><value>Adım ekle</value></data>
+  <data name="RequirementHint" xml:space="preserve"><value>Bir görevin tamamlanmasını yalnız ENGELLEYİCİ adım durdurur. İsteğe bağlı adımlar not niteliğindedir; yalnız onlardan oluşan bir kontrol listesi hiçbir şeyi kapıya bağlamaz.</value></data>
+  <data name="ItemCode" xml:space="preserve"><value>Adım kodu</value></data>
+  <data name="ItemCodePlaceholder" xml:space="preserve"><value>örn. coa-kontrol</value></data>
+  <data name="ItemLabel" xml:space="preserve"><value>Adım</value></data>
+  <data name="ItemLabelPlaceholder" xml:space="preserve"><value>Yapılması gereken</value></data>
+  <data name="Requirement" xml:space="preserve"><value>Zorunluluk</value></data>
+  <data name="RequirementOptional" xml:space="preserve"><value>İsteğe bağlı</value></data>
+  <data name="RequirementRequired" xml:space="preserve"><value>Zorunlu</value></data>
+  <data name="RequirementBlocking" xml:space="preserve"><value>Engelleyici</value></data>
+  <data name="EvidenceRequired" xml:space="preserve"><value>Kanıt</value></data>
+  <data name="ItemCount" xml:space="preserve"><value>Adım</value></data>
+  <data name="BlockingCount" xml:space="preserve"><value>Engelleyici</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Son düzenleme</value></data>
+  <data name="NeverEdited" xml:space="preserve"><value>Henüz yok</value></data>
+  <data name="Gating" xml:space="preserve"><value>Kapı</value></data>
+  <data name="GatingBlocking" xml:space="preserve"><value>Engelleyici adımı var</value></data>
+  <data name="GatingAdvisory" xml:space="preserve"><value>Yalnızca bilgilendirici</value></data>
+  <data name="GatingSection" xml:space="preserve"><value>Kapı</value></data>
+  <data name="NoItems" xml:space="preserve"><value>Bu şablonda adım yok.</value></data>
+  <data name="NoBlockingHint" xml:space="preserve"><value>Hiçbir adım tamamlamayı engellemiyor; bu kontrol listesi işi kapıya bağlamaz, yalnız kaydeder.</value></data>
+  <data name="IsActiveHint" xml:space="preserve"><value>Duraklatılmış şablon burada kalır ama artık görev şablonlarına sunulmaz.</value></data>
+  <data name="NextStepSection" xml:space="preserve"><value>Sonraki adım</value></data>
+  <data name="NextStepHint" xml:space="preserve"><value>Kontrol listesi göreve bir görev şablonu üzerinden ulaşır. Önce kontrol listesini tanımlayın, sonra orada bağlayın.</value></data>
+  <data name="GoToTaskTemplates" xml:space="preserve"><value>Görev şablonları</value></data>
+  <data name="ChecklistTemplateEmpty" xml:space="preserve"><value>En az bir adım ekleyin; boş bir kontrol listesi her göreve boş bir liste koyar.</value></data>
+  <data name="ChecklistItemLabelRequired" xml:space="preserve"><value>Her adımın bir metni olmalı; sözü olmayan bir kutucuk üzerine iş yapılamaz.</value></data>
+  <data name="ChecklistItemCodeRequired" xml:space="preserve"><value>Her adımın bir kodu olmalı; işaretlenen adım bu şablona onunla eşlenir.</value></data>
+  <data name="ChecklistItemCodeDuplicate" xml:space="preserve"><value>İki adım aynı kodu taşıyor. Birini işaretlemek diğerini işaretlemekten ayırt edilemez olur.</value></data>
+  <data name="ChecklistItemRequirementInvalid" xml:space="preserve"><value>Listelenen zorunluluk düzeylerinden birini seçin.</value></data>
+</root>

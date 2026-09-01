@@ -1,0 +1,129 @@
+@model Diten.Web.Models.TaskTemplates.TaskTemplateEditViewModel
+@using Diten.Web.Views.Tasks.Templates
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskTemplatesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Model.Name;
+    Layout = "_LayoutTenantShell";
+
+    var assignmentLabel = Model.DefaultAssignmentTarget switch
+    {
+        "SelfAssigned" => Localizer["AssignmentSelf"].Value,
+        "PositionPool" => Localizer["AssignmentPool"].Value,
+        // Not mapped on purpose: no template can carry any other default, so one that did should read as itself
+        // and be noticed rather than be given a friendly name that hides it.
+        _ => Model.DefaultAssignmentTarget
+    };
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@Model.Name</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a asp-controller="TaskTemplates" asp-action="Index">@Localizer["TaskTemplatesTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@Model.Name</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-controller="TaskTemplates" asp-action="Index" class="btn btn-label-secondary">
+            @SharedLocalizer["Cancel"]
+        </a>
+        <a asp-controller="TaskTemplates" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+            @Localizer["EditItem"]
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ShapeSection"]</h6>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 fw-medium">@Localizer["Code"]</dt>
+                    <dd class="col-sm-8">@Model.Code</dd>
+
+                    <dt class="col-sm-4 fw-medium">@Localizer["TitleTemplate"]</dt>
+                    @* Empty is an ANSWER — the generated task takes the template's name — so it is SAID. *@
+                    <dd class="col-sm-8">
+                        @(string.IsNullOrWhiteSpace(Model.TitleTemplate)
+                            ? Localizer["TitleFallsBackToName"].Value
+                            : Model.TitleTemplate)
+                    </dd>
+
+                    <dt class="col-sm-4 fw-medium">@Localizer["DefaultPriority"]</dt>
+                    <dd class="col-sm-8">@Localizer["Priority" + Model.DefaultPriority]</dd>
+
+                    <dt class="col-sm-4 fw-medium">@Localizer["DefaultDueInDays"]</dt>
+                    <dd class="col-sm-8">
+                        @(Model.DefaultDueInDays is { } days
+                            ? string.Format(Localizer["DueInDaysValue"].Value, days)
+                            : Localizer["NoDueDate"].Value)
+                    </dd>
+                </dl>
+            </div>
+        </section>
+
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["DefaultAssignmentSection"]</h6>
+                @* The precedence again, on the surface where a reader is asking "who does this go to?". *@
+                <p class="text-muted">@Localizer["DefaultAssignmentHint"]</p>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 fw-medium">@Localizer["DefaultAssignmentTarget"]</dt>
+                    <dd class="col-sm-8">@assignmentLabel</dd>
+                </dl>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@SharedLocalizer["Status"]</h6>
+                <span class="badge @(Model.IsActive ? "bg-label-success" : "bg-label-secondary")">
+                    @(Model.IsActive ? SharedLocalizer["Active"].Value : SharedLocalizer["Passive"].Value)
+                </span>
+            </div>
+        </section>
+
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ChecklistSection"]</h6>
+                @if (Model.ChecklistTemplateId is { } checklistId)
+                {
+                    <a asp-controller="TaskChecklistTemplates" asp-action="Details" asp-route-id="@checklistId"
+                       class="btn btn-label-secondary w-100" data-template-checklist-link>
+                        @Localizer["ViewChecklist"]
+                    </a>
+                }
+                else
+                {
+                    @* A template with no checklist is legitimate — a title and a due date is real work — so this
+                       states it rather than leaving an empty card that reads as missing data. *@
+                    <p class="mb-0 text-muted">@Localizer["ChecklistNone"]</p>
+                }
+            </div>
+        </section>
+
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ScopeSection"]</h6>
+                @* "All companies" is stated, never left blank: an empty cell reads as missing data, and here the
+                   absence of a company is the widest possible scope rather than the narrowest. *@
+                <p class="mb-0" data-template-legalentity-name data-legal-entity-id="@Model.LegalEntityId">
+                    @(Model.LegalEntityId is null ? Localizer["LegalEntityAll"].Value : SharedLocalizer["Loading"].Value)
+                </p>
+            </div>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/Tasks/Templates/details.js" asp-append-version="true"></script>
+}

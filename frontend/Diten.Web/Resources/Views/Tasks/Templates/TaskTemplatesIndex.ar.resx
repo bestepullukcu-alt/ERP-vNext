@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="TaskTemplatesTitle" xml:space="preserve"><value>قوالب المهام</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>أشكال مهام قابلة لإعادة الاستخدام. القاعدة المتكرّرة المرتبطة بأحدها تولّد مهمة تحمل أولوية وتاريخ استحقاق وقائمة تحقق، بدل عنوان مجرّد.</value></data>
+  <data name="AddNewTemplate" xml:space="preserve"><value>إضافة قالب</value></data>
+  <data name="EditItem" xml:space="preserve"><value>تعديل القالب</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>إضافة قالب مهمة</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل قالب المهمة</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>مثال: إقفال نهاية الشهر</value></data>
+  <data name="Code" xml:space="preserve"><value>الرمز</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>مثال: MONTHLY-CLOSE</value></data>
+  <data name="CodeHint" xml:space="preserve"><value>لا يمكن تغييره بعد الحفظ: به يُشار إلى هذا القالب من خارج قاعدة البيانات.</value></data>
+  <data name="ShapeSection" xml:space="preserve"><value>الشكل</value></data>
+  <data name="TitleTemplate" xml:space="preserve"><value>عنوان المهمة</value></data>
+  <data name="TitleTemplatePlaceholder" xml:space="preserve"><value>مثال: إقفال نهاية الشهر</value></data>
+  <data name="TitleTemplateHint" xml:space="preserve"><value>اتركه فارغًا فتأخذ المهمة المولَّدة اسم هذا القالب.</value></data>
+  <data name="TitleFallsBackToName" xml:space="preserve"><value>يأخذ اسم القالب</value></data>
+  <data name="DescriptionTemplate" xml:space="preserve"><value>الوصف</value></data>
+  <data name="DefaultPriority" xml:space="preserve"><value>الأولوية</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>منخفضة</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>متوسطة</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>عالية</value></data>
+  <data name="DefaultDueInDays" xml:space="preserve"><value>الاستحقاق (أيام)</value></data>
+  <data name="DefaultDueInDaysHint" xml:space="preserve"><value>يُحتسب من يوم إنشاء المهمة. اتركه فارغًا للعمل غير المحدَّد بمهلة.</value></data>
+  <data name="DueInDaysValue" xml:space="preserve"><value>{0} يوم</value></data>
+  <data name="NoDueDate" xml:space="preserve"><value>بلا تاريخ استحقاق</value></data>
+  <data name="ChecklistSection" xml:space="preserve"><value>قائمة التحقق</value></data>
+  <data name="Checklist" xml:space="preserve"><value>قائمة التحقق</value></data>
+  <data name="ChecklistBound" xml:space="preserve"><value>مرتبطة</value></data>
+  <data name="ChecklistNone" xml:space="preserve"><value>بلا قائمة تحقق</value></data>
+  <data name="ChecklistHint" xml:space="preserve"><value>اختياري. مع قائمة، تحمل كل مهمة مولَّدة خطواتها؛ وبدونها تكون تذكيرًا بسيطًا.</value></data>
+  <data name="ViewChecklist" xml:space="preserve"><value>عرض قائمة التحقق</value></data>
+  <data name="NoChecklistsYet" xml:space="preserve"><value>لم يُعرَّف أي قالب قائمة تحقق بعد.</value></data>
+  <data name="CreateChecklistFirst" xml:space="preserve"><value>أنشئ واحدًا أولًا.</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>نطاق الشركة</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>الشركة</value></data>
+  <data name="LegalEntityAll" xml:space="preserve"><value>كل الشركات</value></data>
+  <data name="LegalEntityHint" xml:space="preserve"><value>اتركه فارغًا فينطبق القالب على كل الشركات. تحديد شركة يقصره عليها؛ والشكل الذي تشترك فيه ثلاث شركات هو ثلاثة قوالب يُعدَّل كل منها وحده.</value></data>
+  <data name="DefaultAssignmentSection" xml:space="preserve"><value>الإسناد الافتراضي</value></data>
+  <data name="DefaultAssignmentTarget" xml:space="preserve"><value>الحائز الافتراضي</value></data>
+  <data name="AssignmentSelf" xml:space="preserve"><value>من ينشئ المهمة</value></data>
+  <data name="AssignmentPool" xml:space="preserve"><value>مجمّع (منصب)</value></data>
+  <data name="PoolPosition" xml:space="preserve"><value>المنصب</value></data>
+  <data name="PoolPositionHint" xml:space="preserve"><value>يُعرض العمل المولَّد على شاغلي ذلك المنصب لاستلامه.</value></data>
+  <data name="DivisionOfLabourHint" xml:space="preserve"><value>القالب يقول كيف يبدو العمل — العنوان والوصف والأولوية والمهلة وقائمة التحقق. والقاعدة المتكرّرة تقول لمن ومتى — الشخص والمنصب والقسم والتكرار.</value></data>
+  <data name="DefaultAssignmentHint" xml:space="preserve"><value>يُستخدم فقط عندما تترك القاعدة المتكرّرة إسنادها فارغًا. وإذا سمّت القاعدة أحدًا، فالقاعدة هي المعتمدة.</value></data>
+  <data name="NoDepartmentHint" xml:space="preserve"><value>لا يُحدَّد القسم هنا: فهو يخص القاعدة المتكرّرة، وهي المكان الوحيد الذي يقول لمن يعود العمل.</value></data>
+  <data name="IsActiveHint" xml:space="preserve"><value>يبقى القالب المتوقّف هنا لكنه لم يعد يُعرَض على القواعد المتكرّرة.</value></data>
+  <data name="TemplatePriorityInvalid" xml:space="preserve"><value>اختر إحدى الأولويات المدرجة.</value></data>
+  <data name="TemplateAssignmentTargetInvalid" xml:space="preserve"><value>لا يمكن للقالب تسمية شخص: فهو بلا حقل مُسنَد إليه، ولن يصل العمل إلى أحد. سمِّ الشخص في القاعدة المتكرّرة.</value></data>
+  <data name="TemplatePoolRequired" xml:space="preserve"><value>اختر المنصب الذي يُعرَض عليه العمل المولَّد.</value></data>
+</root>
