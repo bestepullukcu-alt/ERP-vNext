@@ -16,5 +16,7 @@ public enum FirstGskuIdentityWorkflowCheckpoint
     Completed = 12,
     AwaitingMakerReplay = 13,
     ManualReconciliationRequired = 14,
-    ApprovalValidated = 15
+    ApprovalValidated = 15,
+    AbandonedBeforeWorkflowStart = 16,
+    Superseded = 17
 }

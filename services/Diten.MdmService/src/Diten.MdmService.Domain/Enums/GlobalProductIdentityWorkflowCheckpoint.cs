@@ -11,5 +11,7 @@ public enum GlobalProductIdentityWorkflowCheckpoint
     DecisionApplied = 7,
     Completed = 8,
     AwaitingMakerReplay = 9,
-    ManualReconciliationRequired = 10
+    ManualReconciliationRequired = 10,
+    AbandonedBeforeWorkflowStart = 11,
+    Superseded = 12
 }
