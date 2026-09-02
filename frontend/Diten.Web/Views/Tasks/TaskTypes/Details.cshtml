@@ -3,6 +3,12 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<TaskTypesIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@* ⚠ THE SYSTEM OUTCOME LABELS COME FROM THE WORKCENTERNEXT RESX, NOT THIS ONE.
+   `WorkAggregation_ClosureOutcome_*` already exists there in all seven languages — the projection emits those
+   keys and the Task Center resolves them. Copying the five entries into TaskTypesIndex would put the SAME
+   sentence in two files, and the day one is corrected the two screens would disagree about what an outcome is
+   called. So the second localizer is injected instead. *@
+@inject IHtmlLocalizer<Diten.Web.Views.WorkCenterNext.WorkCenterNextIndex> OutcomeLocalizer
 @{
     ViewData["Title"] = Model.Name;
     Layout = "_LayoutTenantShell";
@@ -73,6 +79,46 @@
                            SOPs with UIDs allocated but no row in the master register, so they legitimately have
                            nothing to show. The empty state says "none recorded", not "none exists". *@
                         <span class="text-muted">@Localizer["GroupDocumentsEmpty"]</span>
+                    }
+                </span>
+            </div>
+            <div class="col-12 backbone-preview-field">
+                <span class="backbone-preview-label"><i class="bx bx-flag"></i> @Localizer["ClosureOutcomesSection"]</span>
+                <span class="backbone-preview-value">
+                    @if (Model.ClosureOutcomes is { Count: > 0 })
+                    {
+                        <ul class="list-unstyled mb-0">
+                            @foreach (var outcome in Model.ClosureOutcomes.OrderBy(o => o.SortOrder).ThenBy(o => o.Code, StringComparer.OrdinalIgnoreCase))
+                            {
+                                @* SYSTEM outcomes read through the resx (seven languages); a TENANT outcome
+                                   prints the words its author typed, in the language they typed them in. The
+                                   CODE follows in muted text — it is the identity stored on every task closed
+                                   this way, so somebody reading a raw export needs to be able to find it. *@
+                                var label = string.IsNullOrWhiteSpace(outcome.LabelResourceKey)
+                                    ? (outcome.LabelText ?? outcome.Code)
+                                    : OutcomeLocalizer[outcome.LabelResourceKey].Value;
+                                <li class="mb-1">
+                                    <span class="badge @(outcome.Disposition == "Cancelled" ? "bg-label-secondary" : "bg-label-success")">
+                                        @(outcome.Disposition == "Cancelled"
+                                            ? Localizer["ClosureDispositionCancelled"].Value
+                                            : Localizer["ClosureDispositionCompleted"].Value)
+                                    </span>
+                                    <span class="ms-2">@label</span>
+                                    <span class="text-muted small ms-2">@outcome.Code</span>
+                                    @if (outcome.RequiresReason)
+                                    {
+                                        @* ⭐ Shown per row, because that is where the rule lives. *@
+                                        <span class="badge bg-label-warning ms-2">@Localizer["ClosureOutcomeRequiresReason"]</span>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        @* An empty dictionary is a CONFIGURATION, not a gap: this type asks nothing when a task
+                           closes, which is how every unconfigured type behaves. The sentence says so. *@
+                        <span class="text-muted">@Localizer["ClosureOutcomesEmpty"]</span>
                     }
                 </span>
             </div>

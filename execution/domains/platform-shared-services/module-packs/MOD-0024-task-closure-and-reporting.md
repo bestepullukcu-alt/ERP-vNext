@@ -463,6 +463,7 @@ exist before the field is worth showing: Faz 3 comes first, and Faz 1's remainin
 | Phase | Content | Schema change | Status |
 |---|---|---|---|
 | **Faz 3 → now** | Outcome dictionary on `TaskType`, `requiresReason` on each outcome, the picker on complete/cancel, the `reasonCode: null` constant removed, `ClosureReasonCode` projected and rendered, `TaskTransition.ReasonCode` on the activity event | Yes, additive | **Delivered 2026-09-02** |
+| **Faz 3b → now** | The task-type EDITOR: a repeater on `_Form`, the system catalogue published at `GET /api/v1/tasks/task-types/closure-outcome-catalog`, the dictionary read-only on `Details` | None — the field already existed | **Delivered 2026-09-03** |
 | **Faz 1 (remainder)** | Distinguish the closing date from the cancellation date on screen — see the `closedAt` note below; measured as SAFE, so this is presentation, not correctness | None | Optional |
 | **Faz 2** | Closure envelope proper: `note`, `deliverables[]`, `followUps[]`, and `TaskFieldDefinition.Stage` | Yes, additive | Next |
 | **Faz 4** | Lifecycle gaps: `Returned` as a state (the event already exists), `Blocked` separated from `Waiting` | Yes — enum change, migration-sensitive | After Faz 2 |
@@ -542,12 +543,35 @@ imprecise are corrected here rather than repeated.
     the child would have stored a code its own type does not offer and printed it raw forever. The copy is
     removed; the child is still recorded as cancelled in its own feed.
 
+**Closed 2026-09-03 — the editor (Faz 3b)**
+
+12. **The catalogue shipped unreachable.** `TaskClosureOutcomeCatalog` arrived with the closure slice and was
+    consulted only from inside the service (`TaskTypeRules.IsSystemCode`); nothing published it. So the five
+    outcomes this product ships were, in practice, unavailable to the only screen that would ever offer them.
+    `GET /api/v1/tasks/task-types/closure-outcome-catalog` (guarded by `TaskTypesManage`) now does — a literal
+    segment beside `task-types/{id:guid}`, which cannot collide because the guid constraint refuses the word.
+13. **The null/empty asymmetry moved into the form, and it had to.** `closureOutcomes: null` still means "leave
+    it alone" and `[]` still means "clear it" — but the reason the nullable field existed (this form did not
+    draw the section) is gone. A posted form with no rows is now ambiguous between "I removed them all" and
+    "the section never rendered", so `_Form` posts a hidden `ClosureOutcomesSubmitted` marker and
+    `ClosureOutcomesPayload` returns null without it. Asserted in
+    `Diten.Web.Tests/Controllers/TaskTypeClosureOutcomeEditorTests.cs`, whose first test is the one that must
+    never go red.
+14. **`jquery.repeater` is NOT in this product.** Sneat's repeater pages (`forms-extras.html:1955`,
+    `app-invoice-add.html`) drive `data-repeater-list` with that plugin; measured — it is absent from
+    `wwwroot/vendor/libs` and no view loads it. Copying the markup would have shipped a static list whose Add
+    button silently did nothing. The row's LOOK is borrowed; the behaviour is ~70 lines of vanilla JS.
+15. **System outcome labels are read from the WorkCenterNext resx, not copied.** `WorkAggregation_ClosureOutcome_*`
+    already exists there in seven languages and the l10n guard holds it as a prefix domain. The type editor
+    injects a second localizer rather than duplicating five sentences into `TaskTypesIndex` — two copies of one
+    sentence is how the Task Center and the editor come to disagree about what an outcome is called.
+
 **Deferred by this slice, and worth naming**
 
-- **No task-type editor UI for the dictionary.** The field round-trips through the existing task-type
-  create/update API, and `UpdateTaskTypeRequest.ClosureOutcomes` is nullable precisely so the current editor —
-  which does not draw it — cannot delete a configured dictionary on save. Until an editor exists, a dictionary
-  is configured through the API.
+- **The catalogue's disposition and reason flag are DEFAULTS in the editor, not locks.** Selecting a system
+  outcome prefills both and leaves them editable, because the server does not constrain them either
+  (`NormalizeClosureOutcomes` refuses only a tenant *label* on a system code). Locking them in the browser would
+  be this screen enforcing a rule the engine does not have. Only the LABEL is the catalogue's to keep.
 - **`closure` is a plain projection field, not a capability-gated block.** §4's rule ("a projection field and
   its capability enter the contract together") governs render BLOCKS; `closure` is a caption fact beside
   `closedAt`, which is not capability-gated either. It is declared in `fixture-contract.js` all the same, per

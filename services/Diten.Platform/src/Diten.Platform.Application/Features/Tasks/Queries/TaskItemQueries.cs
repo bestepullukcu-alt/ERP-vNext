@@ -167,6 +167,21 @@ public sealed record GetActiveTaskTypesQuery(string CorrelationId)
 public sealed record GetTaskTypeByIdQuery(Guid Id, string CorrelationId)
     : IRequest<Response<TaskTypeDto>>;
 
+/// <summary>
+/// The SYSTEM closure outcomes an administrator may pick from when building a type's dictionary.
+///
+/// <para><b>Why an endpoint at all.</b> <c>TaskClosureOutcomeCatalog</c> shipped with the closure slice and was
+/// reachable only from inside the service — <c>TaskTypeRules.IsSystemCode</c> consulted it and nothing published
+/// it. So the vocabulary the product ships was, in practice, unavailable to the only screen that would ever
+/// offer it, and the dictionary could only be built through the API by hand.</para>
+///
+/// <para>It takes no tenant argument and reads no repository: the catalogue is code-owned, identical in every
+/// tenant, and bound to the resx entries that name it. What the caller does with an entry — accept its default
+/// <c>RequiresReason</c>, or not — belongs to the type being edited, not here.</para>
+/// </summary>
+public sealed record GetClosureOutcomeCatalogQuery(string CorrelationId)
+    : IRequest<Response<IReadOnlyList<TaskClosureOutcomeDto>>>;
+
 
 // ── DCP-005 slice 2: the document reference list ────────────────────────────
 

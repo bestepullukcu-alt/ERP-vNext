@@ -115,4 +115,52 @@
   <data name="DocListWithdrawReasonRequired" xml:space="preserve"><value>Для отзыва нужна причина.</value></data>
   <data name="DocListWithdrawSubtext" xml:space="preserve"><value>Версия {0} перестаёт быть списком, на который могут ссылаться задачи. Она сохраняется с отметкой, чтобы прежние ссылки оставались читаемыми.</value></data>
   <data name="DocListImportDenied" xml:space="preserve"><value>Вы можете просматривать этот список, но не импортировать его.</value></data>
+  <data name="ClosureOutcomesSection" xml:space="preserve">
+    <value>Результаты закрытия</value>
+  </data>
+  <data name="ClosureOutcomesHint" xml:space="preserve">
+    <value>Что считается завершением для работы этого типа. Оставьте пустым — и закрытие задачи ничего не спросит; именно так ведёт себя любой ненастроенный тип.</value>
+  </data>
+  <data name="ClosureOutcomesEmpty" xml:space="preserve">
+    <value>Результаты не заданы — закрытие задачи этого типа ничего не спрашивает.</value>
+  </data>
+  <data name="ClosureOutcomeAdd" xml:space="preserve">
+    <value>Добавить результат</value>
+  </data>
+  <data name="ClosureOutcomeRemove" xml:space="preserve">
+    <value>Удалить этот результат</value>
+  </data>
+  <data name="ClosureOutcomeSource" xml:space="preserve">
+    <value>Результат</value>
+  </data>
+  <data name="ClosureOutcomeSourceCustom" xml:space="preserve">
+    <value>Напишу свой</value>
+  </data>
+  <data name="ClosureOutcomeCode" xml:space="preserve">
+    <value>Код</value>
+  </data>
+  <data name="ClosureOutcomeCodePlaceholder" xml:space="preserve">
+    <value>напр. RESOLVED</value>
+  </data>
+  <data name="ClosureOutcomeLabel" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="ClosureOutcomeLabelPlaceholder" xml:space="preserve">
+    <value>Что увидят люди</value>
+  </data>
+  <data name="ClosureOutcomeDisposition" xml:space="preserve">
+    <value>Предлагается при</value>
+  </data>
+  <data name="ClosureOutcomeSortOrder" xml:space="preserve">
+    <value>Порядок</value>
+  </data>
+  <data name="ClosureOutcomeRequiresReason" xml:space="preserve">
+    <value>Спрашивает причину</value>
+  </data>
+  <data name="ClosureDispositionCompleted" xml:space="preserve">
+    <value>Завершении</value>
+  </data>
+  <data name="ClosureDispositionCancelled" xml:space="preserve">
+    <value>Отмене</value>
+  </data>
 </root>
