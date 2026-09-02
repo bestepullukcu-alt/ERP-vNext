@@ -43,6 +43,14 @@ public sealed class CreateTaskTypeHandler : IRequestHandler<CreateTaskTypeComman
             return Response<Guid>.Fail(classInvalid.Message, 400, classInvalid.ReasonCode, command.CorrelationId);
         }
 
+        var (outcomes, outcomesInvalid) = TaskTypeRules.NormalizeClosureOutcomes(
+            request.ClosureOutcomes?.Select(ToOutcome));
+        if (outcomesInvalid is { } outcomeError)
+        {
+            return Response<Guid>.Fail(
+                outcomeError.Message, 400, outcomeError.ReasonCode, command.CorrelationId);
+        }
+
         var code = TaskTypeRules.NormalizeCode(request.Code);
         var existing = await _types.ListAllAsync(ct);
         /*
@@ -67,6 +75,7 @@ public sealed class CreateTaskTypeHandler : IRequestHandler<CreateTaskTypeComman
             IsQualityEvent = request.IsQualityEvent,
             GroupDocuments = TaskTypeRules.NormalizeDocuments(request.GroupDocuments),
             LocalDocuments = TaskTypeRules.NormalizeLocalDocuments(request.LocalDocuments),
+            ClosureOutcomes = outcomes!,
             IsActive = true,
             CreatedBy = _currentUser.ActorName
         };
@@ -77,6 +86,17 @@ public sealed class CreateTaskTypeHandler : IRequestHandler<CreateTaskTypeComman
 
     internal static string? Trimmed(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    /// <summary>The wire shape as the entity. Normalisation and refusal are the rules' job, not this mapping's.</summary>
+    internal static TaskClosureOutcome ToOutcome(TaskClosureOutcomeDto dto) => new()
+    {
+        Code = dto.Code,
+        LabelResourceKey = dto.LabelResourceKey,
+        LabelText = dto.LabelText,
+        Disposition = dto.Disposition,
+        RequiresReason = dto.RequiresReason,
+        SortOrder = dto.SortOrder
+    };
 }
 
 /// <summary>
@@ -129,6 +149,28 @@ public sealed class UpdateTaskTypeHandler : IRequestHandler<UpdateTaskTypeComman
         type.IsQualityEvent = request.IsQualityEvent;
         type.GroupDocuments = TaskTypeRules.NormalizeDocuments(request.GroupDocuments);
         type.LocalDocuments = TaskTypeRules.NormalizeLocalDocuments(request.LocalDocuments);
+
+        /*
+         * ⚠ NULL IS "NOT ASKING", AND THIS BRANCH IS THE WHOLE REASON THE FIELD IS NULLABLE.
+         *
+         * An update is a FULL REPLACE everywhere else on this record, which is right for fields the editor
+         * draws. The editor does NOT draw this one yet — so replacing on null would make every save from the
+         * current screen silently delete a type's outcome dictionary, and the dictionary would look like it had
+         * never been configured. An empty LIST still clears it: that is a caller who knows about the field and
+         * is asking.
+         */
+        if (request.ClosureOutcomes is not null)
+        {
+            var (outcomes, outcomesInvalid) = TaskTypeRules.NormalizeClosureOutcomes(
+                request.ClosureOutcomes.Select(CreateTaskTypeHandler.ToOutcome));
+            if (outcomesInvalid is { } outcomeError)
+            {
+                return Response<NoContent>.Fail(
+                    outcomeError.Message, 400, outcomeError.ReasonCode, command.CorrelationId);
+            }
+
+            type.ClosureOutcomes = outcomes!;
+        }
 
         await _types.UpdateAsync(type, ct);
         return Response<NoContent>.Success(204, command.CorrelationId);

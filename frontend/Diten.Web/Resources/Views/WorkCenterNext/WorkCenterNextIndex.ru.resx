@@ -2202,4 +2202,43 @@
   <data name="BannerReconciliationRequired" xml:space="preserve">
     <value>Требуется сверка с источником.</value>
   </data>
+  <data name="StepClosedAs" xml:space="preserve">
+    <value>Закрыто с результатом: {0}</value>
+  </data>
+  <data name="ClosureOutcomeLabel" xml:space="preserve">
+    <value>Чем завершилась эта работа?</value>
+  </data>
+  <data name="ClosureOutcomePlaceholder" xml:space="preserve">
+    <value>Выберите результат</value>
+  </data>
+  <data name="ClosureOutcomeRequired" xml:space="preserve">
+    <value>Выберите, чем завершилась эта работа.</value>
+  </data>
+  <data name="ClosureReasonLabel" xml:space="preserve">
+    <value>Примечание (необязательно)</value>
+  </data>
+  <data name="ClosureReasonLabelRequired" xml:space="preserve">
+    <value>Причина (обязательно)</value>
+  </data>
+  <data name="ClosureReasonPlaceholder" xml:space="preserve">
+    <value>Опишите результат своими словами</value>
+  </data>
+  <data name="ClosureReasonRequired" xml:space="preserve">
+    <value>Этот результат требует указания причины.</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
+    <value>Выполнено как запрошено</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CompletedPartially" xml:space="preserve">
+    <value>Выполнено частично</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledNotRequired" xml:space="preserve">
+    <value>Больше не требуется</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledSuperseded" xml:space="preserve">
+    <value>Заменено другой работой</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledDuplicate" xml:space="preserve">
+    <value>Дубликат</value>
+  </data>
 </root>

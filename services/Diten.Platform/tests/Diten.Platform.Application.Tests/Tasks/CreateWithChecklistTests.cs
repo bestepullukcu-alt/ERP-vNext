@@ -324,7 +324,7 @@ public sealed class CreateWithChecklistTests
                 new TaskChecklistService(),
                 new FakeWorkflowTransitionGate(),
                 new FakeTaskDependencyRepository(),
-                new FakeTaskNotificationService(),
+                new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
                 NullLogger<TransitionTaskItemHandler>.Instance)
             .Handle(
                 new TransitionTaskItemCommand(

@@ -423,6 +423,48 @@
             }
         }
         /*
+         * closure — WHAT the closure decided, the other half of `closedAt`.
+         *
+         * Declared here for the reason its sibling above gives: an undeclared field is a field that changes
+         * meaning without anyone noticing (BL-032). This one had a longer version of that problem —
+         * `ClosureReasonCode` existed on the entity, in the mapper and in the detail DTO, appeared in ZERO files
+         * under `frontend/`, and was never written by anything, so the column was both unread and empty.
+         *
+         * `reasonCode` is REQUIRED WHEN THE BLOCK IS PRESENT and the label is not: the code is the stored fact,
+         * and an outcome the type has since retired resolves to no label at all — a closure that keeps its code
+         * and loses its words is the designed state, not a broken one.
+         *
+         * On OPEN work it is a contradiction, exactly as a closing instant is.
+         */
+        if (fixture.closure !== undefined && fixture.closure !== null) {
+            if (typeof fixture.closure.reasonCode !== 'string' || !fixture.closure.reasonCode.trim()) {
+                push(errors, fixture, 'CLOSURE_REASON_CODE_INVALID', 'closure');
+            } else if (!isTerminalFixture(fixture)) {
+                push(errors, fixture, 'CLOSURE_ON_OPEN_ITEM', 'closure');
+            } else if (fixture.closure.outcome !== undefined
+                && fixture.closure.outcome !== null
+                && !isLabel(fixture.closure.outcome)) {
+                push(errors, fixture, 'CLOSURE_OUTCOME_LABEL_INVALID', 'closure');
+            }
+        }
+        /*
+         * The TYPE's outcome dictionary, as the picker reads it. Both halves are OPTIONAL and their ABSENCE is
+         * the meaningful, common case: a type that offers nothing closes the way it always did. Validated only
+         * for shape, so a provider cannot ship a picker row with no code or no label — either would draw a
+         * choosable option that names nothing.
+         */
+        ['completionOutcomes', 'cancellationOutcomes'].forEach((slot) => {
+            const offered = fixture.taskType && fixture.taskType[slot];
+            if (offered === undefined || offered === null) { return; }
+            if (!Array.isArray(offered)
+                || offered.some((outcome) => !outcome
+                    || typeof outcome.code !== 'string'
+                    || !outcome.code.trim()
+                    || !isLabel(outcome.label))) {
+                push(errors, fixture, 'CLOSURE_OUTCOMES_INVALID', `taskType.${slot}`);
+            }
+        });
+        /*
          * Activity entries. `at` is ABSOLUTE and a pre-computed "N days ago" is forbidden outright: whoever
          * computes it freezes it, and a projection that sat in a cache or a tab left open overnight then says
          * "today" about yesterday. Same defect class as the frozen showcase date.

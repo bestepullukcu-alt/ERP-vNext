@@ -370,6 +370,7 @@ public sealed class TaskNotificationDispatchPointsTests
                 new TaskChecklistService(),
                 new PassingWorkflowGate(),
                 new FakeTaskDependencyRepository(),
+                new FakeTaskTypeRepository(),
                 Notifications,
                 NullLogger<TransitionTaskItemHandler>.Instance);
     }

@@ -2202,4 +2202,43 @@
   <data name="BannerReconciliationRequired" xml:space="preserve">
     <value>مطلوب تسوية مع المصدر.</value>
   </data>
+  <data name="StepClosedAs" xml:space="preserve">
+    <value>أُغلق بالنتيجة: {0}</value>
+  </data>
+  <data name="ClosureOutcomeLabel" xml:space="preserve">
+    <value>كيف انتهى هذا العمل؟</value>
+  </data>
+  <data name="ClosureOutcomePlaceholder" xml:space="preserve">
+    <value>اختر نتيجة</value>
+  </data>
+  <data name="ClosureOutcomeRequired" xml:space="preserve">
+    <value>اختر كيف انتهى هذا العمل.</value>
+  </data>
+  <data name="ClosureReasonLabel" xml:space="preserve">
+    <value>ملاحظة (اختياري)</value>
+  </data>
+  <data name="ClosureReasonLabelRequired" xml:space="preserve">
+    <value>السبب (مطلوب)</value>
+  </data>
+  <data name="ClosureReasonPlaceholder" xml:space="preserve">
+    <value>اشرح النتيجة بكلماتك</value>
+  </data>
+  <data name="ClosureReasonRequired" xml:space="preserve">
+    <value>تتطلب هذه النتيجة ذكر سبب.</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
+    <value>أُنجز كما طُلب</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CompletedPartially" xml:space="preserve">
+    <value>أُنجز جزئيًا</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledNotRequired" xml:space="preserve">
+    <value>لم يعد مطلوبًا</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledSuperseded" xml:space="preserve">
+    <value>حل محله عمل آخر</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledDuplicate" xml:space="preserve">
+    <value>مكرر</value>
+  </data>
 </root>

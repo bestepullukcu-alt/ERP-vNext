@@ -449,7 +449,19 @@ describe("(b) the keys the SERVER puts on the wire exist too", () => {
       csharp("services/Diten.Platform/src/Diten.Platform.Domain/Enums/Tasks/TaskEnums.cs"), "TaskLifecycle"),
     WorkAggregation_NativeStatus_: () => csEnum(
       csharp("services/Diten.Platform/src/Diten.Platform.Domain/Enums/Workflow/ApprovalTaskStatus.cs"),
-      "ApprovalTaskStatus")
+      "ApprovalTaskStatus"),
+    /*
+     * The SYSTEM closure outcomes. A third concatenated prefix, and it belongs here rather than as a whole key
+     * for the same reason the two above do — but the domain is read differently: these are not an enum, they are
+     * the catalogue's `Entry(CODE, "KeySuffix", …)` rows. The SUFFIX is what completes the key, so that is what
+     * is read, and every one of the five must have a sentence behind it.
+     *
+     * This matters more than the count suggests: a system outcome ships to EVERY tenant in seven languages, so a
+     * catalogue entry whose resx line was forgotten would put a raw key in front of every user of the product.
+     */
+    WorkAggregation_ClosureOutcome_: () => [...csharp(
+      "services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Services/TaskClosureOutcomeCatalog.cs")
+      .matchAll(/Entry\([A-Za-z]+,\s*"([A-Za-z0-9]+)"/g)].map((m) => m[1])
   };
 
   it("every whole key the providers emit has a sentence behind it", () => {
@@ -469,7 +481,7 @@ describe("(b) the keys the SERVER puts on the wire exist too", () => {
     expect(domain.filter((value) => !available.has(prefix + value)).sort()).toEqual([]);
   });
 
-  it("the two prefixes really are still concatenated on the server", () => {
+  it("the prefixes really are still concatenated on the server", () => {
     // Non-vacuity for the check above: if the server stopped building these keys by concatenation, the enum
     // test would be guarding something nobody emits.
     const found = emitted();

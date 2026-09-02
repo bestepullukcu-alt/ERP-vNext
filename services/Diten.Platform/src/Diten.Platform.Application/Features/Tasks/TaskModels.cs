@@ -410,6 +410,25 @@ public static class TaskReasonCodes
     public const string TaskTypeClassificationInvalid = "TASK_TYPE_CLASSIFICATION_INVALID";
     public const string TaskTypeFunctionCodeInvalid = "TASK_TYPE_FUNCTION_CODE_INVALID";
 
+    // ── Closure outcomes ─────────────────────────────────────────────────
+    /// <summary>The type's outcome dictionary is malformed — a duplicate code, no label, or two labels.</summary>
+    public const string TaskTypeClosureOutcomeInvalid = "TASK_TYPE_CLOSURE_OUTCOME_INVALID";
+
+    /// <summary>
+    /// The closer named an outcome the task's type does not offer for this disposition. Refused rather than
+    /// stored: a closure code nothing can resolve to a label is a record that reads as a raw string forever.
+    /// </summary>
+    public const string ClosureOutcomeUnknown = "CLOSURE_OUTCOME_UNKNOWN";
+
+    /// <summary>
+    /// The type offers outcomes for this closure and none was chosen. Only ever raised for a type that HAS a
+    /// dictionary — a type without one closes exactly as it always did.
+    /// </summary>
+    public const string ClosureOutcomeRequired = "CLOSURE_OUTCOME_REQUIRED";
+
+    /// <summary>The chosen outcome carries <c>RequiresReason</c> and no reason was given.</summary>
+    public const string ClosureReasonRequired = "CLOSURE_REASON_REQUIRED";
+
     // ── DCP-005 slice 2 — the document reference list ────────────────────
     public const string DocumentListInvalid = "DOCUMENT_LIST_INVALID";
     public const string DocumentListAlreadyImported = "DOCUMENT_LIST_ALREADY_IMPORTED";
@@ -1199,6 +1218,20 @@ public sealed record SendDueSoonRemindersResponse(
 /// <summary>
 /// Create a task type. <c>Code</c> is normalised and then frozen — see <c>TaskTypeRules.CodeImmutableMessage</c>.
 /// </summary>
+/// <summary>
+/// One closure outcome as the type editor sends it and the task form reads it back.
+///
+/// <para>Trailing and defaulted so every request payload written before the dictionary existed stays valid — the
+/// same treatment <see cref="TaskFieldValueDto.Redacted"/> got, and for the same reason.</para>
+/// </summary>
+public sealed record TaskClosureOutcomeDto(
+    string Code,
+    string? LabelResourceKey,
+    string? LabelText,
+    TaskClosureDisposition Disposition,
+    bool RequiresReason,
+    int SortOrder = 0);
+
 public sealed record CreateTaskTypeRequest(
     string Code,
     string Name,
@@ -1208,7 +1241,8 @@ public sealed record CreateTaskTypeRequest(
     string? FunctionCode,
     bool IsQualityEvent,
     IReadOnlyList<string>? GroupDocuments,
-    IReadOnlyDictionary<string, IReadOnlyList<string>>? LocalDocuments);
+    IReadOnlyDictionary<string, IReadOnlyList<string>>? LocalDocuments,
+    IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null);
 
 /// <summary>
 /// Update a task type. <c>Code</c> is accepted so the screen can round-trip what it displayed, and REFUSED if it
@@ -1223,7 +1257,13 @@ public sealed record UpdateTaskTypeRequest(
     string? FunctionCode,
     bool IsQualityEvent,
     IReadOnlyList<string>? GroupDocuments,
-    IReadOnlyDictionary<string, IReadOnlyList<string>>? LocalDocuments);
+    IReadOnlyDictionary<string, IReadOnlyList<string>>? LocalDocuments,
+    /// <summary>
+    /// ⚠ NULL MEANS "NOT ASKING", an empty list means "clear it". An update is otherwise a FULL REPLACE, so a
+    /// client that does not yet know about the dictionary — the current type editor — would silently delete a
+    /// type's outcomes on every save.
+    /// </summary>
+    IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null);
 
 /// <summary>Retire or restore a type. There is no delete — see <c>DeactivateTaskTypeHandler</c>.</summary>
 public sealed record SetTaskTypeActiveRequest(bool IsActive);
@@ -1240,7 +1280,8 @@ public sealed record TaskTypeDto(
     bool IsQualityEvent,
     IReadOnlyList<string> GroupDocuments,
     IReadOnlyDictionary<string, IReadOnlyList<string>> LocalDocuments,
-    bool IsActive);
+    bool IsActive,
+    IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null);
 
 
 // ── DCP-005 slice 2: the controlled-document reference list ────────────────

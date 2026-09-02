@@ -440,13 +440,33 @@ Each gap costs the report a specific sentence:
 
 Scope of this pack is **Faz 0: the pack itself**. Nothing below is approved by writing it down.
 
-| Phase | Content | Schema change | Depends on |
+### ⚠ The order changed, because Faz 1 was already done
+
+This table originally opened with "put on screen what is already stored". Measured again on 2026-09-02, that
+phase had almost nothing left in it — and what remained was not a display gap:
+
+| Faz 1's original items | Measured state |
+|---|---|
+| Effort card (estimate / spent) | **Already drawn** — `app.js:4253-4267`, fixed 2026-08-24 (Tur B) |
+| `closedAt` on screen | **Already drawn** — the step-bar caption, `app.js:2683` (`StepClosedOn`) |
+| Transition history | **Already projected and drawn** — `TaskWorkItemProvider.ToActivity`, with from→to, actor, reason text and field changes per row |
+| `closureReasonCode` on screen | **Nothing to draw.** The column was EMPTY |
+
+The last row is why the order is wrong rather than merely optimistic. `TRANSITION_BODIES.__default` in `app.js`
+sent `reasonCode: null` as a literal constant, for `complete`, `cancel` and every transition not named
+explicitly. The engine faithfully wrote `task.ClosureReasonCode = command.Request.ReasonCode` — and stored null,
+every time, on every closure since the engine shipped.
+
+**So projecting the field first would have delivered an empty column to the screen.** The vocabulary has to
+exist before the field is worth showing: Faz 3 comes first, and Faz 1's remaining item rides along with it.
+
+| Phase | Content | Schema change | Status |
 |---|---|---|---|
-| **Faz 1** | Put on screen what is already stored: `closureReasonCode` (needs projection first), the closing date distinguished from cancellation, and a closure-oriented `TaskTransition` history. The effort card is **already done** (Tur B, 2026-08-24) and is not part of this phase. | None | — |
-| **Faz 2** | Closure envelope in the contract (`closure` + its capability, added together per §4) and `TaskFieldDefinition.Stage`. | Yes, additive | Faz 1 |
-| **Faz 3** | Outcome dictionary on `TaskType`, with `requiresReason` on each outcome. | Yes, additive | Faz 2 |
-| **Faz 4** | Lifecycle gaps: `Returned` as a state (the event already exists), `Blocked` separated from `Waiting`. | Yes — enum change, migration-sensitive | Faz 3 |
-| **Faz 5** | Work report: Cycle Time · Unattended · Productivity **as a count** · waiting distribution. | Read-only | Faz 4 |
+| **Faz 3 → now** | Outcome dictionary on `TaskType`, `requiresReason` on each outcome, the picker on complete/cancel, the `reasonCode: null` constant removed, `ClosureReasonCode` projected and rendered, `TaskTransition.ReasonCode` on the activity event | Yes, additive | **Delivered 2026-09-02** |
+| **Faz 1 (remainder)** | Distinguish the closing date from the cancellation date on screen — see the `closedAt` note below; measured as SAFE, so this is presentation, not correctness | None | Optional |
+| **Faz 2** | Closure envelope proper: `note`, `deliverables[]`, `followUps[]`, and `TaskFieldDefinition.Stage` | Yes, additive | Next |
+| **Faz 4** | Lifecycle gaps: `Returned` as a state (the event already exists), `Blocked` separated from `Waiting` | Yes — enum change, migration-sensitive | After Faz 2 |
+| **Faz 5** | Work report: Cycle Time · Unattended · Productivity **as a count** · waiting distribution | Read-only | After Faz 4 |
 
 Faz 4 is the one with real regression risk: `TaskLifecycle` is a persisted enum on a document store, and this
 module has already taken a live 500 from exactly that shape of change — a stale `"QA"` value that no enum
@@ -494,6 +514,44 @@ imprecise are corrected here rather than repeated.
    a wire code (`TaskTransitionCodes.cs`). The event is recorded backend-side; only the STATE is missing.
 6. **Backend `TaskLifecycle` has seven members, not eight** (`TaskEnums.cs:16-25`). `notApplicable` is a
    frontend-contract value for non-task work intents and has no backend counterpart.
+
+**Re-measured 2026-09-02, when the vocabulary slice was built**
+
+7. **The empty column had ONE cause, and it was in the browser.** `TRANSITION_BODIES.__default`
+   (`app.js`) read `({ expectedVersion, reason }) => ({ expectedVersion, reasonCode: null, note: reason || null })`.
+   Every other link in the chain already worked: `TaskTransitionRequest(ExpectedVersion, ReasonCode, Note)`
+   accepts a code, `TaskWorkItemActionDispatcher.cs:72` forwards it, and
+   `TaskItemTransitionHandlers.cs:532,536` writes it to the task and to the transition log. Field-name agreement
+   was green in `task-transition-contract.test.js` throughout — the guard compared NAMES, and the defect was a
+   VALUE.
+8. **`closureReasonCode` never reached the projection either.** Zero occurrences in `TaskWorkItemProvider.cs`
+   before this slice, confirming §12 item 3: the gap was one layer earlier than the render.
+9. **`TaskTransition.ReasonCode` was recorded and never projected.** `ToActivity` emitted `Reason` (the actor's
+   free text) and not `ReasonCode`, so a feed row could show the sentence explaining a classification while
+   dropping the classification.
+10. **The `closedAt` fold is SAFE — measured, not assumed.** `ClosedAt: terminal ? CompletedAt ?? CancelledAt`
+    (`TaskWorkItemProvider.cs:711`) can never pick the wrong one: `TaskLifecycleService.CanTransition` refuses
+    every transition out of a terminal state (`IsTerminal` covers `Done` and `Cancelled`), and the subtask
+    cascade skips children already `Done` or `Cancelled`. Those are the only writers of the two fields, so no
+    task can ever carry both. What the fold loses is which of the two it was — and that was never `closedAt`'s
+    to carry: the lifecycle says it, and the closure outcome now says what was decided as well. **No change
+    made; presentation only.**
+11. **A defect this slice would have activated, found and fixed.** `CancelOpenSubtasksAsync` copied the parent's
+    `ReasonCode` onto every child it cancelled. Harmless while the value was always null; with a real outcome
+    flowing, the code comes from the PARENT's type dictionary and a subtask may be a different type or none, so
+    the child would have stored a code its own type does not offer and printed it raw forever. The copy is
+    removed; the child is still recorded as cancelled in its own feed.
+
+**Deferred by this slice, and worth naming**
+
+- **No task-type editor UI for the dictionary.** The field round-trips through the existing task-type
+  create/update API, and `UpdateTaskTypeRequest.ClosureOutcomes` is nullable precisely so the current editor —
+  which does not draw it — cannot delete a configured dictionary on save. Until an editor exists, a dictionary
+  is configured through the API.
+- **`closure` is a plain projection field, not a capability-gated block.** §4's rule ("a projection field and
+  its capability enter the contract together") governs render BLOCKS; `closure` is a caption fact beside
+  `closedAt`, which is not capability-gated either. It is declared in `fixture-contract.js` all the same, per
+  BL-032.
 
 **Measured but deliberately left out of the pack**
 

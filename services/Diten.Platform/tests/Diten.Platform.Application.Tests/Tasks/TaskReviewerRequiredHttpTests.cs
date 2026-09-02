@@ -298,7 +298,7 @@ public sealed class TaskReviewerRequiredHttpTests
                 new TaskChecklistService(),
                 // Permits everything, so any refusal below is MOD-0024's own rule.
                 new PassingWorkflowGate(),
-                new FakeTaskDependencyRepository(), new FakeTaskNotificationService(), NullLogger<TransitionTaskItemHandler>.Instance);
+                new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(), new FakeTaskNotificationService(), NullLogger<TransitionTaskItemHandler>.Instance);
 
             var correlation = new CorrelationContext();
             correlation.SetCorrelationId("corr");

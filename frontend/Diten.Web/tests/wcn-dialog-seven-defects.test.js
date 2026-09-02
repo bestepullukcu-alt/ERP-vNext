@@ -166,10 +166,17 @@ describe("two dialog selects become the product's own picker", () => {
      * A descendant cannot be behind its ancestor, so the question is removed rather than answered with a number.
      */
     expect(APP).toContain("const bindDialogSelect2 =");
-    // Three CALL SITES: the module picker, the assignee picker, the waiting-on picker. (The declaration reads
-    // `const bindDialogSelect2 = (` and is not one of them.)
+    /*
+     * FOUR CALL SITES: the module picker, the assignee picker, the waiting-on picker, and — since the closure
+     * outcome dictionary — the outcome picker. (The declaration reads `const bindDialogSelect2 = (` and is not
+     * one of them.)
+     *
+     * ⚠ THREE UNTIL THE CLOSURE SLICE. The outcome picker is a dialog select like the other three, so it takes
+     * the same binder rather than a native `<select>` — which is the whole reason this count is pinned: the
+     * fourth one would otherwise have shipped with its list at the library's z-index, behind the dialog.
+     */
     expect((APP.match(/bindDialogSelect2\(/g) || []).length,
-      "a dialog select lost its picker").toBe(3);
+      "a dialog select lost its picker").toBe(4);
     const fn = APP.slice(APP.indexOf("const bindDialogSelect2 ="), APP.indexOf("const bindDialogSelect2 =") + 2600);
     expect(fn, "the list is parented to the body again — it will open behind the dialog")
       .toContain("dropdownParent");
