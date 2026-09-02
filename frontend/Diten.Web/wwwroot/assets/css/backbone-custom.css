@@ -8000,10 +8000,22 @@ tags.diten-tags .tagify__input {
    stacking it has always had. This is the flatpickr counterpart of the select2
    `dropdownParent: $(document.body)` rule in frontend-js-standard.md: a popup
    must stack above the layer it was opened from, not beneath it.
+
+   2026-09-02: the offcanvas arm of this rule was written but never ran. It read
+   `.offcanvas-backdrop ~ * .flatpickr-calendar.open`, which asks for a calendar
+   DESCENDED from a sibling of the backdrop. MEASURED in the Task Center quick-create
+   panel: flatpickr appends the calendar to <body>, while Bootstrap renders the
+   backdrop inside a DIV -- so the two are not even siblings, and `cal.matches(...)`
+   returned false for both the shipped selector and its `~` variant. The calendar
+   therefore kept the vendor 1074 under an offcanvas at 1090, and
+   `document.elementFromPoint` at its centre returned `.offcanvas-body`: the same
+   unusable-picker failure this block was written to end, still open on the other
+   layer. Body carries no offcanvas class (unlike `.modal-open`), so the hook is
+   `:has(.offcanvas.show)` -- the idiom already used ~20 times in this sheet.
    ──────────────────────────────────────────────────────────────────────────── */
 .swal2-shown .flatpickr-calendar.open,
 .modal-open .flatpickr-calendar.open,
-.offcanvas-backdrop ~ * .flatpickr-calendar.open { z-index: 1095; }
+body:has(.offcanvas.show) .flatpickr-calendar.open { z-index: 1095; }
 .wcn-actionbar-more > .wcn-act-btn { block-size: 100%; }
 /* A disabled primary keeps its reason here too: on a narrow screen this bar may be the only part of the page
    the reader has seen, so "you cannot press this" without "because…" is worse here than in the card. */
