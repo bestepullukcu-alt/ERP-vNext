@@ -453,6 +453,20 @@ public sealed record WorkItemProjectionDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     DateTimeOffset? ClosedAt = null,
     /// <summary>
+    /// WHAT THE CLOSURE DECIDED — the other half of <see cref="ClosedAt"/>, and the half that was missing.
+    ///
+    /// <para><c>TaskItem.ClosureReasonCode</c> has existed on the entity, in the mapper and in the detail DTO
+    /// since the engine shipped; it appeared in ZERO files under <c>frontend/</c>. It was empty as well as
+    /// unread — the browser's transition vocabulary sent <c>reasonCode: null</c> as a literal constant — so the
+    /// field is arriving here and being written for the first time in the same slice.</para>
+    ///
+    /// <para>Absent when the task is open, when it closed before its type had a dictionary, or when its type has
+    /// none. All three are ordinary, and none of them is an empty string: a closure with no recorded outcome and
+    /// a closure whose outcome is the empty word are different facts.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemClosureDto? Closure = null,
+    /// <summary>
     /// WHAT THE WORK IS, in the requester's own words.
     ///
     /// <para>Measured 2026-08-12: the detail page could say "15 days overdue" and could not say what the work
@@ -821,7 +835,51 @@ public sealed record WorkItemActivityEventDto(
     /// <see cref="WorkItemFieldChangeDto"/>.</para>
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    IReadOnlyList<WorkItemFieldChangeDto>? FieldChanges = null);
+    IReadOnlyList<WorkItemFieldChangeDto>? FieldChanges = null,
+    /// <summary>
+    /// The MACHINE-READABLE classification the act carried — a closure outcome, a handover reason.
+    ///
+    /// <para><c>TaskTransition.ReasonCode</c> has been recorded on every transition since WC-1 and travelled
+    /// nowhere: only <see cref="Reason"/>, the actor's free text, reached this DTO. So the feed could show
+    /// "Ali completed this — it was only half done" and lose the fact that the closure was classified at all.</para>
+    ///
+    /// <para>Beside <see cref="Outcome"/>, not instead of it: the code is what a report groups by, the label is
+    /// what a person reads, and deriving either from the other on the client would be a second authority over the
+    /// same fact.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? ReasonCode = null,
+    /// <summary>The outcome's label when <see cref="ReasonCode"/> names one the type still offers; absent when it
+    /// does not, so a code whose outcome was later removed prints as itself rather than as nothing.</summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemLabelDto? Outcome = null);
+
+/// <summary>
+/// One outcome a task type offers for one closure — the picker's row.
+///
+/// <para><c>Label</c> is the same discriminated shape every other label on this contract uses: a system outcome
+/// arrives as <c>{kind:"resource"}</c> and is translated in the reader's language, a tenant outcome as
+/// <c>{kind:"display"}</c> and is printed as typed. No third mechanism.</para>
+/// </summary>
+/// <summary>
+/// How a work item ENDED: the stored code, and the words for it when they can still be resolved.
+///
+/// <para><c>Outcome</c> is absent when the code names an outcome the type no longer offers. That is deliberate
+/// and it is why the code travels too: an administrator who retires an outcome must not silently blank the
+/// closure records that quote it, and a raw code on screen is a smaller loss than a closure that reads as
+/// though nothing was decided.</para>
+/// </summary>
+public sealed record WorkItemClosureDto(
+    string ReasonCode,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemLabelDto? Outcome = null);
+
+public sealed record WorkItemClosureOutcomeDto(
+    string Code,
+    WorkItemLabelDto Label,
+    /// <summary>⭐ Whether choosing this one obliges a reason. The DIALOG uses it to refuse an empty box; the
+    /// ENGINE enforces it independently, because a client can always decline to draw a field.</summary>
+    bool RequiresReason);
 
 /// <summary>
 /// One typed dependency edge. <c>State</c> is the OTHER task's state in the subtask vocabulary
@@ -857,7 +915,22 @@ public sealed record WorkItemBlockedStateDto(
 /// something a person can read, and re-resolving it on the client would be a second authority over the same
 /// fact.</para>
 /// </summary>
-public sealed record WorkItemTaskTypeDto(string Id, string Code, string Name);
+public sealed record WorkItemTaskTypeDto(
+    string Id,
+    string Code,
+    string Name,
+    /// <summary>
+    /// What this type accepts as an ending, split by which closure it belongs to.
+    ///
+    /// <para>EMPTY IS THE COMMON CASE and it means "ask nothing" — the client then closes the task exactly as it
+    /// did before this field existed. Both lists are omitted when empty rather than sent as <c>[]</c>, for the
+    /// reason <see cref="WorkItemLabelDto"/> gives about null-versus-absent: the contract validator distinguishes
+    /// them, and an empty array is a promise of a picker with no rows.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemClosureOutcomeDto>? CompletionOutcomes = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemClosureOutcomeDto>? CancellationOutcomes = null);
 
 /// <summary>
 /// One reason work cannot move. <c>Label</c> names the thing in the way (a task title, so a DISPLAY label);

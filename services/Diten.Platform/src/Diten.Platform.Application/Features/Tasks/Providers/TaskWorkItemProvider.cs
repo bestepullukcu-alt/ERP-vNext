@@ -504,8 +504,19 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // actions may be offered — and the contract requires every blocked action to be present and disabled,
         // never hidden. A hidden button teaches the reader nothing about why the work will not move.
         var dependencies = ToDependencies(task, edges ?? [], edgeTasks);
+        /*
+         * The task's TYPE, resolved ONCE. Three things below need it — the outcome dictionary the picker offers,
+         * the label on the closure record, and the label on each closing transition in the feed — and resolving
+         * it three times is how the three come to disagree about a type that was retired mid-page.
+         */
+        var resolvedType = task.TaskTypeId is { } resolvedTypeId
+            && taskTypes?.TryGetValue(resolvedTypeId, out var found) == true
+                ? found
+                : null;
+
         var activity = ToActivity(
-            comments ?? [], transitions ?? [], displayNames, actor.UserId, fieldDefinitions, _permissions);
+            comments ?? [], transitions ?? [], displayNames, actor.UserId, fieldDefinitions, _permissions,
+            resolvedType);
 
         /*
          * THE FOUR CONDITIONAL CONTAINERS, DECIDED ONCE.
@@ -680,8 +691,19 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
              * projects no type rather than an id with an empty name — a half-identity on screen is worse than
              * none, and this repository has paid for that shape before.
              */
-            TaskType: task.TaskTypeId is { } typeId && taskTypes?.TryGetValue(typeId, out var taskType) == true
-                ? new WorkItemTaskTypeDto(taskType.Id.ToString(), taskType.Code, taskType.Name)
+            TaskType: resolvedType is { } taskType
+                ? new WorkItemTaskTypeDto(
+                    taskType.Id.ToString(),
+                    taskType.Code,
+                    taskType.Name,
+                    /*
+                     * The two halves of the outcome dictionary, already split by disposition so the dialog does
+                     * not re-derive the filter. Null rather than an empty list when this type asks nothing —
+                     * that absence IS the backward-compatible path, and the client reads it as "close the way
+                     * you always did".
+                     */
+                    ToClosureOutcomes(taskType, TaskClosureDisposition.Completed),
+                    ToClosureOutcomes(taskType, TaskClosureDisposition.Cancelled))
                 : null,
             Pool: ToPool(task, poolLabels),
             BusinessContext: businessContext,
@@ -709,6 +731,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
              * a number rather than quoting one.
              */
             ClosedAt: terminal ? task.CompletedAt ?? task.CancelledAt : null,
+            /*
+             * WHAT WAS DECIDED, beside WHEN it ended. Resolved against the type's CURRENT dictionary, so an
+             * outcome that has since been retired yields the bare code rather than a blank — see WorkItemClosureDto.
+             */
+            Closure: terminal ? ToClosure(task, resolvedType) : null,
             /*
              * WHAT THE WORK IS. The form has collected these four since Phase 1 and none of them reached the
              * Task Center, so the detail page could say a task was fifteen days overdue without saying what it
@@ -1331,13 +1358,72 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         }).ToList();
     }
 
+    /// <summary>
+    /// The outcomes a type offers for ONE closure, as the picker's rows — or NULL when it offers none.
+    ///
+    /// <para>Null rather than an empty list, and the difference is load-bearing: the client reads absence as "this
+    /// type asks nothing, close it the way you always did", which is the state every task type written before the
+    /// dictionary existed is in. An empty array would promise a picker and then draw no rows.</para>
+    /// </summary>
+    private static IReadOnlyList<WorkItemClosureOutcomeDto>? ToClosureOutcomes(
+        TaskType type, TaskClosureDisposition disposition)
+    {
+        var offered = TaskTypeRules.OutcomesFor(type, disposition);
+        return offered.Count == 0
+            ? null
+            : offered
+                .Select(outcome => new WorkItemClosureOutcomeDto(
+                    outcome.Code, OutcomeLabel(outcome), outcome.RequiresReason))
+                .ToList();
+    }
+
+    /// <summary>
+    /// One outcome's label, in the contract's own discriminated shape — a SYSTEM outcome as a resource key the
+    /// reader's language resolves, a TENANT outcome as the words its administrator typed.
+    ///
+    /// <para>No third branch and no fallback to the code: <c>TaskTypeRules.NormalizeClosureOutcomes</c> refuses an
+    /// outcome carrying neither label, so an entry reaching here without one cannot have been stored by this
+    /// engine. If one ever does, the display half prints the code, which is the honest answer.</para>
+    /// </summary>
+    private static WorkItemLabelDto OutcomeLabel(TaskClosureOutcome outcome) =>
+        string.IsNullOrWhiteSpace(outcome.LabelResourceKey)
+            ? WorkItemLabelDto.Display(
+                string.IsNullOrWhiteSpace(outcome.LabelText) ? outcome.Code : outcome.LabelText)
+            : WorkItemLabelDto.Resource(outcome.LabelResourceKey);
+
+    /// <summary>
+    /// The closure record: the stored code, plus its words when the type still offers that outcome.
+    ///
+    /// <para>A code with no matching outcome keeps the code and loses only the label — see
+    /// <see cref="WorkItemClosureDto"/> for why that beats blanking the record of a retired outcome.</para>
+    /// </summary>
+    private static WorkItemClosureDto? ToClosure(TaskItem task, TaskType? type) =>
+        string.IsNullOrWhiteSpace(task.ClosureReasonCode)
+            ? null
+            : new WorkItemClosureDto(task.ClosureReasonCode, ResolveOutcomeLabel(type, task.ClosureReasonCode));
+
+    /// <summary>The label for a stored code, or null when the type does not (or no longer) offers it.</summary>
+    private static WorkItemLabelDto? ResolveOutcomeLabel(TaskType? type, string? reasonCode)
+    {
+        var code = (reasonCode ?? string.Empty).Trim();
+        if (code.Length == 0 || type?.ClosureOutcomes is not { Count: > 0 } outcomes)
+        {
+            return null;
+        }
+
+        var match = outcomes.FirstOrDefault(outcome =>
+            string.Equals(outcome.Code, code, StringComparison.OrdinalIgnoreCase));
+        return match is null ? null : OutcomeLabel(match);
+    }
+
     private static IReadOnlyList<WorkItemActivityEntryDto> ToActivity(
         IReadOnlyList<TaskComment> comments,
         IReadOnlyList<TaskTransition> transitions,
         IReadOnlyDictionary<Guid, string> displayNames,
         Guid actorUserId,
         IReadOnlyDictionary<string, TaskFieldDefinition>? fieldDefinitions,
-        IActorPermissionContext permissions)
+        IActorPermissionContext permissions,
+        TaskType? taskType)
         => comments
             .Select(comment => new WorkItemActivityEntryDto(
                 Id: comment.Id.ToString(),
@@ -1373,7 +1459,14 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     From: transition.FromLifecycle.ToString(),
                     To: transition.ToLifecycle.ToString(),
                     Reason: string.IsNullOrWhiteSpace(transition.Reason) ? null : transition.Reason,
-                    FieldChanges: ToFieldChanges(transition.FieldChanges, fieldDefinitions, permissions)))))
+                    FieldChanges: ToFieldChanges(transition.FieldChanges, fieldDefinitions, permissions),
+                    /*
+                     * Recorded since WC-1 and never projected: the feed carried the actor's words and dropped the
+                     * classification beside them. Both travel now — the code is what a report groups by, the
+                     * label is what the row reads as.
+                     */
+                    ReasonCode: string.IsNullOrWhiteSpace(transition.ReasonCode) ? null : transition.ReasonCode,
+                    Outcome: ResolveOutcomeLabel(taskType, transition.ReasonCode)))))
             .OrderByDescending(entry => entry.At)
             .ThenByDescending(entry => entry.Id)
             .ToList();

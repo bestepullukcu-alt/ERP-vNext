@@ -2202,4 +2202,43 @@
   <data name="BannerReconciliationRequired" xml:space="preserve">
     <value>Source reconciliation is required.</value>
   </data>
+  <data name="StepClosedAs" xml:space="preserve">
+    <value>Closed as: {0}</value>
+  </data>
+  <data name="ClosureOutcomeLabel" xml:space="preserve">
+    <value>How did this end?</value>
+  </data>
+  <data name="ClosureOutcomePlaceholder" xml:space="preserve">
+    <value>Choose an outcome</value>
+  </data>
+  <data name="ClosureOutcomeRequired" xml:space="preserve">
+    <value>Choose how this work ended.</value>
+  </data>
+  <data name="ClosureReasonLabel" xml:space="preserve">
+    <value>Note (optional)</value>
+  </data>
+  <data name="ClosureReasonLabelRequired" xml:space="preserve">
+    <value>Reason (required)</value>
+  </data>
+  <data name="ClosureReasonPlaceholder" xml:space="preserve">
+    <value>Explain the outcome in your own words</value>
+  </data>
+  <data name="ClosureReasonRequired" xml:space="preserve">
+    <value>This outcome requires a reason.</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
+    <value>Completed as requested</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CompletedPartially" xml:space="preserve">
+    <value>Partially completed</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledNotRequired" xml:space="preserve">
+    <value>No longer required</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledSuperseded" xml:space="preserve">
+    <value>Superseded by other work</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledDuplicate" xml:space="preserve">
+    <value>Duplicate</value>
+  </data>
 </root>

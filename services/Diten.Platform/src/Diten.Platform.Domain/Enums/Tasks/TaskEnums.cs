@@ -390,3 +390,28 @@ public enum TaskFunctionCode
     CTY = 17,
     MED = 18
 }
+
+/// <summary>
+/// WHICH CLOSURE an outcome belongs to — finishing the work, or calling it off.
+///
+/// <para><b>ONE dictionary with a discriminator, not two lists.</b> The alternative was
+/// <c>CompletedOutcomes</c> and <c>CancelledOutcomes</c> side by side, and it loses twice. The code-uniqueness
+/// rule would have to be asked in two places — and "is DUPLICATE already taken?" answered differently by each
+/// half is the two-places-drift this module has already paid for with the transition body vocabulary. More
+/// plainly: <see cref="TaskItem.ClosureReasonCode"/> is ONE field. A task carries one closure code whichever way
+/// it ended, so a vocabulary split in two would be describing a storage shape that does not exist.</para>
+///
+/// <para>The discriminator is also exactly what the picker filters on, so the split it replaces would have been
+/// re-derived at every call site anyway.</para>
+///
+/// <para>String on the wire, like every other enum this module ships to a client.</para>
+/// </summary>
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+public enum TaskClosureDisposition
+{
+    /// <summary>Offered when the task is being COMPLETED (<see cref="TaskLifecycle.Done"/>).</summary>
+    Completed = 0,
+
+    /// <summary>Offered when the task is being CANCELLED (<see cref="TaskLifecycle.Cancelled"/>).</summary>
+    Cancelled = 1
+}

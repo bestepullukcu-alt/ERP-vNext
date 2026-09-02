@@ -80,7 +80,21 @@ internal static class TaskTypeMapping
             pair => pair.Key,
             pair => (IReadOnlyList<string>)pair.Value,
             StringComparer.OrdinalIgnoreCase),
-        type.IsActive);
+        type.IsActive,
+        /*
+         * Emitted as an EMPTY LIST rather than null, unlike the request half where null carries the "not asking"
+         * meaning. On the way out there is no such question: a type with no outcomes has none, and a reader that
+         * has to distinguish null from empty to learn that is a reader we have made guess.
+         */
+        type.ClosureOutcomes
+            .Select(outcome => new TaskClosureOutcomeDto(
+                outcome.Code,
+                outcome.LabelResourceKey,
+                outcome.LabelText,
+                outcome.Disposition,
+                outcome.RequiresReason,
+                outcome.SortOrder))
+            .ToList());
 }
 
 /// <summary>

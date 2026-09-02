@@ -2682,6 +2682,23 @@
         const closedOn = isTerminal(item) && item.closedAt
             ? `<span class="wcn-stepbar-closed">${esc(tf('StepClosedOn', item.closedAt))}</span>`
             : '';
+        /*
+         * (4) WHAT WAS DECIDED — beside when it closed, because the two are one fact read together.
+         *
+         * "Done" is a state, not a decision: an approval task closing as Done said nothing about whether it was
+         * approved. This is the sentence that half was missing, and it prints the outcome's WORDS, never its
+         * code — a reader has no use for COMPLETED_PARTIALLY. When the code names an outcome the type no longer
+         * offers, the projection sends the code without a label and it prints as itself: a retired outcome is a
+         * smaller loss than a closure that reads as though nothing was decided.
+         *
+         * No new class: it is the same kind of caption fact as the closing date, so it wears the same one.
+         */
+        const closureText = isTerminal(item) && item.closure
+            ? (data.resolveLabel(item.closure.outcome) || item.closure.reasonCode || '')
+            : '';
+        const closedAs = closureText
+            ? `<span class="wcn-stepbar-closed">${esc(tf('StepClosedAs', closureText))}</span>`
+            : '';
         // Punctuation, not language — `aria-hidden` for the same reason the identity line's separator is:
         // a screen reader gains nothing from "em dash" between two facts it already reads as two.
         const captionSep = '<span class="wcn-stepbar-sep" aria-hidden="true">—</span>';
@@ -2690,7 +2707,8 @@
             : `${captionSep}<span class="wcn-stepbar-count">${currentIndex + 1}/${steps.length}</span>`;
         const stepCaption = `<div class="wcn-stepbar-caption">
             <span class="wcn-stepbar-status">${esc(statusLabel(item))}</span>${progress}${
-            closedOn ? captionSep + closedOn : ''}</div>`;
+            closedOn ? captionSep + closedOn : ''}${
+            closedAs ? captionSep + closedAs : ''}</div>`;
 
         const paused = item.lifecycle === 'Waiting'
             ? `<p class="wcn-step-paused" role="note"><i class="bx bx-pause-circle"></i>${
@@ -4604,6 +4622,16 @@
             // One line: what happened · who · when. The reason, when the act carried one, follows in the actor's
             // own words — it is the half of "returned" that the code cannot carry.
             const parts = [eventSentence(entry), entry.actor || t('CommentAuthorUnknown')];
+            /*
+             * The OUTCOME, when the act carried one. `TaskTransition.ReasonCode` has been recorded on every
+             * transition since WC-1 and reached this feed for the first time in this slice — the row used to
+             * show the actor's sentence and drop the classification it was explaining.
+             *
+             * The words, never the code, and only when the label resolves: an outcome its type has since
+             * retired adds nothing readable to this line, and the closure caption above already keeps the code.
+             */
+            const eventOutcome = entry.event && data.resolveLabel(entry.event.outcome);
+            if (eventOutcome) { parts.push(eventOutcome); }
             if (entry.atMs) { parts.push(agoLabel(entry.atMs, item.provenance)); }
             return `<li class="wcn-audit-item wcn-audit-event">
                 <i class="bx bx-right-arrow-alt wcn-audit-arrow" aria-hidden="true"></i>
@@ -6802,10 +6830,45 @@
         // Plus the person being handed the work — see the picker in the reason dialog.
         reassign: ({ expectedVersion, reason, assigneeUserId }) => ({ expectedVersion, assigneeUserId, reason }),
 
-        // Everything else takes TaskTransitionRequest(ExpectedVersion, ReasonCode, Note) — the generic body that
-        // was being sent to all ten. It is correct for these; it was only ever wrong for the three above.
-        __default: ({ expectedVersion, reason }) => ({ expectedVersion, reasonCode: null, note: reason || null })
+        /*
+         * Everything else takes TaskTransitionRequest(ExpectedVersion, ReasonCode, Note) — the generic body that
+         * was being sent to all ten. It is correct for these; it was only ever wrong for the three above.
+         *
+         * ⚠ `reasonCode` WAS A LITERAL `null` HERE, and that constant is why `TaskItem.ClosureReasonCode` has
+         * been an empty column since the engine shipped. The whole chain behind it worked: the DTO accepts a
+         * code, the dispatcher forwards it (TaskWorkItemActionDispatcher), and the handler writes it to the task
+         * AND to the transition log. Nothing ever sent one. So a task could close, be recorded, be reported on —
+         * and never say WHAT was decided, because the client had hard-coded the answer to "nothing".
+         *
+         * This map's own comment names the lesson it then failed: a value that lives in two places and is
+         * declared in neither drifts. `null` was not even in two places; it was in one, and declared as a fact.
+         */
+        __default: ({ expectedVersion, reason, outcomeCode }) =>
+            ({ expectedVersion, reasonCode: outcomeCode || null, note: reason || null })
     };
+
+    /*
+     * ── WHICH ACTIONS CLOSE WORK, AND INTO WHICH HALF OF THE DICTIONARY ──────────────────────────────────
+     *
+     * Declared rather than tested inline for the reason the map above gives about itself: the engine has the
+     * same pair (TransitionTaskItemHandler.ClosureDispositionFor), and a second copy written as an `if` is how
+     * the two come to disagree about what "closing" means.
+     */
+    const CLOSURE_DISPOSITIONS = { complete: 'completionOutcomes', cancel: 'cancellationOutcomes' };
+
+    /**
+     * The outcomes this item's TYPE offers for this action — empty when it offers none, which is the normal
+     * state and the one that leaves today's behaviour untouched.
+     */
+    const closureOutcomesFor = (item, action) => {
+        const slot = CLOSURE_DISPOSITIONS[action && action.code];
+        if (!slot) { return []; }
+        const offered = item && item.taskType && item.taskType[slot];
+        return Array.isArray(offered) ? offered : [];
+    };
+
+    /** One outcome's words: a system outcome through the resource table, a tenant outcome as typed. */
+    const outcomeText = (outcome) => data.resolveLabel(outcome && outcome.label) || (outcome && outcome.code) || '';
 
     /** Actions whose DTO requires a non-empty Reason — the dialog must not let them through empty. */
     const REASON_REQUIRED_ACTIONS = ['inquire', 'return', 'reassign'];
@@ -6829,7 +6892,7 @@
     const buildTransitionBody = (actionCode, parts) =>
         (TRANSITION_BODIES[actionCode] || TRANSITION_BODIES.__default)(parts);
 
-    const submitRealTransition = async (item, action, reason, assigneeUserId, waitingOnUserId) => {
+    const submitRealTransition = async (item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode) => {
         const label = actionLabel(action);
         state.submittingItemId = item.id;
         state.submittingActionCode = action.code;
@@ -6850,7 +6913,8 @@
             item.id,
             action.code,
             item.source?.providerCode,
-            buildTransitionBody(action.code, { expectedVersion, reason, assigneeUserId, waitingOnUserId }));
+            buildTransitionBody(
+                action.code, { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode }));
 
         state.submittingItemId = null;
         state.submittingActionCode = null;
@@ -7386,9 +7450,9 @@
         }
     };
 
-    const applyAction = (item, action, reason, assigneeUserId, waitingOnUserId) => {
+    const applyAction = (item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode) => {
         if (isDispatchableItem(item)) {
-            submitRealTransition(item, action, reason, assigneeUserId, waitingOnUserId);
+            submitRealTransition(item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode);
             return;
         }
 
@@ -8391,6 +8455,101 @@
             }, dialogLook())).then((res) => {
                 if (res.isConfirmed && res.value) {
                     applyAction(item, action, res.value.reason, res.value.assigneeUserId, res.value.waitingOnUserId);
+                }
+            });
+            return;
+        }
+
+        /*
+         * ── THE CLOSURE OUTCOME PICKER ────────────────────────────────────────────────────────────────────
+         *
+         * BEFORE the plain confirm, and only when the task's TYPE has something to ask. `closureOutcomesFor`
+         * returns an empty list for an unclassified task, for a type nobody has configured, and for every type
+         * written before the dictionary existed — and an empty list falls straight through to the confirm below,
+         * byte for byte the dialog those hundred-odd open tasks get today. That is the backward-compatibility
+         * rule expressed as a branch rather than as a promise.
+         *
+         * A SELECT PLUS A CONDITIONAL TEXTAREA cannot go through `showConfirm`, which supports a textarea and
+         * nothing else (BL-146). So this takes the same raw-dialog route the reason dialog above already takes,
+         * wearing the same `dialogLook()` and the same `dialogIcon()` — not a second appearance, the one the
+         * product declares.
+         */
+        const closureOutcomes = closureOutcomesFor(item, action);
+        if (closureOutcomes.length) {
+            if (!global.Swal) { return; }
+
+            const outcomeOptions = closureOutcomes
+                .map((outcome) => `<option value="${esc(outcome.code)}">${esc(outcomeText(outcome))}</option>`)
+                .join('');
+            /*
+             * The reason box is ALWAYS DRAWN and its LABEL changes, rather than the box appearing and vanishing
+             * as the choice changes. A field that comes and goes moves everything under it and reads as a
+             * malfunction; a label that gains a word does not. It also keeps what somebody already typed when
+             * they change their mind about the outcome — reappearing empty would be a silent deletion.
+             */
+            const labelFor = (code) => {
+                const chosen = closureOutcomes.find((outcome) => outcome.code === code);
+                return chosen && chosen.requiresReason ? t('ClosureReasonLabelRequired') : t('ClosureReasonLabel');
+            };
+
+            global.Swal.fire(Object.assign({
+                title: dialogIcon(action.destructive ? 'danger' : 'info', inboxActionIcon(action))
+                    + '<span>' + esc(actionLabel(action)) + '</span>',
+                html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
+                    + `<label class="form-label d-block text-start" for="wcnClosureOutcome">`
+                    + `${esc(t('ClosureOutcomeLabel'))}</label>`
+                    + `<select id="wcnClosureOutcome" class="form-select">`
+                    + `<option value="">${esc(t('ClosureOutcomePlaceholder'))}</option>${outcomeOptions}</select>`
+                    + `<label class="form-label d-block text-start" id="wcnClosureReasonLabel" `
+                    + `for="wcnClosureReason">${esc(labelFor(''))}</label>`
+                    + `<textarea id="wcnClosureReason" class="form-control" rows="3" `
+                    + `placeholder="${esc(t('ClosureReasonPlaceholder'))}"></textarea>`,
+                showCancelButton: true,
+                confirmButtonText: tf('ConfirmProceedNamed', actionLabel(action).toLocaleLowerCase('tr')),
+                cancelButtonText: t('DialogDismiss'),
+                didOpen: (popup) => {
+                    const picker = document.getElementById('wcnClosureOutcome');
+                    bindDialogSelect2(picker, popup);
+                    /*
+                     * ⚠ THE NATIVE `change` EVENT, NOT select2's `select2:select`. select2 hides the original
+                     * control and re-fires `change` on it, so this listener serves both the enhanced control and
+                     * the plain one it falls back to when jQuery/select2 is absent — which is exactly the state
+                     * the test harness runs in.
+                     */
+                    if (picker) {
+                        picker.addEventListener('change', () => {
+                            const label = document.getElementById('wcnClosureReasonLabel');
+                            if (label) { label.textContent = labelFor(picker.value); }
+                        });
+                    }
+                },
+                preConfirm: () => {
+                    const outcomeCode = String(document.getElementById('wcnClosureOutcome')?.value || '').trim();
+                    if (!outcomeCode) {
+                        global.Swal.showValidationMessage(t('ClosureOutcomeRequired'));
+                        return false;
+                    }
+
+                    const reason = String(document.getElementById('wcnClosureReason')?.value || '').trim();
+                    const chosen = closureOutcomes.find((outcome) => outcome.code === outcomeCode);
+                    /*
+                     * ⭐ THE FLAG IS THE OUTCOME'S. "Rejected" asks why and "Approved" does not, from one list,
+                     * because the requirement travels on the row rather than on a setting above it.
+                     *
+                     * This is a COURTESY, not the enforcement: the engine checks the same rule on the way in
+                     * (TaskItemTransitionHandlers), because a requirement a client can skip by not drawing a
+                     * field is not a requirement.
+                     */
+                    if (chosen && chosen.requiresReason && !reason) {
+                        global.Swal.showValidationMessage(t('ClosureReasonRequired'));
+                        return false;
+                    }
+
+                    return { outcomeCode, reason };
+                }
+            }, dialogLook())).then((res) => {
+                if (res.isConfirmed && res.value) {
+                    applyAction(item, action, res.value.reason, undefined, undefined, res.value.outcomeCode);
                 }
             });
             return;
