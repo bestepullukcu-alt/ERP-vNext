@@ -36,5 +36,7 @@ public enum ProductAuditOperation
     FinishedGoodIdentitySubmitted = 32,
     FinishedGoodIdentityApproved = 33,
     FinishedGoodIdentityRejected = 34,
-    FinishedGoodIdentityRetired = 35
+    FinishedGoodIdentityRetired = 35,
+    ProductIdentityWorkflowOperationAbandonedBeforeWorkflowStart = 36,
+    ProductIdentityWorkflowOperationSuperseded = 37
 }

@@ -12,5 +12,7 @@ public enum FinishedGoodIdentityWorkflowCheckpoint
     DecisionApplied = 8,
     Completed = 9,
     AwaitingMakerReplay = 10,
-    ManualReconciliationRequired = 11
+    ManualReconciliationRequired = 11,
+    AbandonedBeforeWorkflowStart = 12,
+    Superseded = 13
 }

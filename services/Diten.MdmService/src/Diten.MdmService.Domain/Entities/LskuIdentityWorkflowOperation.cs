@@ -57,6 +57,17 @@ public sealed class LskuIdentityWorkflowOperation : EntityBase
     public string? LeaseOwner { get; set; }
     public long? LeaseUntilUtcTicksV1 { get; set; }
     public long LeaseGeneration { get; set; }
+    public Guid? RecoveryCommandId { get; set; }
+    public Guid? RecoveryOperatorSubjectId { get; set; }
+    public string? RecoveryReasonCode { get; set; }
+    public string? RecoveryComment { get; set; }
+    public Guid? RecoveryWorkflowNotFoundEvidenceId { get; set; }
+    public string? RecoveryWorkflowNotFoundEvidenceFingerprint { get; set; }
+    public long? RecoveryWorkflowNotFoundObservedAtUtcTicksV1 { get; set; }
+    public long? RecoveredAtUtcTicksV1 { get; set; }
+    public Guid? SuccessorOperationId { get; set; }
+    public string? SuccessorStartIdempotencyKey { get; set; }
+    public string? SuccessorOperationFingerprint { get; set; }
     public int TemporalStorageVersion { get; set; } = CurrentTemporalStorageVersion;
     public long CreatedAtUtcTicksV1 { get; set; }
     public long UpdatedAtUtcTicksV1 { get; set; }
