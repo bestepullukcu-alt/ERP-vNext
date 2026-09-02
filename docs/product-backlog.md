@@ -3567,6 +3567,46 @@ Düzenle → Durum: Aktif → Kaydet.
 
 **Kardeş kayıtlar:** [[BL-073]] ana veri zinciri · [[BL-071]] Employee↔PositionAssignment
 
+### BL-332 — KYS Tasarımcısı'nda üç switch her kayıtta sessizce false'a düşüyor (2026-09-02, ÖLÇÜLDÜ)
+
+> **DURUM:** AÇIK · **SAHİP:** DOKÜMAN YÖNETİMİ GELİŞTİRİCİSİ (bu modül bizim değil — sahip kararı: dokunulmadı, yalnız kayda geçirildi)
+
+**MODÜL:** Doküman Yönetimi (document-management)
+**SAYFA:** KYS Temel Çizgileri → Tasarımcı · `/DocumentManagement/QmsBaselines/Designer`
+**KONUM:** `frontend/Diten.Web/Views/DocumentManagement/QmsBaselines/Designer.cshtml:158-174`
+
+**Ölçüm (2026-09-02):** MVC aynı adlı iki alandan **ilkini** bağlar. Aynı dosyada
+doğru sıra da yanlış sıra da var:
+
+    158→159  allowsManualChildren   checkbox ÖNCE, hidden sonra   ✅ doğru çalışıyor
+    163→164  templatesAllowed       HIDDEN ÖNCE                   ❌ hep false
+    168→169  isMandatory            HIDDEN ÖNCE                   ❌ hep false
+    173→174  isProtected            HIDDEN ÖNCE                   ❌ hep false
+
+Yani üçü açılamıyor — ve daha kötüsü, **kapatılmamış olanları kapatıyor**:
+
+    designer.js:435-438  panel mevcut değeri yükleyip switch'i AÇIK gösteriyor
+    kullanıcı başka bir alanı değiştirip kaydediyor
+    → üç alan da false olarak geri yazılıyor
+
+`isProtected` bir **koruma bayrağı**; sessizce temizleniyor. Kullanıcı hiçbir uyarı
+görmüyor, çünkü ekranda switch açık duruyordu.
+
+**Düzeltme küçük:** üç `<input type="hidden">`'ı kendi checkbox'larının ALTINA almak
+(158-159'daki desenin aynısı). Ölçülmüş, denenmiş bir sıra — uydurma değil.
+
+**Neden burada duruyor:** bu modül başka bir geliştiricinin. Sahip 2026-09-02'de
+"dokunmayalım, kayda geçelim" dedi. CONTROL TOWER değiştirmedi.
+
+⚠ Aynı desen daha önce dört formda bulunup düzeltilmişti; bu, o turdan artakalan
+üç sitenin biri. Diğer artıklar: CRM "Birincil kişi" switch'i, Dev Sandbox
+(Golden Slim / Golden Compact) switch'leri — onlar da açık.
+
+İlgili: [[feedback-live-verification-gap]] — bu sınıf hatayı 1500 geçen test görmedi;
+yalnız canlı ekranda ya da işaretlemenin sırasına bakınca görünüyor.
+
+---
+
 ### BL-331 — Temanın ikincil metin rengi WCAG AA'dan kalıyor, ürün genelinde (2026-09-02, CANLI, ölçüldü)
 
 > **DURUM:** ✅ KAPANDI (2026-09-02, `a651db91`) · **SAHİP:** CONTROL TOWER
