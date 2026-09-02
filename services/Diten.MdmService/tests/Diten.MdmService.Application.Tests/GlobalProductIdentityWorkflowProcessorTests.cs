@@ -11,6 +11,24 @@ namespace Diten.MdmService.Application.Tests;
 
 public sealed class GlobalProductIdentityWorkflowProcessorTests
 {
+    [Theory]
+    [InlineData(GlobalProductIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart)]
+    [InlineData(GlobalProductIdentityWorkflowCheckpoint.Superseded)]
+    public async Task Recover_OperatorTerminalRecoveryState_IsPermanentNoOp(
+        GlobalProductIdentityWorkflowCheckpoint checkpoint)
+    {
+        var harness = Harness.Create();
+        var operation = harness.CreateOperation(checkpoint);
+        harness.Repository.Current = operation;
+
+        var result = await harness.Processor.RecoverAsync(
+            operation, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(30));
+
+        Assert.True(result.Succeeded);
+        Assert.True(result.IsReplay);
+        Assert.Same(operation, result.Operation);
+    }
+
     [Fact]
     public async Task StartInteractive_LostStartResponseRecoveredByLookup_AppliesPendingOnce()
     {

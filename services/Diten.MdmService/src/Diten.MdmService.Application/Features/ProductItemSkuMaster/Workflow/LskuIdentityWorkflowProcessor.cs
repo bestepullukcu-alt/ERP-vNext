@@ -147,6 +147,11 @@ public sealed class LskuIdentityWorkflowProcessor(
             {
                 return Success(operation, true);
             }
+            if (operation.Checkpoint is LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
+                or LskuIdentityWorkflowCheckpoint.Superseded)
+            {
+                return Success(operation, true);
+            }
             if (stopWhenAwaitingDecision
                 && operation.Checkpoint == LskuIdentityWorkflowCheckpoint.AwaitingDecision)
             {

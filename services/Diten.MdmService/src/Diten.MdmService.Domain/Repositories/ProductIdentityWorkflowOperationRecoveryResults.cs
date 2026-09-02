@@ -147,7 +147,26 @@ public sealed record ProductIdentityWorkflowOperationRecoveryCandidate(
     ProductIdentityWorkflowRecoveryDisposition RecoveryDisposition,
     string? LeaseOwner,
     long? LeaseUntilUtcTicksV1,
-    long LeaseGeneration);
+    long LeaseGeneration,
+    ProductIdentityWorkflowOperationPersistedRecoverySnapshot? PersistedRecovery = null);
+
+/// <summary>
+/// Immutable read-back of an already applied operator recovery. It contains only the facts required to
+/// reconstruct the original mutation after a fresh authoritative Workflow NotFound revalidation.
+/// </summary>
+public sealed record ProductIdentityWorkflowOperationPersistedRecoverySnapshot(
+    ProductIdentityWorkflowRecoveryDisposition Disposition,
+    Guid RecoveryCommandId,
+    Guid OperatorSubjectId,
+    string ReasonCode,
+    string? Comment,
+    Guid WorkflowNotFoundEvidenceId,
+    string WorkflowNotFoundEvidenceFingerprint,
+    long WorkflowNotFoundObservedAtUtcTicksV1,
+    long RecoveredAtUtcTicksV1,
+    Guid? SuccessorOperationId,
+    string? SuccessorStartIdempotencyKey,
+    string? SuccessorOperationFingerprint);
 
 public sealed record ProductIdentityWorkflowOperationRecoveryEvidence(
     ProductIdentityWorkflowRecoveryDisposition Disposition,

@@ -97,6 +97,48 @@ public sealed class ProductIdentityWorkflowOperationRecoveryMongoTests : IAsyncL
     }
 
     [Fact]
+    public async Task Candidate_reads_back_exact_terminal_snapshot_and_malformed_snapshot_fails_closed()
+    {
+        var fixture = Assert.Single(await CreateFourFamiliesAsync(),
+            item => item.Scope.Family == ProductIdentityWorkflowOperationFamily.GlobalProduct);
+        var repository = Repository(_tenantId);
+        var candidate = (await repository.GetCandidateAsync(fixture.OperationId))!;
+        Assert.Null(candidate.PersistedRecovery);
+        var successor = new ProductIdentityWorkflowOperationRecoverySuccessor(
+            Guid.NewGuid(), $"recovery:{Guid.NewGuid():D}", Hex('b'), Guid.NewGuid(), NextScope(fixture.Scope));
+        var mutation = Mutation(candidate, fixture.Scope, fixture.AuditIntents,
+            ProductIdentityWorkflowRecoveryDisposition.Superseded, successor);
+
+        Assert.Equal(ProductIdentityWorkflowOperationRecoveryWriteStatus.Applied,
+            (await repository.RecoverAsync(mutation)).Status);
+        var terminal = (await repository.GetCandidateAsync(fixture.OperationId))!;
+        var snapshot = Assert.IsType<ProductIdentityWorkflowOperationPersistedRecoverySnapshot>(
+            terminal.PersistedRecovery);
+        Assert.Equal(mutation.Evidence.Disposition, snapshot.Disposition);
+        Assert.Equal(mutation.Evidence.CommandId, snapshot.RecoveryCommandId);
+        Assert.Equal(mutation.Evidence.OperatorSubjectId, snapshot.OperatorSubjectId);
+        Assert.Equal(mutation.Evidence.ReasonCode, snapshot.ReasonCode);
+        Assert.Equal(mutation.Evidence.WorkflowNotFoundEvidenceId, snapshot.WorkflowNotFoundEvidenceId);
+        Assert.Equal(mutation.Evidence.WorkflowNotFoundEvidenceFingerprint,
+            snapshot.WorkflowNotFoundEvidenceFingerprint);
+        Assert.Equal(mutation.Evidence.WorkflowNotFoundObservedAtUtcTicksV1,
+            snapshot.WorkflowNotFoundObservedAtUtcTicksV1);
+        Assert.Equal(mutation.Evidence.RecoveredAtUtcTicksV1, snapshot.RecoveredAtUtcTicksV1);
+        Assert.Equal(successor.OperationId, snapshot.SuccessorOperationId);
+        Assert.Equal(successor.StartIdempotencyKey, snapshot.SuccessorStartIdempotencyKey);
+        Assert.Equal(successor.OperationFingerprint, snapshot.SuccessorOperationFingerprint);
+        Assert.Equal(ProductIdentityWorkflowOperationRecoveryWriteStatus.ExactReplay,
+            (await repository.RecoverAsync(mutation)).Status);
+
+        await _database.GetCollection<GlobalProductIdentityWorkflowOperation>(
+                GlobalProductIdentityWorkflowOperationRepository.CollectionName)
+            .UpdateOneAsync(item => item.TenantId == _tenantId && item.OperationId == fixture.OperationId,
+                Builders<GlobalProductIdentityWorkflowOperation>.Update
+                    .Set(item => item.RecoveryReasonCode, " malformed "));
+        Assert.Null(await repository.GetCandidateAsync(fixture.OperationId));
+    }
+
+    [Fact]
     public async Task Stale_versions_fingerprint_active_lease_and_cross_tenant_fail_closed_without_audit()
     {
         var fixture = Assert.Single(await CreateFourFamiliesAsync(),

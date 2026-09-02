@@ -133,6 +133,11 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             {
                 return Success(operation, true);
             }
+            if (operation.Checkpoint is GlobalProductIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
+                or GlobalProductIdentityWorkflowCheckpoint.Superseded)
+            {
+                return Success(operation, true);
+            }
             if (stopWhenAwaitingDecision
                 && operation.Checkpoint == GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision)
             {
