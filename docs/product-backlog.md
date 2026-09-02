@@ -3606,7 +3606,12 @@ olabilir; şart olan 4.5:1.
 
 ### BL-329 — Görev detayında aynı yere giden İKİ "kaynak kaydı" düğmesi (2026-09-02, CANLI, ölçüldü)
 
-> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+> **DURUM:** ✅ KAPANDI (2026-09-02, `951fe12a`) · **SAHİP:** CONTROL TOWER
+>
+> Karar uygulandı: ray bağlantısı kaldı, kart düğmesi çekildi. Nöbetçi `railLeadsToSource`
+> (href VE çizen bir eylem katmanı) -- salt href yeterli değil, çünkü kapalı görevde ray
+> hiç kapı çizmiyor ve salt-href nöbetçisi sayfanın TEK kapısını kaldırırdı.
+> Canlı ölçüm: ray 1 · kart 0 · toplam 1 (önce 2). Kaynak kartı kimlik satırlarıyla duruyor.
 
 **MODÜL:** MOD-0024 (Görev Merkezi)
 **SAYFA:** Görev detayı · `/WorkCenterNext/Details/{id}`
