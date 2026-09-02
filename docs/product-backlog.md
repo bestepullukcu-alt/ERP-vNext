@@ -3567,6 +3567,43 @@ Düzenle → Durum: Aktif → Kaydet.
 
 **Kardeş kayıtlar:** [[BL-073]] ana veri zinciri · [[BL-071]] Employee↔PositionAssignment
 
+### BL-331 — Temanın ikincil metin rengi WCAG AA'dan kalıyor, ürün genelinde (2026-09-02, CANLI, ölçüldü)
+
+> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ · **KARAR SAHİBE AİT (ürün geneli görsel değişiklik)**
+
+**MODÜL:** ürün geneli (tema) -- tek bir modülün kusuru değil
+**SAYFA:** her sayfa; ölçüm Görev detayı · `/WorkCenterNext/Details/{id}` üzerinde yapıldı
+**KONUM:** `wwwroot/assets/vendor/css/core.css` → `--bs-secondary-color: #a7acb2`
+
+**Ölçüm (2026-09-02, canlı oturum, her elemanın GERÇEK zeminine göre):**
+
+    #a7acb2 · beyaz zemin → 2.29:1
+    WCAG AA gereği       → 4.5:1 (normal metin)
+
+    tek sayfada bu rengi kullanan görünür METİN elemanı:
+        AA'dan kalan : 23
+        AA'yı geçen  :  0
+
+    örnekler: kenar çubuğu modül başlıkları ("İnsan Sermayesi Yönetimi", "Satış",
+    "Doküman Yönetimi", "Ana Veri Yönetimi"), Görev Merkezi eylem ipuçları
+
+Karşılaştırma: temanın kendi gövde rengi `--bs-body-color: #646e78` = **5.20:1**, geçiyor.
+Yani tema tutarsız -- gövde metni erişilebilir, ikincil metin değil.
+
+**Vendor dosyası DÜZENLENMEZ** (proje kuralı; navbar-shift düzeltmesini `backbone-custom.css`de
+tutan kuralın aynısı). Düzeltme `backbone-custom.css` içinde bir `:root` ezmesi olur.
+
+**Neden karar sahibe ait:** bu, ürünün HER sayfasındaki soluk metni koyulaştırır. Küçük bir
+kod değişikliği (bir satır), ama görsel etkisi geniş. Bir modülün sınıfını tek başına yamamak
+YANLIŞ olur -- 23 elemandan yalnız birini düzeltip diğer 22'sini okunamaz bırakır.
+
+**Ölçülmüş aday:** `#6f767e` → 4.60:1 (AA geçer). Sahibin tasarım tercihi başka bir ton
+olabilir; şart olan 4.5:1.
+
+İlgili: [[BL-330]] bu kusurun sahibi tarafından "düzenleme yok" olarak görülen yüzü
+
+---
+
 ### BL-329 — Görev detayında aynı yere giden İKİ "kaynak kaydı" düğmesi (2026-09-02, CANLI, ölçüldü)
 
 > **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
@@ -3614,11 +3651,25 @@ Yani yol şu: Görev Merkezi detayı → "Kaynak kayıtta aç" → `/Tasks/{id}`
 "Düzenle". İki tık, ama ilk tıkın etiketi düzenlemeyi çağrıştırmıyor; sahip
 "düzenleme yok" olarak gördü.
 
-**Karar sahibe ait, çünkü sınır sorusu:** MOD-0024 raporlar ve devreder, kaydı
-modül sahiplenir ([[project_mod0024_approval_boundary]]) -- SAP/Oracle'da da gelen
-kutusu *eylem* verir, nesne kendi uygulamasında düzenlenir. Önerim: yeteneği Görev
-Merkezi'ne taşımak yerine devri görünür kılmak, yani rayda `/Tasks/{id}/Edit`'e
-giden bir "Düzenle" bağlantısı. Yeni ekran yok, yeni sınır ihlali yok.
+**⚠ 2026-09-02 EK ÖLÇÜM — bu kaydın ilk gerekçesi YANLIŞTI.** Ürün devri zaten
+ANLATIYOR. Kaynak kapısının altında, 7 dilde, `ActionOpenInSourceHint` duruyor:
+
+    "Görev Merkezi işin yürütüldüğü yerdir; kaydın kendisi -- başlığı,
+     açıklaması ve alanları -- orada düzenlenir."
+
+Canlıda ölçüldü: cümle RENDER EDİLİYOR ve `offsetParent` dolu, yani görünür. Ama:
+
+    .wcn-act-outcome → font-size 12px · color var(--bs-secondary-color) = #a7acb2
+    beyaz zemin üzerinde kontrast = 2.29:1 · WCAG AA gereği 4.5:1 → KALDI
+
+Sahibin "düzenleme yok" görmesinin sebebi bu: cevabı veren cümle ekranda, okunmuyor.
+
+**Bu yüzden yeni bir "Düzenle" bağlantısı + 7 dilde yeni string YANLIŞ ÇÖZÜM olur** --
+doğru şeyi zaten söyleyen bir cümlenin üstünü örtmek olur. Doğru çözüm kontrast, ve o
+da bu kaydın dışında: bkz. [[BL-331]].
+
+BL-330 kapanışı BL-331'e bağlı: cümle okunur olunca sahibin sorusu ekranda yanıtlanmış
+olur. Okunur hâliyle hâlâ kısayol isteniyorsa, o zaman ray bağlantısı ayrıca konuşulur.
 
 ---
 
