@@ -40,6 +40,7 @@ public sealed class PpmListPageViewModel
     public required string[] LifecycleStates { get; init; }
     public string DefaultLifecycleState { get; init; } = string.Empty;
     public bool HasPortfolio { get; init; }
+    public bool RequiresPortfolio { get; init; }
     public bool HasProjectParent { get; init; }
     public bool HasProjectWorkspace { get; init; }
     public bool UsesTitle { get; init; }

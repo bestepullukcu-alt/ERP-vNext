@@ -27,7 +27,8 @@
         Resource = "initiatives", Singular = "Initiative", MarkerType = "InitiativesIndex",
         TitleKey = "InitiativesTitle", AddKey = "AddNewInitiative", EditKey = "EditInitiative",
         LifecycleStates = ["Proposed", "Active", "OnHold", "Completed", "Cancelled"],
-        DefaultLifecycleState = "Proposed", HasPortfolio = true
+        DefaultLifecycleState = "Proposed", HasPortfolio = true, RequiresPortfolio = false,
+        ShowsVisibilityPolicy = false
     };
 }
 @* Golden Slim contract marker: <partial name="_Filter" />. Runtime markup is composed by _ListShell.cshtml. *@

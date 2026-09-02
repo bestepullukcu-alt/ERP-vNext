@@ -47,7 +47,10 @@ public sealed class TenantResolutionMiddleware(RequestDelegate next)
 
         if (!context.Request.Headers.TryGetValue(TenantHeader, out var headerValues))
         {
-            await next(context);
+            await WriteProblemDetails(
+                context,
+                "Missing Tenant",
+                $"The authenticated request must contain the '{TenantHeader}' header.");
             return;
         }
 

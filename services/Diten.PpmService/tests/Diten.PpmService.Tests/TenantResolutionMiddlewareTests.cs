@@ -20,12 +20,16 @@ public sealed class TenantResolutionMiddlewareTests
     }
 
     [Fact]
-    public async Task Missing_header_preserves_the_authenticated_tenant()
+    public async Task Missing_header_fails_closed_with_canonical_problem_details()
     {
         var (context, reached) = await Invoke(TenantA.ToString("D"), null);
 
-        Assert.True(reached());
-        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        Assert.False(reached());
+        Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+        Assert.Equal("application/problem+json", context.Response.ContentType);
+        var payload = await ReadBody(context);
+        Assert.Contains("\"title\":\"Missing Tenant\"", payload, StringComparison.Ordinal);
+        Assert.Contains("X-Tenant-Id", payload, StringComparison.Ordinal);
     }
 
     [Fact]

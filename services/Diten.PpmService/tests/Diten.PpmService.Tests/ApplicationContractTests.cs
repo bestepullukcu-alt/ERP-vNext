@@ -1,5 +1,6 @@
 using Diten.PpmService.Application.Common;
 using Diten.PpmService.Application.Features.Portfolios;
+using Diten.PpmService.Application.Features.Initiatives;
 using Diten.PpmService.Application.Features.Projects;
 using Diten.PpmService.Domain.Entities;
 using Diten.PpmService.Domain.Exceptions;
@@ -19,6 +20,75 @@ namespace Diten.PpmService.Tests;
 
 public sealed class ApplicationContractTests
 {
+    [Fact]
+    public async Task Initiative_create_accepts_the_approved_optional_portfolio_relationship()
+    {
+        var repository = new InitiativeRepository();
+        var tenant = Guid.NewGuid();
+        var actor = Guid.NewGuid();
+        var service = new InitiativeService(
+            repository, new PortfolioRepository(), new AuditRepository(), new UnitOfWork(),
+            new RequestContext(tenant, actor), new RequestContext(tenant, actor),
+            new FixedCorrelation(), new PermissionEvaluator(true));
+
+        var response = await service.Create(new("INIT-1", "Initiative", null, null, null), default);
+
+        Assert.Equal(201, response.StatusCode);
+        Assert.Null(response.Data!.PortfolioId);
+        Assert.Single(repository.Items);
+    }
+
+    [Fact]
+    public async Task Initiative_cross_tenant_get_is_a_nondisclosing_404()
+    {
+        var repository = new InitiativeRepository();
+        var actor = Guid.NewGuid();
+        var entity = new Initiative(Guid.NewGuid(), actor, "INIT-1", "Initiative", null, null, null);
+        repository.Items.Add(entity);
+        var service = new InitiativeService(
+            repository, new PortfolioRepository(), new AuditRepository(), new UnitOfWork(),
+            new RequestContext(Guid.NewGuid(), actor), new RequestContext(Guid.NewGuid(), actor),
+            new FixedCorrelation(), new PermissionEvaluator(true));
+
+        var response = await service.GetById(new(entity.Id), default);
+
+        Assert.Equal(404, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Initiative_entitlement_uncertainty_is_503_before_repository_access()
+    {
+        var repository = new InitiativeRepository();
+        var tenant = Guid.NewGuid();
+        var actor = Guid.NewGuid();
+        var service = new InitiativeService(
+            repository, new PortfolioRepository(), new AuditRepository(), new UnitOfWork(),
+            new RequestContext(tenant, actor), new RequestContext(tenant, actor),
+            new FixedCorrelation(), new FixedAccessAuthorizer(PpmAccessDecision.DependencyUnavailable));
+
+        var response = await service.List(new(), default);
+
+        Assert.Equal(503, response.StatusCode);
+        Assert.Equal(0, repository.Reads);
+    }
+
+    [Fact]
+    public async Task Initiative_stale_update_version_is_rejected()
+    {
+        var tenant = Guid.NewGuid();
+        var actor = Guid.NewGuid();
+        var repository = new InitiativeRepository();
+        var entity = new Initiative(tenant, actor, "INIT-1", "Initiative", null, null, null);
+        repository.Items.Add(entity);
+        var service = new InitiativeService(
+            repository, new PortfolioRepository(), new AuditRepository(), new UnitOfWork(),
+            new RequestContext(tenant, actor), new RequestContext(tenant, actor),
+            new FixedCorrelation(), new PermissionEvaluator(true));
+
+        await Assert.ThrowsAsync<OptimisticConcurrencyException>(() =>
+            service.Update(new(entity.Id, "INIT-1", "Changed", null, null, null, 99), default));
+    }
+
     [Fact]
     public async Task Missing_permission_fails_closed_with_403_before_repository_access()
     {
