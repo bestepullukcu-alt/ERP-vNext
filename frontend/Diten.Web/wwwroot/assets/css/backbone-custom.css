@@ -7372,14 +7372,21 @@ tags.diten-tags .tagify__input {
 /* Empty states -------------------------------------------------------------
    The surface is a CARD, matching the Golden Reference DataTable empty state. Without it the icon, heading and
    text sat straight on the page background, which reads as a page that failed to draw rather than a list with
-   nothing in it. Styled here rather than by wrapping each variant in markup: every empty state already shares
-   this class, and FG-003 keeps presentation in CSS. */
-.wcn-empty,
-.wcn-system-page {
-    background: var(--bs-card-bg);
-    border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-card-border-radius);
-}
+   nothing in it.
+
+   ⚠ THE SURFACE IS NOW THE THEME'S OWN `.card`, WORN IN MARKUP — and nothing about a card is restated here.
+   This block used to say `background: var(--bs-card-bg)` and `border-radius: var(--bs-card-border-radius)`,
+   which LOOK like real declarations and paint nothing: the theme declares both of those custom properties
+   inside its `.card` rule, not at `:root`, so an element that is not a card inherits no value for them and the
+   declarations are invalid at computed-value time. Measured live (2026-09-02, management demo): transparent
+   fill, square corners, no shadow, and only the hairline border surviving — because `--bs-border-color` is the
+   one root token of the three. The border went with the rest: cards in this theme carry a SHADOW and no
+   border, so a hand-drawn 1px line was the empty state differing from every card beside it.
+
+   Wearing the class rather than copying its values is also what keeps the skins working: [data-skin=bordered]
+   redefines --bs-card-box-shadow into a ring, and a copied shadow would have diverged the moment anyone
+   switched skin. What stays below is only what a card does NOT decide — this surface's own layout.
+   (assets/js/WorkCenterNext/app.js emits `class="card wcn-empty"`; a guard pins that neither half drifts.) */
 .wcn-empty {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: .375rem; text-align: center; padding: 4rem 1.5rem; color: var(--bs-secondary-color);

@@ -28,6 +28,11 @@
     <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/diten-tags.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/diten-checkitem.js" asp-append-version="true"></script>
+    @* The date fields' picker. Tasks/form.js binds NO date itself — its enhanceDates delegates here and
+       returns 0 when this file is absent, which is exactly what this page shipped: the quick-create
+       offcanvas drew a calendar icon over a plain text box and the user typed the due date by hand.
+       flatpickr itself comes from _LayoutTenantShell, so this is the only half that was missing. *@
+    <script src="~/assets/js/shared/diten-datefield.js" asp-append-version="true"></script>
     @* Same reason as Details.cshtml: this page renders the very same checklist card in its detail pane, from the
        same component and the same app.js. Loading it on one of the two would make the row draggable on one
        surface and not the other — the exact split this round exists to close. *@

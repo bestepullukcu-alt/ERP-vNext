@@ -112,6 +112,9 @@
      * and `history` is finished: an item you snoozed and later completed must still appear in your own past.
      */
     const SNOOZE_TABS = ['inbox', 'islerim'];
+    // Tabs whose contents are settled, so a count of them is not "work waiting for you" — see the
+    // badge decision in buildTabs, which is the only reader.
+    const BADGELESS_TABS = ['history'];
 
     const state = {
         tab: 'inbox',
@@ -1154,7 +1157,25 @@
              * must never be printed confidently.
              */
             const partial = hasUnavailableSources();
-            const countBadge = (cnt > 0 || partial)
+            /*
+             * ⚠ GEÇMİŞ CARRIES NO BADGE, IN EITHER STATE (2026-09-02, measured in a management demo).
+             *
+             * The owner cancelled his own task, it landed in Geçmiş — correct — and the tab grew a red "1",
+             * which is the page telling him one thing there was waiting for him. `tabCount`'s own rule, six
+             * hundred lines up, already says what a badge means: "work waiting for you in this tab". Geçmiş is
+             * where work goes when it has STOPPED; nothing in it waits for anybody, so no count of it is a
+             * claim worth drawing.
+             *
+             * ⚠ AND THAT INCLUDES WC-D3's "+". The partial-board branch below draws a badge even at zero,
+             * because a count a reader ACTS on must never print a confident zero over an incomplete board.
+             * Geçmiş prints no such count, so there is no number left for the "+" to qualify — a grey "0+"
+             * over closed work would be the same false claim in a quieter colour. The banner above the list
+             * still says a source is missing, which is where that fact belongs.
+             *
+             * Written as a set rather than `key !== 'history'` so the next tab that turns out to hold only
+             * settled work joins it by name, in the one place the reason is written down.
+             */
+            const countBadge = (BADGELESS_TABS.indexOf(key) < 0 && (cnt > 0 || partial))
                 ? `<span class="badge rounded-pill ${partial ? 'bg-secondary wcn-tab-count-partial' : 'bg-danger'} wcn-tab-count position-absolute top-0 start-100 translate-middle" title="${partial ? esc(t('PartialCountHint')) : ''}">${cnt}${partial ? '+' : ''}</span>`
                 : '';
             return `<li class="nav-item" role="presentation">
@@ -2415,6 +2436,51 @@
 
 
         /*
+         * ── THE WAY OUT TO THE RECORD (2026-09-02) ────────────────────────────────────────────────────────
+         *
+         * MEASURED in a management demo: the owner opened a task he had created himself, wanted to change its
+         * title, and found nothing. /Tasks/{id} exists, its header carries "Düzenle", and no path on this
+         * surface led to either.
+         *
+         * ⚠ THE ANSWER IS NOT AN `edit` ACTION IN THE RAIL, and that is a decision rather than an omission.
+         * This rail draws no verbs of its own: every entry comes from the PROJECTION, i.e. from a provider's
+         * own engine transitions. MOD-0024 aggregates providers it does not own, "change the title" is not a
+         * transition, and for a document or a strategy item it means nothing at all. An `edit` action here
+         * would be this module reaching into records that are not its own — the same boundary the approval
+         * work drew: MOD-0024 reports and hands over, it does not decide.
+         *
+         * What was missing is the DOOR. The reader was left in a cul-de-sac, which is this product's recurring
+         * defect and not a missing feature, and the product already has the idiom for it —
+         * `ActionCompleteInSource` on deeplink work, `SubtaskOpenFullDetail` on the subtask panel: a quiet
+         * secondary with an external-link glyph.
+         *
+         * ⚠ NOT ON DEEPLINK WORK. There the source link is already the LEAD button (it is the only way that
+         * work can be finished), so a second link to the same place underneath would be the page saying one
+         * thing twice — the branch above returns before ever reaching here.
+         *
+         * ⚠ NOT A FILLED BUTTON. The card keeps exactly ONE fill, and on inline work that fill belongs to the
+         * act the reader came to perform. A door drawn as loudly as "Tamamla" tells every reader to leave a
+         * page that does its job.
+         *
+         * ⚠ NOT PERMISSION-GATED HERE. The link is navigation; the destination decides what it offers. A
+         * browser-side guess at the reader's rights either hides the way out from somebody who has it, or
+         * claims to know something only the server knows.
+         */
+        const sourceDoor = (target) => {
+            const href = target.source?.deepLink || target.deepLink || target.sourceDeepLink;
+            // No destination, no door: the contract permits a provider to publish none, and a link to nowhere
+            // is worse than no link at all.
+            if (!href) { return ''; }
+            return `<li class="wcn-act wcn-act-source">
+                <a class="wcn-act-btn wcn-act-bare wcn-act-bare-neutral" href="${esc(href)}"
+                   data-wcn-source-link="${esc(target.id)}">
+                    <i class="bx bx-link-external" aria-hidden="true"></i><span>${esc(t('ActionOpenInSource'))}</span>
+                </a>
+                <p class="wcn-act-outcome">${esc(t('ActionOpenInSourceHint'))}</p>
+            </li>`;
+        };
+
+        /*
          * DESTRUCTIVE ACTIONS ARE VISIBLE, and the kebab is empty until something genuinely rare needs it.
          *
          * "Görevi iptal et" lived in a "Diğer aksiyonlar" menu. Folding a destructive act away is not a safety
@@ -2430,6 +2496,7 @@
                 ${secondary.length
             ? `<li class="wcn-acts-row">${actionRail(item, secondary, 'secondary', locked)}</li>`
             : ''}
+                ${sourceDoor(item)}
             </ul>
             </div>
             ${destructive.length
@@ -5870,7 +5937,7 @@
             + section('FocusPinned', 'primary', pinned);
 
         if (!inner) {
-            return `<div class="wcn-empty">
+            return `<div class="card wcn-empty">
                 <i class="bx bx-coffee"></i>
                 <h5>${esc(t('FocusEmptyTitle'))}</h5>
                 <p>${esc(t('FocusEmptyDesc'))}</p>
@@ -5887,7 +5954,7 @@
         // Meeting invitations are trigger-only projections. They use a dedicated
         // empty state but never enter the task-detail resolver or task lifecycle.
         if (state.typeFilter.has('meetingInvite')) {
-            return `<div class="wcn-empty">
+            return `<div class="card wcn-empty">
                 <i class="bx bx-calendar-event"></i>
                 <h5>${esc(t('EmptyMeetingInviteTitle'))}</h5>
                 <p>${esc(t('EmptyMeetingInviteDesc'))}</p>
@@ -5896,7 +5963,7 @@
         const filtered = state.moduleFilter.length || state.priorityFilter !== 'all' || state.modeFilter !== 'all'
             || state.typeFilter.size || state.signalFilter.size || state.search || (state.tab === 'havuz' && state.group !== 'all');
         if (filtered) {
-            return `<div class="wcn-empty">
+            return `<div class="card wcn-empty">
                 <i class="bx bx-filter-alt"></i>
                 <h5>${esc(t('EmptyFilterTitle'))}</h5>
                 <p>${esc(t('EmptyFilterDesc'))}</p>
@@ -5915,7 +5982,7 @@
          * true is that this list could not be completed, not that there is nothing in it.
          */
         if (hasUnavailableSources()) {
-            return `<div class="wcn-empty">
+            return `<div class="card wcn-empty">
                 <i class="bx bx-cloud-snow"></i>
                 <h5>${esc(t('EmptyPartialBoardTitle'))}</h5>
                 <p>${esc(t('EmptyPartialBoardDesc'))}</p>
@@ -5929,7 +5996,7 @@
             islerim: ['EmptyMineTitle', 'EmptyMineDesc', 'bx-briefcase-alt-2']
         };
         const [titleKey, descKey, icon] = byTab[state.tab] || byTab.mine;
-        return `<div class="wcn-empty">
+        return `<div class="card wcn-empty">
             <i class="bx ${icon}"></i>
             <h5>${esc(t(titleKey))}</h5>
             <p>${esc(t(descKey))}</p>
@@ -6009,7 +6076,7 @@
 
 
 
-    const renderLoadingState = () => `<div class="wcn-system-page" role="status" aria-live="polite">
+    const renderLoadingState = () => `<div class="card wcn-system-page" role="status" aria-live="polite">
         <span class="spinner-border spinner-border-sm text-primary" aria-hidden="true"></span>
         <h5>${esc(t('LoadingTitle'))}</h5><p>${esc(t('LoadingDesc'))}</p>
         <div class="wcn-skeleton" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -6075,7 +6142,7 @@
         const retry = conf.retry
             ? `<button type="button" class="btn btn-sm btn-primary" data-wcn-retry>${esc(t('Retry'))}</button>`
             : '';
-        return `<div class="wcn-system-page wcn-system-error" role="alert">
+        return `<div class="card wcn-system-page wcn-system-error" role="alert">
         <i class="bx ${conf.icon}"></i><h5>${esc(t(conf.title))}</h5><p>${esc(t(conf.desc))}</p>
         ${retry}
     </div>`;

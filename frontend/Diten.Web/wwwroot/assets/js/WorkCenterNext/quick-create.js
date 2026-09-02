@@ -15,6 +15,9 @@
 (function (global) {
     const TASK_CREATED_EVENT = 'wcn:task-created';
     const DETAILED_FORM_URL = '/Tasks/Create';
+    // Where positions are made — the destination an empty person picker offers. Same route the detailed form
+    // offers, because it is the same empty state met one surface earlier.
+    const POSITIONS_URL = '/Positions';
     const OFFCANVAS_ID = 'taskQuickCreate';
 
     const t = (key) => global.TasksL10n?.t?.(key) ?? key;
@@ -24,6 +27,9 @@
     const personLabels = () => ({
         placeholder: t('assigneeSelectPlaceholder'),
         empty: t('assigneeEmpty'),
+        // The way OUT of the empty state — the sentence says what is missing, these say where it is made.
+        emptyActionLabel: t('assigneeEmptyAction'),
+        emptyActionHref: POSITIONS_URL,
         nameUnavailable: t('personNameUnavailable'),
         // The pool row's second layer — "{0} kişi". The SAME labels object feeds both pickers and select2's
         // row templates, so the offcanvas and the full form cannot drift into two vocabularies.

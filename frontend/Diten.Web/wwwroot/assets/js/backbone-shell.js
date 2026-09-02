@@ -90,6 +90,61 @@ window.BackboneShell = (function () {
         }
     }
 
+    /*
+     * ══ AN ACKNOWLEDGEMENT THAT SURVIVES A NAVIGATION ═════════════════════════════════════════════════════
+     *
+     * The client-side twin of `handleTempDataToasts` above, and it sits here for the same reason that one
+     * does: a page that saves and then LEAVES has nowhere to raise a toast — the page raising it is about to
+     * be replaced. The server solves that with TempData; a form that navigates in the browser needs the same
+     * hand-over on the browser's side.
+     *
+     * ⚠ WHY IT IS NOT A MODAL. /Tasks/Create used to hold the reader in a dialog so the acknowledgement would
+     * be seen. That works, and it is the wrong instrument: a modal exists to ASK, and "created" asks nothing.
+     * The reader is stopped mid-flow to confirm something they did on purpose.
+     *
+     * ⚠ WHY IT IS NOT SIX PRIVATE KEYS. Six Organization screens already do this, each with its own
+     * sessionStorage key flushed on its own list page (`p-toast`, `ou-toast`, `a-toast`, …). That works only
+     * while a form knows its single destination. The task form does not: it lands on the Task Center, or on
+     * any local returnUrl it was handed. So the flush lives where EVERY tenant page passes, and the key has
+     * exactly one owner — this file — which both writers and readers go through.
+     *
+     * ⚠ SPENT ON READ, always. A message left behind would re-announce a save on the next reload, which is a
+     * page claiming something happened that did not.
+     */
+    var PENDING_TOAST_KEY = 'diten-pending-toast';
+
+    function handOverToast(message, type) {
+        if (!message) return;
+        try {
+            window.sessionStorage.setItem(
+                PENDING_TOAST_KEY, JSON.stringify({ message: message, type: type || 'success' }));
+        } catch (error) {
+            // Private mode, or storage full. The save itself succeeded; losing its announcement is the least
+            // bad outcome and is not worth breaking the navigation over.
+            console.warn('[BackboneShell] the save acknowledgement could not be handed over:', error);
+        }
+    }
+
+    function flushPendingToast() {
+        var raw = null;
+        try {
+            raw = window.sessionStorage.getItem(PENDING_TOAST_KEY);
+            window.sessionStorage.removeItem(PENDING_TOAST_KEY);
+        } catch (error) {
+            return;
+        }
+        if (!raw || !window.showToast) return;
+
+        try {
+            var pending = JSON.parse(raw);
+            if (pending && pending.message) {
+                window.showToast(pending.message, pending.type || 'success');
+            }
+        } catch (error) {
+            console.warn('[BackboneShell] a handed-over toast could not be read:', error);
+        }
+    }
+
     function init() {
         hideSandboxMenuItems();
         initUserDisplay();
@@ -97,10 +152,13 @@ window.BackboneShell = (function () {
         syncRequiredFieldTemplates();
         ensureConfirmFallback();
         handleTempDataToasts();
+        flushPendingToast();
     }
 
     return {
-        init: init
+        init: init,
+        // The ONE way a page hands an acknowledgement across a navigation — see handOverToast.
+        handOverToast: handOverToast
     };
 })();
 

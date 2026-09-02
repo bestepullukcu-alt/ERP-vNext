@@ -136,7 +136,9 @@
   <data name="ExcludedPositionNotActive" xml:space="preserve"><value>{0} occupent un poste inactif</value></data>
   <data name="ExcludedOutOfScope" xml:space="preserve"><value>{0} sont hors de votre périmètre</value></data>
   <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>Sélectionnez une personne…</value></data>
-  <data name="AssigneeEmpty" xml:space="preserve"><value>Personne n'occupe encore de poste, il n'y a donc personne à qui assigner. Demandez d'abord à un administrateur d'attribuer des postes.</value></data>
+  <data name="AssigneeEmpty" xml:space="preserve"><value>Personne n'occupe encore de poste, il n'y a donc personne à qui assigner. Un administrateur doit définir des postes sur l'écran Postes et les attribuer à des personnes.</value></data>
+  <data name="AssigneeEmptyAction" xml:space="preserve"><value>Ouvrir Postes</value></data>
+  <data name="PositionsScreenName" xml:space="preserve"><value>Postes</value></data>
   <data name="PersonNameUnavailable" xml:space="preserve"><value>Nom indisponible</value></data>
   <data name="PickerHolderCount" xml:space="preserve"><value>{0} personne(s)</value></data>
   <data name="CustomFieldRecordSearchPlaceholder" xml:space="preserve"><value>Saisissez pour rechercher…</value></data>

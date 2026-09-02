@@ -311,6 +311,12 @@
   <data name="ActionCompleteInSourceHint" xml:space="preserve">
     <value>Bu iş burada tamamlanamaz; {0} modülünde bitirilir</value>
   </data>
+  <data name="ActionOpenInSource" xml:space="preserve">
+    <value>Kaynak kayıtta aç</value>
+  </data>
+  <data name="ActionOpenInSourceHint" xml:space="preserve">
+    <value>Görev Merkezi işin yürütüldüğü yerdir; kaydın kendisi — başlığı, açıklaması ve alanları — orada düzenlenir.</value>
+  </data>
   <data name="TechVersionValue" xml:space="preserve">
     <value>{0}. sürüm</value>
   </data>
