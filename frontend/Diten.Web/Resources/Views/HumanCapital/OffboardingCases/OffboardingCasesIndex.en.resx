@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="OffboardingCasesTitle" xml:space="preserve"><value>Offboarding Cases</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Review governed employee offboarding case metadata and local handoff state.</value></data>
+  <data name="ServiceHealth" xml:space="preserve"><value>Service Health</value></data>
+  <data name="ReadonlyBoundary" xml:space="preserve"><value>Read-only Boundary</value></data>
+  <data name="ReadonlyBoundaryDescription" xml:space="preserve"><value>This screen shows offboarding case metadata without changing workflow, review or handoff state.</value></data>
+  <data name="HandoffBoundary" xml:space="preserve"><value>TEP Handoff Boundary</value></data>
+  <data name="HandoffBoundaryDescription" xml:space="preserve"><value>Handoff data is shown as local/deferred metadata only.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Offboarding Case Details</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Select an offboarding case to review its metadata.</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="EmployeeProjectionId" xml:space="preserve"><value>Employee Projection ID</value></data>
+  <data name="AssignmentOverlayId" xml:space="preserve"><value>Assignment Overlay ID</value></data>
+  <data name="ExitReasonCode" xml:space="preserve"><value>Exit Reason Code</value></data>
+  <data name="ExitTypeCode" xml:space="preserve"><value>Exit Type Code</value></data>
+  <data name="NoticeDate" xml:space="preserve"><value>Notice Date</value></data>
+  <data name="PlannedExitDate" xml:space="preserve"><value>Planned Exit Date</value></data>
+  <data name="ActualExitDate" xml:space="preserve"><value>Actual Exit Date</value></data>
+  <data name="OffboardingState" xml:space="preserve"><value>Offboarding State</value></data>
+  <data name="ChecklistState" xml:space="preserve"><value>Checklist State</value></data>
+  <data name="SensitiveAccessDecisionState" xml:space="preserve"><value>Sensitive Access State</value></data>
+  <data name="DependencyDecisionState" xml:space="preserve"><value>Dependency Decision State</value></data>
+  <data name="TepHandoffState" xml:space="preserve"><value>TEP Handoff State</value></data>
+  <data name="TepHandoffReferenceKey" xml:space="preserve"><value>TEP Handoff Reference</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Source Contract Version</value></data>
+  <data name="OffboardingVersion" xml:space="preserve"><value>Offboarding Version</value></data>
+  <data name="LastDependencyEvaluatedAt" xml:space="preserve"><value>Last Dependency Evaluated At</value></data>
+  <data name="LastHandoffPlannedAt" xml:space="preserve"><value>Last Handoff Planned At</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Deferred Reason</value></data>
+  <data name="ReviewDisabled" xml:space="preserve"><value>Review disabled</value></data>
+  <data name="HandoffDisabled" xml:space="preserve"><value>Handoff disabled</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Manage disabled</value></data>
+  <data name="ArchiveDisabled" xml:space="preserve"><value>Archive disabled</value></data>
+  <data name="Loading" xml:space="preserve"><value>Loading</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+</root>

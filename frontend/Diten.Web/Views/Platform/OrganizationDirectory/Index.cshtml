@@ -1,0 +1,33 @@
+@using Diten.Web.Views.Platform.OrganizationDirectory
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OrganizationDirectoryIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["OrganizationDirectoryTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canReadOrgUnits = Perms.Has("platform.organization-units.read");
+    var canReadPositions = Perms.Has("platform.positions.read");
+    var canReadPositionAssignments = Perms.Has("platform.position-assignments.read");
+    var canReadManagerChain = Perms.Has("platform.organization.read-manager-chain");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["OrganizationDirectoryTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="organization-directory-shell"
+     data-can-read-org-units="@canReadOrgUnits.ToString().ToLowerInvariant()"
+     data-can-read-positions="@canReadPositions.ToString().ToLowerInvariant()"
+     data-can-read-position-assignments="@canReadPositionAssignments.ToString().ToLowerInvariant()"
+     data-can-read-manager-chain="@canReadManagerChain.ToString().ToLowerInvariant()">
+    <partial name="~/Views/Platform/OrganizationDirectory/_Summary.cshtml" />
+    <partial name="~/Views/Platform/OrganizationDirectory/_Tabs.cshtml" />
+    <partial name="~/Views/Platform/OrganizationDirectory/_DetailsQuickView.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/Platform/OrganizationDirectory/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Platform/OrganizationDirectory/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/OrganizationDirectory/index.js" asp-append-version="true"></script>
+}

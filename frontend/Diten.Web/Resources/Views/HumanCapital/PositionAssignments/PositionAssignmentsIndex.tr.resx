@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PositionAssignmentsTitle" xml:space="preserve"><value>Pozisyon ve Organizasyon Atamaları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Tenant çalışan pozisyon, organizasyon ve yönetici atama overlay metadatasını inceleyin.</value></data>
+  <data name="ServiceHealth" xml:space="preserve"><value>Servis Sağlığı</value></data>
+  <data name="ReadonlyBoundary" xml:space="preserve"><value>Salt Okunur Sınır</value></data>
+  <data name="ReadonlyBoundaryDescription" xml:space="preserve"><value>Bu ekran atama durumunu değiştirmeden assignment overlay metadatasını gösterir.</value></data>
+  <data name="ReferenceBoundary" xml:space="preserve"><value>Referans Sınırı</value></data>
+  <data name="ReferenceBoundaryDescription" xml:space="preserve"><value>Kişi, pozisyon ve organizasyon referansları yalnız metadata bağlantısı olarak kalır.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Atama Detayı</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Metadatasını incelemek için bir atama seçin.</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="EmployeeProjectionId" xml:space="preserve"><value>Çalışan Projeksiyonu ID</value></data>
+  <data name="PersonReferenceId" xml:space="preserve"><value>Kişi Referans ID</value></data>
+  <data name="OrganizationUnitId" xml:space="preserve"><value>Organizasyon Birimi ID</value></data>
+  <data name="PositionId" xml:space="preserve"><value>Pozisyon ID</value></data>
+  <data name="ManagerEmployeeProjectionId" xml:space="preserve"><value>Yönetici Çalışan Projeksiyonu ID</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Bitiş</value></data>
+  <data name="AssignmentState" xml:space="preserve"><value>Atama Durumu</value></data>
+  <data name="ReferenceValidationState" xml:space="preserve"><value>Referans Doğrulama Durumu</value></data>
+  <data name="SensitiveAccessDecisionState" xml:space="preserve"><value>Hassas Erişim Durumu</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Kaynak Sözleşme Versiyonu</value></data>
+  <data name="AssignmentVersion" xml:space="preserve"><value>Atama Versiyonu</value></data>
+  <data name="LastReferenceValidatedAt" xml:space="preserve"><value>Son Referans Doğrulama</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Ertelenme Nedeni</value></data>
+  <data name="ReferenceLinkDisabled" xml:space="preserve"><value>Referans bağlantısı kapalı</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Yönetim kapalı</value></data>
+  <data name="ArchiveDisabled" xml:space="preserve"><value>Arşiv kapalı</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+</root>

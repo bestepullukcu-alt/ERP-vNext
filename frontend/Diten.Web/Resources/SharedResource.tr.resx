@@ -493,6 +493,30 @@
   <data name="UserRoleAssignmentMenu" xml:space="preserve"><value>Kullanıcı Rolleri</value></data>
   <data name="SelfAccessMenu" xml:space="preserve"><value>Erişimim</value></data>
   <data name="ReferenceDataMenu" xml:space="preserve"><value>Referans Veri</value></data>
+  <data name="OrganizationDirectoryMenu" xml:space="preserve"><value>Organizasyon Dizini</value></data>
+  <data name="HrisSourcesMenu" xml:space="preserve"><value>HRIS Sources</value></data>
+  <data name="TimeAttendanceProvidersMenu" xml:space="preserve"><value>Zaman Katılım Sağlayıcıları</value></data>
+  <data name="PayrollIntegrationGovernanceMenu" xml:space="preserve"><value>Payroll Integration Governance</value></data>
+  <data name="PayrollSourcesMenu" xml:space="preserve"><value>Payroll Engine Sources</value></data>
+  <data name="HumanCapital" xml:space="preserve"><value>İnsan Sermayesi</value></data>
+  <data name="EmployeeProjectionsMenu" xml:space="preserve"><value>Çalışan Projeksiyonları</value></data>
+  <data name="SensitiveAccessMenu" xml:space="preserve"><value>HR Hassas Erişim</value></data>
+  <data name="PositionAssignmentsMenu" xml:space="preserve"><value>Pozisyon Atamaları</value></data>
+  <data name="OffboardingCasesMenu" xml:space="preserve"><value>Offboarding Vakaları</value></data>
+  <data name="ApplicantIntakeMenu" xml:space="preserve"><value>Aday Başvuru Alımı</value></data>
+  <data name="CandidatePipelineMenu" xml:space="preserve"><value>Aday Süreci</value></data>
+  <data name="TalentEcosystem" xml:space="preserve"><value>Talent Ekosistemi</value></data>
+  <data name="TepShellMetadataMenu" xml:space="preserve"><value>TEP Shell Metadata</value></data>
+  <data name="ConsentVisibilityPoliciesMenu" xml:space="preserve"><value>Onay ve Görünürlük Politikaları</value></data>
+  <data name="AssociationMembershipsMenu" xml:space="preserve"><value>Association Memberships</value></data>
+  <data name="VerifiedParticipantsMenu" xml:space="preserve"><value>Doğrulanmış Katılımcılar</value></data>
+  <data name="ReviewBoardMenu" xml:space="preserve"><value>Governance Review Board</value></data>
+  <data name="TrustLevelsMenu" xml:space="preserve"><value>Trust Levels</value></data>
+  <data name="CandidateProfilesMenu" xml:space="preserve"><value>Candidate Profiles</value></data>
+  <data name="ExitReferenceRecordsMenu" xml:space="preserve"><value>Exit Reference Records</value></data>
+  <data name="ReferenceExchangeMenu" xml:space="preserve"><value>Reference Exchange</value></data>
+  <data name="RehireRecommendationsMenu" xml:space="preserve"><value>Rehire Recommendations</value></data>
+  <data name="CandidateDisputesMenu" xml:space="preserve"><value>Candidate Disputes</value></data>
   <data name="ESignatures" xml:space="preserve"><value>e-İmzalar</value></data>
   <data name="ESignatures_Description" xml:space="preserve"><value>Tenant e-imza taleplerini izleyin ve doğrulayın.</value></data>
   <data name="ESignatureDetails" xml:space="preserve"><value>e-İmza Detayları</value></data>
@@ -503,4 +527,3 @@
   <data name="AuditExport" xml:space="preserve"><value>Denetim Dışa Aktarımı</value></data>
   <data name="CancelEnvelope" xml:space="preserve"><value>Zarfı İptal Et</value></data>
 </root>
-

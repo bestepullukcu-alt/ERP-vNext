@@ -1,0 +1,58 @@
+@using Diten.Web.Views.Platform.TimeAttendanceProviders
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TimeAttendanceProvidersIndex> Localizer
+
+<div class="row g-3 mb-3">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div>
+                        <span class="text-muted">@Localizer["Providers"]</span>
+                        <h5 class="mb-0" data-ta-count="providers">0</h5>
+                    </div>
+                    <span class="badge bg-label-primary rounded p-2"><i class="bx bx-time-five icon-md"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div>
+                        <span class="text-muted">@Localizer["ActiveProviders"]</span>
+                        <h5 class="mb-0" data-ta-count="active">0</h5>
+                    </div>
+                    <span class="badge bg-label-success rounded p-2"><i class="bx bx-check-shield icon-md"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div>
+                        <span class="text-muted">@Localizer["HealthAccess"]</span>
+                        <h5 class="mb-0" data-ta-health-state>@Localizer["Deferred"]</h5>
+                    </div>
+                    <span class="badge bg-label-info rounded p-2"><i class="bx bx-pulse icon-md"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div>
+                        <span class="text-muted">@Localizer["Mode"]</span>
+                        <h5 class="mb-0">@Localizer["ReadOnly"]</h5>
+                    </div>
+                    <span class="badge bg-label-secondary rounded p-2"><i class="bx bx-lock-alt icon-md"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

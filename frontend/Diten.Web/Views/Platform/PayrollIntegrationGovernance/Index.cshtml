@@ -1,0 +1,49 @@
+@using Diten.Web.Views.Platform.PayrollIntegrationGovernance
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PayrollIntegrationGovernanceIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["PayrollIntegrationGovernanceTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canRead = Perms.Has("platform.payroll-integration-governance.read");
+    var canReadHealth = Perms.Has("platform.payroll-integration-governance.read-health");
+    var canCreateRun = Perms.Has("platform.payroll-integration-governance.create-run");
+    var canUpdateRunStatus = Perms.Has("platform.payroll-integration-governance.update-run-status");
+    var canLinkSource = Perms.Has("platform.payroll-integration-governance.link-source");
+    var canManageMapping = Perms.Has("platform.payroll-integration-governance.manage-mapping");
+    var canRecordReconciliation = Perms.Has("platform.payroll-integration-governance.record-reconciliation");
+    var canCreateException = Perms.Has("platform.payroll-integration-governance.create-exception");
+    var canResolveException = Perms.Has("platform.payroll-integration-governance.resolve-exception");
+    var canRequestReplay = Perms.Has("platform.payroll-integration-governance.request-replay");
+    var canRecordEvidence = Perms.Has("platform.payroll-integration-governance.record-evidence-export");
+    var canRecordHealth = Perms.Has("platform.payroll-integration-governance.record-health");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["PayrollIntegrationGovernanceTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="payroll-integration-governance-shell"
+     data-can-read="@canRead.ToString().ToLowerInvariant()"
+     data-can-read-health="@canReadHealth.ToString().ToLowerInvariant()"
+     data-can-create-run="@canCreateRun.ToString().ToLowerInvariant()"
+     data-can-update-run-status="@canUpdateRunStatus.ToString().ToLowerInvariant()"
+     data-can-link-source="@canLinkSource.ToString().ToLowerInvariant()"
+     data-can-manage-mapping="@canManageMapping.ToString().ToLowerInvariant()"
+     data-can-record-reconciliation="@canRecordReconciliation.ToString().ToLowerInvariant()"
+     data-can-create-exception="@canCreateException.ToString().ToLowerInvariant()"
+     data-can-resolve-exception="@canResolveException.ToString().ToLowerInvariant()"
+     data-can-request-replay="@canRequestReplay.ToString().ToLowerInvariant()"
+     data-can-record-evidence="@canRecordEvidence.ToString().ToLowerInvariant()"
+     data-can-record-health="@canRecordHealth.ToString().ToLowerInvariant()">
+    <partial name="~/Views/Platform/PayrollIntegrationGovernance/_Summary.cshtml" />
+    <partial name="~/Views/Platform/PayrollIntegrationGovernance/_Table.cshtml" />
+    <partial name="~/Views/Platform/PayrollIntegrationGovernance/_DetailsQuickView.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/Platform/PayrollIntegrationGovernance/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Platform/PayrollIntegrationGovernance/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/PayrollIntegrationGovernance/index.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="TrustLevelsTitle" xml:space="preserve"><value>Trust Levels</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Review trust level and multi-signature policy metadata without starting signing workflows.</value></data>
+  <data name="TrustBoundary" xml:space="preserve"><value>Trust Boundary</value></data>
+  <data name="TrustBoundaryDescription" xml:space="preserve"><value>Trust policy and validation states are displayed without changing elevation decisions.</value></data>
+  <data name="MultiSignatureBoundary" xml:space="preserve"><value>Multi-Signature Boundary</value></data>
+  <data name="MultiSignatureBoundaryDescription" xml:space="preserve"><value>Signature requirements remain metadata only; no execution flow starts here.</value></data>
+  <data name="SubstrateBoundary" xml:space="preserve"><value>Substrate Boundary</value></data>
+  <data name="SubstrateBoundaryDescription" xml:space="preserve"><value>Signature substrate and dependency states are shown as references only.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Trust Level Details</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Select a trust policy to review its metadata.</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Display Name</value></data>
+  <data name="TrustLevelPolicyState" xml:space="preserve"><value>Trust Policy State</value></data>
+  <data name="TrustValidationState" xml:space="preserve"><value>Trust Validation State</value></data>
+  <data name="MultiSignatureRequirementState" xml:space="preserve"><value>Multi-Signature Requirement State</value></data>
+  <data name="MultiSignaturePolicyUnavailableBehavior" xml:space="preserve"><value>Unavailable Behavior</value></data>
+  <data name="ActivationState" xml:space="preserve"><value>Activation State</value></data>
+  <data name="AssociationMembershipRegistryId" xml:space="preserve"><value>Association Registry ID</value></data>
+  <data name="ConsentVisibilityPolicyId" xml:space="preserve"><value>Consent/Visibility Policy ID</value></data>
+  <data name="VerifiedParticipantAccessId" xml:space="preserve"><value>Verified Participant Access ID</value></data>
+  <data name="ReviewBoardCaseId" xml:space="preserve"><value>Review Board Case ID</value></data>
+  <data name="AssociationValidationState" xml:space="preserve"><value>Association Validation State</value></data>
+  <data name="ConsentVisibilityValidationState" xml:space="preserve"><value>Consent/Visibility Validation State</value></data>
+  <data name="VerifiedAccessValidationState" xml:space="preserve"><value>Verified Access Validation State</value></data>
+  <data name="ReviewBoardValidationState" xml:space="preserve"><value>Review Board Validation State</value></data>
+  <data name="SignatureSubstrateState" xml:space="preserve"><value>Signature Substrate State</value></data>
+  <data name="SignatureSubstrateReference" xml:space="preserve"><value>Signature Substrate Reference</value></data>
+  <data name="LegalSecurityTrustModelState" xml:space="preserve"><value>Legal/Security Trust Model State</value></data>
+  <data name="AuditEvidenceState" xml:space="preserve"><value>Audit Evidence State</value></data>
+  <data name="RetentionState" xml:space="preserve"><value>Retention State</value></data>
+  <data name="DependencyStates" xml:space="preserve"><value>Dependency States</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Source Contract Version</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Last Evaluated At</value></data>
+  <data name="TrustPolicyVersion" xml:space="preserve"><value>Trust Policy Version</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Deferred Reason</value></data>
+  <data name="AuditMetadata" xml:space="preserve"><value>Audit Metadata</value></data>
+  <data name="EvaluateDisabled" xml:space="preserve"><value>Evaluate disabled</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Manage disabled</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+</root>

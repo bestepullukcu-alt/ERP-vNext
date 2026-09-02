@@ -460,5 +460,13 @@
   <data name="UserRoleAssignmentMenu" xml:space="preserve"><value>User Roles</value></data>
   <data name="SelfAccessMenu" xml:space="preserve"><value>My Access</value></data>
   <data name="ReferenceDataMenu" xml:space="preserve"><value>Справочные данные</value></data>
+  <data name="HumanCapital" xml:space="preserve"><value>Human Capital</value></data>
+  <data name="EmployeeProjectionsMenu" xml:space="preserve"><value>Employee Projections</value></data>
+  <data name="SensitiveAccessMenu" xml:space="preserve"><value>HR Sensitive Access</value></data>
+  <data name="PositionAssignmentsMenu" xml:space="preserve"><value>Position Assignments</value></data>
+  <data name="OffboardingCasesMenu" xml:space="preserve"><value>Offboarding Cases</value></data>
+  <data name="ApplicantIntakeMenu" xml:space="preserve"><value>Applicant Intake</value></data>
+  <data name="CandidatePipelineMenu" xml:space="preserve"><value>Candidate Pipeline</value></data>
+  <data name="RehireRecommendationsMenu" xml:space="preserve"><value>Rehire Recommendations</value></data>
+  <data name="CandidateDisputesMenu" xml:space="preserve"><value>Candidate Disputes</value></data>
 </root>
-

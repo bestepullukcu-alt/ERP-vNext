@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="RehireRecommendationsTitle" xml:space="preserve"><value>Rehire Recommendations</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Recommendation akışlarını başlatmadan rehire readiness metadatasını inceleyin.</value></data>
+  <data name="ReadinessBoundary" xml:space="preserve"><value>Readiness Sınırı</value></data>
+  <data name="ReadinessBoundaryDescription" xml:space="preserve"><value>Kayıtlar bu görünümde yalnız metadata olarak kalır.</value></data>
+  <data name="PolicyBoundary" xml:space="preserve"><value>Policy Sınırı</value></data>
+  <data name="PolicyBoundaryDescription" xml:space="preserve"><value>Politika kontrolleri durum metadatası olarak gösterilir.</value></data>
+  <data name="DeferredBoundary" xml:space="preserve"><value>Deferred Sınırı</value></data>
+  <data name="DeferredBoundaryDescription" xml:space="preserve"><value>Dış akış bağımlılıkları deferred kalır.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Rehire Recommendation Detayı</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Metadatasını incelemek için bir rehire recommendation kaydı seçin.</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Görünen Ad</value></data>
+  <data name="ReferenceExchangeReference" xml:space="preserve"><value>Reference Exchange Referansı</value></data>
+  <data name="ExitReferenceRecordReference" xml:space="preserve"><value>Exit Reference Record Referansı</value></data>
+  <data name="CandidateProfileReference" xml:space="preserve"><value>Candidate Profile Referansı</value></data>
+  <data name="VerifiedParticipantReference" xml:space="preserve"><value>Verified Participant Referansı</value></data>
+  <data name="AssociationMembershipReference" xml:space="preserve"><value>Association Membership Referansı</value></data>
+  <data name="ConsentVisibilityPolicyReference" xml:space="preserve"><value>Onay/Görünürlük Politika Referansı</value></data>
+  <data name="ReviewBoardCaseReference" xml:space="preserve"><value>Review Board Case Referansı</value></data>
+  <data name="TrustLevelPolicyReference" xml:space="preserve"><value>Trust Level Policy Referansı</value></data>
+  <data name="RecommendationReadinessState" xml:space="preserve"><value>Readiness Durumu</value></data>
+  <data name="RecommendationPolicyState" xml:space="preserve"><value>Policy Durumu</value></data>
+  <data name="RecommendationEvaluationState" xml:space="preserve"><value>Evaluation Durumu</value></data>
+  <data name="EligibilityPreconditionState" xml:space="preserve"><value>Eligibility Önkoşulu</value></data>
+  <data name="ConsentPreconditionState" xml:space="preserve"><value>Onay Önkoşulu</value></data>
+  <data name="VisibilityApprovalState" xml:space="preserve"><value>Görünürlük Onayı</value></data>
+  <data name="DataScopeState" xml:space="preserve"><value>Data Scope Durumu</value></data>
+  <data name="MinimizationState" xml:space="preserve"><value>Minimization Durumu</value></data>
+  <data name="ExplainabilityState" xml:space="preserve"><value>Explainability Durumu</value></data>
+  <data name="HumanReviewState" xml:space="preserve"><value>Human Review Durumu</value></data>
+  <data name="ContestabilityState" xml:space="preserve"><value>Contestability Durumu</value></data>
+  <data name="CandidateResponseBoundaryState" xml:space="preserve"><value>Response Sınırı</value></data>
+  <data name="AbuseControlState" xml:space="preserve"><value>Abuse Control Durumu</value></data>
+  <data name="MisuseDetectionState" xml:space="preserve"><value>Misuse Detection Durumu</value></data>
+  <data name="ThrottlingState" xml:space="preserve"><value>Throttling Durumu</value></data>
+  <data name="EscalationState" xml:space="preserve"><value>Escalation Durumu</value></data>
+  <data name="EvidenceRetentionState" xml:space="preserve"><value>Evidence Retention Durumu</value></data>
+  <data name="AuditReadinessState" xml:space="preserve"><value>Audit Readiness Durumu</value></data>
+  <data name="LegalHoldState" xml:space="preserve"><value>Legal Hold Durumu</value></data>
+  <data name="DeletionPolicyState" xml:space="preserve"><value>Deletion Policy Durumu</value></data>
+  <data name="DependencyStates" xml:space="preserve"><value>Bağımlılık Durumları</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Kaynak Sözleşme Versiyonu</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Son Değerlendirme Zamanı</value></data>
+  <data name="RecommendationNetworkVersion" xml:space="preserve"><value>Recommendation Network Versiyonu</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Deferred Nedeni</value></data>
+  <data name="AuditMetadata" xml:space="preserve"><value>Audit Metadatası</value></data>
+  <data name="EvaluateDisabled" xml:space="preserve"><value>Değerlendirme kapalı</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Yönetim kapalı</value></data>
+  <data name="Actions" xml:space="preserve"><value>Aksiyonlar</value></data>
+</root>

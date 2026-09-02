@@ -47,10 +47,6 @@ const LoginPage = (function () {
 
         try {
             const tenantId = config.authMode === 'platform' ? null : resolveTenantIdForLogin();
-            if (config.authMode !== 'platform' && !tenantId) {
-                throw new Error(window.L10n?.TenantLoginMissingTenant || 'Tenant login link is missing tenant information.');
-            }
-
             const loginEndpoint = config.authMode === 'platform'
                 ? config.platformLoginEndpoint
                 : config.tenantLoginEndpoint;

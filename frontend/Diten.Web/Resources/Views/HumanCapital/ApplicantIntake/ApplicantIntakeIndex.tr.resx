@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ApplicantIntakeTitle" xml:space="preserve"><value>Aday Başvuru Alımı</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Genel başvuru akışlarını veya aday içeriğini açmadan başvuru alımı hazırlık metadatasını inceleyin.</value></data>
+  <data name="TotalRecords" xml:space="preserve"><value>Toplam Kayıt</value></data>
+  <data name="TotalRecordsDescription" xml:space="preserve"><value>Tenant kapsamlı hazırlık metadatası.</value></data>
+  <data name="ReadyRecords" xml:space="preserve"><value>Hazır</value></data>
+  <data name="ReadyRecordsDescription" xml:space="preserve"><value>Metadata kapıları tamamlanan kayıtlar.</value></data>
+  <data name="DeferredRecords" xml:space="preserve"><value>Ertelenmiş</value></data>
+  <data name="DeferredRecordsDescription" xml:space="preserve"><value>Önkoşulları bekleyen kayıtlar.</value></data>
+  <data name="BlockedRecords" xml:space="preserve"><value>Bloklu</value></data>
+  <data name="BlockedRecordsDescription" xml:space="preserve"><value>Açık hazırlık blokeri bulunan kayıtlar.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Başvuru Alımı Detayı</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Metadatasını incelemek için bir hazırlık kaydı seçin.</value></data>
+  <data name="AuditMetadata" xml:space="preserve"><value>Audit Metadata</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Görünen Ad</value></data>
+  <data name="IntakeState" xml:space="preserve"><value>Alım Durumu</value></data>
+  <data name="SourceChannelState" xml:space="preserve"><value>Kaynak Kanal Durumu</value></data>
+  <data name="ConsentPreconditionState" xml:space="preserve"><value>Onay Önkoşul Durumu</value></data>
+  <data name="DataMinimizationState" xml:space="preserve"><value>Veri Minimizasyonu Durumu</value></data>
+  <data name="DuplicateHandlingState" xml:space="preserve"><value>Tekil Kayıt Kontrol Durumu</value></data>
+  <data name="RetentionPolicyState" xml:space="preserve"><value>Saklama Politikası Durumu</value></data>
+  <data name="EvidencePolicyState" xml:space="preserve"><value>Kanıt Politikası Durumu</value></data>
+  <data name="ApplicantIdentityBoundaryState" xml:space="preserve"><value>Aday Kimliği Sınır Durumu</value></data>
+  <data name="PublicUxBoundaryState" xml:space="preserve"><value>Genel UX Sınır Durumu</value></data>
+  <data name="DependencyStates" xml:space="preserve"><value>Bağımlılık Durumları</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Kaynak Sözleşme Versiyonu</value></data>
+  <data name="ApplicantIntakeVersion" xml:space="preserve"><value>Başvuru Alımı Versiyonu</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Son Değerlendirme</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Ertelenme Nedeni</value></data>
+  <data name="EvaluateDisabled" xml:space="preserve"><value>Değerlendirme kapalı</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Yönetim kapalı</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+</root>

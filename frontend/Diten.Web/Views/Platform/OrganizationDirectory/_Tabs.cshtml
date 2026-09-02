@@ -1,0 +1,86 @@
+@using Diten.Web.Views.Platform.OrganizationDirectory
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OrganizationDirectoryIndex> Localizer
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-header border-bottom pb-0">
+        <ul class="nav nav-tabs card-header-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#directory-org-units" role="tab">
+                    <i class="bx bx-building me-1"></i>@Localizer["OrganizationUnits"]
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#directory-positions" role="tab">
+                    <i class="bx bx-briefcase me-1"></i>@Localizer["Positions"]
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#directory-assignments" role="tab">
+                    <i class="bx bx-id-card me-1"></i>@Localizer["PositionAssignments"]
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="tab-content p-0">
+        <div class="tab-pane fade show active" id="directory-org-units" role="tabpanel">
+            <div class="card-datatable table-responsive">
+                <table id="dt-platform-org-units" data-dt-standard="v2" class="datatables-platform-org-units table border-top">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>@Localizer["Code"]</th>
+                            <th>@Localizer["Name"]</th>
+                            <th>@Localizer["LegalEntityId"]</th>
+                            <th>@Localizer["ParentOrganizationUnitId"]</th>
+                            <th>@Localizer["IsArchived"]</th>
+                            <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="directory-positions" role="tabpanel">
+            <div class="card-datatable table-responsive">
+                <table id="dt-platform-positions" data-dt-standard="v2" class="datatables-platform-positions table border-top">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>@Localizer["Code"]</th>
+                            <th>@Localizer["Name"]</th>
+                            <th>@Localizer["OrganizationUnitId"]</th>
+                            <th>@Localizer["ReportsToPositionId"]</th>
+                            <th>@Localizer["IsArchived"]</th>
+                            <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="directory-assignments" role="tabpanel">
+            <div class="card-datatable table-responsive">
+                <table id="dt-platform-position-assignments" data-dt-standard="v2" class="datatables-platform-position-assignments table border-top">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>@Localizer["PositionId"]</th>
+                            <th>@Localizer["UserReferenceId"]</th>
+                            <th>@Localizer["EffectiveFrom"]</th>
+                            <th>@Localizer["EffectiveTo"]</th>
+                            <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

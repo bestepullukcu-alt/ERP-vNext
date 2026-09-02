@@ -1,0 +1,52 @@
+@using Diten.Web.Views.Platform.PayrollSources
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PayrollSourcesIndex> Localizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasPayrollSourceDetails" aria-labelledby="offcanvasPayrollSourceDetailsLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="offcanvasPayrollSourceDetailsLabel" class="offcanvas-title">@Localizer["Details"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["Close"]"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div id="payrollSourceDetailsEmpty" class="text-muted">@Localizer["SelectRecord"]</div>
+        <div id="payrollSourceDetailsList" class="d-none">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <div class="text-muted small">@Localizer["PayrollSource"]</div>
+                    <h6 class="mb-0" data-field="primaryLabel"></h6>
+                </div>
+                <span class="badge bg-label-secondary">@Localizer["ReadOnly"]</span>
+            </div>
+            <dl class="row mb-0">
+                <dt class="col-5">@Localizer["Code"]</dt>
+                <dd class="col-7" data-field="code"></dd>
+                <dt class="col-5">@Localizer["DisplayName"]</dt>
+                <dd class="col-7" data-field="displayName"></dd>
+                <dt class="col-5">@Localizer["ProviderFamily"]</dt>
+                <dd class="col-7" data-field="providerFamily"></dd>
+                <dt class="col-5">@Localizer["ExternalPayrollSystemId"]</dt>
+                <dd class="col-7 text-break" data-field="externalPayrollSystemId"></dd>
+                <dt class="col-5">@Localizer["ConnectionReference"]</dt>
+                <dd class="col-7 text-break" data-field="connectionProfileReference"></dd>
+                <dt class="col-5">@Localizer["LifecycleState"]</dt>
+                <dd class="col-7" data-field="lifecycleState"></dd>
+                <dt class="col-5">@Localizer["SupportOwner"]</dt>
+                <dd class="col-7" data-field="supportOwner"></dd>
+                <dt class="col-5">@Localizer["ContractVersion"]</dt>
+                <dd class="col-7" data-field="contractVersion"></dd>
+                <dt class="col-5">@Localizer["EffectiveWindow"]</dt>
+                <dd class="col-7" data-field="effectiveWindow"></dd>
+                <dt class="col-5">@Localizer["EmployeeReferenceMaps"]</dt>
+                <dd class="col-7 text-break" data-field="employeeReferenceMaps"></dd>
+                <dt class="col-5">@Localizer["CycleReferences"]</dt>
+                <dd class="col-7 text-break" data-field="cycleReferences"></dd>
+                <dt class="col-5">@Localizer["ResultReferences"]</dt>
+                <dd class="col-7 text-break" data-field="resultReferences"></dd>
+                <dt class="col-5" data-health-label>@Localizer["HealthState"]</dt>
+                <dd class="col-7 text-break" data-field="healthState"></dd>
+                <dt class="col-5" data-health-label>@Localizer["CheckedAt"]</dt>
+                <dd class="col-7 text-break" data-field="checkedAt"></dd>
+            </dl>
+        </div>
+    </div>
+</div>

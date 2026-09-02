@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ReferenceExchangeTitle" xml:space="preserve"><value>Reference Exchange</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Exchange akışlarını başlatmadan reference exchange readiness metadatasını inceleyin.</value></data>
+  <data name="ReadinessBoundary" xml:space="preserve"><value>Readiness Sınırı</value></data>
+  <data name="ReadinessBoundaryDescription" xml:space="preserve"><value>Readiness kayıtları bu görünümde yalnız metadata olarak kalır.</value></data>
+  <data name="EligibilityBoundary" xml:space="preserve"><value>Eligibility Sınırı</value></data>
+  <data name="EligibilityBoundaryDescription" xml:space="preserve"><value>Katılımcı ve politika kontrolleri durum metadatası olarak gösterilir.</value></data>
+  <data name="DeferredBoundary" xml:space="preserve"><value>Deferred Sınırı</value></data>
+  <data name="DeferredBoundaryDescription" xml:space="preserve"><value>Dış akış bağımlılıkları deferred veya kapsam dışı kalır.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Reference Exchange Detayı</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Metadatasını incelemek için bir reference exchange kaydı seçin.</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Görünen Ad</value></data>
+  <data name="ExchangeReadinessState" xml:space="preserve"><value>Readiness Durumu</value></data>
+  <data name="ExchangeAvailabilityState" xml:space="preserve"><value>Availability Durumu</value></data>
+  <data name="ParticipantEligibilityState" xml:space="preserve"><value>Katılımcı Eligibility</value></data>
+  <data name="AssociationMembershipReference" xml:space="preserve"><value>Association Membership Referansı</value></data>
+  <data name="VerifiedParticipantReference" xml:space="preserve"><value>Verified Participant Referansı</value></data>
+  <data name="ConsentVisibilityPolicyReference" xml:space="preserve"><value>Onay/Görünürlük Politika Referansı</value></data>
+  <data name="CandidateProfileReference" xml:space="preserve"><value>Candidate Profile Referansı</value></data>
+  <data name="ExitReferenceRecordReference" xml:space="preserve"><value>Exit Reference Record Referansı</value></data>
+  <data name="ReviewBoardCaseReference" xml:space="preserve"><value>Review Board Case Referansı</value></data>
+  <data name="TrustLevelPolicyReference" xml:space="preserve"><value>Trust Level Policy Referansı</value></data>
+  <data name="ConsentPreconditionState" xml:space="preserve"><value>Onay Önkoşulu</value></data>
+  <data name="VisibilityApprovalState" xml:space="preserve"><value>Görünürlük Onayı</value></data>
+  <data name="DataScopeState" xml:space="preserve"><value>Data Scope Durumu</value></data>
+  <data name="MinimizationState" xml:space="preserve"><value>Minimization Durumu</value></data>
+  <data name="LegalPrivacyBasisState" xml:space="preserve"><value>Legal Privacy Basis</value></data>
+  <data name="EvidenceRetentionState" xml:space="preserve"><value>Evidence Retention Durumu</value></data>
+  <data name="AuditReadinessState" xml:space="preserve"><value>Audit Readiness Durumu</value></data>
+  <data name="AbuseControlState" xml:space="preserve"><value>Abuse Control Durumu</value></data>
+  <data name="ThrottlingPolicyState" xml:space="preserve"><value>Throttling Policy Durumu</value></data>
+  <data name="ReviewDisputeBoundaryState" xml:space="preserve"><value>Review Sınırı</value></data>
+  <data name="NotificationDependencyState" xml:space="preserve"><value>Notification Bağımlılığı</value></data>
+  <data name="DocumentDependencyState" xml:space="preserve"><value>Document Bağımlılığı</value></data>
+  <data name="DependencyStates" xml:space="preserve"><value>Bağımlılık Durumları</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Kaynak Sözleşme Versiyonu</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Son Değerlendirme Zamanı</value></data>
+  <data name="ReferenceExchangeVersion" xml:space="preserve"><value>Reference Exchange Versiyonu</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Deferred Nedeni</value></data>
+  <data name="AuditMetadata" xml:space="preserve"><value>Audit Metadatası</value></data>
+  <data name="EvaluateDisabled" xml:space="preserve"><value>Değerlendirme kapalı</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Yönetim kapalı</value></data>
+  <data name="Actions" xml:space="preserve"><value>Aksiyonlar</value></data>
+</root>

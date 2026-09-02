@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ReviewBoardTitle" xml:space="preserve"><value>Governance Review Board</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Review governance case and decision metadata without starting review workflow.</value></data>
+  <data name="CaseBoundary" xml:space="preserve"><value>Case Boundary</value></data>
+  <data name="CaseBoundaryDescription" xml:space="preserve"><value>Review-board case metadata is displayed without changing case state.</value></data>
+  <data name="DecisionBoundary" xml:space="preserve"><value>Decision Boundary</value></data>
+  <data name="DecisionBoundaryDescription" xml:space="preserve"><value>Reviewer eligibility, duties and legal/security decisions remain read-only.</value></data>
+  <data name="GovernanceBoundary" xml:space="preserve"><value>Governance Boundary</value></data>
+  <data name="GovernanceBoundaryDescription" xml:space="preserve"><value>Association, consent, verified access and dependency states are metadata only.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Review Board Details</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Select a case to review its metadata.</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Display Name</value></data>
+  <data name="ReviewBoardCaseState" xml:space="preserve"><value>Case State</value></data>
+  <data name="ReviewDecisionState" xml:space="preserve"><value>Decision State</value></data>
+  <data name="AssociationMembershipRegistryId" xml:space="preserve"><value>Association Registry ID</value></data>
+  <data name="ConsentVisibilityPolicyId" xml:space="preserve"><value>Consent/Visibility Policy ID</value></data>
+  <data name="VerifiedParticipantAccessId" xml:space="preserve"><value>Verified Participant Access ID</value></data>
+  <data name="ReviewerEligibilityState" xml:space="preserve"><value>Reviewer Eligibility State</value></data>
+  <data name="SegregationOfDutiesState" xml:space="preserve"><value>Segregation of Duties State</value></data>
+  <data name="LegalSecurityDecisionState" xml:space="preserve"><value>Legal/Security Decision State</value></data>
+  <data name="ExternalReviewBoardState" xml:space="preserve"><value>External Review Board State</value></data>
+  <data name="AuditEvidenceState" xml:space="preserve"><value>Audit Evidence State</value></data>
+  <data name="RetentionState" xml:space="preserve"><value>Retention State</value></data>
+  <data name="DependencyStates" xml:space="preserve"><value>Dependency States</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Source Contract Version</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Last Evaluated At</value></data>
+  <data name="ReviewBoardVersion" xml:space="preserve"><value>Review Board Version</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Deferred Reason</value></data>
+  <data name="AuditMetadata" xml:space="preserve"><value>Audit Metadata</value></data>
+  <data name="ReviewDisabled" xml:space="preserve"><value>Review disabled</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Manage disabled</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+</root>

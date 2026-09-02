@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="RehireRecommendationsTitle" xml:space="preserve"><value>Rehire Recommendations</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Review rehire readiness metadata without starting recommendation workflows.</value></data>
+  <data name="ReadinessBoundary" xml:space="preserve"><value>Readiness Boundary</value></data>
+  <data name="ReadinessBoundaryDescription" xml:space="preserve"><value>Records remain metadata only in this view.</value></data>
+  <data name="PolicyBoundary" xml:space="preserve"><value>Policy Boundary</value></data>
+  <data name="PolicyBoundaryDescription" xml:space="preserve"><value>Policy checks are shown as state metadata.</value></data>
+  <data name="DeferredBoundary" xml:space="preserve"><value>Deferred Boundary</value></data>
+  <data name="DeferredBoundaryDescription" xml:space="preserve"><value>External workflow dependencies remain deferred.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Rehire Recommendation Details</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Select a rehire recommendation record to review its metadata.</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Display Name</value></data>
+  <data name="ReferenceExchangeReference" xml:space="preserve"><value>Reference Exchange Reference</value></data>
+  <data name="ExitReferenceRecordReference" xml:space="preserve"><value>Exit Reference Record Reference</value></data>
+  <data name="CandidateProfileReference" xml:space="preserve"><value>Candidate Profile Reference</value></data>
+  <data name="VerifiedParticipantReference" xml:space="preserve"><value>Verified Participant Reference</value></data>
+  <data name="AssociationMembershipReference" xml:space="preserve"><value>Association Membership Reference</value></data>
+  <data name="ConsentVisibilityPolicyReference" xml:space="preserve"><value>Consent/Visibility Policy Reference</value></data>
+  <data name="ReviewBoardCaseReference" xml:space="preserve"><value>Review Board Case Reference</value></data>
+  <data name="TrustLevelPolicyReference" xml:space="preserve"><value>Trust Level Policy Reference</value></data>
+  <data name="RecommendationReadinessState" xml:space="preserve"><value>Readiness State</value></data>
+  <data name="RecommendationPolicyState" xml:space="preserve"><value>Policy State</value></data>
+  <data name="RecommendationEvaluationState" xml:space="preserve"><value>Evaluation State</value></data>
+  <data name="EligibilityPreconditionState" xml:space="preserve"><value>Eligibility Precondition</value></data>
+  <data name="ConsentPreconditionState" xml:space="preserve"><value>Consent Precondition</value></data>
+  <data name="VisibilityApprovalState" xml:space="preserve"><value>Visibility Approval</value></data>
+  <data name="DataScopeState" xml:space="preserve"><value>Data Scope State</value></data>
+  <data name="MinimizationState" xml:space="preserve"><value>Minimization State</value></data>
+  <data name="ExplainabilityState" xml:space="preserve"><value>Explainability State</value></data>
+  <data name="HumanReviewState" xml:space="preserve"><value>Human Review State</value></data>
+  <data name="ContestabilityState" xml:space="preserve"><value>Contestability State</value></data>
+  <data name="CandidateResponseBoundaryState" xml:space="preserve"><value>Response Boundary</value></data>
+  <data name="AbuseControlState" xml:space="preserve"><value>Abuse Control State</value></data>
+  <data name="MisuseDetectionState" xml:space="preserve"><value>Misuse Detection State</value></data>
+  <data name="ThrottlingState" xml:space="preserve"><value>Throttling State</value></data>
+  <data name="EscalationState" xml:space="preserve"><value>Escalation State</value></data>
+  <data name="EvidenceRetentionState" xml:space="preserve"><value>Evidence Retention State</value></data>
+  <data name="AuditReadinessState" xml:space="preserve"><value>Audit Readiness State</value></data>
+  <data name="LegalHoldState" xml:space="preserve"><value>Legal Hold State</value></data>
+  <data name="DeletionPolicyState" xml:space="preserve"><value>Deletion Policy State</value></data>
+  <data name="DependencyStates" xml:space="preserve"><value>Dependency States</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Source Contract Version</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Last Evaluated At</value></data>
+  <data name="RecommendationNetworkVersion" xml:space="preserve"><value>Recommendation Network Version</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Deferred Reason</value></data>
+  <data name="AuditMetadata" xml:space="preserve"><value>Audit Metadata</value></data>
+  <data name="EvaluateDisabled" xml:space="preserve"><value>Evaluate disabled</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Manage disabled</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+</root>

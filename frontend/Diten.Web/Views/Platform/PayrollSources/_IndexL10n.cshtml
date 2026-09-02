@@ -1,0 +1,22 @@
+@using System.Text.Json
+@using Diten.Web.Views.Platform.PayrollSources
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PayrollSourcesIndex> Localizer
+@{
+    var entries = new Dictionary<string, string>
+    {
+        ["Actions"] = Localizer["Actions"].Value,
+        ["ColumnVisibility"] = Localizer["ColumnVisibility"].Value,
+        ["Count"] = Localizer["Count"].Value,
+        ["Deferred"] = Localizer["Deferred"].Value,
+        ["ErrorOccurred"] = Localizer["ErrorOccurred"].Value,
+        ["Masked"] = Localizer["Masked"].Value,
+        ["NotAvailable"] = Localizer["NotAvailable"].Value,
+        ["PermissionDenied"] = Localizer["PermissionDenied"].Value,
+        ["ReadOnly"] = Localizer["ReadOnly"].Value,
+        ["ViewDetails"] = Localizer["ViewDetails"].Value
+    };
+}
+<script>
+    window.PayrollSourcesL10n = @Html.Raw(JsonSerializer.Serialize(entries));
+</script>

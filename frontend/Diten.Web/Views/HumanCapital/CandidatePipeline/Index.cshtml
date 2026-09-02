@@ -1,0 +1,31 @@
+@using Diten.Web.Views.HumanCapital.CandidatePipeline
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CandidatePipelineIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["CandidatePipelineTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canAudit = Perms.Has("hcm.candidate-pipeline.audit.read");
+    var canManage = Perms.Has("hcm.candidate-pipeline.manage");
+    var canEvaluate = Perms.Has("hcm.candidate-pipeline.evaluate");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["CandidatePipelineTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="candidate-pipeline-shell"
+     data-can-audit="@canAudit.ToString().ToLowerInvariant()"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()">
+    <partial name="~/Views/HumanCapital/CandidatePipeline/_Summary.cshtml" />
+    <partial name="~/Views/HumanCapital/CandidatePipeline/_DataTable.cshtml" />
+    <partial name="~/Views/HumanCapital/CandidatePipeline/_DetailsQuickView.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/HumanCapital/CandidatePipeline/_IndexL10n.cshtml" />
+    <script src="~/assets/js/HumanCapital/CandidatePipeline/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/HumanCapital/CandidatePipeline/index.js" asp-append-version="true"></script>
+}

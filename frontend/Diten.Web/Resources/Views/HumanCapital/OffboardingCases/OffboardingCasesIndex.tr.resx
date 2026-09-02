@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="OffboardingCasesTitle" xml:space="preserve"><value>Offboarding Vakaları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Yönetilen çalışan offboarding vaka metadatasını ve yerel handoff durumunu inceleyin.</value></data>
+  <data name="ServiceHealth" xml:space="preserve"><value>Servis Sağlığı</value></data>
+  <data name="ReadonlyBoundary" xml:space="preserve"><value>Salt Okunur Sınır</value></data>
+  <data name="ReadonlyBoundaryDescription" xml:space="preserve"><value>Bu ekran workflow, review veya handoff durumunu değiştirmeden offboarding vaka metadatasını gösterir.</value></data>
+  <data name="HandoffBoundary" xml:space="preserve"><value>TEP Handoff Sınırı</value></data>
+  <data name="HandoffBoundaryDescription" xml:space="preserve"><value>Handoff verisi yalnız yerel/ertelenmiş metadata olarak gösterilir.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Offboarding Vaka Detayı</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Metadatasını incelemek için bir offboarding vakası seçin.</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="EmployeeProjectionId" xml:space="preserve"><value>Çalışan Projeksiyonu ID</value></data>
+  <data name="AssignmentOverlayId" xml:space="preserve"><value>Atama Overlay ID</value></data>
+  <data name="ExitReasonCode" xml:space="preserve"><value>Çıkış Nedeni Kodu</value></data>
+  <data name="ExitTypeCode" xml:space="preserve"><value>Çıkış Tipi Kodu</value></data>
+  <data name="NoticeDate" xml:space="preserve"><value>Bildirim Tarihi</value></data>
+  <data name="PlannedExitDate" xml:space="preserve"><value>Planlanan Çıkış Tarihi</value></data>
+  <data name="ActualExitDate" xml:space="preserve"><value>Gerçekleşen Çıkış Tarihi</value></data>
+  <data name="OffboardingState" xml:space="preserve"><value>Offboarding Durumu</value></data>
+  <data name="ChecklistState" xml:space="preserve"><value>Kontrol Listesi Durumu</value></data>
+  <data name="SensitiveAccessDecisionState" xml:space="preserve"><value>Hassas Erişim Durumu</value></data>
+  <data name="DependencyDecisionState" xml:space="preserve"><value>Bağımlılık Karar Durumu</value></data>
+  <data name="TepHandoffState" xml:space="preserve"><value>TEP Handoff Durumu</value></data>
+  <data name="TepHandoffReferenceKey" xml:space="preserve"><value>TEP Handoff Referansı</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Kaynak Sözleşme Versiyonu</value></data>
+  <data name="OffboardingVersion" xml:space="preserve"><value>Offboarding Versiyonu</value></data>
+  <data name="LastDependencyEvaluatedAt" xml:space="preserve"><value>Son Bağımlılık Değerlendirmesi</value></data>
+  <data name="LastHandoffPlannedAt" xml:space="preserve"><value>Son Handoff Planlama</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Ertelenme Nedeni</value></data>
+  <data name="ReviewDisabled" xml:space="preserve"><value>Review kapalı</value></data>
+  <data name="HandoffDisabled" xml:space="preserve"><value>Handoff kapalı</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Yönetim kapalı</value></data>
+  <data name="ArchiveDisabled" xml:space="preserve"><value>Arşiv kapalı</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+</root>

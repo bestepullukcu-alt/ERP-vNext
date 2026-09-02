@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="AssociationMembershipsTitle" xml:space="preserve"><value>Association Memberships</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Review association membership and member company registry metadata.</value></data>
+  <data name="RegistryBoundary" xml:space="preserve"><value>Registry Boundary</value></data>
+  <data name="RegistryBoundaryDescription" xml:space="preserve"><value>This screen shows association and member company metadata without changing registry state.</value></data>
+  <data name="ReadonlyBoundary" xml:space="preserve"><value>Read-only Boundary</value></data>
+  <data name="ReadonlyBoundaryDescription" xml:space="preserve"><value>Evaluation, member-company, manage and archive actions remain disabled in this slice.</value></data>
+  <data name="PolicyBoundary" xml:space="preserve"><value>Policy Preconditions</value></data>
+  <data name="PolicyBoundaryDescription" xml:space="preserve"><value>Consent, visibility, activation and dependency states are displayed as metadata only.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Association Membership Details</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Select a membership to review its metadata.</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Display Name</value></data>
+  <data name="AssociationMembershipState" xml:space="preserve"><value>Association Membership State</value></data>
+  <data name="MemberCompanyState" xml:space="preserve"><value>Member Company State</value></data>
+  <data name="MemberCompanyReference" xml:space="preserve"><value>Member Company Reference</value></data>
+  <data name="HcmFoundationReference" xml:space="preserve"><value>HCM Foundation Reference</value></data>
+  <data name="ConsentVisibilityPolicyId" xml:space="preserve"><value>Consent/Visibility Policy ID</value></data>
+  <data name="PolicyEvaluationState" xml:space="preserve"><value>Policy Evaluation State</value></data>
+  <data name="VisibilityApprovalState" xml:space="preserve"><value>Visibility Approval State</value></data>
+  <data name="AssociationActivationState" xml:space="preserve"><value>Association Activation State</value></data>
+  <data name="DependencyStates" xml:space="preserve"><value>Dependency States</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Source Contract Version</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Last Evaluated At</value></data>
+  <data name="RegistryVersion" xml:space="preserve"><value>Registry Version</value></data>
+  <data name="EvaluateDisabled" xml:space="preserve"><value>Evaluate disabled</value></data>
+  <data name="MemberCompanyDisabled" xml:space="preserve"><value>Member company disabled</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Manage disabled</value></data>
+  <data name="ArchiveDisabled" xml:space="preserve"><value>Archive disabled</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+</root>

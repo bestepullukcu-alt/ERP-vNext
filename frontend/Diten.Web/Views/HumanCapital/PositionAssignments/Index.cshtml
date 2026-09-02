@@ -1,0 +1,31 @@
+@using Diten.Web.Views.HumanCapital.PositionAssignments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PositionAssignmentsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["PositionAssignmentsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canReferenceLink = Perms.Has("hcm.position-assignments.reference-link.manage");
+    var canManage = Perms.Has("hcm.position-assignments.manage");
+    var canArchive = Perms.Has("hcm.position-assignments.archive");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["PositionAssignmentsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="position-assignments-shell"
+     data-can-reference-link="@canReferenceLink.ToString().ToLowerInvariant()"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()"
+     data-can-archive="@canArchive.ToString().ToLowerInvariant()">
+    <partial name="~/Views/HumanCapital/PositionAssignments/_Summary.cshtml" />
+    <partial name="~/Views/HumanCapital/PositionAssignments/_DataTable.cshtml" />
+    <partial name="~/Views/HumanCapital/PositionAssignments/_DetailsQuickView.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/HumanCapital/PositionAssignments/_IndexL10n.cshtml" />
+    <script src="~/assets/js/HumanCapital/PositionAssignments/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/HumanCapital/PositionAssignments/index.js" asp-append-version="true"></script>
+}

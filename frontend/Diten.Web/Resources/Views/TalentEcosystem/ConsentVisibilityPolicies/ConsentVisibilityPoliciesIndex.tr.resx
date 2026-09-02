@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ConsentVisibilityPoliciesTitle" xml:space="preserve"><value>Onay, Görünürlük ve Erişim Politikaları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Politika metadatası, görünürlük kapsamı, association tüketim durumu ve yerel denetim metadatasını inceleyin.</value></data>
+  <data name="RestrictedBoundary" xml:space="preserve"><value>Kısıtlı Sınır</value></data>
+  <data name="RestrictedBoundaryDescription" xml:space="preserve"><value>Politika durumları onay toplama, hukuki doküman yürütme veya association runtime aksiyonları olmadan gösterilir.</value></data>
+  <data name="ReadonlyBoundary" xml:space="preserve"><value>Salt Okunur Sınır</value></data>
+  <data name="ReadonlyBoundaryDescription" xml:space="preserve"><value>Bu ekran politika oluşturmaz, değerlendirmez, onaylamaz veya arşivlemez.</value></data>
+  <data name="AuditBoundary" xml:space="preserve"><value>Denetim Metadatası</value></data>
+  <data name="AuditBoundaryDescription" xml:space="preserve"><value>Denetim ve kanıt alanları yalnız yerel/ertelenmiş metadata olarak gösterilir.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Onay/Görünürlük Politika Detayı</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Metadatasını incelemek için bir politika seçin.</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Görünen Ad</value></data>
+  <data name="PolicyState" xml:space="preserve"><value>Politika Durumu</value></data>
+  <data name="ConsentRequirementState" xml:space="preserve"><value>Onay Gereklilik Durumu</value></data>
+  <data name="VisibilityScope" xml:space="preserve"><value>Görünürlük Kapsamı</value></data>
+  <data name="DataScopeState" xml:space="preserve"><value>Veri Kapsam Durumu</value></data>
+  <data name="AccessPolicyState" xml:space="preserve"><value>Erişim Politikası Durumu</value></data>
+  <data name="AssociationConsumptionState" xml:space="preserve"><value>Association Tüketim Durumu</value></data>
+  <data name="PolicyUnavailableBehavior" xml:space="preserve"><value>Politika Yokluğu Davranışı</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Kaynak Sözleşme Versiyonu</value></data>
+  <data name="DependencyStates" xml:space="preserve"><value>Bağımlılık Durumları</value></data>
+  <data name="LocalAuditEvidenceRetentionState" xml:space="preserve"><value>Yerel Denetim/Kanıt Saklama Durumu</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Son Değerlendirme Zamanı</value></data>
+  <data name="PolicyVersion" xml:space="preserve"><value>Politika Versiyonu</value></data>
+  <data name="AuditMetadata" xml:space="preserve"><value>Denetim Metadatası</value></data>
+  <data name="EvaluateDisabled" xml:space="preserve"><value>Değerlendirme kapalı</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Yönetim kapalı</value></data>
+  <data name="Actions" xml:space="preserve"><value>Aksiyonlar</value></data>
+</root>

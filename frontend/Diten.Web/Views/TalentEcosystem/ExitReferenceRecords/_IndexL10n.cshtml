@@ -1,0 +1,26 @@
+@using Diten.Web.Views.TalentEcosystem.ExitReferenceRecords
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ExitReferenceRecordsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="exit-reference-records-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        AuditMetadata = Localizer["AuditMetadata"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        EvaluateDisabled = Localizer["EvaluateDisabled"].Value,
+        Loading = SharedLocalizer["Loading"].Value,
+        ManageDisabled = Localizer["ManageDisabled"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Code = Localizer["Code"].Value,
+        DisplayName = Localizer["DisplayName"].Value,
+        ReferenceRecordState = Localizer["ReferenceRecordState"].Value,
+        ReferenceSharingState = Localizer["ReferenceSharingState"].Value,
+        ConsentPreconditionState = Localizer["ConsentPreconditionState"].Value,
+        VisibilityApprovalState = Localizer["VisibilityApprovalState"].Value,
+        ReferenceRecordVersion = Localizer["ReferenceRecordVersion"].Value
+    })
+</script>

@@ -1,0 +1,31 @@
+@using Diten.Web.Views.HumanCapital.ApplicantIntake
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ApplicantIntakeIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["ApplicantIntakeTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canAudit = Perms.Has("hcm.applicant-intake.audit.read");
+    var canManage = Perms.Has("hcm.applicant-intake.manage");
+    var canEvaluate = Perms.Has("hcm.applicant-intake.evaluate");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ApplicantIntakeTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="applicant-intake-shell"
+     data-can-audit="@canAudit.ToString().ToLowerInvariant()"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()">
+    <partial name="~/Views/HumanCapital/ApplicantIntake/_Summary.cshtml" />
+    <partial name="~/Views/HumanCapital/ApplicantIntake/_DataTable.cshtml" />
+    <partial name="~/Views/HumanCapital/ApplicantIntake/_DetailsQuickView.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/HumanCapital/ApplicantIntake/_IndexL10n.cshtml" />
+    <script src="~/assets/js/HumanCapital/ApplicantIntake/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/HumanCapital/ApplicantIntake/index.js" asp-append-version="true"></script>
+}

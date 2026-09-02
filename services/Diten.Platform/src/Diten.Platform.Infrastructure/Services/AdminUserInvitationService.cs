@@ -36,14 +36,13 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
     {
         var provisioned = await ProvisionAdminUserAsync(tenant, adminUser, cancellationToken);
         var loginUrl = BuildLoginUrl(tenant);
-
-        await SendInvitationEmailAsync(tenant, adminUser, loginUrl, provisioned.TemporaryPassword, cancellationToken);
+        var emailSent = await TrySendInvitationEmailAsync(tenant, adminUser, loginUrl, provisioned.TemporaryPassword, cancellationToken);
 
         return new AdminUserInvitationResult(
             loginUrl,
             provisioned.TemporaryPassword,
             provisioned.UserProvisioned,
-            InvitationEmailSent: true);
+            emailSent);
     }
 
     private async Task<AdminProvisioningResponse> ProvisionAdminUserAsync(Tenant tenant, TenantAdminUser adminUser, CancellationToken cancellationToken)
@@ -90,13 +89,22 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
         return payload;
     }
 
-    private async Task SendInvitationEmailAsync(
+    private async Task<bool> TrySendInvitationEmailAsync(
         Tenant tenant,
         TenantAdminUser adminUser,
         string loginUrl,
         string temporaryPassword,
         CancellationToken cancellationToken)
     {
+        if (!_smtpOptions.Enabled)
+        {
+            _logger.LogInformation(
+                "Tenant admin invitation email skipped because SMTP is disabled. TenantId={TenantId} AdminUserId={AdminUserId}",
+                tenant.Id,
+                adminUser.Id);
+            return false;
+        }
+
         ValidateSmtpConfiguration();
 
         using var message = new MailMessage
@@ -119,6 +127,7 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
 
         cancellationToken.ThrowIfCancellationRequested();
         await client.SendMailAsync(message, cancellationToken);
+        return true;
     }
 
     private void ValidateSmtpConfiguration()

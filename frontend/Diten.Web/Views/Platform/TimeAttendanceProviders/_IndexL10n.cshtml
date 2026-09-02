@@ -1,0 +1,21 @@
+@using System.Text.Json
+@using Diten.Web.Views.Platform.TimeAttendanceProviders
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TimeAttendanceProvidersIndex> Localizer
+@{
+    var entries = new Dictionary<string, string>
+    {
+        ["Actions"] = Localizer["Actions"].Value,
+        ["ColumnVisibility"] = Localizer["ColumnVisibility"].Value,
+        ["Deferred"] = Localizer["Deferred"].Value,
+        ["ErrorOccurred"] = Localizer["ErrorOccurred"].Value,
+        ["Export"] = Localizer["Export"].Value,
+        ["Masked"] = Localizer["Masked"].Value,
+        ["NotAvailable"] = Localizer["NotAvailable"].Value,
+        ["ReadOnly"] = Localizer["ReadOnly"].Value,
+        ["ViewDetails"] = Localizer["ViewDetails"].Value
+    };
+}
+<script>
+    window.TimeAttendanceProvidersL10n = @Html.Raw(JsonSerializer.Serialize(entries));
+</script>

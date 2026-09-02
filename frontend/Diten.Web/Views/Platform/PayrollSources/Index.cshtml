@@ -1,0 +1,45 @@
+@using Diten.Web.Views.Platform.PayrollSources
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PayrollSourcesIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["PayrollSourcesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canRead = Perms.Has("platform.payroll-sources.read");
+    var canReadHealth = Perms.Has("platform.payroll-sources.read-health");
+    var canCreate = Perms.Has("platform.payroll-sources.create");
+    var canUpdate = Perms.Has("platform.payroll-sources.update");
+    var canArchive = Perms.Has("platform.payroll-sources.archive");
+    var canUpdateContract = Perms.Has("platform.payroll-sources.update-contract");
+    var canMapEmployeeReference = Perms.Has("platform.payroll-sources.map-employee-reference");
+    var canRecordCycle = Perms.Has("platform.payroll-sources.record-cycle");
+    var canRecordResult = Perms.Has("platform.payroll-sources.record-result");
+    var canRecordHealth = Perms.Has("platform.payroll-sources.record-health");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["PayrollSourcesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="payroll-sources-shell"
+     data-can-read="@canRead.ToString().ToLowerInvariant()"
+     data-can-read-health="@canReadHealth.ToString().ToLowerInvariant()"
+     data-can-create="@canCreate.ToString().ToLowerInvariant()"
+     data-can-update="@canUpdate.ToString().ToLowerInvariant()"
+     data-can-archive="@canArchive.ToString().ToLowerInvariant()"
+     data-can-update-contract="@canUpdateContract.ToString().ToLowerInvariant()"
+     data-can-map-employee-reference="@canMapEmployeeReference.ToString().ToLowerInvariant()"
+     data-can-record-cycle="@canRecordCycle.ToString().ToLowerInvariant()"
+     data-can-record-result="@canRecordResult.ToString().ToLowerInvariant()"
+     data-can-record-health="@canRecordHealth.ToString().ToLowerInvariant()">
+    <partial name="~/Views/Platform/PayrollSources/_Summary.cshtml" />
+    <partial name="~/Views/Platform/PayrollSources/_Table.cshtml" />
+    <partial name="~/Views/Platform/PayrollSources/_DetailsQuickView.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/Platform/PayrollSources/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Platform/PayrollSources/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/PayrollSources/index.js" asp-append-version="true"></script>
+}

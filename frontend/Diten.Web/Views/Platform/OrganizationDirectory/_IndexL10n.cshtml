@@ -1,0 +1,27 @@
+@using System.Text.Json
+@using Diten.Web.Views.Platform.OrganizationDirectory
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OrganizationDirectoryIndex> Localizer
+@{
+    var entries = new Dictionary<string, string>
+    {
+        ["Actions"] = Localizer["Actions"].Value,
+        ["Archived"] = Localizer["Archived"].Value,
+        ["ColumnVisibility"] = Localizer["ColumnVisibility"].Value,
+        ["Details"] = Localizer["Details"].Value,
+        ["ErrorOccurred"] = Localizer["ErrorOccurred"].Value,
+        ["Export"] = Localizer["Export"].Value,
+        ["ManagerChainUnavailable"] = Localizer["ManagerChainUnavailable"].Value,
+        ["No"] = Localizer["No"].Value,
+        ["NotAvailable"] = Localizer["NotAvailable"].Value,
+        ["OrganizationUnit"] = Localizer["OrganizationUnit"].Value,
+        ["Position"] = Localizer["Position"].Value,
+        ["PositionAssignment"] = Localizer["PositionAssignment"].Value,
+        ["ReadOnly"] = Localizer["ReadOnly"].Value,
+        ["ViewDetails"] = Localizer["ViewDetails"].Value,
+        ["Yes"] = Localizer["Yes"].Value
+    };
+}
+<script>
+    window.OrganizationDirectoryL10n = @Html.Raw(JsonSerializer.Serialize(entries));
+</script>

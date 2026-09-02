@@ -30,6 +30,14 @@ public static class DependencyInjection
         services.AddScoped<ITepShellMetadataRepository, MongoTepShellMetadataRepository>();
         services.AddScoped<ITepConsentVisibilityPolicyRepository, MongoTepConsentVisibilityPolicyRepository>();
         services.AddScoped<ITepAssociationMembershipRegistryRepository, MongoTepAssociationMembershipRegistryRepository>();
+        services.AddScoped<ITepVerifiedParticipantAccessRepository, MongoTepVerifiedParticipantAccessRepository>();
+        services.AddScoped<ITepReviewBoardCaseMetadataRepository, MongoTepReviewBoardCaseMetadataRepository>();
+        services.AddScoped<ITepTrustLevelPolicyMetadataRepository, MongoTepTrustLevelPolicyMetadataRepository>();
+        services.AddScoped<ITepCandidateProfileMetadataRepository, MongoTepCandidateProfileMetadataRepository>();
+        services.AddScoped<ITepExitReferenceRecordMetadataRepository, MongoTepExitReferenceRecordMetadataRepository>();
+        services.AddScoped<ITepReferenceExchangeMarketplaceReadinessMetadataRepository, MongoTepReferenceExchangeMarketplaceReadinessMetadataRepository>();
+        services.AddScoped<ITepRehireRecommendationReadinessMetadataRepository, MongoTepRehireRecommendationReadinessMetadataRepository>();
+        services.AddScoped<ITepCandidateDisputeReadinessMetadataRepository, MongoTepCandidateDisputeReadinessMetadataRepository>();
 
         return services;
     }

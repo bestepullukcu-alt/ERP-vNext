@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PayrollSourcesTitle" xml:space="preserve"><value>Payroll Engine Sources</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Restricted provider metadata for external payroll source profiles.</value></data>
+  <data name="Sources" xml:space="preserve"><value>Sources</value></data>
+  <data name="ActiveSources" xml:space="preserve"><value>Active Sources</value></data>
+  <data name="HealthAccess" xml:space="preserve"><value>Health Metadata</value></data>
+  <data name="Mode" xml:space="preserve"><value>Mode</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>Read-only</value></data>
+  <data name="Deferred" xml:space="preserve"><value>Deferred</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Columns</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Display Name</value></data>
+  <data name="ProviderFamily" xml:space="preserve"><value>Provider Family</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Lifecycle State</value></data>
+  <data name="SupportOwner" xml:space="preserve"><value>Support Owner</value></data>
+  <data name="ContractVersion" xml:space="preserve"><value>Contract Version</value></data>
+  <data name="Details" xml:space="preserve"><value>Details</value></data>
+  <data name="Close" xml:space="preserve"><value>Close</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Select a source to view details.</value></data>
+  <data name="PayrollSource" xml:space="preserve"><value>Payroll Source</value></data>
+  <data name="ExternalPayrollSystemId" xml:space="preserve"><value>External Payroll System Ref</value></data>
+  <data name="ConnectionReference" xml:space="preserve"><value>Connection Reference</value></data>
+  <data name="EffectiveWindow" xml:space="preserve"><value>Effective Window</value></data>
+  <data name="EmployeeReferenceMaps" xml:space="preserve"><value>Employee Reference Maps</value></data>
+  <data name="CycleReferences" xml:space="preserve"><value>Cycle References</value></data>
+  <data name="ResultReferences" xml:space="preserve"><value>Result References</value></data>
+  <data name="HealthState" xml:space="preserve"><value>Health State</value></data>
+  <data name="CheckedAt" xml:space="preserve"><value>Checked At</value></data>
+  <data name="Count" xml:space="preserve"><value>count</value></data>
+  <data name="Masked" xml:space="preserve"><value>Masked</value></data>
+  <data name="NotAvailable" xml:space="preserve"><value>N/A</value></data>
+  <data name="PermissionDenied" xml:space="preserve"><value>You do not have permission to view payroll source metadata.</value></data>
+  <data name="ErrorOccurred" xml:space="preserve"><value>An error occurred.</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>View details</value></data>
+</root>

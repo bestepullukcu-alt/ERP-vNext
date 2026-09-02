@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ReviewBoardTitle" xml:space="preserve"><value>Governance Review Board</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Review workflow başlatmadan governance vaka ve karar metadatasını inceleyin.</value></data>
+  <data name="CaseBoundary" xml:space="preserve"><value>Vaka Sınırı</value></data>
+  <data name="CaseBoundaryDescription" xml:space="preserve"><value>Review-board vaka metadatası durum değiştirmeden gösterilir.</value></data>
+  <data name="DecisionBoundary" xml:space="preserve"><value>Karar Sınırı</value></data>
+  <data name="DecisionBoundaryDescription" xml:space="preserve"><value>Reviewer eligibility, görev ayrılığı ve legal/security kararları salt okunur kalır.</value></data>
+  <data name="GovernanceBoundary" xml:space="preserve"><value>Governance Sınırı</value></data>
+  <data name="GovernanceBoundaryDescription" xml:space="preserve"><value>Association, onay, verified access ve dependency durumları yalnız metadata olarak gösterilir.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Review Board Detayı</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Metadatasını incelemek için bir vaka seçin.</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Görünen Ad</value></data>
+  <data name="ReviewBoardCaseState" xml:space="preserve"><value>Vaka Durumu</value></data>
+  <data name="ReviewDecisionState" xml:space="preserve"><value>Karar Durumu</value></data>
+  <data name="AssociationMembershipRegistryId" xml:space="preserve"><value>Association Registry ID</value></data>
+  <data name="ConsentVisibilityPolicyId" xml:space="preserve"><value>Onay/Görünürlük Politika ID</value></data>
+  <data name="VerifiedParticipantAccessId" xml:space="preserve"><value>Verified Participant Access ID</value></data>
+  <data name="ReviewerEligibilityState" xml:space="preserve"><value>Reviewer Eligibility Durumu</value></data>
+  <data name="SegregationOfDutiesState" xml:space="preserve"><value>Görev Ayrılığı Durumu</value></data>
+  <data name="LegalSecurityDecisionState" xml:space="preserve"><value>Legal/Security Karar Durumu</value></data>
+  <data name="ExternalReviewBoardState" xml:space="preserve"><value>External Review Board Durumu</value></data>
+  <data name="AuditEvidenceState" xml:space="preserve"><value>Audit Evidence Durumu</value></data>
+  <data name="RetentionState" xml:space="preserve"><value>Retention Durumu</value></data>
+  <data name="DependencyStates" xml:space="preserve"><value>Bağımlılık Durumları</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Kaynak Sözleşme Versiyonu</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Son Değerlendirme Zamanı</value></data>
+  <data name="ReviewBoardVersion" xml:space="preserve"><value>Review Board Versiyonu</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Deferred Nedeni</value></data>
+  <data name="AuditMetadata" xml:space="preserve"><value>Audit Metadatası</value></data>
+  <data name="ReviewDisabled" xml:space="preserve"><value>Review kapalı</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Yönetim kapalı</value></data>
+  <data name="Actions" xml:space="preserve"><value>Aksiyonlar</value></data>
+</root>

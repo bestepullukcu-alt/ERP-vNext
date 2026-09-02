@@ -35,12 +35,17 @@ public class AccountController : Controller
     [HttpPost("/account/login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct)
     {
-        if (!ModelState.IsValid || request.TenantId == Guid.Empty)
+        if (!ModelState.IsValid)
         {
-            return BadRequest(new { detail = "Tenant login requires a valid tenant identifier." });
+            return BadRequest(new { detail = "Login request is invalid." });
         }
 
-        var result = await _authGateway.LoginTenantAsync(request.Email, request.Password, request.TenantId, request.RememberMe, ct);
+        if (!request.TenantId.HasValue || request.TenantId.Value == Guid.Empty)
+        {
+            return await LoginPlatformActorFromAccountRouteAsync(request, ct);
+        }
+
+        var result = await _authGateway.LoginTenantAsync(request.Email, request.Password, request.TenantId.Value, request.RememberMe, ct);
         if (result.RequiresMfa && !string.IsNullOrWhiteSpace(result.ChallengeId))
         {
             return Ok(new LoginBridgeResponse(
@@ -63,6 +68,27 @@ public class AccountController : Controller
         return Ok(new LoginBridgeResponse(
             ResolveReturnUrl(request.ReturnUrl, "/WorkCenter"),
             result.User));
+    }
+
+    private async Task<IActionResult> LoginPlatformActorFromAccountRouteAsync(LoginRequest request, CancellationToken ct)
+    {
+        var result = await _authGateway.LoginPlatformAsync(request.Email, request.Password, request.RememberMe, ct);
+        if (!result.Success ||
+            string.IsNullOrWhiteSpace(result.AccessToken) ||
+            string.IsNullOrWhiteSpace(result.RefreshToken) ||
+            !result.ExpiresAt.HasValue ||
+            !IsPlatformActor(TryReadActorType(result.AccessToken)))
+        {
+            return Unauthorized(new { detail = result.ErrorMessage ?? "Login failed." });
+        }
+
+        _authCookieService.ClearTokens(Response);
+        _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
+
+        return Ok(new LoginBridgeResponse(
+            result.RequiresPasswordChange ? "/platform/change-password" : ResolveReturnUrl(request.ReturnUrl, "/Platform/Tenants"),
+            result.User,
+            RequiresPasswordChange: result.RequiresPasswordChange));
     }
 
     [HttpPost("/account/login/mfa")]
@@ -380,7 +406,7 @@ public class AccountController : Controller
         return defaultPath;
     }
 
-    public sealed record LoginRequest(string Email, string Password, Guid TenantId, string? ReturnUrl, bool RememberMe = false);
+    public sealed record LoginRequest(string Email, string Password, Guid? TenantId, string? ReturnUrl, bool RememberMe = false);
     public sealed record MfaLoginRequest(string ChallengeId, string Code, string? ReturnUrl);
     public sealed record MfaResendRequest(string ChallengeId);
     public sealed record PlatformLoginRequest(string Email, string Password, string? ReturnUrl, bool RememberMe = false);

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="VerifiedParticipantsTitle" xml:space="preserve"><value>Doğrulanmış Katılımcılar</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Doğrulanmış HR katılımcı ve üye şirket erişim metadatasını inceleyin.</value></data>
+  <data name="VerificationBoundary" xml:space="preserve"><value>Doğrulama Sınırı</value></data>
+  <data name="VerificationBoundaryDescription" xml:space="preserve"><value>Bu ekran katılımcı durumunu değiştirmeden doğrulama metadatası gösterir.</value></data>
+  <data name="AccessBoundary" xml:space="preserve"><value>Şirket Erişim Sınırı</value></data>
+  <data name="AccessBoundaryDescription" xml:space="preserve"><value>Üye şirket erişimi bu slice içinde local ve deferred metadata olarak kalır.</value></data>
+  <data name="PolicyBoundary" xml:space="preserve"><value>Politika Önkoşulları</value></data>
+  <data name="PolicyBoundaryDescription" xml:space="preserve"><value>Association, onay, görünürlük ve HCM doğrulama durumları salt okunur gösterilir.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Doğrulanmış Katılımcı Detayı</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Metadatasını incelemek için bir katılımcı kaydı seçin.</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Görünen Ad</value></data>
+  <data name="AssociationMembershipId" xml:space="preserve"><value>Association Membership ID</value></data>
+  <data name="MemberCompanyReference" xml:space="preserve"><value>Üye Şirket Referansı</value></data>
+  <data name="HrParticipantReference" xml:space="preserve"><value>HR Katılımcı Referansı</value></data>
+  <data name="HcmFoundationReference" xml:space="preserve"><value>HCM Temel Referansı</value></data>
+  <data name="ConsentVisibilityPolicyId" xml:space="preserve"><value>Onay/Görünürlük Politika ID</value></data>
+  <data name="VerificationState" xml:space="preserve"><value>Doğrulama Durumu</value></data>
+  <data name="AccessState" xml:space="preserve"><value>Erişim Durumu</value></data>
+  <data name="PolicyEvaluationState" xml:space="preserve"><value>Politika Değerlendirme Durumu</value></data>
+  <data name="VisibilityApprovalState" xml:space="preserve"><value>Görünürlük Onay Durumu</value></data>
+  <data name="HcmValidationState" xml:space="preserve"><value>HCM Doğrulama Durumu</value></data>
+  <data name="AssociationValidationState" xml:space="preserve"><value>Association Doğrulama Durumu</value></data>
+  <data name="VerifiedCompanyAccessState" xml:space="preserve"><value>Şirket Erişim Durumu</value></data>
+  <data name="DependencyStates" xml:space="preserve"><value>Bağımlılık Durumları</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Kaynak Sözleşme Versiyonu</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Son Değerlendirme Zamanı</value></data>
+  <data name="VerificationVersion" xml:space="preserve"><value>Doğrulama Versiyonu</value></data>
+  <data name="LocalAuditEvidenceRetentionState" xml:space="preserve"><value>Local Audit Evidence Retention Durumu</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Deferred Nedeni</value></data>
+  <data name="AuditMetadata" xml:space="preserve"><value>Audit Metadatası</value></data>
+  <data name="VerifyDisabled" xml:space="preserve"><value>Doğrulama kapalı</value></data>
+  <data name="EvaluateDisabled" xml:space="preserve"><value>Değerlendirme kapalı</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Yönetim kapalı</value></data>
+  <data name="Actions" xml:space="preserve"><value>Aksiyonlar</value></data>
+</root>

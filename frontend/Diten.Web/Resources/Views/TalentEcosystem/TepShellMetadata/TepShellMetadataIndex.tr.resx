@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="TepShellMetadataTitle" xml:space="preserve"><value>TEP Shell Metadata</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Talent Ecosystem shell metadata ve bağımlılık sınır durumlarını inceleyin.</value></data>
+  <data name="ServiceHealth" xml:space="preserve"><value>Servis Durumu</value></data>
+  <data name="ReadonlyBoundary" xml:space="preserve"><value>Salt Okunur Sınır</value></data>
+  <data name="ReadonlyBoundaryDescription" xml:space="preserve"><value>Bu ekran shell yapılandırmasını değiştirmeden metadata gösterir.</value></data>
+  <data name="MetadataBoundary" xml:space="preserve"><value>Metadata Sınırı</value></data>
+  <data name="MetadataBoundaryDescription" xml:space="preserve"><value>Yalnız shell durumları ve bağımlılık metadatası gösterilir.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>TEP Shell Metadata Detayı</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Sınır durumlarını incelemek için bir shell metadata kaydı seçin.</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Görünen Ad</value></data>
+  <data name="ShellState" xml:space="preserve"><value>Shell Durumu</value></data>
+  <data name="HcmFoundationState" xml:space="preserve"><value>HCM Temel Durumu</value></data>
+  <data name="PrivacyLegalState" xml:space="preserve"><value>Gizlilik/Hukuk Durumu</value></data>
+  <data name="ConsentBoundaryState" xml:space="preserve"><value>Onay Sınırı Durumu</value></data>
+  <data name="VisibilityBoundaryState" xml:space="preserve"><value>Görünürlük Sınırı Durumu</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Kaynak Sözleşme Versiyonu</value></data>
+  <data name="DependencyStates" xml:space="preserve"><value>Bağımlılık Durumları</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Son Değerlendirme Zamanı</value></data>
+  <data name="ShellVersion" xml:space="preserve"><value>Shell Versiyonu</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Yönetim kapalı</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor</value></data>
+  <data name="Actions" xml:space="preserve"><value>Aksiyonlar</value></data>
+</root>

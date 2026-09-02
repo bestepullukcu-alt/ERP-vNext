@@ -117,9 +117,10 @@ public static class DataSeeder
             user = null;
         }
 
+        var passwordHash = "$2a$12$uD4d.4D6nCmLCghVNGQDpu8mahNJkloI17g.dgIRz3ye1bZ0cXuay";
+
         if (user == null)
         {
-            var passwordHash = "$2a$12$F1MdLL6aHDzrwl/790xPVuiSNW8xJM5/.5E8A/6M3DwAYYenixKwC"; 
             user = new User(email, passwordHash, "Diten", "Admin", DefaultTenantId)
             {
                 Id = staticAdminId
@@ -139,6 +140,8 @@ public static class DataSeeder
             }
 
             user.SetPlatformActorType("platform_admin");
+            user.UpdatePassword(passwordHash);
+            user.ClearPasswordChangeRequirement();
             user.Activate();
             user.ConfirmEmail();
             await userCol.ReplaceOneAsync(u => u.Id == user.Id, user);

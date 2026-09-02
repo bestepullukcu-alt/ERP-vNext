@@ -6,7 +6,7 @@ service: Diten.TalentEcosystemService
 shell: none
 golden_reference: none
 entity_base: BaseEntity
-status: ready-for-dev
+status: done
 owner: enterprise-architect / tep-domain-owner / platform-team / security-owner / legal-owner
 branch: feature/tep/cand-cap-0012-association-membership-member-company-registry
 started: 2026-08-13
@@ -27,14 +27,14 @@ permission_namespace: tep.association-memberships.*
 
 # CAND-CAP-0012 - Association Membership & Member Company Registry
 
-> Status: ready-for-dev. Approved for the first TEP backend/API metadata
-> association/member company registry contract slice only. This pack does not
-> authorize candidate/talent identity, broad consent engine, reference exchange,
-> reputation/risk/analytics, service scaffold, frontend, Gateway, HCM/PSS
-> implementation changes, or verified-company runtime integration.
-> `CAND-CAP-0012` remains a governance/documentation identity only and must
-> never be written into runtime literals. `MOD-0323` remains blocked for TEP
-> use.
+> Status: done. First TEP backend/API metadata association/member company
+> registry contract slice has been implemented, read-only implementation review
+> is PASS, and done-promotion reconciliation is complete. This pack does not authorize candidate/talent identity, broad
+> consent engine, reference exchange, reputation/risk/analytics, service
+> scaffold, frontend, Gateway, HCM/PSS implementation changes, or
+> verified-company runtime integration. `CAND-CAP-0012` remains a
+> governance/documentation identity only and must never be written into runtime
+> literals. `MOD-0323` remains blocked for TEP use.
 
 ## 1. Module Summary
 
@@ -212,8 +212,8 @@ TEP R2 sibling dependencies/follow-ups:
 
 ## 8. Runtime Constraints
 
-- Runtime implementation is authorized only for the first metadata association/
-  member company registry contract slice while status is `ready-for-dev`.
+- Runtime implementation was authorized only for the first metadata association/
+  member company registry contract slice and is now complete with status `done`.
 - `Diten.TalentEcosystemService` scaffold exists and is the only runtime host
   authorized for this slice.
 - Runtime owner/key is `tep.association-memberships`.
@@ -326,8 +326,9 @@ ready-for-dev association backend/API slice is separately approved and reviewed.
 
 1. AC-01: DCP-002 candidate gate passes for `CAND-CAP-0012` and `Association
    Membership & Member Company Registry`.
-2. AC-02: Pack status is `ready-for-dev` for the first metadata association/
-   member company registry backend/API contract slice only.
+2. AC-02: Pack status is `done` after first metadata association/member
+   company registry backend/API contract slice implementation, read-only
+   implementation review PASS, and done-promotion reconciliation.
 3. AC-03: `MOD-0323` is not used as the TEP identity.
 4. AC-04: `CAND-CAP-0012` is documented as governance/documentation identity
    only and not a runtime literal.
@@ -432,26 +433,39 @@ member company registry contract slice.
   validation context, and local/deferred verified-company access metadata were
   approved for the first backend/API metadata association/member company
   registry contract slice.
+- Review-ready reconciliation: read-only implementation review PASS. Runtime
+  owner/key remained `tep.association-memberships`; permission namespace was
+  limited to read/manage/archive/evaluate/member-company.manage; thin
+  controller, MediatR, `Response<T>` envelope, server-side tenant resolution,
+  Mongo-backed tenant-aware persistence, active tenant Code unique index, soft
+  delete, CAND-CAP-0013 fail-closed/Deferred policy precondition behavior,
+  member-company scoped mutation, build, targeted tests, full TEP application
+  tests, runtime literal scan, production in-memory scan, and frontend/Gateway/
+  HCM/PSS scope closure were verified.
+- Done-promotion reconciliation: implementation review PASS, pack status review,
+  Open blockers: none, build PASS, Association Membership targeted tests PASS
+  17/17, full TEP Application tests PASS 48/48, runtime literal scan PASS for
+  `CAND-CAP-0012|MOD-0323`, production in-memory repository scan PASS,
+  CAND-CAP-0013 policy precondition fail-closed/Deferred behavior verified,
+  member-company scoped mutation verified, and frontend/Gateway/HCM/PSS scope
+  remained closed.
 - `CAND-CAP-0012` is not an EA canonical MOD allocation and remains a
   governance/documentation identity.
 - `CAND-CAP-0011` TEP Shell is done and is the immediate TEP dependency.
 - HCM R1 foundation is available as prerequisite contract context, but this
   pack does not consume HCM runtime APIs or create association runtime behavior.
 - DCP-010 authorizes the TEP service scaffold and the completed TEP Shell first
-  slice only. This pack now authorizes the Association first metadata registry
-  slice through this ready-for-dev promotion.
+  slice only. This pack authorized the Association first metadata registry slice
+  through the ready-for-dev promotion; the slice is now implemented, reviewed,
+  and promoted to done.
 - Domain-config lists Consent, Visibility & Access Policy before Association in
   the safe next-candidate section. CAND-CAP-0013 is now `done` and must be
   consumed as Association policy precondition.
 
 ## 20. Follow-up Items
 
-- Implement the first backend/API metadata association/member company registry
-  contract slice under `services/Diten.TalentEcosystemService/**` only after
-  explicit user implementation prompt.
-- Reconcile implementation against CAND-CAP-0013 policy precondition behavior
-  before promoting this pack to review/done.
+- Reconcile CAND-CAP-0012 implementation outcomes into CAND-CAP-0013 and future
+  Association runtime follow-ups if needed.
 - Decide future EA canonical MOD assignment for Association Membership & Member
   Company Registry.
-- Route any future Gateway exposure through integration-agent.
 - Route any future Gateway exposure through integration-agent.

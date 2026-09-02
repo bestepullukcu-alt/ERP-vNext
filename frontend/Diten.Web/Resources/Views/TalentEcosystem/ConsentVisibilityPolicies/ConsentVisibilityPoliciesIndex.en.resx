@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ConsentVisibilityPoliciesTitle" xml:space="preserve"><value>Consent, Visibility &amp; Access Policies</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Review policy metadata, visibility scope, association consumption state and local audit metadata.</value></data>
+  <data name="RestrictedBoundary" xml:space="preserve"><value>Restricted Boundary</value></data>
+  <data name="RestrictedBoundaryDescription" xml:space="preserve"><value>Policy states are shown without consent capture, legal document execution or association runtime actions.</value></data>
+  <data name="ReadonlyBoundary" xml:space="preserve"><value>Read-only Boundary</value></data>
+  <data name="ReadonlyBoundaryDescription" xml:space="preserve"><value>This screen does not create, evaluate, approve or archive policies.</value></data>
+  <data name="AuditBoundary" xml:space="preserve"><value>Audit Metadata</value></data>
+  <data name="AuditBoundaryDescription" xml:space="preserve"><value>Audit and evidence fields are displayed only as local/deferred metadata.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Consent/Visibility Policy Details</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Select a policy to review its metadata.</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Display Name</value></data>
+  <data name="PolicyState" xml:space="preserve"><value>Policy State</value></data>
+  <data name="ConsentRequirementState" xml:space="preserve"><value>Consent Requirement State</value></data>
+  <data name="VisibilityScope" xml:space="preserve"><value>Visibility Scope</value></data>
+  <data name="DataScopeState" xml:space="preserve"><value>Data Scope State</value></data>
+  <data name="AccessPolicyState" xml:space="preserve"><value>Access Policy State</value></data>
+  <data name="AssociationConsumptionState" xml:space="preserve"><value>Association Consumption State</value></data>
+  <data name="PolicyUnavailableBehavior" xml:space="preserve"><value>Policy Unavailable Behavior</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Source Contract Version</value></data>
+  <data name="DependencyStates" xml:space="preserve"><value>Dependency States</value></data>
+  <data name="LocalAuditEvidenceRetentionState" xml:space="preserve"><value>Local Audit Evidence Retention State</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Last Evaluated At</value></data>
+  <data name="PolicyVersion" xml:space="preserve"><value>Policy Version</value></data>
+  <data name="AuditMetadata" xml:space="preserve"><value>Audit Metadata</value></data>
+  <data name="EvaluateDisabled" xml:space="preserve"><value>Evaluate disabled</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Manage disabled</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+</root>

@@ -1,0 +1,49 @@
+@using Diten.Web.Views.Platform.TimeAttendanceProviders
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TimeAttendanceProvidersIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["TimeAttendanceProvidersTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canRead = Perms.Has("platform.time-attendance-providers.read");
+    var canReadCheckpoint = Perms.Has("platform.time-attendance-providers.read-checkpoint");
+    var canReadHealth = Perms.Has("platform.time-attendance-providers.read-health");
+    var canCreate = Perms.Has("platform.time-attendance-providers.create");
+    var canUpdate = Perms.Has("platform.time-attendance-providers.update");
+    var canArchive = Perms.Has("platform.time-attendance-providers.archive");
+    var canUpdateContract = Perms.Has("platform.time-attendance-providers.update-contract");
+    var canMapReference = Perms.Has("platform.time-attendance-providers.map-employee-reference");
+    var canRecordEvent = Perms.Has("platform.time-attendance-providers.record-event");
+    var canRecordSummary = Perms.Has("platform.time-attendance-providers.record-summary");
+    var canRecordCheckpoint = Perms.Has("platform.time-attendance-providers.record-checkpoint");
+    var canRecordHealth = Perms.Has("platform.time-attendance-providers.record-health");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["TimeAttendanceProvidersTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="time-attendance-providers-shell"
+     data-can-read="@canRead.ToString().ToLowerInvariant()"
+     data-can-read-checkpoint="@canReadCheckpoint.ToString().ToLowerInvariant()"
+     data-can-read-health="@canReadHealth.ToString().ToLowerInvariant()"
+     data-can-create="@canCreate.ToString().ToLowerInvariant()"
+     data-can-update="@canUpdate.ToString().ToLowerInvariant()"
+     data-can-archive="@canArchive.ToString().ToLowerInvariant()"
+     data-can-update-contract="@canUpdateContract.ToString().ToLowerInvariant()"
+     data-can-map-reference="@canMapReference.ToString().ToLowerInvariant()"
+     data-can-record-event="@canRecordEvent.ToString().ToLowerInvariant()"
+     data-can-record-summary="@canRecordSummary.ToString().ToLowerInvariant()"
+     data-can-record-checkpoint="@canRecordCheckpoint.ToString().ToLowerInvariant()"
+     data-can-record-health="@canRecordHealth.ToString().ToLowerInvariant()">
+    <partial name="~/Views/Platform/TimeAttendanceProviders/_Summary.cshtml" />
+    <partial name="~/Views/Platform/TimeAttendanceProviders/_Table.cshtml" />
+    <partial name="~/Views/Platform/TimeAttendanceProviders/_DetailsQuickView.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/Platform/TimeAttendanceProviders/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Platform/TimeAttendanceProviders/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/TimeAttendanceProviders/index.js" asp-append-version="true"></script>
+}

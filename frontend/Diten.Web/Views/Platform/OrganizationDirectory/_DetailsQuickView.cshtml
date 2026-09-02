@@ -1,0 +1,58 @@
+@using Diten.Web.Views.Platform.OrganizationDirectory
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OrganizationDirectoryIndex> Localizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasOrganizationDirectoryDetails" aria-labelledby="offcanvasOrganizationDirectoryDetailsLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="offcanvasOrganizationDirectoryDetailsLabel" class="offcanvas-title">@Localizer["Details"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["Close"]"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div id="organizationDirectoryDetailsEmpty" class="text-muted">@Localizer["SelectRecord"]</div>
+        <div id="organizationDirectoryDetailsList" class="d-none">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <div class="text-muted small" data-field="recordTypeLabel"></div>
+                    <h6 class="mb-0" data-field="primaryLabel"></h6>
+                </div>
+                <span class="badge bg-label-secondary" data-field="readonlyState">@Localizer["ReadOnly"]</span>
+            </div>
+            <dl class="row mb-0" data-detail-section="orgUnit">
+                <dt class="col-5">@Localizer["Code"]</dt>
+                <dd class="col-7" data-field="code"></dd>
+                <dt class="col-5">@Localizer["Name"]</dt>
+                <dd class="col-7" data-field="name"></dd>
+                <dt class="col-5">@Localizer["LegalEntityId"]</dt>
+                <dd class="col-7 text-break" data-field="legalEntityId"></dd>
+                <dt class="col-5">@Localizer["ParentOrganizationUnitId"]</dt>
+                <dd class="col-7 text-break" data-field="parentOrganizationUnitId"></dd>
+                <dt class="col-5">@Localizer["IsArchived"]</dt>
+                <dd class="col-7" data-field="isArchived"></dd>
+            </dl>
+            <dl class="row mb-0 d-none" data-detail-section="position">
+                <dt class="col-5">@Localizer["Code"]</dt>
+                <dd class="col-7" data-field="code"></dd>
+                <dt class="col-5">@Localizer["Name"]</dt>
+                <dd class="col-7" data-field="name"></dd>
+                <dt class="col-5">@Localizer["OrganizationUnitId"]</dt>
+                <dd class="col-7 text-break" data-field="organizationUnitId"></dd>
+                <dt class="col-5">@Localizer["ReportsToPositionId"]</dt>
+                <dd class="col-7 text-break" data-field="reportsToPositionId"></dd>
+                <dt class="col-5">@Localizer["IsArchived"]</dt>
+                <dd class="col-7" data-field="isArchived"></dd>
+                <dt class="col-5" data-manager-chain-label>@Localizer["ManagerChain"]</dt>
+                <dd class="col-7" data-field="managerChain"></dd>
+            </dl>
+            <dl class="row mb-0 d-none" data-detail-section="assignment">
+                <dt class="col-5">@Localizer["PositionId"]</dt>
+                <dd class="col-7 text-break" data-field="positionId"></dd>
+                <dt class="col-5">@Localizer["UserReferenceId"]</dt>
+                <dd class="col-7 text-break" data-field="userId"></dd>
+                <dt class="col-5">@Localizer["EffectiveFrom"]</dt>
+                <dd class="col-7" data-field="effectiveFrom"></dd>
+                <dt class="col-5">@Localizer["EffectiveTo"]</dt>
+                <dd class="col-7" data-field="effectiveTo"></dd>
+            </dl>
+        </div>
+    </div>
+</div>

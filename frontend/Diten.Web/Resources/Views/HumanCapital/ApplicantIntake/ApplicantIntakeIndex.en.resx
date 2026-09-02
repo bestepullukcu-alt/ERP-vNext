@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ApplicantIntakeTitle" xml:space="preserve"><value>Applicant Intake</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Review applicant intake readiness metadata without opening public application workflows or applicant content.</value></data>
+  <data name="TotalRecords" xml:space="preserve"><value>Total Records</value></data>
+  <data name="TotalRecordsDescription" xml:space="preserve"><value>Tenant-scoped readiness metadata.</value></data>
+  <data name="ReadyRecords" xml:space="preserve"><value>Ready</value></data>
+  <data name="ReadyRecordsDescription" xml:space="preserve"><value>Records whose metadata gates are satisfied.</value></data>
+  <data name="DeferredRecords" xml:space="preserve"><value>Deferred</value></data>
+  <data name="DeferredRecordsDescription" xml:space="preserve"><value>Records waiting on preconditions.</value></data>
+  <data name="BlockedRecords" xml:space="preserve"><value>Blocked</value></data>
+  <data name="BlockedRecordsDescription" xml:space="preserve"><value>Records held by explicit readiness blockers.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Applicant Intake Details</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Select a readiness record to inspect its metadata.</value></data>
+  <data name="AuditMetadata" xml:space="preserve"><value>Audit Metadata</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Display Name</value></data>
+  <data name="IntakeState" xml:space="preserve"><value>Intake State</value></data>
+  <data name="SourceChannelState" xml:space="preserve"><value>Source Channel State</value></data>
+  <data name="ConsentPreconditionState" xml:space="preserve"><value>Consent Precondition State</value></data>
+  <data name="DataMinimizationState" xml:space="preserve"><value>Data Minimization State</value></data>
+  <data name="DuplicateHandlingState" xml:space="preserve"><value>Duplicate Handling State</value></data>
+  <data name="RetentionPolicyState" xml:space="preserve"><value>Retention Policy State</value></data>
+  <data name="EvidencePolicyState" xml:space="preserve"><value>Evidence Policy State</value></data>
+  <data name="ApplicantIdentityBoundaryState" xml:space="preserve"><value>Applicant Identity Boundary State</value></data>
+  <data name="PublicUxBoundaryState" xml:space="preserve"><value>Public UX Boundary State</value></data>
+  <data name="DependencyStates" xml:space="preserve"><value>Dependency States</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Source Contract Version</value></data>
+  <data name="ApplicantIntakeVersion" xml:space="preserve"><value>Applicant Intake Version</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Last Evaluated At</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Deferred Reason</value></data>
+  <data name="EvaluateDisabled" xml:space="preserve"><value>Evaluate disabled</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Manage disabled</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+</root>

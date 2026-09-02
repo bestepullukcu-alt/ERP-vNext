@@ -338,6 +338,7 @@ public static class DependencyInjection
 
         if (!schedulerOptions.Enabled && !schedulerOptions.DashboardEnabled)
         {
+            services.AddSingleton<IBackgroundJobScheduler, DisabledBackgroundJobScheduler>();
             return;
         }
 

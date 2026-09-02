@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, ...</value></resheader>
+  <data name="AssociationMembershipsTitle" xml:space="preserve"><value>Association Memberships</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Association membership ve üye şirket registry metadatasını inceleyin.</value></data>
+  <data name="RegistryBoundary" xml:space="preserve"><value>Registry Sınırı</value></data>
+  <data name="RegistryBoundaryDescription" xml:space="preserve"><value>Bu ekran registry durumunu değiştirmeden association ve üye şirket metadatası gösterir.</value></data>
+  <data name="ReadonlyBoundary" xml:space="preserve"><value>Salt Okunur Sınır</value></data>
+  <data name="ReadonlyBoundaryDescription" xml:space="preserve"><value>Değerlendirme, üye şirket, yönetim ve arşiv aksiyonları bu slice içinde kapalı kalır.</value></data>
+  <data name="PolicyBoundary" xml:space="preserve"><value>Politika Önkoşulları</value></data>
+  <data name="PolicyBoundaryDescription" xml:space="preserve"><value>Onay, görünürlük, aktivasyon ve bağımlılık durumları yalnız metadata olarak gösterilir.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Association Membership Detayı</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Metadatasını incelemek için bir membership seçin.</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Görünen Ad</value></data>
+  <data name="AssociationMembershipState" xml:space="preserve"><value>Association Membership Durumu</value></data>
+  <data name="MemberCompanyState" xml:space="preserve"><value>Üye Şirket Durumu</value></data>
+  <data name="MemberCompanyReference" xml:space="preserve"><value>Üye Şirket Referansı</value></data>
+  <data name="HcmFoundationReference" xml:space="preserve"><value>HCM Temel Referansı</value></data>
+  <data name="ConsentVisibilityPolicyId" xml:space="preserve"><value>Onay/Görünürlük Politika ID</value></data>
+  <data name="PolicyEvaluationState" xml:space="preserve"><value>Politika Değerlendirme Durumu</value></data>
+  <data name="VisibilityApprovalState" xml:space="preserve"><value>Görünürlük Onay Durumu</value></data>
+  <data name="AssociationActivationState" xml:space="preserve"><value>Association Aktivasyon Durumu</value></data>
+  <data name="DependencyStates" xml:space="preserve"><value>Bağımlılık Durumları</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Kaynak Sözleşme Versiyonu</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Son Değerlendirme Zamanı</value></data>
+  <data name="RegistryVersion" xml:space="preserve"><value>Registry Versiyonu</value></data>
+  <data name="EvaluateDisabled" xml:space="preserve"><value>Değerlendirme kapalı</value></data>
+  <data name="MemberCompanyDisabled" xml:space="preserve"><value>Üye şirket kapalı</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Yönetim kapalı</value></data>
+  <data name="ArchiveDisabled" xml:space="preserve"><value>Arşiv kapalı</value></data>
+  <data name="Actions" xml:space="preserve"><value>Aksiyonlar</value></data>
+</root>

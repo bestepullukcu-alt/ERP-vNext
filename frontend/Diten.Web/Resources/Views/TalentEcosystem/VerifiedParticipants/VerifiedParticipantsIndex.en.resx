@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="VerifiedParticipantsTitle" xml:space="preserve"><value>Verified Participants</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Review verified HR participant and member company access metadata.</value></data>
+  <data name="VerificationBoundary" xml:space="preserve"><value>Verification Boundary</value></data>
+  <data name="VerificationBoundaryDescription" xml:space="preserve"><value>This screen displays verification metadata without changing participant state.</value></data>
+  <data name="AccessBoundary" xml:space="preserve"><value>Company Access Boundary</value></data>
+  <data name="AccessBoundaryDescription" xml:space="preserve"><value>Member company access remains local and deferred metadata in this slice.</value></data>
+  <data name="PolicyBoundary" xml:space="preserve"><value>Policy Preconditions</value></data>
+  <data name="PolicyBoundaryDescription" xml:space="preserve"><value>Association, consent, visibility and HCM validation states are displayed read-only.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Verified Participant Details</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Select a participant record to review its metadata.</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Display Name</value></data>
+  <data name="AssociationMembershipId" xml:space="preserve"><value>Association Membership ID</value></data>
+  <data name="MemberCompanyReference" xml:space="preserve"><value>Member Company Reference</value></data>
+  <data name="HrParticipantReference" xml:space="preserve"><value>HR Participant Reference</value></data>
+  <data name="HcmFoundationReference" xml:space="preserve"><value>HCM Foundation Reference</value></data>
+  <data name="ConsentVisibilityPolicyId" xml:space="preserve"><value>Consent/Visibility Policy ID</value></data>
+  <data name="VerificationState" xml:space="preserve"><value>Verification State</value></data>
+  <data name="AccessState" xml:space="preserve"><value>Access State</value></data>
+  <data name="PolicyEvaluationState" xml:space="preserve"><value>Policy Evaluation State</value></data>
+  <data name="VisibilityApprovalState" xml:space="preserve"><value>Visibility Approval State</value></data>
+  <data name="HcmValidationState" xml:space="preserve"><value>HCM Validation State</value></data>
+  <data name="AssociationValidationState" xml:space="preserve"><value>Association Validation State</value></data>
+  <data name="VerifiedCompanyAccessState" xml:space="preserve"><value>Company Access State</value></data>
+  <data name="DependencyStates" xml:space="preserve"><value>Dependency States</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Source Contract Version</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Last Evaluated At</value></data>
+  <data name="VerificationVersion" xml:space="preserve"><value>Verification Version</value></data>
+  <data name="LocalAuditEvidenceRetentionState" xml:space="preserve"><value>Local Audit Evidence Retention State</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Deferred Reason</value></data>
+  <data name="AuditMetadata" xml:space="preserve"><value>Audit Metadata</value></data>
+  <data name="VerifyDisabled" xml:space="preserve"><value>Verify disabled</value></data>
+  <data name="EvaluateDisabled" xml:space="preserve"><value>Evaluate disabled</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Manage disabled</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+</root>

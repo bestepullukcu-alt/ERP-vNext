@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CandidateDisputesTitle" xml:space="preserve"><value>Candidate Disputes</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Review candidate response readiness metadata without starting response workflows.</value></data>
+  <data name="ReadinessBoundary" xml:space="preserve"><value>Readiness Boundary</value></data>
+  <data name="ReadinessBoundaryDescription" xml:space="preserve"><value>Records remain metadata only in this view.</value></data>
+  <data name="ReviewBoundary" xml:space="preserve"><value>Review Boundary</value></data>
+  <data name="ReviewBoundaryDescription" xml:space="preserve"><value>Review lifecycle checks are shown as state metadata.</value></data>
+  <data name="DeferredBoundary" xml:space="preserve"><value>Deferred Boundary</value></data>
+  <data name="DeferredBoundaryDescription" xml:space="preserve"><value>External workflow dependencies remain deferred.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Candidate Dispute Details</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Select a candidate dispute record to review its metadata.</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Display Name</value></data>
+  <data name="CandidateProfileReference" xml:space="preserve"><value>Candidate Profile Reference</value></data>
+  <data name="ExitReferenceRecordReference" xml:space="preserve"><value>Exit Reference Record Reference</value></data>
+  <data name="ReferenceExchangeReference" xml:space="preserve"><value>Reference Exchange Reference</value></data>
+  <data name="RehireRecommendationReference" xml:space="preserve"><value>Rehire Recommendation Reference</value></data>
+  <data name="DisputeReadinessState" xml:space="preserve"><value>Readiness State</value></data>
+  <data name="ResponseBoundaryState" xml:space="preserve"><value>Response Boundary</value></data>
+  <data name="DisputeIntakeState" xml:space="preserve"><value>Intake State</value></data>
+  <data name="DisputeReviewState" xml:space="preserve"><value>Review State</value></data>
+  <data name="ResolutionLifecycleState" xml:space="preserve"><value>Resolution State</value></data>
+  <data name="ContestabilityState" xml:space="preserve"><value>Contestability State</value></data>
+  <data name="HumanReviewState" xml:space="preserve"><value>Human Review State</value></data>
+  <data name="ConsentPreconditionState" xml:space="preserve"><value>Consent Precondition</value></data>
+  <data name="VisibilityApprovalState" xml:space="preserve"><value>Visibility Approval</value></data>
+  <data name="DataScopeState" xml:space="preserve"><value>Data Scope State</value></data>
+  <data name="EvidenceRetentionState" xml:space="preserve"><value>Evidence Retention State</value></data>
+  <data name="AuditReadinessState" xml:space="preserve"><value>Audit Readiness State</value></data>
+  <data name="LegalHoldState" xml:space="preserve"><value>Legal Hold State</value></data>
+  <data name="DeletionPolicyState" xml:space="preserve"><value>Deletion Policy State</value></data>
+  <data name="SelfServiceBoundaryState" xml:space="preserve"><value>Self-Service Boundary</value></data>
+  <data name="NotificationDependencyState" xml:space="preserve"><value>Notification Dependency</value></data>
+  <data name="ExternalDependencyState" xml:space="preserve"><value>External Dependency</value></data>
+  <data name="AutomatedDecisionBoundaryState" xml:space="preserve"><value>Decision Boundary</value></data>
+  <data name="MarketplaceBoundaryState" xml:space="preserve"><value>Marketplace Boundary</value></data>
+  <data name="DependencyStates" xml:space="preserve"><value>Dependency States</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Source Contract Version</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Last Evaluated At</value></data>
+  <data name="DisputeReadinessVersion" xml:space="preserve"><value>Readiness Version</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Deferred Reason</value></data>
+  <data name="AuditMetadata" xml:space="preserve"><value>Audit Metadata</value></data>
+  <data name="EvaluateDisabled" xml:space="preserve"><value>Evaluate disabled</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Manage disabled</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+</root>

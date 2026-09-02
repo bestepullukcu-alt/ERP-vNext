@@ -36,6 +36,9 @@ public static class DependencyInjection
         services.AddScoped<IEmployeeProjectionRepository, MongoEmployeeProjectionRepository>();
         services.AddScoped<IPositionAssignmentOverlayRepository, MongoPositionAssignmentOverlayRepository>();
         services.AddScoped<IOffboardingCaseRepository, MongoOffboardingCaseRepository>();
+        services.AddScoped<IApplicantIntakeReadinessMetadataRepository, MongoApplicantIntakeReadinessMetadataRepository>();
+        services.AddScoped<ICandidatePipelineReadinessMetadataRepository, MongoCandidatePipelineReadinessMetadataRepository>();
+        services.AddScoped<IOfferReadinessMetadataRepository, MongoOfferReadinessMetadataRepository>();
 
         return services;
     }

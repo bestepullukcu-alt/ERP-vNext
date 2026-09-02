@@ -53,7 +53,7 @@ public sealed class InviteTenantAdminUserCommandHandler : IRequestHandler<Invite
         var correlationId = Guid.NewGuid().ToString();
         var reservedQuotaThisAttempt = false;
 
-        if (!TenantAdminUserSupport.CountsTowardsUsersQuota(user))
+        if (!IsInternalTenant(tenant) && !TenantAdminUserSupport.CountsTowardsUsersQuota(user))
         {
             try
             {
@@ -148,6 +148,9 @@ public sealed class InviteTenantAdminUserCommandHandler : IRequestHandler<Invite
 
         return Response<TenantAdminUserDto>.Success(TenantAdminUserSupport.ToDto(user));
     }
+
+    private static bool IsInternalTenant(Tenant tenant) =>
+        tenant.TenantType == TenantType.Internal;
 
     private async Task ReleaseReservedQuotaAsync(
         Guid tenantId,

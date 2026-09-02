@@ -1,0 +1,30 @@
+@using Diten.Web.Views.HumanCapital.OffboardingCases
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OffboardingCasesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="offboarding-cases-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        ArchiveDisabled = Localizer["ArchiveDisabled"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        HandoffDisabled = Localizer["HandoffDisabled"].Value,
+        Loading = SharedLocalizer["Loading"].Value,
+        ManageDisabled = Localizer["ManageDisabled"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        ReviewDisabled = Localizer["ReviewDisabled"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Code = Localizer["Code"].Value,
+        EmployeeProjectionId = Localizer["EmployeeProjectionId"].Value,
+        AssignmentOverlayId = Localizer["AssignmentOverlayId"].Value,
+        OffboardingState = Localizer["OffboardingState"].Value,
+        ChecklistState = Localizer["ChecklistState"].Value,
+        SensitiveAccessDecisionState = Localizer["SensitiveAccessDecisionState"].Value,
+        DependencyDecisionState = Localizer["DependencyDecisionState"].Value,
+        TepHandoffState = Localizer["TepHandoffState"].Value,
+        PlannedExitDate = Localizer["PlannedExitDate"].Value
+    })
+</script>

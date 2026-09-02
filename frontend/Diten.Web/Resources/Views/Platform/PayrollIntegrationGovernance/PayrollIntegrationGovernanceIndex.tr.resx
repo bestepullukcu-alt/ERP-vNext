@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Aksiyonlar</value></data>
+  <data name="ActiveRuns" xml:space="preserve"><value>Aktif Runlar</value></data>
+  <data name="Close" xml:space="preserve"><value>Kapat</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Kolonlar</value></data>
+  <data name="CompletedAt" xml:space="preserve"><value>Tamamlanma</value></data>
+  <data name="ContractVersion" xml:space="preserve"><value>Sozlesme Versiyonu</value></data>
+  <data name="CorrelationId" xml:space="preserve"><value>Korelasyon</value></data>
+  <data name="Deferred" xml:space="preserve"><value>Deferred</value></data>
+  <data name="Details" xml:space="preserve"><value>Detaylar</value></data>
+  <data name="ErrorOccurred" xml:space="preserve"><value>Bir hata olustu.</value></data>
+  <data name="EvidenceReferences" xml:space="preserve"><value>Kanıt Referansları</value></data>
+  <data name="Exceptions" xml:space="preserve"><value>Istisnalar</value></data>
+  <data name="HealthAccess" xml:space="preserve"><value>Health Metadata</value></data>
+  <data name="HealthState" xml:space="preserve"><value>Health State</value></data>
+  <data name="HrisSourceProfileId" xml:space="preserve"><value>HRIS Kaynak Ref</value></data>
+  <data name="MappingControls" xml:space="preserve"><value>Mapping Kontrolleri</value></data>
+  <data name="Masked" xml:space="preserve"><value>Maskeli</value></data>
+  <data name="Mode" xml:space="preserve"><value>Mod</value></data>
+  <data name="NotAvailable" xml:space="preserve"><value>N/A</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Integration runlari, mapping kontrolleri, kontroller, istisnalar, kanit referanslari ve health icin restricted/maskeli yonetisim metadatasi.</value></data>
+  <data name="PayrollIntegrationGovernanceTitle" xml:space="preserve"><value>Payroll Integration Governance</value></data>
+  <data name="PayrollSourceProfileId" xml:space="preserve"><value>Payroll Kaynak Ref</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>Read-only</value></data>
+  <data name="ReconciliationControls" xml:space="preserve"><value>Reconciliation Kontrolleri</value></data>
+  <data name="Run" xml:space="preserve"><value>Run</value></data>
+  <data name="RunCode" xml:space="preserve"><value>Run Kodu</value></data>
+  <data name="Runs" xml:space="preserve"><value>Runlar</value></data>
+  <data name="RunType" xml:space="preserve"><value>Run Tipi</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Maskeli yonetisim metadatasi icin bir run secin.</value></data>
+  <data name="SourceLinks" xml:space="preserve"><value>Kaynak Linkleri</value></data>
+  <data name="StartedAt" xml:space="preserve"><value>Baslama</value></data>
+  <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="Summary" xml:space="preserve"><value>Ozet</value></data>
+  <data name="TimeAttendanceProviderProfileId" xml:space="preserve"><value>Time Provider Ref</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Detaylari gor</value></data>
+</root>

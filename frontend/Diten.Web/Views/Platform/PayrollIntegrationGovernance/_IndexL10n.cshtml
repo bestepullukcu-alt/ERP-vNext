@@ -1,0 +1,16 @@
+@using Diten.Web.Views.Platform.PayrollIntegrationGovernance
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PayrollIntegrationGovernanceIndex> Localizer
+
+<script>
+    window.PayrollIntegrationGovernanceL10n = {
+        Actions: '@Localizer["Actions"]',
+        ColumnVisibility: '@Localizer["ColumnVisibility"]',
+        Deferred: '@Localizer["Deferred"]',
+        ErrorOccurred: '@Localizer["ErrorOccurred"]',
+        Masked: '@Localizer["Masked"]',
+        NotAvailable: '@Localizer["NotAvailable"]',
+        ReadOnly: '@Localizer["ReadOnly"]',
+        ViewDetails: '@Localizer["ViewDetails"]'
+    };
+</script>

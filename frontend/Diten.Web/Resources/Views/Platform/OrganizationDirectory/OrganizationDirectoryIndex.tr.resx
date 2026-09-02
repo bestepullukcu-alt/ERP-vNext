@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Aksiyonlar</value></data>
+  <data name="Archived" xml:space="preserve"><value>Arşivli</value></data>
+  <data name="Close" xml:space="preserve"><value>Kapat</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Sütun Görünürlüğü</value></data>
+  <data name="Details" xml:space="preserve"><value>Detaylar</value></data>
+  <data name="DirectoryMode" xml:space="preserve"><value>Dizin Modu</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Geçerlilik Başlangıcı</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Geçerlilik Bitişi</value></data>
+  <data name="ErrorOccurred" xml:space="preserve"><value>İşlem sırasında bir hata oluştu.</value></data>
+  <data name="Export" xml:space="preserve"><value>Dışa Aktar</value></data>
+  <data name="IsArchived" xml:space="preserve"><value>Arşivli</value></data>
+  <data name="LegalEntityId" xml:space="preserve"><value>Tüzel Kişi Referansı</value></data>
+  <data name="ManagerChain" xml:space="preserve"><value>Yönetici Zinciri Metadatası</value></data>
+  <data name="ManagerChainUnavailable" xml:space="preserve"><value>Ertelendi</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="NotAvailable" xml:space="preserve"><value>Yok</value></data>
+  <data name="OrganizationDirectoryTitle" xml:space="preserve"><value>Organizasyon, Kişi ve Pozisyon Dizini</value></data>
+  <data name="OrganizationUnit" xml:space="preserve"><value>Organizasyon Birimi</value></data>
+  <data name="OrganizationUnits" xml:space="preserve"><value>Organizasyon Birimleri</value></data>
+  <data name="OrganizationUnitId" xml:space="preserve"><value>Organizasyon Birimi Referansı</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Organizasyon birimleri, pozisyonlar ve pozisyon atamaları için salt okunur dizin metadatası.</value></data>
+  <data name="ParentOrganizationUnitId" xml:space="preserve"><value>Üst Organizasyon Birimi Referansı</value></data>
+  <data name="Position" xml:space="preserve"><value>Pozisyon</value></data>
+  <data name="PositionAssignment" xml:space="preserve"><value>Pozisyon Ataması</value></data>
+  <data name="PositionAssignments" xml:space="preserve"><value>Pozisyon Atamaları</value></data>
+  <data name="PositionId" xml:space="preserve"><value>Pozisyon Referansı</value></data>
+  <data name="Positions" xml:space="preserve"><value>Pozisyonlar</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>Salt okunur</value></data>
+  <data name="ReportsToPositionId" xml:space="preserve"><value>Bağlı Olduğu Pozisyon Referansı</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Salt okunur metadatayı görmek için bir satır seçin.</value></data>
+  <data name="UserReferenceId" xml:space="preserve"><value>Kullanıcı Referansı</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Detayları görüntüle</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+</root>

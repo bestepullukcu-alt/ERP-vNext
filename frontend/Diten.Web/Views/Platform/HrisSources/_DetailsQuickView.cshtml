@@ -1,0 +1,50 @@
+@using Diten.Web.Views.Platform.HrisSources
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<HrisSourcesIndex> Localizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasHrisSourceDetails" aria-labelledby="offcanvasHrisSourceDetailsLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="offcanvasHrisSourceDetailsLabel" class="offcanvas-title">@Localizer["Details"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["Close"]"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div id="hrisSourceDetailsEmpty" class="text-muted">@Localizer["SelectRecord"]</div>
+        <div id="hrisSourceDetailsList" class="d-none">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <div class="text-muted small">@Localizer["HrisSource"]</div>
+                    <h6 class="mb-0" data-field="primaryLabel"></h6>
+                </div>
+                <span class="badge bg-label-secondary">@Localizer["ReadOnly"]</span>
+            </div>
+            <dl class="row mb-0">
+                <dt class="col-5">@Localizer["Code"]</dt>
+                <dd class="col-7" data-field="code"></dd>
+                <dt class="col-5">@Localizer["DisplayName"]</dt>
+                <dd class="col-7" data-field="displayName"></dd>
+                <dt class="col-5">@Localizer["ProviderKind"]</dt>
+                <dd class="col-7" data-field="providerKind"></dd>
+                <dt class="col-5">@Localizer["ExternalTenantKey"]</dt>
+                <dd class="col-7 text-break" data-field="externalTenantKey"></dd>
+                <dt class="col-5">@Localizer["ConnectionReference"]</dt>
+                <dd class="col-7 text-break" data-field="connectionProfileReference"></dd>
+                <dt class="col-5">@Localizer["LifecycleState"]</dt>
+                <dd class="col-7" data-field="lifecycleState"></dd>
+                <dt class="col-5">@Localizer["SyncMode"]</dt>
+                <dd class="col-7" data-field="syncMode"></dd>
+                <dt class="col-5">@Localizer["MappingProfileId"]</dt>
+                <dd class="col-7 text-break" data-field="mappingProfileId"></dd>
+                <dt class="col-5">@Localizer["LastValidatedAt"]</dt>
+                <dd class="col-7" data-field="lastValidatedAt"></dd>
+                <dt class="col-5">@Localizer["LastSyncCheckpointId"]</dt>
+                <dd class="col-7 text-break" data-field="lastSyncCheckpointId"></dd>
+                <dt class="col-5">@Localizer["CorrelationId"]</dt>
+                <dd class="col-7 text-break" data-field="correlationId"></dd>
+                <dt class="col-5" data-health-label>@Localizer["SyncCheckpoint"]</dt>
+                <dd class="col-7 text-break" data-field="syncCheckpoint"></dd>
+                <dt class="col-5" data-health-label>@Localizer["HealthState"]</dt>
+                <dd class="col-7 text-break" data-field="healthState"></dd>
+            </dl>
+        </div>
+    </div>
+</div>

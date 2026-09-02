@@ -1,0 +1,58 @@
+@using Diten.Web.Views.Platform.PayrollIntegrationGovernance
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PayrollIntegrationGovernanceIndex> Localizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasPayrollIntegrationGovernanceDetails" aria-labelledby="offcanvasPayrollIntegrationGovernanceDetailsLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="offcanvasPayrollIntegrationGovernanceDetailsLabel" class="offcanvas-title">@Localizer["Details"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["Close"]"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div id="payrollIntegrationGovernanceDetailsEmpty" class="text-muted">@Localizer["SelectRecord"]</div>
+        <div id="payrollIntegrationGovernanceDetailsList" class="d-none">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <div class="text-muted small">@Localizer["Run"]</div>
+                    <h6 class="mb-0" data-field="primaryLabel"></h6>
+                </div>
+                <span class="badge bg-label-secondary">@Localizer["ReadOnly"]</span>
+            </div>
+            <dl class="row mb-0">
+                <dt class="col-5">@Localizer["RunCode"]</dt>
+                <dd class="col-7" data-field="runCode"></dd>
+                <dt class="col-5">@Localizer["RunType"]</dt>
+                <dd class="col-7" data-field="runType"></dd>
+                <dt class="col-5">@Localizer["Status"]</dt>
+                <dd class="col-7" data-field="status"></dd>
+                <dt class="col-5">@Localizer["ContractVersion"]</dt>
+                <dd class="col-7" data-field="contractVersion"></dd>
+                <dt class="col-5">@Localizer["PayrollSourceProfileId"]</dt>
+                <dd class="col-7 text-break" data-field="payrollSourceProfileId"></dd>
+                <dt class="col-5">@Localizer["TimeAttendanceProviderProfileId"]</dt>
+                <dd class="col-7 text-break" data-field="timeAttendanceProviderProfileId"></dd>
+                <dt class="col-5">@Localizer["HrisSourceProfileId"]</dt>
+                <dd class="col-7 text-break" data-field="hrisSourceProfileId"></dd>
+                <dt class="col-5">@Localizer["CorrelationId"]</dt>
+                <dd class="col-7 text-break" data-field="correlationId"></dd>
+                <dt class="col-5">@Localizer["StartedAt"]</dt>
+                <dd class="col-7" data-field="startedAt"></dd>
+                <dt class="col-5">@Localizer["CompletedAt"]</dt>
+                <dd class="col-7" data-field="completedAt"></dd>
+                <dt class="col-5">@Localizer["Summary"]</dt>
+                <dd class="col-7 text-break" data-field="summary"></dd>
+                <dt class="col-5">@Localizer["SourceLinks"]</dt>
+                <dd class="col-7" data-field="sourceLinks"></dd>
+                <dt class="col-5">@Localizer["MappingControls"]</dt>
+                <dd class="col-7" data-field="mappingControls"></dd>
+                <dt class="col-5">@Localizer["ReconciliationControls"]</dt>
+                <dd class="col-7" data-field="reconciliationControls"></dd>
+                <dt class="col-5">@Localizer["Exceptions"]</dt>
+                <dd class="col-7" data-field="exceptions"></dd>
+                <dt class="col-5">@Localizer["EvidenceReferences"]</dt>
+                <dd class="col-7" data-field="evidenceReferences"></dd>
+                <dt class="col-5" data-health-label>@Localizer["HealthState"]</dt>
+                <dd class="col-7" data-field="healthState"></dd>
+            </dl>
+        </div>
+    </div>
+</div>

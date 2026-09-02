@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CandidateDisputesTitle" xml:space="preserve"><value>Candidate Disputes</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Candidate response akışlarını başlatmadan readiness metadatasını inceleyin.</value></data>
+  <data name="ReadinessBoundary" xml:space="preserve"><value>Readiness Sınırı</value></data>
+  <data name="ReadinessBoundaryDescription" xml:space="preserve"><value>Kayıtlar bu görünümde yalnız metadata olarak kalır.</value></data>
+  <data name="ReviewBoundary" xml:space="preserve"><value>Review Sınırı</value></data>
+  <data name="ReviewBoundaryDescription" xml:space="preserve"><value>Review lifecycle kontrolleri durum metadatası olarak gösterilir.</value></data>
+  <data name="DeferredBoundary" xml:space="preserve"><value>Deferred Sınırı</value></data>
+  <data name="DeferredBoundaryDescription" xml:space="preserve"><value>Dış akış bağımlılıkları deferred kalır.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Candidate Dispute Detayı</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Metadatasını incelemek için bir candidate dispute kaydı seçin.</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Görünen Ad</value></data>
+  <data name="CandidateProfileReference" xml:space="preserve"><value>Candidate Profile Referansı</value></data>
+  <data name="ExitReferenceRecordReference" xml:space="preserve"><value>Exit Reference Record Referansı</value></data>
+  <data name="ReferenceExchangeReference" xml:space="preserve"><value>Reference Exchange Referansı</value></data>
+  <data name="RehireRecommendationReference" xml:space="preserve"><value>Rehire Recommendation Referansı</value></data>
+  <data name="DisputeReadinessState" xml:space="preserve"><value>Readiness Durumu</value></data>
+  <data name="ResponseBoundaryState" xml:space="preserve"><value>Response Sınırı</value></data>
+  <data name="DisputeIntakeState" xml:space="preserve"><value>Intake Durumu</value></data>
+  <data name="DisputeReviewState" xml:space="preserve"><value>Review Durumu</value></data>
+  <data name="ResolutionLifecycleState" xml:space="preserve"><value>Resolution Durumu</value></data>
+  <data name="ContestabilityState" xml:space="preserve"><value>Contestability Durumu</value></data>
+  <data name="HumanReviewState" xml:space="preserve"><value>Human Review Durumu</value></data>
+  <data name="ConsentPreconditionState" xml:space="preserve"><value>Onay Önkoşulu</value></data>
+  <data name="VisibilityApprovalState" xml:space="preserve"><value>Görünürlük Onayı</value></data>
+  <data name="DataScopeState" xml:space="preserve"><value>Data Scope Durumu</value></data>
+  <data name="EvidenceRetentionState" xml:space="preserve"><value>Evidence Retention Durumu</value></data>
+  <data name="AuditReadinessState" xml:space="preserve"><value>Audit Readiness Durumu</value></data>
+  <data name="LegalHoldState" xml:space="preserve"><value>Legal Hold Durumu</value></data>
+  <data name="DeletionPolicyState" xml:space="preserve"><value>Deletion Policy Durumu</value></data>
+  <data name="SelfServiceBoundaryState" xml:space="preserve"><value>Self-Service Sınırı</value></data>
+  <data name="NotificationDependencyState" xml:space="preserve"><value>Notification Bağımlılığı</value></data>
+  <data name="ExternalDependencyState" xml:space="preserve"><value>Dış Bağımlılık</value></data>
+  <data name="AutomatedDecisionBoundaryState" xml:space="preserve"><value>Decision Sınırı</value></data>
+  <data name="MarketplaceBoundaryState" xml:space="preserve"><value>Marketplace Sınırı</value></data>
+  <data name="DependencyStates" xml:space="preserve"><value>Bağımlılık Durumları</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Kaynak Sözleşme Versiyonu</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Son Değerlendirme Zamanı</value></data>
+  <data name="DisputeReadinessVersion" xml:space="preserve"><value>Readiness Versiyonu</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Deferred Nedeni</value></data>
+  <data name="AuditMetadata" xml:space="preserve"><value>Audit Metadatası</value></data>
+  <data name="EvaluateDisabled" xml:space="preserve"><value>Değerlendirme kapalı</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Yönetim kapalı</value></data>
+  <data name="Actions" xml:space="preserve"><value>Aksiyonlar</value></data>
+</root>

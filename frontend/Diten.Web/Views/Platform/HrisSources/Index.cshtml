@@ -1,0 +1,39 @@
+@using Diten.Web.Views.Platform.HrisSources
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<HrisSourcesIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["HrisSourcesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canRead = Perms.Has("platform.hris-sources.read");
+    var canReadHealth = Perms.Has("platform.hris-sources.read-health");
+    var canCreate = Perms.Has("platform.hris-sources.create");
+    var canUpdate = Perms.Has("platform.hris-sources.update");
+    var canArchive = Perms.Has("platform.hris-sources.archive");
+    var canValidateConnection = Perms.Has("platform.hris-sources.validate-connection");
+    var canUpdateMapping = Perms.Has("platform.hris-sources.update-mapping");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["HrisSourcesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="hris-sources-shell"
+     data-can-read="@canRead.ToString().ToLowerInvariant()"
+     data-can-read-health="@canReadHealth.ToString().ToLowerInvariant()"
+     data-can-create="@canCreate.ToString().ToLowerInvariant()"
+     data-can-update="@canUpdate.ToString().ToLowerInvariant()"
+     data-can-archive="@canArchive.ToString().ToLowerInvariant()"
+     data-can-validate-connection="@canValidateConnection.ToString().ToLowerInvariant()"
+     data-can-update-mapping="@canUpdateMapping.ToString().ToLowerInvariant()">
+    <partial name="~/Views/Platform/HrisSources/_Summary.cshtml" />
+    <partial name="~/Views/Platform/HrisSources/_Table.cshtml" />
+    <partial name="~/Views/Platform/HrisSources/_DetailsQuickView.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/Platform/HrisSources/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Platform/HrisSources/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Platform/HrisSources/index.js" asp-append-version="true"></script>
+}
