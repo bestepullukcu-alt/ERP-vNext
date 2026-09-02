@@ -19,6 +19,51 @@
 
    To retune borders project-wide, change --diten-input-border only.
    ================================================================ */
+/* ================================================================
+   MUTED TEXT MUST BE READABLE (BL-331, 2026-09-02)
+
+   MEASURED, live, against each element's REAL background — not against an
+   assumed white:
+
+       light : #a7acb2 on #f5f5f9 (body)  =  2.10:1
+       dark  : #7e7f96 on #232333 (body)  =  3.94:1
+       WCAG AA for normal text            =  4.50:1
+
+   Both themes failed. On ONE page, counting only visible text nodes in this
+   colour: 23 failed, 0 passed — the sidebar's own module headers among them
+   ("İnsan Sermayesi Yönetimi", "Satış", "Ana Veri Yönetimi").
+
+   How this surfaced: the Task Center's task detail carries, under the source
+   door, the sentence that answers "where do I edit this?" — `ActionOpenInSourceHint`,
+   present in all seven languages. It rendered, it was on screen, and the owner
+   still reported "there is no edit". The sentence was at 2.10:1. The screen was
+   saying the right thing in a colour nobody could read.
+
+   The theme is inconsistent with itself rather than uniformly quiet: its own
+   --bs-body-color (#646e78) passes at 5.20:1. Only the secondary tone failed.
+
+   Chosen values are the SMALLEST change that clears AA on BOTH surfaces a muted
+   string lands on (page ground and card), so the design stays as quiet as it was:
+
+       light  #68707a → 4.61:1 on #f5f5f9 · 5.02:1 on #ffffff
+       dark   #9294ab → 5.18:1 on #232333 · 4.58:1 on #2b2c40
+
+   Hue is preserved: both keep the original R<G<B lean of the tones they replace.
+
+   ⚠ THE VENDOR FILE IS NOT EDITED. The token is declared in
+   assets/vendor/css/core.css (`:root, [data-bs-theme=light]` and
+   `[data-bs-theme=dark]`); it is overridden here, the same standing rule that
+   keeps the navbar-shift fix in this stylesheet instead of in vendor code.
+   ================================================================ */
+:root,
+[data-bs-theme=light] {
+    --bs-secondary-color: #68707a;
+}
+
+[data-bs-theme=dark] {
+    --bs-secondary-color: #9294ab;
+}
+
 :root {
     --diten-input-border: color-mix(in sRGB, var(--bs-base-color) 22%, var(--bs-paper-bg));
 }
@@ -2171,6 +2216,22 @@ div.dt-container div.dt-search input {
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
+    /*
+     * BL-331: the vendor paints this label with `var(--bs-gray-400)` (core.css:25798) —
+     * a PALETTE step, not a text role. MEASURED on the light menu: #a7acb2 on the white
+     * sidebar = 2.29:1, where AA asks 4.50. The module names a reader navigates by were
+     * among the least readable text on the page.
+     *
+     * --bs-gray-400 is NOT the thing to override: it is also a background elsewhere, so
+     * moving it would repaint surfaces to fix text. The right correction is here, and it
+     * is semantic as much as visual — a quiet section label is exactly what
+     * --bs-secondary-color is for. It now follows that token (5.02:1 on white) and will
+     * keep following it if the token is ever retuned again.
+     *
+     * The dark/semi-dark menu is NOT touched: its own rule above sets #a3a4cc !important,
+     * measured at 6.43:1 on #232333 — already passing.
+     */
+    color: var(--bs-secondary-color);
 }
 
 /*
