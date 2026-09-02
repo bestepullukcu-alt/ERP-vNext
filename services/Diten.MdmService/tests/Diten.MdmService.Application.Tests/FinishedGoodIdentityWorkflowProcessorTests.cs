@@ -11,6 +11,24 @@ namespace Diten.MdmService.Application.Tests;
 
 public sealed class FinishedGoodIdentityWorkflowProcessorTests
 {
+    [Theory]
+    [InlineData(FinishedGoodIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart)]
+    [InlineData(FinishedGoodIdentityWorkflowCheckpoint.Superseded)]
+    public async Task Recover_OperatorTerminalRecoveryState_IsPermanentNoOp(
+        FinishedGoodIdentityWorkflowCheckpoint checkpoint)
+    {
+        var harness = new Harness(ProductIdentityDecisionKind.Approved);
+        harness.ConfigureCheckpoint(checkpoint);
+        var operation = harness.Operation;
+
+        var result = await harness.Processor.RecoverAsync(
+            operation, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(30));
+
+        Assert.True(result.Succeeded);
+        Assert.True(result.IsReplay);
+        Assert.Same(operation, result.Operation);
+    }
+
     [Fact]
     public async Task Reject_completes_without_parent_dependency_calls()
     {

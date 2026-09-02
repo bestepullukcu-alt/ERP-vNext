@@ -12,6 +12,28 @@ namespace Diten.MdmService.Application.Tests;
 
 public sealed class FirstGskuIdentityWorkflowProcessorTests
 {
+    [Theory]
+    [InlineData(FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart)]
+    [InlineData(FirstGskuIdentityWorkflowCheckpoint.Superseded)]
+    public async Task Recover_OperatorTerminalRecoveryState_IsPermanentNoOp(
+        FirstGskuIdentityWorkflowCheckpoint checkpoint)
+    {
+        var harness = new Harness();
+        var operation = new FirstGskuIdentityWorkflowStartRequestFactory(
+                new(TemplateId, null, [ApproverId], "IDENTITY_APPROVAL", true, true, null),
+                TimeProvider.System)
+            .Create(TenantId, harness.Revision, harness.Gsku, OperationId, 0, MakerId).Operation;
+        operation.Checkpoint = checkpoint;
+        harness.Operations.Current = operation;
+
+        var result = await harness.Processor.RecoverAsync(
+            operation, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(30));
+
+        Assert.True(result.Succeeded);
+        Assert.True(result.IsReplay);
+        Assert.Same(operation, result.Operation);
+    }
+
     [Fact]
     public async Task Lost_start_response_is_recovered_and_approval_applies_pair_once()
     {

@@ -12,6 +12,24 @@ namespace Diten.MdmService.Application.Tests;
 
 public sealed class LskuIdentityWorkflowProcessorTests
 {
+    [Theory]
+    [InlineData(LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart)]
+    [InlineData(LskuIdentityWorkflowCheckpoint.Superseded)]
+    public async Task Recover_OperatorTerminalRecoveryState_IsPermanentNoOp(
+        LskuIdentityWorkflowCheckpoint checkpoint)
+    {
+        var harness = new Harness(ProductIdentityDecisionKind.Approved);
+        harness.ConfigureCheckpoint(checkpoint);
+        var operation = harness.Operation;
+
+        var result = await harness.Processor.RecoverAsync(
+            operation, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(30));
+
+        Assert.True(result.Succeeded);
+        Assert.True(result.IsReplay);
+        Assert.Same(operation, result.Operation);
+    }
+
     [Fact]
     public async Task Reject_completes_without_parent_or_market_dependency_calls()
     {

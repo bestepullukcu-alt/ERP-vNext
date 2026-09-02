@@ -46,6 +46,8 @@ public sealed class ProductIdentityWorkflowOperationRecoveryRepository
             GlobalProductIdentityWorkflowOperationRepository.CollectionName, operationId,
             operation => new GlobalProductWorkflowRecoveryScope(operation.GlobalProductId, operation.ExpectedProductVersion),
             operation => operation.Checkpoint == GlobalProductIdentityWorkflowCheckpoint.Prepared,
+            operation => operation.Checkpoint is GlobalProductIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
+                or GlobalProductIdentityWorkflowCheckpoint.Superseded,
             candidates, cancellationToken);
         await AddCandidateAsync<FirstGskuIdentityWorkflowOperation>(
             FirstGskuIdentityWorkflowOperationRepository.CollectionName, operationId,
@@ -53,18 +55,24 @@ public sealed class ProductIdentityWorkflowOperationRecoveryRepository
                 operation.ProductDefinitionRevisionId, operation.GskuId, operation.ExpectedGskuVersion,
                 operation.ExpectedRevisionVersion),
             operation => operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.Prepared,
+            operation => operation.Checkpoint is FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
+                or FirstGskuIdentityWorkflowCheckpoint.Superseded,
             candidates, cancellationToken);
         await AddCandidateAsync<LskuIdentityWorkflowOperation>(
             LskuIdentityWorkflowOperationRepository.CollectionName, operationId,
             operation => new LskuWorkflowRecoveryScope(operation.LskuId, operation.GskuId,
                 operation.ProductDefinitionRevisionId, operation.MarketCode, operation.ExpectedLskuVersion),
             operation => operation.Checkpoint == LskuIdentityWorkflowCheckpoint.Prepared,
+            operation => operation.Checkpoint is LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
+                or LskuIdentityWorkflowCheckpoint.Superseded,
             candidates, cancellationToken);
         await AddCandidateAsync<FinishedGoodIdentityWorkflowOperation>(
             FinishedGoodIdentityWorkflowOperationRepository.CollectionName, operationId,
             operation => new FinishedGoodWorkflowRecoveryScope(operation.FinishedGoodId, operation.GskuId,
                 operation.ProductDefinitionRevisionId, operation.ExpectedFinishedGoodVersion),
             operation => operation.Checkpoint == FinishedGoodIdentityWorkflowCheckpoint.Prepared,
+            operation => operation.Checkpoint is FinishedGoodIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
+                or FinishedGoodIdentityWorkflowCheckpoint.Superseded,
             candidates, cancellationToken);
 
         // A shared operation identity across families is ambiguous and therefore never recoverable.
@@ -147,6 +155,7 @@ public sealed class ProductIdentityWorkflowOperationRecoveryRepository
         Guid operationId,
         Func<TOperation, ProductIdentityWorkflowOperationRecoveryScope> scope,
         Func<TOperation, bool> prepared,
+        Func<TOperation, bool> terminalRecoveryCheckpoint,
         ICollection<ProductIdentityWorkflowOperationRecoveryCandidate> candidates,
         CancellationToken cancellationToken)
         where TOperation : EntityBase
@@ -156,9 +165,64 @@ public sealed class ProductIdentityWorkflowOperationRecoveryRepository
         if (operation is null) return;
 
         dynamic item = operation;
+        var persistedRecovery = PersistedRecoverySnapshot(item);
+        var terminalDisposition = item.RecoveryDisposition is
+            ProductIdentityWorkflowRecoveryDisposition.AbandonedBeforeWorkflowStart
+            or ProductIdentityWorkflowRecoveryDisposition.Superseded;
+        if (terminalDisposition != terminalRecoveryCheckpoint(operation)
+            || terminalDisposition && (persistedRecovery is null
+                || persistedRecovery.SuccessorOperationId == operationId))
+        {
+            // A terminal record with incomplete or malformed immutable evidence is ambiguous and non-disclosing.
+            return;
+        }
         candidates.Add(new(operationId, operation.Version, scope(operation), item.MakerSubjectId,
             item.StartIdempotencyKey, item.OperationFingerprint, prepared(operation), HasWorkflowEvidence(item),
-            item.RecoveryDisposition, item.LeaseOwner, item.LeaseUntilUtcTicksV1, item.LeaseGeneration));
+            item.RecoveryDisposition, item.LeaseOwner, item.LeaseUntilUtcTicksV1, item.LeaseGeneration,
+            persistedRecovery));
+    }
+
+    private static ProductIdentityWorkflowOperationPersistedRecoverySnapshot? PersistedRecoverySnapshot(
+        dynamic operation)
+    {
+        ProductIdentityWorkflowRecoveryDisposition disposition = operation.RecoveryDisposition;
+        if (disposition is not (ProductIdentityWorkflowRecoveryDisposition.AbandonedBeforeWorkflowStart
+            or ProductIdentityWorkflowRecoveryDisposition.Superseded)) return null;
+
+        Guid? commandId = operation.RecoveryCommandId;
+        Guid? operatorId = operation.RecoveryOperatorSubjectId;
+        string? reasonCode = operation.RecoveryReasonCode;
+        string? comment = operation.RecoveryComment;
+        Guid? evidenceId = operation.RecoveryWorkflowNotFoundEvidenceId;
+        string? evidenceFingerprint = operation.RecoveryWorkflowNotFoundEvidenceFingerprint;
+        long? observedAt = operation.RecoveryWorkflowNotFoundObservedAtUtcTicksV1;
+        long? recoveredAt = operation.RecoveredAtUtcTicksV1;
+        Guid? successorId = operation.SuccessorOperationId;
+        string? successorStartKey = operation.SuccessorStartIdempotencyKey;
+        string? successorFingerprint = operation.SuccessorOperationFingerprint;
+        var commonValid = commandId is { } command && command != Guid.Empty
+            && operatorId is { } actor && actor != Guid.Empty
+            && IsExactBounded(reasonCode, 128) && IsOptionalExactBounded(comment, 512)
+            && evidenceId is { } proof && proof != Guid.Empty
+            && IsLowerHex(evidenceFingerprint, 64)
+            && observedAt is > 0 && recoveredAt is > 0 && observedAt <= recoveredAt;
+        if (!commonValid) return null;
+
+        var successorValid = disposition switch
+        {
+            ProductIdentityWorkflowRecoveryDisposition.AbandonedBeforeWorkflowStart =>
+                successorId is null && successorStartKey is null && successorFingerprint is null,
+            ProductIdentityWorkflowRecoveryDisposition.Superseded =>
+                successorId is { } id && id != Guid.Empty
+                && IsExactBounded(successorStartKey, 256)
+                && IsLowerHex(successorFingerprint, 64),
+            _ => false
+        };
+        return successorValid
+            ? new(disposition, commandId!.Value, operatorId!.Value, reasonCode!, comment,
+                evidenceId!.Value, evidenceFingerprint!, observedAt!.Value, recoveredAt!.Value,
+                successorId, successorStartKey, successorFingerprint)
+            : null;
     }
 
     private static bool HasWorkflowEvidence(dynamic operation) =>

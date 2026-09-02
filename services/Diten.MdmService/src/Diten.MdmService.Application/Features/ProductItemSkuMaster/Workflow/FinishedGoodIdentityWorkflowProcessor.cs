@@ -145,6 +145,11 @@ public sealed class FinishedGoodIdentityWorkflowProcessor(
             {
                 return Success(operation, true);
             }
+            if (operation.Checkpoint is FinishedGoodIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
+                or FinishedGoodIdentityWorkflowCheckpoint.Superseded)
+            {
+                return Success(operation, true);
+            }
             if (stopWhenAwaitingDecision
                 && operation.Checkpoint == FinishedGoodIdentityWorkflowCheckpoint.AwaitingDecision)
             {

@@ -138,6 +138,11 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
             {
                 return Success(operation, true);
             }
+            if (operation.Checkpoint is FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
+                or FirstGskuIdentityWorkflowCheckpoint.Superseded)
+            {
+                return Success(operation, true);
+            }
             if (stopWhenAwaitingDecision
                 && operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision)
             {
