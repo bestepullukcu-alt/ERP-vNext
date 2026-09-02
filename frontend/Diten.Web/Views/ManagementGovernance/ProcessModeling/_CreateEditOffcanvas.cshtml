@@ -1,0 +1,47 @@
+@model Diten.Web.Models.ManagementGovernance.ProcessModeling.ProcessModelIdentityInput
+@using Diten.Web.Views.ManagementGovernance.ProcessModeling
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProcessModelingIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">@Localizer["IdentityFormTitle"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body border-top p-4">
+        <div id="processModelFormStatus" class="alert d-none" role="alert" aria-live="assertive" tabindex="-1"></div>
+        <form id="formProcessModelIdentity" class="pt-0" novalidate data-mode="create">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="ProcessModelId" name="ProcessModelId" />
+            <input type="hidden" id="ProcessModelExpectedVersion" name="ExpectedVersion" />
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger d-none" role="alert"></div>
+            <div class="row g-4">
+                <div class="col-12">
+                    <label asp-for="ProcessDefinitionId" class="form-label fw-medium">@Localizer["ProcessDefinition"] <span class="text-danger">*</span></label>
+                    <input asp-for="ProcessDefinitionId" class="form-control" required />
+                    <span asp-validation-for="ProcessDefinitionId" class="text-danger"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="ModelCode" class="form-label fw-medium">@Localizer["ModelCode"] <span class="text-danger">*</span></label>
+                    <input asp-for="ModelCode" class="form-control" maxlength="64" required />
+                    <span asp-validation-for="ModelCode" class="text-danger"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="Name" class="form-label fw-medium">@Localizer["Name"] <span class="text-danger">*</span></label>
+                    <input asp-for="Name" class="form-control" maxlength="200" required />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="Description" class="form-label fw-medium">@SharedLocalizer["Description"]</label>
+                    <textarea asp-for="Description" class="form-control" maxlength="4000" rows="4"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="submit" form="formProcessModelIdentity" id="btnSaveProcessModel" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>

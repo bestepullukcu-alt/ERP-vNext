@@ -1,0 +1,48 @@
+@model Diten.Web.Models.ManagementGovernance.ProcessModeling.ProcessModelingIndexViewModel
+@using Diten.Web.Models.ManagementGovernance.ProcessModeling
+@using Diten.Web.Views.ManagementGovernance.ProcessModeling
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProcessModelingIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["Title"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<partial name="~/Views/ManagementGovernance/ProcessModeling/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["Title"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="processModelingStatus" class="alert d-none" role="status" aria-live="polite"
+     data-process-modeling-state="idle" tabindex="-1"></div>
+
+@if (!Model.GatewayReady)
+{
+    <div class="alert alert-warning d-flex align-items-center" role="status" data-process-modeling-state="gateway-not-ready">
+        <i class="bx bx-shield-quarter me-2" aria-hidden="true"></i>
+        <span>@Localizer["GatewayNotReady"]</span>
+    </div>
+}
+
+<partial name="~/Views/ManagementGovernance/ProcessModeling/_DataTable.cshtml" />
+<partial name="~/Views/ManagementGovernance/ProcessModeling/_CreateEditOffcanvas.cshtml" model="new ProcessModelIdentityInput()" />
+
+<div id="processModelingPermissionSet"
+     class="d-none"
+     data-read="@Model.Permissions.Contains(ProcessModelingFrontendPermissions.Read).ToString().ToLowerInvariant()"
+     data-create="@Model.Permissions.Contains(ProcessModelingFrontendPermissions.Create).ToString().ToLowerInvariant()"
+     data-update="@Model.Permissions.Contains(ProcessModelingFrontendPermissions.Update).ToString().ToLowerInvariant()"
+     data-gateway-ready="@Model.GatewayReady.ToString().ToLowerInvariant()"></div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/pages/management-governance/process-modeling.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/ManagementGovernance/ProcessModeling/_IndexL10n.cshtml" />
+    <script src="~/assets/js/pages/management-governance/process-modeling/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/pages/management-governance/process-modeling/index.js" asp-append-version="true"></script>
+}

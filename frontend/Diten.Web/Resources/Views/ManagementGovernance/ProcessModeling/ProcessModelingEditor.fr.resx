@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Title" xml:space="preserve"><value>Éditeur de modèle</value></data>
+  <data name="BreadcrumbLabel" xml:space="preserve"><value>Navigation du modèle</value></data>
+  <data name="Models" xml:space="preserve"><value>Modèles de processus</value></data>
+  <data name="Editor" xml:space="preserve"><value>Éditeur</value></data>
+  <data name="LifecycleActions" xml:space="preserve"><value>Actions du cycle de vie</value></data>
+  <data name="RequestReview" xml:space="preserve"><value>Demander une révision</value></data>
+  <data name="ReturnToDraft" xml:space="preserve"><value>Revenir au brouillon</value></data>
+  <data name="Publish" xml:space="preserve"><value>Publier</value></data>
+  <data name="Retire" xml:space="preserve"><value>Retirer</value></data>
+  <data name="CreateRevision" xml:space="preserve"><value>Créer une révision</value></data>
+  <data name="GatewayNotReady" xml:space="preserve"><value>L&apos;éditeur reste en lecture seule jusqu&apos;à l&apos;approbation de la passerelle.</value></data>
+  <data name="VersionSummary" xml:space="preserve"><value>Résumé de la version</value></data>
+  <data name="NoAuthoritativeVersion" xml:space="preserve"><value>Aucune version faisant autorité n&apos;a été chargée.</value></data>
+  <data name="WorkspaceTabs" xml:space="preserve"><value>Espace du modèle</value></data>
+  <data name="Graph" xml:space="preserve"><value>Graphe</value></data>
+  <data name="Activities" xml:space="preserve"><value>Activités</value></data>
+  <data name="ControlPoints" xml:space="preserve"><value>Points de contrôle</value></data>
+  <data name="NoAuthoritativeGraph" xml:space="preserve"><value>Aucun graphe faisant autorité n&apos;a été chargé.</value></data>
+  <data name="NoAuthoritativeActivities" xml:space="preserve"><value>Aucune activité faisant autorité n&apos;a été chargée.</value></data>
+  <data name="NoAuthoritativeControls" xml:space="preserve"><value>Aucun point de contrôle faisant autorité n&apos;a été chargé.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Chargement du modèle faisant autorité…</value></data>
+  <data name="Error401" xml:space="preserve"><value>Votre session n&apos;est pas autorisée.</value></data>
+  <data name="Error403" xml:space="preserve"><value>Vous n&apos;avez pas l&apos;autorisation requise.</value></data>
+  <data name="Error404" xml:space="preserve"><value>Le modèle est introuvable.</value></data>
+  <data name="Error409" xml:space="preserve"><value>Le modèle a changé. Actualisez avant de continuer.</value></data>
+  <data name="Error503" xml:space="preserve"><value>Les données de modélisation faisant autorité sont indisponibles.</value></data>
+  <data name="VersionTitle" xml:space="preserve">
+    <value>Titre de la version</value>
+  </data>
+  <data name="Relationships" xml:space="preserve">
+    <value>Relations</value>
+  </data>
+  <data name="EditorActions" xml:space="preserve">
+    <value>Actions de l’éditeur</value>
+  </data>
+  <data name="Error400" xml:space="preserve">
+    <value>La demande est invalide. Vérifiez les données de version.</value>
+  </data>
+  <data name="ErrorOffline" xml:space="preserve">
+    <value>La connexion a été perdue. Vérifiez votre réseau et réessayez.</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>Le brouillon a été enregistré.</value>
+  </data>
+  <data name="ActionCompleted" xml:space="preserve">
+    <value>L’action du cycle de vie a été effectuée.</value>
+  </data>
+  <data name="InvalidGraphJson" xml:space="preserve">
+    <value>Les valeurs du graphe, des activités, des points de contrôle et des relations doivent contenir un JSON valide.</value>
+  </data>
+  <data name="LifecycleDraft" xml:space="preserve">
+    <value>Brouillon</value>
+  </data>
+  <data name="LifecycleReview" xml:space="preserve">
+    <value>En révision</value>
+  </data>
+  <data name="LifecyclePublished" xml:space="preserve">
+    <value>Publié</value>
+  </data>
+  <data name="LifecycleRetired" xml:space="preserve">
+    <value>Retiré</value>
+  </data>
+</root>

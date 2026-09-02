@@ -1,0 +1,29 @@
+@using Diten.Web.Views.ManagementGovernance.ProcessModeling
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProcessModelingIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4" aria-hidden="true">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+    <div class="card-datatable table-responsive">
+        <table id="dt-process-modeling" data-dt-standard="v2" class="datatables-process-modeling table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="cell-fit"><input type="checkbox" class="dt-checkboxes-select-all form-check-input" aria-label="@Localizer["SelectAll"]"></th>
+                    <th>@Localizer["ModelCode"]</th>
+                    <th class="all">@Localizer["Name"]</th>
+                    <th>@Localizer["CurrentVersion"]</th>
+                    <th>@Localizer["Lifecycle"]</th>
+                    <th>@Localizer["UpdatedAt"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
