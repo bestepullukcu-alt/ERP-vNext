@@ -38,7 +38,17 @@ describe("Task Center quick create", () => {
     loadScript("wwwroot/assets/js/Tasks/api.js");
     global.TasksApi.create = async (payload) => {
       created.push(payload);
-      return { ok: true, status: 201, data: { id: "new-1", title: payload.title } };
+      /*
+       * MEASURED against the running engine 2026-09-02: a create answers
+       *     { "data": "69c76120-c48a-40cb-9762-25d209f4b0f0", "statusCode": 201, ... }
+       * `data` is the new task's ID as a STRING. This double used to hand back
+       * `{ id, title }` -- an object the server never sends -- so the assertion below
+       * ("announces the new task") passed while the live toast rendered
+       * "· İşlerim'e eklendi": a sentence opening on its own separator, because the
+       * listener read `.title` off a string. A double kinder than the wire makes its
+       * own test vacuous; this one now says what the server says.
+       */
+      return { ok: true, status: 201, data: "69c76120-c48a-40cb-9762-25d209f4b0f0" };
     };
     global.TasksApi.assignablePositions = async () => ({ ok: true, data: [] });
     global.DitenModal = {

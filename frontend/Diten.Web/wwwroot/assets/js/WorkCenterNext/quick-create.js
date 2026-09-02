@@ -89,7 +89,8 @@
             return null;
         }
 
-        const result = await global.TasksApi.create(global.TaskForm.buildCreatePayload(draft));
+        const payload = global.TaskForm.buildCreatePayload(draft);
+        const result = await global.TasksApi.create(payload);
 
         if (!result.ok) {
             /*
@@ -120,8 +121,9 @@
         }
 
         global.TaskForm.clearDraft();
-        // Read the title BEFORE resetDraft() blanks the inputs -- the toast names the task.
-        const createdTitle = draft.title;
+        // The PAYLOAD's title, not the draft's: buildCreatePayload trims, and the toast must name the task
+        // the way it was stored, not the way it was typed. Read before resetDraft() blanks the inputs.
+        const createdTitle = payload.title;
         resetDraft();
         close();
         /*
