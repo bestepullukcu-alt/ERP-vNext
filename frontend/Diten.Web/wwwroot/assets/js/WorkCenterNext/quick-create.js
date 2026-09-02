@@ -120,9 +120,20 @@
         }
 
         global.TaskForm.clearDraft();
+        // Read the title BEFORE resetDraft() blanks the inputs -- the toast names the task.
+        const createdTitle = draft.title;
         resetDraft();
         close();
-        document.dispatchEvent(new CustomEvent(TASK_CREATED_EVENT, { detail: result.data || null }));
+        /*
+         * MEASURED 2026-09-02: the engine answers a create with `{ data: "<task id>" }` -- `data` is a
+         * STRING, not the task. The listener in app.js reads `event.detail?.title`, and a string has no
+         * `.title`, so the confirmation toast rendered as "· İşlerim'e eklendi": a sentence that opens on
+         * a separator because the name in front of it was undefined. The title is not on the wire, but it
+         * is right here in the draft the user just typed, so it travels with the id.
+         */
+        document.dispatchEvent(new CustomEvent(TASK_CREATED_EVENT, {
+            detail: { id: result.data || null, title: createdTitle }
+        }));
         return result.data || null;
     };
 
