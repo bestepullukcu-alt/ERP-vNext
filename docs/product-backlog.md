@@ -3569,7 +3569,21 @@ Düzenle → Durum: Aktif → Kaydet.
 
 ### BL-331 — Temanın ikincil metin rengi WCAG AA'dan kalıyor, ürün genelinde (2026-09-02, CANLI, ölçüldü)
 
-> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ · **KARAR SAHİBE AİT (ürün geneli görsel değişiklik)**
+> **DURUM:** ✅ KAPANDI (2026-09-02, `a651db91`) · **SAHİP:** CONTROL TOWER
+>
+> Sahip kararı verdi (her sayfayı etkilediği söylendikten sonra). Uygulanan:
+> ışık `#68707a` (4.61 gövde / 5.02 kart) · karanlık `#9294ab` (5.18 / 4.58).
+> Kenar çubuğu başlıkları ayrıca `--bs-gray-400` palet adımından `--bs-secondary-color`
+> metin rolüne çekildi. Canlı: ipucu 2.10→5.02 · başlıklar 2.29→5.02 · karanlık 3.94→4.58.
+>
+> ⚠ Bu değişikliği bir nöbetçi durdurdu ve haklıydı: `wcn-turc-honesty` "leaves the token
+> alone" testi token'ın ezilmesini yasaklıyordu (TUR C aynı zemini ölçmüş ama kararı
+> geliştiriciye ait görmemiş). Test SİLİNMEDİ — sonucu koruyacak şekilde çevrildi:
+> token yeniden ayarlanabilir, ama iki temada da 4.5:1'in altına düşemez.
+>
+> **Kapsam notu:** aynı sayfada 19 eleman hâlâ AA'dan kalıyor, farklı sebeplerle —
+> marka moru kırıntı yolu bağlantıları (3.33-3.72:1) ve renkli zeminli çipler (2.99:1).
+> Bu token'ın meselesi değiller; ayrı kayıt ve ayrı karar isterler.
 
 **MODÜL:** ürün geneli (tema) -- tek bir modülün kusuru değil
 **SAYFA:** her sayfa; ölçüm Görev detayı · `/WorkCenterNext/Details/{id}` üzerinde yapıldı
@@ -3639,7 +3653,10 @@ kuralın genişletilmesi olur: ray aynı yere götürüyorsa kart düğmesi stan
 
 ### BL-330 — Görev Merkezi detayında "Düzenle" kısayolu yok (2026-09-02, CANLI, sahip gördü)
 
-> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+> **DURUM:** ✅ KAPANDI (2026-09-02, [[BL-331]] ile) · **SAHİP:** CONTROL TOWER
+>
+> Yeni bağlantı ve yeni string EKLENMEDİ. Cevabı zaten veren cümle okunur hâle geldi:
+> `ActionOpenInSourceHint` canlıda 2.10:1 → 5.02:1.
 
 **MODÜL:** MOD-0024 (Görev Merkezi)
 **SAYFA:** Görev detayı · `/WorkCenterNext/Details/{id}`
