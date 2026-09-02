@@ -317,6 +317,12 @@
   <data name="ActionOpenInSourceHint" xml:space="preserve">
     <value>Görev Merkezi işin yürütüldüğü yerdir; kaydın kendisi — başlığı, açıklaması ve alanları — orada düzenlenir.</value>
   </data>
+  <data name="ActionEditRecord" xml:space="preserve">
+    <value>Görevi düzenle</value>
+  </data>
+  <data name="ActionEditRecordHint" xml:space="preserve">
+    <value>Bu görevi sen açtın; başlığı, tarihleri ve alanları hâlâ değiştirilebilir — kaydın yaşadığı Görevler modülünde.</value>
+  </data>
   <data name="TechVersionValue" xml:space="preserve">
     <value>{0}. sürüm</value>
   </data>

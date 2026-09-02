@@ -435,3 +435,54 @@ describe("opening the panel binds its controls, and a late lookup tells the pick
     }
   });
 });
+
+describe("the panel's shell is the product's, not Bootstrap's", () => {
+  /*
+   * The owner asked, looking at the two panels side by side: "gap, header — is there a divider under
+   * the header?" There was, in _QuickCreateOffcanvas.cshtml, and there was not here.
+   *
+   * MEASURED on the running page, before:
+   *     standard (.cshtml)               these panels
+   *     header  p-4              → 16px  (none) → 24px 24px 12px
+   *     body    border-top p-4   → 16px  (none) → 24px, and NO divider
+   *     footer  p-4              → 16px  p-3    → 12px
+   *
+   * The 24px was never chosen — it is the vendor default showing through, because these panels are
+   * built in JS and nobody carried the view's utility classes across. Asserted on the source rather
+   * than computed style: jsdom applies no stylesheet, so only the classes can be measured here, and
+   * the pixels were measured in the browser instead.
+   */
+  const shells = () => {
+    const src = APP();
+    return {
+      headers: (src.match(/<div class="offcanvas-header[^"]*"/g) || []),
+      bodies: (src.match(/<div class="offcanvas-body[^"]*"/g) || []),
+      footers: (src.match(/<div class="offcanvas-footer[^"]*"/g) || [])
+    };
+  };
+
+  it("gives every panel header the view's padding, not the vendor's", () => {
+    const { headers } = shells();
+    expect(headers.length, "the panels' headers are gone").toBeGreaterThan(0);
+    headers.forEach((h) => expect(h, `a header kept the vendor default: ${h}`).toContain("p-4"));
+  });
+
+  it("separates the body from the header with a line, and pads it the same", () => {
+    const { bodies } = shells();
+    expect(bodies.length, "the panels' bodies are gone").toBeGreaterThan(0);
+    bodies.forEach((b) => {
+      expect(b, `a body lost its divider: ${b}`).toContain("border-top");
+      expect(b, `a body kept the vendor default: ${b}`).toContain("p-4");
+    });
+  });
+
+  it("pads the footer like the rest of the panel", () => {
+    const { footers } = shells();
+    expect(footers.length, "the panels' footers are gone").toBeGreaterThan(0);
+    footers.forEach((f) => {
+      expect(f, `a footer kept p-3: ${f}`).not.toContain("p-3");
+      expect(f, `a footer lost its padding: ${f}`).toContain("p-4");
+      expect(f, `a footer lost its divider: ${f}`).toContain("border-top");
+    });
+  });
+});

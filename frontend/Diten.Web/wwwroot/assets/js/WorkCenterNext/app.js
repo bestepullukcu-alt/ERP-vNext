@@ -1524,6 +1524,40 @@
             ? `<button type="button" class="wcn-pin pinned" data-wcn-snooze="${item.id}" title="${
                 esc(t('SnoozeClear'))}" aria-label="${esc(t('SnoozeClear'))}" aria-pressed="true"><i class="bx bxs-moon"></i></button>`
             : '';
+        /*
+         * EDITING THE TASK YOU RAISED, FROM THE ROW (owner's decision, 2026-09-02).
+         *
+         * The owner created a task, wanted to fix a field, and read the detail page as offering no way to.
+         * Editing was never missing — /Tasks/{id}/Edit works — but reaching it meant going through
+         * "Kaynak kayıtta aç", a label that promises navigation, not correction.
+         *
+         * ⚠ NO NEW ROW LANGUAGE, exactly as the pin's rule above says: same `.wcn-pin` control in
+         * `.wcn-row-actions`, same size, same title/aria pair. It is an <a>, not a <button>, because it
+         * NAVIGATES — it is not a toggle, so it carries no `aria-pressed` and can never take `.pinned`.
+         *
+         * Three conditions, each measured against the live projection rather than assumed:
+         *   · `providerCode === 'tasks'` — 114 of 115 items; the one exception comes from another provider,
+         *     where /Tasks/{id}/Edit is not its record and the link would be a lie.
+         *   · `raisedByViewer` — the engine publishes `requester.isCurrentUser`, but the presentation mapper
+         *     overwrites `requester` with a display STRING, so the flag is captured in toPresentation before
+         *     that happens (measured: reading it here returned undefined, and the link shipped inert).
+         *     `viewerRole` is not this fact — its if/else reports 'Owner' for a task you raised AND own.
+         *   · not terminal — 22 of the 114 are Done or Cancelled. Editing a closed task is not a correction,
+         *     it is a rewrite of the record. `isTerminal` is the module's one answer to that question; this
+         *     does not add a second.
+         *
+         * Destination is `sourceHref(item) + '/Edit'`, so it follows the same deep link the source door uses.
+         * Nothing here decides the URL on its own.
+         */
+        const canEditFromRow = (candidate) =>
+            candidate.source?.providerCode === 'tasks'
+            && !!candidate.raisedByViewer
+            && !isTerminal(candidate)
+            && !!sourceHref(candidate);
+        const editBtn = canEditFromRow(item)
+            ? `<a class="wcn-pin" href="${esc(sourceHref(item))}/Edit" data-wcn-edit="${esc(item.id)}" title="${
+                esc(t('ActionEditRecord'))}" aria-label="${esc(t('ActionEditRecord'))}"><i class="bx bx-edit-alt" aria-hidden="true"></i></a>`
+            : '';
         const onBehalfBadge = item.delegator
             ? `<span class="wcn-badge wcn-badge-delegation" title="${esc(tf('OnBehalfOf', item.delegator))}"><i class="bx bx-user-voice"></i>${esc(tf('OnBehalfShort', item.delegator))}</span>`
             : '';
@@ -1542,7 +1576,7 @@
                 ${compact ? '' : `<p class="wcn-row-summary">${esc(summary)}</p>`}
                 <div class="wcn-row-chips">${rowChips(item)}</div>
             </div>
-            <div class="wcn-row-actions">${unsnoozeBtn}${pinBtn}${actionCluster(item)}</div>
+            <div class="wcn-row-actions">${editBtn}${unsnoozeBtn}${pinBtn}${actionCluster(item)}</div>
         </div>`;
     };
 
@@ -5063,12 +5097,12 @@
         const statusKey = SUBTASK_STATUS_KEY[draft.status];
         return `<div class="offcanvas offcanvas-end wcn-subtask-panel" tabindex="-1" id="wcnSubtaskPanel"
                      aria-labelledby="wcnSubtaskPanelLabel">
-            <div class="offcanvas-header">
+            <div class="offcanvas-header p-4">
                 <h5 class="offcanvas-title" id="wcnSubtaskPanelLabel">${esc(t('SubtaskQuickEditTitle'))}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
                         aria-label="${esc(t('PanelClose'))}"></button>
             </div>
-            <div class="offcanvas-body">
+            <div class="offcanvas-body border-top p-4">
                 <div class="mb-3">
                     <label class="form-label fw-medium" for="wcnSubtaskTitle">${esc(t('SubtaskFieldTitle'))}</label>
                     <div class="diten-field">
@@ -5098,7 +5132,7 @@
                 </div>
                 <p class="wcn-block-hint">${esc(t('SubtaskQuickEditScope'))}</p>
             </div>
-            <div class="offcanvas-footer p-3 border-top d-flex flex-column gap-2">
+            <div class="offcanvas-footer p-4 border-top d-flex flex-column gap-2">
                 <button type="button" class="btn btn-primary" data-wcn-subtask-save="${esc(id)}"${busy ? ' disabled' : ''}>
                     ${esc(t('SubtaskSave'))}
                 </button>
@@ -5221,9 +5255,26 @@
         const options = people.map((person) =>
             `<option value="${esc(personUserId(person))}"${draft.assigneeUserId === personUserId(person) ? ' selected' : ''}>`
             + `${esc(person.displayName || person.name || '')}</option>`).join('');
+        /*
+         * THE SHELL IS THE PRODUCT'S, NOT BOOTSTRAP'S (owner, 2026-09-02 — "gap, header, divider").
+         *
+         * MEASURED side by side against _QuickCreateOffcanvas.cshtml, the panel this one sits beside:
+         *
+         *     standard (.cshtml)            these panels (before)
+         *     header  p-4        → 16px     (none)   → 24px 24px 12px
+         *     body    border-top p-4 → 16px (none)   → 24px, AND NO DIVIDER
+         *     footer  p-4        → 16px     p-3      → 12px
+         *
+         * The 24px was never a decision — it is the vendor's default showing through, because these panels are
+         * built in JS and nobody carried the utility classes across from the view. The rule that a panel's body
+         * is separated from its header by a line was invisible here for the same reason.
+         *
+         * `backbone-offcanvas-actions` is deliberately NOT added to the footer: it makes buttons share a row,
+         * and this footer stacks them on purpose.
+         */
         return `<div class="offcanvas offcanvas-end wcn-subtask-panel" tabindex="-1" id="wcnSubtaskCreatePanel"
                      aria-labelledby="wcnSubtaskCreateLabel">
-            <div class="offcanvas-header">
+            <div class="offcanvas-header p-4">
                 <h5 class="offcanvas-title" id="wcnSubtaskCreateLabel">${esc(t('SubtaskCreateTitle'))}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
                         aria-label="${esc(t('PanelClose'))}"></button>
@@ -5257,7 +5308,7 @@
                * BEHAVIOUR travels with the markup: the classes below are inert until TaskForm's own enhancers
                * bind them — see showPanel.
                */''}
-            <div class="offcanvas-body">
+            <div class="offcanvas-body border-top p-4">
                 <div class="mb-3">
                     <label class="form-label fw-medium" for="wcnNewSubtaskTitle">
                         ${esc(t('SubtaskFieldTitle'))} <span class="text-danger">*</span>
@@ -5325,7 +5376,7 @@
                 </div>
                 <p class="wcn-block-hint">${esc(t('SubtaskCreateParentFixed'))}</p>
             </div>
-            <div class="offcanvas-footer p-3 border-top d-flex flex-column gap-2">
+            <div class="offcanvas-footer p-4 border-top d-flex flex-column gap-2">
                 <button type="button" class="btn btn-primary w-100"
                         data-wcn-newsubtask-save="${esc(state.subtaskCreateParentId)}"${state.subtaskCreateSaving ? ' disabled' : ''}>
                     ${esc(t('SubtaskCreateSubmit'))}
