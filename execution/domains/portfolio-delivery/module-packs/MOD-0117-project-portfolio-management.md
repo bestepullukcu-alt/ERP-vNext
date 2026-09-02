@@ -379,6 +379,25 @@ closed, in-domain lifecycle vocabularies. Every submitted code outside the retur
 zero mutation. Hardcoded arrays, stale cache/LKG allow, synthetic defaults and frontend fallback values are
 forbidden for both MOD-0048 classifications and PPM lifecycle vocabularies.
 
+The exact approved Core v2 sets are:
+
+```text
+InitiativeCancellationReason : strategic-realignment · funding-withdrawn · business-case-rejected ·
+                               duplicate-initiative · regulatory-block · capacity-unavailable ·
+                               no-longer-viable · superseded
+InitiativeHoldReason         : funding-paused · capacity-constraint · dependency-blocked ·
+                               governance-review · strategy-review · external-constraint
+InitiativeCompletionOutcome  : delivered-as-planned · delivered-with-variance · partially-delivered ·
+                               transferred-to-operations
+InitiativeClosureReason      : scope-completed · planned-end-reached · governance-directed-close ·
+                               early-completion
+InitiativeBenefitDisposition : tracking-required · tracking-in-progress ·
+                               handed-off-to-outcome-owner · no-benefit-commitment
+```
+
+These values are exact lowercase kebab-case tokens. There is deliberately no `other`: an unclassified new
+business reason requires an additive governed vocabulary decision instead of degrading portfolio analytics.
+
 ##### Lifecycle and required companion data
 
 | Transition | Required permission / authority | Required companion data | Result and side effects |
@@ -397,10 +416,11 @@ Initiative records must never be transformed into a WorkCenter provider item.
 
 After `Active -> OnHold`, a notification may be requested only if MOD-0288 exposes a verified, same-tenant,
 versioned owner/governance recipient contract and returns an authoritative recipient. Missing, ambiguous,
-cross-tenant or unavailable recipient authority produces no notification; the implementation must not route
-to a fabricated user, creator, free-text address or generic administrator. Whether missing recipient blocks
-the lifecycle mutation or records a no-notification disposition remains an open Portfolio Governance Process
-Owner + MOD-0288 contract decision; no implementation may choose implicitly.
+cross-tenant or unavailable recipient authority does not block the lifecycle transition and produces no
+notification. The same transaction records the durable `recipient-unresolved` audit/outbox disposition, and
+the mutation response carries a stable warning for the initiating UI. The implementation must not route to a
+fabricated user, creator, free-text address or generic administrator, must not create a WorkCenter item and
+must not reinterpret the warning as successful notification delivery.
 
 ##### InitiativeClosure ownership
 
@@ -1661,8 +1681,9 @@ or any other Gateway route.
   and explicit replacement is transactional and audited.
 - Initiative Core v2 contract endpoint exact-set round trip; out-of-set `400`; same-tenant and cross-tenant
   supersession; atomic closure/transition and successor-link transactions; MOD-0023 required/not-required
-  branches; MOD-0288 verified/missing/ambiguous/unavailable recipient branches; zero fake recipient and zero
-  WorkCenter item/provider projection on direct transitions.
+  branches; MOD-0288 verified/missing/ambiguous/unavailable recipient branches; durable `recipient-unresolved`
+  audit/outbox plus stable UI warning on unresolved recipient; zero fake recipient and zero WorkCenter
+  item/provider projection on direct transitions.
 
 ### Architecture and negative tests
 
@@ -1806,12 +1827,7 @@ Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separat
 
 1. Business-owner and UX acceptance of the implemented Gate L InvestmentCase/BenefitCommitment slice.
 2. Gate I-A/B/C producer contract-owner sequencing, cardinality acceptance and integrated business-flow acceptance.
-3. Portfolio Governance Process Owner approval of the exact closed code sets for cancellation reason, hold
-   reason, completion outcome, closure reason and benefit disposition; Initiative type and priority remain
-   tenant-managed MOD-0048 classifications and are not part of this closed PPM vocabulary decision.
-4. Whether a missing/ambiguous/unavailable MOD-0288 owner/governance recipient blocks `Active -> OnHold` or
-   permits the lifecycle transition with a durable no-notification disposition.
-5. Exact MOD-0031 and MOD-0024 producer contract versions for the already-closed optional `0..n`
+3. Exact MOD-0031 and MOD-0024 producer contract versions for the already-closed optional `0..n`
    `EvidenceReferences` and `FollowUpTaskReferences`; `BenefitDisposition` is required and PPM-owned.
 
 ### Open technical decisions
@@ -1854,7 +1870,7 @@ Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separat
 
 | Date | Change | Authority |
 |---|---|---|
-| 2026-09-02 | Added and corrected the governance-only Initiative Core v2 baseline: exact eight-field Golden Slim create/edit contract; nullable-in-Proposed and required-before-Active MOD-0048-owned type/priority classifications and planning dates; five PPM-owned lifecycle/closure vocabularies; action-based lifecycle and Workflow/WorkCenter boundaries; verified-recipient-only OnHold notification; exact InitiativeClosure requiredness/cardinalities; terminal supersession; authoritative-owner typed links; repository-accurate future allowlist/protected paths; HTTP matrix, acceptance/test gates and explicit owner blockers. No runtime/frontend/service/Gateway/migration/seed/deployment/activation authority was created. | User / Portfolio Governance Process Owner |
+| 2026-09-02 | Added and corrected the governance-only Initiative Core v2 baseline: exact eight-field Golden Slim create/edit contract; nullable-in-Proposed and required-before-Active MOD-0048-owned type/priority classifications and planning dates; exact approved values for five PPM-owned lifecycle/closure vocabularies with no `other`; action-based lifecycle and Workflow/WorkCenter boundaries; verified-recipient-only OnHold notification plus non-blocking durable `recipient-unresolved` disposition/UI warning; exact InitiativeClosure requiredness/cardinalities; terminal supersession; authoritative-owner typed links; repository-accurate future allowlist/protected paths; HTTP matrix, acceptance/test gates and explicit owner blockers. No runtime/frontend/service/Gateway/migration/seed/deployment/activation authority was created. | User / Portfolio Governance Process Owner |
 | 2026-09-01 | Reconciled the Initiative legacy wizard against Blueprint ownership and current PPM code. Retained the six-field Golden Slim form; registered future strategy, organization, planning, metric, investment, funding, decision, evidence and dependency detail concepts as governance-only/default-unavailable. No PPM field, runtime card, producer call, mock fallback or activation authority was created. | User / Portfolio Governance Process Owner |
 | 2026-08-30 | Recorded the DCP-004 Gate-2 current-state disposition as governance-only, default-off and non-production: exact eligible type count `0`, empty action map, six owned-type dispositions, all 31 projection fields and eleven future decision gates. No provider/endpoint/configuration/runtime/activation authority or WorkCenter completion claim was created. | User / Enterprise Strategy Control Tower |
 | 2026-08-29 | Reconciled the canonical local PPM port to `5062`, superseding the earlier `5061` allocation while preserving CRM on `5061`. The integration-agent-owned Gateway authority remains exactly `/api/v1/ppm` plus `/api/v1/ppm/{everything}`; no production activation, deployment or broader route authority was granted. | User / Enterprise Strategy Control Tower |
