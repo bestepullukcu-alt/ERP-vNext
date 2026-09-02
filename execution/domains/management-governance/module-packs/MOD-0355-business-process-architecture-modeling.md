@@ -829,6 +829,67 @@ The following remain outside this amendment without exception: `gateway/**`, `ap
 `services/Diten.Platform/**`, `services/Diten.AuthService/**`, WorkCenter, real broker delivery, migration,
 index/seed execution, production credentials, deployment, production activation and legacy mutation.
 
+### Catalog Foundation & Functional Local-Test amendment — 2026-09-02
+
+The accountable owner explicitly authorizes one backend-only Catalog Foundation slice that completes the
+`Architecture → Domain → Family → Process Definition` chain with real CQRS, HTTP and transactional Mongo
+behavior. This amendment is narrower than the 2026-09-01 closure amendment and supersedes its broader
+allowlist for this slice. It is `NON-PRODUCTION`, `DEFAULT-OFF`, `NON-MIGRATING` and `FAIL-CLOSED`.
+
+The exact API surface is closed to fourteen operations:
+
+- queries: `GET catalog/tree` and `GET catalog/definitions/{id}`;
+- architecture commands: create, update and archive;
+- domain commands: create, update and archive;
+- family commands: create, update and archive; and
+- definition commands: create, update and archive.
+
+These are exactly twelve commands and two queries. Every command, query, handler and validator is a separate
+file. The controller remains a transport adapter and contains no catalog business or persistence logic.
+
+The exact write allowlist for this slice is:
+
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Controllers/ProcessModelingLocalTestController.cs`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/LocalTestSecurity/ProcessModeling*`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Modules/ProcessModeling/Catalog/**`;
+- `services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/ProcessModeling/Catalog/**`;
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.Tests/Modules/ProcessModeling/Catalog/**`;
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Modules/ProcessModeling/Catalog/**`;
+- `services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Modules/ProcessModeling/Catalog/**`; and
+- the three corresponding test `.csproj` files, only when an additive reference is strictly required.
+
+`Program.cs`, `CustomBaseController` and every shared DI/composition file are excluded. The test fixture may
+create an ephemeral HTTP host and register only ProcessModeling Catalog local-test dependencies inside that
+fixture. No production host, listener, port, Gateway route, tracked configuration or activation is authorized.
+The fixture uses only disposable MongoDB: one database named exactly
+`diten_mg_process_modeling_catalog_itest`, isolated by a fresh per-test `TenantId`. It may apply the four
+catalog indexes once at fixture startup. Shared Mongo, seed data, shared `EnsureIndexesAsync` and
+`PlatformSchemaManifest` are forbidden.
+
+Tenant, actor and permission are derived only from the authenticated fixture credential and server context;
+they are never accepted from request body or query. `Idempotency-Key` is required for every mutation.
+`ExpectedVersion` is required for every update and archive. All queries start with
+`TenantId + IsDeleted == false`; every ID lookup and compare-and-swap filter also includes `TenantId`.
+Missing, deleted and cross-tenant records are indistinguishable natural `404` outcomes. An own-tenant
+permission denial is `403`; missing or invalid credentials are `401`; tenant credential/context conflict is
+`400`; stale version is `409`; provider, transaction or unknown-commit indeterminacy is `503`.
+
+Every mutation uses one required Mongo replica-set transaction containing exactly the business record,
+idempotency receipt, producer-local audit intent and producer-local outbox message. Failure of any participant
+rolls back all four. Unknown commit result returns `503`; standalone Mongo, in-memory, compensating and
+partial-commit fallback are forbidden. Archive is only `Active → Archived`; it does not set technical soft-delete
+fields, cascade to children or expose delete/reactivate behavior.
+
+The existing ProcessModeling `EntityBase` is the only shared technical base for these catalogs. Platform and
+Dws base types are forbidden. The exact business field names remain `ArchitectureCode`, `DomainCode`,
+`FamilyCode` and `ProcessCode`; replacing them with generic `Code` is forbidden. ProcessModeling Catalog may
+not reference Dws domain types, repositories, collections, permissions or helpers, and an architecture test
+must enforce this sibling boundary.
+
+The following are excluded without exception from this slice: `frontend/**`, `gateway/**`, `appsettings*`,
+`launchSettings.json`, Platform, Auth, PPM, MOD-0354/Dws, WorkCenter, legacy mutation, migration, seed, real
+secrets, deployment, production activation, PR and merge.
+
 ## 6. Protected Paths
 
 - `.antigravity/**`

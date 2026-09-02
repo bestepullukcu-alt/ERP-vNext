@@ -1,0 +1,2 @@
+namespace Diten.ManagementGovernanceService.Application.Modules.ProcessModeling.Catalog;
+internal sealed class UpdateProcessArchitectureHandler(ICatalogStore store) : CatalogCommandHandler<UpdateProcessArchitectureCommand>(store);
