@@ -2244,6 +2244,38 @@
     };
 
     /*
+     * ── ONE SOURCE FOR "WHERE THE RECORD LIVES", AND FOR "IS THERE ALREADY A DOOR TO IT" ──────────────────
+     *
+     * MEASURED (2026-09-02, BL-329 — two controls to one destination): the detail page drew BOTH the rail's
+     * bare "Kaynak kayıtta aç" link and the source card's "Kaynak kaydını aç" button, on the same task, to the
+     * same href. Counted in a live session and reproduced here: `railLinks=1 cardButtons=1` on an inline item
+     * carrying `source.deepLink`.
+     *
+     * The rule against that was already written — the source card's button "stands down" when the actions card
+     * has taken the destination — but it was expressed as `actionDepth === 'deeplink'`, which is only ONE of
+     * the two ways the rail opens that door. The other, `sourceDoor` on inline work, was added later and the
+     * guard never learned about it. So the fact is derived here, ONCE, and both sides read the result rather
+     * than each re-deciding from a field.
+     *
+     * The href expression itself was written out three times (narrow bar lead, rail lead, rail door) before it
+     * was written a fourth way in the card. Four readings of one fact is exactly how the two controls appeared.
+     */
+    const sourceHref = (target) => target?.source?.deepLink || target?.deepLink || target?.sourceDeepLink || '';
+
+    /*
+     * Does the ACTION RAIL already offer a way to the source record?
+     *
+     * Two conditions, both measured rather than assumed:
+     *  · a destination exists — the contract lets a provider publish none, and neither surface invents one;
+     *  · the rail is actually DRAWN. When nothing applies (`!actions.length`) `renderActionRail` returns the
+     *    "ActionsNoneClosed / ActionsNoneNotYours" card and reaches neither its deeplink lead nor `sourceDoor`
+     *    — measured on a closed task: `railLinks=0`. Reading the href alone would have called that a door and
+     *    withdrawn the card's button, leaving a finished task with no way to its own record: the cul-de-sac
+     *    this page keeps closing, re-opened by the fix for the duplicate.
+     */
+    const railLeadsToSource = (item) => !!sourceHref(item) && actionTiers(item).actions.length > 0;
+
+    /*
      * ── THE NARROW-SCREEN ACTION BAR ──────────────────────────────────────────────────────────────────────
      *
      * MEASURED at 900px: "Mevcut aksiyonlar" began at the page's 1876th pixel of 2597 — 2.08 screens of
@@ -2294,9 +2326,7 @@
             ? `<p class="alert alert-warning wcn-actionbar-reason d-flex align-items-start gap-2" role="note"${reasonId ? ` id="${esc(reasonId)}"` : ''}><i class="bx bx-lock-alt" aria-hidden="true"></i><span>${esc(primary.disabledReason)}</span></p>`
             : '';
 
-        const depthLink = surface?.surfaceMode === 'deeplink'
-            ? (item.source?.deepLink || item.deepLink || item.sourceDeepLink)
-            : null;
+        const depthLink = surface?.surfaceMode === 'deeplink' ? sourceHref(item) : null;
         const lead = depthLink
             ? `<a class="wcn-act-btn wcn-act-fill wcn-act-fill-accent wcn-actionbar-lead" href="${esc(depthLink)}">
                 <i class="bx bx-link-external" aria-hidden="true"></i><span>${
@@ -2403,9 +2433,7 @@
          * it from `item.actionDepth` looked equivalent and was not: the presentation mapper does not carry that
          * field through, so the local test read `undefined` and the branch never fired. One model, consumed.
          */
-        const depthLink = surface?.surfaceMode === 'deeplink'
-            ? (item.source?.deepLink || item.deepLink || item.sourceDeepLink)
-            : null;
+        const depthLink = surface?.surfaceMode === 'deeplink' ? sourceHref(item) : null;
         if (depthLink) {
             const moduleName = item.sourceModuleName || item.sourceModule || '';
             const rest = actions.filter((a) => !a.destructive);
@@ -2467,7 +2495,7 @@
          * claims to know something only the server knows.
          */
         const sourceDoor = (target) => {
-            const href = target.source?.deepLink || target.deepLink || target.sourceDeepLink;
+            const href = sourceHref(target);
             // No destination, no door: the contract permits a provider to publish none, and a link to nowhere
             // is worse than no link at all.
             if (!href) { return ''; }
@@ -4335,13 +4363,31 @@
             + (foreignType ? sourceRow('bx-category', 'DetailSourceType', item.sourceObjectType || item.sourceType) : '');
 
         /*
-         * THE OPEN-SOURCE BUTTON, unless the actions card has already taken it.
+         * THE OPEN-SOURCE BUTTON, unless the actions card has already taken it — or there is nowhere to go.
          *
-         * When the work cannot be finished here (`actionDepth === 'deeplink'`) the actions card leads with
-         * "{Module}'de tamamla", which goes to the same place. Two controls for one destination is the
-         * duplication this page keeps removing — so here it stands down.
+         * ⚠ THE RULE IS NOT NEW; ITS OLD WORDING WAS TOO NARROW (2026-09-02, BL-329). It said: when the work
+         * cannot be finished here (`actionDepth === 'deeplink'`) the actions card leads with "{Module}'de
+         * tamamla", which goes to the same place, so this button stands down. True, and incomplete — the rail
+         * later grew a SECOND door, `sourceDoor`'s bare "Kaynak kayıtta aç" on inline work, and the guard was
+         * never told. MEASURED on an inline task with a deep link: `railLinks=1 cardButtons=1` — the very
+         * duplication the paragraph above was written to prevent, wearing two different labels.
+         *
+         * The card no longer decides this from a field of its own. `railLeadsToSource` is the one answer to
+         * "has a door already been drawn", and it covers both of the rail's doors.
+         *
+         * ⚠ WHICH CONTROL SURVIVES IS A DECISION, not a coin toss (owner, 2026-09-02): the rail keeps the door,
+         * because the rail is where this page collects the things a reader can DO. This card says which record
+         * this is — its identity rows are the reason it exists, and they stay.
+         *
+         * ⚠ NO HREF, NO BUTTON. MEASURED: with `source.deepLink: null` the card still drew the button, and its
+         * handler reads `if (item && item.deepLink)` — so it rendered a control that did nothing at all. The
+         * rail's door already refuses that case; the card now refuses it the same way.
+         *
+         * ⚠ WHAT IS LEFT: an item with a destination and NO applicable action — a closed task, or one that is
+         * not yours. There the rail draws no door (measured: `railLinks=0`), so this button is the only way to
+         * the record and it is not a duplicate of anything.
          */
-        const openButton = item.actionDepth === 'deeplink' ? '' : `
+        const openButton = item.actionDepth === 'deeplink' || railLeadsToSource(item) || !sourceHref(item) ? '' : `
             <button type="button" class="btn btn-sm btn-label-primary wcn-opensource" data-wcn-open="${esc(item.id)}"
                     aria-label="${esc(tf('OpenSourceAria', item.sourceModuleName || item.sourceModule, item.sourceId))}">
                 <i class="bx bx-link-external" aria-hidden="true"></i><span>${esc(t('DetailOpenSource'))}</span>

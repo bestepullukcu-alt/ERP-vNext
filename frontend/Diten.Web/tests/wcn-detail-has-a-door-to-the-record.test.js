@@ -94,6 +94,19 @@ const openDetail = async (items, n) => {
 const doorLink = () => app().querySelector("[data-wcn-source-link]");
 const actionsCard = () => app().querySelector(".wcn-acts");
 
+/** The source card's own button — the second control BL-329 measured beside the rail's door. */
+const cardOpenButton = () => app().querySelector("[data-wcn-open]");
+/** The source card itself, which holds the record's IDENTITY and outlives its button. */
+const sourceCard = () => app().querySelector(".wcn-source");
+/*
+ * EVERY control on this surface that leads to the source record, counted together — the rail's bare door, the
+ * rail's deeplink lead, and the source card's button. Counting them as three separate selectors is how the
+ * duplicate survived: each one was asserted present on its own, and nobody counted the total.
+ */
+const sourceControls = () => app().querySelectorAll(
+  "[data-wcn-source-link], [data-wcn-depth-link], [data-wcn-open]"
+);
+
 describe("the Task Center's detail is not a cul-de-sac", () => {
   it("really renders the actions card for this item — nothing below means anything without it", async () => {
     await openDetail([ownTask(1)], 1);
@@ -150,6 +163,88 @@ describe("the Task Center's detail is not a cul-de-sac", () => {
 
     expect(app().textContent).toContain("ActionCompleteInSource");
     expect(doorLink(), "the deeplink lead and the door both point at the source").toBeNull();
+    // …and the source card must not quietly become the second control either (BL-329, below).
+    expect(sourceControls(), "the deeplink lead has company again").toHaveLength(1);
+  });
+
+  /*
+   * ══ BL-329 — TWO DOORS, ONE ROOM (measured 2026-09-02, live session) ═══════════════════════════════════
+   *
+   * The tests above proved the rail's door EXISTS. None of them counted, so nobody noticed that the source
+   * card was drawing a second control to the identical href, one card lower, under a different label:
+   *
+   *     rail   <a data-wcn-source-link href="/Tasks/{id}">   "Kaynak kayıtta aç"   (ActionOpenInSource)
+   *     card   <button data-wcn-open="{id}">                 "Kaynak kaydını aç"   (DetailOpenSource)
+   *
+   * MEASURED before the fix, on an inline task carrying `source.deepLink`: railLinks=1, cardButtons=1.
+   *
+   * The rule against this was ALREADY WRITTEN, in the source card's own comment — the button stands down when
+   * the actions card has taken the destination. It was expressed as `actionDepth === 'deeplink'`, which is one
+   * of the rail's TWO doors; `sourceDoor` (the bare link on inline work) came later and the guard never learned
+   * about it. So this is the written rule reaching the case it always meant, not a new rule.
+   *
+   * OWNER'S DECISION (2026-09-02): the RAIL keeps the door — the rail is where this page collects what a reader
+   * can do — and the card's button is withdrawn. The card's identity rows are the reason the card exists and
+   * they stay, which the third test below pins so "withdraw the button" cannot quietly become "drop the card".
+   */
+  it("draws exactly ONE control to the source record, and it is the rail's", async () => {
+    await openDetail([ownTask(1)], 1);
+
+    expect(sourceControls(), "two controls, one destination — BL-329 all over again").toHaveLength(1);
+    expect(doorLink(), "the rail lost the door it is supposed to keep").not.toBeNull();
+    expect(cardOpenButton(), "the source card is still drawing its own button beside the rail's").toBeNull();
+  });
+
+  it("draws NO control at all when the record has no destination — a dead button is not a door", async () => {
+    /*
+     * MEASURED before the fix: railLinks=0, cardButtons=1. The card drew its button anyway, and its handler
+     * reads `if (item && item.deepLink)` — so the reader got a control that did nothing when pressed.
+     */
+    await openDetail([ownTask(1, {
+      source: {
+        providerCode: "tasks",
+        providerContractVersion: "1.0",
+        objectType: "task",
+        objectId: ID(1),
+        deepLink: null
+      }
+    })], 1);
+
+    expect(sourceCard(), "the card itself vanished — the assertions below would be vacuous").not.toBeNull();
+    expect(sourceControls()).toHaveLength(0);
+  });
+
+  it("keeps the source card's identity rows — only the button was withdrawn, not the card", async () => {
+    await openDetail([ownTask(1)], 1);
+
+    expect(sourceCard(), "the source card went with its button; the reader can no longer see WHICH record")
+      .not.toBeNull();
+    expect(sourceCard().querySelector(".wcn-source-list"), "the card is left with a heading and nothing under it")
+      .not.toBeNull();
+    expect(sourceCard().textContent).toContain("DetailNativeStatusInSource");
+  });
+
+  it("keeps the card's button on work the rail draws no door for — closing a duplicate must not open a dead end", async () => {
+    /*
+     * ⚠ MEASURED, AND IT IS WHY THE GUARD IS NOT SIMPLY "IS THERE AN HREF". On an item with no applicable
+     * action — a finished task, or one that is not yours — `renderActionRail` returns the "ActionsNoneClosed"
+     * card and reaches NEITHER of its doors: railLinks=0. Withdrawing the card's button on the href alone would
+     * have left a closed task with no way to its own record, which is the cul-de-sac this whole file exists to
+     * close. The count is still exactly one; it is simply the card's turn to carry it.
+     */
+    await openDetail([ownTask(1, {
+      normalizedStatus: "Done",
+      taskLifecycle: "Done",
+      executionState: "notApplicable",
+      closedAt: "2026-08-01T10:00:00Z",
+      actions: [],
+      primaryActionCode: null
+    })], 1);
+
+    expect(actionsCard(), "the rail DID draw its card, so this scenario is not the one being described").toBeNull();
+    expect(doorLink(), "the rail drew a door after all — the reason for this exception is gone").toBeNull();
+    expect(sourceControls(), "a closed task with a deep link and no way to reach it").toHaveLength(1);
+    expect(cardOpenButton()).not.toBeNull();
   });
 
   it("the list rows are untouched — this is a detail-surface door, not a new row action", async () => {
