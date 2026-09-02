@@ -136,7 +136,9 @@
   <data name="ExcludedPositionNotActive" xml:space="preserve"><value>{0} занимают неактивную должность</value></data>
   <data name="ExcludedOutOfScope" xml:space="preserve"><value>{0} вне вашей области видимости</value></data>
   <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>Выберите сотрудника…</value></data>
-  <data name="AssigneeEmpty" xml:space="preserve"><value>Пока никто не занимает должность, назначить работу некому. Попросите администратора сначала назначить должности.</value></data>
+  <data name="AssigneeEmpty" xml:space="preserve"><value>Пока никто не занимает должность, назначить работу некому. Администратору нужно создать должности на экране «Должности» и назначить их сотрудникам.</value></data>
+  <data name="AssigneeEmptyAction" xml:space="preserve"><value>Открыть «Должности»</value></data>
+  <data name="PositionsScreenName" xml:space="preserve"><value>Должности</value></data>
   <data name="PersonNameUnavailable" xml:space="preserve"><value>Имя недоступно</value></data>
   <data name="PickerHolderCount" xml:space="preserve"><value>{0} чел.</value></data>
   <data name="CustomFieldRecordSearchPlaceholder" xml:space="preserve"><value>Введите для поиска…</value></data>

@@ -311,6 +311,18 @@
   <data name="ActionCompleteInSourceHint" xml:space="preserve">
     <value>Ce travail ne peut pas être terminé ici ; il se clôture dans {0}</value>
   </data>
+  <data name="ActionOpenInSource" xml:space="preserve">
+    <value>Ouvrir l'enregistrement source</value>
+  </data>
+  <data name="ActionOpenInSourceHint" xml:space="preserve">
+    <value>Le Centre de tâches est l'endroit où le travail est traité ; l'enregistrement lui-même — son titre, sa description et ses champs — se modifie là-bas.</value>
+  </data>
+  <data name="ActionEditRecord" xml:space="preserve">
+    <value>Modifier la tâche</value>
+  </data>
+  <data name="ActionEditRecordHint" xml:space="preserve">
+    <value>Vous avez créé cette tâche : son titre, ses dates et ses champs peuvent encore être modifiés — dans le module Tâches, où réside l'enregistrement.</value>
+  </data>
   <data name="TechVersionValue" xml:space="preserve">
     <value>Version {0}</value>
   </data>

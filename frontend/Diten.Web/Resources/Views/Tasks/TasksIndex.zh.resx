@@ -136,7 +136,9 @@
   <data name="ExcludedPositionNotActive" xml:space="preserve"><value>{0} 人的岗位未启用</value></data>
   <data name="ExcludedOutOfScope" xml:space="preserve"><value>{0} 人不在您的范围内</value></data>
   <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>选择人员…</value></data>
-  <data name="AssigneeEmpty" xml:space="preserve"><value>目前无人担任职位，因此没有可分配的人员。请先让管理员分配职位。</value></data>
+  <data name="AssigneeEmpty" xml:space="preserve"><value>目前无人担任职位，因此没有可分配的人员。管理员需要在“职位”页面中定义职位并将其分配给人员。</value></data>
+  <data name="AssigneeEmptyAction" xml:space="preserve"><value>打开“职位”页面</value></data>
+  <data name="PositionsScreenName" xml:space="preserve"><value>职位</value></data>
   <data name="PersonNameUnavailable" xml:space="preserve"><value>姓名不可用</value></data>
   <data name="PickerHolderCount" xml:space="preserve"><value>{0} 人</value></data>
   <data name="CustomFieldRecordSearchPlaceholder" xml:space="preserve"><value>输入以搜索…</value></data>

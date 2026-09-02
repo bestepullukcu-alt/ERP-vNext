@@ -3502,3 +3502,238 @@ eklenemez."* — 7 dilde, ve kartın çizilmediği durumu ölçen bir test.
 
 ⚠ **l10n kapısı AÇIK** (yeni metin, 7 dil). Tek başına bir tur değil; bir sonraki
 l10n paketine katılmalı.
+
+### BL-327 — Birim ve pozisyon TASLAK doğuyor, hiçbiri aktif değil, ekran sebebini söylemiyor (2026-09-01, CANLI, sahip gördü)
+
+> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+
+**MODÜL:** ORGANIZATION (Organizasyon) + TASKS (Görevler)
+**SAYFA:** Organizasyon Birimleri `/OrganizationUnits` · Pozisyonlar `/Positions`
+          · Görev Oluştur `/Tasks/Create`
+
+**Belirti (sahip canlıda, yönetim sunumu sırasında):** Görev oluştururken
+İngilizce bir uyarı:
+*"No organization unit could be determined for this task. Ask an administrator
+to assign you a position or define a root organization unit."*
+
+**Ölçüm (2026-09-01, dev veritabanı):**
+
+    organization_units:  15 kayıt
+        Status = 0 (taslak) → 13
+        Status = null       →  2
+        Status = 1 (AKTİF)  →  0     ⚠ HİÇBİRİ AKTİF DEĞİL
+
+    positions:           14 kayıt · aktif 6 · taslak 3 · null 5
+
+Kod `CreateTaskItemHandler.cs:170-176` kademeli düşüyor:
+    1. formda seçilen birim
+    2. atananın AKTİF pozisyonunun birimi
+    3. kiracının AKTİF kök birimi
+    4. yoksa hata
+
+`ResolveTenantRootUnitAsync` (:558-567) üç şart arıyor: üstü yok + arşivsiz +
+`Status == Active`. Kök birim VAR (8 tane, üstü yok, arşivsiz) ama **hiçbiri
+Active değil** → 3. basamak boş dönüyor → hata.
+
+**Üç ayrı kusur, tek belirti:**
+
+1. ⚠ **Varsayılan taslak.** Birim ve pozisyon `Draft` doğuyor. Kullanıcı
+   oluşturur, kaydeder, ve farkında olmadan KULLANILAMAZ bir kayıt yaratır.
+   ⚠ "Taslak birim" kavramının bir karşılığı yok — bir birim ya vardır ya
+   yoktur. Pozisyon için taslak anlamlı olabilir, birim için değil.
+
+2. ⚠ **Liste yalan söylüyor.** `Positions/index.js:51-53` rozeti yalnız
+   `IsArchived`'dan türetiyor, `Status`'ü HİÇ okumuyor. Taslak pozisyon
+   listede yeşil "Aktif" görünüyor, kişi seçicide yok. Sessiz değil,
+   AKTİF OLARAK YANILTICI.
+
+3. ⚠ **Mesaj 7 dilin 1'inde.** `ErrorOrganizationUnitUnresolved` yalnız
+   `Views/Tasks/TasksIndex.en.resx`'te. tr/fr/es/zh/ar/ru: yok. Türkçe
+   arayüzde İngilizce uyarı çıkıyor.
+   Ve mesaj DOĞRU şeyi söylemiyor: "bir kök birim tanımlayın" diyor, ama
+   15 kök birim VAR — eksik olan AKTİF olmaları. Kullanıcı olmayan bir şeyi
+   yaratmaya çalışıyor.
+
+**Önerilen çözüm (sahip tercihi bekliyor):**
+- ⭐ (a) Kök birim varsayılan olarak AKTİF doğsun — "taslak birim"in karşılığı yok
+- (b) Rozet `Status`'ten türetilsin (XS, l10n gerekmez —
+      `StatusDraft`/`StatusActive`/`StatusFrozen`/`StatusClosed` `details.js:40-41`'de
+      zaten kullanımda)
+- (c) Mesaj 7 dile çevrilsin VE gerçek durumu söylesin:
+      "15 biriminiz var ama hiçbiri aktif değil" — "kök birim tanımlayın" değil
+
+**Geçici çözüm (bugün uygulandı):** `/OrganizationUnits` → bir kök birimi
+Düzenle → Durum: Aktif → Kaydet.
+
+**Kardeş kayıtlar:** [[BL-073]] ana veri zinciri · [[BL-071]] Employee↔PositionAssignment
+
+### BL-331 — Temanın ikincil metin rengi WCAG AA'dan kalıyor, ürün genelinde (2026-09-02, CANLI, ölçüldü)
+
+> **DURUM:** ✅ KAPANDI (2026-09-02, `a651db91`) · **SAHİP:** CONTROL TOWER
+>
+> Sahip kararı verdi (her sayfayı etkilediği söylendikten sonra). Uygulanan:
+> ışık `#68707a` (4.61 gövde / 5.02 kart) · karanlık `#9294ab` (5.18 / 4.58).
+> Kenar çubuğu başlıkları ayrıca `--bs-gray-400` palet adımından `--bs-secondary-color`
+> metin rolüne çekildi. Canlı: ipucu 2.10→5.02 · başlıklar 2.29→5.02 · karanlık 3.94→4.58.
+>
+> ⚠ Bu değişikliği bir nöbetçi durdurdu ve haklıydı: `wcn-turc-honesty` "leaves the token
+> alone" testi token'ın ezilmesini yasaklıyordu (TUR C aynı zemini ölçmüş ama kararı
+> geliştiriciye ait görmemiş). Test SİLİNMEDİ — sonucu koruyacak şekilde çevrildi:
+> token yeniden ayarlanabilir, ama iki temada da 4.5:1'in altına düşemez.
+>
+> **Kapsam notu:** aynı sayfada 19 eleman hâlâ AA'dan kalıyor, farklı sebeplerle —
+> marka moru kırıntı yolu bağlantıları (3.33-3.72:1) ve renkli zeminli çipler (2.99:1).
+> Bu token'ın meselesi değiller; ayrı kayıt ve ayrı karar isterler.
+
+**MODÜL:** ürün geneli (tema) -- tek bir modülün kusuru değil
+**SAYFA:** her sayfa; ölçüm Görev detayı · `/WorkCenterNext/Details/{id}` üzerinde yapıldı
+**KONUM:** `wwwroot/assets/vendor/css/core.css` → `--bs-secondary-color: #a7acb2`
+
+**Ölçüm (2026-09-02, canlı oturum, her elemanın GERÇEK zeminine göre):**
+
+    #a7acb2 · beyaz zemin → 2.29:1
+    WCAG AA gereği       → 4.5:1 (normal metin)
+
+    tek sayfada bu rengi kullanan görünür METİN elemanı:
+        AA'dan kalan : 23
+        AA'yı geçen  :  0
+
+    örnekler: kenar çubuğu modül başlıkları ("İnsan Sermayesi Yönetimi", "Satış",
+    "Doküman Yönetimi", "Ana Veri Yönetimi"), Görev Merkezi eylem ipuçları
+
+Karşılaştırma: temanın kendi gövde rengi `--bs-body-color: #646e78` = **5.20:1**, geçiyor.
+Yani tema tutarsız -- gövde metni erişilebilir, ikincil metin değil.
+
+**Vendor dosyası DÜZENLENMEZ** (proje kuralı; navbar-shift düzeltmesini `backbone-custom.css`de
+tutan kuralın aynısı). Düzeltme `backbone-custom.css` içinde bir `:root` ezmesi olur.
+
+**Neden karar sahibe ait:** bu, ürünün HER sayfasındaki soluk metni koyulaştırır. Küçük bir
+kod değişikliği (bir satır), ama görsel etkisi geniş. Bir modülün sınıfını tek başına yamamak
+YANLIŞ olur -- 23 elemandan yalnız birini düzeltip diğer 22'sini okunamaz bırakır.
+
+**Ölçülmüş aday:** `#6f767e` → 4.60:1 (AA geçer). Sahibin tasarım tercihi başka bir ton
+olabilir; şart olan 4.5:1.
+
+İlgili: [[BL-330]] bu kusurun sahibi tarafından "düzenleme yok" olarak görülen yüzü
+
+---
+
+### BL-329 — Görev detayında aynı yere giden İKİ "kaynak kaydı" düğmesi (2026-09-02, CANLI, ölçüldü)
+
+> **DURUM:** ✅ KAPANDI (2026-09-02, `951fe12a`) · **SAHİP:** CONTROL TOWER
+>
+> Karar uygulandı: ray bağlantısı kaldı, kart düğmesi çekildi. Nöbetçi `railLeadsToSource`
+> (href VE çizen bir eylem katmanı) -- salt href yeterli değil, çünkü kapalı görevde ray
+> hiç kapı çizmiyor ve salt-href nöbetçisi sayfanın TEK kapısını kaldırırdı.
+> Canlı ölçüm: ray 1 · kart 0 · toplam 1 (önce 2). Kaynak kartı kimlik satırlarıyla duruyor.
+
+**MODÜL:** MOD-0024 (Görev Merkezi)
+**SAYFA:** Görev detayı · `/WorkCenterNext/Details/{id}`
+**KONUM:** `assets/js/WorkCenterNext/app.js:2475` (eylem rayı) + `app.js:4345` (Kaynak kartı)
+
+**Ölçüm (2026-09-02, canlı oturum):**
+
+    eylem rayı   → <a href="/Tasks/{id}">        "Kaynak kayıtta aç"
+    Kaynak kartı → <button data-wcn-open="{id}"> "Kaynak kaydını aç"
+    ikisi de görünür: true · hedef aynı · etiketler neredeyse aynı
+
+Kodun kendi yorumu kuralı zaten koymuş (`app.js:4341`):
+*"Two controls for one destination is the duplication this page keeps removing --
+so here it stands down."* Ama nöbetçi yalnız `actionDepth === 'deeplink'` durumunu
+tanıyor; ray burada **çıplak** bir bağlantı çizdiği için koşul tutmuyor. Yazılmış
+ama bu durumu kapsamayan bir kural.
+
+**Karar sahibe ait:** hangisi kalacak? Önerim eylem rayındaki bağlantı -- eylemler
+rayda yaşar, Kaynak kartı kaydın *kimliğini* gösterir. Bu, yorumun zaten yazdığı
+kuralın genişletilmesi olur: ray aynı yere götürüyorsa kart düğmesi stand down eder.
+
+İlgili: [[BL-309]] kaynak gezinme modeli
+
+---
+
+### BL-330 — Görev Merkezi detayında "Düzenle" kısayolu yok (2026-09-02, CANLI, sahip gördü)
+
+> **DURUM:** ✅ KAPANDI (2026-09-02, [[BL-331]] ile) · **SAHİP:** CONTROL TOWER
+>
+> Yeni bağlantı ve yeni string EKLENMEDİ. Cevabı zaten veren cümle okunur hâle geldi:
+> `ActionOpenInSourceHint` canlıda 2.10:1 → 5.02:1.
+
+**MODÜL:** MOD-0024 (Görev Merkezi)
+**SAYFA:** Görev detayı · `/WorkCenterNext/Details/{id}`
+**KONUM:** eylem rayı (`app.js` eylem listesi)
+
+**Ölçüm (2026-09-02, canlı oturum):** düzenleme YETENEĞİ eksik değil --
+
+    /Tasks/{id}/Edit   → "Görevi Düzenle" sayfası ÇALIŞIYOR
+                         (TasksController.cs:92, başlık dolu, 2 tarih alanı,
+                          9 select2, "Kaydet")
+    /Tasks/{id}        → "Düzenle" bağlantısı VAR → /Tasks/{id}/Edit
+
+Yani yol şu: Görev Merkezi detayı → "Kaynak kayıtta aç" → `/Tasks/{id}` →
+"Düzenle". İki tık, ama ilk tıkın etiketi düzenlemeyi çağrıştırmıyor; sahip
+"düzenleme yok" olarak gördü.
+
+**⚠ 2026-09-02 EK ÖLÇÜM — bu kaydın ilk gerekçesi YANLIŞTI.** Ürün devri zaten
+ANLATIYOR. Kaynak kapısının altında, 7 dilde, `ActionOpenInSourceHint` duruyor:
+
+    "Görev Merkezi işin yürütüldüğü yerdir; kaydın kendisi -- başlığı,
+     açıklaması ve alanları -- orada düzenlenir."
+
+Canlıda ölçüldü: cümle RENDER EDİLİYOR ve `offsetParent` dolu, yani görünür. Ama:
+
+    .wcn-act-outcome → font-size 12px · color var(--bs-secondary-color) = #a7acb2
+    beyaz zemin üzerinde kontrast = 2.29:1 · WCAG AA gereği 4.5:1 → KALDI
+
+Sahibin "düzenleme yok" görmesinin sebebi bu: cevabı veren cümle ekranda, okunmuyor.
+
+**Bu yüzden yeni bir "Düzenle" bağlantısı + 7 dilde yeni string YANLIŞ ÇÖZÜM olur** --
+doğru şeyi zaten söyleyen bir cümlenin üstünü örtmek olur. Doğru çözüm kontrast, ve o
+da bu kaydın dışında: bkz. [[BL-331]].
+
+BL-330 kapanışı BL-331'e bağlı: cümle okunur olunca sahibin sorusu ekranda yanıtlanmış
+olur. Okunur hâliyle hâlâ kısayol isteniyorsa, o zaman ray bağlantısı ayrıca konuşulur.
+
+---
+
+### BL-328 — Kiracı tarafında "Şifremi unuttum" hiçbir yere gitmiyor (2026-09-01, CANLI, sahip gördü)
+
+> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+
+**MODÜL:** ACCESS-GOVERNANCE (Erişim Yönetimi)
+**SAYFA:** Giriş · `/account/login`
+**KONUM:** `frontend/Diten.Web/Views/Account/Login.cshtml:122`
+
+**Ölçüm (2026-09-01):**
+
+    <a href="@(authMode == "platform" ? "/platform/forgot-password" : "#")">
+
+    platform yöneticisi → /platform/forgot-password  ✅ çalışıyor
+                          (AccountController.cs:220 GET, :227 POST)
+    kiracı kullanıcısı  → "#"                        ⚠ HİÇBİR YER
+
+`AccountController`'da yalnız `PlatformForgotPassword` var; kiracı karşılığı
+hiç yazılmamış.
+
+⚠ **Pratik sonucu:** kiracı kullanıcısı şifresini unutursa kendi başına
+kurtaramaz. Bir yöneticinin `/Users` ekranından "Şifre Sıfırla" yapması
+gerekiyor — ama kullanıcı bunu bilmiyor, çünkü ekran ona tıklanabilir bir
+bağlantı gösteriyor ve tıklayınca hiçbir şey olmuyor.
+
+⚠ Bu, bu üründe tekrar eden kusur ailesinin bir üyesi: EKRAN BİR ŞEYİN NEDEN
+OLMADIĞINI SÖYLEMİYOR. Kardeşleri: [[BL-326]] alt görev kartı sessizce yok
+oluyor · [[BL-327]] birim/pozisyon taslak doğuyor, sebebi söylenmiyor ·
+kişi seçicideki "neden kısa" ipucunun tarayıcıda ölmesi.
+
+**İki aşamalı çözüm — 1. aşama bugün yapıldı:**
+
+- ⭐ **Aşama 1 (XS, YAPILDI):** yalan bağlantıyı kaldır. Kiracı tarafında
+  tıklanabilir bir bağlantı yerine, ne yapılacağını söyleyen bir cümle:
+  "Şifrenizi unuttuysanız yöneticinize başvurun." — 7 dilde.
+- **Aşama 2 (M, AÇIK):** kiracı için gerçek şifre sıfırlama akışı — uç,
+  e-postayla jeton, süre sınırı, sıfırlama ekranı, 7 dil. Platform
+  tarafındaki emsal hazır (`AccountController.cs:220-227`,
+  `Views/Account/ForgotPassword.cshtml`).
+
+**Kapanış ölçütü (Aşama 2):** kiracı kullanıcısı giriş ekranından şifresini
+sıfırlayabilmeli, ve akışın çalıştığını ölçen bir test — bağlantının varlığını
+değil, sıfırlamanın gerçekleştiğini ölçen.

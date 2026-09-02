@@ -40,6 +40,22 @@ public sealed class MdmLegalEntityReferenceValidator : ILegalEntityReferenceVali
 {
     private const string TenantHeader = "X-Tenant-Id";
 
+    /*
+     * ⚠ THIS CALL SITS IN THE TASK CENTER'S CREATE PATH, so an MDM that is merely SLOW freezes a screen.
+     *
+     * MEASURED 2026-09-02, live: MDM answered /lookup-validation in 30 021 ms (its Mongo driver could not
+     * select a server). This client had no budget of its own and none in DI, so it waited on the .NET
+     * default of 100 s; Platform's assignable-people query waited on it; the browser's wire() awaited that
+     * and never bound the date pickers or the person selects. Four separate "the UI is broken" reports,
+     * one unbounded dependency.
+     *
+     * The sibling registered two lines below in DependencyInjection already owns a linked budget
+     * (WorkingCalendarLegalEntityValidator, 3 s). This is that pattern, applied where it was missing.
+     * A budget that expires is NOT the caller's cancellation, so it lands in the TaskCanceledException
+     * catch and fails closed -- the same answer this validator already gives for an unreachable MDM.
+     */
+    private static readonly TimeSpan TotalTimeout = TimeSpan.FromSeconds(5);
+
     private readonly HttpClient _httpClient;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ITenantContext _tenantContext;
@@ -92,13 +108,16 @@ public sealed class MdmLegalEntityReferenceValidator : ILegalEntityReferenceVali
             request.Headers.TryAddWithoutValidation(TenantHeader, tenantId.Value.ToString());
             AttachCallerAuthorization(request);
 
-            using var response = await _httpClient.SendAsync(request, ct);
+            using var budget = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            budget.CancelAfter(TotalTimeout);
+
+            using var response = await _httpClient.SendAsync(request, budget.Token);
             if (!response.IsSuccessStatusCode)
             {
                 return FailClosed();
             }
 
-            var envelope = await response.Content.ReadFromJsonAsync<MdmResponse<LegalEntityReferenceDto>>(cancellationToken: ct);
+            var envelope = await response.Content.ReadFromJsonAsync<MdmResponse<LegalEntityReferenceDto>>(cancellationToken: budget.Token);
             if (envelope?.IsSuccessful != true
                 || envelope.Data is null
                 || envelope.Data.LegalEntityId != legalEntityId

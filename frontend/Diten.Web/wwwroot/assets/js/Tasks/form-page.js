@@ -8,6 +8,8 @@
     const t = (key) => global.TasksL10n?.t?.(key) ?? key;
 
     // Where a completed create/edit returns to: the Task Center owns the personal work list.
+    // Where positions are made — the destination an empty person picker offers.
+    const POSITIONS_URL = '/Positions';
     const WORK_CENTER_URL = '/WorkCenterNext';
 
     /*
@@ -433,6 +435,12 @@
         const personLabels = {
             placeholder: t('assigneeSelectPlaceholder'),
             empty: t('assigneeEmpty'),
+            // The way OUT of the empty state (2026-09-02). "Nobody holds a position" is true and is where the
+            // reader stopped: it named what was missing and no place to go and make it. /Positions is
+            // [Authorize]-only and the backend is authoritative for everything under it, so the link is an
+            // OFFER rather than a client-side guess at the reader's rights.
+            emptyActionLabel: t('assigneeEmptyAction'),
+            emptyActionHref: POSITIONS_URL,
             nameUnavailable: t('personNameUnavailable')
         };
         const personOptions = (people || []).map((row) => ({
@@ -683,6 +691,12 @@
         const personLabels = {
             placeholder: t('assigneeSelectPlaceholder'),
             empty: t('assigneeEmpty'),
+            // The way OUT of the empty state (2026-09-02). "Nobody holds a position" is true and is where the
+            // reader stopped: it named what was missing and no place to go and make it. /Positions is
+            // [Authorize]-only and the backend is authoritative for everything under it, so the link is an
+            // OFFER rather than a client-side guess at the reader's rights.
+            emptyActionLabel: t('assigneeEmptyAction'),
+            emptyActionHref: POSITIONS_URL,
             nameUnavailable: t('personNameUnavailable'),
             holderCount: t('pickerHolderCount')
         };
@@ -856,11 +870,35 @@
 
             if (result.ok) {
                 global.TaskForm.clearDraft();
-                // Awaited so the acknowledgement is actually seen; navigating immediately would kill it.
-                await global.DitenModal.success({
-                    title: t(mode === 'edit' ? 'toastSaved' : 'toastCreated'),
-                    timer: 1600
-                });
+                /*
+                 * ⚠ A REPORT, NOT A QUESTION (2026-09-02).
+                 *
+                 * This was `await DitenModal.success(...)`, and the await was the honest part of it: the save
+                 * navigates, so a toast raised here would die with the page, and holding the reader in a dialog
+                 * was the only way the message survived. But a modal is the instrument for ASKING — it takes
+                 * the page hostage until answered — and "oluşturuldu" asks nothing. Measured in a management
+                 * demo: the reader saved, and the product stopped them to confirm what they had just done.
+                 *
+                 * The message is handed ACROSS the navigation instead and raised on the page the reader lands
+                 * on, so nothing is lost and nothing is interrupted. The shell owns the hand-over (one key, one
+                 * writer, spent on read) because this save has no single destination to flush it on: it lands
+                 * on the Task Center, or on whatever local returnUrl it was given.
+                 *
+                 * ⚠ REFUSALS BELOW STAY MODAL, and that asymmetry is the point. A refusal names a cause the
+                 * reader must act on; a message that fades is the wrong carrier for one.
+                 */
+                const acknowledgement = t(mode === 'edit' ? 'toastSaved' : 'toastCreated');
+                if (global.BackboneShell?.handOverToast) {
+                    global.BackboneShell.handOverToast(acknowledgement, 'success');
+                } else {
+                    /*
+                     * The shell is loaded by _LayoutTenantShell BEFORE this page's own scripts, so this branch
+                     * should be unreachable. It is written as a fall back to the OLD dialog rather than as a
+                     * silent skip on purpose: losing the acknowledgement entirely would be a save the reader is
+                     * never told about, and this file exists this round because a page failed without saying so.
+                     */
+                    await global.DitenModal.success({ title: acknowledgement, timer: 1600 });
+                }
                 /*
                  * The Task Center is the single personal entry point, so saving returns there — not to a
                  * competing task list (MOD-0024 pack §5 / the manifest's own note).

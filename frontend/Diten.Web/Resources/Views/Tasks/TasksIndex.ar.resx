@@ -136,7 +136,9 @@
   <data name="ExcludedPositionNotActive" xml:space="preserve"><value>{0} في منصب غير نشط</value></data>
   <data name="ExcludedOutOfScope" xml:space="preserve"><value>{0} خارج نطاق صلاحيتك</value></data>
   <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>اختر شخصًا…</value></data>
-  <data name="AssigneeEmpty" xml:space="preserve"><value>لا يشغل أحد وظيفة بعد، لذا لا يوجد من يمكن الإسناد إليه. اطلب من المسؤول تعيين الوظائف أولاً.</value></data>
+  <data name="AssigneeEmpty" xml:space="preserve"><value>لا يشغل أحد وظيفة بعد، لذا لا يوجد من يمكن الإسناد إليه. على المسؤول تعريف المناصب من شاشة المناصب وإسنادها إلى الأشخاص.</value></data>
+  <data name="AssigneeEmptyAction" xml:space="preserve"><value>فتح شاشة المناصب</value></data>
+  <data name="PositionsScreenName" xml:space="preserve"><value>المناصب</value></data>
   <data name="PersonNameUnavailable" xml:space="preserve"><value>الاسم غير متوفر</value></data>
   <data name="PickerHolderCount" xml:space="preserve"><value>{0} شخص</value></data>
   <data name="CustomFieldRecordSearchPlaceholder" xml:space="preserve"><value>اكتب للبحث…</value></data>

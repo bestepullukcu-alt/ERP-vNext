@@ -128,8 +128,52 @@ describe("the one contrast pairing we made worse", () => {
     expect(rule, "the chip fell back under the token's own floor").not.toContain("var(--bs-secondary-color)");
   });
 
-  it("leaves the token alone", () => {
-    // Changing `--bs-secondary-color` is a design-system decision and repaints every screen in the product.
-    expect(CSS, "the shared token was redefined").not.toMatch(/--bs-secondary-color:\s*#/);
+  it("keeps the token above AA now that the owner has retuned it", () => {
+    /*
+     * ⚠ THIS GUARD USED TO SAY THE OPPOSITE, and it was right to.
+     *
+     * It read: `expect(CSS).not.toMatch(/--bs-secondary-color:\s*#/)`, with the note
+     * "Changing --bs-secondary-color is a design-system decision and repaints every screen in the
+     * product." TUR C had measured the token's floor (2.29 light / 3.49 dark) and deliberately
+     * RECORDED it rather than changing it, because that call was not a developer's to make.
+     * The guard then caught exactly the session that tried — 2026-09-02, this one.
+     *
+     * The owner has since made the call (BL-331), told that it repaints muted text on every page:
+     * the floor was traced to a live report of "there is no edit" on the Task Center's task detail,
+     * where the sentence that answers the question renders at 2.10:1 on the real page ground and so
+     * could not be read.
+     *
+     * So the rule is not deleted — a decision taken is not a decision unguarded. It now protects the
+     * OUTCOME instead of the status quo: the token may be redefined, and must clear AA on both
+     * surfaces a muted string lands on, in both themes. Retuning it again is still allowed; letting
+     * it drop back below 4.5:1 is not.
+     */
+    const token = (theme) => {
+      const at = theme === "dark"
+        ? CSS.indexOf("[data-bs-theme=dark] {", CSS.indexOf("MUTED TEXT MUST BE READABLE"))
+        : CSS.indexOf(":root,", CSS.indexOf("MUTED TEXT MUST BE READABLE"));
+      const hex = /--bs-secondary-color:\s*(#[0-9a-fA-F]{6})/.exec(CSS.slice(at, at + 400));
+      return hex && hex[1];
+    };
+    const lum = (hex) => {
+      const ch = [1, 3, 5].map((i) => parseInt(hex.substr(i, 2), 16) / 255)
+        .map((v) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
+      return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+    };
+    const ratio = (a, b) => {
+      const [x, y] = [lum(a), lum(b)];
+      return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+    };
+    // The two grounds a muted string actually lands on, measured from the running app.
+    const SURFACES = { light: ["#f5f5f9", "#ffffff"], dark: ["#232333", "#2b2c40"] };
+
+    ["light", "dark"].forEach((theme) => {
+      const colour = token(theme);
+      expect(colour, `no --bs-secondary-color declared for ${theme}`).toBeTruthy();
+      SURFACES[theme].forEach((ground) => {
+        expect(ratio(colour, ground), `${theme} muted text on ${ground} is below WCAG AA`)
+          .toBeGreaterThanOrEqual(4.5);
+      });
+    });
   });
 });

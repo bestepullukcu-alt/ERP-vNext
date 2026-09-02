@@ -722,6 +722,51 @@
     };
 
     /*
+     * ── THE WAY OUT OF AN EMPTY PICKER (2026-09-02) ──────────────────────────────────────────────────────
+     *
+     * The empty state is a disabled `<option>`, and an option renders TEXT and nothing else — no anchor can
+     * live inside one. So the sentence stays in the control and the way out is drawn beside it, as a
+     * `.form-text`, which is the carrier `taskAssigneeExcluded` already uses to explain a SHORT list (BL-072).
+     * One vocabulary for "why this picker does not offer what you expected".
+     *
+     * Built as NODES, never as an HTML string: the label is translated text and the href is a route, and
+     * string-building is how either becomes markup.
+     *
+     * ⚠ REMOVED AGAIN THE MOMENT THE LIST FILLS. A "go and create positions" link left standing over a working
+     * picker describes a state that has passed, which is the same kind of lie as the empty one that said
+     * nothing at all.
+     */
+    const EMPTY_HINT_MARKER = 'data-task-empty-hint';
+
+    const clearEmptyPickerHint = (selectEl) => {
+        const field = selectEl.closest ? selectEl.closest('.diten-field') : null;
+        const scope = (field && field.parentElement) || selectEl.parentElement;
+        scope?.querySelectorAll?.(`[${EMPTY_HINT_MARKER}]`).forEach((node) => node.remove());
+    };
+
+    const renderEmptyPickerHint = (selectEl, text) => {
+        clearEmptyPickerHint(selectEl);
+        if (!text.emptyActionHref || !text.emptyActionLabel) { return; }
+
+        // Anchored to the FIELD WRAPPER, not the control: select2 replaces the control's neighbourhood, and a
+        // hint inserted next to a hidden <select> would land inside the part select2 owns.
+        const field = selectEl.closest ? selectEl.closest('.diten-field') : null;
+        const anchorNode = field || selectEl;
+        if (!anchorNode.parentElement) { return; }
+
+        const hint = global.document.createElement('div');
+        hint.className = 'form-text';
+        hint.setAttribute(EMPTY_HINT_MARKER, 'true');
+
+        const link = global.document.createElement('a');
+        link.setAttribute('href', text.emptyActionHref);
+        link.textContent = text.emptyActionLabel;
+        hint.appendChild(link);
+
+        anchorNode.parentElement.insertBefore(hint, anchorNode.nextSibling);
+    };
+
+    /*
      * Fill a person <select>. An empty list is a REAL state — nobody in the tenant holds a position — and gets an
      * explanation rather than a silently empty dropdown the user cannot interpret.
      */
@@ -739,10 +784,12 @@
             empty.selected = true;
             selectEl.appendChild(empty);
             selectEl.disabled = true;
+            renderEmptyPickerHint(selectEl, text);
             return;
         }
 
         selectEl.disabled = false;
+        clearEmptyPickerHint(selectEl);
         // A MULTI-select gets no placeholder at all: in a list box a placeholder is just another selectable
         // line, and selecting it would post an empty identity among the real ones.
         applyPlaceholder(selectEl, text.placeholder, multiple);
@@ -1398,7 +1445,24 @@
      */
     const enhanceDates = (root) => {
         const scope = root || global.document;
-        if (!scope || !global.DitenDateField) { return 0; }
+        if (!scope) { return 0; }
+        /*
+         * ⚠ THE MISSING COMPONENT IS ANNOUNCED, NOT SWALLOWED (2026-09-02).
+         *
+         * `!global.DitenDateField` used to `return 0` in silence, and that silence is the whole defect: the
+         * Task Center loaded this file and not the component it delegates to, so every date field on it shipped
+         * as a plain text box under a calendar icon. Nothing on screen, in the console or in any test said why.
+         * A host view that forgets the script now reads the name of the script it forgot.
+         */
+        if (!global.DitenDateField) {
+            if (scope.querySelector && scope.querySelector('.flatpickr-date')) {
+                global.console?.error?.(
+                    '[TaskForm] this page renders date fields but never loaded '
+                    + 'assets/js/shared/diten-datefield.js, which is where the picker is constructed. '
+                    + 'enhanceDates binds nothing without it.');
+            }
+            return 0;
+        }
         return global.DitenDateField.enhance(scope);
     };
 
