@@ -312,10 +312,10 @@ soft-delete, never from a stored standalone boolean.
 | `Name` | string | Yes | Trim + NFC; non-empty; max 200 |
 | `Description` | string? | No | Trim + NFC; max 2000 |
 | `PortfolioId` | Guid? | No | Same-tenant non-deleted Portfolio if supplied; optional-one cardinality |
-| `InitiativeTypeCode` | string | Yes | Member of the PPM-owned closed in-domain vocabulary; unknown value is `400` |
-| `PriorityCode` | string | Yes | Member of the PPM-owned closed in-domain vocabulary; unknown value is `400` |
-| `PlannedStartDate` | `DateOnly` | Yes | Planning date; cannot be after `PlannedEndDate` |
-| `PlannedEndDate` | `DateOnly` | Yes | Planning date; cannot precede `PlannedStartDate` |
+| `InitiativeTypeCode` | string? | No for `Proposed`; yes before `Active` | Tenant-managed MOD-0048 option; supplied values require authoritative validation, unknown is `400`, unavailable/indeterminate provider is `503` |
+| `PriorityCode` | string? | No for `Proposed`; yes before `Active` | Tenant-managed MOD-0048 option; supplied values require authoritative validation, unknown is `400`, unavailable/indeterminate provider is `503` |
+| `PlannedStartDate` | `DateOnly?` | No for `Proposed`; yes before `Active` | Planning date; when both dates exist cannot be after `PlannedEndDate` |
+| `PlannedEndDate` | `DateOnly?` | No for `Proposed`; yes before `Active` | Planning date; when both dates exist cannot precede `PlannedStartDate` |
 | `LifecycleState` | closed string enum | Yes | Read-only/action-based: `Proposed`, `Active`, `OnHold`, `Completed`, `Cancelled`; default `Proposed` |
 | `VisibilityPolicyKey` | string? | No | Max 128; non-null requires authoritative MOD-0018 validation |
 | `SupersedesInitiativeId` | Guid? | No | Create-only server-validated reference to a same-tenant terminal Initiative; immutable after create; cycles forbidden |
@@ -339,7 +339,7 @@ amendment authorizes a card, it must consume only the named owner contract and p
 |---|---|---|
 | Strategy alignment (objective, goal, period, horizon) | MOD-0352; no Initiative reference contract | Unavailable; no objective/goal field, free-text alignment note or local strategy copy |
 | Ownership and organization (org, person, position, sponsor) | MOD-0288; relationship semantics and cardinality open | Unavailable; no owner/sponsor text, person snapshot or organization collection |
-| Planning context (priority, phase, dates, cadence, readiness) | PPM candidate decisions are open; taxonomy/period semantics are not approved | Unavailable; no second status truth, hardcoded enum or inferred readiness |
+| Planning context (phase, wave, cadence, readiness) | PPM candidate decisions are open; taxonomy/period semantics are not approved | Unavailable; no second status truth, hardcoded enum or inferred readiness; Core v2 priority and planning dates are governed separately below |
 | Metric and contribution | Canonical owner requires reconciliation; legacy MOD-0004 evidence is not an executable MOD-0059/MOD-0060 contract | Unavailable; no metric text, unit, calculation or contribution-plan copy |
 | Investment, funding, scenario and benefits | InvestmentCase/BenefitCommitment are separate MOD-0117 aggregates; MOD-0136/MOD-0138/MOD-0072 links remain Gate I boundaries | Unavailable unless a later exact Initiative cardinality and producer contract are approved; no amount, currency, scenario or realized-value copy |
 | Decision and approval | MOD-0007 decision links remain Gate I-A; MOD-0023 is `ExcludedV1` | Unavailable; no approval state, decision note or inferred governing status |
@@ -367,18 +367,23 @@ actions. `VisibilityPolicyKey`, `SupersedesInitiativeId`, tenant, audit, soft-de
 not ordinary create/edit fields. `SupersedesInitiativeId` is accepted only by the dedicated create-new-from-
 terminal contract below; it is not exposed by normal edit.
 
-`InitiativeTypeCode`, `PriorityCode`, cancellation reason, hold reason and completion outcome are PPM-owned,
-closed, in-domain vocabularies. The contract endpoint is authoritative; every submitted code outside the
-returned closed set is `400` with zero mutation. Frontend options must be loaded from that endpoint through
-the same-origin PPM proxy and Gateway. Hardcoded arrays, stale cache/LKG allow, synthetic defaults and
-frontend fallback values are forbidden. This is an explicit exception to the domain-level future-MOD-0048
-target because these values are PPM lifecycle semantics, not enterprise reference data.
+`InitiativeTypeCode` and `PriorityCode` are tenant-managed business classifications owned by MOD-0048, matching
+the configurable classification/priority model used by the benchmarked enterprise PPM products. They are
+nullable while an Initiative is `Proposed`, but both must be present and authoritatively validated before
+`Active`. A supplied unknown value is `400`; unavailable, malformed or indeterminate MOD-0048 authority is
+`503` with zero mutation. The PPM contract endpoint may project the authoritative options but may not create a
+second local catalogue. Frontend options must be loaded through the same-origin PPM proxy and Gateway.
+
+Cancellation reason, hold reason, completion outcome, closure reason and benefit disposition remain PPM-owned,
+closed, in-domain lifecycle vocabularies. Every submitted code outside the returned closed set is `400` with
+zero mutation. Hardcoded arrays, stale cache/LKG allow, synthetic defaults and frontend fallback values are
+forbidden for both MOD-0048 classifications and PPM lifecycle vocabularies.
 
 ##### Lifecycle and required companion data
 
 | Transition | Required permission / authority | Required companion data | Result and side effects |
 |---|---|---|---|
-| `Proposed -> Active` | `ppm.initiatives.change-lifecycle`; MOD-0023 only when authoritative PPM policy requires approval | Policy-required immutable MOD-0023 ApprovalOutcome reference | Direct transition when policy says no approval; otherwise Workflow-governed; no WorkCenter item for the direct path |
+| `Proposed -> Active` | `ppm.initiatives.change-lifecycle`; MOD-0023 only when authoritative PPM policy requires approval | Authoritatively validated non-null `InitiativeTypeCode` and `PriorityCode`; non-null valid planning dates; policy-required immutable MOD-0023 ApprovalOutcome reference | Direct transition when policy says no approval; otherwise Workflow-governed; no WorkCenter item for the direct path |
 | `Proposed -> Cancelled` | `ppm.initiatives.change-lifecycle` | PPM cancellation reason code | Terminal `Cancelled` |
 | `Active -> OnHold` | `ppm.initiatives.change-lifecycle` | PPM hold reason code | `OnHold`; notification only under the verified MOD-0288 recipient rule below |
 | `OnHold -> Active` | `ppm.initiatives.change-lifecycle`; MOD-0023 only when authoritative PPM policy requires approval | Policy-required immutable MOD-0023 ApprovalOutcome reference | `Active`; no WorkCenter item when approval is not required |
@@ -400,14 +405,16 @@ Owner + MOD-0288 contract decision; no implementation may choose implicitly.
 ##### InitiativeClosure ownership
 
 `InitiativeClosure` is PPM-owned and is not a copy, subtype or adapter of the MOD-0024 Task closure contract.
-It contains exactly these business fields: `OutcomeCode`, `ClosureReasonCode`, `CompletedAt`,
-`CompletionSummary`, `EvidenceReferences`, `FollowUpTaskReferences`, and `BenefitDisposition`.
+It contains exactly these business fields: required `OutcomeCode`, required `ClosureReasonCode`, server-required
+`CompletedAt`, required non-empty `CompletionSummary`, optional `EvidenceReferences` (`0..n`), optional
+`FollowUpTaskReferences` (`0..n`), and required `BenefitDisposition`.
 `OutcomeCode` and `ClosureReasonCode` use PPM-owned closed vocabularies. `CompletedAt` is server-controlled UTC
 and cannot precede Initiative creation. `EvidenceReferences` are typed MOD-0031 references only; PPM stores no
 evidence/document payload. `FollowUpTaskReferences` are typed MOD-0024 references only; PPM stores no
 task/checklist/closure payload and creates no Task lifecycle truth. `BenefitDisposition` is a PPM closure
 statement and cannot copy or infer MOD-0072 actual outcome, measurement, realization or benefit SoR data.
-Exact cardinalities and producer contract versions remain blockers.
+The reference collection cardinalities above are closed. Exact MOD-0031/MOD-0024 producer contract versions
+remain blockers; no untyped ID, payload copy or local fallback may substitute for them.
 
 ##### Terminal supersession instead of reopen
 
@@ -447,12 +454,12 @@ Core v2 implementation is limited to these exact roots/files; anything else requ
 - `services/Diten.PpmService/src/Diten.PpmService.Api/Controllers/InitiativesController.cs`
 - `services/Diten.PpmService/tests/Diten.PpmService.Tests/Initiatives/**`
 - `services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/Initiatives/**`
-- `services/Diten.PpmService/tests/Diten.PpmService.Architecture.Tests/Initiatives/**`
 - `frontend/Diten.Web/Controllers/PPM/PpmController.cs` (Initiative proxy actions only)
 - `frontend/Diten.Web/Models/PPM/InitiativeModels.cs`
-- `frontend/Diten.Web/Views/PPM/Initiative/**`
-- `frontend/Diten.Web/wwwroot/assets/js/PPM/Initiative/**`
-- `frontend/Diten.Web/Resources/Views/PPM/Initiative/**`
+- `frontend/Diten.Web/Models/PPM/PpmViewModels.cs` (Initiative projection/configuration only)
+- `frontend/Diten.Web/Views/PPM/Initiatives/**`
+- `frontend/Diten.Web/wwwroot/assets/js/PPM/Initiatives/**`
+- `frontend/Diten.Web/Resources/Views/PPM/Initiatives/**`
 - `frontend/Diten.Web/tests/js/ppm-initiative-*.test.mjs`
 
 Protected even for that later slice: `.antigravity/**`, Gateway/`ocelot.json`, Platform, Auth,
@@ -463,7 +470,7 @@ other PPM aggregate roots, shared layouts/assets, migrations, seeds, deployment 
 
 | Method/path | Permission | Success | Fail-closed contract |
 |---|---|---:|---|
-| `GET /api/v1/ppm/initiatives/contracts/v2` | `ppm.initiatives.read` | `200` | Closed type, priority, cancellation, hold and completion-outcome options; `401/403/503`; no fallback |
+| `GET /api/v1/ppm/initiatives/contracts/v2` | `ppm.initiatives.read` | `200` | Authoritative MOD-0048 type/priority options plus PPM-closed cancellation, hold, completion-outcome, closure-reason and benefit-disposition options; `401/403/503`; no fallback |
 | `GET /api/v1/ppm/initiatives` | `ppm.initiatives.read` | `200` | Tenant-scoped, non-deleted list |
 | `GET /api/v1/ppm/initiatives/{id}` | `ppm.initiatives.read` | `200` | Missing/cross-tenant/invisible/deleted `404` |
 | `POST /api/v1/ppm/initiatives` | `ppm.initiatives.create` | `201` | Invalid field/vocabulary/date `400`; duplicate Code `409` |
@@ -1595,8 +1602,9 @@ or any other Gateway route.
   either a named future owner typed-link contract or default-unavailable;
   no legacy field became an implicit PPM entity field or UI requirement.
 - [x] Initiative Core v2 governance fixes exactly eight create/edit user fields; lifecycle and
-  `VisibilityPolicyKey` are not user fields, and all five PPM-owned closed vocabularies reject out-of-set
-  values with `400` while frontend options come only from the contract endpoint without hardcoded fallback.
+  `VisibilityPolicyKey` are not user fields. Type/priority are nullable in `Proposed`, required and
+  authoritatively MOD-0048-validated before `Active`; the five PPM-owned lifecycle/closure vocabularies reject
+  out-of-set values with `400`. Frontend options come only from the contract endpoint without hardcoded fallback.
 - [x] Initiative lifecycle transition/permission/reason/closure/Workflow matrix is explicit; terminal records
   cannot reopen, WorkCenter owns no Initiative lifecycle/provider item, and non-approval transitions create no
   WorkCenter item.
@@ -1798,12 +1806,13 @@ Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separat
 
 1. Business-owner and UX acceptance of the implemented Gate L InvestmentCase/BenefitCommitment slice.
 2. Gate I-A/B/C producer contract-owner sequencing, cardinality acceptance and integrated business-flow acceptance.
-3. Portfolio Governance Process Owner approval of the exact closed code sets for Initiative type, priority,
-   cancellation reason, hold reason, completion outcome and closure reason.
+3. Portfolio Governance Process Owner approval of the exact closed code sets for cancellation reason, hold
+   reason, completion outcome, closure reason and benefit disposition; Initiative type and priority remain
+   tenant-managed MOD-0048 classifications and are not part of this closed PPM vocabulary decision.
 4. Whether a missing/ambiguous/unavailable MOD-0288 owner/governance recipient blocks `Active -> OnHold` or
    permits the lifecycle transition with a durable no-notification disposition.
-5. InitiativeClosure cardinalities and requiredness for `EvidenceReferences`, `FollowUpTaskReferences` and
-   `BenefitDisposition`.
+5. Exact MOD-0031 and MOD-0024 producer contract versions for the already-closed optional `0..n`
+   `EvidenceReferences` and `FollowUpTaskReferences`; `BenefitDisposition` is required and PPM-owned.
 
 ### Open technical decisions
 
@@ -1845,7 +1854,7 @@ Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separat
 
 | Date | Change | Authority |
 |---|---|---|
-| 2026-09-02 | Added the governance-only Initiative Core v2 baseline: exact eight-field Golden Slim create/edit contract, PPM-owned closed vocabularies, action-based lifecycle and Workflow/WorkCenter boundaries, verified-recipient-only OnHold notification, distinct InitiativeClosure ownership, terminal supersession, authoritative-owner typed links, exact future allowlist/protected paths, HTTP matrix, acceptance/test gates and explicit owner blockers. No runtime/frontend/service/Gateway/migration/seed/deployment/activation authority was created. | User / Portfolio Governance Process Owner |
+| 2026-09-02 | Added and corrected the governance-only Initiative Core v2 baseline: exact eight-field Golden Slim create/edit contract; nullable-in-Proposed and required-before-Active MOD-0048-owned type/priority classifications and planning dates; five PPM-owned lifecycle/closure vocabularies; action-based lifecycle and Workflow/WorkCenter boundaries; verified-recipient-only OnHold notification; exact InitiativeClosure requiredness/cardinalities; terminal supersession; authoritative-owner typed links; repository-accurate future allowlist/protected paths; HTTP matrix, acceptance/test gates and explicit owner blockers. No runtime/frontend/service/Gateway/migration/seed/deployment/activation authority was created. | User / Portfolio Governance Process Owner |
 | 2026-09-01 | Reconciled the Initiative legacy wizard against Blueprint ownership and current PPM code. Retained the six-field Golden Slim form; registered future strategy, organization, planning, metric, investment, funding, decision, evidence and dependency detail concepts as governance-only/default-unavailable. No PPM field, runtime card, producer call, mock fallback or activation authority was created. | User / Portfolio Governance Process Owner |
 | 2026-08-30 | Recorded the DCP-004 Gate-2 current-state disposition as governance-only, default-off and non-production: exact eligible type count `0`, empty action map, six owned-type dispositions, all 31 projection fields and eleven future decision gates. No provider/endpoint/configuration/runtime/activation authority or WorkCenter completion claim was created. | User / Enterprise Strategy Control Tower |
 | 2026-08-29 | Reconciled the canonical local PPM port to `5062`, superseding the earlier `5061` allocation while preserving CRM on `5061`. The integration-agent-owned Gateway authority remains exactly `/api/v1/ppm` plus `/api/v1/ppm/{everything}`; no production activation, deployment or broader route authority was granted. | User / Enterprise Strategy Control Tower |
