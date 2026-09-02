@@ -50,7 +50,7 @@ public sealed class CatalogFoundationArchitectureTests
         var forbidden = new[]
         {
             "Modules.Dws", "Modules/Dws", "mg_dws_", "Diten.Platform", "Diten.AuthService",
-            "Diten.PpmService", "WorkCenter", "PlatformSchemaManifest", "EnsureIndexesAsync"
+            "Diten.PpmService", "WorkCenter", "PlatformSchemaManifest", "EnsureIndexes" + "Async"
         };
 
         foreach (var path in sources)

@@ -1,4 +1,5 @@
 using MediatR;
+using Diten.ManagementGovernanceService.Domain.Modules.ProcessModeling;
 
 namespace Diten.ManagementGovernanceService.Application.Modules.ProcessModeling.Catalog;
 
@@ -57,12 +58,13 @@ public interface ICatalogCommand : IRequest<CatalogResponse<CatalogMutationResul
     CatalogCommandContext Context { get; }
 }
 
-internal static class CatalogValidation
+public static class CatalogValidation
 {
-    public static string? Command(ICatalogCommand command)
+    public static string? Command(ICatalogCommand command, out CatalogMutation normalizedMutation)
     {
         var c = command.Context;
         var m = command.Mutation;
+        normalizedMutation = m;
         if (c.TenantId == Guid.Empty || c.SubjectId == Guid.Empty || string.IsNullOrWhiteSpace(c.IdempotencyKey) || string.IsNullOrWhiteSpace(c.Permission)) return CatalogErrors.InvalidRequest;
         if (m.EntityId == Guid.Empty) return CatalogErrors.InvalidRequest;
         var create = m.Kind is CatalogMutationKind.CreateArchitecture or CatalogMutationKind.CreateDomain or CatalogMutationKind.CreateFamily or CatalogMutationKind.CreateDefinition;
@@ -74,8 +76,29 @@ internal static class CatalogValidation
         if (m.Kind is not (CatalogMutationKind.CreateDefinition or CatalogMutationKind.UpdateDefinition) && (!m.SortOrder.HasValue || m.SortOrder < 0)) return CatalogErrors.InvalidRequest;
         if (m.Kind is CatalogMutationKind.CreateDomain or CatalogMutationKind.CreateFamily or CatalogMutationKind.CreateDefinition
             && (m.ParentId is null || m.ParentId == Guid.Empty)) return CatalogErrors.InvalidRequest;
+
+        try
+        {
+            normalizedMutation = m with
+            {
+                Code = create ? ProcessModelingText.Code(m.Code!) : null,
+                Name = ProcessModelingText.Required(m.Name!, 200),
+                Purpose = m.Kind is CatalogMutationKind.CreateDefinition or CatalogMutationKind.UpdateDefinition
+                    ? ProcessModelingText.Optional(m.Purpose, 2000)
+                    : null,
+                Description = ProcessModelingText.Optional(
+                    m.Description,
+                    m.Kind is CatalogMutationKind.CreateDefinition or CatalogMutationKind.UpdateDefinition ? 4000 : 2000)
+            };
+        }
+        catch (ArgumentException)
+        {
+            return CatalogErrors.InvalidRequest;
+        }
         return null;
     }
+
+    public static string? Command(ICatalogCommand command) => Command(command, out _);
 
     public static string? Query(CatalogQueryContext context, Guid? id = null) =>
         context.TenantId == Guid.Empty || context.SubjectId == Guid.Empty || string.IsNullOrWhiteSpace(context.Permission) || id == Guid.Empty
@@ -86,7 +109,7 @@ internal abstract class CatalogCommandHandler<TCommand>(ICatalogStore store) : I
 {
     public Task<CatalogResponse<CatalogMutationResult>> Handle(TCommand request, CancellationToken cancellationToken)
     {
-        var error = CatalogValidation.Command(request);
-        return error is null ? store.MutateAsync(request.Mutation, request.Context, cancellationToken) : Task.FromResult(CatalogResponse<CatalogMutationResult>.Fail(error, 400));
+        var error = CatalogValidation.Command(request, out var normalizedMutation);
+        return error is null ? store.MutateAsync(normalizedMutation, request.Context, cancellationToken) : Task.FromResult(CatalogResponse<CatalogMutationResult>.Fail(error, 400));
     }
 }
