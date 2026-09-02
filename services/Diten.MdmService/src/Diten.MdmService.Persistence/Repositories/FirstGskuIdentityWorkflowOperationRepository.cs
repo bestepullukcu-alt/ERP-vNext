@@ -196,7 +196,9 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
         {
             FirstGskuIdentityWorkflowCheckpoint.Completed,
             FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
-            FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
+            FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+            FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
+            FirstGskuIdentityWorkflowCheckpoint.Superseded
         };
         var filter = ActiveTenantFilter
                      & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(

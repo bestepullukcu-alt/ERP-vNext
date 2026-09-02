@@ -187,7 +187,9 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
         {
             GlobalProductIdentityWorkflowCheckpoint.Completed,
             GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
-            GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired
+            GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+            GlobalProductIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
+            GlobalProductIdentityWorkflowCheckpoint.Superseded
         };
         var filter = ActiveTenantFilter
                      & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(
