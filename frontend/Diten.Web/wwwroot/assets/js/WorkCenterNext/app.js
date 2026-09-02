@@ -5070,23 +5070,30 @@
             </div>
             <div class="offcanvas-body">
                 <div class="mb-3">
-                    <label class="form-label" for="wcnSubtaskTitle">${esc(t('SubtaskFieldTitle'))}</label>
-                    <input type="text" class="form-control" id="wcnSubtaskTitle" maxlength="200"
-                           data-wcn-subtask-field="title" value="${esc(draft.title || '')}">
+                    <label class="form-label fw-medium" for="wcnSubtaskTitle">${esc(t('SubtaskFieldTitle'))}</label>
+                    <div class="diten-field">
+                        <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" class="form-control" id="wcnSubtaskTitle" maxlength="200"
+                               data-wcn-subtask-field="title" value="${esc(draft.title || '')}">
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="wcnSubtaskDue">${esc(t('SubtaskFieldDue'))}</label>
-                    <input type="date" class="form-control" id="wcnSubtaskDue"
-                           data-wcn-subtask-field="dueAt" value="${esc((draft.dueAt || '').slice(0, 10))}">
+                    <label class="form-label fw-medium" for="wcnSubtaskDue">${esc(t('SubtaskFieldDue'))}</label>
+                    <div class="diten-field">
+                        <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" class="form-control flatpickr-date" id="wcnSubtaskDue"
+                               placeholder="${esc(t('DatePlaceholder'))}"
+                               data-wcn-subtask-field="dueAt" value="${esc((draft.dueAt || '').slice(0, 10))}">
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <span class="form-label d-block">${esc(t('SubtaskFieldAssignee'))}</span>
+                    <span class="form-label fw-medium d-block">${esc(t('SubtaskFieldAssignee'))}</span>
                     <p class="wcn-block-hint mb-0">${draft.assigneeName
                         ? esc(draft.assigneeName)
                         : esc(t('SubtaskNoAssignee'))}</p>
                 </div>
                 <div class="mb-3">
-                    <span class="form-label d-block">${esc(t('SubtaskFieldStatus'))}</span>
+                    <span class="form-label fw-medium d-block">${esc(t('SubtaskFieldStatus'))}</span>
                     <p class="wcn-block-hint mb-0">${statusKey ? esc(t(statusKey)) : ''}</p>
                 </div>
                 <p class="wcn-block-hint">${esc(t('SubtaskQuickEditScope'))}</p>
@@ -5123,17 +5130,19 @@
         else { toast(global.TasksApi.failureMessage(result), 'error'); }
     };
 
-    const showSubtaskPanel = () => {
-        const node = document.getElementById('wcnSubtaskPanel');
-        if (!node || !global.bootstrap?.Offcanvas) { return; }
-        const panel = global.bootstrap.Offcanvas.getOrCreateInstance(node);
-        node.addEventListener('hidden.bs.offcanvas', () => {
-            state.subtaskPanelId = null;
-            state.subtaskPanelRecord = null;
-            render();
-        }, { once: true });
-        panel.show();
-    };
+    /*
+     * THE SECOND COPY OF showPanel IS GONE, and the comment above showPanel ("shared plumbing for BOTH subtask
+     * panels") is true for the first time. MEASURED: the two functions differed in nothing but the two lines of
+     * state their `hidden` listener cleared — and that difference is the parameter showPanel already takes.
+     *
+     * It is not tidying: the enhancement hook lives in showPanel, so a panel that kept its own copy of the
+     * plumbing would have kept a browser-native date field too. A rule applied in one of two identical
+     * functions is exactly the shape of defect this round is correcting.
+     */
+    const showSubtaskPanel = () => showPanel('wcnSubtaskPanel', () => {
+        state.subtaskPanelId = null;
+        state.subtaskPanelRecord = null;
+    });
 
     const saveSubtaskPanel = async (subtaskId) => {
         const record = state.subtaskPanelRecord;
@@ -5219,20 +5228,56 @@
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
                         aria-label="${esc(t('PanelClose'))}"></button>
             </div>
+            ${/*
+               * ── THE FIELDS ARE THE PRODUCT'S FIELDS, NOT THIS PANEL'S OWN (2026-09-02) ─────────────────
+               *
+               * MEASURED, against Views/Tasks/_QuickCreateOffcanvas.cshtml — the surface that does the SAME job
+               * one click away:
+               *                    HERE, before                  THERE
+               *     date           the browser's own control     input.form-control.flatpickr-date
+               *     pickers        raw select.form-select        select.select2.form-select
+               *     icons          none                          .diten-field + .diten-field-icon
+               * The browser's own date control takes its format from the OPERATING SYSTEM, so the reader saw
+               * `gg.aa.yyyy` on a Turkish page and would have seen it on an Arabic one too — the page's own
+               * language never entered into it. tests/tasks-quick-create-golden.test.js already forbade exactly
+               * that, but it read the .cshtml alone: this panel is built in JS, so the rule was written and
+               * never reached it. (The forbidden attribute is deliberately not spelled out anywhere in this
+               * file, the same discipline the .cshtml keeps: the guard greps the whole file for it, so prose
+               * would read as a violation — and a guard that has to strip comments first is one a comment can
+               * fool.)
+               *
+               * The GLYPHS are the full form's, field for field (Tasks/_Form.cshtml's map, mirrored by the
+               * quick-create offcanvas) — a subtask is a task, so the same value must not wear a different mark
+               * depending on which door it was created through.
+               *
+               * The description's `bx-align-left` is that same map's `taskDescription`, chosen there over an
+               * invented glyph and reused here rather than re-decided; `--top` because a textarea is not a 38px
+               * line and the centred variant would park the icon beside line three.
+               *
+               * BEHAVIOUR travels with the markup: the classes below are inert until TaskForm's own enhancers
+               * bind them — see showPanel.
+               */''}
             <div class="offcanvas-body">
                 <div class="mb-3">
-                    <label class="form-label" for="wcnNewSubtaskTitle">
+                    <label class="form-label fw-medium" for="wcnNewSubtaskTitle">
                         ${esc(t('SubtaskFieldTitle'))} <span class="text-danger">*</span>
                     </label>
-                    <input type="text" class="form-control" id="wcnNewSubtaskTitle" maxlength="200"
-                           data-wcn-newsubtask-field="title" value="${esc(draft.title || '')}">
+                    <div class="diten-field">
+                        <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" class="form-control" id="wcnNewSubtaskTitle" maxlength="200"
+                               data-wcn-newsubtask-field="title" value="${esc(draft.title || '')}">
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="wcnNewSubtaskAssignee">${esc(t('SubtaskFieldAssignee'))}</label>
-                    <select class="form-select" id="wcnNewSubtaskAssignee" data-wcn-newsubtask-field="assigneeUserId">
-                        <option value="">${esc(t('SubtaskAssignToMe'))}</option>
-                        ${options}
-                    </select>
+                    <label class="form-label fw-medium" for="wcnNewSubtaskAssignee">${esc(t('SubtaskFieldAssignee'))}</label>
+                    <div class="diten-field">
+                        <i class="bx bx-user diten-field-icon" aria-hidden="true"></i>
+                        <select class="select2 form-select" id="wcnNewSubtaskAssignee"
+                                data-wcn-newsubtask-field="assigneeUserId">
+                            <option value="">${esc(t('SubtaskAssignToMe'))}</option>
+                            ${options}
+                        </select>
+                    </div>
                 </div>
                 <div class="mb-3">
                     ${/*
@@ -5241,24 +5286,42 @@
                        * (`400 VALIDATION_REQUEST_DUE_AT_NOT_NULL`, measured on both), and `_Form.cshtml` already
                        * marks the field. The rule is the product's; this panel was the one surface not saying so.
                        */''}
-                    <label class="form-label" for="wcnNewSubtaskDue">
+                    <label class="form-label fw-medium" for="wcnNewSubtaskDue">
                         ${esc(t('SubtaskFieldDue'))} <span class="text-danger">*</span>
                     </label>
-                    <input type="date" class="form-control" id="wcnNewSubtaskDue"
-                           data-wcn-newsubtask-field="dueAt" value="${esc(draft.dueAt || '')}">
+                    ${/*
+                       * `DatePlaceholder` ("YYYY-AA-GG"), not a new string and not a guess: it is the pair the
+                       * Planla and Ertele dialogs on this same page already use over a flatpickr box, and it
+                       * states the format the field CARRIES — flatpickr is constructed with `dateFormat: Y-m-d`,
+                       * so the value the API receives is byte-for-byte what the native control produced.
+                       * The field is typed as well as picked (`allowInput: true`), so it needs the prompt.
+                       */''}
+                    <div class="diten-field">
+                        <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" class="form-control flatpickr-date" id="wcnNewSubtaskDue"
+                               placeholder="${esc(t('DatePlaceholder'))}"
+                               data-wcn-newsubtask-field="dueAt" value="${esc(draft.dueAt || '')}">
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="wcnNewSubtaskPriority">${esc(t('SubtaskFieldPriority'))}</label>
-                    <select class="form-select" id="wcnNewSubtaskPriority" data-wcn-newsubtask-field="priority">
-                        ${['Low', 'Medium', 'High'].map((level) =>
-                            `<option value="${level}"${(draft.priority || 'Medium') === level ? ' selected' : ''}>`
-                            + `${esc(t('Priority' + level))}</option>`).join('')}
-                    </select>
+                    <label class="form-label fw-medium" for="wcnNewSubtaskPriority">${esc(t('SubtaskFieldPriority'))}</label>
+                    <div class="diten-field">
+                        <i class="bx bx-flag diten-field-icon" aria-hidden="true"></i>
+                        <select class="select2 form-select" id="wcnNewSubtaskPriority"
+                                data-wcn-newsubtask-field="priority">
+                            ${['Low', 'Medium', 'High'].map((level) =>
+                                `<option value="${level}"${(draft.priority || 'Medium') === level ? ' selected' : ''}>`
+                                + `${esc(t('Priority' + level))}</option>`).join('')}
+                        </select>
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="wcnNewSubtaskDesc">${esc(t('SubtaskFieldDescription'))}</label>
-                    <textarea class="form-control" id="wcnNewSubtaskDesc" rows="3"
-                              data-wcn-newsubtask-field="description">${esc(draft.description || '')}</textarea>
+                    <label class="form-label fw-medium" for="wcnNewSubtaskDesc">${esc(t('SubtaskFieldDescription'))}</label>
+                    <div class="diten-field">
+                        <i class="bx bx-align-left diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                        <textarea class="form-control" id="wcnNewSubtaskDesc" rows="3"
+                                  data-wcn-newsubtask-field="description">${esc(draft.description || '')}</textarea>
+                    </div>
                 </div>
                 <p class="wcn-block-hint">${esc(t('SubtaskCreateParentFixed'))}</p>
             </div>
@@ -5339,6 +5402,31 @@
                 return `<option value="${esc(id)}">${esc(person.displayName || id)}</option>`;
             }).join('');
         if (chosen) { select.value = chosen; }
+
+        /*
+         * ⚠ THE PICKER IS ALREADY A select2 BY THE TIME THIS RUNS, AND THE ORDER CANNOT BE THE OTHER WAY ROUND.
+         *
+         * quick-create.js renders its options FIRST and binds select2 afterwards, with a comment saying why.
+         * That order is unavailable here: showPanel binds as the panel opens, and the panel deliberately opens
+         * BEFORE this lookup lands — awaiting it first would leave a slow or failing people service showing the
+         * reader a button that does nothing (measured last round, see openSubtaskCreatePanel). So the options
+         * above are written UNDERNEATH a control that is already drawn, and the drawn control has to be told.
+         *
+         * WHAT IS ACTUALLY STALE, measured in the vendored library rather than assumed
+         * (assets/vendor/libs/select2/select2.js):
+         *   · the DROPDOWN is not — `SelectAdapter.query` re-reads `this.$element.children()` on every open, so
+         *     it lists whatever the <select> holds at that moment;
+         *   · the BOX select2 draws over the select is — it is redrawn from the `change.select2` handler select2
+         *     binds on the element (`selection:update`).
+         * One bubbling `change` is therefore the entire notification. No destroy/re-bind, which would also mean
+         * a second `.wrap()` around a control that already carries one.
+         *
+         * Only when it IS bound: on a page without jQuery/select2 this would be a change event nobody asked for.
+         * Either way `onChange` reads the value straight back into the draft, which is the value it already had.
+         */
+        if (select.classList.contains('select2-hidden-accessible')) {
+            select.dispatchEvent(new global.Event('change', { bubbles: true }));
+        }
     };
 
     const saveNewSubtask = async (parentId) => {
@@ -5543,12 +5631,40 @@
             + 'Update the panel in place (setPanelBusy / fillAssigneeSelect) or close it first (hidePanel).');
     };
 
+    /*
+     * ── THE MARKUP IS HALF OF A CONTROL; THIS IS THE OTHER HALF ───────────────────────────────────────────
+     *
+     * MEASURED before this existed: `TaskForm.enhanceSelects` and `TaskForm.enhanceDates` appeared ZERO times in
+     * this file, on a page that loads Tasks/form.js, diten-datefield.js, flatpickr, jQuery and select2 for the
+     * quick-create offcanvas right beside it. So the subtask panels' classes would have been decoration —
+     * `.flatpickr-date` with no picker behind it is a calendar icon over a plain text box, which is the exact
+     * defect diten-datefield.js was extracted to stop repeating.
+     *
+     * ONCE, HERE, and never from render(): a panel is enhanced as it opens and its node then stands untouched
+     * until it closes — see warnIfPanelOpen for what a render during that window costs. Both enhancers skip what
+     * they have already bound (`select2-hidden-accessible` / `_flatpickr`), so this is idempotent by the
+     * components' own rules rather than by a flag kept here.
+     *
+     * SILENT WITHOUT TaskForm, and that is deliberate: boot() already names the missing script, once, for the
+     * whole page. A second complaint per panel would say the same thing in a worse place, and the panel itself
+     * still opens — with plain controls, which is what it had before this round.
+     */
+    const enhancePanelControls = (node) => {
+        const form = global.TaskForm;
+        if (!node || !form) { return; }
+        form.enhanceSelects?.(node);
+        form.enhanceDates?.(node);
+    };
+
     const showPanel = (id, onHidden) => {
         const node = document.getElementById(id);
         if (!node || !global.bootstrap?.Offcanvas) { return; }
         const panel = global.bootstrap.Offcanvas.getOrCreateInstance(node);
         node.addEventListener('hidden.bs.offcanvas', () => { onHidden(); render(); }, { once: true });
+        /* AFTER show(), on purpose: opening is what the click asked for, so a control that cannot be enhanced
+           costs the reader a plain box rather than a panel that never appears. */
         panel.show();
+        enhancePanelControls(node);
     };
 
     // ── Table view ────────────────────────────────────────────────────────────
