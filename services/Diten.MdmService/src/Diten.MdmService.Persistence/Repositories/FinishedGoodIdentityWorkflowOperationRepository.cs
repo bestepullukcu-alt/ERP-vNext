@@ -202,7 +202,9 @@ public sealed class FinishedGoodIdentityWorkflowOperationRepository
         {
             FinishedGoodIdentityWorkflowCheckpoint.Completed,
             FinishedGoodIdentityWorkflowCheckpoint.AwaitingMakerReplay,
-            FinishedGoodIdentityWorkflowCheckpoint.ManualReconciliationRequired
+            FinishedGoodIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+            FinishedGoodIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
+            FinishedGoodIdentityWorkflowCheckpoint.Superseded
         };
         var filter = ActiveTenantFilter
                      & Builders<FinishedGoodIdentityWorkflowOperation>.Filter.Eq(

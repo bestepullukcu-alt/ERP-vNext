@@ -202,7 +202,9 @@ public sealed class LskuIdentityWorkflowOperationRepository
         {
             LskuIdentityWorkflowCheckpoint.Completed,
             LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
-            LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
+            LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+            LskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
+            LskuIdentityWorkflowCheckpoint.Superseded
         };
         var filter = ActiveTenantFilter
                      & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(
