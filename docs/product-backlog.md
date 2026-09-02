@@ -3567,6 +3567,61 @@ Düzenle → Durum: Aktif → Kaydet.
 
 **Kardeş kayıtlar:** [[BL-073]] ana veri zinciri · [[BL-071]] Employee↔PositionAssignment
 
+### BL-329 — Görev detayında aynı yere giden İKİ "kaynak kaydı" düğmesi (2026-09-02, CANLI, ölçüldü)
+
+> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+
+**MODÜL:** MOD-0024 (Görev Merkezi)
+**SAYFA:** Görev detayı · `/WorkCenterNext/Details/{id}`
+**KONUM:** `assets/js/WorkCenterNext/app.js:2475` (eylem rayı) + `app.js:4345` (Kaynak kartı)
+
+**Ölçüm (2026-09-02, canlı oturum):**
+
+    eylem rayı   → <a href="/Tasks/{id}">        "Kaynak kayıtta aç"
+    Kaynak kartı → <button data-wcn-open="{id}"> "Kaynak kaydını aç"
+    ikisi de görünür: true · hedef aynı · etiketler neredeyse aynı
+
+Kodun kendi yorumu kuralı zaten koymuş (`app.js:4341`):
+*"Two controls for one destination is the duplication this page keeps removing --
+so here it stands down."* Ama nöbetçi yalnız `actionDepth === 'deeplink'` durumunu
+tanıyor; ray burada **çıplak** bir bağlantı çizdiği için koşul tutmuyor. Yazılmış
+ama bu durumu kapsamayan bir kural.
+
+**Karar sahibe ait:** hangisi kalacak? Önerim eylem rayındaki bağlantı -- eylemler
+rayda yaşar, Kaynak kartı kaydın *kimliğini* gösterir. Bu, yorumun zaten yazdığı
+kuralın genişletilmesi olur: ray aynı yere götürüyorsa kart düğmesi stand down eder.
+
+İlgili: [[BL-309]] kaynak gezinme modeli
+
+---
+
+### BL-330 — Görev Merkezi detayında "Düzenle" kısayolu yok (2026-09-02, CANLI, sahip gördü)
+
+> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+
+**MODÜL:** MOD-0024 (Görev Merkezi)
+**SAYFA:** Görev detayı · `/WorkCenterNext/Details/{id}`
+**KONUM:** eylem rayı (`app.js` eylem listesi)
+
+**Ölçüm (2026-09-02, canlı oturum):** düzenleme YETENEĞİ eksik değil --
+
+    /Tasks/{id}/Edit   → "Görevi Düzenle" sayfası ÇALIŞIYOR
+                         (TasksController.cs:92, başlık dolu, 2 tarih alanı,
+                          9 select2, "Kaydet")
+    /Tasks/{id}        → "Düzenle" bağlantısı VAR → /Tasks/{id}/Edit
+
+Yani yol şu: Görev Merkezi detayı → "Kaynak kayıtta aç" → `/Tasks/{id}` →
+"Düzenle". İki tık, ama ilk tıkın etiketi düzenlemeyi çağrıştırmıyor; sahip
+"düzenleme yok" olarak gördü.
+
+**Karar sahibe ait, çünkü sınır sorusu:** MOD-0024 raporlar ve devreder, kaydı
+modül sahiplenir ([[project_mod0024_approval_boundary]]) -- SAP/Oracle'da da gelen
+kutusu *eylem* verir, nesne kendi uygulamasında düzenlenir. Önerim: yeteneği Görev
+Merkezi'ne taşımak yerine devri görünür kılmak, yani rayda `/Tasks/{id}/Edit`'e
+giden bir "Düzenle" bağlantısı. Yeni ekran yok, yeni sınır ihlali yok.
+
+---
+
 ### BL-328 — Kiracı tarafında "Şifremi unuttum" hiçbir yere gitmiyor (2026-09-01, CANLI, sahip gördü)
 
 > **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
