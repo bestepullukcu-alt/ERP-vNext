@@ -3566,3 +3566,46 @@ Active değil** → 3. basamak boş dönüyor → hata.
 Düzenle → Durum: Aktif → Kaydet.
 
 **Kardeş kayıtlar:** [[BL-073]] ana veri zinciri · [[BL-071]] Employee↔PositionAssignment
+
+### BL-328 — Kiracı tarafında "Şifremi unuttum" hiçbir yere gitmiyor (2026-09-01, CANLI, sahip gördü)
+
+> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+
+**MODÜL:** ACCESS-GOVERNANCE (Erişim Yönetimi)
+**SAYFA:** Giriş · `/account/login`
+**KONUM:** `frontend/Diten.Web/Views/Account/Login.cshtml:122`
+
+**Ölçüm (2026-09-01):**
+
+    <a href="@(authMode == "platform" ? "/platform/forgot-password" : "#")">
+
+    platform yöneticisi → /platform/forgot-password  ✅ çalışıyor
+                          (AccountController.cs:220 GET, :227 POST)
+    kiracı kullanıcısı  → "#"                        ⚠ HİÇBİR YER
+
+`AccountController`'da yalnız `PlatformForgotPassword` var; kiracı karşılığı
+hiç yazılmamış.
+
+⚠ **Pratik sonucu:** kiracı kullanıcısı şifresini unutursa kendi başına
+kurtaramaz. Bir yöneticinin `/Users` ekranından "Şifre Sıfırla" yapması
+gerekiyor — ama kullanıcı bunu bilmiyor, çünkü ekran ona tıklanabilir bir
+bağlantı gösteriyor ve tıklayınca hiçbir şey olmuyor.
+
+⚠ Bu, bu üründe tekrar eden kusur ailesinin bir üyesi: EKRAN BİR ŞEYİN NEDEN
+OLMADIĞINI SÖYLEMİYOR. Kardeşleri: [[BL-326]] alt görev kartı sessizce yok
+oluyor · [[BL-327]] birim/pozisyon taslak doğuyor, sebebi söylenmiyor ·
+kişi seçicideki "neden kısa" ipucunun tarayıcıda ölmesi.
+
+**İki aşamalı çözüm — 1. aşama bugün yapıldı:**
+
+- ⭐ **Aşama 1 (XS, YAPILDI):** yalan bağlantıyı kaldır. Kiracı tarafında
+  tıklanabilir bir bağlantı yerine, ne yapılacağını söyleyen bir cümle:
+  "Şifrenizi unuttuysanız yöneticinize başvurun." — 7 dilde.
+- **Aşama 2 (M, AÇIK):** kiracı için gerçek şifre sıfırlama akışı — uç,
+  e-postayla jeton, süre sınırı, sıfırlama ekranı, 7 dil. Platform
+  tarafındaki emsal hazır (`AccountController.cs:220-227`,
+  `Views/Account/ForgotPassword.cshtml`).
+
+**Kapanış ölçütü (Aşama 2):** kiracı kullanıcısı giriş ekranından şifresini
+sıfırlayabilmeli, ve akışın çalıştığını ölçen bir test — bağlantının varlığını
+değil, sıfırlamanın gerçekleştiğini ölçen.
