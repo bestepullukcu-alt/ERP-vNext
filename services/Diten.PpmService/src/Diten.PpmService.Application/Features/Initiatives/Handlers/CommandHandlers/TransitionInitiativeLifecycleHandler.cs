@@ -1,10 +1,9 @@
-using Diten.PpmService.Application.Common;
 using Diten.Shared.Core;
 using MediatR;
 
 namespace Diten.PpmService.Application.Features.Initiatives;
 
-public sealed class TransitionInitiativeLifecycleHandler(InitiativeService service) : IRequestHandler<TransitionInitiativeLifecycleCommand, Response<InitiativeDto>>
+public sealed class TransitionInitiativeLifecycleHandler(InitiativeService service) : IRequestHandler<TransitionInitiativeLifecycleCommand, Response<InitiativeLifecycleResult>>
 {
-    public Task<Response<InitiativeDto>> Handle(TransitionInitiativeLifecycleCommand request, CancellationToken cancellationToken) => service.Transition(request, cancellationToken);
+    public Task<Response<InitiativeLifecycleResult>> Handle(TransitionInitiativeLifecycleCommand request, CancellationToken cancellationToken) => service.Transition(request, cancellationToken);
 }

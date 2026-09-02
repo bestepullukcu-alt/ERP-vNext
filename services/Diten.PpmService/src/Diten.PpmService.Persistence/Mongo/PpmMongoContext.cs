@@ -2,6 +2,7 @@ using Diten.PpmService.Domain.Entities;
 using Diten.PpmService.Domain.Exceptions;
 using Diten.BuildingBlocks.Eventing;
 using MongoDB.Driver;
+using MongoDB.Bson;
 
 namespace Diten.PpmService.Persistence.Mongo;
 
@@ -25,6 +26,34 @@ public sealed class PpmMongoContext
 
     public IMongoCollection<Initiative> Initiatives =>
         Database.GetCollection<Initiative>(PpmCollectionNames.Initiatives);
+
+    public IMongoCollection<InitiativeClosure> InitiativeClosures =>
+        Database.GetCollection<InitiativeClosure>("ppm_initiative_closures");
+
+    public async Task EnsureInitiativeV2IndexesAsync(CancellationToken cancellationToken)
+    {
+        await Initiatives.Indexes.CreateOneAsync(new CreateIndexModel<Initiative>(
+            Builders<Initiative>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.SupersedesInitiativeId),
+            new CreateIndexOptions<Initiative>
+            {
+                Name = "ux_initiative_tenant_active_successor",
+                Unique = true,
+                PartialFilterExpression = new BsonDocument
+                {
+                    { nameof(Initiative.IsDeleted), false },
+                    { nameof(Initiative.SupersedesInitiativeId), new BsonDocument("$type", "binData") }
+                }
+            }), cancellationToken: cancellationToken);
+        await InitiativeClosures.Indexes.CreateManyAsync(
+        [
+            new CreateIndexModel<InitiativeClosure>(
+                Builders<InitiativeClosure>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.InitiativeId),
+                new CreateIndexOptions<InitiativeClosure> { Name = "ux_initiative_closure", Unique = true }),
+            new CreateIndexModel<InitiativeClosure>(
+                Builders<InitiativeClosure>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.IsDeleted).Descending(x => x.CompletedAt),
+                new CreateIndexOptions<InitiativeClosure> { Name = "ix_initiative_closure_tenant_active_completed" })
+        ], cancellationToken);
+    }
 
     public IMongoCollection<Program> Programs =>
         Database.GetCollection<Program>(PpmCollectionNames.Programs);

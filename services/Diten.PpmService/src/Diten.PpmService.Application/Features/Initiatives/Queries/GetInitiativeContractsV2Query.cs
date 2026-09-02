@@ -3,4 +3,4 @@ using MediatR;
 
 namespace Diten.PpmService.Application.Features.Initiatives;
 
-public sealed record GetInitiativeByIdQuery(Guid Id) : IRequest<Response<InitiativeV2Dto>>;
+public sealed record GetInitiativeContractsV2Query : IRequest<Response<InitiativeContractsV2>>;
