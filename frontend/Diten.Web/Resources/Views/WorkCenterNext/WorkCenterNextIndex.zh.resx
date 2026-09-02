@@ -311,6 +311,18 @@
   <data name="ActionCompleteInSourceHint" xml:space="preserve">
     <value>此工作无法在此处完成，需在 {0} 中结束</value>
   </data>
+  <data name="ActionOpenInSource" xml:space="preserve">
+    <value>打开源记录</value>
+  </data>
+  <data name="ActionOpenInSourceHint" xml:space="preserve">
+    <value>任务中心用于处理工作；记录本身（标题、说明和字段）在源记录中编辑。</value>
+  </data>
+  <data name="ActionEditRecord" xml:space="preserve">
+    <value>编辑任务</value>
+  </data>
+  <data name="ActionEditRecordHint" xml:space="preserve">
+    <value>这项任务由您创建，其标题、日期和字段仍可更改——在记录所在的任务模块中。</value>
+  </data>
   <data name="TechVersionValue" xml:space="preserve">
     <value>第 {0} 版</value>
   </data>

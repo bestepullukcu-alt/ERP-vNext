@@ -136,7 +136,9 @@
   <data name="ExcludedPositionNotActive" xml:space="preserve"><value>{0} ocupan un puesto que no está activo</value></data>
   <data name="ExcludedOutOfScope" xml:space="preserve"><value>{0} están fuera de su ámbito</value></data>
   <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>Seleccione una persona…</value></data>
-  <data name="AssigneeEmpty" xml:space="preserve"><value>Todavía nadie ocupa un puesto, por lo que no hay a quién asignar. Pida primero a un administrador que asigne puestos.</value></data>
+  <data name="AssigneeEmpty" xml:space="preserve"><value>Todavía nadie ocupa un puesto, por lo que no hay a quién asignar. Un administrador debe definir puestos en la pantalla Puestos y asignarlos a personas.</value></data>
+  <data name="AssigneeEmptyAction" xml:space="preserve"><value>Abrir Puestos</value></data>
+  <data name="PositionsScreenName" xml:space="preserve"><value>Puestos</value></data>
   <data name="PersonNameUnavailable" xml:space="preserve"><value>Nombre no disponible</value></data>
   <data name="PickerHolderCount" xml:space="preserve"><value>{0} persona(s)</value></data>
   <data name="CustomFieldRecordSearchPlaceholder" xml:space="preserve"><value>Escriba para buscar…</value></data>

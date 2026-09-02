@@ -136,7 +136,9 @@
   <data name="ExcludedPositionNotActive" xml:space="preserve"><value>{0} kişinin pozisyonu aktif değil</value></data>
   <data name="ExcludedOutOfScope" xml:space="preserve"><value>{0} kişi kapsamınız dışında</value></data>
   <data name="AssigneeSelectPlaceholder" xml:space="preserve"><value>Kişi seçin…</value></data>
-  <data name="AssigneeEmpty" xml:space="preserve"><value>Henüz hiç kimsenin pozisyonu yok, bu yüzden atanacak kişi bulunmuyor. Önce yöneticinizden pozisyon ataması yapmasını isteyin.</value></data>
+  <data name="AssigneeEmpty" xml:space="preserve"><value>Henüz hiç kimsenin pozisyonu yok, bu yüzden atanacak kişi bulunmuyor. Bir yöneticinin Pozisyonlar ekranından pozisyon tanımlayıp kişilere ataması gerekiyor.</value></data>
+  <data name="AssigneeEmptyAction" xml:space="preserve"><value>Pozisyonlar ekranını aç</value></data>
+  <data name="PositionsScreenName" xml:space="preserve"><value>Pozisyonlar</value></data>
   <data name="PersonNameUnavailable" xml:space="preserve"><value>Ad bilgisi yok</value></data>
   <data name="PickerHolderCount" xml:space="preserve"><value>{0} kişi</value></data>
   <data name="CustomFieldRecordSearchPlaceholder" xml:space="preserve"><value>Aramak için yazın…</value></data>

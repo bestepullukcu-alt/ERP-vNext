@@ -359,6 +359,18 @@
             if (item.assignee?.isCurrentUser) { item.viewerRole = 'Owner'; }
             else if (item.requester?.isCurrentUser) { item.viewerRole = 'Creator'; }
         }
+        /*
+         * ⚠ RECORDED BEFORE THE NEXT LINE DESTROYS IT.
+         *
+         * `personName()` replaces the person OBJECT with a display STRING, so `requester.isCurrentUser` — the
+         * only thing the server states for certain about who raised this work — exists for exactly these few
+         * lines. A surface that asks the question later gets `undefined` from a string and silently renders
+         * nothing; that is how the row's edit link first shipped inert.
+         *
+         * `viewerRole` above is NOT this fact. It is an if/else, so a task the viewer both raised and owns
+         * reports 'Owner' — the common case, and the one this flag has to keep saying yes to.
+         */
+        item.raisedByViewer = !!item.requester?.isCurrentUser;
         // A person is { id, displayName } — fixtures carry the name, the real projection cannot yet resolve it
         // (no user-directory seam in Platform), so fall back to "Me" for the caller and to a plain
         // name-unavailable label for anyone else. Never render a raw user GUID.

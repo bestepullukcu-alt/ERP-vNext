@@ -311,6 +311,18 @@
   <data name="ActionCompleteInSourceHint" xml:space="preserve">
     <value>This work cannot be finished here; it is completed in {0}</value>
   </data>
+  <data name="ActionOpenInSource" xml:space="preserve">
+    <value>Open the source record</value>
+  </data>
+  <data name="ActionOpenInSourceHint" xml:space="preserve">
+    <value>The Task Center is where the work is acted on; the record itself — its title, description and fields — is edited there.</value>
+  </data>
+  <data name="ActionEditRecord" xml:space="preserve">
+    <value>Edit the task</value>
+  </data>
+  <data name="ActionEditRecordHint" xml:space="preserve">
+    <value>You raised this task, so its title, dates and fields can still be changed — in the Tasks module, where the record lives.</value>
+  </data>
   <data name="TechVersionValue" xml:space="preserve">
     <value>Version {0}</value>
   </data>

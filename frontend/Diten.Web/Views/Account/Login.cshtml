@@ -119,9 +119,22 @@
                                         <input class="form-check-input" type="checkbox" id="remember-me" />
                                         <label class="form-check-label" for="remember-me"> @SharedLocalizer["Login.RememberMe"] </label>
                                     </div>
-                                    <a href="@(authMode == "platform" ? "/platform/forgot-password" : "#")">
-                                        <span>@SharedLocalizer["Login.ForgotPassword"]</span>
-                                    </a>
+                                    @*
+                                        BL-328 — the tenant half of this link went to "#", so it looked
+                                        clickable and did nothing. There is no tenant password-reset flow:
+                                        AccountController carries PlatformForgotPassword and no counterpart.
+                                        A dead link is worse than no link — it costs the user a click and
+                                        tells them nothing, so it is drawn only where it leads somewhere.
+                                        The sentence that should replace it for tenants ("ask your
+                                        administrator") needs a new key in seven locales and belongs to the
+                                        l10n batch; the real fix is the flow itself (BL-328 phase 2).
+                                    *@
+                                    @if (authMode == "platform")
+                                    {
+                                        <a href="/platform/forgot-password">
+                                            <span>@SharedLocalizer["Login.ForgotPassword"]</span>
+                                        </a>
+                                    }
                                 </div>
                             </div>
                             <div class="mb-6">

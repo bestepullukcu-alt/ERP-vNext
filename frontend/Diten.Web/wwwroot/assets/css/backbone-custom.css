@@ -19,6 +19,51 @@
 
    To retune borders project-wide, change --diten-input-border only.
    ================================================================ */
+/* ================================================================
+   MUTED TEXT MUST BE READABLE (BL-331, 2026-09-02)
+
+   MEASURED, live, against each element's REAL background — not against an
+   assumed white:
+
+       light : #a7acb2 on #f5f5f9 (body)  =  2.10:1
+       dark  : #7e7f96 on #232333 (body)  =  3.94:1
+       WCAG AA for normal text            =  4.50:1
+
+   Both themes failed. On ONE page, counting only visible text nodes in this
+   colour: 23 failed, 0 passed — the sidebar's own module headers among them
+   ("İnsan Sermayesi Yönetimi", "Satış", "Ana Veri Yönetimi").
+
+   How this surfaced: the Task Center's task detail carries, under the source
+   door, the sentence that answers "where do I edit this?" — `ActionOpenInSourceHint`,
+   present in all seven languages. It rendered, it was on screen, and the owner
+   still reported "there is no edit". The sentence was at 2.10:1. The screen was
+   saying the right thing in a colour nobody could read.
+
+   The theme is inconsistent with itself rather than uniformly quiet: its own
+   --bs-body-color (#646e78) passes at 5.20:1. Only the secondary tone failed.
+
+   Chosen values are the SMALLEST change that clears AA on BOTH surfaces a muted
+   string lands on (page ground and card), so the design stays as quiet as it was:
+
+       light  #68707a → 4.61:1 on #f5f5f9 · 5.02:1 on #ffffff
+       dark   #9294ab → 5.18:1 on #232333 · 4.58:1 on #2b2c40
+
+   Hue is preserved: both keep the original R<G<B lean of the tones they replace.
+
+   ⚠ THE VENDOR FILE IS NOT EDITED. The token is declared in
+   assets/vendor/css/core.css (`:root, [data-bs-theme=light]` and
+   `[data-bs-theme=dark]`); it is overridden here, the same standing rule that
+   keeps the navbar-shift fix in this stylesheet instead of in vendor code.
+   ================================================================ */
+:root,
+[data-bs-theme=light] {
+    --bs-secondary-color: #68707a;
+}
+
+[data-bs-theme=dark] {
+    --bs-secondary-color: #9294ab;
+}
+
 :root {
     --diten-input-border: color-mix(in sRGB, var(--bs-base-color) 22%, var(--bs-paper-bg));
 }
@@ -2171,6 +2216,22 @@ div.dt-container div.dt-search input {
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
+    /*
+     * BL-331: the vendor paints this label with `var(--bs-gray-400)` (core.css:25798) —
+     * a PALETTE step, not a text role. MEASURED on the light menu: #a7acb2 on the white
+     * sidebar = 2.29:1, where AA asks 4.50. The module names a reader navigates by were
+     * among the least readable text on the page.
+     *
+     * --bs-gray-400 is NOT the thing to override: it is also a background elsewhere, so
+     * moving it would repaint surfaces to fix text. The right correction is here, and it
+     * is semantic as much as visual — a quiet section label is exactly what
+     * --bs-secondary-color is for. It now follows that token (5.02:1 on white) and will
+     * keep following it if the token is ever retuned again.
+     *
+     * The dark/semi-dark menu is NOT touched: its own rule above sets #a3a4cc !important,
+     * measured at 6.43:1 on #232333 — already passing.
+     */
+    color: var(--bs-secondary-color);
 }
 
 /*
@@ -7372,14 +7433,21 @@ tags.diten-tags .tagify__input {
 /* Empty states -------------------------------------------------------------
    The surface is a CARD, matching the Golden Reference DataTable empty state. Without it the icon, heading and
    text sat straight on the page background, which reads as a page that failed to draw rather than a list with
-   nothing in it. Styled here rather than by wrapping each variant in markup: every empty state already shares
-   this class, and FG-003 keeps presentation in CSS. */
-.wcn-empty,
-.wcn-system-page {
-    background: var(--bs-card-bg);
-    border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-card-border-radius);
-}
+   nothing in it.
+
+   ⚠ THE SURFACE IS NOW THE THEME'S OWN `.card`, WORN IN MARKUP — and nothing about a card is restated here.
+   This block used to say `background: var(--bs-card-bg)` and `border-radius: var(--bs-card-border-radius)`,
+   which LOOK like real declarations and paint nothing: the theme declares both of those custom properties
+   inside its `.card` rule, not at `:root`, so an element that is not a card inherits no value for them and the
+   declarations are invalid at computed-value time. Measured live (2026-09-02, management demo): transparent
+   fill, square corners, no shadow, and only the hairline border surviving — because `--bs-border-color` is the
+   one root token of the three. The border went with the rest: cards in this theme carry a SHADOW and no
+   border, so a hand-drawn 1px line was the empty state differing from every card beside it.
+
+   Wearing the class rather than copying its values is also what keeps the skins working: [data-skin=bordered]
+   redefines --bs-card-box-shadow into a ring, and a copied shadow would have diverged the moment anyone
+   switched skin. What stays below is only what a card does NOT decide — this surface's own layout.
+   (assets/js/WorkCenterNext/app.js emits `class="card wcn-empty"`; a guard pins that neither half drifts.) */
 .wcn-empty {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: .375rem; text-align: center; padding: 4rem 1.5rem; color: var(--bs-secondary-color);
@@ -7993,10 +8061,22 @@ tags.diten-tags .tagify__input {
    stacking it has always had. This is the flatpickr counterpart of the select2
    `dropdownParent: $(document.body)` rule in frontend-js-standard.md: a popup
    must stack above the layer it was opened from, not beneath it.
+
+   2026-09-02: the offcanvas arm of this rule was written but never ran. It read
+   `.offcanvas-backdrop ~ * .flatpickr-calendar.open`, which asks for a calendar
+   DESCENDED from a sibling of the backdrop. MEASURED in the Task Center quick-create
+   panel: flatpickr appends the calendar to <body>, while Bootstrap renders the
+   backdrop inside a DIV -- so the two are not even siblings, and `cal.matches(...)`
+   returned false for both the shipped selector and its `~` variant. The calendar
+   therefore kept the vendor 1074 under an offcanvas at 1090, and
+   `document.elementFromPoint` at its centre returned `.offcanvas-body`: the same
+   unusable-picker failure this block was written to end, still open on the other
+   layer. Body carries no offcanvas class (unlike `.modal-open`), so the hook is
+   `:has(.offcanvas.show)` -- the idiom already used ~20 times in this sheet.
    ──────────────────────────────────────────────────────────────────────────── */
 .swal2-shown .flatpickr-calendar.open,
 .modal-open .flatpickr-calendar.open,
-.offcanvas-backdrop ~ * .flatpickr-calendar.open { z-index: 1095; }
+body:has(.offcanvas.show) .flatpickr-calendar.open { z-index: 1095; }
 .wcn-actionbar-more > .wcn-act-btn { block-size: 100%; }
 /* A disabled primary keeps its reason here too: on a narrow screen this bar may be the only part of the page
    the reader has seen, so "you cannot press this" without "because…" is worse here than in the card. */

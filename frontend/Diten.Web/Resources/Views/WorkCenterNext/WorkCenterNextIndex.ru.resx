@@ -311,6 +311,18 @@
   <data name="ActionCompleteInSourceHint" xml:space="preserve">
     <value>Эту работу нельзя завершить здесь — она закрывается в {0}</value>
   </data>
+  <data name="ActionOpenInSource" xml:space="preserve">
+    <value>Открыть исходную запись</value>
+  </data>
+  <data name="ActionOpenInSourceHint" xml:space="preserve">
+    <value>Центр задач — место, где работу выполняют; сама запись — её название, описание и поля — редактируется там.</value>
+  </data>
+  <data name="ActionEditRecord" xml:space="preserve">
+    <value>Изменить задачу</value>
+  </data>
+  <data name="ActionEditRecordHint" xml:space="preserve">
+    <value>Эту задачу создали вы, поэтому её название, даты и поля ещё можно изменить — в модуле «Задачи», где хранится запись.</value>
+  </data>
   <data name="TechVersionValue" xml:space="preserve">
     <value>Версия {0}</value>
   </data>

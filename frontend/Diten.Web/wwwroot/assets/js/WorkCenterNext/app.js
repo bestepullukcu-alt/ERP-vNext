@@ -112,6 +112,9 @@
      * and `history` is finished: an item you snoozed and later completed must still appear in your own past.
      */
     const SNOOZE_TABS = ['inbox', 'islerim'];
+    // Tabs whose contents are settled, so a count of them is not "work waiting for you" — see the
+    // badge decision in buildTabs, which is the only reader.
+    const BADGELESS_TABS = ['history'];
 
     const state = {
         tab: 'inbox',
@@ -1154,7 +1157,25 @@
              * must never be printed confidently.
              */
             const partial = hasUnavailableSources();
-            const countBadge = (cnt > 0 || partial)
+            /*
+             * ⚠ GEÇMİŞ CARRIES NO BADGE, IN EITHER STATE (2026-09-02, measured in a management demo).
+             *
+             * The owner cancelled his own task, it landed in Geçmiş — correct — and the tab grew a red "1",
+             * which is the page telling him one thing there was waiting for him. `tabCount`'s own rule, six
+             * hundred lines up, already says what a badge means: "work waiting for you in this tab". Geçmiş is
+             * where work goes when it has STOPPED; nothing in it waits for anybody, so no count of it is a
+             * claim worth drawing.
+             *
+             * ⚠ AND THAT INCLUDES WC-D3's "+". The partial-board branch below draws a badge even at zero,
+             * because a count a reader ACTS on must never print a confident zero over an incomplete board.
+             * Geçmiş prints no such count, so there is no number left for the "+" to qualify — a grey "0+"
+             * over closed work would be the same false claim in a quieter colour. The banner above the list
+             * still says a source is missing, which is where that fact belongs.
+             *
+             * Written as a set rather than `key !== 'history'` so the next tab that turns out to hold only
+             * settled work joins it by name, in the one place the reason is written down.
+             */
+            const countBadge = (BADGELESS_TABS.indexOf(key) < 0 && (cnt > 0 || partial))
                 ? `<span class="badge rounded-pill ${partial ? 'bg-secondary wcn-tab-count-partial' : 'bg-danger'} wcn-tab-count position-absolute top-0 start-100 translate-middle" title="${partial ? esc(t('PartialCountHint')) : ''}">${cnt}${partial ? '+' : ''}</span>`
                 : '';
             return `<li class="nav-item" role="presentation">
@@ -1503,6 +1524,40 @@
             ? `<button type="button" class="wcn-pin pinned" data-wcn-snooze="${item.id}" title="${
                 esc(t('SnoozeClear'))}" aria-label="${esc(t('SnoozeClear'))}" aria-pressed="true"><i class="bx bxs-moon"></i></button>`
             : '';
+        /*
+         * EDITING THE TASK YOU RAISED, FROM THE ROW (owner's decision, 2026-09-02).
+         *
+         * The owner created a task, wanted to fix a field, and read the detail page as offering no way to.
+         * Editing was never missing — /Tasks/{id}/Edit works — but reaching it meant going through
+         * "Kaynak kayıtta aç", a label that promises navigation, not correction.
+         *
+         * ⚠ NO NEW ROW LANGUAGE, exactly as the pin's rule above says: same `.wcn-pin` control in
+         * `.wcn-row-actions`, same size, same title/aria pair. It is an <a>, not a <button>, because it
+         * NAVIGATES — it is not a toggle, so it carries no `aria-pressed` and can never take `.pinned`.
+         *
+         * Three conditions, each measured against the live projection rather than assumed:
+         *   · `providerCode === 'tasks'` — 114 of 115 items; the one exception comes from another provider,
+         *     where /Tasks/{id}/Edit is not its record and the link would be a lie.
+         *   · `raisedByViewer` — the engine publishes `requester.isCurrentUser`, but the presentation mapper
+         *     overwrites `requester` with a display STRING, so the flag is captured in toPresentation before
+         *     that happens (measured: reading it here returned undefined, and the link shipped inert).
+         *     `viewerRole` is not this fact — its if/else reports 'Owner' for a task you raised AND own.
+         *   · not terminal — 22 of the 114 are Done or Cancelled. Editing a closed task is not a correction,
+         *     it is a rewrite of the record. `isTerminal` is the module's one answer to that question; this
+         *     does not add a second.
+         *
+         * Destination is `sourceHref(item) + '/Edit'`, so it follows the same deep link the source door uses.
+         * Nothing here decides the URL on its own.
+         */
+        const canEditFromRow = (candidate) =>
+            candidate.source?.providerCode === 'tasks'
+            && !!candidate.raisedByViewer
+            && !isTerminal(candidate)
+            && !!sourceHref(candidate);
+        const editBtn = canEditFromRow(item)
+            ? `<a class="wcn-pin" href="${esc(sourceHref(item))}/Edit" data-wcn-edit="${esc(item.id)}" title="${
+                esc(t('ActionEditRecord'))}" aria-label="${esc(t('ActionEditRecord'))}"><i class="bx bx-edit-alt" aria-hidden="true"></i></a>`
+            : '';
         const onBehalfBadge = item.delegator
             ? `<span class="wcn-badge wcn-badge-delegation" title="${esc(tf('OnBehalfOf', item.delegator))}"><i class="bx bx-user-voice"></i>${esc(tf('OnBehalfShort', item.delegator))}</span>`
             : '';
@@ -1521,7 +1576,7 @@
                 ${compact ? '' : `<p class="wcn-row-summary">${esc(summary)}</p>`}
                 <div class="wcn-row-chips">${rowChips(item)}</div>
             </div>
-            <div class="wcn-row-actions">${unsnoozeBtn}${pinBtn}${actionCluster(item)}</div>
+            <div class="wcn-row-actions">${editBtn}${unsnoozeBtn}${pinBtn}${actionCluster(item)}</div>
         </div>`;
     };
 
@@ -2223,6 +2278,38 @@
     };
 
     /*
+     * ── ONE SOURCE FOR "WHERE THE RECORD LIVES", AND FOR "IS THERE ALREADY A DOOR TO IT" ──────────────────
+     *
+     * MEASURED (2026-09-02, BL-329 — two controls to one destination): the detail page drew BOTH the rail's
+     * bare "Kaynak kayıtta aç" link and the source card's "Kaynak kaydını aç" button, on the same task, to the
+     * same href. Counted in a live session and reproduced here: `railLinks=1 cardButtons=1` on an inline item
+     * carrying `source.deepLink`.
+     *
+     * The rule against that was already written — the source card's button "stands down" when the actions card
+     * has taken the destination — but it was expressed as `actionDepth === 'deeplink'`, which is only ONE of
+     * the two ways the rail opens that door. The other, `sourceDoor` on inline work, was added later and the
+     * guard never learned about it. So the fact is derived here, ONCE, and both sides read the result rather
+     * than each re-deciding from a field.
+     *
+     * The href expression itself was written out three times (narrow bar lead, rail lead, rail door) before it
+     * was written a fourth way in the card. Four readings of one fact is exactly how the two controls appeared.
+     */
+    const sourceHref = (target) => target?.source?.deepLink || target?.deepLink || target?.sourceDeepLink || '';
+
+    /*
+     * Does the ACTION RAIL already offer a way to the source record?
+     *
+     * Two conditions, both measured rather than assumed:
+     *  · a destination exists — the contract lets a provider publish none, and neither surface invents one;
+     *  · the rail is actually DRAWN. When nothing applies (`!actions.length`) `renderActionRail` returns the
+     *    "ActionsNoneClosed / ActionsNoneNotYours" card and reaches neither its deeplink lead nor `sourceDoor`
+     *    — measured on a closed task: `railLinks=0`. Reading the href alone would have called that a door and
+     *    withdrawn the card's button, leaving a finished task with no way to its own record: the cul-de-sac
+     *    this page keeps closing, re-opened by the fix for the duplicate.
+     */
+    const railLeadsToSource = (item) => !!sourceHref(item) && actionTiers(item).actions.length > 0;
+
+    /*
      * ── THE NARROW-SCREEN ACTION BAR ──────────────────────────────────────────────────────────────────────
      *
      * MEASURED at 900px: "Mevcut aksiyonlar" began at the page's 1876th pixel of 2597 — 2.08 screens of
@@ -2273,9 +2360,7 @@
             ? `<p class="alert alert-warning wcn-actionbar-reason d-flex align-items-start gap-2" role="note"${reasonId ? ` id="${esc(reasonId)}"` : ''}><i class="bx bx-lock-alt" aria-hidden="true"></i><span>${esc(primary.disabledReason)}</span></p>`
             : '';
 
-        const depthLink = surface?.surfaceMode === 'deeplink'
-            ? (item.source?.deepLink || item.deepLink || item.sourceDeepLink)
-            : null;
+        const depthLink = surface?.surfaceMode === 'deeplink' ? sourceHref(item) : null;
         const lead = depthLink
             ? `<a class="wcn-act-btn wcn-act-fill wcn-act-fill-accent wcn-actionbar-lead" href="${esc(depthLink)}">
                 <i class="bx bx-link-external" aria-hidden="true"></i><span>${
@@ -2382,9 +2467,7 @@
          * it from `item.actionDepth` looked equivalent and was not: the presentation mapper does not carry that
          * field through, so the local test read `undefined` and the branch never fired. One model, consumed.
          */
-        const depthLink = surface?.surfaceMode === 'deeplink'
-            ? (item.source?.deepLink || item.deepLink || item.sourceDeepLink)
-            : null;
+        const depthLink = surface?.surfaceMode === 'deeplink' ? sourceHref(item) : null;
         if (depthLink) {
             const moduleName = item.sourceModuleName || item.sourceModule || '';
             const rest = actions.filter((a) => !a.destructive);
@@ -2415,6 +2498,51 @@
 
 
         /*
+         * ── THE WAY OUT TO THE RECORD (2026-09-02) ────────────────────────────────────────────────────────
+         *
+         * MEASURED in a management demo: the owner opened a task he had created himself, wanted to change its
+         * title, and found nothing. /Tasks/{id} exists, its header carries "Düzenle", and no path on this
+         * surface led to either.
+         *
+         * ⚠ THE ANSWER IS NOT AN `edit` ACTION IN THE RAIL, and that is a decision rather than an omission.
+         * This rail draws no verbs of its own: every entry comes from the PROJECTION, i.e. from a provider's
+         * own engine transitions. MOD-0024 aggregates providers it does not own, "change the title" is not a
+         * transition, and for a document or a strategy item it means nothing at all. An `edit` action here
+         * would be this module reaching into records that are not its own — the same boundary the approval
+         * work drew: MOD-0024 reports and hands over, it does not decide.
+         *
+         * What was missing is the DOOR. The reader was left in a cul-de-sac, which is this product's recurring
+         * defect and not a missing feature, and the product already has the idiom for it —
+         * `ActionCompleteInSource` on deeplink work, `SubtaskOpenFullDetail` on the subtask panel: a quiet
+         * secondary with an external-link glyph.
+         *
+         * ⚠ NOT ON DEEPLINK WORK. There the source link is already the LEAD button (it is the only way that
+         * work can be finished), so a second link to the same place underneath would be the page saying one
+         * thing twice — the branch above returns before ever reaching here.
+         *
+         * ⚠ NOT A FILLED BUTTON. The card keeps exactly ONE fill, and on inline work that fill belongs to the
+         * act the reader came to perform. A door drawn as loudly as "Tamamla" tells every reader to leave a
+         * page that does its job.
+         *
+         * ⚠ NOT PERMISSION-GATED HERE. The link is navigation; the destination decides what it offers. A
+         * browser-side guess at the reader's rights either hides the way out from somebody who has it, or
+         * claims to know something only the server knows.
+         */
+        const sourceDoor = (target) => {
+            const href = sourceHref(target);
+            // No destination, no door: the contract permits a provider to publish none, and a link to nowhere
+            // is worse than no link at all.
+            if (!href) { return ''; }
+            return `<li class="wcn-act wcn-act-source">
+                <a class="wcn-act-btn wcn-act-bare wcn-act-bare-neutral" href="${esc(href)}"
+                   data-wcn-source-link="${esc(target.id)}">
+                    <i class="bx bx-link-external" aria-hidden="true"></i><span>${esc(t('ActionOpenInSource'))}</span>
+                </a>
+                <p class="wcn-act-outcome">${esc(t('ActionOpenInSourceHint'))}</p>
+            </li>`;
+        };
+
+        /*
          * DESTRUCTIVE ACTIONS ARE VISIBLE, and the kebab is empty until something genuinely rare needs it.
          *
          * "Görevi iptal et" lived in a "Diğer aksiyonlar" menu. Folding a destructive act away is not a safety
@@ -2430,6 +2558,7 @@
                 ${secondary.length
             ? `<li class="wcn-acts-row">${actionRail(item, secondary, 'secondary', locked)}</li>`
             : ''}
+                ${sourceDoor(item)}
             </ul>
             </div>
             ${destructive.length
@@ -4268,13 +4397,31 @@
             + (foreignType ? sourceRow('bx-category', 'DetailSourceType', item.sourceObjectType || item.sourceType) : '');
 
         /*
-         * THE OPEN-SOURCE BUTTON, unless the actions card has already taken it.
+         * THE OPEN-SOURCE BUTTON, unless the actions card has already taken it — or there is nowhere to go.
          *
-         * When the work cannot be finished here (`actionDepth === 'deeplink'`) the actions card leads with
-         * "{Module}'de tamamla", which goes to the same place. Two controls for one destination is the
-         * duplication this page keeps removing — so here it stands down.
+         * ⚠ THE RULE IS NOT NEW; ITS OLD WORDING WAS TOO NARROW (2026-09-02, BL-329). It said: when the work
+         * cannot be finished here (`actionDepth === 'deeplink'`) the actions card leads with "{Module}'de
+         * tamamla", which goes to the same place, so this button stands down. True, and incomplete — the rail
+         * later grew a SECOND door, `sourceDoor`'s bare "Kaynak kayıtta aç" on inline work, and the guard was
+         * never told. MEASURED on an inline task with a deep link: `railLinks=1 cardButtons=1` — the very
+         * duplication the paragraph above was written to prevent, wearing two different labels.
+         *
+         * The card no longer decides this from a field of its own. `railLeadsToSource` is the one answer to
+         * "has a door already been drawn", and it covers both of the rail's doors.
+         *
+         * ⚠ WHICH CONTROL SURVIVES IS A DECISION, not a coin toss (owner, 2026-09-02): the rail keeps the door,
+         * because the rail is where this page collects the things a reader can DO. This card says which record
+         * this is — its identity rows are the reason it exists, and they stay.
+         *
+         * ⚠ NO HREF, NO BUTTON. MEASURED: with `source.deepLink: null` the card still drew the button, and its
+         * handler reads `if (item && item.deepLink)` — so it rendered a control that did nothing at all. The
+         * rail's door already refuses that case; the card now refuses it the same way.
+         *
+         * ⚠ WHAT IS LEFT: an item with a destination and NO applicable action — a closed task, or one that is
+         * not yours. There the rail draws no door (measured: `railLinks=0`), so this button is the only way to
+         * the record and it is not a duplicate of anything.
          */
-        const openButton = item.actionDepth === 'deeplink' ? '' : `
+        const openButton = item.actionDepth === 'deeplink' || railLeadsToSource(item) || !sourceHref(item) ? '' : `
             <button type="button" class="btn btn-sm btn-label-primary wcn-opensource" data-wcn-open="${esc(item.id)}"
                     aria-label="${esc(tf('OpenSourceAria', item.sourceModuleName || item.sourceModule, item.sourceId))}">
                 <i class="bx bx-link-external" aria-hidden="true"></i><span>${esc(t('DetailOpenSource'))}</span>
@@ -4950,35 +5097,42 @@
         const statusKey = SUBTASK_STATUS_KEY[draft.status];
         return `<div class="offcanvas offcanvas-end wcn-subtask-panel" tabindex="-1" id="wcnSubtaskPanel"
                      aria-labelledby="wcnSubtaskPanelLabel">
-            <div class="offcanvas-header">
+            <div class="offcanvas-header p-4">
                 <h5 class="offcanvas-title" id="wcnSubtaskPanelLabel">${esc(t('SubtaskQuickEditTitle'))}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
                         aria-label="${esc(t('PanelClose'))}"></button>
             </div>
-            <div class="offcanvas-body">
+            <div class="offcanvas-body border-top p-4">
                 <div class="mb-3">
-                    <label class="form-label" for="wcnSubtaskTitle">${esc(t('SubtaskFieldTitle'))}</label>
-                    <input type="text" class="form-control" id="wcnSubtaskTitle" maxlength="200"
-                           data-wcn-subtask-field="title" value="${esc(draft.title || '')}">
+                    <label class="form-label fw-medium" for="wcnSubtaskTitle">${esc(t('SubtaskFieldTitle'))}</label>
+                    <div class="diten-field">
+                        <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" class="form-control" id="wcnSubtaskTitle" maxlength="200"
+                               data-wcn-subtask-field="title" value="${esc(draft.title || '')}">
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="wcnSubtaskDue">${esc(t('SubtaskFieldDue'))}</label>
-                    <input type="date" class="form-control" id="wcnSubtaskDue"
-                           data-wcn-subtask-field="dueAt" value="${esc((draft.dueAt || '').slice(0, 10))}">
+                    <label class="form-label fw-medium" for="wcnSubtaskDue">${esc(t('SubtaskFieldDue'))}</label>
+                    <div class="diten-field">
+                        <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" class="form-control flatpickr-date" id="wcnSubtaskDue"
+                               placeholder="${esc(t('DatePlaceholder'))}"
+                               data-wcn-subtask-field="dueAt" value="${esc((draft.dueAt || '').slice(0, 10))}">
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <span class="form-label d-block">${esc(t('SubtaskFieldAssignee'))}</span>
+                    <span class="form-label fw-medium d-block">${esc(t('SubtaskFieldAssignee'))}</span>
                     <p class="wcn-block-hint mb-0">${draft.assigneeName
                         ? esc(draft.assigneeName)
                         : esc(t('SubtaskNoAssignee'))}</p>
                 </div>
                 <div class="mb-3">
-                    <span class="form-label d-block">${esc(t('SubtaskFieldStatus'))}</span>
+                    <span class="form-label fw-medium d-block">${esc(t('SubtaskFieldStatus'))}</span>
                     <p class="wcn-block-hint mb-0">${statusKey ? esc(t(statusKey)) : ''}</p>
                 </div>
                 <p class="wcn-block-hint">${esc(t('SubtaskQuickEditScope'))}</p>
             </div>
-            <div class="offcanvas-footer p-3 border-top d-flex flex-column gap-2">
+            <div class="offcanvas-footer p-4 border-top d-flex flex-column gap-2">
                 <button type="button" class="btn btn-primary" data-wcn-subtask-save="${esc(id)}"${busy ? ' disabled' : ''}>
                     ${esc(t('SubtaskSave'))}
                 </button>
@@ -5010,17 +5164,19 @@
         else { toast(global.TasksApi.failureMessage(result), 'error'); }
     };
 
-    const showSubtaskPanel = () => {
-        const node = document.getElementById('wcnSubtaskPanel');
-        if (!node || !global.bootstrap?.Offcanvas) { return; }
-        const panel = global.bootstrap.Offcanvas.getOrCreateInstance(node);
-        node.addEventListener('hidden.bs.offcanvas', () => {
-            state.subtaskPanelId = null;
-            state.subtaskPanelRecord = null;
-            render();
-        }, { once: true });
-        panel.show();
-    };
+    /*
+     * THE SECOND COPY OF showPanel IS GONE, and the comment above showPanel ("shared plumbing for BOTH subtask
+     * panels") is true for the first time. MEASURED: the two functions differed in nothing but the two lines of
+     * state their `hidden` listener cleared — and that difference is the parameter showPanel already takes.
+     *
+     * It is not tidying: the enhancement hook lives in showPanel, so a panel that kept its own copy of the
+     * plumbing would have kept a browser-native date field too. A rule applied in one of two identical
+     * functions is exactly the shape of defect this round is correcting.
+     */
+    const showSubtaskPanel = () => showPanel('wcnSubtaskPanel', () => {
+        state.subtaskPanelId = null;
+        state.subtaskPanelRecord = null;
+    });
 
     const saveSubtaskPanel = async (subtaskId) => {
         const record = state.subtaskPanelRecord;
@@ -5099,27 +5255,80 @@
         const options = people.map((person) =>
             `<option value="${esc(personUserId(person))}"${draft.assigneeUserId === personUserId(person) ? ' selected' : ''}>`
             + `${esc(person.displayName || person.name || '')}</option>`).join('');
+        /*
+         * THE SHELL IS THE PRODUCT'S, NOT BOOTSTRAP'S (owner, 2026-09-02 — "gap, header, divider").
+         *
+         * MEASURED side by side against _QuickCreateOffcanvas.cshtml, the panel this one sits beside:
+         *
+         *     standard (.cshtml)            these panels (before)
+         *     header  p-4        → 16px     (none)   → 24px 24px 12px
+         *     body    border-top p-4 → 16px (none)   → 24px, AND NO DIVIDER
+         *     footer  p-4        → 16px     p-3      → 12px
+         *
+         * The 24px was never a decision — it is the vendor's default showing through, because these panels are
+         * built in JS and nobody carried the utility classes across from the view. The rule that a panel's body
+         * is separated from its header by a line was invisible here for the same reason.
+         *
+         * `backbone-offcanvas-actions` is deliberately NOT added to the footer: it makes buttons share a row,
+         * and this footer stacks them on purpose.
+         */
         return `<div class="offcanvas offcanvas-end wcn-subtask-panel" tabindex="-1" id="wcnSubtaskCreatePanel"
                      aria-labelledby="wcnSubtaskCreateLabel">
-            <div class="offcanvas-header">
+            <div class="offcanvas-header p-4">
                 <h5 class="offcanvas-title" id="wcnSubtaskCreateLabel">${esc(t('SubtaskCreateTitle'))}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
                         aria-label="${esc(t('PanelClose'))}"></button>
             </div>
-            <div class="offcanvas-body">
+            ${/*
+               * ── THE FIELDS ARE THE PRODUCT'S FIELDS, NOT THIS PANEL'S OWN (2026-09-02) ─────────────────
+               *
+               * MEASURED, against Views/Tasks/_QuickCreateOffcanvas.cshtml — the surface that does the SAME job
+               * one click away:
+               *                    HERE, before                  THERE
+               *     date           the browser's own control     input.form-control.flatpickr-date
+               *     pickers        raw select.form-select        select.select2.form-select
+               *     icons          none                          .diten-field + .diten-field-icon
+               * The browser's own date control takes its format from the OPERATING SYSTEM, so the reader saw
+               * `gg.aa.yyyy` on a Turkish page and would have seen it on an Arabic one too — the page's own
+               * language never entered into it. tests/tasks-quick-create-golden.test.js already forbade exactly
+               * that, but it read the .cshtml alone: this panel is built in JS, so the rule was written and
+               * never reached it. (The forbidden attribute is deliberately not spelled out anywhere in this
+               * file, the same discipline the .cshtml keeps: the guard greps the whole file for it, so prose
+               * would read as a violation — and a guard that has to strip comments first is one a comment can
+               * fool.)
+               *
+               * The GLYPHS are the full form's, field for field (Tasks/_Form.cshtml's map, mirrored by the
+               * quick-create offcanvas) — a subtask is a task, so the same value must not wear a different mark
+               * depending on which door it was created through.
+               *
+               * The description's `bx-align-left` is that same map's `taskDescription`, chosen there over an
+               * invented glyph and reused here rather than re-decided; `--top` because a textarea is not a 38px
+               * line and the centred variant would park the icon beside line three.
+               *
+               * BEHAVIOUR travels with the markup: the classes below are inert until TaskForm's own enhancers
+               * bind them — see showPanel.
+               */''}
+            <div class="offcanvas-body border-top p-4">
                 <div class="mb-3">
-                    <label class="form-label" for="wcnNewSubtaskTitle">
+                    <label class="form-label fw-medium" for="wcnNewSubtaskTitle">
                         ${esc(t('SubtaskFieldTitle'))} <span class="text-danger">*</span>
                     </label>
-                    <input type="text" class="form-control" id="wcnNewSubtaskTitle" maxlength="200"
-                           data-wcn-newsubtask-field="title" value="${esc(draft.title || '')}">
+                    <div class="diten-field">
+                        <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" class="form-control" id="wcnNewSubtaskTitle" maxlength="200"
+                               data-wcn-newsubtask-field="title" value="${esc(draft.title || '')}">
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="wcnNewSubtaskAssignee">${esc(t('SubtaskFieldAssignee'))}</label>
-                    <select class="form-select" id="wcnNewSubtaskAssignee" data-wcn-newsubtask-field="assigneeUserId">
-                        <option value="">${esc(t('SubtaskAssignToMe'))}</option>
-                        ${options}
-                    </select>
+                    <label class="form-label fw-medium" for="wcnNewSubtaskAssignee">${esc(t('SubtaskFieldAssignee'))}</label>
+                    <div class="diten-field">
+                        <i class="bx bx-user diten-field-icon" aria-hidden="true"></i>
+                        <select class="select2 form-select" id="wcnNewSubtaskAssignee"
+                                data-wcn-newsubtask-field="assigneeUserId">
+                            <option value="">${esc(t('SubtaskAssignToMe'))}</option>
+                            ${options}
+                        </select>
+                    </div>
                 </div>
                 <div class="mb-3">
                     ${/*
@@ -5128,28 +5337,46 @@
                        * (`400 VALIDATION_REQUEST_DUE_AT_NOT_NULL`, measured on both), and `_Form.cshtml` already
                        * marks the field. The rule is the product's; this panel was the one surface not saying so.
                        */''}
-                    <label class="form-label" for="wcnNewSubtaskDue">
+                    <label class="form-label fw-medium" for="wcnNewSubtaskDue">
                         ${esc(t('SubtaskFieldDue'))} <span class="text-danger">*</span>
                     </label>
-                    <input type="date" class="form-control" id="wcnNewSubtaskDue"
-                           data-wcn-newsubtask-field="dueAt" value="${esc(draft.dueAt || '')}">
+                    ${/*
+                       * `DatePlaceholder` ("YYYY-AA-GG"), not a new string and not a guess: it is the pair the
+                       * Planla and Ertele dialogs on this same page already use over a flatpickr box, and it
+                       * states the format the field CARRIES — flatpickr is constructed with `dateFormat: Y-m-d`,
+                       * so the value the API receives is byte-for-byte what the native control produced.
+                       * The field is typed as well as picked (`allowInput: true`), so it needs the prompt.
+                       */''}
+                    <div class="diten-field">
+                        <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" class="form-control flatpickr-date" id="wcnNewSubtaskDue"
+                               placeholder="${esc(t('DatePlaceholder'))}"
+                               data-wcn-newsubtask-field="dueAt" value="${esc(draft.dueAt || '')}">
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="wcnNewSubtaskPriority">${esc(t('SubtaskFieldPriority'))}</label>
-                    <select class="form-select" id="wcnNewSubtaskPriority" data-wcn-newsubtask-field="priority">
-                        ${['Low', 'Medium', 'High'].map((level) =>
-                            `<option value="${level}"${(draft.priority || 'Medium') === level ? ' selected' : ''}>`
-                            + `${esc(t('Priority' + level))}</option>`).join('')}
-                    </select>
+                    <label class="form-label fw-medium" for="wcnNewSubtaskPriority">${esc(t('SubtaskFieldPriority'))}</label>
+                    <div class="diten-field">
+                        <i class="bx bx-flag diten-field-icon" aria-hidden="true"></i>
+                        <select class="select2 form-select" id="wcnNewSubtaskPriority"
+                                data-wcn-newsubtask-field="priority">
+                            ${['Low', 'Medium', 'High'].map((level) =>
+                                `<option value="${level}"${(draft.priority || 'Medium') === level ? ' selected' : ''}>`
+                                + `${esc(t('Priority' + level))}</option>`).join('')}
+                        </select>
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="wcnNewSubtaskDesc">${esc(t('SubtaskFieldDescription'))}</label>
-                    <textarea class="form-control" id="wcnNewSubtaskDesc" rows="3"
-                              data-wcn-newsubtask-field="description">${esc(draft.description || '')}</textarea>
+                    <label class="form-label fw-medium" for="wcnNewSubtaskDesc">${esc(t('SubtaskFieldDescription'))}</label>
+                    <div class="diten-field">
+                        <i class="bx bx-align-left diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                        <textarea class="form-control" id="wcnNewSubtaskDesc" rows="3"
+                                  data-wcn-newsubtask-field="description">${esc(draft.description || '')}</textarea>
+                    </div>
                 </div>
                 <p class="wcn-block-hint">${esc(t('SubtaskCreateParentFixed'))}</p>
             </div>
-            <div class="offcanvas-footer p-3 border-top d-flex flex-column gap-2">
+            <div class="offcanvas-footer p-4 border-top d-flex flex-column gap-2">
                 <button type="button" class="btn btn-primary w-100"
                         data-wcn-newsubtask-save="${esc(state.subtaskCreateParentId)}"${state.subtaskCreateSaving ? ' disabled' : ''}>
                     ${esc(t('SubtaskCreateSubmit'))}
@@ -5226,6 +5453,31 @@
                 return `<option value="${esc(id)}">${esc(person.displayName || id)}</option>`;
             }).join('');
         if (chosen) { select.value = chosen; }
+
+        /*
+         * ⚠ THE PICKER IS ALREADY A select2 BY THE TIME THIS RUNS, AND THE ORDER CANNOT BE THE OTHER WAY ROUND.
+         *
+         * quick-create.js renders its options FIRST and binds select2 afterwards, with a comment saying why.
+         * That order is unavailable here: showPanel binds as the panel opens, and the panel deliberately opens
+         * BEFORE this lookup lands — awaiting it first would leave a slow or failing people service showing the
+         * reader a button that does nothing (measured last round, see openSubtaskCreatePanel). So the options
+         * above are written UNDERNEATH a control that is already drawn, and the drawn control has to be told.
+         *
+         * WHAT IS ACTUALLY STALE, measured in the vendored library rather than assumed
+         * (assets/vendor/libs/select2/select2.js):
+         *   · the DROPDOWN is not — `SelectAdapter.query` re-reads `this.$element.children()` on every open, so
+         *     it lists whatever the <select> holds at that moment;
+         *   · the BOX select2 draws over the select is — it is redrawn from the `change.select2` handler select2
+         *     binds on the element (`selection:update`).
+         * One bubbling `change` is therefore the entire notification. No destroy/re-bind, which would also mean
+         * a second `.wrap()` around a control that already carries one.
+         *
+         * Only when it IS bound: on a page without jQuery/select2 this would be a change event nobody asked for.
+         * Either way `onChange` reads the value straight back into the draft, which is the value it already had.
+         */
+        if (select.classList.contains('select2-hidden-accessible')) {
+            select.dispatchEvent(new global.Event('change', { bubbles: true }));
+        }
     };
 
     const saveNewSubtask = async (parentId) => {
@@ -5430,12 +5682,40 @@
             + 'Update the panel in place (setPanelBusy / fillAssigneeSelect) or close it first (hidePanel).');
     };
 
+    /*
+     * ── THE MARKUP IS HALF OF A CONTROL; THIS IS THE OTHER HALF ───────────────────────────────────────────
+     *
+     * MEASURED before this existed: `TaskForm.enhanceSelects` and `TaskForm.enhanceDates` appeared ZERO times in
+     * this file, on a page that loads Tasks/form.js, diten-datefield.js, flatpickr, jQuery and select2 for the
+     * quick-create offcanvas right beside it. So the subtask panels' classes would have been decoration —
+     * `.flatpickr-date` with no picker behind it is a calendar icon over a plain text box, which is the exact
+     * defect diten-datefield.js was extracted to stop repeating.
+     *
+     * ONCE, HERE, and never from render(): a panel is enhanced as it opens and its node then stands untouched
+     * until it closes — see warnIfPanelOpen for what a render during that window costs. Both enhancers skip what
+     * they have already bound (`select2-hidden-accessible` / `_flatpickr`), so this is idempotent by the
+     * components' own rules rather than by a flag kept here.
+     *
+     * SILENT WITHOUT TaskForm, and that is deliberate: boot() already names the missing script, once, for the
+     * whole page. A second complaint per panel would say the same thing in a worse place, and the panel itself
+     * still opens — with plain controls, which is what it had before this round.
+     */
+    const enhancePanelControls = (node) => {
+        const form = global.TaskForm;
+        if (!node || !form) { return; }
+        form.enhanceSelects?.(node);
+        form.enhanceDates?.(node);
+    };
+
     const showPanel = (id, onHidden) => {
         const node = document.getElementById(id);
         if (!node || !global.bootstrap?.Offcanvas) { return; }
         const panel = global.bootstrap.Offcanvas.getOrCreateInstance(node);
         node.addEventListener('hidden.bs.offcanvas', () => { onHidden(); render(); }, { once: true });
+        /* AFTER show(), on purpose: opening is what the click asked for, so a control that cannot be enhanced
+           costs the reader a plain box rather than a panel that never appears. */
         panel.show();
+        enhancePanelControls(node);
     };
 
     // ── Table view ────────────────────────────────────────────────────────────
@@ -5870,7 +6150,7 @@
             + section('FocusPinned', 'primary', pinned);
 
         if (!inner) {
-            return `<div class="wcn-empty">
+            return `<div class="card wcn-empty">
                 <i class="bx bx-coffee"></i>
                 <h5>${esc(t('FocusEmptyTitle'))}</h5>
                 <p>${esc(t('FocusEmptyDesc'))}</p>
@@ -5887,7 +6167,7 @@
         // Meeting invitations are trigger-only projections. They use a dedicated
         // empty state but never enter the task-detail resolver or task lifecycle.
         if (state.typeFilter.has('meetingInvite')) {
-            return `<div class="wcn-empty">
+            return `<div class="card wcn-empty">
                 <i class="bx bx-calendar-event"></i>
                 <h5>${esc(t('EmptyMeetingInviteTitle'))}</h5>
                 <p>${esc(t('EmptyMeetingInviteDesc'))}</p>
@@ -5896,7 +6176,7 @@
         const filtered = state.moduleFilter.length || state.priorityFilter !== 'all' || state.modeFilter !== 'all'
             || state.typeFilter.size || state.signalFilter.size || state.search || (state.tab === 'havuz' && state.group !== 'all');
         if (filtered) {
-            return `<div class="wcn-empty">
+            return `<div class="card wcn-empty">
                 <i class="bx bx-filter-alt"></i>
                 <h5>${esc(t('EmptyFilterTitle'))}</h5>
                 <p>${esc(t('EmptyFilterDesc'))}</p>
@@ -5915,7 +6195,7 @@
          * true is that this list could not be completed, not that there is nothing in it.
          */
         if (hasUnavailableSources()) {
-            return `<div class="wcn-empty">
+            return `<div class="card wcn-empty">
                 <i class="bx bx-cloud-snow"></i>
                 <h5>${esc(t('EmptyPartialBoardTitle'))}</h5>
                 <p>${esc(t('EmptyPartialBoardDesc'))}</p>
@@ -5929,7 +6209,7 @@
             islerim: ['EmptyMineTitle', 'EmptyMineDesc', 'bx-briefcase-alt-2']
         };
         const [titleKey, descKey, icon] = byTab[state.tab] || byTab.mine;
-        return `<div class="wcn-empty">
+        return `<div class="card wcn-empty">
             <i class="bx ${icon}"></i>
             <h5>${esc(t(titleKey))}</h5>
             <p>${esc(t(descKey))}</p>
@@ -6009,7 +6289,7 @@
 
 
 
-    const renderLoadingState = () => `<div class="wcn-system-page" role="status" aria-live="polite">
+    const renderLoadingState = () => `<div class="card wcn-system-page" role="status" aria-live="polite">
         <span class="spinner-border spinner-border-sm text-primary" aria-hidden="true"></span>
         <h5>${esc(t('LoadingTitle'))}</h5><p>${esc(t('LoadingDesc'))}</p>
         <div class="wcn-skeleton" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -6075,7 +6355,7 @@
         const retry = conf.retry
             ? `<button type="button" class="btn btn-sm btn-primary" data-wcn-retry>${esc(t('Retry'))}</button>`
             : '';
-        return `<div class="wcn-system-page wcn-system-error" role="alert">
+        return `<div class="card wcn-system-page wcn-system-error" role="alert">
         <i class="bx ${conf.icon}"></i><h5>${esc(t(conf.title))}</h5><p>${esc(t(conf.desc))}</p>
         ${retry}
     </div>`;

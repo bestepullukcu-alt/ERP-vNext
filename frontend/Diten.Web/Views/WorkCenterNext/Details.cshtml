@@ -29,6 +29,11 @@
     <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/diten-tags.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/diten-checkitem.js" asp-append-version="true"></script>
+    @* The date fields' picker. Tasks/form.js binds NO date itself — its enhanceDates delegates here and
+       returns 0 when this file is absent, which is exactly what this page shipped: the quick-create
+       offcanvas drew a calendar icon over a plain text box and the user typed the due date by hand.
+       flatpickr itself comes from _LayoutTenantShell, so this is the only half that was missing. *@
+    <script src="~/assets/js/shared/diten-datefield.js" asp-append-version="true"></script>
     @* The checklist row can be DRAGGED here now, as it always could on the create form. The LOCAL copy, exactly
        as Views/Tasks/Create.cshtml loads it — this page's layout is _LayoutTenantShell, which never carried the
        CDN tag in _Layout.cshtml at all, so there was nothing here to reuse. Measured: `window.Sortable` was

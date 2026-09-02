@@ -311,6 +311,18 @@
   <data name="ActionCompleteInSourceHint" xml:space="preserve">
     <value>لا يمكن إنهاء هذا العمل هنا؛ يكتمل في {0}</value>
   </data>
+  <data name="ActionOpenInSource" xml:space="preserve">
+    <value>فتح السجل المصدر</value>
+  </data>
+  <data name="ActionOpenInSourceHint" xml:space="preserve">
+    <value>مركز المهام هو المكان الذي يُنفَّذ فيه العمل؛ أما السجل نفسه — عنوانه ووصفه وحقوله — فيُحرَّر هناك.</value>
+  </data>
+  <data name="ActionEditRecord" xml:space="preserve">
+    <value>تحرير المهمة</value>
+  </data>
+  <data name="ActionEditRecordHint" xml:space="preserve">
+    <value>أنت من أنشأ هذه المهمة، لذا يمكن تغيير عنوانها وتواريخها وحقولها — في وحدة المهام حيث يوجد السجل.</value>
+  </data>
   <data name="TechVersionValue" xml:space="preserve">
     <value>الإصدار {0}</value>
   </data>

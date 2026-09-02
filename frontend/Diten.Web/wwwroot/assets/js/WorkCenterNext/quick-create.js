@@ -15,6 +15,9 @@
 (function (global) {
     const TASK_CREATED_EVENT = 'wcn:task-created';
     const DETAILED_FORM_URL = '/Tasks/Create';
+    // Where positions are made — the destination an empty person picker offers. Same route the detailed form
+    // offers, because it is the same empty state met one surface earlier.
+    const POSITIONS_URL = '/Positions';
     const OFFCANVAS_ID = 'taskQuickCreate';
 
     const t = (key) => global.TasksL10n?.t?.(key) ?? key;
@@ -24,6 +27,9 @@
     const personLabels = () => ({
         placeholder: t('assigneeSelectPlaceholder'),
         empty: t('assigneeEmpty'),
+        // The way OUT of the empty state — the sentence says what is missing, these say where it is made.
+        emptyActionLabel: t('assigneeEmptyAction'),
+        emptyActionHref: POSITIONS_URL,
         nameUnavailable: t('personNameUnavailable'),
         // The pool row's second layer — "{0} kişi". The SAME labels object feeds both pickers and select2's
         // row templates, so the offcanvas and the full form cannot drift into two vocabularies.
@@ -83,7 +89,8 @@
             return null;
         }
 
-        const result = await global.TasksApi.create(global.TaskForm.buildCreatePayload(draft));
+        const payload = global.TaskForm.buildCreatePayload(draft);
+        const result = await global.TasksApi.create(payload);
 
         if (!result.ok) {
             /*
@@ -114,9 +121,21 @@
         }
 
         global.TaskForm.clearDraft();
+        // The PAYLOAD's title, not the draft's: buildCreatePayload trims, and the toast must name the task
+        // the way it was stored, not the way it was typed. Read before resetDraft() blanks the inputs.
+        const createdTitle = payload.title;
         resetDraft();
         close();
-        document.dispatchEvent(new CustomEvent(TASK_CREATED_EVENT, { detail: result.data || null }));
+        /*
+         * MEASURED 2026-09-02: the engine answers a create with `{ data: "<task id>" }` -- `data` is a
+         * STRING, not the task. The listener in app.js reads `event.detail?.title`, and a string has no
+         * `.title`, so the confirmation toast rendered as "· İşlerim'e eklendi": a sentence that opens on
+         * a separator because the name in front of it was undefined. The title is not on the wire, but it
+         * is right here in the draft the user just typed, so it travels with the id.
+         */
+        document.dispatchEvent(new CustomEvent(TASK_CREATED_EVENT, {
+            detail: { id: result.data || null, title: createdTitle }
+        }));
         return result.data || null;
     };
 

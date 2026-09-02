@@ -201,6 +201,22 @@ const tabCount = (key) => {
   const badge = tabButton(key).querySelector(".wcn-tab-count");
   return badge ? Number(badge.textContent.trim()) : 0;
 };
+
+/*
+ * ⚠ HOW MANY ITEMS A TAB HOLDS — read from the tab itself, not from its badge (2026-09-02).
+ *
+ * These tests are about ROUTING: which tab claims an item, and that exactly one does. They used to measure that
+ * through `tabCount`, i.e. through the badge, which worked only while every tab wore one. Geçmiş no longer does,
+ * deliberately — a badge claims "work waiting for you here", and closed work waits for nobody (see the decision
+ * in buildTabs, and wcn-empty-card-and-history-badge.test.js).
+ *
+ * So the routing claims are measured against the rows the tab actually shows, which is the thing they were
+ * always really about; the badge assertions stay where the badge is still the subject.
+ */
+const rowsInTab = async (key) => {
+  await clickTab(key);
+  return rowIds().length;
+};
 const segmentButtons = () => Array.from(app().querySelectorAll("[data-wcn-seg]"));
 const rowIds = () => Array.from(app().querySelectorAll("[data-wcn-row]"))
   .map((el) => el.getAttribute("data-wcn-row"));
@@ -310,7 +326,10 @@ describe("the counters agree with what the list actually holds", () => {
     const items = [inboxItem(1), item(2), poolItem(3), historyItem(4)];
     await bootListPage(items);
 
-    const total = ["inbox", "islerim", "havuz", "history"].reduce((sum, key) => sum + tabCount(key), 0);
+    let total = 0;
+    for (const key of ["inbox", "islerim", "havuz", "history"]) {
+      total += await rowsInTab(key);
+    }
 
     expect(total).toBe(items.length);
   });
@@ -333,12 +352,15 @@ describe("the counters agree with what the list actually holds", () => {
     });
     await bootListPage([disagreeing]);
 
-    const total = ["inbox", "islerim", "havuz", "history"].reduce((sum, key) => sum + tabCount(key), 0);
+    let total = 0;
+    for (const key of ["inbox", "islerim", "havuz", "history"]) {
+      total += await rowsInTab(key);
+    }
 
     // Once, not twice — and History wins, because "finished" is the stronger claim.
     expect(total).toBe(1);
-    expect(tabCount("history")).toBe(1);
-    expect(tabCount("islerim")).toBe(0);
+    expect(await rowsInTab("history")).toBe(1);
+    expect(await rowsInTab("islerim")).toBe(0);
   });
 
   it("makes the tab counter equal the rows that tab shows", async () => {
@@ -402,9 +424,9 @@ describe("which tab an item belongs to", () => {
   it("moves closed work to History, whether it was completed or cancelled", async () => {
     await bootListPage([historyItem(1, "Done"), historyItem(2, "Cancelled")]);
 
-    expect(tabCount("history")).toBe(2);
+    expect(await rowsInTab("history")).toBe(2);
     // Terminal work must not also sit in the tab it came from.
-    expect(tabCount("islerim")).toBe(0);
+    expect(await rowsInTab("islerim")).toBe(0);
   });
 
   it("shows History read-only for work as the engine actually projects it", async () => {
@@ -476,7 +498,7 @@ describe("which tab an item belongs to", () => {
     await clickTab("history");
 
     expect(rowIds()).toEqual([ID(1)]);
-    expect(tabCount("history")).toBe(1);
+    expect(await rowsInTab("history")).toBe(1);
   });
 });
 
