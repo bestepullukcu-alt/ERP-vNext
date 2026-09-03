@@ -1223,6 +1223,296 @@ public sealed class EntitlementPermissionSyncServiceTests
         Assert.False(roles.Exists(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole));
     }
 
+    [Fact]
+    public async Task Recovery_profile_grants_only_the_reserved_role_and_replay_is_stable()
+    {
+        var catalog = RecoveryCompositeCatalog();
+        var (service, roles, grants) = BuildWith(catalog);
+        var keys = ProductIdentityDeclaredKeys(catalog);
+
+        await service.GrantModuleWithKeysAsync(TenantA, "product-item-sku-master", keys, Actor);
+        var recoveryRoleId = roles.IdOf(
+            TenantA,
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.RoleName);
+        var recoveryPermission = catalog.Single(permission =>
+            permission.Key == ProductIdentityRecoveryOperatorEntitlementGrantProfile.PermissionKey);
+
+        Assert.Single(grants.Rows, grant =>
+            grant.RoleId == recoveryRoleId
+            && grant.PermissionId == recoveryPermission.Id
+            && grant.GrantSource == GrantSource.Module
+            && grant.SourceModuleCode == ProductIdentityRecoveryOperatorEntitlementGrantProfile.ModuleCode);
+        Assert.DoesNotContain(grants.Rows, grant =>
+            grant.PermissionId == recoveryPermission.Id && grant.RoleId != recoveryRoleId);
+        var roleCount = roles.Count(TenantA);
+        var grantCount = grants.Rows.Count;
+
+        await service.GrantModuleWithKeysAsync(TenantA, "product-item-sku-master", keys, Actor);
+
+        Assert.Equal(roleCount, roles.Count(TenantA));
+        Assert.Equal(grantCount, grants.Rows.Count);
+    }
+
+    [Fact]
+    public async Task Recovery_contamination_on_another_role_blocks_before_profile_mutation()
+    {
+        var catalog = RecoveryCompositeCatalog();
+        var (service, roles, grants) = BuildWith(catalog);
+        var recovery = catalog.Single(permission =>
+            permission.Key == ProductIdentityRecoveryOperatorEntitlementGrantProfile.PermissionKey);
+        grants.Seed(RolePermission.ManualGrant(
+            roles.IdOf(TenantA, "Custom"),
+            recovery.Id,
+            TenantA,
+            "operator"));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.GrantModuleWithKeysAsync(
+                TenantA,
+                "product-item-sku-master",
+                ProductIdentityDeclaredKeys(catalog),
+                Actor));
+
+        Assert.Equal("PRODUCT_IDENTITY_RECOVERY_GRANT_CONTAMINATION", exception.Message);
+        Assert.False(roles.Exists(TenantA, ProductIdentityRecoveryOperatorEntitlementGrantProfile.RoleName));
+        Assert.Single(grants.Rows);
+    }
+
+    [Fact]
+    public async Task Recovery_duplicate_canonical_rows_block_before_profile_mutation()
+    {
+        var catalog = RecoveryCompositeCatalog();
+        var (service, roles, grants) = BuildWith(catalog);
+        var recovery = catalog.Single(permission =>
+            permission.Key == ProductIdentityRecoveryOperatorEntitlementGrantProfile.PermissionKey);
+        var recoveryRole = await roles.UpsertSystemRoleAsync(
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.RoleName,
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.DisplayName,
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.Description,
+            TenantA,
+            CancellationToken.None);
+        grants.Seed(RolePermission.ModuleGrant(
+            recoveryRole.Id,
+            recovery.Id,
+            TenantA,
+            Actor,
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.ModuleCode));
+        grants.Seed(RolePermission.ModuleGrant(
+            recoveryRole.Id,
+            recovery.Id,
+            TenantA,
+            Actor,
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.ModuleCode));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.GrantModuleWithKeysAsync(
+                TenantA,
+                ProductIdentityRecoveryOperatorEntitlementGrantProfile.ModuleCode,
+                ProductIdentityDeclaredKeys(catalog),
+                Actor));
+
+        Assert.Equal("PRODUCT_IDENTITY_RECOVERY_GRANT_CONTAMINATION", exception.Message);
+        Assert.Equal(2, grants.Rows.Count);
+    }
+
+    [Fact]
+    public async Task Recovery_revoke_removes_canonical_rows_tenant_wide_then_persists_failure_for_foreign_rows()
+    {
+        var catalog = RecoveryCompositeCatalog();
+        var (service, roles, grants) = BuildWith(catalog);
+        var recovery = catalog.Single(permission =>
+            permission.Key == ProductIdentityRecoveryOperatorEntitlementGrantProfile.PermissionKey);
+        var customRoleId = roles.IdOf(TenantA, "Custom");
+        grants.Seed(RolePermission.ModuleGrant(
+            customRoleId,
+            recovery.Id,
+            TenantA,
+            Actor,
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.ModuleCode));
+        grants.Seed(RolePermission.ManualGrant(
+            roles.IdOf(TenantA, DefaultRolePermissionTemplate.AdminRole),
+            recovery.Id,
+            TenantA,
+            "operator"));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.RevokeModuleAsync(TenantA, "product-item-sku-master", Actor));
+
+        Assert.Equal("PRODUCT_IDENTITY_RECOVERY_GRANT_CONTAMINATION", exception.Message);
+        Assert.DoesNotContain(grants.Rows, grant =>
+            grant.PermissionId == recovery.Id
+            && grant.GrantSource == GrantSource.Module
+            && grant.SourceModuleCode == ProductIdentityRecoveryOperatorEntitlementGrantProfile.ModuleCode);
+        Assert.Single(grants.Rows, grant =>
+            grant.PermissionId == recovery.Id && grant.GrantSource == GrantSource.Manual);
+
+        var replay = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.RevokeModuleAsync(TenantA, "product-item-sku-master", Actor));
+        Assert.Equal("PRODUCT_IDENTITY_RECOVERY_GRANT_CONTAMINATION", replay.Message);
+        Assert.Single(grants.Rows);
+    }
+
+    [Fact]
+    public async Task Recovery_revoke_narrows_canonical_grant_even_on_non_system_reserved_role()
+    {
+        var catalog = RecoveryCompositeCatalog();
+        var (service, roles, grants) = BuildWith(catalog);
+        roles.SeedNonSystem(TenantA, ProductIdentityRecoveryOperatorEntitlementGrantProfile.RoleName);
+        var recoveryRoleId = roles.IdOf(
+            TenantA,
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.RoleName);
+        var recovery = catalog.Single(permission =>
+            permission.Key == ProductIdentityRecoveryOperatorEntitlementGrantProfile.PermissionKey);
+        grants.Seed(RolePermission.ModuleGrant(
+            recoveryRoleId,
+            recovery.Id,
+            TenantA,
+            Actor,
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.ModuleCode));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.RevokeModuleAsync(TenantA, "product-item-sku-master", Actor));
+
+        Assert.Equal("PRODUCT_IDENTITY_RECOVERY_GRANT_CONTAMINATION", exception.Message);
+        Assert.Empty(grants.Rows);
+        Assert.False((await roles.GetByNameAndTenantAsync(
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.RoleName,
+            TenantA,
+            CancellationToken.None))!.IsSystem);
+    }
+
+    [Fact]
+    public async Task Recovery_revoke_preserves_same_source_non_recovery_contamination_on_reserved_role()
+    {
+        var catalog = RecoveryCompositeCatalog();
+        var (service, roles, grants) = BuildWith(catalog);
+        var recovery = catalog.Single(permission =>
+            permission.Key == ProductIdentityRecoveryOperatorEntitlementGrantProfile.PermissionKey);
+        var adjacent = catalog.First(permission =>
+            permission.Key != ProductIdentityRecoveryOperatorEntitlementGrantProfile.PermissionKey);
+        var recoveryRole = await roles.UpsertSystemRoleAsync(
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.RoleName,
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.DisplayName,
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.Description,
+            TenantA,
+            CancellationToken.None);
+        grants.Seed(RolePermission.ModuleGrant(
+            recoveryRole.Id,
+            recovery.Id,
+            TenantA,
+            Actor,
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.ModuleCode));
+        grants.Seed(RolePermission.ModuleGrant(
+            recoveryRole.Id,
+            adjacent.Id,
+            TenantA,
+            Actor,
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.ModuleCode));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.RevokeModuleAsync(
+                TenantA,
+                ProductIdentityRecoveryOperatorEntitlementGrantProfile.ModuleCode,
+                Actor));
+
+        Assert.Equal("PRODUCT_IDENTITY_RECOVERY_GRANT_CONTAMINATION", exception.Message);
+        var remaining = Assert.Single(grants.Rows);
+        Assert.Equal(adjacent.Id, remaining.PermissionId);
+        Assert.Equal(GrantSource.Module, remaining.GrantSource);
+        Assert.Equal(ProductIdentityRecoveryOperatorEntitlementGrantProfile.ModuleCode, remaining.SourceModuleCode);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Recovery_revoke_uses_exact_key_identity_when_catalog_is_deleted_or_divergent(bool deleted)
+    {
+        var catalog = RecoveryCompositeCatalog();
+        var (service, roles, grants) = BuildWith(catalog);
+        var recovery = catalog.Single(permission =>
+            permission.Key == ProductIdentityRecoveryOperatorEntitlementGrantProfile.PermissionKey);
+        if (deleted)
+        {
+            recovery.IsDeleted = true;
+        }
+        else
+        {
+            recovery.SetModule("divergent-owner");
+            recovery.SetScope(PermissionScope.PlatformAdmin);
+        }
+
+        var recoveryRole = await roles.UpsertSystemRoleAsync(
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.RoleName,
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.DisplayName,
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.Description,
+            TenantA,
+            CancellationToken.None);
+        grants.Seed(RolePermission.ModuleGrant(
+            recoveryRole.Id,
+            recovery.Id,
+            TenantA,
+            Actor,
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.ModuleCode));
+
+        await service.RevokeModuleAsync(
+            TenantA,
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.ModuleCode,
+            Actor);
+
+        Assert.Empty(grants.Rows);
+    }
+
+    [Fact]
+    public async Task Recovery_profile_never_reads_or_mutates_another_tenant()
+    {
+        var catalog = RecoveryCompositeCatalog();
+        var (service, roles, grants) = BuildWith(catalog);
+        var recovery = catalog.Single(permission =>
+            permission.Key == ProductIdentityRecoveryOperatorEntitlementGrantProfile.PermissionKey);
+        grants.Seed(RolePermission.ManualGrant(
+            roles.IdOf(TenantB, "Custom"),
+            recovery.Id,
+            TenantB,
+            "tenant-b"));
+
+        await service.GrantModuleWithKeysAsync(
+            TenantA,
+            "product-item-sku-master",
+            ProductIdentityDeclaredKeys(catalog),
+            Actor);
+
+        Assert.Single(grants.Rows, grant => grant.TenantId == TenantB);
+        Assert.True(roles.Exists(TenantA, ProductIdentityRecoveryOperatorEntitlementGrantProfile.RoleName));
+    }
+
+    [Fact]
+    public async Task Recovery_second_scan_fences_contamination_that_races_initial_preflight()
+    {
+        var catalog = RecoveryCompositeCatalog();
+        var (service, roles, grants) = BuildWith(catalog);
+        var recovery = catalog.Single(permission =>
+            permission.Key == ProductIdentityRecoveryOperatorEntitlementGrantProfile.PermissionKey);
+        roles.OnSecondGetAll = () => grants.Seed(RolePermission.ManualGrant(
+            roles.IdOf(TenantA, "Custom"),
+            recovery.Id,
+            TenantA,
+            "racing-operator"));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.GrantModuleWithKeysAsync(
+                TenantA,
+                "product-item-sku-master",
+                ProductIdentityDeclaredKeys(catalog),
+                Actor));
+
+        Assert.Equal("PRODUCT_IDENTITY_RECOVERY_GRANT_CONTAMINATION", exception.Message);
+        var recoveryRoleId = roles.IdOf(
+            TenantA,
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.RoleName);
+        Assert.DoesNotContain(grants.Rows, grant => grant.RoleId == recoveryRoleId);
+        Assert.Single(grants.Rows);
+    }
+
     private static IReadOnlyList<string> ProductRoleKeys(
         FakeRoleRepository roles,
         FakeRolePermissionRepository rolePerms,
@@ -1253,6 +1543,20 @@ public sealed class EntitlementPermissionSyncServiceTests
         new("platform", "workflow.tasks", "reject", "Reject", null,
             moduleOverride: "workflow", scope: PermissionScope.Tenant)
     ];
+
+    private static List<Permission> RecoveryCompositeCatalog()
+    {
+        var catalog = ProductIdentityLifecycleCompositeCatalog();
+        catalog.Add(new Permission(
+            "mdm",
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.Resource,
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.Action,
+            "Recover",
+            null,
+            moduleOverride: ProductIdentityRecoveryOperatorEntitlementGrantProfile.ModuleCode,
+            scope: PermissionScope.Tenant));
+        return catalog;
+    }
 
     private static string[] ProductIdentityDeclaredKeys(IEnumerable<Permission> catalog)
         => catalog
@@ -1305,6 +1609,9 @@ public sealed class EntitlementPermissionSyncServiceTests
     private sealed class FakeRoleRepository : IRoleRepository
     {
         private readonly Dictionary<(Guid, string), Role> _roles = new();
+        private int _getAllCalls;
+
+        public Action? OnSecondGetAll { get; set; }
 
         public FakeRoleRepository(params Guid[] tenants)
         {
@@ -1323,6 +1630,8 @@ public sealed class EntitlementPermissionSyncServiceTests
 
         public bool Exists(Guid tenantId, string name) => _roles.ContainsKey((tenantId, name));
 
+        public int Count(Guid tenantId) => _roles.Count(item => item.Key.Item1 == tenantId);
+
         public void SeedNonSystem(Guid tenantId, string name)
             => _roles[(tenantId, name)] = new Role(name, name, null, tenantId);
 
@@ -1330,7 +1639,17 @@ public sealed class EntitlementPermissionSyncServiceTests
             => Task.FromResult(_roles.TryGetValue((tenantId, name), out var r) ? r : null);
 
         public Task<Role?> GetByIdAndTenantAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
-        public Task<IEnumerable<Role>> GetAllByTenantAsync(Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<IEnumerable<Role>> GetAllByTenantAsync(Guid tenantId, CancellationToken ct)
+        {
+            _getAllCalls++;
+            if (_getAllCalls == 2)
+            {
+                OnSecondGetAll?.Invoke();
+            }
+
+            return Task.FromResult<IEnumerable<Role>>(
+                _roles.Where(item => item.Key.Item1 == tenantId).Select(item => item.Value).ToList());
+        }
         public Task<Role> CreateAsync(Role role, CancellationToken ct) => throw new NotSupportedException();
         public Task<Role> UpsertSystemRoleAsync(string name, string displayName, string? description, Guid tenantId, CancellationToken ct)
         {
@@ -1362,7 +1681,9 @@ public sealed class EntitlementPermissionSyncServiceTests
         }
         public Task<Permission?> GetByIdAsync(Guid id, CancellationToken ct) => throw new NotSupportedException();
         public Task<Permission?> GetByKeyAsync(string key, CancellationToken ct) => throw new NotSupportedException();
-        public Task<Permission?> GetByKeyIncludingDeletedAsync(string key, CancellationToken ct) => throw new NotSupportedException();
+        public Task<Permission?> GetByKeyIncludingDeletedAsync(string key, CancellationToken ct)
+            => Task.FromResult(catalog.SingleOrDefault(permission =>
+                string.Equals(permission.Key, key, StringComparison.Ordinal)));
         public Task ReactivateAsync(Guid id, string displayName, string? description, CancellationToken ct) => throw new NotSupportedException();
         public Task<IEnumerable<Permission>> GetByModuleAsync(string module, CancellationToken ct) => throw new NotSupportedException();
         public Task<Permission> CreateAsync(Permission permission, CancellationToken ct) => throw new NotSupportedException();

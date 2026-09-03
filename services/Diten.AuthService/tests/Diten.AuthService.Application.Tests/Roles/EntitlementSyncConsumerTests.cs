@@ -276,6 +276,26 @@ public sealed class EntitlementSyncConsumerTests
     }
 
     [Fact]
+    public async Task Recovery_contamination_failure_releases_claim_and_never_completes_event()
+    {
+        var sync = new FakeSync { FailureMessage = "PRODUCT_IDENTITY_RECOVERY_GRANT_CONTAMINATION" };
+        var inbox = new FakeInbox(firstDelivery: true);
+        var consumer = Build(sync, inbox, new FakeEntitlementClient(["product-item-sku-master"]));
+        var message = Message(TenantEntitlementAddedV1.Name, TenantA, "product-item-sku-master");
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => consumer.ConsumeAsync(message));
+
+        Assert.Equal("PRODUCT_IDENTITY_RECOVERY_GRANT_CONTAMINATION", exception.Message);
+        Assert.Equal(0, inbox.Attempts);
+        Assert.Equal(1, inbox.ClaimAttempts);
+
+        var replay = await Assert.ThrowsAsync<InvalidOperationException>(() => consumer.ConsumeAsync(message));
+        Assert.Equal("PRODUCT_IDENTITY_RECOVERY_GRANT_CONTAMINATION", replay.Message);
+        Assert.Equal(0, inbox.Attempts);
+        Assert.Equal(2, inbox.ClaimAttempts);
+    }
+
+    [Fact]
     public async Task Completed_event_id_replayed_for_another_tenant_fails_before_mutation()
     {
         var tenantB = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
@@ -423,6 +443,7 @@ public sealed class EntitlementSyncConsumerTests
         public (Guid tenantId, string[] codes)? Synced { get; private set; }
         public int SyncCount { get; private set; }
         public bool FailNextGrant { get; set; }
+        public string? FailureMessage { get; set; }
         public TaskCompletionSource? GrantEntered { get; init; }
         public TaskCompletionSource? GrantContinue { get; init; }
 
@@ -447,6 +468,10 @@ public sealed class EntitlementSyncConsumerTests
 
         public async Task GrantModuleWithKeysAsync(Guid tenantId, string moduleCode, IReadOnlyCollection<string> permissionKeys, string actor, CancellationToken ct = default)
         {
+            if (FailureMessage is not null)
+            {
+                throw new InvalidOperationException(FailureMessage);
+            }
             if (FailNextGrant)
             {
                 FailNextGrant = false;

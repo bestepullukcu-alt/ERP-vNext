@@ -51,6 +51,29 @@ public sealed class DefaultRolePermissionTemplateTests
     }
 
     [Fact]
+    public void Product_identity_recovery_is_provisioning_only_and_excluded_from_every_default_role()
+    {
+        var recovery = new Permission(
+            "mdm",
+            "product-identity.lifecycle-operations",
+            "recover",
+            "Recover",
+            null,
+            moduleOverride: "product-item-sku-master",
+            scope: PermissionScope.Tenant);
+
+        Assert.False(DefaultRolePermissionTemplate.IsTenantAssignable(recovery));
+        Assert.All(
+            new[]
+            {
+                DefaultRolePermissionTemplate.SuperAdminRole,
+                DefaultRolePermissionTemplate.AdminRole,
+                DefaultRolePermissionTemplate.ViewerRole
+            },
+            role => Assert.Empty(DefaultRolePermissionTemplate.SelectFor(role, [recovery])));
+    }
+
+    [Fact]
     public void Tenant_workflow_execution_keys_are_assignable_but_not_default_Admin_or_Viewer_grants()
     {
         var catalog = new List<Permission>

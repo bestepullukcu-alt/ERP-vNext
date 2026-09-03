@@ -32,7 +32,8 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         ProductLegalEntityScopeEntitlementGrantProfile.RolloutOperatorRole,
         ProductIdentityLifecycleEntitlementGrantProfile.StewardRole,
         ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole,
-        ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole
+        ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole,
+        ProductIdentityRecoveryOperatorEntitlementGrantProfile.RoleName
     ];
 
     private readonly IPermissionRepository _permissions;
@@ -92,7 +93,10 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             ProductLegalEntityScopeEntitlementGrantProfile.AppliesTo(code, keySet);
         var isProductIdentityLifecycleProfile =
             ProductIdentityLifecycleEntitlementGrantProfile.AppliesTo(code, keySet);
-        if ((isProductAbbreviationProfile || isProductLegalEntityScopeProfile || isProductIdentityLifecycleProfile)
+        var isProductIdentityRecoveryProfile =
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.AppliesTo(code, keySet);
+        if ((isProductAbbreviationProfile || isProductLegalEntityScopeProfile || isProductIdentityLifecycleProfile
+             || isProductIdentityRecoveryProfile)
             && (normalizedKeys.Count != suppliedKeys.Count || keySet.Count != normalizedKeys.Count))
         {
             throw new InvalidOperationException(
@@ -111,6 +115,10 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         {
             ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet(keySet);
         }
+        if (isProductIdentityRecoveryProfile)
+        {
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.ValidateExactPermissionSet(keySet);
+        }
 
         var catalog = await _permissions.GetAllAsync(ct);
         var activeModuleCatalog = catalog
@@ -123,7 +131,8 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         var catalogContainsSpecialProfile = activeModuleCatalog.Any(permission =>
             ProductAbbreviationEntitlementGrantProfile.IsProductAbbreviationKey(permission.Key)
             || ProductLegalEntityScopeEntitlementGrantProfile.IsProductLegalEntityScopeKey(permission.Key)
-            || ProductIdentityLifecycleEntitlementGrantProfile.IsOwnedPermissionKey(permission.Key));
+            || ProductIdentityLifecycleEntitlementGrantProfile.IsOwnedPermissionKey(permission.Key)
+            || ProductIdentityRecoveryOperatorEntitlementGrantProfile.IsRecoveryPermissionKey(permission.Key));
         var lifecycleDeactivationSnapshot = !isProductIdentityLifecycleProfile
             && activeModuleCatalog.Any(permission =>
                 ProductIdentityLifecycleEntitlementGrantProfile.IsOwnedPermissionKey(permission.Key))
@@ -149,7 +158,8 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         // so organization's platform.organization-units.* / platform.positions.* keys resolve where the convention
         // (Module==ModuleCode) could not. Per-role selection (Admin=full, Viewer=read) is preserved.
         if (isProductAbbreviationProfile || isProductLegalEntityScopeProfile
-            || isProductIdentityLifecycleProfile || catalogContainsSpecialProfile)
+            || isProductIdentityLifecycleProfile || isProductIdentityRecoveryProfile
+            || catalogContainsSpecialProfile)
         {
             var authoritativeKeys = activeModuleCatalog
                 .Select(permission => permission.Key)
@@ -183,6 +193,10 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         {
             ProductIdentityLifecycleEntitlementGrantProfile.ValidateAndResolveDefinitions(modulePermissions, catalog);
         }
+        if (isProductIdentityRecoveryProfile)
+        {
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.ValidateAndResolveDefinition(modulePermissions);
+        }
 
         await GrantPermissionsToRolesAsync(tenantId, code, modulePermissions, catalog.ToList(), actor, ct);
     }
@@ -209,8 +223,10 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             ProductLegalEntityScopeEntitlementGrantProfile.AppliesTo(code, permissionKeys);
         var hasProductIdentityLifecycleProfile =
             ProductIdentityLifecycleEntitlementGrantProfile.AppliesTo(code, permissionKeys);
+        var hasProductIdentityRecoveryProfile =
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.AppliesTo(code, permissionKeys);
         if (hasProductAbbreviationProfile || hasProductLegalEntityScopeProfile
-            || hasProductIdentityLifecycleProfile)
+            || hasProductIdentityLifecycleProfile || hasProductIdentityRecoveryProfile)
         {
             if (hasProductAbbreviationProfile)
             {
@@ -224,6 +240,10 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             {
                 ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet(permissionKeys);
             }
+            if (hasProductIdentityRecoveryProfile)
+            {
+                ProductIdentityRecoveryOperatorEntitlementGrantProfile.ValidateExactPermissionSet(permissionKeys);
+            }
 
             await ReconcileSpecialProfilesAsync(
                 tenantId,
@@ -233,6 +253,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
                 hasProductAbbreviationProfile,
                 hasProductLegalEntityScopeProfile,
                 hasProductIdentityLifecycleProfile,
+                hasProductIdentityRecoveryProfile,
                 actor,
                 ct);
             return;
@@ -282,16 +303,19 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         }
 
         IReadOnlyList<Role> dedicatedRoles = Array.Empty<Role>();
+        IReadOnlyList<RecoveryContamination> recoveryContamination = Array.Empty<RecoveryContamination>();
         if (string.Equals(
                 code,
                 ProductAbbreviationEntitlementGrantProfile.ModuleCode,
                 StringComparison.OrdinalIgnoreCase))
         {
+            recoveryContamination = await RevokeRecoveryAndScanContaminationAsync(tenantId, code, ct);
             dedicatedRoles = await ResolveDedicatedRolesAsync(
                 tenantId,
                 includeProductAbbreviation: true,
                 includeProductLegalEntityScope: true,
                 includeProductIdentityLifecycle: true,
+                includeProductIdentityRecovery: false,
                 createMissing: false,
                 ct);
         }
@@ -309,6 +333,16 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
 
         foreach (var role in roles.DistinctBy(item => item.Id))
         {
+            // The recovery role is provisioning-owned. Its exact recovery rows were narrowed tenant-wide above;
+            // every other row on this role is contamination evidence and must survive for explicit remediation.
+            if (string.Equals(
+                    role.Name,
+                    ProductIdentityRecoveryOperatorEntitlementGrantProfile.RoleName,
+                    StringComparison.Ordinal))
+            {
+                continue;
+            }
+
             var existing = await _rolePermissions.GetByRoleAsync(role.Id, tenantId, ct);
 
             // Drop ONLY this module's grants. System (baseline) and Manual (operator) grants — and
@@ -323,6 +357,22 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             {
                 await _rolePermissions.RemoveByIdAsync(rp.Id, tenantId, ct);
             }
+        }
+
+        if (recoveryContamination.Count > 0)
+        {
+            foreach (var item in recoveryContamination)
+            {
+                _logger.LogError(
+                    "entitlement.sync.product_identity_recovery_contamination TenantId={TenantId} RoleId={RoleId} RoleName={RoleName} GrantSource={GrantSource} SourceModuleCode={SourceModuleCode}",
+                    tenantId,
+                    item.RoleId,
+                    item.RoleName,
+                    item.GrantSource,
+                    item.SourceModuleCode);
+            }
+
+            throw RecoveryContaminationException();
         }
     }
 
@@ -488,6 +538,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         bool includeProductAbbreviation,
         bool includeProductLegalEntityScope,
         bool includeProductIdentityLifecycle,
+        bool includeProductIdentityRecovery,
         string actor,
         CancellationToken ct)
     {
@@ -501,10 +552,14 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             .Where(permission => ProductIdentityLifecycleEntitlementGrantProfile.IsBasePermissionKey(permission.Key)
                                  || ProductIdentityLifecycleEntitlementGrantProfile.IsOwnedPermissionKey(permission.Key))
             .ToDictionary(permission => permission.Key, StringComparer.Ordinal);
+        var recoveryPermissions = modulePermissions
+            .Where(permission => ProductIdentityRecoveryOperatorEntitlementGrantProfile.IsRecoveryPermissionKey(permission.Key))
+            .ToDictionary(permission => permission.Key, StringComparer.Ordinal);
         var genericPermissions = modulePermissions
             .Where(permission => !ProductAbbreviationEntitlementGrantProfile.IsProductAbbreviationKey(permission.Key)
                                  && !ProductLegalEntityScopeEntitlementGrantProfile.IsProductLegalEntityScopeKey(permission.Key)
-                                 && !ProductIdentityLifecycleEntitlementGrantProfile.IsOwnedPermissionKey(permission.Key))
+                                 && !ProductIdentityLifecycleEntitlementGrantProfile.IsOwnedPermissionKey(permission.Key)
+                                 && !ProductIdentityRecoveryOperatorEntitlementGrantProfile.IsRecoveryPermissionKey(permission.Key))
             .ToList();
 
         if (includeProductAbbreviation)
@@ -524,6 +579,13 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
                 modulePermissions,
                 globalCatalog);
         }
+        Permission? recoveryPermission = null;
+        if (includeProductIdentityRecovery)
+        {
+            recoveryPermission = ProductIdentityRecoveryOperatorEntitlementGrantProfile.ValidateAndResolveDefinition(
+                recoveryPermissions.Values);
+            await PreflightRecoveryTenantAsync(tenantId, recoveryPermission.Id, ct);
+        }
 
         // All applicable dedicated role names are preflighted before the first role or grant mutation. A collision in
         // either special profile therefore cannot leave the other profile partially provisioned.
@@ -532,8 +594,15 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             includeProductAbbreviation,
             includeProductLegalEntityScope,
             includeProductIdentityLifecycle,
+            includeProductIdentityRecovery,
             createMissing: true,
             ct);
+        if (includeProductIdentityRecovery && recoveryPermission is not null)
+        {
+            // Re-read immediately before grant-plan mutation. The generic assignment boundary blocks supported
+            // concurrent writes; this second scan also catches another reconciliation that raced the first preflight.
+            await PreflightRecoveryTenantAsync(tenantId, recoveryPermission.Id, ct);
+        }
         var plans = new List<(Role Role, IReadOnlyList<Permission> Permissions)>();
 
         foreach (var roleName in TargetRoleNames)
@@ -593,7 +662,24 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             }
 
             var lifecycleTemplate = ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles
-                .Single(item => string.Equals(item.RoleName, role.Name, StringComparison.Ordinal));
+                .SingleOrDefault(item => string.Equals(item.RoleName, role.Name, StringComparison.Ordinal));
+            if (lifecycleTemplate is null)
+            {
+                if (!string.Equals(
+                        role.Name,
+                        ProductIdentityRecoveryOperatorEntitlementGrantProfile.RoleName,
+                        StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException($"Unknown entitlement profile role '{role.Name}'.");
+                }
+
+                plans.Add((
+                    role,
+                    includeProductIdentityRecovery && recoveryPermission is not null
+                        ? [recoveryPermission]
+                        : Array.Empty<Permission>()));
+                continue;
+            }
             plans.Add((
                 role,
                 includeProductIdentityLifecycle
@@ -646,7 +732,12 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             var isLifecycleRole = includeProductIdentityLifecycle
                 && ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles.Any(template =>
                     string.Equals(template.RoleName, role.Name, StringComparison.Ordinal));
-            if (!isLifecycleRole)
+            var isRecoveryRole = includeProductIdentityRecovery
+                && string.Equals(
+                    role.Name,
+                    ProductIdentityRecoveryOperatorEntitlementGrantProfile.RoleName,
+                    StringComparison.Ordinal);
+            if (!isLifecycleRole && !isRecoveryRole)
             {
                 continue;
             }
@@ -664,11 +755,16 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
 
             _logger.LogInformation(
                 "Product identity lifecycle role reconciled. RoleName={RoleName} Desired={Desired} Existing={Existing} Inserted={Inserted} Removed={Removed}",
-                role.Name, desiredIds.Count, existingSourceOwnedCount, inserted, removed);
+                role.Name,
+                desiredIds.Count,
+                existingSourceOwnedCount,
+                inserted,
+                removed);
 
             if (!desiredIds.IsSubsetOf(effectiveIds) || !sourceOwnedIds.IsSubsetOf(desiredIds))
             {
-                throw new InvalidOperationException($"Product identity grant reconciliation did not converge for role '{role.Name}'.");
+                throw new InvalidOperationException(
+                    $"Product identity grant reconciliation did not converge for role '{role.Name}'.");
             }
         }
     }
@@ -678,6 +774,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         bool includeProductAbbreviation,
         bool includeProductLegalEntityScope,
         bool includeProductIdentityLifecycle,
+        bool includeProductIdentityRecovery,
         bool createMissing,
         CancellationToken ct)
     {
@@ -700,6 +797,14 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
                     template.Description,
                     includeProductIdentityLifecycle)))
             .ToList();
+        if (includeProductIdentityRecovery || createMissing)
+        {
+            templates.Add(new DedicatedRoleTemplate(
+                ProductIdentityRecoveryOperatorEntitlementGrantProfile.RoleName,
+                ProductIdentityRecoveryOperatorEntitlementGrantProfile.DisplayName,
+                ProductIdentityRecoveryOperatorEntitlementGrantProfile.Description,
+                includeProductIdentityRecovery));
+        }
 
         var existing = new Dictionary<string, Role?>(StringComparer.Ordinal);
         foreach (var template in templates)
@@ -793,11 +898,130 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         }
     }
 
+    private async Task PreflightRecoveryTenantAsync(Guid tenantId, Guid recoveryPermissionId, CancellationToken ct)
+    {
+        var contamination = await ScanRecoveryContaminationAsync(tenantId, recoveryPermissionId, ct);
+        if (contamination.Count > 0)
+        {
+            throw RecoveryContaminationException();
+        }
+    }
+
+    private async Task<IReadOnlyList<RecoveryContamination>> RevokeRecoveryAndScanContaminationAsync(
+        Guid tenantId,
+        string code,
+        CancellationToken ct)
+    {
+        // Narrowing revoke is identity-based, not descriptor-validity-based. A deleted or divergent catalog row must
+        // not strand an already-effective grant. Active grant/restore retains the strict tuple validation above.
+        var recoveryPermission = await _permissions.GetByKeyIncludingDeletedAsync(
+            ProductIdentityRecoveryOperatorEntitlementGrantProfile.PermissionKey,
+            ct);
+        if (recoveryPermission is null)
+        {
+            return Array.Empty<RecoveryContamination>();
+        }
+
+        if (!string.Equals(
+                recoveryPermission.Key,
+                ProductIdentityRecoveryOperatorEntitlementGrantProfile.PermissionKey,
+                StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("PRODUCT_IDENTITY_RECOVERY_CATALOG_IDENTITY_MISMATCH");
+        }
+
+        var roles = (await _roles.GetAllByTenantAsync(tenantId, ct)).ToList();
+
+        foreach (var role in roles)
+        {
+            var grants = await _rolePermissions.GetByRoleAsync(role.Id, tenantId, ct);
+            foreach (var grant in grants.Where(grant =>
+                         grant.PermissionId == recoveryPermission.Id
+                         && grant.GrantSource == GrantSource.Module
+                         && string.Equals(grant.SourceModuleCode, code, StringComparison.Ordinal)))
+            {
+                await _rolePermissions.RemoveByIdAsync(grant.Id, tenantId, ct);
+            }
+        }
+
+        return await ScanRecoveryContaminationAsync(tenantId, recoveryPermission.Id, ct);
+    }
+
+    private async Task<IReadOnlyList<RecoveryContamination>> ScanRecoveryContaminationAsync(
+        Guid tenantId,
+        Guid recoveryPermissionId,
+        CancellationToken ct)
+    {
+        var contamination = new List<RecoveryContamination>();
+        var canonicalRecoveryCount = 0;
+        var roles = await _roles.GetAllByTenantAsync(tenantId, ct);
+        foreach (var role in roles)
+        {
+            var isReservedRole = string.Equals(
+                role.Name,
+                ProductIdentityRecoveryOperatorEntitlementGrantProfile.RoleName,
+                StringComparison.Ordinal);
+            var grants = await _rolePermissions.GetByRoleAsync(role.Id, tenantId, ct);
+            foreach (var grant in grants)
+            {
+                var isRecoveryGrant = grant.PermissionId == recoveryPermissionId;
+                var isCanonicalRecoveryGrant = isReservedRole
+                    && role.IsSystem
+                    && isRecoveryGrant
+                    && grant.GrantSource == GrantSource.Module
+                    && string.Equals(
+                        grant.SourceModuleCode,
+                        ProductIdentityRecoveryOperatorEntitlementGrantProfile.ModuleCode,
+                        StringComparison.Ordinal);
+                if (isCanonicalRecoveryGrant)
+                {
+                    canonicalRecoveryCount++;
+                    if (canonicalRecoveryCount == 1)
+                    {
+                        continue;
+                    }
+                }
+                else if (!isReservedRole && !isRecoveryGrant)
+                {
+                    continue;
+                }
+
+                contamination.Add(new RecoveryContamination(
+                    role.Id,
+                    role.Name,
+                    grant.GrantSource,
+                    string.IsNullOrWhiteSpace(grant.SourceModuleCode)
+                        ? string.Empty
+                        : ModulePermissionResolver.NormalizeModuleCode(grant.SourceModuleCode)));
+            }
+
+            if (isReservedRole && !role.IsSystem && grants.Count == 0)
+            {
+                contamination.Add(new RecoveryContamination(
+                    role.Id,
+                    role.Name,
+                    GrantSource.Manual,
+                    string.Empty));
+            }
+        }
+
+        return contamination;
+    }
+
+    private static InvalidOperationException RecoveryContaminationException()
+        => new("PRODUCT_IDENTITY_RECOVERY_GRANT_CONTAMINATION");
+
     private sealed record DedicatedRoleTemplate(
         string RoleName,
         string DisplayName,
         string Description,
         bool IsEnabled);
+
+    private sealed record RecoveryContamination(
+        Guid RoleId,
+        string RoleName,
+        GrantSource GrantSource,
+        string SourceModuleCode);
 
     private static bool IsCompositeSpecialModule(string? moduleCode)
         => string.Equals(

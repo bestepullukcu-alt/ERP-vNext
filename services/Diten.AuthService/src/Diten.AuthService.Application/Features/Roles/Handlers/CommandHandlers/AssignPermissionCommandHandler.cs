@@ -40,6 +40,16 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
         // Permissions are global, so we use ID directly.
         var permission = await _permissionRepository.GetByIdAsync(request.PermissionId, ct);
 
+        // FU26 — the recovery permission and its reserved role are authoritative-provisioning-only. This guard is
+        // intentionally before the platform-context exemption and before every grant/version/audit mutation.
+        if (DefaultRolePermissionTemplate.IsProvisioningManagedRole(role.Name)
+            || (permission is not null && DefaultRolePermissionTemplate.IsProvisioningOnlyPermission(permission)))
+        {
+            return Response<NoContent>.Fail(
+                "This permission assignment is managed by authoritative entitlement reconciliation.",
+                403);
+        }
+
         // FEAT-ROLEPERMS-TENANT-SCOPE — manual assignment must honor the same platform-escalation boundary
         // that DefaultRolePermissionTemplate enforces during default provisioning. In a TENANT context
         // (not platform-admin), a tenant role may only receive tenant-assignable permissions; a platform-admin

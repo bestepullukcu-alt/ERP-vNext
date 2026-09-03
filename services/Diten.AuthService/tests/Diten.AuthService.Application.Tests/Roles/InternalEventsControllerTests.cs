@@ -62,6 +62,22 @@ public sealed class InternalEventsControllerTests
     }
 
     [Fact]
+    public async Task Recovery_contamination_releases_claim_without_completing_tenant_activation()
+    {
+        var inbox = new InboxFake();
+        var sync = new SyncFake { FailureMessage = "PRODUCT_IDENTITY_RECOVERY_GRANT_CONTAMINATION" };
+        var controller = Create(Authoritative(), inbox, sync);
+        var integrationEvent = Event();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            controller.TenantActivated(integrationEvent, CancellationToken.None));
+
+        Assert.Equal("PRODUCT_IDENTITY_RECOVERY_GRANT_CONTAMINATION", exception.Message);
+        Assert.Equal(1, inbox.Releases);
+        Assert.Equal(0, inbox.Completes);
+    }
+
+    [Fact]
     public async Task Successful_sync_completes_claim_only_after_roles_and_grants()
     {
         var order = new List<string>();
@@ -141,10 +157,11 @@ public sealed class InternalEventsControllerTests
     private sealed class SyncFake(List<string>? order = null) : IEntitlementPermissionSyncService
     {
         public bool Fail { get; set; }
+        public string? FailureMessage { get; set; }
         public bool Cancel { get; set; }
         public int Calls { get; private set; }
         public Task SyncTenantModulesWithKeysAsync(Guid tenantId, IReadOnlyCollection<EntitledModulePermissionKeys> modules, string actor, CancellationToken ct = default)
-        { Calls++; order?.Add("sync"); return Cancel ? Task.FromCanceled(new CancellationToken(true)) : Fail ? Task.FromException(new InvalidOperationException("sync failed")) : Task.CompletedTask; }
+        { Calls++; order?.Add("sync"); return Cancel ? Task.FromCanceled(new CancellationToken(true)) : FailureMessage is not null ? Task.FromException(new InvalidOperationException(FailureMessage)) : Fail ? Task.FromException(new InvalidOperationException("sync failed")) : Task.CompletedTask; }
         public Task GrantModuleAsync(Guid tenantId, string moduleCode, string actor, CancellationToken ct = default) => Task.CompletedTask;
         public Task RevokeModuleAsync(Guid tenantId, string moduleCode, string actor, CancellationToken ct = default) => Task.CompletedTask;
         public Task SyncTenantModulesAsync(Guid tenantId, IReadOnlyCollection<string> entitledModuleCodes, string actor, CancellationToken ct = default) => Task.CompletedTask;

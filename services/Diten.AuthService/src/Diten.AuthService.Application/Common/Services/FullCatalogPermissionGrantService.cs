@@ -18,20 +18,60 @@ public sealed class FullCatalogPermissionGrantService : IFullCatalogPermissionGr
 
     private readonly IRoleRepository _roleRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
+    private readonly IPermissionRepository _permissionRepository;
     private readonly ILogger<FullCatalogPermissionGrantService> _logger;
 
     public FullCatalogPermissionGrantService(
         IRoleRepository roleRepository,
         IRolePermissionRepository rolePermissionRepository,
+        IPermissionRepository permissionRepository,
         ILogger<FullCatalogPermissionGrantService> logger)
     {
         _roleRepository = roleRepository;
         _rolePermissionRepository = rolePermissionRepository;
+        _permissionRepository = permissionRepository;
         _logger = logger;
     }
 
     public async Task GrantToFullCatalogRolesAsync(Guid permissionId, CancellationToken ct)
     {
+        Permission? permission;
+        try
+        {
+            permission = await _permissionRepository.GetByIdAsync(permissionId, ct);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Could not resolve permission {PermissionId}; full-catalog auto-grant was skipped.",
+                permissionId);
+            return;
+        }
+
+        if (permission is null)
+        {
+            _logger.LogWarning(
+                "Permission {PermissionId} was not found; full-catalog auto-grant was skipped.",
+                permissionId);
+            return;
+        }
+
+        // FU26 — recovery is provisioning-only and can exist solely on ProductIdentityRecoveryOperator through the
+        // authoritative entitlement profile. This exact-key guard prevents the legacy full-catalog SuperAdmin bridge
+        // from creating a System grant while preserving every other registered permission path.
+        if (DefaultRolePermissionTemplate.IsProvisioningOnlyPermission(permission))
+        {
+            _logger.LogInformation(
+                "Provisioning-only permission {PermissionKey} was excluded from full-catalog auto-grant.",
+                permission.Key);
+            return;
+        }
+
         foreach (var roleName in FullCatalogRoleNames)
         {
             try
@@ -60,6 +100,10 @@ public sealed class FullCatalogPermissionGrantService : IFullCatalogPermissionGr
                     "Auto-granted new permission {PermissionId} to full-catalog role '{Role}'.",
                     permissionId,
                     roleName);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
