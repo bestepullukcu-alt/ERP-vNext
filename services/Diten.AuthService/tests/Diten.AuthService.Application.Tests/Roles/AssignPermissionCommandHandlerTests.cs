@@ -89,6 +89,50 @@ public sealed class AssignPermissionCommandHandlerTests
         Assert.Null(rolePerms.AssignedCall);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Recovery_permission_is_rejected_in_tenant_and_platform_context_before_mutation(bool platformContext)
+    {
+        var permission = new Permission(
+            "mdm",
+            "product-identity.lifecycle-operations",
+            "recover",
+            "Recover",
+            null,
+            moduleOverride: "product-item-sku-master",
+            scope: PermissionScope.Tenant);
+        var rolePerms = new FakeRolePermissionRepository();
+        var version = new FakeRoleAssignmentVersionService();
+
+        var result = await CreateHandler(Role(), permission, rolePerms, version, platformContext)
+            .Handle(new AssignPermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(403, result.StatusCode);
+        Assert.Null(rolePerms.AssignedCall);
+        Assert.Equal(0, version.IncrementCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Reserved_recovery_role_rejects_every_generic_permission_before_mutation(bool platformContext)
+    {
+        var role = new Role("ProductIdentityRecoveryOperator", "Recovery", null, TenantId);
+        role.MarkAsSystem();
+        var rolePerms = new FakeRolePermissionRepository();
+        var version = new FakeRoleAssignmentVersionService();
+
+        var result = await CreateHandler(role, TenantPermission(), rolePerms, version, platformContext)
+            .Handle(new AssignPermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(403, result.StatusCode);
+        Assert.Null(rolePerms.AssignedCall);
+        Assert.Equal(0, version.IncrementCount);
+    }
+
     private static Role Role() => new("admin", "Admin", null, TenantId);
 
     private static AssignPermissionCommandHandler CreateHandler(

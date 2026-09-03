@@ -17,6 +17,9 @@ public static class DefaultRolePermissionTemplate
     public const string PlatformModule = "platform";
     public const string ReadAction = "read";
     public const string ServiceClientProvisionPermission = "auth.service-clients.provision";
+    public const string ProductIdentityRecoveryPermission =
+        "mdm.product-identity.lifecycle-operations.recover";
+    public const string ProductIdentityRecoveryOperatorRole = "ProductIdentityRecoveryOperator";
 
     // FIX-PERM-ATTRIBUTION-2 — reference-data is a genuine, distinct Module (RoleAssignments grouping,
     // ModulePermissionResolver entitlement matching) but its screens are ALL platform-admin-only
@@ -101,6 +104,12 @@ public static class DefaultRolePermissionTemplate
             "mdm.product-legal-entity-scope-rollout.rollback"
         };
 
+    public static bool IsProvisioningOnlyPermission(Permission permission)
+        => string.Equals(permission.Key, ProductIdentityRecoveryPermission, StringComparison.Ordinal);
+
+    public static bool IsProvisioningManagedRole(string? roleName)
+        => string.Equals(roleName, ProductIdentityRecoveryOperatorRole, StringComparison.Ordinal);
+
     /// <summary>
     /// Returns the catalog permissions that <paramref name="roleName"/> should be granted.
     /// Deleted permissions are always excluded; platform permissions are excluded from tenant
@@ -108,7 +117,7 @@ public static class DefaultRolePermissionTemplate
     /// </summary>
     public static IReadOnlyList<Permission> SelectFor(string roleName, IEnumerable<Permission> catalog)
     {
-        var available = catalog.Where(p => !p.IsDeleted);
+        var available = catalog.Where(p => !p.IsDeleted && !IsProvisioningOnlyPermission(p));
 
         return roleName switch
         {
@@ -155,5 +164,6 @@ public static class DefaultRolePermissionTemplate
     /// İŞ3-FAZ0 — `!IsPlatform` → `Scope == Tenant` (bit-identical via ClassifyScope).
     /// </summary>
     public static bool IsTenantAssignable(Permission permission)
-        => permission.Scope == PermissionScope.Tenant || TenantSelfServicePermissions.Contains(permission.Key);
+        => !IsProvisioningOnlyPermission(permission)
+           && (permission.Scope == PermissionScope.Tenant || TenantSelfServicePermissions.Contains(permission.Key));
 }
