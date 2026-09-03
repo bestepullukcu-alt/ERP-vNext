@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Diten.AuthService.Application.Common;
+using Diten.AuthService.Application.Common.Authorization;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Domain.Entities;
@@ -39,6 +40,7 @@ public sealed class ProductIdentityRecoveryOperatorPermissionOnboardingMongoTest
             permissions,
             roles,
             grants,
+            new PpmEntitlementPermissionPolicy(),
             NullLogger<EntitlementPermissionSyncService>.Instance);
 
         try
@@ -206,6 +208,7 @@ public sealed class ProductIdentityRecoveryOperatorPermissionOnboardingMongoTest
                 permissions,
                 roles,
                 grants,
+                new PpmEntitlementPermissionPolicy(),
                 NullLogger<EntitlementPermissionSyncService>.Instance);
 
             try

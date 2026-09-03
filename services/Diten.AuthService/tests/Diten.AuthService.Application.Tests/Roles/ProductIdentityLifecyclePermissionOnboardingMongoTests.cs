@@ -1,4 +1,5 @@
 using Diten.AuthService.Application.Common;
+using Diten.AuthService.Application.Common.Authorization;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Domain.Entities;
@@ -45,6 +46,7 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
                 permissions,
                 roles,
                 rolePermissions,
+                new PpmEntitlementPermissionPolicy(),
                 NullLogger<EntitlementPermissionSyncService>.Instance);
 
             foreach (var permission in catalog)
