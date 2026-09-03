@@ -5,6 +5,7 @@ using Diten.MdmService.Application.Features.ProductItemSkuMaster.Queries;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Persistence.Repositories;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
 
@@ -208,7 +209,7 @@ public sealed class LskuRegisterMongoTests
             var client = new MongoClient(settings);
             var databaseName = "diten_lsku_register_" + Guid.NewGuid().ToString("N");
             var database = client.GetDatabase(databaseName);
-            await database.RunCommandAsync<object>("{ ping: 1 }");
+            await database.RunCommandAsync<BsonDocument>("{ ping: 1 }");
             return new(client, database, databaseName);
         }
 
