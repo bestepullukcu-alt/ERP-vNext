@@ -18,21 +18,26 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
             Assert.DoesNotContain(".reject", key, StringComparison.Ordinal);
         });
         Assert.Equal(8, ProductIdentityLifecycleEntitlementGrantProfile.BasePermissionKeys.Count);
-        Assert.Equal(3, ProductIdentityLifecycleEntitlementGrantProfile.SharedDependencyKeys.Count);
+        Assert.Equal(4, ProductIdentityLifecycleEntitlementGrantProfile.SharedDependencyKeys.Count);
     }
 
     [Fact]
-    public void Dedicated_roles_have_exact_twelve_seven_eight_matrices()
+    public void Dedicated_roles_have_exact_thirteen_seven_eight_matrices()
     {
         var roles = ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles
             .ToDictionary(role => role.RoleName, StringComparer.Ordinal);
 
-        Assert.Equal(12, roles[ProductIdentityLifecycleEntitlementGrantProfile.StewardRole].PermissionKeys.Count);
+        Assert.Equal(13, roles[ProductIdentityLifecycleEntitlementGrantProfile.StewardRole].PermissionKeys.Count);
         Assert.Equal(7, roles[ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole].PermissionKeys.Count);
         Assert.Equal(8, roles[ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole].PermissionKeys.Count);
 
         var approver = roles[ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole].PermissionKeys;
-        Assert.True(approver.IsSupersetOf(ProductIdentityLifecycleEntitlementGrantProfile.SharedDependencyKeys));
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.WorkflowInstancesStart,
+            roles[ProductIdentityLifecycleEntitlementGrantProfile.StewardRole].PermissionKeys);
+        Assert.DoesNotContain(ProductIdentityLifecycleEntitlementGrantProfile.WorkflowInstancesStart, approver);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.WorkCenterInboxView, approver);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.WorkflowTasksApprove, approver);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.WorkflowTasksReject, approver);
         Assert.DoesNotContain(approver, key => key.StartsWith("mdm.", StringComparison.Ordinal)
                                                && !key.EndsWith(".read", StringComparison.Ordinal));
     }
@@ -74,13 +79,69 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
 
         Assert.Equal(ProductIdentityLifecycleEntitlementGrantProfile.SharedDependencyKeys, resolved.Keys.ToHashSet(StringComparer.Ordinal));
         Assert.Equal("work-aggregation", resolved[ProductIdentityLifecycleEntitlementGrantProfile.WorkCenterInboxView].Module);
+        Assert.Equal("workflow", resolved[ProductIdentityLifecycleEntitlementGrantProfile.WorkflowInstancesStart].Module);
         Assert.Equal("workflow", resolved[ProductIdentityLifecycleEntitlementGrantProfile.WorkflowTasksApprove].Module);
         Assert.Equal("workflow", resolved[ProductIdentityLifecycleEntitlementGrantProfile.WorkflowTasksReject].Module);
     }
 
     [Theory]
+    [InlineData("module")]
+    [InlineData("resource")]
+    [InlineData("action")]
+    [InlineData("scope")]
+    [InlineData("deleted")]
+    public void Workflow_instance_start_dependency_requires_exact_active_tenant_tuple(string drift)
+    {
+        var declared = ProductCatalog();
+        var dependencies = SharedDependencies();
+        var index = dependencies.FindIndex(permission =>
+            permission.Key == ProductIdentityLifecycleEntitlementGrantProfile.WorkflowInstancesStart);
+        Assert.True(index >= 0);
+        var invalid = new Permission(
+            "platform",
+            drift == "resource" ? "workflow.instance" : "workflow.instances",
+            drift == "action" ? "manage" : "start",
+            "Start",
+            null,
+            moduleOverride: drift == "module" ? "product-item-sku-master" : "workflow",
+            scope: drift == "scope" ? PermissionScope.PlatformAdmin : PermissionScope.Tenant)
+        { IsDeleted = drift == "deleted" };
+        dependencies[index] = invalid;
+
+        Assert.Throws<InvalidOperationException>(() =>
+            ProductIdentityLifecycleEntitlementGrantProfile.ValidateAndResolveDefinitions(
+                declared, declared.Concat(dependencies)));
+    }
+
+    [Theory]
+    [InlineData("missing")]
+    [InlineData("duplicate")]
+    public void Workflow_instance_start_dependency_requires_exactly_one_definition(string drift)
+    {
+        var declared = ProductCatalog();
+        var dependencies = SharedDependencies();
+        var start = dependencies.Single(permission =>
+            permission.Key == ProductIdentityLifecycleEntitlementGrantProfile.WorkflowInstancesStart);
+        if (drift == "missing")
+        {
+            dependencies.Remove(start);
+        }
+        else
+        {
+            dependencies.Add(new Permission(
+                "platform", "workflow.instances", "start", "Duplicate Start", null,
+                moduleOverride: "workflow", scope: PermissionScope.Tenant));
+        }
+
+        Assert.Throws<InvalidOperationException>(() =>
+            ProductIdentityLifecycleEntitlementGrantProfile.ValidateAndResolveDefinitions(
+                declared, declared.Concat(dependencies)));
+    }
+
+    [Theory]
     [InlineData("missing")]
     [InlineData("wrong-module")]
+    [InlineData("wrong-scope")]
     [InlineData("deleted")]
     public void Shared_dependency_drift_fails_closed(string drift)
     {
@@ -103,6 +164,19 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
                 null,
                 moduleOverride: "wrong-module",
                 scope: PermissionScope.Tenant));
+        }
+        else if (drift == "wrong-scope")
+        {
+            dependencies.RemoveAll(permission =>
+                permission.Key == ProductIdentityLifecycleEntitlementGrantProfile.WorkflowTasksApprove);
+            dependencies.Add(new Permission(
+                "platform",
+                "workflow.tasks",
+                "approve",
+                "Approve",
+                null,
+                moduleOverride: "workflow",
+                scope: PermissionScope.PlatformAdmin));
         }
         else
         {
@@ -138,6 +212,8 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
     [
         new("platform", "work-aggregation.inbox", "view", "Inbox", null,
             moduleOverride: "work-aggregation", scope: PermissionScope.Tenant),
+        new("platform", "workflow.instances", "start", "Start", null,
+            moduleOverride: "workflow", scope: PermissionScope.Tenant),
         new("platform", "workflow.tasks", "approve", "Approve", null,
             moduleOverride: "workflow", scope: PermissionScope.Tenant),
         new("platform", "workflow.tasks", "reject", "Reject", null,

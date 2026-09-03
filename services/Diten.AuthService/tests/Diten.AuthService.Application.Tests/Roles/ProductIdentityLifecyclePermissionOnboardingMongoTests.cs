@@ -1,4 +1,5 @@
 using Diten.AuthService.Application.Common;
+using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Persistence.Repositories;
@@ -53,19 +54,55 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
 
             var admin = await roles.UpsertSystemRoleAsync("Admin", "Admin", null, tenantA, CancellationToken.None);
             var viewer = await roles.UpsertSystemRoleAsync("Viewer", "Viewer", null, tenantA, CancellationToken.None);
+            var lifecycleApprover = await roles.UpsertSystemRoleAsync(
+                ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole,
+                "Product Identity Approver",
+                null,
+                tenantA,
+                CancellationToken.None);
+            var retirementSteward = await roles.UpsertSystemRoleAsync(
+                ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole,
+                "Product Identity Retirement Steward",
+                null,
+                tenantA,
+                CancellationToken.None);
             var retainedManual = catalog.Single(permission => permission.Key == "manual.retained.read");
             var retainedOther = catalog.Single(permission => permission.Key == "other.retained.read");
+            var brandRead = catalog.Single(permission => permission.Key == "mdm.brands.read");
             await rolePermissions.AssignAsync(
                 RolePermission.ManualGrant(viewer.Id, retainedManual.Id, tenantA, "operator"),
                 CancellationToken.None);
             await rolePermissions.AssignAsync(
                 RolePermission.ModuleGrant(admin.Id, retainedOther.Id, tenantA, "other", "another-module"),
                 CancellationToken.None);
+            await rolePermissions.AssignAsync(
+                RolePermission.ModuleGrant(
+                    admin.Id,
+                    brandRead.Id,
+                    tenantA,
+                    "legacy-reconciliation",
+                    ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode),
+                CancellationToken.None);
+            await rolePermissions.AssignAsync(
+                RolePermission.ManualGrant(viewer.Id, brandRead.Id, tenantA, "operator"),
+                CancellationToken.None);
+            await rolePermissions.AssignAsync(
+                RolePermission.SystemGrant(lifecycleApprover.Id, brandRead.Id, tenantA, "system"),
+                CancellationToken.None);
+            await rolePermissions.AssignAsync(
+                RolePermission.ModuleGrant(
+                    retirementSteward.Id,
+                    brandRead.Id,
+                    tenantA,
+                    "brand-reconciliation",
+                    "brand-product-master"),
+                CancellationToken.None);
 
             var declaredKeys = catalog
                 .Where(permission => permission.Module == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode)
                 .Select(permission => permission.Key)
                 .ToArray();
+            Assert.Equal(30, declaredKeys.Length);
             await service.GrantModuleWithKeysAsync(
                 tenantA,
                 ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
@@ -73,16 +110,58 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
                 "fu23-mongo-test");
             await AssertExactMatricesAsync(roles, rolePermissions, catalog, tenantA);
 
+            // Live-upgrade shape: a pre-amendment Steward already has the original twelve module grants while the
+            // authoritative descriptor/global catalog now includes workflow.instances.start. Full-set sync must add
+            // exactly that missing dependency without revoke/recreate or duplicate role/grant rows.
+            var stewardBeforeUpgrade = await roles.GetByNameAndTenantAsync(
+                ProductIdentityLifecycleEntitlementGrantProfile.StewardRole,
+                tenantA,
+                CancellationToken.None) ?? throw new InvalidOperationException("Steward missing.");
+            var workflowStart = catalog.Single(permission =>
+                permission.Key == ProductIdentityLifecycleEntitlementGrantProfile.WorkflowInstancesStart);
+            var startGrant = (await rolePermissions.GetByRoleAsync(stewardBeforeUpgrade.Id, tenantA, CancellationToken.None))
+                .Single(grant => grant.PermissionId == workflowStart.Id);
+            await rolePermissions.RemoveByIdAsync(startGrant.Id, tenantA, CancellationToken.None);
+            Assert.Equal(12, (await rolePermissions.GetByRoleAsync(stewardBeforeUpgrade.Id, tenantA, CancellationToken.None)).Count);
+
+            await service.SyncTenantModulesWithKeysAsync(
+                tenantA,
+                [new EntitledModulePermissionKeys(
+                    ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode.ToUpperInvariant(),
+                    declaredKeys)],
+                "tenant-provisioning");
+            await AssertExactMatricesAsync(roles, rolePermissions, catalog, tenantA);
+            await rolePermissions.AssignAsync(
+                RolePermission.ModuleGrant(admin.Id, retainedOther.Id, tenantA, "other", "another-module"),
+                CancellationToken.None);
+
             var roleCollection = database.GetCollection<Role>("roles");
             var grantCollection = database.GetCollection<RolePermission>("rolePermissions");
             var firstRoleCount = await roleCollection.CountDocumentsAsync(role => role.TenantId == tenantA);
             var firstGrantCount = await grantCollection.CountDocumentsAsync(grant => grant.TenantId == tenantA);
             Assert.Equal(12, firstRoleCount);
-            Assert.Equal(65, firstGrantCount);
-            Assert.Equal(63, await grantCollection.CountDocumentsAsync(grant =>
+            Assert.Equal(69, firstGrantCount);
+            Assert.Equal(64, await grantCollection.CountDocumentsAsync(grant =>
                 grant.TenantId == tenantA
                 && grant.GrantSource == GrantSource.Module
                 && grant.SourceModuleCode == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode));
+            Assert.Equal(0, await grantCollection.CountDocumentsAsync(grant =>
+                grant.TenantId == tenantA
+                && grant.PermissionId == brandRead.Id
+                && grant.GrantSource == GrantSource.Module
+                && grant.SourceModuleCode == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode));
+            Assert.Equal(1, await grantCollection.CountDocumentsAsync(grant =>
+                grant.TenantId == tenantA
+                && grant.PermissionId == brandRead.Id
+                && grant.GrantSource == GrantSource.Manual));
+            Assert.Equal(1, await grantCollection.CountDocumentsAsync(grant =>
+                grant.TenantId == tenantA
+                && grant.PermissionId == brandRead.Id
+                && grant.GrantSource == GrantSource.System));
+            Assert.Equal(1, await grantCollection.CountDocumentsAsync(grant =>
+                grant.TenantId == tenantA
+                && grant.PermissionId == brandRead.Id
+                && grant.SourceModuleCode == "brand-product-master"));
 
             await service.GrantModuleWithKeysAsync(
                 tenantA,
@@ -101,10 +180,14 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
                 grant.TenantId == tenantA
                 && grant.GrantSource == GrantSource.Module
                 && grant.SourceModuleCode == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode));
-            Assert.Equal(1, await grantCollection.CountDocumentsAsync(grant =>
+            Assert.Equal(2, await grantCollection.CountDocumentsAsync(grant =>
                 grant.TenantId == tenantA && grant.GrantSource == GrantSource.Manual));
             Assert.Equal(1, await grantCollection.CountDocumentsAsync(grant =>
                 grant.TenantId == tenantA && grant.SourceModuleCode == "another-module"));
+            Assert.Equal(1, await grantCollection.CountDocumentsAsync(grant =>
+                grant.TenantId == tenantA && grant.GrantSource == GrantSource.System));
+            Assert.Equal(1, await grantCollection.CountDocumentsAsync(grant =>
+                grant.TenantId == tenantA && grant.SourceModuleCode == "brand-product-master"));
 
             await service.GrantModuleWithKeysAsync(
                 tenantA,
@@ -147,8 +230,12 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
         .. ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys.Select(ProductPermission),
         .. ProductAbbreviationEntitlementGrantProfile.PermissionKeys.Select(ProductPermission),
         .. ProductLegalEntityScopeEntitlementGrantProfile.PermissionKeys.Select(ProductPermission),
+        new("mdm", "brands", "read", "Read Brands", null,
+            moduleOverride: "brand-product-master", scope: PermissionScope.Tenant),
         new("platform", "work-aggregation.inbox", "view", "Inbox", null,
             moduleOverride: "work-aggregation", scope: PermissionScope.Tenant),
+        new("platform", "workflow.instances", "start", "Start", null,
+            moduleOverride: "workflow", scope: PermissionScope.Tenant),
         new("platform", "workflow.tasks", "approve", "Approve", null,
             moduleOverride: "workflow", scope: PermissionScope.Tenant),
         new("platform", "workflow.tasks", "reject", "Reject", null,
@@ -195,7 +282,14 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
         }
         foreach (var template in ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles)
         {
-            await AssertRoleAsync(roles, rolePermissions, catalog, tenantId, template.RoleName, template.PermissionKeys);
+            await AssertRoleAsync(
+                roles,
+                rolePermissions,
+                catalog,
+                tenantId,
+                template.RoleName,
+                template.PermissionKeys,
+                allowAdditionalNonModuleGrants: true);
         }
     }
 
