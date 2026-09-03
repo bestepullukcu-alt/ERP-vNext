@@ -74,6 +74,8 @@ public static class DependencyInjection
         services.AddScoped<IMfaChallengeRepository, MfaChallengeRepository>();
         services.AddScoped<IServiceClientIdentityRepository, ServiceClientIdentityRepository>();
         services.AddScoped<IServiceClientTenantGrantRepository, ServiceClientTenantGrantRepository>();
+        services.AddScoped<IServiceClientOperationalProvisioningOperationRepository,
+            ServiceClientOperationalProvisioningOperationRepository>();
 
         // Ensure Indexes and Seed Data
         // Note: In a production environment, this might be handled by an initialization service or migration tool.

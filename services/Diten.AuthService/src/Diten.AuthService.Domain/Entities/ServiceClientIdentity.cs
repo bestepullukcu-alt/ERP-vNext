@@ -11,4 +11,7 @@ public sealed class ServiceClientIdentity : GlobalEntityBase
     public string? PreviousCredentialVersion { get; set; }
     public DateTimeOffset? PreviousValidUntilUtc { get; set; }
     public bool IsRevoked { get; set; }
+    public long OperationalVersion { get; set; }
+    public Guid? LastOperationalCommandId { get; set; }
+    public string? LastOperationalCommandFingerprint { get; set; }
 }

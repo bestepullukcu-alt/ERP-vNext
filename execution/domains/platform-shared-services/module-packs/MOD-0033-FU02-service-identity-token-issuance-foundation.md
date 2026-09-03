@@ -24,6 +24,16 @@ consumers: MOD-0021-FU01 / MOD-0290
 > Operational configuration, secret, credential, tenant-grant, data, Production/Staging, commit and push mutations
 > remain unauthorized.
 >
+> **Planning authorization — 2026-08-30.** The user authorized Phase 1.5 planning for the planning-only named step
+> `Service Client Operational Provisioning & Rotation`. Section 5 E freezes its proposed runtime/test allow-list and
+> operational contract. Runtime code-start, Local Development execution and every credential/config/data mutation
+> remained closed at that planning checkpoint and required separate explicit authorization.
+>
+> **Section 5 E runtime authorization — 2026-08-30.** The user explicitly authorized the exact Section 5 E runtime/test
+> allow-list, Local Development operational provisioning and the Product/Item/SKU live WorkCenter acceptance sequence.
+> Local commit is authorized; push and Production/Staging remain prohibited. The pack was therefore `ready-for-dev` for
+> Section 5 E only. Local Development mutation may start only after the implementation and mandatory tests are green.
+>
 > **DCP-002 proof.** Master 8.1 `Blueprint_Data!A34:AG34` identifies parent MOD-0033 as `API Consumer & Credential
 > Management (Developer Portal)` and assigns API consumers/apps, credential metadata, credential issuance and
 > subscriptions/grants to it. `SoR_Map!A2:E2` maps `API consumers/apps` to MOD-0033 with collision count zero.
@@ -127,6 +137,138 @@ wrong/missing/disabled/cross-tenant grant denial; exact 300-second RS256 claims;
 real-Mongo identity/grant isolation; full Auth regression and Release build. The standing non-push user authorization
 grants this exact named-step code-start on 2026-08-29.
 
+### E — Service Client Operational Provisioning & Rotation (Phase 1.5 planning only, 2026-08-30)
+
+This named step supplies the missing supported operator path for service-client identity and tenant/audience grant
+lifecycle. It is not a public or browser administration API, does not extend token issuance authority and does not
+authorize an operational run. It replaces neither Vault/secret-manager ownership nor a Production runbook.
+
+#### Proposed exact runtime allow-list
+
+- `services/Diten.AuthService/src/Diten.AuthService.Api/Program.cs`
+- new `services/Diten.AuthService/src/Diten.AuthService.Api/Configuration/ServiceClientOperationalProvisioningOptions.cs`
+- new `services/Diten.AuthService/src/Diten.AuthService.Api/Services/ServiceIdentityTokens/DevelopmentServiceClientOperationalProvisioningEligibility.cs`
+- new `services/Diten.AuthService/src/Diten.AuthService.Api/Services/ServiceIdentityTokens/ServiceClientOperationalActorAuthorizer.cs`
+- new `services/Diten.AuthService/src/Diten.AuthService.Api/Services/ServiceIdentityTokens/ServiceClientOperationalProvisioningRunner.cs`
+- new `services/Diten.AuthService/src/Diten.AuthService.Api/Services/ServiceIdentityTokens/ServiceClientSecretOutputSink.cs`
+- new `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/IServiceClientOperationalProvisioningEligibility.cs`
+- new `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/IServiceClientOperationalActorAuthorizer.cs`
+- new `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/IServiceClientSecretOutputSink.cs`
+- new `services/Diten.AuthService/src/Diten.AuthService.Application/Features/ServiceIdentityTokens/Operational/ServiceClientOperationalProvisioningModels.cs`
+- new `services/Diten.AuthService/src/Diten.AuthService.Application/Features/ServiceIdentityTokens/Operational/ServiceClientOperationalProvisioningService.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Application/DependencyInjection.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/IServiceClientCredentialVerifier.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/DefaultRolePermissionTemplate.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Domain/Entities/ServiceClientIdentity.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Domain/Entities/ServiceClientTenantGrant.cs`
+- new `services/Diten.AuthService/src/Diten.AuthService.Domain/Entities/ServiceClientOperationalProvisioningOperation.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Domain/Repositories/IServiceClientIdentityRepository.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Domain/Repositories/IServiceClientTenantGrantRepository.cs`
+- new `services/Diten.AuthService/src/Diten.AuthService.Domain/Repositories/IServiceClientOperationalProvisioningOperationRepository.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/ServiceClientIdentityRepository.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/ServiceClientTenantGrantRepository.cs`
+- new `services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/ServiceClientOperationalProvisioningOperationRepository.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Persistence/Configurations/MongoDbIndexConfigurations.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Persistence/DependencyInjection.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Infrastructure/DependencyInjection.cs`
+
+#### Proposed exact test allow-list
+
+- new `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceClientOperationalProvisioningEligibilityTests.cs`
+- new `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceClientOperationalProvisioningRunnerTests.cs`
+- new `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceClientOperationalActorAuthorizationTests.cs`
+- new `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceClientOperationalProvisioningMongoTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceIdentityTokenDependencyInjectionTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceIdentityTokenHandlerTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceIdentityTokenMongoTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceClientCredentialRotationTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/DefaultRolePermissionTemplateTests.cs`
+
+No glob beyond the exact files above is authorized. Appsettings, launch settings, public/internal HTTP
+controllers, token parser/issuer, Gateway, Platform, MDM, frontend, `.antigravity/**`, registry and operational data are
+outside this planning step. Runtime implementation may begin only after a separate exact Section 5 E code-start.
+
+#### Frozen operational contract
+
+- Invocation is an explicit one-shot CLI mode selected by exact `--service-client-operational-run`; it is never an
+  `IHostedService`, startup seed, migration side effect or HTTP endpoint. Normal Auth startup performs no provisioning.
+- Supported single-target operations are exactly: `read-identity`, `create-identity`, `rotate-credential`,
+  `revoke-identity`, `read-grant`, `enable-grant` and `disable-grant`. One invocation performs one operation against one
+  exact identity or one exact `(TenantId, IdentityId, Audience)` grant. Batch/wildcard/all-tenant operations are forbidden.
+- `create-identity` binds one normalized `ClientCode`, exact `ServiceName` and exactly one `AllowedAudience` accepted by
+  `ServiceIdentityTokenAudiencePolicy`; an identity cannot be broadened to a second purpose. Client code normalization
+  is frozen before fingerprinting and persisted read-back; trim/case/alias fallback during lookup is forbidden.
+- `create-identity` and `rotate-credential` generate at least 256 bits with `RandomNumberGenerator`, hash through the
+  existing `IServiceClientCredentialVerifier.Hash` contract and persist only the hash. Operator-supplied raw secrets,
+  deterministic secrets and secret values in arguments/environment/configuration/files are forbidden.
+- Every mutation carries exact `CommandId`, canonical SHA-256 `CommandFingerprint`, `ExpectedOperationalVersion` and
+  authorized actor identity. A dedicated durable operation record reserves the unique command/fingerprint, records
+  sanitized immutable facts, state/checkpoints and a bounded append-only evidence trail; it never contains a secret,
+  credential hash or JWT. Target documents retain technical `OperationalVersion` and last operation identity. Same
+  command plus same fingerprint is stable replay; same command plus different fingerprint, stale version or purpose
+  drift returns `409` before mutation. Atomic Mongo filters increment the version; whole-document replacement and
+  read-then-unfenced write are forbidden.
+- Create uniqueness races resolve by re-read: exact same command/fingerprint returns replay, any differing payload fails
+  `409`. Rotation atomically moves active hash/version to previous, installs the new active hash/version and uses the
+  fixed 300-second overlap dictated by the token TTL; callers cannot extend it. Concurrent rotation has one winner; the
+  loser re-reads and returns replay or conflict.
+- `revoke-identity` atomically sets revoked state and invalidates active/previous authentication without deleting the
+  identity. A revoked identity cannot be re-enabled by this foundation; replacement requires a separately identified
+  client or later owner-approved recovery policy. Revoke and grant disable stop fresh issuance immediately; already
+  issued JWTs remain valid for at most their remaining 300-second TTL and are not claimed to be instantly revoked.
+- Grant enable/disable is tenant-bound and exact-audience-bound. Enable creates or atomically restores the one active
+  tuple; disable never deletes it. Missing identity, revoked identity, service/audience-purpose mismatch and cross-tenant
+  access fail closed. Read-back must prove exact persisted ID, tenant, purpose, enabled/revoked state, operational version
+  and last command fingerprint before success is returned.
+- The mutation sequence is operation reserve, atomic target mutation, exact read-back, sanitized append-only evidence
+  append and `COMPLETED`. An evidence failure cannot return false success: the operation remains `RECOVERY_REQUIRED` and
+  the same command resumes from its persisted checkpoint without repeating the business mutation.
+- A newly generated raw secret crosses exactly one injected `IServiceClientSecretOutputSink` boundary after verified
+  persistence read-back and completed evidence. The CLI sink writes once to an inherited, pre-opened one-shot OS pipe;
+  it refuses files, stdout, stderr, logs and repository/worktree paths. The parent process consumes it only in memory.
+  Replay and concurrent losers never re-emit a secret. If first delivery is lost, recovery is a new authorized rotation
+  command; plaintext is never persisted for replay.
+- Success/log/audit output contains only identity/grant IDs, client code, audience, versions, fingerprint, replay flag
+  and secret-delivered boolean. Raw secret, credential hash, authorization marker and signing material are always redacted.
+- CLI exit mapping is deterministic: `0` completed/exact replay, `2` contract/configuration, `3` actor authentication or
+  authorization denial, `4` drift/idempotency/concurrency conflict, `5` persistence/evidence unavailable, `6`
+  recovery-required and `130` cancellation. Exact replay reports `secretDisposition=not-reissued`; only the winning
+  first create/rotation reports `issued-once` through the protected pipe.
+
+#### Eligibility and actor authorization
+
+- Eligibility is fail-closed unless `IHostEnvironment.IsDevelopment()`, options `Enabled=true`, the exact CLI mode is
+  present, the requested operation is in the frozen list and all required immutable facts are supplied.
+- A fresh human operator JWT is mandatory and is read from bounded stdin, never argv/environment/config/file. The
+  complete UTF-8 envelope remains capped at 64 KiB and the `accessToken` field is independently capped at 32 KiB;
+  this admits the measured 20,995-byte seeded SuperAdmin JWT while rejecting larger tokens before authorization or
+  repository mutation. Normal
+  Auth issuer/signature/audience/lifetime validation applies; the actor must be active, `pwd_change_required=false`,
+  exact `actor_type=platform_admin`, exact Platform System Tenant and hold the dedicated
+  `auth.service-clients.provision` permission. Tenant/partner actors and JWT-claim-only stale users fail closed. The new
+  permission is cataloged as Platform-scoped and granted only through existing explicit platform-role governance; it is
+  never inferred from local process access or a broader RBAC permission.
+- An opaque one-shot operational marker is an additional eligibility factor, not a replacement for the JWT permission.
+  It is supplied through the same bounded stdin envelope and compared in fixed time with a process-injected hash; neither
+  value is logged or returned. The authorized actor is written into target audit metadata.
+- Options are default-disabled and bind only immutable operational eligibility facts; operation payload, JWT, raw marker
+  and secret pipe are supplied through the bounded process-local invocation contract. Product appsettings files are not
+  authorized; a later Local Development run must inject eligibility facts process-locally.
+- Cancellation propagates. Eligibility, secret-output preflight and immutable-fact validation complete before the first
+  repository mutation. Repository/configuration inconsistency is `503`; bounded operation timeout is `504`.
+
+#### Phase gates
+
+1. **Current gate:** planning only; this subsection and its allow-list are frozen by the 2026-08-30 user authorization.
+2. **Runtime gate:** separate user code-start for this exact runtime/test allow-list; focused unit/security/real-Mongo,
+   full Auth suite, architecture gate and Release build evidence are mandatory before operational use.
+3. **Local Development operational gate:** separate authorization naming exact tenant, client code, service, singular
+   audience, actor, command ID, expected version, one-shot pipe sink and requested operation. Run must use the supported
+   CLI, verify read-back and leave no secret in repo/log/config/process arguments.
+4. **Production/Staging:** prohibited. Deployment secret manager, dual control, break-glass, rotation cadence, monitoring,
+   incident response and environment-specific signing/public-key operations require a separate owner-approved runbook.
+
 ## 6. Protected Paths
 
 MDM, Gateway, frontend, MOD-0021-FU01 controller/handler, user-token `ITokenService`/`TokenService`, shared
@@ -150,6 +292,8 @@ owner-approved client identity, tenant grant, audience, signing keys and rotatio
 - Previous client credential is valid only strictly before `PreviousValidUntilUtc`; revocation rejects both credentials.
 - Signing-key rotation is independent of client credential rotation. Unknown `kid`, HS256, `none` and algorithm confusion fail closed.
 - Shared signing secrets, user JWT fallback, roles/permissions/email claims, tenant headers and hardcoded grants are forbidden.
+- The Section 5 E human operator JWT authenticates only the explicit offline CLI and is never accepted by the service-token
+  issuance endpoint as a client credential or authorization fallback.
 
 ## 9. Layout & Shell Contract
 
@@ -181,6 +325,11 @@ credential hashes in fixed time. The requested tenant becomes authoritative only
 - `503`: issuer/key/grant repository configuration unavailable or inconsistent.
 - `504`: two-second issuance budget exceeded. Cancellation propagates unchanged.
 
+For Section 5 E operational commands: invalid eligibility/JWT/actor/permission/marker is denied before mutation; stale version,
+command-fingerprint drift, purpose drift and uniqueness races are `409`; unavailable persistence is `503`; timeout is
+`504`. A secret-sink preflight failure creates no identity/rotation. A post-persistence secret-delivery interruption is
+reported without secret replay and requires a new authorized rotation command.
+
 ## 14. Authorization Convention
 
 This endpoint does not accept user JWT authority. Client authentication proves service identity; the persisted
@@ -203,6 +352,13 @@ new public endpoint or JWKS surface in this foundation.
 5. Platform accepts current/overlap-valid previous public key and rejects unknown/expired `kid`.
 6. Existing human token issuance remains byte/claim behavior compatible; shared HMAC is not reused.
 7. No startup provisioning, plaintext secret persistence/logging, Gateway/frontend or MDM mutation occurs.
+8. Section 5 E, when separately authorized and implemented, exposes only the explicit one-shot CLI and seven frozen
+   operations; normal API startup and HTTP surfaces remain unchanged.
+9. Create/rotate/revoke and grant enable/disable are atomic, version-fenced and command-fingerprint-idempotent; concurrent
+   same-command replay is stable and payload drift/stale version fails before mutation.
+10. Generated plaintext crosses one protected secret sink only after persisted read-back, is never replayed and never
+    appears in logs, configuration, process arguments, Mongo documents or ordinary stdout/stderr.
+11. Local Development eligibility and trusted actor authorization fail before mutation; Production/Staging always deny.
 
 ## 17. Test Expectations
 
@@ -211,6 +367,13 @@ new public endpoint or JWKS surface in this foundation.
 - Real Mongo: unique client/grant indexes, tenant A/B isolation, soft-delete behavior, replay and concurrent rotation fencing.
 - Integration: Auth-issued token validates in Platform with current/previous public key; wrong tenant/audience/service/key fails.
 - Regression: full Auth and Platform suites and Release builds; no skipped/fake/in-memory substitute for named Mongo tests.
+- Section 5 E unit/security: Development/default-disabled matrix, exact operation parsing, JWT/active-actor/permission and
+  marker denial, canonical fingerprint, expected-version checks, one-shot pipe fencing, redaction and cancellation/timeout mapping.
+- Section 5 E real Mongo: create/read replay, uniqueness race, concurrent rotation one-winner, overlap boundary, revoke,
+  grant create/enable/disable replay, tenant A/B isolation, purpose mismatch, stale/fingerprint conflict and exact
+  post-mutation read-back. Existing token issuance must accept only the resulting enabled/non-revoked exact pair.
+- Secret scan must prove no raw generated secret/marker/hash in captured logs, repository files, Mongo or exception text;
+  sink tests must prove inherited one-shot pipe-only delivery, no file/stdout/stderr path and no replay emission.
 
 ## 18. Ready-for-dev Checklist
 
@@ -220,8 +383,37 @@ new public endpoint or JWKS surface in this foundation.
 - [x] Entity/index shapes and the global-identity plus tenant-scoped grant boundary were approved.
 - [x] Pack was promoted to `ready-for-dev` before runtime work.
 - [x] User separately authorized Section 5 A and then B code-start.
+- [x] User authorized Section 5 E Phase 1.5 planning and exact allow-list preparation on 2026-08-30.
+- [x] Section 5 E runtime code-start was separately authorized on 2026-08-30; planning approval alone did not permit code.
 
 ## 19. Implementation Notes
+
+### Section E implementation evidence — 2026-08-30
+
+Section 5 E is implemented and the pack returned to `review`. The Auth-only delivery contains the explicit one-shot CLI,
+fresh Platform System Tenant operator JWT plus live permission recheck, second-factor marker, pipe-only one-time secret
+delivery, atomic identity/grant CAS, fixed 300-second credential overlap and durable operation/checkpoint/evidence replay.
+No HTTP/hosted/startup provisioning path, direct Mongo write, product appsettings, Platform/MDM/Gateway/frontend change,
+operational data mutation or push was introduced.
+
+Verification evidence:
+
+- merged Section E/rotation/permission focused filter: `44/44`, zero skipped, including real localhost Mongo and concrete
+  anonymous-pipe delivery/rejection tests;
+- independent security/code-quality re-review: all identified P1/P2 findings closed, no remaining P0/P1;
+- Auth API Release build: zero errors; one existing `MongoClientSettings.GuidRepresentation` warning in Persistence;
+- full Auth suite: `680/682`, zero skipped. The two failures are pre-existing `UserLookupValidationContractTests`
+  expectations for `MaskedName`/`MaskedEmail`; no Section E file participates in either failure;
+- `git diff --check`: clean. Runtime secret/config/data and Local Development provisioning remain untouched at this point.
+
+The Local Development preflight exposed a bounded-input contract defect: the valid seeded SuperAdmin JWT is 20,995
+bytes, while the first implementation capped `accessToken` at 16 KiB. The field cap is now coherently 32 KiB in both
+strict envelope parsing and actor authorization, while the total envelope remains 64 KiB. A real-shaped signed JWT over
+16 KiB is authorized, a 20,995-character parser token reaches the authorizer, and a token over 32 KiB is rejected before
+authorization or mutation. The updated focused operational/permission filter passes `43/43`, zero skipped.
+
+Local Development operational provisioning and Product/Item/SKU WorkCenter acceptance are the next separately recorded
+execution evidence; Production/Staging and push remain prohibited.
 
 Current Auth `TokenService` emits human tenant/platform tokens using HS256 and `JwtSettings.Secret`; it must not be
 extended for service identity. Existing Platform active/previous credential authenticators are behavioral references,
@@ -294,7 +486,8 @@ separate operational gate.
 ## 20. Follow-up Items
 
 1. Reconcile MOD-0033 parent pack/domain prose with Blueprint 8.1 canonical ownership without renaming runtime literals.
-2. Add separately gated supported service-client/grant provisioning and rotation runbook; then perform Local Development onboarding.
+2. Run the implemented Section 5 E service-client/grant provisioning runner under the recorded exact-facts Local
+   Development authorization and capture sanitized read-back evidence.
 3. Revise MOD-0021-FU01 to consume this Platform public-key validator and run live audit ingestion smoke.
 4. Implement the MOD-0290 MDM token client/cache and H1b durable audit delivery under its own exact allow-list.
 5. Production/Staging signing keys, public-key distribution, credential rotation, monitoring and incident runbook remain separate gates.

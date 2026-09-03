@@ -1,4 +1,5 @@
 using Diten.AuthService.Api;
+using Diten.AuthService.Api.Services.ServiceIdentityTokens;
 using Diten.AuthService.Application;
 using Diten.AuthService.Infrastructure;
 using Diten.AuthService.Persistence;
@@ -58,6 +59,7 @@ builder.Host.UseSerilog((context, services, loggerConfiguration) =>
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
 builder.Services.AddPersistence(builder.Configuration, builder.Environment);
+ServiceClientOperationalProvisioningRunner.AddOperationalProvisioning(builder.Services, builder.Configuration);
 builder.Services.AddDitenObservability(
     builder.Configuration,
     builder.Environment,
@@ -141,6 +143,29 @@ builder.Services.AddSwaggerGen(c =>
 
 // ── Build ─────────────────────────────────────────────────────────────────
 var app = builder.Build();
+
+if (ServiceClientOperationalProvisioningRunner.IsProcessInvocationRequested(args))
+{
+    using var cancellation = new CancellationTokenSource();
+    ConsoleCancelEventHandler cancelHandler = (_, eventArgs) =>
+    {
+        eventArgs.Cancel = true;
+        cancellation.Cancel();
+    };
+    Console.CancelKeyPress += cancelHandler;
+    try
+    {
+        await using var scope = app.Services.CreateAsyncScope();
+        var runner = scope.ServiceProvider.GetRequiredService<ServiceClientOperationalProvisioningRunner>();
+        Environment.ExitCode = await runner.RunAsync(args, Console.In, Console.Out, cancellation.Token);
+    }
+    finally
+    {
+        Console.CancelKeyPress -= cancelHandler;
+    }
+
+    return;
+}
 
 // Enable Swagger
 app.UseSwagger();

@@ -27,6 +27,30 @@ public sealed class DefaultRolePermissionTemplateTests
     }
 
     [Fact]
+    public void Service_client_provisioning_is_platform_admin_only()
+    {
+        var catalog = new List<Permission>
+        {
+            new(
+                "auth",
+                "service-clients",
+                "provision",
+                "Provision Service Clients",
+                null,
+                moduleOverride: "platform",
+                scope: PermissionScope.PlatformAdmin)
+        };
+
+        Assert.Equal(
+            [DefaultRolePermissionTemplate.ServiceClientProvisionPermission],
+            DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.SuperAdminRole, catalog)
+                .Select(permission => permission.Key));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.AdminRole, catalog));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.ViewerRole, catalog));
+        Assert.False(DefaultRolePermissionTemplate.IsTenantAssignable(catalog[0]));
+    }
+
+    [Fact]
     public void Admin_gets_auth_and_mdm_only_never_platform()
     {
         var keys = DefaultRolePermissionTemplate.SelectFor("Admin", Catalog()).Select(p => p.Key).ToList();

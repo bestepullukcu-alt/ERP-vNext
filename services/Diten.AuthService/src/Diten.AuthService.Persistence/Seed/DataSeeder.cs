@@ -323,6 +323,11 @@ public static class DataSeeder
             // Gates GET/PUT navigation preferences (the tenant-wide sidebar), while GET menu stays open to every user.
             new("platform", "tenant-navigation", "manage", "Manage Tenant Navigation", "Permission to manage tenant navigation (menu) settings", moduleOverride: "tenant-settings"),
 
+            // MOD-0033-FU02 Section E — offline, Development-only service-client provisioning permission.
+            // PlatformAdmin scope keeps it out of every tenant Admin/Viewer baseline; only the default-tenant
+            // SuperAdmin receives it through the existing full-catalog governance path.
+            new("auth", "service-clients", "provision", "Provision Service Clients", "Permission to execute the explicitly gated service-client operational provisioning CLI", moduleOverride: "platform", scope: PermissionScope.PlatformAdmin),
+
             new("goldenslim", "records", "read",   "Read Golden Slim",   "View Golden Slim records"),
             new("goldenslim", "records", "create", "Create Golden Slim", null),
             new("goldenslim", "records", "update", "Update Golden Slim", null),
