@@ -187,6 +187,74 @@ public sealed class InternalPermissionsControllerTests
         Assert.Equal(PermissionScope.PlatformAdmin, p.Scope); // not downgraded
     }
 
+    [Theory]
+    [InlineData("workflow.instances", "start")]
+    [InlineData("workflow.tasks", "approve")]
+    [InlineData("workflow.tasks", "reject")]
+    public async Task Catalog_replay_cannot_promote_seed_owned_tenant_workflow_execution_scope(string resource, string action)
+    {
+        var repo = new FakePermissionRepository();
+        repo.Items.Add(new Permission(
+            "platform",
+            resource,
+            action,
+            action,
+            null,
+            moduleOverride: "workflow",
+            scope: PermissionScope.Tenant));
+        var controller = Build(repo, authorized: true);
+
+        var first = await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            $"platform.{resource}.{action}", action, null, "workflow", "PlatformAdmin"), CancellationToken.None);
+        var replay = await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            $"platform.{resource}.{action}", action, null, "workflow", "PlatformAdmin"), CancellationToken.None);
+
+        Assert.Equal("updated", Assert.IsType<InternalPermissionsController.SyncPermissionResponse>(Assert.IsType<OkObjectResult>(first).Value).Status);
+        Assert.Equal("updated", Assert.IsType<InternalPermissionsController.SyncPermissionResponse>(Assert.IsType<OkObjectResult>(replay).Value).Status);
+        var permission = Assert.Single(repo.Items);
+        Assert.True(permission.IsSystem);
+        Assert.Equal(PermissionScope.Tenant, permission.Scope);
+    }
+
+    [Fact]
+    public async Task Non_exception_system_key_keeps_generic_most_restrictive_tie_break()
+    {
+        var repo = new FakePermissionRepository();
+        repo.Items.Add(new Permission(
+            "platform",
+            "workflow.tasks",
+            "delegate",
+            "Delegate",
+            null,
+            moduleOverride: "workflow",
+            scope: PermissionScope.Tenant));
+        var controller = Build(repo, authorized: true);
+
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            "platform.workflow.tasks.delegate", "Delegate", null, "workflow", "PlatformAdmin"), CancellationToken.None);
+
+        Assert.Equal(PermissionScope.PlatformAdmin, Assert.Single(repo.Items).Scope);
+    }
+
+    [Theory]
+    [InlineData("workflow.instances", "start")]
+    [InlineData("workflow.tasks", "approve")]
+    [InlineData("workflow.tasks", "reject")]
+    public async Task Catalog_created_workflow_execution_key_keeps_catalog_scope_behavior(string resource, string action)
+    {
+        var repo = new FakePermissionRepository();
+        var controller = Build(repo, authorized: true);
+
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            $"platform.{resource}.{action}", action, null, "workflow", "PlatformAdmin"), CancellationToken.None);
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            $"platform.{resource}.{action}", action, null, "workflow", "Tenant"), CancellationToken.None);
+
+        var permission = Assert.Single(repo.Items);
+        Assert.False(permission.IsSystem);
+        Assert.Equal(PermissionScope.PlatformAdmin, permission.Scope);
+    }
+
     [Fact]
     public async Task Update_from_old_sender_without_fields_leaves_module_and_scope_untouched()
     {

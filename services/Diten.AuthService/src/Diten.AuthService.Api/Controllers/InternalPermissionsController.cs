@@ -19,6 +19,12 @@ namespace Diten.AuthService.Api.Controllers;
 public sealed class InternalPermissionsController : ControllerBase
 {
     private const string InternalApiKeyHeader = "X-Internal-Api-Key";
+    private static readonly HashSet<string> SeedOwnedTenantScopeKeys = new(StringComparer.Ordinal)
+    {
+        "platform.workflow.instances.start",
+        "platform.workflow.tasks.approve",
+        "platform.workflow.tasks.reject"
+    };
 
     private readonly IInternalEventAuthService _internalEventAuthService;
     private readonly IPermissionRepository _permissionRepository;
@@ -145,9 +151,18 @@ public sealed class InternalPermissionsController : ControllerBase
             {
                 // Tie-break (most restrictive wins): the same key can be synced from several pages with different
                 // routes. If ANY of them is platform-scoped the key stays PlatformAdmin — never downgrade to Tenant.
-                var effectiveScope = existing.Scope == PermissionScope.PlatformAdmin || incomingScope.Value == PermissionScope.PlatformAdmin
-                    ? PermissionScope.PlatformAdmin
-                    : PermissionScope.Tenant;
+                // The three seeded Workflow execution keys are an explicit Auth-owned exception: after startup has
+                // reconciled their SYSTEM rows to Tenant, catalog replay may refresh their metadata/module but may not
+                // promote them back to PlatformAdmin. Catalog-created/user-defined rows and every other key retain the
+                // generic most-restrictive rule.
+                var seedOwnedTenantScope = existing.IsSystem
+                    && existing.Scope == PermissionScope.Tenant
+                    && SeedOwnedTenantScopeKeys.Contains(existing.Key);
+                var effectiveScope = seedOwnedTenantScope
+                    ? PermissionScope.Tenant
+                    : existing.Scope == PermissionScope.PlatformAdmin || incomingScope.Value == PermissionScope.PlatformAdmin
+                        ? PermissionScope.PlatformAdmin
+                        : PermissionScope.Tenant;
                 existing.SetScope(effectiveScope);
             }
         }
