@@ -18,6 +18,29 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
         EnsureIndexes();
     }
 
+    public async Task<IReadOnlyList<ProductAbbreviationRegisterEntry>> GetInitialPendingWorkItemsAsync(
+        int limit,
+        CancellationToken cancellationToken = default)
+    {
+        if (limit is < 1 or > 101)
+        {
+            throw new ArgumentOutOfRangeException(nameof(limit));
+        }
+
+        return await _collection
+            .Find(
+                TenantFilter
+                & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
+                    x => x.LifecycleStatus,
+                    ProductAbbreviationLifecycleStatus.REQUESTED)
+                & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(x => x.ReplacesEntryId, null))
+            // BL-030: DateTimeOffset is stored as a BSON array in this service. An ascending
+            // RequestedAtUtc sort can silently order by offset minutes instead of the instant.
+            .SortBy(x => x.Id)
+            .Limit(limit)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<ProductAbbreviationRegisterEntry?> GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken = default)
