@@ -352,6 +352,169 @@ public sealed record WorkReportDto(
 }
 
 /// <summary>
+/// WHICH CELL of the report a reader clicked — Dilim 1c.
+///
+/// <para><b>⚠ THIS ENUM IS THE JOIN BETWEEN A NUMBER AND A LIST, and that is the whole slice.</b> Before it, the
+/// report could say "10 late" and had no way to say WHICH ten. A manager saw a figure and could act on nothing:
+/// the report was a dead end rather than a route into the work.</para>
+///
+/// <para><b>Every member names a set the report ALREADY counts</b> — there is no cell here that the totals do
+/// not publish, and no published cell that a reader can click without landing somewhere. The counting and the
+/// listing are the same code (<c>WorkReportTally.Select</c>), so the two cannot drift into disagreeing about
+/// which tasks a number was about.</para>
+/// </summary>
+/// <remarks>
+/// ⚠ STRING ON THE WIRE, for the reason <see cref="WorkReportGroupBy"/> is: an enum that reaches a client as a
+/// NUMBER is a defect this module has already shipped twice.
+/// </remarks>
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+public enum WorkReportBucketKind
+{
+    /// <summary>Created within the period.</summary>
+    Opened = 0,
+
+    /// <summary>Reached a terminal state within the period — completed or cancelled.</summary>
+    Closed = 1,
+    Completed = 2,
+    Cancelled = 3,
+
+    /// <summary>
+    /// Open work nobody is holding, AS OF NOW — not as of the period. The list inherits that, because a list
+    /// that answered a different question from the number above it would be worse than no list at all.
+    /// </summary>
+    Unattended = 4,
+
+    OnTime = 5,
+    Late = 6,
+
+    /// <summary>
+    /// Closed in the period with no deadline to be judged against. Clickable because it is the blind spot of
+    /// the punctuality figure, and the work in it is exactly what nobody promised a date for.
+    /// </summary>
+    WithoutDueDate = 7,
+
+    /// <summary>Open at the PERIOD'S END and under a week old. See <see cref="WorkReportAging"/>.</summary>
+    AgingUpTo7Days = 8,
+    AgingFrom8To30Days = 9,
+    AgingOlderThan30Days = 10,
+
+    /// <summary>Touched in the period and returned at least once (Faz 4).</summary>
+    Returned = 11,
+
+    /// <summary>
+    /// Closed with one particular outcome code, which travels in <c>argument</c>. The only member that needs
+    /// one — every other cell is fully identified by its kind.
+    /// </summary>
+    Outcome = 12
+}
+
+/// <summary>
+/// ONE TASK, as a report's list shows it — seven fields, and deliberately not a task.
+///
+/// <para><b>Why not reuse the Task Center's item DTO.</b> That one carries the checklist, the field values, the
+/// SLA state, the watcher list and the frozen document references — everything a detail page needs. This list
+/// answers "which work produced that number", and the reader's next click is the detail page itself. Shipping
+/// the heavy shape would make a fifty-row list cost more than the report that opened it.</para>
+///
+/// <para><b><see cref="AssigneeUserId"/> is an ID, not a name</b>, for the reason
+/// <see cref="WorkReportBucket.Label"/> is null on the assignee axis: MEASURED 2026-09-03, Platform has no User
+/// entity and no auth client, so a name invented here would be a fabrication. The screen resolves people
+/// through the lookup it already uses for the assignee filter.</para>
+/// </summary>
+/// <param name="Lifecycle">
+/// ⚠ A STRING, NOT THE ENUM — the convention <c>TaskItemMapper</c> and <c>TaskWorkItemProvider</c> already
+/// follow. <c>TaskLifecycle</c> carries no <c>JsonStringEnumConverter</c> (its header explains why: existing
+/// responses map it explicitly rather than change the wire format of every module that touches it), so a record
+/// that stored the enum here would serialize it as a bare number — the exact defect
+/// <see cref="WorkReportGroupBy"/>'s own converter exists to prevent, caught twice already in this module.
+/// </param>
+/// <param name="ClosedAt">
+/// Whichever terminal timestamp the closure actually wrote, or null while the task is still open. The two are
+/// mutually exclusive by construction — <c>TaskLifecycleService.CanTransition</c> refuses every transition out
+/// of a terminal state — so one field can carry both without ambiguity.
+/// </param>
+public sealed record WorkReportItem(
+    Guid Id,
+    string Title,
+    string Lifecycle,
+    Guid? AssigneeUserId,
+    DateTimeOffset? DueAt,
+    DateTimeOffset? ClosedAt,
+    string? ClosureReasonCode);
+
+/// <summary>
+/// WHICH CELL, and how far into it — the list request, alongside the report criteria it belongs to.
+///
+/// <para><b>⚠ IT CARRIES THE WHOLE REPORT CRITERIA, and does not restate any of it.</b> The period, the scope
+/// and the five filters are the same object the numbers were computed from, so a list cannot be asked for under
+/// a period or a filter the report never ran. Re-declaring them here would be a second contract, and a second
+/// contract is how a list ends up answering about a slightly different set than the number that opened it.</para>
+/// </summary>
+/// <param name="Argument">
+/// The outcome CODE, for <see cref="WorkReportBucketKind.Outcome"/>. Null for every other kind — and a kind
+/// that needs one without getting one lists nothing rather than listing all outcomes.
+/// </param>
+/// <param name="GroupKey">
+/// Which group row was clicked, on the axis <see cref="WorkReportCriteria.GroupBy"/> already names. Null means
+/// the TOTALS row. The reserved keys travel here as they do everywhere else —
+/// <see cref="WorkReportDto.OtherKey"/> lists the folded tail, <see cref="WorkReportDto.UnassignedKey"/> the
+/// unresolvable companies.
+/// </param>
+public sealed record WorkReportItemsCriteria(
+    WorkReportCriteria Report,
+    WorkReportBucketKind Bucket,
+    string? Argument = null,
+    string? GroupKey = null,
+    int Skip = 0);
+
+/// <summary>
+/// THE WORK BEHIND ONE NUMBER — a page of it, and the number itself.
+/// </summary>
+/// <param name="Total">
+/// <b>⚠ THE SAME FIGURE THE REPORT PUBLISHED FOR THIS CELL, computed by the same code.</b> It is not the page's
+/// length and it is not a second count: <c>WorkReportTally.Select</c> produces the rows, the report counts them
+/// and this lists them. That identity is the acceptance criterion of Dilim 1c, and a test asserts it cell by
+/// cell — a number a reader cannot walk into is exactly the dead end this slice exists to remove.
+/// </param>
+/// <param name="HasMore">
+/// Whether the cut was made. <b>⚠ STATED, NEVER SILENT</b> — the same rule as
+/// <see cref="WorkReportDto.GroupsTruncated"/>. A reader who counted fifty rows under a number that said 83 and
+/// saw nothing explaining the gap would conclude the report was wrong, and they would be right to.
+/// </param>
+public sealed record WorkReportItemsDto(
+    WorkReportBucketKind Bucket,
+    string? Argument,
+    string? GroupKey,
+    string ScopeApplied,
+    int Total,
+    int Skip,
+    IReadOnlyList<WorkReportItem> Items,
+    bool HasMore)
+{
+    /// <summary>
+    /// Rows per page. FIFTY for the reason <see cref="WorkReportDto.MaxGroups"/> is fifty — it is a reading
+    /// limit rather than a technical one, and the two being the same number is deliberate: one screen, one
+    /// sense of "as much as a person will look at before asking for more".
+    /// </summary>
+    public const int PageSize = 50;
+
+    /// <summary>
+    /// The fail-closed answer, shaped like a real one. A caller whose scope resolves to nothing gets an empty
+    /// page and a 200 — "you may see no work" is true, not an error, for the same reason
+    /// <see cref="WorkReportDto.Empty"/> exists.
+    /// </summary>
+    public static WorkReportItemsDto Empty(WorkReportItemsCriteria criteria) => new(
+        criteria.Bucket,
+        criteria.Argument,
+        criteria.GroupKey,
+        WorkReportDto.ScopeScoped,
+        0,
+        criteria.Skip,
+        [],
+        false);
+}
+
+/// <summary>
 /// The report's ONE read — declared here beside its criteria rather than in Domain, following the same
 /// Application-port shape <c>IOutboxEventRepository</c> and <c>IRepositoryReadinessPort</c> use: the criteria
 /// carry a <see cref="WorkReportScope"/>, which is an authorization concept, and Domain has no business knowing
@@ -376,4 +539,21 @@ public interface IWorkReportRepository
     /// short-circuits before calling, so this is the second lock on the same door.</para>
     /// </summary>
     Task<WorkReportDto> AggregateAsync(WorkReportCriteria criteria, CancellationToken ct = default);
+
+    /// <summary>
+    /// THE WORK BEHIND ONE OF THOSE NUMBERS — Dilim 1c.
+    ///
+    /// <para><b>⚠ IT RUNS THE SAME COMPOSITION THE REPORT RAN, and this is the requirement, not an optimisation.</b>
+    /// The implementation builds the identical row set (<c>BuildMatchFilter</c>: scope ∧ period ∧ filter, plus
+    /// the two reads ageing and the unattended backlog need), then asks
+    /// <c>WorkReportTally.Select</c> for the cell — the very method the counts are derived from. Two separately
+    /// written queries would agree on the day they were written and disagree some later day, and nobody would be
+    /// able to say which of the two numbers on screen was the true one.</para>
+    ///
+    /// <para><b>The scope applies here exactly as it does to the numbers.</b> No click can open work the report
+    /// was not allowed to count — a list is a second door into the same room, and it takes the same key.</para>
+    ///
+    /// <para>An out-of-scope criteria set returns an EMPTY page, never an unfiltered one.</para>
+    /// </summary>
+    Task<WorkReportItemsDto> ItemsAsync(WorkReportItemsCriteria criteria, CancellationToken ct = default);
 }

@@ -153,7 +153,10 @@
         <section class="card h-100">
             <div class="card-body p-4">
                 <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["ReworkTitle"]</h6>
-                <p class="h4 mb-1" data-wr-rework-tasks></p>
+                @* ⚠ THE WHOLE LINE OPENS THE TASKS BEHIND IT — Dilim 1c. `data-wr-click="Returned"` is read by
+                   the same delegated handler every other clickable number uses; nothing here is bespoke. *@
+                <p class="h4 mb-1 wr-clickable" data-wr-rework-tasks data-wr-click="Returned"
+                   role="button" tabindex="0"></p>
                 <p class="small mb-0" data-wr-rework-trend hidden></p>
                 <p class="text-muted small mb-0" data-wr-rework-returns></p>
             </div>
@@ -163,7 +166,8 @@
         <section class="card h-100">
             <div class="card-body p-4">
                 <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["UnattendedTitle"]</h6>
-                <p class="h4 mb-1" data-wr-unattended-value></p>
+                <p class="h4 mb-1 wr-clickable" data-wr-unattended-value data-wr-click="Unattended"
+                   role="button" tabindex="0"></p>
                 @* AGEING — open work at the PERIOD'S END, so the same period says the same thing months later.
                    It sits in this card because it answers the same question the card asks: what is waiting. *@
                 <p class="small mb-0 mt-2" data-wr-aging hidden></p>
@@ -237,6 +241,40 @@
                 <p class="text-muted small mb-0 mt-2" data-wr-groups-truncated hidden></p>
             </div>
         </section>
+    </div>
+</div>
+
+@*
+    THE ITEMS PANEL — Dilim 1c. Opens beside the report rather than replacing it: closing it returns to exactly
+    the numbers the reader left, at the same scroll position.
+
+    ⚠ NOT THE TASK CENTER. Görev Merkezi's tabs sit on the OWNERSHIP axis (mine / pool / inbox / history) and
+    "the tasks behind this report cell" is not a place on that axis — forcing it there would break the axis for
+    everybody else. This is the project's own offcanvas pattern instead (see PPM's `_DetailsQuickView`, MDM's
+    `_CreateEditOffcanvas`), not a new one.
+*@
+<div class="offcanvas offcanvas-end wr-items-offcanvas" tabindex="-1" id="wrItemsOffcanvas"
+     aria-labelledby="wrItemsOffcanvasLabel" data-bs-scroll="true">
+    <div class="offcanvas-header p-4 border-bottom">
+        <div class="min-w-0">
+            @* ⚠ SAYS WHERE IT CAME FROM — the cell, the period and, when one applies, the group. A panel that
+               opened silently would leave a reader unable to tell "late in Finance in September" from
+               "late everywhere, all year" once they had scrolled past the report itself. *@
+            <h5 id="wrItemsOffcanvasLabel" class="offcanvas-title mb-0" data-wr-items-title>-</h5>
+            <small class="text-muted d-block" data-wr-items-subtitle>-</small>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                aria-label="@Localizer["ItemsClose"]"></button>
+    </div>
+    <div class="offcanvas-body p-4">
+        <p class="text-muted small mb-3" data-wr-items-count></p>
+        <p class="text-muted" data-wr-items-loading hidden>@Localizer["Loading"]</p>
+        <p class="text-muted" data-wr-items-empty hidden>@Localizer["ItemsEmpty"]</p>
+        <p class="text-danger" data-wr-items-error hidden>@Localizer["ItemsLoadFailed"]</p>
+        <div data-wr-items-list></div>
+        <button type="button" class="btn btn-outline-primary btn-sm mt-3" data-wr-items-more hidden>
+            @* Text filled in by the script with the real remaining count — see ItemsShowMore. *@
+        </button>
     </div>
 </div>
 

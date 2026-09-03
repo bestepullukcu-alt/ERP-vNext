@@ -72,5 +72,19 @@
   <data name="FilterPriority" xml:space="preserve"><value>优先级</value></data>
   <data name="PriorityHigh" xml:space="preserve"><value>高</value></data>
   <data name="PriorityMedium" xml:space="preserve"><value>中</value></data>
+  <data name="ItemsClose" xml:space="preserve"><value>关闭</value></data>
+  <data name="ItemsEmpty" xml:space="preserve"><value>没有与此单元格匹配的任务。</value></data>
+  <data name="ItemsLoadFailed" xml:space="preserve"><value>无法加载列表。</value></data>
+  <data name="ItemsCount" xml:space="preserve"><value>显示 {1} 项中的 {0} 项</value></data>
+  <data name="ItemsShowMore" xml:space="preserve"><value>再显示 {0} 项</value></data>
+  <data name="ItemsStatusOpen" xml:space="preserve"><value>进行中</value></data>
+  <data name="ItemsUnassigned" xml:space="preserve"><value>未分配</value></data>
+  <data name="ItemsSubtitleRange" xml:space="preserve"><value>{0} – {1}</value></data>
+  <data name="ItemsSubtitleWithGroup" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="ItemsAging0to7" xml:space="preserve"><value>开放 0-7 天</value></data>
+  <data name="ItemsAging8to30" xml:space="preserve"><value>开放 8-30 天</value></data>
+  <data name="ItemsAging30plus" xml:space="preserve"><value>开放 30 天以上</value></data>
+  <data name="ItemsColDue" xml:space="preserve"><value>截止 {0}</value></data>
+  <data name="ItemsColClosed" xml:space="preserve"><value>关闭 {0}</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>低</value></data>
 </root>

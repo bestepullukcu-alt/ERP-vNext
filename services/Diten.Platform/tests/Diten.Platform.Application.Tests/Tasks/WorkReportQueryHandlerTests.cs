@@ -55,7 +55,42 @@ public sealed class WorkReportQueryHandlerTests
                 WorkReportDto.EmptyBucket(null),
                 []));
         }
+
+        /// <summary>
+        /// The list endpoint's read. Recorded the same way, because the SCOPE it is handed is the thing these
+        /// tests are about — a click that opened work the numbers refused to count would be the same defect as
+        /// an unscoped report, one layer further from anyone who would notice.
+        /// </summary>
+        public System.Threading.Tasks.Task<WorkReportItemsDto> ItemsAsync(
+            WorkReportItemsCriteria criteria, CancellationToken ct = default)
+        {
+            Calls++;
+            LastCriteria = criteria.Report;
+            LastItemsCriteria = criteria;
+
+            return System.Threading.Tasks.Task.FromResult(new WorkReportItemsDto(
+                criteria.Bucket,
+                criteria.Argument,
+                criteria.GroupKey,
+                criteria.Report.Scope.TenantWide ? WorkReportDto.ScopeTenant : WorkReportDto.ScopeScoped,
+                0,
+                criteria.Skip,
+                [],
+                false));
+        }
+
+        public WorkReportItemsCriteria? LastItemsCriteria { get; private set; }
     }
+
+    private static IWorkReportScopeSource Scope(
+        StubScopes resolver,
+        FakeActorPermissions permissions,
+        Guid? callerOverride = null) => new WorkReportScopeSource(
+        resolver,
+        new FakeCurrentUserContext(callerOverride ?? Caller),
+        new FakeTenantContext(Tenant),
+        permissions,
+        NullLogger<WorkReportScopeSource>.Instance);
 
     private sealed class StubScopes(IReadOnlyList<EntitlementDataScope>? scopes, Exception? throws = null)
         : IDataScopeResolver
@@ -83,13 +118,13 @@ public sealed class WorkReportQueryHandlerTests
     {
         var reports = new RecordingReports();
         var resolver = new StubScopes(scopes, resolverThrows);
-        var handler = new WorkReportQueryHandler(
-            reports,
-            resolver,
-            new FakeCurrentUserContext(callerOverride ?? Caller),
-            new FakeTenantContext(Tenant),
-            permissions,
-            NullLogger<WorkReportQueryHandler>.Instance);
+        /*
+         * ⚠ THE HANDLER NO LONGER RESOLVES ITS OWN SCOPE (Dilim 1c) — it asks the shared
+         * `IWorkReportScopeSource`, which the items handler asks too. These tests therefore exercise the REAL
+         * resolution code through the real seam rather than a copy of it, which is the whole reason the
+         * resolution was extracted instead of duplicated.
+         */
+        var handler = new WorkReportQueryHandler(reports, Scope(resolver, permissions, callerOverride));
 
         return (handler, reports, resolver);
     }

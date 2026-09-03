@@ -8785,3 +8785,38 @@ body:has(.offcanvas.show) .flatpickr-calendar.open { z-index: 1095; }
 .dt-checklist-preview__item + .dt-checklist-preview__item {
     margin-block-start: 0.75rem;
 }
+
+/*
+ * MOD-0024 Dilim 1c — a report NUMBER that opens the work behind it.
+ *
+ * ⚠ FG-003: styled here, never via `style=""` or `element.style` in the script. `.wr-clickable` marks any
+ * number the reader can open — a tile value, or one of the aging bands inside a templated sentence — and is
+ * applied uniformly whether the element already existed (the view marks it) or was built by the script (the
+ * three aging spans, assembled from the localized template so the sentence itself never changes).
+ */
+.wr-clickable {
+    cursor: pointer;
+    text-decoration-line: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 2px;
+}
+
+.wr-clickable:hover,
+.wr-clickable:focus-visible {
+    text-decoration-style: solid;
+}
+
+.wr-clickable:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+/* The row inside the items panel — one task, and the whole row opens its detail page. */
+.wr-item-row {
+    cursor: pointer;
+}
+
+.wr-item-row:hover {
+    background-color: var(--bs-tertiary-bg);
+}

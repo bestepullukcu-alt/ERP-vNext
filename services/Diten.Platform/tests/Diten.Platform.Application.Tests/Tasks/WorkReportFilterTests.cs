@@ -188,12 +188,14 @@ public sealed class WorkReportFilterTests
          */
         var scope = WorkReportScope.TenantWideScope();
         var baseline = WorkReportTally.Build(
-            Criteria(), Pipeline(scope, null, rows), 3, new Dictionary<Guid, int>());
+            Criteria(),
+            WorkReportSets.Of(Pipeline(scope, null, rows), unattended: 3, returns: new Dictionary<Guid, int>()));
 
         foreach (var filter in new WorkReportFilter?[] { null, new WorkReportFilter(), new WorkReportFilter(TaskTypeCode: "   ") })
         {
             var got = WorkReportTally.Build(
-                Criteria(filter), Pipeline(scope, filter, rows), 3, new Dictionary<Guid, int>());
+            Criteria(filter),
+            WorkReportSets.Of(Pipeline(scope, filter, rows), unattended: 3, returns: new Dictionary<Guid, int>()));
 
             Assert.Equal(baseline.Totals.Flow, got.Totals.Flow);
             Assert.Equal(baseline.Totals.CycleTime, got.Totals.CycleTime);
@@ -244,7 +246,8 @@ public sealed class WorkReportFilterTests
         };
 
         var report = WorkReportTally.Build(
-            Criteria(groupBy: WorkReportGroupBy.LegalEntity), rows, 0, new Dictionary<Guid, int>());
+            Criteria(groupBy: WorkReportGroupBy.LegalEntity),
+            WorkReportSets.Of(rows, returns: new Dictionary<Guid, int>()));
 
         var unassigned = Assert.Single(report.Groups, g => g.Key == WorkReportDto.UnassignedKey);
         Assert.Equal(1, unassigned.Flow.Opened);
@@ -260,7 +263,8 @@ public sealed class WorkReportFilterTests
         var rows = new[] { Row(company: CompanyA), Row(company: CompanyA), Row(company: CompanyB) };
 
         var report = WorkReportTally.Build(
-            Criteria(groupBy: WorkReportGroupBy.LegalEntity), rows, 0, new Dictionary<Guid, int>());
+            Criteria(groupBy: WorkReportGroupBy.LegalEntity),
+            WorkReportSets.Of(rows, returns: new Dictionary<Guid, int>()));
 
         Assert.Equal(2, report.Groups.Count);
         Assert.Equal(2, report.Groups.Single(g => g.Key == CompanyA.ToString()).Flow.Opened);
@@ -291,7 +295,9 @@ public sealed class WorkReportFilterTests
         };
 
         var report = WorkReportTally.Build(
-            Criteria(groupBy: WorkReportGroupBy.LegalEntity), rows, 0, new Dictionary<Guid, int>(), labels);
+            Criteria(groupBy: WorkReportGroupBy.LegalEntity),
+            WorkReportSets.Of(rows, returns: new Dictionary<Guid, int>()),
+            labels);
 
         Assert.Equal("Grand Medical Poland", report.Groups.Single(g => g.Key == CompanyA.ToString()).Label);
 
@@ -311,9 +317,7 @@ public sealed class WorkReportFilterTests
         // would make a drill-down impossible the moment a name is ambiguous.
         var report = WorkReportTally.Build(
             Criteria(groupBy: WorkReportGroupBy.LegalEntity),
-            [Row(company: CompanyA)],
-            0,
-            new Dictionary<Guid, int>(),
+            WorkReportSets.Of([Row(company: CompanyA)], returns: new Dictionary<Guid, int>()),
             new Dictionary<string, string>(StringComparer.Ordinal) { [CompanyA.ToString()] = "Grand Medical" });
 
         var group = Assert.Single(report.Groups);
@@ -336,7 +340,8 @@ public sealed class WorkReportFilterTests
         rows.Add(Row(unit: OtherUnit));
 
         var report = WorkReportTally.Build(
-            Criteria(groupBy: WorkReportGroupBy.OrganizationUnit), rows, 0, new Dictionary<Guid, int>());
+            Criteria(groupBy: WorkReportGroupBy.OrganizationUnit),
+            WorkReportSets.Of(rows, returns: new Dictionary<Guid, int>()));
 
         Assert.Equal(MyUnit.ToString(), report.Groups[0].Key);
         Assert.Equal(3, report.Groups[0].Flow.Opened);
@@ -360,7 +365,8 @@ public sealed class WorkReportFilterTests
         }
 
         var report = WorkReportTally.Build(
-            Criteria(groupBy: WorkReportGroupBy.OrganizationUnit), rows, 0, new Dictionary<Guid, int>());
+            Criteria(groupBy: WorkReportGroupBy.OrganizationUnit),
+            WorkReportSets.Of(rows, returns: new Dictionary<Guid, int>()));
 
         Assert.Equal(WorkReportDto.MaxGroups + 1, report.Groups.Count);   // 50 + the "other" bucket
         Assert.Equal(7, report.GroupsTruncated);
@@ -377,7 +383,8 @@ public sealed class WorkReportFilterTests
         var rows = new[] { Row(unit: MyUnit), Row(unit: OtherUnit) };
 
         var report = WorkReportTally.Build(
-            Criteria(groupBy: WorkReportGroupBy.OrganizationUnit), rows, 0, new Dictionary<Guid, int>());
+            Criteria(groupBy: WorkReportGroupBy.OrganizationUnit),
+            WorkReportSets.Of(rows, returns: new Dictionary<Guid, int>()));
 
         Assert.Equal(2, report.Groups.Count);
         Assert.Equal(0, report.GroupsTruncated);

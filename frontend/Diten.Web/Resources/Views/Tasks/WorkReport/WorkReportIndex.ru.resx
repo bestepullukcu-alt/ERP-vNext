@@ -72,5 +72,19 @@
   <data name="FilterPriority" xml:space="preserve"><value>Приоритет</value></data>
   <data name="PriorityHigh" xml:space="preserve"><value>Высокий</value></data>
   <data name="PriorityMedium" xml:space="preserve"><value>Средний</value></data>
+  <data name="ItemsClose" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="ItemsEmpty" xml:space="preserve"><value>Нет задач, соответствующих этой ячейке.</value></data>
+  <data name="ItemsLoadFailed" xml:space="preserve"><value>Не удалось загрузить список.</value></data>
+  <data name="ItemsCount" xml:space="preserve"><value>Показано {0} из {1}</value></data>
+  <data name="ItemsShowMore" xml:space="preserve"><value>Показать ещё {0}</value></data>
+  <data name="ItemsStatusOpen" xml:space="preserve"><value>Открыта</value></data>
+  <data name="ItemsUnassigned" xml:space="preserve"><value>Не назначено</value></data>
+  <data name="ItemsSubtitleRange" xml:space="preserve"><value>{0} – {1}</value></data>
+  <data name="ItemsSubtitleWithGroup" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="ItemsAging0to7" xml:space="preserve"><value>Открыто 0-7 дней</value></data>
+  <data name="ItemsAging8to30" xml:space="preserve"><value>Открыто 8-30 дней</value></data>
+  <data name="ItemsAging30plus" xml:space="preserve"><value>Открыто более 30 дней</value></data>
+  <data name="ItemsColDue" xml:space="preserve"><value>срок {0}</value></data>
+  <data name="ItemsColClosed" xml:space="preserve"><value>закрыто {0}</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>Низкий</value></data>
 </root>

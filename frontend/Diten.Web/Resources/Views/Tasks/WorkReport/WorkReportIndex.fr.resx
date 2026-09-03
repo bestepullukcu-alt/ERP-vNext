@@ -72,5 +72,19 @@
   <data name="FilterPriority" xml:space="preserve"><value>Priorité</value></data>
   <data name="PriorityHigh" xml:space="preserve"><value>Haute</value></data>
   <data name="PriorityMedium" xml:space="preserve"><value>Moyenne</value></data>
+  <data name="ItemsClose" xml:space="preserve"><value>Fermer</value></data>
+  <data name="ItemsEmpty" xml:space="preserve"><value>Aucune tâche ne correspond à cette cellule.</value></data>
+  <data name="ItemsLoadFailed" xml:space="preserve"><value>La liste n'a pas pu être chargée.</value></data>
+  <data name="ItemsCount" xml:space="preserve"><value>Affichage de {0} sur {1}</value></data>
+  <data name="ItemsShowMore" xml:space="preserve"><value>Afficher {0} de plus</value></data>
+  <data name="ItemsStatusOpen" xml:space="preserve"><value>Ouverte</value></data>
+  <data name="ItemsUnassigned" xml:space="preserve"><value>Non attribuée</value></data>
+  <data name="ItemsSubtitleRange" xml:space="preserve"><value>{0} – {1}</value></data>
+  <data name="ItemsSubtitleWithGroup" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="ItemsAging0to7" xml:space="preserve"><value>Ouverte depuis 0 à 7 jours</value></data>
+  <data name="ItemsAging8to30" xml:space="preserve"><value>Ouverte depuis 8 à 30 jours</value></data>
+  <data name="ItemsAging30plus" xml:space="preserve"><value>Ouverte depuis plus de 30 jours</value></data>
+  <data name="ItemsColDue" xml:space="preserve"><value>échéance {0}</value></data>
+  <data name="ItemsColClosed" xml:space="preserve"><value>clôturée {0}</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>Basse</value></data>
 </root>

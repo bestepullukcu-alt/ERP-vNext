@@ -566,6 +566,57 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>
+    /// THE WORK BEHIND ONE OF THE REPORT'S NUMBERS — Dilim 1c.
+    ///
+    /// <para><b>Why this exists.</b> The report could say "10 late" and had no way to say WHICH ten, so a
+    /// manager could read a figure and act on nothing. A number nobody can walk into is a dead end.</para>
+    ///
+    /// <para><b>⚠ IT IS THE SAME QUERY, NOT A SIMILAR ONE.</b> The period, the five filters and the scope are
+    /// the report's own; the repository selects from the row set the numbers were computed from, through the
+    /// same <c>WorkReportTally.Select</c> the counts come from. So the list's length IS the cell's number —
+    /// asserted cell by cell rather than hoped for.</para>
+    ///
+    /// <para><b>Guarded by <c>WorkReportRead</c>, the same key as the report.</b> No new authority: a click
+    /// opens work the caller could already count, and could already open one at a time in the Task Center.
+    /// Whose rows those are comes from the scope, exactly as it does for the numbers — there is no argument to
+    /// this route that widens anything.</para>
+    ///
+    /// <para>At most <c>WorkReportItemsDto.PageSize</c> rows per call, with <c>hasMore</c> stated. A silent cut
+    /// would leave a reader counting fifty rows under a number that said eighty-three.</para>
+    /// </summary>
+    [HttpGet("work-report/items")]
+    [HasPermission(TaskPermissions.WorkReportRead)]
+    public async Task<IActionResult> GetWorkReportItems(
+        [FromQuery] DateTimeOffset from,
+        [FromQuery] DateTimeOffset to,
+        [FromQuery] WorkReportBucketKind bucket,
+        [FromQuery] WorkReportGroupBy groupBy = WorkReportGroupBy.None,
+        /// <summary>The outcome code, for the Outcome bucket only.</summary>
+        [FromQuery] string? argument = null,
+        /// <summary>Which row of the breakdown; absent means the totals row.</summary>
+        [FromQuery] string? groupKey = null,
+        [FromQuery] int skip = 0,
+        [FromQuery] Guid? legalEntityId = null,
+        [FromQuery] Guid? organizationUnitId = null,
+        [FromQuery] Guid? assigneeUserId = null,
+        [FromQuery] string? taskTypeCode = null,
+        [FromQuery] TaskPriority? priority = null,
+        CancellationToken ct = default)
+    {
+        // ⚠ THE SAME FILTER SHAPE AS THE REPORT, deliberately — a list asked for under a filter the numbers
+        // never ran would answer about a different set than the number the reader clicked.
+        var filter = new WorkReportFilter(
+            legalEntityId, organizationUnitId, assigneeUserId, taskTypeCode, priority);
+
+        var response = await _mediator.Send(
+            new WorkReportItemsQuery(
+                from, to, bucket, CorrelationId, groupBy, argument, groupKey, skip, filter),
+            ct);
+
+        return CreateActionResultInstance(response);
+    }
+
     // ── DCP-005 slice 1: task types ──────────────────────────────────────
 
     /// <summary>

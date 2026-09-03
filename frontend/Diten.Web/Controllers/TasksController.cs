@@ -167,6 +167,22 @@ public sealed class TasksController : Controller
             $"{_gatewayUrl}/api/v1/tasks/work-report" + Request.QueryString.Value,
             readBody: false);
 
+    /// <summary>
+    /// The work behind ONE of the report's numbers (Dilim 1c). Declared BEFORE nothing and AFTER the report on
+    /// purpose — the two are one screen and belong side by side, so a route added to Platform and forgotten
+    /// here is visible at a glance. That omission is exactly how `inquire` once shipped unreachable.
+    ///
+    /// <para>The query string is forwarded WHOLE: the bucket, the group key, the page offset and the five
+    /// filters are Platform's contract, and re-listing them in this tier is how a parameter gets dropped
+    /// silently — the list would then answer about a wider set than the number that opened it.</para>
+    /// </summary>
+    [HttpGet("api/work-report/items")]
+    public Task<IActionResult> ApiWorkReportItems()
+        => ProxyAsync(
+            HttpMethod.Get,
+            $"{_gatewayUrl}/api/v1/tasks/work-report/items" + Request.QueryString.Value,
+            readBody: false);
+
     // ── Configurable field definitions (Phase 5) ─────────────────────────────
     //
     // Their own resource, so NOT transition codes and not in TaskTransitionRoutes — each one has to be listed

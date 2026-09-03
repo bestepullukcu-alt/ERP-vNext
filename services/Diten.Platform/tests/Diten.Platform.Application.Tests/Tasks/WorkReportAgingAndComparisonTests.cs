@@ -164,11 +164,7 @@ public sealed class WorkReportAgingAndComparisonTests
 
         var report = WorkReportTally.Build(
             Criteria(WorkReportGroupBy.OrganizationUnit),
-            [Row(From.AddDays(1), unit: UnitA), Row(From.AddDays(2), unit: UnitB)],
-            0,
-            new Dictionary<Guid, int>(),
-            null,
-            open);
+            WorkReportSets.Of([Row(From.AddDays(1), unit: UnitA), Row(From.AddDays(2), unit: UnitB)], returns: new Dictionary<Guid, int>(), openAtPeriodEnd: open));
 
         Assert.Equal(new WorkReportAging(1, 0, 0), report.Groups.Single(g => g.Key == UnitA.ToString()).Aging);
         Assert.Equal(new WorkReportAging(0, 0, 1), report.Groups.Single(g => g.Key == UnitB.ToString()).Aging);
@@ -185,7 +181,8 @@ public sealed class WorkReportAgingAndComparisonTests
          * zeroes, not a guess.
          */
         var report = WorkReportTally.Build(
-            Criteria(), [Row(From.AddDays(1))], 0, new Dictionary<Guid, int>());
+            Criteria(),
+            WorkReportSets.Of([Row(From.AddDays(1))], returns: new Dictionary<Guid, int>()));
 
         Assert.Equal(new WorkReportAging(0, 0, 0), report.Totals.Aging);
     }
@@ -244,7 +241,9 @@ public sealed class WorkReportAgingAndComparisonTests
          * Zeroes would read as "the previous period had no work", which is a claim. Null says "nobody asked" —
          * and the screen can then draw no arrow at all rather than a misleading downward one.
          */
-        var report = WorkReportTally.Build(Criteria(), [Row(From.AddDays(1))], 0, new Dictionary<Guid, int>());
+        var report = WorkReportTally.Build(
+            Criteria(),
+            WorkReportSets.Of([Row(From.AddDays(1))], returns: new Dictionary<Guid, int>()));
 
         Assert.Null(report.Previous);
     }

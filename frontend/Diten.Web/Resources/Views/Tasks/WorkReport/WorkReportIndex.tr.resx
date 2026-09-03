@@ -72,5 +72,19 @@
   <data name="FilterPriority" xml:space="preserve"><value>Öncelik</value></data>
   <data name="PriorityHigh" xml:space="preserve"><value>Yüksek</value></data>
   <data name="PriorityMedium" xml:space="preserve"><value>Orta</value></data>
+  <data name="ItemsClose" xml:space="preserve"><value>Kapat</value></data>
+  <data name="ItemsEmpty" xml:space="preserve"><value>Bu hücreyle eşleşen görev yok.</value></data>
+  <data name="ItemsLoadFailed" xml:space="preserve"><value>Liste yüklenemedi.</value></data>
+  <data name="ItemsCount" xml:space="preserve"><value>{1} kayıttan {0} tanesi gösteriliyor</value></data>
+  <data name="ItemsShowMore" xml:space="preserve"><value>{0} kayıt daha göster</value></data>
+  <data name="ItemsStatusOpen" xml:space="preserve"><value>Açık</value></data>
+  <data name="ItemsUnassigned" xml:space="preserve"><value>Atanmamış</value></data>
+  <data name="ItemsSubtitleRange" xml:space="preserve"><value>{0} – {1}</value></data>
+  <data name="ItemsSubtitleWithGroup" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="ItemsAging0to7" xml:space="preserve"><value>0-7 gün açık</value></data>
+  <data name="ItemsAging8to30" xml:space="preserve"><value>8-30 gün açık</value></data>
+  <data name="ItemsAging30plus" xml:space="preserve"><value>30+ gün açık</value></data>
+  <data name="ItemsColDue" xml:space="preserve"><value>termin {0}</value></data>
+  <data name="ItemsColClosed" xml:space="preserve"><value>kapanış {0}</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>Düşük</value></data>
 </root>

@@ -40,6 +40,54 @@ public sealed record WorkReportRow(
     string? TaskTypeCode = null);
 
 /// <summary>
+/// EVERYTHING ONE REPORT WAS COMPUTED FROM — the three row sets and the return histogram, in one object.
+///
+/// <para><b>⚠ IT EXISTS SO A NUMBER AND ITS LIST CANNOT DRIFT (Dilim 1c).</b> Before it, the repository handed
+/// the tally three loose arguments and kept the queries to itself; a list endpoint written beside that would
+/// have had to REBUILD the same sets, and two hand-written queries agree only on the day they are written. Now
+/// there is one object, produced once by <c>WorkReportRepository.RowSetAsync</c>, and both the counting and the
+/// listing read it through <see cref="WorkReportTally.Select"/>.</para>
+///
+/// <para><b>Why three sets and not one.</b> They answer three different questions and no filter turns any of
+/// them into another: <see cref="Touched"/> is the work the PERIOD saw; <see cref="OpenAtPeriodEnd"/> is what
+/// was still waiting when the period ended — a task raised last year and never touched appears in the first set
+/// not at all, and it is exactly what ageing exists to surface; <see cref="Unattended"/> is what nobody is
+/// holding RIGHT NOW, which is a question about today rather than about the period.</para>
+/// </summary>
+/// <param name="Touched">Work created, completed or cancelled inside the period.</param>
+/// <param name="OpenAtPeriodEnd">Work created before the period ended and not closed by then.</param>
+/// <param name="Unattended">Open work with no assignee, as of now.</param>
+/// <param name="ReturnsByTask">How many times each touched task was returned (Faz 4).</param>
+public sealed record WorkReportRowSet(
+    IReadOnlyList<WorkReportRow> Touched,
+    IReadOnlyList<WorkReportRow> OpenAtPeriodEnd,
+    IReadOnlyList<WorkReportRow> Unattended,
+    IReadOnlyDictionary<Guid, int> ReturnsByTask)
+{
+    public static WorkReportRowSet Empty { get; } =
+        new([], [], [], new Dictionary<Guid, int>());
+
+    /// <summary>
+    /// The same sets, narrowed to one group of the breakdown.
+    ///
+    /// <para><b>⚠ <see cref="Unattended"/> IS DELIBERATELY EMPTIED, not narrowed.</b> It is a tenant-level
+    /// "right now" figure; splitting today's unclaimed backlog across the groups would attribute one backlog to
+    /// every row on screen. The totals row is the only place it is reported, and the group buckets have carried
+    /// a zero there since Faz 5a — this keeps the LIST honest about the same thing.</para>
+    /// </summary>
+    public WorkReportRowSet ForGroup(Func<WorkReportRow, bool> inGroup)
+    {
+        ArgumentNullException.ThrowIfNull(inGroup);
+
+        return new WorkReportRowSet(
+            Touched.Where(inGroup).ToList(),
+            OpenAtPeriodEnd.Where(inGroup).ToList(),
+            [],
+            ReturnsByTask);
+    }
+}
+
+/// <summary>
 /// WHAT THE NUMBERS ARE — pure, and shared by the database path and the tests.
 ///
 /// <para><b>Why the tally is here and the query is not.</b> The expensive half of a report is the SCAN, and that
@@ -123,62 +171,29 @@ public static class WorkReportTally
     /// </param>
     public static WorkReportDto Build(
         WorkReportCriteria criteria,
-        IReadOnlyList<WorkReportRow> rows,
-        int unattended,
-        IReadOnlyDictionary<Guid, int> returnsByTask,
-        IReadOnlyDictionary<string, string>? labels = null,
-        IReadOnlyList<WorkReportRow>? openAtPeriodEnd = null)
+        WorkReportRowSet set,
+        IReadOnlyDictionary<string, string>? labels = null)
     {
         ArgumentNullException.ThrowIfNull(criteria);
-        ArgumentNullException.ThrowIfNull(rows);
-        ArgumentNullException.ThrowIfNull(returnsByTask);
+        ArgumentNullException.ThrowIfNull(set);
 
-        /*
-         * ⚠ ITS OWN ROW SET, AND IT HAS TO BE. `rows` is the work TOUCHED in the period — opened or closed
-         * inside it. A task raised last year and still untouched appears in NEITHER, and it is exactly the task
-         * ageing exists to surface. The repository fetches these separately; a caller that passes none gets
-         * zeroes rather than a wrong answer derived from the wrong set.
-         */
-        var open = openAtPeriodEnd ?? [];
+        var rows = set.Touched;
 
         string? LabelFor(string? key) =>
             key is not null && labels is not null && labels.TryGetValue(key, out var found) ? found : null;
 
-        var totals = Measure(
-            null, null, rows, unattended, returnsByTask, criteria, AgeOpenWork(open, criteria.To));
+        var totals = Measure(null, null, set, criteria);
 
         var groups = new List<WorkReportBucket>();
         var truncated = 0;
 
         if (criteria.GroupBy != WorkReportGroupBy.None)
         {
-            /*
-             * ⚠ DETERMINISTIC ORDER, WHICH THERE WAS NONE OF. Before this slice the groups came back in whatever
-             * order the grouping produced — so two reads of the same period could disagree about which unit came
-             * first, and a capped list would have kept an arbitrary fifty.
-             *
-             * Busiest first (by OPENED, the axis a reader scans for), ties broken on the key so the order is
-             * total rather than merely mostly-defined.
-             */
-            var ordered = rows
-                .GroupBy(row => GroupKey(row, criteria.GroupBy))
-                .Select(group => new
-                {
-                    group.Key,
-                    // Unattended is a tenant-level "right now" figure and is NOT split across groups:
-                    // attributing today's unclaimed backlog to every group would multiply one backlog by the
-                    // number of rows on screen.
-                    Bucket = Measure(
-                        group.Key, LabelFor(group.Key), group.ToList(), 0, returnsByTask, criteria,
-                        // Ageing is split on the SAME axis, so a unit's backlog sits beside its own flow.
-                        AgeOpenWork(
-                            open.Where(row => GroupKey(row, criteria.GroupBy) == group.Key), criteria.To))
-                })
-                .OrderByDescending(entry => entry.Bucket.Flow.Opened)
-                .ThenBy(entry => entry.Key, StringComparer.Ordinal)
-                .ToList();
+            var ordered = OrderedGroupKeys(criteria, set);
 
-            groups.AddRange(ordered.Take(WorkReportDto.MaxGroups).Select(entry => entry.Bucket));
+            groups.AddRange(ordered
+                .Take(WorkReportDto.MaxGroups)
+                .Select(key => Measure(key, LabelFor(key), GroupSet(criteria, set, key), criteria)));
 
             /*
              * ⚠ FOLDED, NOT DROPPED — and the count is reported. A silent cut would leave a reader comparing
@@ -186,16 +201,16 @@ public static class WorkReportTally
              * tail is re-measured as ONE bucket from its own rows, so every number in it is real rather than a
              * sum of pre-computed averages (an average of averages is not an average).
              */
-            var tail = ordered.Skip(WorkReportDto.MaxGroups).Select(entry => entry.Key).ToHashSet(StringComparer.Ordinal);
-            if (tail.Count > 0)
+            truncated = Math.Max(0, ordered.Count - WorkReportDto.MaxGroups);
+            if (truncated > 0)
             {
-                truncated = tail.Count;
-                var tailRows = rows.Where(row => tail.Contains(GroupKey(row, criteria.GroupBy))).ToList();
                 // The "other" bucket is named by the SCREEN, in the reader's language — the server has no
                 // sentence for it that would survive seven translations.
                 groups.Add(Measure(
-                    WorkReportDto.OtherKey, null, tailRows, 0, returnsByTask, criteria,
-                    AgeOpenWork(open.Where(row => tail.Contains(GroupKey(row, criteria.GroupBy))), criteria.To)));
+                    WorkReportDto.OtherKey,
+                    null,
+                    GroupSet(criteria, set, WorkReportDto.OtherKey),
+                    criteria));
             }
         }
 
@@ -207,6 +222,70 @@ public static class WorkReportTally
             totals,
             groups,
             truncated);
+    }
+
+    /// <summary>
+    /// EVERY GROUP KEY ON THE AXIS, in the order the cap is applied in — busiest first.
+    ///
+    /// <para><b>⚠ ONE DEFINITION OF "WHICH FIFTY SURVIVED" (Dilim 1c).</b> The chart draws the first fifty and
+    /// folds the rest into <see cref="WorkReportDto.OtherKey"/>; a click on that folded bar has to open exactly
+    /// the rows that were folded. If the list worked the ordering out separately, one edit to the sort would
+    /// silently make the "all other groups" list a different set from the "all other groups" bar.</para>
+    ///
+    /// <para><b>Deterministic, and it was not always.</b> Before Dilim 1a the groups came back in whatever order
+    /// the grouping produced, so two reads of the same period could disagree about which unit came first and a
+    /// capped list would have kept an arbitrary fifty. Busiest first by OPENED — the axis a reader scans for —
+    /// with ties broken on the key so the order is total rather than merely mostly-defined.</para>
+    /// </summary>
+    private static List<string> OrderedGroupKeys(WorkReportCriteria criteria, WorkReportRowSet set) =>
+        set.Touched
+            .GroupBy(row => GroupKey(row, criteria.GroupBy))
+            .Select(group => new
+            {
+                group.Key,
+                Opened = group.Count(row => In(row.CreatedAt, criteria.From, criteria.To))
+            })
+            .OrderByDescending(entry => entry.Opened)
+            .ThenBy(entry => entry.Key, StringComparer.Ordinal)
+            .Select(entry => entry.Key)
+            .ToList();
+
+    /// <summary>
+    /// The rows behind ONE row of the breakdown — the totals' set narrowed to that group.
+    ///
+    /// <para><b>⚠ THIS IS WHAT MAKES A GROUP BAR CLICKABLE (Dilim 1c).</b> The bucket the chart drew was
+    /// measured from exactly this set, so a list built from it has, cell by cell, the number of rows the bar
+    /// reported. <see cref="WorkReportDto.OtherKey"/> resolves through <see cref="OrderedGroupKeys"/> to the
+    /// tail the cap folded away, which is the only key whose membership is not a property of a single row.</para>
+    /// </summary>
+    public static WorkReportRowSet RestrictToGroup(
+        WorkReportCriteria criteria,
+        WorkReportRowSet set,
+        string groupKey)
+    {
+        ArgumentNullException.ThrowIfNull(criteria);
+        ArgumentNullException.ThrowIfNull(set);
+
+        return GroupSet(criteria, set, groupKey);
+    }
+
+    private static WorkReportRowSet GroupSet(
+        WorkReportCriteria criteria,
+        WorkReportRowSet set,
+        string groupKey)
+    {
+        if (!string.Equals(groupKey, WorkReportDto.OtherKey, StringComparison.Ordinal))
+        {
+            return set.ForGroup(row => GroupKey(row, criteria.GroupBy) == groupKey);
+        }
+
+        // The folded tail: everything the cap pushed past fifty, resolved through the SAME ordering the chart
+        // drew from rather than through a second idea of which groups were busiest.
+        var tail = OrderedGroupKeys(criteria, set)
+            .Skip(WorkReportDto.MaxGroups)
+            .ToHashSet(StringComparer.Ordinal);
+
+        return set.ForGroup(row => tail.Contains(GroupKey(row, criteria.GroupBy)));
     }
 
     private static string GroupKey(WorkReportRow row, WorkReportGroupBy groupBy) => groupBy switch
@@ -229,81 +308,212 @@ public static class WorkReportTally
         _ => string.Empty
     };
 
+    /// <summary>
+    /// ⚠ EVERY COUNT BELOW IS <see cref="Select"/>.<c>Count</c> — that is the point of this method's shape.
+    ///
+    /// <para>Dilim 1c made each of these numbers clickable, and the acceptance criterion was that the list a
+    /// click opens has exactly as many rows as the number said. The only way to keep that true through later
+    /// edits is for the count and the list to BE the same code, so <c>Measure</c> no longer has predicates of
+    /// its own: it asks <see cref="Select"/> for each cell and counts what comes back. A change to who belongs
+    /// in a cell now moves the number and the list together, because there is nothing else to change.</para>
+    ///
+    /// <para>The two that are not counts — the durations and the effort variance — are computed from the rows
+    /// <see cref="Select"/> returns rather than from a fourth, private notion of "closed".</para>
+    /// </summary>
     private static WorkReportBucket Measure(
         string? key,
         string? label,
-        IReadOnlyList<WorkReportRow> rows,
-        int unattended,
-        IReadOnlyDictionary<Guid, int> returnsByTask,
-        WorkReportCriteria criteria,
-        WorkReportAging aging)
+        WorkReportRowSet set,
+        WorkReportCriteria criteria)
     {
-        var from = criteria.From;
-        var to = criteria.To;
+        IReadOnlyList<WorkReportRow> Cell(WorkReportBucketKind kind, string? argument = null) =>
+            Select(criteria, set, kind, argument);
 
-        var opened = rows.Count(row => In(row.CreatedAt, from, to));
-        var completed = rows.Count(row => In(row.CompletedAt, from, to));
-        var cancelled = rows.Count(row => In(row.CancelledAt, from, to));
-
-        /*
-         * WHICHEVER timestamp the closure actually wrote. The two are mutually exclusive by construction:
-         * TaskLifecycleService.CanTransition refuses every transition out of a terminal state, so no task can
-         * carry both a CompletedAt and a CancelledAt.
-         */
-        var closed = rows
-            .Where(row => In(row.CompletedAt, from, to) || In(row.CancelledAt, from, to))
-            .Select(row => (Row: row, At: (row.CompletedAt ?? row.CancelledAt)!.Value))
-            .ToList();
+        var completed = Cell(WorkReportBucketKind.Completed);
+        var cancelled = Cell(WorkReportBucketKind.Cancelled);
 
         /*
-         * ⚠ K-1 — COMPLETIONS AND CANCELLATIONS ARE MEASURED APART.
+         * ⚠ K-1 — COMPLETIONS AND CANCELLATIONS ARE MEASURED APART (Dilim 1b).
          *
-         * MEASURED 2026-09-04: these were one number. A task that waited ninety days and was then abandoned was
-         * reported as ninety days of "how long our work takes", which is not what anybody reads that figure to
-         * mean. Oracle measures cycle time over completions alone; the cancellation span is kept because "how
-         * long before we admitted this wasn't happening" is its own finding, not noise to discard.
+         * A task that waited ninety days and was then abandoned used to be reported as ninety days of "how long
+         * our work takes", which is not what anybody reads that figure to mean. Oracle measures cycle time over
+         * completions alone; the cancellation span is kept because "how long before we admitted this wasn't
+         * happening" is its own finding, not noise to discard.
          */
-        var completedSpans = Spans(closed.Where(pair => In(pair.Row.CompletedAt, from, to)));
-        var cancelledSpans = Spans(closed.Where(pair => In(pair.Row.CancelledAt, from, to)));
-
-        var withDue = closed.Where(pair => pair.Row.DueAt is not null).ToList();
+        var completedSpans = Spans(completed.Select(row => (Row: row, At: row.CompletedAt!.Value)));
+        var cancelledSpans = Spans(cancelled.Select(row => (Row: row, At: row.CancelledAt!.Value)));
 
         // Both halves present, or the comparison is meaningless: an estimate nobody worked against, or work
         // nobody estimated, says nothing about whether the plan held.
-        var effort = rows.Where(row => row.EstimateHours is not null && row.SpentHours > 0m).ToList();
+        var effort = set.Touched.Where(row => row.EstimateHours is not null && row.SpentHours > 0m).ToList();
 
-        var outcomes = rows
+        /*
+         * The outcome CODES present, then each one's cell — rather than one grouping pass. A grouping would be
+         * a second definition of "which tasks carry this outcome", and the donut's slices would then be able to
+         * disagree with the list a slice opens.
+         */
+        var outcomes = set.Touched
             .Where(row => !string.IsNullOrWhiteSpace(row.ClosureReasonCode))
-            .GroupBy(row => row.ClosureReasonCode!, StringComparer.OrdinalIgnoreCase)
-            .OrderByDescending(group => group.Count())
-            .ThenBy(group => group.Key, StringComparer.Ordinal)
-            .Select(group => new WorkReportOutcomeCount(group.Key, group.Count()))
+            .Select(row => row.ClosureReasonCode!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Select(code => new WorkReportOutcomeCount(code, Cell(WorkReportBucketKind.Outcome, code).Count))
+            .OrderByDescending(outcome => outcome.Count)
+            .ThenBy(outcome => outcome.Code, StringComparer.Ordinal)
             .ToList();
 
-        var returns = rows
-            .Select(row => returnsByTask.TryGetValue(row.Id, out var count) ? count : 0)
-            .Where(count => count > 0)
-            .ToList();
+        var returned = Cell(WorkReportBucketKind.Returned);
 
         return new WorkReportBucket(
             key,
             label,
-            new WorkReportFlow(opened, completed + cancelled, completed, cancelled, unattended),
+            new WorkReportFlow(
+                Cell(WorkReportBucketKind.Opened).Count,
+                Cell(WorkReportBucketKind.Closed).Count,
+                completed.Count,
+                cancelled.Count,
+                Cell(WorkReportBucketKind.Unattended).Count),
             Duration(completedSpans),
             Duration(cancelledSpans),
-            aging,
+            new WorkReportAging(
+                Cell(WorkReportBucketKind.AgingUpTo7Days).Count,
+                Cell(WorkReportBucketKind.AgingFrom8To30Days).Count,
+                Cell(WorkReportBucketKind.AgingOlderThan30Days).Count),
             new WorkReportTimeliness(
-                withDue.Count(pair => pair.At <= pair.Row.DueAt!.Value),
-                withDue.Count(pair => pair.At > pair.Row.DueAt!.Value),
-                closed.Count - withDue.Count),
+                Cell(WorkReportBucketKind.OnTime).Count,
+                Cell(WorkReportBucketKind.Late).Count,
+                Cell(WorkReportBucketKind.WithoutDueDate).Count),
             new WorkReportEffort(
                 effort.Sum(row => row.EstimateHours ?? 0m),
                 effort.Sum(row => row.SpentHours),
                 effort.Count),
             outcomes,
-            new WorkReportRework(returns.Count, returns.Sum()));
+            new WorkReportRework(
+                returned.Count,
+                returned.Sum(row => set.ReturnsByTask.TryGetValue(row.Id, out var count) ? count : 0)));
     }
 
+    /// <summary>
+    /// THE WORK BEHIND ONE CELL — the single definition of who belongs in each of the report's numbers.
+    ///
+    /// <para><b>⚠ THIS IS BOTH THE COUNTER AND THE LISTER.</b> <c>Measure</c> calls it and takes
+    /// <c>.Count</c>; the items endpoint calls it and takes a page. There is no second predicate anywhere, which
+    /// is what makes "the list has as many rows as the number said" a property of the code rather than a
+    /// coincidence two tests happen to agree on.</para>
+    ///
+    /// <para><b>It cannot widen anything.</b> Every branch reads one of the three sets in
+    /// <paramref name="set"/>, and those were produced by the report's own scoped, filtered queries. There is no
+    /// argument to this method that reaches a row the report did not already count — a click is a way to SEE a
+    /// number's contents, never a way to ask a different question.</para>
+    ///
+    /// <para><b>Ordering is total and deterministic:</b> newest first, ties broken on the id. A page of an
+    /// unordered set is an arbitrary page, and pressing "more" on one would show rows the first page had
+    /// already shown while hiding others entirely.</para>
+    /// </summary>
+    /// <param name="argument">The outcome code, for <see cref="WorkReportBucketKind.Outcome"/>. Ignored by every
+    /// other kind; an Outcome cell asked without one lists NOTHING rather than listing every outcome at once.</param>
+    public static IReadOnlyList<WorkReportRow> Select(
+        WorkReportCriteria criteria,
+        WorkReportRowSet set,
+        WorkReportBucketKind kind,
+        string? argument = null)
+    {
+        ArgumentNullException.ThrowIfNull(criteria);
+        ArgumentNullException.ThrowIfNull(set);
+
+        var from = criteria.From;
+        var to = criteria.To;
+
+        /*
+         * WHICHEVER terminal timestamp the closure actually wrote. The two are mutually exclusive by
+         * construction — TaskLifecycleService.CanTransition refuses every transition out of a terminal state —
+         * so no task can carry both a CompletedAt and a CancelledAt.
+         */
+        static DateTimeOffset ClosedAt(WorkReportRow row) => (row.CompletedAt ?? row.CancelledAt)!.Value;
+
+        IEnumerable<WorkReportRow> closedInPeriod = set.Touched
+            .Where(row => In(row.CompletedAt, from, to) || In(row.CancelledAt, from, to));
+
+        IEnumerable<WorkReportRow> chosen = kind switch
+        {
+            WorkReportBucketKind.Opened => set.Touched.Where(row => In(row.CreatedAt, from, to)),
+            WorkReportBucketKind.Closed => closedInPeriod,
+            WorkReportBucketKind.Completed => set.Touched.Where(row => In(row.CompletedAt, from, to)),
+            WorkReportBucketKind.Cancelled => set.Touched.Where(row => In(row.CancelledAt, from, to)),
+
+            // As of NOW, not over the period — the list inherits the number's question. See WorkReportFlow.
+            WorkReportBucketKind.Unattended => set.Unattended,
+
+            WorkReportBucketKind.OnTime =>
+                closedInPeriod.Where(row => row.DueAt is { } due && ClosedAt(row) <= due),
+            WorkReportBucketKind.Late =>
+                closedInPeriod.Where(row => row.DueAt is { } due && ClosedAt(row) > due),
+            // Work nobody set a date for was not early. It is reported apart for that reason, and it is
+            // clickable because it is precisely what the punctuality figure cannot speak about.
+            WorkReportBucketKind.WithoutDueDate => closedInPeriod.Where(row => row.DueAt is null),
+
+            WorkReportBucketKind.AgingUpTo7Days =>
+                set.OpenAtPeriodEnd.Where(row => AgeBucket(row, to) == 0),
+            WorkReportBucketKind.AgingFrom8To30Days =>
+                set.OpenAtPeriodEnd.Where(row => AgeBucket(row, to) == 1),
+            WorkReportBucketKind.AgingOlderThan30Days =>
+                set.OpenAtPeriodEnd.Where(row => AgeBucket(row, to) == 2),
+
+            WorkReportBucketKind.Returned =>
+                set.Touched.Where(row => set.ReturnsByTask.TryGetValue(row.Id, out var count) && count > 0),
+
+            /*
+             * ⚠ MEASURED 2026-09-05, and the list inherits it rather than correcting it: this asks whether the
+             * row CARRIES the code, not whether the closure happened inside the period. A task created in the
+             * period and closed after it therefore appears in the outcome chart. That is the behaviour the
+             * donut has published since Faz 5a; changing it here would move a number in a slice that is about
+             * clickability, and would move it without anybody having decided to. Recorded in the pack instead.
+             */
+            WorkReportBucketKind.Outcome => string.IsNullOrWhiteSpace(argument)
+                ? []
+                : set.Touched.Where(row =>
+                    string.Equals(row.ClosureReasonCode, argument, StringComparison.OrdinalIgnoreCase)),
+
+            _ => []
+        };
+
+        return chosen
+            .OrderByDescending(row => row.CreatedAt)
+            .ThenBy(row => row.Id)
+            .ToList();
+    }
+
+    /// <summary>
+    /// ONE PAGE of a cell, and the cell's OWN total — Dilim 1c.
+    ///
+    /// <para><b>⚠ THE TOTAL IS NOT THE PAGE'S LENGTH, and separating the two is the whole reason this is a
+    /// named function rather than three lines inside the repository.</b> The number the reader clicked is
+    /// <paramref name="selected"/><c>.Count</c>; what comes back is at most
+    /// <see cref="WorkReportItemsDto.PageSize"/> of it. A list that reported its own length as the total would
+    /// silently rewrite "83 opened" to "50 opened" the moment the cap bit — a report contradicting itself on
+    /// one screen.</para>
+    ///
+    /// <para><b><c>HasMore</c> is computed, never assumed.</b> A silent cut leaves a reader counting fifty rows
+    /// under a number that said eighty-three and concluding the report is wrong.</para>
+    /// </summary>
+    public static (IReadOnlyList<WorkReportRow> Rows, int Total, bool HasMore) Page(
+        IReadOnlyList<WorkReportRow> selected,
+        int skip)
+    {
+        ArgumentNullException.ThrowIfNull(selected);
+
+        // A negative offset is a client bug, not a request to read backwards from the end.
+        var from = Math.Max(0, skip);
+        var rows = selected.Skip(from).Take(WorkReportItemsDto.PageSize).ToList();
+
+        return (rows, selected.Count, from + rows.Count < selected.Count);
+    }
+
+    /// <summary>Which of the three ageing bands a row falls in at <paramref name="periodEnd"/>: 0, 1 or 2.</summary>
+    private static int AgeBucket(WorkReportRow row, DateTimeOffset periodEnd)
+    {
+        var days = (periodEnd - row.CreatedAt).TotalDays;
+        return days <= 7 ? 0 : days <= 30 ? 1 : 2;
+    }
 
     /// <summary>
     /// The day-spans of a set of closures, corrupt rows dropped.
@@ -370,20 +580,15 @@ public static class WorkReportTally
 
         int upTo7 = 0, from8To30 = 0, older = 0;
 
+        // ⚠ The boundaries live in AgeBucket alone. Repeating "<= 7" here is how the chart and the list a click
+        // opens would one day disagree about which band a six-day-old task belongs to.
         foreach (var row in openAtPeriodEnd)
         {
-            var days = (periodEnd - row.CreatedAt).TotalDays;
-            if (days <= 7)
+            switch (AgeBucket(row, periodEnd))
             {
-                upTo7++;
-            }
-            else if (days <= 30)
-            {
-                from8To30++;
-            }
-            else
-            {
-                older++;
+                case 0: upTo7++; break;
+                case 1: from8To30++; break;
+                default: older++; break;
             }
         }
 

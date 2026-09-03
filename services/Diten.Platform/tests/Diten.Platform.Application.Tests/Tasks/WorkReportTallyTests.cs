@@ -94,7 +94,9 @@ public sealed class WorkReportTallyTests
         new(From, To, WorkReportScope.TenantWideScope(), groupBy);
 
     private static WorkReportBucket Totals(WorkReportGroupBy groupBy = WorkReportGroupBy.None, int unattended = 0) =>
-        WorkReportTally.Build(Criteria(groupBy), Rows(), unattended, Returns).Totals;
+        WorkReportTally.Build(
+            Criteria(groupBy),
+            WorkReportSets.Of(Rows(), unattended: unattended, returns: Returns)).Totals;
 
     // ── Flow ─────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -189,7 +191,9 @@ public sealed class WorkReportTallyTests
             .Select(d => Row(Guid.NewGuid(), UnitA, TypeX, start, completed: start.AddDays(d)))
             .ToArray();
 
-        var cycle = WorkReportTally.Build(wide, spans, 0, Returns).Totals.CycleTime;
+        var cycle = WorkReportTally.Build(
+            wide,
+            WorkReportSets.Of(spans, returns: Returns)).Totals.CycleTime;
 
         Assert.Equal(20, cycle.AverageDays);
         Assert.Equal(3, cycle.MedianDays);
@@ -211,7 +215,9 @@ public sealed class WorkReportTallyTests
             .Select(d => Row(Guid.NewGuid(), UnitA, TypeX, start, completed: start.AddDays(d)))
             .ToArray();
 
-        Assert.Equal(5, WorkReportTally.Build(wide, spans, 0, Returns).Totals.CycleTime.MedianDays);
+        Assert.Equal(5, WorkReportTally.Build(
+            wide,
+            WorkReportSets.Of(spans, returns: Returns)).Totals.CycleTime.MedianDays);
     }
 
     [Fact]
@@ -223,7 +229,9 @@ public sealed class WorkReportTallyTests
          */
         var open = new[] { Row(T4, UnitB, TypeX, June(4), due: June(20)) };
 
-        var cycle = WorkReportTally.Build(Criteria(), open, 0, Returns).Totals.CycleTime;
+        var cycle = WorkReportTally.Build(
+            Criteria(),
+            WorkReportSets.Of(open, returns: Returns)).Totals.CycleTime;
 
         Assert.Null(cycle.AverageDays);
         Assert.Null(cycle.MedianDays);
@@ -244,7 +252,9 @@ public sealed class WorkReportTallyTests
          * untouched, and the two are allowed to differ precisely because each says what it measured.
          */
         var corrupt = new[] { Row(T1, UnitA, TypeX, June(10), completed: June(5)) };
-        var report = WorkReportTally.Build(Criteria(), corrupt, 0, Returns);
+        var report = WorkReportTally.Build(
+            Criteria(),
+            WorkReportSets.Of(corrupt, returns: Returns));
 
         Assert.Null(report.Totals.CycleTime.AverageDays);
         Assert.Equal(0, report.Totals.CycleTime.Count);
@@ -346,7 +356,8 @@ public sealed class WorkReportTallyTests
          * argue from.
          */
         var report = WorkReportTally.Build(
-            Criteria(WorkReportGroupBy.OrganizationUnit), Rows(), 0, Returns);
+            Criteria(WorkReportGroupBy.OrganizationUnit),
+            WorkReportSets.Of(Rows(), returns: Returns));
 
         Assert.Equal(2, report.Groups.Count);
         Assert.Equal(report.Totals.Flow.Opened, report.Groups.Sum(g => g.Flow.Opened));
@@ -365,7 +376,9 @@ public sealed class WorkReportTallyTests
          * T3 and T5 carry no task type. Dropping them would make the groups add up to less than the totals with
          * nothing on screen to explain the gap — the fastest way to lose a reader's trust in a report.
          */
-        var report = WorkReportTally.Build(Criteria(WorkReportGroupBy.TaskType), Rows(), 0, Returns);
+        var report = WorkReportTally.Build(
+            Criteria(WorkReportGroupBy.TaskType),
+            WorkReportSets.Of(Rows(), returns: Returns));
 
         Assert.Contains(report.Groups, g => g.Key == string.Empty);
         Assert.Equal(report.Totals.Flow.Opened, report.Groups.Sum(g => g.Flow.Opened));
@@ -377,7 +390,8 @@ public sealed class WorkReportTallyTests
         // It is a tenant-level "right now" figure. Repeating it per group would multiply one backlog by the
         // number of units on screen and attribute all of it to each.
         var report = WorkReportTally.Build(
-            Criteria(WorkReportGroupBy.OrganizationUnit), Rows(), 9, Returns);
+            Criteria(WorkReportGroupBy.OrganizationUnit),
+            WorkReportSets.Of(Rows(), unattended: 9, returns: Returns));
 
         Assert.Equal(9, report.Totals.Flow.Unattended);
         Assert.All(report.Groups, group => Assert.Equal(0, group.Flow.Unattended));
@@ -392,7 +406,9 @@ public sealed class WorkReportTallyTests
         var onTheBoundary = new[] { Row(T1, UnitA, TypeX, To) };
 
         Assert.False(WorkReportTally.TouchedInPeriod(onTheBoundary[0], From, To));
-        Assert.Equal(0, WorkReportTally.Build(Criteria(), onTheBoundary, 0, Returns).Totals.Flow.Opened);
+        Assert.Equal(0, WorkReportTally.Build(
+            Criteria(),
+            WorkReportSets.Of(onTheBoundary, returns: Returns)).Totals.Flow.Opened);
 
         // …and one created at the instant it starts belongs to this one.
         var atTheStart = new[] { Row(T1, UnitA, TypeX, From) };
@@ -406,7 +422,9 @@ public sealed class WorkReportTallyTests
          * So a reader can tell "there is no work" from "there is no work I may see" — two very different
          * sentences that produce the same empty chart.
          */
-        Assert.Equal(WorkReportDto.ScopeTenant, WorkReportTally.Build(Criteria(), Rows(), 0, Returns).ScopeApplied);
+        Assert.Equal(WorkReportDto.ScopeTenant, WorkReportTally.Build(
+            Criteria(),
+            WorkReportSets.Of(Rows(), returns: Returns)).ScopeApplied);
 
         var scoped = new WorkReportCriteria(
             From, To,
@@ -415,6 +433,8 @@ public sealed class WorkReportTallyTests
 
         Assert.Equal(
             WorkReportDto.ScopeScoped,
-            WorkReportTally.Build(scoped, Rows(), 0, Returns).ScopeApplied);
+            WorkReportTally.Build(
+            scoped,
+            WorkReportSets.Of(Rows(), returns: Returns)).ScopeApplied);
     }
 }

@@ -46,34 +46,18 @@ public sealed record WorkReportQuery(
 /// </summary>
 public sealed class WorkReportQueryHandler : IRequestHandler<WorkReportQuery, Response<WorkReportDto>>
 {
-    /// <summary>
-    /// The module the scope is resolved FOR. The resolver takes a module code so a grant can be narrowed to one
-    /// module; the report reads task rows, so it asks as the task module — not as a report-specific code nobody
-    /// has ever granted anything against.
-    /// </summary>
-    private const string ScopeModuleCode = "tasks";
-
     private readonly IWorkReportRepository _reports;
-    private readonly IDataScopeResolver _scopes;
-    private readonly ICurrentUserContext _currentUser;
-    private readonly ITenantContext _tenantContext;
-    private readonly IActorPermissionContext _permissions;
-    private readonly ILogger<WorkReportQueryHandler> _logger;
 
-    public WorkReportQueryHandler(
-        IWorkReportRepository reports,
-        IDataScopeResolver scopes,
-        ICurrentUserContext currentUser,
-        ITenantContext tenantContext,
-        IActorPermissionContext permissions,
-        ILogger<WorkReportQueryHandler> logger)
+    /// <summary>
+    /// ⚠ The ONE scope resolution, shared with the items handler — see <see cref="IWorkReportScopeSource"/>.
+    /// It used to live inline here, and Dilim 1c moved it out rather than letting a second handler copy it.
+    /// </summary>
+    private readonly IWorkReportScopeSource _scope;
+
+    public WorkReportQueryHandler(IWorkReportRepository reports, IWorkReportScopeSource scope)
     {
         _reports = reports;
-        _scopes = scopes;
-        _currentUser = currentUser;
-        _tenantContext = tenantContext;
-        _permissions = permissions;
-        _logger = logger;
+        _scope = scope;
     }
 
     public async Task<Response<WorkReportDto>> Handle(WorkReportQuery query, CancellationToken ct)
@@ -90,7 +74,7 @@ public sealed class WorkReportQueryHandler : IRequestHandler<WorkReportQuery, Re
                 400, TaskReasonCodes.ValidationFailed, query.CorrelationId);
         }
 
-        var scope = await ResolveScopeAsync(ct);
+        var scope = await _scope.ResolveAsync(ct);
         if (scope.MatchesNothing)
         {
             /*
@@ -118,48 +102,5 @@ public sealed class WorkReportQueryHandler : IRequestHandler<WorkReportQuery, Re
         var report = await _reports.AggregateAsync(criteria, ct);
 
         return Response<WorkReportDto>.Success(report, 200, query.CorrelationId);
-    }
-
-    private async Task<WorkReportScope> ResolveScopeAsync(CancellationToken ct)
-    {
-        /*
-         * A PLATFORM actor is above a single tenant and already passes every permission check by definition
-         * (IActorPermissionContext.IsPlatformActor). Making it walk the org tree of a tenant it does not belong
-         * to would resolve to nothing and report an empty page to the one caller who is entitled to everything.
-         */
-        if (_permissions.IsPlatformActor || _permissions.Has(TaskPermissions.WorkReportReadTenantWide))
-        {
-            return WorkReportScope.TenantWideScope();
-        }
-
-        if (!_tenantContext.IsResolved || _currentUser.UserId == Guid.Empty)
-        {
-            // No tenant or no identifiable caller: there is nobody to compute a scope for.
-            return WorkReportScope.Empty;
-        }
-
-        try
-        {
-            var scopes = await _scopes.ResolveAsync(
-                _tenantContext.TenantId, _currentUser.UserId, ScopeModuleCode, featureCode: null, ct);
-
-            return WorkReportScope.FromDataScopes(scopes, _currentUser.UserId);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            /*
-             * ⚠ A THROWING RESOLVER MUST NOT WIDEN THE REPORT. Letting this propagate would surface a 500, which
-             * is honest but unhelpful; swallowing it and continuing with no scope would be catastrophic, because
-             * "no scope" is one careless line away from "no filter". Empty, and loudly logged.
-             */
-            _logger.LogError(
-                ex,
-                "Work report scope could not be resolved for user {UserId} in tenant {TenantId}; "
-                + "reporting an EMPTY period rather than an unscoped one.",
-                _currentUser.UserId,
-                _tenantContext.TenantId);
-
-            return WorkReportScope.Empty;
-        }
     }
 }

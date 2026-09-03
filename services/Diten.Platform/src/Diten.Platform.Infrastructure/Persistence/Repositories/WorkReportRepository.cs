@@ -120,7 +120,100 @@ public sealed class WorkReportRepository : IWorkReportRepository
 
     private async Task<WorkReportDto> MeasureAsync(WorkReportCriteria criteria, CancellationToken ct)
     {
+        var readout = await ReadAsync(criteria, ct);
+        if (readout is null)
+        {
+            return WorkReportDto.Empty(criteria.From, criteria.To, criteria.GroupBy);
+        }
 
+        return WorkReportTally.Build(
+            criteria,
+            readout.Set,
+            await LabelsAsync(criteria, readout.Set.Touched, readout.Units, readout.Types, ct));
+    }
+
+    /// <summary>
+    /// THE WORK BEHIND ONE OF THE REPORT'S NUMBERS — Dilim 1c.
+    ///
+    /// <para><b>⚠ IT REBUILDS NOTHING.</b> The same <see cref="ReadAsync"/> the numbers came from, then
+    /// <c>WorkReportTally.Select</c> — the very method <c>Measure</c> takes its counts from. So the list is not
+    /// "a query that ought to agree with the report"; it is the report's own set, paged. A second query written
+    /// beside this one would agree on the day it was written and drift the day either was edited, and nobody
+    /// reading two numbers on a screen could say which one was true.</para>
+    ///
+    /// <para><b>The titles are read LAST and only for the page.</b> A title is a string per row and the numbers
+    /// path never needs one, so <see cref="WorkReportRow"/> does not carry it — fifty ids go back to Mongo for
+    /// fifty titles rather than every row of every period carrying one it will not use.</para>
+    /// </summary>
+    public async Task<WorkReportItemsDto> ItemsAsync(WorkReportItemsCriteria criteria, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(criteria);
+
+        var readout = await ReadAsync(criteria.Report, ct);
+        if (readout is null)
+        {
+            return WorkReportItemsDto.Empty(criteria);
+        }
+
+        /*
+         * ⚠ THE GROUP NARROWING IS THE TALLY'S OWN, not a second reading of the axis. `RestrictToGroup` is
+         * built from the same key function and the same cap ordering the chart's buckets were, so "the list
+         * under this bar" is literally the rows that bar was measured from — the reserved keys included.
+         */
+        var set = criteria.GroupKey is { } group && criteria.Report.GroupBy != WorkReportGroupBy.None
+            ? WorkReportTally.RestrictToGroup(criteria.Report, readout.Set, group)
+            : readout.Set;
+
+        var selected = WorkReportTally.Select(criteria.Report, set, criteria.Bucket, criteria.Argument);
+
+        // ⚠ THE TOTAL AND THE PAGE COME FROM ONE PLACE — see WorkReportTally.Page for why the total may never
+        // be the page's own length.
+        var (page, total, hasMore) = WorkReportTally.Page(selected, criteria.Skip);
+        var titles = await TitlesAsync(page.Select(row => row.Id).ToList(), ct);
+
+        return new WorkReportItemsDto(
+            criteria.Bucket,
+            criteria.Argument,
+            criteria.GroupKey,
+            criteria.Report.Scope.TenantWide ? WorkReportDto.ScopeTenant : WorkReportDto.ScopeScoped,
+            total,
+            Math.Max(0, criteria.Skip),
+            page.Select(row => new WorkReportItem(
+                row.Id,
+                titles.TryGetValue(row.Id, out var title) ? title : string.Empty,
+                // ⚠ .ToString(), never the bare enum — see WorkReportItem.Lifecycle for why.
+                row.Lifecycle.ToString(),
+                row.AssigneeUserId,
+                row.DueAt,
+                row.CompletedAt ?? row.CancelledAt,
+                row.ClosureReasonCode)).ToList(),
+            hasMore);
+    }
+
+    /// <summary>
+    /// One report's row sets, plus the two lookups the labels need — everything a single read produces.
+    ///
+    /// <para>A record rather than fields on the repository: the comparison path calls
+    /// <see cref="ReadAsync"/> twice for two different periods, and a shared mutable cache between those two
+    /// calls is a bug waiting for the day somebody reorders them.</para>
+    /// </summary>
+    private sealed record ReportReadout(
+        WorkReportRowSet Set,
+        IReadOnlyDictionary<Guid, OrganizationUnit> Units,
+        IReadOnlyDictionary<Guid, Domain.Entities.Tasks.TaskType> Types);
+
+    /// <summary>
+    /// The three row sets and the return histogram one report is computed from — read ONCE, in the database.
+    ///
+    /// <para><b>⚠ EXTRACTED SO THE NUMBERS AND THE LISTS SHARE A SET (Dilim 1c)</b>, for the same reason
+    /// <see cref="BuildMatchFilter"/> was extracted in 1a: a rule that lives in two places is a rule that will
+    /// one day be enforced in only one of them. Everything below — the match, the projection, the ageing read,
+    /// the unattended read and the return histogram — is what BOTH endpoints see.</para>
+    ///
+    /// <para>Returns NULL when the scope admits nothing, so each caller can shape its own empty answer.</para>
+    /// </summary>
+    private async Task<ReportReadout?> ReadAsync(WorkReportCriteria criteria, CancellationToken ct)
+    {
         /*
          * ⚠ THE SECOND LOCK ON THE SAME DOOR. The handler short-circuits an empty scope before it ever gets
          * here — and this checks again anyway, because "no scope" reaching a query builder is one careless
@@ -128,7 +221,7 @@ public sealed class WorkReportRepository : IWorkReportRepository
          */
         if (criteria.Scope.MatchesNothing)
         {
-            return WorkReportDto.Empty(criteria.From, criteria.To, criteria.GroupBy);
+            return null;
         }
 
         var scoped = ScopeFilter(_tenantContext.TenantId, criteria.Scope);
@@ -139,7 +232,8 @@ public sealed class WorkReportRepository : IWorkReportRepository
             /*
              * FIFTEEN FIELDS, not the whole task. A task carries its checklist, its field values and its frozen
              * document references; none of them can appear in a report, and shipping them would make the wire
-             * cost of the report grow with data it never reads.
+             * cost of the report grow with data it never reads. The TITLE is absent for the same reason and is
+             * read separately, for the fifty rows a list actually shows.
              */
             .Project(task => new WorkReportRow(
                 task.Id,
@@ -183,15 +277,7 @@ public sealed class WorkReportRepository : IWorkReportRepository
             : new Dictionary<Guid, Domain.Entities.Tasks.TaskType>();
 
         rows = rows
-            .Select(row => row with
-            {
-                // Null when the unit is gone from the live set — the row then lands in the "unassigned"
-                // bucket rather than being dropped. See WorkReportDto.UnassignedKey.
-                LegalEntityId = units.TryGetValue(row.OrganizationUnitId, out var unit) ? unit.LegalEntityId : null,
-                TaskTypeCode = row.TaskTypeId is { } typeId && types.TryGetValue(typeId, out var type)
-                    ? type.Code
-                    : null
-            })
+            .Select(row => Enrich(row, units, types))
             /*
              * ⚠ THE DERIVED HALF OF THE FILTER, APPLIED HERE — and still an intersection.
              *
@@ -202,33 +288,67 @@ public sealed class WorkReportRepository : IWorkReportRepository
             .Where(row => WorkReportTally.MatchesFilter(criteria.Filter, row))
             .ToList();
 
-        /*
-         * ⚠ UNATTENDED IS ITS OWN MATCH, and deliberately not part of the period.
-         *
-         * Oracle's Unattended report asks "how much work is sitting unclaimed" — a question about NOW, not about
-         * a window. A task opened last year and never picked up is exactly what it is for, and folding it into
-         * the period filter would hide precisely the rows that matter most.
-         */
-        var unattended = await CountUnattendedAsync(scoped, criteria, units, types, ct);
-
-        var returnsByTask = await ReturnsByTaskAsync(rows.Select(row => row.Id).ToList(), ct);
-
-        /*
-         * ⚠ THE SUMS LIVE IN `WorkReportTally`, NOT HERE — and that is what makes them testable.
-         *
-         * The expensive half is done: the match, the projection, the unattended count and the return histogram
-         * all ran in the database, and `rows` is one period of one scope. The arithmetic is shared with the
-         * tests, which check it against hand-computed expectations rather than against a live Mongo — this
-         * module's Mongo-backed suites are the flaky ones, and a report whose sums are only verified when the
-         * database happens to be up is a report whose sums are not verified.
-         */
-        return WorkReportTally.Build(
-            criteria,
+        var set = new WorkReportRowSet(
             rows,
-            unattended,
-            returnsByTask,
-            await LabelsAsync(criteria, rows, units, types, ct),
-            await OpenAtPeriodEndAsync(scoped, criteria, units, types, ct));
+            await OpenAtPeriodEndAsync(scoped, criteria, units, types, ct),
+            /*
+             * ⚠ UNATTENDED IS ITS OWN MATCH, and deliberately not part of the period.
+             *
+             * Oracle's Unattended report asks "how much work is sitting unclaimed" — a question about NOW, not
+             * about a window. A task opened last year and never picked up is exactly what it is for, and folding
+             * it into the period filter would hide precisely the rows that matter most.
+             */
+            await UnattendedAsync(scoped, criteria, units, types, ct),
+            await ReturnsByTaskAsync(rows.Select(row => row.Id).ToList(), ct));
+
+        return new ReportReadout(set, units, types);
+    }
+
+    /// <summary>The two derived fields a task does not carry: its company, and its type's code.</summary>
+    private static WorkReportRow Enrich(
+        WorkReportRow row,
+        IReadOnlyDictionary<Guid, OrganizationUnit> units,
+        IReadOnlyDictionary<Guid, Domain.Entities.Tasks.TaskType> types) => row with
+        {
+            // Null when the unit is gone from the live set — the row then lands in the "unassigned"
+            // bucket rather than being dropped. See WorkReportDto.UnassignedKey.
+            LegalEntityId = units.TryGetValue(row.OrganizationUnitId, out var unit) ? unit.LegalEntityId : null,
+            TaskTypeCode = row.TaskTypeId is { } typeId && types.TryGetValue(typeId, out var type)
+                ? type.Code
+                : null
+        };
+
+    /// <summary>
+    /// The TITLES for one page of a list — at most <see cref="WorkReportItemsDto.PageSize"/> ids.
+    ///
+    /// <para>A separate read on purpose. Carrying the title through the report's projection would put a string
+    /// on every row of every period for the sake of the fifty a reader opens.</para>
+    /// </summary>
+    private async Task<IReadOnlyDictionary<Guid, string>> TitlesAsync(
+        IReadOnlyList<Guid> ids,
+        CancellationToken ct)
+    {
+        if (ids.Count == 0)
+        {
+            return new Dictionary<Guid, string>();
+        }
+
+        /*
+         * ⚠ THE TENANT GUARD IS HERE TOO, even though these ids came from an already-scoped read. It costs
+         * nothing, and it means no id reaching this method — however it got here — can name a row belonging to
+         * another tenant.
+         */
+        var filter = Builders<TaskItem>.Filter.And(
+            Builders<TaskItem>.Filter.Eq(x => x.TenantId, _tenantContext.TenantId),
+            Builders<TaskItem>.Filter.Eq(x => x.IsDeleted, false),
+            Builders<TaskItem>.Filter.In(x => x.Id, ids));
+
+        var titles = await _tasks.Aggregate()
+            .Match(filter)
+            .Project(task => new { task.Id, task.Title })
+            .ToListAsync(ct);
+
+        return titles.ToDictionary(row => row.Id, row => row.Title ?? string.Empty);
     }
 
     /// <summary>
@@ -419,46 +539,58 @@ public sealed class WorkReportRepository : IWorkReportRepository
                 task.OrganizationUnitId,
                 task.TaskTypeId,
                 task.AssigneeUserId,
-                task.Priority
+                task.Priority,
+                task.DueAt,
+                task.Lifecycle
             })
             .ToListAsync(ct);
 
         return rows
-            .Select(row => new WorkReportRow(
-                row.Id,
-                row.TaskTypeId,
-                row.OrganizationUnitId,
-                row.AssigneeUserId,
-                CreatedByUserId: null,
-                PoolPositionId: null,
-                row.Priority,
-                row.CreatedAt,
-                CompletedAt: null,
-                CancelledAt: null,
-                DueAt: null,
-                EstimateHours: null,
-                SpentHours: 0m,
-                ClosureReasonCode: null,
-                Lifecycle: TaskLifecycle.Open,
-                LegalEntityId: units.TryGetValue(row.OrganizationUnitId, out var unit) ? unit.LegalEntityId : null,
-                TaskTypeCode: row.TaskTypeId is { } typeId && types.TryGetValue(typeId, out var type) ? type.Code : null))
+            .Select(row => Enrich(
+                new WorkReportRow(
+                    row.Id,
+                    row.TaskTypeId,
+                    row.OrganizationUnitId,
+                    row.AssigneeUserId,
+                    CreatedByUserId: null,
+                    PoolPositionId: null,
+                    row.Priority,
+                    row.CreatedAt,
+                    CompletedAt: null,
+                    CancelledAt: null,
+                    /*
+                     * ⚠ CARRIED NOW, AND THE LIFECYCLE WITH IT (Dilim 1c). The ageing NUMBERS need neither —
+                     * they read CreatedAt against the period's end. The LIST does: a deadline and a state are
+                     * two of the four columns it shows, and a hard-coded `Open` would have printed the same
+                     * word on every ageing row whatever the tasks actually said.
+                     */
+                    row.DueAt,
+                    EstimateHours: null,
+                    SpentHours: 0m,
+                    ClosureReasonCode: null,
+                    row.Lifecycle),
+                units,
+                types))
             // The derived half of the filter, same as the main read: company and type code are not task columns.
             .Where(row => WorkReportTally.MatchesFilter(criteria.Filter, row))
             .ToList();
     }
 
     /// <summary>
-    /// Open work nobody is holding — counted as of NOW, and narrowed by the SAME filter as everything else.
+    /// Open work nobody is holding — as of NOW, and narrowed by the SAME filter as everything else.
     ///
-    /// <para>⚠ The filter has to reach this number too. A reader who asked about one unit and saw the whole
+    /// <para>⚠ The filter has to reach this set too. A reader who asked about one unit and saw the whole
     /// tenant's unclaimed backlog beside that unit's flow would draw a conclusion about the unit from a figure
     /// that was never about it.</para>
     ///
-    /// <para>Counted in the database when the filter is direct-only, and read back when a derived clause
-    /// (company, type code) applies — the second path is bounded by the same scope, and the alternative is a
-    /// number that quietly ignores half the filter.</para>
+    /// <para><b>⚠ ROWS, NOT A COUNT — CHANGED IN DILIM 1c, and the trade-off is deliberate.</b> This used to
+    /// call <c>CountDocumentsAsync</c> whenever no derived clause applied, which was cheaper and made the tile's
+    /// number impossible to open: a count cannot be listed. Reading the rows makes the number and its list one
+    /// selection, which is this slice's acceptance criterion. The cost is bounded by the same scope and filter
+    /// as every other read here, and this set is a SUBSET of the ageing read the report already performs — so
+    /// the report gained one more projection, not a new order of magnitude.</para>
     /// </summary>
-    private async Task<int> CountUnattendedAsync(
+    private async Task<IReadOnlyList<WorkReportRow>> UnattendedAsync(
         FilterDefinition<TaskItem> scoped,
         WorkReportCriteria criteria,
         IReadOnlyDictionary<Guid, OrganizationUnit> units,
@@ -471,24 +603,44 @@ public sealed class WorkReportRepository : IWorkReportRepository
             Builders<TaskItem>.Filter.Eq(x => x.AssigneeUserId, (Guid?)null),
             Builders<TaskItem>.Filter.Nin(x => x.Lifecycle, new[] { TaskLifecycle.Done, TaskLifecycle.Cancelled }));
 
-        var derived = criteria.Filter is { } f && (f.LegalEntityId is not null || !string.IsNullOrWhiteSpace(f.TaskTypeCode));
-        if (!derived)
-        {
-            return (int)await _tasks.CountDocumentsAsync(open, cancellationToken: ct);
-        }
-
-        var candidates = await _tasks.Aggregate()
+        var rows = await _tasks.Aggregate()
             .Match(open)
-            .Project(task => new { task.OrganizationUnitId, task.TaskTypeId })
+            .Project(task => new
+            {
+                task.Id,
+                task.CreatedAt,
+                task.OrganizationUnitId,
+                task.TaskTypeId,
+                task.Priority,
+                task.DueAt,
+                task.Lifecycle
+            })
             .ToListAsync(ct);
 
-        return candidates.Count(candidate =>
-            (criteria.Filter!.LegalEntityId is not { } company
-                || (units.TryGetValue(candidate.OrganizationUnitId, out var unit) && unit.LegalEntityId == company))
-            && (string.IsNullOrWhiteSpace(criteria.Filter.TaskTypeCode)
-                || (candidate.TaskTypeId is { } typeId
-                    && types.TryGetValue(typeId, out var type)
-                    && string.Equals(type.Code, criteria.Filter.TaskTypeCode.Trim(), StringComparison.OrdinalIgnoreCase))));
+        return rows
+            .Select(row => Enrich(
+                new WorkReportRow(
+                    row.Id,
+                    row.TaskTypeId,
+                    row.OrganizationUnitId,
+                    // Unassigned by definition — that is what puts the row in this set at all.
+                    AssigneeUserId: null,
+                    CreatedByUserId: null,
+                    PoolPositionId: null,
+                    row.Priority,
+                    row.CreatedAt,
+                    CompletedAt: null,
+                    CancelledAt: null,
+                    row.DueAt,
+                    EstimateHours: null,
+                    SpentHours: 0m,
+                    ClosureReasonCode: null,
+                    row.Lifecycle),
+                units,
+                types))
+            // The derived half of the filter, same as every other read: company and type code are not columns.
+            .Where(row => WorkReportTally.MatchesFilter(criteria.Filter, row))
+            .ToList();
     }
 
     /// <summary>

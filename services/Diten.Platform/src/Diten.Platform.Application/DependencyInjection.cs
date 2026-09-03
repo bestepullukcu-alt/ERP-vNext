@@ -57,6 +57,10 @@ public static class DependencyInjection
         services.AddScoped<IPlatformCatalogContract, PlatformCatalogContract>();
         services.AddSingleton<ITemporaryAccessProvider, NoOpTemporaryAccessProvider>();
         services.AddScoped<IDataScopeResolver, OrgDataScopeResolver>();
+        // ⚠ ONE scope resolution for the work report, shared by its two endpoints — the numbers and the lists.
+        // See IWorkReportScopeSource for why a second copy in the items handler would be the dangerous shape.
+        services.AddScoped<Features.Tasks.Services.IWorkReportScopeSource,
+            Features.Tasks.Services.WorkReportScopeSource>();
         /*
          * The ONE surface MOD-0024 asks "who sits in which seat" through. Nine files used to inject the
          * assignment repository directly and each re-wrote the active-window rule; BL-071 moves that fact to
