@@ -87,14 +87,6 @@ assert.equal(
     'The failed table body must be hidden while the honest error banner is shown.'
 );
 
-const initiativeIndex = readFileSync(
-    new URL('../../Views/PPM/Initiatives/Index.cshtml', import.meta.url),
-    'utf8'
-);
-const sharedForm = readFileSync(
-    new URL('../../Views/PPM/Shared/_CreateEditOffcanvas.cshtml', import.meta.url),
-    'utf8'
-);
 const initiativeScript = readFileSync(
     new URL('../../wwwroot/assets/js/PPM/Initiatives/index.js', import.meta.url),
     'utf8'
@@ -104,44 +96,84 @@ const sharedCrud = readFileSync(
     'utf8'
 );
 
-const initiativeDom = new JSDOM('<!doctype html><html><body></body></html>', {
+const initiativeDom = new JSDOM(`<!doctype html><html><body>
+  <div id="offcanvasCreateEdit"></div><div id="offcanvasDetailsPreview"></div>
+  <div id="skeleton-loader"></div><div id="initiative-table-alert" class="d-none"></div>
+  <div id="initiative-form-alert" class="d-none"></div><div id="offcanvasCreateEditLabel"></div>
+  <form id="formInitiative"><input name="__RequestVerificationToken" value="token"></form>
+  <button id="btnSaveInitiative"></button><button id="btnFilterApply"></button><button id="btnFilterReset"></button>
+  <select id="filterLifecycle"><option value="">All</option></select>
+  <select id="initiativeType"><option value="">Type</option></select>
+  <select id="initiativePriority"><option value="">Priority</option></select>
+  <select id="initiativePortfolio"><option value="">Portfolio</option></select>
+  <input id="initiativeId"><input id="initiativeVersion" value="1"><input id="initiativeCode"><input id="initiativeName">
+  <textarea id="initiativeDescription"></textarea><input id="initiativeStart"><input id="initiativeEnd">
+  <table id="dt-initiatives"></table>
+</body></html>`, {
     runScripts: 'outside-only',
     url: 'http://localhost/ppm/initiatives'
 });
-let initiativeConfig;
-initiativeDom.window.PpmCrud = {
-    mount: config => { initiativeConfig = config; }
+const iw = initiativeDom.window;
+iw.L10n = { ClassificationUnavailable: 'classification unavailable', LifecycleUnavailable: 'lifecycle unavailable', States: {}, ViewDetails: 'View', Edit: 'Edit', Delete: 'Delete', CreateSuccessor: 'Successor' };
+iw.bootstrap = window.bootstrap;
+iw.DtDefaults = { exportButtons: () => [], refreshButtonGroupRadii: () => {} };
+let initiativeCrudOptions;
+let renderedActions;
+iw.DitenDataTable = {
+    createCrudTable: options => { initiativeCrudOptions = options; return dt; },
+    renderActions: actions => { renderedActions = actions; return ''; }
 };
-initiativeDom.window.eval(initiativeScript);
-initiativeDom.window.document.dispatchEvent(new initiativeDom.window.Event('DOMContentLoaded'));
+const initiativeJquery = selector => {
+    const nodes = typeof selector === 'string' ? [...iw.document.querySelectorAll(selector)] : [selector];
+    const api = {
+        val: value => value === undefined ? (nodes[0]?.value || []) : (nodes.forEach(node => { node.value = Array.isArray(value) ? value[0] || '' : value; }), api),
+        trigger: () => api,
+        prop: (name, value) => (nodes.forEach(node => { node[name] = value; }), api),
+        select2: () => api,
+        each: callback => (nodes.forEach((node, index) => callback.call(node, index, node)), api)
+    };
+    return api;
+};
+initiativeJquery.fn = { dataTable: { ext: { search: [] } } };
+iw.$ = initiativeJquery;
+let resolveLifecycle;
+const lifecycleResponse = new Promise(resolve => { resolveLifecycle = resolve; });
+const requestedUrls = [];
+iw.fetch = async url => {
+    requestedUrls.push(url);
+    if (url.endsWith('/lifecycle-contracts/v2')) return lifecycleResponse;
+    if (url.endsWith('/contracts/v2')) return { ok: false, status: 503, text: async () => '{}' };
+    if (url === '/ppm/portfolios/api') return { ok: true, status: 200, text: async () => '[]' };
+    throw new Error(`Unexpected fetch: ${url}`);
+};
+const initiativeReady = new Promise(resolve => iw.document.addEventListener('DOMContentLoaded', resolve, { once: true }));
+iw.eval(initiativeScript);
+await initiativeReady;
+await Promise.resolve();
 
-assert.equal(initiativeConfig.resource, 'initiatives');
-assert.equal(initiativeConfig.endpoint, '/PPM/Initiatives/api');
-assert.equal(initiativeConfig.hasPortfolio, true);
-assert.deepEqual(
-    JSON.parse(JSON.stringify(initiativeConfig.transitions)),
-    {
-        Proposed: ['Active', 'Cancelled'],
-        Active: ['OnHold', 'Completed', 'Cancelled'],
-        OnHold: ['Active', 'Completed', 'Cancelled'],
-        Completed: [],
-        Cancelled: []
-    }
-);
+assert.deepEqual(requestedUrls, ['/PPM/Initiatives/api/lifecycle-contracts/v2']);
+assert.equal(initiativeCrudOptions, undefined, 'Table initialization must wait for the lifecycle authority.');
+resolveLifecycle({ ok: true, status: 200, text: async () => JSON.stringify({ allowedTargetStatesBySource: { Proposed: ['Active'] }, transitions: [] }) });
+for (let i = 0; i < 8; i += 1) await new Promise(resolve => setTimeout(resolve, 0));
 
-assert.match(initiativeIndex, /Layout = "_LayoutTenantShell"/);
-assert.match(initiativeIndex, /HasPortfolio = true/);
-assert.match(initiativeIndex, /RequiresPortfolio = false/);
-assert.match(initiativeIndex, /ShowsVisibilityPolicy = false/);
-assert.match(sharedForm, /required="@\(Model\.RequiresPortfolio \? "required" : null\)"/);
-assert.match(sharedForm, /@if \(Model\.ShowsVisibilityPolicy\)/);
+assert.deepEqual(requestedUrls, ['/PPM/Initiatives/api/lifecycle-contracts/v2', '/PPM/Initiatives/api/contracts/v2', '/ppm/portfolios/api']);
+assert.ok(initiativeCrudOptions, 'Table initializes after the lifecycle authority resolves.');
+assert.equal(iw.document.getElementById('filterLifecycle').options.length, 2, 'Lifecycle states must be populated from the endpoint payload.');
+assert.equal(iw.document.getElementById('btnSaveInitiative').disabled, true);
+assert.equal(iw.document.getElementById('initiativeType').disabled, true);
+assert.equal(iw.document.getElementById('initiativePriority').disabled, true);
+assert.equal(iw.document.getElementById('initiative-form-alert').textContent, 'classification unavailable');
+
+const actionRenderer = initiativeCrudOptions.config.columnDefs.find(definition => definition.targets === 8).render;
+actionRenderer(null, null, { id: 'initiative-1', lifecycleState: 'Proposed', version: 3, availableActions: [{ targetState: 'Active', availability: 'available', reasonCode: 'ready' }] });
+assert.equal(renderedActions.filter(action => action.className.startsWith('js-initiative-transition')).length, 1);
+assert.equal(renderedActions.find(action => action.className.startsWith('js-initiative-transition')).attrs['data-target'], 'Active');
 
 assert.match(initiativeScript, /const endpoint = '\/PPM\/Initiatives\/api'/);
 assert.doesNotMatch(initiativeScript, /localhost|5062|Bearer|document\.cookie/);
-assert.match(initiativeScript, /Proposed: \['Active', 'Cancelled'\]/);
-assert.match(initiativeScript, /Active: \['OnHold', 'Completed', 'Cancelled'\]/);
-assert.match(initiativeScript, /OnHold: \['Active', 'Completed', 'Cancelled'\]/);
-assert.match(initiativeScript, /Completed: \[\], Cancelled: \[\]/);
+assert.match(initiativeScript, /row\.availableActions/);
+assert.doesNotMatch(initiativeScript, /Proposed:\s*\[/);
+assert.doesNotMatch(initiativeScript, /(?:const|let|var)\s+(?:cancellationReasons|holdReasons|completionOutcomes|closureReasons|benefitDispositions)\s*=/);
 
 for (const status of [401, 403, 404, 409, 503]) {
     assert.match(sharedCrud, new RegExp(`${status}:`));
