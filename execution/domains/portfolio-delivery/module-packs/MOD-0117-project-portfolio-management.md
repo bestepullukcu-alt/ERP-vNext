@@ -2042,10 +2042,123 @@ After the prerequisite is implemented under separate authority, frontend impleme
 separate explicit user approval already required by `c9799a14`. The pack remains `review` with
 `production_authority: none` and default-off/non-activating posture.
 
+### Amendment — 2026-09-03 — Initiative Lifecycle Contracts v2 exact backend prerequisite authority
+
+**Authority class:** bounded backend prerequisite implementation handoff; governance checkpoint only.
+
+**Production authority:** `production_authority: none`.
+
+**Activation posture:** default-off / non-activating. The pack remains `review`. This amendment implements no
+backend, frontend, runtime or test code. Backend implementation requires separate explicit user approval;
+frontend implementation remains blocked until the prerequisite is merged and its contract gates pass.
+
+This amendment authorizes only an additive PPM-owned lifecycle discovery contract. It does not alter mutation
+rules, create a second policy engine or transfer approval ownership from MOD-0023.
+
+#### Endpoint and lifecycle contract
+
+The exact authorized endpoint is `GET /api/v1/ppm/initiatives/lifecycle-contracts/v2`. A successful response
+contains at least the contract version; allowed target states grouped by every canonical source state; and,
+for every transition, source state, target state, required companion-data kind and approval-dependency
+disposition. It also contains the exact cancellation reasons, hold reasons, completion outcomes, closure
+reasons and benefit dispositions.
+
+Required companion-data kind is the closed set `none`, `cancellation-reason`, `hold-reason`, `closure`.
+Approval-dependency disposition is the closed set `direct`, `approval-authority-required`. States and
+vocabularies are generated server-side from canonical Initiative transition rules and
+`InitiativeVocabularies`; consumers do not keep copied sets. Duplicate, blank, unknown or internally
+indeterminate values fail the whole contract as `503` and are never silently skipped.
+
+Missing/invalid authentication returns `401`; permission denial returns `403`; malformed, unknown or
+internally inconsistent lifecycle authority returns `503`. Tenant context remains mandatory, the endpoint
+emits no cross-tenant record data, and frontend fallback or a synthetic contract is forbidden.
+
+#### MOD-0048 separation
+
+- Lifecycle-contracts v2 never calls MOD-0048 Initiative Type or Priority providers and returns canonical
+  PPM-owned lifecycle data with `200` while MOD-0048 is unavailable.
+- Existing classification `GET /api/v1/ppm/initiatives/contracts/v2` behavior is unchanged: Type/Priority stay
+  MOD-0048-authoritative and unavailable, malformed or indeterminate authority remains `503`.
+- Create/edit consumers still use classification `contracts/v2` and close safely on its failure. Lifecycle
+  availability cannot substitute Type/Priority values.
+
+#### Record-specific action projection
+
+The general matrix is descriptive, not user/tenant/record authorization. List and detail `InitiativeV2Dto`
+therefore carry server-calculated actions. Every action contains at least target state, availability, stable
+reason code and required companion-data kind. Availability is the closed set `available`, `forbidden`,
+`dependency-unavailable`, `record-not-ready`.
+
+- `forbidden`: the backend actor/tenant access authorizer denies lifecycle mutation. Read permission does not
+  imply mutation permission, and frontend code never derives the result from JWT claims.
+- `dependency-unavailable`: `Proposed -> Active` and `OnHold -> Active` while required MOD-0023 policy/outcome
+  authority is unavailable; also `Active|OnHold -> Cancelled` while required approval authority is unavailable.
+- `record-not-ready`: activation readiness data is incomplete independently of permission/dependency state.
+- `available`: only a direct transition allowed by canonical domain rules, actor/tenant authorization,
+  readiness and dependency results.
+
+Terminal records expose no lifecycle/edit/delete actions. The projection is UX guidance only; mutation
+endpoints independently re-run permission, tenant, CAS/version, readiness, canonical-transition and dependency
+checks and never trust projected availability as authority.
+
+#### Exact future backend implementation allowlist
+
+Only these paths may change in the separately approved prerequisite implementation:
+
+- `services/Diten.PpmService/src/Diten.PpmService.Api/Controllers/InitiativesController.cs` — lifecycle GET only.
+- `services/Diten.PpmService/src/Diten.PpmService.Application/Features/Initiatives/InitiativeContractsV2.cs` —
+  additive classification-contract separation only, if required.
+- `services/Diten.PpmService/src/Diten.PpmService.Application/Features/Initiatives/InitiativeLifecycleContractsV2.cs`.
+- `services/Diten.PpmService/src/Diten.PpmService.Application/Features/Initiatives/InitiativeLifecycleTransitionContract.cs`.
+- `services/Diten.PpmService/src/Diten.PpmService.Application/Features/Initiatives/InitiativeActionAvailability.cs`.
+- `services/Diten.PpmService/src/Diten.PpmService.Application/Features/Initiatives/InitiativeV2Dto.cs`.
+- `services/Diten.PpmService/src/Diten.PpmService.Application/Features/Initiatives/InitiativeMapping.cs`.
+- `services/Diten.PpmService/src/Diten.PpmService.Application/Features/Initiatives/Services/InitiativeService.cs`.
+- `services/Diten.PpmService/src/Diten.PpmService.Application/Features/Initiatives/Queries/GetInitiativeLifecycleContractsV2Query.cs`.
+- `services/Diten.PpmService/src/Diten.PpmService.Application/Features/Initiatives/Handlers/QueryHandlers/GetInitiativeLifecycleContractsV2Handler.cs`.
+- `services/Diten.PpmService/src/Diten.PpmService.Domain/Initiatives/InitiativeVocabularies.cs`.
+- `services/Diten.PpmService/tests/Diten.PpmService.Tests/Initiatives/**`.
+- `services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/Initiatives/**`.
+
+No additional model file is authorized. If one is necessary, work stops until a later amendment names the
+exact file under `Application/Features/Initiatives/`. No broader PPM-service wildcard is permitted.
+
+#### Protected paths and non-authority
+
+Everything outside the exact allowlist is protected, especially Persistence/Mongo/index/migration/seed,
+Infrastructure/DI, Gateway, frontend, Platform, Auth, MOD-0023 implementation, WorkCenter, `appsettings*`,
+`launchSettings*`, secrets/credentials, deployment/production activation, `.antigravity/**`, `AGENTS.md`,
+other modules and services. No permission/catalog change, route, configuration, migration or activation is
+authorized.
+
+#### Acceptance and test gates
+
+- With MOD-0048 unavailable, lifecycle-contracts v2 returns `200` with exact canonical PPM-owned payload;
+  existing classification `contracts/v2` remains `503`.
+- Contract version, companion-data and approval-dependency values match the closed sets above.
+- The transition matrix exhaustively equals canonical domain `CanTransitionTo`; adding a state breaks the
+  exhaustive test until intentionally contracted.
+- Reason/closure vocabularies equal exact canonical `InitiativeVocabularies` sets.
+- Duplicate, blank, unknown or inconsistent values produce `503`, never partial output or fallback.
+- Read-only actors receive `forbidden`; terminal records have no actions; `record-not-ready` and
+  `dependency-unavailable` are tested separately, including the named MOD-0023-dependent transitions.
+- Mutation endpoints retain server-side permission, tenant, CAS/version, readiness, transition and dependency
+  checks; `401/403/503` and tenant non-disclosure behavior are verified.
+- Targeted Initiative unit tests pass. Disposable Mongo/HTTP integration, if necessary, uses only existing
+  Initiative test infrastructure within the allowlist.
+- PPM build is zero-warning/zero-error. Existing baseline failures are separately attributed and are not
+  claimed as newly introduced.
+- `git diff --check`, exact allowlist, full staged-diff review, secret/artifact scans pass; `.local-test/**`
+  and generated artifacts remain uncommitted.
+
+Passing these gates proves only the default-off backend prerequisite. It does not activate production,
+authorize frontend implementation, close MOD-0023 authority or promote MOD-0117 to `done`.
+
 ### Change log
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-09-03 | Added exact Initiative Lifecycle Contracts v2 backend prerequisite authority: `GET /api/v1/ppm/initiatives/lifecycle-contracts/v2`, PPM-owned lifecycle matrix/vocabularies independent of MOD-0048, server-calculated record action availability, strict `401/403/503`, exact backend/test allowlist and exhaustive gates. Preserved `review`, `production_authority: none`, default-off/non-activating posture and separate explicit approval; frontend stays blocked until prerequisite merge and verification. No backend/frontend/runtime/test code changed in this checkpoint. | User / Portfolio Governance Process Owner |
 | 2026-09-03 | Corrected the Initiative frontend handoff after executable feasibility review: the current DTO/result exposes no authoritative allowed-transition/action projection, and combined `contracts/v2` couples PPM-owned lifecycle vocabularies to MOD-0048 availability. Required an independent additive PPM-owned lifecycle contract (preferred `GET /api/v1/ppm/initiatives/lifecycle-contracts/v2`) plus record-specific server-calculated actions where needed before frontend lifecycle work can start. This correction grants no backend authority; an exact backend allowlist amendment and separate explicit user approval are required. | User / Portfolio Governance Process Owner |
 | 2026-09-03 | Added bounded Initiative Core v2 frontend implementation authority: exact eight-field Golden Slim tenant UI, same-origin Initiative proxy, authoritative `contracts/v2` vocabulary with fail-closed create/edit, action-only lifecycle/closure/supersession, typed-link-only details, HTTP-specific UX and exact frontend/test allowlist. Preserved `review`, set `production_authority: none`, retained default-off/non-activating posture and required separate explicit user approval before frontend implementation. No runtime/frontend/Gateway/backend/deployment code was changed by this governance checkpoint. | User / Portfolio Governance Process Owner |
 | 2026-09-02 | Added and corrected the governance-only Initiative Core v2 baseline: exact eight-field Golden Slim create/edit contract; nullable-in-Proposed and required-before-Active MOD-0048-owned type/priority classifications and planning dates; exact approved values for five PPM-owned lifecycle/closure vocabularies with no `other`; action-based lifecycle and Workflow/WorkCenter boundaries; verified-recipient-only OnHold notification plus non-blocking durable `recipient-unresolved` disposition/UI warning; exact InitiativeClosure requiredness/cardinalities; terminal supersession; authoritative-owner typed links; repository-accurate future allowlist/protected paths; HTTP matrix, acceptance/test gates and explicit owner blockers. No runtime/frontend/service/Gateway/migration/seed/deployment/activation authority was created. | User / Portfolio Governance Process Owner |
