@@ -2111,6 +2111,7 @@ Only these paths may change in the separately approved prerequisite implementati
 - `services/Diten.PpmService/src/Diten.PpmService.Application/Features/Initiatives/InitiativeLifecycleContractsV2.cs`.
 - `services/Diten.PpmService/src/Diten.PpmService.Application/Features/Initiatives/InitiativeLifecycleTransitionContract.cs`.
 - `services/Diten.PpmService/src/Diten.PpmService.Application/Features/Initiatives/InitiativeActionAvailability.cs`.
+- `services/Diten.PpmService/src/Diten.PpmService.Application/Features/Initiatives/IInitiativeLifecycleContractAuthority.cs`.
 - `services/Diten.PpmService/src/Diten.PpmService.Application/Features/Initiatives/InitiativeV2Dto.cs`.
 - `services/Diten.PpmService/src/Diten.PpmService.Application/Features/Initiatives/InitiativeMapping.cs`.
 - `services/Diten.PpmService/src/Diten.PpmService.Application/Features/Initiatives/Services/InitiativeService.cs`.
@@ -2122,6 +2123,13 @@ Only these paths may change in the separately approved prerequisite implementati
 
 No additional model file is authorized. If one is necessary, work stops until a later amendment names the
 exact file under `Application/Features/Initiatives/`. No broader PPM-service wildcard is permitted.
+
+The allowlisted `IInitiativeLifecycleContractAuthority` is a PPM-owned canonical contract-production and
+fail-closed test seam only. It may be used to inject malformed, duplicate, blank or unknown lifecycle-contract
+fixtures without mutating shared backing arrays or making parallel tests order-dependent. It grants no external
+provider, alternate system of record, DI registration, cache, Persistence, Infrastructure, frontend, Gateway,
+configuration or production-activation authority. Production behavior continues to use the PPM-owned canonical
+builder; the seam cannot replace lifecycle ownership or weaken validation.
 
 #### Protected paths and non-authority
 
@@ -2158,6 +2166,7 @@ authorize frontend implementation, close MOD-0023 authority or promote MOD-0117 
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-09-03 | Added only `IInitiativeLifecycleContractAuthority.cs` to the Initiative Lifecycle Contracts v2 exact backend allowlist as a PPM-owned canonical-production and fail-closed malformed-contract test seam. Explicitly prohibited external providers, alternate ownership, DI/cache, Persistence/Infrastructure, frontend/Gateway/configuration and production activation. No runtime or test code changed in this governance checkpoint. | User / Portfolio Governance Process Owner |
 | 2026-09-03 | Added exact Initiative Lifecycle Contracts v2 backend prerequisite authority: `GET /api/v1/ppm/initiatives/lifecycle-contracts/v2`, PPM-owned lifecycle matrix/vocabularies independent of MOD-0048, server-calculated record action availability, strict `401/403/503`, exact backend/test allowlist and exhaustive gates. Preserved `review`, `production_authority: none`, default-off/non-activating posture and separate explicit approval; frontend stays blocked until prerequisite merge and verification. No backend/frontend/runtime/test code changed in this checkpoint. | User / Portfolio Governance Process Owner |
 | 2026-09-03 | Corrected the Initiative frontend handoff after executable feasibility review: the current DTO/result exposes no authoritative allowed-transition/action projection, and combined `contracts/v2` couples PPM-owned lifecycle vocabularies to MOD-0048 availability. Required an independent additive PPM-owned lifecycle contract (preferred `GET /api/v1/ppm/initiatives/lifecycle-contracts/v2`) plus record-specific server-calculated actions where needed before frontend lifecycle work can start. This correction grants no backend authority; an exact backend allowlist amendment and separate explicit user approval are required. | User / Portfolio Governance Process Owner |
 | 2026-09-03 | Added bounded Initiative Core v2 frontend implementation authority: exact eight-field Golden Slim tenant UI, same-origin Initiative proxy, authoritative `contracts/v2` vocabulary with fail-closed create/edit, action-only lifecycle/closure/supersession, typed-link-only details, HTTP-specific UX and exact frontend/test allowlist. Preserved `review`, set `production_authority: none`, retained default-off/non-activating posture and required separate explicit user approval before frontend implementation. No runtime/frontend/Gateway/backend/deployment code was changed by this governance checkpoint. | User / Portfolio Governance Process Owner |
