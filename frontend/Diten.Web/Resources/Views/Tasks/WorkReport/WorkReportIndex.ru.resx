@@ -85,6 +85,8 @@
   <data name="ItemsAging8to30" xml:space="preserve"><value>Открыто 8-30 дней</value></data>
   <data name="ItemsAging30plus" xml:space="preserve"><value>Открыто более 30 дней</value></data>
   <data name="ItemsColDue" xml:space="preserve"><value>срок {0}</value></data>
+  <data name="FiltersToggle" xml:space="preserve"><value>Фильтры</value></data>
+  <data name="OutcomesOther" xml:space="preserve"><value>Другие результаты</value></data>
   <data name="ItemsColClosed" xml:space="preserve"><value>закрыто {0}</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>Низкий</value></data>
 </root>

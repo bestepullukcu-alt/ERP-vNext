@@ -255,15 +255,23 @@ describe("(b) an empty period says so instead of drawing zeroes", () => {
 });
 
 describe("(c) outcome labels arrive translated, never as raw codes", () => {
-  it("draws the donut with the words, not with COMPLETED_AS_REQUESTED", () => {
+  it("draws the bar with the words, not with COMPLETED_AS_REQUESTED", () => {
+    /*
+     * ⚠ SHAPE UPDATED IN DILIM 1d — the outcome axis draws as a sorted horizontal bar rather than a donut (a
+     * long-tailed axis does not survive a wheel), so the assertions below moved from `.labels`/`.series` (the
+     * donut's shape) to `.xaxis.categories`/`.series[0].data` (the bar's). The PROTECTIVE INTENT this test
+     * exists for — translated words on the axis, never a raw code — is unchanged and re-asserted in the new
+     * shape.
+     */
     const screen = boot();
     screen.render(busy());
 
     const chart = chartFor("[data-wr-chart-outcomes]");
     expect(chart, "the outcome chart was never drawn").toBeTruthy();
-    expect(chart.options.labels).toEqual(["Completed as requested", "Superseded by other work"]);
-    expect(chart.options.labels.join(" "), "a raw code reached the chart").not.toMatch(/COMPLETED_|CANCELLED_/);
-    expect(chart.options.series).toEqual([6, 2]);
+    expect(chart.options.chart.type).toBe("bar");
+    expect(chart.options.xaxis.categories).toEqual(["Completed as requested", "Superseded by other work"]);
+    expect(chart.options.xaxis.categories.join(" "), "a raw code reached the chart").not.toMatch(/COMPLETED_|CANCELLED_/);
+    expect(chart.options.series[0].data).toEqual([6, 2]);
   });
 
   it("falls back to the code for a TENANT outcome, which has nothing to translate", () => {
@@ -290,13 +298,13 @@ describe("(c) outcome labels arrive translated, never as raw codes", () => {
   });
 
   it("says so in words when nothing closed with an outcome", () => {
-    // An empty donut is a grey ring that says nothing.
+    // An empty chart is a blank card that says nothing.
     const screen = boot();
     screen.render(busy({ totals: bucket({ flow: { opened: 3, closed: 1, completed: 1, cancelled: 0, unattended: 0 }, outcomes: [] }) }));
 
     expect(hidden("[data-wr-outcomes-empty]")).toBe(false);
     expect(chartFor("[data-wr-chart-outcomes]")).toBeUndefined();
-    // …while the OTHER charts still drew, so this is about the donut and not about a dead render path.
+    // …while the OTHER charts still drew, so this is about the outcomes chart and not about a dead render path.
     expect(chartFor("[data-wr-chart-flow]")).toBeTruthy();
   });
 });

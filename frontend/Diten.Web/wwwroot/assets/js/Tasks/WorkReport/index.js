@@ -319,9 +319,26 @@
     };
 
     /** WHAT DID THE CLOSURES DECIDE? — the outcome histogram (Faz 3's ClosureReasonCode). */
+    /**
+     * WHAT DID THE CLOSURES DECIDE? — a sorted horizontal bar, capped to the busiest eight.
+     *
+     * ⚠ A WHEEL DOES NOT SURVIVE A LONG TAIL, AND THIS AXIS HAS ONE — Dilim 1d. A task type's closure
+     * dictionary is not bounded to a handful of entries the way flow or timeliness are; a donut with twenty
+     * slices is an unreadable ring of slivers and a legend nobody can match back to a colour. The SAME shape
+     * `renderGroups` already draws for the breakdown axis — sorted, horizontal, a named "other" bucket for the
+     * rest — answers this one too, and answers it the way the server's OWN cap
+     * (`WorkReportDto.MaxGroups`/`OtherKey`) already treats a long axis: show the busiest, fold the rest, say
+     * so. `rows` arrives from the API already sorted busiest-first (`WorkReportTally.Measure`), so the fold
+     * below is a straight `slice`, not a re-sort.
+     *
+     * ⚠ NO CHART-TYPE PICKER. The shape follows what the AXIS is, not a preference a reader could set to
+     * something that misreads the data — offering one invites turning a comparison into a decoration.
+     */
+    var OUTCOMES_SHOWN = 8;
+
     var renderOutcomes = function (outcomes) {
         var rows = outcomes || [];
-        // An empty donut is a grey ring that says nothing. A sentence says the thing.
+        // An empty chart is a blank card that says nothing. A sentence says the thing.
         show('[data-wr-outcomes-empty]', rows.length === 0);
 
         if (rows.length === 0) {
@@ -331,16 +348,46 @@
             return;
         }
 
+        var shown = rows.slice(0, OUTCOMES_SHOWN);
+        var folded = rows.slice(OUTCOMES_SHOWN);
+
+        /*
+         * ⚠ THE FOLDED SUM IS ADDITION, NOT A NEW MEASURE. Every number in it is one the API already published
+         * for that row; this only totals rows that no longer fit on screen, the same way the aging tile already
+         * sums three published buckets to decide whether to show itself at all. No ratio, no derived figure.
+         */
+        var otherTotal = folded.reduce(function (sum, row) { return sum + (row.count || 0); }, 0);
+
+        var categories = shown.map(function (row) { return outcomeLabel(row.code); });
+        var data = shown.map(function (row) { return row.count || 0; });
+        if (otherTotal > 0) {
+            categories.push(t('OutcomesOther'));
+            data.push(otherTotal);
+        }
+
         draw('outcomes', '[data-wr-chart-outcomes]', {
             chart: {
-                type: 'donut', height: 260,
-                // A slice's ARGUMENT is the CODE `rows` carries — never the translated label the axis shows,
-                // because the code is the identity the server's `Outcome` cell matches on.
-                events: { dataPointSelection: function (_e, _ctx, cfg) { openItems('Outcome', rows[cfg.dataPointIndex].code); } }
+                type: 'bar', height: Math.max(220, categories.length * 44), toolbar: { show: false },
+                events: {
+                    dataPointSelection: function (_e, _ctx, cfg) {
+                        /*
+                         * ⚠ THE FOLDED "OTHER" BAR OPENS NOTHING — Dilim 1c's own bucket kinds have no "the
+                         * rest of the outcomes" cell to ask for, and inventing a fetch here would be exactly the
+                         * chart-local query Dilim 1c's own guard exists to forbid. A click past the shown rows
+                         * is a no-op rather than a request for a bucket that does not exist.
+                         */
+                        if (cfg.dataPointIndex >= shown.length) { return; }
+                        // The ARGUMENT is the CODE `rows` carries — never the translated label the axis shows,
+                        // because the code is the identity the server's `Outcome` cell matches on.
+                        openItems('Outcome', shown[cfg.dataPointIndex].code);
+                    }
+                }
             },
-            series: rows.map(function (row) { return row.count || 0; }),
-            labels: rows.map(function (row) { return outcomeLabel(row.code); }),
-            legend: { position: 'bottom' }
+            series: [{ name: t('OutcomesTitle'), data: data }],
+            xaxis: { categories: categories },
+            dataLabels: { enabled: true },
+            plotOptions: { bar: { horizontal: true, borderRadius: 4, distributed: true, cursor: 'pointer' } },
+            legend: { show: false }
         });
     };
 
@@ -645,6 +692,17 @@
         if (previous && el.querySelector('option[value="' + previous.replace(/"/g, '\\"') + '"]')) {
             el.value = previous;
         }
+
+        /*
+         * ⚠ select2 DOES NOT NOTICE `<option>` ELEMENTS CHANGING UNDER IT — it renders from a snapshot taken
+         * when it was initialized, and `innerHTML = ''` above just emptied that snapshot's DOM without telling
+         * select2 anything happened. `.trigger('change')` is select2's own documented way to say "re-read your
+         * options"; without it, the company/unit/type/assignee pickers would stay showing "Any" forever, no
+         * matter how many rows `loadFilterOptions` fetched.
+         */
+        if (window.jQuery && window.jQuery(el).hasClass('select2-hidden-accessible')) {
+            window.jQuery(el).trigger('change');
+        }
     };
 
     var allUnits = [];
@@ -687,12 +745,90 @@
         });
     };
 
+    /*
+     * ── DILIM 1d — THE PROJECT'S OWN PICKERS, NOT NATIVE ONES ───────────────────────────────────────────────
+     *
+     * flatpickr on the two dates, select2 on the breakdown and the five filters — the SAME two libraries
+     * the organisation and device-enablement forms already use, loaded once in
+     * the tenant shell rather than pulled in specially for this screen.
+     */
+    var initDatePickers = function () {
+        if (!window.flatpickr) { return; }
+        ['#wrFrom', '#wrTo'].forEach(function (selector) {
+            var el = $(selector);
+            if (el) { el.flatpickr({ monthSelectorType: 'static', dateFormat: 'Y-m-d' }); }
+        });
+    };
+
+    var initSelect2 = function () {
+        if (!window.jQuery || !window.jQuery.fn.select2) { return; }
+        var $ = window.jQuery;
+        var $body = $(document.body);
+
+        $('#wrGroupBy, #wrLegalEntity, #wrUnit, #wrTaskType, #wrAssignee, #wrPriority').each(function () {
+            var $s = $(this);
+            if ($s.hasClass('select2-hidden-accessible')) { $s.select2('destroy'); }
+            $s.select2({
+                dropdownParent: $body,
+                dropdownCssClass: 'dt-inline-filter-dropdown',
+                selectionCssClass: 'form-select',
+                placeholder: $s.data('placeholder') || '',
+                width: 'element',
+                allowClear: $s.is('[data-wr-filter]'),
+                // The breakdown has six fixed options — a search box for six items is a control looking for a
+                // reason to exist. The five filters can carry a whole tenant's units or people, so they search.
+                minimumResultsForSearch: $s.attr('data-minimum-results-for-search') === 'Infinity' ? Infinity : 0
+            });
+        });
+
+        /*
+         * ⚠ THE NATIVE-CHANGE BRIDGE — copied in spirit from `Tasks/form.js`'s own comment on the same defect.
+         *
+         * select2 announces a choice by calling jQuery's `.trigger('change')`, which does NOT run listeners
+         * added with `addEventListener`. Every listener already on this page — `refreshUnits` on the company
+         * picker, the filter-count badge below — was written against the native event, and would go silently
+         * deaf the moment select2 wrapped the element. `event.originalEvent` is jQuery's own mark of a REAL DOM
+         * event it is merely relaying; its absence is what tells this bridge the event was jQuery-synthesised
+         * and needs re-dispatching as a native one. Checking that, rather than a re-entrancy flag, is what stops
+         * the bridge from echoing its own dispatch back into an infinite loop.
+         */
+        $('#wrGroupBy, #wrLegalEntity, #wrUnit, #wrTaskType, #wrAssignee, #wrPriority').on('change', function (event) {
+            if (event && event.originalEvent) { return; }
+            this.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+    };
+
+    /*
+     * ⚠ THE ACTIVE-FILTER COUNT IS A CORRECTNESS SIGNAL, NOT DECORATION — see the view's own comment on the
+     * badge. Counted from the five `[data-wr-filter]` selects' CURRENT values, whatever the panel's own
+     * open/closed state — a reader who closes the panel after choosing three filters must still see "3".
+     */
+    var updateFilterCount = function () {
+        var badge = $('[data-wr-filter-count]');
+        if (!badge) { return; }
+
+        var count = Array.prototype.slice.call(document.querySelectorAll('[data-wr-filter]'))
+            .filter(function (el) { return !!el.value; })
+            .length;
+
+        badge.hidden = count === 0;
+        badge.textContent = String(count);
+    };
+
     document.addEventListener('DOMContentLoaded', function () {
         var form = $('#workReportFilter');
         if (!form) { return; }
 
+        initDatePickers();
+        initSelect2();
+
         var company = $('#wrLegalEntity');
         if (company) { company.addEventListener('change', refreshUnits); }
+
+        document.querySelectorAll('[data-wr-filter]').forEach(function (el) {
+            el.addEventListener('change', updateFilterCount);
+        });
+        updateFilterCount();
 
         // The report is drawn regardless of whether the lookups answered: a picker that failed to load leaves
         // the reader with fewer choices, not with no report.
@@ -978,6 +1114,11 @@
         // Exposed for the harness — the real functions, not copies of them.
         groupLabel: groupLabel, query: query,
         setPeople: function (map) { people = map || {}; },
+        // Dilim 1d — layout wiring, exposed so the badge and the pickers can be exercised without a
+        // real DOMContentLoaded firing (the test harness's jsdom document is already 'complete').
+        updateFilterCount: updateFilterCount,
+        initDatePickers: initDatePickers,
+        initSelect2: initSelect2,
         // Dilim 1c — the real drill-down path, not a copy of it.
         openItems: openItems,
         loadItemsPage: loadItemsPage,

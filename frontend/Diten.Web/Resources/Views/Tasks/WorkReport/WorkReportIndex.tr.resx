@@ -85,6 +85,8 @@
   <data name="ItemsAging8to30" xml:space="preserve"><value>8-30 gün açık</value></data>
   <data name="ItemsAging30plus" xml:space="preserve"><value>30+ gün açık</value></data>
   <data name="ItemsColDue" xml:space="preserve"><value>termin {0}</value></data>
+  <data name="FiltersToggle" xml:space="preserve"><value>Filtreler</value></data>
+  <data name="OutcomesOther" xml:space="preserve"><value>Diğer sonuçlar</value></data>
   <data name="ItemsColClosed" xml:space="preserve"><value>kapanış {0}</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>Düşük</value></data>
 </root>

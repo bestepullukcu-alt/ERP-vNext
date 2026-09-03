@@ -85,6 +85,8 @@
   <data name="ItemsAging8to30" xml:space="preserve"><value>Abierta hace 8-30 días</value></data>
   <data name="ItemsAging30plus" xml:space="preserve"><value>Abierta hace más de 30 días</value></data>
   <data name="ItemsColDue" xml:space="preserve"><value>vence {0}</value></data>
+  <data name="FiltersToggle" xml:space="preserve"><value>Filtros</value></data>
+  <data name="OutcomesOther" xml:space="preserve"><value>Otros resultados</value></data>
   <data name="ItemsColClosed" xml:space="preserve"><value>cerrada {0}</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>Baja</value></data>
 </root>

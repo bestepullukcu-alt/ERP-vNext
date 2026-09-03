@@ -30,26 +30,34 @@
 <section class="card mb-4">
     <div class="card-body p-4">
         @*
-            THE FILTER. The period is REQUIRED — the API refuses an unbounded report, because one is a
-            full-collection scan wearing a date picker — so both boxes are `required` and pre-filled rather than
-            left empty for the reader to discover the rule.
+            THE FILTER. The period and the breakdown are the report's IDENTITY — which window, which axis — and
+            stay visible; narrowing that window further is a SEPARATE decision, so the five filters that do it
+            sit behind their own button (§1). The period is REQUIRED — the API refuses an unbounded report,
+            because one is a full-collection scan wearing a date picker — so both boxes are `required` and
+            pre-filled rather than left empty for the reader to discover the rule.
+
+            Dates are flatpickr (`.flatpickr-date`), the breakdown and the five filters below are select2 —
+            the project's own pickers (`Views/Organization/*/Form.cshtml`, `Views/DevEnablement/*/_Filter.cshtml`),
+            not a new pattern. select2 announces a choice through jQuery rather than a native DOM event, so
+            `index.js` bridges it back to `addEventListener('change', ...)` the same way `Tasks/form.js` already
+            does — otherwise the company→unit narrowing below goes silently deaf.
         *@
         <form id="workReportFilter" class="row g-3 align-items-end" novalidate>
             <div class="col-12 col-md-3">
                 <label for="wrFrom" class="form-label fw-medium">@Localizer["From"]</label>
-                <input type="date" id="wrFrom" class="form-control" required
+                <input type="text" id="wrFrom" class="form-control flatpickr-date" autocomplete="off" required
                        value="@defaultFrom.ToString("yyyy-MM-dd")" />
             </div>
             <div class="col-12 col-md-3">
                 <label for="wrTo" class="form-label fw-medium">@Localizer["To"]</label>
                 @* Exclusive, exactly as the API reads it — the value shown is the first day NOT counted. *@
-                <input type="date" id="wrTo" class="form-control" required
+                <input type="text" id="wrTo" class="form-control flatpickr-date" autocomplete="off" required
                        value="@defaultTo.ToString("yyyy-MM-dd")" />
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-3">
                 <label for="wrGroupBy" class="form-label fw-medium">@Localizer["GroupBy"]</label>
                 @* CODE values that travel, never translated words — the same rule every other picker here follows. *@
-                <select id="wrGroupBy" class="form-select">
+                <select id="wrGroupBy" class="form-select select2" data-minimum-results-for-search="Infinity">
                     <option value="None">@Localizer["GroupByNone"]</option>
                     <option value="TaskType">@Localizer["GroupByTaskType"]</option>
                     <option value="OrganizationUnit">@Localizer["GroupByOrganizationUnit"]</option>
@@ -58,83 +66,161 @@
                     <option value="LegalEntity">@Localizer["GroupByLegalEntity"]</option>
                 </select>
             </div>
-            <div class="col-12 col-md-2">
+            <div class="col-auto">
+                <label class="form-label fw-medium d-block">&nbsp;</label>
+                @*
+                    ⚠ THE ACTIVE-FILTER COUNT IS NOT COSMETIC — it is what keeps a narrowed report from being
+                    mistaken for the whole. The badge is the SAME shape WorkCenterNext's own filter toggle uses
+                    (`badge-center rounded-pill bg-primary position-absolute`, `wwwroot/assets/js/WorkCenterNext/app.js`),
+                    so a reader who already knows that idiom recognises this one. Zero active filters → no badge.
+                *@
+                <button type="button" class="btn btn-icon btn-label-secondary position-relative"
+                        data-bs-toggle="collapse" data-bs-target="#wrFilterCollapse"
+                        aria-expanded="false" aria-controls="wrFilterCollapse"
+                        title="@Localizer["FiltersToggle"]" aria-label="@Localizer["FiltersToggle"]">
+                    <i class="icon-base bx bx-filter-alt icon-sm"></i>
+                    <span class="badge badge-center rounded-pill bg-primary position-absolute top-0 end-0 translate-middle"
+                          data-wr-filter-count hidden>0</span>
+                </button>
+            </div>
+            <div class="col-12 col-md-auto ms-md-auto">
+                <label class="form-label fw-medium d-block d-md-none">&nbsp;</label>
                 <button type="submit" class="btn btn-primary w-100">@Localizer["Apply"]</button>
             </div>
 
             @*
-                ── THE FILTERS ──────────────────────────────────────────────────────────────────────────────
+                ── THE FILTERS, BEHIND THEIR OWN BUTTON ─────────────────────────────────────────────────────
                 Every one optional, and NONE of them a permission. They narrow the caller's already-resolved
                 scope and can never widen it: naming somebody else's id here returns an EMPTY report rather than
                 their work, because the server applies the scope first. Said here because a reader of this form
                 could otherwise reasonably assume the opposite.
 
                 The options are loaded from lookups this product already exposes — no new endpoint was written
-                for any of them, and the person picker is the one Workflow already uses.
+                for any of them, and the person picker is the one Workflow already uses. `dt-filter-host` is the
+                SAME class `DevEnablement/GoldenReferenceCompact`'s own filter panel wraps its chips in — it is
+                what gives the select2 boxes here their compact sizing and spacing, for free, from
+                `backbone-custom.css`, without a single new CSS rule for the shape of a filter chip.
             *@
-            <div class="col-12 col-md-4 col-xl-2">
-                <label for="wrLegalEntity" class="form-label fw-medium">@Localizer["FilterLegalEntity"]</label>
-                <select id="wrLegalEntity" class="form-select" data-wr-filter>
-                    <option value="">@Localizer["FilterAny"]</option>
-                </select>
-            </div>
-            <div class="col-12 col-md-4 col-xl-2">
-                <label for="wrUnit" class="form-label fw-medium">@Localizer["FilterUnit"]</label>
-                @* Narrowed by the company above — picking a company shows only its units. *@
-                <select id="wrUnit" class="form-select" data-wr-filter>
-                    <option value="">@Localizer["FilterAny"]</option>
-                </select>
-            </div>
-            <div class="col-12 col-md-4 col-xl-2">
-                <label for="wrTaskType" class="form-label fw-medium">@Localizer["FilterTaskType"]</label>
-                <select id="wrTaskType" class="form-select" data-wr-filter>
-                    <option value="">@Localizer["FilterAny"]</option>
-                </select>
-            </div>
-            <div class="col-12 col-md-4 col-xl-2">
-                <label for="wrAssignee" class="form-label fw-medium">@Localizer["FilterAssignee"]</label>
-                <select id="wrAssignee" class="form-select" data-wr-filter>
-                    <option value="">@Localizer["FilterAny"]</option>
-                </select>
-            </div>
-            <div class="col-12 col-md-4 col-xl-2">
-                <label for="wrPriority" class="form-label fw-medium">@Localizer["FilterPriority"]</label>
-                @* CODE values that travel, never translated words — the rule every picker on this page follows. *@
-                <select id="wrPriority" class="form-select" data-wr-filter>
-                    <option value="">@Localizer["FilterAny"]</option>
-                    <option value="High">@Localizer["PriorityHigh"]</option>
-                    <option value="Medium">@Localizer["PriorityMedium"]</option>
-                    <option value="Low">@Localizer["PriorityLow"]</option>
-                </select>
+            <div class="col-12">
+                <div class="collapse" id="wrFilterCollapse">
+                    <div class="pt-3 mt-1 border-top dt-filter-host">
+                        <div class="dt-filter-bar d-flex flex-wrap gap-3">
+                            <div class="filter-chip">
+                                <label for="wrLegalEntity" class="form-label fw-medium">@Localizer["FilterLegalEntity"]</label>
+                                <select id="wrLegalEntity" class="form-select select2" data-wr-filter
+                                        data-placeholder="@Localizer["FilterAny"]">
+                                    @*
+                                        ⚠ THE EMPTY OPTION IS LOAD-BEARING, NOT DECORATIVE — LIVE-VERIFIED MISSING IN THE
+                                        FIRST DRAFT OF THIS DILIM. select2's placeholder and its "clear" affordance both
+                                        need a blank `<option>` to represent "nothing chosen" (the same shape
+                                        `filterPriority` in GoldenReferenceCompact's own `_Filter.cshtml` uses); and
+                                        `fillSelect` in index.js only PRESERVES an existing blank option across a refill,
+                                        it never invents one. Omitting it — as this file first did — meant the "Any" state
+                                        vanished the instant the lookup populated real options, with no way back to it.
+                                    *@
+                                    <option value="">@Localizer["FilterAny"]</option>
+                                </select>
+                            </div>
+                            <div class="filter-chip">
+                                <label for="wrUnit" class="form-label fw-medium">@Localizer["FilterUnit"]</label>
+                                @* Narrowed by the company above — picking a company shows only its units. *@
+                                <select id="wrUnit" class="form-select select2" data-wr-filter
+                                        data-placeholder="@Localizer["FilterAny"]">
+                                    @*
+                                        ⚠ THE EMPTY OPTION IS LOAD-BEARING, NOT DECORATIVE — LIVE-VERIFIED MISSING IN THE
+                                        FIRST DRAFT OF THIS DILIM. select2's placeholder and its "clear" affordance both
+                                        need a blank `<option>` to represent "nothing chosen" (the same shape
+                                        `filterPriority` in GoldenReferenceCompact's own `_Filter.cshtml` uses); and
+                                        `fillSelect` in index.js only PRESERVES an existing blank option across a refill,
+                                        it never invents one. Omitting it — as this file first did — meant the "Any" state
+                                        vanished the instant the lookup populated real options, with no way back to it.
+                                    *@
+                                    <option value="">@Localizer["FilterAny"]</option>
+                                </select>
+                            </div>
+                            <div class="filter-chip">
+                                <label for="wrTaskType" class="form-label fw-medium">@Localizer["FilterTaskType"]</label>
+                                <select id="wrTaskType" class="form-select select2" data-wr-filter
+                                        data-placeholder="@Localizer["FilterAny"]">
+                                    @*
+                                        ⚠ THE EMPTY OPTION IS LOAD-BEARING, NOT DECORATIVE — LIVE-VERIFIED MISSING IN THE
+                                        FIRST DRAFT OF THIS DILIM. select2's placeholder and its "clear" affordance both
+                                        need a blank `<option>` to represent "nothing chosen" (the same shape
+                                        `filterPriority` in GoldenReferenceCompact's own `_Filter.cshtml` uses); and
+                                        `fillSelect` in index.js only PRESERVES an existing blank option across a refill,
+                                        it never invents one. Omitting it — as this file first did — meant the "Any" state
+                                        vanished the instant the lookup populated real options, with no way back to it.
+                                    *@
+                                    <option value="">@Localizer["FilterAny"]</option>
+                                </select>
+                            </div>
+                            <div class="filter-chip">
+                                <label for="wrAssignee" class="form-label fw-medium">@Localizer["FilterAssignee"]</label>
+                                <select id="wrAssignee" class="form-select select2" data-wr-filter
+                                        data-placeholder="@Localizer["FilterAny"]">
+                                    @*
+                                        ⚠ THE EMPTY OPTION IS LOAD-BEARING, NOT DECORATIVE — LIVE-VERIFIED MISSING IN THE
+                                        FIRST DRAFT OF THIS DILIM. select2's placeholder and its "clear" affordance both
+                                        need a blank `<option>` to represent "nothing chosen" (the same shape
+                                        `filterPriority` in GoldenReferenceCompact's own `_Filter.cshtml` uses); and
+                                        `fillSelect` in index.js only PRESERVES an existing blank option across a refill,
+                                        it never invents one. Omitting it — as this file first did — meant the "Any" state
+                                        vanished the instant the lookup populated real options, with no way back to it.
+                                    *@
+                                    <option value="">@Localizer["FilterAny"]</option>
+                                </select>
+                            </div>
+                            <div class="filter-chip">
+                                <label for="wrPriority" class="form-label fw-medium">@Localizer["FilterPriority"]</label>
+                                @* CODE values that travel, never translated words — the rule every picker on this page follows. *@
+                                <select id="wrPriority" class="form-select select2" data-wr-filter
+                                        data-placeholder="@Localizer["FilterAny"]">
+                                    <option value="">@Localizer["FilterAny"]</option>
+                                    <option value="High">@Localizer["PriorityHigh"]</option>
+                                    <option value="Medium">@Localizer["PriorityMedium"]</option>
+                                    <option value="Low">@Localizer["PriorityLow"]</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </form>
-
-        @*
-            ⚠ WHAT THE NUMBERS COVER, SAID OUT LOUD.
-
-            "There is no work" and "there is no work I may SEE" draw the identical empty chart, and a reader
-            takes the second for the first every time. The API publishes `scopeApplied` for exactly this reason,
-            and a screen that swallowed it would kill the field's reason to exist. Rendered from the response,
-            never guessed from the permission — the server decides scope, this reports it.
-        *@
-        <div class="mt-3" data-wr-scope hidden>
-            <span class="badge" data-wr-scope-badge></span>
-            <span class="text-muted small ms-2" data-wr-scope-hint></span>
-        </div>
 
         <p class="text-muted mb-0 mt-3" data-wr-status role="status" aria-live="polite"></p>
     </div>
 </section>
 
 @*
+    ⚠ WHAT THE NUMBERS COVER, NEXT TO THE NUMBERS THAT COVER IT — not inside the filter card any more, and
+    deliberately still a quiet badge rather than an alert. "There is no work" and "there is no work I may SEE"
+    draw the identical empty chart, and a reader takes the second for the first every time; a dismissible alert
+    would let that distinction be closed away and then a narrowed report reads as the whole tenant's. The API
+    publishes `scopeApplied` for exactly this reason, and this stays rendered from the response, never guessed
+    from the permission.
+*@
+<div class="d-flex align-items-center gap-2 mb-3" data-wr-scope hidden>
+    <span class="badge" data-wr-scope-badge></span>
+    <span class="text-muted small" data-wr-scope-hint></span>
+</div>
+
+@*
     THE TILES — one NUMBER each. A chart for a single figure is decoration, and this screen has a rule against
     decoration: every visual answers one question. These four are questions with one-number answers.
+*@
+@*
+    THE KPI CARDS — Dilim 1d gives them the shell `Platform/Tenants/Index.cshtml` uses (avatar icon + label +
+    figure), reused rather than invented. The CONTENT is untouched: median beside the average, the cancellation
+    span, the trend arrow and the ageing line are exactly what 1b and 1c put here — only the card's shell moved.
 *@
 <div class="row g-4 mb-4" data-wr-tiles hidden>
     <div class="col-12 col-md-6 col-xl-3">
         <section class="card h-100">
             <div class="card-body p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["CycleTimeTitle"]</h6>
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="avatar flex-shrink-0"><span class="avatar-initial rounded bg-label-primary"><i class="bx bx-time-five"></i></span></div>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["CycleTimeTitle"]</h6>
+                </div>
                 <p class="h4 mb-1" data-wr-cycle-value></p>
                 @* MEDIAN BESIDE THE AVERAGE, never instead of it — a large gap between them says "there is a
                    tail", which is the finding. Either number alone invites the wrong decision. *@
@@ -152,7 +238,10 @@
     <div class="col-12 col-md-6 col-xl-3">
         <section class="card h-100">
             <div class="card-body p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["ReworkTitle"]</h6>
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="avatar flex-shrink-0"><span class="avatar-initial rounded bg-label-warning"><i class="bx bx-revision"></i></span></div>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["ReworkTitle"]</h6>
+                </div>
                 @* ⚠ THE WHOLE LINE OPENS THE TASKS BEHIND IT — Dilim 1c. `data-wr-click="Returned"` is read by
                    the same delegated handler every other clickable number uses; nothing here is bespoke. *@
                 <p class="h4 mb-1 wr-clickable" data-wr-rework-tasks data-wr-click="Returned"
@@ -165,7 +254,10 @@
     <div class="col-12 col-md-6 col-xl-3">
         <section class="card h-100">
             <div class="card-body p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["UnattendedTitle"]</h6>
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="avatar flex-shrink-0"><span class="avatar-initial rounded bg-label-danger"><i class="bx bx-user-x"></i></span></div>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["UnattendedTitle"]</h6>
+                </div>
                 <p class="h4 mb-1 wr-clickable" data-wr-unattended-value data-wr-click="Unattended"
                    role="button" tabindex="0"></p>
                 @* AGEING — open work at the PERIOD'S END, so the same period says the same thing months later.
@@ -178,7 +270,10 @@
     <div class="col-12 col-md-6 col-xl-3">
         <section class="card h-100">
             <div class="card-body p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["EffortTitle"]</h6>
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="avatar flex-shrink-0"><span class="avatar-initial rounded bg-label-info"><i class="bx bx-bar-chart-alt-2"></i></span></div>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["EffortTitle"]</h6>
+                </div>
                 <p class="h6 mb-1" data-wr-effort-value></p>
                 <p class="text-muted small mb-1" data-wr-effort-over></p>
                 @*
@@ -194,7 +289,18 @@
     </div>
 </div>
 
-@* THE CHARTS — one question each, named above the picture so nobody has to infer what they are looking at. *@
+@*
+    THE CHARTS — one question each, named above the picture so nobody has to infer what they are looking at.
+
+    ⚠ SHAPE FOLLOWS THE DATA, NOT A GRID — Dilim 1d. Flow and timeliness are each a handful of categories, so
+    they stay small and side by side. Outcomes is a LONG-TAILED axis — a type dictionary can carry many outcome
+    codes — and a wheel with that many slices is unreadable past a handful; it is now the SAME sorted horizontal
+    bar `renderGroups` already draws for the breakdown axis, full width, busiest first, capped to the top eight
+    with the rest folded into one named bar (`OutcomesOther`) — the same folding idea `WorkReportDto.OtherKey`
+    already uses server-side, done here in the SCREEN because outcomes carries no such cap of its own. No chart
+    TYPE picker was added: the shape is decided by what the axis IS, not by a preference a reader could set to
+    something that misreads the data.
+*@
 <div class="row g-4" data-wr-charts hidden>
     <div class="col-12 col-xl-6">
         <section class="card h-100">
@@ -209,20 +315,20 @@
     <div class="col-12 col-xl-6">
         <section class="card h-100">
             <div class="card-body p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["OutcomesTitle"]</h6>
-                <p class="text-muted small mb-3">@Localizer["OutcomesQuestion"]</p>
-                <div data-wr-chart-outcomes></div>
-                <p class="text-muted mb-0" data-wr-outcomes-empty hidden>@Localizer["OutcomesEmpty"]</p>
-            </div>
-        </section>
-    </div>
-    <div class="col-12 col-xl-6">
-        <section class="card h-100">
-            <div class="card-body p-4">
                 <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["TimelinessTitle"]</h6>
                 <p class="text-muted small mb-3">@Localizer["TimelinessQuestion"]</p>
                 <div data-wr-chart-timeliness></div>
                 <p class="small mb-0 mt-2" data-wr-late-trend hidden></p>
+            </div>
+        </section>
+    </div>
+    <div class="col-12">
+        <section class="card h-100">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["OutcomesTitle"]</h6>
+                <p class="text-muted small mb-3">@Localizer["OutcomesQuestion"]</p>
+                <div data-wr-chart-outcomes></div>
+                <p class="text-muted mb-0" data-wr-outcomes-empty hidden>@Localizer["OutcomesEmpty"]</p>
             </div>
         </section>
     </div>

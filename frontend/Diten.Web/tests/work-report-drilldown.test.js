@@ -282,11 +282,32 @@ describe("(1) every published cell is reachable, and only through the shared doo
      * ⚠ THE STRUCTURAL GUARD — the same shape as Platform's `The_items_read_issues_NO_QUERY_OF_ITS_OWN`. Every
      * click handler in this file is REQUIRED to call `openItems`; a chart wired to its own inline `fetch` would
      * pass every test above on the day it was written and drift the day either copy was edited next.
+     *
+     * ⚠ BRACE-BALANCED EXTRACTION, NOT A NAIVE REGEX. A first version of this guard used
+     * `/dataPointSelection:\s*function[^}]*\{[^}]*\}/`, which stops at the FIRST `}` — so the moment Dilim 1d
+     * gave the outcomes handler an early-return `if (...) { return; }` before its own `openItems(...)` call,
+     * the regex captured only the `if` block and reported a false bypass. The handler body is read the same way
+     * `WorkReportItemsTests.MethodBody` reads a C# method on the backend: find the opening brace, count depth,
+     * stop when it returns to zero.
      */
-    const clickHandlers = SCRIPT.match(/dataPointSelection:\s*function[^}]*\{[^}]*\}/g) || [];
-    expect(clickHandlers.length, "no chart click handlers were found — the guard is pointing at nothing")
+    const handlerStarts = [];
+    const marker = /dataPointSelection:\s*function[^{]*\{/g;
+    let match;
+    while ((match = marker.exec(SCRIPT))) { handlerStarts.push(match.index + match[0].length - 1); }
+
+    expect(handlerStarts.length, "no chart click handlers were found — the guard is pointing at nothing")
       .toBeGreaterThanOrEqual(4);
-    clickHandlers.forEach((handler) => {
+
+    const handlerBody = (openBraceIndex) => {
+      let depth = 0;
+      for (let i = openBraceIndex; i < SCRIPT.length; i++) {
+        if (SCRIPT[i] === "{") depth++;
+        else if (SCRIPT[i] === "}" && --depth === 0) { return SCRIPT.slice(openBraceIndex, i + 1); }
+      }
+      throw new Error("unbalanced braces after a dataPointSelection handler");
+    };
+
+    handlerStarts.map(handlerBody).forEach((handler) => {
       expect(handler, "a chart click handler bypasses openItems").toMatch(/openItems\(/);
       expect(handler, "a chart click handler calls fetch directly").not.toMatch(/\bfetch\(/);
     });

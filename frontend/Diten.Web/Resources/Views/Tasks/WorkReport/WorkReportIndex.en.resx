@@ -85,6 +85,8 @@
   <data name="ItemsAging8to30" xml:space="preserve"><value>Open 8–30 days</value></data>
   <data name="ItemsAging30plus" xml:space="preserve"><value>Open 30+ days</value></data>
   <data name="ItemsColDue" xml:space="preserve"><value>due {0}</value></data>
+  <data name="FiltersToggle" xml:space="preserve"><value>Filters</value></data>
+  <data name="OutcomesOther" xml:space="preserve"><value>Other outcomes</value></data>
   <data name="ItemsColClosed" xml:space="preserve"><value>closed {0}</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>Low</value></data>
 </root>
