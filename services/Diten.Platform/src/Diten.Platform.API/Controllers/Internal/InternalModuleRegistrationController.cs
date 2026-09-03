@@ -56,8 +56,7 @@ public sealed class InternalModuleRegistrationController : CustomBaseController
         }
 
         var normalizedModuleCode = ModuleCatalogCodeNormalizer.Normalize(manifest.ModuleCode);
-        var isMdmCredentialModule = string.Equals(normalizedModuleCode, "PRODUCT-ITEM-SKU-MASTER", StringComparison.Ordinal)
-            || string.Equals(normalizedModuleCode, "LEGAL-ENTITY", StringComparison.Ordinal);
+        var isMdmCredentialModule = IsMdmCredentialModule(normalizedModuleCode);
         var hasMdmCredentialHeaders = Request.Headers.ContainsKey(CredentialIdHeader)
             || Request.Headers.ContainsKey(CredentialSecretHeader);
 
@@ -92,6 +91,9 @@ public sealed class InternalModuleRegistrationController : CustomBaseController
             response.IsSuccessful);
         return CreateActionResultInstance(response);
     }
+
+    private static bool IsMdmCredentialModule(string normalizedModuleCode) =>
+        normalizedModuleCode is "LEGAL-ENTITY" or "PRODUCT-ITEM-SKU-MASTER" or "BRAND-PRODUCT-MASTER";
 
     private bool IsLegacyInternalRequestAuthorized()
     {
