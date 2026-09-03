@@ -51,6 +51,25 @@ public sealed class DefaultRolePermissionTemplateTests
     }
 
     [Fact]
+    public void Tenant_workflow_execution_keys_are_assignable_but_not_default_Admin_or_Viewer_grants()
+    {
+        var catalog = new List<Permission>
+        {
+            new("platform", "workflow.instances", "start", "Start Workflow Instance", null,
+                moduleOverride: "workflow", scope: PermissionScope.Tenant),
+            new("platform", "workflow.tasks", "approve", "Approve Workflow Task", null,
+                moduleOverride: "workflow", scope: PermissionScope.Tenant),
+            new("platform", "workflow.tasks", "reject", "Reject Workflow Task", null,
+                moduleOverride: "workflow", scope: PermissionScope.Tenant)
+        };
+
+        Assert.All(catalog, permission => Assert.True(DefaultRolePermissionTemplate.IsTenantAssignable(permission)));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.AdminRole, catalog));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.ViewerRole, catalog));
+        Assert.Equal(3, DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.SuperAdminRole, catalog).Count);
+    }
+
+    [Fact]
     public void Admin_gets_auth_and_mdm_only_never_platform()
     {
         var keys = DefaultRolePermissionTemplate.SelectFor("Admin", Catalog()).Select(p => p.Key).ToList();
