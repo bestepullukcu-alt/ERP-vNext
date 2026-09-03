@@ -59,12 +59,24 @@ public sealed class TaskTypesController : Controller
     public IActionResult Index() => View($"{ViewRoot}/Index.cshtml");
 
     [HttpGet("Create")]
-    public IActionResult Create() => View($"{ViewRoot}/Create.cshtml", new TaskTypeEditViewModel());
+    public async Task<IActionResult> Create()
+    {
+        var model = new TaskTypeEditViewModel();
+        model.SystemOutcomes = await LoadSystemOutcomesAsync();
+        return View($"{ViewRoot}/Create.cshtml", model);
+    }
 
     [HttpPost("Create")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create([FromForm] TaskTypeEditViewModel model)
     {
+        /*
+         * ⚠ RELOADED ON EVERY RE-RENDER, not only on the first GET. The catalogue is not posted back — codes and
+         * resource keys are code-owned — so a form redisplayed after a validation failure would lose its picker
+         * and silently offer only custom outcomes. Same class of omission as the GroupDocumentsText rehydration.
+         */
+        model.SystemOutcomes = await LoadSystemOutcomesAsync();
+
         if (!ModelState.IsValid)
             return View($"{ViewRoot}/Create.cshtml", model);
 
@@ -98,6 +110,11 @@ public sealed class TaskTypesController : Controller
     public async Task<IActionResult> Edit(Guid id)
     {
         var detail = await LoadApiModelAsync(id);
+        if (detail is not null)
+        {
+            detail.SystemOutcomes = await LoadSystemOutcomesAsync();
+        }
+
         if (detail is null)
         {
             TempData["ErrorMessage"] = _sharedLocalizer["GatewayError"].Value;
@@ -125,6 +142,7 @@ public sealed class TaskTypesController : Controller
     public async Task<IActionResult> Edit(Guid id, [FromForm] TaskTypeEditViewModel model)
     {
         model.Id = id;
+        model.SystemOutcomes = await LoadSystemOutcomesAsync();
         if (!ModelState.IsValid)
             return View($"{ViewRoot}/Edit.cshtml", model);
 
@@ -178,12 +196,64 @@ public sealed class TaskTypesController : Controller
          * Same shape as the BL-024 field-preservation defect: the write path was right, the READ path never
          * handed it what it needed to preserve.
          */
-        if (payload?.Data is { } model && model.GroupDocuments is { Count: > 0 })
+        if (payload?.Data is { } model)
         {
-            model.GroupDocumentsText = string.Join(Environment.NewLine, model.GroupDocuments);
+            if (model.GroupDocuments is { Count: > 0 })
+            {
+                model.GroupDocumentsText = string.Join(Environment.NewLine, model.GroupDocuments);
+            }
+
+            /*
+             * ⚠ A JSON `null` OVERWRITES A PROPERTY INITIALISER — it does not leave the default in place.
+             *
+             * The API emits the dictionary as a list and never as null, so this looks unnecessary today. It is
+             * not: `TaskTypeDto.ClosureOutcomes` is a NULLABLE parameter, so one older service, one cached
+             * response or one future change that omits it would deserialize null onto this list — and the form
+             * enumerates it unconditionally. That is a 500 on the edit screen for a field the user never touched.
+             *
+             * Empty is also the honest reading: a type with no dictionary asks nothing when a task closes.
+             */
+            model.ClosureOutcomes ??= [];
         }
 
         return payload?.Data;
+    }
+
+    /// <summary>
+    /// The SYSTEM closure outcomes the picker offers.
+    ///
+    /// <para><b>An empty list is a DEGRADED form, not a broken one.</b> If the gateway cannot answer, the editor
+    /// still opens and still saves — the administrator simply gets no system outcomes to pick from and can only
+    /// write their own. Refusing to render the page would take away the type's OTHER fields over a list that is
+    /// optional by design; the log line says what was lost.</para>
+    /// </summary>
+    private async Task<IReadOnlyList<TaskTypeClosureOutcomeViewModel>> LoadSystemOutcomesAsync()
+    {
+        if (!AddAuthHeaders())
+        {
+            return [];
+        }
+
+        try
+        {
+            var response = await _httpClient.GetAsync($"{_gatewayUrl}{ApiPath}/closure-outcome-catalog");
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning(
+                    "Closure outcome catalogue unavailable ({Status}); the type editor offers custom outcomes only.",
+                    (int)response.StatusCode);
+                return [];
+            }
+
+            var payload = await response.Content
+                .ReadFromJsonAsync<GatewayResponse<List<TaskTypeClosureOutcomeViewModel>>>(_jsonOptions);
+            return payload?.Data ?? [];
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Closure outcome catalogue could not be read; offering custom outcomes only.");
+            return [];
+        }
     }
 
     /// <summary>
@@ -200,7 +270,8 @@ public sealed class TaskTypesController : Controller
         functionCode = Nullable(model.FunctionCode),
         isQualityEvent = model.IsQualityEvent,
         groupDocuments = SplitDocuments(model.GroupDocumentsText),
-        localDocuments = (object?)null
+        localDocuments = (object?)null,
+        closureOutcomes = ClosureOutcomesPayload(model)
     };
 
     /// <summary>
@@ -222,8 +293,60 @@ public sealed class TaskTypesController : Controller
         functionCode = Nullable(model.FunctionCode),
         isQualityEvent = model.IsQualityEvent,
         groupDocuments = SplitDocuments(model.GroupDocumentsText),
-        localDocuments = (object?)null
+        localDocuments = (object?)null,
+        closureOutcomes = ClosureOutcomesPayload(model)
     };
+
+    /// <summary>
+    /// The closure outcome dictionary — or NULL, meaning "do not touch it".
+    ///
+    /// <para>⚠ <b>THE NULL IS THE POINT, and getting it wrong deletes a tenant's configuration silently.</b> The
+    /// API distinguishes the two on purpose: <c>null</c> is "not asking", <c>[]</c> is "clear it". An update is a
+    /// FULL REPLACE everywhere else on this record, so before the form drew this section, sending <c>[]</c> would
+    /// have wiped a dictionary on every save from this screen — a 302 and a success message, exactly like the
+    /// <c>GroupDocumentsText</c> defect found live on 2026-08-26.</para>
+    ///
+    /// <para>So the answer comes from the FORM, not from the list being empty. The section posts a hidden marker
+    /// when it renders; without it this returns null and the stored dictionary survives untouched. With it, the
+    /// posted rows are the truth — including none of them, which is a real instruction to clear.</para>
+    ///
+    /// <para>Rows with no code are dropped rather than refused: a repeater's freshly added, never-filled row is a
+    /// half-typed thought, not a validation failure. The server refuses a code it cannot accept.</para>
+    /// </summary>
+    private static object? ClosureOutcomesPayload(TaskTypeEditViewModel model)
+    {
+        if (!model.ClosureOutcomesSubmitted)
+        {
+            return null;
+        }
+
+        return (model.ClosureOutcomes ?? [])
+            .Where(outcome => !string.IsNullOrWhiteSpace(outcome.Code))
+            .Select((outcome, index) => new
+            {
+                code = outcome.Code,
+                /*
+                 * EXACTLY ONE LABEL SOURCE. A system row carries the resource key and no text; a tenant row
+                 * carries text and no key. The server refuses both at once (OutcomeLabelAmbiguousMessage), so a
+                 * row that somehow carried both is normalised HERE to the system half — the key is the stronger
+                 * claim, because it is bound to a translation this product ships.
+                 */
+                labelResourceKey = Nullable(outcome.LabelResourceKey),
+                labelText = string.IsNullOrWhiteSpace(outcome.LabelResourceKey)
+                    ? Nullable(outcome.LabelText)
+                    : null,
+                disposition = outcome.Disposition,
+                // ⭐ Read off THIS row. A global flag cannot express "Rejected asks why, Approved does not".
+                requiresReason = outcome.RequiresReason,
+                /*
+                 * Fall back to the ROW'S POSITION when no explicit order was typed. The alternative — every row
+                 * at 0 — makes the server's tie-breaker (code, alphabetical) the real order, so a list an
+                 * administrator arranged deliberately would come back rearranged.
+                 */
+                sortOrder = outcome.SortOrder == 0 ? (index + 1) * 10 : outcome.SortOrder
+            })
+            .ToList();
+    }
 
     /// <summary>One UID per line — the document PICKER is slice 2, and there is nothing to pick from yet.</summary>
     private static string[] SplitDocuments(string? text) => string.IsNullOrWhiteSpace(text)

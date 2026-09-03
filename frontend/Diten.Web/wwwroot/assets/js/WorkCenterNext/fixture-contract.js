@@ -423,6 +423,39 @@
             }
         }
         /*
+         * returned — THIS WORK CAME BACK. Where it came from, not what state it is in.
+         *
+         * DECLARED HERE because that is this file's own recurring lesson: a value "existed in the provider, in
+         * the shell's icon map and in its label map, and in none of them as a stated contract" (see
+         * SUBTASK_STATUSES above), and `taskContext` went further — its card gated on a capability the
+         * vocabulary did not contain, so the effort card never drew at all. A field the shell reads and the
+         * contract does not name is a field that changes meaning without anyone noticing.
+         *
+         * ⚠ IT IS NOT A LIFECYCLE VALUE, and must never become one. The task really is `Open` — somebody has to
+         * do it. `returned` says it has been here before, which is ORIGIN, and this contract sorts those apart:
+         * tab is ownership, segment is state, chip is type and signal.
+         *
+         * `at` and `count` are required together when the block is present: a signal that cannot say WHEN cannot
+         * be ordered, and one that cannot say HOW MANY cannot feed the rework count it exists to seed. `reason`
+         * is optional and is a DISPLAY label — the returner's own sentence, never a resource key.
+         *
+         * Valid on TERMINAL work too, unlike `closure` below: a finished task that came back twice on its way
+         * there is a true statement about it, and the shell decides where that is worth saying.
+         */
+        if (fixture.returned !== undefined && fixture.returned !== null) {
+            const returned = fixture.returned;
+            if (Number.isNaN(new Date(returned.at).getTime())) {
+                push(errors, fixture, 'RETURNED_AT_INVALID', 'returned');
+            }
+            if (!Number.isInteger(returned.count) || returned.count < 1) {
+                // Zero is not a small count, it is the absence of the signal — and the absence is `undefined`.
+                push(errors, fixture, 'RETURNED_COUNT_INVALID', 'returned');
+            }
+            if (returned.reason !== undefined && returned.reason !== null && !isLabel(returned.reason)) {
+                push(errors, fixture, 'RETURNED_REASON_INVALID', 'returned');
+            }
+        }
+        /*
          * closure — WHAT the closure decided, the other half of `closedAt`.
          *
          * Declared here for the reason its sibling above gives: an undeclared field is a field that changes

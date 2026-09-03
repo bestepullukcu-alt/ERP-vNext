@@ -2241,4 +2241,22 @@
   <data name="WorkAggregation_ClosureOutcome_CancelledDuplicate" xml:space="preserve">
     <value>Mükerrer</value>
   </data>
+  <data name="ReturnedLabel" xml:space="preserve">
+    <value>Geri geldi</value>
+  </data>
+  <data name="ReturnedCount" xml:space="preserve">
+    <value>{0}× geri geldi</value>
+  </data>
+  <data name="StepReturned" xml:space="preserve">
+    <value>Bu görev size geri gönderildi.</value>
+  </data>
+  <data name="StepReturnedTimes" xml:space="preserve">
+    <value>Bu görev {0} kez geri gönderildi.</value>
+  </data>
+  <data name="StepReturnedBecause" xml:space="preserve">
+    <value>Size geri gönderildi: {0}</value>
+  </data>
+  <data name="StepReturnedTimesBecause" xml:space="preserve">
+    <value>{0} kez geri gönderildi, en son: {1}</value>
+  </data>
 </root>

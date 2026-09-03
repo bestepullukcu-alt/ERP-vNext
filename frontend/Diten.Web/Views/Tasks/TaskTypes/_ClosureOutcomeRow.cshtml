@@ -1,0 +1,149 @@
+@model Diten.Web.Models.TaskTypes.TaskTypeClosureOutcomeRow
+@using Diten.Web.Views.Tasks.TaskTypes
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Diten.Web.Views.WorkCenterNext
+@inject IHtmlLocalizer<TaskTypesIndex> Localizer
+@* ⚠ THE SYSTEM OUTCOME LABELS COME FROM THE WORKCENTERNEXT RESX, NOT THIS ONE.
+   `WorkAggregation_ClosureOutcome_*` already exists there in all seven languages — the projection emits those
+   keys and the Task Center resolves them. Copying the five entries into TaskTypesIndex would put the SAME
+   sentence in two files, and the day one is corrected the two screens would disagree about what an outcome is
+   called. So the second localizer is injected instead. *@
+@inject IHtmlLocalizer<WorkCenterNextIndex> OutcomeLocalizer
+@{
+    var outcome = Model.Outcome;
+    var key = Model.RowKey;
+    var isSystem = !string.IsNullOrWhiteSpace(outcome.LabelResourceKey);
+}
+@*
+    ONE ROW OF THE CLOSURE OUTCOME DICTIONARY — declared ONCE.
+
+    _Form renders this for every stored row AND once inside a <template> with the placeholder key, so the markup
+    an administrator edits and the markup the Add button clones are the same file. Two copies of a row is how the
+    cloned one quietly loses a field name and stops binding.
+
+    The visual shape is Sneat's repeater row (forms-extras.html:1955 — `data-repeater-list` / `data-repeater-item`):
+    a `.row` of `col-*` inputs with the delete control on the right. ⚠ MEASURED: `jquery.repeater`, which drives
+    those pages, IS vendored (wwwroot/assets/vendor/libs/jquery-repeater/) but NOTHING WIRES IT — no view loads the
+    script, and its only caller is app-ecommerce-product-add.js, a Sneat sample no view references. Copying the
+    `data-repeater-*` markup would therefore have produced an Add button that silently does nothing. The look is
+    borrowed; the behaviour is a small vanilla script. (Wiring the vendor library instead remains open — it is
+    present, not absent.)
+*@
+<div class="row g-3 align-items-end mb-3" data-closure-outcome-row>
+    @*
+        NON-SEQUENTIAL INDEX BINDING. `<name>.Index` lets the model binder accept arbitrary keys, so removing the
+        middle row does not require renumbering the ones after it — which a clone-and-append editor cannot do
+        without re-rendering the whole list and throwing away what the user has typed.
+    *@
+    <input type="hidden" name="ClosureOutcomes.Index" value="@key" />
+
+    @* Identifies a SYSTEM outcome. Hidden because it is not something anyone types: it is the catalogue's key,
+       bound to the seven translations this product ships. Empty for a tenant outcome. *@
+    <input type="hidden" name="ClosureOutcomes[@key].LabelResourceKey"
+           value="@outcome.LabelResourceKey" data-closure-outcome-key />
+
+    <div class="col-12 col-lg-3">
+        <label class="form-label fw-medium">@Localizer["ClosureOutcomeSource"]</label>
+        <select class="form-select" data-closure-outcome-source>
+            @* "Custom" is a REAL CHOICE — the administrator writing their own outcome — not a placeholder, so it
+               says so in words rather than showing a greyed prompt. *@
+            <option value="">@Localizer["ClosureOutcomeSourceCustom"]</option>
+            @foreach (var system in Model.SystemOutcomes)
+            {
+                var systemKey = system.LabelResourceKey ?? system.Code;
+                <option value="@system.Code"
+                        data-disposition="@system.Disposition"
+                        data-requires-reason="@(system.RequiresReason ? "true" : "false")"
+                        data-resource-key="@system.LabelResourceKey"
+                        data-label="@OutcomeLocalizer[systemKey].Value"
+                        selected="@(isSystem && string.Equals(outcome.Code, system.Code, StringComparison.OrdinalIgnoreCase))">
+                    @OutcomeLocalizer[systemKey]
+                </option>
+            }
+        </select>
+    </div>
+
+    <div class="col-12 col-md-4 col-lg-2">
+        <label class="form-label fw-medium">@Localizer["ClosureOutcomeCode"]</label>
+        @* A system row's code belongs to the catalogue. `readonly`, NEVER `disabled`: a disabled input posts
+           nothing, and this code is the value stored on every task closed this way. *@
+        <input type="text" class="form-control" maxlength="40"
+               name="ClosureOutcomes[@key].Code" value="@outcome.Code"
+               readonly="@isSystem"
+               placeholder="@Localizer["ClosureOutcomeCodePlaceholder"]"
+               data-closure-outcome-code />
+    </div>
+
+    <div class="col-12 col-md-8 col-lg-3">
+        <label class="form-label fw-medium">@Localizer["ClosureOutcomeLabel"]</label>
+        @*
+            TWO CONTROLS, EXACTLY ONE VISIBLE — the label split TaskFieldDefinition established.
+
+            The SYSTEM control is read-only and carries NO `name`, so it never posts: the resource key alone
+            identifies the outcome and the translation already exists in all seven languages. The TENANT control
+            posts the author's own words, in the one language they typed them in.
+
+            Posting both would be REFUSED by the server (OutcomeLabelAmbiguousMessage), which is why the script
+            clears the text box when a system outcome is chosen rather than merely hiding it.
+        *@
+        <input type="text" class="form-control @(isSystem ? "" : "d-none")" readonly
+               value="@(isSystem ? OutcomeLocalizer[outcome.LabelResourceKey!].Value : string.Empty)"
+               data-closure-outcome-system-label />
+        <input type="text" class="form-control @(isSystem ? "d-none" : "")" maxlength="160"
+               placeholder="@Localizer["ClosureOutcomeLabelPlaceholder"]"
+               name="ClosureOutcomes[@key].LabelText"
+               value="@(isSystem ? string.Empty : outcome.LabelText)"
+               data-closure-outcome-text />
+    </div>
+
+    <div class="col-6 col-md-4 col-lg-2">
+        <label class="form-label fw-medium">@Localizer["ClosureOutcomeDisposition"]</label>
+        @* CODE values that travel, never translated words — the same rule RecordClass follows above. *@
+        <select class="form-select" name="ClosureOutcomes[@key].Disposition" data-closure-outcome-disposition>
+            <option value="Completed" selected="@(outcome.Disposition == "Completed")">@Localizer["ClosureDispositionCompleted"]</option>
+            <option value="Cancelled" selected="@(outcome.Disposition == "Cancelled")">@Localizer["ClosureDispositionCancelled"]</option>
+        </select>
+    </div>
+
+    <div class="col-6 col-md-4 col-lg-1">
+        <label class="form-label fw-medium">@Localizer["ClosureOutcomeSortOrder"]</label>
+        <input type="number" class="form-control" min="0"
+               name="ClosureOutcomes[@key].SortOrder" value="@outcome.SortOrder" />
+    </div>
+
+    <div class="col-8 col-md-3 col-lg-2">
+        @*
+            ⭐ PER ROW, and that is the design rather than a convenience. A single "notes are mandatory" switch
+            above the list forces a sentence onto the outcomes that do not need one; those boxes fill with "ok",
+            and the field then carries no signal on the outcomes that DID need it. "Rejected" asks why,
+            "Approved" does not — one list, two answers.
+        *@
+        <div class="form-check mb-2">
+            @* The hidden false is what makes UNCHECKING post at all — an unchecked checkbox sends nothing, so
+               without it a box could be ticked and never untucked. *@
+            @*
+                ⚠ CHECKBOX FIRST, HIDDEN SECOND — AND THE ORDER IS THE WHOLE RULE.
+
+                MVC binds the FIRST value it meets for a repeated name. Written the other way round, a ticked box
+                puts "false,true" on the wire and the binder takes "false": the switch can never be turned on, and
+                nothing complains. MEASURED live on this very row before it was fixed — FormData(form) returned
+                ["false","true"] with the box ticked.
+
+                This cannot be an `asp-for` checkbox: that emits its hidden partner into FormContext.EndOfFormContent
+                at </form>, which the <template> this partial also renders is not part of. So the pair is written by
+                hand here, and the order is the only thing keeping it honest. A test asserts it; do not reorder.
+            *@
+            <input type="checkbox" class="form-check-input" name="ClosureOutcomes[@key].RequiresReason"
+                   value="true" checked="@outcome.RequiresReason" data-closure-outcome-requires-reason />
+            <input type="hidden" name="ClosureOutcomes[@key].RequiresReason" value="false" />
+            <label class="form-check-label small">@Localizer["ClosureOutcomeRequiresReason"]</label>
+        </div>
+    </div>
+
+    <div class="col-4 col-md-1 col-lg-1 text-end">
+        <button type="button" class="btn btn-label-danger" data-closure-outcome-remove
+                aria-label="@Localizer["ClosureOutcomeRemove"]">
+            <i class="bx bx-trash"></i>
+        </button>
+    </div>
+</div>

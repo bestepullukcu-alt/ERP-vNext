@@ -115,4 +115,52 @@
   <data name="DocListWithdrawReasonRequired" xml:space="preserve"><value>Un retrait exige un motif.</value></data>
   <data name="DocListWithdrawSubtext" xml:space="preserve"><value>La version {0} cesse d’être la liste citable. Elle est conservée et marquée, afin que les références antérieures restent lisibles.</value></data>
   <data name="DocListImportDenied" xml:space="preserve"><value>Vous pouvez consulter cette liste mais pas l’importer.</value></data>
+  <data name="ClosureOutcomesSection" xml:space="preserve">
+    <value>Résultats de clôture</value>
+  </data>
+  <data name="ClosureOutcomesHint" xml:space="preserve">
+    <value>Ce qui compte comme une fin pour un travail de ce type. Laissez vide et la clôture d'une tâche ne demande rien — c'est le comportement de tout type non configuré.</value>
+  </data>
+  <data name="ClosureOutcomesEmpty" xml:space="preserve">
+    <value>Aucun résultat défini — clôturer une tâche de ce type ne demande rien.</value>
+  </data>
+  <data name="ClosureOutcomeAdd" xml:space="preserve">
+    <value>Ajouter un résultat</value>
+  </data>
+  <data name="ClosureOutcomeRemove" xml:space="preserve">
+    <value>Supprimer ce résultat</value>
+  </data>
+  <data name="ClosureOutcomeSource" xml:space="preserve">
+    <value>Résultat</value>
+  </data>
+  <data name="ClosureOutcomeSourceCustom" xml:space="preserve">
+    <value>Rédiger le mien</value>
+  </data>
+  <data name="ClosureOutcomeCode" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="ClosureOutcomeCodePlaceholder" xml:space="preserve">
+    <value>ex. RESOLU</value>
+  </data>
+  <data name="ClosureOutcomeLabel" xml:space="preserve">
+    <value>Libellé</value>
+  </data>
+  <data name="ClosureOutcomeLabelPlaceholder" xml:space="preserve">
+    <value>Ce que les gens verront</value>
+  </data>
+  <data name="ClosureOutcomeDisposition" xml:space="preserve">
+    <value>Proposé lors de</value>
+  </data>
+  <data name="ClosureOutcomeSortOrder" xml:space="preserve">
+    <value>Ordre</value>
+  </data>
+  <data name="ClosureOutcomeRequiresReason" xml:space="preserve">
+    <value>Demande pourquoi</value>
+  </data>
+  <data name="ClosureDispositionCompleted" xml:space="preserve">
+    <value>La finalisation</value>
+  </data>
+  <data name="ClosureDispositionCancelled" xml:space="preserve">
+    <value>L'annulation</value>
+  </data>
 </root>

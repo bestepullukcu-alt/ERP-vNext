@@ -547,6 +547,24 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>
+    /// The SYSTEM closure outcomes a type may be built from.
+    ///
+    /// <para>A LITERAL segment beside <c>task-types/{id:guid}</c>, which is why the two cannot collide: the guid
+    /// constraint refuses this word before routing ever reaches the parameterised action.</para>
+    ///
+    /// <para>Guarded by <c>TaskTypesManage</c> — the same permission as editing a type, because this list exists
+    /// only to build one. It is not tenant data and holds nothing to protect; the permission keeps the surface
+    /// coherent rather than the contents secret.</para>
+    /// </summary>
+    [HttpGet("task-types/closure-outcome-catalog")]
+    [HasPermission(TaskPermissions.TaskTypesManage)]
+    public async Task<IActionResult> GetClosureOutcomeCatalog(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetClosureOutcomeCatalogQuery(CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     [HttpGet("task-types/{id:guid}")]
     [HasPermission(TaskPermissions.TaskTypesManage)]
     public async Task<IActionResult> GetTaskType(Guid id, CancellationToken ct)
