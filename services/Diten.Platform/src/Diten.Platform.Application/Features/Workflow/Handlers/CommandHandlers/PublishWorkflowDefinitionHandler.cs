@@ -112,6 +112,7 @@ public sealed class PublishWorkflowDefinitionHandler
         template.ActivePublishedVersionId = created.Id;
         template.CurrentVersionId = created.Id;
         template.Status = WorkflowTemplateStatus.Published;
+        template.UpdatedBy = publishedBy;
 
         var updated = await _templateRepository.UpdateAsync(template, expectedTemplateVersion, ct);
         if (!updated)

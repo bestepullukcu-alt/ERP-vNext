@@ -159,6 +159,7 @@ builder.Services.AddSingleton<Diten.Platform.API.Models.Audit.TrustedSourceAudit
 builder.Services.AddScoped<ITrustedSourceAuditIntentRequestExecutor, TrustedSourceAuditIntentRequestExecutor>();
 builder.Services.AddSingleton<Diten.Platform.API.Models.Workflow.TrustedWorkflowConsumerRequestParser>();
 builder.Services.AddScoped<ITrustedWorkflowConsumerRequestExecutor, TrustedWorkflowConsumerRequestExecutor>();
+builder.Services.AddScoped<IPlatformTenantWorkflowDefinitionRequestExecutor, PlatformTenantWorkflowDefinitionRequestExecutor>();
 builder.Services.AddSingleton<ConfiguredTrustedWorkflowStartAuthorizationPolicy>();
 builder.Services.AddSingleton<Microsoft.Extensions.Options.IValidateOptions<TrustedWorkflowStartAuthorizationOptions>,
     TrustedWorkflowStartAuthorizationOptionsValidator>();
