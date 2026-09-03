@@ -77,6 +77,20 @@ public sealed class InternalModuleRegistrationControllerTests
     }
 
     [Fact]
+    public async Task Protected_brand_product_never_falls_back_to_valid_shared_internal_key()
+    {
+        var mediator = new Mock<IMediator>();
+        var sharedSecret = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+        var controller = BuildController(mediator, ModuleRegistrationAuthenticationResult.Rejected, sharedSecret);
+        controller.Request.Headers["X-Internal-Api-Key"] = sharedSecret;
+
+        var result = await controller.RegisterManifest(BrandProductManifest(), CancellationToken.None);
+
+        Assert.Equal(401, Assert.IsAssignableFrom<ObjectResult>(result).StatusCode);
+        mediator.Verify(x => x.Send(It.IsAny<RegisterModuleManifestCommand>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task Authenticated_mdm_owner_is_added_server_side_to_command()
     {
         var mediator = SuccessfulMediator();
@@ -101,6 +115,39 @@ public sealed class InternalModuleRegistrationControllerTests
         mediator.Verify(x => x.Send(
             It.Is<RegisterModuleManifestCommand>(c => c.Manifest == legalEntity),
             It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Authenticated_mdm_credential_registers_exact_brand_product_mapping_with_server_owned_owner()
+    {
+        var mediator = SuccessfulMediator();
+        var controller = BuildController(mediator, new(true, "DITENMDMSERVICE"));
+        var brandProduct = BrandProductManifest();
+
+        var result = await controller.RegisterManifest(brandProduct, CancellationToken.None);
+
+        Assert.Equal(200, Assert.IsAssignableFrom<ObjectResult>(result).StatusCode);
+        mediator.Verify(x => x.Send(
+            It.Is<RegisterModuleManifestCommand>(c =>
+                c.Manifest == brandProduct
+                && c.TrustedProducerOwnerCode == "DITENMDMSERVICE"),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Authenticated_brand_product_registration_never_logs_or_returns_credential_secret()
+    {
+        var mediator = SuccessfulMediator();
+        var logger = new RecordingLogger<InternalModuleRegistrationController>();
+        var controller = BuildController(mediator, new(true, "DITENMDMSERVICE"), logger: logger);
+        var secret = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+        controller.Request.Headers["X-Module-Registration-Credential"] = secret;
+
+        var result = await controller.RegisterManifest(BrandProductManifest(), CancellationToken.None);
+        var responseJson = JsonSerializer.Serialize(Assert.IsAssignableFrom<ObjectResult>(result).Value);
+
+        Assert.DoesNotContain(secret, responseJson, StringComparison.Ordinal);
+        Assert.DoesNotContain(logger.Messages, message => message.Contains(secret, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -171,6 +218,9 @@ public sealed class InternalModuleRegistrationControllerTests
 
     private static ModuleManifestDocument ProductManifest() =>
         new("product-item-sku-master", "ProductItemSkuMaster", "Product", "MasterDataManagement", "DitenMdmService", "1.0.0", true, 10, []);
+
+    private static ModuleManifestDocument BrandProductManifest() =>
+        ProductManifest() with { ModuleCode = "brand-product-master", ModuleName = "BrandProductMaster" };
 
     private sealed class RecordingLogger<T> : ILogger<T>
     {

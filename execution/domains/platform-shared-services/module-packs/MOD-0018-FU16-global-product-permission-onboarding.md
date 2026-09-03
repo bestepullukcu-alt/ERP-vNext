@@ -6,7 +6,7 @@ service: Diten.AuthService
 shell: none
 golden_reference: none
 entity_base: GlobalEntityBase
-status: review
+status: in-progress
 owner: auth-owner / platform-owner
 branch: feature/pss/mod-0018-fu16-global-product-permission-onboarding
 started: 2026-08-04
@@ -33,6 +33,60 @@ consumer_module: MOD-0290
 >
 > **Golden Reference decision.** This is backend-only permission/catalog/onboarding work, not a CRUD, Razor or
 > DataTable module. Therefore `shell: none`, `golden_reference: none` and `form_field_count: 0` are intentional.
+
+## 0. BRAND-PRODUCT-MASTER Trusted MDM Registration Mapping Amendment — 2026-08-30
+
+The dedicated `brand-product-master` manifest is emitted by the existing MDM module-registration hosted service with
+the same dedicated MDM credential as the Legal Entity and Product / Item / SKU manifests. Current Platform code accepts
+that credential only for `LEGAL-ENTITY` and `PRODUCT-ITEM-SKU-MASTER`; therefore the new manifest fails with HTTP 401
+before catalog reconciliation. Manual publication through the shared internal key is not an acceptable permanent
+fallback.
+
+The trusted MDM module-registration mapping must become the exact set:
+
+`{ LEGAL-ENTITY, PRODUCT-ITEM-SKU-MASTER, BRAND-PRODUCT-MASTER }`
+
+The credential still derives trusted producer owner `DITENMDMSERVICE` server-side. The request body cannot choose or
+override the owner. Unknown modules, the shared internal key, missing/wrong/revoked MDM credentials and owner/module
+mismatches remain fail-closed. No generic service registry, wildcard/prefix match, committed secret, new header or MDM
+runtime change is authorized.
+
+### Exact amendment allow-list
+
+**Platform runtime:**
+
+- `services/Diten.Platform/src/Diten.Platform.API/Controllers/Internal/InternalModuleRegistrationController.cs`
+
+**Platform tests:**
+
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/ModuleRegistration/InternalModuleRegistrationControllerTests.cs`
+
+**Governance:** this pack and the canonical `MOD-0018-FU16` registry row only.
+
+Acceptance requires focused controller/security tests, the full Platform suite, Platform Release build and a current
+MDM-binary startup proof in which all three exact MDM manifests register through the dedicated credential, the Brand
+manifest returns 2xx without manual publication, and unknown/shared-key attempts remain 401. This amendment is
+runtime-implemented and test-verified; its current-binary operational startup proof remains pending. It does not
+authorize operational secret/configuration changes.
+
+### Amendment implementation evidence — 2026-08-30
+
+- `InternalModuleRegistrationController` recognizes only the normalized exact MDM-owned set
+  `{ LEGAL-ENTITY, PRODUCT-ITEM-SKU-MASTER, BRAND-PRODUCT-MASTER }`; no prefix, wildcard or generic service-registry
+  fallback was introduced.
+- The dedicated credential continues to derive `DITENMDMSERVICE` server-side. Brand/Product registration reaches the
+  command only with that trusted owner; a valid legacy shared key cannot register the Brand/Product manifest, and an
+  unknown module carrying MDM credential headers remains `401` before mediator dispatch.
+- Brand/Product success and rejection tests prove the supplied credential secret is absent from response and logger
+  output.
+- Focused controller tests: `11/11` passed. Broader module-registration/security tests: `36/36` passed.
+- Platform API Release build passed with `0` errors and `18` existing scope-external warnings.
+- The full Platform suite executed `3882` tests: `3858` passed and `24` failed in scope-external Document Management,
+  Audit and Business Reference Data tests, including one Mongo collection-drop race. No failure referenced the amended
+  controller or module-registration test surface. This is recorded as non-green full-suite evidence, not hidden as a
+  successful suite.
+- No config, credential, secret, data, process, MDM runtime, Auth, Gateway, frontend or Production/Staging mutation was
+  performed. A current-MDM-binary three-manifest startup proof remains the only amendment-specific operational gate.
 
 ## 1. Module Summary
 
