@@ -616,6 +616,11 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         {
             var existing = await _rolePermissions.GetByRoleAsync(role.Id, tenantId, ct);
             var desiredIds = desiredPermissions.Select(permission => permission.Id).ToHashSet();
+            var existingSourceOwnedCount = existing.Count(grant =>
+                grant.GrantSource == GrantSource.Module
+                && string.Equals(grant.SourceModuleCode, code, StringComparison.OrdinalIgnoreCase));
+            var inserted = 0;
+            var removed = 0;
 
             var staleModuleGrants = existing
                 .Where(grant => grant.GrantSource == GrantSource.Module
@@ -629,6 +634,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             foreach (var stale in staleModuleGrants)
             {
                 await _rolePermissions.RemoveByIdAsync(stale.Id, tenantId, ct);
+                removed++;
             }
 
             foreach (var permission in desiredPermissions)
@@ -641,6 +647,35 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
                 await _rolePermissions.AssignAsync(
                     RolePermission.ModuleGrant(role.Id, permission.Id, tenantId, actor, code),
                     ct);
+                inserted++;
+            }
+
+            var isLifecycleRole = includeProductIdentityLifecycle
+                && ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles.Any(template =>
+                    string.Equals(template.RoleName, role.Name, StringComparison.Ordinal));
+            if (!isLifecycleRole)
+            {
+                continue;
+            }
+
+            var effective = await _rolePermissions.GetByRoleAsync(role.Id, tenantId, ct);
+            var effectiveIds = effective.Select(grant => grant.PermissionId).ToHashSet();
+            var sourceOwnedIds = effective
+                .Where(grant => grant.GrantSource == GrantSource.Module
+                                && string.Equals(
+                                    grant.SourceModuleCode,
+                                    code,
+                                    StringComparison.OrdinalIgnoreCase))
+                .Select(grant => grant.PermissionId)
+                .ToHashSet();
+
+            _logger.LogInformation(
+                "Product identity lifecycle role reconciled. RoleName={RoleName} Desired={Desired} Existing={Existing} Inserted={Inserted} Removed={Removed}",
+                role.Name, desiredIds.Count, existingSourceOwnedCount, inserted, removed);
+
+            if (!desiredIds.IsSubsetOf(effectiveIds) || !sourceOwnedIds.IsSubsetOf(desiredIds))
+            {
+                throw new InvalidOperationException($"Product identity grant reconciliation did not converge for role '{role.Name}'.");
             }
         }
     }

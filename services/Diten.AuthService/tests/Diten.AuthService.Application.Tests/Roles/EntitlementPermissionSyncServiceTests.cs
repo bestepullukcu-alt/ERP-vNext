@@ -954,14 +954,12 @@ public sealed class EntitlementPermissionSyncServiceTests
     }
 
     [Fact]
-    public async Task Product_identity_lifecycle_profile_composes_exact_twelve_seven_eight_roles_with_ABB_and_scope()
+    public async Task Product_identity_lifecycle_profile_composes_exact_thirteen_seven_eight_roles_with_ABB_and_scope()
     {
         var catalog = ProductIdentityLifecycleCompositeCatalog();
         var (svc, roles, rolePerms) = BuildWith(catalog);
-        var declaredKeys = catalog
-            .Where(permission => permission.Module == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode)
-            .Select(permission => permission.Key)
-            .ToArray();
+        var declaredKeys = ProductIdentityDeclaredKeys(catalog);
+        Assert.Equal(30, declaredKeys.Length);
 
         await svc.GrantModuleWithKeysAsync(
             TenantA,
@@ -969,7 +967,7 @@ public sealed class EntitlementPermissionSyncServiceTests
             declaredKeys,
             Actor);
 
-        Assert.Equal(12, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole).Count);
+        Assert.Equal(13, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole).Count);
         Assert.Equal(7, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole).Count);
         Assert.Equal(8, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole).Count);
 
@@ -979,6 +977,8 @@ public sealed class EntitlementPermissionSyncServiceTests
         Assert.DoesNotContain(viewer, ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys.Contains);
         Assert.DoesNotContain(admin, ProductIdentityLifecycleEntitlementGrantProfile.SharedDependencyKeys.Contains);
         Assert.DoesNotContain(viewer, ProductIdentityLifecycleEntitlementGrantProfile.SharedDependencyKeys.Contains);
+        Assert.DoesNotContain("mdm.brands.read", admin);
+        Assert.DoesNotContain("mdm.brands.read", viewer);
         Assert.Equal(8 + 1 + 1, admin.Count);
         Assert.Equal(4 + 1, viewer.Count);
 
@@ -993,15 +993,60 @@ public sealed class EntitlementPermissionSyncServiceTests
     }
 
     [Fact]
+    public async Task Product_identity_lifecycle_reconcile_fails_when_repository_does_not_converge()
+    {
+        var catalog = ProductIdentityLifecycleCompositeCatalog();
+        var (service, _, grants) = BuildWith(catalog);
+        grants.DropAssignments = true;
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            ProductIdentityDeclaredKeys(catalog),
+            Actor));
+    }
+
+    [Fact]
+    public async Task Product_identity_lifecycle_reconcile_accepts_existing_manual_dependency_without_duplicate_module_grant()
+    {
+        var catalog = ProductIdentityLifecycleCompositeCatalog();
+        var (service, roles, grants) = BuildWith(catalog);
+        var declaredKeys = ProductIdentityDeclaredKeys(catalog);
+        await service.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            declaredKeys,
+            Actor);
+
+        var stewardId = roles.IdOf(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole);
+        var start = catalog.Single(permission =>
+            permission.Key == ProductIdentityLifecycleEntitlementGrantProfile.WorkflowInstancesStart);
+        grants.Rows.RemoveAll(grant => grant.RoleId == stewardId && grant.PermissionId == start.Id);
+        grants.Seed(RolePermission.ManualGrant(stewardId, start.Id, TenantA, "operator"));
+
+        await service.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            declaredKeys,
+            Actor);
+
+        Assert.Single(grants.Rows, grant =>
+            grant.RoleId == stewardId
+            && grant.PermissionId == start.Id
+            && grant.GrantSource == GrantSource.Manual);
+        Assert.DoesNotContain(grants.Rows, grant =>
+            grant.RoleId == stewardId
+            && grant.PermissionId == start.Id
+            && grant.GrantSource == GrantSource.Module);
+    }
+
+    [Fact]
     public async Task Product_identity_profile_dependency_drift_and_collision_fail_before_mutation()
     {
         var missingDependencyCatalog = ProductIdentityLifecycleCompositeCatalog()
             .Where(permission => permission.Key != ProductIdentityLifecycleEntitlementGrantProfile.WorkflowTasksReject)
             .ToList();
-        var declaredKeys = missingDependencyCatalog
-            .Where(permission => permission.Module == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode)
-            .Select(permission => permission.Key)
-            .ToArray();
+        var declaredKeys = ProductIdentityDeclaredKeys(missingDependencyCatalog);
         var (missingService, missingRoles, missingGrants) = BuildWith(missingDependencyCatalog);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => missingService.GrantModuleWithKeysAsync(
@@ -1018,11 +1063,87 @@ public sealed class EntitlementPermissionSyncServiceTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => collisionService.GrantModuleWithKeysAsync(
             TenantA,
             ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
-            collisionCatalog.Where(permission => permission.Module == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode)
-                .Select(permission => permission.Key).ToArray(),
+            ProductIdentityDeclaredKeys(collisionCatalog),
             Actor));
         Assert.Empty(collisionGrants.Rows);
         Assert.False(collisionRoles.Exists(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole));
+    }
+
+    [Fact]
+    public async Task Product_identity_profile_rejects_arbitrary_cross_module_read_before_mutation()
+    {
+        var catalog = ProductIdentityLifecycleCompositeCatalog();
+        catalog.Add(new Permission(
+            "mdm",
+            "products",
+            "read",
+            "Read Products",
+            null,
+            moduleOverride: "brand-product-master",
+            scope: PermissionScope.Tenant));
+        var declaredKeys = ProductIdentityDeclaredKeys(catalog)
+            .Append("mdm.products.read")
+            .ToArray();
+        var (service, roles, grants) = BuildWith(catalog);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            declaredKeys,
+            Actor));
+
+        Assert.Empty(grants.Rows);
+        Assert.False(roles.Exists(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole));
+    }
+
+    [Fact]
+    public async Task Product_identity_reconcile_removes_only_stale_product_sourced_brand_grant()
+    {
+        var catalog = ProductIdentityLifecycleCompositeCatalog();
+        var brandRead = new Permission(
+            "mdm",
+            "brands",
+            "read",
+            "Read Brands",
+            null,
+            moduleOverride: "brand-product-master",
+            scope: PermissionScope.Tenant);
+        catalog.Add(brandRead);
+        var (service, roles, grants) = BuildWith(catalog);
+        var adminId = roles.IdOf(TenantA, DefaultRolePermissionTemplate.AdminRole);
+        grants.Seed(RolePermission.ModuleGrant(
+            adminId,
+            brandRead.Id,
+            TenantA,
+            Actor,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode));
+        grants.Seed(RolePermission.ManualGrant(adminId, brandRead.Id, TenantA, "operator"));
+        grants.Seed(RolePermission.SystemGrant(adminId, brandRead.Id, TenantA, "system"));
+        grants.Seed(RolePermission.ModuleGrant(
+            adminId,
+            brandRead.Id,
+            TenantA,
+            Actor,
+            "brand-product-master"));
+
+        await service.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            ProductIdentityDeclaredKeys(catalog),
+            Actor);
+
+        Assert.DoesNotContain(grants.Rows, grant =>
+            grant.PermissionId == brandRead.Id
+            && grant.GrantSource == GrantSource.Module
+            && grant.SourceModuleCode == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode);
+        Assert.Contains(grants.Rows, grant =>
+            grant.PermissionId == brandRead.Id && grant.GrantSource == GrantSource.Manual);
+        Assert.Contains(grants.Rows, grant =>
+            grant.PermissionId == brandRead.Id && grant.GrantSource == GrantSource.System);
+        Assert.Contains(grants.Rows, grant =>
+            grant.PermissionId == brandRead.Id
+            && grant.GrantSource == GrantSource.Module
+            && grant.SourceModuleCode == "brand-product-master");
     }
 
     [Theory]
@@ -1038,8 +1159,7 @@ public sealed class EntitlementPermissionSyncServiceTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => svc.GrantModuleWithKeysAsync(
             TenantA,
             ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
-            catalog.Where(permission => permission.Module == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode)
-                .Select(permission => permission.Key).ToArray(),
+            ProductIdentityDeclaredKeys(catalog),
             Actor));
 
         Assert.Empty(rolePerms.Rows);
@@ -1053,9 +1173,7 @@ public sealed class EntitlementPermissionSyncServiceTests
     {
         var catalog = ProductIdentityLifecycleCompositeCatalog();
         var (svc, roles, rolePerms) = BuildWith(catalog);
-        var allDeclared = catalog
-            .Where(permission => permission.Module == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode)
-            .Select(permission => permission.Key).ToArray();
+        var allDeclared = ProductIdentityDeclaredKeys(catalog);
         await svc.GrantModuleWithKeysAsync(
             TenantA,
             ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
@@ -1088,9 +1206,7 @@ public sealed class EntitlementPermissionSyncServiceTests
         var catalog = ProductIdentityLifecycleCompositeCatalog();
         catalog.Add(new Permission("goldenslim", "records", "read", "Read", null));
         var (svc, roles, rolePerms) = BuildWith(catalog);
-        var invalidProductKeys = catalog
-            .Where(permission => permission.Module == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode)
-            .Select(permission => permission.Key)
+        var invalidProductKeys = ProductIdentityDeclaredKeys(catalog)
             .Where(key => key != ProductIdentityLifecycleEntitlementGrantProfile.GskusSubmit)
             .ToArray();
 
@@ -1131,11 +1247,19 @@ public sealed class EntitlementPermissionSyncServiceTests
         .. ProductLegalEntityScopeEntitlementGrantProfile.PermissionKeys.Select(PermissionFor),
         new("platform", "work-aggregation.inbox", "view", "Inbox", null,
             moduleOverride: "work-aggregation", scope: PermissionScope.Tenant),
+        new("platform", "workflow.instances", "start", "Start", null,
+            moduleOverride: "workflow", scope: PermissionScope.Tenant),
         new("platform", "workflow.tasks", "approve", "Approve", null,
             moduleOverride: "workflow", scope: PermissionScope.Tenant),
         new("platform", "workflow.tasks", "reject", "Reject", null,
             moduleOverride: "workflow", scope: PermissionScope.Tenant)
     ];
+
+    private static string[] ProductIdentityDeclaredKeys(IEnumerable<Permission> catalog)
+        => catalog
+            .Where(permission => permission.Module == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode)
+            .Select(permission => permission.Key)
+            .ToArray();
 
     private static List<Permission> ProductItemSkuMasterCompositeCatalog() =>
     [
@@ -1259,6 +1383,7 @@ public sealed class EntitlementPermissionSyncServiceTests
         // Opt-in mirror of the Mongo unique index (RoleId, PermissionId, TenantId): when on, AssignAsync throws
         // on a duplicate exactly like a real E11000. Off by default so unrelated tests are unaffected.
         public bool EnforceUniqueIndex { get; set; }
+        public bool DropAssignments { get; set; }
 
         public void Seed(RolePermission rp) => Rows.Add(rp);
 
@@ -1267,6 +1392,11 @@ public sealed class EntitlementPermissionSyncServiceTests
 
         public Task AssignAsync(RolePermission rolePermission, CancellationToken ct)
         {
+            if (DropAssignments)
+            {
+                return Task.CompletedTask;
+            }
+
             if (EnforceUniqueIndex && Rows.Any(rp =>
                     rp.RoleId == rolePermission.RoleId
                     && rp.PermissionId == rolePermission.PermissionId

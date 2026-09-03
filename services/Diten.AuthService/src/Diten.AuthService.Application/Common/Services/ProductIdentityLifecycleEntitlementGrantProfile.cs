@@ -28,6 +28,7 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
     public const string FinishedGoodsRetire = "mdm.finished-goods.retire";
 
     public const string WorkCenterInboxView = "platform.work-aggregation.inbox.view";
+    public const string WorkflowInstancesStart = "platform.workflow.instances.start";
     public const string WorkflowTasksApprove = "platform.workflow.tasks.approve";
     public const string WorkflowTasksReject = "platform.workflow.tasks.reject";
 
@@ -65,6 +66,7 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
         new HashSet<string>(StringComparer.Ordinal)
         {
             WorkCenterInboxView,
+            WorkflowInstancesStart,
             WorkflowTasksApprove,
             WorkflowTasksReject
         };
@@ -76,7 +78,7 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
             "Product Data Steward",
             "Creates and submits Product Identity records without checker or retirement authority.",
             BasePermissionKeys.Concat(
-                    [GlobalProductsSubmit, GskusSubmit, LskusSubmit, FinishedGoodsSubmit])
+                    [GlobalProductsSubmit, GskusSubmit, LskusSubmit, FinishedGoodsSubmit, WorkflowInstancesStart])
                 .ToHashSet(StringComparer.Ordinal)),
         new(
             ApproverRole,
@@ -210,6 +212,9 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
             WorkCenterInboxView => string.Equals(permission.Module, "work-aggregation", StringComparison.Ordinal)
                                    && string.Equals(permission.Resource, "work-aggregation.inbox", StringComparison.Ordinal)
                                    && string.Equals(permission.Action, "view", StringComparison.Ordinal),
+            WorkflowInstancesStart => string.Equals(permission.Module, "workflow", StringComparison.Ordinal)
+                                      && string.Equals(permission.Resource, "workflow.instances", StringComparison.Ordinal)
+                                      && string.Equals(permission.Action, "start", StringComparison.Ordinal),
             WorkflowTasksApprove => string.Equals(permission.Module, "workflow", StringComparison.Ordinal)
                                     && string.Equals(permission.Resource, "workflow.tasks", StringComparison.Ordinal)
                                     && string.Equals(permission.Action, "approve", StringComparison.Ordinal),
