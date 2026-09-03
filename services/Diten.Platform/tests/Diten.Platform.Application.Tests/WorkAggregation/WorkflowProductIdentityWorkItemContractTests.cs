@@ -67,7 +67,18 @@ public sealed class WorkflowProductIdentityWorkItemContractTests
         nameof(WorkItemProjectionDto.Watchers),
         nameof(WorkItemProjectionDto.DelegationAllowed),
         nameof(WorkItemProjectionDto.Notifications),
-        nameof(WorkItemProjectionDto.ReminderLeadDays)
+        nameof(WorkItemProjectionDto.ReminderLeadDays),
+        // Closure is the Task provider's typed TaskItem.ClosureReasonCode/outcome contract. Native Workflow
+        // approvals persist transition reason and terminal status, but no equivalent closure-outcome dictionary;
+        // translating ActionReasonCode would invent Task semantics and an outcome label the provider cannot prove.
+        nameof(WorkItemProjectionDto.Closure),
+        // Returned describes the Task provider's explicit return-to-requester transition history. Workflow's
+        // request-info transition moves an approval to WaitingEvidence; it does not persist the equivalent
+        // return event/count contract, so the native Workflow projection must remain silent.
+        nameof(WorkItemProjectionDto.Returned),
+        // ViewerRelation classifies Task-provider initiator-only reads. This provider enumerates assigned
+        // ApprovalTask records and has no separate initiator/outbox query path to classify truthfully.
+        nameof(WorkItemProjectionDto.ViewerRelation)
     };
 
     [Fact]
