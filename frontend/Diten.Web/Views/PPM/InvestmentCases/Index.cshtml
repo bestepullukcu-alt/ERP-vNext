@@ -26,7 +26,8 @@
         Resource = "investment-cases", Singular = "InvestmentCase", MarkerType = "InvestmentCasesIndex",
         TitleKey = "InvestmentCasesTitle", AddKey = "AddNewInvestmentCase", EditKey = "EditInvestmentCase",
         LifecycleStates = ["Draft", "UnderAnalysis", "Closed", "Withdrawn"], DefaultLifecycleState = "Draft",
-        UsesTitle = true, HasPortfolio = true, HasPlanningDates = true, ShowsVisibilityPolicy = false
+        UsesTitle = true, HasPortfolio = true, RequiresPortfolio = true, HasPlanningDates = true,
+        ShowsVisibilityPolicy = false
     };
 }
 @* Golden Slim contract marker: <partial name="_Filter" />. Runtime markup is composed by _ListShell.cshtml. *@

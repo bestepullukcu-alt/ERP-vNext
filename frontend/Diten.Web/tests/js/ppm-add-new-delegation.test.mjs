@@ -87,4 +87,67 @@ assert.equal(
     'The failed table body must be hidden while the honest error banner is shown.'
 );
 
+const initiativeIndex = readFileSync(
+    new URL('../../Views/PPM/Initiatives/Index.cshtml', import.meta.url),
+    'utf8'
+);
+const sharedForm = readFileSync(
+    new URL('../../Views/PPM/Shared/_CreateEditOffcanvas.cshtml', import.meta.url),
+    'utf8'
+);
+const initiativeScript = readFileSync(
+    new URL('../../wwwroot/assets/js/PPM/Initiatives/index.js', import.meta.url),
+    'utf8'
+);
+const sharedCrud = readFileSync(
+    new URL('../../wwwroot/assets/js/PPM/ppm-crud.js', import.meta.url),
+    'utf8'
+);
+
+const initiativeDom = new JSDOM('<!doctype html><html><body></body></html>', {
+    runScripts: 'outside-only',
+    url: 'http://localhost/ppm/initiatives'
+});
+let initiativeConfig;
+initiativeDom.window.PpmCrud = {
+    mount: config => { initiativeConfig = config; }
+};
+initiativeDom.window.eval(initiativeScript);
+initiativeDom.window.document.dispatchEvent(new initiativeDom.window.Event('DOMContentLoaded'));
+
+assert.equal(initiativeConfig.resource, 'initiatives');
+assert.equal(initiativeConfig.endpoint, '/PPM/Initiatives/api');
+assert.equal(initiativeConfig.hasPortfolio, true);
+assert.deepEqual(
+    JSON.parse(JSON.stringify(initiativeConfig.transitions)),
+    {
+        Proposed: ['Active', 'Cancelled'],
+        Active: ['OnHold', 'Completed', 'Cancelled'],
+        OnHold: ['Active', 'Completed', 'Cancelled'],
+        Completed: [],
+        Cancelled: []
+    }
+);
+
+assert.match(initiativeIndex, /Layout = "_LayoutTenantShell"/);
+assert.match(initiativeIndex, /HasPortfolio = true/);
+assert.match(initiativeIndex, /RequiresPortfolio = false/);
+assert.match(initiativeIndex, /ShowsVisibilityPolicy = false/);
+assert.match(sharedForm, /required="@\(Model\.RequiresPortfolio \? "required" : null\)"/);
+assert.match(sharedForm, /@if \(Model\.ShowsVisibilityPolicy\)/);
+
+assert.match(initiativeScript, /const endpoint = '\/PPM\/Initiatives\/api'/);
+assert.doesNotMatch(initiativeScript, /localhost|5062|Bearer|document\.cookie/);
+assert.match(initiativeScript, /Proposed: \['Active', 'Cancelled'\]/);
+assert.match(initiativeScript, /Active: \['OnHold', 'Completed', 'Cancelled'\]/);
+assert.match(initiativeScript, /OnHold: \['Active', 'Completed', 'Cancelled'\]/);
+assert.match(initiativeScript, /Completed: \[\], Cancelled: \[\]/);
+
+for (const status of [401, 403, 404, 409, 503]) {
+    assert.match(sharedCrud, new RegExp(`${status}:`));
+}
+assert.match(sharedCrud, /state\.lookupBlocked \|\| !form\.checkValidity\(\)/);
+assert.match(sharedCrud, /credentials: 'same-origin'/);
+assert.doesNotMatch(sharedCrud, /init-001|prj-001/i);
+
 console.log('PPM Add New delegated-click jsdom test: PASS');

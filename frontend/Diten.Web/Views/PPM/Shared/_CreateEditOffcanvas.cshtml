@@ -29,8 +29,15 @@
                 @if (Model.HasPortfolio)
                 {
                     <div class="col-12">
-                        <label for="ppmPortfolioId" class="form-label fw-medium">@ViewData["ParentText"] <span class="text-danger">*</span></label>
-                        <select id="ppmPortfolioId" name="PortfolioId" class="form-select select2-offcanvas" required>
+                        <label for="ppmPortfolioId" class="form-label fw-medium">
+                            @ViewData["ParentText"]
+                            @if (Model.RequiresPortfolio)
+                            {
+                                <span class="text-danger">*</span>
+                            }
+                        </label>
+                        <select id="ppmPortfolioId" name="PortfolioId" class="form-select select2-offcanvas"
+                                required="@(Model.RequiresPortfolio ? "required" : null)">
                             <option value="">@ViewData["SelectText"]</option>
                         </select>
                     </div>

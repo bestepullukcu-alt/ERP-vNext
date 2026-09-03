@@ -6,8 +6,8 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
   <data name="InitiativesTitle" xml:space="preserve"><value>Gestion des initiatives</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Gérez les Initiatives du locataire, leur cycle de vie et leur référençabilité.</value></data>
-  <data name="AddNewInitiative" xml:space="preserve"><value>Ajouter initiative</value></data>
-  <data name="EditInitiative" xml:space="preserve"><value>Modifier initiative</value></data>
+  <data name="AddNewInitiative" xml:space="preserve"><value>Ajouter une initiative</value></data>
+  <data name="EditInitiative" xml:space="preserve"><value>Modifier une initiative</value></data>
   <data name="Code" xml:space="preserve"><value>Code de l’initiative</value></data>
   <data name="Name" xml:space="preserve"><value>Nom</value></data>
   <data name="Description" xml:space="preserve"><value>Description de l’initiative</value></data>

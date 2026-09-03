@@ -1,5 +1,6 @@
 using Diten.BuildingBlocks.Eventing;
 using Diten.PpmService.Domain.Repositories;
+using Diten.PpmService.Domain.Entities;
 using Diten.PpmService.Application.Features.ExternalContextReferences;
 using Diten.PpmService.Application.Features.InvestmentCases.GateI.DecisionTrace;
 using Diten.PpmService.Persistence.Mongo;
@@ -44,6 +45,10 @@ public static class DependencyInjection
         services.AddScoped<PpmMongoContext>();
         services.AddScoped<IPortfolioRepository, PortfolioRepository>();
         services.AddScoped<IInitiativeRepository, InitiativeRepository>();
+        services.AddScoped<IInitiativeV2Repository>(provider =>
+            provider.GetRequiredService<IInitiativeRepository>() is IInitiativeV2Repository repository
+                ? repository
+                : throw new InvalidOperationException("Initiative v2 repository registration is invalid."));
         services.AddScoped<IProgramRepository, ProgramRepository>();
         services.AddScoped<IProjectRepository, ProjectRepository>();
         services.AddScoped<IInvestmentCaseRepository, InvestmentCaseRepository>();
@@ -62,9 +67,22 @@ public static class DependencyInjection
         services.AddSingleton<IGateIRelationshipTransportMetadataProvider, UnavailableGateIRelationshipTransportMetadataProvider>();
         services.AddHostedService<GateIMutationReceiptIndexInitializer>();
         services.AddHostedService<PpmMongoIndexInitializer>();
+        services.AddHostedService<InitiativeV2IndexInitializer>();
         services.AddHealthChecks()
             .AddCheck<PpmMongoTransactionHealthCheck>("ppm-mongo-transactions");
 
         return services;
+    }
+
+    private sealed class InitiativeV2IndexInitializer(IServiceProvider services) : Microsoft.Extensions.Hosting.IHostedService
+    {
+        public async Task StartAsync(CancellationToken cancellationToken)
+        {
+            using var scope = services.CreateScope();
+            await scope.ServiceProvider.GetRequiredService<PpmMongoContext>()
+                .EnsureInitiativeV2IndexesAsync(cancellationToken);
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }

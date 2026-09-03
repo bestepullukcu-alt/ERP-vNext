@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
   <data name="InitiativesTitle" xml:space="preserve"><value>Iniciativas</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Gestione los Iniciativas del inquilino, su ciclo de vida y referenciabilidad.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gestione las iniciativas del inquilino, su ciclo de vida y referenciabilidad.</value></data>
   <data name="AddNewInitiative" xml:space="preserve"><value>Añadir iniciativa</value></data>
   <data name="EditInitiative" xml:space="preserve"><value>Editar iniciativa</value></data>
   <data name="Code" xml:space="preserve"><value>Código</value></data>

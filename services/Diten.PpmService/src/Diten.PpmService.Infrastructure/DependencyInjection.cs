@@ -12,6 +12,8 @@ using Diten.PpmService.Application.Features.InvestmentCases.GateI.DecisionTrace;
 using Diten.PpmService.Application.Features.InvestmentCases.GateI.FundingScenario;
 using Diten.Platform.Common.Authorization;
 using Diten.PpmService.Application.GateI;
+using Diten.PpmService.Application.Features.Initiatives;
+using Diten.PpmService.Infrastructure.Initiatives;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,6 +57,8 @@ public static class DependencyInjection
         services.AddScoped<DecisionTraceValidationService>();
         services.AddScoped<FundingScenarioContractValidator>();
         services.AddScoped<BenefitCommitmentOutcomeReferenceValidator>();
+        services.AddSingleton<IInitiativeClassificationAuthority, UnavailableInitiativeClassificationAuthority>();
+        services.AddSingleton<IInitiativeClosureReferenceAuthority, UnavailableInitiativeClosureReferenceAuthority>();
 
         var externalContextSection = configuration?.GetSection(ExternalContextProviderOptions.SectionName);
         services.AddSingleton<IValidateOptions<ExternalContextProviderOptions>, ExternalContextProviderOptionsValidator>();

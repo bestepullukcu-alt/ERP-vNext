@@ -6,8 +6,8 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
   <data name="InitiativesTitle" xml:space="preserve"><value>Инициативы</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Управляйте объектами «Инициативы» арендатора, их жизненным циклом и возможностью ссылок.</value></data>
-  <data name="AddNewInitiative" xml:space="preserve"><value>Добавить: инициатива</value></data>
-  <data name="EditInitiative" xml:space="preserve"><value>Изменить: инициатива</value></data>
+  <data name="AddNewInitiative" xml:space="preserve"><value>Добавить инициативу</value></data>
+  <data name="EditInitiative" xml:space="preserve"><value>Изменить инициативу</value></data>
   <data name="Code" xml:space="preserve"><value>Код</value></data>
   <data name="Name" xml:space="preserve"><value>Наименование</value></data>
   <data name="Description" xml:space="preserve"><value>Описание</value></data>
