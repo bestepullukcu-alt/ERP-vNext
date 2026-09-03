@@ -32,7 +32,7 @@ public sealed class TrustedSourceAuditIntentMongoTests : IAsyncLifetime
         _database = _client.GetDatabase(_databaseName);
         await PlatformSchemaManifest.ApplyAsync(_database, new[] { SchemaProfile.AccessGovernance });
         _repository = new AuditOutboxRepository(
-            _database,
+            new PlatformDbContext(_client, _database),
             new AuditOutboxTemporalMigrationRepository(_database));
         _service = new(_repository, new FixedTimeProvider(TrustedSourceAuditIntentTestData.Now));
     }

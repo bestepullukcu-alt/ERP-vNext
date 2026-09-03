@@ -82,7 +82,10 @@ public sealed class DisposableMongoReplicaSet : IAsyncDisposable
         startInfo.ArgumentList.Add("127.0.0.1");
         startInfo.ArgumentList.Add("--replSet");
         startInfo.ArgumentList.Add("rs0");
-        startInfo.ArgumentList.Add("--nounixsocket");
+        if (!OperatingSystem.IsWindows())
+        {
+            startInfo.ArgumentList.Add("--nounixsocket");
+        }
         startInfo.ArgumentList.Add("--logpath");
         startInfo.ArgumentList.Add(Path.Combine(root, "mongod.log"));
 

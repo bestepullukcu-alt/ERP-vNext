@@ -17,7 +17,9 @@ public sealed class TransactionalAuditOutboxMongoTests
         await using var replicaSet = await DisposableMongoReplicaSet.StartAsync();
         var database = replicaSet.CreateDatabase();
         var context = new PlatformDbContext(replicaSet.Client, database);
-        var repository = new AuditOutboxRepository(context);
+        var repository = new AuditOutboxRepository(
+            context,
+            new AuditOutboxTemporalMigrationRepository(database));
         var executor = new PlatformTransactionExecutor(context);
 
         Assert.True(await executor.ExecuteAsync((session, ct) =>
@@ -32,7 +34,9 @@ public sealed class TransactionalAuditOutboxMongoTests
         await using var replicaSet = await DisposableMongoReplicaSet.StartAsync();
         var database = replicaSet.CreateDatabase();
         var context = new PlatformDbContext(replicaSet.Client, database);
-        var repository = new AuditOutboxRepository(context);
+        var repository = new AuditOutboxRepository(
+            context,
+            new AuditOutboxTemporalMigrationRepository(database));
         var executor = new PlatformTransactionExecutor(context);
 
         await Assert.ThrowsAsync<InjectedFailure>(() => executor.ExecuteAsync<int>(async (session, ct) =>
@@ -51,7 +55,9 @@ public sealed class TransactionalAuditOutboxMongoTests
         var database = replicaSet.CreateDatabase();
         var ownerContext = new PlatformDbContext(replicaSet.Client, database);
         var otherContext = new PlatformDbContext(new MongoClient(replicaSet.ConnectionString), database);
-        var repository = new AuditOutboxRepository(otherContext);
+        var repository = new AuditOutboxRepository(
+            otherContext,
+            new AuditOutboxTemporalMigrationRepository(database));
         var executor = new PlatformTransactionExecutor(ownerContext);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => executor.ExecuteAsync(

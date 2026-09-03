@@ -44,7 +44,7 @@ public sealed class AuditOutboxTemporalStorageMigrationMongoTests(
         await PlatformSchemaManifest.ApplyAsync(_database, new[] { SchemaProfile.AccessGovernance });
         _raw = _database.GetCollection<BsonDocument>(AuditCollectionNames.AuditOutbox);
         _repository = new AuditOutboxRepository(
-            _database,
+            new PlatformDbContext(_client, _database),
             new AuditOutboxTemporalMigrationRepository(_database));
     }
 
@@ -170,7 +170,9 @@ public sealed class AuditOutboxTemporalStorageMigrationMongoTests(
             Assert.Equal(0, await state.CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
             Assert.Equal(before, await raw.Find(new BsonDocument("_id", legacy["_id"])).SingleAsync());
 
-            var normalRepository = new AuditOutboxRepository(database, stateRepository);
+            var normalRepository = new AuditOutboxRepository(
+                new PlatformDbContext(client, database),
+                stateRepository);
             var request = Request();
             Assert.True(await normalRepository.TryEnqueueAsync(request));
             var current = await raw.Find(new BsonDocument("IdempotencyKey", request.IdempotencyKey)).SingleAsync();
@@ -337,7 +339,9 @@ public sealed class AuditOutboxTemporalStorageMigrationMongoTests(
             1,
             new string('b', 64),
             DateTimeOffset.UtcNow.UtcTicks);
-        var fencedRepository = new AuditOutboxRepository(_database, stateRepository);
+        var fencedRepository = new AuditOutboxRepository(
+            new PlatformDbContext(_client, _database),
+            stateRepository);
 
         var error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             fencedRepository.ClaimNextBatchAsync(
@@ -380,7 +384,9 @@ public sealed class AuditOutboxTemporalStorageMigrationMongoTests(
             LeaseExpiresAtUtcTicks = hasLease ? DateTimeOffset.UtcNow.AddMinutes(1).UtcTicks : null
         });
         var stateRepository = new AuditOutboxTemporalMigrationRepository(_database);
-        var guarded = new AuditOutboxRepository(_database, stateRepository);
+        var guarded = new AuditOutboxRepository(
+            new PlatformDbContext(_client, _database),
+            stateRepository);
 
         var error = await Assert.ThrowsAsync<InvalidOperationException>(() => guarded.ClaimNextBatchAsync(
             1,
@@ -404,7 +410,9 @@ public sealed class AuditOutboxTemporalStorageMigrationMongoTests(
         malformed["TemporalStorageVersion"] = 1;
         await _raw.InsertOneAsync(malformed);
         var stateRepository = await InsertActiveStateAsync(scannedCount: 1);
-        var guarded = new AuditOutboxRepository(_database, stateRepository);
+        var guarded = new AuditOutboxRepository(
+            new PlatformDbContext(_client, _database),
+            stateRepository);
 
         var claimed = await guarded.ClaimNextBatchAsync(
             1,
@@ -453,7 +461,9 @@ public sealed class AuditOutboxTemporalStorageMigrationMongoTests(
             AuditOutboxTemporalStorageCompatibility.InspectionKind.Current,
             AuditOutboxTemporalStorageCompatibility.Inspect(row).Kind));
 
-        var fencedRepository = new AuditOutboxRepository(_database, stateRepository);
+        var fencedRepository = new AuditOutboxRepository(
+            new PlatformDbContext(_client, _database),
+            stateRepository);
         var claimed = await fencedRepository.ClaimNextBatchAsync(
             5,
             5,

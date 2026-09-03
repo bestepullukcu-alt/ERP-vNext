@@ -295,7 +295,10 @@ public sealed class GlobalApplicabilityTransactionMongoTests
                     new CreateIndexOptions { Unique = true }));
             var coordinator = new GlobalApplicabilityTransactionCoordinator(
                 new PlatformTransactionExecutor(context), versions ?? new EntitlementStateVersionRepository(context),
-                integration ?? new TestIntegrationWriter(outbox), audit ?? new AuditOutboxRepository(context));
+                integration ?? new TestIntegrationWriter(outbox),
+                audit ?? new AuditOutboxRepository(
+                    context,
+                    new AuditOutboxTemporalMigrationRepository(database)));
             return new() { Database = database, Plans = plans, Modules = modules, State = state, Coordinator = coordinator };
         }
 
