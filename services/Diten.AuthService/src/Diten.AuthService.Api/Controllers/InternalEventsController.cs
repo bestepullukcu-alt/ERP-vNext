@@ -12,6 +12,7 @@ public sealed class InternalEventsController : ControllerBase
 {
     private const string InternalApiKeyHeader = "X-Internal-Api-Key";
     private const string TenantActivatedEventName = "tenant.activated";
+    private static readonly TimeSpan TenantActivatedClaimLease = TimeSpan.FromSeconds(30);
 
     private const string EntitlementSyncActor = "tenant-provisioning";
 
@@ -72,24 +73,66 @@ public sealed class InternalEventsController : ControllerBase
             return BadRequest(new { message = "event_name must be tenant.activated" });
         }
 
-        var inserted = await _inboxRepository.TryInsertAsync(
+        // Read the authoritative snapshot before claiming. An unavailable/empty provider response must not consume
+        // the event: the producer can safely retry the same EventId after Platform recovers.
+        var entitlementRead = await _tenantEntitlementClient.ReadEntitledModulesWithPermissionKeysAsync(
+            integrationEvent.TenantId,
+            ct);
+        if (!entitlementRead.IsAuthoritative || entitlementRead.Modules.Count == 0)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { message = "tenant entitlement snapshot unavailable" });
+        }
+
+        var claim = await _inboxRepository.TryClaimAsync(
             integrationEvent.EventId,
             integrationEvent.EventName,
             integrationEvent.TenantId,
+            TenantActivatedClaimLease,
             ct);
-
-        if (!inserted)
+        if (claim.Result == IntegrationEventClaimResult.Completed)
         {
-            _logger.LogInformation(
-                "Duplicate internal event ignored. EventId={EventId} TenantId={TenantId} EventName={EventName}",
-                integrationEvent.EventId,
-                integrationEvent.TenantId,
-                integrationEvent.EventName);
             return Ok(new { status = "noop_duplicate" });
         }
+        if (claim.Result != IntegrationEventClaimResult.Claimed || claim.ClaimId is null)
+        {
+            return Conflict(new { message = "tenant activation event is already claimed or has conflicting identity" });
+        }
 
-        await _roleProvisioningService.EnsureDefaultRolesAsync(integrationEvent.TenantId, ct);
-        await SyncEntitledModulesBestEffortAsync(integrationEvent.TenantId, ct);
+        try
+        {
+            await _roleProvisioningService.EnsureDefaultRolesAsync(integrationEvent.TenantId, ct);
+            await _entitlementPermissionSyncService.SyncTenantModulesWithKeysAsync(
+                integrationEvent.TenantId,
+                entitlementRead.Modules,
+                EntitlementSyncActor,
+                ct);
+            await _inboxRepository.CompleteClaimAsync(
+                integrationEvent.EventId,
+                integrationEvent.TenantId,
+                claim.ClaimId.Value,
+                ct);
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                await _inboxRepository.ReleaseClaimAsync(
+                    integrationEvent.EventId,
+                    integrationEvent.TenantId,
+                    claim.ClaimId.Value,
+                    CancellationToken.None);
+            }
+            catch (Exception releaseException)
+            {
+                _logger.LogError(
+                    releaseException,
+                    "Tenant activation claim release failed. EventId={EventId} TenantId={TenantId} OriginalException={OriginalException}",
+                    integrationEvent.EventId,
+                    integrationEvent.TenantId,
+                    ex.GetType().Name);
+            }
+            throw;
+        }
 
         return Ok(new { status = "processed" });
     }
