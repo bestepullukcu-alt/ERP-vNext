@@ -16,6 +16,7 @@ public static class DefaultRolePermissionTemplate
 
     public const string PlatformModule = "platform";
     public const string ReadAction = "read";
+    public const string ServiceClientProvisionPermission = "auth.service-clients.provision";
 
     // FIX-PERM-ATTRIBUTION-2 — reference-data is a genuine, distinct Module (RoleAssignments grouping,
     // ModulePermissionResolver entitlement matching) but its screens are ALL platform-admin-only

@@ -139,5 +139,24 @@ public static class MongoDbIndexConfigurations
                     .Ascending(x => x.TenantId).Ascending(x => x.IsEnabled),
                 new CreateIndexOptions { Name = "ix_service_client_grant_tenant_enabled" })
         });
+
+        var operations = database.GetCollection<ServiceClientOperationalProvisioningOperation>(
+            "serviceClientOperationalProvisioningOperations");
+        await operations.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<ServiceClientOperationalProvisioningOperation>(
+                Builders<ServiceClientOperationalProvisioningOperation>.IndexKeys.Ascending(x => x.CommandId),
+                new CreateIndexOptions<ServiceClientOperationalProvisioningOperation>
+                {
+                    Unique = true,
+                    Name = "ux_service_client_operational_command_active",
+                    PartialFilterExpression = Builders<ServiceClientOperationalProvisioningOperation>.Filter.Eq(
+                        x => x.IsDeleted, false)
+                }),
+            new CreateIndexModel<ServiceClientOperationalProvisioningOperation>(
+                Builders<ServiceClientOperationalProvisioningOperation>.IndexKeys
+                    .Ascending(x => x.State).Ascending(x => x.UpdatedAt),
+                new CreateIndexOptions { Name = "ix_service_client_operational_state_updated" })
+        });
     }
 }
