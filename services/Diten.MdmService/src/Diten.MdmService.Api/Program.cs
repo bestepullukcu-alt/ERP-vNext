@@ -6,6 +6,7 @@ using Diten.MdmService.Api.Services.ProductLegalEntityScopes;
 using Diten.MdmService.Api.Services.Audit;
 using Diten.MdmService.Api.Services.ProductItemSkuMaster;
 using Diten.MdmService.Application;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 using Diten.MdmService.Infrastructure;
 using Diten.MdmService.Persistence;
@@ -113,6 +114,7 @@ builder.Services.AddScoped(sp =>
         TimeSpan.FromSeconds(options.RetryDelaySeconds));
 });
 builder.Services.AddScoped<FirstGskuIdentityWorkflowProcessor>();
+builder.Services.AddScoped<FirstGskuIdentityRetirementProcessor>();
 builder.Services.AddSingleton<FirstGskuIdentityWorkflowRecoveryRunner>();
 builder.Services.AddHostedService<FirstGskuIdentityWorkflowRecoveryWorker>();
 builder.Services.AddOptions<LskuIdentityWorkflowOptions>()
