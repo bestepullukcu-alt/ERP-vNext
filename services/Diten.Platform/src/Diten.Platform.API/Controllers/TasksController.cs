@@ -4,6 +4,7 @@ using Diten.Platform.API.Security;
 using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Application.Features.Tasks.Queries;
+using Diten.Platform.Application.Features.Tasks.Handlers.QueryHandlers;
 using Diten.Platform.Domain.Enums.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -515,6 +516,36 @@ public sealed class TasksController : CustomBaseController
     {
         var response = await _mediator.Send(
             new GetTaskTypeGoverningDocumentsQuery(id, organizationCode, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    // ── Faz 5a: the work report ──────────────────────────────────────────
+
+    /// <summary>
+    /// HOW WORK IS FLOWING over a period — for the work this caller may see.
+    ///
+    /// <para><b>The permission opens the door; the SCOPE furnishes the room.</b>
+    /// <c>WorkReportRead</c> is required to call at all. Whose rows are counted comes from MOD-0018-FU15's
+    /// <c>IDataScopeResolver</c> inside the handler, so a caller sees the flow of exactly the work they could
+    /// already open one at a time. <c>WorkReportReadTenantWide</c> widens that to every row in the tenant and is
+    /// checked in the handler, never taken from the request — a flag would let anyone who can reach this route
+    /// set it.</para>
+    ///
+    /// <para><b>The period is REQUIRED</b>, and <c>to</c> is EXCLUSIVE. An unbounded report is a full-collection
+    /// scan wearing a date picker; the criteria refuse one.</para>
+    ///
+    /// <para>A caller whose scope resolves to nothing gets an EMPTY report and a 200 — "you may see no work" is
+    /// a true answer, not an error, and a 403 would make the screen build a second rendering path for it.</para>
+    /// </summary>
+    [HttpGet("work-report")]
+    [HasPermission(TaskPermissions.WorkReportRead)]
+    public async Task<IActionResult> GetWorkReport(
+        [FromQuery] DateTimeOffset from,
+        [FromQuery] DateTimeOffset to,
+        [FromQuery] WorkReportGroupBy groupBy = WorkReportGroupBy.None,
+        CancellationToken ct = default)
+    {
+        var response = await _mediator.Send(new WorkReportQuery(from, to, groupBy, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 

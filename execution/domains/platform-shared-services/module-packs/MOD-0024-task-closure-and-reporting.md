@@ -497,7 +497,22 @@ exist before the field is worth showing: Faz 3 comes first, and Faz 1's remainin
 | **Faz 1 (remainder)** | Distinguish the closing date from the cancellation date on screen — see the `closedAt` note below; measured as SAFE, so this is presentation, not correctness | None | Optional |
 | **Faz 2** | Closure envelope proper: `note`, `deliverables[]`, `followUps[]`, and `TaskFieldDefinition.Stage` | Yes, additive | Next |
 | **Faz 4 → done, and smaller than written** | The RETURN SIGNAL: `Returned { at, reason, count }` on the projection, declared in the contract, a row chip and a detail sentence. **No lifecycle member, and `Blocked` dropped entirely** — see §10 for why both were mis-specified | **None** | **Delivered 2026-09-03** |
-| **Faz 5** | Work report: Cycle Time · Unattended · Productivity **as a count** · waiting distribution | Read-only | After Faz 4 |
+| **Faz 5a → now** | The work report QUERY and its AUTHORITY. `GET /api/v1/tasks/work-report`, scoped through MOD-0018-FU15's `IDataScopeResolver`, aggregated in the database. **No screen, no string** | Read-only | **Delivered 2026-09-03** |
+| **Faz 5b** | The report SCREEN, drawing those numbers — and the 7-language strings it needs | None | Next |
+
+### Why Faz 5 split in two
+
+One prompt would have shipped an aggregation, a permission model, a screen and seven languages together, and
+"the tests are green but the live page is wrong" has happened three times in this module's sessions. Split, the
+two halves are verified against different questions:
+
+- **5a — are the NUMBERS right, and does the right person see them?** Deterministic: hand-computed expectations
+  against the real tally, and scope tests that prove out-of-scope work is excluded *while in-scope work is
+  counted*. No browser needed.
+- **5b — is the SCREEN right?** Live verification, with the numbers already trusted.
+
+The seam is the endpoint: 5a ends with an address and a JSON shape, so 5b has something real to draw before a
+single pixel is designed.
 
 Faz 4 carried the plan's biggest regression risk, and re-measurement removed it rather than managing it: the
 signal needs no schema change at all. The paragraph below stands as the reason a lifecycle member is still the
@@ -608,6 +623,44 @@ imprecise are corrected here rather than repeated.
   its capability enter the contract together") governs render BLOCKS; `closure` is a caption fact beside
   `closedAt`, which is not capability-gated either. It is declared in `fixture-contract.js` all the same, per
   BL-032.
+
+**Measured 2026-09-03, building the report query (Faz 5a)**
+
+16. **The scope engine already existed, and a second one was NOT written.** `IDataScopeResolver`
+    (MOD-0018-FU15) is registered as `OrgDataScopeResolver` — verified at
+    `Diten.Platform.Application/DependencyInjection.cs:59`. It emits `OrgUnit` (own + subtree, pre-expanded),
+    `Position`, `ManagerChain` and `LegalEntity`, and fails closed in three separate places (no user id, no
+    active position assignment, no live position). The report translates those scopes; it computes none.
+17. **The DATA scope is the right direction, and the assignment scope is the wrong one.**
+    `TaskAssignmentScopeResolver`'s own comment says `ManagerChain` holds the positions ABOVE the caller
+    "because data scoping asks 'whose rows may I see through my superiors'". A report asks exactly that, so it
+    uses the resolver as it comes rather than the downward walk assignment had to derive.
+18. **`TaskItem` cannot carry a LegalEntity/Company/Country/Region scope.** Its scopable fields are
+    `OrganizationUnitId`, `PoolPositionId`, `AssigneeUserId` and `CreatedByUserId` — nothing else. Scopes with
+    nowhere to land are dropped, which NARROWS the answer; widening by guessing a unit→entity join would be the
+    second engine again. Pinned by `WorkReportScopeTests`.
+19. **The repository had no period read at all.** `ITaskItemRepository` exposes `GetAllForTenantAsync` and
+    nothing filtered — fine at 115 tasks, a full-collection scan at a hundred thousand. The report therefore
+    got its own port (`IWorkReportRepository`) whose criteria REQUIRE a period, and the counting happens in the
+    database via `Aggregate().Match().Group()` — the pattern `ModuleCatalogRepository.GetStatsAsync:204` and
+    `TenantRegistryRepository:143` already use.
+20. **Two permissions, not one, and neither is `Read`.** `platform.tasks.read` is in
+    `PersonalWorkSurfaceScoped`, so a nav-visible page behind it would be a second answer to "where is my work"
+    and `TaskManifestProviderTests` refuses it. The report is not personal work, so it gets
+    `platform.tasks.work-report.read`; widening to the whole tenant gets its own key,
+    `platform.tasks.work-report.read-tenant-wide`, checked in the handler and never taken from the request.
+
+**Deferred from 5a, and worth naming**
+
+- **Median cycle time.** Reported as an AVERAGE with its denominator beside it. A median needs a second pass or
+  a `$percentile` whose availability varies by server version; the count is what lets a reader tell an average
+  of three tasks from one of three hundred.
+- **Waiting distribution (Oracle's Time Distribution).** The raw material exists — `waitingContext` and the
+  transition log — but "how long did it sit in each waiting state" needs interval reconstruction from the log,
+  which is its own slice. Flow, cycle time, timeliness, effort, outcomes and rework ship now.
+- **The final tally runs in memory**, over rows already narrowed to one period and one scope by the database.
+  Seven conditional accumulations as one `$group` would be a pipeline nobody can verify; the bound that keeps
+  the set small is the REQUIRED period, and `WorkReportTally`'s header says so in case that ever changes.
 
 **Measured but deliberately left out of the pack**
 
