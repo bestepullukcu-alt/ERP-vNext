@@ -702,6 +702,12 @@
   <data name="Nav.Page.REPOSITORYASSESSMENT" xml:space="preserve">
     <value>Оценки хранилищ</value>
   </data>
+  <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
+    <value>Мастер-данные брендов / продуктов</value>
+  </data>
+  <data name="Nav.Page.PRODUCTS" xml:space="preserve">
+    <value>Продукты</value>
+  </data>
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>Бренды</value>
   </data>

@@ -20,13 +20,14 @@ public sealed class ModuleRegistrationHostedServiceTests
                 ? HttpStatusCode.ServiceUnavailable
                 : HttpStatusCode.OK);
         var service = CreateService(
-            [new ProductItemSkuMasterManifestProvider(), new LegalEntityManifestProvider()],
+            [new ProductItemSkuMasterManifestProvider(), new BrandProductMasterManifestProvider(), new LegalEntityManifestProvider()],
             handler,
             secret);
 
         await service.RunRegistrationsAsync((_, _) => Task.CompletedTask, CancellationToken.None);
 
         Assert.Equal(5, handler.Requests.Count(request => request.Body.Contains("\"moduleCode\":\"product-item-sku-master\"", StringComparison.Ordinal)));
+        Assert.Single(handler.Requests, request => request.Body.Contains("\"moduleCode\":\"brand-product-master\"", StringComparison.Ordinal));
         Assert.Single(handler.Requests, request => request.Body.Contains("\"moduleCode\":\"legal-entity\"", StringComparison.Ordinal));
     }
 

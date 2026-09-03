@@ -703,6 +703,12 @@
   <data name="Nav.Page.REPOSITORYASSESSMENT" xml:space="preserve">
     <value>Evaluaciones de Repositorios</value>
   </data>
+  <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
+    <value>Maestro de Marcas / Productos</value>
+  </data>
+  <data name="Nav.Page.PRODUCTS" xml:space="preserve">
+    <value>Productos</value>
+  </data>
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>Marcas</value>
   </data>

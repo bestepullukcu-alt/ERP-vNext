@@ -763,6 +763,12 @@
   <data name="Nav.Page.REPOSITORYASSESSMENT" xml:space="preserve">
     <value>Depo Değerlendirmeleri</value>
   </data>
+  <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
+    <value>Marka / Ürün Ana Verisi</value>
+  </data>
+  <data name="Nav.Page.PRODUCTS" xml:space="preserve">
+    <value>Ürünler</value>
+  </data>
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>Markalar</value>
   </data>

@@ -702,6 +702,12 @@
   <data name="Nav.Page.REPOSITORYASSESSMENT" xml:space="preserve">
     <value>存储库评估</value>
   </data>
+  <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
+    <value>品牌／产品主数据</value>
+  </data>
+  <data name="Nav.Page.PRODUCTS" xml:space="preserve">
+    <value>产品</value>
+  </data>
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>品牌</value>
   </data>

@@ -237,6 +237,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.Configure<PlatformRegistrationOptions>(builder.Configuration.GetSection(PlatformRegistrationOptions.SectionName));
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IModuleManifestProvider, LegalEntityManifestProvider>();
+builder.Services.AddSingleton<IModuleManifestProvider, BrandProductMasterManifestProvider>();
 builder.Services.AddSingleton<IModuleManifestProvider, ProductItemSkuMasterManifestProvider>();
 builder.Services.AddHostedService<ModuleRegistrationHostedService>();
 

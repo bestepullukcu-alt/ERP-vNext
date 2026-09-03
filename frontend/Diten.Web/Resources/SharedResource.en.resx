@@ -763,6 +763,12 @@
   <data name="Nav.Page.REPOSITORYASSESSMENT" xml:space="preserve">
     <value>Repository Assessments</value>
   </data>
+  <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
+    <value>Brand / Product Master</value>
+  </data>
+  <data name="Nav.Page.PRODUCTS" xml:space="preserve">
+    <value>Products</value>
+  </data>
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>Brands</value>
   </data>

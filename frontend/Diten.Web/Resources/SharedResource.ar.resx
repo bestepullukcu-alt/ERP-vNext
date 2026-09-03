@@ -702,6 +702,12 @@
   <data name="Nav.Page.REPOSITORYASSESSMENT" xml:space="preserve">
     <value>تقييمات المستودعات</value>
   </data>
+  <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
+    <value>البيانات الرئيسية للعلامة التجارية / المنتج</value>
+  </data>
+  <data name="Nav.Page.PRODUCTS" xml:space="preserve">
+    <value>المنتجات</value>
+  </data>
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>العلامات التجارية</value>
   </data>
