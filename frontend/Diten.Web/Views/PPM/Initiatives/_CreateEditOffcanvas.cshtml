@@ -1,3 +1,15 @@
-@model Diten.Web.Models.PPM.PpmListPageViewModel
-@* Shared/_CreateEditOffcanvas renders id="offcanvasCreateEdit". *@
-<partial name="~/Views/PPM/Shared/_CreateEditOffcanvas.cshtml" model="Model" />
+@model Diten.Web.Models.PPM.InitiativeEditViewModel
+@using Diten.Web.Views.PPM.Initiatives
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<InitiativesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel"><div class="offcanvas-header p-4"><h5 id="offcanvasCreateEditLabel" class="offcanvas-title">-</h5><button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button></div><div class="offcanvas-body border-top p-4">
+ <div id="initiative-form-alert" class="alert alert-danger d-none" role="alert"></div><form id="formInitiative" novalidate>@Html.AntiForgeryToken()<input type="hidden" id="initiativeId"/><input type="hidden" id="initiativeVersion" value="1"/><div class="row g-4">
+ <div class="col-12"><label for="initiativeCode" class="form-label">@Localizer["Code"] <span class="text-danger">*</span></label><input id="initiativeCode" class="form-control" maxlength="64" required/><div class="invalid-feedback"></div></div>
+ <div class="col-12"><label for="initiativeName" class="form-label">@Localizer["Name"] <span class="text-danger">*</span></label><input id="initiativeName" class="form-control" maxlength="200" required/><div class="invalid-feedback"></div></div>
+ <div class="col-12"><label for="initiativeDescription" class="form-label">@Localizer["Description"]</label><textarea id="initiativeDescription" class="form-control" maxlength="2000" rows="3"></textarea></div>
+ <div class="col-12"><label for="initiativePortfolio" class="form-label">@Localizer["Portfolio"]</label><select id="initiativePortfolio" class="form-select select2-offcanvas"><option value="">@SharedLocalizer["SelectPlaceholder"]</option></select></div>
+ <div class="col-12"><label for="initiativeType" class="form-label">@Localizer["InitiativeType"]</label><select id="initiativeType" class="form-select select2-offcanvas" disabled><option value="">@SharedLocalizer["SelectPlaceholder"]</option></select></div>
+ <div class="col-12"><label for="initiativePriority" class="form-label">@Localizer["Priority"]</label><select id="initiativePriority" class="form-select select2-offcanvas" disabled><option value="">@SharedLocalizer["SelectPlaceholder"]</option></select></div>
+ <div class="col-12 col-md-6"><label for="initiativeStart" class="form-label">@Localizer["PlannedStartDate"]</label><input id="initiativeStart" type="date" class="form-control"/></div><div class="col-12 col-md-6"><label for="initiativeEnd" class="form-label">@Localizer["PlannedEndDate"]</label><input id="initiativeEnd" type="date" class="form-control"/></div>
+ </div></form></div><div class="offcanvas-footer border-top p-4 d-flex justify-content-between gap-2"><button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button><button type="button" id="btnSaveInitiative" class="btn btn-primary" disabled>@SharedLocalizer["Save"]</button></div></div>

@@ -2,42 +2,17 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<InitiativesIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
-@{
-    ViewData["Title"] = Localizer["InitiativesTitle"].Value;
-    Layout = "_LayoutTenantShell";
-    ViewData["TitleText"] = Localizer["InitiativesTitle"].Value;
-    ViewData["PageDescription"] = Localizer["PageDescription"].Value;
-    ViewData["AddText"] = Localizer["AddNewInitiative"].Value;
-    ViewData["EditTitleText"] = Localizer["EditInitiative"].Value;
-    ViewData["CodeText"] = Localizer["Code"].Value;
-    ViewData["NameText"] = Localizer["Name"].Value;
-    ViewData["DescriptionText"] = Localizer["Description"].Value;
-    ViewData["LifecycleText"] = Localizer["LifecycleState"].Value;
-    ViewData["VisibilityText"] = Localizer["VisibilityPolicyKey"].Value;
-    ViewData["ReferenceabilityText"] = Localizer["Referenceability"].Value;
-    ViewData["ReferenceableText"] = Localizer["Referenceable"].Value;
-    ViewData["NotReferenceableText"] = Localizer["NotReferenceable"].Value;
-    ViewData["LoadingText"] = Localizer["InitiativesLoadingState"].Value;
-    ViewData["EmptyText"] = Localizer["InitiativesEmptyState"].Value;
-    ViewData["ErrorText"] = Localizer["InitiativesErrorState"].Value;
-    ViewData["ParentText"] = Localizer["Portfolio"].Value;
-    ViewData["CompleteConfirmText"] = Localizer["CompleteInitiativeConfirmation"].Value;
-    ViewData["CancelConfirmText"] = Localizer["CancelInitiativeConfirmation"].Value;
-    var page = new Diten.Web.Models.PPM.PpmListPageViewModel {
-        Resource = "initiatives", Singular = "Initiative", MarkerType = "InitiativesIndex",
-        TitleKey = "InitiativesTitle", AddKey = "AddNewInitiative", EditKey = "EditInitiative",
-        LifecycleStates = ["Proposed", "Active", "OnHold", "Completed", "Cancelled"],
-        DefaultLifecycleState = "Proposed", HasPortfolio = true, RequiresPortfolio = false,
-        ShowsVisibilityPolicy = false
-    };
-}
-@* Golden Slim contract marker: <partial name="_Filter" />. Runtime markup is composed by _ListShell.cshtml. *@
-@* Golden Slim contract marker: id="offcanvasDetailsPreview". Runtime markup is rendered by Shared/_DetailsQuickView.cshtml. *@
-<partial name="~/Views/PPM/Shared/_ListShell.cshtml" model="page" />
+@{ ViewData["Title"] = Localizer["InitiativesTitle"].Value; Layout = "_LayoutTenantShell"; }
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/PPM/Initiatives/_Filter.cshtml" />
+<div class="mb-3"><h5 class="mb-0">@Localizer["InitiativesTitle"]</h5><p class="mb-0 text-muted">@Localizer["PageDescription"]</p></div>
+<partial name="~/Views/PPM/Initiatives/_DataTable.cshtml" />
+@* Contract marker: id="offcanvasDetailsPreview" *@
+<partial name="~/Views/PPM/Initiatives/_DetailsQuickView.cshtml" />
+<partial name="~/Views/PPM/Initiatives/_CreateEditOffcanvas.cshtml" model="new Diten.Web.Models.PPM.InitiativeEditViewModel()" />
 @section Scripts {
-    @* Golden Slim contract marker: <partial name="_IndexL10n" />. *@
-    <partial name="~/Views/PPM/Initiatives/_IndexL10n.cshtml" />
-    <script src="~/assets/js/PPM/Initiatives/index.l10n.js" asp-append-version="true"></script>
-    <script src="~/assets/js/PPM/ppm-crud.js" asp-append-version="true"></script>
-    <script src="~/assets/js/PPM/Initiatives/index.js" asp-append-version="true"></script>
+ @* Contract marker: <partial name="_IndexL10n" /> *@
+ <partial name="~/Views/PPM/Initiatives/_IndexL10n.cshtml" />
+ <script src="~/assets/js/PPM/Initiatives/index.l10n.js" asp-append-version="true"></script>
+ <script src="~/assets/js/PPM/Initiatives/index.js" asp-append-version="true"></script>
 }
