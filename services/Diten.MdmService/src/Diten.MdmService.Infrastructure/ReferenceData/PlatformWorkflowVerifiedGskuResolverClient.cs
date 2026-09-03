@@ -7,48 +7,53 @@ using Microsoft.Extensions.Options;
 
 namespace Diten.MdmService.Infrastructure.ReferenceData;
 
-public sealed class PlatformWorkflowVerifiedMarketResolverClient
-    : IWorkflowVerifiedMarketReferenceResolver
+public sealed class PlatformWorkflowVerifiedGskuResolverClient : IWorkflowVerifiedGskuReferenceResolver
 {
     public const string CredentialIdHeader = "X-Verified-Gsku-Credential-Id";
     public const string CredentialSecretHeader = "X-Verified-Gsku-Credential";
     public const string AudienceHeader = "X-Verified-Gsku-Audience";
     public const string ResolverAudience = "VERIFIED_GSKU_RESOLVE";
-    private const string ResolvePath = "/api/internal/v1/reference-data/verified-market/resolve";
+    private const string ResolvePath = "/api/internal/v1/reference-data/verified-gsku/resolve";
     private const int MaximumResponseBytes = 32 * 1024;
-    private static readonly TimeSpan Budget = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan MaximumBudget = TimeSpan.FromSeconds(2);
     private readonly IHttpClientFactory _clients;
     private readonly IWorkflowVerifiedMarketServiceIdentityProvider _identities;
-    private readonly VerifiedMarketResolverOptions _options;
+    private readonly VerifiedGskuResolverOptions _options;
 
-    public PlatformWorkflowVerifiedMarketResolverClient(
+    public PlatformWorkflowVerifiedGskuResolverClient(
         IHttpClientFactory clients,
         IWorkflowVerifiedMarketServiceIdentityProvider identities,
-        IOptions<VerifiedMarketResolverOptions> options)
+        IOptions<VerifiedGskuResolverOptions> options)
     {
         _clients = clients;
         _identities = identities;
         _options = options.Value;
     }
 
-    public async Task<VerifiedMarketReferenceResolveResult> ResolveLatestAsync(
+    public async Task<VerifiedGskuReferenceResolveResult> ResolveLatestAsync(
         Guid tenantId,
-        string marketCode,
+        string packApplicabilityValueCode,
+        string uomValueCode,
         CancellationToken cancellationToken = default)
     {
-        if (tenantId == Guid.Empty || !IsExactAlpha2(marketCode) || !IsConfigured())
+        if (tenantId == Guid.Empty
+            || !IsAllowedPackApplicability(packApplicabilityValueCode)
+            || !IsAllowedUom(uomValueCode)
+            || !IsConfigured())
+        {
             return Fail(503, "REFERENCE_PROVIDER_CONFIGURATION_INVALID");
+        }
 
         using var budget = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        budget.CancelAfter(Budget);
+        budget.CancelAfter(_options.Timeout);
         try
         {
             var identity = await _identities.GetAsync(tenantId, false, budget.Token);
-            var first = await SendOnceAsync(identity, marketCode, budget.Token);
+            var first = await SendOnceAsync(identity, packApplicabilityValueCode, uomValueCode, budget.Token);
             if (first.StatusCode != 401) return first.Result;
 
             identity = await _identities.GetAsync(tenantId, true, budget.Token);
-            var replay = await SendOnceAsync(identity, marketCode, budget.Token);
+            var replay = await SendOnceAsync(identity, packApplicabilityValueCode, uomValueCode, budget.Token);
             return replay.StatusCode == 401
                 ? Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE")
                 : replay.Result;
@@ -59,11 +64,9 @@ public sealed class PlatformWorkflowVerifiedMarketResolverClient
         }
         catch (WorkflowVerifiedMarketServiceIdentityException exception)
         {
-            return Fail(
-                exception.IsRetryable && exception.ErrorCode.EndsWith("TIMEOUT", StringComparison.Ordinal) ? 504 : 503,
-                exception.IsRetryable && exception.ErrorCode.EndsWith("TIMEOUT", StringComparison.Ordinal)
-                    ? "REFERENCE_PROVIDER_TIMEOUT"
-                    : "REFERENCE_PROVIDER_UNAVAILABLE");
+            return exception.IsRetryable && exception.ErrorCode.EndsWith("TIMEOUT", StringComparison.Ordinal)
+                ? Fail(504, "REFERENCE_PROVIDER_TIMEOUT")
+                : Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE");
         }
         catch (HttpRequestException)
         {
@@ -81,23 +84,26 @@ public sealed class PlatformWorkflowVerifiedMarketResolverClient
 
     private async Task<Attempt> SendOnceAsync(
         WorkflowVerifiedMarketServiceIdentity identity,
-        string marketCode,
+        string packApplicabilityValueCode,
+        string uomValueCode,
         CancellationToken cancellationToken)
     {
-        using var request = new HttpRequestMessage(
-            HttpMethod.Post,
-            new Uri(_options.PlatformBaseAddress!, ResolvePath));
+        using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(_options.PlatformBaseAddress!, ResolvePath));
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", identity.AccessToken);
         request.Headers.TryAddWithoutValidation(CredentialIdHeader, _options.CredentialIdentifier);
         request.Headers.TryAddWithoutValidation(CredentialSecretHeader, _options.CredentialSecret);
         request.Headers.TryAddWithoutValidation(AudienceHeader, ResolverAudience);
-        request.Content = new StringContent(
-            JsonSerializer.Serialize(new Dictionary<string, string> { ["market_code"] = marketCode }),
-            Encoding.UTF8,
-            "application/json");
+        request.Content = new StringContent(JsonSerializer.Serialize(new
+        {
+            selections = new[]
+            {
+                new { set_code = "pack-applicability", value_code = packApplicabilityValueCode, resolution_mode = "LATEST" },
+                new { set_code = "uom", value_code = uomValueCode, resolution_mode = "LATEST" }
+            }
+        }), Encoding.UTF8, "application/json");
 
         using var response = await _clients
-            .CreateClient(nameof(PlatformWorkflowVerifiedMarketResolverClient))
+            .CreateClient(nameof(PlatformWorkflowVerifiedGskuResolverClient))
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         if (response.StatusCode == HttpStatusCode.Unauthorized)
             return new(401, Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE"));
@@ -105,13 +111,14 @@ public sealed class PlatformWorkflowVerifiedMarketResolverClient
             return new((int)response.StatusCode, MapTransportFailure(response.StatusCode));
 
         var payload = await ReadBoundedAsync(response.Content, cancellationToken);
-        return new((int)response.StatusCode, Parse(response.StatusCode, payload, marketCode));
+        return new((int)response.StatusCode, Parse(response.StatusCode, payload, packApplicabilityValueCode, uomValueCode));
     }
 
-    private static VerifiedMarketReferenceResolveResult Parse(
+    private static VerifiedGskuReferenceResolveResult Parse(
         HttpStatusCode status,
         byte[] payload,
-        string marketCode)
+        string packApplicabilityValueCode,
+        string uomValueCode)
     {
         try
         {
@@ -132,18 +139,12 @@ public sealed class PlatformWorkflowVerifiedMarketResolverClient
                     || root.GetProperty("data").ValueKind != JsonValueKind.Object)
                     return Contract();
                 var data = root.GetProperty("data");
-                RequireExact(data, "market");
-                var market = data.GetProperty("market");
-                RequireExact(market, "set_code", "value_code", "catalog_version_id", "catalog_version_number", "resolution_mode", "resolved_at_utc");
-                var selection = new VerifiedMarketReferenceSelection(
-                    market.GetProperty("set_code").GetString()!,
-                    market.GetProperty("value_code").GetString()!,
-                    market.GetProperty("catalog_version_id").GetGuid(),
-                    market.GetProperty("catalog_version_number").GetInt32(),
-                    market.GetProperty("resolution_mode").GetString()!,
-                    market.GetProperty("resolved_at_utc").GetDateTimeOffset());
-                return Trusted(selection, marketCode)
-                    ? VerifiedMarketReferenceResolveResult.Success(selection)
+                RequireExact(data, "selections");
+                var values = data.GetProperty("selections");
+                if (values.ValueKind != JsonValueKind.Array || values.GetArrayLength() != 2) return Contract();
+                var selections = values.EnumerateArray().Select(ParseSelection).ToList();
+                return Trusted(selections, packApplicabilityValueCode, uomValueCode)
+                    ? VerifiedGskuReferenceResolveResult.Success(selections)
                     : Contract();
             }
 
@@ -154,8 +155,7 @@ public sealed class PlatformWorkflowVerifiedMarketResolverClient
             var reason = root.GetProperty("reason_code").ValueKind == JsonValueKind.String
                 ? root.GetProperty("reason_code").GetString()
                 : null;
-            if (!IsExact(reason, 160)) return Contract();
-            return MapFailure(status, reason);
+            return IsExact(reason, 160) ? MapFailure(status, reason) : Contract();
         }
         catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
         {
@@ -163,59 +163,70 @@ public sealed class PlatformWorkflowVerifiedMarketResolverClient
         }
     }
 
+    private static VerifiedGskuReferenceSelection ParseSelection(JsonElement item)
+    {
+        RequireExact(item, "set_code", "value_code", "catalog_version_id", "catalog_version_number",
+            "resolution_mode", "resolved_at_utc", "is_retired", "selectable_for_new");
+        return new(
+            item.GetProperty("set_code").GetString()!, item.GetProperty("value_code").GetString()!,
+            item.GetProperty("catalog_version_id").GetGuid(), item.GetProperty("catalog_version_number").GetInt32(),
+            item.GetProperty("resolution_mode").GetString()!, item.GetProperty("resolved_at_utc").GetDateTimeOffset(),
+            item.GetProperty("is_retired").GetBoolean(), item.GetProperty("selectable_for_new").GetBoolean());
+    }
+
     private bool IsConfigured() => _options.PlatformBaseAddress is { IsAbsoluteUri: true } uri
         && uri.Scheme is "http" or "https" && uri.AbsolutePath == "/"
         && string.IsNullOrEmpty(uri.UserInfo) && string.IsNullOrEmpty(uri.Query) && string.IsNullOrEmpty(uri.Fragment)
+        && _options.Timeout > TimeSpan.Zero && _options.Timeout <= MaximumBudget
         && IsExact(_options.CredentialIdentifier, 256) && IsExact(_options.CredentialSecret, 512);
 
-    private static VerifiedMarketReferenceResolveResult MapFailure(HttpStatusCode status, string? reason) =>
-        status switch
-        {
-            HttpStatusCode.Forbidden => Fail(403, "REFERENCE_PROVIDER_FORBIDDEN"),
-            HttpStatusCode.NotFound => Fail(404, "REFERENCE_MARKET_NOT_FOUND"),
-            HttpStatusCode.Conflict => Fail(409, "REFERENCE_CONTRACT_MISMATCH"),
-            HttpStatusCode.GatewayTimeout => Fail(504, "REFERENCE_PROVIDER_TIMEOUT"),
-            HttpStatusCode.RequestTimeout or HttpStatusCode.TooManyRequests or HttpStatusCode.ServiceUnavailable =>
-                Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE"),
-            _ when (int)status >= 500 => Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE"),
-            _ => Contract()
-        };
+    private static VerifiedGskuReferenceResolveResult MapFailure(HttpStatusCode status, string? reason) => status switch
+    {
+        HttpStatusCode.Forbidden => Fail(403, IsReferenceReason(reason) ? reason! : "REFERENCE_FORBIDDEN"),
+        HttpStatusCode.NotFound => Fail(404, IsReferenceReason(reason) ? reason! : "REFERENCE_SET_NOT_ACCESSIBLE"),
+        HttpStatusCode.Conflict => Fail(409, IsReferenceReason(reason) ? reason! : "REFERENCE_RESOLUTION_CONTRACT_INVALID"),
+        HttpStatusCode.GatewayTimeout => Fail(504, "REFERENCE_PROVIDER_TIMEOUT"),
+        HttpStatusCode.RequestTimeout or HttpStatusCode.TooManyRequests or HttpStatusCode.ServiceUnavailable =>
+            Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE"),
+        _ when (int)status >= 500 => Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE"),
+        _ => Contract()
+    };
 
-    private static VerifiedMarketReferenceResolveResult MapTransportFailure(HttpStatusCode status) =>
-        status switch
-        {
-            HttpStatusCode.Forbidden => Fail(403, "REFERENCE_PROVIDER_FORBIDDEN"),
-            HttpStatusCode.NotFound => Fail(404, "REFERENCE_MARKET_NOT_FOUND"),
-            HttpStatusCode.Conflict => Fail(409, "REFERENCE_CONTRACT_MISMATCH"),
-            HttpStatusCode.GatewayTimeout => Fail(504, "REFERENCE_PROVIDER_TIMEOUT"),
-            HttpStatusCode.RequestTimeout or HttpStatusCode.TooManyRequests or HttpStatusCode.ServiceUnavailable =>
-                Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE"),
-            _ when (int)status >= 500 => Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE"),
-            _ => Contract()
-        };
+    private static VerifiedGskuReferenceResolveResult MapTransportFailure(HttpStatusCode status) => status switch
+    {
+        HttpStatusCode.Forbidden => Fail(403, "REFERENCE_FORBIDDEN"),
+        HttpStatusCode.NotFound => Fail(404, "REFERENCE_SET_NOT_ACCESSIBLE"),
+        HttpStatusCode.Conflict => Fail(409, "REFERENCE_RESOLUTION_CONTRACT_INVALID"),
+        HttpStatusCode.GatewayTimeout => Fail(504, "REFERENCE_PROVIDER_TIMEOUT"),
+        HttpStatusCode.RequestTimeout or HttpStatusCode.TooManyRequests or HttpStatusCode.ServiceUnavailable =>
+            Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE"),
+        _ when (int)status >= 500 => Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE"),
+        _ => Contract()
+    };
 
-    private static bool Trusted(VerifiedMarketReferenceSelection selection, string marketCode) =>
-        string.Equals(selection.SetCode, "market", StringComparison.Ordinal)
-        && string.Equals(selection.ValueCode, marketCode, StringComparison.Ordinal)
-        && selection.CatalogVersionId != Guid.Empty && selection.CatalogVersionNumber > 0
-        && string.Equals(selection.ResolutionMode, "LATEST", StringComparison.Ordinal)
-        && selection.ResolvedAtUtc != default && selection.ResolvedAtUtc.Offset == TimeSpan.Zero;
+    private static bool Trusted(IReadOnlyList<VerifiedGskuReferenceSelection> selections, string pack, string uom) =>
+        selections.Select(item => item.SetCode).Distinct(StringComparer.Ordinal).Count() == 2
+        && selections.All(item => item.CatalogVersionId != Guid.Empty && item.CatalogVersionNumber > 0
+            && item.ResolutionMode == "LATEST" && item.ResolvedAtUtc != default
+            && item.ResolvedAtUtc.Offset == TimeSpan.Zero && !item.IsRetired && item.SelectableForNew)
+        && selections.Any(item => item.SetCode == "pack-applicability" && item.ValueCode == pack)
+        && selections.Any(item => item.SetCode == "uom" && item.ValueCode == uom);
 
-    private static bool IsExactAlpha2(string? value) => value is { Length: 2 }
-        && value[0] is >= 'A' and <= 'Z' && value[1] is >= 'A' and <= 'Z';
+    private static bool IsAllowedPackApplicability(string? value) => value == "SCALAR_QUANTITY_APPLIES";
+    private static bool IsAllowedUom(string? value) => value is "C62" or "GRM" or "KGM" or "MLT" or "LTR";
+    private static bool IsReferenceReason(string? value) => IsExact(value, 160) && value!.StartsWith("REFERENCE_", StringComparison.Ordinal);
     private static bool IsOptionalExactCorrelation(JsonElement value) => value.ValueKind == JsonValueKind.Null
         || value.ValueKind == JsonValueKind.String && IsExact(value.GetString(), 256);
     private static bool IsExact(string? value, int maximum) => !string.IsNullOrWhiteSpace(value)
-        && value.Length <= maximum && string.Equals(value, value.Trim(), StringComparison.Ordinal)
-        && !value.Any(char.IsControl) && !value.Contains(',');
+        && value.Length <= maximum && value == value.Trim() && !value.Any(char.IsControl) && !value.Contains(',');
 
     private static void RequireExact(JsonElement element, params string[] names)
     {
         var found = element.ValueKind == JsonValueKind.Object
-            ? element.EnumerateObject().Select(x => x.Name).ToArray()
+            ? element.EnumerateObject().Select(property => property.Name).ToArray()
             : [];
         if (found.Length != names.Length || found.Distinct(StringComparer.Ordinal).Count() != names.Length
-            || names.Any(x => !found.Contains(x, StringComparer.Ordinal)))
+            || names.Any(name => !found.Contains(name, StringComparer.Ordinal)))
             throw new JsonException();
     }
 
@@ -234,17 +245,14 @@ public sealed class PlatformWorkflowVerifiedMarketResolverClient
         }
     }
 
-    private static VerifiedMarketReferenceResolveResult Contract() =>
-        Fail(409, "REFERENCE_CONTRACT_MISMATCH");
-    private static VerifiedMarketReferenceResolveResult Fail(int statusCode, string code) =>
-        VerifiedMarketReferenceResolveResult.Fail(statusCode, code);
-
+    private static VerifiedGskuReferenceResolveResult Contract() => Fail(409, "REFERENCE_CONTRACT_MISMATCH");
+    private static VerifiedGskuReferenceResolveResult Fail(int statusCode, string code) =>
+        VerifiedGskuReferenceResolveResult.Fail(statusCode, code);
     private static readonly JsonDocumentOptions StrictOptions = new()
     {
         AllowTrailingCommas = false,
         CommentHandling = JsonCommentHandling.Disallow,
         MaxDepth = 8
     };
-
-    private sealed record Attempt(int StatusCode, VerifiedMarketReferenceResolveResult Result);
+    private sealed record Attempt(int StatusCode, VerifiedGskuReferenceResolveResult Result);
 }

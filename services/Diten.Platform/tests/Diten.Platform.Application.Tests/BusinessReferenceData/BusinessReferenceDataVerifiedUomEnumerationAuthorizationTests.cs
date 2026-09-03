@@ -100,8 +100,11 @@ public sealed class BusinessReferenceDataVerifiedUomEnumerationAuthorizationTest
         Mock<IVerifiedGskuResolverJwtTenantContext> jwt,
         TenantContext context)
     {
+        var service = new Mock<IVerifiedReferenceDataServiceTenantContext>(MockBehavior.Strict);
+        service.Setup(x => x.ResolveAsync(It.IsAny<HttpContext>()))
+            .ReturnsAsync(VerifiedGskuResolverJwtTenantResult.Unauthenticated);
         var controller = new InternalBusinessReferenceDataController(
-            mediator.Object, credential.Object, jwt.Object, context);
+            mediator.Object, credential.Object, jwt.Object, service.Object, context);
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Headers[InternalBusinessReferenceDataController.CredentialIdHeader] = "resolver-id";
         httpContext.Request.Headers[InternalBusinessReferenceDataController.CredentialSecretHeader] = "resolver-secret";

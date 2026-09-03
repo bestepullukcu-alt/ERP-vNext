@@ -28,10 +28,15 @@ public sealed class InternalBusinessReferenceDataController : CustomBaseControll
         IMediator mediator,
         IVerifiedGskuResolverCredentialAuthenticator credentialAuthenticator,
         IVerifiedGskuResolverJwtTenantContext jwtTenantContext,
+        IVerifiedReferenceDataServiceTenantContext serviceTenantContext,
         ITenantContext tenantContext)
     {
         _mediator = mediator;
-        _requestExecutor = new VerifiedReferenceDataRequestExecutor(credentialAuthenticator, jwtTenantContext, tenantContext);
+        _requestExecutor = new VerifiedReferenceDataRequestExecutor(
+            credentialAuthenticator,
+            jwtTenantContext,
+            serviceTenantContext,
+            tenantContext);
     }
 
     [HttpPost("resolve")]

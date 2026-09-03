@@ -94,6 +94,40 @@ public sealed class GlobalProductIdentityWorkflowOperationMongoTests : IAsyncLif
     }
 
     [Fact]
+    public async Task Maker_replay_can_persist_the_started_workflow_proof()
+    {
+        var repository = Repository(_tenantId);
+        var operation = Operation(_tenantId, "maker-replay", "maker-replay-fingerprint");
+        Assert.True((await repository.ReserveAsync(operation)).Succeeded);
+        var now = DateTimeOffset.UtcNow.UtcTicks;
+        await _collection.UpdateOneAsync(
+            item => item.TenantId == _tenantId && item.OperationId == operation.OperationId,
+            Builders<GlobalProductIdentityWorkflowOperation>.Update.Set(
+                item => item.Checkpoint, GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay));
+        var claim = await repository.TryClaimAsync(new(
+            operation.OperationId, operation.OperationFingerprint,
+            [GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay], "maker", now,
+            now + TimeSpan.FromMinutes(1).Ticks));
+
+        Assert.NotNull(claim);
+        var workflowInstanceId = Guid.NewGuid();
+        var workflowTemplateId = Guid.NewGuid();
+        var workflowTemplateVersionId = Guid.NewGuid();
+        Assert.True(await repository.AdvanceAsync(claim!, new(
+            GlobalProductIdentityWorkflowCheckpoint.WorkflowStarted,
+            ProductIdentityWorkflowRecoveryDisposition.None, now + 1,
+            WorkflowInstanceId: workflowInstanceId,
+            WorkflowTemplateId: workflowTemplateId,
+            WorkflowTemplateVersionId: workflowTemplateVersionId,
+            WorkflowStartedAtUtcTicksV1: now + 1,
+            ReleaseLease: true)));
+        var stored = await repository.GetByOperationIdAsync(operation.OperationId);
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.WorkflowStarted, stored!.Checkpoint);
+        Assert.Equal(workflowInstanceId, stored.WorkflowInstanceId);
+        Assert.Equal(workflowTemplateId, stored.WorkflowTemplateId);
+    }
+
+    [Fact]
     public async Task Checkpoint_CAS_persists_sanitized_proof_and_recovers_after_restart()
     {
         var repository = Repository(_tenantId);

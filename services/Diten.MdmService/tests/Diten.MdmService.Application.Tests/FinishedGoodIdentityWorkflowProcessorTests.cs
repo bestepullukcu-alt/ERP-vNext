@@ -134,6 +134,28 @@ public sealed class FinishedGoodIdentityWorkflowProcessorTests
     }
 
     [Fact]
+    public async Task Decision_observation_does_not_rewrite_persisted_start_proof()
+    {
+        var harness = new Harness(ProductIdentityDecisionKind.Approved);
+        harness.ConfigureCheckpoint(FinishedGoodIdentityWorkflowCheckpoint.AwaitingDecision);
+        harness.Operations.FailNextAdvanceTo = FinishedGoodIdentityWorkflowCheckpoint.DecisionObserved;
+
+        await harness.Processor.RecoverAsync(
+            harness.Operation, "worker", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        var mutation = Assert.IsType<FinishedGoodIdentityWorkflowCheckpointMutation>(
+            harness.Operations.LastMutation);
+        Assert.Equal(FinishedGoodIdentityWorkflowCheckpoint.DecisionObserved, mutation.NextCheckpoint);
+        Assert.Null(mutation.WorkflowInstanceId);
+        Assert.Null(mutation.WorkflowTemplateId);
+        Assert.Null(mutation.WorkflowTemplateVersionId);
+        Assert.Null(mutation.ApprovalTaskId);
+        Assert.Null(mutation.AssignmentSnapshotId);
+        Assert.Null(mutation.StartTransitionLogId);
+        Assert.Null(mutation.WorkflowStartedAtUtcTicksV1);
+    }
+
+    [Fact]
     public async Task Recovery_resumes_directly_from_decision_applied_without_second_mutation()
     {
         var harness = new Harness(ProductIdentityDecisionKind.Approved);
@@ -335,6 +357,7 @@ public sealed class FinishedGoodIdentityWorkflowProcessorTests
     {
         public FinishedGoodIdentityWorkflowOperation? Current { get; set; }
         public FinishedGoodIdentityWorkflowCheckpoint? FailNextAdvanceTo { get; set; }
+        public FinishedGoodIdentityWorkflowCheckpointMutation? LastMutation { get; private set; }
 
         public Task<FinishedGoodIdentityWorkflowReserveResult> ReserveAsync(
             FinishedGoodIdentityWorkflowOperation operation, CancellationToken cancellationToken = default) =>
@@ -372,6 +395,7 @@ public sealed class FinishedGoodIdentityWorkflowProcessorTests
             FinishedGoodIdentityWorkflowClaim claim, FinishedGoodIdentityWorkflowCheckpointMutation mutation,
             CancellationToken cancellationToken = default)
         {
+            LastMutation = mutation;
             if (Current is null || Current.Checkpoint != claim.Checkpoint) return Task.FromResult(false);
             if (FailNextAdvanceTo == mutation.NextCheckpoint)
             {

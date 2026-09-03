@@ -273,6 +273,32 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
                          item => item.LeaseGeneration, claim.LeaseGeneration)
                      & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Gt(
                          item => item.LeaseUntilUtcTicksV1, mutation.UpdatedAtUtcTicks);
+        if (claim.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
+            && mutation.NextCheckpoint == FirstGskuIdentityWorkflowCheckpoint.DecisionObserved)
+        {
+            filter &= Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(
+                          item => item.RecoveryDisposition,
+                          ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
+                      & Builders<FirstGskuIdentityWorkflowOperation>.Filter.In(
+                          item => item.LastFailureCode,
+                          new[]
+                          {
+                              "FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED",
+                              "REFERENCE_UNAUTHENTICATED",
+                              "REFERENCE_FORBIDDEN"
+                          })
+                      & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(
+                          item => item.DecisionKind,
+                          ProductIdentityDecisionKind.Approved)
+                      & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(
+                          item => item.ApprovalPackApplicabilitySelection, null)
+                      & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(
+                          item => item.ApprovalPackUomSelection, null)
+                      & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(
+                          item => item.ReferencesValidatedAtUtcTicksV1, null)
+                      & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(
+                          item => item.ApprovalReferenceProofFingerprint, null);
+        }
         var update = Builders<FirstGskuIdentityWorkflowOperation>.Update
             .Set(item => item.Checkpoint, mutation.NextCheckpoint)
             .Set(item => item.RecoveryDisposition, mutation.RecoveryDisposition)
@@ -409,6 +435,8 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
             (FirstGskuIdentityWorkflowCheckpoint.PairDraftRestored,
                 FirstGskuIdentityWorkflowCheckpoint.Completed
                 or FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+            (FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+                FirstGskuIdentityWorkflowCheckpoint.DecisionObserved) => true,
             _ => false
         };
 
@@ -461,6 +489,15 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
                 && mutation.NextAttemptAtUtcTicksV1 is > 0
                 && !string.IsNullOrWhiteSpace(mutation.LastFailureCode)
                 && mutation.ReleaseLease && !hasStart && !hasDecision && !hasApproval;
+        }
+        if (current == FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
+            && mutation.NextCheckpoint == FirstGskuIdentityWorkflowCheckpoint.DecisionObserved)
+        {
+            return mutation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.None
+                && mutation.NextAttemptAtUtcTicksV1 is null
+                && mutation.LastFailureCode is null
+                && mutation.ReleaseLease
+                && !hasStart && !hasDecision && !hasApproval;
         }
         if (mutation.NextCheckpoint == FirstGskuIdentityWorkflowCheckpoint.WorkflowStarted)
         {

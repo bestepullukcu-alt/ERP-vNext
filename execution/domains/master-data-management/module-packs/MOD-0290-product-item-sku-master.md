@@ -3579,6 +3579,40 @@ E1A test allow-list is new `FirstGskuIdentityLifecycleUnitTests.cs`, `FirstGskuI
 `LskuRegisterMongoTests.cs`, `FinishedGoodRegisterMongoTests.cs`, `GskuCreateOptionsFacadeTests.cs` and existing
 Workflow transport/security tests only for an additive exact `gsku` profile assertion.
 
+**E1A workflow-safe verified-GSKU revalidation amendment — 2026-09-03:** background decision recovery must not
+inject the interactive `IVerifiedGskuReferenceResolver`, because that contract deliberately requires the current
+user bearer and therefore fails closed outside an HTTP request. E1A may add
+`IWorkflowVerifiedGskuReferenceResolver.cs`, `PlatformWorkflowVerifiedGskuResolverClient.cs` and
+`PlatformWorkflowVerifiedGskuResolverClientTests.cs`, and may narrowly update Infrastructure
+`DependencyInjection.cs`, `WorkflowVerifiedMarketDependencyInjectionTests.cs`,
+`FirstGskuIdentityWorkflowProcessor.cs`, `FirstGskuIdentityWorkflowProcessorTests.cs`,
+`FirstGskuIdentityWorkflowOperationRepository.cs` and `FirstGskuIdentityWorkflowOperationMongoTests.cs`.
+The new client reuses the existing tenant-bound `Diten.MDM/TRUSTED_REFERENCE_DATA_CONSUMER` identity provider and
+rotation/cache path from MOD-0033-FU02 Section D; it creates no client identity, credential, grant or configuration.
+It sends only that service bearer plus the existing verified-GSKU static second factor, never `X-Tenant-Id` or an
+interactive bearer, uses a two-second maximum budget, retries a 401 exactly once with a forced service-token refresh,
+and strictly validates the exact two-selection response before returning evidence.
+
+Existing operations quarantined by the former interactive dependency may resume under the same operation, Workflow
+instance, terminal decision and evidence only through same-maker interactive replay when `Checkpoint` and
+`RecoveryDisposition` are both manual, `LastFailureCode` is exactly `REFERENCE_UNAUTHENTICATED`, the parent is now
+`IdentityApproved`, and no approval-time reference proof has been stored. This is additive to the same exact recovery
+for `FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED`; background discovery and every other manual failure remain blocked.
+The repository transition back to `DecisionObserved` is an atomic CAS over that closed two-code set. No new Workflow,
+business record, direct data write, generic manual bypass, config/data mutation, Production/Staging action or push is
+authorized by this amendment.
+
+**E1A LSKU legacy market-contract recovery evidence — 2026-09-03:** the same-operation LSKU interactive replay may
+resume a previously persisted terminal approval only when the operation is manual, the failure code is exactly
+`REFERENCE_CONTRACT_MISMATCH`, the delegated maker token is present, start and terminal decision evidence are exact,
+the approver differs from the maker, and no approval-time market proof has been stored. Background recovery and every
+other manual failure remain blocked. The repository performs an atomic CAS from `ManualReconciliationRequired` back
+to `DecisionObserved`; a per-invocation guard prevents a repeated quarantine loop. Focused processor, resolver-client
+and real-Mongo operation tests passed 44/44. Release MDM API build passed with zero errors and zero warnings. Local
+Development replay reused operation `23a3f859-384c-4f5a-abff-2a2f863b4fd3`, returned HTTP 200, created no additional
+business or Workflow record, and completed `LS-000000000004` as `IdentityApproved` version 2. Finished Good operation
+`789e9d30-9428-46c4-933a-283a62bd93f7` also replayed HTTP 200 and remained completed without a second mutation.
+
 **E1B — downstream admission and direct pair retirement.** Runtime allow-list is `Gsku.cs`, a new bounded
 `GskuChildCreationAdmission.cs`, `IGskuRepository.cs`, `GskuRepository.cs`, `ILskuRepository.cs`, `LskuRepository.cs`,
 `IFinishedGoodRepository.cs`, `FinishedGoodRepository.cs`, `CreateLskuDraftHandler.cs`,

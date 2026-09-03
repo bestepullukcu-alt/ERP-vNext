@@ -35,11 +35,18 @@ public sealed class WorkflowVerifiedMarketDependencyInjectionTests
             descriptor.ServiceType == typeof(IWorkflowVerifiedMarketReferenceResolver)
             && descriptor.ImplementationType == typeof(PlatformWorkflowVerifiedMarketResolverClient)
             && descriptor.Lifetime == ServiceLifetime.Scoped);
+        Assert.Contains(services, descriptor =>
+            descriptor.ServiceType == typeof(IWorkflowVerifiedGskuReferenceResolver)
+            && descriptor.ImplementationType == typeof(PlatformWorkflowVerifiedGskuResolverClient)
+            && descriptor.Lifetime == ServiceLifetime.Scoped);
         Assert.DoesNotContain(services, descriptor =>
             descriptor.ServiceType == typeof(IVerifiedMarketReferenceResolver)
             && descriptor.ImplementationType == typeof(PlatformWorkflowVerifiedMarketResolverClient));
         Assert.DoesNotContain(
             typeof(PlatformWorkflowVerifiedMarketResolverClient).GetConstructors().Single().GetParameters(),
+            parameter => parameter.ParameterType.FullName == "Microsoft.AspNetCore.Http.IHttpContextAccessor");
+        Assert.DoesNotContain(
+            typeof(PlatformWorkflowVerifiedGskuResolverClient).GetConstructors().Single().GetParameters(),
             parameter => parameter.ParameterType.FullName == "Microsoft.AspNetCore.Http.IHttpContextAccessor");
 
         using var provider = services.BuildServiceProvider();

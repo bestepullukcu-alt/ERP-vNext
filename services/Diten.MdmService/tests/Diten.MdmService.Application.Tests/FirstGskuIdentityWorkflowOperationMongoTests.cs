@@ -206,6 +206,96 @@ public sealed class FirstGskuIdentityWorkflowOperationMongoTests : IAsyncLifetim
     }
 
     [Fact]
+    public async Task Parent_dependency_manual_state_can_atomically_return_to_decision_observed_only_for_exact_failure()
+    {
+        var repository = Repository(_tenantId);
+        var exact = Operation("parent-dependency", "parent-dependency-fingerprint");
+        var legacyAuth = Operation("legacy-auth", "legacy-auth-fingerprint");
+        var legacyForbidden = Operation("legacy-forbidden", "legacy-forbidden-fingerprint");
+        var unrelated = Operation("unrelated-manual", "unrelated-manual-fingerprint");
+        Assert.True((await repository.ReserveAsync(exact)).Succeeded);
+        Assert.True((await repository.ReserveAsync(legacyAuth)).Succeeded);
+        Assert.True((await repository.ReserveAsync(legacyForbidden)).Succeeded);
+        Assert.True((await repository.ReserveAsync(unrelated)).Succeeded);
+        var now = DateTimeOffset.UtcNow.UtcTicks;
+        var decisionFields = Builders<FirstGskuIdentityWorkflowOperation>.Update
+            .Set(item => item.Checkpoint, FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired)
+            .Set(item => item.RecoveryDisposition,
+                ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
+            .Set(item => item.DecisionKind, ProductIdentityDecisionKind.Approved)
+            .Set(item => item.LeaseOwner, null)
+            .Set(item => item.LeaseUntilUtcTicksV1, null);
+        await _collection.UpdateOneAsync(
+            item => item.TenantId == _tenantId && item.OperationId == exact.OperationId,
+            decisionFields.Set(item => item.LastFailureCode, "FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED"));
+        await _collection.UpdateOneAsync(
+            item => item.TenantId == _tenantId && item.OperationId == legacyAuth.OperationId,
+            decisionFields.Set(item => item.LastFailureCode, "REFERENCE_UNAUTHENTICATED"));
+        await _collection.UpdateOneAsync(
+            item => item.TenantId == _tenantId && item.OperationId == legacyForbidden.OperationId,
+            decisionFields.Set(item => item.LastFailureCode, "REFERENCE_FORBIDDEN"));
+        await _collection.UpdateOneAsync(
+            item => item.TenantId == _tenantId && item.OperationId == unrelated.OperationId,
+            decisionFields.Set(item => item.LastFailureCode, "FIRST_GSKU_IDENTITY_WORKFLOW_EVIDENCE_CONFLICT"));
+
+        var exactClaim = await repository.TryClaimAsync(new(
+            exact.OperationId, exact.OperationFingerprint,
+            [FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired],
+            "interactive-maker", now, now + TimeSpan.FromMinutes(1).Ticks));
+        var unrelatedClaim = await repository.TryClaimAsync(new(
+            unrelated.OperationId, unrelated.OperationFingerprint,
+            [FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired],
+            "interactive-maker", now, now + TimeSpan.FromMinutes(1).Ticks));
+        var legacyAuthClaim = await repository.TryClaimAsync(new(
+            legacyAuth.OperationId, legacyAuth.OperationFingerprint,
+            [FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired],
+            "interactive-maker", now, now + TimeSpan.FromMinutes(1).Ticks));
+        var legacyForbiddenClaim = await repository.TryClaimAsync(new(
+            legacyForbidden.OperationId, legacyForbidden.OperationFingerprint,
+            [FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired],
+            "interactive-maker", now, now + TimeSpan.FromMinutes(1).Ticks));
+        Assert.NotNull(exactClaim);
+        Assert.NotNull(legacyAuthClaim);
+        Assert.NotNull(legacyForbiddenClaim);
+        Assert.NotNull(unrelatedClaim);
+
+        var exactAdvanced = await repository.AdvanceAsync(exactClaim!, new(
+            FirstGskuIdentityWorkflowCheckpoint.DecisionObserved,
+            ProductIdentityWorkflowRecoveryDisposition.None,
+            now + 1,
+            ReleaseLease: true));
+        var unrelatedAdvanced = await repository.AdvanceAsync(unrelatedClaim!, new(
+            FirstGskuIdentityWorkflowCheckpoint.DecisionObserved,
+            ProductIdentityWorkflowRecoveryDisposition.None,
+            now + 1,
+            ReleaseLease: true));
+        var legacyAuthAdvanced = await repository.AdvanceAsync(legacyAuthClaim!, new(
+            FirstGskuIdentityWorkflowCheckpoint.DecisionObserved,
+            ProductIdentityWorkflowRecoveryDisposition.None,
+            now + 1,
+            ReleaseLease: true));
+        var legacyForbiddenAdvanced = await repository.AdvanceAsync(legacyForbiddenClaim!, new(
+            FirstGskuIdentityWorkflowCheckpoint.DecisionObserved,
+            ProductIdentityWorkflowRecoveryDisposition.None,
+            now + 1,
+            ReleaseLease: true));
+
+        Assert.True(exactAdvanced);
+        Assert.True(legacyAuthAdvanced);
+        Assert.True(legacyForbiddenAdvanced);
+        Assert.False(unrelatedAdvanced);
+        var exactStored = await repository.GetByOperationIdAsync(exact.OperationId);
+        var unrelatedStored = await repository.GetByOperationIdAsync(unrelated.OperationId);
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.DecisionObserved, exactStored!.Checkpoint);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.None, exactStored.RecoveryDisposition);
+        Assert.Null(exactStored.LastFailureCode);
+        Assert.Null(exactStored.LeaseOwner);
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+            unrelatedStored!.Checkpoint);
+        Assert.Equal("FIRST_GSKU_IDENTITY_WORKFLOW_EVIDENCE_CONFLICT", unrelatedStored.LastFailureCode);
+    }
+
+    [Fact]
     public async Task Repository_owns_exact_four_tenant_safe_indexes_and_no_secret_fields()
     {
         var operation = Operation("shape", "shape-fingerprint");

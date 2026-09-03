@@ -345,6 +345,9 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
                 GlobalProductIdentityWorkflowCheckpoint.WorkflowStarted
                 or GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay
                 or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+            (GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
+                GlobalProductIdentityWorkflowCheckpoint.WorkflowStarted
+                or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
             (GlobalProductIdentityWorkflowCheckpoint.WorkflowStarted,
                 GlobalProductIdentityWorkflowCheckpoint.LocalPendingApplied
                 or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,

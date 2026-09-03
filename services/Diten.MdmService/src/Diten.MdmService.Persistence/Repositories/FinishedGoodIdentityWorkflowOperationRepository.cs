@@ -391,6 +391,9 @@ public sealed class FinishedGoodIdentityWorkflowOperationRepository
                 FinishedGoodIdentityWorkflowCheckpoint.WorkflowStarted
                 or FinishedGoodIdentityWorkflowCheckpoint.AwaitingMakerReplay
                 or FinishedGoodIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+            (FinishedGoodIdentityWorkflowCheckpoint.AwaitingMakerReplay,
+                FinishedGoodIdentityWorkflowCheckpoint.WorkflowStarted
+                or FinishedGoodIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
             (FinishedGoodIdentityWorkflowCheckpoint.WorkflowStarted,
                 FinishedGoodIdentityWorkflowCheckpoint.LocalPendingApplied
                 or FinishedGoodIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,

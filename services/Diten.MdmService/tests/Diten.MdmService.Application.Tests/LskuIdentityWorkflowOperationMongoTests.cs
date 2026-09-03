@@ -86,6 +86,46 @@ public sealed class LskuIdentityWorkflowOperationMongoTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Maker_replay_can_persist_the_started_workflow_proof()
+    {
+        var repository = Repository(_tenantId);
+        var operation = Operation("maker-replay", new string('f', 64));
+        Assert.True((await repository.ReserveAsync(operation)).Succeeded);
+        var now = DateTimeOffset.UtcNow.UtcTicks;
+        await _collection.UpdateOneAsync(
+            item => item.TenantId == _tenantId && item.OperationId == operation.OperationId,
+            Builders<LskuIdentityWorkflowOperation>.Update.Set(
+                item => item.Checkpoint, LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay));
+        var claim = await repository.TryClaimAsync(new(
+            operation.OperationId, operation.OperationFingerprint,
+            [LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay], "maker", now,
+            now + TimeSpan.FromMinutes(1).Ticks));
+
+        Assert.NotNull(claim);
+        var workflowInstanceId = Guid.NewGuid();
+        var workflowTemplateId = Guid.NewGuid();
+        var workflowTemplateVersionId = Guid.NewGuid();
+        var approvalTaskId = Guid.NewGuid();
+        var assignmentSnapshotId = Guid.NewGuid();
+        var startTransitionLogId = Guid.NewGuid();
+        Assert.True(await repository.AdvanceAsync(claim!, new(
+            LskuIdentityWorkflowCheckpoint.WorkflowStarted,
+            ProductIdentityWorkflowRecoveryDisposition.None, now + 1,
+            WorkflowInstanceId: workflowInstanceId,
+            WorkflowTemplateId: workflowTemplateId,
+            WorkflowTemplateVersionId: workflowTemplateVersionId,
+            ApprovalTaskId: approvalTaskId,
+            AssignmentSnapshotId: assignmentSnapshotId,
+            StartTransitionLogId: startTransitionLogId,
+            WorkflowStartedAtUtcTicksV1: now + 1,
+            ReleaseLease: true)));
+        var stored = await repository.GetByOperationIdAsync(operation.OperationId);
+        Assert.Equal(LskuIdentityWorkflowCheckpoint.WorkflowStarted, stored!.Checkpoint);
+        Assert.Equal(workflowInstanceId, stored.WorkflowInstanceId);
+        Assert.Equal(approvalTaskId, stored.ApprovalTaskId);
+    }
+
+    [Fact]
     public async Task Approval_proof_is_atomic_exact_and_immutable_after_crash()
     {
         var repository = Repository(_tenantId);
@@ -154,6 +194,66 @@ public sealed class LskuIdentityWorkflowOperationMongoTests : IAsyncLifetime
         var owned = indexes.Where(x => x["name"].AsString.Contains("lsku_identity_workflow", StringComparison.Ordinal)).ToArray();
         Assert.Equal(4, owned.Length);
         Assert.All(owned, index => Assert.Equal("TenantId", index["key"].AsBsonDocument.GetElement(0).Name));
+    }
+
+    [Fact]
+    public async Task Exact_legacy_market_contract_failure_can_resume_to_persisted_decision_once()
+    {
+        var repository = Repository(_tenantId);
+        var operation = Operation("manual-resume", new string('4', 64));
+        Assert.True((await repository.ReserveAsync(operation)).Succeeded);
+        var now = DateTimeOffset.UtcNow.UtcTicks;
+        await _collection.UpdateOneAsync(
+            item => item.TenantId == _tenantId && item.OperationId == operation.OperationId,
+            Builders<LskuIdentityWorkflowOperation>.Update
+                .Set(item => item.Checkpoint, LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired)
+                .Set(item => item.RecoveryDisposition,
+                    ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
+                .Set(item => item.LastFailureCode, "REFERENCE_CONTRACT_MISMATCH")
+                .Set(item => item.DecisionKind, ProductIdentityDecisionKind.Approved));
+
+        var claim = await repository.TryClaimAsync(new(
+            operation.OperationId,
+            operation.OperationFingerprint,
+            [LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired],
+            "interactive-maker",
+            now,
+            now + TimeSpan.FromMinutes(1).Ticks));
+        Assert.NotNull(claim);
+
+        Assert.True(await repository.AdvanceAsync(claim!, new(
+            LskuIdentityWorkflowCheckpoint.DecisionObserved,
+            ProductIdentityWorkflowRecoveryDisposition.None,
+            now + 1,
+            ReleaseLease: true)));
+        var resumed = await repository.GetByOperationIdAsync(operation.OperationId);
+        Assert.Equal(LskuIdentityWorkflowCheckpoint.DecisionObserved, resumed!.Checkpoint);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.None, resumed.RecoveryDisposition);
+        Assert.Null(resumed.LastFailureCode);
+
+        var wrongFailure = Operation("manual-reject", new string('5', 64));
+        Assert.True((await repository.ReserveAsync(wrongFailure)).Succeeded);
+        await _collection.UpdateOneAsync(
+            item => item.TenantId == _tenantId && item.OperationId == wrongFailure.OperationId,
+            Builders<LskuIdentityWorkflowOperation>.Update
+                .Set(item => item.Checkpoint, LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired)
+                .Set(item => item.RecoveryDisposition,
+                    ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
+                .Set(item => item.LastFailureCode, "REFERENCE_MARKET_NOT_FOUND")
+                .Set(item => item.DecisionKind, ProductIdentityDecisionKind.Approved));
+        var rejectedClaim = await repository.TryClaimAsync(new(
+            wrongFailure.OperationId,
+            wrongFailure.OperationFingerprint,
+            [LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired],
+            "interactive-maker",
+            now + 2,
+            now + TimeSpan.FromMinutes(1).Ticks));
+        Assert.NotNull(rejectedClaim);
+        Assert.False(await repository.AdvanceAsync(rejectedClaim!, new(
+            LskuIdentityWorkflowCheckpoint.DecisionObserved,
+            ProductIdentityWorkflowRecoveryDisposition.None,
+            now + 3,
+            ReleaseLease: true)));
     }
 
     public async Task DisposeAsync() => await _collection.DeleteManyAsync(

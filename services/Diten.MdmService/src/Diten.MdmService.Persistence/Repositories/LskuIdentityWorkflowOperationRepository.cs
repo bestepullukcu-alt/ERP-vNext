@@ -300,12 +300,36 @@ public sealed class LskuIdentityWorkflowOperationRepository
                 : Builders<LskuIdentityWorkflowOperation>.Filter.Eq(
                     item => item.DecisionKind, ProductIdentityDecisionKind.Approved);
         }
-        if (mutation.NextCheckpoint == LskuIdentityWorkflowCheckpoint.DecisionObserved)
+        if (claim.Checkpoint != LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
+            && mutation.NextCheckpoint == LskuIdentityWorkflowCheckpoint.DecisionObserved)
         {
             filter &= Builders<LskuIdentityWorkflowOperation>.Filter.Eq(
                           item => item.ObjectType, mutation.DecisionObjectType)
                       & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(
                           item => item.ObjectId, mutation.DecisionObjectId);
+        }
+
+        if (claim.Checkpoint == LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
+            && mutation.NextCheckpoint == LskuIdentityWorkflowCheckpoint.DecisionObserved)
+        {
+            filter &= Builders<LskuIdentityWorkflowOperation>.Filter.Eq(
+                          item => item.RecoveryDisposition,
+                          ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
+                      & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(
+                          item => item.LastFailureCode,
+                          "REFERENCE_CONTRACT_MISMATCH")
+                      & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(
+                          item => item.DecisionKind,
+                          ProductIdentityDecisionKind.Approved)
+                      & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(
+                          item => item.ApprovalMarketSelection,
+                          null)
+                      & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(
+                          item => item.MarketValidatedAtUtcTicksV1,
+                          null)
+                      & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(
+                          item => item.ApprovalMarketProofFingerprint,
+                          null);
         }
         var update = Builders<LskuIdentityWorkflowOperation>.Update
             .Set(item => item.Checkpoint, mutation.NextCheckpoint)
@@ -406,6 +430,9 @@ public sealed class LskuIdentityWorkflowOperationRepository
                 LskuIdentityWorkflowCheckpoint.WorkflowStarted
                 or LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay
                 or LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+            (LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
+                LskuIdentityWorkflowCheckpoint.WorkflowStarted
+                or LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
             (LskuIdentityWorkflowCheckpoint.WorkflowStarted,
                 LskuIdentityWorkflowCheckpoint.LocalPendingApplied
                 or LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
@@ -425,6 +452,8 @@ public sealed class LskuIdentityWorkflowOperationRepository
             (LskuIdentityWorkflowCheckpoint.DecisionApplied,
                 LskuIdentityWorkflowCheckpoint.Completed
                 or LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+            (LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+                LskuIdentityWorkflowCheckpoint.DecisionObserved) => true,
             _ => false
         };
 
@@ -512,6 +541,15 @@ public sealed class LskuIdentityWorkflowOperationRepository
         if (mutation.NextCheckpoint == LskuIdentityWorkflowCheckpoint.WorkflowStarted)
         {
             return hasCompleteStartProof && !hasAnyDecisionProof && !hasAnyApprovalProof;
+        }
+        if (current == LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
+            && mutation.NextCheckpoint == LskuIdentityWorkflowCheckpoint.DecisionObserved)
+        {
+            return mutation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.None
+                && mutation.NextAttemptAtUtcTicksV1 is null
+                && mutation.LastFailureCode is null
+                && mutation.ReleaseLease
+                && !hasAnyStartProof && !hasAnyDecisionProof && !hasAnyApprovalProof;
         }
         if (mutation.NextCheckpoint == LskuIdentityWorkflowCheckpoint.DecisionObserved)
         {

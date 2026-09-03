@@ -140,6 +140,7 @@ public sealed class LskuIdentityWorkflowProcessor(
         CancellationToken cancellationToken)
     {
         var operation = initial;
+        var manualResumeAttempted = false;
         for (var step = 0; step < 12; step++)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -164,7 +165,10 @@ public sealed class LskuIdentityWorkflowProcessor(
             }
             if (operation.Checkpoint == LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired)
             {
-                return Fail(operation, "LSKU_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED", 409);
+                if (manualResumeAttempted || !CanResumeApprovalContract(operation, delegatedUserToken))
+                {
+                    return Fail(operation, "LSKU_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED", 409);
+                }
             }
 
             var now = timeProvider.GetUtcNow();
@@ -207,11 +211,24 @@ public sealed class LskuIdentityWorkflowProcessor(
                 LskuIdentityWorkflowCheckpoint.DecisionApplied =>
                     await VerifyDecisionAppliedAndCompleteAsync(
                         operation, claim, now, retryDelay, cancellationToken),
+                LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired =>
+                    await AdvanceAsync(
+                        claim,
+                        LskuIdentityWorkflowCheckpoint.DecisionObserved,
+                        ProductIdentityWorkflowRecoveryDisposition.None,
+                        now,
+                        releaseLease: true,
+                        cancellationToken: cancellationToken),
                 _ => false
             };
             if (!advanced)
             {
                 return Fail(operation, "LSKU_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT", 409);
+            }
+
+            if (operation.Checkpoint == LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired)
+            {
+                manualResumeAttempted = true;
             }
 
             operation = await operations.GetByOperationIdAsync(operation.OperationId, cancellationToken)
@@ -459,9 +476,6 @@ public sealed class LskuIdentityWorkflowProcessor(
                 LskuIdentityWorkflowCheckpoint.DecisionObserved,
                 ProductIdentityWorkflowRecoveryDisposition.None,
                 now.UtcTicks,
-                WorkflowInstanceId: evidence.WorkflowInstanceId,
-                WorkflowTemplateVersionId: evidence.TemplateVersionId,
-                ApprovalTaskId: evidence.ApprovalTaskId,
                 DecisionKind: decision,
                 DecisionObservedAtUtcTicksV1: now.UtcTicks,
                 DecisionActorSubjectId: actorId,
@@ -730,6 +744,36 @@ public sealed class LskuIdentityWorkflowProcessor(
         && operation.AssignmentSnapshotId is { } snapshotId && snapshotId != Guid.Empty
         && operation.StartTransitionLogId is { } logId && logId != Guid.Empty
         && operation.WorkflowStartedAtUtcTicksV1 is > 0;
+
+    private static bool CanResumeApprovalContract(
+        LskuIdentityWorkflowOperation operation,
+        string? delegatedUserToken) =>
+        !string.IsNullOrWhiteSpace(delegatedUserToken)
+        && operation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired
+        && operation.LastFailureCode == "REFERENCE_CONTRACT_MISMATCH"
+        && operation.DecisionKind == ProductIdentityDecisionKind.Approved
+        && operation.ApprovalMarketSelection is null
+        && !operation.MarketValidatedAtUtcTicksV1.HasValue
+        && operation.ApprovalMarketProofFingerprint is null
+        && CompleteStartProof(operation)
+        && TryRehydrateEvidence(operation, out var evidence)
+        && evidence.Decision == ProductIdentityDecisionKind.Approved
+        && evidence.WorkflowInstanceId == operation.WorkflowInstanceId
+        && evidence.ApprovalTaskId == operation.ApprovalTaskId
+        && evidence.WorkflowTemplateId == operation.WorkflowTemplateId
+        && evidence.WorkflowTemplateVersionId == operation.WorkflowTemplateVersionId
+        && evidence.ObjectType == operation.ObjectType
+        && evidence.ObjectId == operation.LskuId
+        && evidence.ObjectId.ToString("D") == operation.ObjectId
+        && evidence.ObjectRef == operation.ObjectRef
+        && evidence.DecisionActorSubjectId != Guid.Empty
+        && evidence.DecisionActorSubjectId != operation.MakerSubjectId
+        && evidence.DecisionAtUtc.UtcTicks > 0
+        && evidence.TransitionSequence > 0
+        && ExactTerminalStatuses(
+            ProductIdentityDecisionKind.Approved,
+            evidence.TaskStatus,
+            evidence.InstanceStatus);
 
     private static bool ExactBinding(
         ProductIdentityWorkflowBinding? actual,

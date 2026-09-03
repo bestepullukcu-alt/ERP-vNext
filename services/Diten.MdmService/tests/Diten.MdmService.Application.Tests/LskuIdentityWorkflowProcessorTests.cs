@@ -152,6 +152,28 @@ public sealed class LskuIdentityWorkflowProcessorTests
     }
 
     [Fact]
+    public async Task Decision_observation_does_not_rewrite_persisted_start_proof()
+    {
+        var harness = new Harness(ProductIdentityDecisionKind.Approved);
+        harness.ConfigureCheckpoint(LskuIdentityWorkflowCheckpoint.AwaitingDecision);
+        harness.Operations.FailNextAdvanceTo = LskuIdentityWorkflowCheckpoint.DecisionObserved;
+
+        await harness.Processor.RecoverAsync(
+            harness.Operation, "worker", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        var mutation = Assert.IsType<LskuIdentityWorkflowCheckpointMutation>(
+            harness.Operations.LastMutation);
+        Assert.Equal(LskuIdentityWorkflowCheckpoint.DecisionObserved, mutation.NextCheckpoint);
+        Assert.Null(mutation.WorkflowInstanceId);
+        Assert.Null(mutation.WorkflowTemplateId);
+        Assert.Null(mutation.WorkflowTemplateVersionId);
+        Assert.Null(mutation.ApprovalTaskId);
+        Assert.Null(mutation.AssignmentSnapshotId);
+        Assert.Null(mutation.StartTransitionLogId);
+        Assert.Null(mutation.WorkflowStartedAtUtcTicksV1);
+    }
+
+    [Fact]
     public async Task Recovery_resumes_directly_from_decision_applied_without_second_mutation()
     {
         var harness = new Harness(ProductIdentityDecisionKind.Approved);
@@ -170,6 +192,41 @@ public sealed class LskuIdentityWorkflowProcessorTests
         Assert.True(recovered.Succeeded);
         Assert.Equal(LskuIdentityWorkflowCheckpoint.Completed, recovered.Operation!.Checkpoint);
         Assert.Equal(1, harness.DecisionMutations);
+    }
+
+    [Fact]
+    public async Task Interactive_replay_resumes_exact_legacy_market_contract_failure_once()
+    {
+        var harness = new Harness(ProductIdentityDecisionKind.Approved);
+        harness.ConfigureManualContractFailure();
+
+        var result = await harness.Processor.StartInteractiveAsync(
+            TenantId, LskuId, 0, OperationId, MakerId, "delegated-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.True(result.Succeeded);
+        Assert.True(result.IsReplay);
+        Assert.Equal(LskuIdentityWorkflowCheckpoint.Completed, result.Operation!.Checkpoint);
+        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, harness.Lsku.LifecycleStatus);
+        Assert.Equal(3, harness.Market.Calls);
+        Assert.Equal(1, harness.DecisionMutations);
+    }
+
+    [Fact]
+    public async Task Background_recovery_cannot_resume_manual_market_contract_failure()
+    {
+        var harness = new Harness(ProductIdentityDecisionKind.Approved);
+        harness.ConfigureManualContractFailure();
+
+        var result = await harness.Processor.RecoverAsync(
+            harness.Operation, "worker", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.False(result.Succeeded);
+        Assert.Equal("LSKU_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED", result.ErrorCode);
+        Assert.Equal(LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+            result.Operation!.Checkpoint);
+        Assert.Equal(0, harness.Market.Calls);
+        Assert.Equal(0, harness.DecisionMutations);
     }
 
     [Fact]
@@ -270,6 +327,17 @@ public sealed class LskuIdentityWorkflowProcessorTests
             }
         }
 
+        public void ConfigureManualContractFailure()
+        {
+            Operation.Checkpoint = LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired;
+            Operation.RecoveryDisposition =
+                ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired;
+            Operation.LastFailureCode = "REFERENCE_CONTRACT_MISMATCH";
+            Operation.ApprovalMarketSelection = null;
+            Operation.MarketValidatedAtUtcTicksV1 = null;
+            Operation.ApprovalMarketProofFingerprint = null;
+        }
+
         private Task<Gsku?> ReadGsku(Guid id)
         {
             GskuReads++;
@@ -333,6 +401,7 @@ public sealed class LskuIdentityWorkflowProcessorTests
     {
         public LskuIdentityWorkflowOperation? Current { get; set; }
         public LskuIdentityWorkflowCheckpoint? FailNextAdvanceTo { get; set; }
+        public LskuIdentityWorkflowCheckpointMutation? LastMutation { get; private set; }
 
         public Task<LskuIdentityWorkflowReserveResult> ReserveAsync(
             LskuIdentityWorkflowOperation operation, CancellationToken cancellationToken = default) =>
@@ -369,6 +438,7 @@ public sealed class LskuIdentityWorkflowProcessorTests
             LskuIdentityWorkflowClaim claim, LskuIdentityWorkflowCheckpointMutation mutation,
             CancellationToken cancellationToken = default)
         {
+            LastMutation = mutation;
             if (Current is null || Current.Checkpoint != claim.Checkpoint) return Task.FromResult(false);
             if (FailNextAdvanceTo == mutation.NextCheckpoint)
             {

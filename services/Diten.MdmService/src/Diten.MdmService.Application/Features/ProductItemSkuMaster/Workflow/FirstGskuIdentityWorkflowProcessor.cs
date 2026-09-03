@@ -24,7 +24,7 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
     IProductDefinitionRevisionRepository revisions,
     IGskuRepository gskus,
     IGlobalProductRepository globalProducts,
-    IVerifiedGskuReferenceResolver references,
+    IWorkflowVerifiedGskuReferenceResolver references,
     IProductIdentityWorkflowClient workflowClient,
     FirstGskuIdentityWorkflowStartRequestFactory requestFactory,
     TimeProvider timeProvider)
@@ -131,6 +131,7 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         CancellationToken cancellationToken)
     {
         var operation = initial;
+        var manualResumeAttempted = false;
         for (var step = 0; step < 18; step++)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -155,7 +156,16 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
             }
             if (operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired)
             {
-                return Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED", 409);
+                if (manualResumeAttempted || !CanResumeApprovalDependency(operation, delegatedUserToken))
+                {
+                    return Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED", 409);
+                }
+
+                var parent = await globalProducts.GetByIdAsync(operation.GlobalProductId, cancellationToken);
+                if (parent is null || parent.LifecycleStatus != ProductIdentityLifecycleStatus.IdentityApproved)
+                {
+                    return Fail(operation, "FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED", 409);
+                }
             }
 
             var now = timeProvider.GetUtcNow();
@@ -199,11 +209,20 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
                     await VerifyAndCompleteAsync(operation, claim, now, retryDelay, cancellationToken),
                 FirstGskuIdentityWorkflowCheckpoint.GskuDraftRestored =>
                     await ApplyRevisionRejectionAsync(operation, claim, now, cancellationToken),
+                FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired =>
+                    await AdvanceAsync(
+                        claim, FirstGskuIdentityWorkflowCheckpoint.DecisionObserved,
+                        now, releaseLease: true, cancellationToken: cancellationToken),
                 _ => false
             };
             if (!advanced)
             {
                 return Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT", 409);
+            }
+
+            if (operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired)
+            {
+                manualResumeAttempted = true;
             }
 
             operation = await operations.GetByOperationIdAsync(operation.OperationId, cancellationToken)
@@ -611,7 +630,7 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         try
         {
             result = await references.ResolveLatestAsync(
-                operation.PackApplicabilityCode, operation.PackUomCode, cancellationToken);
+                operation.TenantId, operation.PackApplicabilityCode, operation.PackUomCode, cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -632,6 +651,39 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
             ? new(true, false, null, ToSelection(applicability), ToSelection(uom))
             : new(false, false, "REFERENCE_DATA_CONTRACT_CONFLICT", null, null);
     }
+
+    private static bool CanResumeApprovalDependency(
+        FirstGskuIdentityWorkflowOperation operation,
+        string? delegatedUserToken) =>
+        !string.IsNullOrWhiteSpace(delegatedUserToken)
+        && operation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired
+        && operation.LastFailureCode is "FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED"
+            or "REFERENCE_UNAUTHENTICATED"
+            or "REFERENCE_FORBIDDEN"
+        && operation.DecisionKind == ProductIdentityDecisionKind.Approved
+        && operation.ApprovalPackApplicabilitySelection is null
+        && operation.ApprovalPackUomSelection is null
+        && !operation.ReferencesValidatedAtUtcTicksV1.HasValue
+        && operation.ApprovalReferenceProofFingerprint is null
+        && CompleteStartProof(operation)
+        && TryEvidence(operation, out var evidence)
+        && evidence.Decision == ProductIdentityDecisionKind.Approved
+        && evidence.WorkflowInstanceId == operation.WorkflowInstanceId
+        && evidence.ApprovalTaskId == operation.ApprovalTaskId
+        && evidence.WorkflowTemplateId == operation.WorkflowTemplateId
+        && evidence.WorkflowTemplateVersionId == operation.WorkflowTemplateVersionId
+        && evidence.ObjectType == operation.ObjectType
+        && evidence.ObjectId == operation.GskuId
+        && evidence.ObjectId.ToString("D") == operation.ObjectId
+        && evidence.ObjectRef == operation.ObjectRef
+        && evidence.DecisionActorSubjectId != Guid.Empty
+        && evidence.DecisionActorSubjectId != operation.MakerSubjectId
+        && evidence.DecisionAtUtc.UtcTicks > 0
+        && evidence.TransitionSequence > 0
+        && ExactTerminalStatuses(
+            ProductIdentityDecisionKind.Approved,
+            evidence.TaskStatus,
+            evidence.InstanceStatus);
 
     private static VerifiedGskuReferenceSelection? ExactSelection(
         IReadOnlyList<VerifiedGskuReferenceSelection> selections, string setCode, string valueCode) =>

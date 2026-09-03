@@ -89,6 +89,46 @@ public sealed class FinishedGoodIdentityWorkflowOperationMongoTests : IAsyncLife
     }
 
     [Fact]
+    public async Task Maker_replay_can_persist_the_started_workflow_proof()
+    {
+        var repository = Repository(_tenantId);
+        var operation = Operation("maker-replay", new string('f', 64));
+        Assert.True((await repository.ReserveAsync(operation)).Succeeded);
+        var now = DateTimeOffset.UtcNow.UtcTicks;
+        await _collection.UpdateOneAsync(
+            item => item.TenantId == _tenantId && item.OperationId == operation.OperationId,
+            Builders<FinishedGoodIdentityWorkflowOperation>.Update.Set(
+                item => item.Checkpoint, FinishedGoodIdentityWorkflowCheckpoint.AwaitingMakerReplay));
+        var claim = await repository.TryClaimAsync(new(
+            operation.OperationId, operation.OperationFingerprint,
+            [FinishedGoodIdentityWorkflowCheckpoint.AwaitingMakerReplay], "maker", now,
+            now + TimeSpan.FromMinutes(1).Ticks));
+
+        Assert.NotNull(claim);
+        var workflowInstanceId = Guid.NewGuid();
+        var workflowTemplateId = Guid.NewGuid();
+        var workflowTemplateVersionId = Guid.NewGuid();
+        var approvalTaskId = Guid.NewGuid();
+        var assignmentSnapshotId = Guid.NewGuid();
+        var startTransitionLogId = Guid.NewGuid();
+        Assert.True(await repository.AdvanceAsync(claim!, new(
+            FinishedGoodIdentityWorkflowCheckpoint.WorkflowStarted,
+            ProductIdentityWorkflowRecoveryDisposition.None, now + 1,
+            WorkflowInstanceId: workflowInstanceId,
+            WorkflowTemplateId: workflowTemplateId,
+            WorkflowTemplateVersionId: workflowTemplateVersionId,
+            ApprovalTaskId: approvalTaskId,
+            AssignmentSnapshotId: assignmentSnapshotId,
+            StartTransitionLogId: startTransitionLogId,
+            WorkflowStartedAtUtcTicksV1: now + 1,
+            ReleaseLease: true)));
+        var stored = await repository.GetByOperationIdAsync(operation.OperationId);
+        Assert.Equal(FinishedGoodIdentityWorkflowCheckpoint.WorkflowStarted, stored!.Checkpoint);
+        Assert.Equal(workflowInstanceId, stored.WorkflowInstanceId);
+        Assert.Equal(approvalTaskId, stored.ApprovalTaskId);
+    }
+
+    [Fact]
     public async Task Approval_parent_proof_is_atomic_exact_and_immutable_after_crash()
     {
         var repository = Repository(_tenantId);

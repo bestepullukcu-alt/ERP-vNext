@@ -153,7 +153,7 @@ public sealed class PlatformWorkflowVerifiedMarketResolverClientTests
     private static HttpResponseMessage Success(string code) => Json(HttpStatusCode.OK, new
     {
         data = new { market = Market(code) }, statusCode = 200, isSuccessful = true,
-        errors = Array.Empty<string>(), reason_code = (string?)null, correlation_id = "corr"
+        errors = Array.Empty<string>(), reason_code = (string?)null, correlation_id = (string?)null
     });
     private static object Market(string code) => new
     {

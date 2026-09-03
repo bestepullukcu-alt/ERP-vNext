@@ -137,6 +137,123 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
     }
 
     [Fact]
+    public async Task Parent_approval_dependency_only_resumes_by_exact_interactive_replay_without_new_workflow()
+    {
+        var harness = new Harness();
+        harness.Parent.LifecycleStatus = ProductIdentityLifecycleStatus.Draft;
+        var submitted = await harness.Processor.StartInteractiveAsync(
+            TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        var blocked = await harness.Processor.RecoverAsync(
+            submitted.Operation!, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.False(blocked.Succeeded);
+        Assert.Equal("FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED", blocked.Operation!.LastFailureCode);
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+            blocked.Operation.Checkpoint);
+        Assert.Equal(1, harness.Client.StartCalls);
+
+        harness.Parent.LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved;
+        var backgroundAttempt = await harness.Processor.RecoverAsync(
+            blocked.Operation, "worker-2", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        var replay = await harness.Processor.StartInteractiveAsync(
+            TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.False(backgroundAttempt.Succeeded);
+        Assert.Equal(409, backgroundAttempt.StatusCode);
+        Assert.True(replay.Succeeded);
+        Assert.True(replay.IsReplay);
+        Assert.Equal(OperationId, replay.Operation!.OperationId);
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.Completed, replay.Operation.Checkpoint);
+        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, harness.Revision.LifecycleStatus);
+        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, harness.Gsku.LifecycleStatus);
+        Assert.Equal(1, harness.Client.StartCalls);
+    }
+
+    [Theory]
+    [InlineData(401, "REFERENCE_UNAUTHENTICATED")]
+    [InlineData(403, "REFERENCE_FORBIDDEN")]
+    public async Task Legacy_interactive_reference_auth_failure_only_resumes_by_exact_interactive_replay_with_trusted_resolver(
+        int statusCode,
+        string failureCode)
+    {
+        var harness = new Harness();
+        harness.References.Result = VerifiedGskuReferenceResolveResult.Fail(statusCode, failureCode);
+        var submitted = await harness.Processor.StartInteractiveAsync(
+            TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        var blocked = await harness.Processor.RecoverAsync(
+            submitted.Operation!, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.False(blocked.Succeeded);
+        Assert.Equal(failureCode, blocked.Operation!.LastFailureCode);
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired, blocked.Operation.Checkpoint);
+        harness.References.Result = ReferenceResolver.Success(2);
+
+        var backgroundAttempt = await harness.Processor.RecoverAsync(
+            blocked.Operation, "worker-2", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        var replay = await harness.Processor.StartInteractiveAsync(
+            TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.False(backgroundAttempt.Succeeded);
+        Assert.True(replay.Succeeded);
+        Assert.True(replay.IsReplay);
+        Assert.Equal(OperationId, replay.Operation!.OperationId);
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.Completed, replay.Operation.Checkpoint);
+        Assert.Equal(1, harness.Client.StartCalls);
+    }
+
+    [Fact]
+    public async Task Persistent_reference_auth_failure_does_not_spin_manual_resume_until_step_budget()
+    {
+        var harness = new Harness();
+        harness.References.Result = VerifiedGskuReferenceResolveResult.Fail(403, "REFERENCE_FORBIDDEN");
+        var submitted = await harness.Processor.StartInteractiveAsync(
+            TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        var blocked = await harness.Processor.RecoverAsync(
+            submitted.Operation!, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        var replay = await harness.Processor.StartInteractiveAsync(
+            TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.False(replay.Succeeded);
+        Assert.Equal(409, replay.StatusCode);
+        Assert.Equal("FIRST_GSKU_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED", replay.ErrorCode);
+        Assert.Equal(2, harness.References.Calls);
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+            replay.Operation!.Checkpoint);
+        Assert.False(blocked.Succeeded);
+    }
+
+    [Fact]
+    public async Task Unrelated_manual_reconciliation_cannot_resume_by_interactive_replay()
+    {
+        var harness = new Harness { TerminalActorId = MakerId };
+        var submitted = await harness.Processor.StartInteractiveAsync(
+            TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        var quarantined = await harness.Processor.RecoverAsync(
+            submitted.Operation!, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        var replay = await harness.Processor.StartInteractiveAsync(
+            TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.False(quarantined.Succeeded);
+        Assert.False(replay.Succeeded);
+        Assert.Equal("FIRST_GSKU_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED", replay.ErrorCode);
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+            replay.Operation!.Checkpoint);
+        Assert.Equal(1, harness.Client.StartCalls);
+    }
+
+    [Fact]
     public async Task Reference_drift_after_revision_approval_blocks_gsku_approval()
     {
         var harness = new Harness();
@@ -226,7 +343,7 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
             };
             Revisions = new PairRevisionRepository(Revision);
             Gskus = new PairGskuRepository(Gsku);
-            var parent = new GlobalProduct
+            Parent = new GlobalProduct
             {
                 Id = ProductId, TenantId = TenantId, CanonicalCode = "GP-0001",
                 GlobalProductName = "Product", GlobalProductNameNormalized = "PRODUCT",
@@ -234,7 +351,7 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
             };
             var products = DispatchProxy.Create<IGlobalProductRepository, RepositoryProxy>();
             ((RepositoryProxy)(object)products).Handler = (method, args) => method.Name == "GetByIdAsync"
-                ? Task.FromResult<GlobalProduct?>((Guid)args![0]! == ProductId ? parent : null)
+                ? Task.FromResult<GlobalProduct?>((Guid)args![0]! == ProductId ? Parent : null)
                 : throw new NotSupportedException(method.Name);
             Client = new(this);
             References = new();
@@ -253,20 +370,26 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
         public ReferenceResolver References { get; }
         public ProductDefinitionRevision Revision { get; }
         public Gsku Gsku { get; }
+        public GlobalProduct Parent { get; }
         public Guid TerminalActorId { get; set; } = ApproverId;
     }
 
     private sealed class FakeWorkflowClient(Harness harness) : IProductIdentityWorkflowClient
     {
         public ProductIdentityWorkflowTransportOutcome StartOutcome { get; set; } = ProductIdentityWorkflowTransportOutcome.Success;
+        public int StartCalls { get; private set; }
         public int StartResultCalls { get; private set; }
 
         public Task<ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>> StartAsync(
             Guid tenantId, ProductIdentityWorkflowStartRequest request, string delegatedUserToken,
-            CancellationToken cancellationToken = default) => Task.FromResult(
-            StartOutcome == ProductIdentityWorkflowTransportOutcome.Success
-                ? ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Success(StartResult())
-                : ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(StartOutcome, "TIMEOUT"));
+            CancellationToken cancellationToken = default)
+        {
+            StartCalls++;
+            return Task.FromResult(
+                StartOutcome == ProductIdentityWorkflowTransportOutcome.Success
+                    ? ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Success(StartResult())
+                    : ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(StartOutcome, "TIMEOUT"));
+        }
 
         public Task<ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>> GetStartResultAsync(
             Guid tenantId, ProductIdentityWorkflowStartResultRequest request,
@@ -291,15 +414,19 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
             "GS-0001", "Running", "Approval", "Review", DateTimeOffset.UtcNow, null, false, "corr");
     }
 
-    private sealed class ReferenceResolver : IVerifiedGskuReferenceResolver
+    private sealed class ReferenceResolver : IWorkflowVerifiedGskuReferenceResolver
     {
         public VerifiedGskuReferenceResolveResult? Result { get; set; }
         public Queue<VerifiedGskuReferenceResolveResult> Results { get; } = new();
+        public int Calls { get; private set; }
 
         public Task<VerifiedGskuReferenceResolveResult> ResolveLatestAsync(
-            string packApplicabilityValueCode, string uomValueCode,
-            CancellationToken cancellationToken = default) => Task.FromResult(
-                Results.Count > 0 ? Results.Dequeue() : Result ?? Success(2));
+            Guid tenantId, string packApplicabilityValueCode, string uomValueCode,
+            CancellationToken cancellationToken = default)
+        {
+            Calls++;
+            return Task.FromResult(Results.Count > 0 ? Results.Dequeue() : Result ?? Success(2));
+        }
 
         public static VerifiedGskuReferenceResolveResult Success(int version) =>
             VerifiedGskuReferenceResolveResult.Success([
