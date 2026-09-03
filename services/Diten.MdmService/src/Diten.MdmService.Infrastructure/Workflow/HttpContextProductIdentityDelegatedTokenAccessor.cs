@@ -18,14 +18,32 @@ public sealed class HttpContextProductIdentityDelegatedTokenAccessor : IProductI
         var authorization = context?.Request.Headers.Authorization;
         if (context?.User.Identity?.IsAuthenticated != true || authorization is null || authorization.Value.Count != 1
             || context.Request.Headers.ContainsKey("X-Delegated-Authorization")
-            || context.Request.Headers.ContainsKey("X-Tenant-Id")
             || context.User.Claims.Any(x => x.Type == "actor_type" && string.Equals(x.Value, "service", StringComparison.Ordinal)))
             throw new ProductIdentityDelegatedTokenException("PRODUCT_WORKFLOW_DELEGATED_IDENTITY_INVALID");
+
+        if (context.Request.Headers.TryGetValue("X-Tenant-Id", out var tenantHeaders))
+        {
+            var tenantClaims = context.User.Claims
+                .Where(x => x.Type == "tenant_id")
+                .Select(x => x.Value)
+                .ToArray();
+            var header = tenantHeaders.Count == 1 ? tenantHeaders[0] : null;
+            if (tenantHeaders.Count != 1
+                || string.IsNullOrWhiteSpace(header)
+                || tenantClaims.Length != 1
+                || !Guid.TryParseExact(header, "D", out var headerTenantId)
+                || !Guid.TryParseExact(tenantClaims[0], "D", out var claimTenantId)
+                || headerTenantId == Guid.Empty
+                || claimTenantId == Guid.Empty
+                || !string.Equals(header, headerTenantId.ToString("D"), StringComparison.Ordinal)
+                || !string.Equals(tenantClaims[0], claimTenantId.ToString("D"), StringComparison.Ordinal)
+                || headerTenantId != claimTenantId)
+                throw new ProductIdentityDelegatedTokenException("PRODUCT_WORKFLOW_DELEGATED_IDENTITY_INVALID");
+        }
 
         var subjects = context.User.Claims
             .Where(x => x.Type is "sub" or ClaimTypes.NameIdentifier)
             .Select(x => x.Value)
-            .Distinct(StringComparer.Ordinal)
             .ToArray();
         var rawAuthorization = authorization.Value[0] ?? string.Empty;
         if (subjects.Length != 1 || !Guid.TryParseExact(subjects[0], "D", out var subjectId) || subjectId == Guid.Empty
