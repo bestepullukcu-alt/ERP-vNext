@@ -45,6 +45,18 @@ public sealed class PpmController(HttpClient httpClient, IConfiguration configur
     public Task<IActionResult> Get(string resource, Guid id, CancellationToken cancellationToken) =>
         ProxyAsync(resource, HttpMethod.Get, id.ToString(), cancellationToken);
 
+    [HttpGet("initiatives/api/contracts/v2")]
+    public Task<IActionResult> InitiativeContracts(CancellationToken cancellationToken) =>
+        ProxyAsync("initiatives", HttpMethod.Get, "contracts/v2", cancellationToken);
+
+    [HttpGet("initiatives/api/lifecycle-contracts/v2")]
+    public Task<IActionResult> InitiativeLifecycleContracts(CancellationToken cancellationToken) =>
+        ProxyAsync("initiatives", HttpMethod.Get, "lifecycle-contracts/v2", cancellationToken);
+
+    [HttpGet("initiatives/api/{id:guid}/details/links")]
+    public Task<IActionResult> InitiativeDetailLinks(Guid id, CancellationToken cancellationToken) =>
+        ProxyAsync("initiatives", HttpMethod.Get, $"{id}/details/links", cancellationToken);
+
     [ValidateAntiForgeryToken]
     [HttpPost("{resource}/api")]
     public Task<IActionResult> Create(string resource, CancellationToken cancellationToken) =>
@@ -59,6 +71,11 @@ public sealed class PpmController(HttpClient httpClient, IConfiguration configur
     [HttpPost("{resource}/api/{id:guid}/lifecycle")]
     public Task<IActionResult> Transition(string resource, Guid id, CancellationToken cancellationToken) =>
         ProxyBodyAsync(resource, HttpMethod.Post, $"{id}/lifecycle", cancellationToken);
+
+    [ValidateAntiForgeryToken]
+    [HttpPost("initiatives/api/{terminalId:guid}/successors")]
+    public Task<IActionResult> CreateInitiativeSuccessor(Guid terminalId, CancellationToken cancellationToken) =>
+        ProxyBodyAsync("initiatives", HttpMethod.Post, $"{terminalId}/successors", cancellationToken);
 
     [ValidateAntiForgeryToken]
     [HttpDelete("{resource}/api/{id:guid}")]

@@ -1,3 +1,8 @@
-@model Diten.Web.Models.PPM.PpmListPageViewModel
-@* Shared/_DataTable renders id="skeleton-loader" and the DataTable v2 identity marker. *@
-<partial name="~/Views/PPM/Shared/_DataTable.cshtml" model="Model" />
+@using Diten.Web.Views.PPM.Initiatives
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<InitiativesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+<div class="card"><div id="skeleton-loader" class="backbone-skeleton p-4" aria-live="polite"><div class="shimmer skeleton-row skeleton-row-lg"></div><div class="shimmer skeleton-row"></div><div class="shimmer skeleton-row"></div><div class="shimmer skeleton-row skeleton-row-last"></div></div>
+ <div id="initiative-table-alert" class="alert alert-danger rounded-0 mb-0 d-none" role="alert"></div><div class="card-datatable table-responsive">
+ <table id="dt-initiatives" data-dt-standard="v2" class="datatables-initiatives table border-top"><thead><tr><th></th><th>@Localizer["Code"]</th><th class="all">@Localizer["Name"]</th><th>@Localizer["InitiativeType"]</th><th>@Localizer["Priority"]</th><th>@Localizer["LifecycleState"]</th><th>@Localizer["PlannedStartDate"]</th><th>@Localizer["PlannedEndDate"]</th><th class="cell-fit text-end pe-3 all">@SharedLocalizer["ViewDetails"]</th></tr></thead></table>
+ </div></div>

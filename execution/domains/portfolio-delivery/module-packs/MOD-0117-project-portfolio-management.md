@@ -1987,6 +1987,30 @@ A separately approved frontend implementation is acceptable only when all of the
 Passing these gates proves only the bounded Initiative frontend implementation. It does not activate
 production, close the owner-contract blockers, promote MOD-0117 to `done`, or establish full MOD-0117 parity.
 
+### Correction — 2026-09-03 — Initiative frontend test and verifier disposition
+
+**Authority class:** narrow governance/test correction. **Production authority:** `production_authority: none`.
+The pack remains `review`, default-off and non-activating. This correction grants no production-code,
+shared-partial, `.antigravity` verifier, backend, Gateway, deployment or activation authority.
+
+For the approved Initiative Core v2 frontend implementation only,
+`frontend/Diten.Web/tests/js/ppm-add-new-delegation.test.mjs` is added to the exact test allowlist. Within that
+file, only superseded Initiative assertions may change: the existing Portfolio delegated Add New and shared
+CRUD proofs must remain intact. Initiative assertions must exercise the Initiative-owned script behavior with
+DOM/fetch stubs and prove that table initialization waits for the authoritative `lifecycle-contracts/v2`
+response, lifecycle data comes from that endpoint, row lifecycle actions come from record-specific
+`availableActions`, no hardcoded transition/vocabulary fallback is introduced, and classification
+`contracts/v2` failure disables create/edit save. This authority does not permit `PpmCrud` compatibility code,
+hardcoded transitions or vocabularies, bulk UI/API, or changes to any production/shared source.
+
+For this Initiative surface, generic verifier expectations for a select-all checkbox, bulk endpoint, bulk-delete
+control and clear-selection lifecycle are **inapplicable by design** because Initiative bulk lifecycle and bulk
+delete remain forbidden. Acceptance is based on the applicable same-origin proxy, Golden Slim, DataTable v2,
+inline-filter, Save View, loading, empty and differentiated-error gates. “Verifier fully passes” wording in the
+preceding acceptance criteria is therefore read as “all applicable verifier gates pass”; the named forbidden-bulk
+findings are recorded advisories and must never be remediated by adding bulk behavior or changing the protected
+verifier.
+
 ### Correction — 2026-09-03 — Initiative lifecycle contract prerequisite
 
 **Authority class:** governance correction / executable frontend blocker. This correction does not amend
@@ -2166,6 +2190,7 @@ authorize frontend implementation, close MOD-0023 authority or promote MOD-0117 
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-09-03 | Added the exact legacy delegated-click test file solely to replace superseded Initiative assertions with authoritative lifecycle/classification behavioral proof while preserving Portfolio/shared CRUD coverage. Recorded generic select-all/bulk endpoint/bulk-delete/clear-selection verifier expectations as inapplicable to the explicitly no-bulk Initiative surface. Preserved `review`, `production_authority: none`, and prohibited production/shared/verifier changes. | User / Portfolio Governance Process Owner |
 | 2026-09-03 | Added only `IInitiativeLifecycleContractAuthority.cs` to the Initiative Lifecycle Contracts v2 exact backend allowlist as a PPM-owned canonical-production and fail-closed malformed-contract test seam. Explicitly prohibited external providers, alternate ownership, DI/cache, Persistence/Infrastructure, frontend/Gateway/configuration and production activation. No runtime or test code changed in this governance checkpoint. | User / Portfolio Governance Process Owner |
 | 2026-09-03 | Added exact Initiative Lifecycle Contracts v2 backend prerequisite authority: `GET /api/v1/ppm/initiatives/lifecycle-contracts/v2`, PPM-owned lifecycle matrix/vocabularies independent of MOD-0048, server-calculated record action availability, strict `401/403/503`, exact backend/test allowlist and exhaustive gates. Preserved `review`, `production_authority: none`, default-off/non-activating posture and separate explicit approval; frontend stays blocked until prerequisite merge and verification. No backend/frontend/runtime/test code changed in this checkpoint. | User / Portfolio Governance Process Owner |
 | 2026-09-03 | Corrected the Initiative frontend handoff after executable feasibility review: the current DTO/result exposes no authoritative allowed-transition/action projection, and combined `contracts/v2` couples PPM-owned lifecycle vocabularies to MOD-0048 availability. Required an independent additive PPM-owned lifecycle contract (preferred `GET /api/v1/ppm/initiatives/lifecycle-contracts/v2`) plus record-specific server-calculated actions where needed before frontend lifecycle work can start. This correction grants no backend authority; an exact backend allowlist amendment and separate explicit user approval are required. | User / Portfolio Governance Process Owner |
