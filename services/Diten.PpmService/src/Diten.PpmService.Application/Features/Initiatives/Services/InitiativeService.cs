@@ -9,11 +9,34 @@ public sealed class InitiativeService(
     IInitiativeRepository repository, IPortfolioRepository portfolios, IAuditIntentRepository audit,
     IPpmUnitOfWork unitOfWork, ITenantContext tenant, ICurrentActorContext actor, ICorrelationContext correlation,
     IPpmAccessAuthorizer access, IInitiativeClassificationAuthority? classifications = null,
-    IInitiativeClosureReferenceAuthority? closureReferences = null)
+    IInitiativeClosureReferenceAuthority? closureReferences = null,
+    IInitiativeLifecycleContractAuthority? lifecycleContracts = null)
 {
     private IInitiativeClassificationAuthority Classifications { get; } = classifications ?? UnavailableAuthorities.Instance;
     private IInitiativeClosureReferenceAuthority ClosureReferences { get; } = closureReferences ?? UnavailableAuthorities.Instance;
+    private IInitiativeLifecycleContractAuthority? LifecycleContracts { get; } = lifecycleContracts;
     private IInitiativeV2Repository? V2Repository => repository as IInitiativeV2Repository;
+
+    public async Task<Response<InitiativeLifecycleContractsV2>> GetLifecycleContracts(CancellationToken ct)
+    {
+        var denied = await Authorize<InitiativeLifecycleContractsV2>(PpmPermissions.InitiativesRead, ct);
+        if (denied is not null) return denied;
+
+        try
+        {
+            var contract = LifecycleContracts is null
+                ? BuildLifecycleContracts()
+                : await LifecycleContracts.GetLifecycleContractsAsync(ct);
+            ValidateLifecycleContracts(contract);
+            return Response<InitiativeLifecycleContractsV2>.Success(contract);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            return Response<InitiativeLifecycleContractsV2>.Fail(
+                "Initiative lifecycle contract authority is unavailable.", 503);
+        }
+    }
+
     public async Task<Response<InitiativeContractsV2>> GetContracts(CancellationToken ct)
     {
         var denied = await Authorize<InitiativeContractsV2>(PpmPermissions.InitiativesRead, ct);
@@ -65,7 +88,8 @@ public sealed class InitiativeService(
                 tenant.TenantId, old.Id, successor.Id, request.ExpectedTerminalVersion, token);
             await repository.AddAsync(successor, token);
             await audit.AddAsync(Intent(successor, "successor-created"), token);
-            return Response<InitiativeV2Dto>.Success(successor.ToV2Dto(), 201);
+            return Response<InitiativeV2Dto>.Success(
+                successor.ToV2Dto(await GetAvailableActions(successor, token)), 201);
         }, ct);
     }
 
@@ -87,7 +111,8 @@ public sealed class InitiativeService(
                 request.InitiativeTypeCode, request.PriorityCode, request.PlannedStartDate, request.PlannedEndDate);
             await repository.ReplaceAsync(entity, request.ExpectedVersion, token);
             await audit.AddAsync(Intent(entity, "updated"), token);
-            return Response<InitiativeV2Dto>.Success(entity.ToV2Dto());
+            return Response<InitiativeV2Dto>.Success(
+                entity.ToV2Dto(await GetAvailableActions(entity, token)));
         }, ct);
     }
 
@@ -138,7 +163,8 @@ public sealed class InitiativeService(
             if (closure is not null)
                 await V2Repository!.AddClosureAsync(closure, token);
             await audit.AddAsync(Intent(entity, warnings.Count != 0 ? InitiativeWarnings.RecipientUnresolved : "lifecycle-changed"), token);
-            return Response<InitiativeLifecycleResult>.Success(new(entity.ToV2Dto(), closure?.ToDto(), warnings));
+            return Response<InitiativeLifecycleResult>.Success(new(
+                entity.ToV2Dto(await GetAvailableActions(entity, token)), closure?.ToDto(), warnings));
         }, ct);
     }
 
@@ -163,7 +189,10 @@ public sealed class InitiativeService(
         var denied = await Authorize<InitiativeV2Dto>(PpmPermissions.InitiativesRead, ct);
         if (denied is not null) return denied;
         var entity = await repository.GetByIdAsync(tenant.TenantId, request.Id, ct);
-        return entity is null ? Response<InitiativeV2Dto>.Fail("Initiative was not found.", 404) : Response<InitiativeV2Dto>.Success(entity.ToV2Dto());
+        return entity is null
+            ? Response<InitiativeV2Dto>.Fail("Initiative was not found.", 404)
+            : Response<InitiativeV2Dto>.Success(
+                entity.ToV2Dto(await GetAvailableActions(entity, ct)));
     }
 
     public async Task<Response<InitiativeDetailLinks>> GetDetailLinks(GetInitiativeDetailLinksQuery request, CancellationToken ct)
@@ -180,7 +209,10 @@ public sealed class InitiativeService(
         var denied = await Authorize<IReadOnlyList<InitiativeV2Dto>>(PpmPermissions.InitiativesRead, ct);
         if (denied is not null) return denied;
         var entities = await repository.ListAsync(tenant.TenantId, ct);
-        return Response<IReadOnlyList<InitiativeV2Dto>>.Success(entities.Select(x => x.ToV2Dto()).ToArray());
+        var lifecycleAccess = await access.AuthorizeAsync(PpmPermissions.InitiativesLifecycle, ct);
+        return Response<IReadOnlyList<InitiativeV2Dto>>.Success(entities
+            .Select(x => x.ToV2Dto(GetAvailableActions(x, lifecycleAccess)))
+            .ToArray());
     }
 
     private async Task<Response<InitiativeV2Dto>> CreateCore(string code, string name, string? description,
@@ -193,8 +225,163 @@ public sealed class InitiativeService(
             var entity = New(code, name, description, portfolioId, type, priority, start, end, supersedes);
             await repository.AddAsync(entity, token);
             await audit.AddAsync(Intent(entity, "created"), token);
-            return Response<InitiativeV2Dto>.Success(entity.ToV2Dto(), 201);
+            return Response<InitiativeV2Dto>.Success(
+                entity.ToV2Dto(await GetAvailableActions(entity, token)), 201);
         }, ct);
+
+    private async Task<IReadOnlyList<InitiativeActionAvailability>> GetAvailableActions(
+        Initiative entity, CancellationToken ct) =>
+        GetAvailableActions(entity,
+            await access.AuthorizeAsync(PpmPermissions.InitiativesLifecycle, ct));
+
+    private static IReadOnlyList<InitiativeActionAvailability> GetAvailableActions(
+        Initiative entity, PpmAccessDecision lifecycleAccess)
+    {
+        if (entity.IsTerminal) return [];
+
+        return Enum.GetValues<InitiativeLifecycleState>()
+            .Where(entity.CanTransitionTo)
+            .Select(target => BuildActionAvailability(entity, target, lifecycleAccess))
+            .ToArray();
+    }
+
+    private static InitiativeActionAvailability BuildActionAvailability(
+        Initiative entity, InitiativeLifecycleState target, PpmAccessDecision lifecycleAccess)
+    {
+        var companionData = CompanionDataFor(target);
+        if (lifecycleAccess == PpmAccessDecision.Forbidden)
+            return new(target, InitiativeActionAvailability.Forbidden,
+                InitiativeActionAvailability.LifecyclePermissionDeniedReason, companionData);
+        if (target == InitiativeLifecycleState.Active && !entity.IsActivationReady)
+            return new(target, InitiativeActionAvailability.RecordNotReady,
+                InitiativeActionAvailability.ActivationDataIncompleteReason, companionData);
+        if (lifecycleAccess == PpmAccessDecision.DependencyUnavailable)
+            return new(target, InitiativeActionAvailability.DependencyUnavailable,
+                InitiativeActionAvailability.EntitlementAuthorityUnavailableReason, companionData);
+        if (RequiresApprovalAuthority(entity.LifecycleState, target))
+            return new(target, InitiativeActionAvailability.DependencyUnavailable,
+                InitiativeActionAvailability.ApprovalAuthorityUnavailableReason, companionData);
+        return new(target, InitiativeActionAvailability.Available,
+            InitiativeActionAvailability.Available, companionData);
+    }
+
+    private static InitiativeLifecycleContractsV2 BuildLifecycleContracts()
+    {
+        var states = Enum.GetValues<InitiativeLifecycleState>();
+        var transitions = states
+            .SelectMany(source => states
+                .Where(CreateLifecycleProbe(source).CanTransitionTo)
+                .Select(target => new InitiativeLifecycleTransitionContract(
+                    source, target, CompanionDataFor(target),
+                    RequiresApprovalAuthority(source, target)
+                        ? InitiativeLifecycleTransitionContract.ApprovalAuthorityRequiredDisposition
+                        : InitiativeLifecycleTransitionContract.DirectApprovalDisposition)))
+            .ToArray();
+        var allowedTargetsBySource = states.ToDictionary(
+            source => source,
+            source => (IReadOnlyList<InitiativeLifecycleState>)transitions
+                .Where(transition => transition.SourceState == source)
+                .Select(transition => transition.TargetState)
+                .ToArray());
+
+        return new(InitiativeLifecycleContractsV2.CurrentContractVersion, allowedTargetsBySource, transitions,
+            InitiativeVocabularies.CancellationReasons,
+            InitiativeVocabularies.HoldReasons,
+            InitiativeVocabularies.CompletionOutcomes,
+            InitiativeVocabularies.ClosureReasons,
+            InitiativeVocabularies.BenefitDispositions);
+    }
+
+    private static Initiative CreateLifecycleProbe(InitiativeLifecycleState state)
+    {
+        var probe = new Initiative(Guid.NewGuid(), Guid.NewGuid(), "CONTRACT-PROBE", "Contract probe",
+            null, null, "type", "priority", DateOnly.MinValue, DateOnly.MinValue);
+        if (state is InitiativeLifecycleState.Active or InitiativeLifecycleState.OnHold
+            or InitiativeLifecycleState.Completed)
+            probe.Transition(Guid.NewGuid(), InitiativeLifecycleState.Active);
+        if (state is InitiativeLifecycleState.OnHold)
+            probe.Transition(Guid.NewGuid(), InitiativeLifecycleState.OnHold);
+        if (state is InitiativeLifecycleState.Completed)
+            probe.Transition(Guid.NewGuid(), InitiativeLifecycleState.Completed);
+        if (state is InitiativeLifecycleState.Cancelled)
+            probe.Transition(Guid.NewGuid(), InitiativeLifecycleState.Cancelled);
+        return probe;
+    }
+
+    private static void ValidateLifecycleContracts(InitiativeLifecycleContractsV2 contract)
+    {
+        ArgumentNullException.ThrowIfNull(contract);
+        var states = Enum.GetValues<InitiativeLifecycleState>();
+        var allowedTargetsBySource = contract.AllowedTargetStatesBySource;
+        var transitions = contract.Transitions;
+        if (!string.Equals(contract.ContractVersion, InitiativeLifecycleContractsV2.CurrentContractVersion,
+                StringComparison.Ordinal)
+            || allowedTargetsBySource is null
+            || transitions is null
+            || contract.CancellationReasons is null
+            || contract.HoldReasons is null
+            || contract.CompletionOutcomes is null
+            || contract.ClosureReasons is null
+            || contract.BenefitDispositions is null)
+            throw new InvalidOperationException("Initiative lifecycle contract is malformed.");
+
+        if (allowedTargetsBySource.Count != states.Length
+            || states.Any(state => !allowedTargetsBySource.ContainsKey(state))
+            || allowedTargetsBySource.Keys.Any(state => !Enum.IsDefined(state))
+            || allowedTargetsBySource.Values.Any(targets => targets is null)
+            || allowedTargetsBySource.Any(entry => entry.Value.Any(target => !Enum.IsDefined(target)))
+            || allowedTargetsBySource.Any(entry => entry.Value.Distinct().Count() != entry.Value.Count)
+            || allowedTargetsBySource.Any(entry => !entry.Value.SequenceEqual(transitions
+                .Where(transition => transition.SourceState == entry.Key)
+                .Select(transition => transition.TargetState)))
+            || transitions.Any(x => x is null)
+            || transitions.Any(x => !Enum.IsDefined(x.SourceState) || !Enum.IsDefined(x.TargetState))
+            || transitions.Any(x => x.SourceState == x.TargetState)
+            || transitions.DistinctBy(x => (x.SourceState, x.TargetState)).Count() != transitions.Count
+            || transitions.Any(transition => transition.RequiredCompanionDataKind is not (
+                InitiativeLifecycleTransitionContract.NoCompanionData
+                or InitiativeLifecycleTransitionContract.CancellationReasonCompanionData
+                or InitiativeLifecycleTransitionContract.HoldReasonCompanionData
+                or InitiativeLifecycleTransitionContract.ClosureCompanionData))
+            || transitions.Any(transition => transition.ApprovalDependencyDisposition is not (
+                InitiativeLifecycleTransitionContract.DirectApprovalDisposition
+                or InitiativeLifecycleTransitionContract.ApprovalAuthorityRequiredDisposition))
+            || transitions.Any(transition =>
+                transition.RequiredCompanionDataKind != CompanionDataFor(transition.TargetState))
+            || transitions.Any(transition => transition.ApprovalDependencyDisposition
+                != (RequiresApprovalAuthority(transition.SourceState, transition.TargetState)
+                    ? InitiativeLifecycleTransitionContract.ApprovalAuthorityRequiredDisposition
+                    : InitiativeLifecycleTransitionContract.DirectApprovalDisposition)))
+            throw new InvalidOperationException("Initiative lifecycle transition contract is inconsistent.");
+
+        ValidateVocabulary(contract.CancellationReasons, InitiativeVocabularies.CancellationReasons);
+        ValidateVocabulary(contract.HoldReasons, InitiativeVocabularies.HoldReasons);
+        ValidateVocabulary(contract.CompletionOutcomes, InitiativeVocabularies.CompletionOutcomes);
+        ValidateVocabulary(contract.ClosureReasons, InitiativeVocabularies.ClosureReasons);
+        ValidateVocabulary(contract.BenefitDispositions, InitiativeVocabularies.BenefitDispositions);
+    }
+
+    private static void ValidateVocabulary(IReadOnlyList<string> values, IReadOnlyList<string> canonicalValues)
+    {
+        if (values.Count == 0 || values.Any(string.IsNullOrWhiteSpace)
+            || values.Distinct(StringComparer.Ordinal).Count() != values.Count
+            || !values.SequenceEqual(canonicalValues, StringComparer.Ordinal))
+            throw new InvalidOperationException("Initiative lifecycle vocabulary is inconsistent.");
+    }
+
+    private static string CompanionDataFor(InitiativeLifecycleState target) => target switch
+    {
+        InitiativeLifecycleState.Cancelled => InitiativeLifecycleTransitionContract.CancellationReasonCompanionData,
+        InitiativeLifecycleState.OnHold => InitiativeLifecycleTransitionContract.HoldReasonCompanionData,
+        InitiativeLifecycleState.Completed => InitiativeLifecycleTransitionContract.ClosureCompanionData,
+        _ => InitiativeLifecycleTransitionContract.NoCompanionData
+    };
+
+    private static bool RequiresApprovalAuthority(
+        InitiativeLifecycleState source, InitiativeLifecycleState target) =>
+        target == InitiativeLifecycleState.Active
+        || target == InitiativeLifecycleState.Cancelled
+            && source is InitiativeLifecycleState.Active or InitiativeLifecycleState.OnHold;
 
     private Initiative New(string code, string name, string? description, Guid? portfolioId, string? type,
         string? priority, DateOnly? start, DateOnly? end, Guid? supersedes) =>
