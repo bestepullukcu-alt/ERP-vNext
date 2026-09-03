@@ -2241,4 +2241,22 @@
   <data name="WorkAggregation_ClosureOutcome_CancelledDuplicate" xml:space="preserve">
     <value>Duplicado</value>
   </data>
+  <data name="ReturnedLabel" xml:space="preserve">
+    <value>Devuelta</value>
+  </data>
+  <data name="ReturnedCount" xml:space="preserve">
+    <value>Devuelta {0}×</value>
+  </data>
+  <data name="StepReturned" xml:space="preserve">
+    <value>Esta tarea le fue devuelta.</value>
+  </data>
+  <data name="StepReturnedTimes" xml:space="preserve">
+    <value>Esta tarea se ha devuelto {0} veces.</value>
+  </data>
+  <data name="StepReturnedBecause" xml:space="preserve">
+    <value>Devuelta a usted: {0}</value>
+  </data>
+  <data name="StepReturnedTimesBecause" xml:space="preserve">
+    <value>Devuelta {0} veces, la última: {1}</value>
+  </data>
 </root>

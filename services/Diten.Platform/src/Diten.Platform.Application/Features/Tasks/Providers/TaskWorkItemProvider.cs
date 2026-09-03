@@ -737,6 +737,17 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
              */
             Closure: terminal ? ToClosure(task, resolvedType) : null,
             /*
+             * WHERE THIS CAME FROM — and it travels for a CLOSED task too, deliberately.
+             *
+             * The chip is a triage signal and the shell hides it on finished work; there is nothing to triage on
+             * a task nobody has to pick up. But the DETAIL page of a closed task answers a different question —
+             * what happened to this work — and "it came back twice before it was finished" is a real part of
+             * that answer. Withholding the fact here would decide the second question with the first one's
+             * reasoning, and the projection has no business doing that: it states what is true, the surface
+             * decides what is worth showing. (Same split `closedAt` gets: emitted as fact, drawn selectively.)
+             */
+            Returned: ToReturned(transitions),
+            /*
              * WHAT THE WORK IS. The form has collected these four since Phase 1 and none of them reached the
              * Task Center, so the detail page could say a task was fifteen days overdue without saying what it
              * asked for or when it was due. Each is omitted when absent rather than emitted empty — the screen
@@ -1356,6 +1367,48 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     Field: null, Label: null, From: null, To: null,
                     ValuesOmitted: change.ValuesOmitted, Redacted: true);
         }).ToList();
+    }
+
+    /// <summary>
+    /// The RETURN signal, derived from the history this page has ALREADY read.
+    ///
+    /// <para>⚠ NO REPOSITORY CALL. <c>transitions</c> is the list <c>GetWorkItemsAsync</c> batched for the whole
+    /// page in one read (see the comment on that read), and it is already a parameter here because the activity
+    /// feed needs it. Asking a repository for the same rows again would put an N+1 back across every row on
+    /// screen — the exact cost that batch exists to avoid — for a fact already in memory.</para>
+    ///
+    /// <para>The LAST return, not the first: a task returned twice is telling the story of the most recent one,
+    /// and the count beside it says the earlier ones happened.</para>
+    /// </summary>
+    private static WorkItemReturnedDto? ToReturned(IReadOnlyList<TaskTransition>? transitions)
+    {
+        if (transitions is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        var returns = transitions
+            .Where(transition => transition.Kind == TaskTransitionKind.Returned)
+            .ToList();
+
+        if (returns.Count == 0)
+        {
+            // The overwhelming majority. Null rather than a zero-count object: "never returned" is an absence,
+            // and an object saying `count: 0` is a signal that has to be inspected before it can be ignored.
+            return null;
+        }
+
+        var latest = returns.MaxBy(transition => transition.CreatedAt)!;
+
+        return new WorkItemReturnedDto(
+            latest.CreatedAt,
+            /*
+             * DISPLAY, never a resource key: this is the returner's own sentence. Omitted when blank rather than
+             * sent as an empty label — the handler requires a reason, so a blank one means a row written before
+             * that rule or by something else, and an empty quotation reads as though nobody said anything.
+             */
+            string.IsNullOrWhiteSpace(latest.Reason) ? null : WorkItemLabelDto.Display(latest.Reason),
+            returns.Count);
     }
 
     /// <summary>

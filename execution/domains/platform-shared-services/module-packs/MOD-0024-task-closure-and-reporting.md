@@ -395,28 +395,58 @@ Measured state. Backend `TaskLifecycle` (`TaskEnums.cs:16-25`) has seven members
 `Open · Planned · InProgress · Waiting · PendingReview · Done · Cancelled`. The frontend contract
 (`fixture-contract.js:9`) mirrors those seven and adds `notApplicable` for non-task work intents.
 
-### RETURNED / REWORK — missing as a state
+### ⚠ THIS SECTION WAS WRONG ABOUT BOTH ITEMS — corrected 2026-09-03
 
-`PendingReview` exists. "The review sent it back, do it again" does not. Rework rate is the single most
-valuable metric a work report can produce, and it currently cannot be computed.
+It asked for two new lifecycle states. Re-measured, neither is a state: one is already modelled *more richly*
+than a state, and the other is not a state at all.
 
-The act itself is already recorded: `TaskTransitionKind.Returned` exists and maps to the wire code
-`returned` (`TaskTransitionCodes.cs`), and `returned` is in `ACTIVITY_EVENT_CODES`
-(`fixture-contract.js:148`). So the transition is logged and the word reaches the screen — there is simply no
-lifecycle STATE for a returned task to sit in, which means a returned task is indistinguishable from a task
-that was merely started again. The gap is narrower than "not modelled" and more precise: **the event exists,
-the state does not.**
+### RETURNED — a SIGNAL, delivered 2026-09-03; the lifecycle is untouched
 
-### BLOCKED ≠ WAITING
+The original text said "there is simply no lifecycle STATE for a returned task to sit in". That framed the
+gap as a missing enum member. It was not.
 
-`WAITING_CONTEXT_TYPES` is `externalInformation · approval · review · meeting`
-(`fixture-contract.js:29`). None of them is "blocked by a dependency" — yet dependency blocking is fully
-implemented (`TaskBlockingRules.cs`, `TaskDependency` at `TaskSupportingEntities.cs:106`), and it surfaces
-only as a disabled action.
+The task's state really is `Open` — somebody has to do it, and the return handler sets exactly that
+(`TaskItemTransitionHandlers.cs`, `ReturnTaskItemHandler`: reason required, assignee-only, reassign to the
+requester, `ReopenAcceptanceGate()`, `Lifecycle = Open`, `Declare(TaskTransitionKind.Returned, actor,
+reason)`). What was missing is **where it came from**, which is ORIGIN — and this product already sorts those
+apart: tab is ownership, segment is state, chip is type and signal.
 
-Waiting is waiting on a PERSON or an event. Blocked is waiting on another TASK. They have different owners,
-different resolutions and different report meanings; collapsing them makes "what is stuck, and on what"
-unanswerable.
+The real gap was measured elsewhere: **the projection carried none of it.** `"Returned"` appeared in ZERO
+lines of `TaskWorkItemProvider` (measured 2026-09-03), so a returned task reached the requester's inbox
+indistinguishable from one raised that morning — and the sentence the returner was required to write was
+stored and never shown to the person it was written for.
+
+Delivered as `WorkItemProjectionDto.Returned { at, reason, count }`, derived from the transition history the
+page already batches (no extra read), declared in `fixture-contract.js`, drawn as a row chip and summarised in
+one line on the detail page.
+
+**The lifecycle enum was not touched, and that is the decision.** A `Returned` member would cost a persisted
+enum on a document store, the frontend contract's own list, every switch over either, and every provider that
+maps its native status into ours — for a fact about origin. `TaskReturnedSignalTests` pins the absence so the
+question gets argued rather than slipped in.
+
+### BLOCKED — already modelled, and RICHER than a state would be. Not doing it.
+
+The original text said dependency blocking "surfaces only as a disabled action". That is wrong. Measured
+2026-09-03:
+
+| Piece | Where |
+|---|---|
+| `WorkItemBlockerDto { Code, Label, TaskItemId, DependencyType, AffectedActionCode }` | `TaskWorkItemProvider.cs:1266-1271` |
+| `blockedState { blocked, affectedActionCodes[], blockers[] }` declared in the contract | `fixture-contract.js:536` |
+| Read by the shell | `app.js` — 4 code sites (`:322`, `:433`, `:1474`, `:3728`) |
+| Drawn | the "Blocked" row chip, whose tooltip is the first blocker's own sentence |
+
+A one-word `Blocked` lifecycle state would be a **regression**: the existing model says WHICH task blocks
+this one, through WHICH dependency type, and WHICH action it stops. A state says none of that. Removed from
+the plan.
+
+### BLOCKED ≠ WAITING — the distinction, restated correctly
+
+`WAITING_CONTEXT_TYPES` is `externalInformation · approval · review · meeting` (`fixture-contract.js:29`) and
+contains no "blocked by a dependency" — correctly, because blocking is not a waiting *context*: it is its own
+`blockedState` block, above. Waiting is waiting on a PERSON or an event; blocked is waiting on another TASK,
+and the two already have separate models. Nothing to do.
 
 ### ONHOLD / DEFERRED — missing
 
@@ -430,11 +460,11 @@ that it was.
 
 Each gap costs the report a specific sentence:
 
-| Gap | Sentence the report cannot say |
-|---|---|
-| No `Returned` state | "18% of reviews came back at least once." |
-| Blocked folded into Waiting | "Half our waiting time is waiting on other tasks, not on people." |
-| No `OnHold` | "This was deliberately parked for three weeks." |
+| Gap | Sentence the report cannot say | State 2026-09-03 |
+|---|---|---|
+| Return invisible to the projection | "18% of reviews came back at least once." | **Closed** — `Returned.count` now travels per item; the RATE is still Faz 5's to compute |
+| Blocked folded into Waiting | "Half our waiting time is waiting on other tasks, not on people." | Was never folded — `blockedState` and `waitingContext` are separate models |
+| No `OnHold` | "This was deliberately parked for three weeks." | Still open |
 
 ## 11. Delivery slices — listed, not authorized
 
@@ -466,10 +496,12 @@ exist before the field is worth showing: Faz 3 comes first, and Faz 1's remainin
 | **Faz 3b → now** | The task-type EDITOR: a repeater on `_Form`, the system catalogue published at `GET /api/v1/tasks/task-types/closure-outcome-catalog`, the dictionary read-only on `Details` | None — the field already existed | **Delivered 2026-09-03** |
 | **Faz 1 (remainder)** | Distinguish the closing date from the cancellation date on screen — see the `closedAt` note below; measured as SAFE, so this is presentation, not correctness | None | Optional |
 | **Faz 2** | Closure envelope proper: `note`, `deliverables[]`, `followUps[]`, and `TaskFieldDefinition.Stage` | Yes, additive | Next |
-| **Faz 4** | Lifecycle gaps: `Returned` as a state (the event already exists), `Blocked` separated from `Waiting` | Yes — enum change, migration-sensitive | After Faz 2 |
+| **Faz 4 → done, and smaller than written** | The RETURN SIGNAL: `Returned { at, reason, count }` on the projection, declared in the contract, a row chip and a detail sentence. **No lifecycle member, and `Blocked` dropped entirely** — see §10 for why both were mis-specified | **None** | **Delivered 2026-09-03** |
 | **Faz 5** | Work report: Cycle Time · Unattended · Productivity **as a count** · waiting distribution | Read-only | After Faz 4 |
 
-Faz 4 is the one with real regression risk: `TaskLifecycle` is a persisted enum on a document store, and this
+Faz 4 carried the plan's biggest regression risk, and re-measurement removed it rather than managing it: the
+signal needs no schema change at all. The paragraph below stands as the reason a lifecycle member is still the
+wrong tool, should anyone propose one again — `TaskLifecycle` is a persisted enum on a document store, and this
 module has already taken a live 500 from exactly that shape of change — a stale `"QA"` value that no enum
 member could represent brought the task-type list down on deserialization (measured 2026-08-26,
 `TaskSupportingEntities.cs:576-586`, the `FunctionCode` commentary). Any lifecycle addition must be able to READ every

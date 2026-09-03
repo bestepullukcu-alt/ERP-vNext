@@ -2241,4 +2241,22 @@
   <data name="WorkAggregation_ClosureOutcome_CancelledDuplicate" xml:space="preserve">
     <value>مكرر</value>
   </data>
+  <data name="ReturnedLabel" xml:space="preserve">
+    <value>أُعيدت</value>
+  </data>
+  <data name="ReturnedCount" xml:space="preserve">
+    <value>أُعيدت {0}×</value>
+  </data>
+  <data name="StepReturned" xml:space="preserve">
+    <value>أُعيدت هذه المهمة إليك.</value>
+  </data>
+  <data name="StepReturnedTimes" xml:space="preserve">
+    <value>أُعيدت هذه المهمة {0} مرات.</value>
+  </data>
+  <data name="StepReturnedBecause" xml:space="preserve">
+    <value>أُعيدت إليك: {0}</value>
+  </data>
+  <data name="StepReturnedTimesBecause" xml:space="preserve">
+    <value>أُعيدت {0} مرات، وآخرها: {1}</value>
+  </data>
 </root>

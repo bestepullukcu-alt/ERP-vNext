@@ -440,13 +440,29 @@ internal sealed class FakeTaskTransitionRepository : ITaskTransitionRepository
         return Task.FromResult(transition);
     }
 
+    /// <summary>
+    /// Reads issued, by shape — so a test can prove the projection stayed on ONE batched read.
+    ///
+    /// <para>The per-task variant is the N+1: called once per row on a page, it is the cost the batch below
+    /// exists to avoid, and a new field derived from history is exactly how that cost creeps back in.</para>
+    /// </summary>
+    public int ListByTaskIdCalls { get; private set; }
+
+    public int ListByTaskIdsCalls { get; private set; }
+
     public Task<IReadOnlyList<TaskTransition>> ListByTaskIdAsync(Guid taskItemId, CancellationToken ct = default)
-        => Task.FromResult(Order(_events.Where(x => x.TaskItemId == taskItemId)));
+    {
+        ListByTaskIdCalls++;
+        return Task.FromResult(Order(_events.Where(x => x.TaskItemId == taskItemId)));
+    }
 
     public Task<IReadOnlyList<TaskTransition>> ListByTaskIdsAsync(
         IReadOnlyCollection<Guid> taskItemIds,
         CancellationToken ct = default)
-        => Task.FromResult(Order(_events.Where(x => taskItemIds.Contains(x.TaskItemId))));
+    {
+        ListByTaskIdsCalls++;
+        return Task.FromResult(Order(_events.Where(x => taskItemIds.Contains(x.TaskItemId))));
+    }
 
     private static IReadOnlyList<TaskTransition> Order(IEnumerable<TaskTransition> transitions)
         => transitions
