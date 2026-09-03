@@ -13,11 +13,16 @@ namespace Diten.Platform.Application.Features.Tasks.Handlers.QueryHandlers;
 /// </summary>
 /// <param name="From">Inclusive start.</param>
 /// <param name="To">EXCLUSIVE end.</param>
+/// <param name="Filter">
+/// Optional narrowing. ⚠ It NARROWS the caller's scope and can never widen it — see
+/// <see cref="WorkReportFilter"/>. Nothing here is a permission.
+/// </param>
 public sealed record WorkReportQuery(
     DateTimeOffset From,
     DateTimeOffset To,
     WorkReportGroupBy GroupBy,
-    string CorrelationId)
+    string CorrelationId,
+    WorkReportFilter? Filter = null)
     : IRequest<Response<WorkReportDto>>;
 
 /// <summary>
@@ -99,7 +104,15 @@ public sealed class WorkReportQueryHandler : IRequestHandler<WorkReportQuery, Re
                 WorkReportDto.Empty(query.From, query.To, query.GroupBy), 200, query.CorrelationId);
         }
 
-        var criteria = new WorkReportCriteria(query.From, query.To, scope, query.GroupBy);
+        /*
+         * ⚠ SCOPE FIRST, FILTER SECOND — AND THE ORDER IS THE SECURITY BOUNDARY.
+         *
+         * The scope is resolved above from the caller's data entitlements; the filter is what the caller TYPED.
+         * Handing both to the criteria in this order is what makes the filter an intersection: a query string
+         * naming somebody else's id narrows an already-narrowed set to nothing rather than reaching past it.
+         * There is no arrangement of these two in which the filter grants anything.
+         */
+        var criteria = new WorkReportCriteria(query.From, query.To, scope, query.GroupBy, query.Filter);
         var report = await _reports.AggregateAsync(criteria, ct);
 
         return Response<WorkReportDto>.Success(report, 200, query.CorrelationId);

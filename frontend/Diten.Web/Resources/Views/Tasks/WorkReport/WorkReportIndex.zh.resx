@@ -54,4 +54,17 @@
   <data name="EffortOver" xml:space="preserve"><value>基于 {0} 项任务</value></data>
   <data name="EffortHint" xml:space="preserve"><value>这是关于「计划」的信号，绝非关于个人。</value></data>
   <data name="NotMeasured" xml:space="preserve"><value>未测量</value></data>
+  <data name="GroupByLegalEntity" xml:space="preserve"><value>公司</value></data>
+  <data name="GroupUnassigned" xml:space="preserve"><value>公司未知</value></data>
+  <data name="GroupOther" xml:space="preserve"><value>其他所有分组</value></data>
+  <data name="GroupsTruncated" xml:space="preserve"><value>显示最繁忙的 {0} 个分组；另有 {1} 个已并入「其他所有分组」。</value></data>
+  <data name="FilterAny" xml:space="preserve"><value>全部</value></data>
+  <data name="FilterLegalEntity" xml:space="preserve"><value>公司</value></data>
+  <data name="FilterUnit" xml:space="preserve"><value>组织单元</value></data>
+  <data name="FilterTaskType" xml:space="preserve"><value>任务类型</value></data>
+  <data name="FilterAssignee" xml:space="preserve"><value>负责人</value></data>
+  <data name="FilterPriority" xml:space="preserve"><value>优先级</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>高</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>中</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>低</value></data>
 </root>

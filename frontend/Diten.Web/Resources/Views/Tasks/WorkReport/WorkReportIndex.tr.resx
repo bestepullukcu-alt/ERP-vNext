@@ -54,4 +54,17 @@
   <data name="EffortOver" xml:space="preserve"><value>{0} görev üzerinden</value></data>
   <data name="EffortHint" xml:space="preserve"><value>PLANA dair bir gösterge, kişiye dair değil.</value></data>
   <data name="NotMeasured" xml:space="preserve"><value>Ölçülmedi</value></data>
+  <data name="GroupByLegalEntity" xml:space="preserve"><value>Şirket</value></data>
+  <data name="GroupUnassigned" xml:space="preserve"><value>Şirketi belirsiz</value></data>
+  <data name="GroupOther" xml:space="preserve"><value>Diğer tüm gruplar</value></data>
+  <data name="GroupsTruncated" xml:space="preserve"><value>En yoğun {0} grup gösteriliyor; {1} grup daha “Diğer tüm gruplar” içinde toplandı.</value></data>
+  <data name="FilterAny" xml:space="preserve"><value>Hepsi</value></data>
+  <data name="FilterLegalEntity" xml:space="preserve"><value>Şirket</value></data>
+  <data name="FilterUnit" xml:space="preserve"><value>Organizasyon birimi</value></data>
+  <data name="FilterTaskType" xml:space="preserve"><value>Görev türü</value></data>
+  <data name="FilterAssignee" xml:space="preserve"><value>Atanan</value></data>
+  <data name="FilterPriority" xml:space="preserve"><value>Öncelik</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>Yüksek</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Orta</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Düşük</value></data>
 </root>

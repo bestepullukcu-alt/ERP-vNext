@@ -88,7 +88,7 @@ public sealed class WorkReportScopeTests
             Row(requester: Caller)
         };
 
-        Assert.All(rows, row => Assert.False(WorkReportTally.InScope(WorkReportScope.Empty, row)));
+        Assert.All(rows, row => Assert.False(WorkReportScopeMirror.InScope(WorkReportScope.Empty, row)));
 
         // And the same rows ARE matched by a scope that includes them — otherwise the assertion above would
         // hold for a predicate that simply always returns false.
@@ -98,7 +98,7 @@ public sealed class WorkReportScopeTests
              Scope(EntitlementDataScopeKind.Own)],
             Caller);
 
-        Assert.All(rows, row => Assert.True(WorkReportTally.InScope(wide, row)));
+        Assert.All(rows, row => Assert.True(WorkReportScopeMirror.InScope(wide, row)));
     }
 
     [Fact]
@@ -133,7 +133,7 @@ public sealed class WorkReportScopeTests
             Caller);
 
         Assert.True(scope.MatchesNothing);
-        Assert.False(WorkReportTally.InScope(scope, Row(unit: MyUnit)));
+        Assert.False(WorkReportScopeMirror.InScope(scope, Row(unit: MyUnit)));
     }
 
     // ── (a) OUT-OF-SCOPE WORK IS NOT COUNTED ─────────────────────────────────────────────────────────────
@@ -155,9 +155,9 @@ public sealed class WorkReportScopeTests
              Scope(EntitlementDataScopeKind.OrgUnit, ChildUnit)],
             Caller);
 
-        Assert.True(WorkReportTally.InScope(scope, Row(unit: MyUnit)));
-        Assert.True(WorkReportTally.InScope(scope, Row(unit: ChildUnit)));
-        Assert.False(WorkReportTally.InScope(scope, Row(unit: ForeignUnit)));
+        Assert.True(WorkReportScopeMirror.InScope(scope, Row(unit: MyUnit)));
+        Assert.True(WorkReportScopeMirror.InScope(scope, Row(unit: ChildUnit)));
+        Assert.False(WorkReportScopeMirror.InScope(scope, Row(unit: ForeignUnit)));
     }
 
     [Fact]
@@ -173,10 +173,10 @@ public sealed class WorkReportScopeTests
              Scope(EntitlementDataScopeKind.ManagerChain, Guid.Parse("88888888-8888-8888-8888-888888888888"))],
             Caller);
 
-        Assert.True(WorkReportTally.InScope(scope, Row(pool: MyPosition)));
-        Assert.True(WorkReportTally.InScope(
+        Assert.True(WorkReportScopeMirror.InScope(scope, Row(pool: MyPosition)));
+        Assert.True(WorkReportScopeMirror.InScope(
             scope, Row(pool: Guid.Parse("88888888-8888-8888-8888-888888888888"))));
-        Assert.False(WorkReportTally.InScope(scope, Row(pool: ForeignPosition)));
+        Assert.False(WorkReportScopeMirror.InScope(scope, Row(pool: ForeignPosition)));
     }
 
     [Fact]
@@ -185,9 +185,9 @@ public sealed class WorkReportScopeTests
         // `Own` carries no id — it MEANS the caller — so the caller's own id is what lands in the scope.
         var scope = WorkReportScope.FromDataScopes([Scope(EntitlementDataScopeKind.Own)], Caller);
 
-        Assert.True(WorkReportTally.InScope(scope, Row(assignee: Caller)));
-        Assert.True(WorkReportTally.InScope(scope, Row(requester: Caller)));
-        Assert.False(WorkReportTally.InScope(scope, Row(assignee: Stranger, requester: Stranger)));
+        Assert.True(WorkReportScopeMirror.InScope(scope, Row(assignee: Caller)));
+        Assert.True(WorkReportScopeMirror.InScope(scope, Row(requester: Caller)));
+        Assert.False(WorkReportScopeMirror.InScope(scope, Row(assignee: Stranger, requester: Stranger)));
     }
 
     [Fact]
@@ -202,7 +202,7 @@ public sealed class WorkReportScopeTests
 
         Assert.True(scope.TenantWide);
         Assert.False(scope.MatchesNothing);
-        Assert.True(WorkReportTally.InScope(scope, Row(unit: ForeignUnit, assignee: Stranger)));
+        Assert.True(WorkReportScopeMirror.InScope(scope, Row(unit: ForeignUnit, assignee: Stranger)));
 
         // And no combination of ordinary data scopes can produce it.
         var ordinary = WorkReportScope.FromDataScopes(

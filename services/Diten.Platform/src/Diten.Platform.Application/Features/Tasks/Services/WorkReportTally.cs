@@ -12,6 +12,10 @@ namespace Diten.Platform.Application.Features.Tasks.Services;
 public sealed record WorkReportRow(
     Guid Id,
     Guid? TaskTypeId,
+    /// <summary>
+    /// The task's own unit. <c>required Guid</c> on the entity — a task always names one, though the unit it
+    /// names may no longer resolve.
+    /// </summary>
     Guid OrganizationUnitId,
     Guid? AssigneeUserId,
     Guid? CreatedByUserId,
@@ -24,7 +28,16 @@ public sealed record WorkReportRow(
     decimal? EstimateHours,
     decimal SpentHours,
     string? ClosureReasonCode,
-    TaskLifecycle Lifecycle);
+    TaskLifecycle Lifecycle,
+    /// <summary>
+    /// The company, DERIVED from the unit by the repository — a task carries none of its own.
+    ///
+    /// <para>Null when the unit could not be resolved against the tenant's live org tree. That row is counted
+    /// under <see cref="WorkReportDto.UnassignedKey"/> rather than dropped, so the groups still add up.</para>
+    /// </summary>
+    Guid? LegalEntityId = null,
+    /// <summary>The type's code, carried so the filter can match on the CODE a person actually types.</summary>
+    string? TaskTypeCode = null);
 
 /// <summary>
 /// WHAT THE NUMBERS ARE — pure, and shared by the database path and the tests.
@@ -42,34 +55,59 @@ public sealed record WorkReportRow(
 public static class WorkReportTally
 {
     /// <summary>
-    /// Whether a row is inside a scope — the SAME question the Mongo filter asks, in the form the tests can ask
-    /// it too.
+    /// Whether a row survives the reader's FILTER — asked only of rows the SCOPE has already admitted.
     ///
-    /// <para>⚠ It exists so "out of scope" can be tested against real counting rather than against an empty
-    /// result set. An assertion that a foreign row is absent from a report that counted nothing measures
-    /// nothing at all.</para>
+    /// <para>⚠ In production that admission happens in the DATABASE, as the scope terms
+    /// <c>WorkReportRepository.BuildMatchFilter</c> ANDs into the query — never in memory here. This method sees
+    /// only rows Mongo already returned, which is why it can narrow and can never widen.</para>
+    ///
+    /// <para><b>⚠ THE ORDER IS THE WHOLE RULE, AND IT IS ONE-WAY.</b> The scope narrows first; this narrows
+    /// further; nothing here can widen anything. Naming a person outside the caller's scope produces an EMPTY
+    /// report rather than that person's work — because the row was already gone before this method saw it. A
+    /// filter evaluated first, or evaluated INSTEAD, would turn a query string into a way to read other
+    /// people's work.</para>
+    ///
+    /// <para>An absent filter matches everything, so the unfiltered report is bit-for-bit the one that existed
+    /// before filters did.</para>
     /// </summary>
-    public static bool InScope(WorkReportScope scope, WorkReportRow row)
+    public static bool MatchesFilter(WorkReportFilter? filter, WorkReportRow row)
     {
-        ArgumentNullException.ThrowIfNull(scope);
         ArgumentNullException.ThrowIfNull(row);
 
-        if (scope.TenantWide)
+        if (filter is null || filter.IsEmpty)
         {
             return true;
         }
 
-        // Fail-closed: an empty scope matches nothing. An OR over zero branches is TRUE in every query language
-        // there is, which is precisely the accident this guard exists to prevent.
-        if (scope.MatchesNothing)
+        /*
+         * A company filter against a row whose unit did not resolve is a NO. The row's company is genuinely
+         * unknown, and answering "yes" would attribute unattributable work to whichever company was asked
+         * about — the one direction a report must never guess in.
+         */
+        if (filter.LegalEntityId is { } company && row.LegalEntityId != company)
         {
             return false;
         }
 
-        return scope.OrganizationUnitIds.Contains(row.OrganizationUnitId)
-            || (row.PoolPositionId is { } pool && scope.PositionIds.Contains(pool))
-            || (row.AssigneeUserId is { } assignee && scope.UserIds.Contains(assignee))
-            || (row.CreatedByUserId is { } requester && scope.UserIds.Contains(requester));
+        // EXACT, not a subtree: the scope already carries the resolver's pre-expanded tree, and a second
+        // expansion here would be a second answer to "what is below me".
+        if (filter.OrganizationUnitId is { } unit && row.OrganizationUnitId != unit)
+        {
+            return false;
+        }
+
+        if (filter.AssigneeUserId is { } assignee && row.AssigneeUserId != assignee)
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.TaskTypeCode)
+            && !string.Equals(row.TaskTypeCode, filter.TaskTypeCode.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return filter.Priority is not { } priority || row.Priority == priority;
     }
 
     /// <summary>Whether the row was touched in the period — opened in it, or closed in it.</summary>
@@ -77,30 +115,73 @@ public static class WorkReportTally
         In(row.CreatedAt, from, to) || In(row.CompletedAt, from, to) || In(row.CancelledAt, from, to);
 
     /// <summary>The whole answer, from rows already narrowed to one period and one scope.</summary>
+    /// <param name="labels">
+    /// Group key → the words for it, supplied by the repository from the data it owns (type names, unit names,
+    /// company names). A key absent from the map keeps a NULL label and the screen shows the identity — see
+    /// <see cref="WorkReportBucket"/> for why nothing is invented to fill the gap. The ASSIGNEE axis is always
+    /// absent here: Platform has no user entity to ask.
+    /// </param>
     public static WorkReportDto Build(
         WorkReportCriteria criteria,
         IReadOnlyList<WorkReportRow> rows,
         int unattended,
-        IReadOnlyDictionary<Guid, int> returnsByTask)
+        IReadOnlyDictionary<Guid, int> returnsByTask,
+        IReadOnlyDictionary<string, string>? labels = null)
     {
         ArgumentNullException.ThrowIfNull(criteria);
         ArgumentNullException.ThrowIfNull(rows);
         ArgumentNullException.ThrowIfNull(returnsByTask);
 
-        var totals = Measure(null, rows, unattended, returnsByTask, criteria);
+        string? LabelFor(string? key) =>
+            key is not null && labels is not null && labels.TryGetValue(key, out var found) ? found : null;
 
-        var groups = criteria.GroupBy == WorkReportGroupBy.None
-            ? []
-            : rows
+        var totals = Measure(null, null, rows, unattended, returnsByTask, criteria);
+
+        var groups = new List<WorkReportBucket>();
+        var truncated = 0;
+
+        if (criteria.GroupBy != WorkReportGroupBy.None)
+        {
+            /*
+             * ⚠ DETERMINISTIC ORDER, WHICH THERE WAS NONE OF. Before this slice the groups came back in whatever
+             * order the grouping produced — so two reads of the same period could disagree about which unit came
+             * first, and a capped list would have kept an arbitrary fifty.
+             *
+             * Busiest first (by OPENED, the axis a reader scans for), ties broken on the key so the order is
+             * total rather than merely mostly-defined.
+             */
+            var ordered = rows
                 .GroupBy(row => GroupKey(row, criteria.GroupBy))
-                .OrderBy(group => group.Key, StringComparer.Ordinal)
-                /*
-                 * Unattended is a tenant-level "right now" figure, so it is NOT split across groups: attributing
-                 * today's unclaimed backlog to whichever month is on screen would double-count it across every
-                 * group and misattribute all of it.
-                 */
-                .Select(group => Measure(group.Key, group.ToList(), 0, returnsByTask, criteria))
+                .Select(group => new
+                {
+                    group.Key,
+                    // Unattended is a tenant-level "right now" figure and is NOT split across groups:
+                    // attributing today's unclaimed backlog to every group would multiply one backlog by the
+                    // number of rows on screen.
+                    Bucket = Measure(group.Key, LabelFor(group.Key), group.ToList(), 0, returnsByTask, criteria)
+                })
+                .OrderByDescending(entry => entry.Bucket.Flow.Opened)
+                .ThenBy(entry => entry.Key, StringComparer.Ordinal)
                 .ToList();
+
+            groups.AddRange(ordered.Take(WorkReportDto.MaxGroups).Select(entry => entry.Bucket));
+
+            /*
+             * ⚠ FOLDED, NOT DROPPED — and the count is reported. A silent cut would leave a reader comparing
+             * fifty units and quietly missing the rest, with the parts no longer adding up to the whole. The
+             * tail is re-measured as ONE bucket from its own rows, so every number in it is real rather than a
+             * sum of pre-computed averages (an average of averages is not an average).
+             */
+            var tail = ordered.Skip(WorkReportDto.MaxGroups).Select(entry => entry.Key).ToHashSet(StringComparer.Ordinal);
+            if (tail.Count > 0)
+            {
+                truncated = tail.Count;
+                var tailRows = rows.Where(row => tail.Contains(GroupKey(row, criteria.GroupBy))).ToList();
+                // The "other" bucket is named by the SCREEN, in the reader's language — the server has no
+                // sentence for it that would survive seven translations.
+                groups.Add(Measure(WorkReportDto.OtherKey, null, tailRows, 0, returnsByTask, criteria));
+            }
+        }
 
         return new WorkReportDto(
             criteria.From,
@@ -108,7 +189,8 @@ public static class WorkReportTally
             criteria.Scope.TenantWide ? WorkReportDto.ScopeTenant : WorkReportDto.ScopeScoped,
             criteria.GroupBy,
             totals,
-            groups);
+            groups,
+            truncated);
     }
 
     private static string GroupKey(WorkReportRow row, WorkReportGroupBy groupBy) => groupBy switch
@@ -122,11 +204,18 @@ public static class WorkReportTally
         WorkReportGroupBy.OrganizationUnit => row.OrganizationUnitId.ToString(),
         WorkReportGroupBy.Assignee => row.AssigneeUserId?.ToString() ?? string.Empty,
         WorkReportGroupBy.Priority => row.Priority.ToString(),
+        /*
+         * The DERIVED axis. A row whose unit did not resolve has no company to name — it goes to the reserved
+         * "unassigned" key rather than to "", so the screen can say WHY that bucket exists instead of showing a
+         * nameless one beside four named ones.
+         */
+        WorkReportGroupBy.LegalEntity => row.LegalEntityId?.ToString() ?? WorkReportDto.UnassignedKey,
         _ => string.Empty
     };
 
     private static WorkReportBucket Measure(
         string? key,
+        string? label,
         IReadOnlyList<WorkReportRow> rows,
         int unattended,
         IReadOnlyDictionary<Guid, int> returnsByTask,
@@ -180,6 +269,7 @@ public static class WorkReportTally
 
         return new WorkReportBucket(
             key,
+            label,
             new WorkReportFlow(opened, completed + cancelled, completed, cancelled, unattended),
             new WorkReportCycleTime(
                 cycleDays.Count == 0 ? null : Math.Round(cycleDays.Average(), 2),

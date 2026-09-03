@@ -54,4 +54,17 @@
   <data name="EffortOver" xml:space="preserve"><value>على {0} مهمة</value></data>
   <data name="EffortHint" xml:space="preserve"><value>مؤشّر على الخطة، لا على شخص.</value></data>
   <data name="NotMeasured" xml:space="preserve"><value>غير مقيس</value></data>
+  <data name="GroupByLegalEntity" xml:space="preserve"><value>الشركة</value></data>
+  <data name="GroupUnassigned" xml:space="preserve"><value>الشركة غير معروفة</value></data>
+  <data name="GroupOther" xml:space="preserve"><value>كل المجموعات الأخرى</value></data>
+  <data name="GroupsTruncated" xml:space="preserve"><value>تُعرض أكثر {0} مجموعة نشاطًا؛ و{1} مجموعة أخرى مُجمَّعة ضمن «كل المجموعات الأخرى».</value></data>
+  <data name="FilterAny" xml:space="preserve"><value>الكل</value></data>
+  <data name="FilterLegalEntity" xml:space="preserve"><value>الشركة</value></data>
+  <data name="FilterUnit" xml:space="preserve"><value>الوحدة التنظيمية</value></data>
+  <data name="FilterTaskType" xml:space="preserve"><value>نوع المهمة</value></data>
+  <data name="FilterAssignee" xml:space="preserve"><value>المسؤول</value></data>
+  <data name="FilterPriority" xml:space="preserve"><value>الأولوية</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>عالية</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>متوسطة</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>منخفضة</value></data>
 </root>

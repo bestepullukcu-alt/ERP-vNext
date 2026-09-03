@@ -54,4 +54,17 @@
   <data name="EffortOver" xml:space="preserve"><value>sur {0} tâches</value></data>
   <data name="EffortHint" xml:space="preserve"><value>Un signal sur le PLAN, jamais sur une personne.</value></data>
   <data name="NotMeasured" xml:space="preserve"><value>Non mesuré</value></data>
+  <data name="GroupByLegalEntity" xml:space="preserve"><value>Société</value></data>
+  <data name="GroupUnassigned" xml:space="preserve"><value>Société inconnue</value></data>
+  <data name="GroupOther" xml:space="preserve"><value>Tous les autres groupes</value></data>
+  <data name="GroupsTruncated" xml:space="preserve"><value>Les {0} groupes les plus actifs sont affichés ; {1} autres sont regroupés dans « Tous les autres groupes ».</value></data>
+  <data name="FilterAny" xml:space="preserve"><value>Tous</value></data>
+  <data name="FilterLegalEntity" xml:space="preserve"><value>Société</value></data>
+  <data name="FilterUnit" xml:space="preserve"><value>Unité organisationnelle</value></data>
+  <data name="FilterTaskType" xml:space="preserve"><value>Type de tâche</value></data>
+  <data name="FilterAssignee" xml:space="preserve"><value>Assigné à</value></data>
+  <data name="FilterPriority" xml:space="preserve"><value>Priorité</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>Haute</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Moyenne</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Basse</value></data>
 </root>

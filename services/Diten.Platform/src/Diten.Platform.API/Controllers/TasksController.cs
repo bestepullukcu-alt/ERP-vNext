@@ -543,9 +543,23 @@ public sealed class TasksController : CustomBaseController
         [FromQuery] DateTimeOffset from,
         [FromQuery] DateTimeOffset to,
         [FromQuery] WorkReportGroupBy groupBy = WorkReportGroupBy.None,
+        [FromQuery] Guid? legalEntityId = null,
+        [FromQuery] Guid? organizationUnitId = null,
+        [FromQuery] Guid? assigneeUserId = null,
+        [FromQuery] string? taskTypeCode = null,
+        [FromQuery] TaskPriority? priority = null,
         CancellationToken ct = default)
     {
-        var response = await _mediator.Send(new WorkReportQuery(from, to, groupBy, CorrelationId), ct);
+        /*
+         * ⚠ EVERY FILTER IS OPTIONAL AND NONE IS A PERMISSION. They narrow the caller's already-resolved scope
+         * and can never widen it — naming another person's id here returns an EMPTY report, not their work.
+         * The handler applies the scope first; see WorkReportFilter for why that order is the whole rule.
+         */
+        var filter = new WorkReportFilter(
+            legalEntityId, organizationUnitId, assigneeUserId, taskTypeCode, priority);
+
+        var response = await _mediator.Send(
+            new WorkReportQuery(from, to, groupBy, CorrelationId, filter), ct);
         return CreateActionResultInstance(response);
     }
 

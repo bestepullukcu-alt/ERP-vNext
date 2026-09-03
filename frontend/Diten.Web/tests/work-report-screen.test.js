@@ -49,7 +49,15 @@ const LABELS = {
   reworkReturns: "{0} returns in total",
   effortHours: "{0} h estimated · {1} h spent",
   effortOver: "over {0} tasks",
-  notMeasured: "Not measured"
+  notMeasured: "Not measured",
+  groupByLegalEntity: "Company",
+  groupUnassigned: "Company unknown",
+  groupOther: "All other groups",
+  groupsTruncated: "Showing the busiest {0}; {1} more are folded in.",
+  filterAny: "Any",
+  priorityHigh: "High",
+  priorityMedium: "Medium",
+  priorityLow: "Low"
 };
 
 /** The five SYSTEM outcome codes, translated — read from the WorkCenterNext resx by the real view. */
@@ -75,11 +83,17 @@ const MARKUP = `
     <p data-wr-unattended-value></p>
     <p data-wr-effort-value></p><p data-wr-effort-over></p>
   </div>
+  <select id="wrLegalEntity"><option value="">Any</option></select>
+  <select id="wrUnit"><option value="">Any</option></select>
+  <select id="wrTaskType"><option value="">Any</option></select>
+  <select id="wrAssignee"><option value="">Any</option></select>
+  <select id="wrPriority"><option value="">Any</option></select>
   <div data-wr-charts hidden>
     <div data-wr-chart-flow></div>
     <div data-wr-chart-outcomes></div><p data-wr-outcomes-empty hidden></p>
     <div data-wr-chart-timeliness></div>
-    <div data-wr-groups-card hidden><h6 data-wr-groups-title></h6><div data-wr-chart-groups></div></div>
+    <div data-wr-groups-card hidden><h6 data-wr-groups-title></h6><div data-wr-chart-groups></div>
+      <p data-wr-groups-truncated hidden></p></div>
   </div>
   <script id="work-report-l10n" type="application/json">${JSON.stringify(LABELS)}</script>
   <script id="work-report-outcomes-l10n" type="application/json">${JSON.stringify(OUTCOME_LABELS)}</script>
@@ -101,12 +115,15 @@ const boot = () => {
   };
   window.ApexCharts = global.ApexCharts;
 
+  global.fetch = global.fetch || (() => Promise.resolve({ ok: false, json: () => Promise.resolve(null) }));
+
   loadScript("wwwroot/assets/js/Tasks/WorkReport/index.js");
   return window.WorkReportScreen;
 };
 
 const bucket = (over) => Object.assign({
   key: null,
+  label: null,
   flow: { opened: 0, closed: 0, completed: 0, cancelled: 0, unattended: 0 },
   cycleTime: { averageDays: null, closedCount: 0 },
   timeliness: { onTime: 0, late: 0, withoutDueDate: 0 },
@@ -438,5 +455,114 @@ describe("the screen obeys the house rules", () => {
         expect(value(lang, key), `${key}/${lang} is still the English text`).not.toBe(english);
       });
     });
+  });
+});
+
+describe("Dilim 1a — filters, the company axis and readable labels", () => {
+  it("sends only the filters that were actually chosen", () => {
+    /*
+     * An empty picker means "not asked", not "match nothing" — the server's contract makes every filter
+     * nullable for exactly that reason. Sending `&priority=` would turn an untouched control into a constraint.
+     */
+    const screen = boot();
+    document.querySelector("#wrPriority").innerHTML = '<option value="">Any</option><option value="High" selected>High</option>';
+
+    const q = screen.query();
+    expect(q.priority).toBe("High");
+    expect(q.legalEntityId).toBe("");
+    expect(q.assigneeUserId).toBe("");
+  });
+
+  it("builds the URL with the chosen filters and without the untouched ones", async () => {
+    const screen = boot();
+    let requested = "";
+    global.fetch = (url) => {
+      requested = url;
+      return Promise.resolve({ ok: true, json: () => Promise.resolve(busy()) });
+    };
+
+    document.querySelector("#wrTaskType").innerHTML = '<option value="DEV" selected>Dev</option>';
+    await screen.load();
+
+    expect(requested).toContain("taskTypeCode=DEV");
+    expect(requested, "an untouched filter was sent as an empty constraint").not.toContain("priority=");
+    expect(requested, "an untouched filter was sent as an empty constraint").not.toContain("assigneeUserId=");
+  });
+
+  it("names the unassigned and the other bucket in words, not as reserved keys", () => {
+    /*
+     * `__unassigned__` and `__other__` cross the wire as reserved keys because the server has no sentence for
+     * them that survives seven translations. On screen they MUST read as sentences — a raw `__other__` on an
+     * axis is indistinguishable from a bug.
+     */
+    const screen = boot();
+    expect(screen.groupLabel({ key: "__unassigned__" }, "LegalEntity")).toBe(LABELS.groupUnassigned);
+    expect(screen.groupLabel({ key: "__other__" }, "LegalEntity")).toBe(LABELS.groupOther);
+    expect(document.body.textContent).not.toContain("__unassigned__");
+  });
+
+  it("prefers the SERVER's label, and falls back to the identity rather than inventing one", () => {
+    const screen = boot();
+    expect(screen.groupLabel({ key: "abc", label: "Grand Medical" }, "LegalEntity")).toBe("Grand Medical");
+    // No label, no lookup entry → the identity. Never a placeholder that matches nothing searchable.
+    expect(screen.groupLabel({ key: "abc", label: null }, "LegalEntity")).toBe("abc");
+  });
+
+  it("resolves a PERSON from its own lookup, because Platform cannot name one", () => {
+    /*
+     * MEASURED 2026-09-04: Platform has no User entity and no auth client, so `label` is always null on the
+     * assignee axis. The screen fills it from the user lookup this product already serves.
+     */
+    const screen = boot();
+    screen.setPeople({ "u-1": "Ayşe Yılmaz" });
+
+    expect(screen.groupLabel({ key: "u-1", label: null }, "Assignee")).toBe("Ayşe Yılmaz");
+    expect(screen.groupLabel({ key: "u-2", label: null }, "Assignee")).toBe("u-2");
+  });
+
+  it("names a PRIORITY in the reader's language rather than echoing the enum", () => {
+    // An enum is a code. A server-side English word would be a second, untranslated vocabulary.
+    const screen = boot();
+    expect(screen.groupLabel({ key: "High", label: null }, "Priority")).toBe(LABELS.priorityHigh);
+  });
+
+  it("draws the company breakdown with names on the axis", () => {
+    const screen = boot();
+    screen.render(busy({
+      groupBy: "LegalEntity",
+      groups: [
+        bucket({ key: "co-a", label: "Grand Medical Poland", flow: { opened: 6, closed: 4, completed: 4, cancelled: 0, unattended: 0 } }),
+        bucket({ key: "__unassigned__", flow: { opened: 2, closed: 1, completed: 1, cancelled: 0, unattended: 0 } })
+      ]
+    }));
+
+    const axis = chartFor("[data-wr-chart-groups]").options.xaxis.categories;
+    expect(axis).toEqual(["Grand Medical Poland", LABELS.groupUnassigned]);
+    expect(axis.join(" "), "a raw GUID or reserved key reached the axis").not.toMatch(/__|co-a/);
+  });
+
+  it("says when the group list was capped, and stays quiet when it was not", () => {
+    /*
+     * ⚠ A SILENT CUT IS WORSE THAN NO CAP. A reader comparing units would conclude a unit has no work when it
+     * simply did not place in the busiest fifty.
+     */
+    const screen = boot();
+    const groups = [bucket({ key: "u1", flow: { opened: 3, closed: 1, completed: 1, cancelled: 0, unattended: 0 } })];
+
+    screen.render(busy({ groupBy: "OrganizationUnit", groups, groupsTruncated: 0 }));
+    expect(hidden("[data-wr-groups-truncated]")).toBe(true);
+
+    screen.render(busy({ groupBy: "OrganizationUnit", groups, groupsTruncated: 7 }));
+    expect(hidden("[data-wr-groups-truncated]"), "the cap was applied silently").toBe(false);
+    expect(text("[data-wr-groups-truncated]")).toContain("7");
+  });
+
+  it("still computes no ratio anywhere, filters or not", () => {
+    // Pack §8 travels with the screen: nothing this slice added may divide two published numbers.
+    const arithmetic = SCRIPT.split("\n")
+      .filter((line) => !line.trim().startsWith("*") && !line.trim().startsWith("//"))
+      .join("\n");
+    expect(arithmetic).not.toMatch(/spentHours\s*\/|\/\s*estimatedHours/);
+    expect(arithmetic).not.toMatch(/efficiency|multiplier|productivityScore/i);
   });
 });

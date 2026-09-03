@@ -54,4 +54,17 @@
   <data name="EffortOver" xml:space="preserve"><value>по {0} задачам</value></data>
   <data name="EffortHint" xml:space="preserve"><value>Сигнал о ПЛАНЕ, а не о человеке.</value></data>
   <data name="NotMeasured" xml:space="preserve"><value>Не измерено</value></data>
+  <data name="GroupByLegalEntity" xml:space="preserve"><value>Компания</value></data>
+  <data name="GroupUnassigned" xml:space="preserve"><value>Компания неизвестна</value></data>
+  <data name="GroupOther" xml:space="preserve"><value>Все прочие группы</value></data>
+  <data name="GroupsTruncated" xml:space="preserve"><value>Показаны {0} самых активных групп; ещё {1} объединены в «Все прочие группы».</value></data>
+  <data name="FilterAny" xml:space="preserve"><value>Все</value></data>
+  <data name="FilterLegalEntity" xml:space="preserve"><value>Компания</value></data>
+  <data name="FilterUnit" xml:space="preserve"><value>Организационная единица</value></data>
+  <data name="FilterTaskType" xml:space="preserve"><value>Тип задачи</value></data>
+  <data name="FilterAssignee" xml:space="preserve"><value>Исполнитель</value></data>
+  <data name="FilterPriority" xml:space="preserve"><value>Приоритет</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>Высокий</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Средний</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Низкий</value></data>
 </root>

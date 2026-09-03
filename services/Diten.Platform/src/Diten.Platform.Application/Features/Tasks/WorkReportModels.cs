@@ -1,3 +1,4 @@
+using Diten.Platform.Domain.Enums.Tasks;
 using Diten.Platform.Application.Features.Tasks.Services;
 
 namespace Diten.Platform.Application.Features.Tasks;
@@ -29,7 +30,21 @@ public enum WorkReportGroupBy
     TaskType = 1,
     OrganizationUnit = 2,
     Assignee = 3,
-    Priority = 4
+    Priority = 4,
+
+    /// <summary>
+    /// WHICH COMPANY the work belongs to.
+    ///
+    /// <para>⚠ A DERIVED AXIS, and the only one. MEASURED 2026-09-04: <c>TaskItem</c> carries no legal-entity
+    /// field — it carries <c>OrganizationUnitId</c> (<c>required Guid</c>), and the company hangs off the unit
+    /// (<c>OrganizationUnit.LegalEntityId</c>, itself <c>required</c>). So this axis is a JOIN the repository
+    /// resolves, not a column it reads.</para>
+    ///
+    /// <para>A task whose unit cannot be resolved — deleted, archived out of the tenant's live set, or an id
+    /// pointing at nothing — lands in <see cref="WorkReportDto.UnassignedKey"/> rather than being dropped. A
+    /// silently discarded row makes the groups fail to add up to the totals, and nobody ever finds out why.</para>
+    /// </summary>
+    LegalEntity = 5
 }
 
 /// <summary>
@@ -53,17 +68,76 @@ public enum WorkReportGroupBy
 /// itself what "currently holds this seat" means — a rule that has to be re-reasoned when HCM takes the columns
 /// over. This file decides nothing of the sort; citing them as an analogy would have added a false site to that
 /// search, and the guard was right to say so.</para></param>
+/// <param name="Filter">
+/// Optional narrowing, applied AFTER the scope. See <see cref="WorkReportFilter"/> for why the order is the
+/// whole rule.
+/// </param>
 public sealed record WorkReportCriteria(
     DateTimeOffset From,
     DateTimeOffset To,
     WorkReportScope Scope,
-    WorkReportGroupBy GroupBy = WorkReportGroupBy.None);
+    WorkReportGroupBy GroupBy = WorkReportGroupBy.None,
+    WorkReportFilter? Filter = null);
+
+/// <summary>
+/// WHICH SLICE of the work the reader asked about — every field optional, and none of them a substitute for the
+/// scope.
+///
+/// <para><b>⚠ A FILTER INTERSECTS THE SCOPE; IT NEVER REPLACES IT.</b> Naming a person outside your data scope
+/// in <see cref="AssigneeUserId"/> returns an EMPTY report, not theirs. The same for a unit, a company or a
+/// type. The order is fixed and load-bearing: the scope narrows first, the filter narrows further, and there is
+/// no path in which a filter widens anything. Reversing the two would turn a reporting parameter into a
+/// privilege-escalation seam — a query string that reads other people's work.</para>
+///
+/// <para><b>All-null is the identity.</b> A criteria set with no filter must produce exactly what the report
+/// produced before filters existed; that is asserted rather than assumed, because "additive" is a claim about
+/// the past that only a test can keep true.</para>
+/// </summary>
+/// <param name="LegalEntityId">
+/// The company. DERIVED through the unit, exactly as the <see cref="WorkReportGroupBy.LegalEntity"/> axis is —
+/// a task carries no company of its own.
+/// </param>
+/// <param name="OrganizationUnitId">
+/// One unit, matched EXACTLY rather than as a subtree. The scope already carries a pre-expanded subtree from
+/// the resolver; expanding again here would be a second walk of the same tree, and the two would eventually
+/// disagree about what "below me" means. A reader who wants a subtree picks the parent's scope, not this.
+/// </param>
+/// <param name="TaskTypeCode">
+/// The type's CODE, not its id — a code is what a person reads aloud and types into a link, and it is stable by
+/// contract (<c>TaskType.Code</c> is immutable once created).
+/// </param>
+public sealed record WorkReportFilter(
+    Guid? LegalEntityId = null,
+    Guid? OrganizationUnitId = null,
+    Guid? AssigneeUserId = null,
+    string? TaskTypeCode = null,
+    TaskPriority? Priority = null)
+{
+    /// <summary>Nothing was asked for — the report is exactly the unfiltered one.</summary>
+    public bool IsEmpty =>
+        LegalEntityId is null
+        && OrganizationUnitId is null
+        && AssigneeUserId is null
+        && string.IsNullOrWhiteSpace(TaskTypeCode)
+        && Priority is null;
+}
 
 /// <summary>One measured slice of the period — the totals, or one group of them.</summary>
 /// <param name="Key">Null for the totals row; otherwise the group's identity (a type id, unit id, user id or
 /// priority name) as a string, so one shape serves every axis.</param>
+/// <param name="Label">
+/// The words for <paramref name="Key"/>, when the server can supply them — a type's name, a unit's name, a
+/// company's name.
+///
+/// <para><b>NULL is a real answer, and never a fabricated one.</b> It stays null for the ASSIGNEE axis, because
+/// MEASURED 2026-09-04 there is no User entity in Platform and no auth client to ask — the screen resolves
+/// people through the lookup it already uses. It also stays null when a name genuinely cannot be found (a unit
+/// deleted since the work was done), and the screen then shows the identity. Inventing a placeholder would put a
+/// label on screen that matches nothing anybody could search for.</para>
+/// </param>
 public sealed record WorkReportBucket(
     string? Key,
+    string? Label,
     WorkReportFlow Flow,
     WorkReportCycleTime CycleTime,
     WorkReportTimeliness Timeliness,
@@ -133,16 +207,51 @@ public sealed record WorkReportRework(int TasksReturned, int TotalReturns);
 /// What the numbers cover — <c>tenant</c> or <c>scoped</c>. Stated rather than implied so a reader of the
 /// screen, or of a support ticket, can tell "there is no work" from "there is no work I may see".
 /// </param>
+/// <param name="GroupsTruncated">
+/// How many groups were folded into <see cref="WorkReportDto.OtherKey"/> because the answer exceeded
+/// <see cref="WorkReportDto.MaxGroups"/>. Zero when everything fits.
+///
+/// <para><b>⚠ STATED, NEVER SILENT.</b> Before this slice the grouping had no cap and no order at all: a
+/// 500-person tenant grouped by assignee returned 500 buckets in whatever order the dictionary produced. A cap
+/// alone would have been worse than none — a reader comparing units would be comparing the arbitrary fifty that
+/// survived. The count travels so the screen can say "50 shown, N more", and the folded rows still appear in
+/// the "other" bucket so the parts continue to add up to the whole.</para>
+/// </param>
 public sealed record WorkReportDto(
     DateTimeOffset From,
     DateTimeOffset To,
     string ScopeApplied,
     WorkReportGroupBy GroupBy,
     WorkReportBucket Totals,
-    IReadOnlyList<WorkReportBucket> Groups)
+    IReadOnlyList<WorkReportBucket> Groups,
+    int GroupsTruncated = 0)
 {
     public const string ScopeTenant = "tenant";
     public const string ScopeScoped = "scoped";
+
+    /// <summary>
+    /// Groups beyond the cap. FIFTY is a reading limit, not a technical one: a bar chart of more than fifty rows
+    /// is a wall nobody reads, and the tail is where the counts are smallest and the noise is highest.
+    /// </summary>
+    public const int MaxGroups = 50;
+
+    /// <summary>
+    /// The bucket everything past the cap is folded into. A reserved key rather than a translated word, because
+    /// it crosses the wire and the screen names it in the reader's language.
+    /// </summary>
+    public const string OtherKey = "__other__";
+
+    /// <summary>
+    /// Work whose company could not be determined — its organisation unit is missing from the tenant's live
+    /// set (deleted, or an id pointing at nothing).
+    ///
+    /// <para>⚠ MEASURED 2026-09-04, and it corrects an assumption worth stating: <c>TaskItem.OrganizationUnitId</c>
+    /// is <c>required Guid</c>, NOT nullable, and <c>OrganizationUnit.LegalEntityId</c> is required too. So a
+    /// task never simply "has no unit" — it has a unit id that may no longer RESOLVE. That is the case this
+    /// bucket holds, and it is why the bucket cannot be dropped: a silently discarded row makes the groups fail
+    /// to add up to the totals, with nothing on screen to explain the difference.</para>
+    /// </summary>
+    public const string UnassignedKey = "__unassigned__";
 
     /// <summary>
     /// The fail-closed answer: the period the caller asked for, and nothing in it.
@@ -156,6 +265,7 @@ public sealed record WorkReportDto(
 
     public static WorkReportBucket EmptyBucket(string? key) => new(
         key,
+        null,
         new WorkReportFlow(0, 0, 0, 0, 0),
         new WorkReportCycleTime(null, 0),
         new WorkReportTimeliness(0, 0, 0),

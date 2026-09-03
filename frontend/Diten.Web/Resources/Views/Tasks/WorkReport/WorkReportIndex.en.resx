@@ -54,4 +54,17 @@
   <data name="EffortOver" xml:space="preserve"><value>over {0} tasks</value></data>
   <data name="EffortHint" xml:space="preserve"><value>A signal about the PLAN, never about a person.</value></data>
   <data name="NotMeasured" xml:space="preserve"><value>Not measured</value></data>
+  <data name="GroupByLegalEntity" xml:space="preserve"><value>Company</value></data>
+  <data name="GroupUnassigned" xml:space="preserve"><value>Company unknown</value></data>
+  <data name="GroupOther" xml:space="preserve"><value>All other groups</value></data>
+  <data name="GroupsTruncated" xml:space="preserve"><value>Showing the busiest {0}; {1} more are folded into “All other groups”.</value></data>
+  <data name="FilterAny" xml:space="preserve"><value>Any</value></data>
+  <data name="FilterLegalEntity" xml:space="preserve"><value>Company</value></data>
+  <data name="FilterUnit" xml:space="preserve"><value>Organisation unit</value></data>
+  <data name="FilterTaskType" xml:space="preserve"><value>Task type</value></data>
+  <data name="FilterAssignee" xml:space="preserve"><value>Assignee</value></data>
+  <data name="FilterPriority" xml:space="preserve"><value>Priority</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>High</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Medium</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Low</value></data>
 </root>

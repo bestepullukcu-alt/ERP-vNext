@@ -55,10 +55,57 @@
                     <option value="OrganizationUnit">@Localizer["GroupByOrganizationUnit"]</option>
                     <option value="Assignee">@Localizer["GroupByAssignee"]</option>
                     <option value="Priority">@Localizer["GroupByPriority"]</option>
+                    <option value="LegalEntity">@Localizer["GroupByLegalEntity"]</option>
                 </select>
             </div>
             <div class="col-12 col-md-2">
                 <button type="submit" class="btn btn-primary w-100">@Localizer["Apply"]</button>
+            </div>
+
+            @*
+                ── THE FILTERS ──────────────────────────────────────────────────────────────────────────────
+                Every one optional, and NONE of them a permission. They narrow the caller's already-resolved
+                scope and can never widen it: naming somebody else's id here returns an EMPTY report rather than
+                their work, because the server applies the scope first. Said here because a reader of this form
+                could otherwise reasonably assume the opposite.
+
+                The options are loaded from lookups this product already exposes — no new endpoint was written
+                for any of them, and the person picker is the one Workflow already uses.
+            *@
+            <div class="col-12 col-md-4 col-xl-2">
+                <label for="wrLegalEntity" class="form-label fw-medium">@Localizer["FilterLegalEntity"]</label>
+                <select id="wrLegalEntity" class="form-select" data-wr-filter>
+                    <option value="">@Localizer["FilterAny"]</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-4 col-xl-2">
+                <label for="wrUnit" class="form-label fw-medium">@Localizer["FilterUnit"]</label>
+                @* Narrowed by the company above — picking a company shows only its units. *@
+                <select id="wrUnit" class="form-select" data-wr-filter>
+                    <option value="">@Localizer["FilterAny"]</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-4 col-xl-2">
+                <label for="wrTaskType" class="form-label fw-medium">@Localizer["FilterTaskType"]</label>
+                <select id="wrTaskType" class="form-select" data-wr-filter>
+                    <option value="">@Localizer["FilterAny"]</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-4 col-xl-2">
+                <label for="wrAssignee" class="form-label fw-medium">@Localizer["FilterAssignee"]</label>
+                <select id="wrAssignee" class="form-select" data-wr-filter>
+                    <option value="">@Localizer["FilterAny"]</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-4 col-xl-2">
+                <label for="wrPriority" class="form-label fw-medium">@Localizer["FilterPriority"]</label>
+                @* CODE values that travel, never translated words — the rule every picker on this page follows. *@
+                <select id="wrPriority" class="form-select" data-wr-filter>
+                    <option value="">@Localizer["FilterAny"]</option>
+                    <option value="High">@Localizer["PriorityHigh"]</option>
+                    <option value="Medium">@Localizer["PriorityMedium"]</option>
+                    <option value="Low">@Localizer["PriorityLow"]</option>
+                </select>
             </div>
         </form>
 
@@ -167,6 +214,12 @@
                 <h6 class="text-uppercase text-heading fw-semibold mb-1" data-wr-groups-title></h6>
                 <p class="text-muted small mb-3">@Localizer["GroupsQuestion"]</p>
                 <div data-wr-chart-groups></div>
+                @*
+                    ⚠ THE CAP, SAID OUT LOUD. Fifty groups is a reading limit; beyond it the tail is folded into
+                    one bucket rather than cut, so the parts still add up to the whole. A reader comparing units
+                    has to know they are looking at the busiest fifty and not at all of them.
+                *@
+                <p class="text-muted small mb-0 mt-2" data-wr-groups-truncated hidden></p>
             </div>
         </section>
     </div>

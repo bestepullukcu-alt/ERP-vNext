@@ -217,6 +217,31 @@
         });
     };
 
+    /*
+     * ── WHAT TO CALL A GROUP ─────────────────────────────────────────────────────────────────────────────
+     *
+     * Three sources, in order, and the order is the honesty:
+     *   1. the reserved buckets, named HERE because they are sentences the server has no translation for;
+     *   2. the server's own `label` — a type, unit or company name, from the data Platform owns;
+     *   3. a name this screen resolved itself, which is ONLY the assignee axis (Platform has no user entity);
+     *   4. failing all of that, the KEY — never an invented placeholder, which would put a word on screen that
+     *      matches nothing anybody can search for.
+     */
+    var people = {};
+
+    var groupLabel = function (group, groupBy) {
+        if (group.key === '__unassigned__') { return t('GroupUnassigned'); }
+        if (group.key === '__other__') { return t('GroupOther'); }
+        if (group.label) { return group.label; }
+
+        // The one axis the server cannot name. `priority` is named here too — it is an enum, and a server-side
+        // English word would be a second, untranslated vocabulary.
+        if (groupBy === 'Assignee' && group.key && people[group.key]) { return people[group.key]; }
+        if (groupBy === 'Priority' && group.key) { return t('Priority' + group.key) || group.key; }
+
+        return group.key || t('GroupUnnamed');
+    };
+
     /** WHERE IS THE WORK HAPPENING? — only when a breakdown was asked for. */
     var renderGroups = function (report) {
         var groups = report.groups || [];
@@ -230,6 +255,18 @@
 
         setText('[data-wr-groups-title]', tf('GroupsTitle', t('GroupBy' + report.groupBy)));
 
+        /*
+         * ⚠ THE CAP, STATED. Fifty groups is a reading limit; the tail is FOLDED into one bucket rather than
+         * cut, so the parts still add up. But a reader comparing units has to be told they are looking at the
+         * busiest fifty — a silent cut is how somebody concludes a unit has no work when it simply did not
+         * place.
+         */
+        var truncated = report.groupsTruncated || 0;
+        show('[data-wr-groups-truncated]', truncated > 0);
+        if (truncated > 0) {
+            setText('[data-wr-groups-truncated]', tf('GroupsTruncated', groups.length - 1, truncated));
+        }
+
         draw('groups', '[data-wr-chart-groups]', {
             chart: { type: 'bar', height: Math.max(260, groups.length * 44), stacked: false, toolbar: { show: false } },
             series: [
@@ -241,7 +278,7 @@
              * purpose so the groups still add up to the totals. It gets a WORD, because a nameless axis label
              * reads as a rendering bug.
              */
-            xaxis: { categories: groups.map(function (g) { return g.key || t('GroupUnnamed'); }) },
+            xaxis: { categories: groups.map(function (g) { return groupLabel(g, report.groupBy); }) },
             plotOptions: { bar: { horizontal: true, borderRadius: 4 } },
             legend: { position: 'bottom' }
         });
@@ -288,11 +325,27 @@
 
     /* ── loading ─────────────────────────────────────────────────────────────────────────────────────────── */
 
+    var valueOf = function (selector) {
+        var el = $(selector);
+        return (el && el.value) ? el.value : '';
+    };
+
     var query = function () {
-        var from = ($('#wrFrom') || {}).value;
-        var to = ($('#wrTo') || {}).value;
-        var groupBy = ($('#wrGroupBy') || {}).value || 'None';
-        return { from: from, to: to, groupBy: groupBy };
+        return {
+            from: valueOf('#wrFrom'),
+            to: valueOf('#wrTo'),
+            groupBy: valueOf('#wrGroupBy') || 'None',
+            /*
+             * ⚠ FILTERS, NOT PERMISSIONS. Each one narrows the scope the SERVER resolved; none of them can widen
+             * it. Naming somebody else's id here comes back empty rather than as their work, because the server
+             * applies the scope before it applies any of this.
+             */
+            legalEntityId: valueOf('#wrLegalEntity'),
+            organizationUnitId: valueOf('#wrUnit'),
+            taskTypeCode: valueOf('#wrTaskType'),
+            assigneeUserId: valueOf('#wrAssignee'),
+            priority: valueOf('#wrPriority')
+        };
     };
 
     var load = function () {
@@ -320,6 +373,12 @@
             + '&to=' + encodeURIComponent(q.to + 'T00:00:00Z')
             + '&groupBy=' + encodeURIComponent(q.groupBy);
 
+        // Only what was actually chosen travels: an empty parameter is not "match nothing", it is "not asked",
+        // and the server's contract says so by making every filter nullable.
+        ['legalEntityId', 'organizationUnitId', 'taskTypeCode', 'assigneeUserId', 'priority'].forEach(function (name) {
+            if (q[name]) { url += '&' + name + '=' + encodeURIComponent(q[name]); }
+        });
+
         return fetch(url, { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
             .then(function (response) {
                 if (!response.ok) { throw new Error('HTTP ' + response.status); }
@@ -338,9 +397,116 @@
             });
     };
 
+    /* ── filter option sources ───────────────────────────────────────────────────────────────────────────── */
+
+    /*
+     * ⚠ NO NEW ENDPOINT WAS WRITTEN FOR ANY OF THESE. Each is a lookup this product already serves, called
+     * same-origin through a proxy that already existed:
+     *   companies → /Tasks/api/legal-entities   (already on TasksController, hits /api/legal-entities/lookup)
+     *   units     → /OrganizationUnits/api
+     *   types     → /Tasks/api/task-types/active
+     *   people    → /Platform/Workflow/lookup/users   ← the person picker this product already uses
+     *
+     * MEASURED 2026-09-04: Platform has NO user entity and no auth client, which is why the person axis is the
+     * one the server cannot label and the one resolved here.
+     */
+    var getJson = function (url) {
+        return fetch(url, { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (p) {
+                var body = (p && p.data !== undefined) ? p.data : p;
+                return Array.isArray(body) ? body : (body && Array.isArray(body.items) ? body.items : []);
+            })
+            .catch(function () { return []; });
+    };
+
+    var pick = function (row, names) {
+        for (var i = 0; i < names.length; i++) {
+            if (row[names[i]]) { return row[names[i]]; }
+        }
+        return '';
+    };
+
+    /**
+     * Fill one picker, keeping its "any" option first.
+     *
+     * ⚠ THE CURRENT VALUE SURVIVES A REFILL when it is still offered — otherwise narrowing the units by company
+     * would silently clear a unit the reader had already chosen, and the next Apply would quietly widen the
+     * report they were looking at.
+     */
+    var fillSelect = function (selector, rows, valueKeys, labelKeys) {
+        var el = $(selector);
+        if (!el) { return; }
+
+        var previous = el.value;
+        var any = el.querySelector('option[value=""]');
+        el.innerHTML = '';
+        if (any) { el.appendChild(any); }
+
+        rows.forEach(function (row) {
+            var value = pick(row, valueKeys);
+            if (!value) { return; }
+            var option = document.createElement('option');
+            option.value = value;
+            option.textContent = pick(row, labelKeys) || value;
+            el.appendChild(option);
+        });
+
+        if (previous && el.querySelector('option[value="' + previous.replace(/"/g, '\\"') + '"]')) {
+            el.value = previous;
+        }
+    };
+
+    var allUnits = [];
+
+    /** Units, narrowed to the chosen company — the one dependency between two filters. */
+    var refreshUnits = function () {
+        var company = valueOf('#wrLegalEntity');
+        var rows = company
+            ? allUnits.filter(function (u) { return String(u.legalEntityId || u.LegalEntityId || '') === company; })
+            : allUnits;
+        fillSelect('#wrUnit', rows, ['id', 'Id'], ['name', 'Name', 'code', 'Code']);
+    };
+
+    var loadFilterOptions = function () {
+        return Promise.all([
+            getJson('/Tasks/api/legal-entities'),
+            getJson('/OrganizationUnits/api'),
+            getJson('/Tasks/api/task-types/active'),
+            getJson('/Platform/Workflow/lookup/users')
+        ]).then(function (results) {
+            fillSelect('#wrLegalEntity', results[0], ['id', 'Id', 'legalEntityId'], ['displayName', 'name', 'legalName', 'Name']);
+
+            allUnits = results[1] || [];
+            refreshUnits();
+
+            // The CODE is the value — the filter matches on the code a person reads and types, not on an id.
+            fillSelect('#wrTaskType', results[2], ['code', 'Code'], ['name', 'Name']);
+
+            var users = results[3] || [];
+            fillSelect('#wrAssignee', users, ['id', 'Id', 'userId'], ['displayName', 'fullName', 'name', 'email']);
+
+            // The same names label the ASSIGNEE breakdown — the server cannot supply them, so this is the only
+            // place they can come from.
+            people = {};
+            users.forEach(function (u) {
+                var id = pick(u, ['id', 'Id', 'userId']);
+                var name = pick(u, ['displayName', 'fullName', 'name', 'email']);
+                if (id && name) { people[String(id)] = name; }
+            });
+        });
+    };
+
     document.addEventListener('DOMContentLoaded', function () {
         var form = $('#workReportFilter');
         if (!form) { return; }
+
+        var company = $('#wrLegalEntity');
+        if (company) { company.addEventListener('change', refreshUnits); }
+
+        // The report is drawn regardless of whether the lookups answered: a picker that failed to load leaves
+        // the reader with fewer choices, not with no report.
+        loadFilterOptions().catch(function () { /* reported by the empty pickers themselves */ });
 
         form.addEventListener('submit', function (event) {
             event.preventDefault();
@@ -351,5 +517,10 @@
     });
 
     // Exposed for the test harness — the real render path, not a copy of it.
-    window.WorkReportScreen = { render: render, load: load, outcomeLabel: outcomeLabel, hasWork: hasWork };
+    window.WorkReportScreen = {
+        render: render, load: load, outcomeLabel: outcomeLabel, hasWork: hasWork,
+        // Exposed for the harness — the real functions, not copies of them.
+        groupLabel: groupLabel, query: query,
+        setPeople: function (map) { people = map || {}; }
+    };
 })();
