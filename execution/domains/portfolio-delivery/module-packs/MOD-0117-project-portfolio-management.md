@@ -1866,10 +1866,132 @@ Blueprint-wide MOD-0117 product `done`; this pack remains `review` until separat
    implementation amendment must choose only contracts that are executable, tenant-safe and bilaterally
    evidenced; it cannot promote the whole registry at once.
 
+### Amendment — 2026-09-03 — Initiative Core v2 frontend implementation authority
+
+**Authority class:** bounded frontend implementation handoff; governance checkpoint only in this commit.
+
+**Production authority:** `production_authority: none`.
+
+**Activation posture:** default-off / non-activating. No deployment, production configuration, feature
+activation, migration, seed, secret, credential, Gateway, backend/service or shared-runtime change is
+authorized. The pack remains `review`. This amendment does not itself implement frontend code. A later
+frontend implementation run requires separate, explicit user approval against this amendment.
+
+This amendment authorizes a future implementation to project the existing Initiative Core v2 backend
+contract into one tenant-shell frontend surface. It does not widen or reinterpret the 2026-09-02 backend
+baseline. The Initiative create/edit surface remains exactly eight user-entered fields and therefore uses
+Golden Reference Slim:
+
+1. `Code`
+2. `Name`
+3. `Description`
+4. `PortfolioId` (optional)
+5. `InitiativeTypeCode`
+6. `PriorityCode`
+7. `PlannedStartDate`
+8. `PlannedEndDate`
+
+Lifecycle is not a ninth form field. It is read-only in the table and quick view and changes only through
+separate controlled actions backed by the existing backend transition contract/result.
+
+#### Exact frontend implementation allowlist
+
+Only the following paths may change in the separately approved frontend implementation:
+
+- `frontend/Diten.Web/Controllers/PPM/PpmController.cs` — Initiative same-origin proxy actions only.
+- `frontend/Diten.Web/Models/PPM/InitiativeModels.cs`.
+- `frontend/Diten.Web/Models/PPM/PpmViewModels.cs` — Initiative projection/configuration only.
+- `frontend/Diten.Web/Views/PPM/Initiatives/**`.
+- `frontend/Diten.Web/wwwroot/assets/js/PPM/Initiatives/**`.
+- `frontend/Diten.Web/Resources/Views/PPM/Initiatives/**`.
+- `frontend/Diten.Web/tests/js/ppm-initiative-*.test.mjs`.
+
+No shared PPM partial is currently allowlisted. If implementation proves that an existing shared PPM
+partial must change, work stops and a governance amendment must name the exact file and prove that only
+Initiative behavior changes; a wildcard over shared PPM surfaces is forbidden.
+
+#### Protected paths and non-authority
+
+Everything outside the exact allowlist is protected, including `.antigravity/**`, `AGENTS.md`, Gateway and
+every `ocelot.json`, Platform, Auth, all PPM backend/service sources, DWS, BPM, WorkCenter, Enterprise Strategy
+legacy sources, shared layouts, `appsettings*`, `launchSettings*`, migrations, indexes, seeds, secrets,
+credentials, deployment/production-activation assets and every other module's frontend files. The future
+implementation may not copy legacy Enterprise Strategy persistence or browser state into PPM and may not
+add bulk lifecycle or bulk delete.
+
+#### Data, dependency and fail-closed UI contract
+
+- The page explicitly uses `Layout = "_LayoutTenantShell"`, DataTable v2
+  (`data-dt-standard="v2"`), Golden Slim create/edit offcanvas, inline filter, Save View, skeleton/loading,
+  empty and error states, `_DetailsQuickView.cshtml`, premium SweetAlert2 and seven-language RESX plus
+  `window.L10n` bridging.
+- Browser requests are same-origin and go through the narrowly scoped `PpmController` proxy to Gateway;
+  browser code never calls a service port directly.
+- `InitiativeTypeCode` and `PriorityCode` options come exclusively from successful authoritative
+  `contracts/v2` payloads. When the provider is unavailable, malformed or indeterminate, create/edit is
+  safely disabled and a localized dependency error is shown. Hardcoded arrays, stale cache, synthetic
+  defaults and frontend fallback vocabularies are forbidden.
+- Planning dates may be null while Proposed. The UI may explain backend activation requirements but cannot
+  duplicate or become owner of the business rule; the backend remains authoritative before Active.
+- Allowed transitions are driven only by backend contract/result. Cancel, OnHold and Complete collect the
+  exact required reason/closure inputs in separate premium SweetAlert2 or equivalently controlled action
+  surfaces. Completed and Cancelled rows show no edit, delete or lifecycle actions.
+- Completion shows only the exact fields required by the backend. Until executable MOD-0031 evidence and
+  MOD-0024 follow-up-reference contracts exist, the UI exposes neither fake inputs nor free-text ID fields.
+- A terminal Initiative may expose a separate **Create successor** action. It never edits or reopens the
+  terminal record.
+- Details/quick view shows PPM-owned core fields. A foreign-owner card appears only when its executable,
+  typed, tenant-safe contract exists. A `503` owner-contract condition shows no mock, placeholder or locally
+  copied data.
+- An Initiative record or lifecycle state never becomes a WorkCenter item. Only a genuine MOD-0023 approval
+  item, owned and projected by its separate authority, may appear there.
+- HTTP outcomes remain distinguishable: `400` validation, `401` refresh/login, `403` permission,
+  non-disclosing `404`, `409` stale version/conflict and `503` dependency unavailable. They must not collapse
+  into one generic error message.
+
+#### Implementation acceptance criteria and gates
+
+A separately approved frontend implementation is acceptable only when all of the following are evidenced:
+
+- Exact create/edit parity for the eight fields above; `PortfolioId` is optional; lifecycle is absent from
+  the form and read-only in table/quick view.
+- Golden Slim and DataTable v2 verifiers pass for `PPM/Initiatives` using the same-origin proxy profile.
+- `dotnet build frontend/Diten.Web/Diten.Web.csproj -c Debug` and the applicable PPM/Web tests pass.
+- All `frontend/Diten.Web/tests/js/ppm-initiative-*.test.mjs` contract tests pass.
+- Initiative RESX keys have semantic parity in `en`, `fr`, `es`, `zh`, `ar`, `ru`, `tr`; no English
+  placeholders or hardcoded UI fallback text remains.
+- Negative scans find no hardcoded type/priority/lifecycle/closure vocabulary, fallback arrays, stale-cache
+  option source, synthetic default, direct service-port URL, legacy ES persistence or browser-state copy.
+- Same-origin proxy behavior is verified; loading, empty and differentiated error states are exercised.
+- Browser acceptance covers create, edit, quick view and the transitions `Proposed -> Active`,
+  `Active -> OnHold`, `OnHold -> Active`, `Active|OnHold -> Completed`, and
+  `Proposed|Active|OnHold -> Cancelled`.
+- Browser acceptance proves terminal immutability, successor creation, authoritative failure on unavailable
+  closure/owner contracts and distinct `400/401/403/404/409/503` UI behavior.
+- Browser evidence confirms `_LayoutTenantShell`, inline filter, Save View, responsive DataTable v2,
+  accessible action controls, premium SweetAlert2 and no console/network contract errors.
+- `.local-test/**` and generated artifacts remain uncommitted; secret/credential and artifact scans pass.
+- `git diff --check`, exact-allowlist comparison and full staged-diff review pass before commit.
+
+#### Open owner-contract blockers
+
+- `contracts/v2` must return an authoritative, well-formed type/priority payload; otherwise create/edit stays
+  disabled with `503`-class dependency UX and no fallback.
+- MOD-0031 evidence and MOD-0024 follow-up-reference contracts remain unavailable for closure input until
+  separately executable and bilaterally accepted.
+- Foreign-owner Initiative Details cards remain unavailable until each owner publishes an executable typed
+  link contract; `503` remains the truthful state.
+- MOD-0023 is the only possible owner of an approval WorkCenter item. This amendment grants PPM no
+  WorkCenter projection or approval implementation authority.
+
+Passing these gates proves only the bounded Initiative frontend implementation. It does not activate
+production, close the owner-contract blockers, promote MOD-0117 to `done`, or establish full MOD-0117 parity.
+
 ### Change log
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-09-03 | Added bounded Initiative Core v2 frontend implementation authority: exact eight-field Golden Slim tenant UI, same-origin Initiative proxy, authoritative `contracts/v2` vocabulary with fail-closed create/edit, action-only lifecycle/closure/supersession, typed-link-only details, HTTP-specific UX and exact frontend/test allowlist. Preserved `review`, set `production_authority: none`, retained default-off/non-activating posture and required separate explicit user approval before frontend implementation. No runtime/frontend/Gateway/backend/deployment code was changed by this governance checkpoint. | User / Portfolio Governance Process Owner |
 | 2026-09-02 | Added and corrected the governance-only Initiative Core v2 baseline: exact eight-field Golden Slim create/edit contract; nullable-in-Proposed and required-before-Active MOD-0048-owned type/priority classifications and planning dates; exact approved values for five PPM-owned lifecycle/closure vocabularies with no `other`; action-based lifecycle and Workflow/WorkCenter boundaries; verified-recipient-only OnHold notification plus non-blocking durable `recipient-unresolved` disposition/UI warning; exact InitiativeClosure requiredness/cardinalities; terminal supersession; authoritative-owner typed links; repository-accurate future allowlist/protected paths; HTTP matrix, acceptance/test gates and explicit owner blockers. No runtime/frontend/service/Gateway/migration/seed/deployment/activation authority was created. | User / Portfolio Governance Process Owner |
 | 2026-09-01 | Reconciled the Initiative legacy wizard against Blueprint ownership and current PPM code. Retained the six-field Golden Slim form; registered future strategy, organization, planning, metric, investment, funding, decision, evidence and dependency detail concepts as governance-only/default-unavailable. No PPM field, runtime card, producer call, mock fallback or activation authority was created. | User / Portfolio Governance Process Owner |
 | 2026-08-30 | Recorded the DCP-004 Gate-2 current-state disposition as governance-only, default-off and non-production: exact eligible type count `0`, empty action map, six owned-type dispositions, all 31 projection fields and eleven future decision gates. No provider/endpoint/configuration/runtime/activation authority or WorkCenter completion claim was created. | User / Enterprise Strategy Control Tower |
