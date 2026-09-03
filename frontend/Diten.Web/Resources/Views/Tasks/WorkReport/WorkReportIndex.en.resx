@@ -53,6 +53,12 @@
   <data name="EffortHours" xml:space="preserve"><value>{0} h estimated · {1} h spent</value></data>
   <data name="EffortOver" xml:space="preserve"><value>over {0} tasks</value></data>
   <data name="EffortHint" xml:space="preserve"><value>A signal about the PLAN, never about a person.</value></data>
+  <data name="CycleTimeMedian" xml:space="preserve"><value>median {0}</value></data>
+  <data name="CancelTime" xml:space="preserve"><value>Until cancelled: average {0} · median {1} ({2} cancelled)</value></data>
+  <data name="AgingBuckets" xml:space="preserve"><value>Age of open work — 0-7 days: {0} · 8-30 days: {1} · 30+ days: {2}</value></data>
+  <data name="TrendSame" xml:space="preserve"><value>same as the previous period</value></data>
+  <data name="TrendUp" xml:space="preserve"><value>+{0} against the previous period (was {1})</value></data>
+  <data name="TrendDown" xml:space="preserve"><value>-{0} against the previous period (was {1})</value></data>
   <data name="NotMeasured" xml:space="preserve"><value>Not measured</value></data>
   <data name="GroupByLegalEntity" xml:space="preserve"><value>Company</value></data>
   <data name="GroupUnassigned" xml:space="preserve"><value>Company unknown</value></data>

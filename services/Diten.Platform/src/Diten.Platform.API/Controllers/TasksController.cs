@@ -548,6 +548,9 @@ public sealed class TasksController : CustomBaseController
         [FromQuery] Guid? assigneeUserId = null,
         [FromQuery] string? taskTypeCode = null,
         [FromQuery] TaskPriority? priority = null,
+        /// <summary>Also measure the preceding period of the same length. The SERVER decides which days those
+        /// are — see WorkReportDto.Previous for why that definition may not be duplicated in a client.</summary>
+        [FromQuery] bool comparePrevious = false,
         CancellationToken ct = default)
     {
         /*
@@ -559,7 +562,7 @@ public sealed class TasksController : CustomBaseController
             legalEntityId, organizationUnitId, assigneeUserId, taskTypeCode, priority);
 
         var response = await _mediator.Send(
-            new WorkReportQuery(from, to, groupBy, CorrelationId, filter), ct);
+            new WorkReportQuery(from, to, groupBy, CorrelationId, filter, comparePrevious), ct);
         return CreateActionResultInstance(response);
     }
 

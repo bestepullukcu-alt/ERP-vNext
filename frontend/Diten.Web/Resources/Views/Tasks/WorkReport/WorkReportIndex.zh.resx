@@ -53,6 +53,12 @@
   <data name="EffortHours" xml:space="preserve"><value>预估 {0} 小时 · 实际 {1} 小时</value></data>
   <data name="EffortOver" xml:space="preserve"><value>基于 {0} 项任务</value></data>
   <data name="EffortHint" xml:space="preserve"><value>这是关于「计划」的信号，绝非关于个人。</value></data>
+  <data name="CycleTimeMedian" xml:space="preserve"><value>中位数 {0}</value></data>
+  <data name="CancelTime" xml:space="preserve"><value>至取消：平均 {0} · 中位数 {1}（已取消 {2} 项）</value></data>
+  <data name="AgingBuckets" xml:space="preserve"><value>未结工作的时长 — 0-7 天：{0} · 8-30 天：{1} · 30 天以上：{2}</value></data>
+  <data name="TrendSame" xml:space="preserve"><value>与上一周期持平</value></data>
+  <data name="TrendUp" xml:space="preserve"><value>较上一周期 +{0}（此前 {1}）</value></data>
+  <data name="TrendDown" xml:space="preserve"><value>较上一周期 -{0}（此前 {1}）</value></data>
   <data name="NotMeasured" xml:space="preserve"><value>未测量</value></data>
   <data name="GroupByLegalEntity" xml:space="preserve"><value>公司</value></data>
   <data name="GroupUnassigned" xml:space="preserve"><value>公司未知</value></data>

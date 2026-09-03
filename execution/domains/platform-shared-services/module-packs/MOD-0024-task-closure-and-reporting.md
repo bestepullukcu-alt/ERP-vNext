@@ -499,6 +499,8 @@ exist before the field is worth showing: Faz 3 comes first, and Faz 1's remainin
 | **Faz 4 → done, and smaller than written** | The RETURN SIGNAL: `Returned { at, reason, count }` on the projection, declared in the contract, a row chip and a detail sentence. **No lifecycle member, and `Blocked` dropped entirely** — see §10 for why both were mis-specified | **None** | **Delivered 2026-09-03** |
 | **Faz 5a → now** | The work report QUERY and its AUTHORITY. `GET /api/v1/tasks/work-report`, scoped through MOD-0018-FU15's `IDataScopeResolver`, aggregated in the database. **No screen, no string** | Read-only | **Delivered 2026-09-03** |
 | **Faz 5b → now** | The report SCREEN at `/Tasks/WorkReport`: proxy, page, four tiles, four charts, 50 labels × 7 languages, manifest page made nav-visible | None | **Delivered 2026-09-04** |
+| **Dilim 1a → now** | Five optional filters, the company axis via an org-unit join, readable group labels, a 50-group cap with an "all other groups" bucket. **The filter INTERSECTS the resolved scope and can never widen it** | Read-only | **Delivered 2026-09-04** |
+| **Dilim 1b → now** | Median beside every average, a same-length previous period, ageing at the PERIOD'S END, and two repairs: cancellations split out of cycle time (K-1) and the denominator corrected to the spans actually measured (K-2). Plus a dev-only seed for closure outcomes | Read-only | **Delivered 2026-09-04** |
 
 ### Why Faz 5 split in two
 
@@ -685,6 +687,63 @@ imprecise are corrected here rather than repeated.
     prefix domain. A second copy would let the Task Center and this report disagree about what an outcome is
     called the day one is corrected. A code with no entry falls back to itself, which is the honest answer for a
     TENANT outcome (one language, nothing to translate) and a visible gap for a system one.
+
+26. **K-1 was real, and the live database says how much it cost.** On the dev tenant for
+    2026-08-05 → 2026-09-04, ten tasks completed averaging **6.39 days** and six were cancelled averaging
+    **0.01 days**. Folded into one figure — what the card did before this slice — the answer was **3.99 days**.
+    So the published cycle time was understating the real one by 37%, and it was doing so in the flattering
+    direction, because abandoning work fast looks identical to finishing work fast once the two are averaged.
+    The number was never wrong arithmetic; it was arithmetic over the wrong set.
+
+27. **K-2 was the quieter of the two, and it hid inside a true sentence.** The footnote read "over {n} closed"
+    with `n` = every closure — 16 — while the average was taken over the 10 spans that existed. Both numbers
+    were individually correct, which is exactly why it survived review. `WorkReportDuration.Count` is now the
+    count of spans the average was actually computed from, and the screen reads that field rather than adding
+    up the flow.
+
+28. **Ageing needed its OWN database query, and this was not obvious.** The report's rows are the work TOUCHED
+    in the period — created, completed or cancelled inside it. A task raised last year and still untouched
+    appears in no clause of that filter, which is precisely the backlog ageing exists to surface. Deriving
+    ageing from the report's own rows would have shown the cleanest backlog to the tenant with the worst one.
+
+29. **Ageing is anchored to the PERIOD'S END, never to the clock — and the live data proves the difference.**
+    Measured against 2026-09-04 the buckets are 12 / 56 / 26 (94 open, reconciled by hand straight from
+    `task_items`). The same code asked about the previous period's end, 2026-08-05, answers 8 / 19 / 0 — a
+    different, smaller backlog with nothing yet past thirty days. A clock-anchored implementation would have
+    given both periods today's answer, and a report reopened in a review months later would silently stop
+    matching the copy that was printed beside the decision.
+
+30. **The previous period is defined in ONE place, and the screen only asks for it.**
+    `WorkReportRepository.PreviousPeriod` returns `[From − length, From)` — for 2026-08-05 → 2026-09-04 that is
+    2026-07-06 → 2026-08-05: same thirty days, sharing no day, scope and filter carried across unchanged. It
+    also switches its own `ComparePrevious` off and its `GroupBy` to `None`, or a comparison would ask for a
+    comparison a period at a time until the epoch, and fifty groups would be measured twice to buy one arrow.
+    The browser sends `comparePrevious=true` and computes no dates: two implementations of "previous" drift the
+    first time somebody reasons about month lengths, and then two figures on one page disagree with no way to
+    tell which is right.
+
+31. **"Better" is not "bigger", so direction is a per-caller argument rather than the sign of a subtraction.**
+    Cycle time rising is bad; closures rising is good; late work rising is bad. One helper, three callers, each
+    naming which way it wants — verified live: `+5.19 days` renders `text-danger`, `+7 closed` renders
+    `text-success`, `+7 late` renders `text-danger`.
+
+32. **A missing comparison is null, never a bucket of zeroes.** Zeroes are a claim about the previous period,
+    and they would have painted a triumphant green arrow onto every report whose comparison failed to load.
+
+33. **The outcome chart had nothing to draw, and that is why a dev seed exists.** MEASURED 2026-09-04: of 178
+    tasks, 23 completed and 18 cancelled, and exactly ZERO carried a `ClosureReasonCode` — neither task type had
+    a dictionary at all. Faz 3 and 3b were correct and invisible, which is the hardest kind of thing to review.
+    `scripts/seed-closure-outcomes-dev.sh` refuses any database whose name does not end `_dev`, names its target
+    before touching anything, is idempotent (a task's outcome is derived from its own id, so two screenshots of
+    "the same" data agree), and undoes only the codes it wrote. It is registered nowhere and runs only when a
+    person types its name.
+
+34. **A pre-existing guard collided with a legitimate number, and the fixture moved rather than the guard.**
+    `work-report-screen.test.js` forbade `1.3` anywhere in the document, because 52 h spent over 40 h estimated
+    is the ratio §8 excludes. Dilim 1b put a cycle-time average of `11.33 days` on the same card. The guard is
+    right and its reach — the whole document — is the point, so the fixture's hours became 40/60 and the
+    forbidden strings became `1.5` / `0.67`. Narrowing the guard to the effort card would have been the easier
+    fix and the wrong one.
 
 **Deferred from 5b, and worth naming**
 

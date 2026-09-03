@@ -77,7 +77,12 @@ public sealed record WorkReportCriteria(
     DateTimeOffset To,
     WorkReportScope Scope,
     WorkReportGroupBy GroupBy = WorkReportGroupBy.None,
-    WorkReportFilter? Filter = null);
+    WorkReportFilter? Filter = null,
+    /// <summary>
+    /// Whether to measure the preceding period of the same length as well. Off by default so the comparison is
+    /// paid for only when it is asked for — it doubles the reads.
+    /// </summary>
+    bool ComparePrevious = false);
 
 /// <summary>
 /// WHICH SLICE of the work the reader asked about — every field optional, and none of them a substitute for the
@@ -135,11 +140,26 @@ public sealed record WorkReportFilter(
 /// deleted since the work was done), and the screen then shows the identity. Inventing a placeholder would put a
 /// label on screen that matches nothing anybody could search for.</para>
 /// </param>
+/// <param name="CycleTime">
+/// How long COMPLETED work took. ⚠ Completions only — see <paramref name="CancellationTime"/>.
+/// </param>
+/// <param name="CancellationTime">
+/// How long CALLED-OFF work sat before somebody called it off.
+///
+/// <para><b>⚠ SPLIT OUT, NOT DELETED, AND THE SPLIT IS THE POINT.</b> MEASURED 2026-09-04: cycle time counted
+/// completions and cancellations together, so a task that waited ninety days and was then abandoned was
+/// reported as ninety days of "how long our work takes". Oracle measures cycle time over completions alone,
+/// and the reason is that the two answer different questions: one is "how fast do we finish", the other is
+/// "how long before we admit we won't". Both are worth knowing; averaged together they are worth nothing.</para>
+/// </param>
+/// <param name="Aging">Open work at the period's end, by age. See <see cref="WorkReportAging"/>.</param>
 public sealed record WorkReportBucket(
     string? Key,
     string? Label,
     WorkReportFlow Flow,
-    WorkReportCycleTime CycleTime,
+    WorkReportDuration CycleTime,
+    WorkReportDuration CancellationTime,
+    WorkReportAging Aging,
     WorkReportTimeliness Timeliness,
     WorkReportEffort Effort,
     IReadOnlyList<WorkReportOutcomeCount> Outcomes,
@@ -160,14 +180,45 @@ public sealed record WorkReportBucket(
 public sealed record WorkReportFlow(int Opened, int Closed, int Completed, int Cancelled, int Unattended);
 
 /// <summary>
-/// HOW LONG IT TOOK, from creation to closure, over the tasks CLOSED in the period.
+/// HOW LONG SOMETHING TOOK, from creation to the moment it ended — in days.
 ///
-/// <para>Average and not median: <c>$avg</c> is one accumulator in the same group stage, while a median needs a
-/// second pass or a percentile operator whose availability varies by server version. The count travels beside it
-/// so a reader can tell an average of three tasks from an average of three hundred — an average with no
-/// denominator is the shape that gets quoted in a meeting and cannot be defended.</para>
+/// <para><b>⚠ AVERAGE AND MEDIAN TOGETHER, and never one alone.</b> Durations are skewed: one task parked for
+/// ninety days drags an average nobody recognises. <c>1 · 2 · 3 · 4 · 90</c> averages to 20 and has a median of
+/// 3, and the pair is the finding — a large gap between them says "there is a tail", which is the thing worth
+/// acting on. Either number by itself invites the wrong decision.</para>
+///
+/// <para><b>MEDIAN IS A DISTRIBUTION MEASURE, NOT A PERFORMANCE SCORE.</b> It is reported for a period, a type
+/// or a unit — never turned into a ranking of people. Pack §8's exclusion of efficiency scoring covers this for
+/// the same reason: a number that becomes a personal score changes the behaviour it was measuring.</para>
+///
+/// <para><b><see cref="Count"/> is the DENOMINATOR THE AVERAGE WAS ACTUALLY COMPUTED OVER</b> — not the number
+/// of things that ended. MEASURED 2026-09-04: it used to be <c>closed.Count</c> while the average ran over the
+/// negative-span-filtered list, so a report with one corrupt row said "over 16" beside a mean of 15. An average
+/// whose stated denominator is not its real one cannot be checked by the person reading it.</para>
 /// </summary>
-public sealed record WorkReportCycleTime(double? AverageDays, int ClosedCount);
+public sealed record WorkReportDuration(double? AverageDays, double? MedianDays, int Count);
+
+/// <summary>
+/// HOW MUCH WORK IS STILL OPEN, and how long it has been waiting — measured AT THE END OF THE PERIOD.
+///
+/// <para><b>⚠ AGAINST THE PERIOD'S END, NEVER AGAINST "NOW", AND THAT IS WHAT MAKES IT EVIDENCE.</b> A report
+/// is read again months later — in a review, in an audit, beside a decision somebody already took. Ageing
+/// computed from the current clock gives a different answer every time the page is opened, so the same period
+/// stops reconciling with the copy that was printed. Anchored to <c>To</c>, June's report says the same thing in
+/// June and in December.</para>
+///
+/// <para><b>Work with no deadline is counted here.</b> It is precisely the work
+/// <see cref="WorkReportTimeliness"/> cannot speak about — <c>WithoutDueDate</c> is its blind spot — so ageing
+/// is the measure that sees it. Every open task has an age; not every one has a promise.</para>
+/// </summary>
+/// <param name="UpTo7Days">Open at period end, created within the last week of it.</param>
+/// <param name="From8To30Days">Open at period end, between eight and thirty days old.</param>
+/// <param name="OlderThan30Days">Open at period end and older than thirty days.</param>
+public sealed record WorkReportAging(int UpTo7Days, int From8To30Days, int OlderThan30Days)
+{
+    /// <summary>Every open item, once. The three buckets partition the same set, so this is their sum.</summary>
+    public int Total => UpTo7Days + From8To30Days + OlderThan30Days;
+}
 
 /// <summary>
 /// DID IT LAND ON TIME — over closed tasks that HAD a deadline.
@@ -217,6 +268,29 @@ public sealed record WorkReportRework(int TasksReturned, int TotalReturns);
 /// survived. The count travels so the screen can say "50 shown, N more", and the folded rows still appear in
 /// the "other" bucket so the parts continue to add up to the whole.</para>
 /// </param>
+/// <param name="Previous">
+/// The SAME NUMBERS for the period immediately before this one, of the same length — or null when the caller
+/// asked not to compare.
+///
+/// <para><b>⚠ THE SERVER DECIDES WHAT "THE PREVIOUS PERIOD" IS, and the screen never computes it.</b> Two
+/// places answering "which days came before these" drift apart by a day the first time somebody reasons about
+/// month lengths, inclusive ends or a leap year — and then two charts on the same page disagree with no way to
+/// tell which is right. One definition, computed once: <c>[From − length, From)</c>, which is exactly as long
+/// as the period asked for and touches none of its days.</para>
+///
+/// <para>Carried as a whole <see cref="WorkReportBucket"/> rather than a handful of deltas, so the screen can
+/// compare whichever measures it shows without the contract having to guess in advance which those are — and
+/// so a DIRECTION is always derivable from two real numbers rather than from a pre-computed arrow nobody can
+/// check.</para>
+/// </param>
+/// <summary>
+/// The period immediately before the one asked about, and its totals.
+///
+/// <para>The bounds travel with the numbers so a reader — or a support ticket — can see WHICH days were
+/// compared. A comparison whose other half is unnamed is a number nobody can reproduce.</para>
+/// </summary>
+public sealed record WorkReportComparison(DateTimeOffset From, DateTimeOffset To, WorkReportBucket Totals);
+
 public sealed record WorkReportDto(
     DateTimeOffset From,
     DateTimeOffset To,
@@ -224,7 +298,8 @@ public sealed record WorkReportDto(
     WorkReportGroupBy GroupBy,
     WorkReportBucket Totals,
     IReadOnlyList<WorkReportBucket> Groups,
-    int GroupsTruncated = 0)
+    int GroupsTruncated = 0,
+    WorkReportComparison? Previous = null)
 {
     public const string ScopeTenant = "tenant";
     public const string ScopeScoped = "scoped";
@@ -267,7 +342,9 @@ public sealed record WorkReportDto(
         key,
         null,
         new WorkReportFlow(0, 0, 0, 0, 0),
-        new WorkReportCycleTime(null, 0),
+        new WorkReportDuration(null, null, 0),
+        new WorkReportDuration(null, null, 0),
+        new WorkReportAging(0, 0, 0),
         new WorkReportTimeliness(0, 0, 0),
         new WorkReportEffort(0m, 0m, 0),
         [],

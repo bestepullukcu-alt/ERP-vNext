@@ -126,16 +126,26 @@ public static class WorkReportTally
         IReadOnlyList<WorkReportRow> rows,
         int unattended,
         IReadOnlyDictionary<Guid, int> returnsByTask,
-        IReadOnlyDictionary<string, string>? labels = null)
+        IReadOnlyDictionary<string, string>? labels = null,
+        IReadOnlyList<WorkReportRow>? openAtPeriodEnd = null)
     {
         ArgumentNullException.ThrowIfNull(criteria);
         ArgumentNullException.ThrowIfNull(rows);
         ArgumentNullException.ThrowIfNull(returnsByTask);
 
+        /*
+         * ⚠ ITS OWN ROW SET, AND IT HAS TO BE. `rows` is the work TOUCHED in the period — opened or closed
+         * inside it. A task raised last year and still untouched appears in NEITHER, and it is exactly the task
+         * ageing exists to surface. The repository fetches these separately; a caller that passes none gets
+         * zeroes rather than a wrong answer derived from the wrong set.
+         */
+        var open = openAtPeriodEnd ?? [];
+
         string? LabelFor(string? key) =>
             key is not null && labels is not null && labels.TryGetValue(key, out var found) ? found : null;
 
-        var totals = Measure(null, null, rows, unattended, returnsByTask, criteria);
+        var totals = Measure(
+            null, null, rows, unattended, returnsByTask, criteria, AgeOpenWork(open, criteria.To));
 
         var groups = new List<WorkReportBucket>();
         var truncated = 0;
@@ -158,7 +168,11 @@ public static class WorkReportTally
                     // Unattended is a tenant-level "right now" figure and is NOT split across groups:
                     // attributing today's unclaimed backlog to every group would multiply one backlog by the
                     // number of rows on screen.
-                    Bucket = Measure(group.Key, LabelFor(group.Key), group.ToList(), 0, returnsByTask, criteria)
+                    Bucket = Measure(
+                        group.Key, LabelFor(group.Key), group.ToList(), 0, returnsByTask, criteria,
+                        // Ageing is split on the SAME axis, so a unit's backlog sits beside its own flow.
+                        AgeOpenWork(
+                            open.Where(row => GroupKey(row, criteria.GroupBy) == group.Key), criteria.To))
                 })
                 .OrderByDescending(entry => entry.Bucket.Flow.Opened)
                 .ThenBy(entry => entry.Key, StringComparer.Ordinal)
@@ -179,7 +193,9 @@ public static class WorkReportTally
                 var tailRows = rows.Where(row => tail.Contains(GroupKey(row, criteria.GroupBy))).ToList();
                 // The "other" bucket is named by the SCREEN, in the reader's language — the server has no
                 // sentence for it that would survive seven translations.
-                groups.Add(Measure(WorkReportDto.OtherKey, null, tailRows, 0, returnsByTask, criteria));
+                groups.Add(Measure(
+                    WorkReportDto.OtherKey, null, tailRows, 0, returnsByTask, criteria,
+                    AgeOpenWork(open.Where(row => tail.Contains(GroupKey(row, criteria.GroupBy))), criteria.To)));
             }
         }
 
@@ -219,7 +235,8 @@ public static class WorkReportTally
         IReadOnlyList<WorkReportRow> rows,
         int unattended,
         IReadOnlyDictionary<Guid, int> returnsByTask,
-        WorkReportCriteria criteria)
+        WorkReportCriteria criteria,
+        WorkReportAging aging)
     {
         var from = criteria.From;
         var to = criteria.To;
@@ -235,18 +252,19 @@ public static class WorkReportTally
          */
         var closed = rows
             .Where(row => In(row.CompletedAt, from, to) || In(row.CancelledAt, from, to))
-            .Select(row => new { Row = row, At = (row.CompletedAt ?? row.CancelledAt)!.Value })
+            .Select(row => (Row: row, At: (row.CompletedAt ?? row.CancelledAt)!.Value))
             .ToList();
 
-        var cycleDays = closed
-            .Select(pair => (pair.At - pair.Row.CreatedAt).TotalDays)
-            /*
-             * A negative span means a closure stamped before its creation — corrupt, not fast. Excluded rather
-             * than clamped to zero, because a zero silently drags the average toward a number that reads as a
-             * very efficient team.
-             */
-            .Where(days => days >= 0)
-            .ToList();
+        /*
+         * ⚠ K-1 — COMPLETIONS AND CANCELLATIONS ARE MEASURED APART.
+         *
+         * MEASURED 2026-09-04: these were one number. A task that waited ninety days and was then abandoned was
+         * reported as ninety days of "how long our work takes", which is not what anybody reads that figure to
+         * mean. Oracle measures cycle time over completions alone; the cancellation span is kept because "how
+         * long before we admitted this wasn't happening" is its own finding, not noise to discard.
+         */
+        var completedSpans = Spans(closed.Where(pair => In(pair.Row.CompletedAt, from, to)));
+        var cancelledSpans = Spans(closed.Where(pair => In(pair.Row.CancelledAt, from, to)));
 
         var withDue = closed.Where(pair => pair.Row.DueAt is not null).ToList();
 
@@ -271,9 +289,9 @@ public static class WorkReportTally
             key,
             label,
             new WorkReportFlow(opened, completed + cancelled, completed, cancelled, unattended),
-            new WorkReportCycleTime(
-                cycleDays.Count == 0 ? null : Math.Round(cycleDays.Average(), 2),
-                closed.Count),
+            Duration(completedSpans),
+            Duration(cancelledSpans),
+            aging,
             new WorkReportTimeliness(
                 withDue.Count(pair => pair.At <= pair.Row.DueAt!.Value),
                 withDue.Count(pair => pair.At > pair.Row.DueAt!.Value),
@@ -284,6 +302,102 @@ public static class WorkReportTally
                 effort.Count),
             outcomes,
             new WorkReportRework(returns.Count, returns.Sum()));
+    }
+
+
+    /// <summary>
+    /// The day-spans of a set of closures, corrupt rows dropped.
+    ///
+    /// <para>A NEGATIVE span means a closure stamped before its creation — corrupt, not fast. Excluded rather
+    /// than clamped to zero, because a zero silently drags the average toward a number that reads as a very
+    /// efficient team.</para>
+    /// </summary>
+    private static List<double> Spans(IEnumerable<(WorkReportRow Row, DateTimeOffset At)> closures) =>
+        closures
+            .Select(pair => (pair.At - pair.Row.CreatedAt).TotalDays)
+            .Where(days => days >= 0)
+            .ToList();
+
+    /// <summary>
+    /// Average, median and the denominator BOTH were computed over.
+    ///
+    /// <para><b>⚠ K-2 — THE COUNT IS THE REAL DENOMINATOR.</b> MEASURED 2026-09-04: the report printed
+    /// <c>closed.Count</c> beside an average taken over the negative-filtered list, so the two disagreed
+    /// whenever a corrupt row existed and the reader could not tell. Whatever the numbers were computed from is
+    /// what gets reported.</para>
+    ///
+    /// <para><b>The MEDIAN uses the standard definition:</b> the middle value of the sorted list, or the mean
+    /// of the middle TWO when the count is even. Stated rather than assumed because "the median of an even
+    /// list" is exactly the sort of thing two implementations quietly disagree about — one taking the lower
+    /// middle, the other the mean — and the difference shows up as a number nobody can reproduce.</para>
+    /// </summary>
+    private static WorkReportDuration Duration(IReadOnlyList<double> spans)
+    {
+        if (spans.Count == 0)
+        {
+            // Absent, not zero: a zero reads as "everything closed instantly", the most flattering lie a report
+            // can tell. The count beside it says why there is nothing to average.
+            return new WorkReportDuration(null, null, 0);
+        }
+
+        var sorted = spans.OrderBy(value => value).ToList();
+        var middle = sorted.Count / 2;
+        var median = sorted.Count % 2 == 1
+            ? sorted[middle]
+            : (sorted[middle - 1] + sorted[middle]) / 2d;
+
+        return new WorkReportDuration(
+            Math.Round(sorted.Average(), 2),
+            Math.Round(median, 2),
+            sorted.Count);
+    }
+
+    /// <summary>
+    /// Open work at the END OF THE PERIOD, bucketed by age.
+    ///
+    /// <para><b>⚠ ANCHORED TO <paramref name="periodEnd"/>, NEVER TO THE CURRENT CLOCK.</b> A report is
+    /// evidence: it is opened again in a review months later, beside a decision somebody already took. Ageing
+    /// measured from "now" answers differently every time the page loads, so the same period stops matching the
+    /// copy that was printed. This function takes no clock and reads none — that is what makes the answer
+    /// repeatable, and a test calls it twice to prove it.</para>
+    ///
+    /// <para>A row is open at that instant when it was created before it and had not closed by then. Work with
+    /// no deadline is included: it is exactly the work the timeliness measure cannot speak about.</para>
+    /// </summary>
+    public static WorkReportAging AgeOpenWork(IEnumerable<WorkReportRow> openAtPeriodEnd, DateTimeOffset periodEnd)
+    {
+        ArgumentNullException.ThrowIfNull(openAtPeriodEnd);
+
+        int upTo7 = 0, from8To30 = 0, older = 0;
+
+        foreach (var row in openAtPeriodEnd)
+        {
+            var days = (periodEnd - row.CreatedAt).TotalDays;
+            if (days <= 7)
+            {
+                upTo7++;
+            }
+            else if (days <= 30)
+            {
+                from8To30++;
+            }
+            else
+            {
+                older++;
+            }
+        }
+
+        return new WorkReportAging(upTo7, from8To30, older);
+    }
+
+    /// <summary>Whether a row was still open at <paramref name="instant"/> — created before it, closed after it or not at all.</summary>
+    public static bool OpenAt(WorkReportRow row, DateTimeOffset instant)
+    {
+        ArgumentNullException.ThrowIfNull(row);
+
+        return row.CreatedAt < instant
+            && (row.CompletedAt is null || row.CompletedAt >= instant)
+            && (row.CancelledAt is null || row.CancelledAt >= instant);
     }
 
     private static bool In(DateTimeOffset? at, DateTimeOffset from, DateTimeOffset to) =>

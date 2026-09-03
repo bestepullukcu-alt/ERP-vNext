@@ -136,7 +136,16 @@
             <div class="card-body p-4">
                 <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["CycleTimeTitle"]</h6>
                 <p class="h4 mb-1" data-wr-cycle-value></p>
+                @* MEDIAN BESIDE THE AVERAGE, never instead of it — a large gap between them says "there is a
+                   tail", which is the finding. Either number alone invites the wrong decision. *@
+                <p class="text-muted small mb-0" data-wr-cycle-median></p>
                 <p class="text-muted small mb-0" data-wr-cycle-over></p>
+                @* Direction against the previous period. Drawn from two real numbers the server measured, not
+                   from a pre-computed arrow nobody can check. *@
+                <p class="small mb-0" data-wr-cycle-trend hidden></p>
+                @* ⚠ CANCELLATIONS READ SEPARATELY. Averaged into the line above they turned "how long our work
+                   takes" into "how long before we gave up" — the defect this slice repairs. *@
+                <p class="text-muted small mb-0 mt-2" data-wr-cancel-value hidden></p>
             </div>
         </section>
     </div>
@@ -145,6 +154,7 @@
             <div class="card-body p-4">
                 <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["ReworkTitle"]</h6>
                 <p class="h4 mb-1" data-wr-rework-tasks></p>
+                <p class="small mb-0" data-wr-rework-trend hidden></p>
                 <p class="text-muted small mb-0" data-wr-rework-returns></p>
             </div>
         </section>
@@ -154,6 +164,9 @@
             <div class="card-body p-4">
                 <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["UnattendedTitle"]</h6>
                 <p class="h4 mb-1" data-wr-unattended-value></p>
+                @* AGEING — open work at the PERIOD'S END, so the same period says the same thing months later.
+                   It sits in this card because it answers the same question the card asks: what is waiting. *@
+                <p class="small mb-0 mt-2" data-wr-aging hidden></p>
                 <p class="text-muted small mb-0">@Localizer["UnattendedHint"]</p>
             </div>
         </section>
@@ -185,6 +198,7 @@
                 <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["FlowTitle"]</h6>
                 <p class="text-muted small mb-3">@Localizer["FlowQuestion"]</p>
                 <div data-wr-chart-flow></div>
+                <p class="small mb-0 mt-2" data-wr-flow-trend hidden></p>
             </div>
         </section>
     </div>
@@ -204,6 +218,7 @@
                 <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["TimelinessTitle"]</h6>
                 <p class="text-muted small mb-3">@Localizer["TimelinessQuestion"]</p>
                 <div data-wr-chart-timeliness></div>
+                <p class="small mb-0 mt-2" data-wr-late-trend hidden></p>
             </div>
         </section>
     </div>

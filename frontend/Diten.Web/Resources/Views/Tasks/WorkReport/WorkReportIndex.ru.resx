@@ -53,6 +53,12 @@
   <data name="EffortHours" xml:space="preserve"><value>{0} ч оценка · {1} ч затрачено</value></data>
   <data name="EffortOver" xml:space="preserve"><value>по {0} задачам</value></data>
   <data name="EffortHint" xml:space="preserve"><value>Сигнал о ПЛАНЕ, а не о человеке.</value></data>
+  <data name="CycleTimeMedian" xml:space="preserve"><value>медиана {0}</value></data>
+  <data name="CancelTime" xml:space="preserve"><value>До отмены: в среднем {0} · медиана {1} (отменено: {2})</value></data>
+  <data name="AgingBuckets" xml:space="preserve"><value>Возраст незакрытой работы — 0-7 дней: {0} · 8-30 дней: {1} · 30+ дней: {2}</value></data>
+  <data name="TrendSame" xml:space="preserve"><value>как в предыдущем периоде</value></data>
+  <data name="TrendUp" xml:space="preserve"><value>+{0} к предыдущему периоду (было {1})</value></data>
+  <data name="TrendDown" xml:space="preserve"><value>-{0} к предыдущему периоду (было {1})</value></data>
   <data name="NotMeasured" xml:space="preserve"><value>Не измерено</value></data>
   <data name="GroupByLegalEntity" xml:space="preserve"><value>Компания</value></data>
   <data name="GroupUnassigned" xml:space="preserve"><value>Компания неизвестна</value></data>

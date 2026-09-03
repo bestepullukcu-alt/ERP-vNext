@@ -131,21 +131,88 @@
         show('[data-wr-scope]', true);
     };
 
-    var renderTiles = function (totals) {
+    /*
+     * ── DIRECTION AGAINST THE PREVIOUS PERIOD ────────────────────────────────────────────────────────────
+     *
+     * Computed from TWO NUMBERS THE SERVER MEASURED, never from an arrow it pre-computed — a reader can check
+     * a difference between two figures on screen and cannot check an arrow.
+     *
+     * ⚠ AND THE SCREEN NEVER WORKS OUT WHICH DAYS "PREVIOUS" MEANS. That definition lives once, in
+     * `WorkReportRepository.PreviousPeriod`; a second copy here would drift by a day the first time somebody
+     * reasoned about month lengths, and then two figures on this page would disagree.
+     */
+    var trend = function (selector, current, previous, lowerIsBetter) {
+        var el = $(selector);
+        if (!el) { return; }
+
+        var has = typeof current === 'number' && typeof previous === 'number';
+        el.hidden = !has;
+        if (!has) { return; }
+
+        var delta = Math.round((current - previous) * 100) / 100;
+        if (delta === 0) {
+            el.textContent = t('TrendSame');
+            el.className = 'small mb-0 text-muted';
+            return;
+        }
+
+        var up = delta > 0;
+        // "Better" is not "bigger". More work closed is good; a longer cycle time is not — so each caller says
+        // which direction it wants rather than the helper guessing from the number.
+        var good = lowerIsBetter ? !up : up;
+        el.textContent = tf(up ? 'TrendUp' : 'TrendDown', Math.abs(delta), previous);
+        el.className = 'small mb-0 ' + (good ? 'text-success' : 'text-danger');
+    };
+
+    var duration = function (value) {
+        return (value === null || value === undefined) ? t('NotMeasured') : tf('CycleTimeDays', value);
+    };
+
+    var renderTiles = function (totals, previous) {
         var cycle = totals.cycleTime || {};
         // Absent, not zero: the API sends null when nothing closed, because a zero reads as "everything closed
         // instantly" — the most flattering lie a report can tell.
-        setText('[data-wr-cycle-value]',
-            cycle.averageDays === null || cycle.averageDays === undefined
-                ? t('NotMeasured')
-                : tf('CycleTimeDays', cycle.averageDays));
-        setText('[data-wr-cycle-over]', tf('CycleTimeOver', cycle.closedCount || 0));
+        setText('[data-wr-cycle-value]', duration(cycle.averageDays));
+        setText('[data-wr-cycle-median]', tf('CycleTimeMedian', duration(cycle.medianDays)));
+        // ⚠ THE DENOMINATOR THE AVERAGE WAS ACTUALLY COMPUTED OVER — see WorkReportDuration.Count.
+        setText('[data-wr-cycle-over]', tf('CycleTimeOver', cycle.count || 0));
+        trend('[data-wr-cycle-trend]', cycle.averageDays, (previous && (previous.cycleTime || {}).averageDays), true);
+
+        /*
+         * The cancellation span, on its own line. Hidden when nothing was cancelled rather than shown as a
+         * zero — "we abandoned work after 0 days" is a sentence nobody means.
+         */
+        var cancel = totals.cancellationTime || {};
+        var cancelEl = $('[data-wr-cancel-value]');
+        if (cancelEl) {
+            cancelEl.hidden = !(cancel.count > 0);
+            if (cancel.count > 0) {
+                cancelEl.textContent = tf('CancelTime', duration(cancel.averageDays), duration(cancel.medianDays), cancel.count);
+            }
+        }
 
         var rework = totals.rework || {};
         setText('[data-wr-rework-tasks]', tf('ReworkTasks', rework.tasksReturned || 0));
         setText('[data-wr-rework-returns]', tf('ReworkReturns', rework.totalReturns || 0));
 
+        setText('[data-wr-rework-trend]', '');
+        trend('[data-wr-rework-trend]', (totals.rework || {}).totalReturns,
+            (previous && (previous.rework || {}).totalReturns), true);
+
         setText('[data-wr-unattended-value]', String((totals.flow || {}).unattended || 0));
+
+        /*
+         * AGEING — measured at the PERIOD'S END, which is what makes the report evidence: the same period says
+         * the same thing when it is reopened in a review months later. Hidden when nothing was open.
+         */
+        var aging = totals.aging || {};
+        var agingTotal = (aging.upTo7Days || 0) + (aging.from8To30Days || 0) + (aging.olderThan30Days || 0);
+        var agingEl = $('[data-wr-aging]');
+        if (agingEl) {
+            agingEl.hidden = agingTotal === 0;
+            agingEl.textContent = tf('AgingBuckets',
+                aging.upTo7Days || 0, aging.from8To30Days || 0, aging.olderThan30Days || 0);
+        }
 
         var effort = totals.effort || {};
         /*
@@ -309,13 +376,26 @@
             destroyAll();
             show('[data-wr-tiles]', false);
             show('[data-wr-charts]', false);
+            // The trend and ageing lines live inside hidden cards, but they are hidden in their own right too:
+            // a stale arrow surviving into an empty period would be a number about nothing.
+            ['[data-wr-cycle-trend]', '[data-wr-cancel-value]', '[data-wr-rework-trend]',
+             '[data-wr-aging]', '[data-wr-flow-trend]', '[data-wr-late-trend]']
+                .forEach(function (sel) { show(sel, false); });
             setText('[data-wr-status]',
                 report.scopeApplied === 'tenant' ? t('NoData') : t('NoDataScoped'));
             return;
         }
 
         setText('[data-wr-status]', '');
-        renderTiles(totals);
+
+        // The previous period's TOTALS, when one was asked for. Null — not a bucket of zeroes — when it was
+        // not, so the screen draws no arrow rather than a misleading downward one.
+        var previous = report.previous && report.previous.totals;
+
+        renderTiles(totals, previous);
+        trend('[data-wr-flow-trend]', (totals.flow || {}).closed, previous && (previous.flow || {}).closed, false);
+        trend('[data-wr-late-trend]', (totals.timeliness || {}).late,
+            previous && (previous.timeliness || {}).late, true);
         show('[data-wr-charts]', true);
         renderFlow(totals.flow || {});
         renderOutcomes(totals.outcomes);
@@ -371,7 +451,9 @@
         var url = ENDPOINT
             + '?from=' + encodeURIComponent(q.from + 'T00:00:00Z')
             + '&to=' + encodeURIComponent(q.to + 'T00:00:00Z')
-            + '&groupBy=' + encodeURIComponent(q.groupBy);
+            + '&groupBy=' + encodeURIComponent(q.groupBy)
+            // The SERVER decides which days "previous" means. Asking for it is all the screen does.
+            + '&comparePrevious=true';
 
         // Only what was actually chosen travels: an empty parameter is not "match nothing", it is "not asked",
         // and the server's contract says so by making every filter nullable.

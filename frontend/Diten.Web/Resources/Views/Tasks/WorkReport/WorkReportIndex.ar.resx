@@ -53,6 +53,12 @@
   <data name="EffortHours" xml:space="preserve"><value>{0} ساعة مقدَّرة · {1} ساعة مُنفَقة</value></data>
   <data name="EffortOver" xml:space="preserve"><value>على {0} مهمة</value></data>
   <data name="EffortHint" xml:space="preserve"><value>مؤشّر على الخطة، لا على شخص.</value></data>
+  <data name="CycleTimeMedian" xml:space="preserve"><value>الوسيط {0}</value></data>
+  <data name="CancelTime" xml:space="preserve"><value>حتى الإلغاء: المتوسط {0} · الوسيط {1} ({2} ملغاة)</value></data>
+  <data name="AgingBuckets" xml:space="preserve"><value>عمر العمل المفتوح — 0-7 أيام: {0} · 8-30 يومًا: {1} · أكثر من 30 يومًا: {2}</value></data>
+  <data name="TrendSame" xml:space="preserve"><value>مثل الفترة السابقة</value></data>
+  <data name="TrendUp" xml:space="preserve"><value>+{0} مقارنة بالفترة السابقة (كانت {1})</value></data>
+  <data name="TrendDown" xml:space="preserve"><value>-{0} مقارنة بالفترة السابقة (كانت {1})</value></data>
   <data name="NotMeasured" xml:space="preserve"><value>غير مقيس</value></data>
   <data name="GroupByLegalEntity" xml:space="preserve"><value>الشركة</value></data>
   <data name="GroupUnassigned" xml:space="preserve"><value>الشركة غير معروفة</value></data>

@@ -62,6 +62,65 @@ public sealed class WorkReportRepository : IWorkReportRepository
     {
         ArgumentNullException.ThrowIfNull(criteria);
 
+        var report = await MeasureAsync(criteria, ct);
+        if (!criteria.ComparePrevious)
+        {
+            return report;
+        }
+
+        /*
+         * ⚠ THE PREVIOUS PERIOD IS DEFINED ONCE, HERE, AND THE SCREEN NEVER COMPUTES IT.
+         *
+         * Two places answering "which days came before these" drift apart the first time somebody reasons
+         * about month lengths, inclusive ends or a leap year — and then two figures on the same page disagree
+         * with no way to tell which is right. The definition: the SAME LENGTH, immediately before, touching
+         * none of the same days — `[From − (To − From), From)`. Half-open at both ends, like every interval in
+         * this report.
+         */
+        var previousCriteria = PreviousPeriod(criteria);
+        var previous = await MeasureAsync(previousCriteria, ct);
+
+        return report with
+        {
+            Previous = new WorkReportComparison(previousCriteria.From, previousCriteria.To, previous.Totals)
+        };
+    }
+
+    /// <summary>
+    /// THE PERIOD IMMEDIATELY BEFORE THIS ONE — the single definition, named so a test can call it.
+    ///
+    /// <para><b>⚠ EXTRACTED FOR THE SAME REASON <see cref="BuildMatchFilter"/> WAS.</b> A test that worked the
+    /// arithmetic out for itself would prove the TEST's idea of "previous", not this one — the exact gap that
+    /// let a scope-dropping edit pass 47 green tests in Dilim 1a. Production calls this; so does the guard.</para>
+    ///
+    /// <para><b>The definition:</b> <c>[From − (To − From), From)</c> — the SAME LENGTH, immediately before,
+    /// sharing no day. Half-open at both ends like every interval in this report, so the two halves are
+    /// comparable and disjoint, which is the only thing that makes a direction drawn from them mean anything.
+    /// A client computing this for itself would drift by a day the first time somebody reasoned about month
+    /// lengths, and then two figures on one page would disagree with no way to tell which was right.</para>
+    /// </summary>
+    internal static WorkReportCriteria PreviousPeriod(WorkReportCriteria criteria)
+    {
+        ArgumentNullException.ThrowIfNull(criteria);
+
+        var length = criteria.To - criteria.From;
+
+        return criteria with
+        {
+            From = criteria.From - length,
+            To = criteria.From,
+            // One level only: the comparison does not itself want a comparison, and asking for one would
+            // recurse a period at a time until the epoch.
+            ComparePrevious = false,
+            // Groups are not compared in this slice — the totals are what a direction is drawn from, and
+            // measuring fifty groups twice to show one arrow is work nobody asked for.
+            GroupBy = WorkReportGroupBy.None
+        };
+    }
+
+    private async Task<WorkReportDto> MeasureAsync(WorkReportCriteria criteria, CancellationToken ct)
+    {
+
         /*
          * ⚠ THE SECOND LOCK ON THE SAME DOOR. The handler short-circuits an empty scope before it ever gets
          * here — and this checks again anyway, because "no scope" reaching a query builder is one careless
@@ -164,7 +223,12 @@ public sealed class WorkReportRepository : IWorkReportRepository
          * database happens to be up is a report whose sums are not verified.
          */
         return WorkReportTally.Build(
-            criteria, rows, unattended, returnsByTask, await LabelsAsync(criteria, rows, units, types, ct));
+            criteria,
+            rows,
+            unattended,
+            returnsByTask,
+            await LabelsAsync(criteria, rows, units, types, ct),
+            await OpenAtPeriodEndAsync(scoped, criteria, units, types, ct));
     }
 
     /// <summary>
@@ -309,6 +373,78 @@ public sealed class WorkReportRepository : IWorkReportRepository
         }
 
         return clauses.Count == 0 ? Builders<TaskItem>.Filter.Empty : Builders<TaskItem>.Filter.And(clauses);
+    }
+
+
+    /// <summary>
+    /// The work that was STILL OPEN at the end of the period — ageing's own row set.
+    ///
+    /// <para><b>⚠ A SEPARATE READ, AND IT HAS TO BE.</b> The report's main query matches work TOUCHED in the
+    /// period — created or closed inside it. A task raised last year and still untouched matches NEITHER
+    /// clause, and it is precisely the task ageing exists to surface. Deriving ageing from the period's rows
+    /// would show a clean backlog on the tenant with the worst one.</para>
+    ///
+    /// <para>Bounded by the same scope and the same filter as everything else, and projected to the four fields
+    /// ageing and grouping need — never the whole task.</para>
+    /// </summary>
+    private async Task<IReadOnlyList<WorkReportRow>> OpenAtPeriodEndAsync(
+        FilterDefinition<TaskItem> scoped,
+        WorkReportCriteria criteria,
+        IReadOnlyDictionary<Guid, OrganizationUnit> units,
+        IReadOnlyDictionary<Guid, Domain.Entities.Tasks.TaskType> types,
+        CancellationToken ct)
+    {
+        /*
+         * OPEN AT AN INSTANT: created before it, and not closed by then. Expressed against the stored
+         * timestamps rather than the lifecycle enum, because a task closed AFTER the period was open DURING it
+         * — the enum only knows about today.
+         */
+        var openThen = Builders<TaskItem>.Filter.And(
+            scoped,
+            DirectFilter(criteria.Filter),
+            Builders<TaskItem>.Filter.Lt(x => x.CreatedAt, criteria.To),
+            Builders<TaskItem>.Filter.Or(
+                Builders<TaskItem>.Filter.Eq(x => x.CompletedAt, (DateTimeOffset?)null),
+                Builders<TaskItem>.Filter.Gte(x => x.CompletedAt, criteria.To)),
+            Builders<TaskItem>.Filter.Or(
+                Builders<TaskItem>.Filter.Eq(x => x.CancelledAt, (DateTimeOffset?)null),
+                Builders<TaskItem>.Filter.Gte(x => x.CancelledAt, criteria.To)));
+
+        var rows = await _tasks.Aggregate()
+            .Match(openThen)
+            .Project(task => new
+            {
+                task.Id,
+                task.CreatedAt,
+                task.OrganizationUnitId,
+                task.TaskTypeId,
+                task.AssigneeUserId,
+                task.Priority
+            })
+            .ToListAsync(ct);
+
+        return rows
+            .Select(row => new WorkReportRow(
+                row.Id,
+                row.TaskTypeId,
+                row.OrganizationUnitId,
+                row.AssigneeUserId,
+                CreatedByUserId: null,
+                PoolPositionId: null,
+                row.Priority,
+                row.CreatedAt,
+                CompletedAt: null,
+                CancelledAt: null,
+                DueAt: null,
+                EstimateHours: null,
+                SpentHours: 0m,
+                ClosureReasonCode: null,
+                Lifecycle: TaskLifecycle.Open,
+                LegalEntityId: units.TryGetValue(row.OrganizationUnitId, out var unit) ? unit.LegalEntityId : null,
+                TaskTypeCode: row.TaskTypeId is { } typeId && types.TryGetValue(typeId, out var type) ? type.Code : null))
+            // The derived half of the filter, same as the main read: company and type code are not task columns.
+            .Where(row => WorkReportTally.MatchesFilter(criteria.Filter, row))
+            .ToList();
     }
 
     /// <summary>

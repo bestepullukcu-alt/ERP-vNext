@@ -22,7 +22,8 @@ public sealed record WorkReportQuery(
     DateTimeOffset To,
     WorkReportGroupBy GroupBy,
     string CorrelationId,
-    WorkReportFilter? Filter = null)
+    WorkReportFilter? Filter = null,
+    bool ComparePrevious = false)
     : IRequest<Response<WorkReportDto>>;
 
 /// <summary>
@@ -112,7 +113,8 @@ public sealed class WorkReportQueryHandler : IRequestHandler<WorkReportQuery, Re
          * naming somebody else's id narrows an already-narrowed set to nothing rather than reaching past it.
          * There is no arrangement of these two in which the filter grants anything.
          */
-        var criteria = new WorkReportCriteria(query.From, query.To, scope, query.GroupBy, query.Filter);
+        var criteria = new WorkReportCriteria(
+            query.From, query.To, scope, query.GroupBy, query.Filter, query.ComparePrevious);
         var report = await _reports.AggregateAsync(criteria, ct);
 
         return Response<WorkReportDto>.Success(report, 200, query.CorrelationId);

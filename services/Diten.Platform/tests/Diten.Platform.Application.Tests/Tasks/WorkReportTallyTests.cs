@@ -130,14 +130,88 @@ public sealed class WorkReportTallyTests
     // ── Cycle time ───────────────────────────────────────────────────────────────────────────────────────
 
     [Fact]
-    public void Cycle_time_averages_creation_to_closure_over_the_tasks_CLOSED_in_the_period()
+    public void Cycle_time_measures_COMPLETIONS_ONLY_and_reports_a_median_beside_the_average()
     {
-        // 4 + 10 + 1 + 20 = 35 days over 4 closed tasks. T5 spans the period boundary and still counts in
-        // full — the work took twenty days regardless of which month it started in.
+        /*
+         * ⚠ THIS EXPECTATION CHANGED, AND THE CHANGE IS THE FIX (K-1).
+         *
+         * It used to be 8.75 over 4 — completions AND the cancellation averaged together, so a task somebody
+         * abandoned counted as "how long our work takes". Completions only now: T1=4, T2=10, T5=20.
+         *
+         *   average = (4 + 10 + 20) / 3 = 11.33
+         *   median  = middle of [4, 10, 20] = 10
+         *
+         * T5 spans the period boundary and still counts in full — the work took twenty days regardless of
+         * which month it started in.
+         */
         var cycle = Totals().CycleTime;
 
-        Assert.Equal(8.75, cycle.AverageDays);
-        Assert.Equal(4, cycle.ClosedCount);
+        Assert.Equal(11.33, cycle.AverageDays);
+        Assert.Equal(10, cycle.MedianDays);
+        Assert.Equal(3, cycle.Count);
+    }
+
+    [Fact]
+    public void Cancellations_get_their_OWN_duration_rather_than_being_averaged_in_or_thrown_away()
+    {
+        /*
+         * "How long before we admitted this wasn't happening" is a finding, not noise. T3 was called off after
+         * one day — the only cancellation in the fixture.
+         */
+        var cancelled = Totals().CancellationTime;
+
+        Assert.Equal(1, cancelled.AverageDays);
+        Assert.Equal(1, cancelled.MedianDays);
+        Assert.Equal(1, cancelled.Count);
+
+        // NON-VACUITY: the two are genuinely different numbers, so this is a split and not a copy.
+        Assert.NotEqual(Totals().CycleTime.AverageDays, cancelled.AverageDays);
+    }
+
+    [Fact]
+    public void The_median_is_the_MIDDLE_and_the_average_is_dragged_by_the_tail()
+    {
+        /*
+         * The reason both travel. Durations are skewed: one parked task moves a mean nobody recognises, while
+         * the median says what a typical task actually took. The gap between them IS the finding.
+         *
+         *   1 · 2 · 3 · 4 · 90   →   average 20   ·   median 3
+         */
+        /*
+         * ⚠ A WIDE WINDOW ON PURPOSE. June alone cannot hold a ninety-day span, and the first version of this
+         * test built `June(91)` and threw — the closure has to land INSIDE the period or it is not a closure
+         * the period counts, which is the very rule the flow tests pin.
+         */
+        var start = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var wide = new WorkReportCriteria(start, start.AddYears(1), WorkReportScope.TenantWideScope());
+
+        var spans = new[] { 1, 2, 3, 4, 90 }
+            .Select(d => Row(Guid.NewGuid(), UnitA, TypeX, start, completed: start.AddDays(d)))
+            .ToArray();
+
+        var cycle = WorkReportTally.Build(wide, spans, 0, Returns).Totals.CycleTime;
+
+        Assert.Equal(20, cycle.AverageDays);
+        Assert.Equal(3, cycle.MedianDays);
+        Assert.Equal(5, cycle.Count);
+    }
+
+    [Fact]
+    public void An_EVEN_number_of_durations_takes_the_mean_of_the_middle_two()
+    {
+        /*
+         * The standard definition, stated because it is exactly what two implementations quietly disagree
+         * about — one taking the lower middle, the other the mean — and the difference shows up later as a
+         * number nobody can reproduce. [2, 4, 6, 10] → middle two are 4 and 6 → 5.
+         */
+        var start = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var wide = new WorkReportCriteria(start, start.AddYears(1), WorkReportScope.TenantWideScope());
+
+        var spans = new[] { 2, 4, 6, 10 }
+            .Select(d => Row(Guid.NewGuid(), UnitA, TypeX, start, completed: start.AddDays(d)))
+            .ToArray();
+
+        Assert.Equal(5, WorkReportTally.Build(wide, spans, 0, Returns).Totals.CycleTime.MedianDays);
     }
 
     [Fact]
@@ -152,23 +226,31 @@ public sealed class WorkReportTallyTests
         var cycle = WorkReportTally.Build(Criteria(), open, 0, Returns).Totals.CycleTime;
 
         Assert.Null(cycle.AverageDays);
-        Assert.Equal(0, cycle.ClosedCount);
+        Assert.Null(cycle.MedianDays);
+        Assert.Equal(0, cycle.Count);
     }
 
     [Fact]
-    public void A_closure_stamped_before_its_creation_is_excluded_rather_than_clamped()
+    public void A_closure_stamped_before_its_creation_is_excluded_AND_the_count_says_so()
     {
         /*
          * Corrupt, not fast. Clamping to zero would drag the average toward a number that reads as a very
-         * efficient team — the row is dropped from the AVERAGE while still counting as closed, so the
-         * denominator on screen shows the discrepancy instead of hiding it.
+         * efficient team, so the row is dropped from the average entirely.
+         *
+         * ⚠ AND THE COUNT DROPS WITH IT — THIS EXPECTATION CHANGED (K-2). It used to assert 1: the report said
+         * "over 1 closed" beside an average computed over nothing. The stated denominator is now the one the
+         * numbers were actually computed over, because an average whose denominator is not its own cannot be
+         * checked by the person reading it. The row still counts as CLOSED in the flow — that number is
+         * untouched, and the two are allowed to differ precisely because each says what it measured.
          */
         var corrupt = new[] { Row(T1, UnitA, TypeX, June(10), completed: June(5)) };
+        var report = WorkReportTally.Build(Criteria(), corrupt, 0, Returns);
 
-        var cycle = WorkReportTally.Build(Criteria(), corrupt, 0, Returns).Totals.CycleTime;
+        Assert.Null(report.Totals.CycleTime.AverageDays);
+        Assert.Equal(0, report.Totals.CycleTime.Count);
 
-        Assert.Null(cycle.AverageDays);
-        Assert.Equal(1, cycle.ClosedCount);
+        // The closure itself is not denied — only its impossible duration is.
+        Assert.Equal(1, report.Totals.Flow.Closed);
     }
 
     // ── Timeliness ───────────────────────────────────────────────────────────────────────────────────────

@@ -53,6 +53,12 @@
   <data name="EffortHours" xml:space="preserve"><value>{0} sa tahmin · {1} sa harcanan</value></data>
   <data name="EffortOver" xml:space="preserve"><value>{0} görev üzerinden</value></data>
   <data name="EffortHint" xml:space="preserve"><value>PLANA dair bir gösterge, kişiye dair değil.</value></data>
+  <data name="CycleTimeMedian" xml:space="preserve"><value>ortanca {0}</value></data>
+  <data name="CancelTime" xml:space="preserve"><value>İptale kadar: ortalama {0} · ortanca {1} ({2} iptal)</value></data>
+  <data name="AgingBuckets" xml:space="preserve"><value>Açık işin yaşı — 0-7 gün: {0} · 8-30 gün: {1} · 30+ gün: {2}</value></data>
+  <data name="TrendSame" xml:space="preserve"><value>önceki dönemle aynı</value></data>
+  <data name="TrendUp" xml:space="preserve"><value>önceki döneme göre +{0} (önceki: {1})</value></data>
+  <data name="TrendDown" xml:space="preserve"><value>önceki döneme göre -{0} (önceki: {1})</value></data>
   <data name="NotMeasured" xml:space="preserve"><value>Ölçülmedi</value></data>
   <data name="GroupByLegalEntity" xml:space="preserve"><value>Şirket</value></data>
   <data name="GroupUnassigned" xml:space="preserve"><value>Şirketi belirsiz</value></data>

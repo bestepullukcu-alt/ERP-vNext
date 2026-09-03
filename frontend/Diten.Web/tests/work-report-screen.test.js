@@ -21,6 +21,12 @@ const resx = (lang) =>
 
 /** The l10n island the view renders, with the key casing MVC's serializer produces. */
 const LABELS = {
+  cycleTimeMedian: "median {0}",
+  cancelTime: "Until cancelled: average {0} · median {1} ({2} cancelled)",
+  agingBuckets: "Age of open work — 0-7 days: {0} · 8-30 days: {1} · 30+ days: {2}",
+  trendSame: "same as the previous period",
+  trendUp: "+{0} against the previous period (was {1})",
+  trendDown: "-{0} against the previous period (was {1})",
   scopeScoped: "Your scope",
   scopeTenant: "Whole tenant",
   scopeScopedHint: "Counts only the work you are entitled to see.",
@@ -78,9 +84,10 @@ const MARKUP = `
   <div data-wr-scope hidden><span data-wr-scope-badge></span><span data-wr-scope-hint></span></div>
   <p data-wr-status></p>
   <div data-wr-tiles hidden>
-    <p data-wr-cycle-value></p><p data-wr-cycle-over></p>
-    <p data-wr-rework-tasks></p><p data-wr-rework-returns></p>
-    <p data-wr-unattended-value></p>
+    <p data-wr-cycle-value></p><p data-wr-cycle-median></p><p data-wr-cycle-over></p>
+    <p data-wr-cycle-trend hidden></p><p data-wr-cancel-value hidden></p>
+    <p data-wr-rework-tasks></p><p data-wr-rework-returns></p><p data-wr-rework-trend hidden></p>
+    <p data-wr-unattended-value></p><p data-wr-aging hidden></p>
     <p data-wr-effort-value></p><p data-wr-effort-over></p>
   </div>
   <select id="wrLegalEntity"><option value="">Any</option></select>
@@ -89,9 +96,9 @@ const MARKUP = `
   <select id="wrAssignee"><option value="">Any</option></select>
   <select id="wrPriority"><option value="">Any</option></select>
   <div data-wr-charts hidden>
-    <div data-wr-chart-flow></div>
+    <div data-wr-chart-flow></div><p data-wr-flow-trend hidden></p>
     <div data-wr-chart-outcomes></div><p data-wr-outcomes-empty hidden></p>
-    <div data-wr-chart-timeliness></div>
+    <div data-wr-chart-timeliness></div><p data-wr-late-trend hidden></p>
     <div data-wr-groups-card hidden><h6 data-wr-groups-title></h6><div data-wr-chart-groups></div>
       <p data-wr-groups-truncated hidden></p></div>
   </div>
@@ -125,7 +132,9 @@ const bucket = (over) => Object.assign({
   key: null,
   label: null,
   flow: { opened: 0, closed: 0, completed: 0, cancelled: 0, unattended: 0 },
-  cycleTime: { averageDays: null, closedCount: 0 },
+  cycleTime: { averageDays: null, medianDays: null, count: 0 },
+  cancellationTime: { averageDays: null, medianDays: null, count: 0 },
+  aging: { upTo7Days: 0, from8To30Days: 0, olderThan30Days: 0 },
   timeliness: { onTime: 0, late: 0, withoutDueDate: 0 },
   effort: { estimatedHours: 0, spentHours: 0, taskCount: 0 },
   outcomes: [],
@@ -138,16 +147,19 @@ const report = (over) => Object.assign({
   scopeApplied: "scoped",
   groupBy: "None",
   totals: bucket(),
-  groups: []
+  groups: [],
+  groupsTruncated: 0,
+  previous: null
 }, over || {});
 
 /** A period with real work in it — the fixture every "presence first" assertion leans on. */
 const busy = (over) => report(Object.assign({
   totals: bucket({
     flow: { opened: 12, closed: 9, completed: 7, cancelled: 2, unattended: 4 },
-    cycleTime: { averageDays: 8.75, closedCount: 9 },
+    cycleTime: { averageDays: 11.33, medianDays: 10, count: 7 },
+    cancellationTime: { averageDays: 8.75, medianDays: 8, count: 2 },
     timeliness: { onTime: 5, late: 3, withoutDueDate: 1 },
-    effort: { estimatedHours: 40, spentHours: 52, taskCount: 6 },
+    effort: { estimatedHours: 40, spentHours: 60, taskCount: 6 },
     outcomes: [{ code: "COMPLETED_AS_REQUESTED", count: 6 }, { code: "CANCELLED_SUPERSEDED", count: 2 }],
     rework: { tasksReturned: 3, totalReturns: 5 }
   })
@@ -300,10 +312,14 @@ describe("(d) no efficiency percentage is computed anywhere", () => {
     const screen = boot();
     screen.render(busy());
 
-    expect(text("[data-wr-effort-value]")).toBe("40 h estimated · 52 h spent");
+    expect(text("[data-wr-effort-value]")).toBe("40 h estimated · 60 h spent");
     expect(text("[data-wr-effort-over]")).toBe("over 6 tasks");
-    // 52/40 = 1.3 — the number a ratio would produce, and it must appear nowhere.
-    expect(document.body.textContent).not.toMatch(/1\.3|130\s*%|0\.77/);
+    /*
+     * 60/40 = 1.5 — the number a ratio would produce, and it must appear nowhere. The hours moved from 52 to 60
+     * in Dilim 1b: 52/40 renders as 1.3, and the cycle-time average this slice put on the card is 11.33, so the
+     * old guard would have been tripped by a legitimate duration rather than by a ratio.
+     */
+    expect(document.body.textContent).not.toMatch(/1\.5|150\s*%|0\.66|0\.67/);
   });
 
   it("has no division, percentage or score in the source at all", () => {
@@ -391,7 +407,7 @@ describe("each visual answers ONE question", () => {
     screen.render(busy({
       totals: bucket({
         flow: { opened: 4, closed: 0, completed: 0, cancelled: 0, unattended: 0 },
-        cycleTime: { averageDays: null, closedCount: 0 }
+        cycleTime: { averageDays: null, medianDays: null, count: 0 }
       })
     }));
 
