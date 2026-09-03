@@ -2241,4 +2241,22 @@
   <data name="WorkAggregation_ClosureOutcome_CancelledDuplicate" xml:space="preserve">
     <value>Duplicate</value>
   </data>
+  <data name="ReturnedLabel" xml:space="preserve">
+    <value>Came back</value>
+  </data>
+  <data name="ReturnedCount" xml:space="preserve">
+    <value>Came back {0}×</value>
+  </data>
+  <data name="StepReturned" xml:space="preserve">
+    <value>This task was returned to you.</value>
+  </data>
+  <data name="StepReturnedTimes" xml:space="preserve">
+    <value>This task has been returned {0} times.</value>
+  </data>
+  <data name="StepReturnedBecause" xml:space="preserve">
+    <value>Returned to you: {0}</value>
+  </data>
+  <data name="StepReturnedTimesBecause" xml:space="preserve">
+    <value>Returned {0} times, most recently: {1}</value>
+  </data>
 </root>

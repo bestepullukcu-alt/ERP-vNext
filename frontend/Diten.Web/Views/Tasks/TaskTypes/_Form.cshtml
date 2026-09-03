@@ -1,4 +1,5 @@
 @model Diten.Web.Models.TaskTypes.TaskTypeEditViewModel
+@using Diten.Web.Models.TaskTypes
 @using Diten.Web.Views.Tasks.TaskTypes
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<TaskTypesIndex> Localizer
@@ -18,6 +19,19 @@
     {
         "QUA", "RA", "PV", "MFG", "SCM", "RND", "COM", "FIN", "HR", "LEG",
         "PRC", "ITG", "ISM", "FAC", "EHS", "PPM", "CORP", "CTY", "MED"
+    };
+
+    // The catalogue, resolved once. Empty when the gateway could not answer — the editor still works and offers
+    // custom outcomes only; see LoadSystemOutcomesAsync for why that beats refusing to render the whole page.
+    var systemOutcomes = Model.SystemOutcomes ?? [];
+    var closureOutcomes = Model.ClosureOutcomes ?? [];
+
+    // The blank row the Add button clones. `__key__` is swapped for a fresh key on clone.
+    var templateRow = new TaskTypeClosureOutcomeRow
+    {
+        RowKey = "__key__",
+        Outcome = new TaskTypeClosureOutcomeViewModel(),
+        SystemOutcomes = systemOutcomes
     };
 }
 
@@ -147,6 +161,73 @@
                     <textarea asp-for="GroupDocumentsText" class="form-control" rows="5"
                               placeholder="@Localizer["GroupDocumentsPlaceholder"]"></textarea>
                     <div class="form-text">@Localizer["GroupDocumentsHint"]</div>
+                </div>
+            </section>
+        </div>
+
+        @*
+            ── THE CLOSURE OUTCOME DICTIONARY ──────────────────────────────────────────────────────────────────
+            WHAT COUNTS AS AN ENDING for work of this type. Full width and LAST, below the two columns above,
+            because a row carries seven controls and would be unreadable in a quarter of the page.
+
+            An EMPTY dictionary is a real, common configuration: it means this type asks nothing when a task is
+            closed, which is how every type behaved before the dictionary existed and how every unconfigured type
+            still behaves today.
+        *@
+        <div class="col-12">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["ClosureOutcomesSection"]</h6>
+                    <p class="form-text mb-4">@Localizer["ClosureOutcomesHint"]</p>
+
+                    @*
+                        ⚠⚠ THIS HIDDEN FIELD IS LOAD-BEARING, AND REMOVING IT DELETES TENANT CONFIGURATION.
+
+                        The API distinguishes `closureOutcomes: null` ("not asking, leave it alone") from `[]`
+                        ("clear it"). That asymmetry exists precisely BECAUSE this form did not draw the field —
+                        without it, every save from this screen would have wiped a dictionary configured through
+                        the API, with a 302 and a success message.
+
+                        Now that the section renders, the protection moves here: a posted form with no rows is
+                        genuinely ambiguous between "I removed them all" and "this editor never appeared". The
+                        marker resolves it — PRESENT means the browser rendered the editor, so the rows below are
+                        the truth, empty included.
+
+                        Same defect shape as the GroupDocumentsText rehydration bug found live on 2026-08-26: a
+                        full-replace save, and a form that did not carry what it had to preserve.
+                    *@
+                    <input type="hidden" asp-for="ClosureOutcomesSubmitted" value="true" />
+
+                    <div data-closure-outcome-list>
+                        @for (var i = 0; i < closureOutcomes.Count; i++)
+                        {
+                            var row = new TaskTypeClosureOutcomeRow
+                            {
+                                RowKey = $"r{i}",
+                                Outcome = closureOutcomes[i],
+                                SystemOutcomes = systemOutcomes
+                            };
+                            <partial name="~/Views/Tasks/TaskTypes/_ClosureOutcomeRow.cshtml" model="row" />
+                        }
+                    </div>
+
+                    @* The empty state is a SENTENCE. "This type asks nothing" is a configuration, and a reader
+                       should not have to infer it from a blank area. *@
+                    <p class="text-muted mb-3 @(closureOutcomes.Count > 0 ? "d-none" : "")"
+                       data-closure-outcome-empty>@Localizer["ClosureOutcomesEmpty"]</p>
+
+                    <button type="button" class="btn btn-label-primary" data-closure-outcome-add>
+                        <i class="bx bx-plus me-1"></i>@Localizer["ClosureOutcomeAdd"]
+                    </button>
+
+                    @*
+                        The blank row the Add button clones — THE SAME PARTIAL, so there is one definition of a
+                        row. `__key__` is replaced with a fresh key on clone; inside <template> nothing is parsed
+                        as a form control, so the placeholder never reaches the model binder.
+                    *@
+                    <template data-closure-outcome-template>
+                        <partial name="~/Views/Tasks/TaskTypes/_ClosureOutcomeRow.cshtml" model="templateRow" />
+                    </template>
                 </div>
             </section>
         </div>

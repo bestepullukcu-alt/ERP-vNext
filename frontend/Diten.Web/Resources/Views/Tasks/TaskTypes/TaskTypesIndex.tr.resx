@@ -115,4 +115,52 @@
   <data name="DocListWithdrawReasonRequired" xml:space="preserve"><value>Geri çekme için gerekçe gerekli.</value></data>
   <data name="DocListWithdrawSubtext" xml:space="preserve"><value>{0} sürümü artık görevlerin atıf yapabileceği liste olmaktan çıkar. Silinmez, işaretlenir; önceki atıflar okunur kalır.</value></data>
   <data name="DocListImportDenied" xml:space="preserve"><value>Bu listeyi okuyabilirsiniz ama içe aktaramazsınız.</value></data>
+  <data name="ClosureOutcomesSection" xml:space="preserve">
+    <value>Kapanış sonuçları</value>
+  </data>
+  <data name="ClosureOutcomesHint" xml:space="preserve">
+    <value>Bu tipteki işin nasıl bitmiş sayılacağı. Boş bırakırsanız görev kapatılırken hiçbir şey sorulmaz — yapılandırılmamış her tip bugün böyle davranır.</value>
+  </data>
+  <data name="ClosureOutcomesEmpty" xml:space="preserve">
+    <value>Tanımlı sonuç yok — bu tipte bir görev kapatılırken hiçbir şey sorulmaz.</value>
+  </data>
+  <data name="ClosureOutcomeAdd" xml:space="preserve">
+    <value>Sonuç ekle</value>
+  </data>
+  <data name="ClosureOutcomeRemove" xml:space="preserve">
+    <value>Bu sonucu kaldır</value>
+  </data>
+  <data name="ClosureOutcomeSource" xml:space="preserve">
+    <value>Sonuç</value>
+  </data>
+  <data name="ClosureOutcomeSourceCustom" xml:space="preserve">
+    <value>Kendim yazacağım</value>
+  </data>
+  <data name="ClosureOutcomeCode" xml:space="preserve">
+    <value>Kod</value>
+  </data>
+  <data name="ClosureOutcomeCodePlaceholder" xml:space="preserve">
+    <value>örn. COZULDU</value>
+  </data>
+  <data name="ClosureOutcomeLabel" xml:space="preserve">
+    <value>Etiket</value>
+  </data>
+  <data name="ClosureOutcomeLabelPlaceholder" xml:space="preserve">
+    <value>Kullanıcının göreceği ifade</value>
+  </data>
+  <data name="ClosureOutcomeDisposition" xml:space="preserve">
+    <value>Ne zaman sunulur</value>
+  </data>
+  <data name="ClosureOutcomeSortOrder" xml:space="preserve">
+    <value>Sıra</value>
+  </data>
+  <data name="ClosureOutcomeRequiresReason" xml:space="preserve">
+    <value>Gerekçe ister</value>
+  </data>
+  <data name="ClosureDispositionCompleted" xml:space="preserve">
+    <value>Tamamlarken</value>
+  </data>
+  <data name="ClosureDispositionCancelled" xml:space="preserve">
+    <value>İptal ederken</value>
+  </data>
 </root>

@@ -1472,6 +1472,35 @@
 
     // ── Row (shared by List / Split / Focus) ──────────────────────────────────
     const isBlocked = (item) => !!(item.blockedState && item.blockedState.blocked);
+
+    /*
+     * ── THE RETURN SIGNAL ────────────────────────────────────────────────────────────────────────────────
+     *
+     * Read through helpers rather than reaching into `item.returned` at each site, for the reason this file has
+     * paid for twice (`reasonKey`, `viewerRole`): a field touched in four places by hand is a field that gets
+     * three of them right. `at` is the guard — the contract requires it whenever the block exists, so an item
+     * carrying a malformed signal draws nothing rather than an empty chip.
+     */
+    const returnedSignal = (item) => (item && item.returned && item.returned.at) ? item.returned : null;
+
+    /** The returner's own sentence, or nothing. A DISPLAY label — resolved the way every other label is. */
+    const returnedReasonText = (item) => {
+        const signal = returnedSignal(item);
+        return signal ? (data.resolveLabel(signal.reason) || '') : '';
+    };
+
+    /*
+     * The chip's word, with the count only once it means something.
+     *
+     * A single return is the common case and "1" beside it is noise; from the second, the number IS the story —
+     * it is the same count the rework rate will be built from (Faz 5), shown where the work is rather than
+     * waiting for a report.
+     */
+    const returnedChipText = (item) => {
+        const signal = returnedSignal(item);
+        if (!signal) { return ''; }
+        return signal.count > 1 ? tf('ReturnedCount', signal.count) : t('ReturnedLabel');
+    };
     const sourceTitle = (item) => [item.sourceModuleId, item.sourceModuleName, item.sourceObjectType]
         .filter(Boolean).join(' · ');
 
@@ -1490,6 +1519,25 @@
          */
         waitingSentence(item)
             ? chip('warning', 'bx-time-five', waitingSentence(item), waitingSentence(item))
+            : '',
+        /*
+         * THIS CAME BACK TO YOU — a SIGNAL, beside the type, never a status.
+         *
+         * The row already says the work is Open, and it is: somebody has to do this. What it could not say is
+         * that it has been here before, which is the difference between a new request and one that bounced.
+         * Modelled on the blocked chip two lines up: the visible word is short, and the TOOLTIP carries the
+         * returner's own sentence — the same "chip clips, title carries the full sentence" rule the waiting chip
+         * states above.
+         *
+         * ⚠ NOT ON FINISHED WORK. A chip on this row is a triage signal, and there is nothing to triage on a
+         * task nobody has to pick up. The projection still carries the fact for a closed task (see
+         * `ToReturned`); the DETAIL page is where a finished task's history is worth reading.
+         *
+         * The count appears only from the SECOND return. "1" beside a chip that already means "this came back"
+         * says nothing the chip did not, and a number that is almost always the same number stops being read.
+         */
+        returnedSignal(item) && !isTerminal(item)
+            ? chip('warning', 'bx-undo', returnedChipText(item), returnedReasonText(item))
             : '',
         // Why the leading action cannot be used, ON the row rather than only in the button's tooltip. A blocked
         // item whose reason needs a hover reads as simply broken.
@@ -2724,11 +2772,40 @@
          * reader meeting a bare list of four items DOES need to be told what the list is. The resource key is
          * unchanged and still in all seven languages — the words moved, they were not deleted.
          */
+        /*
+         * WHY IT CAME BACK — one sentence, beside the one that says why it is paused.
+         *
+         * ⚠ A SUMMARY, NOT A SECOND NARRATIVE. The activity feed already holds the `returned` event with its
+         * actor, its timestamp and this same sentence; that row is the RECORD and stays the record. What the
+         * feed cannot do is answer the question someone opening a returned task asks first, without scrolling
+         * to find it. So this restates one fact in place and invents nothing — the same relationship the paused
+         * note above has with the waiting entry in the feed.
+         *
+         * Shown on FINISHED work too, unlike the row chip: the chip is for triage and a closed task has none,
+         * but "this came back twice before it was done" is part of what happened to it, and the detail page is
+         * where what happened is read.
+         *
+         * `wcn-step-paused` is reused rather than cloned: it is already the class for "a note under the step
+         * bar", and a second class with the same rules is how the two drift apart (FG-003 — styling lives in
+         * backbone-custom.css, and this needs no new rule).
+         */
+        const signal = returnedSignal(item);
+        const returnedReason = returnedReasonText(item);
+        const returnedNote = signal
+            ? `<p class="wcn-step-paused" role="note"><i class="bx bx-undo" aria-hidden="true"></i>${
+                esc(returnedReason
+                    ? (signal.count > 1
+                        ? tf('StepReturnedTimesBecause', signal.count, returnedReason)
+                        : tf('StepReturnedBecause', returnedReason))
+                    : (signal.count > 1 ? tf('StepReturnedTimes', signal.count) : t('StepReturned')))}</p>`
+            : '';
+
         return `<div class="wcn-detail-section wcn-stepbar">
             ${stepCaption}
             <ol class="wcn-steps${cancelled ? ' wcn-steps-cancelled' : ''}"
                 aria-label="${esc(t('StepBarLabel'))}">${rendered}</ol>
             ${paused}
+            ${returnedNote}
         </div>`;
     };
 

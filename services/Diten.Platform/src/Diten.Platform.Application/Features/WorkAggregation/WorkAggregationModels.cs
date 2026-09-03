@@ -467,6 +467,23 @@ public sealed record WorkItemProjectionDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     WorkItemClosureDto? Closure = null,
     /// <summary>
+    /// THIS WORK CAME BACK — where it came from, not what state it is in.
+    ///
+    /// <para><b>Why a signal and not a lifecycle state.</b> The return handler sets the task to <c>Open</c> and
+    /// hands it to the requester, and <c>Open</c> is the honest answer: somebody has to do this. What the
+    /// lifecycle cannot say is that it has been here before. That is ORIGIN, and this repository already sorts
+    /// those apart — tab is ownership, segment is state, chip is type and signal.</para>
+    ///
+    /// <para>The alternative was a <c>Returned</c> member on <c>TaskLifecycle</c>, and the bill is out of
+    /// proportion to the fact: a persisted enum on a document store (seven members), the frontend contract's own
+    /// list (eight), every switch over either, and every provider that maps its native status into ours — all so
+    /// a row can say where it came from.</para>
+    ///
+    /// <para>Absent for the overwhelming majority of tasks, which have never been returned.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemReturnedDto? Returned = null,
+    /// <summary>
     /// WHAT THE WORK IS, in the requester's own words.
     ///
     /// <para>Measured 2026-08-12: the detail page could say "15 days overdue" and could not say what the work
@@ -861,6 +878,34 @@ public sealed record WorkItemActivityEventDto(
 /// arrives as <c>{kind:"resource"}</c> and is translated in the reader's language, a tenant outcome as
 /// <c>{kind:"display"}</c> and is printed as typed. No third mechanism.</para>
 /// </summary>
+/// <summary>
+/// The RETURN signal — derived from the transition log, never stored on the task.
+///
+/// <para><b>Nothing new is persisted, and that is the point.</b> <c>TaskTransitionKind.Returned</c> has been
+/// recorded on every return since WC-1, carrying the actor's own sentence in <c>Reason</c>. The defect was that
+/// the projection never carried any of it: a returned task reached the inbox indistinguishable from a brand new
+/// one, so the person it came back to could not tell it HAD come back, let alone why. Measured 2026-09-03:
+/// <c>"Returned"</c> appeared in zero lines of <c>TaskWorkItemProvider</c>.</para>
+///
+/// <para><b>The reason is DISPLAY text, never a resource key.</b> It is what the returner typed, in the language
+/// they typed it in — the same rule <c>TaskTransition.Reason</c> states on the entity, and the reason this is a
+/// <see cref="WorkItemLabelDto"/> display label rather than a bare string is so the shell resolves it through the
+/// one path it resolves every other label through.</para>
+/// </summary>
+/// <param name="At">When it was LAST returned. A task returned twice tells its story from the most recent one.</param>
+/// <param name="Reason">The returner's own sentence. Absent only if a return was somehow recorded without one —
+/// the handler refuses that (<c>HandoverReasonRequired</c>), so it should not occur.</param>
+/// <param name="Count">
+/// How many times in total. The count is the raw material of the rework rate (Faz 5) and it is deliberately a
+/// COUNT here, not a rate: a rate needs a denominator and a period, and inventing either in a per-item projection
+/// would be a second answer to a question the report has not asked yet.
+/// </param>
+public sealed record WorkItemReturnedDto(
+    DateTimeOffset At,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemLabelDto? Reason,
+    int Count);
+
 /// <summary>
 /// How a work item ENDED: the stored code, and the words for it when they can still be resolved.
 ///

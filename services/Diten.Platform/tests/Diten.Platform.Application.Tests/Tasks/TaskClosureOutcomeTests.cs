@@ -1,10 +1,14 @@
 using Diten.Platform.Application.Features.Tasks;
+using Diten.Platform.Application.Features.Tasks.Handlers.QueryHandlers;
+using Diten.Platform.Application.Features.Tasks.Queries;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.Tasks;
+
+using Task = System.Threading.Tasks.Task;
 
 /// <summary>
 /// The closure outcome dictionary — what a task type accepts as an ENDING.
@@ -247,6 +251,44 @@ public sealed class TaskClosureOutcomeTests
         first.RequiresReason = !first.RequiresReason;
 
         Assert.NotEqual(first.RequiresReason, TaskClosureOutcomeCatalog.All[0].RequiresReason);
+    }
+
+    // ── The catalogue reaches the screen that needs it ──────────────────────────────────────────────────
+
+    [Fact]
+    public async Task The_catalogue_is_published_so_the_type_editor_can_offer_it()
+    {
+        /*
+         * ⚠ IT SHIPPED UNREACHABLE. `TaskClosureOutcomeCatalog` arrived with the closure slice and was consulted
+         * only from inside the service (TaskTypeRules.IsSystemCode); nothing published it. So the vocabulary this
+         * product ships was, in practice, unavailable to the one screen that would ever offer it, and a
+         * dictionary could be built only by hand through the API.
+         *
+         * The handler is the seam that fixes it, and this asserts it hands over the WHOLE catalogue — including
+         * the two fields the editor cannot work without: the resource key it renders the label from, and the
+         * default reason flag it pre-ticks.
+         */
+        var response = await new GetClosureOutcomeCatalogHandler()
+            .Handle(new GetClosureOutcomeCatalogQuery("corr"), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(TaskClosureOutcomeCatalog.All.Count, response.Data!.Count);
+
+        Assert.All(response.Data, dto =>
+        {
+            Assert.False(string.IsNullOrWhiteSpace(dto.Code));
+            // The screen renders the label from this key, through the resx the Task Center already uses.
+            Assert.StartsWith(TaskClosureOutcomeCatalog.ResourceKeyPrefix, dto.LabelResourceKey);
+            // A system entry never carries free text; that half belongs to a tenant outcome.
+            Assert.Null(dto.LabelText);
+        });
+
+        // Both kinds travel, so the editor can pre-tick one and not the other — the per-outcome rule, end to end.
+        Assert.Contains(response.Data, dto => dto.RequiresReason);
+        Assert.Contains(response.Data, dto => !dto.RequiresReason);
+        // Both halves of the dictionary, so the picker can offer an ending for either closure.
+        Assert.Contains(response.Data, dto => dto.Disposition == TaskClosureDisposition.Completed);
+        Assert.Contains(response.Data, dto => dto.Disposition == TaskClosureDisposition.Cancelled);
     }
 
     private static TaskClosureOutcome Find(IReadOnlyList<TaskClosureOutcome> catalogue, string code) =>

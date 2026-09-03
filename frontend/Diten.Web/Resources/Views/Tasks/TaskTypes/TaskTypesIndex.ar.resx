@@ -115,4 +115,52 @@
   <data name="DocListWithdrawReasonRequired" xml:space="preserve"><value>السحب يحتاج إلى سبب.</value></data>
   <data name="DocListWithdrawSubtext" xml:space="preserve"><value>لن يعود الإصدار {0} القائمة التي يمكن للمهام الاستشهاد بها. يُحتفظ به مع علامة، لتبقى الإحالات السابقة مقروءة.</value></data>
   <data name="DocListImportDenied" xml:space="preserve"><value>يمكنك قراءة هذه القائمة لكن لا يمكنك استيرادها.</value></data>
+  <data name="ClosureOutcomesSection" xml:space="preserve">
+    <value>نتائج الإغلاق</value>
+  </data>
+  <data name="ClosureOutcomesHint" xml:space="preserve">
+    <value>ما يُعدّ نهايةً للعمل من هذا النوع. اتركه فارغًا فلا يُسأل شيء عند إغلاق المهمة — وهكذا يتصرف كل نوع غير مُهيّأ.</value>
+  </data>
+  <data name="ClosureOutcomesEmpty" xml:space="preserve">
+    <value>لا توجد نتائج مُعرّفة — إغلاق مهمة من هذا النوع لا يسأل شيئًا.</value>
+  </data>
+  <data name="ClosureOutcomeAdd" xml:space="preserve">
+    <value>إضافة نتيجة</value>
+  </data>
+  <data name="ClosureOutcomeRemove" xml:space="preserve">
+    <value>إزالة هذه النتيجة</value>
+  </data>
+  <data name="ClosureOutcomeSource" xml:space="preserve">
+    <value>النتيجة</value>
+  </data>
+  <data name="ClosureOutcomeSourceCustom" xml:space="preserve">
+    <value>أكتب نتيجتي</value>
+  </data>
+  <data name="ClosureOutcomeCode" xml:space="preserve">
+    <value>الرمز</value>
+  </data>
+  <data name="ClosureOutcomeCodePlaceholder" xml:space="preserve">
+    <value>مثال RESOLVED</value>
+  </data>
+  <data name="ClosureOutcomeLabel" xml:space="preserve">
+    <value>التسمية</value>
+  </data>
+  <data name="ClosureOutcomeLabelPlaceholder" xml:space="preserve">
+    <value>ما سيراه المستخدمون</value>
+  </data>
+  <data name="ClosureOutcomeDisposition" xml:space="preserve">
+    <value>تُعرض عند</value>
+  </data>
+  <data name="ClosureOutcomeSortOrder" xml:space="preserve">
+    <value>الترتيب</value>
+  </data>
+  <data name="ClosureOutcomeRequiresReason" xml:space="preserve">
+    <value>تطلب سببًا</value>
+  </data>
+  <data name="ClosureDispositionCompleted" xml:space="preserve">
+    <value>الإنجاز</value>
+  </data>
+  <data name="ClosureDispositionCancelled" xml:space="preserve">
+    <value>الإلغاء</value>
+  </data>
 </root>
