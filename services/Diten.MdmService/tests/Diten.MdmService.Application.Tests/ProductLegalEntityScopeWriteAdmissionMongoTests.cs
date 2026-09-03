@@ -44,6 +44,34 @@ public sealed class ProductLegalEntityScopeWriteAdmissionMongoTests
     }
 
     [Fact]
+    public async Task Pre_H1b_rollout_without_writer_fields_acquires_generation_one_without_migration()
+    {
+        await using var scope = await ProductScopeMongoScope.CreateAsync();
+        var repository = scope.RolloutRepository();
+        var state = ProductLegalEntityScopeRolloutState.CreatePreparation(
+            scope.TenantId, Guid.NewGuid(), Guid.NewGuid(), Now);
+        Assert.True((await repository.CreateAsync(state)).Succeeded);
+        await scope.RolloutCollection.UpdateOneAsync(
+            item => item.TenantId == scope.TenantId && item.Id == state.Id,
+            Builders<ProductLegalEntityScopeRolloutState>.Update
+                .Unset(nameof(ProductLegalEntityScopeRolloutState.WriterLeaseGeneration))
+                .Unset(nameof(ProductLegalEntityScopeRolloutState.ActiveWriterLease))
+                .Unset(nameof(ProductLegalEntityScopeRolloutState.ActiveFence)));
+
+        var acquired = await repository.AcquireWriterLeaseAsync(
+            Lease(Guid.NewGuid(), Guid.NewGuid(), "RequestProductAbbreviationAllocation", "L"));
+
+        Assert.True(acquired.Acquired);
+        Assert.NotNull(acquired.Lease);
+        Assert.Equal(1, acquired.Lease.Generation);
+        var persisted = await scope.RolloutCollection
+            .Find(item => item.TenantId == scope.TenantId && item.Id == state.Id)
+            .SingleAsync();
+        Assert.Equal(1, persisted.WriterLeaseGeneration);
+        Assert.Equal(acquired.Lease.Token, persisted.ActiveWriterLease!.Token);
+    }
+
+    [Fact]
     public async Task Tenant_B_cannot_observe_or_release_tenant_A_lease_and_payload_drift_is_denied()
     {
         await using var scope = await ProductScopeMongoScope.CreateAsync();
