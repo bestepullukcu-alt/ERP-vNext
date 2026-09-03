@@ -1987,10 +1987,66 @@ A separately approved frontend implementation is acceptable only when all of the
 Passing these gates proves only the bounded Initiative frontend implementation. It does not activate
 production, close the owner-contract blockers, promote MOD-0117 to `done`, or establish full MOD-0117 parity.
 
+### Correction — 2026-09-03 — Initiative lifecycle contract prerequisite
+
+**Authority class:** governance correction / executable frontend blocker. This correction does not amend
+`c9799a14`; it is a separate checkpoint and supersedes any reading of the preceding frontend amendment that
+would allow Initiative lifecycle UI implementation or acceptance to start against the current backend
+contract.
+
+**Observed executable contradiction:** `InitiativeV2Dto` and `InitiativeLifecycleResult` do not currently
+carry authoritative `AllowedTransitions` or an equivalent lifecycle-action contract, while the existing
+Initiative frontend hardcodes a transition matrix. In addition, the current `InitiativeService.GetContracts()`
+resolves the MOD-0048-owned type and priority authorities before returning the combined payload. If either
+classification provider is unavailable, the whole request returns `503`, also withholding PPM-owned
+cancellation reasons, hold reasons, completion outcomes, closure reasons and benefit dispositions. Therefore
+server-driven lifecycle actions, no hardcoded lifecycle/closure vocabulary and passing lifecycle browser
+acceptance cannot all be achieved with the current executable contract.
+
+#### Corrected ownership and contract boundary
+
+- MOD-0048-owned Initiative Type and Priority remain on the existing `contracts/v2` fail-closed boundary.
+  Their unavailable, malformed or indeterminate provider state continues to produce `503`; no cache,
+  synthetic option or frontend fallback is permitted.
+- The PPM-owned lifecycle transition matrix and PPM-owned reason/closure vocabularies must not depend on
+  MOD-0048 classification-provider availability. They remain PPM-owned authoritative server contracts and
+  must never be hardcoded in frontend code.
+- Before Initiative frontend implementation begins, an additive PPM-owned lifecycle contract endpoint or
+  equivalent authoritative server projection must be implemented. The preferred contract is
+  `GET /api/v1/ppm/initiatives/lifecycle-contracts/v2`.
+- The lifecycle contract must carry, at minimum: allowed target states by source state; cancellation reasons;
+  hold reasons; completion outcomes; closure reasons; and benefit dispositions.
+- This PPM-owned endpoint/projection must be independent of the MOD-0048 classification provider. An unknown,
+  malformed or internally indeterminate lifecycle contract returns `503`; frontend fallback remains forbidden.
+- When actor, permission, policy or record data affect action eligibility, the list/detail projection must
+  additionally carry server-calculated record-specific available actions. Frontend may not infer an
+  authorization result from the general state matrix.
+- Transitions requiring MOD-0023 approval retain their existing fail-closed boundary. This correction neither
+  invents an approval outcome nor weakens the `503` behavior while authoritative approval evidence is absent.
+
+#### Authority and sequencing correction
+
+This correction grants **no backend implementation authority** and changes no runtime source allowlist.
+Implementing the prerequisite requires a separate, exact backend allowlist amendment and separate explicit
+user approval. Until that approved backend prerequisite is implemented and contract-tested:
+
+- the Initiative frontend implementation authorized in `c9799a14` must not start;
+- the `c9799a14` frontend allowlist remains governance-defined but non-executable;
+- frontend lifecycle/closure browser acceptance, terminal-action visibility and successor-action acceptance
+  remain blocked and must not be reported as passable or passed;
+- hardcoded transition matrices or PPM-owned reason/closure vocabularies remain prohibited; and
+- create/edit classification behavior continues to use the independent existing `contracts/v2` fail-closed
+  MOD-0048 boundary.
+
+After the prerequisite is implemented under separate authority, frontend implementation still requires the
+separate explicit user approval already required by `c9799a14`. The pack remains `review` with
+`production_authority: none` and default-off/non-activating posture.
+
 ### Change log
 
 | Date | Change | Authority |
 |---|---|---|
+| 2026-09-03 | Corrected the Initiative frontend handoff after executable feasibility review: the current DTO/result exposes no authoritative allowed-transition/action projection, and combined `contracts/v2` couples PPM-owned lifecycle vocabularies to MOD-0048 availability. Required an independent additive PPM-owned lifecycle contract (preferred `GET /api/v1/ppm/initiatives/lifecycle-contracts/v2`) plus record-specific server-calculated actions where needed before frontend lifecycle work can start. This correction grants no backend authority; an exact backend allowlist amendment and separate explicit user approval are required. | User / Portfolio Governance Process Owner |
 | 2026-09-03 | Added bounded Initiative Core v2 frontend implementation authority: exact eight-field Golden Slim tenant UI, same-origin Initiative proxy, authoritative `contracts/v2` vocabulary with fail-closed create/edit, action-only lifecycle/closure/supersession, typed-link-only details, HTTP-specific UX and exact frontend/test allowlist. Preserved `review`, set `production_authority: none`, retained default-off/non-activating posture and required separate explicit user approval before frontend implementation. No runtime/frontend/Gateway/backend/deployment code was changed by this governance checkpoint. | User / Portfolio Governance Process Owner |
 | 2026-09-02 | Added and corrected the governance-only Initiative Core v2 baseline: exact eight-field Golden Slim create/edit contract; nullable-in-Proposed and required-before-Active MOD-0048-owned type/priority classifications and planning dates; exact approved values for five PPM-owned lifecycle/closure vocabularies with no `other`; action-based lifecycle and Workflow/WorkCenter boundaries; verified-recipient-only OnHold notification plus non-blocking durable `recipient-unresolved` disposition/UI warning; exact InitiativeClosure requiredness/cardinalities; terminal supersession; authoritative-owner typed links; repository-accurate future allowlist/protected paths; HTTP matrix, acceptance/test gates and explicit owner blockers. No runtime/frontend/service/Gateway/migration/seed/deployment/activation authority was created. | User / Portfolio Governance Process Owner |
 | 2026-09-01 | Reconciled the Initiative legacy wizard against Blueprint ownership and current PPM code. Retained the six-field Golden Slim form; registered future strategy, organization, planning, metric, investment, funding, decision, evidence and dependency detail concepts as governance-only/default-unavailable. No PPM field, runtime card, producer call, mock fallback or activation authority was created. | User / Portfolio Governance Process Owner |
