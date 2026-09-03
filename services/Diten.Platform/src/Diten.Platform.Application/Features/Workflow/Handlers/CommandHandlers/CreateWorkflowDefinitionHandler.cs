@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Workflow.Commands;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Enums.Workflow;
@@ -13,11 +14,16 @@ public sealed class CreateWorkflowDefinitionHandler
 {
     private readonly IWorkflowTemplateRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ICurrentUserContext _currentUserContext;
 
-    public CreateWorkflowDefinitionHandler(IWorkflowTemplateRepository repository, ITenantContext tenantContext)
+    public CreateWorkflowDefinitionHandler(
+        IWorkflowTemplateRepository repository,
+        ITenantContext tenantContext,
+        ICurrentUserContext currentUserContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _currentUserContext = currentUserContext;
     }
 
     public async Task<Response<WorkflowDefinitionDetailDto>> Handle(
@@ -50,7 +56,8 @@ public sealed class CreateWorkflowDefinitionHandler
             TemplateCode = templateCode,
             Name = name,
             Description = description,
-            Status = WorkflowTemplateStatus.Draft
+            Status = WorkflowTemplateStatus.Draft,
+            CreatedBy = _currentUserContext.ActorName
         };
 
         var created = await _repository.CreateAsync(template, ct);

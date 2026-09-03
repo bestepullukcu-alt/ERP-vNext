@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Features.Workflow;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Workflow.Commands;
 using Diten.Platform.Application.Features.Workflow.Handlers.CommandHandlers;
 using Diten.Platform.Application.Features.Workflow.Handlers.QueryHandlers;
@@ -183,7 +184,16 @@ public sealed class WorkflowDefinitionFoundationTests
     }
 
     private static CreateWorkflowDefinitionHandler CreateHandler(IWorkflowTemplateRepository repo, ITenantContext ctx) =>
-        new(repo, ctx);
+        new(repo, ctx, new FakeCurrentUserContext());
+
+    private sealed class FakeCurrentUserContext : ICurrentUserContext
+    {
+        public Guid UserId => Guid.Parse("99999999-9999-9999-9999-999999999999");
+        public string? Email => "workflow.admin@diten.local";
+        public string? DisplayName => "Workflow Admin";
+        public string ActorName => Email!;
+        public bool IsAuthenticated => true;
+    }
 
     private static GetWorkflowDefinitionByIdHandler ByIdHandler(IWorkflowTemplateRepository repo) => new(repo);
 
