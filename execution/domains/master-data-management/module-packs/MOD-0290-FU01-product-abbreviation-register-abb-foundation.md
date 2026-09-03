@@ -522,6 +522,26 @@ Section 20.
 - Verification passed focused MDM `57/57` and full MDM `404/404` with zero skipped and real `localhost:27017` Mongo.
   Production readiness and navigation remain open; no Production completion is claimed.
 
+### ABB WorkCenter integration/replay evidence — 2026-09-03
+
+- MDM now exposes the bounded ABB WorkCenter projection/action endpoints under
+  `api/v1/work-items/product-abbreviations`, using provider `mdm-product-abbreviations`, contract version `1.0`, and
+  only the existing `approve`, `reject` and owner `cancel` lifecycle commands. The module remains the lifecycle owner.
+- Projection is tenant-scoped, limited to initial pending requests, capped at 100 plus one overflow sentinel, joined to
+  Global Products in one bounded batch, and filtered through the accepted FU03 consumer guard. No ABB-specific
+  Platform provider/dispatcher, Gateway route, frontend surface, config row or operational data was added.
+- Terminal exact replay reaches the existing idempotent ABB command path and preserves entry/history identity; changed
+  reason, action or expected version fails closed with `409 CONCURRENCY_CONFLICT`. The generation-zero rollout CAS
+  also accepts only a physically missing legacy generation field and materializes generation one without weakening
+  later no-ABA fencing.
+- Focused MDM WorkItem plus scope-write tests passed `30/30` (`24` ABB WorkItem and `6` scope-write); generic Platform
+  remote bridge, singleton implementation, permission and manifest-address guards passed `34/34`. MDM API Release
+  build completed with `0` warnings and `0` errors; `git diff --check` passed.
+- The current full MDM run passed `1201/1218`; all `17` failures are confined to
+  `ProductIdentityWorkflowOperationRecoveryMongoTests` because the active local MongoDB is standalone and therefore
+  rejects transactions. This infrastructure boundary is reported explicitly: the integration does not claim a green
+  full suite or Production readiness from that run.
+
 | Deferred item | Owner | Boundary | Closure gate |
 |---|---|---|---|
 | Production permission/catalog/role enablement | Platform permission catalog owner + Diten.AuthService owner + MOD-0018 policy owner | Local Development onboarding is complete; Production/Staging was not touched. | Separate Production approval, runbook and production evidence. |
