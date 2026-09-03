@@ -55,7 +55,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     {
         const string prefix = "Permission:";
         var policyProperty = typeof(HasPermissionAttribute).GetProperty("Policy");
-        var enforced = new[] { typeof(GlobalProductsController), typeof(FinishedGoodsController), typeof(GskusController), typeof(LskusController), typeof(ProductAbbreviationsController), typeof(ProductLegalEntityScopesController) }
+        var enforced = new[] { typeof(GlobalProductsController), typeof(FinishedGoodsController), typeof(GskusController), typeof(LskusController), typeof(ProductAbbreviationsController), typeof(ProductLegalEntityScopesController), typeof(ProductIdentityWorkflowOperationsController) }
             .SelectMany(controller => controller
                 .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
             .SelectMany(method => method.GetCustomAttributes<HasPermissionAttribute>())
@@ -96,6 +96,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.product-abbreviations.reject",
                 "mdm.product-abbreviations.request",
                 "mdm.product-abbreviations.retire",
+                "mdm.product-identity.lifecycle-operations.recover",
                 "mdm.product-legal-entity-scope-rollout.activate",
                 "mdm.product-legal-entity-scope-rollout.rollback",
                 "mdm.product-legal-entity-scopes.configure",
@@ -104,7 +105,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.product-legal-entity-scopes.replace"
             },
             declared.OrderBy(value => value, StringComparer.Ordinal));
-        Assert.Equal(31, declared.Count);
+        Assert.Equal(32, declared.Count);
         var nonControllerPermissions = new HashSet<string>(StringComparer.Ordinal)
         {
             "mdm.brands.read",
@@ -121,7 +122,9 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.Equal(4, productPages.Count);
         foreach (var page in productPages)
         {
-            var expectedActions = new[] { "ADD_NEW", "RETIRE", "SUBMIT", "VIEW_DETAILS" };
+            var expectedActions = page.PageCode == "GLOBAL_PRODUCTS"
+                ? new[] { "ADD_NEW", "RECOVER_ORPHANED_LIFECYCLE_OPERATION", "RETIRE", "SUBMIT", "VIEW_DETAILS" }
+                : new[] { "ADD_NEW", "RETIRE", "SUBMIT", "VIEW_DETAILS" };
             Assert.Equal(expectedActions.Length, page.Actions.Count);
             Assert.Equal(
                 expectedActions,
@@ -164,6 +167,27 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.True(retire.IsDangerous);
         Assert.DoesNotContain(page.Actions, action => action.ActionCode is "APPROVE" or "REJECT");
         Assert.True(page.IsNavigationVisible);
+    }
+
+    [Fact]
+    public void Recovery_is_one_invisible_system_action_on_existing_global_products_page()
+    {
+        Assert.Equal(7, Manifest.Pages.Count);
+        var page = Assert.Single(Manifest.Pages, item => item.PageCode == "GLOBAL_PRODUCTS");
+        var action = Assert.Single(page.Actions,
+            item => item.ActionCode == "RECOVER_ORPHANED_LIFECYCLE_OPERATION");
+
+        Assert.Equal("mdm.product-identity.lifecycle-operations.recover", action.PermissionKey);
+        Assert.Equal("System", action.ActionType);
+        Assert.False(action.IsToolbarAction);
+        Assert.False(action.IsRowAction);
+        Assert.True(action.IsDangerous);
+        Assert.True(page.IsNavigationVisible);
+        Assert.DoesNotContain(Manifest.Pages,
+            item => item.PageCode.Contains("RECOVER", StringComparison.Ordinal));
+        Assert.DoesNotContain(Manifest.Pages.SelectMany(item => item.Actions), item =>
+            item.ActionCode == "RECOVER_ORPHANED_LIFECYCLE_OPERATION"
+            && item.ActionType is "Toolbar" or "RowAction");
     }
 
     [Fact]

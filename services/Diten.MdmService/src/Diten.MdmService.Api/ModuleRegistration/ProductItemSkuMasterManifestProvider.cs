@@ -38,6 +38,8 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
     private const string ProductScopesEnd = "mdm.product-legal-entity-scopes.end";
     private const string ProductScopeRolloutActivate = "mdm.product-legal-entity-scope-rollout.activate";
     private const string ProductScopeRolloutRollback = "mdm.product-legal-entity-scope-rollout.rollback";
+    private const string ProductIdentityLifecycleOperationRecover =
+        "mdm.product-identity.lifecycle-operations.recover";
 
     public ModuleManifestDocument GetManifest() =>
         new(
@@ -65,7 +67,16 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                         new ModuleManifestAction("ADD_NEW", "Add New", Create, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
                         new ModuleManifestAction("VIEW_DETAILS", "View Details", Read, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("SUBMIT", "Submit", Submit, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
-                        new ModuleManifestAction("RETIRE", "Retire", Retire, "RowAction", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
+                        new ModuleManifestAction("RETIRE", "Retire", Retire, "RowAction", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction(
+                            "RECOVER_ORPHANED_LIFECYCLE_OPERATION",
+                            "Recover Orphaned Lifecycle Operation",
+                            ProductIdentityLifecycleOperationRecover,
+                            "System",
+                            50,
+                            IsDangerous: true,
+                            IsToolbarAction: false,
+                            IsRowAction: false)
                     ]),
                 new ModuleManifestPage(
                     PageCode: "FINISHED_GOODS",

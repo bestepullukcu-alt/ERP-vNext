@@ -4013,6 +4013,229 @@ contracts close; it is not authority to add source files or to declare lifecycle
 - [ ] Additional-GSKU cardinality/ownership receives a separate owner decision before any implementation.
 - [ ] H receives exact operational values and predecessor evidence before Local Development mutation.
 
+### Orphaned lifecycle operation recovery — Phase 1.5 plan (planning only, runtime unauthorized)
+
+#### Identity and ownership decision
+
+This is a named hardening step of `MOD-0290 Product / Item / SKU Master`, not a new product capability. It therefore
+does not mint a new `MOD`, `FU`, `CAND-CAP` or registry row. The parent pack remains `in-progress`. This subsection is
+planning evidence only and is not runtime code-start authority.
+
+The source-owned operation families are exhaustive:
+
+1. Global Product lifecycle operation;
+2. combined first Product Definition Revision + first GSKU lifecycle operation;
+3. LSKU lifecycle operation; and
+4. Finished Good lifecycle operation.
+
+The source module remains lifecycle authority. WorkCenter/Workflow is queried only for authoritative start evidence;
+it does not abandon, supersede or rewrite an MDM operation.
+
+#### Recovery vocabulary and fail-closed boundary
+
+- `AbandonedBeforeWorkflowStart` is a terminal, non-deleted operation state. It records that an authorized operator
+  closed an operation only after authoritative Workflow read-back proved that its exact start idempotency identity
+  has no workflow instance. It creates no successor.
+- `Superseded` is a terminal, non-deleted operation state. In the same transaction it creates exactly one successor
+  in `Prepared`, for the same tenant and target tuple, but it does not copy or mutate the old `MakerSubjectId`. The
+  successor maker is the authenticated recovery operator derived server-side from the canonical human JWT. That
+  subject must be different from the missing/original maker and must independently hold both the dedicated recovery
+  permission and the target family's existing `submit` permission. The successor has a new server-derived D-GUID
+  operation identity and start idempotency identity and uses the post-audit target version. This creates a new
+  operation; it is never a rebind of the historical operation and it does not submit or start Workflow.
+- Exact replay of the same recovery command returns the same terminal result and, for supersede, the same successor.
+  A reused command identity with different action, reason, expected version, operation fingerprint, target tuple or
+  successor identity is `409` and performs no mutation.
+- Eligibility is limited to an operation with no persisted workflow instance/decision proof and an authoritative,
+  operation-specific Workflow `NotFound` result obtained for the exact start idempotency identity. The proof must be
+  current, authenticated, tenant-bound and persisted before mutation.
+- Timeout, cancellation, `401/403`, `409`, `429`, `5xx`, malformed/contradictory response, unavailable provider,
+  incomplete proof or any positive/ambiguous Workflow evidence is never equivalent to `NotFound`. `Prepared` alone
+  is not proof. `StartOutcomeUnknown`, `WorkflowStarted` and every later checkpoint are ineligible.
+- An active lease, stale operation version, stale target version, non-Draft target, missing/deleted/cross-tenant
+  target, mismatched maker/target/fingerprint or existing successor fails closed before mutation.
+- The operator must be a canonical human subject, distinct from the original maker, and hold the dedicated operator-only
+  permission dependency proposed as `mdm.product-identity.lifecycle-operations.recover`. Service actors, Platform
+  actors, delegated maker tokens and caller-supplied tenant identity are rejected. The permission key, default-role
+  posture and entitlement grant require a separate approved MOD-0018 owner step before exposure.
+- `AbandonedBeforeWorkflowStart` requires only the recovery permission. `Superseded` additionally requires the exact
+  existing submit permission for the selected family; neither permission may be inferred from Admin/Viewer status.
+  The successor maker/operation identity cannot be supplied in the JSON body. The maker is the authenticated operator
+  and the successor identity is derived server-side from the canonical recovery idempotency identity.
+
+#### Atomicity, admission-fence release and audit contract
+
+Both actions use Mongo transaction capability and compare-and-set the exact tenant, operation ID, operation Version,
+checkpoint, lease state, operation fingerprint and target expected Version. Whole-document replacement is forbidden.
+The transaction:
+
+1. freezes immutable recovery evidence on the old operation (action, command ID, operator subject, bounded reason,
+   authoritative NotFound evidence identity/fingerprint and UTC ticks);
+2. moves the old operation to its terminal recovery state, clears retry/lease fields and increments Version;
+3. appends deterministic `LocalAuditIntent` evidence to the existing business aggregate and increments its Version;
+4. releases only the old operation's admission fence; and
+5. for `Superseded` only, reserves one successor using the new aggregate Version, the same target facts and the
+   authenticated recovery operator as the new operation's maker.
+
+The combined first-GSKU family updates Revision, GSKU, old operation and optional successor in one transaction and
+appends separate deterministic audit intents to Revision and GSKU. No lifecycle status changes: all targets remain
+`Draft`; no Workflow binding, decision proof, code reservation, identifier or reference-data selection is rewritten.
+The old operation remains immutable historical evidence and cannot be rediscovered by automatic recovery workers.
+Audit uses the existing append-only intent/delivery/receipt path and existing aggregate discriminators; no direct
+Mongo write, audit bypass, new audit transport or new audit aggregate type is permitted.
+
+#### A-D delivery order and exact future allow-lists
+
+No file listed below is authorized by this planning turn. Each step needs explicit runtime code-start and predecessor
+evidence. Paths not listed are denied.
+
+**A — Domain state and command contracts**
+
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/GlobalProductIdentityWorkflowCheckpoint.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/FirstGskuIdentityWorkflowCheckpoint.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/LskuIdentityWorkflowCheckpoint.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/FinishedGoodIdentityWorkflowCheckpoint.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductIdentityWorkflowRecoveryDisposition.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductAuditOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/GlobalProductIdentityWorkflowOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/FirstGskuIdentityWorkflowOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/LskuIdentityWorkflowOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/FinishedGoodIdentityWorkflowOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IProductIdentityWorkflowOperationRecoveryRepository.cs` (new)
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/ProductIdentityWorkflowOperationRecoveryResults.cs` (new)
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/OrphanedOperationRecovery/ProductIdentityWorkflowOperationRecoveryModels.cs` (new)
+
+A freezes additive terminal states, immutable recovery evidence, the four-family discriminator, strict request/result
+contracts and additive audit-operation vocabulary. It does not change repositories or runtime behavior.
+
+**B — Atomic persistence, replay and discovery fencing**
+
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductIdentityWorkflowOperationRecoveryRepository.cs` (new)
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GlobalProductIdentityWorkflowOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FirstGskuIdentityWorkflowOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/LskuIdentityWorkflowOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FinishedGoodIdentityWorkflowOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/DependencyInjection.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductIdentityWorkflowOperationRecoveryMongoTests.cs` (new)
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductIdentityWorkflowOperationMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FirstGskuIdentityWorkflowOperationMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuIdentityWorkflowOperationMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodIdentityWorkflowOperationMongoTests.cs`
+
+B implements one transaction-backed repository and terminal-discovery fencing. It may not change operation indexes,
+soft-delete operations, delete/recreate operations or create per-test schema profiles. Real-Mongo tests use the
+existing MDM test-database pattern and prove crash rollback, CAS races, lease races, exact replay, admission-fence
+  release, successor uniqueness, aggregate/audit atomicity and tenant isolation for all four families.
+
+**C — Application orchestration and authoritative pre-start proof**
+
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/OrphanedOperationRecovery/ProductIdentityWorkflowOperationRecoveryAuditIntentFactory.cs` (new)
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/OrphanedOperationRecovery/Commands/RecoverOrphanedProductIdentityWorkflowOperationCommand.cs` (new)
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/OrphanedOperationRecovery/Handlers/CommandHandlers/RecoverOrphanedProductIdentityWorkflowOperationHandler.cs` (new)
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/OrphanedOperationRecovery/Validators/RecoverOrphanedProductIdentityWorkflowOperationValidator.cs` (new)
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/GlobalProductIdentityWorkflowProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/FirstGskuIdentityWorkflowProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/LskuIdentityWorkflowProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/FinishedGoodIdentityWorkflowProcessor.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductIdentityWorkflowOperationRecoveryTests.cs` (new)
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductIdentityWorkflowProcessorTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FirstGskuIdentityWorkflowProcessorTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuIdentityWorkflowProcessorTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodIdentityWorkflowProcessorTests.cs`
+
+C obtains and validates exact Workflow NotFound proof through the existing trusted Workflow client, revalidates it
+immediately before repository mutation, builds deterministic audit intents and makes all automatic processors treat
+both terminal states as permanent no-op outcomes. It cannot call Workflow cancel, start or transition endpoints.
+
+**D — Operator surface, authorization ownership and acceptance**
+
+The proposed MDM surface is one strict authenticated command endpoint with two enum actions; no list/search/bulk or
+general operation-inspection endpoint is added. Its future MDM allow-list is frozen as:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/ProductIdentityWorkflowOperationsController.cs` (new)
+- `services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductIdentityWorkflowOperationRecoveryApiContractTests.cs` (new)
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductIdentityWorkflowOperationRecoveryAuthorizationTests.cs` (new)
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ModuleRegistration/ProductItemSkuMasterManifestProviderTests.cs`
+
+The endpoint is `POST /api/product-identity-workflow-operations/{operationId:guid}/recover-before-start`. The strict
+body contains only `Action`, `ExpectedOperationVersion`, `ExpectedTargetVersion`, `ReasonCode` and optional bounded
+`Comment`; `Idempotency-Key` is one canonical non-empty D-GUID header. Tenant, operator/maker subject, successor ID,
+Workflow evidence, fingerprint, lease and audit facts are always server-derived. `Abandon` requires only the recovery
+permission; `Supersede` also requires the selected family's existing submit permission. The endpoint returns a
+sanitized terminal old-operation result and, only for Supersede, the server-derived successor operation identity.
+
+The MDM manifest declares `mdm.product-identity.lifecycle-operations.recover` as navigation-hidden and action-only.
+No default Admin/Viewer grant is implied. A separate MOD-0018 owner pack must create the dedicated
+`ProductIdentityRecoveryOperator` profile, grant only the recover permission by default to that role, add no automatic
+user assignment and prove entitlement revoke/restore/replay. Until that dependency is approved and implemented, D
+remains blocked even though its future MDM file list is frozen; no endpoint or manifest change may be exposed.
+
+Gateway route, frontend page/button, navigation and WorkCenter action are all `none` for this foundation. A later
+operator UI or Gateway route requires a separately approved named step and integration-agent delivery. WorkCenter
+must not advertise either action. Local Development operational acceptance is separately authorized only after A-C,
+permission onboarding and API contract evidence are green. Production/Staging remains a separate prohibited gate.
+
+**D implementation evidence — 2026-09-02:**
+
+- The one command surface is implemented at the frozen
+  `POST /api/product-identity-workflow-operations/{operationId:guid}/recover-before-start` route. The route operation
+  identity and the single `Idempotency-Key` are canonical non-empty D-GUIDs when their raw transport values are
+  available. The strict raw JSON reader rejects duplicate, unknown and case-alias fields, technical/provider fields,
+  invalid action values, negative/overflow versions and non-exact or over-budget reason/comment text before MediatR
+  dispatch.
+- The API boundary accepts exactly one canonical `tenant_user` actor, one canonical `tenant_id`, one canonical `sub`
+  and no conflicting name identifier. A single optional Gateway `X-Tenant-Id` is accepted only when it exactly equals
+  the JWT tenant. Claim-type case aliases are included in duplicate detection, and the exact JWT tenant must also equal
+  the middleware-resolved `ITenantContext`; this prevents a differently cased signed tenant claim from splitting API
+  authorization and repository scope. Service/Platform/partner actors, delegated authorization,
+  malformed/duplicate identities and non-ordinal/duplicate recovery permission claims fail closed before dispatch.
+  The C handler remains the sole owner of family discovery and of the additional exact submit-permission check for
+  `Supersede`.
+- The response exposes only the terminal operation identity/family/disposition/version, bounded target versions and,
+  for `Supersede`, the successor operation identity/target versions. Tenant, maker, Workflow evidence, fingerprint,
+  lease, audit and idempotency facts are absent.
+- The existing `GLOBAL_PRODUCTS` page owns exactly one dangerous, non-toolbar, non-row `System` action named
+  `RECOVER_ORPHANED_LIFECYCLE_OPERATION`, protected by
+  `mdm.product-identity.lifecycle-operations.recover`. No new page, route, navigation item, Gateway, frontend or
+  WorkCenter action was added. The earlier BRANDS ownership removal remains separate FU02 evidence and is not claimed
+  by this D step.
+- Focused D API/authorization/manifest tests passed `89/89`, skipped `0`. All MDM tests other than the pre-existing
+  transaction-only recovery Mongo class passed `1162/1162`, skipped `0`. The combined A-D recovery selection passed
+  `111/127`; its `16` failures were all the same environment precondition (`Standalone servers do not support
+  transactions`) after local Mongo was running standalone, not an assertion or D regression. The B predecessor's
+  transaction semantics therefore retain their earlier replica-set real-Mongo evidence and were not falsely re-claimed
+  in this D run. MDM API Release build passed with `0` warnings and `0` errors.
+
+#### Acceptance and regression matrix
+
+- Unit/validator tests: four-family mapping, strict enum/cardinality/reason bounds, human operator distinct from maker,
+  exact NotFound evidence validation and rejection of every ambiguous/provider-failure result.
+- Authorization/API contract tests when D is authorized: operator permission allow; Admin, Viewer, maker, approver,
+  service actor, Platform actor and wrong tenant deny; unknown/extra fields and duplicate/malformed headers fail before
+  handler dispatch; no technical Workflow/audit facts leak.
+- Real Mongo: one winner under concurrent operators; stale Version/fingerprint/lease/target rejection; transaction
+  rollback at every checkpoint; exact replay; payload drift conflict; no duplicate successor/audit; old-operation
+  terminal discovery exclusion; old maker remains immutable; successor maker equals the authenticated recovery
+  operator and differs from the original maker; admission fence release; no business identity/cardinality or
+  lifecycle drift; First GSKU pair all-or-nothing; cross-tenant/non-disclosing behavior.
+- Workflow regressions: authoritative NotFound only; timeout, cancellation, `503/504`, malformed, incomplete,
+  contradictory or positive evidence never mutates; no start/cancel/decision call; restart after persisted proof is
+  fail-closed and revalidates before mutation.
+- Audit regressions: deterministic intent IDs, append-only delivery/replay, no false receipt, no new aggregate type,
+  and unchanged submit/approve/reject/retire audit behavior.
+- Full MDM Release build and suite, existing four lifecycle focused/real-Mongo suites, `git diff --check`, conflict,
+  trailing-whitespace and final-newline gates must be green before any completion claim.
+
+#### Protected paths and explicit exclusions
+
+Auth, Platform, Gateway, frontend, WorkCenter/MOD-0023, configuration, appsettings, secrets, seed/business data,
+navigation, other module packs/registry/tracker, `.antigravity/**`, code reservation/allocation, reference-data
+selection, lifecycle controller/UI behavior and all files outside the exact active step allow-list are protected.
+Maker rebind, operation deletion/soft-delete, direct Mongo, cleanup scripts, whole-document replacement, Workflow
+cancel/start/decision mutation, automatic startup execution, bulk recovery, Production/Staging, commit and push are
+excluded. No runtime work begins until the user separately authorizes the exact A step.
+
 ## 20. Follow-up Items
 
 These are references to existing backlog or owner decisions; this pack creates no new identity or provider pack.
