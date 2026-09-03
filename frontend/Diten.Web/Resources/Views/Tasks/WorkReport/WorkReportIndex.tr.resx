@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Title" xml:space="preserve"><value>İş Raporu</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Bir dönemde işin nasıl aktığı — görebildiğiniz işler için.</value></data>
+  <data name="From" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="To" xml:space="preserve"><value>Bitiş</value></data>
+  <data name="GroupBy" xml:space="preserve"><value>Kırılım</value></data>
+  <data name="Apply" xml:space="preserve"><value>Uygula</value></data>
+  <data name="GroupByNone" xml:space="preserve"><value>Kırılım yok</value></data>
+  <data name="GroupByTaskType" xml:space="preserve"><value>Görev türü</value></data>
+  <data name="GroupByOrganizationUnit" xml:space="preserve"><value>Organizasyon birimi</value></data>
+  <data name="GroupByAssignee" xml:space="preserve"><value>Atanan</value></data>
+  <data name="GroupByPriority" xml:space="preserve"><value>Öncelik</value></data>
+  <data name="ScopeScoped" xml:space="preserve"><value>Sizin kapsamınız</value></data>
+  <data name="ScopeTenant" xml:space="preserve"><value>Tüm kiracı</value></data>
+  <data name="ScopeScopedHint" xml:space="preserve"><value>Yalnız görmeye yetkili olduğunuz işleri sayar. Başka bir okuyucunun raporu farklı olabilir.</value></data>
+  <data name="ScopeTenantHint" xml:space="preserve"><value>Kiracıdaki her görevi sayar.</value></data>
+  <data name="NoData" xml:space="preserve"><value>Bu dönemde açılan ya da kapanan iş yok.</value></data>
+  <data name="NoDataScoped" xml:space="preserve"><value>Bu dönemde görebildiğiniz, açılan ya da kapanan iş yok.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Rapor yükleniyor…</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Rapor yüklenemedi.</value></data>
+  <data name="PeriodInvalid" xml:space="preserve"><value>Dönemin bitişi başlangıcından sonra olmalı.</value></data>
+  <data name="FlowTitle" xml:space="preserve"><value>Açılan ve kapanan</value></data>
+  <data name="FlowQuestion" xml:space="preserve"><value>Gelen işe yetişiyor muyuz?</value></data>
+  <data name="Opened" xml:space="preserve"><value>Açılan</value></data>
+  <data name="Closed" xml:space="preserve"><value>Kapanan</value></data>
+  <data name="Completed" xml:space="preserve"><value>Tamamlanan</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>İptal edilen</value></data>
+  <data name="OutcomesTitle" xml:space="preserve"><value>İş nasıl bitti</value></data>
+  <data name="OutcomesQuestion" xml:space="preserve"><value>Kapanışlar neye karar verdi?</value></data>
+  <data name="OutcomesEmpty" xml:space="preserve"><value>Sonucu kayıtlı bir kapanış yok.</value></data>
+  <data name="TimelinessTitle" xml:space="preserve"><value>Termine göre</value></data>
+  <data name="TimelinessQuestion" xml:space="preserve"><value>İş zamanında bitti mi?</value></data>
+  <data name="OnTime" xml:space="preserve"><value>Zamanında</value></data>
+  <data name="Late" xml:space="preserve"><value>Geciken</value></data>
+  <data name="WithoutDueDate" xml:space="preserve"><value>Termin konmamış</value></data>
+  <data name="GroupsTitle" xml:space="preserve"><value>{0} kırılımı</value></data>
+  <data name="GroupsQuestion" xml:space="preserve"><value>İş nerede yapılıyor?</value></data>
+  <data name="GroupUnnamed" xml:space="preserve"><value>Belirtilmemiş</value></data>
+  <data name="CycleTimeTitle" xml:space="preserve"><value>Ortalama kapanış süresi</value></data>
+  <data name="CycleTimeDays" xml:space="preserve"><value>{0} gün</value></data>
+  <data name="CycleTimeOver" xml:space="preserve"><value>{0} kapanan iş üzerinden</value></data>
+  <data name="ReworkTitle" xml:space="preserve"><value>Geri gelen</value></data>
+  <data name="ReworkTasks" xml:space="preserve"><value>{0} görev</value></data>
+  <data name="ReworkReturns" xml:space="preserve"><value>toplam {0} geri dönüş</value></data>
+  <data name="UnattendedTitle" xml:space="preserve"><value>Sahibini bekleyen</value></data>
+  <data name="UnattendedHint" xml:space="preserve"><value>Şu anda kimsenin üstlenmediği açık işler.</value></data>
+  <data name="EffortTitle" xml:space="preserve"><value>Plan ve gerçekleşen</value></data>
+  <data name="EffortHours" xml:space="preserve"><value>{0} sa tahmin · {1} sa harcanan</value></data>
+  <data name="EffortOver" xml:space="preserve"><value>{0} görev üzerinden</value></data>
+  <data name="EffortHint" xml:space="preserve"><value>PLANA dair bir gösterge, kişiye dair değil.</value></data>
+  <data name="NotMeasured" xml:space="preserve"><value>Ölçülmedi</value></data>
+</root>

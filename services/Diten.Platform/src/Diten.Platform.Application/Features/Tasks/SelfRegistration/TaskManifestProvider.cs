@@ -346,7 +346,15 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                     RoutePath: "/Tasks/WorkReport",
                     RequiredPermission: TaskPermissions.WorkReportRead,
                     ParentPageCode: PageTasks,
-                    IsNavigationVisible: false,
+                    /*
+                     * ⚠ VISIBLE NOW (Faz 5b), and it was `false` for exactly one slice.
+                     *
+                     * 5a shipped the query with no screen behind this route, and publishing it visible then
+                     * would have grown a sidebar entry pointing at a 404 on the next reconciliation — the
+                     * mistake the document-list page made once and had to be corrected for. The page exists as
+                     * of this slice, so the promise the menu makes can now be kept.
+                     */
+                    IsNavigationVisible: true,
                     PageType: "List",
                     SortOrder: 33,
                     Actions:

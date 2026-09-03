@@ -498,7 +498,7 @@ exist before the field is worth showing: Faz 3 comes first, and Faz 1's remainin
 | **Faz 2** | Closure envelope proper: `note`, `deliverables[]`, `followUps[]`, and `TaskFieldDefinition.Stage` | Yes, additive | Next |
 | **Faz 4 → done, and smaller than written** | The RETURN SIGNAL: `Returned { at, reason, count }` on the projection, declared in the contract, a row chip and a detail sentence. **No lifecycle member, and `Blocked` dropped entirely** — see §10 for why both were mis-specified | **None** | **Delivered 2026-09-03** |
 | **Faz 5a → now** | The work report QUERY and its AUTHORITY. `GET /api/v1/tasks/work-report`, scoped through MOD-0018-FU15's `IDataScopeResolver`, aggregated in the database. **No screen, no string** | Read-only | **Delivered 2026-09-03** |
-| **Faz 5b** | The report SCREEN, drawing those numbers — and the 7-language strings it needs | None | Next |
+| **Faz 5b → now** | The report SCREEN at `/Tasks/WorkReport`: proxy, page, four tiles, four charts, 50 labels × 7 languages, manifest page made nav-visible | None | **Delivered 2026-09-04** |
 
 ### Why Faz 5 split in two
 
@@ -661,6 +661,41 @@ imprecise are corrected here rather than repeated.
 - **The final tally runs in memory**, over rows already narrowed to one period and one scope by the database.
   Seven conditional accumulations as one `$group` would be a pipeline nobody can verify; the bound that keeps
   the set small is the REQUIRED period, and `WorkReportTally`'s header says so in case that ever changes.
+
+**Measured 2026-09-04, building the report screen (Faz 5b)**
+
+21. **There was no proxy, and the screen would have 404'd inside the web tier.** `Diten.Web`'s
+    `TasksController` had ZERO matches for `work-report`. Added following the file's own pattern, forwarding
+    `Request.QueryString.Value` WHOLE — `from`/`to`/`groupBy` are Platform's contract, and re-listing them is
+    how a parameter gets dropped silently. Pinned by `WorkReportRouteTests`, which exists because a route
+    Platform exposes and this tier does not is exactly how `inquire` shipped unreachable.
+22. **ApexCharts is vendored but the tenant shell does not load it.** `_LayoutTenantShell` has 0 matches for
+    apex; `_Layout` loads it at lines 91/502/542. So the library is loaded in the PAGE's own
+    `@section Scripts` — adding it to the shell would put a charting library on every tenant page to serve one.
+    No CDN, no npm, no new dependency.
+23. **The flow chart is a COMPARISON, not a time series — a limit of the endpoint.** 5a returns ONE period's
+    totals and does no sub-period bucketing, so there is no series to plot; a line drawn from four totals would
+    be a picture of nothing. If a series is ever wanted, the bucketing belongs to the query.
+24. **Making the manifest page nav-visible needed a `Nav.Page` label, and the guard caught its absence.**
+    Flipping `IsNavigationVisible` took `NavManifestL10nGuardTests` from 42 problems to 49 — seven languages ×
+    one page — meaning the sidebar would have printed `Nav.Page.TASKWORKREPORT` raw. Added to
+    `SharedResource.*.resx`; the count is back at its baseline 42.
+25. **The closure outcome labels were NOT copied.** The screen injects the WorkCenterNext localizer and reads
+    `WorkAggregation_ClosureOutcome_*` — already present in seven languages and held by the l10n guard as a
+    prefix domain. A second copy would let the Task Center and this report disagree about what an outcome is
+    called the day one is corrected. A code with no entry falls back to itself, which is the honest answer for a
+    TENANT outcome (one language, nothing to translate) and a visible gap for a system one.
+
+**Deferred from 5b, and worth naming**
+
+- **Group keys are raw ids.** `groups[].key` is a task-type id, unit id or user id, and the screen prints it as
+  it comes. Resolving them to names needs a lookup the report does not carry; the empty key gets a word
+  (`GroupUnnamed`) because a nameless axis label reads as a rendering bug, but a Guid on an axis is honest and
+  ugly. A name resolver is its own slice.
+- **No tenant-wide TOGGLE.** The endpoint decides scope from the permission, not the request, so there is
+  nothing for a control to switch. The manifest's `VIEW_TENANT_WIDE` action declares the authority; the screen
+  REPORTS what came back via `scopeApplied` and offers no way to ask for something else. A toggle would be a
+  second answer to a question the server already settled.
 
 **Measured but deliberately left out of the pack**
 

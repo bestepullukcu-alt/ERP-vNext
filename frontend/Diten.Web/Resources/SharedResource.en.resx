@@ -682,6 +682,9 @@
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>Task Types</value>
   </data>
+  <data name="Nav.Page.TASKWORKREPORT" xml:space="preserve">
+    <value>Work Report</value>
+  </data>
   <data name="Nav.Page.TASKDOCUMENTLIST" xml:space="preserve">
     <value>Controlled Documents</value>
   </data>

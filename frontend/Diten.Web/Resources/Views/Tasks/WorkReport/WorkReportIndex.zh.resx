@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Title" xml:space="preserve"><value>工作报告</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>某一时期内工作的流转情况——仅限您可见的工作。</value></data>
+  <data name="From" xml:space="preserve"><value>起始</value></data>
+  <data name="To" xml:space="preserve"><value>截止</value></data>
+  <data name="GroupBy" xml:space="preserve"><value>分组维度</value></data>
+  <data name="Apply" xml:space="preserve"><value>应用</value></data>
+  <data name="GroupByNone" xml:space="preserve"><value>不分组</value></data>
+  <data name="GroupByTaskType" xml:space="preserve"><value>任务类型</value></data>
+  <data name="GroupByOrganizationUnit" xml:space="preserve"><value>组织单元</value></data>
+  <data name="GroupByAssignee" xml:space="preserve"><value>负责人</value></data>
+  <data name="GroupByPriority" xml:space="preserve"><value>优先级</value></data>
+  <data name="ScopeScoped" xml:space="preserve"><value>您的范围</value></data>
+  <data name="ScopeTenant" xml:space="preserve"><value>整个租户</value></data>
+  <data name="ScopeScopedHint" xml:space="preserve"><value>仅统计您有权查看的工作。其他人的报告可能不同。</value></data>
+  <data name="ScopeTenantHint" xml:space="preserve"><value>统计租户内的全部任务。</value></data>
+  <data name="NoData" xml:space="preserve"><value>该时期内没有开启或关闭的工作。</value></data>
+  <data name="NoDataScoped" xml:space="preserve"><value>该时期内没有您可见的、开启或关闭的工作。</value></data>
+  <data name="Loading" xml:space="preserve"><value>正在加载报告…</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>无法加载报告。</value></data>
+  <data name="PeriodInvalid" xml:space="preserve"><value>时期的结束必须晚于开始。</value></data>
+  <data name="FlowTitle" xml:space="preserve"><value>开启与关闭</value></data>
+  <data name="FlowQuestion" xml:space="preserve"><value>我们跟得上新来的工作吗？</value></data>
+  <data name="Opened" xml:space="preserve"><value>已开启</value></data>
+  <data name="Closed" xml:space="preserve"><value>已关闭</value></data>
+  <data name="Completed" xml:space="preserve"><value>已完成</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="OutcomesTitle" xml:space="preserve"><value>工作如何结束</value></data>
+  <data name="OutcomesQuestion" xml:space="preserve"><value>这些关闭做出了什么决定？</value></data>
+  <data name="OutcomesEmpty" xml:space="preserve"><value>没有记录带结果的关闭。</value></data>
+  <data name="TimelinessTitle" xml:space="preserve"><value>对照截止日期</value></data>
+  <data name="TimelinessQuestion" xml:space="preserve"><value>工作按时完成了吗？</value></data>
+  <data name="OnTime" xml:space="preserve"><value>按时</value></data>
+  <data name="Late" xml:space="preserve"><value>逾期</value></data>
+  <data name="WithoutDueDate" xml:space="preserve"><value>未设截止日期</value></data>
+  <data name="GroupsTitle" xml:space="preserve"><value>按{0}</value></data>
+  <data name="GroupsQuestion" xml:space="preserve"><value>工作发生在哪里？</value></data>
+  <data name="GroupUnnamed" xml:space="preserve"><value>未设置</value></data>
+  <data name="CycleTimeTitle" xml:space="preserve"><value>平均关闭用时</value></data>
+  <data name="CycleTimeDays" xml:space="preserve"><value>{0} 天</value></data>
+  <data name="CycleTimeOver" xml:space="preserve"><value>基于 {0} 项已关闭</value></data>
+  <data name="ReworkTitle" xml:space="preserve"><value>被退回</value></data>
+  <data name="ReworkTasks" xml:space="preserve"><value>{0} 项任务</value></data>
+  <data name="ReworkReturns" xml:space="preserve"><value>共 {0} 次退回</value></data>
+  <data name="UnattendedTitle" xml:space="preserve"><value>等待认领</value></data>
+  <data name="UnattendedHint" xml:space="preserve"><value>当前无人认领的开启工作。</value></data>
+  <data name="EffortTitle" xml:space="preserve"><value>计划与实际</value></data>
+  <data name="EffortHours" xml:space="preserve"><value>预估 {0} 小时 · 实际 {1} 小时</value></data>
+  <data name="EffortOver" xml:space="preserve"><value>基于 {0} 项任务</value></data>
+  <data name="EffortHint" xml:space="preserve"><value>这是关于「计划」的信号，绝非关于个人。</value></data>
+  <data name="NotMeasured" xml:space="preserve"><value>未测量</value></data>
+</root>

@@ -1,0 +1,187 @@
+@using Diten.Web.Views.Tasks.WorkReport
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkReportIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["Title"].Value;
+    Layout = "_LayoutTenantShell";
+
+    /*
+     * THE DEFAULT PERIOD: the last 30 days, ending at TOMORROW 00:00 so today is fully included — the API's
+     * `to` is exclusive.
+     *
+     * ⚠ ROLLING, NOT MONTH-TO-DATE, and the reason is the same one `scopeApplied` exists for. On the first of
+     * the month a month-to-date default renders an almost empty report, which reads as "nothing is happening"
+     * rather than "you asked for six hours". A rolling window always has a full window of data behind it, so
+     * the first thing a reader sees is a real answer to a real question.
+     *
+     * Thirty days rather than seven: cycle time and rework are the measures this screen exists for, and both
+     * need enough closures to mean anything. A week of a small team's work is a handful of tasks.
+     */
+    var today = DateTime.UtcNow.Date;
+    var defaultTo = today.AddDays(1);
+    var defaultFrom = defaultTo.AddDays(-30);
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["Title"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<section class="card mb-4">
+    <div class="card-body p-4">
+        @*
+            THE FILTER. The period is REQUIRED — the API refuses an unbounded report, because one is a
+            full-collection scan wearing a date picker — so both boxes are `required` and pre-filled rather than
+            left empty for the reader to discover the rule.
+        *@
+        <form id="workReportFilter" class="row g-3 align-items-end" novalidate>
+            <div class="col-12 col-md-3">
+                <label for="wrFrom" class="form-label fw-medium">@Localizer["From"]</label>
+                <input type="date" id="wrFrom" class="form-control" required
+                       value="@defaultFrom.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-12 col-md-3">
+                <label for="wrTo" class="form-label fw-medium">@Localizer["To"]</label>
+                @* Exclusive, exactly as the API reads it — the value shown is the first day NOT counted. *@
+                <input type="date" id="wrTo" class="form-control" required
+                       value="@defaultTo.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-12 col-md-4">
+                <label for="wrGroupBy" class="form-label fw-medium">@Localizer["GroupBy"]</label>
+                @* CODE values that travel, never translated words — the same rule every other picker here follows. *@
+                <select id="wrGroupBy" class="form-select">
+                    <option value="None">@Localizer["GroupByNone"]</option>
+                    <option value="TaskType">@Localizer["GroupByTaskType"]</option>
+                    <option value="OrganizationUnit">@Localizer["GroupByOrganizationUnit"]</option>
+                    <option value="Assignee">@Localizer["GroupByAssignee"]</option>
+                    <option value="Priority">@Localizer["GroupByPriority"]</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-2">
+                <button type="submit" class="btn btn-primary w-100">@Localizer["Apply"]</button>
+            </div>
+        </form>
+
+        @*
+            ⚠ WHAT THE NUMBERS COVER, SAID OUT LOUD.
+
+            "There is no work" and "there is no work I may SEE" draw the identical empty chart, and a reader
+            takes the second for the first every time. The API publishes `scopeApplied` for exactly this reason,
+            and a screen that swallowed it would kill the field's reason to exist. Rendered from the response,
+            never guessed from the permission — the server decides scope, this reports it.
+        *@
+        <div class="mt-3" data-wr-scope hidden>
+            <span class="badge" data-wr-scope-badge></span>
+            <span class="text-muted small ms-2" data-wr-scope-hint></span>
+        </div>
+
+        <p class="text-muted mb-0 mt-3" data-wr-status role="status" aria-live="polite"></p>
+    </div>
+</section>
+
+@*
+    THE TILES — one NUMBER each. A chart for a single figure is decoration, and this screen has a rule against
+    decoration: every visual answers one question. These four are questions with one-number answers.
+*@
+<div class="row g-4 mb-4" data-wr-tiles hidden>
+    <div class="col-12 col-md-6 col-xl-3">
+        <section class="card h-100">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["CycleTimeTitle"]</h6>
+                <p class="h4 mb-1" data-wr-cycle-value></p>
+                <p class="text-muted small mb-0" data-wr-cycle-over></p>
+            </div>
+        </section>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
+        <section class="card h-100">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["ReworkTitle"]</h6>
+                <p class="h4 mb-1" data-wr-rework-tasks></p>
+                <p class="text-muted small mb-0" data-wr-rework-returns></p>
+            </div>
+        </section>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
+        <section class="card h-100">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["UnattendedTitle"]</h6>
+                <p class="h4 mb-1" data-wr-unattended-value></p>
+                <p class="text-muted small mb-0">@Localizer["UnattendedHint"]</p>
+            </div>
+        </section>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
+        <section class="card h-100">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["EffortTitle"]</h6>
+                <p class="h6 mb-1" data-wr-effort-value></p>
+                <p class="text-muted small mb-1" data-wr-effort-over></p>
+                @*
+                    ⚠ HOURS AND A COUNT — NEVER A RATIO, AND THE NOTE SAYS WHY.
+                    Pack §8 excludes an efficiency percentage outright: turning estimate-versus-actual into a
+                    personal score makes people inflate estimates, which corrupts the only planning input the
+                    system has. The variance is a fact about the PLAN, and this line stops a reader doing the
+                    division in their head and attributing it to a person.
+                *@
+                <p class="text-muted small mb-0 fst-italic">@Localizer["EffortHint"]</p>
+            </div>
+        </section>
+    </div>
+</div>
+
+@* THE CHARTS — one question each, named above the picture so nobody has to infer what they are looking at. *@
+<div class="row g-4" data-wr-charts hidden>
+    <div class="col-12 col-xl-6">
+        <section class="card h-100">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["FlowTitle"]</h6>
+                <p class="text-muted small mb-3">@Localizer["FlowQuestion"]</p>
+                <div data-wr-chart-flow></div>
+            </div>
+        </section>
+    </div>
+    <div class="col-12 col-xl-6">
+        <section class="card h-100">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["OutcomesTitle"]</h6>
+                <p class="text-muted small mb-3">@Localizer["OutcomesQuestion"]</p>
+                <div data-wr-chart-outcomes></div>
+                <p class="text-muted mb-0" data-wr-outcomes-empty hidden>@Localizer["OutcomesEmpty"]</p>
+            </div>
+        </section>
+    </div>
+    <div class="col-12 col-xl-6">
+        <section class="card h-100">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["TimelinessTitle"]</h6>
+                <p class="text-muted small mb-3">@Localizer["TimelinessQuestion"]</p>
+                <div data-wr-chart-timeliness></div>
+            </div>
+        </section>
+    </div>
+    @* Drawn only when a breakdown was asked for — an empty card headed "By nothing" is worse than no card. *@
+    <div class="col-12 col-xl-6" data-wr-groups-card hidden>
+        <section class="card h-100">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-1" data-wr-groups-title></h6>
+                <p class="text-muted small mb-3">@Localizer["GroupsQuestion"]</p>
+                <div data-wr-chart-groups></div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<partial name="~/Views/Tasks/_WorkReportL10n.cshtml" />
+
+@section Scripts {
+    @*
+        ⚠ APEXCHARTS IS LOADED HERE, NOT IN THE SHELL — MEASURED 2026-09-04.
+        `_LayoutTenantShell` does not load it (0 matches); `_Layout` does. Adding it to the shell would put a
+        charting library on every tenant page to serve one, and the shell is shared by all of them. The library
+        is already vendored at assets/vendor/libs/apex-charts — no CDN, no npm, no new dependency.
+    *@
+    <link rel="stylesheet" href="~/assets/vendor/libs/apex-charts/apex-charts.css" />
+    <script src="~/assets/vendor/libs/apex-charts/apexcharts.js"></script>
+    <script src="~/assets/js/Tasks/WorkReport/index.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Title" xml:space="preserve"><value>Rapport d'activité</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Comment le travail s'écoule sur une période — pour ce que vous pouvez voir.</value></data>
+  <data name="From" xml:space="preserve"><value>Du</value></data>
+  <data name="To" xml:space="preserve"><value>Au</value></data>
+  <data name="GroupBy" xml:space="preserve"><value>Répartir par</value></data>
+  <data name="Apply" xml:space="preserve"><value>Appliquer</value></data>
+  <data name="GroupByNone" xml:space="preserve"><value>Aucune répartition</value></data>
+  <data name="GroupByTaskType" xml:space="preserve"><value>Type de tâche</value></data>
+  <data name="GroupByOrganizationUnit" xml:space="preserve"><value>Unité organisationnelle</value></data>
+  <data name="GroupByAssignee" xml:space="preserve"><value>Assigné à</value></data>
+  <data name="GroupByPriority" xml:space="preserve"><value>Priorité</value></data>
+  <data name="ScopeScoped" xml:space="preserve"><value>Votre périmètre</value></data>
+  <data name="ScopeTenant" xml:space="preserve"><value>Tout le locataire</value></data>
+  <data name="ScopeScopedHint" xml:space="preserve"><value>Ne compte que le travail que vous êtes autorisé à voir. Le rapport d'un autre lecteur peut différer.</value></data>
+  <data name="ScopeTenantHint" xml:space="preserve"><value>Compte toutes les tâches du locataire.</value></data>
+  <data name="NoData" xml:space="preserve"><value>Aucun travail ouvert ni clôturé sur cette période.</value></data>
+  <data name="NoDataScoped" xml:space="preserve"><value>Aucun travail visible par vous n'a été ouvert ni clôturé sur cette période.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Chargement du rapport…</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Le rapport n'a pas pu être chargé.</value></data>
+  <data name="PeriodInvalid" xml:space="preserve"><value>La fin de la période doit suivre son début.</value></data>
+  <data name="FlowTitle" xml:space="preserve"><value>Ouvertes et clôturées</value></data>
+  <data name="FlowQuestion" xml:space="preserve"><value>Suivons-nous le rythme des arrivées ?</value></data>
+  <data name="Opened" xml:space="preserve"><value>Ouvertes</value></data>
+  <data name="Closed" xml:space="preserve"><value>Clôturées</value></data>
+  <data name="Completed" xml:space="preserve"><value>Terminées</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>Annulées</value></data>
+  <data name="OutcomesTitle" xml:space="preserve"><value>Comment le travail s'est terminé</value></data>
+  <data name="OutcomesQuestion" xml:space="preserve"><value>Qu'ont décidé les clôtures ?</value></data>
+  <data name="OutcomesEmpty" xml:space="preserve"><value>Aucune clôture n'a été enregistrée avec un résultat.</value></data>
+  <data name="TimelinessTitle" xml:space="preserve"><value>Face à l'échéance</value></data>
+  <data name="TimelinessQuestion" xml:space="preserve"><value>Le travail est-il arrivé à temps ?</value></data>
+  <data name="OnTime" xml:space="preserve"><value>À temps</value></data>
+  <data name="Late" xml:space="preserve"><value>En retard</value></data>
+  <data name="WithoutDueDate" xml:space="preserve"><value>Sans échéance</value></data>
+  <data name="GroupsTitle" xml:space="preserve"><value>Par {0}</value></data>
+  <data name="GroupsQuestion" xml:space="preserve"><value>Où le travail se fait-il ?</value></data>
+  <data name="GroupUnnamed" xml:space="preserve"><value>Non renseigné</value></data>
+  <data name="CycleTimeTitle" xml:space="preserve"><value>Durée moyenne de clôture</value></data>
+  <data name="CycleTimeDays" xml:space="preserve"><value>{0} jours</value></data>
+  <data name="CycleTimeOver" xml:space="preserve"><value>sur {0} clôturées</value></data>
+  <data name="ReworkTitle" xml:space="preserve"><value>Renvoyées</value></data>
+  <data name="ReworkTasks" xml:space="preserve"><value>{0} tâches</value></data>
+  <data name="ReworkReturns" xml:space="preserve"><value>{0} renvois au total</value></data>
+  <data name="UnattendedTitle" xml:space="preserve"><value>En attente de quelqu'un</value></data>
+  <data name="UnattendedHint" xml:space="preserve"><value>Travail ouvert que personne ne porte, actuellement.</value></data>
+  <data name="EffortTitle" xml:space="preserve"><value>Plan et réel</value></data>
+  <data name="EffortHours" xml:space="preserve"><value>{0} h estimées · {1} h passées</value></data>
+  <data name="EffortOver" xml:space="preserve"><value>sur {0} tâches</value></data>
+  <data name="EffortHint" xml:space="preserve"><value>Un signal sur le PLAN, jamais sur une personne.</value></data>
+  <data name="NotMeasured" xml:space="preserve"><value>Non mesuré</value></data>
+</root>

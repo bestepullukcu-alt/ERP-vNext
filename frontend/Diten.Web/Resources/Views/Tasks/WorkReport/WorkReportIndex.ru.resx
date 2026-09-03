@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Title" xml:space="preserve"><value>Отчёт о работе</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Как движется работа за период — по работе, которую вы видите.</value></data>
+  <data name="From" xml:space="preserve"><value>С</value></data>
+  <data name="To" xml:space="preserve"><value>По</value></data>
+  <data name="GroupBy" xml:space="preserve"><value>Разбивка по</value></data>
+  <data name="Apply" xml:space="preserve"><value>Применить</value></data>
+  <data name="GroupByNone" xml:space="preserve"><value>Без разбивки</value></data>
+  <data name="GroupByTaskType" xml:space="preserve"><value>Тип задачи</value></data>
+  <data name="GroupByOrganizationUnit" xml:space="preserve"><value>Организационная единица</value></data>
+  <data name="GroupByAssignee" xml:space="preserve"><value>Исполнитель</value></data>
+  <data name="GroupByPriority" xml:space="preserve"><value>Приоритет</value></data>
+  <data name="ScopeScoped" xml:space="preserve"><value>Ваша область</value></data>
+  <data name="ScopeTenant" xml:space="preserve"><value>Весь арендатор</value></data>
+  <data name="ScopeScopedHint" xml:space="preserve"><value>Учитывается только работа, которую вам разрешено видеть. Отчёт другого читателя может отличаться.</value></data>
+  <data name="ScopeTenantHint" xml:space="preserve"><value>Учитываются все задачи арендатора.</value></data>
+  <data name="NoData" xml:space="preserve"><value>За этот период не было открытых или закрытых задач.</value></data>
+  <data name="NoDataScoped" xml:space="preserve"><value>За этот период не было видимых вам открытых или закрытых задач.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка отчёта…</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Не удалось загрузить отчёт.</value></data>
+  <data name="PeriodInvalid" xml:space="preserve"><value>Конец периода должен быть позже его начала.</value></data>
+  <data name="FlowTitle" xml:space="preserve"><value>Открыто и закрыто</value></data>
+  <data name="FlowQuestion" xml:space="preserve"><value>Успеваем ли мы за поступающей работой?</value></data>
+  <data name="Opened" xml:space="preserve"><value>Открыто</value></data>
+  <data name="Closed" xml:space="preserve"><value>Закрыто</value></data>
+  <data name="Completed" xml:space="preserve"><value>Выполнено</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>Отменено</value></data>
+  <data name="OutcomesTitle" xml:space="preserve"><value>Чем закончилась работа</value></data>
+  <data name="OutcomesQuestion" xml:space="preserve"><value>Что решили эти закрытия?</value></data>
+  <data name="OutcomesEmpty" xml:space="preserve"><value>Ни одно закрытие не записано с результатом.</value></data>
+  <data name="TimelinessTitle" xml:space="preserve"><value>Относительно срока</value></data>
+  <data name="TimelinessQuestion" xml:space="preserve"><value>Успела ли работа в срок?</value></data>
+  <data name="OnTime" xml:space="preserve"><value>В срок</value></data>
+  <data name="Late" xml:space="preserve"><value>С опозданием</value></data>
+  <data name="WithoutDueDate" xml:space="preserve"><value>Срок не задан</value></data>
+  <data name="GroupsTitle" xml:space="preserve"><value>По разрезу «{0}»</value></data>
+  <data name="GroupsQuestion" xml:space="preserve"><value>Где выполняется работа?</value></data>
+  <data name="GroupUnnamed" xml:space="preserve"><value>Не задано</value></data>
+  <data name="CycleTimeTitle" xml:space="preserve"><value>Среднее время закрытия</value></data>
+  <data name="CycleTimeDays" xml:space="preserve"><value>{0} дн.</value></data>
+  <data name="CycleTimeOver" xml:space="preserve"><value>по {0} закрытым</value></data>
+  <data name="ReworkTitle" xml:space="preserve"><value>Вернулось</value></data>
+  <data name="ReworkTasks" xml:space="preserve"><value>{0} задач</value></data>
+  <data name="ReworkReturns" xml:space="preserve"><value>всего {0} возвратов</value></data>
+  <data name="UnattendedTitle" xml:space="preserve"><value>Ждёт исполнителя</value></data>
+  <data name="UnattendedHint" xml:space="preserve"><value>Открытая работа, которую сейчас никто не ведёт.</value></data>
+  <data name="EffortTitle" xml:space="preserve"><value>План и факт</value></data>
+  <data name="EffortHours" xml:space="preserve"><value>{0} ч оценка · {1} ч затрачено</value></data>
+  <data name="EffortOver" xml:space="preserve"><value>по {0} задачам</value></data>
+  <data name="EffortHint" xml:space="preserve"><value>Сигнал о ПЛАНЕ, а не о человеке.</value></data>
+  <data name="NotMeasured" xml:space="preserve"><value>Не измерено</value></data>
+</root>

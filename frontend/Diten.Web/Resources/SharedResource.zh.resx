@@ -621,6 +621,9 @@
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>任务类型</value>
   </data>
+  <data name="Nav.Page.TASKWORKREPORT" xml:space="preserve">
+    <value>工作报告</value>
+  </data>
   <data name="Nav.Page.TASKDOCUMENTLIST" xml:space="preserve">
     <value>受控文件</value>
   </data>

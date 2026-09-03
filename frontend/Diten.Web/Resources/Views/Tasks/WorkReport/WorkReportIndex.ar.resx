@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Title" xml:space="preserve"><value>تقرير العمل</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>كيف يتدفّق العمل خلال فترة — للعمل الذي يمكنك رؤيته.</value></data>
+  <data name="From" xml:space="preserve"><value>من</value></data>
+  <data name="To" xml:space="preserve"><value>إلى</value></data>
+  <data name="GroupBy" xml:space="preserve"><value>التقسيم حسب</value></data>
+  <data name="Apply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="GroupByNone" xml:space="preserve"><value>بدون تقسيم</value></data>
+  <data name="GroupByTaskType" xml:space="preserve"><value>نوع المهمة</value></data>
+  <data name="GroupByOrganizationUnit" xml:space="preserve"><value>الوحدة التنظيمية</value></data>
+  <data name="GroupByAssignee" xml:space="preserve"><value>المسؤول</value></data>
+  <data name="GroupByPriority" xml:space="preserve"><value>الأولوية</value></data>
+  <data name="ScopeScoped" xml:space="preserve"><value>نطاقك</value></data>
+  <data name="ScopeTenant" xml:space="preserve"><value>المستأجر بالكامل</value></data>
+  <data name="ScopeScopedHint" xml:space="preserve"><value>يحسب العمل المصرّح لك برؤيته فقط. قد يختلف تقرير قارئ آخر.</value></data>
+  <data name="ScopeTenantHint" xml:space="preserve"><value>يحسب كل مهام المستأجر.</value></data>
+  <data name="NoData" xml:space="preserve"><value>لم يُفتح أو يُغلق أي عمل في هذه الفترة.</value></data>
+  <data name="NoDataScoped" xml:space="preserve"><value>لم يُفتح أو يُغلق أي عمل تراه في هذه الفترة.</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ تحميل التقرير…</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>تعذّر تحميل التقرير.</value></data>
+  <data name="PeriodInvalid" xml:space="preserve"><value>يجب أن تنتهي الفترة بعد بدايتها.</value></data>
+  <data name="FlowTitle" xml:space="preserve"><value>المفتوحة والمغلقة</value></data>
+  <data name="FlowQuestion" xml:space="preserve"><value>هل نواكب ما يصل إلينا؟</value></data>
+  <data name="Opened" xml:space="preserve"><value>مفتوحة</value></data>
+  <data name="Closed" xml:space="preserve"><value>مغلقة</value></data>
+  <data name="Completed" xml:space="preserve"><value>مكتملة</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>ملغاة</value></data>
+  <data name="OutcomesTitle" xml:space="preserve"><value>كيف انتهى العمل</value></data>
+  <data name="OutcomesQuestion" xml:space="preserve"><value>ماذا قرّرت عمليات الإغلاق؟</value></data>
+  <data name="OutcomesEmpty" xml:space="preserve"><value>لم يُسجَّل أي إغلاق بنتيجة.</value></data>
+  <data name="TimelinessTitle" xml:space="preserve"><value>مقابل الموعد النهائي</value></data>
+  <data name="TimelinessQuestion" xml:space="preserve"><value>هل أُنجز العمل في وقته؟</value></data>
+  <data name="OnTime" xml:space="preserve"><value>في الوقت</value></data>
+  <data name="Late" xml:space="preserve"><value>متأخر</value></data>
+  <data name="WithoutDueDate" xml:space="preserve"><value>بلا موعد نهائي</value></data>
+  <data name="GroupsTitle" xml:space="preserve"><value>حسب {0}</value></data>
+  <data name="GroupsQuestion" xml:space="preserve"><value>أين يجري العمل؟</value></data>
+  <data name="GroupUnnamed" xml:space="preserve"><value>غير محدَّد</value></data>
+  <data name="CycleTimeTitle" xml:space="preserve"><value>متوسط زمن الإغلاق</value></data>
+  <data name="CycleTimeDays" xml:space="preserve"><value>{0} يوم</value></data>
+  <data name="CycleTimeOver" xml:space="preserve"><value>على {0} مغلقة</value></data>
+  <data name="ReworkTitle" xml:space="preserve"><value>أُعيدت</value></data>
+  <data name="ReworkTasks" xml:space="preserve"><value>{0} مهمة</value></data>
+  <data name="ReworkReturns" xml:space="preserve"><value>{0} إعادة إجمالًا</value></data>
+  <data name="UnattendedTitle" xml:space="preserve"><value>بانتظار من يتسلّمها</value></data>
+  <data name="UnattendedHint" xml:space="preserve"><value>عمل مفتوح لا يحمله أحد، الآن.</value></data>
+  <data name="EffortTitle" xml:space="preserve"><value>الخطة مقابل الفعلي</value></data>
+  <data name="EffortHours" xml:space="preserve"><value>{0} ساعة مقدَّرة · {1} ساعة مُنفَقة</value></data>
+  <data name="EffortOver" xml:space="preserve"><value>على {0} مهمة</value></data>
+  <data name="EffortHint" xml:space="preserve"><value>مؤشّر على الخطة، لا على شخص.</value></data>
+  <data name="NotMeasured" xml:space="preserve"><value>غير مقيس</value></data>
+</root>
