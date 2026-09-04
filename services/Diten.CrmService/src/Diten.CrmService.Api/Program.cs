@@ -22,6 +22,14 @@ builder.Configuration
     .AddEnvironmentVariables()
     .AddCommandLine(args);
 
+// Dev-fleet bind fix (WP-CRM-PORTFIX): CreateEmptyBuilder does NOT flow ASPNETCORE_URLS into Kestrel the way
+// CreateBuilder's default host config does, so dev falls back to :5000 (the Gateway port) and every gateway
+// route 404s. Re-apply the env-provided URLs to Kestrel ourselves — but ONLY in non-Production and ONLY when the
+// value is present, so the IIS binding path below (where the ANCM module owns the port) is never disturbed.
+var devUrls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
+if (!builder.Environment.IsProduction() && !string.IsNullOrWhiteSpace(devUrls))
+    builder.WebHost.UseUrls(devUrls.Split(';', StringSplitOptions.RemoveEmptyEntries));
+
 // CreateEmptyBuilder registers NO server, so wire the same set WebApplication.CreateBuilder does — otherwise
 // hosting under IIS fails (in-process: "No service for type 'IServer'"; or a self-bind clash with the module).
 // Kestrel serves standalone/dev; UseIIS is the in-process IIS server (IISHttpServer); UseIISIntegration is the
