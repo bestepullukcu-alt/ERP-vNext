@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Diten.Platform.Application.Features.DocumentManagementMasterRegister.Models;
 
 // DCP-005 (document-management side, Phase 1) — controlled-document EFFECTIVENESS read contract.
@@ -18,7 +20,13 @@ namespace Diten.Platform.Application.Features.DocumentManagementMasterRegister.M
 /// </list>
 /// <see cref="Unresolved"/> is never used for an infrastructure failure — a register read that throws propagates as a
 /// thrown exception ("could not check"), never as an <see cref="Unresolved"/> result (contract §2/§5, fail-closed).
+///
+/// This state crosses the HTTP boundary (the effectiveness:batch response `state` field), so it carries the per-enum
+/// [JsonConverter(typeof(JsonStringEnumConverter))] the service convention requires (Enums/Tasks/TaskEnums.cs:7-11,
+/// Enums/EntitlementSource.cs). Without it System.Text.Json writes the numeric value on the wire — unloggable, and it
+/// silently mis-reads once a member is inserted. Applied per-enum, never via a global AddJsonOptions change.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum DocumentEffectivenessState
 {
     Effective,
