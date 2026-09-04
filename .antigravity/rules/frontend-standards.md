@@ -132,6 +132,39 @@ Bu kurallar, projedeki görsel tutarlılığı (consistency) korumak için ZORUN
 - Full-page wrapper class'ı `{module-slug}-details` veya `{module-slug}-preview` formatında olmalı ve shared CSS standardına dahil edilmelidir; örnekler: `module-catalog-details`, `module-page-details`, `golden-reference-compact-details`.
 - Bordered layout/card varyantı gerekiyorsa CSS ile elle çoğaltılmaz; Sneat settings/layout seçeneği kullanılmalıdır.
 
+### UI-027: Çalışmayan Kontrol Konmaz (ZORUNLU)
+
+Ekrana, basıldığında hiçbir şey yapmayan bir kontrol (buton, menü, sekme, bağlantı)
+**konulmaz**. Bir kontrolün varlığı kullanıcıya bir söz verir; tutulmayan söz, olmayan
+özellikten daha kötüdür — kullanıcı ekranın bozuk olduğunu düşünür ve sebebini bulamaz.
+
+**Ölçülmüş vaka (2026-09-04, İş Raporu).** Sayfaya bir "İşlem" açılır menüsü kondu.
+Ölçüm: menü açılıyor, `çocuk sayısı 0`, `innerHTML ""`, yükseklik 16px — tamamen boş.
+Kodun kendi yorumu bunu bilerek yaptığını söylüyordu: *"VISUAL SHELL ONLY … the menu
+stays empty rather than guessing at a behaviour nobody asked for."* Tahmin etmekten
+kaçınmak doğru içgüdüydü; **seçilen çözüm yanlıştı.**
+
+Gerekçe olarak yazılan "sayfanın silüeti DataTable kardeşlerine benzesin" bir kullanıcı
+değeri değildir — kullanıcı silüet karşılaştırmaz, butona basar.
+
+**Bir davranışa henüz karar verilmediyse üç meşru yol vardır:**
+
+1. **Kontrolü hiç koyma.** Özellik geldiğinde kontrol de birlikte gelir. (Tercih edilen.)
+2. **İçine gerçek bir şey koy.** Bugün yapılabilen ne varsa o.
+3. **Devre dışı bırak ve SEBEBİNİ SÖYLE.** Pasif buton + neden pasif olduğunu anlatan
+   ipucu. Görünür bir eksiklik, sessiz bir vaatten dürüsttür.
+
+**Dördüncü yol — koy ve boş bırak — YASAKTIR.**
+
+⚠ Bu kural, bu üründe tekrar eden bir kusur ailesinin üyesidir: EKRAN BİR ŞEYİN NEDEN
+OLMADIĞINI SÖYLEMİYOR. Kardeşleri: kiracı tarafındaki "Şifremi unuttum" bağlantısının
+hiçbir yere gitmemesi ([[BL-328]]), alt görev kartının sessizce yok olması ([[BL-326]]),
+birim/pozisyonun taslak doğup sebebinin söylenmemesi ([[BL-327]]). Hepsinde ekran bir
+söz veriyor ve tutmuyor.
+
+**Kabul ölçütü:** teslimden önce ekrandaki HER kontrole bas. Hiçbir şey yapmayan bir
+kontrol kaldıysa iş bitmemiştir.
+
 ### UI-026: KPI Kartı (KPI Cards) Tasarım Standartları
 - **Padding (İç Boşluk)**: KPI kartlarındaki iç boşluklar varsayılan 24px yerine daima **16px** olmalıdır. Bunun için özel CSS yazılmamalı, doğrudan Bootstrap'in yerleşik **`p-4`** (`card-body p-4`) sınıfı kullanılmalıdır.
   - ⚠ ÖLÇÜLDÜ (2026-09-04): Bu kural daha önce `p-3` diyordu, ama `p-3` **12px** üretir; hedeflenen 16px `p-4`'ün değeridir (`card-body` varsayılanı 24px). Sınıf ile değer birbirini tutmuyordu: kuralın harfine uyan 12px alıyor, amacına uyan 16px. Golden Reference ve proje geneli (271 kullanım) zaten `p-4`; kural onlara hizalandı.
