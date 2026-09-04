@@ -63,7 +63,11 @@ public static class DataSeeder
         // Keep these grants on this dedicated tenant/user role; do not broaden the shared Admin baseline.
         "platform.document-management.master-register.registration.create",
         "platform.document-management.master-register.manage",
-        "platform.document-management.controlled-documents.create"
+        "platform.document-management.controlled-documents.create",
+        // DCP-005 — the master-register operator also reads controlled-document effectiveness (Task Center's
+        // task-type activation gate consumes the same resolver in-process). Granted here, on this dedicated tenant
+        // role, so a real tenant login exercises the effectiveness:batch endpoint; never in the shared Admin baseline.
+        "platform.document-management.master-register.effectiveness.read"
     };
     private static readonly string[] WorkflowPermissionKeys =
     {
@@ -415,6 +419,10 @@ public static class DataSeeder
             new("platform", "document-management.master-register", "manage", "Manage Document Master Register", "Permission to create and edit document master register entries"),
             new("platform", "document-management.master-register", "link", "Link Document Master Register", "Permission to link master register entries to controlled documents and sources"),
             new("platform", "document-management.master-register", "audit.view", "View Master Register Audit", "Permission to view document master register audit history"),
+            // DCP-005 — gates the effectiveness:batch read endpoint (the screen side of the effectiveness resolver).
+            // Platform-scoped like its master-register siblings; granted to the tenant-97c5 master-register operator
+            // role below (SeedTenant97c5MasterRegisterLinkGrantAsync), never broadened into the shared Admin baseline.
+            new("platform", "document-management.master-register.effectiveness", "read", "Read Document Effectiveness", "Permission to resolve controlled-document effectiveness (Effective/Blocked/Unresolved) from the live Master Register"),
             new("platform", "document-management.master-register.registration", "view", "View Controlled Document Registrations", "Permission to view controlled document registration operations"),
             new("platform", "document-management.master-register.registration", "create", "Create Controlled Document Registrations", "Permission to create a governed controlled document registration"),
             new("platform", "document-management.master-register.registration", "reconcile", "Reconcile Controlled Document Registrations", "Permission to retry and reconcile controlled document registration operations"),
