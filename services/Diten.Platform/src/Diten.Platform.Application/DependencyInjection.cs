@@ -120,6 +120,10 @@ public static class DependencyInjection
         services.AddScoped<Features.DocumentManagementTemplateMasters.Services.TemplateMasterService>();
         // MOD-0029-FU06 — Document Master Register (LOG-0001) governance projection service.
         services.AddScoped<Features.DocumentManagementMasterRegister.Services.DocumentMasterRegisterService>();
+        // DCP-005 Phase 1 — in-process controlled-document effectiveness gate over the single effectiveness resolver
+        // (ResolveDocumentEffectivenessQuery). The MediatR handler is auto-registered; only the port needs binding.
+        services.AddScoped<Features.DocumentManagementMasterRegister.Services.IControlledDocumentEffectivenessPort,
+            Features.DocumentManagementMasterRegister.Services.ControlledDocumentEffectivenessPort>();
         // MOD-0029-FU36 — durable controlled-document registration orchestration.
         services.AddScoped<Features.DocumentManagementControlledDocumentRegistration.Services.ControlledDocumentRegistrationService>();
         // MOD-0029-FU07 — Permanent UID / Document Code allocation engine (ledger + atomic sequence counter).
