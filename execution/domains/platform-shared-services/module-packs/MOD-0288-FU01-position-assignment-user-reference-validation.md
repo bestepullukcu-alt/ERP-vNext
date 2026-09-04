@@ -78,7 +78,7 @@ Expected future modify paths:
 
 These paths follow the existing MOD-0040 MDM Legal Entity validation pattern:
 `ILegalEntityReferenceValidator`, `MdmLegalEntityReferenceValidator`, `MdmServiceOptions`,
-`TenantPropagationHandler`, typed `HttpClient` registration, bearer forwarding, `X-Tenant-Id` propagation,
+`TenantOnTheWire`, typed `HttpClient` registration, bearer forwarding, `X-Tenant-Id` propagation,
 fail-closed mapping, malformed response handling, network failure handling, and caller cancellation preservation.
 
 ## 5. Protected Paths
@@ -118,7 +118,12 @@ AuthService success response contains only:
   `Referenceable != true`, the Position Assignment write is rejected and the `UserId` is not persisted.
 - Missing, cross-tenant, soft-deleted, and inactive users must not produce existence leakage.
 - Caller cancellation must remain cancellation, not be converted to business rejection.
-- Existing `TenantPropagationHandler` behavior should be reused for `X-Tenant-Id`.
+- `X-Tenant-Id` must be written by the calling class itself, from the request scope, using `TenantOnTheWire`
+  to decide which tenant may travel. **⚠ Corrected 2026-08-29 (BL-316).** This line used to say "existing
+  `TenantPropagationHandler` behavior should be reused". That was wrong and cost a round: `IHttpClientFactory`
+  caches a client's handler chain in its OWN scope, so a `DelegatingHandler` injecting the request-scoped
+  `ITenantContext` holds an instance belonging to no request, answers `IsResolved == false`, and adds no header
+  — silently. The handler has been deleted from all three services. Do not reintroduce one.
 - Bearer token forwarding should mirror the existing MDM Legal Entity validator pattern.
 
 ## 8. Locked Behavior

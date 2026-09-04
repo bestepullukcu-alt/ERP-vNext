@@ -547,6 +547,24 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>
+    /// The SYSTEM closure outcomes a type may be built from.
+    ///
+    /// <para>A LITERAL segment beside <c>task-types/{id:guid}</c>, which is why the two cannot collide: the guid
+    /// constraint refuses this word before routing ever reaches the parameterised action.</para>
+    ///
+    /// <para>Guarded by <c>TaskTypesManage</c> — the same permission as editing a type, because this list exists
+    /// only to build one. It is not tenant data and holds nothing to protect; the permission keeps the surface
+    /// coherent rather than the contents secret.</para>
+    /// </summary>
+    [HttpGet("task-types/closure-outcome-catalog")]
+    [HasPermission(TaskPermissions.TaskTypesManage)]
+    public async Task<IActionResult> GetClosureOutcomeCatalog(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetClosureOutcomeCatalogQuery(CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     [HttpGet("task-types/{id:guid}")]
     [HasPermission(TaskPermissions.TaskTypesManage)]
     public async Task<IActionResult> GetTaskType(Guid id, CancellationToken ct)
@@ -770,6 +788,115 @@ public sealed class TasksController : CustomBaseController
     public async Task<IActionResult> DeleteRecurrenceRule(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new DeleteTaskRecurrenceRuleCommand(id, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    // ── The template chain (BL-054) ──────────────────────────────────────────
+    //
+    // Two resources, and CHECKLIST TEMPLATES COME FIRST — in this file and in the slice. The task-template form
+    // below carries a checklist picker; shipping it before its source would repeat, one level in, the defect
+    // this slice exists to close: a live-looking control that can never be filled.
+    //
+    // ⚠ The Diten.Web proxy has to carry each of these explicitly. A route that exists here and not there
+    // answers 404 before the request ever leaves the web tier, which is exactly how `inquire` shipped
+    // unreachable.
+
+    [HttpGet("checklist-templates")]
+    [HasPermission(TaskPermissions.ChecklistTemplatesManage)]
+    public async Task<IActionResult> GetChecklistTemplates(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetChecklistTemplateListQuery(CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("checklist-templates/{id:guid}")]
+    [HasPermission(TaskPermissions.ChecklistTemplatesManage)]
+    public async Task<IActionResult> GetChecklistTemplate(Guid id, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetChecklistTemplateByIdQuery(id, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpPost("checklist-templates")]
+    [HasPermission(TaskPermissions.ChecklistTemplatesManage)]
+    public async Task<IActionResult> CreateChecklistTemplate(
+        [FromBody] CreateChecklistTemplateRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new CreateChecklistTemplateCommand(request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpPut("checklist-templates/{id:guid}")]
+    [HasPermission(TaskPermissions.ChecklistTemplatesManage)]
+    public async Task<IActionResult> UpdateChecklistTemplate(
+        Guid id, [FromBody] UpdateChecklistTemplateRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new UpdateChecklistTemplateCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpDelete("checklist-templates/{id:guid}")]
+    [HasPermission(TaskPermissions.ChecklistTemplatesManage)]
+    public async Task<IActionResult> DeleteChecklistTemplate(Guid id, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new DeleteChecklistTemplateCommand(id, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("templates")]
+    [HasPermission(TaskPermissions.TemplatesManage)]
+    public async Task<IActionResult> GetTemplates(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetTaskTemplateListQuery(CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("templates/{id:guid}")]
+    [HasPermission(TaskPermissions.TemplatesManage)]
+    public async Task<IActionResult> GetTemplate(Guid id, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetTaskTemplateByIdQuery(id, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpPost("templates")]
+    [HasPermission(TaskPermissions.TemplatesManage)]
+    public async Task<IActionResult> CreateTemplate(
+        [FromBody] CreateTaskTemplateRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new CreateTaskTemplateCommand(request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpPut("templates/{id:guid}")]
+    [HasPermission(TaskPermissions.TemplatesManage)]
+    public async Task<IActionResult> UpdateTemplate(
+        Guid id, [FromBody] UpdateTaskTemplateRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new UpdateTaskTemplateCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpDelete("templates/{id:guid}")]
+    [HasPermission(TaskPermissions.TemplatesManage)]
+    public async Task<IActionResult> DeleteTemplate(Guid id, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new DeleteTaskTemplateCommand(id, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// Checklist templates the TASK-TEMPLATE form's picker is filled from.
+    ///
+    /// <para>Guarded by <see cref="TaskPermissions.TemplatesManage"/> rather than by the checklist key: the
+    /// caller is somebody defining a task template, and requiring the authority to REWRITE every gate in order
+    /// to be allowed to CHOOSE one would make the picker unusable for exactly the people it is for.</para>
+    /// </summary>
+    [HttpGet("lookups/checklist-templates")]
+    [HasPermission(TaskPermissions.TemplatesManage)]
+    public async Task<IActionResult> GetChecklistTemplateLookup(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetChecklistTemplateLookupQuery(CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 

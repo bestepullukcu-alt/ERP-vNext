@@ -1,6 +1,6 @@
 namespace Diten.Platform.Application.Contracts.Eventing;
 
-public interface IOutboxEventRepository
+public interface IOutboxEventRepository : Diten.BuildingBlocks.Eventing.IEventOutboxStore
 {
     Task AddAsync(OutboxEvent outboxEvent, CancellationToken cancellationToken = default);
 

@@ -526,7 +526,7 @@
   <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>Entité juridique</value></data>
   <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>Données de référence</value></data>
   <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>Organisation</value></data>
-  <data name="Nav.Module.TASKS" xml:space="preserve"><value>Tâches</value></data>
+  <data name="Nav.Module.TASKS" xml:space="preserve"><value>Paramètres des tâches</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>Flux de travail</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Utilisateurs</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Rôles</value></data>
@@ -588,6 +588,12 @@
   </data>
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>Centre des tâches</value>
+  </data>
+  <data name="Nav.Page.TASKCHECKLISTTEMPLATES" xml:space="preserve">
+    <value>Modèles de liste de contrôle</value>
+  </data>
+  <data name="Nav.Page.TASKTEMPLATES" xml:space="preserve">
+    <value>Modèles de tâche</value>
   </data>
   <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
     <value>Règles de tâches récurrentes</value>

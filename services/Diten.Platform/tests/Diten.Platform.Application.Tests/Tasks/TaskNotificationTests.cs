@@ -263,6 +263,7 @@ public sealed class TaskNotificationTests
                 new FakeNotificationLocaleResolver(),
                 resolver,
                 positionAssignments ?? new FakePositionAssignmentRepository(),
+                new FakeUserNotificationRepository(),
                 new FakeTenantContext(TaskTestData.Tenant),
                 NullLogger<TaskNotificationService>.Instance);
 

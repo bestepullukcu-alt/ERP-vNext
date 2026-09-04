@@ -191,7 +191,7 @@ public sealed class TaskActionRoundTripTests
         var expectedVersion = int.Parse(projection.Concurrency.Token);
         var handler = new TransitionTaskItemHandler(
             repository, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
-            new FakeChecklistRunRepository(), new TaskChecklistService(), new FakeWorkflowTransitionGate(), new FakeTaskDependencyRepository(), new FakeTaskNotificationService(), NullLogger<TransitionTaskItemHandler>.Instance);
+            new FakeChecklistRunRepository(), new TaskChecklistService(), new FakeWorkflowTransitionGate(), new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(), new FakeTaskNotificationService(), NullLogger<TransitionTaskItemHandler>.Instance);
 
         return handler.Handle(
             new TransitionTaskItemCommand(id, target, new TaskTransitionRequest(expectedVersion, null, null), "corr"),

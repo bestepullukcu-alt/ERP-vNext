@@ -1,0 +1,37 @@
+@using Diten.Web.Views.ManagementGovernance.ProcessModeling
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProcessModelingIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="process-modeling-index-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        ColumnOrder = SharedLocalizer["ColumnOrder"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        Actions = Localizer["Actions"].Value,
+        AddNew = Localizer["AddNew"].Value,
+        OpenEditor = Localizer["OpenEditor"].Value,
+        GatewayNotReady = Localizer["GatewayNotReady"].Value,
+        Empty = Localizer["Empty"].Value,
+        Error401 = Localizer["Error401"].Value,
+        Error400 = Localizer["Error400"].Value,
+        Error403 = Localizer["Error403"].Value,
+        Error404 = Localizer["Error404"].Value,
+        Error409 = Localizer["Error409"].Value,
+        Error503 = Localizer["Error503"].Value,
+        ErrorOffline = Localizer["ErrorOffline"].Value,
+        Saved = Localizer["Saved"].Value,
+        NoOp = Localizer["NoOp"].Value,
+        Edit = SharedLocalizer["Edit"].Value,
+        Save = SharedLocalizer["Save"].Value
+    })
+</script>

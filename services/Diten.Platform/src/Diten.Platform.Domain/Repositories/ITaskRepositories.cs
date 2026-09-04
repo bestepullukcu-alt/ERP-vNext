@@ -38,6 +38,25 @@ public interface ITaskItemRepository
         CancellationToken ct = default);
 
     /// <summary>
+    /// BL-016 — tasks this user OPENED, whoever is carrying them now.
+    ///
+    /// <para>The third ownership question, and the one nothing here could answer: <see cref="ListByAssigneeAsync"/>
+    /// asks what the user holds and <see cref="ListUnclaimedByPositionsAsync"/> asks what their pools are offering.
+    /// Work a user created and handed to somebody else was in NEITHER, so "where is the task I gave Ahmet" had no
+    /// query behind it at all.</para>
+    ///
+    /// <para>⚠ <c>CreatedByUserId</c>, never <c>CreatedBy</c>. <c>CreatedBy</c> is the audit stamp; the task's
+    /// requester — the person the projection puts on <c>Requester</c> and whose right it is to cancel — is
+    /// <c>CreatedByUserId</c>. Asking the audit field returns nothing useful and reads as "there is no data".</para>
+    ///
+    /// <para>TERMINAL WORK IS EXCLUDED, like the pool read above and for the same reason: this answers "what did I
+    /// start that is still out there". A finished task the user never held is not their history — the History tab
+    /// is what was once on their own board — and claiming it would be a second, unannounced meaning for that tab.
+    /// </para>
+    /// </summary>
+    Task<IReadOnlyList<TaskItem>> ListByCreatorAsync(Guid creatorUserId, CancellationToken ct = default);
+
+    /// <summary>
     /// Optimistic-concurrency update. Returns false when the expected version no longer matches — the caller
     /// turns that into a controlled 409 rather than silently overwriting (pack §13).
     /// </summary>
@@ -194,7 +213,21 @@ public interface IChecklistTemplateRepository
 {
     Task<ChecklistTemplate> CreateAsync(ChecklistTemplate template, CancellationToken ct = default);
     Task<ChecklistTemplate?> GetByIdAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>Templates a task or a task template may be built from — active and not retired.</summary>
     Task<IReadOnlyList<ChecklistTemplate>> ListActiveAsync(CancellationToken ct = default);
+
+    /// <summary>The template carrying this code, or null. Backs the tenant-uniqueness check on create/edit.</summary>
+    Task<ChecklistTemplate?> GetByCodeAsync(string code, CancellationToken ct = default);
+
+    /// <summary>
+    /// Every template, retired ones included — the management screen. Same reason its three siblings state:
+    /// a template that vanished when it was switched off could never be switched back on.
+    /// </summary>
+    Task<IReadOnlyList<ChecklistTemplate>> ListAllAsync(CancellationToken ct = default);
+
+    /// <summary>Expected-version write, like every other MOD-0024 edit.</summary>
+    Task<bool> UpdateAsync(ChecklistTemplate template, int expectedVersion, CancellationToken ct = default);
 }
 
 public interface IChecklistRunRepository
@@ -213,7 +246,18 @@ public interface ITaskTemplateRepository
 {
     Task<TaskTemplate> CreateAsync(TaskTemplate template, CancellationToken ct = default);
     Task<TaskTemplate?> GetByIdAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>Templates a recurrence rule or a manual create may be built from — active and not retired.</summary>
     Task<IReadOnlyList<TaskTemplate>> ListActiveAsync(CancellationToken ct = default);
+
+    /// <summary>The template carrying this code, or null. Backs the tenant-uniqueness check on create/edit.</summary>
+    Task<TaskTemplate?> GetByCodeAsync(string code, CancellationToken ct = default);
+
+    /// <summary>Every template, retired ones included — the management screen and the uniqueness check.</summary>
+    Task<IReadOnlyList<TaskTemplate>> ListAllAsync(CancellationToken ct = default);
+
+    /// <summary>Expected-version write, like every other MOD-0024 edit.</summary>
+    Task<bool> UpdateAsync(TaskTemplate template, int expectedVersion, CancellationToken ct = default);
 }
 
 public interface ITaskRecurrenceRuleRepository

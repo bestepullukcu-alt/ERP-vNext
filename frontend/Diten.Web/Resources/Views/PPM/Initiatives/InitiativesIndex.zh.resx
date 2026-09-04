@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="InitiativesTitle" xml:space="preserve"><value>举措</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>管理租户的举措、生命周期和可引用性。</value></data>
+  <data name="AddNewInitiative" xml:space="preserve"><value>新增举措</value></data>
+  <data name="EditInitiative" xml:space="preserve"><value>编辑举措</value></data>
+  <data name="Code" xml:space="preserve"><value>代码</value></data>
+  <data name="Name" xml:space="preserve"><value>名称</value></data>
+  <data name="Description" xml:space="preserve"><value>说明</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>生命周期</value></data>
+  <data name="VisibilityPolicyKey" xml:space="preserve"><value>可见性策略</value></data>
+  <data name="Referenceability" xml:space="preserve"><value>可引用性</value></data>
+  <data name="Referenceable" xml:space="preserve"><value>可建立新引用</value></data>
+  <data name="NotReferenceable" xml:space="preserve"><value>不可建立新引用</value></data>
+  <data name="InitiativesLoadingState" xml:space="preserve"><value>正在加载举措…</value></data>
+  <data name="InitiativesEmptyState" xml:space="preserve"><value>未找到举措。</value></data>
+  <data name="InitiativesErrorState" xml:space="preserve"><value>无法加载举措列表。</value></data>
+  <data name="Portfolio" xml:space="preserve"><value>项目组合</value></data>
+  <data name="LifecycleProposed" xml:space="preserve"><value>已提议</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>活动中</value></data>
+  <data name="LifecycleOnHold" xml:space="preserve"><value>暂停</value></data>
+  <data name="LifecycleCompleted" xml:space="preserve"><value>已完成</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="CompleteInitiativeConfirmation" xml:space="preserve"><value>要完成此举措吗？完成后将不允许建立新引用。</value></data>
+  <data name="CancelInitiativeConfirmation" xml:space="preserve"><value>要取消此举措吗？取消后将不允许建立新引用。</value></data>
+  <data name="InitiativeType" xml:space="preserve"><value>计划类型</value></data><data name="Priority" xml:space="preserve"><value>优先级</value></data><data name="PlannedStartDate" xml:space="preserve"><value>计划开始日期</value></data><data name="PlannedEndDate" xml:space="preserve"><value>计划结束日期</value></data><data name="ClassificationUnavailable" xml:space="preserve"><value>分类选项不可用，创建和编辑已禁用。</value></data><data name="LifecycleUnavailable" xml:space="preserve"><value>生命周期合约不可用，无法安全显示操作。</value></data><data name="ValidationError" xml:space="preserve"><value>请检查标记的值。</value></data><data name="Unauthorized" xml:space="preserve"><value>会话已过期。</value></data><data name="Forbidden" xml:space="preserve"><value>您无权执行此操作。</value></data><data name="NotFound" xml:space="preserve"><value>未找到该计划。</value></data><data name="Conflict" xml:space="preserve"><value>计划已更改，请刷新后重试。</value></data><data name="DependencyUnavailable" xml:space="preserve"><value>所需授权服务不可用。</value></data><data name="CreateSuccessor" xml:space="preserve"><value>创建后续计划</value></data><data name="RelatedRecords" xml:space="preserve"><value>相关记录</value></data><data name="CompletionSummary" xml:space="preserve"><value>完成摘要</value></data><data name="Outcome" xml:space="preserve"><value>结果</value></data><data name="ClosureReason" xml:space="preserve"><value>关闭原因</value></data><data name="BenefitDisposition" xml:space="preserve"><value>收益处理</value></data><data name="Reason" xml:space="preserve"><value>原因</value></data><data name="RecordNotReady" xml:space="preserve"><value>该计划尚未准备就绪。</value></data><data name="ActionForbidden" xml:space="preserve"><value>不允许执行此操作。</value></data><data name="ActionDependencyUnavailable" xml:space="preserve"><value>此操作需要当前不可用的授权服务。</value></data>
+</root>

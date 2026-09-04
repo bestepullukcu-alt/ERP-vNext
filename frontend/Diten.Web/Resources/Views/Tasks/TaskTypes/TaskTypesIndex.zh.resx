@@ -115,4 +115,52 @@
   <data name="DocListWithdrawReasonRequired" xml:space="preserve"><value>撤回需要理由。</value></data>
   <data name="DocListWithdrawSubtext" xml:space="preserve"><value>版本 {0} 将不再是任务可引用的清单。它会被保留并标记，使先前的引用仍可读。</value></data>
   <data name="DocListImportDenied" xml:space="preserve"><value>您可以查看此清单，但不能导入。</value></data>
+  <data name="ClosureOutcomesSection" xml:space="preserve">
+    <value>结束结果</value>
+  </data>
+  <data name="ClosureOutcomesHint" xml:space="preserve">
+    <value>此类型的工作以何种方式算作结束。留空则关闭任务时不会提问——所有未配置的类型都是这样。</value>
+  </data>
+  <data name="ClosureOutcomesEmpty" xml:space="preserve">
+    <value>未定义结果——关闭此类型的任务时不会提问。</value>
+  </data>
+  <data name="ClosureOutcomeAdd" xml:space="preserve">
+    <value>添加结果</value>
+  </data>
+  <data name="ClosureOutcomeRemove" xml:space="preserve">
+    <value>移除此结果</value>
+  </data>
+  <data name="ClosureOutcomeSource" xml:space="preserve">
+    <value>结果</value>
+  </data>
+  <data name="ClosureOutcomeSourceCustom" xml:space="preserve">
+    <value>自行填写</value>
+  </data>
+  <data name="ClosureOutcomeCode" xml:space="preserve">
+    <value>代码</value>
+  </data>
+  <data name="ClosureOutcomeCodePlaceholder" xml:space="preserve">
+    <value>例如 RESOLVED</value>
+  </data>
+  <data name="ClosureOutcomeLabel" xml:space="preserve">
+    <value>标签</value>
+  </data>
+  <data name="ClosureOutcomeLabelPlaceholder" xml:space="preserve">
+    <value>用户将看到的文字</value>
+  </data>
+  <data name="ClosureOutcomeDisposition" xml:space="preserve">
+    <value>何时提供</value>
+  </data>
+  <data name="ClosureOutcomeSortOrder" xml:space="preserve">
+    <value>顺序</value>
+  </data>
+  <data name="ClosureOutcomeRequiresReason" xml:space="preserve">
+    <value>需要原因</value>
+  </data>
+  <data name="ClosureDispositionCompleted" xml:space="preserve">
+    <value>完成时</value>
+  </data>
+  <data name="ClosureDispositionCancelled" xml:space="preserve">
+    <value>取消时</value>
+  </data>
 </root>

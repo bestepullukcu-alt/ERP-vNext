@@ -526,7 +526,7 @@
   <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>كيان قانوني</value></data>
   <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>البيانات المرجعية</value></data>
   <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>المؤسسة</value></data>
-  <data name="Nav.Module.TASKS" xml:space="preserve"><value>المهام</value></data>
+  <data name="Nav.Module.TASKS" xml:space="preserve"><value>إعدادات المهام</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>سير العمل</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>المستخدمون</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>الأدوار</value></data>
@@ -587,6 +587,12 @@
   </data>
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>مركز المهام</value>
+  </data>
+  <data name="Nav.Page.TASKCHECKLISTTEMPLATES" xml:space="preserve">
+    <value>قوالب قوائم التحقق</value>
+  </data>
+  <data name="Nav.Page.TASKTEMPLATES" xml:space="preserve">
+    <value>قوالب المهام</value>
   </data>
   <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
     <value>قواعد المهام المتكررة</value>

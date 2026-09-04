@@ -311,6 +311,18 @@
   <data name="ActionCompleteInSourceHint" xml:space="preserve">
     <value>此工作无法在此处完成，需在 {0} 中结束</value>
   </data>
+  <data name="ActionOpenInSource" xml:space="preserve">
+    <value>打开源记录</value>
+  </data>
+  <data name="ActionOpenInSourceHint" xml:space="preserve">
+    <value>任务中心用于处理工作；记录本身（标题、说明和字段）在源记录中编辑。</value>
+  </data>
+  <data name="ActionEditRecord" xml:space="preserve">
+    <value>编辑任务</value>
+  </data>
+  <data name="ActionEditRecordHint" xml:space="preserve">
+    <value>这项任务由您创建，其标题、日期和字段仍可更改——在记录所在的任务模块中。</value>
+  </data>
   <data name="TechVersionValue" xml:space="preserve">
     <value>第 {0} 版</value>
   </data>
@@ -611,6 +623,9 @@
   <data name="TabPool" xml:space="preserve">
     <value>任务池</value>
   </data>
+  <data name="TabInitiated" xml:space="preserve">
+    <value>我发起的</value>
+  </data>
   <data name="ActClaim" xml:space="preserve">
     <value>认领</value>
   </data>
@@ -649,6 +664,12 @@
   </data>
   <data name="EmptyPoolDesc" xml:space="preserve">
     <value>没有等待您认领的项目。</value>
+  </data>
+  <data name="EmptyInitiatedTitle" xml:space="preserve">
+    <value>没有你发起的工作</value>
+  </data>
+  <data name="EmptyInitiatedDesc" xml:space="preserve">
+    <value>你没有发起任何由他人负责的工作。</value>
   </data>
   <data name="ToastClaimed" xml:space="preserve">
     <value>{0} · 已由您认领（模拟）</value>
@@ -2180,5 +2201,62 @@
   </data>
   <data name="BannerReconciliationRequired" xml:space="preserve">
     <value>需要与来源进行核对。</value>
+  </data>
+  <data name="StepClosedAs" xml:space="preserve">
+    <value>结束方式：{0}</value>
+  </data>
+  <data name="ClosureOutcomeLabel" xml:space="preserve">
+    <value>这项工作是如何结束的？</value>
+  </data>
+  <data name="ClosureOutcomePlaceholder" xml:space="preserve">
+    <value>选择一个结果</value>
+  </data>
+  <data name="ClosureOutcomeRequired" xml:space="preserve">
+    <value>请选择这项工作的结束方式。</value>
+  </data>
+  <data name="ClosureReasonLabel" xml:space="preserve">
+    <value>备注（可选）</value>
+  </data>
+  <data name="ClosureReasonLabelRequired" xml:space="preserve">
+    <value>原因（必填）</value>
+  </data>
+  <data name="ClosureReasonPlaceholder" xml:space="preserve">
+    <value>请用自己的话说明结果</value>
+  </data>
+  <data name="ClosureReasonRequired" xml:space="preserve">
+    <value>该结果需要填写原因。</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
+    <value>已按要求完成</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CompletedPartially" xml:space="preserve">
+    <value>部分完成</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledNotRequired" xml:space="preserve">
+    <value>不再需要</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledSuperseded" xml:space="preserve">
+    <value>已被其他工作取代</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledDuplicate" xml:space="preserve">
+    <value>重复</value>
+  </data>
+  <data name="ReturnedLabel" xml:space="preserve">
+    <value>已退回</value>
+  </data>
+  <data name="ReturnedCount" xml:space="preserve">
+    <value>已退回 {0} 次</value>
+  </data>
+  <data name="StepReturned" xml:space="preserve">
+    <value>该任务已退回给您。</value>
+  </data>
+  <data name="StepReturnedTimes" xml:space="preserve">
+    <value>该任务已被退回 {0} 次。</value>
+  </data>
+  <data name="StepReturnedBecause" xml:space="preserve">
+    <value>退回给您：{0}</value>
+  </data>
+  <data name="StepReturnedTimesBecause" xml:space="preserve">
+    <value>已退回 {0} 次，最近一次：{1}</value>
   </data>
 </root>

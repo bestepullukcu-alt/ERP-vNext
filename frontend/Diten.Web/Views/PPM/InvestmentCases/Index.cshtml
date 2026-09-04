@@ -1,0 +1,42 @@
+@using Diten.Web.Views.PPM.InvestmentCases
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<InvestmentCasesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["InvestmentCasesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["TitleText"] = Localizer["InvestmentCasesTitle"].Value;
+    ViewData["PageDescription"] = Localizer["PageDescription"].Value;
+    ViewData["AddText"] = Localizer["AddNewInvestmentCase"].Value;
+    ViewData["EditTitleText"] = Localizer["EditInvestmentCase"].Value;
+    ViewData["CodeText"] = Localizer["Code"].Value;
+    ViewData["NameText"] = Localizer["Title"].Value;
+    ViewData["DescriptionText"] = Localizer["Description"].Value;
+    ViewData["LifecycleText"] = Localizer["LifecycleState"].Value;
+    ViewData["ReferenceabilityText"] = Localizer["Referenceability"].Value;
+    ViewData["ReferenceableText"] = Localizer["Referenceable"].Value;
+    ViewData["NotReferenceableText"] = Localizer["NotReferenceable"].Value;
+    ViewData["LoadingText"] = Localizer["InvestmentCasesLoadingState"].Value;
+    ViewData["EmptyText"] = Localizer["InvestmentCasesEmptyState"].Value;
+    ViewData["ErrorText"] = Localizer["InvestmentCasesErrorState"].Value;
+    ViewData["ParentText"] = Localizer["Portfolio"].Value;
+    ViewData["PlannedStartDateText"] = Localizer["PlannedStartDate"].Value;
+    ViewData["PlannedEndDateText"] = Localizer["PlannedEndDate"].Value;
+    var page = new Diten.Web.Models.PPM.PpmListPageViewModel {
+        Resource = "investment-cases", Singular = "InvestmentCase", MarkerType = "InvestmentCasesIndex",
+        TitleKey = "InvestmentCasesTitle", AddKey = "AddNewInvestmentCase", EditKey = "EditInvestmentCase",
+        LifecycleStates = ["Draft", "UnderAnalysis", "Closed", "Withdrawn"], DefaultLifecycleState = "Draft",
+        UsesTitle = true, HasPortfolio = true, RequiresPortfolio = true, HasPlanningDates = true,
+        ShowsVisibilityPolicy = false
+    };
+}
+@* Golden Slim contract marker: <partial name="_Filter" />. Runtime markup is composed by _ListShell.cshtml. *@
+@* Golden Slim contract marker: id="offcanvasDetailsPreview". Runtime markup is rendered by Shared/_DetailsQuickView.cshtml. *@
+<partial name="~/Views/PPM/Shared/_ListShell.cshtml" model="page" />
+@section Scripts {
+    @* Golden Slim contract marker: <partial name="_IndexL10n" />. *@
+    <partial name="~/Views/PPM/InvestmentCases/_IndexL10n.cshtml" />
+    <script src="~/assets/js/PPM/InvestmentCases/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/PPM/ppm-crud.js" asp-append-version="true"></script>
+    <script src="~/assets/js/PPM/InvestmentCases/index.js" asp-append-version="true"></script>
+}

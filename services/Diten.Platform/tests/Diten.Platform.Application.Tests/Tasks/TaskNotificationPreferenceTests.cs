@@ -369,6 +369,7 @@ public sealed class TaskNotificationPreferenceTests
             new FakeNotificationLocaleResolver(),
             new FakeTaskNotificationRecipientResolver((Assignee, "alice@example.test")),
             new FakePositionAssignmentRepository(),
+            new FakeUserNotificationRepository(),
             new FakeTenantContext(TaskTestData.Tenant),
             NullLogger<TaskNotificationService>.Instance);
 
@@ -647,6 +648,7 @@ public sealed class TaskNotificationPreferenceTests
                 new FakeNotificationLocaleResolver(),
                 new FakeTaskNotificationRecipientResolver((Assignee, "alice@example.test")),
                 new FakePositionAssignmentRepository(),
+                new FakeUserNotificationRepository(),
                 new FakeTenantContext(TaskTestData.Tenant),
                 NullLogger<TaskNotificationService>.Instance);
 
@@ -740,6 +742,7 @@ public sealed class TaskNotificationPreferenceTests
             new FakeNotificationLocaleResolver(),
             new FakeTaskNotificationRecipientResolver((Assignee, "alice@example.test")),
             new FakePositionAssignmentRepository(),
+            new FakeUserNotificationRepository(),
             new FakeTenantContext(TaskTestData.Tenant),
             NullLogger<TaskNotificationService>.Instance);
 

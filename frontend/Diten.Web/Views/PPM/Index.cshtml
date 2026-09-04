@@ -1,0 +1,74 @@
+@using Diten.Web.Views.PPM
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PpmIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["PpmTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["PpmTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div class="alert alert-primary d-flex align-items-center mb-4" role="status">
+    <i class="bx bx-info-circle me-2"></i>
+    <span>@Localizer["Phase2AContextCore"]</span>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6 col-xl-3">
+        <a class="card h-100 text-decoration-none" href="/ppm/portfolios">
+            <div class="card-body">
+                <i class="bx bx-layer fs-2 text-primary"></i>
+                <h6 class="mt-3 mb-1">@Localizer["PortfoliosLabel"]</h6>
+                <span class="text-muted">@Localizer["OpenPortfolios"]</span>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <a class="card h-100 text-decoration-none" href="/ppm/initiatives">
+            <div class="card-body">
+                <i class="bx bx-bulb fs-2 text-primary"></i>
+                <h6 class="mt-3 mb-1">@Localizer["InitiativesLabel"]</h6>
+                <span class="text-muted">@Localizer["OpenInitiatives"]</span>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <a class="card h-100 text-decoration-none" href="/ppm/programs">
+            <div class="card-body">
+                <i class="bx bx-grid-alt fs-2 text-primary"></i>
+                <h6 class="mt-3 mb-1">@Localizer["ProgramsLabel"]</h6>
+                <span class="text-muted">@Localizer["OpenPrograms"]</span>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <a class="card h-100 text-decoration-none" href="/ppm/projects">
+            <div class="card-body">
+                <i class="bx bx-folder fs-2 text-primary"></i>
+                <h6 class="mt-3 mb-1">@Localizer["ProjectsLabel"]</h6>
+                <span class="text-muted">@Localizer["OpenProjects"]</span>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <a class="card h-100 text-decoration-none" href="/ppm/investment-cases">
+            <div class="card-body">
+                <i class="bx bx-line-chart fs-2 text-primary"></i>
+                <h6 class="mt-3 mb-1">@Localizer["InvestmentCasesLabel"]</h6>
+                <span class="text-muted">@Localizer["OpenInvestmentCases"]</span>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <a class="card h-100 text-decoration-none" href="/ppm/benefit-commitments">
+            <div class="card-body">
+                <i class="bx bx-target-lock fs-2 text-primary"></i>
+                <h6 class="mt-3 mb-1">@Localizer["BenefitCommitmentsLabel"]</h6>
+                <span class="text-muted">@Localizer["OpenBenefitCommitments"]</span>
+            </div>
+        </a>
+    </div>
+</div>

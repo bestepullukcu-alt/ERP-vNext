@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="InitiativesTitle" xml:space="preserve"><value>Gestion des initiatives</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gérez les Initiatives du locataire, leur cycle de vie et leur référençabilité.</value></data>
+  <data name="AddNewInitiative" xml:space="preserve"><value>Ajouter une initiative</value></data>
+  <data name="EditInitiative" xml:space="preserve"><value>Modifier une initiative</value></data>
+  <data name="Code" xml:space="preserve"><value>Code de l’initiative</value></data>
+  <data name="Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="Description" xml:space="preserve"><value>Description de l’initiative</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Cycle de vie</value></data>
+  <data name="VisibilityPolicyKey" xml:space="preserve"><value>Politique de visibilité</value></data>
+  <data name="Referenceability" xml:space="preserve"><value>Référençabilité</value></data>
+  <data name="Referenceable" xml:space="preserve"><value>Disponible pour de nouvelles références</value></data>
+  <data name="NotReferenceable" xml:space="preserve"><value>Indisponible pour de nouvelles références</value></data>
+  <data name="InitiativesLoadingState" xml:space="preserve"><value>Chargement des Initiatives…</value></data>
+  <data name="InitiativesEmptyState" xml:space="preserve"><value>Aucun élément dans Initiatives.</value></data>
+  <data name="InitiativesErrorState" xml:space="preserve"><value>Impossible de charger la liste des Initiatives.</value></data>
+  <data name="Portfolio" xml:space="preserve"><value>Portefeuille</value></data>
+  <data name="LifecycleProposed" xml:space="preserve"><value>Proposée</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>Actif</value></data>
+  <data name="LifecycleOnHold" xml:space="preserve"><value>En attente</value></data>
+  <data name="LifecycleCompleted" xml:space="preserve"><value>Terminé</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>Annulé</value></data>
+  <data name="CompleteInitiativeConfirmation" xml:space="preserve"><value>Terminer cet élément (initiative) ? Les nouvelles références ne seront plus autorisées.</value></data>
+  <data name="CancelInitiativeConfirmation" xml:space="preserve"><value>Annuler cet élément (initiative) ? Les nouvelles références ne seront plus autorisées.</value></data>
+  <data name="InitiativeType" xml:space="preserve"><value>Type d’initiative</value></data><data name="Priority" xml:space="preserve"><value>Priorité</value></data><data name="PlannedStartDate" xml:space="preserve"><value>Date de début prévue</value></data><data name="PlannedEndDate" xml:space="preserve"><value>Date de fin prévue</value></data><data name="ClassificationUnavailable" xml:space="preserve"><value>Les options de classification sont indisponibles. La création et la modification sont désactivées.</value></data><data name="LifecycleUnavailable" xml:space="preserve"><value>Le contrat de cycle de vie est indisponible.</value></data><data name="ValidationError" xml:space="preserve"><value>Vérifiez les valeurs signalées.</value></data><data name="Unauthorized" xml:space="preserve"><value>Votre session a expiré.</value></data><data name="Forbidden" xml:space="preserve"><value>Vous n’avez pas l’autorisation requise.</value></data><data name="NotFound" xml:space="preserve"><value>L’initiative est introuvable.</value></data><data name="Conflict" xml:space="preserve"><value>L’initiative a changé. Rechargez la page.</value></data><data name="DependencyUnavailable" xml:space="preserve"><value>Une autorité requise est indisponible.</value></data><data name="CreateSuccessor" xml:space="preserve"><value>Créer un successeur</value></data><data name="RelatedRecords" xml:space="preserve"><value>Enregistrements associés</value></data><data name="CompletionSummary" xml:space="preserve"><value>Résumé de clôture</value></data><data name="Outcome" xml:space="preserve"><value>Résultat</value></data><data name="ClosureReason" xml:space="preserve"><value>Motif de clôture</value></data><data name="BenefitDisposition" xml:space="preserve"><value>Sort des bénéfices</value></data><data name="Reason" xml:space="preserve"><value>Motif</value></data><data name="RecordNotReady" xml:space="preserve"><value>L’initiative n’est pas prête.</value></data><data name="ActionForbidden" xml:space="preserve"><value>Cette action n’est pas autorisée.</value></data><data name="ActionDependencyUnavailable" xml:space="preserve"><value>Cette action exige une autorité indisponible.</value></data>
+</root>

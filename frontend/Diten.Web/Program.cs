@@ -112,6 +112,14 @@ builder.Services.ValidateRequiredSecrets(builder.Configuration, builder.Environm
     new("ConnectionStrings:MongoDb", "Diten.Web", SecretRequirementKind.ConnectionString, Required: false)
 ]);
 
+// ShellAccessFilter is the GLOBAL authorization filter (registered above) and the only thing in Diten.Web that
+// puts a VERIFIED principal on HttpContext.User. It used to answer missing JWT settings with a bare `return;` —
+// verification skipped in full, User untouched, nothing written anywhere. Assert its configuration ONCE, here,
+// so a deployment missing a key never starts instead of running with the check quietly switched off.
+// ⚠ Complements ValidateRequiredSecrets rather than duplicating it: that call covers JwtSettings:Secret only,
+// while Issuer and Audience — which the filter needs just as much — had no startup gate at all.
+ShellAccessFilter.ValidateConfiguration(builder.Configuration);
+
 var app = builder.Build();
 
 // FE-A-harden (A4): honour X-Forwarded-For / X-Forwarded-Proto from the TLS-terminating proxy so the
@@ -194,7 +202,7 @@ var validatedTokenParameters = new TokenValidationParameters
     ValidIssuer = jwtIssuer,
     ValidAudience = jwtAudience,
     IssuerSigningKeys = jwtRotationResolver.GetValidationKeys(),
-    ClockSkew = TimeSpan.FromSeconds(30)
+    ClockSkew = JwtValidationDefaults.ClockSkew
 };
 
 // FE-A-harden (A3): single-flight the eager refresh, and MOD-0014's token→User bridge. Both live in

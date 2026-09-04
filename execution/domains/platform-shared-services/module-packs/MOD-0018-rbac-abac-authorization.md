@@ -1,6 +1,6 @@
 ---
 id: MOD-0018
-name: RBAC / Entitlement Production Wiring
+name: RBAC / ABAC Authorization
 domain: platform-shared-services
 service: Diten.Platform.Common
 shell: none
@@ -14,7 +14,7 @@ target: 2026-06-05
 form_field_count: 0
 ---
 
-# MOD-0018 - RBAC / Entitlement Production Wiring
+# MOD-0018 - RBAC / ABAC Authorization
 
 > **Draft note:** Bu pack, mevcut MOD-0018 enforcement altyapisini yeni kapsam kararina gore yeniden sozlesmelestirir. Kod yazimi bu pack `approved` veya `ready-for-dev` yapilmadan baslamaz.
 
@@ -298,7 +298,64 @@ Politika:
 
 Bu revize MOD-0018 freeze'ini bozmaz; "imza degismez" literal kuralini "yuzey korunur + additive izinli" semantik kuralina cevirir. Revize tarihi pack'in `Implementation Notes` bolumunde audit kaydidir; pack `done` olduktan sonra silinmez.
 
-## 20. Follow-up Items
+**S2S / attestation reconciliation amendment (bounded):**
+
+- `MOD-0018-FU16` current registry identity remains reserved for **Global Product Permission Onboarding**. Historical S2S material that used the same FU16 identity is not carried forward under that identity and creates no replacement FU identifier.
+- The S2S authorization, delegated-proof and entitlement-attestation foundation is a bounded MOD-0018 parent amendment. It remains default-disabled, non-production and non-activating until separately reconciled executable slices prove their own scope and evidence gates.
+- This amendment does not authorize a production key, secret, vault configuration, endpoint, authentication-scheme activation, deployment, Gateway route or automatic permission grant. User/session HS256 and current FU16 Product behavior remain separate and unchanged.
+- Future executable work must preserve: exact tenant/module/request binding; explicit tenant-scoped grants only; dormant-grant semantics on entitlement disable; authoritative indeterminacy as fail-closed; and no cache or last-known-good allow path.
+
+## 20. S2S Authorization, Delegation and Permission Provisioning Amendment
+
+This is a bounded amendment of the parent `MOD-0018` pack; it does not create,
+reserve, rename, or reuse a follow-up identity. `MOD-0018-FU16` remains the
+separate **Global Product Permission Onboarding** record and is not an S2S
+identity.
+
+### 20.1 First slice: contract-only, default-off
+
+The first slice may add only service-to-service actor-provenance, canonical
+request-binding, replay-disposition, and permission-provisioning **contracts**.
+It creates no effective permission, service principal, credential, grant,
+catalog row, endpoint, listener, broker consumer, startup registration, or
+durable write.
+
+The exact initial implementation paths are limited to:
+
+- `services/Diten.AuthService/src/Diten.AuthService.Application/S2S/**`
+- `services/Diten.AuthService/src/Diten.AuthService.Domain/S2S/**`
+- `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/IDelegatedActorProofIssuer.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/IDelegatedActorProofValidator.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/IS2S*.cs`
+- `services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/S2S/S2SCanonicalRequestBinding.cs`
+- `services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/IPermissionClaimEvaluator.cs`
+- `services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/SignedJwtPermissionClaimEvaluator.cs`
+- `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/ITrustedTransportMetadataProvider.cs`
+- `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/TrustedTransportMetadata.cs`
+- `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/SignedEventContracts.cs`
+- matching AuthService, Platform.Common, and Eventing contract/regression test paths only.
+
+### 20.2 Explicit exclusions
+
+This amendment excludes API routes, Program/DI composition, Mongo
+persistence/index/seed/migration work, secret or key configuration, JWKS or
+vault/HSM integration, HMAC/RS256 production signing implementation, broker
+transport, live delivery, permission-catalog registration, role-grant mutation,
+frontend, Gateway, deployment, and activation.
+
+Existing HS256 user/session JWT behavior, platform-admin tokens, and the FU16
+entitlement-attestation token family remain unchanged.
+
+### 20.3 Later executable gate
+
+An executable acceptance or provisioning slice requires a separate approved
+amendment that names the issuer/producer owner, key trust source, JWKS/vault
+boundary, durable replay/inbox schema, session-owned transaction, and concrete
+activation switch. It must prove cross-token-family rejection, request binding,
+expiry/not-before, replay, and unavailable-key paths fail closed. Untrusted
+payload size/depth limits must apply before parsing.
+
+## 21. Follow-up Items
 
 Canonical follow-up identity source: `execution/registries/module-id-registry.md`. This parent pack does not create or rename follow-up packs; it only mirrors the registry-controlled chain.
 
@@ -310,5 +367,7 @@ Canonical follow-up identity source: `execution/registries/module-id-registry.md
 - MOD-0018-FU13: Permission Convention + Cache Invalidation Events.
 - MOD-0018-FU14: Effective Access Explain + Allow Audit.
 - MOD-0018-FU15: Real DataScopeResolver; replacement for deprecated `NEW-MOD-0041` alias.
+
+`MOD-0018-FU16` is registry-owned by Global Product Permission Onboarding. The bounded S2S / attestation reconciliation amendment above intentionally does not mint or claim another FU identity.
 
 The older FU1-FU9 notes are historical planning shorthand and are superseded for registry-controlled identity by the MOD-0018-FU10..FU15 chain above. No implementation status is changed by this reconciliation note.

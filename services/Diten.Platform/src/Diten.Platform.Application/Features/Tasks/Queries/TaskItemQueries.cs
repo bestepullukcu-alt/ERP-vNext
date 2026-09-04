@@ -74,6 +74,28 @@ public sealed record GetTaskRecurrenceRuleListQuery(string CorrelationId)
 public sealed record GetTaskRecurrenceRuleByIdQuery(Guid Id, string CorrelationId)
     : IRequest<Response<TaskRecurrenceRuleDto>>;
 
+// ── BL-054: the template chain ───────────────────────────────────────────────
+
+public sealed record GetChecklistTemplateListQuery(string CorrelationId)
+    : IRequest<Response<IReadOnlyList<ChecklistTemplateDto>>>;
+
+public sealed record GetChecklistTemplateByIdQuery(Guid Id, string CorrelationId)
+    : IRequest<Response<ChecklistTemplateDto>>;
+
+/// <summary>
+/// Checklist templates the TASK-TEMPLATE form's picker is filled from. Its own query rather than reusing the
+/// list: a picker offers only what may still be bound (active, not retired), while the management list has to
+/// show a paused template or it could never be switched back on.
+/// </summary>
+public sealed record GetChecklistTemplateLookupQuery(string CorrelationId)
+    : IRequest<Response<IReadOnlyList<ChecklistTemplateLookupDto>>>;
+
+public sealed record GetTaskTemplateListQuery(string CorrelationId)
+    : IRequest<Response<IReadOnlyList<TaskTemplateDto>>>;
+
+public sealed record GetTaskTemplateByIdQuery(Guid Id, string CorrelationId)
+    : IRequest<Response<TaskTemplateDto>>;
+
 /// <summary>
 /// Every field definition the tenant can see, ACTIVE OR NOT — a retired definition must stay visible so the
 /// values already stored under it keep an explanation, and so it can be switched back on.
@@ -144,6 +166,21 @@ public sealed record GetActiveTaskTypesQuery(string CorrelationId)
 
 public sealed record GetTaskTypeByIdQuery(Guid Id, string CorrelationId)
     : IRequest<Response<TaskTypeDto>>;
+
+/// <summary>
+/// The SYSTEM closure outcomes an administrator may pick from when building a type's dictionary.
+///
+/// <para><b>Why an endpoint at all.</b> <c>TaskClosureOutcomeCatalog</c> shipped with the closure slice and was
+/// reachable only from inside the service — <c>TaskTypeRules.IsSystemCode</c> consulted it and nothing published
+/// it. So the vocabulary the product ships was, in practice, unavailable to the only screen that would ever
+/// offer it, and the dictionary could only be built through the API by hand.</para>
+///
+/// <para>It takes no tenant argument and reads no repository: the catalogue is code-owned, identical in every
+/// tenant, and bound to the resx entries that name it. What the caller does with an entry — accept its default
+/// <c>RequiresReason</c>, or not — belongs to the type being edited, not here.</para>
+/// </summary>
+public sealed record GetClosureOutcomeCatalogQuery(string CorrelationId)
+    : IRequest<Response<IReadOnlyList<TaskClosureOutcomeDto>>>;
 
 
 // ── DCP-005 slice 2: the document reference list ────────────────────────────

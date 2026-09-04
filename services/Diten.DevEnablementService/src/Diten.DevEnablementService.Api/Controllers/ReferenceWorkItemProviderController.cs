@@ -98,6 +98,10 @@ public sealed class ReferenceWorkItemProviderController : ControllerBase
             return NotFound();
         }
 
+        // BL-323 case 2 — THE SHAPE TO COPY, and the whole point is that there is no cross-tenant branch here.
+        // The lookup is SCOPED BY TENANT first, so another tenant's item is not "forbidden", it is simply absent,
+        // and the ordinary not-found path answers it. 404, never 403: a 403 confirms the record exists, which is
+        // the leak the 404 is chosen to prevent. Do not add an `if (state.TenantId != mine) return Forbid()`.
         var state = States.GetOrAdd(TenantKey, _ => new ReferenceItemState());
         if (itemId != state.Id)
         {
@@ -140,6 +144,13 @@ public sealed class ReferenceWorkItemProviderController : ControllerBase
     /// The tenant PLATFORM SENT, not one this service invented. Keying the state by it is what makes tenant
     /// propagation observable: two tenants see two items, and a header that failed to travel shows up immediately
     /// as one shared item titled "(no tenant header)".
+    ///
+    /// <para>⚠ <b>Reading the RAW HEADER is only safe because the service refuses a contradiction first</b>
+    /// (BL-323 case 1, <c>TenantResolutionMiddleware</c>: header ≠ JWT tenant is 400 before any handler runs).
+    /// Until 2026-08-29 that middleware let the JWT win with a warning while this property kept using the header,
+    /// so a caller holding tenant A's token could read and mutate tenant B's item by sending B's header. Keep the
+    /// raw-header read — the "(no tenant header)" echo is what caught the §7.7 propagation defect — but do not
+    /// copy it into a service whose middleware does not refuse the contradiction.</para>
     /// </summary>
     private string TenantKey
     {

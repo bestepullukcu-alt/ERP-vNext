@@ -104,14 +104,62 @@ describe("every transition sends exactly what its endpoint declares", () => {
     /*
      * Non-vacuity in the other direction: the generic body was never wrong for the seven endpoints that take
      * TaskTransitionRequest(ExpectedVersion, ReasonCode, Note). "Fix the three" must not become "change all ten".
+     *
+     * ⚠ READ THROUGH `clientFields`, NOT OFF ONE LINE. This used to be a one-line regex match on the
+     * `__default:` key, which made "the
+     * fallback builder fits on a single line" an unwritten rule of app.js — the same mistake the entry reader
+     * above already had to correct once. The builder wraps the moment it takes a second parameter, and it now
+     * does.
+     */
+    const fields = new Set(clientFields("__default"));
+    expect(fields).toEqual(new Set(serverFields("TaskTransitionRequest")));
+  });
+
+  it("sends a real closure outcome instead of the hard-coded null it shipped with", () => {
+    /*
+     * ⚠ THE REGRESSION THIS FILE EXISTS TO STOP, IN ITS SECOND FORM.
+     *
+     * The generic builder read `({ expectedVersion, reason }) => ({ expectedVersion, reasonCode: null, … })`.
+     * The FIELD was right — the guard above was green throughout — and the VALUE was a literal `null`, so
+     * `TaskItem.ClosureReasonCode` was written null on every close since the engine shipped. Field-name
+     * agreement is not payload agreement, and that gap is exactly wide enough to hide an empty column for
+     * months.
+     *
+     * So this asserts the value's SOURCE: the builder must take an outcome from its caller and pass it through.
      */
     const source = fs.readFileSync(APP_JS, "utf8");
-    const map = source.slice(source.indexOf("const TRANSITION_BODIES = {"), source.indexOf("};", source.indexOf("const TRANSITION_BODIES = {")));
+    const start = source.indexOf("const TRANSITION_BODIES = {");
+    const map = source.slice(start, source.indexOf("};", start));
+    const fallback = map.slice(map.indexOf("__default:"));
 
-    expect(map).toContain("__default");
-    const fallback = /__default:[^\n]*/.exec(map)[0];
-    expect(fallback).toContain("reasonCode");
-    expect(fallback).toContain("note");
+    expect(fallback, "the fallback builder no longer accepts an outcome").toContain("outcomeCode");
+    expect(fallback, "reasonCode is a hard-coded null again — nothing will ever be recorded")
+      .not.toMatch(/reasonCode:\s*null/);
+    expect(fallback).toMatch(/reasonCode:\s*outcomeCode/);
+  });
+
+  it("carries the chosen outcome all the way from the dialog to the request", () => {
+    /*
+     * The other half of the same defect: a builder that accepts an outcome is useless if no call site passes
+     * one. Each hop is named, because a break in ANY of them restores the empty column silently.
+     */
+    const source = fs.readFileSync(APP_JS, "utf8");
+    expect(source, "the dialog no longer hands the outcome to applyAction")
+      .toMatch(/applyAction\(item, action, res\.value\.reason, undefined, undefined, res\.value\.outcomeCode\)/);
+    expect(source, "applyAction no longer forwards the outcome")
+      .toMatch(/submitRealTransition\(item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode\)/);
+    expect(source, "the body builder is no longer given the outcome").toMatch(/outcomeCode \}\)\);/);
+  });
+
+  it("only asks for an outcome when the task's TYPE offers one", () => {
+    /*
+     * BACKWARD COMPATIBILITY, asserted rather than promised. A hundred-odd tasks are open against types with no
+     * dictionary; if the picker ever became unconditional, every one of them would meet a required field that
+     * has no rows to choose from and could not be closed at all.
+     */
+    const source = fs.readFileSync(APP_JS, "utf8");
+    expect(source).toContain("const closureOutcomes = closureOutcomesFor(item, action);");
+    expect(source, "the picker stopped being conditional").toContain("if (closureOutcomes.length) {");
   });
 });
 

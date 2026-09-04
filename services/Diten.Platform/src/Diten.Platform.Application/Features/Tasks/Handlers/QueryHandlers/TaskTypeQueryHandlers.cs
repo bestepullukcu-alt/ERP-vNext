@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Tasks.Queries;
+using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -63,6 +64,33 @@ public sealed class GetTaskTypeByIdHandler : IRequestHandler<GetTaskTypeByIdQuer
     }
 }
 
+/// <summary>
+/// The system closure outcome catalogue, as the type editor reads it.
+///
+/// <para>No repository and no tenant: these are code-owned and identical everywhere. The handler exists only so
+/// the screen reaches them the same way it reaches everything else — through the gateway, under the same
+/// permission that guards editing a type.</para>
+/// </summary>
+public sealed class GetClosureOutcomeCatalogHandler
+    : IRequestHandler<GetClosureOutcomeCatalogQuery, Response<IReadOnlyList<TaskClosureOutcomeDto>>>
+{
+    public Task<Response<IReadOnlyList<TaskClosureOutcomeDto>>> Handle(
+        GetClosureOutcomeCatalogQuery query, CancellationToken ct)
+        => Task.FromResult(Response<IReadOnlyList<TaskClosureOutcomeDto>>.Success(
+            TaskClosureOutcomeCatalog.All
+                .Select(outcome => new TaskClosureOutcomeDto(
+                    outcome.Code,
+                    outcome.LabelResourceKey,
+                    // Always null for a system entry, and sent rather than omitted: the screen decides which half
+                    // of the label to draw by asking which one is present.
+                    outcome.LabelText,
+                    outcome.Disposition,
+                    outcome.RequiresReason,
+                    outcome.SortOrder))
+                .ToList(),
+            200, query.CorrelationId));
+}
+
 /// <summary>One mapping, so the list and the single read cannot drift apart.</summary>
 internal static class TaskTypeMapping
 {
@@ -80,7 +108,38 @@ internal static class TaskTypeMapping
             pair => pair.Key,
             pair => (IReadOnlyList<string>)pair.Value,
             StringComparer.OrdinalIgnoreCase),
-        type.IsActive);
+        type.IsActive,
+        /*
+         * Emitted as an EMPTY LIST rather than null, unlike the request half where null carries the "not asking"
+         * meaning. On the way out there is no such question: a type with no outcomes has none, and a reader that
+         * has to distinguish null from empty to learn that is a reader we have made guess.
+         */
+        /*
+         * `?? []` guards a state the APPLICATION cannot produce but a DOCUMENT can.
+         *
+         * The property is declared non-nullable with an initializer, so a type whose stored document simply
+         * lacks the field deserializes to an empty list and this mapping is safe — measured: with the field
+         * absent, GetTaskTypeListQuery answers 200.
+         *
+         * An EXPLICIT BSON null is different: the driver writes it straight onto the property, past the
+         * initializer, and `null.Select(...)` then throws ArgumentNullException("source") — which surfaces as a
+         * 500 on the whole list and a task-type page stuck on "Loading…". One bad document takes the tenant's
+         * entire list with it.
+         *
+         * HOW THIS WAS FOUND, honestly: CONTROL TOWER put that null there while restoring a temporary test
+         * dictionary with `$set: { ClosureOutcomes: null }` instead of `$unset`. Nothing in this product writes
+         * an explicit null today. It is kept anyway because a migration, an import or a manual repair can, and
+         * degrading one row beats refusing the list.
+         */
+        (type.ClosureOutcomes ?? [])
+            .Select(outcome => new TaskClosureOutcomeDto(
+                outcome.Code,
+                outcome.LabelResourceKey,
+                outcome.LabelText,
+                outcome.Disposition,
+                outcome.RequiresReason,
+                outcome.SortOrder))
+            .ToList());
 }
 
 /// <summary>

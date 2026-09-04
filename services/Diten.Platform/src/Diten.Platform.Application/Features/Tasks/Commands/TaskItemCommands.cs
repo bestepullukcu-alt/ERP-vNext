@@ -18,7 +18,16 @@ namespace Diten.Platform.Application.Features.Tasks.Commands;
 public sealed record CreateTaskItemCommand(
     CreateTaskItemRequest Request,
     string CorrelationId,
-    bool EnforceRequiredFields = true)
+    bool EnforceRequiredFields = true,
+    /// <summary>
+    /// BL-054 — HOW OLD THE TEMPLATE WAS, when this create came from one. Copied onto
+    /// <c>TaskItem.TemplateSnapshotAt</c> verbatim.
+    ///
+    /// <para>On the COMMAND rather than on <c>CreateTaskItemRequest</c>, deliberately: it is a fact the server
+    /// reads off the template, never something a client may assert. A caller that could post its own value could
+    /// claim a task was built from a shape the template never had.</para>
+    /// </summary>
+    DateTimeOffset? TemplateSnapshotAt = null)
     : IRequest<Response<Guid>>;
 
 public sealed record UpdateTaskItemCommand(Guid Id, UpdateTaskItemRequest Request, string CorrelationId)

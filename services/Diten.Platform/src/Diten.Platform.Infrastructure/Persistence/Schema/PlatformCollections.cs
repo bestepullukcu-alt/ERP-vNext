@@ -148,6 +148,7 @@ public static class PlatformCollections
     public const string TenantNavPreferences = "tenant_nav_preferences";
     public const string TenantSubscriptions = "tenant_subscriptions";
     public const string Tenants = "tenants";
+    public const string UserNotifications = "notification_user_notifications";
     public const string WorkflowInstances = "workflow_instances";
     public const string WorkflowRuntimeAssignmentSnapshots = "workflow_runtime_assignment_snapshots";
     public const string WorkflowSlaRules = "workflow_sla_rules";

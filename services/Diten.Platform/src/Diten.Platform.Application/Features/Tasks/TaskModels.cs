@@ -66,6 +66,27 @@ public static class TaskPermissions
     public const string RecurrenceManage = "platform.tasks.recurrence-rules.manage";
 
     /// <summary>
+    /// Who may define the reusable CHECKLIST shapes a template or a task is instantiated from (BL-054).
+    ///
+    /// <para>Its own key, for the same reason <see cref="RecurrenceManage"/> has one: writing the steps a whole
+    /// tenant's work will be measured against is a configuration authority, not the act of doing the work. It is
+    /// deliberately outside <see cref="PersonalWorkSurfaceScoped"/>, so the screen behind it may appear in the
+    /// menu without becoming a second answer to "where is my work".</para>
+    /// </summary>
+    public const string ChecklistTemplatesManage = "platform.tasks.checklist-templates.manage";
+
+    /// <summary>
+    /// Who may define the reusable TASK shapes — title, priority, due offset, checklist (BL-054).
+    ///
+    /// <para><b>Separate from <see cref="ChecklistTemplatesManage"/> even though the two screens ship together.</b>
+    /// A task template says what a piece of work looks like; a checklist template says what must be TICKED before
+    /// it can be called done, and in a regulated tenant those are not the same authority — the second is the one
+    /// QA cares about. One key for both would mean granting the ability to rewrite every gate in order to let
+    /// somebody set a default due date.</para>
+    /// </summary>
+    public const string TemplatesManage = "platform.tasks.templates.manage";
+
+    /// <summary>
     /// The permissions that gate a <b>personal work surface</b> — a page that shows or acts on the viewer's own
     /// task INSTANCES.
     ///
@@ -181,6 +202,48 @@ public static class TaskReasonCodes
 
     /// <summary>The recurrence rule does not exist, or belongs to another tenant.</summary>
     public const string RecurrenceRuleNotFound = "RECURRENCE_RULE_NOT_FOUND";
+
+    /// <summary>The checklist template does not exist, or belongs to another tenant.</summary>
+    public const string ChecklistTemplateNotFound = "CHECKLIST_TEMPLATE_NOT_FOUND";
+
+    /// <summary>
+    /// Another checklist template already uses this code. Codes are how a template is named in an import, an
+    /// export and a support conversation, so two carrying one code make every such reference ambiguous.
+    /// </summary>
+    public const string ChecklistTemplateCodeTaken = "CHECKLIST_TEMPLATE_CODE_TAKEN";
+
+    /// <summary>
+    /// A checklist template was saved with no items. Refused: a gate with nothing in it is not a lighter gate,
+    /// it is a template that instantiates an empty list onto every task bound to it and explains nothing.
+    /// </summary>
+    public const string ChecklistTemplateEmpty = "CHECKLIST_TEMPLATE_EMPTY";
+
+    /// <summary>Two items in one checklist template carry the same code — the key a run item is matched by.</summary>
+    public const string ChecklistItemCodeDuplicate = "CHECKLIST_ITEM_CODE_DUPLICATE";
+
+    /// <summary>Another task template already uses this code.</summary>
+    public const string TaskTemplateCodeTaken = "TASK_TEMPLATE_CODE_TAKEN";
+
+    /// <summary>
+    /// A template's code was edited. Immutable for the same reason a field definition's is: it is how the
+    /// template is referred to from outside the database, and moving it silently re-points those references.
+    /// </summary>
+    public const string TemplateCodeImmutable = "TEMPLATE_CODE_IMMUTABLE";
+
+    /// <summary>
+    /// The template names a checklist template that does not exist, is retired, or belongs to another tenant.
+    ///
+    /// <para>Refused at the WRITE rather than at generation. A template bound to a checklist that cannot resolve
+    /// produces tasks with no gates at all, silently — which is the same class of defect as the recurrence rule
+    /// that generated work assigned to nobody: it looks configured and does the opposite of what it says.</para>
+    /// </summary>
+    public const string TemplateChecklistUnresolved = "TEMPLATE_CHECKLIST_UNRESOLVED";
+
+    /// <summary>
+    /// The template's default assignment does not hold together — a pool with no position, or a person named on
+    /// a pool default. Checked against the SAME shared rule task creation uses.
+    /// </summary>
+    public const string TemplateAssignmentInvalid = "TEMPLATE_ASSIGNMENT_INVALID";
 
     /// <summary>The field definition does not exist, or belongs to another tenant.</summary>
     public const string FieldDefinitionNotFound = "FIELD_DEFINITION_NOT_FOUND";
@@ -346,6 +409,25 @@ public static class TaskReasonCodes
     public const string TaskTypeCodeTaken = "TASK_TYPE_CODE_TAKEN";
     public const string TaskTypeClassificationInvalid = "TASK_TYPE_CLASSIFICATION_INVALID";
     public const string TaskTypeFunctionCodeInvalid = "TASK_TYPE_FUNCTION_CODE_INVALID";
+
+    // ── Closure outcomes ─────────────────────────────────────────────────
+    /// <summary>The type's outcome dictionary is malformed — a duplicate code, no label, or two labels.</summary>
+    public const string TaskTypeClosureOutcomeInvalid = "TASK_TYPE_CLOSURE_OUTCOME_INVALID";
+
+    /// <summary>
+    /// The closer named an outcome the task's type does not offer for this disposition. Refused rather than
+    /// stored: a closure code nothing can resolve to a label is a record that reads as a raw string forever.
+    /// </summary>
+    public const string ClosureOutcomeUnknown = "CLOSURE_OUTCOME_UNKNOWN";
+
+    /// <summary>
+    /// The type offers outcomes for this closure and none was chosen. Only ever raised for a type that HAS a
+    /// dictionary — a type without one closes exactly as it always did.
+    /// </summary>
+    public const string ClosureOutcomeRequired = "CLOSURE_OUTCOME_REQUIRED";
+
+    /// <summary>The chosen outcome carries <c>RequiresReason</c> and no reason was given.</summary>
+    public const string ClosureReasonRequired = "CLOSURE_REASON_REQUIRED";
 
     // ── DCP-005 slice 2 — the document reference list ────────────────────
     public const string DocumentListInvalid = "DOCUMENT_LIST_INVALID";
@@ -756,6 +838,14 @@ public sealed record TaskItemDetailDto(
     int? ReminderLeadDays,
     bool DelegationAllowed,
     string? ProcessInstanceId,
+    /// <summary>
+    /// BL-054 — how old the TEMPLATE was when this task was built from it, or null for a hand-made task.
+    ///
+    /// <para>Exposed rather than merely stored, and that is the point: a stamp nothing can read is a payload
+    /// nobody reads. The question it answers — "has the template been rewritten since this task was born?" —
+    /// is asked by a person looking at the task, so the answer has to reach them.</para>
+    /// </summary>
+    DateTimeOffset? TemplateSnapshotAt,
     IReadOnlyList<TaskFieldValueDto> FieldValues,
     IReadOnlyList<TaskWatcherDto> Watchers,
     IReadOnlyList<TaskDependencyDto> Dependencies,
@@ -1128,6 +1218,20 @@ public sealed record SendDueSoonRemindersResponse(
 /// <summary>
 /// Create a task type. <c>Code</c> is normalised and then frozen — see <c>TaskTypeRules.CodeImmutableMessage</c>.
 /// </summary>
+/// <summary>
+/// One closure outcome as the type editor sends it and the task form reads it back.
+///
+/// <para>Trailing and defaulted so every request payload written before the dictionary existed stays valid — the
+/// same treatment <see cref="TaskFieldValueDto.Redacted"/> got, and for the same reason.</para>
+/// </summary>
+public sealed record TaskClosureOutcomeDto(
+    string Code,
+    string? LabelResourceKey,
+    string? LabelText,
+    TaskClosureDisposition Disposition,
+    bool RequiresReason,
+    int SortOrder = 0);
+
 public sealed record CreateTaskTypeRequest(
     string Code,
     string Name,
@@ -1137,7 +1241,8 @@ public sealed record CreateTaskTypeRequest(
     string? FunctionCode,
     bool IsQualityEvent,
     IReadOnlyList<string>? GroupDocuments,
-    IReadOnlyDictionary<string, IReadOnlyList<string>>? LocalDocuments);
+    IReadOnlyDictionary<string, IReadOnlyList<string>>? LocalDocuments,
+    IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null);
 
 /// <summary>
 /// Update a task type. <c>Code</c> is accepted so the screen can round-trip what it displayed, and REFUSED if it
@@ -1152,7 +1257,13 @@ public sealed record UpdateTaskTypeRequest(
     string? FunctionCode,
     bool IsQualityEvent,
     IReadOnlyList<string>? GroupDocuments,
-    IReadOnlyDictionary<string, IReadOnlyList<string>>? LocalDocuments);
+    IReadOnlyDictionary<string, IReadOnlyList<string>>? LocalDocuments,
+    /// <summary>
+    /// ⚠ NULL MEANS "NOT ASKING", an empty list means "clear it". An update is otherwise a FULL REPLACE, so a
+    /// client that does not yet know about the dictionary — the current type editor — would silently delete a
+    /// type's outcomes on every save.
+    /// </summary>
+    IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null);
 
 /// <summary>Retire or restore a type. There is no delete — see <c>DeactivateTaskTypeHandler</c>.</summary>
 public sealed record SetTaskTypeActiveRequest(bool IsActive);
@@ -1169,7 +1280,8 @@ public sealed record TaskTypeDto(
     bool IsQualityEvent,
     IReadOnlyList<string> GroupDocuments,
     IReadOnlyDictionary<string, IReadOnlyList<string>> LocalDocuments,
-    bool IsActive);
+    bool IsActive,
+    IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null);
 
 
 // ── DCP-005 slice 2: the controlled-document reference list ────────────────
@@ -1251,3 +1363,116 @@ public sealed record DocumentReferenceEntryDto(
     /// <summary>False means: SHOW it, and refuse to let it be chosen. Never hide it.</summary>
     bool LinkableInErp,
     string? LinkBlockedReason);
+
+// ── BL-054: the template chain ───────────────────────────────────────────────
+//
+// Two screens, and the ORDER between them is load-bearing rather than tidy. A task template's form offers a
+// checklist-template picker; without a checklist screen that picker is a control with no source — exactly the
+// shape the recurrence rule's own template picker had before this slice, where a live-looking select could never
+// be filled. The checklist contracts come first here for the same reason they ship first.
+
+/// <summary>One step in a reusable checklist, as it travels on the wire.</summary>
+/// <param name="Code">Stable key. A run item is matched back to its template item by this, so it never moves.</param>
+/// <param name="LabelResourceKey">
+/// System text, translated in all seven languages. Exactly one of this and <paramref name="LabelText"/> is set —
+/// conflating them is how a raw resource key reaches the screen, which has happened here before.
+/// </param>
+/// <param name="LabelText">A tenant author's own words, in the language they typed them in.</param>
+public sealed record ChecklistTemplateItemDto(
+    string Code,
+    string? LabelResourceKey,
+    string? LabelText,
+    ChecklistItemRequirement Requirement,
+    int SortOrder,
+    bool EvidenceRequired);
+
+public sealed record CreateChecklistTemplateRequest(
+    string Code,
+    string Name,
+    string? Description,
+    IReadOnlyList<ChecklistTemplateItemDto> Items,
+    bool IsActive = true);
+
+/// <summary>Full replace, like every other MOD-0024 update — the item list included.</summary>
+public sealed record UpdateChecklistTemplateRequest(
+    string Code,
+    string Name,
+    string? Description,
+    IReadOnlyList<ChecklistTemplateItemDto> Items,
+    bool IsActive,
+    int ExpectedVersion);
+
+public sealed record ChecklistTemplateDto(
+    Guid Id,
+    string Code,
+    string Name,
+    string? Description,
+    IReadOnlyList<ChecklistTemplateItemDto> Items,
+    /// <summary>Rendered as a column so the list answers "how long is this checklist?" without opening it.</summary>
+    int ItemCount,
+    bool IsActive,
+    int Version,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? UpdatedAt);
+
+/// <summary>What the task-template form's checklist picker is filled from.</summary>
+public sealed record ChecklistTemplateLookupDto(Guid Id, string Code, string Name, int ItemCount);
+
+/// <summary>
+/// Define a reusable task shape.
+///
+/// <para><b>What is deliberately NOT here.</b> No organization unit: a template says what work LOOKS LIKE, and
+/// which department it lands in is the recurrence rule's sentence, not the template's. No subtasks either — a
+/// template produces ONE task; a shape that produces a tree is a project template and a different feature.</para>
+/// </summary>
+public sealed record CreateTaskTemplateRequest(
+    string Code,
+    string Name,
+    string? TitleTemplate,
+    string? DescriptionTemplate,
+    TaskPriority DefaultPriority,
+    /// <summary>
+    /// The DEFAULT holder, used only when the recurrence rule leaves its own assignment empty. The rule wins
+    /// when it names anybody — the form says so out loud, because two places carrying an assignment with no
+    /// stated precedence is how work silently reaches the wrong person.
+    /// </summary>
+    TaskAssignmentTarget DefaultAssignmentTarget,
+    Guid? DefaultPoolPositionId,
+    int? DefaultDueInDays,
+    Guid? ChecklistTemplateId,
+    /// <summary>Null = every company. One id = that company only; see <c>TaskTemplate.LegalEntityId</c>.</summary>
+    Guid? LegalEntityId,
+    bool IsActive = true);
+
+public sealed record UpdateTaskTemplateRequest(
+    string Code,
+    string Name,
+    string? TitleTemplate,
+    string? DescriptionTemplate,
+    TaskPriority DefaultPriority,
+    TaskAssignmentTarget DefaultAssignmentTarget,
+    Guid? DefaultPoolPositionId,
+    int? DefaultDueInDays,
+    Guid? ChecklistTemplateId,
+    Guid? LegalEntityId,
+    bool IsActive,
+    int ExpectedVersion);
+
+public sealed record TaskTemplateDto(
+    Guid Id,
+    string Code,
+    string Name,
+    string? TitleTemplate,
+    string? DescriptionTemplate,
+    // Enums as STRINGS on the wire — the live Platform convention, and one an enum-as-number defect already
+    // cost this module once.
+    string DefaultPriority,
+    string DefaultAssignmentTarget,
+    Guid? DefaultPoolPositionId,
+    int? DefaultDueInDays,
+    Guid? ChecklistTemplateId,
+    Guid? LegalEntityId,
+    bool IsActive,
+    int Version,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? UpdatedAt);

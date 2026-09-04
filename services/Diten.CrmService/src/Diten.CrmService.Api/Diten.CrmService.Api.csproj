@@ -15,5 +15,6 @@
     <ProjectReference Include="..\Diten.CrmService.Application\Diten.CrmService.Application.csproj" />
     <ProjectReference Include="..\Diten.CrmService.Infrastructure\Diten.CrmService.Infrastructure.csproj" />
     <ProjectReference Include="..\Diten.CrmService.Persistence\Diten.CrmService.Persistence.csproj" />
-  </ItemGroup>
+      <ProjectReference Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
+</ItemGroup>
 </Project>

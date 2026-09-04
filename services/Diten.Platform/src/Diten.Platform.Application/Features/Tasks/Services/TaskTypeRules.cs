@@ -207,4 +207,121 @@ public static class TaskTypeRules
 
         return result;
     }
+
+    // ── Closure outcomes ─────────────────────────────────────────────────────────────────────────────────
+
+    public const string OutcomeCodeMaxLength_Message =
+        "A closure outcome's code cannot be longer than 40 characters.";
+    public const string OutcomeCodeRequiredMessage = "A closure outcome needs a code.";
+    public const string OutcomeCodeDuplicateMessage = "This type already offers a closure outcome with that code.";
+    public const string OutcomeLabelRequiredMessage =
+        "A closure outcome needs a label: a system resource key, or the words the administrator typed.";
+    public const string OutcomeLabelAmbiguousMessage =
+        "A closure outcome carries EITHER a resource key OR its own text, never both — two labels is two answers "
+        + "to which one the screen should print.";
+    public const string OutcomeSystemCodeReservedMessage =
+        "That code belongs to a system closure outcome. A tenant outcome reusing it would inherit our translation "
+        + "and mean something else in it.";
+
+    public const int OutcomeCodeMaxLength = 40;
+
+    /// <summary>
+    /// The outcome dictionary, cleaned and checked as ONE list.
+    ///
+    /// <para>Uniqueness is asked across the WHOLE list rather than per disposition, and that is the point of the
+    /// single-list shape: <see cref="TaskItem.ClosureReasonCode"/> is one field, so a code appearing once under
+    /// Completed and once under Cancelled would produce two closed tasks quoting the same code with different
+    /// meanings, and nothing downstream could tell them apart.</para>
+    ///
+    /// <para>Returns the normalised list on success — trimmed, upper-cased codes, sorted by
+    /// <see cref="TaskClosureOutcome.SortOrder"/> then code so the picker never shuffles.</para>
+    /// </summary>
+    public static (List<TaskClosureOutcome>? Value, (string ReasonCode, string Message)? Error)
+        NormalizeClosureOutcomes(IEnumerable<TaskClosureOutcome>? outcomes)
+    {
+        if (outcomes is null)
+        {
+            // Absent is not "clear it": the caller is not asking for anything. An empty LIST is, and passes below.
+            return ([], null);
+        }
+
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var normalized = new List<TaskClosureOutcome>();
+
+        foreach (var outcome in outcomes)
+        {
+            if (outcome is null)
+            {
+                continue;
+            }
+
+            var code = NormalizeCode(outcome.Code);
+            if (code.Length == 0)
+            {
+                return (null, (TaskReasonCodes.TaskTypeClosureOutcomeInvalid, OutcomeCodeRequiredMessage));
+            }
+
+            if (code.Length > OutcomeCodeMaxLength)
+            {
+                return (null, (TaskReasonCodes.TaskTypeClosureOutcomeInvalid, OutcomeCodeMaxLength_Message));
+            }
+
+            if (!seen.Add(code))
+            {
+                return (null, (TaskReasonCodes.TaskTypeClosureOutcomeInvalid, OutcomeCodeDuplicateMessage));
+            }
+
+            var key = (outcome.LabelResourceKey ?? string.Empty).Trim();
+            var text = (outcome.LabelText ?? string.Empty).Trim();
+
+            if (key.Length == 0 && text.Length == 0)
+            {
+                return (null, (TaskReasonCodes.TaskTypeClosureOutcomeInvalid, OutcomeLabelRequiredMessage));
+            }
+
+            if (key.Length > 0 && text.Length > 0)
+            {
+                return (null, (TaskReasonCodes.TaskTypeClosureOutcomeInvalid, OutcomeLabelAmbiguousMessage));
+            }
+
+            /*
+             * A TENANT outcome may not squat on a system code. The catalogue binds each system code to a resx
+             * entry, so a tenant row carrying COMPLETED_PARTIALLY with its own words would still be printed by
+             * whichever half the reader's screen consulted first — and the two halves disagree by construction.
+             */
+            if (text.Length > 0 && TaskClosureOutcomeCatalog.IsSystemCode(code))
+            {
+                return (null, (TaskReasonCodes.TaskTypeClosureOutcomeInvalid, OutcomeSystemCodeReservedMessage));
+            }
+
+            normalized.Add(new TaskClosureOutcome
+            {
+                Code = code,
+                LabelResourceKey = key.Length > 0 ? key : null,
+                LabelText = text.Length > 0 ? text : null,
+                Disposition = outcome.Disposition,
+                RequiresReason = outcome.RequiresReason,
+                SortOrder = outcome.SortOrder
+            });
+        }
+
+        return (normalized
+            .OrderBy(outcome => outcome.SortOrder)
+            .ThenBy(outcome => outcome.Code, StringComparer.OrdinalIgnoreCase)
+            .ToList(), null);
+    }
+
+    /// <summary>
+    /// The outcomes a type offers for ONE closure, in picker order. Empty means this type asks nothing — the
+    /// backward-compatible path, and the state every type written before this feature is in.
+    /// </summary>
+    public static IReadOnlyList<TaskClosureOutcome> OutcomesFor(
+        TaskType? type, TaskClosureDisposition disposition) =>
+        type?.ClosureOutcomes is { Count: > 0 } outcomes
+            ? outcomes
+                .Where(outcome => outcome.Disposition == disposition)
+                .OrderBy(outcome => outcome.SortOrder)
+                .ThenBy(outcome => outcome.Code, StringComparer.OrdinalIgnoreCase)
+                .ToList()
+            : [];
 }

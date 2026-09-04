@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="InitiativesTitle" xml:space="preserve"><value>Инициативы</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Управляйте объектами «Инициативы» арендатора, их жизненным циклом и возможностью ссылок.</value></data>
+  <data name="AddNewInitiative" xml:space="preserve"><value>Добавить инициативу</value></data>
+  <data name="EditInitiative" xml:space="preserve"><value>Изменить инициативу</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="Name" xml:space="preserve"><value>Наименование</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Жизненный цикл</value></data>
+  <data name="VisibilityPolicyKey" xml:space="preserve"><value>Политика видимости</value></data>
+  <data name="Referenceability" xml:space="preserve"><value>Возможность ссылок</value></data>
+  <data name="Referenceable" xml:space="preserve"><value>Доступно для новых ссылок</value></data>
+  <data name="NotReferenceable" xml:space="preserve"><value>Недоступно для новых ссылок</value></data>
+  <data name="InitiativesLoadingState" xml:space="preserve"><value>Загрузка: Инициативы…</value></data>
+  <data name="InitiativesEmptyState" xml:space="preserve"><value>Объекты «Инициативы» не найдены.</value></data>
+  <data name="InitiativesErrorState" xml:space="preserve"><value>Не удалось загрузить список «Инициативы».</value></data>
+  <data name="Portfolio" xml:space="preserve"><value>Портфель</value></data>
+  <data name="LifecycleProposed" xml:space="preserve"><value>Предложена</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>Активный</value></data>
+  <data name="LifecycleOnHold" xml:space="preserve"><value>Приостановлен</value></data>
+  <data name="LifecycleCompleted" xml:space="preserve"><value>Завершён</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>Отменён</value></data>
+  <data name="CompleteInitiativeConfirmation" xml:space="preserve"><value>Завершить объект «инициатива»? Новые ссылки будут запрещены.</value></data>
+  <data name="CancelInitiativeConfirmation" xml:space="preserve"><value>Отменить объект «инициатива»? Новые ссылки будут запрещены.</value></data>
+  <data name="InitiativeType" xml:space="preserve"><value>Тип инициативы</value></data><data name="Priority" xml:space="preserve"><value>Приоритет</value></data><data name="PlannedStartDate" xml:space="preserve"><value>Плановая дата начала</value></data><data name="PlannedEndDate" xml:space="preserve"><value>Плановая дата окончания</value></data><data name="ClassificationUnavailable" xml:space="preserve"><value>Параметры классификации недоступны. Создание и изменение отключены.</value></data><data name="LifecycleUnavailable" xml:space="preserve"><value>Контракт жизненного цикла недоступен.</value></data><data name="ValidationError" xml:space="preserve"><value>Проверьте отмеченные значения.</value></data><data name="Unauthorized" xml:space="preserve"><value>Срок сеанса истёк.</value></data><data name="Forbidden" xml:space="preserve"><value>У вас нет разрешения на это действие.</value></data><data name="NotFound" xml:space="preserve"><value>Инициатива не найдена.</value></data><data name="Conflict" xml:space="preserve"><value>Инициатива изменилась. Обновите страницу.</value></data><data name="DependencyUnavailable" xml:space="preserve"><value>Необходимый источник полномочий недоступен.</value></data><data name="CreateSuccessor" xml:space="preserve"><value>Создать преемника</value></data><data name="RelatedRecords" xml:space="preserve"><value>Связанные записи</value></data><data name="CompletionSummary" xml:space="preserve"><value>Итог завершения</value></data><data name="Outcome" xml:space="preserve"><value>Результат</value></data><data name="ClosureReason" xml:space="preserve"><value>Причина закрытия</value></data><data name="BenefitDisposition" xml:space="preserve"><value>Состояние выгод</value></data><data name="Reason" xml:space="preserve"><value>Причина</value></data><data name="RecordNotReady" xml:space="preserve"><value>Инициатива не готова к действию.</value></data><data name="ActionForbidden" xml:space="preserve"><value>Это действие запрещено.</value></data><data name="ActionDependencyUnavailable" xml:space="preserve"><value>Для действия требуется недоступный источник полномочий.</value></data>
+</root>

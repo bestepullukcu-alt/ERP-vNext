@@ -23,6 +23,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
     private readonly IAuthAuditService _authAuditService;
     private readonly ITenantLoginSettingsClient _tenantLoginSettingsClient;
     private readonly IMfaChallengeService _mfaChallengeService;
+    private readonly ITenantEffectivePermissionResolver _effectivePermissionResolver;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<LoginCommandHandler> _logger;
 
@@ -38,6 +39,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         IAuthAuditService authAuditService,
         ITenantLoginSettingsClient tenantLoginSettingsClient,
         IMfaChallengeService mfaChallengeService,
+        ITenantEffectivePermissionResolver effectivePermissionResolver,
         ITenantContext tenantContext,
         ILogger<LoginCommandHandler> logger)
     {
@@ -52,6 +54,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         _authAuditService = authAuditService;
         _tenantLoginSettingsClient = tenantLoginSettingsClient;
         _mfaChallengeService = mfaChallengeService;
+        _effectivePermissionResolver = effectivePermissionResolver;
         _tenantContext = tenantContext;
         _logger = logger;
     }
@@ -164,12 +167,16 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         }
 
         var roleIds = await ResolveRoleIdsAsync(roles, _tenantContext.TenantId, ct);
-        var permissions = (await _rolePermissionRepository
+        var rolePermissions = (await _rolePermissionRepository
                 .GetPermissionsByRolesAsync(roleIds, _tenantContext.TenantId, ct))
             ?.Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray()
             ?? [];
+        var permissions = await _effectivePermissionResolver.ResolveAsync(
+            _tenantContext.TenantId,
+            rolePermissions,
+            ct);
 
         var accessToken = _tokenService.GenerateAccessToken(user, roles, permissions, settings.SessionTimeoutMinutes);
         var refreshTokenStr = _tokenService.GenerateRefreshToken();

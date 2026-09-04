@@ -587,7 +587,7 @@
   <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>Legal Entity</value></data>
   <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>Reference Data</value></data>
   <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>Organization</value></data>
-  <data name="Nav.Module.TASKS" xml:space="preserve"><value>Tasks</value></data>
+  <data name="Nav.Module.TASKS" xml:space="preserve"><value>Task Settings</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>Workflow</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Users</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Roles</value></data>
@@ -649,6 +649,12 @@
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>Task Center</value>
   </data>
+  <data name="Nav.Page.TASKCHECKLISTTEMPLATES" xml:space="preserve">
+    <value>Checklist Templates</value>
+  </data>
+  <data name="Nav.Page.TASKTEMPLATES" xml:space="preserve">
+    <value>Task Templates</value>
+  </data>
   <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
     <value>Recurring Task Rules</value>
   </data>
@@ -674,10 +680,10 @@
     <value>GSKUs</value>
   </data>
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
-    <value>Task types</value>
+    <value>Task Types</value>
   </data>
   <data name="Nav.Page.TASKDOCUMENTLIST" xml:space="preserve">
-    <value>Controlled documents</value>
+    <value>Controlled Documents</value>
   </data>
   <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
     <value>Field Definitions</value>

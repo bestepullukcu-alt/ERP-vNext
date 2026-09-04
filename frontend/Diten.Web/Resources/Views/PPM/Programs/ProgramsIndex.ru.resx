@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ProgramsTitle" xml:space="preserve"><value>Программы</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Управляйте объектами «Программы» арендатора, их жизненным циклом и возможностью ссылок.</value></data>
+  <data name="AddNewProgram" xml:space="preserve"><value>Добавить: программа</value></data>
+  <data name="EditProgram" xml:space="preserve"><value>Изменить: программа</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="Name" xml:space="preserve"><value>Наименование</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Жизненный цикл</value></data>
+  <data name="VisibilityPolicyKey" xml:space="preserve"><value>Политика видимости</value></data>
+  <data name="Referenceability" xml:space="preserve"><value>Возможность ссылок</value></data>
+  <data name="Referenceable" xml:space="preserve"><value>Доступно для новых ссылок</value></data>
+  <data name="NotReferenceable" xml:space="preserve"><value>Недоступно для новых ссылок</value></data>
+  <data name="ProgramsLoadingState" xml:space="preserve"><value>Загрузка: Программы…</value></data>
+  <data name="ProgramsEmptyState" xml:space="preserve"><value>Объекты «Программы» не найдены.</value></data>
+  <data name="ProgramsErrorState" xml:space="preserve"><value>Не удалось загрузить список «Программы».</value></data>
+  <data name="Portfolio" xml:space="preserve"><value>Портфель</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>Активный</value></data>
+  <data name="LifecycleOnHold" xml:space="preserve"><value>Приостановлен</value></data>
+  <data name="LifecycleCompleted" xml:space="preserve"><value>Завершён</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>Отменён</value></data>
+  <data name="CompleteProgramConfirmation" xml:space="preserve"><value>Завершить объект «программа»? Новые ссылки будут запрещены.</value></data>
+  <data name="CancelProgramConfirmation" xml:space="preserve"><value>Отменить объект «программа»? Новые ссылки будут запрещены.</value></data>
+</root>

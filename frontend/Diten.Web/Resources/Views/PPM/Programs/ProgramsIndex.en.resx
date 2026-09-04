@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ProgramsTitle" xml:space="preserve"><value>Programs</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Manage tenant Programs, lifecycle and referenceability.</value></data>
+  <data name="AddNewProgram" xml:space="preserve"><value>Add New Program</value></data>
+  <data name="EditProgram" xml:space="preserve"><value>Edit Program</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Lifecycle</value></data>
+  <data name="VisibilityPolicyKey" xml:space="preserve"><value>Visibility Policy</value></data>
+  <data name="Referenceability" xml:space="preserve"><value>Referenceability</value></data>
+  <data name="Referenceable" xml:space="preserve"><value>Available for new references</value></data>
+  <data name="NotReferenceable" xml:space="preserve"><value>Not available for new references</value></data>
+  <data name="ProgramsLoadingState" xml:space="preserve"><value>Loading Programs…</value></data>
+  <data name="ProgramsEmptyState" xml:space="preserve"><value>No Programs found.</value></data>
+  <data name="ProgramsErrorState" xml:space="preserve"><value>The Programs list could not be loaded.</value></data>
+  <data name="Portfolio" xml:space="preserve"><value>Portfolio</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>Active</value></data>
+  <data name="LifecycleOnHold" xml:space="preserve"><value>On Hold</value></data>
+  <data name="LifecycleCompleted" xml:space="preserve"><value>Completed</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="CompleteProgramConfirmation" xml:space="preserve"><value>Complete this Program? New references will no longer be allowed.</value></data>
+  <data name="CancelProgramConfirmation" xml:space="preserve"><value>Cancel this Program? New references will no longer be allowed.</value></data>
+</root>

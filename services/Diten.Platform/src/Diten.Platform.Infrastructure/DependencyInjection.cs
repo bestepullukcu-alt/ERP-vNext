@@ -4,12 +4,14 @@ using Diten.BuildingBlocks.Security.Secrets;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Application.Features.Lookups.Services;
+using Diten.Platform.Application.Features.EntitlementAttestations;
 using Diten.Platform.Application.Features.Notifications.Services;
 using Diten.Platform.Application.Features.WorkingCalendar.Services;
 using Diten.Platform.Application.Features.WorkingCalendarImport;
 using Diten.Platform.Application.Features.TenantOrganization.Services;
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Application.Services;
+using Diten.Platform.Application.Services.Eventing;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Eventing;
 using Diten.Platform.Infrastructure.Authorization;
@@ -21,7 +23,6 @@ using Diten.Platform.Infrastructure.Persistence.Repositories.BusinessReferenceDa
 using Diten.Platform.Infrastructure.Persistence.Settings;
 using Diten.Platform.Infrastructure.Services;
 using Diten.Platform.Infrastructure.Services.Audit;
-using Diten.Platform.Infrastructure.Services.Http;
 using Diten.Platform.Infrastructure.Services.WorkAggregation;
 using Diten.Platform.Infrastructure.Services.Mdm;
 using Diten.Platform.Infrastructure.Services.WorkingCalendarImport;
@@ -45,6 +46,10 @@ using Hangfire;
 using Hangfire.Mongo;
 using Hangfire.Mongo.Migration.Strategies;
 using Hangfire.Mongo.Migration.Strategies.Backup;
+using EventOutboxStore = Diten.BuildingBlocks.Eventing.IEventOutboxStore;
+using EventOutboxWriter = Diten.BuildingBlocks.Eventing.IEventOutboxWriter;
+using TrustedTransportMetadataProvider = Diten.BuildingBlocks.Eventing.ITrustedTransportMetadataProvider;
+using EmptyTrustedTransportMetadataProvider = Diten.BuildingBlocks.Eventing.EmptyTrustedTransportMetadataProvider;
 
 namespace Diten.Platform.Infrastructure;
 
@@ -76,7 +81,7 @@ public static class DependencyInjection
                     ValidIssuer = jwtIssuer,
                     ValidAudience = jwtAudience,
                     IssuerSigningKeys = jwtRotationResolver.GetValidationKeys(),
-                    ClockSkew = TimeSpan.FromSeconds(30)
+                    ClockSkew = JwtValidationDefaults.ClockSkew
                 };
             });
 
@@ -197,6 +202,11 @@ public static class DependencyInjection
         services.AddScoped<ITenantDefaultsProvider, TenantDefaultsProvider>();
         services.AddSingleton<EntitlementCacheService>();
         services.AddScoped<IEntitlementChecker, EntitlementChecker>();
+        services.AddOptions<PlatformEntitlementAttestationOptions>()
+            .Bind(configuration.GetSection("PlatformEntitlementAttestation"));
+        services.AddSingleton<VersionAwareEntitlementDecisionCache>();
+        services.AddScoped<IAuthoritativeEntitlementDecisionSource, MongoAuthoritativeEntitlementDecisionSource>();
+        services.AddScoped<IPlatformEntitlementDecisionProvider, PlatformEntitlementDecisionProvider>();
         services.AddScoped<IAdminUserInvitationService, AdminUserInvitationService>();
         services.AddScoped<ITenantActivationNotifier, AuthServiceTenantActivationNotifier>();
         services.AddScoped<ICatalogPermissionSyncService, CatalogPermissionSyncService>();
@@ -206,10 +216,16 @@ public static class DependencyInjection
         services.AddScoped<IPlatformLookupCache, PlatformLookupMemoryCache>();
         services.AddScoped<IPlatformAdministratorProvisioningService, PlatformAdministratorProvisioningService>();
         services.AddScoped<IPlatformAdministratorInvitationEmailService, PlatformAdministratorInvitationEmailService>();
-        services.AddTransient<TenantPropagationHandler>();
-        services.AddHttpClient("TenantAwareClient").AddHttpMessageHandler<TenantPropagationHandler>();
-        services.AddHttpClient<ILegalEntityReferenceValidator, MdmLegalEntityReferenceValidator>()
-            .AddHttpMessageHandler<TenantPropagationHandler>();
+        /*
+         * ⚠ These reference-validator clients carry NO tenant DelegatingHandler, and that is DELIBERATE.
+         * A handler cannot see the request: IHttpClientFactory caches a client's handler chain in its OWN scope,
+         * so a handler injecting the request-scoped ITenantContext is never resolved and adds no X-Tenant-Id —
+         * silently, and green in unit tests, which register the context as a singleton and so prove wiring rather
+         * than lifetime. Measured 2026-08-28 by a live read; the shared handler was deleted in BL-316.
+         * Each validator writes X-Tenant-Id itself, from the request's own scope, via TenantOnTheWire — which is
+         * also the one place that decides WHICH tenant may travel. Do not re-introduce a handler here.
+         */
+        services.AddHttpClient<ILegalEntityReferenceValidator, MdmLegalEntityReferenceValidator>();
         services.AddHttpClient<IWorkingCalendarLegalEntityValidator, WorkingCalendarLegalEntityValidator>(client =>
         {
             // The validator owns one linked 3-second budget across both attempts.
@@ -229,8 +245,7 @@ public static class DependencyInjection
                 ? sp.GetRequiredService<NagerDateHolidayProvider>()
                 : sp.GetRequiredService<OfflineHolidayProvider>();
         });
-        services.AddHttpClient<IUserReferenceValidator, Diten.Platform.Infrastructure.Services.Auth.AuthServiceUserReferenceValidator>()
-            .AddHttpMessageHandler<TenantPropagationHandler>();
+        services.AddHttpClient<IUserReferenceValidator, Diten.Platform.Infrastructure.Services.Auth.AuthServiceUserReferenceValidator>();
         services.AddHttpClient<
             Diten.Platform.Application.Features.DocumentManagementApproval.Services.IApprovalRoleDirectory,
             Diten.Platform.Infrastructure.Services.Auth.AuthServiceApprovalRoleDirectory>();
@@ -272,12 +287,17 @@ public static class DependencyInjection
 
         services.AddSingleton<IMongoClient>(mongoClient);
         services.AddSingleton<IPlatformDbContext>(new PlatformDbContext(mongoClient, database));
+        services.AddSingleton<IPlatformTransactionFaultProbe, NoOpPlatformTransactionFaultProbe>();
+        services.AddScoped<IPlatformTransactionExecutor, PlatformTransactionExecutor>();
+        services.AddScoped<IEntitlementStateVersionRepository, EntitlementStateVersionRepository>();
+        services.AddScoped<IGlobalApplicabilityStateRepository, GlobalApplicabilityStateRepository>();
         services.AddScoped<IMongoDatabase>(_ => database);
         services.AddScoped<ISavedViewRepository, SavedViewRepository>();
         services.AddScoped<ITenantRegistryRepository, TenantRegistryRepository>();
         services.AddScoped<ITenantDomainRepository, TenantDomainRepository>();
         services.AddScoped<ITenantLoginSettingsRepository, TenantLoginSettingsRepository>();
         services.AddScoped<IModuleCatalogRepository, ModuleCatalogRepository>();
+        services.AddScoped<ITransactionalModuleCatalogRepository>(sp => (ModuleCatalogRepository)sp.GetRequiredService<IModuleCatalogRepository>());
         services.AddScoped<IModuleDomainRepository, ModuleDomainRepository>();
         services.AddScoped<IModuleServiceRepository, ModuleServiceRepository>();
         services.AddScoped<IModulePageDescriptorRepository, ModulePageDescriptorRepository>();
@@ -286,6 +306,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantNavDomainPreferenceRepository, TenantNavDomainPreferenceRepository>();
         services.AddScoped<IPlatformAdministratorRepository, PlatformAdministratorRepository>();
         services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
+        services.AddScoped<ITransactionalSubscriptionPlanRepository>(sp => (SubscriptionPlanRepository)sp.GetRequiredService<ISubscriptionPlanRepository>());
         services.AddScoped<ITenantSubscriptionRepository, TenantSubscriptionRepository>();
         services.AddScoped<ITenantModuleEntitlementRepository, TenantModuleEntitlementRepository>();
         services.AddScoped<IQuotaUsageRepository, QuotaUsageRepository>();
@@ -302,6 +323,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationTemplateRepository, NotificationTemplateRepository>();
         services.AddScoped<INotificationDispatchRepository, NotificationDispatchRepository>();
         services.AddScoped<INotificationEventDefinitionRepository, NotificationEventDefinitionRepository>();
+        services.AddScoped<IUserNotificationRepository, UserNotificationRepository>();
         services.AddScoped<IOrganizationUnitRepository, OrganizationUnitRepository>();
         services.AddScoped<IPositionRepository, PositionRepository>();
         services.AddScoped<IPositionAssignmentRepository, PositionAssignmentRepository>();
@@ -465,6 +487,7 @@ public static class DependencyInjection
         services.AddScoped<IMessagingProviderResolver, MessagingProviderResolver>();
         services.AddScoped<AuditOutboxRepository>();
         services.AddScoped<IAuditOutboxWriter>(provider => provider.GetRequiredService<AuditOutboxRepository>());
+        services.AddScoped<ITransactionalAuditOutboxWriter>(provider => provider.GetRequiredService<AuditOutboxRepository>());
         services.AddScoped<IAuditOutboxProcessingRepository>(provider => provider.GetRequiredService<AuditOutboxRepository>());
         services.AddSingleton<AuditOutboxWorkerOptions>();
         services.AddScoped<AuditOutboxPayloadMapper>();
@@ -490,7 +513,6 @@ public static class DependencyInjection
             .Get<AuditRetentionSeedOptions>()
             ?? throw new InvalidOperationException($"Configuration error: '{AuditRetentionSeedOptions.SectionName}' is missing in appsettings.json.");
         AuditRetentionPolicySeed.EnsureSeededAsync(database, auditRetentionSeedOptions).GetAwaiter().GetResult();
-        SubscriptionPlanSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
@@ -519,10 +541,20 @@ public static class DependencyInjection
         // marker-gated: re-runnable and idempotent, so catalog rows that drifted after that one-shot ran
         // (two spellings of one domain → the sidebar heading rendered twice) are healed on every startup.
         ModuleCatalogDomainCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+        // FIX-TASKS-MODULE-NAME — the tasks module was renamed "Görevler" → "Görev Tanımları"; catalog
+        // DisplayName is SOFT (operator-owned) so a manifest re-push would NOT carry it. Rewrites only a
+        // row still holding the exact old seed, so it is idempotent and never clobbers an operator rename.
+        TaskModuleDisplayNameRenameMigration.MigrateAsync(database).GetAwaiter().GetResult();
         PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
 
         services.AddScoped<IOutboxEventRepository, OutboxEventRepository>();
+        services.AddScoped<EventOutboxWriter>(sp => sp.GetRequiredService<IOutboxEventRepository>());
+        services.AddScoped<EventOutboxStore>(sp => sp.GetRequiredService<IOutboxEventRepository>());
+        services.AddSingleton<TrustedTransportMetadataProvider, EmptyTrustedTransportMetadataProvider>();
+        services.AddScoped<ITransactionalOutboxEventWriter>(sp =>
+            (ITransactionalOutboxEventWriter)sp.GetRequiredService<IOutboxEventRepository>());
+        services.AddScoped<ITransactionalIntegrationEventWriter, TransactionalIntegrationEventWriter>();
         services.AddScoped<IOutboxObservabilityReader>(sp => (IOutboxObservabilityReader)sp.GetRequiredService<IOutboxEventRepository>());
         services.AddScoped<IConsumedEventRepository, ConsumedEventRepository>();
         services.AddScoped<IJobExecutionLogRepository, JobExecutionLogRepository>();
@@ -567,6 +599,7 @@ public static class DependencyInjection
         }
 
         services.AddHostedService<OutboxPublisherWorker>();
+        services.AddHostedService<SubscriptionPlanStartupInitializer>();
 
         RunMongoStartupInitialization(
             database,
@@ -617,7 +650,6 @@ public static class DependencyInjection
             // partial index (ux_platform_module_domains_code_key) is (re)created, else the index build would fail.
             ModuleDomainDeduplicationMigration.MigrateAsync(database).GetAwaiter().GetResult();
             MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
-            SubscriptionPlanSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
@@ -643,6 +675,10 @@ public static class DependencyInjection
             // marker-gated: re-runnable and idempotent, so catalog rows that drifted after that one-shot ran
             // (two spellings of one domain → the sidebar heading rendered twice) are healed on every startup.
             ModuleCatalogDomainCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+            // FIX-TASKS-MODULE-NAME — the tasks module was renamed "Görevler" → "Görev Tanımları"; catalog
+            // DisplayName is SOFT (operator-owned) so a manifest re-push would NOT carry it. Rewrites only a
+            // row still holding the exact old seed, so it is idempotent and never clobbers an operator rename.
+            TaskModuleDisplayNameRenameMigration.MigrateAsync(database).GetAwaiter().GetResult();
             PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
         }

@@ -12,6 +12,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
     <ProjectReference Include="..\Diten.MdmService.Application\Diten.MdmService.Application.csproj" />
     <ProjectReference Include="..\Diten.MdmService.Infrastructure\Diten.MdmService.Infrastructure.csproj" />
     <ProjectReference Include="..\Diten.MdmService.Persistence\Diten.MdmService.Persistence.csproj" />

@@ -1,0 +1,2 @@
+namespace Diten.ManagementGovernanceService.Application.Modules.ProcessModeling.Catalog;
+internal sealed class ArchiveProcessDefinitionHandler(ICatalogStore store) : CatalogCommandHandler<ArchiveProcessDefinitionCommand>(store);

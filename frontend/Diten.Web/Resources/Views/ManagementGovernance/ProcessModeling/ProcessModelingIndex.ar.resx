@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Title" xml:space="preserve"><value>نماذج العمليات</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>عرّف هويات نماذج العمليات وراجع الرسوم ذات الإصدارات.</value></data>
+  <data name="GatewayNotReady" xml:space="preserve"><value>نمذجة العمليات غير متصلة بالبوابة. لم تتم قراءة بيانات موثوقة.</value></data>
+  <data name="Lifecycle" xml:space="preserve"><value>دورة الحياة</value></data>
+  <data name="Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Review" xml:space="preserve"><value>مراجعة</value></data>
+  <data name="Published" xml:space="preserve"><value>منشور</value></data>
+  <data name="Retired" xml:space="preserve"><value>متقاعد</value></data>
+  <data name="ModelCode" xml:space="preserve"><value>رمز النموذج</value></data>
+  <data name="Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="CurrentVersion" xml:space="preserve"><value>الإصدار الحالي</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>وقت التحديث</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="IdentityFormTitle" xml:space="preserve"><value>هوية نموذج العملية</value></data>
+  <data name="WriteNotReady" xml:space="preserve"><value>تظل عمليات الكتابة معطلة حتى اعتماد بوابة الربط.</value></data>
+  <data name="ProcessDefinition" xml:space="preserve"><value>تعريف العملية</value></data>
+  <data name="AddNew" xml:space="preserve"><value>إضافة نموذج</value></data>
+  <data name="OpenEditor" xml:space="preserve"><value>فتح المحرر</value></data>
+  <data name="Empty" xml:space="preserve"><value>لم يتم العثور على نماذج.</value></data>
+  <data name="Error401" xml:space="preserve"><value>جلستك غير مخولة.</value></data>
+  <data name="Error403" xml:space="preserve"><value>ليس لديك إذن لهذه العملية.</value></data>
+  <data name="Error404" xml:space="preserve"><value>لم يتم العثور على نموذج العملية.</value></data>
+  <data name="Error409" xml:space="preserve"><value>تغير نموذج العملية. حدّث الصفحة قبل المتابعة.</value></data>
+  <data name="Error503" xml:space="preserve"><value>بيانات نمذجة العمليات الموثوقة غير متاحة حاليًا.</value></data>
+  <data name="Error400" xml:space="preserve">
+    <value>الطلب غير صالح. راجع القيم المدخلة.</value>
+  </data>
+  <data name="ErrorOffline" xml:space="preserve">
+    <value>انقطع الاتصال. تحقق من الشبكة وحاول مرة أخرى.</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>تم حفظ نموذج العملية بنجاح.</value>
+  </data>
+  <data name="NoOp" xml:space="preserve">
+    <value>لم يتم اكتشاف أي تغييرات.</value>
+  </data>
+</root>

@@ -311,6 +311,18 @@
   <data name="ActionCompleteInSourceHint" xml:space="preserve">
     <value>Bu iş burada tamamlanamaz; {0} modülünde bitirilir</value>
   </data>
+  <data name="ActionOpenInSource" xml:space="preserve">
+    <value>Kaynak kayıtta aç</value>
+  </data>
+  <data name="ActionOpenInSourceHint" xml:space="preserve">
+    <value>Görev Merkezi işin yürütüldüğü yerdir; kaydın kendisi — başlığı, açıklaması ve alanları — orada düzenlenir.</value>
+  </data>
+  <data name="ActionEditRecord" xml:space="preserve">
+    <value>Görevi düzenle</value>
+  </data>
+  <data name="ActionEditRecordHint" xml:space="preserve">
+    <value>Bu görevi sen açtın; başlığı, tarihleri ve alanları hâlâ değiştirilebilir — kaydın yaşadığı Görevler modülünde.</value>
+  </data>
   <data name="TechVersionValue" xml:space="preserve">
     <value>{0}. sürüm</value>
   </data>
@@ -611,6 +623,9 @@
   <data name="TabPool" xml:space="preserve">
     <value>Havuz</value>
   </data>
+  <data name="TabInitiated" xml:space="preserve">
+    <value>Başlattıklarım</value>
+  </data>
   <data name="ActClaim" xml:space="preserve">
     <value>Üzerime al</value>
   </data>
@@ -649,6 +664,12 @@
   </data>
   <data name="EmptyPoolDesc" xml:space="preserve">
     <value>Üzerinize alabileceğiniz bekleyen bir öğe yok.</value>
+  </data>
+  <data name="EmptyInitiatedTitle" xml:space="preserve">
+    <value>Başlattığın iş yok</value>
+  </data>
+  <data name="EmptyInitiatedDesc" xml:space="preserve">
+    <value>Başlattığın ve şu anda başkasında olan bir iş yok.</value>
   </data>
   <data name="ToastClaimed" xml:space="preserve">
     <value>{0} · üzerinize alındı (mock)</value>
@@ -2180,5 +2201,62 @@
   </data>
   <data name="BannerReconciliationRequired" xml:space="preserve">
     <value>Kaynakla mutabakat gerekiyor.</value>
+  </data>
+  <data name="StepClosedAs" xml:space="preserve">
+    <value>Kapanış: {0}</value>
+  </data>
+  <data name="ClosureOutcomeLabel" xml:space="preserve">
+    <value>Bu iş nasıl sonuçlandı?</value>
+  </data>
+  <data name="ClosureOutcomePlaceholder" xml:space="preserve">
+    <value>Bir sonuç seçin</value>
+  </data>
+  <data name="ClosureOutcomeRequired" xml:space="preserve">
+    <value>İşin nasıl sonuçlandığını seçin.</value>
+  </data>
+  <data name="ClosureReasonLabel" xml:space="preserve">
+    <value>Not (isteğe bağlı)</value>
+  </data>
+  <data name="ClosureReasonLabelRequired" xml:space="preserve">
+    <value>Gerekçe (zorunlu)</value>
+  </data>
+  <data name="ClosureReasonPlaceholder" xml:space="preserve">
+    <value>Sonucu kendi cümlelerinizle açıklayın</value>
+  </data>
+  <data name="ClosureReasonRequired" xml:space="preserve">
+    <value>Bu sonuç bir gerekçe ister.</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
+    <value>İstendiği gibi tamamlandı</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CompletedPartially" xml:space="preserve">
+    <value>Kısmen tamamlandı</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledNotRequired" xml:space="preserve">
+    <value>Artık gerekmiyor</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledSuperseded" xml:space="preserve">
+    <value>Başka bir işin yerini aldı</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledDuplicate" xml:space="preserve">
+    <value>Mükerrer</value>
+  </data>
+  <data name="ReturnedLabel" xml:space="preserve">
+    <value>Geri geldi</value>
+  </data>
+  <data name="ReturnedCount" xml:space="preserve">
+    <value>{0}× geri geldi</value>
+  </data>
+  <data name="StepReturned" xml:space="preserve">
+    <value>Bu görev size geri gönderildi.</value>
+  </data>
+  <data name="StepReturnedTimes" xml:space="preserve">
+    <value>Bu görev {0} kez geri gönderildi.</value>
+  </data>
+  <data name="StepReturnedBecause" xml:space="preserve">
+    <value>Size geri gönderildi: {0}</value>
+  </data>
+  <data name="StepReturnedTimesBecause" xml:space="preserve">
+    <value>{0} kez geri gönderildi, en son: {1}</value>
   </data>
 </root>

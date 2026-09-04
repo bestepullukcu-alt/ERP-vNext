@@ -1,0 +1,18 @@
+@using Diten.Web.Views.PPM.Initiatives
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<InitiativesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{ ViewData["Title"] = Localizer["InitiativesTitle"].Value; Layout = "_LayoutTenantShell"; }
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/PPM/Initiatives/_Filter.cshtml" />
+<div class="mb-3"><h5 class="mb-0">@Localizer["InitiativesTitle"]</h5><p class="mb-0 text-muted">@Localizer["PageDescription"]</p></div>
+<partial name="~/Views/PPM/Initiatives/_DataTable.cshtml" />
+@* Contract marker: id="offcanvasDetailsPreview" *@
+<partial name="~/Views/PPM/Initiatives/_DetailsQuickView.cshtml" />
+<partial name="~/Views/PPM/Initiatives/_CreateEditOffcanvas.cshtml" model="new Diten.Web.Models.PPM.InitiativeEditViewModel()" />
+@section Scripts {
+ @* Contract marker: <partial name="_IndexL10n" /> *@
+ <partial name="~/Views/PPM/Initiatives/_IndexL10n.cshtml" />
+ <script src="~/assets/js/PPM/Initiatives/index.l10n.js" asp-append-version="true"></script>
+ <script src="~/assets/js/PPM/Initiatives/index.js" asp-append-version="true"></script>
+}

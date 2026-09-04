@@ -166,8 +166,11 @@ public sealed class TokenService : ITokenService
             ValidAudience = _jwtSettings.Audience,
             ValidIssuer = _jwtSettings.Issuer,
             IssuerSigningKeys = _rotationResolver.GetValidationKeys(),
-            ValidateLifetime = false,
-            ClockSkew = TimeSpan.Zero
+            // BL-296: no ClockSkew here, and that is deliberate. ValidateLifetime is false — this decodes a
+            // token we already KNOW is expired, during refresh. The library never consults ClockSkew when
+            // lifetime validation is off, so any value written here would be decoration. The one tolerance
+            // that does decide whether a request is accepted lives in JwtValidationDefaults.ClockSkew.
+            ValidateLifetime = false
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();

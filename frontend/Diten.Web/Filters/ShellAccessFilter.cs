@@ -2,10 +2,12 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Diten.BuildingBlocks.Security.Secrets;
 using Diten.Web.Services.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Diten.Web.Filters;
@@ -18,12 +20,61 @@ public sealed class ShellAccessFilter : IAuthorizationFilter
     // tenant_user actors (like ReferenceData). It must be exempt from the platform-actor-only gate.
     private const string WorkflowPath = "/Platform/Workflow";
     private const string PersonReferencesPath = "/Platform/PersonReferences";
-    private readonly IConfiguration _configuration;
 
-    public ShellAccessFilter(IConfiguration configuration)
+    private const string SecretKey = "JwtSettings:Secret";
+    private const string IssuerKey = "JwtSettings:Issuer";
+    private const string AudienceKey = "JwtSettings:Audience";
+
+    /// <summary>
+    /// Everything this filter needs before it can VERIFY anything. Program.cs asserts these at startup.
+    /// </summary>
+    private static readonly string[] RequiredConfigurationKeys = { SecretKey, IssuerKey, AudienceKey };
+
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<ShellAccessFilter> _logger;
+
+    public ShellAccessFilter(IConfiguration configuration, ILogger<ShellAccessFilter> logger)
     {
         _configuration = configuration;
+        _logger = logger;
     }
+
+    /// <summary>
+    /// Fails the host at startup when the JWT settings this filter validates tokens with are missing or empty,
+    /// naming every key that is not set.
+    /// </summary>
+    /// <remarks>
+    /// <para>This filter is GLOBAL (Program.cs) and is the only thing in Diten.Web that puts a VERIFIED principal
+    /// on <c>HttpContext.User</c>. It used to answer missing configuration with a bare <c>return;</c>: token
+    /// verification was skipped in full, <c>User</c> was left exactly as found, and nothing was written anywhere.
+    /// The app happened to stay closed — no code path in Diten.Web calls <c>SignInAsync</c>, so <c>User</c> stayed
+    /// anonymous and /Platform/* redirected to login — but that was an ACCIDENT of the surrounding code rather
+    /// than a decision, and it would be noticed at the worst possible moment. A misconfigured deployment now
+    /// refuses to boot instead, with the offending key named.</para>
+    /// <para>⚠ Reads <see cref="IConfiguration"/>, deliberately — that is the same source
+    /// <see cref="EnsureJwtCookiePrincipal"/> reads, so this is EXACTLY the filter's precondition rather than an
+    /// approximation of it. It is not routed through <c>ValidateRequiredSecrets</c> (which already covers
+    /// <c>JwtSettings:Secret</c> and would throw first): that validator resolves from environment variables ONLY
+    /// in Production, and Issuer/Audience legitimately ship in appsettings.json, so requiring them there would
+    /// break a correct deployment.</para>
+    /// </remarks>
+    public static void ValidateConfiguration(IConfiguration configuration)
+    {
+        var missing = MissingConfigurationKeys(configuration);
+        if (missing.Length == 0)
+        {
+            return;
+        }
+
+        throw new InvalidOperationException(
+            $"{nameof(ShellAccessFilter)} cannot verify access tokens because required configuration is missing " +
+            $"or empty: {string.Join(", ", missing)}. Diten.Web will not start until every key is set.");
+    }
+
+    private static string[] MissingConfigurationKeys(IConfiguration configuration) =>
+        RequiredConfigurationKeys
+            .Where(key => string.IsNullOrWhiteSpace(configuration[key]))
+            .ToArray();
 
     public void OnAuthorization(AuthorizationFilterContext context)
     {
@@ -113,18 +164,31 @@ public sealed class ShellAccessFilter : IAuthorizationFilter
             return;
         }
 
-        var jwtSecret = _configuration["JwtSettings:Secret"] ?? string.Empty;
-        var jwtIssuer = _configuration["JwtSettings:Issuer"] ?? string.Empty;
-        var jwtAudience = _configuration["JwtSettings:Audience"] ?? string.Empty;
-
-        Console.WriteLine($"[SHELL_FILTER_DEBUG] Secret length: {jwtSecret.Length}, Issuer: '{jwtIssuer}', Audience: '{jwtAudience}', AccessToken empty: {string.IsNullOrEmpty(accessToken)}");
-
-        if (string.IsNullOrWhiteSpace(jwtSecret) ||
-            string.IsNullOrWhiteSpace(jwtIssuer) ||
-            string.IsNullOrWhiteSpace(jwtAudience))
+        var missingConfiguration = MissingConfigurationKeys(_configuration);
+        if (missingConfiguration.Length > 0)
         {
+            /*
+             * ⚠ FAIL LOUD AND CLOSED — never the silent `return;` that used to live here.
+             *
+             * ValidateConfiguration runs at startup, so a booted host has already proved these keys are set.
+             * Reaching this branch means configuration was emptied UNDER a running process (appsettings.json is
+             * registered with reloadOnChange). No verification is possible, so no principal is vouched for: the
+             * request is explicitly anonymous, and the deployment problem is on the record with the key named.
+             *
+             * The cookies are NOT cleared. A server-side misconfiguration is not the visitor's fault, and
+             * signing every session out over it would turn a config slip into a fleet-wide logout.
+             */
+            _logger.LogError(
+                "ShellAccessFilter cannot verify the access token: required configuration is missing or empty ({MissingKeys}). Treating the request as anonymous.",
+                string.Join(", ", missingConfiguration));
+
+            context.User = new ClaimsPrincipal(new ClaimsIdentity());
             return;
         }
+
+        var jwtSecret = _configuration[SecretKey]!;
+        var jwtIssuer = _configuration[IssuerKey]!;
+        var jwtAudience = _configuration[AudienceKey]!;
 
         try
         {
@@ -137,14 +201,19 @@ public sealed class ShellAccessFilter : IAuthorizationFilter
                 ValidIssuer = jwtIssuer,
                 ValidAudience = jwtAudience,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
-                ClockSkew = TimeSpan.FromSeconds(30)
+                ClockSkew = JwtValidationDefaults.ClockSkew
             }, out _);
 
             context.User = principal;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[SHELL_FILTER_ERROR] Token validation failed: {ex.Message}");
+            // Warning, not Error: a rejected token is EXPECTED traffic on a public-facing shell — an expired
+            // session, a token from another environment, a stale cookie. Only a broken deployment is an Error.
+            _logger.LogWarning(
+                ex,
+                "Access-token validation failed ({ExceptionType}); clearing the auth cookies and treating the request as anonymous.",
+                ex.GetType().Name);
             AuthTokenCookies.ClearTokens(context.Response);
             context.User = new ClaimsPrincipal(new ClaimsIdentity());
         }

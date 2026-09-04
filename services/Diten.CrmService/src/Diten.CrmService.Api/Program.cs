@@ -5,6 +5,7 @@ using Diten.CrmService.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Diten.BuildingBlocks.Security.Secrets;
 
 // NOTE (MOD-0149-PREREQ scaffold): This is the Diten.CrmService runtime skeleton only.
 // It intentionally hosts NO Account/CRM business endpoints. Only /health + infrastructure wiring.
@@ -21,11 +22,16 @@ builder.Configuration
     .AddEnvironmentVariables()
     .AddCommandLine(args);
 
+// CreateEmptyBuilder registers NO server, so wire the same set WebApplication.CreateBuilder does — otherwise
+// hosting under IIS fails (in-process: "No service for type 'IServer'"; or a self-bind clash with the module).
+// Kestrel serves standalone/dev; UseIIS is the in-process IIS server (IISHttpServer); UseIISIntegration is the
+// out-of-process reverse-proxy path. Do NOT hard-code UseUrls("http://localhost:5061"): under IIS the module
+// owns the port (in-process it IS the server; out-of-process it assigns one and proxies), and self-binding it
+// collides with the module — the app failed to start (500.30 in-process, 502 with SocketException 10013
+// out-of-process). Binding is left to the host: ASPNETCORE_URLS in dev (launchSettings), the ANCM binding under IIS.
 builder.WebHost.UseKestrel();
-builder.WebHost.UseUrls(
-    builder.Configuration["urls"]
-    ?? builder.Configuration["ASPNETCORE_URLS"]
-    ?? "http://localhost:5061");
+builder.WebHost.UseIIS();
+builder.WebHost.UseIISIntegration();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -59,7 +65,7 @@ builder.Services
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
             IssuerSigningKeys = jwtSigningKeys,
-            ClockSkew = TimeSpan.FromSeconds(30)
+            ClockSkew = JwtValidationDefaults.ClockSkew
         };
     });
 

@@ -30,8 +30,11 @@ window.personalizationClient = (function () {
         redirectToLogin();
     };
 
+    // The shared rule from shared/http-media-type.js (loaded by both layouts ahead of this file). It replaced a substring
+    // test that answered NO to `application/problem+json` — the exact media type the gateway's
+    // TenantResolutionMiddleware uses to refuse the personalization routes this client calls.
     const isJsonResponse = (response) =>
-        (response.headers?.get('content-type') || '').toLowerCase().includes('application/json');
+        window.DitenHttp.isJsonMediaType(response.headers?.get('content-type'));
 
     const isLoginResponse = (response) => {
         if (!response?.redirected || !response.url) return false;

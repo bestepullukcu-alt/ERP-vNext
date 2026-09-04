@@ -387,6 +387,24 @@ public sealed class TaskTemplate : TenantScopedEntity
     public int? DefaultDueInDays { get; set; }
     public Guid? ChecklistTemplateId { get; set; }
     public List<TaskFieldValue> DefaultFieldValues { get; set; } = [];
+
+    /// <summary>
+    /// WHICH COMPANY this template belongs to. Null means it applies to every legal entity in the tenant.
+    ///
+    /// <para><b>ONE entity, not a list, and that is the whole decision.</b> A multi-select rots: the day a new
+    /// company is opened, every template that should also cover it has to be found and edited one at a time, and
+    /// nobody does that — so the list silently means "the companies we had when somebody last looked". A single
+    /// nullable owner has no such drift: either the template is global or it names exactly one company, and a
+    /// shape three companies share is three templates, each editable in its own company without touching the
+    /// other two. That is the shape the larger systems settle on for the same reason.</para>
+    ///
+    /// <para>⚠ Stored and displayed; it is NOT a read filter yet. MOD-0024 carries no "current legal entity"
+    /// context to filter against, and inventing one here would be a second answer to which company a user is
+    /// acting for. Scoping the pickers is a follow-on that needs that context first — recording the intent now
+    /// is what lets it arrive without a migration.</para>
+    /// </summary>
+    public Guid? LegalEntityId { get; set; }
+
     public bool IsActive { get; set; } = true;
     public DateTimeOffset? DeletedAt { get; set; }
 }
@@ -588,12 +606,86 @@ public sealed class TaskType : TenantScopedEntity
     public Dictionary<string, List<string>> LocalDocuments { get; set; } = [];
 
     /// <summary>
+    /// WHAT COUNTS AS AN ENDING for work of this type — the closure outcome dictionary.
+    ///
+    /// <para><b>EMPTY IS THE NORMAL STATE, and it must stay working.</b> Every type written before this list
+    /// existed has none, and a task of such a type closes exactly as it does today: no picker, no code, no new
+    /// refusal. The dictionary is an OFFER a type makes, never a gate the engine imposes — the same posture
+    /// <see cref="TaskFieldDefinition.ViewPermission"/> takes for the same reason (turning the feature on must
+    /// change nothing until somebody deliberately configures something).</para>
+    ///
+    /// <para><b>Why on the TYPE.</b> Oracle defines a human task's outcomes in the task DEFINITION, not
+    /// globally, and the reason survives the port: a "Rejected" on a purchase approval and a "Rejected" on a
+    /// deviation investigation are different decisions that happen to share a word. A tenant-wide list would
+    /// force one vocabulary onto both and mean nothing in either.</para>
+    /// </summary>
+    public List<TaskClosureOutcome> ClosureOutcomes { get; set; } = [];
+
+    /// <summary>
     /// Whether this type may be chosen on a NEW task. Retiring one never removes it: tasks already opened with
     /// it keep reading correctly, which is the same rule folders and documents follow.
     /// </summary>
     public bool IsActive { get; set; } = true;
 
     public DateTimeOffset? DeletedAt { get; set; }
+}
+
+/// <summary>
+/// One way work of a given type can END, and what the engine must ask before accepting it.
+///
+/// <para><b>An outcome is not a status.</b> <c>Done</c> says the work stopped; it does not say what was decided.
+/// An approval task closing as <c>Done</c> carries no record of whether it was approved or rejected, and that
+/// missing half is what this type supplies. It is stored on <see cref="TaskItem.ClosureReasonCode"/>, the field
+/// the engine has always had and nothing has ever written.</para>
+///
+/// <para><b>The label split is <see cref="TaskFieldDefinition"/>'s, deliberately and without variation.</b> A
+/// SYSTEM outcome carries a resource key and is translated in all seven tenant languages; a TENANT outcome
+/// carries the administrator's own words in the one language they typed them in. That comment explains why the
+/// tenant half is single-language and the reasoning is unchanged here: a tenant cannot add a line to our resx
+/// files, so a key-only design would render "regulatory.rejected" where a label belongs — and inventing
+/// half a translation editor for a dropdown would be a second answer to a question that entity already
+/// settled.</para>
+/// </summary>
+public sealed class TaskClosureOutcome
+{
+    /// <summary>
+    /// Unique within its TYPE, normalised upper-case. Written to <see cref="TaskItem.ClosureReasonCode"/> and to
+    /// <see cref="TaskTransition.ReasonCode"/>, so it is an identity that outlives its label: renaming the words
+    /// must not orphan the closed tasks that already quote the code.
+    /// </summary>
+    public required string Code { get; set; }
+
+    /// <summary>
+    /// SYSTEM outcomes. Translated in all seven languages, identical in every tenant. Null when
+    /// <see cref="LabelText"/> is used.
+    /// </summary>
+    public string? LabelResourceKey { get; set; }
+
+    /// <summary>
+    /// TENANT outcomes — the administrator's own words, in the language they typed them in. Null when
+    /// <see cref="LabelResourceKey"/> is used.
+    /// </summary>
+    public string? LabelText { get; set; }
+
+    /// <summary>Whether this outcome is offered when completing the work, or when calling it off.</summary>
+    public TaskClosureDisposition Disposition { get; set; } = TaskClosureDisposition.Completed;
+
+    /// <summary>
+    /// ⭐ Whether choosing this outcome obliges the closer to say WHY, in their own words.
+    ///
+    /// <para><b>It lives on the OUTCOME, and a global "notes are mandatory" switch is the design this replaces.</b>
+    /// "Rejected" needs a reason; "Approved" does not. A global flag forces one onto both, the unneeded half
+    /// fills up with "ok", and the field then carries no signal on the outcomes that actually needed it — the
+    /// switch destroys the data it was turned on to collect. Oracle marks the individual outcome comment-required
+    /// for the same reason.</para>
+    ///
+    /// <para>The engine enforces it (<c>TaskItemTransitionHandlers</c>) rather than trusting the dialog: a
+    /// requirement a client can skip by not drawing a field is not a requirement.</para>
+    /// </summary>
+    public bool RequiresReason { get; set; }
+
+    /// <summary>Presentation order in the picker. Ties fall back to code, so the list never shuffles.</summary>
+    public int SortOrder { get; set; }
 }
 
 /// <summary>

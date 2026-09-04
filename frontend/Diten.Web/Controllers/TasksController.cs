@@ -227,6 +227,75 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiDeleteRecurrenceRule(Guid id)
         => ProxyAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/v1/tasks/recurrence-rules/{id}", readBody: false);
 
+    // ── The template chain (BL-054) ──────────────────────────────────────────
+    //
+    // The rule screen's template picker had a lookup and no source; these are the routes behind the two screens
+    // that fill it. Listed BY HAND for the same reason as everything above: a path Platform serves and this
+    // proxy does not answers 404 inside the web tier, before the request ever leaves it.
+
+    [HttpGet("api/checklist-templates")]
+    public Task<IActionResult> ApiChecklistTemplates()
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/checklist-templates", readBody: false);
+
+    [HttpGet("api/checklist-templates/{id:guid}")]
+    public Task<IActionResult> ApiChecklistTemplate(Guid id)
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/checklist-templates/{id}", readBody: false);
+
+    [HttpPost("api/checklist-templates")]
+    public Task<IActionResult> ApiCreateChecklistTemplate()
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/checklist-templates", readBody: true);
+
+    [HttpPut("api/checklist-templates/{id:guid}")]
+    public Task<IActionResult> ApiUpdateChecklistTemplate(Guid id)
+        => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/tasks/checklist-templates/{id}", readBody: true);
+
+    [HttpDelete("api/checklist-templates/{id:guid}")]
+    public Task<IActionResult> ApiDeleteChecklistTemplate(Guid id)
+        => ProxyAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/v1/tasks/checklist-templates/{id}", readBody: false);
+
+    /// <summary>
+    /// The checklist picker on the TASK-TEMPLATE form. A different route from the list above and deliberately so:
+    /// a picker offers only what may still be bound, while the management list has to show a paused template or
+    /// it could never be switched back on.
+    /// </summary>
+    [HttpGet("api/checklist-template-lookup")]
+    public Task<IActionResult> ApiChecklistTemplateLookup()
+        => ProxyAsync(
+            HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/lookups/checklist-templates", readBody: false);
+
+    [HttpGet("api/templates")]
+    public Task<IActionResult> ApiTemplates()
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/templates", readBody: false);
+
+    [HttpGet("api/templates/{id:guid}")]
+    public Task<IActionResult> ApiTemplate(Guid id)
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/templates/{id}", readBody: false);
+
+    [HttpPost("api/templates")]
+    public Task<IActionResult> ApiCreateTemplate()
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/templates", readBody: true);
+
+    [HttpPut("api/templates/{id:guid}")]
+    public Task<IActionResult> ApiUpdateTemplate(Guid id)
+        => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/tasks/templates/{id}", readBody: true);
+
+    [HttpDelete("api/templates/{id:guid}")]
+    public Task<IActionResult> ApiDeleteTemplate(Guid id)
+        => ProxyAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/v1/tasks/templates/{id}", readBody: false);
+
+    /// <summary>
+    /// The COMPANY picker on the task-template form, fed by MDM's referenceable-only lookup — the same feed the
+    /// organization-unit form uses, so a template cannot name a company that form could not.
+    ///
+    /// <para>⚠ Left EMPTY means every company, and that is a supported answer rather than a missing one. The
+    /// field is a single id and never a list: a multi-select would have to be revisited for every template on the
+    /// day a new company is opened, and nobody does that — so it would come to mean "the companies we had when
+    /// somebody last looked".</para>
+    /// </summary>
+    [HttpGet("api/legal-entities")]
+    public Task<IActionResult> ApiLegalEntities()
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/legal-entities/lookup", readBody: false);
+
     /// <summary>
     /// Assignable positions. Carries the organization unit code+name so the picker renders
     /// "QA Specialist — Facility A"; without it a pooled task can silently reach the wrong facility.

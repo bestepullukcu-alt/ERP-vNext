@@ -1,0 +1,121 @@
+@model Diten.Web.Models.PPM.PpmListPageViewModel
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">-</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@ViewData["CancelText"]"></button>
+    </div>
+    <div class="offcanvas-body border-top p-4">
+        <div id="ppm-form-alert" class="alert alert-danger d-none" role="alert"></div>
+        <form id="formPpm" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="ppmId" name="Id" />
+            <input type="hidden" id="ppmVersion" name="Version" value="1" />
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="ppmCode" class="form-label fw-medium">@ViewData["CodeText"] <span class="text-danger">*</span></label>
+                    <input type="text" id="ppmCode" name="Code" class="form-control" maxlength="64" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-12">
+                    <label for="ppmName" class="form-label fw-medium">@ViewData["NameText"] <span class="text-danger">*</span></label>
+                    <input type="text" id="ppmName" name="Name" class="form-control" maxlength="200" required />
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-12">
+                    <label for="ppmDescription" class="form-label fw-medium">@ViewData["DescriptionText"]</label>
+                    <textarea id="ppmDescription" name="Description" class="form-control" rows="4" maxlength="2000"></textarea>
+                </div>
+                @if (Model.HasPortfolio)
+                {
+                    <div class="col-12">
+                        <label for="ppmPortfolioId" class="form-label fw-medium">
+                            @ViewData["ParentText"]
+                            @if (Model.RequiresPortfolio)
+                            {
+                                <span class="text-danger">*</span>
+                            }
+                        </label>
+                        <select id="ppmPortfolioId" name="PortfolioId" class="form-select select2-offcanvas"
+                                required="@(Model.RequiresPortfolio ? "required" : null)">
+                            <option value="">@ViewData["SelectText"]</option>
+                        </select>
+                    </div>
+                }
+                @if (Model.HasProjectParent)
+                {
+                    <div class="col-12">
+                        <label for="ppmParentType" class="form-label fw-medium">@ViewData["ParentTypeText"] <span class="text-danger">*</span></label>
+                        <select id="ppmParentType" name="ParentType" class="form-select select2-offcanvas" required>
+                            <option value="">@ViewData["SelectText"]</option>
+                            <option value="Initiative">@ViewData["InitiativeText"]</option>
+                            <option value="Program">@ViewData["ProgramText"]</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label for="ppmParentId" class="form-label fw-medium">@ViewData["ParentText"] <span class="text-danger">*</span></label>
+                        <select id="ppmParentId" name="ParentId" class="form-select select2-offcanvas" required disabled>
+                            <option value="">@ViewData["SelectText"]</option>
+                        </select>
+                    </div>
+                }
+                @if (Model.HasInvestmentCaseParent)
+                {
+                    <div class="col-12">
+                        <label for="ppmInvestmentCaseId" class="form-label fw-medium">@ViewData["ParentText"] <span class="text-danger">*</span></label>
+                        <select id="ppmInvestmentCaseId" name="InvestmentCaseId" class="form-select select2-offcanvas" required>
+                            <option value="">@ViewData["SelectText"]</option>
+                        </select>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                }
+                @if (Model.HasPlanningDates)
+                {
+                    <div class="col-12 col-md-6">
+                        <label for="ppmPlannedStartDate" class="form-label fw-medium">@ViewData["PlannedStartDateText"]</label>
+                        <input type="date" id="ppmPlannedStartDate" name="PlannedStartDate" class="form-control" />
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="ppmPlannedEndDate" class="form-label fw-medium">@ViewData["PlannedEndDateText"]</label>
+                        <input type="date" id="ppmPlannedEndDate" name="PlannedEndDate" class="form-control" />
+                    </div>
+                }
+                @if (Model.HasBenefitTarget)
+                {
+                    <div class="col-12">
+                        <label for="ppmTargetDescription" class="form-label fw-medium">@ViewData["TargetDescriptionText"] <span class="text-danger">*</span></label>
+                        <textarea id="ppmTargetDescription" name="TargetDescription" class="form-control" rows="3" maxlength="2000" required></textarea>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="col-12">
+                        <label for="ppmTargetDate" class="form-label fw-medium">@ViewData["TargetDateText"]</label>
+                        <input type="date" id="ppmTargetDate" name="TargetDate" class="form-control" />
+                    </div>
+                }
+                <div class="col-12">
+                    <label for="ppmLifecycleState" class="form-label fw-medium">@ViewData["LifecycleText"] <span class="text-danger">*</span></label>
+                    <select id="ppmLifecycleState" name="LifecycleState" class="form-select select2-offcanvas" required disabled
+                            aria-disabled="true">
+                        @foreach (var state in Model.LifecycleStates)
+                        {
+                            <option value="@state" selected="@(state == Model.DefaultLifecycleState ? "selected" : null)">@state</option>
+                        }
+                    </select>
+                </div>
+                @if (Model.ShowsVisibilityPolicy)
+                {
+                    <div class="col-12">
+                        <label for="ppmVisibilityPolicyKey" class="form-label fw-medium">@ViewData["VisibilityText"]</label>
+                        <input type="text" id="ppmVisibilityPolicyKey" name="VisibilityPolicyKey" class="form-control"
+                               maxlength="128" disabled aria-disabled="true" />
+                        <div class="form-text">@ViewData["VisibilityBlockedText"]</div>
+                    </div>
+                }
+            </div>
+        </form>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@ViewData["CancelText"]</button>
+        <button type="button" id="btnSavePpm" class="btn btn-primary">@ViewData["SaveText"]</button>
+    </div>
+</div>

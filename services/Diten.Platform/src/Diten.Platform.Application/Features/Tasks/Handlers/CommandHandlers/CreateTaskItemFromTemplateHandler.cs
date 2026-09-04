@@ -78,7 +78,21 @@ public sealed class CreateTaskItemFromTemplateHandler
          * definition unusable, with no screen on which to fix it. The gap is real and recorded (BL-058): the
          * template editor has to offer the configurable fields before this can tighten.
          */
+        /*
+         * BL-054 — HOW OLD THE TEMPLATE WAS at this moment, carried onto the task.
+         *
+         * `UpdatedAt ?? CreatedAt`, because those are the same question asked of a template nobody has edited
+         * yet. NOT `UtcNow`: the stamp has to name the TEMPLATE's state, not the generation's. A "now" would
+         * agree with the creation timestamp the task already carries and answer nothing, while this answers the
+         * one question a reader six months later actually has — was the template touched after this task was
+         * born, or is what it carries still what the template says?
+         */
         return await _mediator.Send(
-            new CreateTaskItemCommand(createRequest, command.CorrelationId, EnforceRequiredFields: false), ct);
+            new CreateTaskItemCommand(
+                createRequest,
+                command.CorrelationId,
+                EnforceRequiredFields: false,
+                TemplateSnapshotAt: template.UpdatedAt ?? template.CreatedAt),
+            ct);
     }
 }

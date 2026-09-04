@@ -8,6 +8,7 @@ using Diten.Platform.Application.Features.Audit;
 using Diten.Platform.Application.Features.Audit.Services;
 using Diten.Platform.Application.Features.BusinessReferenceData.Services;
 using Diten.Platform.Application.Features.DocumentManagementInstantiation.Services;
+using Diten.Platform.Application.Features.GlobalApplicability;
 using Diten.Platform.Application.Features.Lookups.Services;
 using Diten.Platform.Application.Features.Notifications.BackgroundJobs;
 using Diten.Platform.Application.Features.Notifications.Eventing;
@@ -24,6 +25,7 @@ using Diten.Platform.Contracts.Events;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Diten.Platform.Application.Features.Tenants.Commercial.Subscriptions;
 
 namespace Diten.Platform.Application;
 
@@ -72,6 +74,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantModuleAccessService, TenantModuleAccessService>();
         services.AddScoped<IActorSafetyGuard, ActorSafetyGuard>();
         services.AddScoped<IQuotaService, QuotaService>();
+        services.AddScoped<TenantSubscriptionTransactionWriter>();
         services.AddScoped<IPlatformLookupProvider, PlatformLookupProvider>();
         // Working Calendar read-only working-day seam — the capability's actual product; consumers call THIS in-process.
         services.AddScoped<Features.WorkingCalendar.Provider.IWorkingCalendarProvider, Features.WorkingCalendar.Provider.WorkingCalendarProvider>();
@@ -272,6 +275,7 @@ public static class DependencyInjection
         services.AddScoped<IAuditRetentionPolicyResolver, AuditRetentionPolicyResolver>();
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<IAuditMetaAuditWriter, AuditMetaAuditWriter>();
+        services.AddScoped<IGlobalApplicabilityTransactionCoordinator, GlobalApplicabilityTransactionCoordinator>();
         services.AddScoped<IJobExecutionLogWriter, JobExecutionLogWriter>();
         services.AddScoped<SchedulerSmokeTestJob>();
         services.AddScoped<DeferredPlatformJobHandler>();
@@ -398,6 +402,7 @@ public static class DependencyInjection
         // MOD-0149 — Commercial Suite CRM (Account Foundation). Reconciles the CRM catalog identity + /CRM/Accounts page
         // descriptor (nav-visible=false; static tenant-shell menu owns nav until the MOD-0285 migration).
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.Crm.SelfRegistration.CrmManifestProvider>();
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.Ppm.SelfRegistration.PpmManifestProvider>();
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.WorkingCalendar.SelfRegistration.WorkingCalendarManifestProvider>();
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.WorkingCalendarImport.WorkingCalendarImportManifestProvider>();
         // WC-1b (DCP-004) — Görev Merkezi / Task Center tenant module (entitlement-gated, NOT baseline).

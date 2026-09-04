@@ -72,6 +72,7 @@
   <data name="AuditRetention.Category.DataPrivacy" xml:space="preserve"><value>Veri Gizliligi</value></data>
   <data name="AuditRetention.Category.Integration" xml:space="preserve"><value>Entegrasyon</value></data>
   <data name="AuditRetention.Category.System" xml:space="preserve"><value>Sistem</value></data>
+  <data name="AuditRetention.Category.PortfolioDelivery" xml:space="preserve"><value>Portföy Teslimatı</value></data>
   <data name="Common.ErrorOccurred" xml:space="preserve"><value>Bir hata olustu.</value></data>
   <data name="Common.Ok" xml:space="preserve"><value>Tamam</value></data>
   <data name="Common.Unknown" xml:space="preserve"><value>Bilinmiyor</value></data>

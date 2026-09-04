@@ -1,0 +1,220 @@
+@model Diten.Web.Models.TaskTemplates.TaskTemplateEditViewModel
+@using Diten.Web.Views.Tasks.Templates
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskTemplatesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var action = isEdit ? "Edit" : "Create";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a asp-controller="TaskTemplates" asp-action="Index">@Localizer["TaskTemplatesTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-controller="TaskTemplates" asp-action="Index" class="btn btn-label-secondary">
+            @SharedLocalizer["Cancel"]
+        </a>
+        <button type="submit" form="taskTemplateForm" class="btn btn-primary">
+            @(isEdit ? SharedLocalizer["Update"] : SharedLocalizer["Save"])
+        </button>
+    </div>
+</div>
+
+<form id="taskTemplateForm" asp-controller="TaskTemplates" asp-action="@action" asp-route-id="@Model.Id"
+      method="post" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="ExpectedVersion" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    @*
+        ⚠ THE DIVISION OF LABOUR, SAID ON THE SCREEN ITSELF.
+
+        A template and a recurrence rule both carry an assignment, and which one wins was decided in code and
+        stated nowhere a person filling this form could read it. Two places holding the same field with no stated
+        precedence is how work silently reaches the wrong person.
+    *@
+    <div class="alert alert-info d-flex align-items-start gap-2" role="note">
+        <i class="icon-base bx bx-info-circle icon-sm mt-1"></i>
+        <span>@Localizer["DivisionOfLabourHint"]</span>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ShapeSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <label asp-for="Code" class="form-label fw-medium">@Localizer["Code"] <span class="text-danger">*</span></label>
+                            @* Read-only once saved — the server refuses a changed code rather than ignoring it. *@
+                            <input asp-for="Code" class="form-control" maxlength="60" placeholder="@Localizer["CodePlaceholder"]"
+                                   required readonly="@isEdit" />
+                            <div class="form-text">@Localizer["CodeHint"]</div>
+                            <span asp-validation-for="Code" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-8">
+                            <label asp-for="Name" class="form-label fw-medium">@Localizer["Name"] <span class="text-danger">*</span></label>
+                            <input asp-for="Name" class="form-control" maxlength="200" placeholder="@Localizer["NamePlaceholder"]" required />
+                            <span asp-validation-for="Name" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="TitleTemplate" class="form-label fw-medium">@Localizer["TitleTemplate"]</label>
+                            <input asp-for="TitleTemplate" class="form-control" maxlength="300" placeholder="@Localizer["TitleTemplatePlaceholder"]" />
+                            @* Empty is an ANSWER: the generated task takes the template's name. Said here so
+                               nobody retypes the name into this box to get past an imagined requirement. *@
+                            <div class="form-text">@Localizer["TitleTemplateHint"]</div>
+                            <span asp-validation-for="TitleTemplate" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="DescriptionTemplate" class="form-label fw-medium">@Localizer["DescriptionTemplate"]</label>
+                            <textarea asp-for="DescriptionTemplate" class="form-control" rows="3" maxlength="2000"></textarea>
+                            <span asp-validation-for="DescriptionTemplate" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="DefaultPriority" class="form-label fw-medium">@Localizer["DefaultPriority"]</label>
+                            <select asp-for="DefaultPriority" class="select2 form-select">
+                                <option value="Low">@Localizer["PriorityLow"]</option>
+                                <option value="Medium">@Localizer["PriorityMedium"]</option>
+                                <option value="High">@Localizer["PriorityHigh"]</option>
+                            </select>
+                            <span asp-validation-for="DefaultPriority" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="DefaultDueInDays" class="form-label fw-medium">@Localizer["DefaultDueInDays"]</label>
+                            <input asp-for="DefaultDueInDays" type="number" class="form-control" min="1" max="3650" />
+                            @* Empty means the generated task has no due date at all, which is legitimate for
+                               work that is not time-boxed. *@
+                            <div class="form-text">@Localizer["DefaultDueInDaysHint"]</div>
+                            <span asp-validation-for="DefaultDueInDays" class="text-danger small mt-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ChecklistSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="ChecklistTemplateId" class="form-label fw-medium">@Localizer["Checklist"]</label>
+                            @* Populated from /Tasks/api/checklist-template-lookup by form.js. The lookup offers
+                               ACTIVE templates only: binding a retired checklist would go on instantiating steps
+                               nobody maintains, and the server refuses it. *@
+                            <select asp-for="ChecklistTemplateId" class="select2 form-select" data-template-checklist>
+                                <option value="">@Localizer["ChecklistNone"]</option>
+                            </select>
+                            <div class="form-text">@Localizer["ChecklistHint"]</div>
+                            <span asp-validation-for="ChecklistTemplateId" class="text-danger small mt-1"></span>
+                        </div>
+                        @*
+                            Where the empty list is EXPLAINED rather than left to be interpreted as a broken
+                            screen. This is the exact failure the slice exists to close, one level in: a picker
+                            with no source looks identical to a picker that failed to load.
+                        *@
+                        <div class="col-12 d-none" data-template-checklist-empty>
+                            <div class="alert alert-warning mb-0" role="note">
+                                @Localizer["NoChecklistsYet"]
+                                <a asp-controller="TaskChecklistTemplates" asp-action="Create" class="alert-link">
+                                    @Localizer["CreateChecklistFirst"]
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right) -->
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ScopeSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="LegalEntityId" class="form-label fw-medium">@Localizer["LegalEntity"]</label>
+                            @*
+                                ⚠ SINGLE SELECT, NEVER MULTIPLE. A list of companies rots: the day a new one is
+                                opened, every template that should also cover it has to be found and edited one
+                                at a time, and nobody does that. A shape three companies share is three
+                                templates, each changeable in its own company.
+                            *@
+                            <select asp-for="LegalEntityId" class="select2 form-select" data-template-legalentity>
+                                <option value="">@Localizer["LegalEntityAll"]</option>
+                            </select>
+                            <div class="form-text">@Localizer["LegalEntityHint"]</div>
+                            <span asp-validation-for="LegalEntityId" class="text-danger small mt-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["DefaultAssignmentSection"]</h6>
+
+                    @*
+                        The precedence, beside the controls it governs. "Varsayılan" is not a decoration on the
+                        label: these fields apply ONLY when the recurrence rule leaves its own assignment empty.
+                    *@
+                    <div class="alert alert-secondary" role="note">@Localizer["DefaultAssignmentHint"]</div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="DefaultAssignmentTarget" class="form-label fw-medium">@Localizer["DefaultAssignmentTarget"]</label>
+                            @*
+                                "A person" is deliberately not offered. A template has no assignee field, so it
+                                would name nobody — and the generated task would be created for nobody, visible
+                                in no list, exactly the failure the recurrence rule already paid for once. The
+                                model refuses it if this markup is edited, and so does the server.
+                            *@
+                            <select asp-for="DefaultAssignmentTarget" class="select2 form-select" data-template-target>
+                                <option value="SelfAssigned">@Localizer["AssignmentSelf"]</option>
+                                <option value="PositionPool">@Localizer["AssignmentPool"]</option>
+                            </select>
+                            <span asp-validation-for="DefaultAssignmentTarget" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 d-none" data-template-pool>
+                            <label asp-for="DefaultPoolPositionId" class="form-label fw-medium">@Localizer["PoolPosition"]</label>
+                            <select asp-for="DefaultPoolPositionId" class="select2 form-select" data-template-position></select>
+                            <div class="form-text">@Localizer["PoolPositionHint"]</div>
+                            <span asp-validation-for="DefaultPoolPositionId" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <div class="alert alert-secondary mb-0" role="note">@Localizer["NoDepartmentHint"]</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@SharedLocalizer["Status"]</h6>
+                    @*
+                        ⚠ NO MANUAL hidden "false" companion — see the step editor above. MEASURED: with one, a
+                        ticked switch posted `false,true` and bound to FALSE, so every template saved passive
+                        however the switch was left.
+                    *@
+                    <div class="form-check form-switch">
+                        <input asp-for="IsActive" class="form-check-input" role="switch" />
+                        <label asp-for="IsActive" class="form-check-label ms-2">@SharedLocalizer["Active"]</label>
+                    </div>
+                    <div class="form-text mt-2">@Localizer["IsActiveHint"]</div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

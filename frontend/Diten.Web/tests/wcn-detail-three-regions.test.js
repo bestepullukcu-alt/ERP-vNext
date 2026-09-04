@@ -2884,9 +2884,76 @@ describe("the page reaches the product's one confirm implementation", () => {
      * code: it looks maintained. What remains is the reason+assignee form, which genuinely cannot be a
      * confirmation.
      */
-    expect((src.match(/Swal\.fire\(/g) || []).length).toBe(1);
+    /*
+     * ⚠ TWO (closure slice). The closure OUTCOME PICKER joins the reason+assignee form in the same category and
+     * for the same reason: a SELECT plus a reason box whose label changes with the choice is two fields, and
+     * the wrapper offers one textarea. It is reported here rather than growing the shared component to suit
+     * this module — the rule the comments above spend four rounds establishing.
+     */
+    expect((src.match(/Swal\.fire\(/g) || []).length).toBe(2);
     expect((src.match(/dialogLook\(\)/g) || []).length,
-      "the surviving raw dialog is drawing itself again").toBe(1);
+      "a raw dialog is drawing itself again").toBe(2);
+  });
+});
+
+describe("a closed task says WHAT was decided, not only when it ended", () => {
+  /*
+   * `ClosureReasonCode` existed on the entity, in the mapper and in the detail DTO from the day the engine
+   * shipped, and appeared in ZERO files under `frontend/`. It was also always null, because the browser's
+   * transition vocabulary hard-coded `reasonCode: null` — so the column was unread AND empty, and each half
+   * hid the other.
+   *
+   * These render the surface, because a projection field that reaches the page and is never drawn is exactly
+   * the state this slice found and is the state a wiring-only test would call fixed.
+   */
+  const closed = (closure) => projectionItem({
+    normalizedStatus: "Done",
+    taskLifecycle: "Done",
+    executionState: "notApplicable",
+    closedAt: "2026-08-30",
+    closure
+  });
+
+  it("prints the outcome's WORDS in the step caption, beside the closing date", async () => {
+    await boot(closed({
+      reasonCode: "RESOLVED",
+      outcome: { kind: "display", text: "Çözüldü", locale: "und" }
+    }));
+
+    const caption = app().querySelector(".wcn-stepbar-caption").textContent;
+    // Both facts, in one caption: WHEN it ended and WHAT was decided. Neither replaces the other.
+    expect(caption).toContain("StepClosedOn:2026-08-30");
+    expect(caption).toContain("StepClosedAs:Çözüldü");
+    // The CODE is never what a reader is shown — "RESOLVED" is an identity, not a sentence.
+    expect(caption).not.toContain("RESOLVED");
+  });
+
+  it("falls back to the code when the type no longer offers that outcome", async () => {
+    /*
+     * An administrator who retires an outcome must not silently blank every closure record that quotes it. The
+     * projection then sends the code with no label, and a raw code is a smaller loss than a closed task that
+     * reads as though nothing was decided.
+     */
+    await boot(closed({ reasonCode: "RETIRED_OUTCOME" }));
+
+    expect(app().querySelector(".wcn-stepbar-caption").textContent)
+      .toContain("StepClosedAs:RETIRED_OUTCOME");
+  });
+
+  it("says nothing at all when the task carried no closure record", async () => {
+    // Most closed tasks have none — every one closed before the dictionary existed, and every type without one.
+    // A caption that invented "Closed as: —" would be a confident zero.
+    await boot(closed(undefined));
+
+    const caption = app().querySelector(".wcn-stepbar-caption").textContent;
+    expect(caption).toContain("StepClosedOn:2026-08-30");
+    expect(caption).not.toContain("StepClosedAs");
+  });
+
+  it("does not print a closure on work that is still open", async () => {
+    await boot(projectionItem());
+
+    expect(app().querySelector(".wcn-stepbar-caption").textContent).not.toContain("StepClosedAs");
   });
 });
 

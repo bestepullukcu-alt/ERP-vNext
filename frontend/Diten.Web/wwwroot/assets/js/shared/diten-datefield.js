@@ -28,8 +28,31 @@
         const scope = root || global.document;
         if (!scope) { return 0; }
 
-        const nodes = Array.from(scope.querySelectorAll('.flatpickr-date'))
-            .filter((node) => typeof node.flatpickr === 'function' && !node._flatpickr);
+        const candidates = Array.from(scope.querySelectorAll('.flatpickr-date'));
+        const nodes = candidates.filter((node) => typeof node.flatpickr === 'function' && !node._flatpickr);
+
+        /*
+         * ⚠ A FIELD THAT COULD NOT BE BOUND SAYS SO (2026-09-02).
+         *
+         * This filter used to swallow the whole failure: a page carrying `.flatpickr-date` markup without the
+         * flatpickr library returned 0, painted a calendar icon over a plain text box, and told nobody. The
+         * Task Center shipped that for weeks and it was found by a person typing a date by hand in a demo, not
+         * by any of the 2000 green tests — because there was nothing to observe.
+         *
+         * `filter` is the RIGHT behaviour (an already-bound field is skipped, and skipping is not a failure);
+         * what was missing is the difference between "nothing to do" and "something to do and no way to do it".
+         * Only the second is reported, and it is reported once with the ids, so a developer opening the console
+         * on the broken screen reads the cause instead of hunting for it.
+         */
+        const unbindable = candidates.filter((node) => typeof node.flatpickr !== 'function');
+        if (unbindable.length > 0 && global.console && global.console.error) {
+            global.console.error(
+                `[DitenDateField] ${unbindable.length} date field(s) cannot be enhanced because the flatpickr `
+                + 'library is not loaded on this page — they will stay plain text boxes under a calendar icon '
+                + 'that opens nothing. Load assets/vendor/libs/flatpickr/flatpickr.js (the tenant shell layout '
+                + 'already does) before this script. Fields: '
+                + unbindable.map((node) => node.id || node.name || '(unnamed)').join(', ') + '.');
+        }
 
         nodes.forEach((node) => {
             node.flatpickr(Object.assign(

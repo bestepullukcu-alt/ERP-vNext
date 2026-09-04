@@ -1,20 +1,64 @@
 using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Application.Contracts.Eventing;
+using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Common.Tenancy;
+using Diten.Platform.Domain.Repositories;
 using MongoDB.Driver;
 
 namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 
-public sealed class OutboxEventRepository : RepositoryBase<OutboxEvent>, IOutboxEventRepository, IOutboxObservabilityReader
+public sealed class OutboxEventRepository : RepositoryBase<OutboxEvent>, IOutboxEventRepository, ITransactionalOutboxEventWriter, IOutboxObservabilityReader
 {
+    private readonly IPlatformDbContext _platformDbContext;
+
     public OutboxEventRepository(IPlatformDbContext platformDbContext, ITenantContext tenantContext)
         : base(platformDbContext, tenantContext, PlatformCollections.OutboxEvents)
     {
+        _platformDbContext = platformDbContext;
     }
 
     public Task AddAsync(OutboxEvent outboxEvent, CancellationToken cancellationToken = default)
     {
         return Collection.InsertOneAsync(outboxEvent, cancellationToken: cancellationToken);
+    }
+
+    public async Task<EventOutboxWriteResult> EnqueueAsync(
+        EventOutboxWriteRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var candidate = OutboxEvent.FromWriteRequest(request);
+        try
+        {
+            await Collection.InsertOneAsync(candidate, cancellationToken: cancellationToken);
+            return EventOutboxWriteResult.Inserted;
+        }
+        catch (MongoWriteException exception) when (
+            exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            var existing = await GetByEventIdAsync(candidate.EventId, cancellationToken);
+            if (existing is not null && existing.HasSameImmutableContent(candidate))
+            {
+                return EventOutboxWriteResult.Duplicate;
+            }
+
+            throw new EventOutboxConflictException(candidate.EventId);
+        }
+    }
+
+    public async Task<EventOutboxWriteResult> EnqueueAsync(
+        IPlatformTransactionSession session,
+        EventOutboxWriteRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        ArgumentNullException.ThrowIfNull(request);
+
+        var mongoSession = PlatformMongoTransactionSession.Require(session, _platformDbContext);
+        var candidate = OutboxEvent.FromWriteRequest(request);
+        // A duplicate write aborts a Mongo transaction. Transaction-owned mutations therefore require
+        // a fresh, exact-one intent and deliberately do not use the legacy idempotent duplicate path.
+        await Collection.InsertOneAsync(mongoSession, candidate, cancellationToken: cancellationToken);
+        return EventOutboxWriteResult.Inserted;
     }
 
     public async Task<IReadOnlyList<OutboxEvent>> GetPendingAsync(DateTimeOffset nowUtc, int batchSize, CancellationToken cancellationToken = default)
@@ -82,5 +126,90 @@ public sealed class OutboxEventRepository : RepositoryBase<OutboxEvent>, IOutbox
     public Task<OutboxEvent?> GetByEventIdAsync(Guid eventId, CancellationToken cancellationToken = default)
     {
         return Collection.Find(x => x.EventId == eventId).FirstOrDefaultAsync(cancellationToken)!;
+    }
+
+    public async Task<EventOutboxPublishItem?> ClaimForPublishAsync(
+        DateTimeOffset nowUtc,
+        DateTimeOffset stalePublishingCutoffUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var item = await ClaimNextAsync(nowUtc, stalePublishingCutoffUtc, cancellationToken);
+        return item is null ? null : ToPublicPublishItem(item);
+    }
+
+    public async Task CompletePublishAsync(Guid eventId, CancellationToken cancellationToken = default)
+    {
+        var item = await GetByEventIdAsync(eventId, cancellationToken)
+                   ?? throw new InvalidOperationException($"Outbox event '{eventId}' was not found.");
+        item.MarkPublished();
+        await UpdateAsync(item, cancellationToken);
+    }
+
+    public async Task FailPublishAsync(
+        Guid eventId,
+        string error,
+        DateTimeOffset nextAttemptAtUtc,
+        int maxAttempts,
+        CancellationToken cancellationToken = default)
+    {
+        var item = await GetByEventIdAsync(eventId, cancellationToken)
+                   ?? throw new InvalidOperationException($"Outbox event '{eventId}' was not found.");
+        item.MarkPublishFailed(error, nextAttemptAtUtc, maxAttempts);
+        await UpdateAsync(item, cancellationToken);
+    }
+
+    public async Task DeadLetterPublishAsync(
+        Guid eventId,
+        EventOutboxTerminalFailure failure,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(failure);
+        var safeError = EventErrorRedactor.RedactAndTruncate(
+            $"{failure.Kind}:{failure.ReasonCode}:{failure.SafeDescription}");
+        var filter = Builders<OutboxEvent>.Filter.And(
+            Builders<OutboxEvent>.Filter.Eq(x => x.EventId, eventId),
+            Builders<OutboxEvent>.Filter.Eq(x => x.Status, OutboxEventStatus.Publishing));
+        var update = Builders<OutboxEvent>.Update
+            .Set(x => x.Status, OutboxEventStatus.DeadLettered)
+            .Set(x => x.LastError, safeError)
+            .Set(x => x.NextAttemptAtUtc, null)
+            .Set(x => x.UpdatedAt, DateTime.UtcNow)
+            .Inc(x => x.AttemptCount, 1);
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+        if (result.ModifiedCount == 1)
+        {
+            return;
+        }
+
+        var existing = await GetByEventIdAsync(eventId, cancellationToken)
+                       ?? throw new InvalidOperationException($"Outbox event '{eventId}' was not found.");
+        if (existing.Status == OutboxEventStatus.DeadLettered
+            && string.Equals(existing.LastError, safeError, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        throw new InvalidOperationException(
+            $"Outbox event '{eventId}' cannot transition from {existing.Status} to DeadLettered.");
+    }
+
+    private static EventOutboxPublishItem ToPublicPublishItem(OutboxEvent item)
+    {
+        var metadata = new EventMetadata(
+            item.EventId,
+            item.EventName,
+            item.EventVersion,
+            item.CorrelationId,
+            item.CausationId,
+            item.TenantId,
+            item.Producer,
+            item.OccurredAtUtc);
+        return new EventOutboxPublishItem(
+            metadata,
+            System.Text.Encoding.UTF8.GetBytes(item.PayloadJson),
+            new TrustedTransportMetadata(item.TransportHeaders),
+            (EventOutboxDeliveryStatus)(int)item.Status,
+            item.AttemptCount,
+            item.LastError);
     }
 }

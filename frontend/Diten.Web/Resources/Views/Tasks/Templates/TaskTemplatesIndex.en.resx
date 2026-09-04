@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="TaskTemplatesTitle" xml:space="preserve"><value>Task Templates</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Reusable task shapes. A recurring rule bound to one of these generates a task carrying a priority, a due date and a checklist instead of a bare title.</value></data>
+  <data name="AddNewTemplate" xml:space="preserve"><value>Add Template</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Edit Template</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Add Task Template</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit Task Template</value></data>
+  <data name="QuickView" xml:space="preserve"><value>View</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>e.g. Month-end close</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>e.g. MONTHLY-CLOSE</value></data>
+  <data name="CodeHint" xml:space="preserve"><value>Cannot be changed after saving: it is how this template is referred to from outside the database.</value></data>
+  <data name="ShapeSection" xml:space="preserve"><value>Shape</value></data>
+  <data name="TitleTemplate" xml:space="preserve"><value>Task title</value></data>
+  <data name="TitleTemplatePlaceholder" xml:space="preserve"><value>e.g. Month-end close</value></data>
+  <data name="TitleTemplateHint" xml:space="preserve"><value>Leave empty and the generated task takes this template&#x27;s name.</value></data>
+  <data name="TitleFallsBackToName" xml:space="preserve"><value>Takes the template&#x27;s name</value></data>
+  <data name="DescriptionTemplate" xml:space="preserve"><value>Description</value></data>
+  <data name="DefaultPriority" xml:space="preserve"><value>Priority</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Low</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Medium</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>High</value></data>
+  <data name="DefaultDueInDays" xml:space="preserve"><value>Due in (days)</value></data>
+  <data name="DefaultDueInDaysHint" xml:space="preserve"><value>Counted from the day the task is created. Leave empty for work that is not time-boxed.</value></data>
+  <data name="DueInDaysValue" xml:space="preserve"><value>{0} days</value></data>
+  <data name="NoDueDate" xml:space="preserve"><value>No due date</value></data>
+  <data name="ChecklistSection" xml:space="preserve"><value>Checklist</value></data>
+  <data name="Checklist" xml:space="preserve"><value>Checklist</value></data>
+  <data name="ChecklistBound" xml:space="preserve"><value>Bound</value></data>
+  <data name="ChecklistNone" xml:space="preserve"><value>No checklist</value></data>
+  <data name="ChecklistHint" xml:space="preserve"><value>Optional. With one, every generated task carries its steps as a live checklist; without one it is a plain reminder.</value></data>
+  <data name="ViewChecklist" xml:space="preserve"><value>View checklist</value></data>
+  <data name="NoChecklistsYet" xml:space="preserve"><value>No checklist template has been defined yet.</value></data>
+  <data name="CreateChecklistFirst" xml:space="preserve"><value>Create one first.</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>Company scope</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Company</value></data>
+  <data name="LegalEntityAll" xml:space="preserve"><value>All companies</value></data>
+  <data name="LegalEntityHint" xml:space="preserve"><value>Leave empty and the template applies to every company. Naming one limits it to that company; a shape three companies share is three templates, each editable on its own.</value></data>
+  <data name="DefaultAssignmentSection" xml:space="preserve"><value>Default assignment</value></data>
+  <data name="DefaultAssignmentTarget" xml:space="preserve"><value>Default holder</value></data>
+  <data name="AssignmentSelf" xml:space="preserve"><value>Whoever creates the task</value></data>
+  <data name="AssignmentPool" xml:space="preserve"><value>A pool (position)</value></data>
+  <data name="PoolPosition" xml:space="preserve"><value>Position</value></data>
+  <data name="PoolPositionHint" xml:space="preserve"><value>Generated work is offered to that position&#x27;s holders to claim.</value></data>
+  <data name="DivisionOfLabourHint" xml:space="preserve"><value>A template says WHAT THE WORK LOOKS LIKE — title, description, priority, due offset, checklist. A recurring rule says WHO IT IS FOR AND WHEN — person, position, department, frequency.</value></data>
+  <data name="DefaultAssignmentHint" xml:space="preserve"><value>Used only when the recurring rule leaves its own assignment empty. If the rule names anyone, the rule wins.</value></data>
+  <data name="NoDepartmentHint" xml:space="preserve"><value>A department is not set here: it belongs to the recurring rule, which is the only place that says who the work is for.</value></data>
+  <data name="IsActiveHint" xml:space="preserve"><value>A paused template stays here but is no longer offered to recurring rules.</value></data>
+  <data name="TemplatePriorityInvalid" xml:space="preserve"><value>Choose one of the listed priorities.</value></data>
+  <data name="TemplateAssignmentTargetInvalid" xml:space="preserve"><value>A template cannot name a person: it has no assignee field, so the work would reach nobody. Name the person on the recurring rule.</value></data>
+  <data name="TemplatePoolRequired" xml:space="preserve"><value>Select the position the generated work is offered to.</value></data>
+</root>

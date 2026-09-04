@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.3.6" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Diten.Platform.Common\src\Diten.Platform.Common\Diten.Platform.Common.csproj" />
+    <ProjectReference Include="..\Diten.PpmService.Application\Diten.PpmService.Application.csproj" />
+    <ProjectReference Include="..\Diten.PpmService.Contracts\Diten.PpmService.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.Eventing\Diten.BuildingBlocks.Eventing.csproj" />
+  </ItemGroup>
+</Project>

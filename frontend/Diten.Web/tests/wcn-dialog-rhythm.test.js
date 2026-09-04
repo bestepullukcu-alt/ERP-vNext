@@ -84,11 +84,16 @@ describe("one action, one icon", () => {
     // The rail button reads it…
     expect(APP).toContain("inboxActionIcon(primary)");
     /*
-     * …and so does every dialog an action opens. FIVE reads: the overflow-MENU row (which was already reading
-     * it), plus the four dialogs — plan, review meeting, log time, and the raw reason+assignee form.
+     * …and so does every dialog an action opens. SIX reads: the overflow-MENU row (which was already reading
+     * it), plus the five dialogs — plan, review meeting, log time, the raw reason+assignee form, and the
+     * closure outcome picker.
+     *
+     * ⚠ FIVE BEFORE THE CLOSURE SLICE. The new dialog is opened BY an action (complete/cancel), so it asks the
+     * dictionary exactly as the other five do. Picking its glyph by hand is the defect this count exists to
+     * catch — it is how one action came to show a pin on its button and a speech bubble in its dialog.
      */
     expect((APP.match(/inboxActionIcon\(action\)/g) || []).length,
-      "a dialog stopped reading the dictionary").toBe(5);
+      "a dialog stopped reading the dictionary").toBe(6);
     // Three of those are the `icon:` seam; the fourth is the raw dialog's own builder call.
     expect((APP.match(/icon: inboxActionIcon\(action\)/g) || []).length).toBe(3);
   });

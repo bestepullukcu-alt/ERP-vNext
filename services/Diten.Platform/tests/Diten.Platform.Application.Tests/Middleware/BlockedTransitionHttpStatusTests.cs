@@ -12,6 +12,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
+using static Diten.Platform.Application.Tests.GlobalApplicability.GlobalApplicabilityTestDependencies;
 
 namespace Diten.Platform.Application.Tests.Middleware;
 
@@ -100,13 +101,15 @@ public sealed class BlockedTransitionHttpStatusTests
         // re-implementation of it.
         var repository = new ModuleCatalog.ModuleCatalogActivateGateTests.FakeModuleCatalogRepository(item);
         var handler = new ActivateModuleCatalogItemCommandHandler(
-            repository,
+            Module(repository),
             new WorkflowTransitionGate(
                 new ModuleCatalog.ModuleCatalogActivateGateTests.GateMediator(
                     WorkflowTransitionGateDecision.Blocked,
                     WorkflowTransitionGateStatus.PendingApproval,
                     blockingReason: WorkflowReasonCodes.WorkflowPendingApproval),
-                NullLogger<WorkflowTransitionGate>.Instance));
+                NullLogger<WorkflowTransitionGate>.Instance),
+            Coordinator,
+            State);
 
         var thrown = await Assert.ThrowsAsync<WorkflowTransitionBlockedException>(
             () => handler.Handle(new ActivateModuleCatalogItemCommand(item.Id), CancellationToken.None));

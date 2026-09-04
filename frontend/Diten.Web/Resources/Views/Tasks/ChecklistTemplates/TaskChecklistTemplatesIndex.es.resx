@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ChecklistTemplatesTitle" xml:space="preserve"><value>Plantillas de lista de verificación</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Listas de pasos reutilizables. Una plantilla de tarea vincula una de ellas y cada tarea generada lleva los pasos como lista de verificación activa.</value></data>
+  <data name="AddNewTemplate" xml:space="preserve"><value>Añadir plantilla</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Editar plantilla</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Añadir plantilla de lista de verificación</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar plantilla de lista de verificación</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Ver</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Name" xml:space="preserve"><value>Nombre</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>p. ej. Control de liberación de lote</value></data>
+  <data name="Code" xml:space="preserve"><value>Código</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>p. ej. QA-RELEASE</value></data>
+  <data name="CodeHint" xml:space="preserve"><value>No se puede cambiar tras guardar: así es como un paso marcado se vincula a esta plantilla.</value></data>
+  <data name="Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identidad</value></data>
+  <data name="ItemsSection" xml:space="preserve"><value>Pasos</value></data>
+  <data name="AddItem" xml:space="preserve"><value>Añadir paso</value></data>
+  <data name="RequirementHint" xml:space="preserve"><value>Solo un paso BLOQUEANTE impide realmente completar una tarea. Los pasos opcionales son notas; una lista formada solo por ellos no controla nada.</value></data>
+  <data name="ItemCode" xml:space="preserve"><value>Código del paso</value></data>
+  <data name="ItemCodePlaceholder" xml:space="preserve"><value>p. ej. coa-verificado</value></data>
+  <data name="ItemLabel" xml:space="preserve"><value>Paso</value></data>
+  <data name="ItemLabelPlaceholder" xml:space="preserve"><value>Lo que hay que hacer</value></data>
+  <data name="Requirement" xml:space="preserve"><value>Obligatoriedad</value></data>
+  <data name="RequirementOptional" xml:space="preserve"><value>Opcional</value></data>
+  <data name="RequirementRequired" xml:space="preserve"><value>Obligatorio</value></data>
+  <data name="RequirementBlocking" xml:space="preserve"><value>Bloqueante</value></data>
+  <data name="EvidenceRequired" xml:space="preserve"><value>Evidencia</value></data>
+  <data name="ItemCount" xml:space="preserve"><value>Pasos</value></data>
+  <data name="BlockingCount" xml:space="preserve"><value>Bloqueantes</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Última edición</value></data>
+  <data name="NeverEdited" xml:space="preserve"><value>Todavía no</value></data>
+  <data name="Gating" xml:space="preserve"><value>Control</value></data>
+  <data name="GatingBlocking" xml:space="preserve"><value>Tiene un paso bloqueante</value></data>
+  <data name="GatingAdvisory" xml:space="preserve"><value>Solo informativa</value></data>
+  <data name="GatingSection" xml:space="preserve"><value>Control</value></data>
+  <data name="NoItems" xml:space="preserve"><value>Esta plantilla no tiene pasos.</value></data>
+  <data name="NoBlockingHint" xml:space="preserve"><value>Ningún paso bloquea la finalización: esta lista registra el trabajo en lugar de controlarlo.</value></data>
+  <data name="IsActiveHint" xml:space="preserve"><value>Una plantilla pausada permanece aquí pero ya no se ofrece a las plantillas de tarea.</value></data>
+  <data name="NextStepSection" xml:space="preserve"><value>Siguiente paso</value></data>
+  <data name="NextStepHint" xml:space="preserve"><value>Una lista de verificación llega a una tarea a través de una plantilla de tarea. Defina primero la lista y vincúlela allí.</value></data>
+  <data name="GoToTaskTemplates" xml:space="preserve"><value>Plantillas de tarea</value></data>
+  <data name="ChecklistTemplateEmpty" xml:space="preserve"><value>Añada al menos un paso; una lista vacía pondría una lista vacía en cada tarea.</value></data>
+  <data name="ChecklistItemLabelRequired" xml:space="preserve"><value>Cada paso necesita un texto; una casilla sin palabras no permite actuar.</value></data>
+  <data name="ChecklistItemCodeRequired" xml:space="preserve"><value>Cada paso necesita un código; así se vincula un paso marcado a esta plantilla.</value></data>
+  <data name="ChecklistItemCodeDuplicate" xml:space="preserve"><value>Dos pasos comparten un código. Marcar uno sería indistinguible de marcar el otro.</value></data>
+  <data name="ChecklistItemRequirementInvalid" xml:space="preserve"><value>Elija uno de los niveles de obligatoriedad indicados.</value></data>
+</root>

@@ -11,6 +11,8 @@ public interface ITenantRegistryRepository
     Task<IReadOnlyList<Tenant>> GetActiveTenantsAsync(CancellationToken ct = default);
     Task<Tenant> CreateAsync(Tenant tenant, CancellationToken ct = default);
     Task UpdateAsync(Tenant tenant, CancellationToken ct = default);
+    Task UpdateAsync(IPlatformTransactionSession session, Tenant tenant, CancellationToken ct = default) =>
+        throw new PlatformTransactionUnavailableException("The tenant repository does not implement transaction-bound updates.");
     Task DeleteAsync(Guid id, CancellationToken ct = default);
     Task UpdateStatusAsync(Guid id, TenantStatus status, CancellationToken ct = default);
     Task<IReadOnlyList<Tenant>> GetAllAsync(CancellationToken ct = default);

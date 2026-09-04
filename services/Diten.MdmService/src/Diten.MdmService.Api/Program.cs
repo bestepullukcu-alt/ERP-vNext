@@ -1,4 +1,5 @@
 using System.Text;
+using Diten.BuildingBlocks.Security.Secrets;
 using Diten.MdmService.Api.ModuleRegistration;
 using Diten.MdmService.Application;
 using Diten.MdmService.Infrastructure;
@@ -34,7 +35,7 @@ builder.Services
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret ?? string.Empty)),
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = JwtValidationDefaults.ClockSkew
         };
     });
 

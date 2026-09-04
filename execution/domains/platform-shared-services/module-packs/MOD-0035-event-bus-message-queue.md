@@ -401,6 +401,30 @@ This is a backend/infrastructure module, not a CRUD DataTable module. `golden_re
 - No code was written as part of module-pack preparation.
 
 ## 20. Follow-up Items
+- [ ] **Bounded PPM Audit Consumer V1 transport amendment (2026-08-31):** the only accepted event
+  is PPM-owned `ppm.audit-intent.submitted.v1` / version `1`, from the independent PPM Contracts
+  artifact (never `Diten.PpmService.Application` and never a PSS-owned duplicate payload). Its
+  payload is exactly `auditIntentId`, `actorId`, `entityType`, `entityId`, `mutation`, and
+  `occurredAtUtc`. The V1 consumer mapping is `PortfolioDelivery = 15` and
+  `created/Create`, `updated/Update`, `lifecycle-changed/LifecycleTransition = 16`, and
+  `soft-deleted/Delete`. It must not derive a target state, read PPM state, or silently restrict
+  PPM entity coverage.
+
+  The transport slice remains default-off: this amendment does not register a consumer or authorize
+  RabbitMQ configuration, live broker proof, credential/key provisioning, signing material, replay
+  surface, endpoint, runtime activation, or direct production audit append. Any later registration
+  must first prove authenticated publisher identity, trusted tenant/actor context, and atomic local
+  `ConsumerName + EventId` inbox plus audit-outbox idempotency. The retained policy-seed consequence
+  of adding `PortfolioDelivery` requires bounded regression evidence: exact-one missing-policy
+  insert, no existing-policy change, and zero insert on repeat. Only a test-owned disposable
+  database may be created and it must be completely removed; schema-wide setup is not allowed.
+- [ ] Wire the authenticated publisher-identity/key-provider seam only after its owner and concrete
+  credential lifecycle are approved.  Fixture data must contain no key, secret, signature, or
+  credential material; historic HMAC-specific transport code is not the PSS acceptance baseline.
+- [ ] Before registration, approve the MOD-0021 audit category/operation mapping and prove that
+  inbox `ConsumerName + EventId` and the resulting audit append/outbox commit form one idempotent
+  local outcome.  This is required to satisfy at-least-once delivery without claiming distributed
+  exactly-once behavior.
 - [ ] Update `execution/domains/platform-shared-services/domain-config.md` Event Bus runtime decision after user approval.
 - [ ] Update `docs/platform/master-plan.md` MOD-0035 status after implementation begins.
 - [ ] Prepare/update MOD-0009 Tenant Registry Lifecycle Events pack to emit events through `IEventBus`.

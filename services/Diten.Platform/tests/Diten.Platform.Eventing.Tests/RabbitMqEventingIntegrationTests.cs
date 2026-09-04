@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Xunit;
+using PlatformEventTransportMessage = Diten.Platform.Application.Contracts.Eventing.EventTransportMessage;
 
 namespace Diten.Platform.Eventing.Tests;
 
@@ -203,7 +204,7 @@ public sealed class RabbitMqEventingIntegrationTests
             var outboxRepository = new OutboxEventRepository(dbContext, tenantContext);
             var queueName = "tenant-activated-v1-failure-test-" + Guid.NewGuid().ToString("N");
             var attempts = new TestConsumerAttempts();
-            var errorQueueSignal = new TaskCompletionSource<EventTransportMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var errorQueueSignal = new TaskCompletionSource<PlatformEventTransportMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
             const int retryCount = 5;
 
             var bus = Bus.Factory.CreateUsingRabbitMq(cfg =>
@@ -355,7 +356,7 @@ public sealed class RabbitMqEventingIntegrationTests
         return string.IsNullOrWhiteSpace(value) ? defaultValue : value;
     }
 
-    private sealed class TestTenantActivatedV1Consumer : IConsumer<EventTransportMessage>
+    private sealed class TestTenantActivatedV1Consumer : IConsumer<PlatformEventTransportMessage>
     {
         private readonly ConsumedEventStore _consumedEventStore;
         private readonly TestConsumerSideEffects _sideEffects;
@@ -371,7 +372,7 @@ public sealed class RabbitMqEventingIntegrationTests
             _signal = signal;
         }
 
-        public Task Consume(ConsumeContext<EventTransportMessage> context)
+        public Task Consume(ConsumeContext<PlatformEventTransportMessage> context)
         {
             var message = context.Message;
             var payload = JsonSerializer.Deserialize<TenantActivatedV1>(message.PayloadJson)
@@ -426,7 +427,7 @@ public sealed class RabbitMqEventingIntegrationTests
         }
     }
 
-    private sealed class AlwaysFailingTenantActivatedV1Consumer : IConsumer<EventTransportMessage>
+    private sealed class AlwaysFailingTenantActivatedV1Consumer : IConsumer<PlatformEventTransportMessage>
     {
         private readonly TestConsumerAttempts _attempts;
 
@@ -435,7 +436,7 @@ public sealed class RabbitMqEventingIntegrationTests
             _attempts = attempts;
         }
 
-        public Task Consume(ConsumeContext<EventTransportMessage> context)
+        public Task Consume(ConsumeContext<PlatformEventTransportMessage> context)
         {
             if (string.Equals(context.Message.EventName, TenantActivatedV1.Name, StringComparison.Ordinal))
             {
@@ -446,16 +447,16 @@ public sealed class RabbitMqEventingIntegrationTests
         }
     }
 
-    private sealed class ErrorQueueEventTransportMessageConsumer : IConsumer<EventTransportMessage>
+    private sealed class ErrorQueueEventTransportMessageConsumer : IConsumer<PlatformEventTransportMessage>
     {
-        private readonly TaskCompletionSource<EventTransportMessage> _signal;
+        private readonly TaskCompletionSource<PlatformEventTransportMessage> _signal;
 
-        public ErrorQueueEventTransportMessageConsumer(TaskCompletionSource<EventTransportMessage> signal)
+        public ErrorQueueEventTransportMessageConsumer(TaskCompletionSource<PlatformEventTransportMessage> signal)
         {
             _signal = signal;
         }
 
-        public Task Consume(ConsumeContext<EventTransportMessage> context)
+        public Task Consume(ConsumeContext<PlatformEventTransportMessage> context)
         {
             _signal.TrySetResult(context.Message);
             return Task.CompletedTask;

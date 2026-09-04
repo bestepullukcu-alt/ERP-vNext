@@ -5,6 +5,7 @@ using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Common.Authorization;
 using Diten.Platform.Common.Tenancy;
+using Diten.Platform.Domain.Entities.Notifications;
 using Diten.Platform.Domain.Entities.Organization;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
@@ -327,6 +328,20 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
             .Where(x => x.TenantId == TaskTestData.Tenant && !x.IsDeleted && x.AssigneeUserId == userId)
             .ToList());
 
+    /// <summary>
+    /// BL-016 — mirrors <c>TaskItemRepository.ListByCreatorAsync</c>, terminal exclusion included. The exclusion
+    /// is copied deliberately: a double that returned finished work too would let a guard about the Outbox pass
+    /// against behaviour production does not have.
+    /// </summary>
+    public Task<IReadOnlyList<TaskItem>> ListByCreatorAsync(Guid creatorUserId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<TaskItem>>(_items
+            .Where(x => x.TenantId == TaskTestData.Tenant
+                        && !x.IsDeleted
+                        && x.CreatedByUserId == creatorUserId
+                        && x.Lifecycle != Domain.Enums.Tasks.TaskLifecycle.Done
+                        && x.Lifecycle != Domain.Enums.Tasks.TaskLifecycle.Cancelled)
+            .ToList());
+
     public Task<IReadOnlyList<TaskItem>> ListByParentAsync(Guid parentTaskItemId, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<TaskItem>>(_items
             .Where(x => x.TenantId == TaskTestData.Tenant && !x.IsDeleted && x.ParentTaskItemId == parentTaskItemId)
@@ -425,13 +440,29 @@ internal sealed class FakeTaskTransitionRepository : ITaskTransitionRepository
         return Task.FromResult(transition);
     }
 
+    /// <summary>
+    /// Reads issued, by shape — so a test can prove the projection stayed on ONE batched read.
+    ///
+    /// <para>The per-task variant is the N+1: called once per row on a page, it is the cost the batch below
+    /// exists to avoid, and a new field derived from history is exactly how that cost creeps back in.</para>
+    /// </summary>
+    public int ListByTaskIdCalls { get; private set; }
+
+    public int ListByTaskIdsCalls { get; private set; }
+
     public Task<IReadOnlyList<TaskTransition>> ListByTaskIdAsync(Guid taskItemId, CancellationToken ct = default)
-        => Task.FromResult(Order(_events.Where(x => x.TaskItemId == taskItemId)));
+    {
+        ListByTaskIdCalls++;
+        return Task.FromResult(Order(_events.Where(x => x.TaskItemId == taskItemId)));
+    }
 
     public Task<IReadOnlyList<TaskTransition>> ListByTaskIdsAsync(
         IReadOnlyCollection<Guid> taskItemIds,
         CancellationToken ct = default)
-        => Task.FromResult(Order(_events.Where(x => taskItemIds.Contains(x.TaskItemId))));
+    {
+        ListByTaskIdsCalls++;
+        return Task.FromResult(Order(_events.Where(x => taskItemIds.Contains(x.TaskItemId))));
+    }
 
     private static IReadOnlyList<TaskTransition> Order(IEnumerable<TaskTransition> transitions)
         => transitions
@@ -951,21 +982,93 @@ internal sealed class FakeChecklistRunRepository(params ChecklistRun[] seed) : I
 }
 
 /// <summary>Task templates, tenant-filtered like the real repository.</summary>
-internal sealed class FakeTaskTemplateRepository(params TaskTemplate[] seed) : ITaskTemplateRepository
+internal sealed class FakeTaskTemplateRepository : ITaskTemplateRepository
 {
+    private readonly List<TaskTemplate> _templates = [];
+
+    public FakeTaskTemplateRepository(params TaskTemplate[] seed) => _templates.AddRange(seed);
+
+    /// <summary>Everything stored, across every tenant — for assertions, never for the code under test.</summary>
+    public IReadOnlyList<TaskTemplate> All => _templates;
+
     public Task<TaskTemplate> CreateAsync(TaskTemplate template, CancellationToken ct = default)
-        => Task.FromResult(template);
+    {
+        _templates.Add(template);
+        return Task.FromResult(template);
+    }
 
     public Task<TaskTemplate?> GetByIdAsync(Guid id, CancellationToken ct = default)
-        => Task.FromResult(seed.FirstOrDefault(x => x.Id == id && x.TenantId == TaskTestData.Tenant));
+    {
+        var stored = _templates.FirstOrDefault(x => x.Id == id && x.TenantId == TaskTestData.Tenant);
+        return Task.FromResult(stored is null ? null : Detach(stored));
+    }
+
+    public Task<TaskTemplate?> GetByCodeAsync(string code, CancellationToken ct = default)
+        => Task.FromResult(_templates.FirstOrDefault(x =>
+            x.TenantId == TaskTestData.Tenant && string.Equals(x.Code, code, StringComparison.OrdinalIgnoreCase)));
 
     public Task<IReadOnlyList<TaskTemplate>> ListActiveAsync(CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<TaskTemplate>>(
-            seed.Where(x => x.TenantId == TaskTestData.Tenant && x.IsActive).ToList());
+        => Task.FromResult<IReadOnlyList<TaskTemplate>>(_templates
+            .Where(x => x.TenantId == TaskTestData.Tenant && x.IsActive && x.DeletedAt is null)
+            .Select(Detach)
+            .ToList());
+
+    public Task<IReadOnlyList<TaskTemplate>> ListAllAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<TaskTemplate>>(_templates
+            .Where(x => x.TenantId == TaskTestData.Tenant)
+            .Select(Detach)
+            .ToList());
+
+    public Task<bool> UpdateAsync(TaskTemplate template, int expectedVersion, CancellationToken ct = default)
+    {
+        var stored = _templates.FirstOrDefault(x => x.Id == template.Id && x.TenantId == TaskTestData.Tenant);
+        if (stored is null || stored.Version != expectedVersion)
+        {
+            return Task.FromResult(false);
+        }
+
+        _templates[_templates.IndexOf(stored)] = template;
+        template.Version = expectedVersion + 1;
+        template.UpdatedAt = DateTimeOffset.UtcNow;
+        return Task.FromResult(true);
+    }
+
+    /// <summary>
+    /// A COPY, like every other fake here. The live repository hands back a fresh document per read, so a handler
+    /// that mutates what it fetched and then fails a version check must not have already changed the store.
+    /// </summary>
+    private static TaskTemplate Detach(TaskTemplate source) => new()
+    {
+        Id = source.Id,
+        TenantId = source.TenantId,
+        Version = source.Version,
+        CreatedAt = source.CreatedAt,
+        UpdatedAt = source.UpdatedAt,
+        Code = source.Code,
+        Name = source.Name,
+        TitleTemplate = source.TitleTemplate,
+        DescriptionTemplate = source.DescriptionTemplate,
+        DefaultPriority = source.DefaultPriority,
+        DefaultAssignmentTarget = source.DefaultAssignmentTarget,
+        DefaultPoolPositionId = source.DefaultPoolPositionId,
+        DefaultDueInDays = source.DefaultDueInDays,
+        ChecklistTemplateId = source.ChecklistTemplateId,
+        DefaultFieldValues = source.DefaultFieldValues,
+        LegalEntityId = source.LegalEntityId,
+        IsActive = source.IsActive,
+        DeletedAt = source.DeletedAt
+    };
 }
 
 internal sealed class FakeChecklistTemplateRepository(params ChecklistTemplate[] seed) : IChecklistTemplateRepository
 {
+    /// <summary>
+    /// The mutable store. The primary-constructor array is the SEED; create and retire have to be able to change
+    /// what is stored, and an array cannot grow — a fake whose create is a no-op makes a create test pass without
+    /// anything having been created.
+    /// </summary>
+    public List<ChecklistTemplate> Store { get; } = [.. seed];
+
     /// <summary>
     /// A checklist template every instance answers for, so a caller that only needs "a template exists" does not
     /// have to build one. Seeded templates still win — passing one in overrides this entirely.
@@ -983,16 +1086,41 @@ internal sealed class FakeChecklistTemplateRepository(params ChecklistTemplate[]
     };
 
     public Task<ChecklistTemplate> CreateAsync(ChecklistTemplate template, CancellationToken ct = default)
-        => Task.FromResult(template);
+    {
+        Store.Add(template);
+        return Task.FromResult(template);
+    }
 
     public Task<ChecklistTemplate?> GetByIdAsync(Guid id, CancellationToken ct = default)
         => Task.FromResult(
-            seed.FirstOrDefault(x => x.Id == id && x.TenantId == TaskTestData.Tenant)
+            Store.FirstOrDefault(x => x.Id == id && x.TenantId == TaskTestData.Tenant)
             ?? (id == SeededId ? Seeded : null));
 
     public Task<IReadOnlyList<ChecklistTemplate>> ListActiveAsync(CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<ChecklistTemplate>>(
-            seed.Where(x => x.TenantId == TaskTestData.Tenant && x.IsActive).ToList());
+            Store.Where(x => x.TenantId == TaskTestData.Tenant && x.IsActive && x.DeletedAt is null).ToList());
+
+    public Task<ChecklistTemplate?> GetByCodeAsync(string code, CancellationToken ct = default)
+        => Task.FromResult(Store.FirstOrDefault(x =>
+            x.TenantId == TaskTestData.Tenant && string.Equals(x.Code, code, StringComparison.OrdinalIgnoreCase)));
+
+    public Task<IReadOnlyList<ChecklistTemplate>> ListAllAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<ChecklistTemplate>>(
+            Store.Where(x => x.TenantId == TaskTestData.Tenant).ToList());
+
+    public Task<bool> UpdateAsync(ChecklistTemplate template, int expectedVersion, CancellationToken ct = default)
+    {
+        var stored = Store.FirstOrDefault(x => x.Id == template.Id && x.TenantId == TaskTestData.Tenant);
+        if (stored is null || stored.Version != expectedVersion)
+        {
+            return Task.FromResult(false);
+        }
+
+        Store[Store.IndexOf(stored)] = template;
+        template.Version = expectedVersion + 1;
+        template.UpdatedAt = DateTimeOffset.UtcNow;
+        return Task.FromResult(true);
+    }
 }
 
 /// <summary>
@@ -1738,4 +1866,58 @@ internal sealed class FakeTaskTypeRepository : ITaskTypeRepository
         if (at >= 0) { _types[at] = type; }
         return Task.CompletedTask;
     }
+}
+
+/// <summary>
+/// BL-025 — the in-app inbox in memory, behaving like the Mongo one where behaviour is observable.
+///
+/// <para>Ordering, tenant/user scoping and the once-only mark are all reproduced here rather than simplified
+/// away: a double that returns rows in insertion order would let a "unread first" assertion pass without the
+/// production sort existing, and a double that ignores the user would make the scoping tests vacuous.</para>
+/// </summary>
+internal sealed class FakeUserNotificationRepository : IUserNotificationRepository
+{
+    /// <summary>Everything ever written, in write order — assertions read it directly.</summary>
+    public List<UserNotification> Written { get; } = [];
+
+    /// <summary>Set to make every write throw, to prove the e-mail path survives an in-app failure.</summary>
+    public Exception? ThrowOnCreate { get; set; }
+
+    public Task<UserNotification> CreateAsync(UserNotification notification, CancellationToken ct = default)
+    {
+        if (ThrowOnCreate is not null) { throw ThrowOnCreate; }
+
+        Written.Add(notification);
+        return Task.FromResult(notification);
+    }
+
+    public Task<IReadOnlyList<UserNotification>> ListForUserAsync(
+        Guid tenantId, Guid userId, int skip, int take, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<UserNotification>>(
+            Owned(tenantId, userId)
+                // The production sort, reproduced: unread (IsRead false) first, newest first inside each
+                // group — and on the SAME key production uses, so a double cannot certify a sort Mongo
+                // would reject (DateTimeOffsetSortGuardTests, BL-030).
+                .OrderBy(x => x.IsRead)
+                .ThenByDescending(x => x.CreatedAt)
+                .Skip(Math.Max(0, skip))
+                .Take(take <= 0 ? 0 : take)
+                .ToList());
+
+    public Task<long> CountUnreadForUserAsync(Guid tenantId, Guid userId, CancellationToken ct = default)
+        => Task.FromResult(Owned(tenantId, userId).LongCount(x => !x.IsRead));
+
+    public Task<bool> MarkReadAsync(
+        Guid tenantId, Guid userId, Guid notificationId, DateTimeOffset readAt, CancellationToken ct = default)
+    {
+        var row = Owned(tenantId, userId).FirstOrDefault(x => x.Id == notificationId);
+        return Task.FromResult(row is not null && row.TryMarkRead(readAt));
+    }
+
+    public Task<long> MarkAllReadAsync(
+        Guid tenantId, Guid userId, DateTimeOffset readAt, CancellationToken ct = default)
+        => Task.FromResult(Owned(tenantId, userId).LongCount(x => x.TryMarkRead(readAt)));
+
+    private IEnumerable<UserNotification> Owned(Guid tenantId, Guid userId)
+        => Written.Where(x => !x.IsDeleted && x.TenantId == tenantId && x.UserId == userId);
 }

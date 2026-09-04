@@ -208,6 +208,9 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
     private readonly IWorkflowTransitionGate _workflowGate;
     private readonly ITaskDependencyRepository _dependencies;
 
+    /// <summary>The closure outcome dictionary lives on the TYPE, so closing a task has to read one.</summary>
+    private readonly ITaskTypeRepository _types;
+
     /// <summary>WC-4 — the shared notification path; see ITaskNotificationService for the four rules it holds.</summary>
     private readonly ITaskNotificationService _notifications;
     private readonly ILogger<TransitionTaskItemHandler> _logger;
@@ -220,12 +223,14 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         ITaskChecklistService checklistService,
         IWorkflowTransitionGate workflowGate,
         ITaskDependencyRepository dependencies,
+        ITaskTypeRepository types,
         ITaskNotificationService notifications,
         ILogger<TransitionTaskItemHandler> logger)
     {
         _logger = logger;
         _notifications = notifications;
         _dependencies = dependencies;
+        _types = types;
         _tasks = tasks;
         _lifecycle = lifecycle;
         _currentUser = currentUser;
@@ -233,6 +238,16 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         _checklistService = checklistService;
         _workflowGate = workflowGate;
     }
+
+    /// <summary>Which half of the outcome dictionary this transition is closing into, or null when it closes
+    /// nothing. Declared rather than inlined so the gate and the picker cannot disagree about what "closing"
+    /// means.</summary>
+    internal static TaskClosureDisposition? ClosureDispositionFor(TaskLifecycle target) => target switch
+    {
+        TaskLifecycle.Done => TaskClosureDisposition.Completed,
+        TaskLifecycle.Cancelled => TaskClosureDisposition.Cancelled,
+        _ => null
+    };
 
     public async Task<Response<NoContent>> Handle(TransitionTaskItemCommand command, CancellationToken ct)
     {
@@ -425,6 +440,59 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
             }
         }
 
+        /*
+         * ── CLOSURE OUTCOME GATE ─────────────────────────────────────────────────────────────────────────────
+         *
+         * AFTER every other gate and BEFORE any mutation, so a task refused here is byte-identical to the one
+         * that arrived — the same placement the dependency and subtask gates already take.
+         *
+         * ⚠ ENFORCED HERE RATHER THAN IN THE DIALOG. A requirement a client can skip by not drawing a field is
+         * not a requirement, and this endpoint is reachable without the dialog (the dispatch route, and every
+         * future provider that closes a task through it).
+         *
+         * ⚠ AND SILENT FOR A TYPE WITH NO DICTIONARY. That is the backward-compatibility rule in one branch:
+         * `OutcomesFor` returns empty for an unclassified task, for a type nobody has configured, and for the
+         * hundred-odd tasks already open — and empty means this whole block does nothing at all.
+         */
+        if (ClosureDispositionFor(command.Target) is { } disposition)
+        {
+            var type = task.TaskTypeId is { } typeId ? await _types.GetByIdAsync(typeId, ct) : null;
+            var offered = TaskTypeRules.OutcomesFor(type, disposition);
+
+            if (offered.Count > 0)
+            {
+                var chosenCode = (command.Request.ReasonCode ?? string.Empty).Trim();
+                if (chosenCode.Length == 0)
+                {
+                    return Response<NoContent>.Fail(
+                        "This task's type asks what the closure was; none was chosen.",
+                        400, TaskReasonCodes.ClosureOutcomeRequired, command.CorrelationId);
+                }
+
+                var chosen = offered.FirstOrDefault(outcome =>
+                    string.Equals(outcome.Code, chosenCode, StringComparison.OrdinalIgnoreCase));
+                if (chosen is null)
+                {
+                    /*
+                     * Refused rather than stored. A code the type does not offer resolves to no label anywhere,
+                     * so it would be printed raw on the closed task forever — and the dictionary's whole purpose
+                     * is that a closure reads as words.
+                     */
+                    return Response<NoContent>.Fail(
+                        "That closure outcome is not one this task's type offers.",
+                        400, TaskReasonCodes.ClosureOutcomeUnknown, command.CorrelationId);
+                }
+
+                // ⭐ The flag is the OUTCOME's, never a global setting — see TaskClosureOutcome.RequiresReason.
+                if (chosen.RequiresReason && string.IsNullOrWhiteSpace(command.Request.Note))
+                {
+                    return Response<NoContent>.Fail(
+                        "This closure outcome requires a reason.",
+                        400, TaskReasonCodes.ClosureReasonRequired, command.CorrelationId);
+                }
+            }
+        }
+
         var previousLifecycle = task.Lifecycle;
         task.Lifecycle = command.Target;
         /*
@@ -550,7 +618,21 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
 
             child.Lifecycle = TaskLifecycle.Cancelled;
             child.CancelledAt = DateTimeOffset.UtcNow;
-            child.ClosureReasonCode = command.Request.ReasonCode;
+            /*
+             * ⚠ THE PARENT'S OUTCOME IS **NOT** COPIED ONTO THE CHILD — changed with the closure dictionary.
+             *
+             * This line read `child.ClosureReasonCode = command.Request.ReasonCode`. It was harmless only because
+             * the value was ALWAYS null: the browser hard-coded `reasonCode: null`, so the copy never carried
+             * anything. The moment a real outcome flows, the copy becomes a defect — the code comes from the
+             * PARENT's type dictionary, and a subtask may be a different type, or no type at all. The child would
+             * then store a code its own type does not offer, resolve to no label, and print a raw
+             * `COMPLETED_PARTIALLY` on a task nobody classified that way.
+             *
+             * It is also not what happened. The child was not called off for the parent's reason; it was called
+             * off BECAUSE ITS PARENT WAS, and that fact is already recorded — as its own Cancelled transition,
+             * below, in the child's own feed. An outcome invented for it here would be this module answering a
+             * question that belongs to the child's type.
+             */
             child.UpdatedBy = _currentUser.ActorName;
             // The child's own history records the cancellation as its own event, actored by whoever called off the
             // parent. Its holder learns from the child's feed why work they were carrying stopped.
@@ -558,7 +640,8 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
                 TaskTransitionKind.Cancelled,
                 _currentUser.UserId,
                 reason: null,
-                reasonCode: command.Request.ReasonCode);
+                // Same reasoning as the closure code above: the parent's classification is not the child's.
+                reasonCode: null);
 
             await _tasks.UpdateAsync(child, child.Version, ct);
         }

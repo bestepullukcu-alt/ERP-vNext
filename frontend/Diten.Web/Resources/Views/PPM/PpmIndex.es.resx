@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PpmTitle" xml:space="preserve"><value>Gestión de proyectos y carteras</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gestione contextos de cartera, iniciativa, programa y proyecto.</value></data>
+  <data name="Phase2AContextCore" xml:space="preserve"><value>Núcleo de contexto y referenciabilidad de la fase 2A</value></data>
+  <data name="PortfoliosLabel" xml:space="preserve"><value>Carteras</value></data>
+  <data name="InitiativesLabel" xml:space="preserve"><value>Iniciativas</value></data>
+  <data name="ProgramsLabel" xml:space="preserve"><value>Programas</value></data>
+  <data name="ProjectsLabel" xml:space="preserve"><value>Proyectos</value></data>
+  <data name="OpenPortfolios" xml:space="preserve"><value>Abrir: Carteras</value></data>
+  <data name="OpenInitiatives" xml:space="preserve"><value>Abrir: Iniciativas</value></data>
+  <data name="OpenPrograms" xml:space="preserve"><value>Abrir: Programas</value></data>
+  <data name="OpenProjects" xml:space="preserve"><value>Abrir: Proyectos</value></data>
+  <data name="PpmEmptyState" xml:space="preserve"><value>Aún no hay ningún contexto PPM disponible.</value></data>
+  <data name="PpmLoadingState" xml:space="preserve"><value>Cargando el espacio PPM…</value></data>
+  <data name="PpmErrorState" xml:space="preserve"><value>No se pudo cargar el espacio PPM.</value></data>
+  <data name="InvestmentCasesLabel" xml:space="preserve"><value>Casos de inversión</value></data>
+  <data name="BenefitCommitmentsLabel" xml:space="preserve"><value>Compromisos de beneficios</value></data>
+  <data name="OpenInvestmentCases" xml:space="preserve"><value>Casos de inversión</value></data>
+  <data name="OpenBenefitCommitments" xml:space="preserve"><value>Compromisos de beneficios</value></data>
+</root>

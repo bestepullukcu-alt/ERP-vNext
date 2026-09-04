@@ -72,6 +72,7 @@
   <data name="AuditRetention.Category.DataPrivacy" xml:space="preserve"><value>Data Privacy</value></data>
   <data name="AuditRetention.Category.Integration" xml:space="preserve"><value>Integration</value></data>
   <data name="AuditRetention.Category.System" xml:space="preserve"><value>System</value></data>
+  <data name="AuditRetention.Category.PortfolioDelivery" xml:space="preserve"><value>Portfolio Delivery</value></data>
   <data name="Common.ErrorOccurred" xml:space="preserve"><value>An error occurred.</value></data>
   <data name="Common.Ok" xml:space="preserve"><value>OK</value></data>
   <data name="Common.Unknown" xml:space="preserve"><value>Unknown</value></data>

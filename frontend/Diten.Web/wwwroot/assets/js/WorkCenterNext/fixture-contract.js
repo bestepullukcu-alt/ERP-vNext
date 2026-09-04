@@ -64,6 +64,23 @@
      */
     const SLA_STATES = ['overdue', 'due-soon', 'on-track', 'no-sla'];
     /*
+     * WHAT THE READER IS TO THIS WORK, when the item cannot say it for itself (BL-016).
+     *
+     * ONE value, and the shortness is the honest part rather than a stub. The other two ownership answers are
+     * ALREADY on the wire and are derived, never restated: the holder case from `assignee.isCurrentUser`, the
+     * pool case from `admissionState === 'pendingClaim'`. A provider that repeated those here would give the
+     * shell two sources for one answer and a way for them to disagree.
+     *
+     * `initiator` is the one that cannot be derived. It means: the reader OPENED this work, does not hold it, and
+     * cannot claim it. The shell cannot work that out from `requester.isCurrentUser` — an unclaimed pooled task
+     * the reader created satisfies both "I made this" and "I may take this", and those two answers belong in
+     * different tabs. Only the provider knows which of its reads put the row on the board.
+     *
+     * Validated WHEN PRESENT and never required — the BL-038 rule: validateItems DROPS what it rejects, so
+     * requiring this would delete every item from every provider that has never heard of it.
+     */
+    const VIEWER_RELATIONS = ['initiator'];
+    /*
      * A typed dependency edge, in the ENGINE's vocabulary (TaskDependencyType) for the same reason priority is:
      * one canonical spelling on the wire, display abbreviations ("FS") built in the shell where the 7 languages
      * live. Fixtures said 'FS' and the engine said 'FinishToStart', so a real dependency would have reached the
@@ -360,6 +377,18 @@
             push(errors, fixture, 'PRIORITY_INVALID', 'priority');
         }
         /*
+         * viewerRelation — validated WHEN PRESENT (BL-016), like priority and slaState above.
+         *
+         * An unknown value here is not a cosmetic miss: `tabFor` routes on this string, so a value the shell does
+         * not know would silently fall through to the tab the row would have gone to anyway — the row would be in
+         * the WRONG OWNERSHIP TAB and nothing would say so. That is worse than a dropped row, which is visibly
+         * absent, so this one is an error rather than a shrug.
+         */
+        if (fixture.viewerRelation !== undefined && fixture.viewerRelation !== null
+            && !VIEWER_RELATIONS.includes(fixture.viewerRelation)) {
+            push(errors, fixture, 'VIEWER_RELATION_INVALID', 'viewerRelation');
+        }
+        /*
          * slaState — validated WHEN PRESENT, never required (WC-2).
          *
          * The distinction is load-bearing, and BL-038 is why it is written down. validateItems DROPS an item
@@ -393,6 +422,81 @@
                 push(errors, fixture, 'CLOSED_AT_ON_OPEN_ITEM', 'closedAt');
             }
         }
+        /*
+         * returned — THIS WORK CAME BACK. Where it came from, not what state it is in.
+         *
+         * DECLARED HERE because that is this file's own recurring lesson: a value "existed in the provider, in
+         * the shell's icon map and in its label map, and in none of them as a stated contract" (see
+         * SUBTASK_STATUSES above), and `taskContext` went further — its card gated on a capability the
+         * vocabulary did not contain, so the effort card never drew at all. A field the shell reads and the
+         * contract does not name is a field that changes meaning without anyone noticing.
+         *
+         * ⚠ IT IS NOT A LIFECYCLE VALUE, and must never become one. The task really is `Open` — somebody has to
+         * do it. `returned` says it has been here before, which is ORIGIN, and this contract sorts those apart:
+         * tab is ownership, segment is state, chip is type and signal.
+         *
+         * `at` and `count` are required together when the block is present: a signal that cannot say WHEN cannot
+         * be ordered, and one that cannot say HOW MANY cannot feed the rework count it exists to seed. `reason`
+         * is optional and is a DISPLAY label — the returner's own sentence, never a resource key.
+         *
+         * Valid on TERMINAL work too, unlike `closure` below: a finished task that came back twice on its way
+         * there is a true statement about it, and the shell decides where that is worth saying.
+         */
+        if (fixture.returned !== undefined && fixture.returned !== null) {
+            const returned = fixture.returned;
+            if (Number.isNaN(new Date(returned.at).getTime())) {
+                push(errors, fixture, 'RETURNED_AT_INVALID', 'returned');
+            }
+            if (!Number.isInteger(returned.count) || returned.count < 1) {
+                // Zero is not a small count, it is the absence of the signal — and the absence is `undefined`.
+                push(errors, fixture, 'RETURNED_COUNT_INVALID', 'returned');
+            }
+            if (returned.reason !== undefined && returned.reason !== null && !isLabel(returned.reason)) {
+                push(errors, fixture, 'RETURNED_REASON_INVALID', 'returned');
+            }
+        }
+        /*
+         * closure — WHAT the closure decided, the other half of `closedAt`.
+         *
+         * Declared here for the reason its sibling above gives: an undeclared field is a field that changes
+         * meaning without anyone noticing (BL-032). This one had a longer version of that problem —
+         * `ClosureReasonCode` existed on the entity, in the mapper and in the detail DTO, appeared in ZERO files
+         * under `frontend/`, and was never written by anything, so the column was both unread and empty.
+         *
+         * `reasonCode` is REQUIRED WHEN THE BLOCK IS PRESENT and the label is not: the code is the stored fact,
+         * and an outcome the type has since retired resolves to no label at all — a closure that keeps its code
+         * and loses its words is the designed state, not a broken one.
+         *
+         * On OPEN work it is a contradiction, exactly as a closing instant is.
+         */
+        if (fixture.closure !== undefined && fixture.closure !== null) {
+            if (typeof fixture.closure.reasonCode !== 'string' || !fixture.closure.reasonCode.trim()) {
+                push(errors, fixture, 'CLOSURE_REASON_CODE_INVALID', 'closure');
+            } else if (!isTerminalFixture(fixture)) {
+                push(errors, fixture, 'CLOSURE_ON_OPEN_ITEM', 'closure');
+            } else if (fixture.closure.outcome !== undefined
+                && fixture.closure.outcome !== null
+                && !isLabel(fixture.closure.outcome)) {
+                push(errors, fixture, 'CLOSURE_OUTCOME_LABEL_INVALID', 'closure');
+            }
+        }
+        /*
+         * The TYPE's outcome dictionary, as the picker reads it. Both halves are OPTIONAL and their ABSENCE is
+         * the meaningful, common case: a type that offers nothing closes the way it always did. Validated only
+         * for shape, so a provider cannot ship a picker row with no code or no label — either would draw a
+         * choosable option that names nothing.
+         */
+        ['completionOutcomes', 'cancellationOutcomes'].forEach((slot) => {
+            const offered = fixture.taskType && fixture.taskType[slot];
+            if (offered === undefined || offered === null) { return; }
+            if (!Array.isArray(offered)
+                || offered.some((outcome) => !outcome
+                    || typeof outcome.code !== 'string'
+                    || !outcome.code.trim()
+                    || !isLabel(outcome.label))) {
+                push(errors, fixture, 'CLOSURE_OUTCOMES_INVALID', `taskType.${slot}`);
+            }
+        });
         /*
          * Activity entries. `at` is ABSOLUTE and a pre-computed "N days ago" is forbidden outright: whoever
          * computes it freezes it, and a projection that sat in a cache or a tab left open overnight then says
@@ -540,7 +644,7 @@
 
     global.WorkCenterNextContract = {
         MINIMUM_VISIBLE_ROW,
-        enums: { WORK_INTENTS, ASSIGNMENT_MODES, OWNERSHIP_STATES, ADMISSION_STATES, NORMALIZED_STATUSES, TASK_LIFECYCLES, EXECUTION_STATES, TIMER_STATES, SYSTEM_STATES, ACTION_DEPTHS, REVIEW_MEETING_REQUIREMENTS, WAITING_CONTEXT_TYPES, SUBTASK_STATUSES, PRIORITIES, SLA_STATES, DEPENDENCY_TYPES, DEPENDENCY_DIRECTIONS, ACTIVITY_KINDS, ACTIVITY_EVENT_CODES, CAPABILITIES, VALUE_TYPES },
+        enums: { WORK_INTENTS, ASSIGNMENT_MODES, OWNERSHIP_STATES, ADMISSION_STATES, NORMALIZED_STATUSES, TASK_LIFECYCLES, EXECUTION_STATES, TIMER_STATES, SYSTEM_STATES, ACTION_DEPTHS, REVIEW_MEETING_REQUIREMENTS, WAITING_CONTEXT_TYPES, SUBTASK_STATUSES, PRIORITIES, SLA_STATES, VIEWER_RELATIONS, DEPENDENCY_TYPES, DEPENDENCY_DIRECTIONS, ACTIVITY_KINDS, ACTIVITY_EVENT_CODES, CAPABILITIES, VALUE_TYPES },
         limits: LIMITS,
         isLabel,
         isSafeLink,

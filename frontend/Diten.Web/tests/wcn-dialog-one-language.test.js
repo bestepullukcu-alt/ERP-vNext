@@ -151,11 +151,17 @@ describe("eight dialogs, four moved and four dressed", () => {
      * selection column is drawn nowhere). Both had just been given this appearance, which is dead code at its
      * most convincing. The survivor is the reason+assignee form, which genuinely cannot be a confirmation.
      */
-    expect(raw, "a raw dialog appeared or disappeared without this test being told").toHaveLength(1);
-    expect(dressed, "the surviving raw dialog is drawing itself again").toHaveLength(1);
-    // The raw call is an `Object.assign(...)`, which is the only shape that can carry the package.
+    /*
+     * ⚠ TWO (closure slice). The second is the closure OUTCOME PICKER: a select plus a reason box whose label
+     * changes with the choice. `showConfirm` supports a textarea and nothing else (BL-146), so this is the same
+     * category as the survivor above — a shape the shared wrapper cannot express — and it is DRESSED with the
+     * declared package rather than inventing an appearance, which is what this test is actually protecting.
+     */
+    expect(raw, "a raw dialog appeared or disappeared without this test being told").toHaveLength(2);
+    expect(dressed, "a raw dialog is drawing itself again").toHaveLength(2);
+    // Each raw call is an `Object.assign(...)`, which is the only shape that can carry the package.
     expect((stripped.match(/Swal\.fire\(Object\.assign\(/g) || []),
-      "a raw dialog opened without the appearance").toHaveLength(1);
+      "a raw dialog opened without the appearance").toHaveLength(2);
   });
 
   it("reads the package instead of copying it", () => {

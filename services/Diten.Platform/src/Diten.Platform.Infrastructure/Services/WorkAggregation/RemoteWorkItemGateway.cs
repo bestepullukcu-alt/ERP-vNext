@@ -24,16 +24,18 @@ namespace Diten.Platform.Infrastructure.Services.WorkAggregation;
 /// services' logs. NOTHING ELSE is copied from the inbound request: a blanket header copy would forward cookies
 /// and internal API keys to a third party.</para>
 ///
-/// <para><b>⚠ Why the tenant header is NOT left to <c>TenantPropagationHandler</c>, MEASURED 2026-08-28.</b> The
-/// intent was to reuse the handler the MDM and Auth clients already carry, so tenancy on the wire would have one
-/// implementation. It does not work, and the failure is silent: <c>IHttpClientFactory</c> builds and CACHES a
+/// <para><b>⚠ Why the tenant header is NOT left to a <c>DelegatingHandler</c>, MEASURED 2026-08-28.</b> The
+/// intent was to reuse the shared tenant-propagation handler the MDM and Auth clients then carried, so tenancy on
+/// the wire would have one implementation. It does not work, and the failure is silent: <c>IHttpClientFactory</c>
+/// builds and CACHES a
 /// handler chain in its OWN scope, so a <c>DelegatingHandler</c> resolving a request-scoped
 /// <see cref="ITenantContext"/> gets an instance that belongs to no request and answers
 /// <c>IsResolved == false</c> — the header is then simply not added and nothing anywhere says so. It was caught
 /// by calling a real module and reading the tenant it received back on the screen: "(no tenant header)". A unit
 /// test could not have caught it, and did not: the test's container registers the context as a singleton, so it
-/// proved the wiring and not the lifetime. The two clients that still use that handler are a pre-existing defect
-/// of the same shape — recorded as BL-311, not fixed from here.</para>
+/// proved the wiring and not the lifetime. The two clients that carried the same defect were moved off it
+/// (BL-311) and the handler class was then deleted from all three services (BL-316); <c>TenantOnTheWire</c> is
+/// where the rule lives now.</para>
 ///
 /// <para><b>Timeouts have ONE source.</b> The named client's own <c>Timeout</c> is disabled on purpose
 /// (<c>InfiniteTimeSpan</c>) so that the only deadline in play is

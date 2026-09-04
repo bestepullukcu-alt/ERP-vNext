@@ -12,17 +12,20 @@ public sealed class CreateTenantSubscriptionCommandHandler : IRequestHandler<Cre
     private readonly ISubscriptionPlanRepository _planRepository;
     private readonly ITenantSubscriptionRepository _subscriptionRepository;
     private readonly ICurrentUserContext _currentUser;
+    private readonly TenantSubscriptionTransactionWriter _writer;
 
     public CreateTenantSubscriptionCommandHandler(
         ITenantRegistryRepository tenantRepository,
         ISubscriptionPlanRepository planRepository,
         ITenantSubscriptionRepository subscriptionRepository,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        TenantSubscriptionTransactionWriter writer)
     {
         _tenantRepository = tenantRepository;
         _planRepository = planRepository;
         _subscriptionRepository = subscriptionRepository;
         _currentUser = currentUser;
+        _writer = writer;
     }
 
     public Task<Response<Guid>> Handle(CreateTenantSubscriptionCommand request, CancellationToken ct)
@@ -39,6 +42,10 @@ public sealed class CreateTenantSubscriptionCommandHandler : IRequestHandler<Cre
             _planRepository,
             _subscriptionRepository,
             _currentUser,
+            _writer,
+            null,
+            nameof(CreateTenantSubscriptionCommand),
+            Diten.Platform.Domain.Enums.AuditOperation.Create,
             ct);
     }
 }

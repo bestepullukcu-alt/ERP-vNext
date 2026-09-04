@@ -1,0 +1,16 @@
+@model Diten.Web.Models.TaskChecklistTemplates.ChecklistTemplateEditViewModel
+@using Diten.Web.Views.Tasks.ChecklistTemplates
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskChecklistTemplatesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleCreate"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "create";
+}
+
+<partial name="~/Views/Tasks/ChecklistTemplates/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/js/Tasks/ChecklistTemplates/form.js" asp-append-version="true"></script>
+}

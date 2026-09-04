@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="InitiativesTitle" xml:space="preserve"><value>Girişimler</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Kiracıya ait Girişimler kayıtlarını, yaşam döngüsünü ve referanslanabilirliği yönetin.</value></data>
+  <data name="AddNewInitiative" xml:space="preserve"><value>Yeni Girişim Ekle</value></data>
+  <data name="EditInitiative" xml:space="preserve"><value>Girişim Düzenle</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>Yaşam Döngüsü</value></data>
+  <data name="VisibilityPolicyKey" xml:space="preserve"><value>Görünürlük Politikası</value></data>
+  <data name="Referenceability" xml:space="preserve"><value>Referanslanabilirlik</value></data>
+  <data name="Referenceable" xml:space="preserve"><value>Yeni referanslara açık</value></data>
+  <data name="NotReferenceable" xml:space="preserve"><value>Yeni referanslara kapalı</value></data>
+  <data name="InitiativesLoadingState" xml:space="preserve"><value>Girişimler yükleniyor…</value></data>
+  <data name="InitiativesEmptyState" xml:space="preserve"><value>Girişimler içinde kayıt bulunamadı.</value></data>
+  <data name="InitiativesErrorState" xml:space="preserve"><value>Girişimler listesi yüklenemedi.</value></data>
+  <data name="Portfolio" xml:space="preserve"><value>Portföy</value></data>
+  <data name="LifecycleProposed" xml:space="preserve"><value>Önerildi</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="LifecycleOnHold" xml:space="preserve"><value>Beklemede</value></data>
+  <data name="LifecycleCompleted" xml:space="preserve"><value>Tamamlandı</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>İptal Edildi</value></data>
+  <data name="CompleteInitiativeConfirmation" xml:space="preserve"><value>Bu Girişim tamamlansın mı? Yeni referanslara artık izin verilmeyecek.</value></data>
+  <data name="CancelInitiativeConfirmation" xml:space="preserve"><value>Bu Girişim iptal edilsin mi? Yeni referanslara artık izin verilmeyecek.</value></data>
+  <data name="InitiativeType" xml:space="preserve"><value>Girişim Türü</value></data><data name="Priority" xml:space="preserve"><value>Öncelik</value></data><data name="PlannedStartDate" xml:space="preserve"><value>Planlanan Başlangıç Tarihi</value></data><data name="PlannedEndDate" xml:space="preserve"><value>Planlanan Bitiş Tarihi</value></data>
+  <data name="ClassificationUnavailable" xml:space="preserve"><value>Sınıflandırma seçenekleri kullanılamıyor. Oluşturma ve düzenleme devre dışı.</value></data><data name="LifecycleUnavailable" xml:space="preserve"><value>Yaşam döngüsü sözleşmesi kullanılamıyor. Girişim eylemleri güvenle gösterilemiyor.</value></data><data name="ValidationError" xml:space="preserve"><value>İşaretli değerleri gözden geçirin.</value></data><data name="Unauthorized" xml:space="preserve"><value>Oturumunuz sona erdi.</value></data><data name="Forbidden" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data><data name="NotFound" xml:space="preserve"><value>Girişim bulunamadı.</value></data><data name="Conflict" xml:space="preserve"><value>Girişim değişti. Yenileyip tekrar deneyin.</value></data><data name="DependencyUnavailable" xml:space="preserve"><value>Gerekli bir yetkili kaynak kullanılamıyor.</value></data>
+  <data name="CreateSuccessor" xml:space="preserve"><value>Ardıl Oluştur</value></data><data name="RelatedRecords" xml:space="preserve"><value>İlişkili Kayıtlar</value></data><data name="CompletionSummary" xml:space="preserve"><value>Tamamlama Özeti</value></data><data name="Outcome" xml:space="preserve"><value>Sonuç</value></data><data name="ClosureReason" xml:space="preserve"><value>Kapanış Nedeni</value></data><data name="BenefitDisposition" xml:space="preserve"><value>Fayda Durumu</value></data><data name="Reason" xml:space="preserve"><value>Neden</value></data><data name="RecordNotReady" xml:space="preserve"><value>Girişim bu işlem için hazır değil.</value></data><data name="ActionForbidden" xml:space="preserve"><value>Bu işleme izin verilmiyor.</value></data><data name="ActionDependencyUnavailable" xml:space="preserve"><value>Bu işlem kullanılamayan bir yetkili kaynak gerektiriyor.</value></data>
+</root>

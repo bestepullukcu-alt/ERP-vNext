@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ChecklistTemplatesTitle" xml:space="preserve"><value>Modèles de liste de contrôle</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Listes d&#x27;étapes réutilisables. Un modèle de tâche en associe une, et chaque tâche générée porte les étapes sous forme de liste de contrôle active.</value></data>
+  <data name="AddNewTemplate" xml:space="preserve"><value>Ajouter un modèle</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Modifier le modèle</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Ajouter un modèle de liste de contrôle</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Modifier le modèle de liste de contrôle</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Voir</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>p. ex. Contrôle de libération de lot</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>p. ex. QA-RELEASE</value></data>
+  <data name="CodeHint" xml:space="preserve"><value>Non modifiable après enregistrement : c&#x27;est ainsi qu&#x27;une étape cochée est rattachée à ce modèle.</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identité</value></data>
+  <data name="ItemsSection" xml:space="preserve"><value>Étapes</value></data>
+  <data name="AddItem" xml:space="preserve"><value>Ajouter une étape</value></data>
+  <data name="RequirementHint" xml:space="preserve"><value>Seule une étape BLOQUANTE empêche réellement la clôture d&#x27;une tâche. Les étapes facultatives sont des notes ; une liste qui n&#x27;en contient que ne verrouille rien.</value></data>
+  <data name="ItemCode" xml:space="preserve"><value>Code de l&#x27;étape</value></data>
+  <data name="ItemCodePlaceholder" xml:space="preserve"><value>p. ex. coa-verifie</value></data>
+  <data name="ItemLabel" xml:space="preserve"><value>Étape</value></data>
+  <data name="ItemLabelPlaceholder" xml:space="preserve"><value>Ce qui doit être fait</value></data>
+  <data name="Requirement" xml:space="preserve"><value>Exigence</value></data>
+  <data name="RequirementOptional" xml:space="preserve"><value>Facultative</value></data>
+  <data name="RequirementRequired" xml:space="preserve"><value>Obligatoire</value></data>
+  <data name="RequirementBlocking" xml:space="preserve"><value>Bloquante</value></data>
+  <data name="EvidenceRequired" xml:space="preserve"><value>Preuve</value></data>
+  <data name="ItemCount" xml:space="preserve"><value>Étapes</value></data>
+  <data name="BlockingCount" xml:space="preserve"><value>Bloquantes</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Dernière modification</value></data>
+  <data name="NeverEdited" xml:space="preserve"><value>Pas encore</value></data>
+  <data name="Gating" xml:space="preserve"><value>Verrouillage</value></data>
+  <data name="GatingBlocking" xml:space="preserve"><value>Comporte une étape bloquante</value></data>
+  <data name="GatingAdvisory" xml:space="preserve"><value>Indicative seulement</value></data>
+  <data name="GatingSection" xml:space="preserve"><value>Verrouillage</value></data>
+  <data name="NoItems" xml:space="preserve"><value>Ce modèle ne comporte aucune étape.</value></data>
+  <data name="NoBlockingHint" xml:space="preserve"><value>Aucune étape ne bloque la clôture : cette liste enregistre le travail sans le verrouiller.</value></data>
+  <data name="IsActiveHint" xml:space="preserve"><value>Un modèle en pause reste ici mais n&#x27;est plus proposé aux modèles de tâche.</value></data>
+  <data name="NextStepSection" xml:space="preserve"><value>Étape suivante</value></data>
+  <data name="NextStepHint" xml:space="preserve"><value>Une liste de contrôle atteint une tâche via un modèle de tâche. Définissez d&#x27;abord la liste, puis associez-la là-bas.</value></data>
+  <data name="GoToTaskTemplates" xml:space="preserve"><value>Modèles de tâche</value></data>
+  <data name="ChecklistTemplateEmpty" xml:space="preserve"><value>Ajoutez au moins une étape ; une liste vide placerait une liste vide sur chaque tâche.</value></data>
+  <data name="ChecklistItemLabelRequired" xml:space="preserve"><value>Chaque étape doit être libellée ; une case sans texte ne permet aucune action.</value></data>
+  <data name="ChecklistItemCodeRequired" xml:space="preserve"><value>Chaque étape doit avoir un code ; c&#x27;est ainsi qu&#x27;une étape cochée est rattachée à ce modèle.</value></data>
+  <data name="ChecklistItemCodeDuplicate" xml:space="preserve"><value>Deux étapes partagent un code. Cocher l&#x27;une serait indiscernable de cocher l&#x27;autre.</value></data>
+  <data name="ChecklistItemRequirementInvalid" xml:space="preserve"><value>Choisissez l&#x27;un des niveaux d&#x27;exigence proposés.</value></data>
+</root>

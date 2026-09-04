@@ -311,6 +311,18 @@
   <data name="ActionCompleteInSourceHint" xml:space="preserve">
     <value>لا يمكن إنهاء هذا العمل هنا؛ يكتمل في {0}</value>
   </data>
+  <data name="ActionOpenInSource" xml:space="preserve">
+    <value>فتح السجل المصدر</value>
+  </data>
+  <data name="ActionOpenInSourceHint" xml:space="preserve">
+    <value>مركز المهام هو المكان الذي يُنفَّذ فيه العمل؛ أما السجل نفسه — عنوانه ووصفه وحقوله — فيُحرَّر هناك.</value>
+  </data>
+  <data name="ActionEditRecord" xml:space="preserve">
+    <value>تحرير المهمة</value>
+  </data>
+  <data name="ActionEditRecordHint" xml:space="preserve">
+    <value>أنت من أنشأ هذه المهمة، لذا يمكن تغيير عنوانها وتواريخها وحقولها — في وحدة المهام حيث يوجد السجل.</value>
+  </data>
   <data name="TechVersionValue" xml:space="preserve">
     <value>الإصدار {0}</value>
   </data>
@@ -611,6 +623,9 @@
   <data name="TabPool" xml:space="preserve">
     <value>قائمة الانتظار</value>
   </data>
+  <data name="TabInitiated" xml:space="preserve">
+    <value>التي بدأتها</value>
+  </data>
   <data name="ActClaim" xml:space="preserve">
     <value>استلام</value>
   </data>
@@ -649,6 +664,12 @@
   </data>
   <data name="EmptyPoolDesc" xml:space="preserve">
     <value>لا توجد عناصر بانتظار استلامك.</value>
+  </data>
+  <data name="EmptyInitiatedTitle" xml:space="preserve">
+    <value>لا يوجد عمل بدأته</value>
+  </data>
+  <data name="EmptyInitiatedDesc" xml:space="preserve">
+    <value>لم تبدأ أي عمل يتولاه شخص آخر.</value>
   </data>
   <data name="ToastClaimed" xml:space="preserve">
     <value>{0} · تم استلامه بواسطتك (تجريبي)</value>
@@ -2180,5 +2201,62 @@
   </data>
   <data name="BannerReconciliationRequired" xml:space="preserve">
     <value>مطلوب تسوية مع المصدر.</value>
+  </data>
+  <data name="StepClosedAs" xml:space="preserve">
+    <value>أُغلق بالنتيجة: {0}</value>
+  </data>
+  <data name="ClosureOutcomeLabel" xml:space="preserve">
+    <value>كيف انتهى هذا العمل؟</value>
+  </data>
+  <data name="ClosureOutcomePlaceholder" xml:space="preserve">
+    <value>اختر نتيجة</value>
+  </data>
+  <data name="ClosureOutcomeRequired" xml:space="preserve">
+    <value>اختر كيف انتهى هذا العمل.</value>
+  </data>
+  <data name="ClosureReasonLabel" xml:space="preserve">
+    <value>ملاحظة (اختياري)</value>
+  </data>
+  <data name="ClosureReasonLabelRequired" xml:space="preserve">
+    <value>السبب (مطلوب)</value>
+  </data>
+  <data name="ClosureReasonPlaceholder" xml:space="preserve">
+    <value>اشرح النتيجة بكلماتك</value>
+  </data>
+  <data name="ClosureReasonRequired" xml:space="preserve">
+    <value>تتطلب هذه النتيجة ذكر سبب.</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
+    <value>أُنجز كما طُلب</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CompletedPartially" xml:space="preserve">
+    <value>أُنجز جزئيًا</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledNotRequired" xml:space="preserve">
+    <value>لم يعد مطلوبًا</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledSuperseded" xml:space="preserve">
+    <value>حل محله عمل آخر</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledDuplicate" xml:space="preserve">
+    <value>مكرر</value>
+  </data>
+  <data name="ReturnedLabel" xml:space="preserve">
+    <value>أُعيدت</value>
+  </data>
+  <data name="ReturnedCount" xml:space="preserve">
+    <value>أُعيدت {0}×</value>
+  </data>
+  <data name="StepReturned" xml:space="preserve">
+    <value>أُعيدت هذه المهمة إليك.</value>
+  </data>
+  <data name="StepReturnedTimes" xml:space="preserve">
+    <value>أُعيدت هذه المهمة {0} مرات.</value>
+  </data>
+  <data name="StepReturnedBecause" xml:space="preserve">
+    <value>أُعيدت إليك: {0}</value>
+  </data>
+  <data name="StepReturnedTimesBecause" xml:space="preserve">
+    <value>أُعيدت {0} مرات، وآخرها: {1}</value>
   </data>
 </root>

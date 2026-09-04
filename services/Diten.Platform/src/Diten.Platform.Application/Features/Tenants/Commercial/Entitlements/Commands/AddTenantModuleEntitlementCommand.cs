@@ -6,7 +6,7 @@ using MediatR;
 namespace Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands;
 
 public sealed record AddTenantModuleEntitlementCommand(Guid TenantId, TenantModuleEntitlementRequest Request)
-    : IRequest<Response<Guid>>, IAuditableCommand, IAuditMetadataProvider
+    : IRequest<Response<Guid>>, IAuditableCommand, IAuditMetadataProvider, ITransactionOwnedAuditCommand
 {
     public AuditRequestMetadata GetAuditMetadata() => new(
         Category: AuditCategory.SubscriptionBilling, Operation: AuditOperation.Assign, EntityType: "TenantModuleEntitlement",

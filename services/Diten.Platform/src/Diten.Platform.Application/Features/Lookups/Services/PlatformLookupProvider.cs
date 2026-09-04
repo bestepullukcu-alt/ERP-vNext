@@ -112,13 +112,32 @@ public sealed class PlatformLookupProvider : IPlatformLookupProvider
                 valueUsesDisplayName: false,
                 excludeUnknown: true,
                 ct)),
-            // MOD-0027-FU02: notification enum lookups consumed by the Platform Admin notification UI.
+            /*
+             * MOD-0027-FU02: notification enum lookups consumed by the Platform Admin notification UI.
+             *
+             * ⚠ InApp IS EXCLUDED, AND THE EXCLUSION IS THE POINT. This lookup feeds exactly one thing: the
+             * channel selector on the Platform Admin notification TEMPLATE and EVENT screens. Templates are a
+             * property of the e-mail pipeline — QueueEmailNotificationHandler resolves one by
+             * {key, locale, Channel=Email} and renders a subject and an HTML body. The in-app channel
+             * (BL-025) does not render templates at all: it writes a UserNotification row carrying the event
+             * code and the source record's own title, precisely so that nothing has to be authored per
+             * language up front.
+             *
+             * So an "InApp" option here would let an operator author a template that NOTHING will ever read,
+             * and it would render as the bare literal "InApp" in all seven languages besides — the enum
+             * carries no [Display] attribute and no resx key exists for channel VALUES (only for the column
+             * label). Both are UI defects, and neither is what adding the channel was for.
+             *
+             * This comes off the moment a template-rendering in-app pipeline exists. Pinned by
+             * PlatformLookupProviderTests so it cannot come off by accident.
+             */
             PlatformLookupKeys.NotificationChannels => Wrap(GetEnumLookupAsync<NotificationChannelCode>(
                 PlatformLookupKeys.NotificationChannels,
                 "NotificationChannel",
                 valueUsesDisplayName: false,
                 excludeUnknown: false,
-                ct)),
+                ct,
+                excludeCodes: [nameof(NotificationChannelCode.InApp)])),
             PlatformLookupKeys.MessagingProviders => Wrap(GetEnumLookupAsync<MessagingProviderCode>(
                 PlatformLookupKeys.MessagingProviders,
                 "MessagingProvider",
@@ -302,13 +321,16 @@ public sealed class PlatformLookupProvider : IPlatformLookupProvider
         string group,
         bool valueUsesDisplayName,
         bool excludeUnknown,
-        CancellationToken ct)
+        CancellationToken ct,
+        IReadOnlyCollection<string>? excludeCodes = null)
         where TEnum : struct, Enum =>
         _cache.GetOrCreateAsync(
             BuildCacheKey(lookupKey),
             StaticLookupTtl,
             _ => Task.FromResult<IReadOnlyList<LookupOptionDto>>(Enum.GetValues<TEnum>()
                 .Where(enumValue => !excludeUnknown || !string.Equals(enumValue.ToString(), "Unknown", StringComparison.OrdinalIgnoreCase))
+                .Where(enumValue => excludeCodes is null
+                    || !excludeCodes.Contains(enumValue.ToString(), StringComparer.OrdinalIgnoreCase))
                 .Select((enumValue, index) =>
                 {
                     var code = enumValue.ToString();

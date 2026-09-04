@@ -267,12 +267,18 @@ describe("(c) each file is measured against the bridge it actually binds to", ()
   });
 });
 
-/**
- * Resource labels this module DECLARES but no surface renders. Excused from the check below, each with a
- * reason and each with a test above that fails the moment the reason stops being true.
+/*
+ * ⚠ THERE IS NO EXCEPTION LIST HERE ANY MORE, and that is the point — BL-309.
+ *
+ * One used to exist (`UNRENDERED_LABELS = ["OpenInSource"]`), excusing a resource label from the seven-language
+ * rule because `task-detail-resolver.js` built it into a `sourceNavigation` object no surface read. The
+ * producer has been deleted — source navigation renders through `DetailOpenSource` and `ActionCompleteInSource`,
+ * both already in all seven files — so the exception went with its reason instead of outliving it.
+ *
+ * Nothing weaker replaced it: the walk below now covers every `kind: 'resource'` label in the folder with no
+ * escape hatch at all, so re-adding an unrendered label — `sourceNavigation` included — turns this red on the
+ * commit that adds it and asks for the seven translations.
  */
-const UNRENDERED_LABELS = new Set(["OpenInSource"]);
-
 describe("every key the shell asks for by name exists", () => {
   const app = code(path.join(WCN_JS, "app.js"));
   const sites = callSites(app);
@@ -305,35 +311,48 @@ describe("every key the shell asks for by name exists", () => {
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) { walk(full); return; }
       if (!entry.name.endsWith(".js")) { return; }
-      [...code(full).matchAll(/kind:\s*'resource'[^}]*?key:\s*'([A-Za-z0-9_]+)'/g)]
-        .forEach((m) => keys.add(m[1]));
+      const source = code(full);
+      /*
+       * ⚠ TWO SPELLINGS, AND THE INLINE ONE WAS THE RARE ONE — this is why the count below is asserted.
+       *
+       * The object literal was all this matched, and MEASURED, exactly one file in the folder ever wrote it:
+       * `task-detail-resolver.js`, for the `OpenInSource` label that BL-309 deleted. Every fixture builds its
+       * labels through `resource('Key')` (declared in fixtures/canonical-fixtures.js) instead — 48 keys the
+       * walk went straight past. So a test named for "the labels the in-repo fixtures carry" was checking
+       * one key that was not a fixture's, and then excusing it.
+       */
+      [...source.matchAll(/kind:\s*'resource'[^}]*?key:\s*'([A-Za-z0-9_]+)'/g)].forEach((m) => keys.add(m[1]));
+      [...source.matchAll(/\bresource\(\s*'([A-Za-z0-9_]+)'/g)].forEach((m) => keys.add(m[1]));
     });
-    // The whole folder, not just fixtures/: `task-detail-resolver.js` builds one of these labels too, and a
-    // walk scoped to the fixtures directory found nothing at all — a guard that measures an empty set.
+    // The whole folder, not just fixtures/: the helper is declared in fixtures/ but a resolver or mapper may
+    // build one of these labels too, and a walk scoped to one directory cannot see that.
     walk(WCN_JS);
 
-    expect(keys.size).toBeGreaterThan(0);
-    expect([...keys].filter((k) => !UNRENDERED_LABELS.has(k) && !available.has(k)).sort()).toEqual([]);
+    // Non-vacuity, and it is NOT decorative: at `> 0` this guard sat green while measuring a single key.
+    // The floor is the fixture catalogue's real size, so an extractor that stops matching fails loudly.
+    expect(keys.size, "the resource-label extractor has stopped finding the fixtures' labels").toBeGreaterThan(40);
+    expect(
+      [...keys].filter((k) => !available.has(k)).sort(),
+      "a resource label with no resx entry renders as its raw key — translate it, or stop declaring it"
+    ).toEqual([]);
   });
 
   /*
-   * The one exception above, and it is written so it CANNOT outlive its reason.
+   * BL-309's other half. Deleting the unread producer is only half a fix: the field could come back, and a
+   * `sourceNavigation` that nothing reads is dead weight whatever label it carries — the test above only
+   * notices if the label happens to be a new one.
    *
-   * `task-detail-resolver.js` builds `sourceNavigation: { label: { kind: 'resource', key: 'OpenInSource' } }`
-   * and nothing in the shell reads `sourceNavigation` — the resolver's output is unused. Adding seven
-   * translations for a label no surface renders would be dead text, which is the same habit that keeps
-   * WatcherRoleWatcher out of the resx.
-   *
-   * So the exception is paired with proof that it still holds: the day a render site reads sourceNavigation,
-   * this fails and the key has to be added.
+   * So the shape itself is guarded. Either the field does not exist, or a surface renders it; a producer with
+   * no reader fails here and names the choice: wire it up, or drop it.
    */
-  it("only excuses OpenInSource for as long as nothing renders it", () => {
-    const readers = jsFiles
-      .filter((f) => path.basename(f) !== "task-detail-resolver.js")
-      .filter((f) => code(f).includes("sourceNavigation"))
-      .map((f) => path.basename(f));
+  it("has no sourceNavigation without a surface that renders it", () => {
+    const byRole = { producers: [], readers: [] };
+    jsFiles.filter((f) => code(f).includes("sourceNavigation"))
+      .forEach((f) => byRole[path.basename(f) === "task-detail-resolver.js" ? "producers" : "readers"]
+        .push(path.basename(f)));
 
-    expect(readers, "sourceNavigation is rendered now — OpenInSource needs its seven translations").toEqual([]);
+    if (byRole.readers.length) { return; }   // rendered — the label check above now owns it
+    expect(byRole.producers, "sourceNavigation is produced but no surface reads it (BL-309)").toEqual([]);
   });
 });
 
@@ -430,7 +449,19 @@ describe("(b) the keys the SERVER puts on the wire exist too", () => {
       csharp("services/Diten.Platform/src/Diten.Platform.Domain/Enums/Tasks/TaskEnums.cs"), "TaskLifecycle"),
     WorkAggregation_NativeStatus_: () => csEnum(
       csharp("services/Diten.Platform/src/Diten.Platform.Domain/Enums/Workflow/ApprovalTaskStatus.cs"),
-      "ApprovalTaskStatus")
+      "ApprovalTaskStatus"),
+    /*
+     * The SYSTEM closure outcomes. A third concatenated prefix, and it belongs here rather than as a whole key
+     * for the same reason the two above do — but the domain is read differently: these are not an enum, they are
+     * the catalogue's `Entry(CODE, "KeySuffix", …)` rows. The SUFFIX is what completes the key, so that is what
+     * is read, and every one of the five must have a sentence behind it.
+     *
+     * This matters more than the count suggests: a system outcome ships to EVERY tenant in seven languages, so a
+     * catalogue entry whose resx line was forgotten would put a raw key in front of every user of the product.
+     */
+    WorkAggregation_ClosureOutcome_: () => [...csharp(
+      "services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Services/TaskClosureOutcomeCatalog.cs")
+      .matchAll(/Entry\([A-Za-z]+,\s*"([A-Za-z0-9]+)"/g)].map((m) => m[1])
   };
 
   it("every whole key the providers emit has a sentence behind it", () => {
@@ -450,7 +481,7 @@ describe("(b) the keys the SERVER puts on the wire exist too", () => {
     expect(domain.filter((value) => !available.has(prefix + value)).sort()).toEqual([]);
   });
 
-  it("the two prefixes really are still concatenated on the server", () => {
+  it("the prefixes really are still concatenated on the server", () => {
     // Non-vacuity for the check above: if the server stopped building these keys by concatenation, the enum
     // test would be guarding something nobody emits.
     const found = emitted();

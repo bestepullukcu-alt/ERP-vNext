@@ -311,6 +311,18 @@
   <data name="ActionCompleteInSourceHint" xml:space="preserve">
     <value>This work cannot be finished here; it is completed in {0}</value>
   </data>
+  <data name="ActionOpenInSource" xml:space="preserve">
+    <value>Open the source record</value>
+  </data>
+  <data name="ActionOpenInSourceHint" xml:space="preserve">
+    <value>The Task Center is where the work is acted on; the record itself — its title, description and fields — is edited there.</value>
+  </data>
+  <data name="ActionEditRecord" xml:space="preserve">
+    <value>Edit the task</value>
+  </data>
+  <data name="ActionEditRecordHint" xml:space="preserve">
+    <value>You raised this task, so its title, dates and fields can still be changed — in the Tasks module, where the record lives.</value>
+  </data>
   <data name="TechVersionValue" xml:space="preserve">
     <value>Version {0}</value>
   </data>
@@ -611,6 +623,9 @@
   <data name="TabPool" xml:space="preserve">
     <value>Pool</value>
   </data>
+  <data name="TabInitiated" xml:space="preserve">
+    <value>Initiated</value>
+  </data>
   <data name="ActClaim" xml:space="preserve">
     <value>Claim</value>
   </data>
@@ -649,6 +664,12 @@
   </data>
   <data name="EmptyPoolDesc" xml:space="preserve">
     <value>There are no items waiting for you to claim.</value>
+  </data>
+  <data name="EmptyInitiatedTitle" xml:space="preserve">
+    <value>Nothing you started</value>
+  </data>
+  <data name="EmptyInitiatedDesc" xml:space="preserve">
+    <value>You have not started any work that someone else is carrying.</value>
   </data>
   <data name="ToastClaimed" xml:space="preserve">
     <value>{0} · claimed by you (mock)</value>
@@ -2180,5 +2201,62 @@
   </data>
   <data name="BannerReconciliationRequired" xml:space="preserve">
     <value>Source reconciliation is required.</value>
+  </data>
+  <data name="StepClosedAs" xml:space="preserve">
+    <value>Closed as: {0}</value>
+  </data>
+  <data name="ClosureOutcomeLabel" xml:space="preserve">
+    <value>How did this end?</value>
+  </data>
+  <data name="ClosureOutcomePlaceholder" xml:space="preserve">
+    <value>Choose an outcome</value>
+  </data>
+  <data name="ClosureOutcomeRequired" xml:space="preserve">
+    <value>Choose how this work ended.</value>
+  </data>
+  <data name="ClosureReasonLabel" xml:space="preserve">
+    <value>Note (optional)</value>
+  </data>
+  <data name="ClosureReasonLabelRequired" xml:space="preserve">
+    <value>Reason (required)</value>
+  </data>
+  <data name="ClosureReasonPlaceholder" xml:space="preserve">
+    <value>Explain the outcome in your own words</value>
+  </data>
+  <data name="ClosureReasonRequired" xml:space="preserve">
+    <value>This outcome requires a reason.</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
+    <value>Completed as requested</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CompletedPartially" xml:space="preserve">
+    <value>Partially completed</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledNotRequired" xml:space="preserve">
+    <value>No longer required</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledSuperseded" xml:space="preserve">
+    <value>Superseded by other work</value>
+  </data>
+  <data name="WorkAggregation_ClosureOutcome_CancelledDuplicate" xml:space="preserve">
+    <value>Duplicate</value>
+  </data>
+  <data name="ReturnedLabel" xml:space="preserve">
+    <value>Came back</value>
+  </data>
+  <data name="ReturnedCount" xml:space="preserve">
+    <value>Came back {0}×</value>
+  </data>
+  <data name="StepReturned" xml:space="preserve">
+    <value>This task was returned to you.</value>
+  </data>
+  <data name="StepReturnedTimes" xml:space="preserve">
+    <value>This task has been returned {0} times.</value>
+  </data>
+  <data name="StepReturnedBecause" xml:space="preserve">
+    <value>Returned to you: {0}</value>
+  </data>
+  <data name="StepReturnedTimesBecause" xml:space="preserve">
+    <value>Returned {0} times, most recently: {1}</value>
   </data>
 </root>

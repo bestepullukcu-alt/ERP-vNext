@@ -1,0 +1,58 @@
+@using Diten.Web.Views.Tasks.Templates
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TaskTemplatesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@*
+    No Dt* keys here, deliberately — the DataTable chrome arrives from ONE shared payload the layout emits and
+    dt-defaults reads (BL-047b). Seeding them per page is what left a sibling screen in this module rendering
+    "No data available in table" on a Turkish page.
+*@
+<script id="tasktemplates-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Actions = Localizer["Actions"].Value,
+        Delete = SharedLocalizer["Delete"].Value,
+        Edit = SharedLocalizer["Edit"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Details = SharedLocalizer["Details"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        ComingSoon = SharedLocalizer["ComingSoon"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        AddNew = Localizer["AddNewTemplate"].Value,
+        EditItem = Localizer["EditItem"].Value,
+        Name = Localizer["Name"].Value,
+        Code = Localizer["Code"].Value,
+        DefaultPriority = Localizer["DefaultPriority"].Value,
+        PriorityLow = Localizer["PriorityLow"].Value,
+        PriorityMedium = Localizer["PriorityMedium"].Value,
+        PriorityHigh = Localizer["PriorityHigh"].Value,
+        DefaultDueInDays = Localizer["DefaultDueInDays"].Value,
+        DueInDaysValue = Localizer["DueInDaysValue"].Value,
+        NoDueDate = Localizer["NoDueDate"].Value,
+        Checklist = Localizer["Checklist"].Value,
+        ChecklistBound = Localizer["ChecklistBound"].Value,
+        ChecklistNone = Localizer["ChecklistNone"].Value,
+        LegalEntity = Localizer["LegalEntity"].Value,
+        LegalEntityAll = Localizer["LegalEntityAll"].Value,
+        AssignmentSelf = Localizer["AssignmentSelf"].Value,
+        AssignmentPool = Localizer["AssignmentPool"].Value
+    })
+</script>

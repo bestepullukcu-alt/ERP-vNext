@@ -10,9 +10,12 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 
 public sealed class TenantModuleEntitlementRepository : GlobalRepository<TenantModuleEntitlement>, ITenantModuleEntitlementRepository
 {
+    private readonly IPlatformDbContext _dbContext;
+
     public TenantModuleEntitlementRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
         : base(dbContext.Database, tenantContext, PlatformCollections.TenantModuleEntitlements)
     {
+        _dbContext = dbContext;
     }
 
     public async Task<TenantModuleEntitlement?> GetByIdAsync(Guid tenantId, Guid entitlementId, CancellationToken ct = default)
@@ -34,6 +37,27 @@ public sealed class TenantModuleEntitlementRepository : GlobalRepository<TenantM
         return await Collection.Find(filter)
             .Sort(Builders<TenantModuleEntitlement>.Sort.Ascending(x => x.ModuleCode).Ascending(x => x.Source))
             .ToListAsync(ct);
+    }
+
+    public Task<long> CountEnabledAsync(
+        IPlatformTransactionSession session,
+        Guid tenantId,
+        CancellationToken ct = default)
+    {
+        if (tenantId == Guid.Empty)
+        {
+            throw new ArgumentException("Tenant id is required.", nameof(tenantId));
+        }
+
+        var filter = Builders<TenantModuleEntitlement>.Filter.And(
+            ExecutionFilter,
+            Builders<TenantModuleEntitlement>.Filter.Eq(x => x.TenantId, tenantId),
+            Builders<TenantModuleEntitlement>.Filter.Eq(x => x.IsEnabled, true));
+
+        return Collection.CountDocumentsAsync(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            filter,
+            cancellationToken: ct);
     }
 
     public async Task<IReadOnlyList<TenantModuleEntitlement>> GetByTenantAndModuleAsync(Guid tenantId, string moduleCode, CancellationToken ct = default)
@@ -72,12 +96,12 @@ public sealed class TenantModuleEntitlementRepository : GlobalRepository<TenantM
         return await Collection.Find(Builders<TenantModuleEntitlement>.Filter.And(filters)).FirstOrDefaultAsync(ct);
     }
 
-    public async Task UpdateAsync(TenantModuleEntitlement entitlement, byte[]? expectedRowVersion, CancellationToken ct = default)
+    public async Task UpdateAsync(IPlatformTransactionSession session, TenantModuleEntitlement entitlement, byte[]? expectedRowVersion, CancellationToken ct = default)
     {
         var filters = new List<FilterDefinition<TenantModuleEntitlement>>
         {
             ExecutionFilter,
-            Builders<TenantModuleEntitlement>.Filter.Eq(x => x.TenantId, entitlement.TenantId),
+            Builders<TenantModuleEntitlement>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
             Builders<TenantModuleEntitlement>.Filter.Eq(x => x.Id, entitlement.Id)
         };
 
@@ -91,6 +115,7 @@ public sealed class TenantModuleEntitlementRepository : GlobalRepository<TenantM
         entitlement.RowVersion = Guid.NewGuid().ToByteArray();
 
         var result = await Collection.ReplaceOneAsync(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
             Builders<TenantModuleEntitlement>.Filter.And(filters),
             entitlement,
             cancellationToken: ct);
@@ -101,7 +126,7 @@ public sealed class TenantModuleEntitlementRepository : GlobalRepository<TenantM
         }
     }
 
-    public async Task SoftDeleteAsync(Guid tenantId, Guid entitlementId, byte[]? expectedRowVersion, CancellationToken ct = default)
+    public async Task SoftDeleteAsync(IPlatformTransactionSession session, Guid tenantId, Guid entitlementId, byte[]? expectedRowVersion, CancellationToken ct = default)
     {
         var filters = new List<FilterDefinition<TenantModuleEntitlement>>
         {
@@ -120,18 +145,55 @@ public sealed class TenantModuleEntitlementRepository : GlobalRepository<TenantM
             .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
             .Set(x => x.RowVersion, Guid.NewGuid().ToByteArray());
 
-        var result = await Collection.UpdateOneAsync(Builders<TenantModuleEntitlement>.Filter.And(filters), update, cancellationToken: ct);
+        var result = await Collection.UpdateOneAsync(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            Builders<TenantModuleEntitlement>.Filter.And(filters),
+            update,
+            cancellationToken: ct);
         if (result.MatchedCount == 0)
         {
             throw new TenantModuleEntitlementConcurrencyException();
         }
     }
 
-    public override async Task<TenantModuleEntitlement> CreateAsync(TenantModuleEntitlement entity, CancellationToken ct = default)
+    public async Task<TenantModuleEntitlement> CreateAsync(
+        IPlatformTransactionSession session,
+        TenantModuleEntitlement entity,
+        CancellationToken ct = default)
     {
+        // Platform actors (PlatformActor policy) operate cross-tenant: the middleware sets the platform
+        // context (TenantContext.TenantId == Guid.Empty) and the authoritative target tenant is carried on
+        // the entity itself (set by the handler from the route's {tenantId}). Only a genuine tenant-scoped
+        // caller must be pinned to its own tenant — comparing a platform actor's Guid.Empty context against a
+        // real target tenant would (and did) reject every manual entitlement add with a bogus concurrency error.
+        if (!TenantContext.IsPlatformContext && entity.TenantId != TenantContext.TenantId)
+        {
+            throw new TenantModuleEntitlementConcurrencyException();
+        }
+
         entity.ModuleCode = NormalizeModuleCode(entity.ModuleCode);
-        return await base.CreateAsync(entity, ct);
+        entity.IsDeleted = false;
+        await Collection.InsertOneAsync(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            entity,
+            cancellationToken: ct);
+        return entity;
     }
+
+    [Obsolete("Authoritative entitlement mutations require an explicit Platform transaction session.")]
+    public override Task<TenantModuleEntitlement> CreateAsync(TenantModuleEntitlement entity, CancellationToken ct = default) =>
+        throw new PlatformTransactionUnavailableException(
+            "Sessionless physical-entitlement mutation is disabled until the caller supplies the Platform transaction session.");
+
+    [Obsolete("Authoritative entitlement mutations require an explicit Platform transaction session.")]
+    public Task UpdateAsync(TenantModuleEntitlement entitlement, byte[]? expectedRowVersion, CancellationToken ct = default) =>
+        throw new PlatformTransactionUnavailableException(
+            "Sessionless physical-entitlement mutation is disabled until the caller supplies the Platform transaction session.");
+
+    [Obsolete("Authoritative entitlement mutations require an explicit Platform transaction session.")]
+    public Task SoftDeleteAsync(Guid tenantId, Guid entitlementId, byte[]? expectedRowVersion, CancellationToken ct = default) =>
+        throw new PlatformTransactionUnavailableException(
+            "Sessionless physical-entitlement mutation is disabled until the caller supplies the Platform transaction session.");
 
     private static string NormalizeModuleCode(string moduleCode) => moduleCode.Trim().ToUpperInvariant();
 }

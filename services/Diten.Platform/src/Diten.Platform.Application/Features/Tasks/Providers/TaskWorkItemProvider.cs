@@ -221,6 +221,15 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          * subordinate's load. Showing it under a manager's team view would count work that may never land there.
          */
         List<TaskItem> tasks;
+        /*
+         * BL-016 — the ids that reached this page ONLY because the actor OPENED the work, and holds no other
+         * relationship to it. Empty for a Team read and for every task the actor holds or may claim.
+         *
+         * It has to be a set computed HERE rather than a per-task test later, because the question is not "did
+         * this person create it" (that is on the task) but "is creating it the ONLY reason this row is on the
+         * board" — and only the code that ran the three reads knows which one produced the row.
+         */
+        var initiatorOnly = new HashSet<Guid>();
         if (actor.Scope == WorkItemScope.Team)
         {
             var team = _teamResolver is null
@@ -243,8 +252,37 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             var positionIds = await ResolveActivePositionIdsAsync(actor.UserId, ct);
             var pooled = await _tasks.ListUnclaimedByPositionsAsync(positionIds, ct);
 
+            /*
+             * BL-016 — THE THIRD OWNERSHIP QUESTION: what did I start that somebody else is carrying.
+             *
+             * Neither read above can answer it. `mine` asks what the actor HOLDS and `pooled` asks what their
+             * positions are OFFERING; a task the actor opened and handed to a colleague appears in no query at
+             * all, which is why "where is the task I gave Ahmet" had, literally, no answer on this surface.
+             *
+             * ⚠ PRECEDENCE, MEASURED AND DELIBERATE. A task can satisfy two of these at once, and it must still
+             * belong to exactly ONE ownership tab — that is the surface's axis law. The order is:
+             *
+             *     hold it        → İşlerim / Gelen Kutusu   (mine)
+             *     may claim it   → Havuz                    (pooled)
+             *     opened it      → Başlattıklarım           (this read, and only what the first two did not take)
+             *
+             * Holding outranks having opened it: a task you assigned to yourself is YOUR WORK, not something you
+             * are watching somebody else do — put it in the Outbox and the reader would have to look in two
+             * places for work that is on their own desk. Claimable outranks it for the same reason in the other
+             * direction: `claim` is an action the reader can actually press, and the tab where the action lives
+             * is the tab the row belongs in.
+             *
+             * `Except` on the id set is what enforces that, so the DistinctBy below never has to choose.
+             */
+            var alreadyOnTheBoard = mine.Concat(pooled).Select(t => t.Id).ToHashSet();
+            var initiated = (await _tasks.ListByCreatorAsync(actor.UserId, ct))
+                .Where(t => !alreadyOnTheBoard.Contains(t.Id))
+                .ToList();
+            initiatorOnly = initiated.Select(t => t.Id).ToHashSet();
+
             tasks = mine
                 .Concat(pooled)
+                .Concat(initiated)
                 .DistinctBy(t => t.Id)
                 .ToList();
         }
@@ -411,7 +449,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     taskTypes,
                     fieldDefinitions,
                     personalByTask.GetValueOrDefault(t.Id),
-                    watchersByTask.GetValueOrDefault(t.Id, []));
+                    watchersByTask.GetValueOrDefault(t.Id, []),
+                    initiatorOnly.Contains(t.Id));
             })
             .ToList();
     }
@@ -443,7 +482,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         IReadOnlyDictionary<Guid, TaskType>? taskTypes = null,
         IReadOnlyDictionary<string, TaskFieldDefinition>? fieldDefinitions = null,
         TaskPersonalOverlay? personal = null,
-        IReadOnlyList<TaskWatcher>? watchers = null)
+        IReadOnlyList<TaskWatcher>? watchers = null,
+        // BL-016 — the actor OPENED this and holds no other relationship to it. Decided by GetWorkItemsAsync,
+        // the only code that knows which read produced the row; see the precedence note there.
+        bool initiatorOnly = false)
     {
         var assignment = _assignmentResolver.Resolve(task);
         var normalized = _lifecycle.ToNormalizedStatus(
@@ -462,8 +504,19 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // actions may be offered — and the contract requires every blocked action to be present and disabled,
         // never hidden. A hidden button teaches the reader nothing about why the work will not move.
         var dependencies = ToDependencies(task, edges ?? [], edgeTasks);
+        /*
+         * The task's TYPE, resolved ONCE. Three things below need it — the outcome dictionary the picker offers,
+         * the label on the closure record, and the label on each closing transition in the feed — and resolving
+         * it three times is how the three come to disagree about a type that was retired mid-page.
+         */
+        var resolvedType = task.TaskTypeId is { } resolvedTypeId
+            && taskTypes?.TryGetValue(resolvedTypeId, out var found) == true
+                ? found
+                : null;
+
         var activity = ToActivity(
-            comments ?? [], transitions ?? [], displayNames, actor.UserId, fieldDefinitions, _permissions);
+            comments ?? [], transitions ?? [], displayNames, actor.UserId, fieldDefinitions, _permissions,
+            resolvedType);
 
         /*
          * THE FOUR CONDITIONAL CONTAINERS, DECIDED ONCE.
@@ -506,7 +559,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
 
         var (built, primaryActionCode, overflowActionCodes) = terminal
             ? ([], null, (IReadOnlyList<string>)[])
-            : BuildActions(task, actor, checklistBlocks, approvalOutstanding, reviewOutstanding, reviewRejected);
+            : BuildActions(
+                task, actor, checklistBlocks, approvalOutstanding, reviewOutstanding, reviewRejected,
+                initiatorOnly);
 
         /*
          * Apply the blocks LAST, as a rewrite over whatever was offered. Done here rather than inside BuildActions
@@ -636,8 +691,19 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
              * projects no type rather than an id with an empty name — a half-identity on screen is worse than
              * none, and this repository has paid for that shape before.
              */
-            TaskType: task.TaskTypeId is { } typeId && taskTypes?.TryGetValue(typeId, out var taskType) == true
-                ? new WorkItemTaskTypeDto(taskType.Id.ToString(), taskType.Code, taskType.Name)
+            TaskType: resolvedType is { } taskType
+                ? new WorkItemTaskTypeDto(
+                    taskType.Id.ToString(),
+                    taskType.Code,
+                    taskType.Name,
+                    /*
+                     * The two halves of the outcome dictionary, already split by disposition so the dialog does
+                     * not re-derive the filter. Null rather than an empty list when this type asks nothing —
+                     * that absence IS the backward-compatible path, and the client reads it as "close the way
+                     * you always did".
+                     */
+                    ToClosureOutcomes(taskType, TaskClosureDisposition.Completed),
+                    ToClosureOutcomes(taskType, TaskClosureDisposition.Cancelled))
                 : null,
             Pool: ToPool(task, poolLabels),
             BusinessContext: businessContext,
@@ -665,6 +731,22 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
              * a number rather than quoting one.
              */
             ClosedAt: terminal ? task.CompletedAt ?? task.CancelledAt : null,
+            /*
+             * WHAT WAS DECIDED, beside WHEN it ended. Resolved against the type's CURRENT dictionary, so an
+             * outcome that has since been retired yields the bare code rather than a blank — see WorkItemClosureDto.
+             */
+            Closure: terminal ? ToClosure(task, resolvedType) : null,
+            /*
+             * WHERE THIS CAME FROM — and it travels for a CLOSED task too, deliberately.
+             *
+             * The chip is a triage signal and the shell hides it on finished work; there is nothing to triage on
+             * a task nobody has to pick up. But the DETAIL page of a closed task answers a different question —
+             * what happened to this work — and "it came back twice before it was finished" is a real part of
+             * that answer. Withholding the fact here would decide the second question with the first one's
+             * reasoning, and the projection has no business doing that: it states what is true, the surface
+             * decides what is worth showing. (Same split `closedAt` gets: emitted as fact, drawn selectively.)
+             */
+            Returned: ToReturned(transitions),
             /*
              * WHAT THE WORK IS. The form has collected these four since Phase 1 and none of them reached the
              * Task Center, so the detail page could say a task was fifteen days overdue without saying what it
@@ -717,7 +799,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 // NULL and EMPTY are different answers here — "nobody chose, so everything is sent" versus "the
                 // owner chose nothing". Normalising either into the other would silence a task or invent a choice.
                 task.NotifyOnEvents is null ? null : task.NotifyOnEvents.ToList()),
-            ReminderLeadDays: task.ReminderLeadDays);
+            ReminderLeadDays: task.ReminderLeadDays,
+            // BL-016 — stated ONLY when the shell cannot work it out for itself; see the DTO for why the holder
+            // and pool cases are deliberately silent.
+            ViewerRelation: initiatorOnly ? WorkItemContract.ViewerRelationInitiator : null);
     }
 
     /// <summary>
@@ -1284,13 +1369,114 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         }).ToList();
     }
 
+    /// <summary>
+    /// The RETURN signal, derived from the history this page has ALREADY read.
+    ///
+    /// <para>⚠ NO REPOSITORY CALL. <c>transitions</c> is the list <c>GetWorkItemsAsync</c> batched for the whole
+    /// page in one read (see the comment on that read), and it is already a parameter here because the activity
+    /// feed needs it. Asking a repository for the same rows again would put an N+1 back across every row on
+    /// screen — the exact cost that batch exists to avoid — for a fact already in memory.</para>
+    ///
+    /// <para>The LAST return, not the first: a task returned twice is telling the story of the most recent one,
+    /// and the count beside it says the earlier ones happened.</para>
+    /// </summary>
+    private static WorkItemReturnedDto? ToReturned(IReadOnlyList<TaskTransition>? transitions)
+    {
+        if (transitions is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        var returns = transitions
+            .Where(transition => transition.Kind == TaskTransitionKind.Returned)
+            .ToList();
+
+        if (returns.Count == 0)
+        {
+            // The overwhelming majority. Null rather than a zero-count object: "never returned" is an absence,
+            // and an object saying `count: 0` is a signal that has to be inspected before it can be ignored.
+            return null;
+        }
+
+        var latest = returns.MaxBy(transition => transition.CreatedAt)!;
+
+        return new WorkItemReturnedDto(
+            latest.CreatedAt,
+            /*
+             * DISPLAY, never a resource key: this is the returner's own sentence. Omitted when blank rather than
+             * sent as an empty label — the handler requires a reason, so a blank one means a row written before
+             * that rule or by something else, and an empty quotation reads as though nobody said anything.
+             */
+            string.IsNullOrWhiteSpace(latest.Reason) ? null : WorkItemLabelDto.Display(latest.Reason),
+            returns.Count);
+    }
+
+    /// <summary>
+    /// The outcomes a type offers for ONE closure, as the picker's rows — or NULL when it offers none.
+    ///
+    /// <para>Null rather than an empty list, and the difference is load-bearing: the client reads absence as "this
+    /// type asks nothing, close it the way you always did", which is the state every task type written before the
+    /// dictionary existed is in. An empty array would promise a picker and then draw no rows.</para>
+    /// </summary>
+    private static IReadOnlyList<WorkItemClosureOutcomeDto>? ToClosureOutcomes(
+        TaskType type, TaskClosureDisposition disposition)
+    {
+        var offered = TaskTypeRules.OutcomesFor(type, disposition);
+        return offered.Count == 0
+            ? null
+            : offered
+                .Select(outcome => new WorkItemClosureOutcomeDto(
+                    outcome.Code, OutcomeLabel(outcome), outcome.RequiresReason))
+                .ToList();
+    }
+
+    /// <summary>
+    /// One outcome's label, in the contract's own discriminated shape — a SYSTEM outcome as a resource key the
+    /// reader's language resolves, a TENANT outcome as the words its administrator typed.
+    ///
+    /// <para>No third branch and no fallback to the code: <c>TaskTypeRules.NormalizeClosureOutcomes</c> refuses an
+    /// outcome carrying neither label, so an entry reaching here without one cannot have been stored by this
+    /// engine. If one ever does, the display half prints the code, which is the honest answer.</para>
+    /// </summary>
+    private static WorkItemLabelDto OutcomeLabel(TaskClosureOutcome outcome) =>
+        string.IsNullOrWhiteSpace(outcome.LabelResourceKey)
+            ? WorkItemLabelDto.Display(
+                string.IsNullOrWhiteSpace(outcome.LabelText) ? outcome.Code : outcome.LabelText)
+            : WorkItemLabelDto.Resource(outcome.LabelResourceKey);
+
+    /// <summary>
+    /// The closure record: the stored code, plus its words when the type still offers that outcome.
+    ///
+    /// <para>A code with no matching outcome keeps the code and loses only the label — see
+    /// <see cref="WorkItemClosureDto"/> for why that beats blanking the record of a retired outcome.</para>
+    /// </summary>
+    private static WorkItemClosureDto? ToClosure(TaskItem task, TaskType? type) =>
+        string.IsNullOrWhiteSpace(task.ClosureReasonCode)
+            ? null
+            : new WorkItemClosureDto(task.ClosureReasonCode, ResolveOutcomeLabel(type, task.ClosureReasonCode));
+
+    /// <summary>The label for a stored code, or null when the type does not (or no longer) offers it.</summary>
+    private static WorkItemLabelDto? ResolveOutcomeLabel(TaskType? type, string? reasonCode)
+    {
+        var code = (reasonCode ?? string.Empty).Trim();
+        if (code.Length == 0 || type?.ClosureOutcomes is not { Count: > 0 } outcomes)
+        {
+            return null;
+        }
+
+        var match = outcomes.FirstOrDefault(outcome =>
+            string.Equals(outcome.Code, code, StringComparison.OrdinalIgnoreCase));
+        return match is null ? null : OutcomeLabel(match);
+    }
+
     private static IReadOnlyList<WorkItemActivityEntryDto> ToActivity(
         IReadOnlyList<TaskComment> comments,
         IReadOnlyList<TaskTransition> transitions,
         IReadOnlyDictionary<Guid, string> displayNames,
         Guid actorUserId,
         IReadOnlyDictionary<string, TaskFieldDefinition>? fieldDefinitions,
-        IActorPermissionContext permissions)
+        IActorPermissionContext permissions,
+        TaskType? taskType)
         => comments
             .Select(comment => new WorkItemActivityEntryDto(
                 Id: comment.Id.ToString(),
@@ -1326,7 +1512,14 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     From: transition.FromLifecycle.ToString(),
                     To: transition.ToLifecycle.ToString(),
                     Reason: string.IsNullOrWhiteSpace(transition.Reason) ? null : transition.Reason,
-                    FieldChanges: ToFieldChanges(transition.FieldChanges, fieldDefinitions, permissions)))))
+                    FieldChanges: ToFieldChanges(transition.FieldChanges, fieldDefinitions, permissions),
+                    /*
+                     * Recorded since WC-1 and never projected: the feed carried the actor's words and dropped the
+                     * classification beside them. Both travel now — the code is what a report groups by, the
+                     * label is what the row reads as.
+                     */
+                    ReasonCode: string.IsNullOrWhiteSpace(transition.ReasonCode) ? null : transition.ReasonCode,
+                    Outcome: ResolveOutcomeLabel(taskType, transition.ReasonCode)))))
             .OrderByDescending(entry => entry.At)
             .ThenByDescending(entry => entry.Id)
             .ToList();
@@ -1441,17 +1634,69 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             bool checklistBlocks,
             bool approvalOutstanding,
             bool reviewOutstanding,
-            bool reviewRejected)
+            bool reviewRejected,
+            bool initiatorOnly = false)
     {
         var actions = new List<WorkItemActionDto>();
         string? primary = null;
 
         var isPool = task.AssignmentTarget == TaskAssignmentTarget.PositionPool;
         var unclaimed = isPool && task.AssigneeUserId is null;
+        // WHO THE ACTOR IS TO THIS TASK. Read up here rather than beside their first use because the outbox
+        // branch below turns on exactly these, and two places deciding "am I the requester" is one place too many.
+        var isRequester = task.CreatedByUserId is not null && task.CreatedByUserId == actor.UserId;
+        var isHolder = task.AssigneeUserId == actor.UserId;
+        var hasSeparateRequester = task.CreatedByUserId is not null && task.CreatedByUserId != task.AssigneeUserId;
         var openOrPlanned = task.Lifecycle is TaskLifecycle.Open or TaskLifecycle.Planned;
         // An approval-gated task is visible but not startable — MOD-0023 must release it first (pack §12 K2).
         // Read from MOD-0023, not from the flag: once approved this is false and `start` becomes enabled.
         var approvalPending = approvalOutstanding && openOrPlanned;
+
+        /*
+         * ── BL-016 · THE OUTBOX IS AN OBSERVATIONAL SURFACE ──────────────────────────────────────────────
+         *
+         * The actor OPENED this work and does not hold it — somebody else does. What may be offered here is
+         * decided by ONE question: is this act the requester's, or the holder's?
+         *
+         * OFFERED (the requester's own levers, both already enforced on the server):
+         *   cancel   — TransitionTaskItemHandler answers a non-requester's /cancel with 403 CANCEL_NOT_REQUESTER,
+         *              so this is the one act whose authority the engine already ties to whoever asked for the work.
+         *   reassign — "this is with the wrong person" is the requester's correction, and the gate below already
+         *              reads `isHolder || isRequester`. It leads the row: cancel is destructive and a destructive
+         *              act must never be the primary button.
+         *
+         * WITHHELD, and this is the point of the branch — accept · start · resume · complete · submitReview ·
+         * plan · inquire · claim · release · return. Every one of them is a HOLDER's act, and BuildActions gates
+         * them on lifecycle and permission ONLY. Measured before this branch existed: an Open task the actor
+         * created and assigned to a colleague came back offering `accept` as its primary button. The server
+         * refuses the write, so nothing would have broken — but a button that exists to be pressed and answers
+         * 403 is worse than no button, and "the server will catch it" is not a reason to draw it.
+         *
+         * ⚠ WITHHELD, NOT DISABLED, and the difference is deliberate. This card's usual rule is to grey an action
+         * and state the reason, because a blocked act is still the reader's act. These are not: they are somebody
+         * else's work. A greyed `Tamamla` on every outbox row would say "you could finish this if only…", and the
+         * honest sentence — "this is not yours" — is the ROW, not a tooltip on ten dead buttons.
+         *
+         * ⚠ RECALL (geri çağırma) IS NOT HERE. Taking work back from its holder is a real verb with a real
+         * transition and no endpoint behind it today; the spec puts it at v1.5. Projecting it would be the
+         * mock-era failure this provider's own remarks refuse — an action with nothing behind it.
+         */
+        if (initiatorOnly)
+        {
+            var outbox = new List<WorkItemActionDto>();
+            string? outboxPrimary = null;
+
+            // A pooled task has no holder to correct, so reassign is not offered on one — the same rule the
+            // holder's path applies, read from the same condition.
+            if (!isPool)
+            {
+                outbox.Add(ReassignAction(task, actor));
+                outboxPrimary = "reassign";
+            }
+
+            outbox.Add(CancelAction(actor));
+            return (outbox, outboxPrimary, outbox.Select(a => a.Code).Where(c => c != outboxPrimary).ToList());
+        }
 
         if (unclaimed)
         {
@@ -1611,10 +1856,6 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          * `reassign` is the holder's (delegating) or the requester's (correcting). It is never offered on pooled
          * work: a pool is claimed and released, and naming a holder it does not have would contradict that.
          */
-        var isRequester = task.CreatedByUserId is not null && task.CreatedByUserId == actor.UserId;
-        var isHolder = task.AssigneeUserId == actor.UserId;
-        var hasSeparateRequester = task.CreatedByUserId is not null && task.CreatedByUserId != task.AssigneeUserId;
-
         if (!isPool && isHolder && hasSeparateRequester)
         {
             actions.Add(Build("return", ActionReturnKey, actor.Has(TaskPermissions.Update), requiresReason: true));
@@ -1622,20 +1863,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
 
         if (!isPool && (isHolder || isRequester))
         {
-            /*
-             * ⚠ DISABLED WITH A REASON, never withheld. This card's rule is that an action whose reason cannot be
-             * stated is not drawn at all — and here the reason is plain ("this task may not be delegated"), so
-             * the button is drawn, greyed, and explains itself. Hiding it would leave the holder wondering why a
-             * task they hold cannot be handed on.
-             *
-             * The task's own policy is checked BEFORE the permission: "nobody may delegate this" outranks "you
-             * may not delegate", and reporting the permission first would send a reader after an authority that
-             * would never help.
-             */
-            actions.Add(!task.DelegationAllowed
-                ? Disabled("reassign", ActionReassignKey,
-                    TaskReasonCodes.DelegationNotAllowed, DisabledDelegationKey)
-                : Build("reassign", ActionReassignKey, actor.Has(TaskPermissions.Assign), requiresReason: true));
+            // Drawn-and-greyed rather than hidden when the task forbids delegation — see ReassignAction.
+            actions.Add(ReassignAction(task, actor));
         }
 
         // Only a pooled task that someone has taken can be handed back to the pool.
@@ -1665,8 +1894,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          */
         if (isRequester || actor.Has(TaskPermissions.Delete))
         {
-            actions.Add(Build("cancel", ActionCancelKey, actor.Has(TaskPermissions.Cancel),
-                requiresConfirmation: true, riskLevel: "destructive"));
+            actions.Add(CancelAction(actor));
         }
 
         // Everything that is not the primary belongs in the overflow menu, in the order built above.
@@ -1677,6 +1905,36 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
 
         return (actions, primary, overflow);
     }
+
+    /// <summary>
+    /// Handing work on — the holder's (delegating) or the requester's (correcting).
+    ///
+    /// <para>⚠ DISABLED WITH A REASON, never withheld. This card's rule is that an action whose reason cannot be
+    /// stated is not drawn at all — and here the reason is plain ("this task may not be delegated"), so the button
+    /// is drawn, greyed, and explains itself. Hiding it would leave the holder wondering why a task they hold
+    /// cannot be handed on.</para>
+    ///
+    /// <para>The task's own policy is checked BEFORE the permission: "nobody may delegate this" outranks "you may
+    /// not delegate", and reporting the permission first would send a reader after an authority that would never
+    /// help.</para>
+    ///
+    /// <para>One factory rather than one construction per caller: the holder's path and BL-016's outbox path both
+    /// offer this act, and two copies would be free to drift on the policy-before-permission order.</para>
+    /// </summary>
+    private static WorkItemActionDto ReassignAction(TaskItem task, WorkItemActor actor)
+        => !task.DelegationAllowed
+            ? Disabled("reassign", ActionReassignKey,
+                TaskReasonCodes.DelegationNotAllowed, DisabledDelegationKey)
+            : Build("reassign", ActionReassignKey, actor.Has(TaskPermissions.Assign), requiresReason: true);
+
+    /// <summary>
+    /// Calling the work off — the REQUESTER's right, not the assignee's (see the caller for the authority rule and
+    /// for why administrative cancellation is bound to the delete permission). Shared with BL-016's outbox path for
+    /// the same reason <see cref="ReassignAction"/> is.
+    /// </summary>
+    private static WorkItemActionDto CancelAction(WorkItemActor actor)
+        => Build("cancel", ActionCancelKey, actor.Has(TaskPermissions.Cancel),
+            requiresConfirmation: true, riskLevel: "destructive");
 
     private static WorkItemActionDto Build(
         string code,

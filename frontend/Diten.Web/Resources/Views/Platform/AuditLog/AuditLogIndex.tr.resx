@@ -144,6 +144,7 @@
   <data name="AuditLog.Category.DataPrivacy" xml:space="preserve"><value>Veri Gizliligi</value></data>
   <data name="AuditLog.Category.Integration" xml:space="preserve"><value>Entegrasyon</value></data>
   <data name="AuditLog.Category.System" xml:space="preserve"><value>Sistem</value></data>
+  <data name="AuditLog.Category.PortfolioDelivery" xml:space="preserve"><value>Portföy Teslimatı</value></data>
   <data name="AuditLog.Operation.Create" xml:space="preserve"><value>Olustur</value></data>
   <data name="AuditLog.Operation.Update" xml:space="preserve"><value>Guncelle</value></data>
   <data name="AuditLog.Operation.Delete" xml:space="preserve"><value>Sil</value></data>
@@ -159,6 +160,7 @@
   <data name="AuditLog.Operation.Logout" xml:space="preserve"><value>Cikis</value></data>
   <data name="AuditLog.Operation.PermissionDenied" xml:space="preserve"><value>Yetki Reddedildi</value></data>
   <data name="AuditLog.Operation.Execute" xml:space="preserve"><value>Calistir</value></data>
+  <data name="AuditLog.Operation.LifecycleTransition" xml:space="preserve"><value>Yaşam Döngüsü Geçişi</value></data>
   <data name="Common.Active" xml:space="preserve"><value>Aktif</value></data>
   <data name="Common.Passive" xml:space="preserve"><value>Pasif</value></data>
   <data name="Common.Unknown" xml:space="preserve"><value>Bilinmiyor</value></data>

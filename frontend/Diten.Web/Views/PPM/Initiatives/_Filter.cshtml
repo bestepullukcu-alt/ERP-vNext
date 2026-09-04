@@ -1,0 +1,8 @@
+@using Diten.Web.Views.PPM.Initiatives
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<InitiativesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+<div id="inlineFilterHost" class="px-3"><div id="inlineFilterCollapse" class="collapse pt-0 pb-3"><div class="card card-body border shadow-none"><div class="row g-3 align-items-end">
+ <div class="col-12 col-md-5"><label for="filterLifecycle" class="form-label">@Localizer["LifecycleState"]</label><select id="filterLifecycle" class="form-select" multiple data-placeholder="@SharedLocalizer["ShowAll"]"></select></div>
+ <div class="col-12 col-md-auto ms-md-auto d-flex gap-2"><button id="btnFilterReset" type="button" class="btn btn-label-secondary">@SharedLocalizer["Reset"]</button><button id="btnFilterApply" type="button" class="btn btn-primary">@SharedLocalizer["Apply"]</button></div>
+</div></div></div></div>

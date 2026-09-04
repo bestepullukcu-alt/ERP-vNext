@@ -1,0 +1,25 @@
+@using Diten.Web.Views.PPM.Initiatives
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<InitiativesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+<script id="ppm-initiative-l10n" type="application/json">@Json.Serialize(new {
+ AddNew = Localizer["AddNewInitiative"].Value, EditTitle = Localizer["EditInitiative"].Value,
+ Loading = Localizer["InitiativesLoadingState"].Value, Empty = Localizer["InitiativesEmptyState"].Value, Error = Localizer["InitiativesErrorState"].Value,
+ ClassificationUnavailable = Localizer["ClassificationUnavailable"].Value, LifecycleUnavailable = Localizer["LifecycleUnavailable"].Value,
+ ValidationError = Localizer["ValidationError"].Value, Unauthorized = Localizer["Unauthorized"].Value, Forbidden = Localizer["Forbidden"].Value,
+ NotFound = Localizer["NotFound"].Value, Conflict = Localizer["Conflict"].Value, DependencyUnavailable = Localizer["DependencyUnavailable"].Value,
+ CreateSuccessor = Localizer["CreateSuccessor"].Value, RelatedRecords = Localizer["RelatedRecords"].Value,
+ CompletionSummary = Localizer["CompletionSummary"].Value, Outcome = Localizer["Outcome"].Value, ClosureReason = Localizer["ClosureReason"].Value,
+ BenefitDisposition = Localizer["BenefitDisposition"].Value, Reason = Localizer["Reason"].Value, RecordNotReady = Localizer["RecordNotReady"].Value,
+ ActionForbidden = Localizer["ActionForbidden"].Value, ActionDependencyUnavailable = Localizer["ActionDependencyUnavailable"].Value,
+ States = new { Proposed = Localizer["LifecycleProposed"].Value, Active = Localizer["LifecycleActive"].Value, OnHold = Localizer["LifecycleOnHold"].Value, Completed = Localizer["LifecycleCompleted"].Value, Cancelled = Localizer["LifecycleCancelled"].Value },
+ Search = SharedLocalizer["Search"].Value, Export = SharedLocalizer["Export"].Value, Import = SharedLocalizer["Import"].Value, Filter = SharedLocalizer["Filter"].Value,
+ Reset = SharedLocalizer["Reset"].Value, ShowAll = SharedLocalizer["ShowAll"].Value, Status = SharedLocalizer["Status"].Value,
+ SaveView = SharedLocalizer["SaveView"].Value, ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value, ViewDetails = SharedLocalizer["ViewDetails"].Value,
+ Active = SharedLocalizer["Active"].Value, Passive = SharedLocalizer["Passive"].Value, Unknown = SharedLocalizer["Unknown"].Value,
+ Actions = SharedLocalizer["ViewDetails"].Value, QuickView = SharedLocalizer["ViewDetails"].Value,
+ BulkDelete = SharedLocalizer["BulkDelete"].Value, BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+ Edit = SharedLocalizer["EditRecord"].Value, Delete = SharedLocalizer["Delete"].Value, Cancel = SharedLocalizer["Cancel"].Value,
+ Save = SharedLocalizer["Save"].Value, Apply = SharedLocalizer["Apply"].Value, AreYouSure = SharedLocalizer["AreYouSure"].Value,
+ RecordSaved = SharedLocalizer["RecordSaved"].Value, RecordDeleted = SharedLocalizer["RecordDeleted"].Value, NotAvailable = SharedLocalizer["NotAvailable"].Value
+})</script>

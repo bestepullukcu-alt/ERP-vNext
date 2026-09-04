@@ -209,8 +209,26 @@
         if (Number.isNaN(dueDay.getTime()) || Number.isNaN(closedDay.getTime())) { return null; }
         return Math.round((dueDay - closedDay) / 86400000);
     };
+    /*
+     * WHICH OWNERSHIP TAB A ROW BELONGS IN. Exactly one, always — that is what makes the tab bar an axis rather
+     * than five filters.
+     *
+     * ⚠ THE ORDER IS THE RULE (BL-016). `viewerRelation === 'initiator'` is tested AFTER terminal and BEFORE
+     * everything else, and each of those two placements was decided, not defaulted:
+     *
+     *   after terminal  — the server never sends `initiator` on finished work (ListByCreatorAsync excludes it),
+     *                     so this changes nothing today. It is written in this order anyway so that the day
+     *                     closed initiated work does arrive, it lands in History with the rest of the past
+     *                     instead of sitting in the Outbox forever.
+     *   before the rest — because the SERVER already applied the precedence. `initiator` means "the reader holds
+     *                     no other relationship to this": not the assignee, not eligible to claim it. Re-deciding
+     *                     that here off `admissionState` would send an unclaimable pooled row to Havuz, under a
+     *                     `claim` button the reader cannot press — which is the 403-by-invitation this round
+     *                     exists to remove.
+     */
     const tabFor = (item) => {
         if (['Done', 'Cancelled'].includes(item.normalizedStatus)) { return 'history'; }
+        if (item.viewerRelation === 'initiator') { return 'baslattiklarim'; }
         if (item.admissionState === 'pendingClaim' || item.admissionState === 'pendingOffer') { return 'havuz'; }
         if (item.admissionState === 'pendingAcceptance') { return 'inbox'; }
         // Act-directly intents (approval/review/issue/exception) awaiting the viewer's
@@ -341,6 +359,18 @@
             if (item.assignee?.isCurrentUser) { item.viewerRole = 'Owner'; }
             else if (item.requester?.isCurrentUser) { item.viewerRole = 'Creator'; }
         }
+        /*
+         * ⚠ RECORDED BEFORE THE NEXT LINE DESTROYS IT.
+         *
+         * `personName()` replaces the person OBJECT with a display STRING, so `requester.isCurrentUser` — the
+         * only thing the server states for certain about who raised this work — exists for exactly these few
+         * lines. A surface that asks the question later gets `undefined` from a string and silently renders
+         * nothing; that is how the row's edit link first shipped inert.
+         *
+         * `viewerRole` above is NOT this fact. It is an if/else, so a task the viewer both raised and owns
+         * reports 'Owner' — the common case, and the one this flag has to keep saying yes to.
+         */
+        item.raisedByViewer = !!item.requester?.isCurrentUser;
         // A person is { id, displayName } — fixtures carry the name, the real projection cannot yet resolve it
         // (no user-directory seam in Platform), so fall back to "Me" for the caller and to a plain
         // name-unavailable label for anyone else. Never render a raw user GUID.
@@ -348,12 +378,6 @@
         item.assignee = personName(item.assignee);
         item.scope = item.delegationContext ? 'onBehalf' : 'mine';
         item.delegator = item.delegationContext?.displayName || null;
-        // A group is shown only when something actually NAMES one. The projection carries no pool identity — a
-        // real item says only assignmentMode:"groupQueue", never WHICH queue — so deriving a name from that flag
-        // meant labelling genuine CFO-pool work "Operasyon Kuyruğu", a queue that does not exist. Nothing is
-        // synthesized any more: buildGroupSelector then renders nothing, and the Havuz tab stops asserting a team
-        // it cannot know. Giving the provider a pool-identity field is WC-3 contract work (BL-031 a/b), NOT this
-        // slice. A showcase fixture may still declare its own `group` and keep it; none does today.
         /*
          * WHICH queue this work waits in. It now comes from the projection (WC-3 / BL-031): `pool.label` is the
          * position joined to its organization unit, resolved server-side.

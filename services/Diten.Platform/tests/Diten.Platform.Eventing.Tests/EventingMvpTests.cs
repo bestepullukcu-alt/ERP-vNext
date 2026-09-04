@@ -7,6 +7,8 @@ using Diten.Platform.Infrastructure.Eventing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit;
+using PlatformEventTransportMessage = Diten.Platform.Application.Contracts.Eventing.EventTransportMessage;
+using PlatformEventTransportPublisher = Diten.Platform.Application.Contracts.Eventing.IEventTransportPublisher;
 
 namespace Diten.Platform.Eventing.Tests;
 
@@ -65,6 +67,122 @@ public sealed class EventingMvpTests
         Assert.Equal(correlationId, stored.CorrelationId);
         Assert.Equal(causationId, stored.CausationId);
         Assert.Equal(OutboxEventStatus.Pending, stored.Status);
+    }
+
+    [Fact]
+    public async Task CanonicalPublish_PersistsExactUtf8AndTrustedMetadataWithoutReserialization()
+    {
+        var outbox = new InMemoryOutboxEventRepository();
+        var canonicalBytes = System.Text.Encoding.UTF8.GetBytes("{\"z\":\"é\",\"a\":1}");
+        var provider = new FixedTrustedMetadataProvider(
+            new TrustedTransportMetadata(
+            [
+                new(TrustedTransportMetadata.SignatureSchemeHeader, "hmac-sha256-v1"),
+                new(TrustedTransportMetadata.KeyIdHeader, "ppm-review-key"),
+                new(TrustedTransportMetadata.SignatureHeader, new string('a', 64))
+            ]));
+        var bus = new EventBus(
+            outbox,
+            new EventPayloadContractValidator(),
+            Options.Create(new EventBusOptions { Producer = "Diten.Platform.Tests", MaxCanonicalPayloadBytes = 128 }),
+            NullLogger<EventBus>.Instance,
+            provider);
+
+        await bus.PublishAsync(new CanonicalTestEvent(canonicalBytes));
+
+        var stored = Assert.Single(outbox.Items);
+        Assert.Equal(canonicalBytes, System.Text.Encoding.UTF8.GetBytes(stored.PayloadJson));
+        Assert.Equal("hmac-sha256-v1", stored.TransportHeaders[TrustedTransportMetadata.SignatureSchemeHeader]);
+        Assert.Equal("ppm-review-key", stored.TransportHeaders[TrustedTransportMetadata.KeyIdHeader]);
+        Assert.Equal(new string('a', 64), stored.TransportHeaders[TrustedTransportMetadata.SignatureHeader]);
+    }
+
+    [Fact]
+    public async Task SameEventIdAndImmutableContent_IsIdempotent_ButDifferentBytesConflict()
+    {
+        var outbox = new InMemoryOutboxEventRepository();
+        var eventId = Guid.NewGuid();
+        var occurredAt = DateTimeOffset.UtcNow;
+        var options = new EventPublishOptions
+        {
+            EventId = eventId,
+            CorrelationId = Guid.NewGuid(),
+            OccurredAtUtc = occurredAt
+        };
+        var bus = CreateEventBus(outbox);
+
+        await bus.PublishAsync(new CanonicalTestEvent(System.Text.Encoding.UTF8.GetBytes("{\"a\":1}")), options);
+        await bus.PublishAsync(new CanonicalTestEvent(System.Text.Encoding.UTF8.GetBytes("{\"a\":1}")), options);
+
+        Assert.Single(outbox.Items);
+        await Assert.ThrowsAsync<EventOutboxConflictException>(() =>
+            bus.PublishAsync(new CanonicalTestEvent(System.Text.Encoding.UTF8.GetBytes("{\"a\":2}")), options));
+    }
+
+    [Theory]
+    [InlineData("X-Unknown", "value")]
+    [InlineData("X-Diten-Event-Signature", "line\r\nbreak")]
+    [InlineData(" X-Diten-Event-Signature", "value")]
+    public void TrustedMetadata_InvalidNameOrValue_FailsClosed(string name, string value)
+    {
+        Assert.Throws<EventValidationException>(() => new TrustedTransportMetadata([new(name, value)]));
+    }
+
+    [Fact]
+    public void TrustedMetadata_DuplicateAndOversizedValues_FailClosed()
+    {
+        Assert.Throws<EventValidationException>(() =>
+            new TrustedTransportMetadata(
+            [
+                new(TrustedTransportMetadata.SignatureHeader, "a"),
+                new(TrustedTransportMetadata.SignatureHeader.ToLowerInvariant(), "b")
+            ]));
+        Assert.Throws<EventValidationException>(() =>
+            new TrustedTransportMetadata(
+            [
+                new(TrustedTransportMetadata.SignatureHeader, new string('a', TrustedTransportMetadata.MaxHeaderValueBytes + 1))
+            ]));
+        Assert.Throws<EventValidationException>(() =>
+            new TrustedTransportMetadata(
+            [
+                new(TrustedTransportMetadata.SignatureSchemeHeader, "hmac-sha256-v1")
+            ]));
+    }
+
+    [Fact]
+    public async Task UnsignedEvent_StillPublishesWithNoTrustedHeaders()
+    {
+        var outbox = new InMemoryOutboxEventRepository();
+        var bus = CreateEventBus(outbox);
+
+        await bus.PublishAsync(new TenantActivatedV1(Guid.NewGuid(), DateTimeOffset.UtcNow, null));
+
+        Assert.Empty(Assert.Single(outbox.Items).TransportHeaders);
+    }
+
+    [Fact]
+    public void BusinessPublishOptions_CannotInjectTransportHeaders()
+    {
+        Assert.DoesNotContain(
+            typeof(EventPublishOptions).GetProperties(),
+            property => property.Name.Contains("Header", StringComparison.OrdinalIgnoreCase)
+                        || typeof(System.Collections.IDictionary).IsAssignableFrom(property.PropertyType));
+    }
+
+    [Fact]
+    public async Task CanonicalPayload_EmptyOversizedAndInvalidUtf8_FailClosedBeforePersistence()
+    {
+        var outbox = new InMemoryOutboxEventRepository();
+        var bus = new EventBus(
+            outbox,
+            new EventPayloadContractValidator(),
+            Options.Create(new EventBusOptions { Producer = "Diten.Platform.Tests", MaxCanonicalPayloadBytes = 4 }),
+            NullLogger<EventBus>.Instance);
+
+        await Assert.ThrowsAsync<EventValidationException>(() => bus.PublishAsync(new CanonicalTestEvent([])));
+        await Assert.ThrowsAsync<EventValidationException>(() => bus.PublishAsync(new CanonicalTestEvent([1, 2, 3, 4, 5])));
+        await Assert.ThrowsAsync<EventValidationException>(() => bus.PublishAsync(new CanonicalTestEvent([0xc3, 0x28])));
+        Assert.Empty(outbox.Items);
     }
 
     [Fact]
@@ -340,7 +458,7 @@ public sealed class EventingMvpTests
 
     private static OutboxPublisherProcessor CreateProcessor(
         IOutboxEventRepository outboxRepository,
-        IEventTransportPublisher transport,
+        PlatformEventTransportPublisher transport,
         RabbitMqEventingOptions? options = null)
     {
         return new OutboxPublisherProcessor(
@@ -397,12 +515,44 @@ public sealed class EventingMvpTests
         public int EventVersion => 1;
     }
 
+    private sealed class CanonicalTestEvent : ICanonicalIntegrationEvent
+    {
+        private readonly byte[] _bytes;
+
+        public CanonicalTestEvent(byte[] bytes)
+        {
+            _bytes = bytes;
+        }
+
+        public string EventName => "test.canonical.created.v1";
+        public int EventVersion => 1;
+        ReadOnlyMemory<byte> ICanonicalIntegrationEvent.CanonicalPayloadUtf8 => _bytes;
+    }
+
+    private sealed class FixedTrustedMetadataProvider : ITrustedTransportMetadataProvider
+    {
+        private readonly TrustedTransportMetadata _metadata;
+
+        public FixedTrustedMetadataProvider(TrustedTransportMetadata metadata)
+        {
+            _metadata = metadata;
+        }
+
+        public ValueTask<TrustedTransportMetadata> CreateAsync(
+            EventMetadata metadata,
+            ReadOnlyMemory<byte> canonicalPayloadUtf8,
+            CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(_metadata);
+        }
+    }
+
     private sealed class BaseEntity
     {
         public Guid Id { get; init; }
     }
 
-    private sealed class ThrowingTransportPublisher : IEventTransportPublisher
+    private sealed class ThrowingTransportPublisher : PlatformEventTransportPublisher
     {
         private readonly string _message;
 
@@ -411,7 +561,7 @@ public sealed class EventingMvpTests
             _message = message;
         }
 
-        public Task PublishAsync(EventTransportMessage message, CancellationToken cancellationToken = default)
+        public Task PublishAsync(PlatformEventTransportMessage message, CancellationToken cancellationToken = default)
         {
             throw new InvalidOperationException(_message);
         }
@@ -425,6 +575,26 @@ public sealed class EventingMvpTests
         {
             Items.Add(outboxEvent);
             return Task.CompletedTask;
+        }
+
+        public Task<EventOutboxWriteResult> EnqueueAsync(
+            EventOutboxWriteRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var candidate = OutboxEvent.FromWriteRequest(request);
+            var existing = Items.FirstOrDefault(item => item.EventId == candidate.EventId);
+            if (existing is null)
+            {
+                Items.Add(candidate);
+                return Task.FromResult(EventOutboxWriteResult.Inserted);
+            }
+
+            if (existing.HasSameImmutableContent(candidate))
+            {
+                return Task.FromResult(EventOutboxWriteResult.Duplicate);
+            }
+
+            throw new EventOutboxConflictException(candidate.EventId);
         }
 
         public Task<IReadOnlyList<OutboxEvent>> GetPendingAsync(DateTimeOffset nowUtc, int batchSize, CancellationToken cancellationToken = default)
@@ -469,6 +639,67 @@ public sealed class EventingMvpTests
             var count = Items.LongCount(x => x.Status == OutboxEventStatus.Pending
                                             || x.Status == OutboxEventStatus.Failed && x.NextAttemptAtUtc <= nowUtc);
             return Task.FromResult(count);
+        }
+
+        public async Task<EventOutboxPublishItem?> ClaimForPublishAsync(
+            DateTimeOffset nowUtc,
+            DateTimeOffset stalePublishingCutoffUtc,
+            CancellationToken cancellationToken = default)
+        {
+            var item = await ClaimNextAsync(nowUtc, stalePublishingCutoffUtc, cancellationToken);
+            if (item is null)
+            {
+                return null;
+            }
+
+            return new EventOutboxPublishItem(
+                new EventMetadata(
+                    item.EventId,
+                    item.EventName,
+                    item.EventVersion,
+                    item.CorrelationId,
+                    item.CausationId,
+                    item.TenantId,
+                    item.Producer,
+                    item.OccurredAtUtc),
+                System.Text.Encoding.UTF8.GetBytes(item.PayloadJson),
+                new TrustedTransportMetadata(item.TransportHeaders),
+                (EventOutboxDeliveryStatus)(int)item.Status,
+                item.AttemptCount,
+                item.LastError);
+        }
+
+        public Task CompletePublishAsync(Guid eventId, CancellationToken cancellationToken = default)
+        {
+            var item = Items.Single(candidate => candidate.EventId == eventId);
+            item.MarkPublished();
+            return Task.CompletedTask;
+        }
+
+        public Task FailPublishAsync(
+            Guid eventId,
+            string error,
+            DateTimeOffset nextAttemptAtUtc,
+            int maxAttempts,
+            CancellationToken cancellationToken = default)
+        {
+            var item = Items.Single(candidate => candidate.EventId == eventId);
+            item.MarkPublishFailed(error, nextAttemptAtUtc, maxAttempts);
+            return Task.CompletedTask;
+        }
+
+        public Task DeadLetterPublishAsync(
+            Guid eventId,
+            EventOutboxTerminalFailure failure,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(failure);
+            var item = Items.Single(candidate => candidate.EventId == eventId);
+            item.MarkPublishFailed(
+                $"{failure.Kind}:{failure.ReasonCode}:{failure.SafeDescription}",
+                DateTimeOffset.UtcNow,
+                maxAttempts: 1);
+            return Task.CompletedTask;
         }
     }
 

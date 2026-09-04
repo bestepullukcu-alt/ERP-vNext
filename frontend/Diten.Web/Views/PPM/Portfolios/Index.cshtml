@@ -1,0 +1,40 @@
+@using Diten.Web.Views.PPM.Portfolios
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PortfoliosIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["PortfoliosTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["TitleText"] = Localizer["PortfoliosTitle"].Value;
+    ViewData["PageDescription"] = Localizer["PageDescription"].Value;
+    ViewData["AddText"] = Localizer["AddNewPortfolio"].Value;
+    ViewData["EditTitleText"] = Localizer["EditPortfolio"].Value;
+    ViewData["CodeText"] = Localizer["Code"].Value;
+    ViewData["NameText"] = Localizer["Name"].Value;
+    ViewData["DescriptionText"] = Localizer["Description"].Value;
+    ViewData["LifecycleText"] = Localizer["LifecycleState"].Value;
+    ViewData["VisibilityText"] = Localizer["VisibilityPolicyKey"].Value;
+    ViewData["ReferenceabilityText"] = Localizer["Referenceability"].Value;
+    ViewData["ReferenceableText"] = Localizer["Referenceable"].Value;
+    ViewData["NotReferenceableText"] = Localizer["NotReferenceable"].Value;
+    ViewData["LoadingText"] = Localizer["PortfoliosLoadingState"].Value;
+    ViewData["EmptyText"] = Localizer["PortfoliosEmptyState"].Value;
+    ViewData["ErrorText"] = Localizer["PortfoliosErrorState"].Value;
+    ViewData["ParentText"] = SharedLocalizer["NotAvailable"].Value;
+    ViewData["ArchiveConfirmText"] = Localizer["ArchivePortfolioConfirmation"].Value;
+    var page = new Diten.Web.Models.PPM.PpmListPageViewModel {
+        Resource = "portfolios", Singular = "Portfolio", MarkerType = "PortfoliosIndex",
+        TitleKey = "PortfoliosTitle", AddKey = "AddNewPortfolio", EditKey = "EditPortfolio",
+        LifecycleStates = ["Draft", "Active", "Archived"], DefaultLifecycleState = "Draft"
+    };
+}
+@* Golden Slim contract marker: <partial name="_Filter" />. Runtime markup is composed by _ListShell.cshtml. *@
+@* Golden Slim contract marker: id="offcanvasDetailsPreview". Runtime markup is rendered by Shared/_DetailsQuickView.cshtml. *@
+<partial name="~/Views/PPM/Shared/_ListShell.cshtml" model="page" />
+@section Scripts {
+    @* Golden Slim contract marker: <partial name="_IndexL10n" />. *@
+    <partial name="~/Views/PPM/Portfolios/_IndexL10n.cshtml" />
+    <script src="~/assets/js/PPM/Portfolios/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/PPM/ppm-crud.js" asp-append-version="true"></script>
+    <script src="~/assets/js/PPM/Portfolios/index.js" asp-append-version="true"></script>
+}

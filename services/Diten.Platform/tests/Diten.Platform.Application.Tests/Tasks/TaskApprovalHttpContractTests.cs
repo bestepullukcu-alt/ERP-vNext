@@ -205,7 +205,7 @@ public sealed class TaskApprovalHttpContractTests
                 new FakeChecklistRunRepository(),
                 new TaskChecklistService(),
                 new WorkflowTransitionGate(mediator, NullLogger<WorkflowTransitionGate>.Instance),
-                new FakeTaskDependencyRepository(), new FakeTaskNotificationService(),
+                new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
                 NullLogger<TransitionTaskItemHandler>.Instance);
         }
 

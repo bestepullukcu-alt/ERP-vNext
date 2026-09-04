@@ -61,9 +61,33 @@
     const ROLE_KEY = { Owner: 'RoleOwner', Approver: 'RoleApprover', Reviewer: 'RoleReviewer', Creator: 'RoleCreator' };
 
     // Axis law (spec v3): OWNERSHIP→tab · STATUS→segment · TYPE→chip.
+    /*
+     * THE TAB STRIP, IN ORDER — and these two arrays are what RENDERS it (buildTabs) and what the URL
+     * whitelist validates against (STATE_VALUES.tab).
+     *
+     * ⚠ THEY USED TO BE DEAD. Both were declared here and read by nothing: the strip was built from a hand-typed
+     * literal `['inbox', 'islerim', 'havuz', 'history']` and the whitelist from a second copy of the same words.
+     * `workcenter-next-team-scope.test.js` guards the axis law by PARSING these arrays — so the one guard
+     * standing between this surface and a fifth tab was measuring two constants the running page never read.
+     * Adding a tab to the literal and not to the array would have left that guard green.
+     */
     const TABS_PRIMARY = ['inbox', 'islerim'];
-    const TABS_SECONDARY = ['havuz', 'history'];
-    const TAB_KEY = { inbox: 'TabInbox', islerim: 'TabMine', havuz: 'TabPool', history: 'TabHistory' };
+    const TABS_SECONDARY = ['havuz', 'baslattiklarim', 'history'];
+    const TABS = [...TABS_PRIMARY, ...TABS_SECONDARY];
+    /*
+     * ⚠ `baslattiklarim` — THE OUTBOX (BL-016) — IS AN OWNERSHIP TAB, WHICH IS WHY IT IS A TAB AT ALL.
+     *
+     * The axis law is unchanged: OWNERSHIP→tab · STATUS→segment · TYPE→chip. "What did I start that somebody
+     * else is carrying" is an ownership question — the third one, after "what do I hold" and "what may I take" —
+     * so it belongs on this axis and nowhere else. It is not a filter over İşlerim: nothing in İşlerim is in it.
+     *
+     * The shape is SAP's and Oracle's. SAP Business Workplace / Fiori My Inbox put the Outbox inside the same
+     * personal surface as the inbox; Oracle BPM Worklist calls the same view "Initiated Tasks". In both, "show me
+     * everything anyone started" is a DIFFERENT, permission-gated surface (SAP SWI1, Oracle Administrative
+     * Tasks). This is the first one. The second is not in this round and is not a widening of this tab.
+     */
+    const TAB_KEY = { inbox: 'TabInbox', islerim: 'TabMine', havuz: 'TabPool',
+        baslattiklarim: 'TabInitiated', history: 'TabHistory' };
     const SEGMENTS = { islerim: ['aktif', 'bekleyen', 'planli'] };
     const SEGMENT_KEY = { aktif: 'SegActive', bekleyen: 'SegWaiting', planli: 'SegPlanned' };
     /*
@@ -88,12 +112,15 @@
      * and `history` is finished: an item you snoozed and later completed must still appear in your own past.
      */
     const SNOOZE_TABS = ['inbox', 'islerim'];
+    // Tabs whose contents are settled, so a count of them is not "work waiting for you" — see the
+    // badge decision in buildTabs, which is the only reader.
+    const BADGELESS_TABS = ['history'];
 
     const state = {
         tab: 'inbox',
         segment: 'aktif',        // meaningful within İşlerim
         view: 'list',
-        viewsByTab: { inbox: 'list', islerim: 'list', havuz: 'list', history: 'list' },
+        viewsByTab: { inbox: 'list', islerim: 'list', havuz: 'list', baslattiklarim: 'list', history: 'list' },
         /*
          * 'mine' | 'all' | <delegator name> (N-way delegation) | 'team' (BL-023).
          *
@@ -198,7 +225,7 @@
     state.triggers.forEach((trigger) => { trigger.isUnread = !seenIds.has(trigger.id); });
 
     const STATE_VALUES = {
-        tab: ['inbox', 'islerim', 'havuz', 'history'],
+        tab: TABS,
         segment: ['aktif', 'bekleyen', 'planli'],
         view: ['list', 'table', 'split', 'kanban', 'calendar', 'focus'],
         priority: ['all', 'High', 'Medium', 'Low'],
@@ -1089,7 +1116,8 @@
     // Standard Sneat `nav nav-pills` (like the legacy WorkCenter), with icon +
     // count. Inbox is default so new work is seen on open. Click drives state
     // (data-wcn-tab) + re-render — not Bootstrap tab-panes.
-    const TAB_ICON = { inbox: 'bx-envelope', islerim: 'bx-briefcase-alt-2', havuz: 'bx-collection', history: 'bx-history' };
+    const TAB_ICON = { inbox: 'bx-envelope', islerim: 'bx-briefcase-alt-2', havuz: 'bx-collection',
+        baslattiklarim: 'bx-paper-plane', history: 'bx-history' };
     // Views are tab-appropriate, not all six everywhere: Inbox = triage (list/
     // split/table), İşlerim = full work management, Havuz = claim list, Geçmiş =
     // read-only archive. Kanban/Calendar/Bugün only make sense for active work.
@@ -1110,6 +1138,10 @@
         inbox: ['list', 'table', 'split', 'calendar'],
         islerim: ['list', 'table', 'split', 'kanban', 'calendar', 'focus'],
         havuz: ['list', 'table', 'split', 'kanban', 'calendar'],
+        // The Outbox gets İşlerim's views MINUS Bugün: "what should I do today" is a question about work the
+        // reader holds, and this tab holds none of it. Kanban stays — its columns are lifecycle stages, and how
+        // far along the work you handed over has got is the tab's whole question.
+        baslattiklarim: ['list', 'table', 'split', 'kanban', 'calendar'],
         history: ['list', 'table', 'split', 'kanban', 'calendar']
     };
     const buildTabs = () => {
@@ -1125,7 +1157,25 @@
              * must never be printed confidently.
              */
             const partial = hasUnavailableSources();
-            const countBadge = (cnt > 0 || partial)
+            /*
+             * ⚠ GEÇMİŞ CARRIES NO BADGE, IN EITHER STATE (2026-09-02, measured in a management demo).
+             *
+             * The owner cancelled his own task, it landed in Geçmiş — correct — and the tab grew a red "1",
+             * which is the page telling him one thing there was waiting for him. `tabCount`'s own rule, six
+             * hundred lines up, already says what a badge means: "work waiting for you in this tab". Geçmiş is
+             * where work goes when it has STOPPED; nothing in it waits for anybody, so no count of it is a
+             * claim worth drawing.
+             *
+             * ⚠ AND THAT INCLUDES WC-D3's "+". The partial-board branch below draws a badge even at zero,
+             * because a count a reader ACTS on must never print a confident zero over an incomplete board.
+             * Geçmiş prints no such count, so there is no number left for the "+" to qualify — a grey "0+"
+             * over closed work would be the same false claim in a quieter colour. The banner above the list
+             * still says a source is missing, which is where that fact belongs.
+             *
+             * Written as a set rather than `key !== 'history'` so the next tab that turns out to hold only
+             * settled work joins it by name, in the one place the reason is written down.
+             */
+            const countBadge = (BADGELESS_TABS.indexOf(key) < 0 && (cnt > 0 || partial))
                 ? `<span class="badge rounded-pill ${partial ? 'bg-secondary wcn-tab-count-partial' : 'bg-danger'} wcn-tab-count position-absolute top-0 start-100 translate-middle" title="${partial ? esc(t('PartialCountHint')) : ''}">${cnt}${partial ? '+' : ''}</span>`
                 : '';
             return `<li class="nav-item" role="presentation">
@@ -1140,7 +1190,7 @@
         return `<div class="card mb-3 wcn-tabcard">
             <div class="card-body p-3 d-flex align-items-center gap-3 flex-wrap">
                 <ul class="nav nav-pills gap-2 flex-wrap mb-0 wcn-tabs" role="tablist" aria-label="${esc(t('TabsLabel'))}">
-                    ${['inbox', 'islerim', 'havuz', 'history'].map(tab).join('')}
+                    ${TABS.map(tab).join('')}
                 </ul>
                 ${views}
             </div>
@@ -1422,6 +1472,35 @@
 
     // ── Row (shared by List / Split / Focus) ──────────────────────────────────
     const isBlocked = (item) => !!(item.blockedState && item.blockedState.blocked);
+
+    /*
+     * ── THE RETURN SIGNAL ────────────────────────────────────────────────────────────────────────────────
+     *
+     * Read through helpers rather than reaching into `item.returned` at each site, for the reason this file has
+     * paid for twice (`reasonKey`, `viewerRole`): a field touched in four places by hand is a field that gets
+     * three of them right. `at` is the guard — the contract requires it whenever the block exists, so an item
+     * carrying a malformed signal draws nothing rather than an empty chip.
+     */
+    const returnedSignal = (item) => (item && item.returned && item.returned.at) ? item.returned : null;
+
+    /** The returner's own sentence, or nothing. A DISPLAY label — resolved the way every other label is. */
+    const returnedReasonText = (item) => {
+        const signal = returnedSignal(item);
+        return signal ? (data.resolveLabel(signal.reason) || '') : '';
+    };
+
+    /*
+     * The chip's word, with the count only once it means something.
+     *
+     * A single return is the common case and "1" beside it is noise; from the second, the number IS the story —
+     * it is the same count the rework rate will be built from (Faz 5), shown where the work is rather than
+     * waiting for a report.
+     */
+    const returnedChipText = (item) => {
+        const signal = returnedSignal(item);
+        if (!signal) { return ''; }
+        return signal.count > 1 ? tf('ReturnedCount', signal.count) : t('ReturnedLabel');
+    };
     const sourceTitle = (item) => [item.sourceModuleId, item.sourceModuleName, item.sourceObjectType]
         .filter(Boolean).join(' · ');
 
@@ -1440,6 +1519,25 @@
          */
         waitingSentence(item)
             ? chip('warning', 'bx-time-five', waitingSentence(item), waitingSentence(item))
+            : '',
+        /*
+         * THIS CAME BACK TO YOU — a SIGNAL, beside the type, never a status.
+         *
+         * The row already says the work is Open, and it is: somebody has to do this. What it could not say is
+         * that it has been here before, which is the difference between a new request and one that bounced.
+         * Modelled on the blocked chip two lines up: the visible word is short, and the TOOLTIP carries the
+         * returner's own sentence — the same "chip clips, title carries the full sentence" rule the waiting chip
+         * states above.
+         *
+         * ⚠ NOT ON FINISHED WORK. A chip on this row is a triage signal, and there is nothing to triage on a
+         * task nobody has to pick up. The projection still carries the fact for a closed task (see
+         * `ToReturned`); the DETAIL page is where a finished task's history is worth reading.
+         *
+         * The count appears only from the SECOND return. "1" beside a chip that already means "this came back"
+         * says nothing the chip did not, and a number that is almost always the same number stops being read.
+         */
+        returnedSignal(item) && !isTerminal(item)
+            ? chip('warning', 'bx-undo', returnedChipText(item), returnedReasonText(item))
             : '',
         // Why the leading action cannot be used, ON the row rather than only in the button's tooltip. A blocked
         // item whose reason needs a hover reads as simply broken.
@@ -1474,6 +1572,40 @@
             ? `<button type="button" class="wcn-pin pinned" data-wcn-snooze="${item.id}" title="${
                 esc(t('SnoozeClear'))}" aria-label="${esc(t('SnoozeClear'))}" aria-pressed="true"><i class="bx bxs-moon"></i></button>`
             : '';
+        /*
+         * EDITING THE TASK YOU RAISED, FROM THE ROW (owner's decision, 2026-09-02).
+         *
+         * The owner created a task, wanted to fix a field, and read the detail page as offering no way to.
+         * Editing was never missing — /Tasks/{id}/Edit works — but reaching it meant going through
+         * "Kaynak kayıtta aç", a label that promises navigation, not correction.
+         *
+         * ⚠ NO NEW ROW LANGUAGE, exactly as the pin's rule above says: same `.wcn-pin` control in
+         * `.wcn-row-actions`, same size, same title/aria pair. It is an <a>, not a <button>, because it
+         * NAVIGATES — it is not a toggle, so it carries no `aria-pressed` and can never take `.pinned`.
+         *
+         * Three conditions, each measured against the live projection rather than assumed:
+         *   · `providerCode === 'tasks'` — 114 of 115 items; the one exception comes from another provider,
+         *     where /Tasks/{id}/Edit is not its record and the link would be a lie.
+         *   · `raisedByViewer` — the engine publishes `requester.isCurrentUser`, but the presentation mapper
+         *     overwrites `requester` with a display STRING, so the flag is captured in toPresentation before
+         *     that happens (measured: reading it here returned undefined, and the link shipped inert).
+         *     `viewerRole` is not this fact — its if/else reports 'Owner' for a task you raised AND own.
+         *   · not terminal — 22 of the 114 are Done or Cancelled. Editing a closed task is not a correction,
+         *     it is a rewrite of the record. `isTerminal` is the module's one answer to that question; this
+         *     does not add a second.
+         *
+         * Destination is `sourceHref(item) + '/Edit'`, so it follows the same deep link the source door uses.
+         * Nothing here decides the URL on its own.
+         */
+        const canEditFromRow = (candidate) =>
+            candidate.source?.providerCode === 'tasks'
+            && !!candidate.raisedByViewer
+            && !isTerminal(candidate)
+            && !!sourceHref(candidate);
+        const editBtn = canEditFromRow(item)
+            ? `<a class="wcn-pin" href="${esc(sourceHref(item))}/Edit" data-wcn-edit="${esc(item.id)}" title="${
+                esc(t('ActionEditRecord'))}" aria-label="${esc(t('ActionEditRecord'))}"><i class="bx bx-edit-alt" aria-hidden="true"></i></a>`
+            : '';
         const onBehalfBadge = item.delegator
             ? `<span class="wcn-badge wcn-badge-delegation" title="${esc(tf('OnBehalfOf', item.delegator))}"><i class="bx bx-user-voice"></i>${esc(tf('OnBehalfShort', item.delegator))}</span>`
             : '';
@@ -1492,7 +1624,7 @@
                 ${compact ? '' : `<p class="wcn-row-summary">${esc(summary)}</p>`}
                 <div class="wcn-row-chips">${rowChips(item)}</div>
             </div>
-            <div class="wcn-row-actions">${unsnoozeBtn}${pinBtn}${actionCluster(item)}</div>
+            <div class="wcn-row-actions">${editBtn}${unsnoozeBtn}${pinBtn}${actionCluster(item)}</div>
         </div>`;
     };
 
@@ -2194,6 +2326,38 @@
     };
 
     /*
+     * ── ONE SOURCE FOR "WHERE THE RECORD LIVES", AND FOR "IS THERE ALREADY A DOOR TO IT" ──────────────────
+     *
+     * MEASURED (2026-09-02, BL-329 — two controls to one destination): the detail page drew BOTH the rail's
+     * bare "Kaynak kayıtta aç" link and the source card's "Kaynak kaydını aç" button, on the same task, to the
+     * same href. Counted in a live session and reproduced here: `railLinks=1 cardButtons=1` on an inline item
+     * carrying `source.deepLink`.
+     *
+     * The rule against that was already written — the source card's button "stands down" when the actions card
+     * has taken the destination — but it was expressed as `actionDepth === 'deeplink'`, which is only ONE of
+     * the two ways the rail opens that door. The other, `sourceDoor` on inline work, was added later and the
+     * guard never learned about it. So the fact is derived here, ONCE, and both sides read the result rather
+     * than each re-deciding from a field.
+     *
+     * The href expression itself was written out three times (narrow bar lead, rail lead, rail door) before it
+     * was written a fourth way in the card. Four readings of one fact is exactly how the two controls appeared.
+     */
+    const sourceHref = (target) => target?.source?.deepLink || target?.deepLink || target?.sourceDeepLink || '';
+
+    /*
+     * Does the ACTION RAIL already offer a way to the source record?
+     *
+     * Two conditions, both measured rather than assumed:
+     *  · a destination exists — the contract lets a provider publish none, and neither surface invents one;
+     *  · the rail is actually DRAWN. When nothing applies (`!actions.length`) `renderActionRail` returns the
+     *    "ActionsNoneClosed / ActionsNoneNotYours" card and reaches neither its deeplink lead nor `sourceDoor`
+     *    — measured on a closed task: `railLinks=0`. Reading the href alone would have called that a door and
+     *    withdrawn the card's button, leaving a finished task with no way to its own record: the cul-de-sac
+     *    this page keeps closing, re-opened by the fix for the duplicate.
+     */
+    const railLeadsToSource = (item) => !!sourceHref(item) && actionTiers(item).actions.length > 0;
+
+    /*
      * ── THE NARROW-SCREEN ACTION BAR ──────────────────────────────────────────────────────────────────────
      *
      * MEASURED at 900px: "Mevcut aksiyonlar" began at the page's 1876th pixel of 2597 — 2.08 screens of
@@ -2244,9 +2408,7 @@
             ? `<p class="alert alert-warning wcn-actionbar-reason d-flex align-items-start gap-2" role="note"${reasonId ? ` id="${esc(reasonId)}"` : ''}><i class="bx bx-lock-alt" aria-hidden="true"></i><span>${esc(primary.disabledReason)}</span></p>`
             : '';
 
-        const depthLink = surface?.surfaceMode === 'deeplink'
-            ? (item.source?.deepLink || item.deepLink || item.sourceDeepLink)
-            : null;
+        const depthLink = surface?.surfaceMode === 'deeplink' ? sourceHref(item) : null;
         const lead = depthLink
             ? `<a class="wcn-act-btn wcn-act-fill wcn-act-fill-accent wcn-actionbar-lead" href="${esc(depthLink)}">
                 <i class="bx bx-link-external" aria-hidden="true"></i><span>${
@@ -2353,9 +2515,7 @@
          * it from `item.actionDepth` looked equivalent and was not: the presentation mapper does not carry that
          * field through, so the local test read `undefined` and the branch never fired. One model, consumed.
          */
-        const depthLink = surface?.surfaceMode === 'deeplink'
-            ? (item.source?.deepLink || item.deepLink || item.sourceDeepLink)
-            : null;
+        const depthLink = surface?.surfaceMode === 'deeplink' ? sourceHref(item) : null;
         if (depthLink) {
             const moduleName = item.sourceModuleName || item.sourceModule || '';
             const rest = actions.filter((a) => !a.destructive);
@@ -2386,6 +2546,51 @@
 
 
         /*
+         * ── THE WAY OUT TO THE RECORD (2026-09-02) ────────────────────────────────────────────────────────
+         *
+         * MEASURED in a management demo: the owner opened a task he had created himself, wanted to change its
+         * title, and found nothing. /Tasks/{id} exists, its header carries "Düzenle", and no path on this
+         * surface led to either.
+         *
+         * ⚠ THE ANSWER IS NOT AN `edit` ACTION IN THE RAIL, and that is a decision rather than an omission.
+         * This rail draws no verbs of its own: every entry comes from the PROJECTION, i.e. from a provider's
+         * own engine transitions. MOD-0024 aggregates providers it does not own, "change the title" is not a
+         * transition, and for a document or a strategy item it means nothing at all. An `edit` action here
+         * would be this module reaching into records that are not its own — the same boundary the approval
+         * work drew: MOD-0024 reports and hands over, it does not decide.
+         *
+         * What was missing is the DOOR. The reader was left in a cul-de-sac, which is this product's recurring
+         * defect and not a missing feature, and the product already has the idiom for it —
+         * `ActionCompleteInSource` on deeplink work, `SubtaskOpenFullDetail` on the subtask panel: a quiet
+         * secondary with an external-link glyph.
+         *
+         * ⚠ NOT ON DEEPLINK WORK. There the source link is already the LEAD button (it is the only way that
+         * work can be finished), so a second link to the same place underneath would be the page saying one
+         * thing twice — the branch above returns before ever reaching here.
+         *
+         * ⚠ NOT A FILLED BUTTON. The card keeps exactly ONE fill, and on inline work that fill belongs to the
+         * act the reader came to perform. A door drawn as loudly as "Tamamla" tells every reader to leave a
+         * page that does its job.
+         *
+         * ⚠ NOT PERMISSION-GATED HERE. The link is navigation; the destination decides what it offers. A
+         * browser-side guess at the reader's rights either hides the way out from somebody who has it, or
+         * claims to know something only the server knows.
+         */
+        const sourceDoor = (target) => {
+            const href = sourceHref(target);
+            // No destination, no door: the contract permits a provider to publish none, and a link to nowhere
+            // is worse than no link at all.
+            if (!href) { return ''; }
+            return `<li class="wcn-act wcn-act-source">
+                <a class="wcn-act-btn wcn-act-bare wcn-act-bare-neutral" href="${esc(href)}"
+                   data-wcn-source-link="${esc(target.id)}">
+                    <i class="bx bx-link-external" aria-hidden="true"></i><span>${esc(t('ActionOpenInSource'))}</span>
+                </a>
+                <p class="wcn-act-outcome">${esc(t('ActionOpenInSourceHint'))}</p>
+            </li>`;
+        };
+
+        /*
          * DESTRUCTIVE ACTIONS ARE VISIBLE, and the kebab is empty until something genuinely rare needs it.
          *
          * "Görevi iptal et" lived in a "Diğer aksiyonlar" menu. Folding a destructive act away is not a safety
@@ -2401,6 +2606,7 @@
                 ${secondary.length
             ? `<li class="wcn-acts-row">${actionRail(item, secondary, 'secondary', locked)}</li>`
             : ''}
+                ${sourceDoor(item)}
             </ul>
             </div>
             ${destructive.length
@@ -2524,6 +2730,23 @@
         const closedOn = isTerminal(item) && item.closedAt
             ? `<span class="wcn-stepbar-closed">${esc(tf('StepClosedOn', item.closedAt))}</span>`
             : '';
+        /*
+         * (4) WHAT WAS DECIDED — beside when it closed, because the two are one fact read together.
+         *
+         * "Done" is a state, not a decision: an approval task closing as Done said nothing about whether it was
+         * approved. This is the sentence that half was missing, and it prints the outcome's WORDS, never its
+         * code — a reader has no use for COMPLETED_PARTIALLY. When the code names an outcome the type no longer
+         * offers, the projection sends the code without a label and it prints as itself: a retired outcome is a
+         * smaller loss than a closure that reads as though nothing was decided.
+         *
+         * No new class: it is the same kind of caption fact as the closing date, so it wears the same one.
+         */
+        const closureText = isTerminal(item) && item.closure
+            ? (data.resolveLabel(item.closure.outcome) || item.closure.reasonCode || '')
+            : '';
+        const closedAs = closureText
+            ? `<span class="wcn-stepbar-closed">${esc(tf('StepClosedAs', closureText))}</span>`
+            : '';
         // Punctuation, not language — `aria-hidden` for the same reason the identity line's separator is:
         // a screen reader gains nothing from "em dash" between two facts it already reads as two.
         const captionSep = '<span class="wcn-stepbar-sep" aria-hidden="true">—</span>';
@@ -2532,7 +2755,8 @@
             : `${captionSep}<span class="wcn-stepbar-count">${currentIndex + 1}/${steps.length}</span>`;
         const stepCaption = `<div class="wcn-stepbar-caption">
             <span class="wcn-stepbar-status">${esc(statusLabel(item))}</span>${progress}${
-            closedOn ? captionSep + closedOn : ''}</div>`;
+            closedOn ? captionSep + closedOn : ''}${
+            closedAs ? captionSep + closedAs : ''}</div>`;
 
         const paused = item.lifecycle === 'Waiting'
             ? `<p class="wcn-step-paused" role="note"><i class="bx bx-pause-circle"></i>${
@@ -2548,11 +2772,40 @@
          * reader meeting a bare list of four items DOES need to be told what the list is. The resource key is
          * unchanged and still in all seven languages — the words moved, they were not deleted.
          */
+        /*
+         * WHY IT CAME BACK — one sentence, beside the one that says why it is paused.
+         *
+         * ⚠ A SUMMARY, NOT A SECOND NARRATIVE. The activity feed already holds the `returned` event with its
+         * actor, its timestamp and this same sentence; that row is the RECORD and stays the record. What the
+         * feed cannot do is answer the question someone opening a returned task asks first, without scrolling
+         * to find it. So this restates one fact in place and invents nothing — the same relationship the paused
+         * note above has with the waiting entry in the feed.
+         *
+         * Shown on FINISHED work too, unlike the row chip: the chip is for triage and a closed task has none,
+         * but "this came back twice before it was done" is part of what happened to it, and the detail page is
+         * where what happened is read.
+         *
+         * `wcn-step-paused` is reused rather than cloned: it is already the class for "a note under the step
+         * bar", and a second class with the same rules is how the two drift apart (FG-003 — styling lives in
+         * backbone-custom.css, and this needs no new rule).
+         */
+        const signal = returnedSignal(item);
+        const returnedReason = returnedReasonText(item);
+        const returnedNote = signal
+            ? `<p class="wcn-step-paused" role="note"><i class="bx bx-undo" aria-hidden="true"></i>${
+                esc(returnedReason
+                    ? (signal.count > 1
+                        ? tf('StepReturnedTimesBecause', signal.count, returnedReason)
+                        : tf('StepReturnedBecause', returnedReason))
+                    : (signal.count > 1 ? tf('StepReturnedTimes', signal.count) : t('StepReturned')))}</p>`
+            : '';
+
         return `<div class="wcn-detail-section wcn-stepbar">
             ${stepCaption}
             <ol class="wcn-steps${cancelled ? ' wcn-steps-cancelled' : ''}"
                 aria-label="${esc(t('StepBarLabel'))}">${rendered}</ol>
             ${paused}
+            ${returnedNote}
         </div>`;
     };
 
@@ -4239,13 +4492,31 @@
             + (foreignType ? sourceRow('bx-category', 'DetailSourceType', item.sourceObjectType || item.sourceType) : '');
 
         /*
-         * THE OPEN-SOURCE BUTTON, unless the actions card has already taken it.
+         * THE OPEN-SOURCE BUTTON, unless the actions card has already taken it — or there is nowhere to go.
          *
-         * When the work cannot be finished here (`actionDepth === 'deeplink'`) the actions card leads with
-         * "{Module}'de tamamla", which goes to the same place. Two controls for one destination is the
-         * duplication this page keeps removing — so here it stands down.
+         * ⚠ THE RULE IS NOT NEW; ITS OLD WORDING WAS TOO NARROW (2026-09-02, BL-329). It said: when the work
+         * cannot be finished here (`actionDepth === 'deeplink'`) the actions card leads with "{Module}'de
+         * tamamla", which goes to the same place, so this button stands down. True, and incomplete — the rail
+         * later grew a SECOND door, `sourceDoor`'s bare "Kaynak kayıtta aç" on inline work, and the guard was
+         * never told. MEASURED on an inline task with a deep link: `railLinks=1 cardButtons=1` — the very
+         * duplication the paragraph above was written to prevent, wearing two different labels.
+         *
+         * The card no longer decides this from a field of its own. `railLeadsToSource` is the one answer to
+         * "has a door already been drawn", and it covers both of the rail's doors.
+         *
+         * ⚠ WHICH CONTROL SURVIVES IS A DECISION, not a coin toss (owner, 2026-09-02): the rail keeps the door,
+         * because the rail is where this page collects the things a reader can DO. This card says which record
+         * this is — its identity rows are the reason it exists, and they stay.
+         *
+         * ⚠ NO HREF, NO BUTTON. MEASURED: with `source.deepLink: null` the card still drew the button, and its
+         * handler reads `if (item && item.deepLink)` — so it rendered a control that did nothing at all. The
+         * rail's door already refuses that case; the card now refuses it the same way.
+         *
+         * ⚠ WHAT IS LEFT: an item with a destination and NO applicable action — a closed task, or one that is
+         * not yours. There the rail draws no door (measured: `railLinks=0`), so this button is the only way to
+         * the record and it is not a duplicate of anything.
          */
-        const openButton = item.actionDepth === 'deeplink' ? '' : `
+        const openButton = item.actionDepth === 'deeplink' || railLeadsToSource(item) || !sourceHref(item) ? '' : `
             <button type="button" class="btn btn-sm btn-label-primary wcn-opensource" data-wcn-open="${esc(item.id)}"
                     aria-label="${esc(tf('OpenSourceAria', item.sourceModuleName || item.sourceModule, item.sourceId))}">
                 <i class="bx bx-link-external" aria-hidden="true"></i><span>${esc(t('DetailOpenSource'))}</span>
@@ -4428,6 +4699,16 @@
             // One line: what happened · who · when. The reason, when the act carried one, follows in the actor's
             // own words — it is the half of "returned" that the code cannot carry.
             const parts = [eventSentence(entry), entry.actor || t('CommentAuthorUnknown')];
+            /*
+             * The OUTCOME, when the act carried one. `TaskTransition.ReasonCode` has been recorded on every
+             * transition since WC-1 and reached this feed for the first time in this slice — the row used to
+             * show the actor's sentence and drop the classification it was explaining.
+             *
+             * The words, never the code, and only when the label resolves: an outcome its type has since
+             * retired adds nothing readable to this line, and the closure caption above already keeps the code.
+             */
+            const eventOutcome = entry.event && data.resolveLabel(entry.event.outcome);
+            if (eventOutcome) { parts.push(eventOutcome); }
             if (entry.atMs) { parts.push(agoLabel(entry.atMs, item.provenance)); }
             return `<li class="wcn-audit-item wcn-audit-event">
                 <i class="bx bx-right-arrow-alt wcn-audit-arrow" aria-hidden="true"></i>
@@ -4921,35 +5202,42 @@
         const statusKey = SUBTASK_STATUS_KEY[draft.status];
         return `<div class="offcanvas offcanvas-end wcn-subtask-panel" tabindex="-1" id="wcnSubtaskPanel"
                      aria-labelledby="wcnSubtaskPanelLabel">
-            <div class="offcanvas-header">
+            <div class="offcanvas-header p-4">
                 <h5 class="offcanvas-title" id="wcnSubtaskPanelLabel">${esc(t('SubtaskQuickEditTitle'))}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
                         aria-label="${esc(t('PanelClose'))}"></button>
             </div>
-            <div class="offcanvas-body">
+            <div class="offcanvas-body border-top p-4">
                 <div class="mb-3">
-                    <label class="form-label" for="wcnSubtaskTitle">${esc(t('SubtaskFieldTitle'))}</label>
-                    <input type="text" class="form-control" id="wcnSubtaskTitle" maxlength="200"
-                           data-wcn-subtask-field="title" value="${esc(draft.title || '')}">
+                    <label class="form-label fw-medium" for="wcnSubtaskTitle">${esc(t('SubtaskFieldTitle'))}</label>
+                    <div class="diten-field">
+                        <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" class="form-control" id="wcnSubtaskTitle" maxlength="200"
+                               data-wcn-subtask-field="title" value="${esc(draft.title || '')}">
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="wcnSubtaskDue">${esc(t('SubtaskFieldDue'))}</label>
-                    <input type="date" class="form-control" id="wcnSubtaskDue"
-                           data-wcn-subtask-field="dueAt" value="${esc((draft.dueAt || '').slice(0, 10))}">
+                    <label class="form-label fw-medium" for="wcnSubtaskDue">${esc(t('SubtaskFieldDue'))}</label>
+                    <div class="diten-field">
+                        <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" class="form-control flatpickr-date" id="wcnSubtaskDue"
+                               placeholder="${esc(t('DatePlaceholder'))}"
+                               data-wcn-subtask-field="dueAt" value="${esc((draft.dueAt || '').slice(0, 10))}">
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <span class="form-label d-block">${esc(t('SubtaskFieldAssignee'))}</span>
+                    <span class="form-label fw-medium d-block">${esc(t('SubtaskFieldAssignee'))}</span>
                     <p class="wcn-block-hint mb-0">${draft.assigneeName
                         ? esc(draft.assigneeName)
                         : esc(t('SubtaskNoAssignee'))}</p>
                 </div>
                 <div class="mb-3">
-                    <span class="form-label d-block">${esc(t('SubtaskFieldStatus'))}</span>
+                    <span class="form-label fw-medium d-block">${esc(t('SubtaskFieldStatus'))}</span>
                     <p class="wcn-block-hint mb-0">${statusKey ? esc(t(statusKey)) : ''}</p>
                 </div>
                 <p class="wcn-block-hint">${esc(t('SubtaskQuickEditScope'))}</p>
             </div>
-            <div class="offcanvas-footer p-3 border-top d-flex flex-column gap-2">
+            <div class="offcanvas-footer p-4 border-top d-flex flex-column gap-2">
                 <button type="button" class="btn btn-primary" data-wcn-subtask-save="${esc(id)}"${busy ? ' disabled' : ''}>
                     ${esc(t('SubtaskSave'))}
                 </button>
@@ -4981,17 +5269,19 @@
         else { toast(global.TasksApi.failureMessage(result), 'error'); }
     };
 
-    const showSubtaskPanel = () => {
-        const node = document.getElementById('wcnSubtaskPanel');
-        if (!node || !global.bootstrap?.Offcanvas) { return; }
-        const panel = global.bootstrap.Offcanvas.getOrCreateInstance(node);
-        node.addEventListener('hidden.bs.offcanvas', () => {
-            state.subtaskPanelId = null;
-            state.subtaskPanelRecord = null;
-            render();
-        }, { once: true });
-        panel.show();
-    };
+    /*
+     * THE SECOND COPY OF showPanel IS GONE, and the comment above showPanel ("shared plumbing for BOTH subtask
+     * panels") is true for the first time. MEASURED: the two functions differed in nothing but the two lines of
+     * state their `hidden` listener cleared — and that difference is the parameter showPanel already takes.
+     *
+     * It is not tidying: the enhancement hook lives in showPanel, so a panel that kept its own copy of the
+     * plumbing would have kept a browser-native date field too. A rule applied in one of two identical
+     * functions is exactly the shape of defect this round is correcting.
+     */
+    const showSubtaskPanel = () => showPanel('wcnSubtaskPanel', () => {
+        state.subtaskPanelId = null;
+        state.subtaskPanelRecord = null;
+    });
 
     const saveSubtaskPanel = async (subtaskId) => {
         const record = state.subtaskPanelRecord;
@@ -5070,27 +5360,80 @@
         const options = people.map((person) =>
             `<option value="${esc(personUserId(person))}"${draft.assigneeUserId === personUserId(person) ? ' selected' : ''}>`
             + `${esc(person.displayName || person.name || '')}</option>`).join('');
+        /*
+         * THE SHELL IS THE PRODUCT'S, NOT BOOTSTRAP'S (owner, 2026-09-02 — "gap, header, divider").
+         *
+         * MEASURED side by side against _QuickCreateOffcanvas.cshtml, the panel this one sits beside:
+         *
+         *     standard (.cshtml)            these panels (before)
+         *     header  p-4        → 16px     (none)   → 24px 24px 12px
+         *     body    border-top p-4 → 16px (none)   → 24px, AND NO DIVIDER
+         *     footer  p-4        → 16px     p-3      → 12px
+         *
+         * The 24px was never a decision — it is the vendor's default showing through, because these panels are
+         * built in JS and nobody carried the utility classes across from the view. The rule that a panel's body
+         * is separated from its header by a line was invisible here for the same reason.
+         *
+         * `backbone-offcanvas-actions` is deliberately NOT added to the footer: it makes buttons share a row,
+         * and this footer stacks them on purpose.
+         */
         return `<div class="offcanvas offcanvas-end wcn-subtask-panel" tabindex="-1" id="wcnSubtaskCreatePanel"
                      aria-labelledby="wcnSubtaskCreateLabel">
-            <div class="offcanvas-header">
+            <div class="offcanvas-header p-4">
                 <h5 class="offcanvas-title" id="wcnSubtaskCreateLabel">${esc(t('SubtaskCreateTitle'))}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
                         aria-label="${esc(t('PanelClose'))}"></button>
             </div>
-            <div class="offcanvas-body">
+            ${/*
+               * ── THE FIELDS ARE THE PRODUCT'S FIELDS, NOT THIS PANEL'S OWN (2026-09-02) ─────────────────
+               *
+               * MEASURED, against Views/Tasks/_QuickCreateOffcanvas.cshtml — the surface that does the SAME job
+               * one click away:
+               *                    HERE, before                  THERE
+               *     date           the browser's own control     input.form-control.flatpickr-date
+               *     pickers        raw select.form-select        select.select2.form-select
+               *     icons          none                          .diten-field + .diten-field-icon
+               * The browser's own date control takes its format from the OPERATING SYSTEM, so the reader saw
+               * `gg.aa.yyyy` on a Turkish page and would have seen it on an Arabic one too — the page's own
+               * language never entered into it. tests/tasks-quick-create-golden.test.js already forbade exactly
+               * that, but it read the .cshtml alone: this panel is built in JS, so the rule was written and
+               * never reached it. (The forbidden attribute is deliberately not spelled out anywhere in this
+               * file, the same discipline the .cshtml keeps: the guard greps the whole file for it, so prose
+               * would read as a violation — and a guard that has to strip comments first is one a comment can
+               * fool.)
+               *
+               * The GLYPHS are the full form's, field for field (Tasks/_Form.cshtml's map, mirrored by the
+               * quick-create offcanvas) — a subtask is a task, so the same value must not wear a different mark
+               * depending on which door it was created through.
+               *
+               * The description's `bx-align-left` is that same map's `taskDescription`, chosen there over an
+               * invented glyph and reused here rather than re-decided; `--top` because a textarea is not a 38px
+               * line and the centred variant would park the icon beside line three.
+               *
+               * BEHAVIOUR travels with the markup: the classes below are inert until TaskForm's own enhancers
+               * bind them — see showPanel.
+               */''}
+            <div class="offcanvas-body border-top p-4">
                 <div class="mb-3">
-                    <label class="form-label" for="wcnNewSubtaskTitle">
+                    <label class="form-label fw-medium" for="wcnNewSubtaskTitle">
                         ${esc(t('SubtaskFieldTitle'))} <span class="text-danger">*</span>
                     </label>
-                    <input type="text" class="form-control" id="wcnNewSubtaskTitle" maxlength="200"
-                           data-wcn-newsubtask-field="title" value="${esc(draft.title || '')}">
+                    <div class="diten-field">
+                        <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" class="form-control" id="wcnNewSubtaskTitle" maxlength="200"
+                               data-wcn-newsubtask-field="title" value="${esc(draft.title || '')}">
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="wcnNewSubtaskAssignee">${esc(t('SubtaskFieldAssignee'))}</label>
-                    <select class="form-select" id="wcnNewSubtaskAssignee" data-wcn-newsubtask-field="assigneeUserId">
-                        <option value="">${esc(t('SubtaskAssignToMe'))}</option>
-                        ${options}
-                    </select>
+                    <label class="form-label fw-medium" for="wcnNewSubtaskAssignee">${esc(t('SubtaskFieldAssignee'))}</label>
+                    <div class="diten-field">
+                        <i class="bx bx-user diten-field-icon" aria-hidden="true"></i>
+                        <select class="select2 form-select" id="wcnNewSubtaskAssignee"
+                                data-wcn-newsubtask-field="assigneeUserId">
+                            <option value="">${esc(t('SubtaskAssignToMe'))}</option>
+                            ${options}
+                        </select>
+                    </div>
                 </div>
                 <div class="mb-3">
                     ${/*
@@ -5099,28 +5442,46 @@
                        * (`400 VALIDATION_REQUEST_DUE_AT_NOT_NULL`, measured on both), and `_Form.cshtml` already
                        * marks the field. The rule is the product's; this panel was the one surface not saying so.
                        */''}
-                    <label class="form-label" for="wcnNewSubtaskDue">
+                    <label class="form-label fw-medium" for="wcnNewSubtaskDue">
                         ${esc(t('SubtaskFieldDue'))} <span class="text-danger">*</span>
                     </label>
-                    <input type="date" class="form-control" id="wcnNewSubtaskDue"
-                           data-wcn-newsubtask-field="dueAt" value="${esc(draft.dueAt || '')}">
+                    ${/*
+                       * `DatePlaceholder` ("YYYY-AA-GG"), not a new string and not a guess: it is the pair the
+                       * Planla and Ertele dialogs on this same page already use over a flatpickr box, and it
+                       * states the format the field CARRIES — flatpickr is constructed with `dateFormat: Y-m-d`,
+                       * so the value the API receives is byte-for-byte what the native control produced.
+                       * The field is typed as well as picked (`allowInput: true`), so it needs the prompt.
+                       */''}
+                    <div class="diten-field">
+                        <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" class="form-control flatpickr-date" id="wcnNewSubtaskDue"
+                               placeholder="${esc(t('DatePlaceholder'))}"
+                               data-wcn-newsubtask-field="dueAt" value="${esc(draft.dueAt || '')}">
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="wcnNewSubtaskPriority">${esc(t('SubtaskFieldPriority'))}</label>
-                    <select class="form-select" id="wcnNewSubtaskPriority" data-wcn-newsubtask-field="priority">
-                        ${['Low', 'Medium', 'High'].map((level) =>
-                            `<option value="${level}"${(draft.priority || 'Medium') === level ? ' selected' : ''}>`
-                            + `${esc(t('Priority' + level))}</option>`).join('')}
-                    </select>
+                    <label class="form-label fw-medium" for="wcnNewSubtaskPriority">${esc(t('SubtaskFieldPriority'))}</label>
+                    <div class="diten-field">
+                        <i class="bx bx-flag diten-field-icon" aria-hidden="true"></i>
+                        <select class="select2 form-select" id="wcnNewSubtaskPriority"
+                                data-wcn-newsubtask-field="priority">
+                            ${['Low', 'Medium', 'High'].map((level) =>
+                                `<option value="${level}"${(draft.priority || 'Medium') === level ? ' selected' : ''}>`
+                                + `${esc(t('Priority' + level))}</option>`).join('')}
+                        </select>
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="wcnNewSubtaskDesc">${esc(t('SubtaskFieldDescription'))}</label>
-                    <textarea class="form-control" id="wcnNewSubtaskDesc" rows="3"
-                              data-wcn-newsubtask-field="description">${esc(draft.description || '')}</textarea>
+                    <label class="form-label fw-medium" for="wcnNewSubtaskDesc">${esc(t('SubtaskFieldDescription'))}</label>
+                    <div class="diten-field">
+                        <i class="bx bx-align-left diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                        <textarea class="form-control" id="wcnNewSubtaskDesc" rows="3"
+                                  data-wcn-newsubtask-field="description">${esc(draft.description || '')}</textarea>
+                    </div>
                 </div>
                 <p class="wcn-block-hint">${esc(t('SubtaskCreateParentFixed'))}</p>
             </div>
-            <div class="offcanvas-footer p-3 border-top d-flex flex-column gap-2">
+            <div class="offcanvas-footer p-4 border-top d-flex flex-column gap-2">
                 <button type="button" class="btn btn-primary w-100"
                         data-wcn-newsubtask-save="${esc(state.subtaskCreateParentId)}"${state.subtaskCreateSaving ? ' disabled' : ''}>
                     ${esc(t('SubtaskCreateSubmit'))}
@@ -5197,6 +5558,31 @@
                 return `<option value="${esc(id)}">${esc(person.displayName || id)}</option>`;
             }).join('');
         if (chosen) { select.value = chosen; }
+
+        /*
+         * ⚠ THE PICKER IS ALREADY A select2 BY THE TIME THIS RUNS, AND THE ORDER CANNOT BE THE OTHER WAY ROUND.
+         *
+         * quick-create.js renders its options FIRST and binds select2 afterwards, with a comment saying why.
+         * That order is unavailable here: showPanel binds as the panel opens, and the panel deliberately opens
+         * BEFORE this lookup lands — awaiting it first would leave a slow or failing people service showing the
+         * reader a button that does nothing (measured last round, see openSubtaskCreatePanel). So the options
+         * above are written UNDERNEATH a control that is already drawn, and the drawn control has to be told.
+         *
+         * WHAT IS ACTUALLY STALE, measured in the vendored library rather than assumed
+         * (assets/vendor/libs/select2/select2.js):
+         *   · the DROPDOWN is not — `SelectAdapter.query` re-reads `this.$element.children()` on every open, so
+         *     it lists whatever the <select> holds at that moment;
+         *   · the BOX select2 draws over the select is — it is redrawn from the `change.select2` handler select2
+         *     binds on the element (`selection:update`).
+         * One bubbling `change` is therefore the entire notification. No destroy/re-bind, which would also mean
+         * a second `.wrap()` around a control that already carries one.
+         *
+         * Only when it IS bound: on a page without jQuery/select2 this would be a change event nobody asked for.
+         * Either way `onChange` reads the value straight back into the draft, which is the value it already had.
+         */
+        if (select.classList.contains('select2-hidden-accessible')) {
+            select.dispatchEvent(new global.Event('change', { bubbles: true }));
+        }
     };
 
     const saveNewSubtask = async (parentId) => {
@@ -5401,12 +5787,40 @@
             + 'Update the panel in place (setPanelBusy / fillAssigneeSelect) or close it first (hidePanel).');
     };
 
+    /*
+     * ── THE MARKUP IS HALF OF A CONTROL; THIS IS THE OTHER HALF ───────────────────────────────────────────
+     *
+     * MEASURED before this existed: `TaskForm.enhanceSelects` and `TaskForm.enhanceDates` appeared ZERO times in
+     * this file, on a page that loads Tasks/form.js, diten-datefield.js, flatpickr, jQuery and select2 for the
+     * quick-create offcanvas right beside it. So the subtask panels' classes would have been decoration —
+     * `.flatpickr-date` with no picker behind it is a calendar icon over a plain text box, which is the exact
+     * defect diten-datefield.js was extracted to stop repeating.
+     *
+     * ONCE, HERE, and never from render(): a panel is enhanced as it opens and its node then stands untouched
+     * until it closes — see warnIfPanelOpen for what a render during that window costs. Both enhancers skip what
+     * they have already bound (`select2-hidden-accessible` / `_flatpickr`), so this is idempotent by the
+     * components' own rules rather than by a flag kept here.
+     *
+     * SILENT WITHOUT TaskForm, and that is deliberate: boot() already names the missing script, once, for the
+     * whole page. A second complaint per panel would say the same thing in a worse place, and the panel itself
+     * still opens — with plain controls, which is what it had before this round.
+     */
+    const enhancePanelControls = (node) => {
+        const form = global.TaskForm;
+        if (!node || !form) { return; }
+        form.enhanceSelects?.(node);
+        form.enhanceDates?.(node);
+    };
+
     const showPanel = (id, onHidden) => {
         const node = document.getElementById(id);
         if (!node || !global.bootstrap?.Offcanvas) { return; }
         const panel = global.bootstrap.Offcanvas.getOrCreateInstance(node);
         node.addEventListener('hidden.bs.offcanvas', () => { onHidden(); render(); }, { once: true });
+        /* AFTER show(), on purpose: opening is what the click asked for, so a control that cannot be enhanced
+           costs the reader a plain box rather than a panel that never appears. */
         panel.show();
+        enhancePanelControls(node);
     };
 
     // ── Table view ────────────────────────────────────────────────────────────
@@ -5841,7 +6255,7 @@
             + section('FocusPinned', 'primary', pinned);
 
         if (!inner) {
-            return `<div class="wcn-empty">
+            return `<div class="card wcn-empty">
                 <i class="bx bx-coffee"></i>
                 <h5>${esc(t('FocusEmptyTitle'))}</h5>
                 <p>${esc(t('FocusEmptyDesc'))}</p>
@@ -5858,7 +6272,7 @@
         // Meeting invitations are trigger-only projections. They use a dedicated
         // empty state but never enter the task-detail resolver or task lifecycle.
         if (state.typeFilter.has('meetingInvite')) {
-            return `<div class="wcn-empty">
+            return `<div class="card wcn-empty">
                 <i class="bx bx-calendar-event"></i>
                 <h5>${esc(t('EmptyMeetingInviteTitle'))}</h5>
                 <p>${esc(t('EmptyMeetingInviteDesc'))}</p>
@@ -5867,7 +6281,7 @@
         const filtered = state.moduleFilter.length || state.priorityFilter !== 'all' || state.modeFilter !== 'all'
             || state.typeFilter.size || state.signalFilter.size || state.search || (state.tab === 'havuz' && state.group !== 'all');
         if (filtered) {
-            return `<div class="wcn-empty">
+            return `<div class="card wcn-empty">
                 <i class="bx bx-filter-alt"></i>
                 <h5>${esc(t('EmptyFilterTitle'))}</h5>
                 <p>${esc(t('EmptyFilterDesc'))}</p>
@@ -5886,7 +6300,7 @@
          * true is that this list could not be completed, not that there is nothing in it.
          */
         if (hasUnavailableSources()) {
-            return `<div class="wcn-empty">
+            return `<div class="card wcn-empty">
                 <i class="bx bx-cloud-snow"></i>
                 <h5>${esc(t('EmptyPartialBoardTitle'))}</h5>
                 <p>${esc(t('EmptyPartialBoardDesc'))}</p>
@@ -5895,11 +6309,12 @@
         const byTab = {
             inbox: ['EmptyInboxZeroTitle', 'EmptyInboxZeroDesc', 'bx-check-circle'],
             havuz: ['EmptyPoolTitle', 'EmptyPoolDesc', 'bx-time'],
+            baslattiklarim: ['EmptyInitiatedTitle', 'EmptyInitiatedDesc', 'bx-paper-plane'],
             history: ['EmptyHistoryTitle', 'EmptyHistoryDesc', 'bx-history'],
             islerim: ['EmptyMineTitle', 'EmptyMineDesc', 'bx-briefcase-alt-2']
         };
         const [titleKey, descKey, icon] = byTab[state.tab] || byTab.mine;
-        return `<div class="wcn-empty">
+        return `<div class="card wcn-empty">
             <i class="bx ${icon}"></i>
             <h5>${esc(t(titleKey))}</h5>
             <p>${esc(t(descKey))}</p>
@@ -5979,7 +6394,7 @@
 
 
 
-    const renderLoadingState = () => `<div class="wcn-system-page" role="status" aria-live="polite">
+    const renderLoadingState = () => `<div class="card wcn-system-page" role="status" aria-live="polite">
         <span class="spinner-border spinner-border-sm text-primary" aria-hidden="true"></span>
         <h5>${esc(t('LoadingTitle'))}</h5><p>${esc(t('LoadingDesc'))}</p>
         <div class="wcn-skeleton" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -6045,7 +6460,7 @@
         const retry = conf.retry
             ? `<button type="button" class="btn btn-sm btn-primary" data-wcn-retry>${esc(t('Retry'))}</button>`
             : '';
-        return `<div class="wcn-system-page wcn-system-error" role="alert">
+        return `<div class="card wcn-system-page wcn-system-error" role="alert">
         <i class="bx ${conf.icon}"></i><h5>${esc(t(conf.title))}</h5><p>${esc(t(conf.desc))}</p>
         ${retry}
     </div>`;
@@ -6315,9 +6730,25 @@
                 item.claimed = false; item.assignee = null;
                 item.admissionState = 'pendingClaim';
                 item.ownershipState = 'unowned';
-                // No queue name here: the projection never says WHICH pool an item belongs to, and inventing one
-                // ("Operasyon Kuyruğu") put a non-existent team's name on real work. The ungrouped state gets its
-                // own translated label instead. Naming the queue is WC-3 contract work (BL-031 a/b).
+                /*
+                 * ⚠ THE OLD COMMENT HERE SAID THE PROJECTION "NEVER SAYS WHICH POOL AN ITEM BELONGS TO", and
+                 * that naming the queue was still WC-3 contract work. MEASURED, AND NO LONGER TRUE: the wire
+                 * carries `WorkItemPoolDto? Pool` on every work item (WorkAggregationModels.cs:402) as
+                 * `{ Id, Label? }` (:660), and `TaskWorkItemProvider` resolves the names in one batched read
+                 * (:341, :642, :1394) — a position that cannot be read still yields the id with a null label,
+                 * never a printed GUID. The fixtures answer it too (`pool.id` is REQUIRED of every groupQueue
+                 * fixture, fixture-contract.js:347), and the surface already reads it: mock-data.js maps
+                 * `pool.label.text` onto `item.group`, which is what `buildGroupSelector` draws its buttons from.
+                 *
+                 * NO QUEUE NAME IS WRITTEN HERE ANYWAY, for a reason that outlived the wrong one: this argument
+                 * is the item's STATUS TEXT, not its queue. Released work is back in the queue and held by
+                 * nobody, which is what `PoolUnassigned` says ("Unassigned — in the pool", all seven languages).
+                 * The nameless state keeps a TRANSLATED label and never a team name — "Operasyon Kuyruğu" once
+                 * put a non-existent team's name on real work (BL-031).
+                 *
+                 * FIXTURE-ONLY, like the whole of `applyTransition`: `applyAction` hands every real item to
+                 * `submitRealTransition` before this branch is reachable, so what it writes is a simulated row.
+                 */
                 setProjectionState(item, 'Pending', item.itemType === 'task' ? 'Open' : null, t('PoolUnassigned'));
                 return 'released';
             case 'approve': setProjectionState(item, 'Done', null, 'Onaylandı'); return 'resolved';
@@ -6476,10 +6907,45 @@
         // Plus the person being handed the work — see the picker in the reason dialog.
         reassign: ({ expectedVersion, reason, assigneeUserId }) => ({ expectedVersion, assigneeUserId, reason }),
 
-        // Everything else takes TaskTransitionRequest(ExpectedVersion, ReasonCode, Note) — the generic body that
-        // was being sent to all ten. It is correct for these; it was only ever wrong for the three above.
-        __default: ({ expectedVersion, reason }) => ({ expectedVersion, reasonCode: null, note: reason || null })
+        /*
+         * Everything else takes TaskTransitionRequest(ExpectedVersion, ReasonCode, Note) — the generic body that
+         * was being sent to all ten. It is correct for these; it was only ever wrong for the three above.
+         *
+         * ⚠ `reasonCode` WAS A LITERAL `null` HERE, and that constant is why `TaskItem.ClosureReasonCode` has
+         * been an empty column since the engine shipped. The whole chain behind it worked: the DTO accepts a
+         * code, the dispatcher forwards it (TaskWorkItemActionDispatcher), and the handler writes it to the task
+         * AND to the transition log. Nothing ever sent one. So a task could close, be recorded, be reported on —
+         * and never say WHAT was decided, because the client had hard-coded the answer to "nothing".
+         *
+         * This map's own comment names the lesson it then failed: a value that lives in two places and is
+         * declared in neither drifts. `null` was not even in two places; it was in one, and declared as a fact.
+         */
+        __default: ({ expectedVersion, reason, outcomeCode }) =>
+            ({ expectedVersion, reasonCode: outcomeCode || null, note: reason || null })
     };
+
+    /*
+     * ── WHICH ACTIONS CLOSE WORK, AND INTO WHICH HALF OF THE DICTIONARY ──────────────────────────────────
+     *
+     * Declared rather than tested inline for the reason the map above gives about itself: the engine has the
+     * same pair (TransitionTaskItemHandler.ClosureDispositionFor), and a second copy written as an `if` is how
+     * the two come to disagree about what "closing" means.
+     */
+    const CLOSURE_DISPOSITIONS = { complete: 'completionOutcomes', cancel: 'cancellationOutcomes' };
+
+    /**
+     * The outcomes this item's TYPE offers for this action — empty when it offers none, which is the normal
+     * state and the one that leaves today's behaviour untouched.
+     */
+    const closureOutcomesFor = (item, action) => {
+        const slot = CLOSURE_DISPOSITIONS[action && action.code];
+        if (!slot) { return []; }
+        const offered = item && item.taskType && item.taskType[slot];
+        return Array.isArray(offered) ? offered : [];
+    };
+
+    /** One outcome's words: a system outcome through the resource table, a tenant outcome as typed. */
+    const outcomeText = (outcome) => data.resolveLabel(outcome && outcome.label) || (outcome && outcome.code) || '';
 
     /** Actions whose DTO requires a non-empty Reason — the dialog must not let them through empty. */
     const REASON_REQUIRED_ACTIONS = ['inquire', 'return', 'reassign'];
@@ -6503,7 +6969,7 @@
     const buildTransitionBody = (actionCode, parts) =>
         (TRANSITION_BODIES[actionCode] || TRANSITION_BODIES.__default)(parts);
 
-    const submitRealTransition = async (item, action, reason, assigneeUserId, waitingOnUserId) => {
+    const submitRealTransition = async (item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode) => {
         const label = actionLabel(action);
         state.submittingItemId = item.id;
         state.submittingActionCode = action.code;
@@ -6524,7 +6990,8 @@
             item.id,
             action.code,
             item.source?.providerCode,
-            buildTransitionBody(action.code, { expectedVersion, reason, assigneeUserId, waitingOnUserId }));
+            buildTransitionBody(
+                action.code, { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode }));
 
         state.submittingItemId = null;
         state.submittingActionCode = null;
@@ -7060,9 +7527,9 @@
         }
     };
 
-    const applyAction = (item, action, reason, assigneeUserId, waitingOnUserId) => {
+    const applyAction = (item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode) => {
         if (isDispatchableItem(item)) {
-            submitRealTransition(item, action, reason, assigneeUserId, waitingOnUserId);
+            submitRealTransition(item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode);
             return;
         }
 
@@ -8065,6 +8532,101 @@
             }, dialogLook())).then((res) => {
                 if (res.isConfirmed && res.value) {
                     applyAction(item, action, res.value.reason, res.value.assigneeUserId, res.value.waitingOnUserId);
+                }
+            });
+            return;
+        }
+
+        /*
+         * ── THE CLOSURE OUTCOME PICKER ────────────────────────────────────────────────────────────────────
+         *
+         * BEFORE the plain confirm, and only when the task's TYPE has something to ask. `closureOutcomesFor`
+         * returns an empty list for an unclassified task, for a type nobody has configured, and for every type
+         * written before the dictionary existed — and an empty list falls straight through to the confirm below,
+         * byte for byte the dialog those hundred-odd open tasks get today. That is the backward-compatibility
+         * rule expressed as a branch rather than as a promise.
+         *
+         * A SELECT PLUS A CONDITIONAL TEXTAREA cannot go through `showConfirm`, which supports a textarea and
+         * nothing else (BL-146). So this takes the same raw-dialog route the reason dialog above already takes,
+         * wearing the same `dialogLook()` and the same `dialogIcon()` — not a second appearance, the one the
+         * product declares.
+         */
+        const closureOutcomes = closureOutcomesFor(item, action);
+        if (closureOutcomes.length) {
+            if (!global.Swal) { return; }
+
+            const outcomeOptions = closureOutcomes
+                .map((outcome) => `<option value="${esc(outcome.code)}">${esc(outcomeText(outcome))}</option>`)
+                .join('');
+            /*
+             * The reason box is ALWAYS DRAWN and its LABEL changes, rather than the box appearing and vanishing
+             * as the choice changes. A field that comes and goes moves everything under it and reads as a
+             * malfunction; a label that gains a word does not. It also keeps what somebody already typed when
+             * they change their mind about the outcome — reappearing empty would be a silent deletion.
+             */
+            const labelFor = (code) => {
+                const chosen = closureOutcomes.find((outcome) => outcome.code === code);
+                return chosen && chosen.requiresReason ? t('ClosureReasonLabelRequired') : t('ClosureReasonLabel');
+            };
+
+            global.Swal.fire(Object.assign({
+                title: dialogIcon(action.destructive ? 'danger' : 'info', inboxActionIcon(action))
+                    + '<span>' + esc(actionLabel(action)) + '</span>',
+                html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
+                    + `<label class="form-label d-block text-start" for="wcnClosureOutcome">`
+                    + `${esc(t('ClosureOutcomeLabel'))}</label>`
+                    + `<select id="wcnClosureOutcome" class="form-select">`
+                    + `<option value="">${esc(t('ClosureOutcomePlaceholder'))}</option>${outcomeOptions}</select>`
+                    + `<label class="form-label d-block text-start" id="wcnClosureReasonLabel" `
+                    + `for="wcnClosureReason">${esc(labelFor(''))}</label>`
+                    + `<textarea id="wcnClosureReason" class="form-control" rows="3" `
+                    + `placeholder="${esc(t('ClosureReasonPlaceholder'))}"></textarea>`,
+                showCancelButton: true,
+                confirmButtonText: tf('ConfirmProceedNamed', actionLabel(action).toLocaleLowerCase('tr')),
+                cancelButtonText: t('DialogDismiss'),
+                didOpen: (popup) => {
+                    const picker = document.getElementById('wcnClosureOutcome');
+                    bindDialogSelect2(picker, popup);
+                    /*
+                     * ⚠ THE NATIVE `change` EVENT, NOT select2's `select2:select`. select2 hides the original
+                     * control and re-fires `change` on it, so this listener serves both the enhanced control and
+                     * the plain one it falls back to when jQuery/select2 is absent — which is exactly the state
+                     * the test harness runs in.
+                     */
+                    if (picker) {
+                        picker.addEventListener('change', () => {
+                            const label = document.getElementById('wcnClosureReasonLabel');
+                            if (label) { label.textContent = labelFor(picker.value); }
+                        });
+                    }
+                },
+                preConfirm: () => {
+                    const outcomeCode = String(document.getElementById('wcnClosureOutcome')?.value || '').trim();
+                    if (!outcomeCode) {
+                        global.Swal.showValidationMessage(t('ClosureOutcomeRequired'));
+                        return false;
+                    }
+
+                    const reason = String(document.getElementById('wcnClosureReason')?.value || '').trim();
+                    const chosen = closureOutcomes.find((outcome) => outcome.code === outcomeCode);
+                    /*
+                     * ⭐ THE FLAG IS THE OUTCOME'S. "Rejected" asks why and "Approved" does not, from one list,
+                     * because the requirement travels on the row rather than on a setting above it.
+                     *
+                     * This is a COURTESY, not the enforcement: the engine checks the same rule on the way in
+                     * (TaskItemTransitionHandlers), because a requirement a client can skip by not drawing a
+                     * field is not a requirement.
+                     */
+                    if (chosen && chosen.requiresReason && !reason) {
+                        global.Swal.showValidationMessage(t('ClosureReasonRequired'));
+                        return false;
+                    }
+
+                    return { outcomeCode, reason };
+                }
+            }, dialogLook())).then((res) => {
+                if (res.isConfirmed && res.value) {
+                    applyAction(item, action, res.value.reason, undefined, undefined, res.value.outcomeCode);
                 }
             });
             return;

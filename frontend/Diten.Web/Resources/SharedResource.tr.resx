@@ -587,7 +587,7 @@
   <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>Tüzel Kişilik</value></data>
   <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>Referans Verileri</value></data>
   <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>Organizasyon</value></data>
-  <data name="Nav.Module.TASKS" xml:space="preserve"><value>Görevler</value></data>
+  <data name="Nav.Module.TASKS" xml:space="preserve"><value>Görev Tanımları</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>İş Akışı</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Kullanıcılar</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Roller</value></data>
@@ -649,6 +649,12 @@
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>Görev Merkezi</value>
   </data>
+  <data name="Nav.Page.TASKCHECKLISTTEMPLATES" xml:space="preserve">
+    <value>Kontrol Listesi Şablonları</value>
+  </data>
+  <data name="Nav.Page.TASKTEMPLATES" xml:space="preserve">
+    <value>Görev Şablonları</value>
+  </data>
   <data name="Nav.Page.TASKRECURRENCERULES" xml:space="preserve">
     <value>Yinelenen Görev Kuralları</value>
   </data>
@@ -674,10 +680,10 @@
     <value>GSKU’lar</value>
   </data>
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
-    <value>Görev türleri</value>
+    <value>Görev Türleri</value>
   </data>
   <data name="Nav.Page.TASKDOCUMENTLIST" xml:space="preserve">
-    <value>Kontrollü dokümanlar</value>
+    <value>Kontrollü Dokümanlar</value>
   </data>
   <data name="Nav.Page.TASKFIELDDEFINITIONS" xml:space="preserve">
     <value>Alan Tanımları</value>

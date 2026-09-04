@@ -1,18 +1,45 @@
 using Diten.Platform.Application.Contracts.Audit;
+using Diten.Platform.Domain.Repositories;
+using Diten.Platform.Infrastructure.Persistence;
 using Diten.Platform.Infrastructure.Persistence.Models;
 using Diten.Platform.Infrastructure.Services.Audit;
 using MongoDB.Driver;
 
 namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 
-internal sealed class AuditOutboxRepository : IAuditOutboxWriter
+internal sealed class AuditOutboxRepository : IAuditOutboxWriter, ITransactionalAuditOutboxWriter
     , IAuditOutboxProcessingRepository
 {
     private readonly IMongoCollection<AuditOutboxMessage> _collection;
+    private readonly IPlatformDbContext _dbContext;
 
-    public AuditOutboxRepository(IMongoDatabase database)
+    public AuditOutboxRepository(IPlatformDbContext dbContext)
     {
-        _collection = database.GetCollection<AuditOutboxMessage>(AuditCollectionNames.AuditOutbox);
+        _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        _collection = dbContext.Database.GetCollection<AuditOutboxMessage>(AuditCollectionNames.AuditOutbox);
+    }
+
+    public async Task<bool> TryEnqueueAsync(
+        IPlatformTransactionSession session,
+        AuditOutboxWriteRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        ArgumentNullException.ThrowIfNull(request);
+        request.Validate();
+
+        var mongoSession = PlatformMongoTransactionSession.Require(session, _dbContext);
+        var message = ToPersistenceMessage(request);
+        message.ValidateForInsert();
+        try
+        {
+            await _collection.InsertOneAsync(mongoSession, message, cancellationToken: ct);
+            return true;
+        }
+        catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            return false;
+        }
     }
 
     public async Task<bool> TryEnqueueAsync(AuditOutboxWriteRequest request, CancellationToken ct = default)

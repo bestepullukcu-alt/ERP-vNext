@@ -1,6 +1,7 @@
 using Diten.AuthService.Application.Common.Behaviors;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Common.Services;
+using Diten.AuthService.Application.Common.Authorization;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +26,8 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(assembly);
         services.AddScoped<IRoleProvisioningService, RoleProvisioningService>();
         services.AddScoped<IEntitlementPermissionSyncService, EntitlementPermissionSyncService>();
+        services.AddSingleton<IPpmEntitlementPermissionPolicy, PpmEntitlementPermissionPolicy>();
+        services.AddScoped<ITenantEffectivePermissionResolver, TenantEffectivePermissionResolver>();
         services.AddScoped<IPasswordPolicyService, PasswordPolicyService>();
         services.AddScoped<IFullCatalogPermissionGrantService, FullCatalogPermissionGrantService>();
         services.AddScoped<IRbacAuditRecorder, RbacAuditRecorder>(); // FEAT-AUDIT-RBAC
@@ -32,4 +35,3 @@ public static class DependencyInjection
         return services;
     }
 }
-

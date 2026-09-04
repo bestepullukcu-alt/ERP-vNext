@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ProjectsTitle" xml:space="preserve"><value>المشاريع</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>إدارة المشاريع الخاصة بالمستأجر ودورة حياتها وقابلية الإسناد إليها.</value></data>
+  <data name="AddNewProject" xml:space="preserve"><value>إضافة مشروع</value></data>
+  <data name="EditProject" xml:space="preserve"><value>تحرير مشروع</value></data>
+  <data name="Code" xml:space="preserve"><value>الرمز</value></data>
+  <data name="Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="LifecycleState" xml:space="preserve"><value>دورة الحياة</value></data>
+  <data name="VisibilityPolicyKey" xml:space="preserve"><value>سياسة الظهور</value></data>
+  <data name="Referenceability" xml:space="preserve"><value>قابلية الإسناد</value></data>
+  <data name="Referenceable" xml:space="preserve"><value>متاح للإسنادات الجديدة</value></data>
+  <data name="NotReferenceable" xml:space="preserve"><value>غير متاح للإسنادات الجديدة</value></data>
+  <data name="ProjectsLoadingState" xml:space="preserve"><value>جارٍ تحميل المشاريع…</value></data>
+  <data name="ProjectsEmptyState" xml:space="preserve"><value>لم يتم العثور على عناصر في المشاريع.</value></data>
+  <data name="ProjectsErrorState" xml:space="preserve"><value>تعذر تحميل قائمة المشاريع.</value></data>
+  <data name="ParentType" xml:space="preserve"><value>نوع الأصل</value></data>
+  <data name="Parent" xml:space="preserve"><value>الأصل</value></data>
+  <data name="ParentInitiative" xml:space="preserve"><value>المبادرة</value></data>
+  <data name="ParentProgram" xml:space="preserve"><value>البرنامج</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="LifecyclePlanned" xml:space="preserve"><value>مخطط</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>نشط</value></data>
+  <data name="LifecycleOnHold" xml:space="preserve"><value>معلّق</value></data>
+  <data name="LifecycleCompleted" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>ملغى</value></data>
+  <data name="CompleteProjectConfirmation" xml:space="preserve"><value>هل تريد إكمال هذا العنصر (مشروع)؟ لن يُسمح بإسنادات جديدة بعدها.</value></data>
+  <data name="CancelProjectConfirmation" xml:space="preserve"><value>هل تريد إلغاء هذا العنصر (مشروع)؟ لن يُسمح بإسنادات جديدة بعدها.</value></data>
+  <data name="OpenWorkspace" xml:space="preserve"><value>فتح مساحة العمل</value></data>
+</root>

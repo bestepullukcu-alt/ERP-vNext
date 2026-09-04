@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "dws-local-test-mutation-evidence-v1",
+  "mutations": [
+    {
+      "id": "LT01-port-5017-to-5011",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs",
+      "restoredSha256": "934460a3a80b1476f0a46cf7938705487a9cbf8b4a69dacddf5df1b207a014d6",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "failureText": "expected loopback 5017; actual 5011; no listener started",
+      "testType": "Diten.ManagementGovernanceService.ArchitectureTests.Modules.Dws.DwsLocalTestArchitectureTests",
+      "testMethod": "Local_test_host_is_bound_to_exact_loopback_5017_configuration",
+      "disposition": "expected-red",
+      "runId": "20260828-lt01-port-5017-to-5011"
+    },
+    {
+      "id": "LT02-default-off-gate",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs",
+      "restoredSha256": "934460a3a80b1476f0a46cf7938705487a9cbf8b4a69dacddf5df1b207a014d6",
+      "failureText": "mutant would remove --local-test or loopback-only activation gate",
+      "testType": "Diten.ManagementGovernanceService.ArchitectureTests.Modules.Dws.DwsLocalTestArchitectureTests",
+      "testMethod": "Program_without_local_test_switch_exits_without_host",
+      "disposition": "security-policy-forbidden"
+    },
+    {
+      "id": "LT03-fu16-permission-binding",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/Modules/Dws/DwsLocalTestAdapters.cs",
+      "restoredSha256": "146640c4c5576b71ecc004bbbf467384475c67d3a37c59a571cbd22fcd4b09ea",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "failureText": "wrong exact permission was accepted",
+      "testType": "Diten.ManagementGovernanceService.IntegrationTests.Modules.Dws.DwsLocalTestMongoTests",
+      "testMethod": "Local_executor_rejects_operation_permission_drift_before_write",
+      "disposition": "expected-red",
+      "runId": "20260828-lt03-fu16-permission-binding"
+    },
+    {
+      "id": "LT04-controller-discovery",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Api/Program.cs",
+      "restoredSha256": "934460a3a80b1476f0a46cf7938705487a9cbf8b4a69dacddf5df1b207a014d6",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "failureText": "create endpoint returned 404 instead of 201",
+      "testType": "Diten.ManagementGovernanceService.IntegrationTests.Modules.Dws.DwsLocalTestMongoTests",
+      "testMethod": "Local_host_health_and_create_are_loopback_persistence_smoke",
+      "disposition": "expected-red",
+      "runId": "20260828-lt04-controller-discovery"
+    },
+    {
+      "id": "LT05-audit-simulator-participation",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/Modules/Dws/DwsLocalTestAdapters.cs",
+      "restoredSha256": "146640c4c5576b71ecc004bbbf467384475c67d3a37c59a571cbd22fcd4b09ea",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "failureText": "audit simulator record collection was empty",
+      "testType": "Diten.ManagementGovernanceService.IntegrationTests.Modules.Dws.DwsLocalTestMongoTests",
+      "testMethod": "Local_host_health_and_create_are_loopback_persistence_smoke",
+      "disposition": "expected-red",
+      "runId": "20260828-lt05-audit-simulator-participation"
+    },
+    {
+      "id": "LT06-fourth-pipeline-behavior",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/DependencyInjection.cs",
+      "restoredSha256": "9a1310ac5d2eb77e0c8f1f8ed267fe979326000893359df602a5a7921d013341",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "failureText": "three behaviors present instead of exact four",
+      "testType": "Diten.ManagementGovernanceService.ArchitectureTests.Modules.Dws.DwsLocalTestArchitectureTests",
+      "testMethod": "Application_composition_has_exact_four_pipeline_behaviors",
+      "disposition": "expected-red",
+      "runId": "20260828-lt06-fourth-pipeline-behavior"
+    },
+    {
+      "id": "LT07-self-registration-permission",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Features/Dws/DwsLocalContracts.cs",
+      "restoredSha256": "bf299eca127c2df98107be7e7cc3aa3b5e02ca38c77d7bfce60fcf37750d00dc",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "failureText": "five permissions present instead of exact six",
+      "testType": "Diten.ManagementGovernanceService.Tests.Modules.Dws.DwsLocalTestContractTests",
+      "testMethod": "Self_registration_is_exact_and_contains_only_six_permissions",
+      "disposition": "expected-red",
+      "runId": "20260828-lt07-self-registration-permission"
+    },
+    {
+      "id": "LT08-create-response-status",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Features/Dws/DwsDispatchHandler.cs",
+      "restoredSha256": "55655c01ab9825c54caca1f999889c8f9e46da9882524d7fdaae31096550d4ef",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "failureText": "create returned 200 instead of 201",
+      "testType": "Diten.ManagementGovernanceService.IntegrationTests.Modules.Dws.DwsLocalTestMongoTests",
+      "testMethod": "Local_host_health_and_create_are_loopback_persistence_smoke",
+      "disposition": "expected-red",
+      "runId": "20260828-lt08-create-response-status"
+    },
+    {
+      "id": "LT09-operation-contract-identity",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Application/Features/Dws/DwsDispatchHandler.cs",
+      "restoredSha256": "55655c01ab9825c54caca1f999889c8f9e46da9882524d7fdaae31096550d4ef",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "failureText": "operation and contract drift reached executor",
+      "testType": "Diten.ManagementGovernanceService.Tests.Modules.Dws.DwsLocalTestContractTests",
+      "testMethod": "Dispatch_rejects_operation_contract_drift_before_executor",
+      "disposition": "expected-red",
+      "runId": "20260828-lt09-operation-contract-identity"
+    },
+    {
+      "id": "LT10-mongo-persistence-participation",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/Modules/Dws/DwsLocalTestAdapters.cs",
+      "restoredSha256": "146640c4c5576b71ecc004bbbf467384475c67d3a37c59a571cbd22fcd4b09ea",
+      "compileExit": 0,
+      "targetedExit": 1,
+      "failureText": "expected five Mongo participants; actual zero",
+      "testType": "Diten.ManagementGovernanceService.IntegrationTests.Modules.Dws.DwsLocalTestMongoTests",
+      "testMethod": "Local_host_health_and_create_are_loopback_persistence_smoke",
+      "disposition": "expected-red",
+      "runId": "20260828-lt10-mongo-persistence-participation"
+    }
+  ]
+}

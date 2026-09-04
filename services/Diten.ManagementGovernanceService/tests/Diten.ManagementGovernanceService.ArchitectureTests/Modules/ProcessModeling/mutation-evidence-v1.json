@@ -1,0 +1,68 @@
+{
+  "contract": "mod-0355-core-safe-mutation-evidence-v1",
+  "safePhysicalMutations": [
+    {
+      "id": "canonical-complete-sort-order",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Modules/ProcessModeling/CanonicalContentHash.cs",
+      "expectedRedTest": "CanonicalHashTests.Non_empty_unsorted_vector_matches_normative_output",
+      "compileExitCode": 0,
+      "targetedExitCode": 1,
+      "expectedFailure": "normative canonical bytes differ",
+      "restoredSha256": "648c627f89bb93e7bd40e09c22f51cb2761b58976fb92e36f94d6cb45dcff5ca"
+    },
+    {
+      "id": "draft-review-open-version-partial-index",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Persistence/Modules/ProcessModeling/ProcessModelingPersistenceManifest.cs",
+      "expectedRedTest": "AtomicPersistenceTests.Persistence_manifest_is_exact_tenant_first_and_non_ttl",
+      "compileExitCode": 0,
+      "targetedExitCode": 1,
+      "expectedFailure": "open-version partial unique index differs",
+      "restoredSha256": "01d01de73eeb08cf65affb75241eba4f65dae037afecc30a19dd165878c71e2f"
+    },
+    {
+      "id": "cohosted-sibling-project-isolation",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Infrastructure/DependencyInjection.cs",
+      "expectedRedTest": "ProcessModelingArchitectureTests.Exact_twelve_dimension_isolation_matrix_is_fail_closed",
+      "compileExitCode": 0,
+      "targetedExitCode": 1,
+      "expectedFailure": "forbidden sibling dependency detected",
+      "restoredSha256": "25f3c90d6d31a085129457408a00f440d2a3a796333a85a180209f9790778c47"
+    },
+    {
+      "id": "server-owned-canonical-content-hash",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Modules/ProcessModeling/ProcessModels.cs",
+      "expectedRedTest": "CoreDomainTests.Draft_hash_is_server_computed_and_children_are_tenant_owned",
+      "compileExitCode": 0,
+      "targetedExitCode": 1,
+      "expectedFailure": "caller-controlled hash accepted",
+      "restoredSha256": "e3a5d17991faa38f1be4422dfe79f4feae006b5c9a13d147c58890a66e6f0984"
+    },
+    {
+      "id": "terminal-published-version-pointer",
+      "sourcePath": "services/Diten.ManagementGovernanceService/src/Diten.ManagementGovernanceService.Domain/Modules/ProcessModeling/ProcessModels.cs",
+      "expectedRedTest": "CoreDomainTests.Model_pointers_coordinate_open_publish_and_retire",
+      "compileExitCode": 0,
+      "targetedExitCode": 1,
+      "expectedFailure": "terminal published pointer changed",
+      "restoredSha256": "e3a5d17991faa38f1be4422dfe79f4feae006b5c9a13d147c58890a66e6f0984"
+    }
+  ],
+  "guardianDispositions": [
+    {
+      "id": "tenant-predicate",
+      "disposition": "guardian-rejected",
+      "rationale": "A production tenant-predicate mutant could authorize a cross-tenant write.",
+      "compensatingTest": "MongoPersistenceTests.Tenant_predicate_and_expected_version_CAS_guardians_are_executable",
+      "behavior": "foreign tenant lookup returns null"
+    },
+    {
+      "id": "expected-version-cas",
+      "disposition": "guardian-rejected",
+      "rationale": "A production expected-version mutant could accept a stale write.",
+      "compensatingTest": "MongoPersistenceTests.Tenant_predicate_and_expected_version_CAS_guardians_are_executable",
+      "behavior": "stale CAS returns conflict and winner state remains unchanged"
+    }
+  ],
+  "faultSeamTest": "MongoPersistenceTests.Dynamic_replica_set_proves_indexes_tenant_cas_and_atomic_participants",
+  "faultParticipants": ["Business", "Receipt", "AuditIntent", "Outbox"]
+}

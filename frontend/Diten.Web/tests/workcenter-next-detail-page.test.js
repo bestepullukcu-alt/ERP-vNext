@@ -466,7 +466,13 @@ describe("each action says what it will do", () => {
 
     // The button still renders — it is the provider's action — but its consequence is not guessed at.
     expect(app().querySelector(".wcn-act-btn")).not.toBeNull();
-    expect(app().querySelector(".wcn-act-outcome")).toBeNull();
+    /*
+     * Scoped to the ACTION rows. The card also carries the "open the source record" door (2026-09-02), which
+     * is a link out rather than a provider action and explains itself through the same `.wcn-act-outcome`
+     * line the deeplink lead has always used. This claim is about an ACTION whose consequence is unknown, so
+     * it asks the action's own row — a bare `.wcn-act-outcome` would now be answered by the door.
+     */
+    expect(app().querySelector(".wcn-act:not(.wcn-act-source) .wcn-act-outcome")).toBeNull();
     expect(warnings.some((w) => w.includes("No outcome text for action \"teleport\""))).toBe(true);
   });
 });

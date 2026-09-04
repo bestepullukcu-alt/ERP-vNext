@@ -66,8 +66,8 @@ Existing legacy note: `execution/domains/platform-shared-services/module-packs/M
 ## Owned Objects
 Domain objects:
 - `AuditEvent` - tenant-aware immutable audit event record.
-- `AuditCategory` enum - domain enum for category-based retention and filtering.
-- `AuditOperation` enum - create/update/delete/activate/deactivate/suspend/reactivate/export/read/redact/retention-update/system. `AuditOperation.Delete` means deletion of the audited business entity or lifecycle state, not deletion of the `AuditEvent` record.
+- `AuditCategory` enum - domain enum for category-based retention and filtering. The bounded PPM Audit Consumer V1 mapping reserves `PortfolioDelivery = 15`; values are append-only and existing numeric values must not be renumbered.
+- `AuditOperation` enum - create/update/delete/activate/deactivate/suspend/reactivate/export/read/redact/retention-update/system. The bounded PPM Audit Consumer V1 mapping reserves `LifecycleTransition = 16`; `AuditOperation.Delete` means deletion of the audited business entity or lifecycle state, not deletion of the `AuditEvent` record.
 - `AuditActorType` enum - PlatformAdmin, PartnerAdmin, TenantUser, System.
 - `AuditEventRetentionPolicy` - platform-level/global retention policy by category, plan/tier, and storage phase.
 - `TenantAuditPreference` - tenant-scoped retention preference constrained by platform policy floor/ceiling.
@@ -729,6 +729,42 @@ AuditRetention.SaveError
 Magic string yasaktır — view/JS tarafında string literal text yerine bu key'ler render edilir.
 
 ## Follow-up Items
+- **Bounded PPM Audit Consumer V1 amendment (2026-08-31):** the consumer may only accept the
+  PPM-owned `PpmAuditIntentSubmittedV1` contract with event identity
+  `ppm.audit-intent.submitted.v1`, version `1`, and exactly these six payload fields:
+  `auditIntentId`, `actorId`, `entityType`, `entityId`, `mutation`, and `occurredAtUtc`.
+  Unknown, missing, duplicate, or nested fields; invalid identifiers; and non-UTC timestamps are
+  rejection cases. PSS references the independent
+  `services/Diten.PpmService/src/Diten.PpmService.Contracts/Events/**` artifact only: it must not
+  reference `Diten.PpmService.Application` or duplicate the payload DTO.
+
+  The approved V1 audit mapping is constant across every entity type accepted by that PPM-owned
+  contract: `AuditCategory.PortfolioDelivery = 15`; `created -> AuditOperation.Create`;
+  `updated -> AuditOperation.Update`; `lifecycle-changed -> AuditOperation.LifecycleTransition = 16`;
+  and `soft-deleted -> AuditOperation.Delete`. V1 has no target-state field. A consumer must not
+  infer Activate, Deactivate, Suspend, or Reactivate from an entity name or a remote PPM read. A
+  target-state-specific mapping requires a separately versioned PPM contract and pack amendment.
+
+  The six payload fields are not authorization evidence: actor and tenant are accepted only when
+  they agree with authenticated transport context. No PSS-side four-aggregate allowlist is permitted;
+  all entity coverage remains owned by the PPM contract. The historic PPM HMAC-specific consumer is
+  not a baseline and must not be copied.
+
+  This amendment is default-off. It authorizes neither consumer registration nor a live broker,
+  RabbitMQ configuration, key/secret provisioning, replay UI/API, public endpoint, production
+  activation, or direct production audit append. A later implementation requires the approved
+  shared publisher-identity/key-provider binding and must use `ConsumerName + EventId` idempotency
+  with the local audit append/outbox transaction. Same-`EventId` replay may create at most one
+  `AuditEvent` only when canonical bytes match; changed bytes and untrusted publishers are rejected.
+
+  Adding `PortfolioDelivery = 15` has a bounded persistence consequence: the existing
+  `AuditRetentionPolicySeed` enumerates non-unknown categories and inserts a missing default
+  retention policy. The implementation must prove on the existing test database that it inserts
+  exactly one missing `PortfolioDelivery` policy, leaves existing policies unchanged, and is
+  idempotent on a second run. A test may use only a test-owned disposable database that it removes
+  completely; it must not contact or create a non-test database, apply an unrelated schema profile,
+  or introduce a data-migration job. Audit Log and Audit Retention must add en/tr labels for
+  `PortfolioDelivery`; Audit Log must also add en/tr labels for `LifecycleTransition`.
 - Tenant-facing audit viewer and tenant permission boundary.
 - Tenant-side ERP UI for audit retention preference, if product decides tenants can self-manage it.
 - Retrofitting existing Platform modules to emit richer audit payloads after MOD-0021 core is merged.
