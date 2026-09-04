@@ -20,8 +20,10 @@ namespace Diten.Platform.Application.Features.DocumentManagementMasterRegister.H
 /// </list>
 /// FAIL-CLOSED: the register read is NOT wrapped in a try/catch — an infrastructure failure ("could not check")
 /// propagates as a thrown exception and is never converted into an <see cref="DocumentEffectivenessState.Unresolved"/>
-/// result (contract §2/§5). Phase 1 resolves in memory over the existing tenant-scoped read (the register is small);
-/// the batched <c>$in</c> repository methods are Phase 2 and are intentionally not added here.
+/// result (contract §2/§5). Phase 2 resolves via the batched <c>$in</c> repository seam
+/// (<see cref="IDocumentMasterRegisterRepository.GetByPermanentUidsAsync"/> / GetByDocumentCodesAsync) — fetching only
+/// the requested rows instead of the whole tenant register. The in-memory mapping below is unchanged, so the result is
+/// byte-for-byte identical to Phase 1.
 /// </summary>
 public sealed class ResolveDocumentEffectivenessHandler(
     IDocumentMasterRegisterRepository register,
@@ -32,9 +34,19 @@ public sealed class ResolveDocumentEffectivenessHandler(
     {
         TenantGuard.RequireTenant(tenantContext);
 
-        // Phase 1: in-memory resolution over the existing tenant-scoped read (batch $in is Phase 2). The read is NOT
+        // Trim + drop blanks, preserving original order and duplicates (one result item per requested occurrence). Full
+        // request rejection (empty/all-blank -> 400) is the HTTP boundary's job (Faz 3); here blanks are simply skipped.
+        var requested = request.Identifiers
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Select(id => id.Trim())
+            .ToList();
+
+        // Phase 2: batch $in over ONLY the requested identifiers (replaces the Faz 1 full-tenant scan). The read is NOT
         // guarded — a failure here must surface as a thrown exception, not a silent Unresolved.
-        var rows = await register.GetAllForTenantAsync(ct);
+        var distinct = requested.Distinct(StringComparer.Ordinal).ToList();
+        var rows = request.By == DocumentIdentifierKind.Uid
+            ? await register.GetByPermanentUidsAsync(distinct, ct)
+            : await register.GetByDocumentCodesAsync(distinct, ct);
 
         // Index by the requested identity field; skip rows whose key is not yet allocated (nullable pre-FU07). Codes /
         // UIDs are unique per tenant (register duplicate guards), so a plain last-wins dictionary is safe.
@@ -48,17 +60,9 @@ public sealed class ResolveDocumentEffectivenessHandler(
             }
         }
 
-        var items = new List<DocumentEffectivenessItem>();
-        foreach (var raw in request.Identifiers)
+        var items = new List<DocumentEffectivenessItem>(requested.Count);
+        foreach (var identifier in requested)
         {
-            // Phase 1 validation posture: only empty/whitespace identifiers are screened out here; full request
-            // rejection (400) is the Phase 3 HTTP boundary's job.
-            if (string.IsNullOrWhiteSpace(raw))
-            {
-                continue;
-            }
-
-            var identifier = raw.Trim();
             if (index.TryGetValue(identifier, out var entry))
             {
                 var effective = entry.LifecycleStatus.IsOperationallyEffective();
