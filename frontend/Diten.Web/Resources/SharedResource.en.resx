@@ -646,6 +646,9 @@
   <data name="Nav.Module.WORKAGGREGATION" xml:space="preserve">
     <value>Task Center</value>
   </data>
+  <data name="Nav.Module.WORKREPORT" xml:space="preserve">
+    <value>Work Report</value>
+  </data>
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>Task Center</value>
   </data>

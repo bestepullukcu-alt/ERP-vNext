@@ -585,6 +585,9 @@
   <data name="Nav.Module.WORKAGGREGATION" xml:space="preserve">
     <value>Центр задач</value>
   </data>
+  <data name="Nav.Module.WORKREPORT" xml:space="preserve">
+    <value>Отчёт о работе</value>
+  </data>
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>Центр задач</value>
   </data>

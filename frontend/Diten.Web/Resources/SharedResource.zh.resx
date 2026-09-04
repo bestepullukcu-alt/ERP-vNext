@@ -585,6 +585,9 @@
   <data name="Nav.Module.WORKAGGREGATION" xml:space="preserve">
     <value>任务中心</value>
   </data>
+  <data name="Nav.Module.WORKREPORT" xml:space="preserve">
+    <value>工作报告</value>
+  </data>
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>任务中心</value>
   </data>

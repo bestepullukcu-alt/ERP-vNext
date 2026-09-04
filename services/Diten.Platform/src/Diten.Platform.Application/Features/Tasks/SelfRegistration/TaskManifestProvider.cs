@@ -41,7 +41,6 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
     private const string PageTaskRecurrenceRules = "TASK_RECURRENCE_RULES";
     private const string PageChecklistTemplates = "TASK_CHECKLIST_TEMPLATES";
     private const string PageTaskTemplates = "TASK_TEMPLATES";
-    private const string PageWorkReport = "TASK_WORK_REPORT";
 
     public ModuleManifestDocument GetManifest() =>
         new(
@@ -320,54 +319,6 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                         new ModuleManifestAction("DELETE", "Delete Task Template",
                             TaskPermissions.TemplatesManage, "Row", 30,
                             IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
-                    ]),
-
-                /*
-                 * The WORK REPORT (Faz 5a) — how work is flowing, for the work the reader may see.
-                 *
-                 * ⚠ NAV-INVISIBLE, AND THAT IS THE POINT OF DECLARING IT NOW ANYWAY. Faz 5a ships the QUERY;
-                 * the screen is 5b. A manifest page is a promise the menu keeps, and publishing this visible
-                 * would grow a sidebar entry pointing at a 404 on the next reconciliation — exactly what the
-                 * document-list page shipped once and had to be corrected for.
-                 *
-                 * It is declared regardless because the permission keys need a manifest HOME: a key the
-                 * manifest never mentions is created by the A1 reflection worker as Module="platform" +
-                 * Scope=PlatformAdmin, which AuthService cannot downgrade — permanently unassignable to a
-                 * tenant role. 5b flips the flag; it does not invent the keys.
-                 *
-                 * ⚠ NOT behind `TaskPermissions.Read`. That key is in `PersonalWorkSurfaceScoped`, so a
-                 * nav-visible page behind it would become a second answer to "where is my work". A report is not
-                 * personal work — it says how the ORGANISATION's work is flowing — so it carries its own key,
-                 * the same separation `DocumentListRead` was given.
-                 */
-                new ModuleManifestPage(
-                    PageCode: PageWorkReport,
-                    DisplayName: "Work Report",
-                    RoutePath: "/Tasks/WorkReport",
-                    RequiredPermission: TaskPermissions.WorkReportRead,
-                    ParentPageCode: PageTasks,
-                    /*
-                     * ⚠ VISIBLE NOW (Faz 5b), and it was `false` for exactly one slice.
-                     *
-                     * 5a shipped the query with no screen behind this route, and publishing it visible then
-                     * would have grown a sidebar entry pointing at a 404 on the next reconciliation — the
-                     * mistake the document-list page made once and had to be corrected for. The page exists as
-                     * of this slice, so the promise the menu makes can now be kept.
-                     */
-                    IsNavigationVisible: true,
-                    PageType: "List",
-                    SortOrder: 33,
-                    Actions:
-                    [
-                        /*
-                         * Widening the report to every row in the tenant, as its own declared authority rather
-                         * than a flag on the request — a flag would let anyone who can reach the endpoint set
-                         * it. Held by far fewer people than the report itself: Oracle frames worklist report
-                         * scope as the user's groups or their reportees' groups, not the company.
-                         */
-                        new ModuleManifestAction("VIEW_TENANT_WIDE", "View Work Report Tenant-Wide",
-                            TaskPermissions.WorkReportReadTenantWide, "Toolbar", 10,
-                            IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
                     ])
             ],
             NotificationEvents:

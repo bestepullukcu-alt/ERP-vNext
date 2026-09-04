@@ -410,6 +410,9 @@ public static class DependencyInjection
         // MOD-0024 — Task Engine. Declares its permission keys (so the manifest, not the A1 reflection worker,
         // owns their Module/Scope attribution) and its email notification events.
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.Tasks.SelfRegistration.TaskManifestProvider>();
+        // MOD-0024 / İş Raporu — the Work Report is its OWN module, not a page under "Görev Tanımları": the
+        // sidebar groups by module, so no ParentPageCode could have moved it out of the settings group.
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.Tasks.SelfRegistration.WorkReportManifestProvider>();
 
         return services;
     }
