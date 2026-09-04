@@ -3737,3 +3737,72 @@ kişi seçicideki "neden kısa" ipucunun tarayıcıda ölmesi.
 **Kapanış ölçütü (Aşama 2):** kiracı kullanıcısı giriş ekranından şifresini
 sıfırlayabilmeli, ve akışın çalıştığını ölçen bir test — bağlantının varlığını
 değil, sıfırlamanın gerçekleştiğini ölçen.
+
+---
+
+### BL-333 — Yetkiler JWT'ye claim olarak gömülüyor; token 21,5 KB ve büyüyor (2026-09-04, CANLI, ölçüldü)
+
+**Durum:** AÇIK · **Boyut:** M · **Sahip:** Auth / platform altyapı
+**Semptomu bugün geçici olarak kapatıldı** (header tavanı 32→64 KB); kök neden duruyor.
+
+`TokenService.cs:50-52` her yetkiyi ayrı bir claim olarak access token'a yazıyor:
+
+```csharp
+foreach (var permission in permissions)
+    claims.Add(new Claim("permission", permission));
+```
+
+**Ölçüm (2026-09-04, `diten_auth_v3`):**
+
+    tanımlı yetki          407
+    kiracı admin'in aldığı 408   (hepsi)
+    ortalama ad uzunluğu    37 karakter
+    → token ~21,5 KB, altı parçalı çerez olarak taşınıyor
+      (access_token=chunks-6, access_tokenC1..C6)
+
+Sayı yerine ölçüm komutu — kayıt bayatlamasın diye:
+
+    mongosh --quiet diten_auth_v3 --eval 'print(db.permissions.countDocuments({}))'
+
+**Neden bugün patladı.** Kestrel'in varsayılan başlık tavanı 32 KB. Tarayıcı
+gateway'e DOĞRUDAN giden sayfalarda (`direct-gateway-profile`: Golden Reference,
+Governance/*, CRM'in bir kısmı) 21,5 KB çerez + CORS başlıkları tavanı aştı ve
+Kestrel **431** döndürdü — istek hiçbir servise ulaşmadan.
+
+⚠ Arıza servis düşmüş gibi göründü: DataTable "Loading…" da takılı kaldı, ve
+`initComplete` hiç çalışmadığı için `mountInlineFilter()` çağrılmayıp inline
+filtre sayfanın dibinde açıldı. İki ayrı "hata" tek kök nedendi. Aynı anda
+`proxy-profile` sayfaları sorunsuz çalışıyordu — çünkü orada MVC controller
+token'ı sunucu tarafında `Authorization: Bearer`'a çeviriyor ve tarayıcının
+çerezleri gateway'e hiç gitmiyor.
+
+**Bugün yapılan (semptom):** `MaxRequestHeadersTotalSize = 64 KB` — gateway, web
+ve arkadaki beş servisin hepsine. Kenarda yükseltmek YETMEDİ: ölçüldü, gateway
+200 verirken arkasındaki her servis hâlâ 431 veriyordu; Ocelot çağıranın
+başlıklarını forward ediyor.
+
+**Neden bu bir çözüm değil.** Token her yeni modülün yetkileriyle büyüyor —
+407 ve artıyor. Tavanı yükseltmek kırılma gününü erteler; bir sonraki modül
+64 KB'ı da aşabilir ve o gün sistem hiç açılmaz.
+
+**Kalıcı çözüm:** yetkiler token'dan çıkar. Token yalnız kullanıcı kimliği +
+rolleri taşır; yetkiler istek anında sunucu tarafında çözülür (zaten
+AuthService'te duruyorlar, `rolePermissions` 1126 satır). Beklenen etki:
+token ~21,5 KB → ~1 KB.
+
+**Yan kazanç:** her istekte taşınan 21,5 KB fazladan başlık kalkar. Bir sayfa
+~25 istek atıyorsa sayfa başına ~525 KB gereksiz trafik demek — başka bir
+makinedeki Codex'in "ortak gateway/layout performans sorunu" bulgusu büyük
+olasılıkla bunun aynısı (doğrulanmadı, raporu görülmedi).
+
+**Kapanış ölçütü:** kiracı admin'i ile giriş yapıldığında `access_token`
+çerezi TEK parça olmalı (chunks-* yok) ve toplam çerez < 4 KB; ayrıca
+`direct-gateway-profile` sayfaları 64 KB tavan GERİ İNDİRİLDİĞİNDE de
+çalışmalı — tavan geri 32 KB'a indirilerek doğrulanır.
+
+**İlişkili teknik borç:** `direct-gateway-profile` ile `proxy-profile` karışık
+uygulanmış. Kural (`frontend-js-standard.md:40-41`) Platform/admin için
+`proxy-profile` ZORUNLU diyor, ama `Governance/Roles`, `Governance/Permissions`
+gibi platform ekranları `direct-gateway` kullanıyor. Proxy profili bu arızaya
+yapısal olarak bağışık olduğu için, bu tutarsızlık yalnız stil meselesi değil.
+Ayrı madde açılmalı.
