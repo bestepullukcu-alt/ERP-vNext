@@ -1,0 +1,86 @@
+@model Diten.Web.Models.CRM.VisitPlanningSessionPageViewModel
+@using Diten.Web.Views.CRM.VisitPlanning
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitPlanningIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/VisitPlanning">@Localizer["SessionsTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/CRM/VisitPlanning" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        <button type="button" id="vp-save" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>
+
+@* Plan setup only — targets (accounts + doctors) are chosen on the plan's Details page. The route is generated on
+   Details, so no route card here; a visually-hidden RouteSection landmark keeps the [PlanSection, RouteSection]
+   section map identical to Details.cshtml (Compact parity). *@
+<div id="visit-planning-form"
+     data-mode="@(isEdit ? "edit" : "create")"
+     data-session-id="@(Model.SessionId?.ToString())"
+     data-can-apply="@Model.CanApply.ToString().ToLowerInvariant()">
+
+    <div id="vp-form-error" class="alert alert-danger d-none" role="alert"></div>
+
+    <div class="row g-4">
+        <div class="col-12">
+            <section class="card">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["PlanSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-medium" for="vp-country">@Localizer["Country"] <span class="text-danger">*</span></label>
+                            <select id="vp-country" class="form-select select2" data-placeholder="@SharedLocalizer["SelectPlaceholder"]"></select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-medium" for="vp-period">@Localizer["CyclePeriod"] <span class="text-danger">*</span></label>
+                            <select id="vp-period" class="form-select select2" data-placeholder="@SharedLocalizer["SelectPlaceholder"]" disabled></select>
+                            <div class="form-text" id="vp-period-hint">@Localizer["SelectCountryFirst"]</div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-medium" for="vp-week-form">@Localizer["WeekLabel"]</label>
+                            <select id="vp-week-form" class="form-select"></select>
+                            <div class="form-text">@Localizer["WeekScopeHint"]</div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-medium" for="vp-resource">@Localizer["RepUser"] <span class="text-danger">*</span></label>
+                            <select id="vp-resource" class="form-select select2" data-placeholder="@SharedLocalizer["SelectPlaceholder"]"></select>
+                            <div class="form-text" id="vp-users-note"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-medium" for="vp-segment">@Localizer["Segments"]</label>
+                            <select id="vp-segment" class="form-select select2" multiple data-placeholder="@Localizer["Segments"]"></select>
+                            <div class="form-text">@Localizer["SegmentHint"]</div>
+                            <div class="form-text text-muted">@Localizer["SegmentSingleNote"]</div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-medium" for="vp-strategy">@Localizer["StrategyTemplate"]</label>
+                            <select id="vp-strategy" class="form-select select2" data-placeholder="@Localizer["StrategyTemplateNone"]">
+                                <option value="">@Localizer["StrategyTemplateNone"]</option>
+                            </select>
+                            <div class="form-text" id="vp-strategy-note"></div>
+                        </div>
+                    </div>
+                    <div class="form-text mt-2" id="vp-form-status"></div>
+                </div>
+            </section>
+
+            @* Route is generated on Details — kept as a hidden landmark so the section-map parity with Details holds. *@
+            <section class="visually-hidden" aria-hidden="true">
+                <h6>@Localizer["RouteSection"]</h6>
+            </section>
+        </div>
+    </div>
+</div>

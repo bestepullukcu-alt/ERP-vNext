@@ -78,6 +78,17 @@
   <data name="StepsHelp" xml:space="preserve"><value>按内容应被讲解/学习/展示的顺序添加步骤。</value></data>
   <data name="AddStep" xml:space="preserve"><value>添加步骤</value></data>
   <data name="NoSteps" xml:space="preserve"><value>暂无步骤。</value></data>
+  <data name="ShowArchived" xml:space="preserve"><value>显示已归档</value></data>
+  <data name="ContentLibrary" xml:space="preserve"><value>内容库</value></data>
+  <data name="ContentLibraryHelp" xml:space="preserve"><value>与此路径分类匹配的已发布内容。勾选卡片即可将其添加为步骤。</value></data>
+  <data name="NoMatchingContent" xml:space="preserve"><value>暂无与此分类匹配的已发布内容。</value></data>
+  <data name="SelectedSteps" xml:space="preserve"><value>已选步骤</value></data>
+  <data name="SelectedStepsHelp" xml:space="preserve"><value>拖动以重新排序。点击步骤可编辑其详细信息。</value></data>
+  <data name="StepOrderDragHelp" xml:space="preserve"><value>通过在已选步骤列表中拖放来设置。</value></data>
+  <data name="EditStep" xml:space="preserve"><value>编辑步骤</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>全选</value></data>
+  <data name="SelectContentTab" xml:space="preserve"><value>选择内容</value></data>
+  <data name="ArrangeStepsTab" xml:space="preserve"><value>排列步骤</value></data>
   <data name="StepsSection" xml:space="preserve"><value>步骤</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>标识</value></data>
   <data name="ClassificationSection" xml:space="preserve"><value>分类</value></data>

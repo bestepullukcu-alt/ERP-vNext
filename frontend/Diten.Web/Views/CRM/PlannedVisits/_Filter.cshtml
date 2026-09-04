@@ -1,0 +1,59 @@
+@using Diten.Web.Views.CRM.PlannedVisits
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PlannedVisitsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Status, target type and purpose options come from the CONTRACT vocabulary, never a hardcoded list. *@
+                    <div class="filter-chip filter-status">
+                        <select id="filterPlanStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-target-type">
+                        <select id="filterTargetType" class="form-select form-select-sm select2" data-placeholder="@Localizer["TargetType"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-purpose">
+                        <select id="filterVisitPurpose" class="form-select form-select-sm select2" data-placeholder="@Localizer["VisitPurpose"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-resource">
+                        <input type="text" id="filterResourceId" class="form-control form-control-sm" placeholder="@Localizer["ResourceId"]" />
+                    </div>
+
+                    <div class="filter-chip filter-date-from">
+                        <input type="date" id="filterPlannedDateFrom" class="form-control form-control-sm" title="@Localizer["PlannedDateFrom"]" />
+                    </div>
+
+                    <div class="filter-chip filter-date-to">
+                        <input type="date" id="filterPlannedDateTo" class="form-control form-control-sm" title="@Localizer["PlannedDateTo"]" />
+                    </div>
+
+                    <div class="filter-chip filter-include-archived form-check ms-2">
+                        <input class="form-check-input" type="checkbox" id="filterIncludeArchived" />
+                        <label class="form-check-label small" for="filterIncludeArchived">@Localizer["IncludeArchived"]</label>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

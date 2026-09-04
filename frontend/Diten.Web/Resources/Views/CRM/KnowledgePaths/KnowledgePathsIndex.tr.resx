@@ -78,6 +78,17 @@
   <data name="StepsHelp" xml:space="preserve"><value>Adımları, içeriğin anlatılması / öğrenilmesi / gösterilmesi gereken sırayla ekleyin.</value></data>
   <data name="AddStep" xml:space="preserve"><value>Adım Ekle</value></data>
   <data name="NoSteps" xml:space="preserve"><value>Henüz adım yok.</value></data>
+  <data name="ShowArchived" xml:space="preserve"><value>Arşivlenenleri göster</value></data>
+  <data name="ContentLibrary" xml:space="preserve"><value>İçerik Kütüphanesi</value></data>
+  <data name="ContentLibraryHelp" xml:space="preserve"><value>Bu rotanın sınıflandırmasına uyan yayınlanmış içerikler. Adım olarak eklemek için bir kartı işaretleyin.</value></data>
+  <data name="NoMatchingContent" xml:space="preserve"><value>Bu sınıflandırmaya uyan yayınlanmış içerik henüz yok.</value></data>
+  <data name="SelectedSteps" xml:space="preserve"><value>Seçilen Adımlar</value></data>
+  <data name="SelectedStepsHelp" xml:space="preserve"><value>Sıralamak için sürükleyin. Ayrıntılarını düzenlemek için bir adıma tıklayın.</value></data>
+  <data name="StepOrderDragHelp" xml:space="preserve"><value>Seçilen adımlar listesinde sürükle-bırak ile belirlenir.</value></data>
+  <data name="EditStep" xml:space="preserve"><value>Adımı Düzenle</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Tümünü seç</value></data>
+  <data name="SelectContentTab" xml:space="preserve"><value>İçerik seç</value></data>
+  <data name="ArrangeStepsTab" xml:space="preserve"><value>Adımları sırala</value></data>
   <data name="StepsSection" xml:space="preserve"><value>Adımlar</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
   <data name="ClassificationSection" xml:space="preserve"><value>Sınıflandırma</value></data>

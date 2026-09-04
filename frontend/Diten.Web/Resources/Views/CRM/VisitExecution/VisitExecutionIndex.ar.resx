@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>تقرير الزيارة</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>سجّل ما حدث فعلاً — ضع علامة على كل زيارة مخطّطة بأنها مكتملة أو فائتة أو معاد جدولتها، وقدّم تقرير الزيارة غير القابل للتعديل.</value></data>
+  <data name="ExecutionNotice" xml:space="preserve"><value>هذا تقويم التنفيذ. يسجّل النتائج والتقارير؛ لا ينشئ أي خطة ولا يقدّم مرحلة المحتوى — المرحلة الفعلية التي تسجّلها هنا هي ما تقرأه الدورة التالية.</value></data>
+  <data name="View" xml:space="preserve"><value>العرض</value></data>
+  <data name="Day" xml:space="preserve"><value>يوم</value></data>
+  <data name="Week" xml:space="preserve"><value>أسبوع</value></data>
+  <data name="Date" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="Resource" xml:space="preserve"><value>المندوب (معرّف المورد)</value></data>
+  <data name="ResourcePlaceholder" xml:space="preserve"><value>مثال rep-1</value></data>
+  <data name="Refresh" xml:space="preserve"><value>تحديث</value></data>
+  <data name="NoVisits" xml:space="preserve"><value>لا توجد زيارات مخطّطة في هذه الفترة.</value></data>
+  <data name="ReportTitle" xml:space="preserve"><value>تقرير الزيارة</value></data>
+  <data name="PlannedContent" xml:space="preserve"><value>المحتوى المخطّط (FU04)</value></data>
+  <data name="ActualStage" xml:space="preserve"><value>المرحلة الفعلية المقدَّمة</value></data>
+  <data name="StageIndex" xml:space="preserve"><value>المرحلة #</value></data>
+  <data name="MatchedPlan" xml:space="preserve"><value>مطابقة للمرحلة المخطّطة</value></data>
+  <data name="OutcomeCode" xml:space="preserve"><value>رمز النتيجة</value></data>
+  <data name="OutcomeCodePlaceholder" xml:space="preserve"><value>مثال positive</value></data>
+  <data name="ReferenceDataHint" xml:space="preserve"><value>رموز النتائج تأتي من البيانات المرجعية.</value></data>
+  <data name="DoctorFeedback" xml:space="preserve"><value>ملاحظات الطبيب</value></data>
+  <data name="Samples" xml:space="preserve"><value>العيّنات / المواد المُسلَّمة</value></data>
+  <data name="AddSample" xml:space="preserve"><value>إضافة عيّنة</value></data>
+  <data name="FollowUpRequired" xml:space="preserve"><value>المتابعة مطلوبة</value></data>
+  <data name="FollowUpNotes" xml:space="preserve"><value>ملاحظات المتابعة</value></data>
+  <data name="AmendReason" xml:space="preserve"><value>سبب التعديل</value></data>
+  <data name="AmendHint" xml:space="preserve"><value>تم إرسال التقرير؛ التصحيح هو تعديل بالإضافة فقط.</value></data>
+  <data name="Submit" xml:space="preserve"><value>إرسال التقرير</value></data>
+  <data name="Amend" xml:space="preserve"><value>تقديم تعديل</value></data>
+  <data name="MarkCompleted" xml:space="preserve"><value>مكتملة</value></data>
+  <data name="MarkMissed" xml:space="preserve"><value>فائتة</value></data>
+  <data name="MarkRescheduled" xml:space="preserve"><value>أُعيد جدولتها</value></data>
+  <data name="Report" xml:space="preserve"><value>تقرير</value></data>
+  <data name="StateNone" xml:space="preserve"><value>لا يوجد تقرير</value></data>
+  <data name="StateDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StateSubmitted" xml:space="preserve"><value>مُرسَل</value></data>
+  <data name="StateAmended" xml:space="preserve"><value>مُعدَّل</value></data>
+  <data name="OutcomeRecorded" xml:space="preserve"><value>تم تسجيل النتيجة.</value></data>
+  <data name="ReportSubmitted" xml:space="preserve"><value>تم إرسال التقرير.</value></data>
+  <data name="ReportAmended" xml:space="preserve"><value>تم تقديم التعديل.</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>فشل الإجراء.</value></data>
+  <data name="ReasonPrompt" xml:space="preserve"><value>رمز السبب (مثال doctor_unavailable):</value></data>
+  <data name="ReschedulePrompt" xml:space="preserve"><value>تاريخ جديد (yyyy-MM-dd):</value></data>
+  <data name="Quantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="ItemType" xml:space="preserve"><value>نوع العنصر</value></data>
+  <data name="Remove" xml:space="preserve"><value>إزالة</value></data>
+</root>

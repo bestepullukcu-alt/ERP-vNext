@@ -8,11 +8,48 @@
     var c = Model.Content;
     string Show(object? value) =>
         value is null || (value is string s && string.IsNullOrWhiteSpace(s)) ? "-" : value.ToString()!;
+
+    // File-preview thumbnail / type icon (mirrors the CRM Knowledge list). Url/FileRef are POINTERS, never inline data.
+    var previewUrl = c.Url ?? string.Empty;
+    var isImageUrl = System.Text.RegularExpressions.Regex.IsMatch(previewUrl, @"\.(png|jpe?g|gif|webp|svg)(\?.*)?$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+    string PreviewIcon()
+    {
+        if (previewUrl.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(c.ContentType, "pdf", StringComparison.OrdinalIgnoreCase)) return "bxs-file-pdf";
+        return (c.ContentType ?? string.Empty).ToLowerInvariant() switch
+        {
+            "presentation" => "bx-slideshow",
+            "clinical-summary" => "bx-file",
+            "faq" => "bx-help-circle",
+            "objection-handling" => "bx-message-rounded-dots",
+            "video" => "bx-play-circle",
+            "brochure" => "bxs-file-pdf",
+            "quiz" => "bx-list-check",
+            _ => string.IsNullOrWhiteSpace(c.FileRef) ? "bx-file-blank" : "bx-file",
+        };
+    }
 }
 
 <div id="knowledgeDetailsPage" class="knowledge-details" data-content-id="@c.ContentId" data-archived="@c.IsArchived.ToString().ToLowerInvariant()">
     <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-        <div>
+        <div class="d-flex align-items-center gap-3">
+            @if (isImageUrl)
+            {
+                <img src="@previewUrl" class="rounded border flex-shrink-0" style="width:40px;height:40px;object-fit:contain;background:var(--bs-body-bg);"
+                     alt="" onerror="this.outerHTML='<span class=&quot;rounded border d-inline-flex align-items-center justify-content-center text-muted flex-shrink-0 bg-label-secondary&quot; style=&quot;width:40px;height:40px;&quot;><i class=&quot;icon-base bx @PreviewIcon()&quot;></i></span>';">
+            }
+            else if (!string.IsNullOrWhiteSpace(c.FileRef))
+            {
+                @* FileRef is a Document Management controlled-document id — stream its bytes; an image document renders,
+                   a PDF/other doc <img> can't paint degrades to the type/doc icon via onerror. *@
+                <img src="/CRM/Knowledge/document-preview/@c.FileRef" class="rounded border flex-shrink-0" style="width:40px;height:40px;object-fit:contain;background:var(--bs-body-bg);"
+                     alt="" onerror="this.outerHTML='<span class=&quot;rounded border d-inline-flex align-items-center justify-content-center text-muted flex-shrink-0 bg-label-secondary&quot; style=&quot;width:40px;height:40px;&quot;><i class=&quot;icon-base bx @PreviewIcon()&quot;></i></span>';">
+            }
+            else
+            {
+                <span class="rounded border d-inline-flex align-items-center justify-content-center text-muted flex-shrink-0 bg-label-secondary" style="width:40px;height:40px;"><i class="icon-base bx @PreviewIcon()"></i></span>
+            }
+            <div>
             <h5 class="mb-0">@c.ContentTitle</h5>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
@@ -20,6 +57,7 @@
                     <li class="breadcrumb-item active text-primary">@c.ContentCode</li>
                 </ol>
             </nav>
+            </div>
         </div>
         <div class="d-flex align-items-center gap-2">
             <a href="/CRM/Knowledge" class="btn btn-label-secondary">@Localizer["BackToList"]</a>
@@ -117,7 +155,7 @@
                             <i class="bx bx-category"></i>
                             <div>
                                 <div class="backbone-preview-label">@Localizer["SubjectId"]</div>
-                                <div class="backbone-preview-value mt-1 text-break">@Show(c.SubjectId)</div>
+                                <div class="backbone-preview-value mt-1 text-break">@(Model.SubjectName ?? Show(c.SubjectId))</div>
                             </div>
                         </div>
                     </div>
@@ -126,7 +164,7 @@
                             <i class="bx bx-sitemap"></i>
                             <div>
                                 <div class="backbone-preview-label">@Localizer["TopicId"]</div>
-                                <div class="backbone-preview-value mt-1 text-break">@Show(c.TopicId)</div>
+                                <div class="backbone-preview-value mt-1 text-break">@(Model.TopicName ?? Show(c.TopicId))</div>
                             </div>
                         </div>
                     </div>
@@ -135,7 +173,7 @@
                             <i class="bx bx-user-detail"></i>
                             <div>
                                 <div class="backbone-preview-label">@Localizer["AudienceProfileId"]</div>
-                                <div class="backbone-preview-value mt-1 text-break">@Show(c.AudienceProfileId)</div>
+                                <div class="backbone-preview-value mt-1 text-break">@(Model.AudienceProfileName ?? Show(c.AudienceProfileId))</div>
                             </div>
                         </div>
                     </div>
@@ -256,19 +294,10 @@
                 <div class="row g-4">
                     <div class="col-12">
                         <div class="backbone-preview-field">
-                            <i class="bx bx-purchase-tag"></i>
-                            <div>
-                                <div class="backbone-preview-label">@Localizer["BrandId"]</div>
-                                <div class="backbone-preview-value mt-1 text-break">@Show(c.BrandId)</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <div class="backbone-preview-field">
                             <i class="bx bx-package"></i>
                             <div>
                                 <div class="backbone-preview-label">@Localizer["ProductId"]</div>
-                                <div class="backbone-preview-value mt-1 text-break">@Show(c.ProductId)</div>
+                                <div class="backbone-preview-value mt-1 text-break">@(Model.ProductName ?? Show(c.ProductId))</div>
                             </div>
                         </div>
                     </div>
@@ -290,7 +319,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12"><small class="text-muted">@Localizer["ReferenceIdsOnlyHelp"]</small></div>
                 </div>
             </section>
 

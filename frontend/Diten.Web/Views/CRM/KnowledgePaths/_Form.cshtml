@@ -17,7 +17,7 @@
 }
 
 <div class="row g-4">
-    <div class="col-12 col-lg-8">
+    <div class="col-12 col-lg-8 d-flex flex-column gap-4">
 
         <section class="card mb-4">
             <div class="card-body p-4">
@@ -96,37 +96,9 @@
                 </div>
             </div>
         </section>
-
-        <section class="card mb-4">
-            <div class="card-body p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["StepsSection"]</h6>
-                @if (!Model.PathId.HasValue)
-                {
-                    <div class="alert alert-info mb-0"><i class="bx bx-info-circle me-1"></i>@Localizer["SaveBeforeSteps"]</div>
-                }
-                else if (Model.IsStepSetFrozen)
-                {
-                    <div class="alert alert-warning mb-0"><i class="bx bx-lock-alt me-1"></i>@Localizer["FrozenStepsHelp"]</div>
-                }
-                else
-                {
-                    <div id="stepEditor"
-                         data-path-id="@Model.PathId"
-                         data-endpoint="/CRM/KnowledgePaths/api"
-                         data-subject-id="@subjectValue">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <small class="text-muted">@Localizer["StepsHelp"]</small>
-                            <button type="button" id="btnAddStep" class="btn btn-sm btn-primary"><i class="bx bx-plus me-1"></i>@Localizer["AddStep"]</button>
-                        </div>
-                        <div id="stepList" class="d-flex flex-column gap-2"></div>
-                        <div id="stepEmpty" class="text-muted d-none">@Localizer["NoSteps"]</div>
-                    </div>
-                }
-            </div>
-        </section>
     </div>
 
-    <div class="col-12 col-lg-4">
+    <div class="col-12 col-lg-4 d-flex flex-column gap-4">
         <section class="card mb-4">
             <div class="card-body p-4">
                 <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SchedulingSection"]</h6>
@@ -168,6 +140,93 @@
     </div>
 </div>
 
+<div class="row g-4 mt-4">
+    <div class="col-12">
+        @* Steps builder — full-width row below the 8-4 identity/classification/scheduling block. *@
+        <section class="mb-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["StepsSection"]</h6>
+            @if (!Model.PathId.HasValue)
+            {
+                <div class="alert alert-info mb-0"><i class="bx bx-info-circle me-1"></i>@Localizer["SaveBeforeSteps"]</div>
+            }
+            else if (Model.IsStepSetFrozen)
+            {
+                <div class="alert alert-warning mb-0"><i class="bx bx-lock-alt me-1"></i>@Localizer["FrozenStepsHelp"]</div>
+            }
+            else
+            {
+                <div id="stepEditor"
+                     data-path-id="@Model.PathId"
+                     data-endpoint="/CRM/KnowledgePaths/api"
+                     data-subject-id="@subjectValue"
+                     data-topic-id="@topicValue"
+                     data-audience-id="@(Model.AudienceProfileId?.ToString() ?? string.Empty)">
+                    <small class="text-muted d-block mb-3">@Localizer["StepsHelp"]</small>
+
+                    @* Two-step workflow: pick content (Tab 1) → arrange the resulting steps (Tab 2). The offcanvas step
+                       editor is global and works from either tab. Pill/button tabs mirror WorkCenterTabs.cshtml. *@
+                    @* Tabs sit on a card header (mirrors WorkCenterTabs.cshtml); the tab-content panes live below the card. *@
+                    <div class="card mb-4">
+                        <div class="card-header p-3">
+                            <div class="d-flex align-items-center gap-3 flex-wrap">
+                                <div class="nav-align-top">
+                                    <ul class="nav nav-pills d-inline-flex gap-2" role="tablist">
+                                        <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                                            <button type="button" class="nav-link active small border shadow-none wc-tab-compact" id="kp-tab-select-btn" data-bs-toggle="tab" data-bs-target="#kp-tab-select" role="tab" aria-controls="kp-tab-select" aria-selected="true">
+                                                <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-grid-alt me-1 wc-tab-icon"></i>@Localizer["SelectContentTab"]</span>
+                                                <i class="bx bx-grid-alt d-sm-none wc-tab-icon"></i>
+                                            </button>
+                                        </li>
+                                        <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                                            <button type="button" class="nav-link small border shadow-none wc-tab-compact" id="kp-tab-arrange-btn" data-bs-toggle="tab" data-bs-target="#kp-tab-arrange" role="tab" aria-controls="kp-tab-arrange" aria-selected="false" tabindex="-1">
+                                                <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-list-ol me-1 wc-tab-icon"></i>@Localizer["ArrangeStepsTab"]<span id="kpSelectedCount" class="badge bg-label-primary rounded-pill ms-1 d-none">0</span></span>
+                                                <i class="bx bx-list-ol d-sm-none wc-tab-icon"></i>
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-content px-0">
+
+                        @* Tab 1 — Select content: refine bar + classification-filtered published content cards. *@
+                        <div class="tab-pane fade show active" id="kp-tab-select" role="tabpanel" aria-labelledby="kp-tab-select-btn">
+                            @* Filter bar in its own card: select-all (left) + search & type on ONE row (flex-nowrap). Client-side, no new fetch. *@
+                            <div class="card mb-4">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                                        <div class="form-check mb-0">
+                                            <input class="form-check-input" type="checkbox" id="contentSelectAll" />
+                                            <label class="form-check-label fw-medium" for="contentSelectAll">@Localizer["SelectAll"]</label>
+                                        </div>
+                                        <div class="ms-auto d-flex align-items-center gap-2 flex-nowrap">
+                                            <input type="search" id="contentSearch" class="form-control form-control-sm" style="max-width: 240px;" placeholder="@Localizer["Search"]" autocomplete="off" />
+                                            <select id="contentTypeFilter" class="form-select form-select-sm" style="max-width: 200px;" aria-label="@Localizer["Filter"]">
+                                                <option value="">@Localizer["ShowAll"]</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="contentLibrary" class="row g-3"></div>
+                            <div id="contentLibraryEmpty" class="text-muted d-none">@Localizer["NoMatchingContent"]</div>
+                        </div>
+
+                        @* Tab 2 — Arrange steps: each row is its own WorkCenter inbox-row task card (no outer card wrapper). *@
+                        <div class="tab-pane fade" id="kp-tab-arrange" role="tabpanel" aria-labelledby="kp-tab-arrange-btn">
+                            <small class="text-muted d-block mb-3">@Localizer["SelectedStepsHelp"]</small>
+                            <div id="stepList" class="d-flex flex-column gap-3"></div>
+                            <div id="stepEmpty" class="text-muted d-none">@Localizer["NoSteps"]</div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </section>
+    </div>
+</div>
+
 @* Contract vocabularies consumed by the step sub-editor (form.js). No hardcoded lists. *@
 <script id="knowledgePathVocab" type="application/json">@Html.Raw(JsonSerializer.Serialize(new {
     stepTypes = Model.StepTypes,
@@ -178,7 +237,7 @@
 @* The step sub-editor + its branch repeater live entirely inside this Compact page (D3/D7). *@
 <div class="offcanvas offcanvas-end" tabindex="-1" id="stepCanvas" aria-labelledby="stepCanvasLabel">
     <div class="offcanvas-header border-bottom">
-        <h5 class="offcanvas-title" id="stepCanvasLabel">@Localizer["AddStep"]</h5>
+        <h5 class="offcanvas-title" id="stepCanvasLabel">@Localizer["EditStep"]</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@Localizer["Cancel"]"></button>
     </div>
     <div class="offcanvas-body">
@@ -186,8 +245,9 @@
         <input type="hidden" id="stepEditId" />
         <div class="row g-3">
             <div class="col-6">
-                <label class="form-label fw-medium" for="stepOrder">@Localizer["StepOrder"] <span class="text-danger">*</span></label>
-                <input type="number" id="stepOrder" class="form-control" min="1" />
+                <label class="form-label fw-medium" for="stepOrder">@Localizer["StepOrder"]</label>
+                <input type="number" id="stepOrder" class="form-control" min="1" readonly />
+                <small class="text-muted">@Localizer["StepOrderDragHelp"]</small>
             </div>
             <div class="col-6">
                 <label class="form-label fw-medium" for="stepCode">@Localizer["StepCode"] <span class="text-danger">*</span></label>
@@ -206,9 +266,10 @@
                 <select id="stepVersionPin" class="form-select"></select>
             </div>
             <div class="col-12">
-                <label class="form-label fw-medium" for="stepContentId">@Localizer["ContentId"] <span class="text-danger">*</span></label>
-                <select id="stepContentId" class="form-select" data-placeholder="@Localizer["SelectOption"].Value"></select>
-                <small class="text-muted" id="stepContentMeta"></small>
+                <label class="form-label fw-medium">@Localizer["ContentId"]</label>
+                @* Content is fixed by the library card that created the step — shown read-only here (id carried in a hidden field). *@
+                <input type="hidden" id="stepContentId" />
+                <div id="stepContentDisplay" class="form-control-plaintext text-heading fw-medium border rounded px-3 py-2 bg-label-secondary"></div>
             </div>
             <div class="col-6">
                 <label class="form-label fw-medium" for="stepCompletionRule">@Localizer["CompletionRule"]</label>

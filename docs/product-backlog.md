@@ -5337,3 +5337,63 @@ handler'ın denendiğini ve ölçümle reddedildiğini yazıyor.
      yine sessiz kalmamalı
   4. Bugüne kadar "gönderildi" işaretlenmiş outbox kayıtlarının kaybı
      **ölçülsün ve raporlansın** — telafi gerekiyorsa ayrı iş olarak açılsın
+
+### BL-316 — MOD-0162'nin beyan edilmiş SoR'u kavram modelini KAPSAMIYOR; ConceptGraph sınırın dışına yazıldı (2026-09-01, ölçüldü)
+> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+
+- **Ölçüm — Blueprint master 8.1, `Blueprint_Data` sayfası, MOD-0162 satırı:**
+
+  ```
+  Capability Group : Service
+  Module Name      : Knowledge Base
+  SoR Module       : SoR: knowledge articles (if designated), article feedback
+  Aim (group)      : Execute service delivery with SLA governance and
+                     closed-loop satisfaction telemetry.
+  ```
+
+- **Ne yazıldı:** MOD-0162-FU03 kapsamında beş aggregate
+  `services/Diten.CrmService/src/Diten.CrmService.Domain/Entities/` altına kondu:
+  `ConceptType`, `ConceptNode`, `ConceptRelationship`, `ConceptChainTemplate`,
+  `KnowledgeContentConceptLink`. Bunların hiçbiri "knowledge article" ya da
+  "article feedback" değil — bir kavram grafiği ve zincir şablonudur.
+
+- **⚠ Sapma iki katmanlı:**
+  1. **SoR sapması** — yazılan nesneler modülün beyan edilmiş SoR'unda yok.
+  2. **Capability grubu sapması** — MOD-0162 `Service` grubunda ve grubun hedefi
+     servis teslimi/SLA. Kavram modeli ise **promosyonel mesaj mimarisi**
+     (legacy `Marketing / UCLN` ekranlarının karşılığı), vaka çözümü değil.
+     Yani iş Marketing hedefine hizmet ediyor, Service modülünde duruyor.
+
+- **⚠ İkinci ölçüm — registry kendi içinde çelişiyor.** `execution/registries/module-id-registry.md:259`
+  ve `execution/domains/commercial-suite/crm-sor-boundary.md:21`
+  "MOD-0167 owns Segment / TargetCustomer / **UCLN**" diyor. Oysa MOD-0167'nin blueprint SoR'u
+  yalnız `segments, segment versions, segment usage logs`. Sonuç: **UCLN üç yerde üç farklı sahibe
+  yazılı** — blueprint'te hiçbir modülde, registry'de MOD-0167'de, kodda MOD-0162'de.
+
+- **Neden ŞİMDİ değiştirilmiyor:** kod teslim edilmiş ve çalışıyor (FU03 smoke 32/32, verifier 85/9).
+  Taşıma maliyeti = collection adları + `RegisterClassMaps` kayıtları + `crm.knowledge-concept.*`
+  RBAC anahtarları + gateway yolları + frontend rota kökü (`CRM/KnowledgeConcepts`).
+  Sıfır işlevsel kazanç, yüksek regresyon riski. Bu bir **yönetişim borcu**, hata değil.
+
+- **Tetikleyici:** legacy UCLN akışının üst katmanı için — Strategy Template / UCLN Book / Book Pages —
+  module pack açıldığında. O pack zaten yeni bir capability sahibi tanımlamak zorunda
+  (registry'de bir sonraki boş kimlik `CAND-CAP-0011`), dolayısıyla sınır kararı orada
+  **tek seferde** verilmeli. Ayrı bir tur harcamaya değmez.
+
+- **Karar gerektiren soru — üç seçenek, henüz seçilmedi:**
+  1. **MOD-0162'nin SoR'unu genişlet** (blueprint 8.2'de satır güncellenir: `+ concept model`).
+     En az riskli; ama Marketing işi Service grubunda kalmaya devam eder.
+  2. **MOD-0057 / MOD-0058 ile bölüş.** MOD-0057 (Semantic Tagging & Taxonomy Management) SoR'u
+     `taxonomies, tags, tagging rules, tag approvals`; MOD-0058 (Knowledge Graph / Entity Linking)
+     SoR'u `KG entities/links, link audit trails`. Kavramsal olarak en doğru eşleşme —
+     **ama iki platform modülü de henüz yok**, yani bu seçenek bir bağımlılık yaratır.
+  3. **Yeni Marketing capability'sine taşı.** En temiz sonuç, en pahalı yol.
+
+- **Seçenekten BAĞIMSIZ olarak yapılacak:** registry'deki "MOD-0167 owns UCLN" kaydı **yanlış** ve
+  silinmeli. Tek satırlık düzeltme, bugün de yapılabilir; üç seçeneğin hiçbirini önceden bağlamaz.
+
+- **Gelecek regresyon riski: 🟢** — bugün hiçbir şey kırılmıyor, hiçbir test düşmüyor.
+  Bedeli, sınır sorusu bir sonraki module pack'te yeniden açıldığında ödenir.
+
+- **Kaynak:** legacy UCLN akış/karşılaştırma raporu (bölüm E — Blueprint 8.1 yerleşimi),
+  ölçüm tarihi 2026-09-01.

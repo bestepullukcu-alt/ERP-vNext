@@ -105,6 +105,13 @@ public static class DependencyInjection
             Application.Features.CycleCapacity.Services.ICycleCapacityDefaultsProvider,
             CycleCapacity.ConfigurationCycleCapacityDefaultsProvider>();
 
+        // MOD-0155 FU03 — the configured route-optimization placeholders (09:00–18:00 field day + lunch, road factor,
+        // assumed field speed). Singleton: configuration is read once at startup. NOT derived from CycleCapacity
+        // (DailyWorkMinutes has no start/end/lunch structure); HR/MOD-0288 is the additive future source (D-WORKINGHOURS).
+        services.AddSingleton<
+            Application.Features.RouteOptimization.IRouteOptimizationDefaultsProvider,
+            RouteOptimization.ConfigurationRouteOptimizationDefaultsProvider>();
+
         services.AddHttpClient<IReferenceDataValidator, GatewayReferenceDataValidator>();
         // MOD-0150 FU04 — the same Gateway validator also reads per-value attributes (relationship-type metadata).
         services.AddScoped<Application.Common.ReferenceValidation.IReferenceMetadataReader>(

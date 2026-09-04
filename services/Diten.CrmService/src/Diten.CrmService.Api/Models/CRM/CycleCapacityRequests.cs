@@ -38,6 +38,10 @@ public sealed class CreateCycleCapacityRequest
     /// <summary>Minutes spent on quizzes on a field DAY.</summary>
     public int QuizDuration { get; set; }
 
+    /// <summary>MOD-0155 FU06B — buffer minutes left between two consecutive visits. Nullable so an omitted field takes
+    /// the server's configured default rather than posting a silent 0; not part of a single visit's duration.</summary>
+    public int? BetweenVisitTimeMinutes { get; set; }
+
     public string? Description { get; set; }
 
     /// <summary>One row per calendar month the period touches, each addressed by (Year, MonthNumber). There is no
@@ -56,6 +60,11 @@ public sealed class UpdateCycleCapacityRequest
     public int TravelingTime { get; set; }
     public int ReportDuration { get; set; }
     public int QuizDuration { get; set; }
+
+    /// <summary>MOD-0155 FU06B — buffer minutes between two consecutive visits. Nullable: an omitted field takes the
+    /// configured default.</summary>
+    public int? BetweenVisitTimeMinutes { get; set; }
+
     public string? Description { get; set; }
     public List<CycleCapacityMonthRequest> Months { get; set; } = new();
     public int? ExpectedVersion { get; set; }

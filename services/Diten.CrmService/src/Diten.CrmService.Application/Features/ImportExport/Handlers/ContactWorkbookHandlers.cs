@@ -37,7 +37,7 @@ internal static class ContactWorkbookSupport
     internal static async Task<IReadOnlyList<IReadOnlyList<string?>>?> ReadAccountLookupAsync(
         IAccountRepository accounts, Guid tenantId, CancellationToken cancellationToken)
     {
-        var (items, _) = await accounts.ListAsync(tenantId, null, 1, ContactWorkbookSchema.MaxAccountLookupRows, cancellationToken);
+        var (items, _, _) = await accounts.ListAsync(tenantId, null, 1, ContactWorkbookSchema.MaxAccountLookupRows, null, null, null, null, null, cancellationToken);
         return items
             .OrderBy(a => a.AccountCode, StringComparer.OrdinalIgnoreCase)
             .Select(a => (IReadOnlyList<string?>)new string?[]
@@ -229,7 +229,7 @@ public sealed class ExportContactsWorkbookHandler
     private async Task<Dictionary<Guid, DomainAccount>> BuildAccountMapAsync(
         Guid tenantId, IEnumerable<Guid> accountIds, CancellationToken cancellationToken)
     {
-        var (items, _) = await _accounts.ListAsync(tenantId, null, 1, ContactWorkbookSchema.MaxAccountLookupRows, cancellationToken);
+        var (items, _, _) = await _accounts.ListAsync(tenantId, null, 1, ContactWorkbookSchema.MaxAccountLookupRows, null, null, null, null, null, cancellationToken);
         var map = items.ToDictionary(a => a.Id);
 
         // Tenants with more accounts than the lookup page: resolve only the ids the links actually reference.

@@ -89,6 +89,7 @@ public sealed class GetCycleCapacityContractHandler
                 defaults.Fte,
                 CycleCapacityFteSources.InterimDefault,
                 FteIsEditable: false,
+                defaults.BetweenVisitTimeMinutes,
                 CyclePeriodReferenceSets.CountrySet),
             CycleCapacityReasonCodes.All,
             CycleCapacityPermissions.All,

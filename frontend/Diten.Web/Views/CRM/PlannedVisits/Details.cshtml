@@ -1,0 +1,269 @@
+@model Diten.Web.Models.CRM.PlannedVisitDetailApiModel
+@using Diten.Web.Views.CRM.PlannedVisits
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PlannedVisitsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = SharedLocalizer["Details"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = ViewData["CanManage"] as bool? ?? false;
+    var canConfirm = ViewData["CanConfirm"] as bool? ?? false;
+    var status = Model.PlanStatus?.ToLowerInvariant() ?? "draft";
+    var isArchived = status == "archived";
+    var isCancelled = status == "cancelled";
+    var statusClass = status switch
+    {
+        "confirmed" => "bg-label-success",
+        "planned" => "bg-label-info",
+        "cancelled" => "bg-label-secondary",
+        "archived" => "bg-label-dark",
+        _ => "bg-label-primary"
+    };
+    string ConsentTone(string s) => s switch
+    {
+        "allowed" => "bg-label-success",
+        "blocked" => "bg-label-danger",
+        "unknown" => "bg-label-warning",
+        _ => "bg-label-secondary"
+    };
+    string FreqTone(string s) => s switch
+    {
+        "resolved" => "bg-label-success",
+        "conflict" => "bg-label-warning",
+        _ => "bg-label-secondary"
+    };
+}
+
+@* The section/card map mirrors _Form.cshtml (WhoSection, ContentSection, ResourceSection, ContextSection,
+   LifecycleSection) so the Compact information architecture stays identical between authoring and reading. The
+   read-only provenance panels (consent, frequency, selection, availability) and the motor-filled slot fold in as inner
+   cards within those sections rather than as separate sections. *@
+<div class="planned-visit-details">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0">@SharedLocalizer["Details"] · @Model.VisitCode</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/CRM/PlannedVisits">@Localizer["PlannedVisitsTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@SharedLocalizer["Details"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2" data-plan-id="@Model.PlannedVisitId" data-plan-version="@Model.Version" id="detailActions">
+            <a href="/CRM/PlannedVisits" class="btn btn-label-secondary">@SharedLocalizer["Back"]</a>
+            @if (canManage && !isArchived)
+            {
+                <a href="/CRM/PlannedVisits/Edit/@Model.PlannedVisitId" class="btn btn-primary">@SharedLocalizer["Edit"]</a>
+            }
+            @if (canConfirm && status == "planned")
+            {
+                <button type="button" class="btn btn-success js-detail-confirm">@Localizer["ConfirmPlannedVisit"]</button>
+            }
+            @if (canManage && !isArchived && !isCancelled)
+            {
+                <button type="button" class="btn btn-outline-warning js-detail-cancel">@Localizer["CancelPlannedVisit"]</button>
+            }
+            @if (canManage && !isArchived)
+            {
+                <button type="button" class="btn btn-outline-dark js-detail-archive">@Localizer["ArchivePlannedVisit"]</button>
+            }
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Column (Left): Who + Content -->
+        <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+            <section class="card p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["WhoSection"]</h6>
+                <div class="row g-4">
+                    <div class="col-md-4"><div class="text-muted small">@Localizer["TargetType"]</div><div><span class="badge bg-label-primary">@Localizer["TargetType_" + Model.TargetType]</span></div></div>
+                    <div class="col-md-8"><div class="text-muted small">@Localizer["TargetId"]</div><div>@Model.TargetId</div></div>
+                    <div class="col-md-4"><div class="text-muted small">@Localizer["PlannedDate"]</div><div>@Model.PlannedDate</div></div>
+                    <div class="col-md-4"><div class="text-muted small">@Localizer["PlannedWindow"]</div><div>@(string.IsNullOrWhiteSpace(Model.PlannedStartTime) ? "—" : $"{Model.PlannedStartTime} – {Model.PlannedEndTime}")</div></div>
+                    <div class="col-md-4"><div class="text-muted small">@Localizer["PlannedDurationMinutes"]</div><div>@(Model.PlannedDurationMinutes?.ToString() ?? "—")</div></div>
+                    <div class="col-md-6"><div class="text-muted small">@Localizer["VisitPurpose"]</div><div>@Localizer["VisitPurpose_" + Model.VisitPurpose]</div></div>
+                    <div class="col-md-6"><div class="text-muted small">@Localizer["VisitType"]</div><div>@Localizer["VisitType_" + Model.VisitType]</div></div>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.Objective) || !string.IsNullOrWhiteSpace(Model.Notes))
+                {
+                    <hr />
+                    @if (!string.IsNullOrWhiteSpace(Model.Objective))
+                    {
+                        <div class="mb-2"><div class="text-muted small">@Localizer["Objective"]</div><div>@Model.Objective</div></div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.Notes))
+                    {
+                        <div><div class="text-muted small">@SharedLocalizer["Description"]</div><div>@Model.Notes</div></div>
+                    }
+                }
+            </section>
+
+            <section class="card p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ContentSection"]</h6>
+                @if (Model.Content is { } content && content.JourneyId is not null)
+                {
+                    <div class="row g-4">
+                        <div class="col-md-6"><div class="text-muted small">@Localizer["ContentEngagementJourneyId"]</div><div>@(content.JourneyDisplayName ?? content.JourneyId?.ToString())</div></div>
+                        <div class="col-md-6"><div class="text-muted small">@Localizer["ContentEngagementJourneyStageId"]</div><div>@(content.StageDisplayName ?? content.StageId?.ToString() ?? "—")</div></div>
+                        <div class="col-md-4"><div class="text-muted small">@Localizer["StageIndex"]</div><div>@(content.StageIndex?.ToString() ?? "—")</div></div>
+                        <div class="col-md-8"><div class="text-muted small">@Localizer["ContentSource"]</div><div><span class="badge bg-label-secondary">@Localizer["ContentSource_" + content.ContentSource]</span></div></div>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-muted">@Localizer["NoJourneyBound"]</div>
+                }
+
+                @* Motor-filled slot (D12) — an inner card, shown only when a later FU has packed it. *@
+                @if (Model.Slot is { IsPacked: true })
+                {
+                    <div class="card bg-lighter mt-4 p-3">
+                        <div class="fw-semibold mb-2">@Localizer["SlotSection"]</div>
+                        <div class="row g-3">
+                            <div class="col-md-4"><div class="text-muted small">@Localizer["SequenceOrder"]</div><div>@(Model.Slot.SequenceOrder?.ToString() ?? "—")</div></div>
+                            <div class="col-md-8"><div class="text-muted small">@Localizer["SlotWindow"]</div><div>@(string.IsNullOrWhiteSpace(Model.Slot.SlotStartTime) ? "—" : $"{Model.Slot.SlotStartTime} – {Model.Slot.SlotEndTime}")</div></div>
+                        </div>
+                    </div>
+                }
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right): Resource + Context + Lifecycle (with provenance) -->
+        <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+            <section class="card p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["ResourceSection"]</h6>
+                <div class="mb-2"><div class="text-muted small">@Localizer["ResourceId"]</div><div>@Model.Resource.ResourceId</div></div>
+                <div class="mb-2"><div class="text-muted small">@Localizer["ResourceType"]</div><div>@Model.Resource.ResourceType</div></div>
+                @if (!string.IsNullOrWhiteSpace(Model.Resource.DisplayName))
+                {
+                    <div><div class="text-muted small">@Localizer["ResourceDisplayName"]</div><div>@Model.Resource.DisplayName</div></div>
+                }
+            </section>
+
+            <section class="card p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["ContextSection"]</h6>
+                <div class="mb-2"><div class="text-muted small">@Localizer["BusinessUnit"]</div><div>@(string.IsNullOrWhiteSpace(Model.BusinessUnit) ? "—" : Model.BusinessUnit)</div></div>
+                <div class="mb-2"><div class="text-muted small">@Localizer["TerritoryNodeId"]</div><div>@(Model.TerritoryNodeId?.ToString() ?? "—")</div></div>
+                <div><div class="text-muted small">@Localizer["CampaignId"]</div><div>@(Model.CampaignId?.ToString() ?? "—")</div></div>
+            </section>
+
+            <section class="card p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["LifecycleSection"]</h6>
+                <div class="mb-2">
+                    <div class="text-muted small">@SharedLocalizer["Status"]</div>
+                    <div><span class="badge @statusClass">@Localizer["Status_" + status]</span></div>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.CancellationReason))
+                {
+                    <div class="mb-2"><div class="text-muted small">@Localizer["CancellationReason"]</div><div>@Model.CancellationReason</div></div>
+                }
+
+                @* Consent provenance (D6) — inner card, blocked/unknown clearly badged. *@
+                <div class="card bg-lighter mt-3 p-3">
+                    <div class="fw-semibold mb-2">@Localizer["Consent"]</div>
+                    @if (Model.Consent is { } consent)
+                    {
+                        <div class="mb-2"><span class="badge @ConsentTone(consent.EligibilityStatus)">@Localizer["Consent_" + consent.EligibilityStatus]</span></div>
+                        <div class="text-muted small">@Localizer["ConsentChannelPurpose"]</div>
+                        <div class="mb-1">@consent.Channel / @consent.Purpose</div>
+                        @if (!consent.FilterApplied)
+                        {
+                            <div class="alert alert-warning py-2 small mb-1">@Localizer["ConsentFilterNotApplied"]</div>
+                        }
+                        @if (consent.ReasonCodes.Any())
+                        {
+                            <div class="text-muted small">@string.Join(", ", consent.ReasonCodes)</div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-muted small">@SharedLocalizer["NotAvailable"]</div>
+                    }
+                </div>
+
+                @* Frequency provenance (D5) — inner card. *@
+                <div class="card bg-lighter mt-3 p-3">
+                    <div class="fw-semibold mb-2">@Localizer["Frequency"]</div>
+                    @if (Model.Frequency is { } frequency)
+                    {
+                        <div class="mb-1"><span class="badge @FreqTone(frequency.FrequencyStatus)">@Localizer["Frequency_" + frequency.FrequencyStatus]</span></div>
+                        @if (!string.IsNullOrWhiteSpace(frequency.SelectedPolicyName))
+                        {
+                            <div>@frequency.SelectedPolicyName</div>
+                            <div class="text-muted small">@frequency.RequiredVisitCount× / @frequency.PeriodType</div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-muted small">@SharedLocalizer["NotAvailable"]</div>
+                    }
+                </div>
+
+                @* Selection origin (D11) — inner card. *@
+                @if (Model.Selection is { } selection)
+                {
+                    <div class="card bg-lighter mt-3 p-3">
+                        <div class="fw-semibold mb-2">@Localizer["SelectionSection"]</div>
+                        <div><span class="badge bg-label-secondary">@Localizer["SelectionMode_" + selection.SelectionMode]</span></div>
+                        @if (!string.IsNullOrWhiteSpace(selection.DecidedBy))
+                        {
+                            <div class="text-muted small mt-1">@selection.DecidedBy</div>
+                        }
+                    </div>
+                }
+
+                @* Availability snapshot (D13) — inner card, a WARNING signal never a block. *@
+                @if (Model.Availability is { } availability)
+                {
+                    <div class="card bg-lighter mt-3 p-3">
+                        <div class="fw-semibold mb-2">@Localizer["AvailabilitySection"]</div>
+                        <div class="text-muted small">@availability.Weekday</div>
+                        <div class="mb-1">@(string.IsNullOrWhiteSpace(availability.AvailableStartTime) ? "—" : $"{availability.AvailableStartTime} – {availability.AvailableEndTime}")</div>
+                        @if (availability.WithinAvailableWindow == false)
+                        {
+                            <div class="alert alert-warning py-2 small mb-1">@Localizer["AvailabilityWarning"]</div>
+                        }
+                        @if (availability.ReasonCodes.Any())
+                        {
+                            <div class="text-muted small">@string.Join(", ", availability.ReasonCodes)</div>
+                        }
+                    </div>
+                }
+            </section>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/CRM/PlannedVisits/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/PlannedVisits/index.l10n.js" asp-append-version="true"></script>
+    <script>
+        (function () {
+            'use strict';
+            const L = window.L10n || {};
+            const root = document.getElementById('detailActions');
+            if (!root) return;
+            const id = root.dataset.planId;
+            const version = root.dataset.planVersion;
+            const post = async (url, successKey) => {
+                try {
+                    const res = await fetch(url, { method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, body: url.indexOf('cancel') > -1 ? JSON.stringify({ cancellationReason: window.__cancelReason, expectedVersion: Number(version) }) : undefined });
+                    const body = await res.json().catch(() => ({}));
+                    if (!res.ok) throw new Error((body.errors || [L.ErrorOccurred]).join(' · '));
+                    window.showToast?.(successKey, 'success');
+                    setTimeout(() => window.location.assign('/CRM/PlannedVisits'), 600);
+                } catch (e) { window.showToast?.(e.message || L.ErrorOccurred, 'error'); }
+            };
+            root.querySelector('.js-detail-confirm')?.addEventListener('click', () =>
+                window.showConfirm?.(L.ConfirmPlannedVisitConfirm, () => post(`/CRM/PlannedVisits/api/plans/${id}/confirm?expectedVersion=${version}`, L.RecordConfirmed), { type: 'question', confirmButtonText: L.ConfirmPlannedVisit }));
+            root.querySelector('.js-detail-archive')?.addEventListener('click', () =>
+                window.showConfirm?.(L.ArchivePlannedVisitConfirm, () => post(`/CRM/PlannedVisits/api/plans/${id}/archive?expectedVersion=${version}`, L.RecordArchived), { type: 'warning', confirmButtonText: L.ArchivePlannedVisit }));
+            root.querySelector('.js-detail-cancel')?.addEventListener('click', () => {
+                const reason = window.prompt(L.CancellationReasonPrompt || 'Reason');
+                if (!reason) return;
+                window.__cancelReason = reason;
+                post(`/CRM/PlannedVisits/api/plans/${id}/cancel`, L.RecordCancelled);
+            });
+        })();
+    </script>
+}

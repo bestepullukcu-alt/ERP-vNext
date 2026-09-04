@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Visit Planning</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Turn a rep's selection into a scheduled plan — pick a period, accounts and doctors, preview a Day/Week grid, then apply.</value></data>
+  <data name="EngineNotice" xml:space="preserve"><value>The engine reads content, route, cadence, capacity, consent, availability and territory from the shipped modules. It computes nothing itself: preview is a dry-run, apply writes the plan atoms.</value></data>
+  <data name="SessionsPanel" xml:space="preserve"><value>My draft plans</value></data>
+  <data name="NewSession" xml:space="preserve"><value>New session</value></data>
+  <data name="PeriodPanel" xml:space="preserve"><value>Period</value></data>
+  <data name="CyclePeriod" xml:space="preserve"><value>Cycle period</value></data>
+  <data name="Resource" xml:space="preserve"><value>Rep (resource id)</value></data>
+  <data name="ResourcePlaceholder" xml:space="preserve"><value>e.g. rep-1</value></data>
+  <data name="Segment" xml:space="preserve"><value>Segment filter</value></data>
+  <data name="NoSegmentFilter" xml:space="preserve"><value>No segment filter</value></data>
+  <data name="SegmentHint" xml:space="preserve"><value>Segment narrows the eligible doctor universe; the pick stays manual.</value></data>
+  <data name="AccountsPanel" xml:space="preserve"><value>Accounts (clinics / hospitals)</value></data>
+  <data name="AccountsHint" xml:space="preserve"><value>Out-of-territory accounts are warned, never hidden.</value></data>
+  <data name="ContactsPanel" xml:space="preserve"><value>Doctors</value></data>
+  <data name="ContactsHint" xml:space="preserve"><value>Manual multi-select from the eligible universe.</value></data>
+  <data name="SaveSelection" xml:space="preserve"><value>Save selection</value></data>
+  <data name="Preview" xml:space="preserve"><value>Preview</value></data>
+  <data name="SupplyDemandPanel" xml:space="preserve"><value>Supply vs demand</value></data>
+  <data name="NoPreviewYet" xml:space="preserve"><value>Run a preview to see the plan.</value></data>
+  <data name="ContentPanel" xml:space="preserve"><value>Content preview (per doctor)</value></data>
+  <data name="Doctor" xml:space="preserve"><value>Doctor</value></data>
+  <data name="Stage" xml:space="preserve"><value>Next stage</value></data>
+  <data name="Duration" xml:space="preserve"><value>Duration</value></data>
+  <data name="Consent" xml:space="preserve"><value>Consent</value></data>
+  <data name="GridPanel" xml:space="preserve"><value>Day / Week grid</value></data>
+  <data name="Week" xml:space="preserve"><value>Week</value></data>
+  <data name="Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Slot" xml:space="preserve"><value>Slot</value></data>
+  <data name="Target" xml:space="preserve"><value>Target</value></data>
+  <data name="Order" xml:space="preserve"><value>Order</value></data>
+  <data name="Apply" xml:space="preserve"><value>Apply</value></data>
+  <data name="Replan" xml:space="preserve"><value>Re-plan</value></data>
+  <data name="SavedSession" xml:space="preserve"><value>Session saved.</value></data>
+  <data name="PreviewFailed" xml:space="preserve"><value>Preview failed.</value></data>
+  <data name="Applied" xml:space="preserve"><value>Plan applied.</value></data>
+  <data name="Replanned" xml:space="preserve"><value>Subset re-planned.</value></data>
+  <data name="SelectSession" xml:space="preserve"><value>Select a session first.</value></data>
+  <data name="NoContentResolved" xml:space="preserve"><value>No content resolved (report-only).</value></data>
+  <data name="OutOfTerritory" xml:space="preserve"><value>Out of territory</value></data>
+  <data name="Unscheduled" xml:space="preserve"><value>Unscheduled</value></data>
+  <data name="SessionsTitle" xml:space="preserve"><value>مسوداتي للخطط</value></data>
+  <data name="Plan" xml:space="preserve"><value>الخطة</value></data>
+  <data name="Rep" xml:space="preserve"><value>المندوب</value></data>
+  <data name="Targets" xml:space="preserve"><value>الأهداف</value></data>
+  <data name="Updated" xml:space="preserve"><value>تم التحديث</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="RouteAction" xml:space="preserve"><value>إنشاء المسار</value></data>
+  <data name="DeleteSession" xml:space="preserve"><value>حذف</value></data>
+  <data name="DeleteSessionConfirm" xml:space="preserve"><value>حذف مسودة الخطة هذه؟</value></data>
+  <data name="RecordDeleted" xml:space="preserve"><value>تم حذف مسودة الخطة.</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Status_committed" xml:space="preserve"><value>مُعتمدة</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>مسودة خطة جديدة</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل مسودة الخطة</value></data>
+  <data name="PlanSection" xml:space="preserve"><value>إعداد الخطة</value></data>
+  <data name="TargetsSection" xml:space="preserve"><value>الأهداف</value></data>
+  <data name="RouteSection" xml:space="preserve"><value>المسار</value></data>
+  <data name="RepUser" xml:space="preserve"><value>المندوب (المستخدم)</value></data>
+  <data name="StrategyTemplate" xml:space="preserve"><value>قالب الاستراتيجية</value></data>
+  <data name="StrategyTemplateNone" xml:space="preserve"><value>بدون قالب استراتيجية</value></data>
+  <data name="StrategyTemplatesUnavailable" xml:space="preserve"><value>قوالب الاستراتيجية غير متاحة.</value></data>
+  <data name="UsersUnavailable" xml:space="preserve"><value>دليل المستخدمين غير متاح؛ أدخل المندوب من المنصة.</value></data>
+  <data name="WeekLabel" xml:space="preserve"><value>الأسبوع</value></data>
+  <data name="RouteHint" xml:space="preserve"><value>يتم إنشاء المسار من التفاصيل بعد حفظ الخطة.</value></data>
+  <data name="RouteEmpty" xml:space="preserve"><value>لا يوجد مسار لهذا الأسبوع.</value></data>
+  <data name="SelectAccountFirst" xml:space="preserve"><value>اختر عيادة/مستشفى أولاً</value></data>
+  <data name="WeekScopeHint" xml:space="preserve"><value>الأسبوع المستهدف لهذه الخطة (افتراضي لعرض المسار).</value></data>
+  <data name="SaveTargets" xml:space="preserve"><value>حفظ الأهداف</value></data>
+  <data name="TargetsSaved" xml:space="preserve"><value>تم حفظ الأهداف.</value></data>
+  <data name="WorkingHours" xml:space="preserve"><value>ساعات العمل</value></data>
+  <data name="PhysicianVisit" xml:space="preserve"><value>زيارة طبيب</value></data>
+  <data name="PharmacyVisit" xml:space="preserve"><value>زيارة صيدلية</value></data>
+  <data name="OutsideHoursWarning" xml:space="preserve"><value>بعض الزيارات مجدولة خارج ساعات العمل.</value></data>
+  <data name="OpenSlotsInfo" xml:space="preserve"><value>لا يزال لديك فترات زمنية متاحة.</value></data>
+  <data name="DayPlan" xml:space="preserve"><value>خطة</value></data>
+  <data name="SelectedAccount" xml:space="preserve"><value>الحساب المحدد</value></data>
+  <data name="SelectionSummary" xml:space="preserve"><value>ملخص التحديد</value></data>
+  <data name="SelectedLabel" xml:space="preserve"><value>المحددون</value></data>
+  <data name="ClearSelection" xml:space="preserve"><value>مسح</value></data>
+  <data name="SelectAllDoctors" xml:space="preserve"><value>تحديد الكل</value></data>
+  <data name="SearchDoctor" xml:space="preserve"><value>ابحث عن طبيب…</value></data>
+  <data name="StatDoctors" xml:space="preserve"><value>أطباء</value></data>
+  <data name="StatPharmacies" xml:space="preserve"><value>صيدليات</value></data>
+  <data name="StatAccounts" xml:space="preserve"><value>حسابات</value></data>
+  <data name="SelectedSuffix" xml:space="preserve"><value>محدد</value></data>
+  <data name="AllLabel" xml:space="preserve"><value>الكل</value></data>
+  <data name="MapFullscreen" xml:space="preserve"><value>ملء الشاشة</value></data>
+  <data name="ViewOptions" xml:space="preserve"><value>خيارات العرض</value></data>
+  <data name="PlanSummaryLabel" xml:space="preserve"><value>ملخص</value></data>
+  <data name="ActionsAvailable" xml:space="preserve"><value>الإجراءات المتاحة</value></data>
+  <data name="SaveWeekPlanHint" xml:space="preserve"><value>يحفظ هذه الخطة كخطة الأسبوع.</value></data>
+  <data name="DateRangeLabel" xml:space="preserve"><value>نطاق التاريخ</value></data>
+  <data name="LinkedPharmacies" xml:space="preserve"><value>الصيدليات المرتبطة</value></data>
+  <data name="NoLinkedPharmacies" xml:space="preserve"><value>لا صيدليات مرتبطة.</value></data>
+  <data name="WalkMinutes" xml:space="preserve"><value>دقيقة مشي</value></data>
+  <data name="EmptyPlanBlocked" xml:space="preserve"><value>لا تحتوي هذه الخطة على أي زيارات، لذا لا يمكن حفظها.</value></data>
+  <data name="FreeSlotLabel" xml:space="preserve"><value>فارغ</value></data>
+  <data name="NoPlanTitle" xml:space="preserve"><value>لا خطة بعد</value></data>
+  <data name="NoPlanDesc" xml:space="preserve"><value>شغّل المعاينة لعرض الخطة. ستظهر المسارات وترتيب الزيارات وأوقات القيادة هنا.</value></data>
+  <data name="ToggleMap" xml:space="preserve"><value>خريطة</value></data>
+  <data name="ToggleVisitNumbers" xml:space="preserve"><value>رقم الزيارة</value></data>
+  <data name="ToggleDriveTimes" xml:space="preserve"><value>أوقات القيادة</value></data>
+  <data name="MapView" xml:space="preserve"><value>عرض الخريطة</value></data>
+  <data name="TotalDriveTime" xml:space="preserve"><value>إجمالي وقت القيادة</value></data>
+  <data name="StopOrder" xml:space="preserve"><value>ترتيب المحطات</value></data>
+  <data name="DragOrArrows" xml:space="preserve"><value>اسحب أو استخدم الأسهم</value></data>
+  <data name="MapNoCoords" xml:space="preserve"><value>لا إحداثيات للرسم</value></data>
+  <data name="SummaryVisits" xml:space="preserve"><value>زيارات</value></data>
+  <data name="SummaryStops" xml:space="preserve"><value>محطات</value></data>
+  <data name="SummaryFieldTime" xml:space="preserve"><value>وقت الميدان</value></data>
+  <data name="SummaryFreeTime" xml:space="preserve"><value>وقت فراغ</value></data>
+  <data name="HourAbbrev" xml:space="preserve"><value>س</value></data>
+  <data name="MinuteAbbrev" xml:space="preserve"><value>د</value></data>
+  <data name="TravelMinutes" xml:space="preserve"><value>دقيقة قيادة</value></data>
+  <data name="LunchBreak" xml:space="preserve"><value>استراحة الغداء</value></data>
+  <data name="VisitsWord" xml:space="preserve"><value>زيارة</value></data>
+  <data name="YearLabel" xml:space="preserve"><value>السنة</value></data>
+  <data name="DayShortMon" xml:space="preserve"><value>الاثنين</value></data>
+  <data name="DayShortTue" xml:space="preserve"><value>الثلاثاء</value></data>
+  <data name="DayShortWed" xml:space="preserve"><value>الأربعاء</value></data>
+  <data name="DayShortThu" xml:space="preserve"><value>الخميس</value></data>
+  <data name="DayShortFri" xml:space="preserve"><value>الجمعة</value></data>
+  <data name="DayShortSat" xml:space="preserve"><value>السبت</value></data>
+  <data name="DayShortSun" xml:space="preserve"><value>الأحد</value></data>
+  <data name="HolidayMarker" xml:space="preserve"><value>عطلة</value></data>
+  <data name="ColAccount" xml:space="preserve"><value>الحساب</value></data>
+  <data name="ColType" xml:space="preserve"><value>النوع</value></data>
+  <data name="ColCity" xml:space="preserve"><value>المدينة / المنطقة</value></data>
+  <data name="ColContact" xml:space="preserve"><value>الطبيب</value></data>
+  <data name="ColLinked" xml:space="preserve"><value>الرابط</value></data>
+  <data name="ColSelected" xml:space="preserve"><value>محدد</value></data>
+  <data name="AddAccount" xml:space="preserve"><value>إضافة عيادة / مستشفى</value></data>
+  <data name="RemoveTarget" xml:space="preserve"><value>إزالة</value></data>
+  <data name="NoTargetAccounts" xml:space="preserve"><value>لم تتم إضافة عيادات/مستشفيات بعد.</value></data>
+  <data name="PickAccountForContacts" xml:space="preserve"><value>اختر حسابًا لعرض أطبائه.</value></data>
+  <data name="Country" xml:space="preserve"><value>الدولة</value></data>
+  <data name="SelectCountryFirst" xml:space="preserve"><value>اختر دولة أولاً</value></data>
+  <data name="Segments" xml:space="preserve"><value>الشرائح</value></data>
+  <data name="SegmentSingleNote" xml:space="preserve"><value>يُطبَّق حاليًا الشريحة الأولى فقط (الخلفية تدعم شريحة واحدة).</value></data>
+  <data name="WeekNumberLabel" xml:space="preserve"><value>الأسبوع {0}</value></data>
+  <data name="ColSpecialty" xml:space="preserve"><value>التخصص</value></data>
+  <data name="ResetOptimal" xml:space="preserve"><value>العودة إلى المسار الأمثل</value></data>
+  <data name="SaveWeekPlan" xml:space="preserve"><value>حفظ كخطة هذا الأسبوع</value></data>
+  <data name="SupplyLabel" xml:space="preserve">
+    <value>Supply</value>
+  </data>
+  <data name="DemandLabel" xml:space="preserve">
+    <value>Demand</value>
+  </data>
+  <data name="ScheduledLabel" xml:space="preserve">
+    <value>Scheduled</value>
+  </data>
+  <data name="UnscheduledLabel" xml:space="preserve">
+    <value>Unscheduled</value>
+  </data>
+</root>

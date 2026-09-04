@@ -90,6 +90,18 @@ public static class CycleCapacityValidation
         return null;
     }
 
+    /// <summary>
+    /// MOD-0155 FU06B — the between-visit buffer. A single scalar, range-checked; the value is already defaulted before
+    /// it reaches here (a missing payload takes the configured default on the write path), so this only guards the
+    /// authored range and never treats absence as a fault.
+    /// </summary>
+    public static Failure? ValidateBetweenVisitTime(int betweenVisitTimeMinutes)
+        => betweenVisitTimeMinutes is >= 0 and <= CycleCapacityLimits.MaxBufferMinutes
+            ? null
+            : new Failure(
+                $"BetweenVisitTimeMinutes must be between 0 and {CycleCapacityLimits.MaxBufferMinutes} minutes.",
+                CycleCapacityReasonCodes.BetweenVisitTimeInvalid);
+
     public static Failure? ValidateDescription(string? description)
     {
         var value = Trim(description);

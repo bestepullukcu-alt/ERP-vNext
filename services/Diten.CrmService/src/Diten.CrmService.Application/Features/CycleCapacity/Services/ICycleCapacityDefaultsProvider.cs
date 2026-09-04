@@ -22,4 +22,8 @@ public interface ICycleCapacityDefaultsProvider
 /// average — which is precisely why the resulting number is published as an ESTIMATE and why the field is disabled in
 /// the UI (F-FTE-HR / F-FTE-BU).
 /// </param>
-public sealed record CycleCapacityDefaults(int DailyWorkMinutes, decimal Fte);
+/// <param name="BetweenVisitTimeMinutes">
+/// MOD-0155 FU06B — the between-visit buffer a NEW capacity is born with, and the value read-time normalisation stamps
+/// onto rows that predate the field (D-DEFAULT). Configured rather than hardcoded so moving it is an ops change.
+/// </param>
+public sealed record CycleCapacityDefaults(int DailyWorkMinutes, decimal Fte, int BetweenVisitTimeMinutes);

@@ -22,8 +22,21 @@ public sealed class AccountController : CustomBaseController
 
     [HttpGet]
     [HasPermission("crm.account.read")]
-    public async Task<IActionResult> List([FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 25, CancellationToken cancellationToken = default)
-        => CreateActionResultInstance(await _mediator.Send(new GetAccountListQuery(search, page, pageSize), cancellationToken));
+    public async Task<IActionResult> List(
+        [FromQuery] string? search,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 25,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] string? sortDir = null,
+        [FromQuery] string? status = null,
+        [FromQuery] string? accountType = null,
+        [FromQuery] string? territoryNodeId = null,
+        [FromQuery] string? countryScope = null,
+        CancellationToken cancellationToken = default)
+        => CreateActionResultInstance(await _mediator.Send(
+            new GetAccountListQuery(
+                search, page, pageSize, sortBy, sortDir, status, accountType, territoryNodeId, countryScope),
+            cancellationToken));
 
     [HttpGet("{id:guid}")]
     [HasPermission("crm.account.read")]

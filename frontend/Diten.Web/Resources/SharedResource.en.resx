@@ -760,4 +760,6 @@
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>Brands</value>
   </data>
+  <data name="PlannedVisitsMenu" xml:space="preserve"><value>Planned Visits</value></data>
+  <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>Planned Visits</value></data>
 </root>

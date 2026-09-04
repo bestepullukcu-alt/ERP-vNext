@@ -78,6 +78,17 @@
   <data name="StepsHelp" xml:space="preserve"><value>Добавляйте шаги в порядке, в котором контент должен рассказываться / изучаться / показываться.</value></data>
   <data name="AddStep" xml:space="preserve"><value>Добавить шаг</value></data>
   <data name="NoSteps" xml:space="preserve"><value>Пока нет шагов.</value></data>
+  <data name="ShowArchived" xml:space="preserve"><value>Показать архивированные</value></data>
+  <data name="ContentLibrary" xml:space="preserve"><value>Библиотека контента</value></data>
+  <data name="ContentLibraryHelp" xml:space="preserve"><value>Опубликованный контент, соответствующий классификации этого пути. Отметьте карточку, чтобы добавить её как шаг.</value></data>
+  <data name="NoMatchingContent" xml:space="preserve"><value>Пока нет опубликованного контента, соответствующего этой классификации.</value></data>
+  <data name="SelectedSteps" xml:space="preserve"><value>Выбранные шаги</value></data>
+  <data name="SelectedStepsHelp" xml:space="preserve"><value>Перетащите для изменения порядка. Нажмите на шаг, чтобы изменить его детали.</value></data>
+  <data name="StepOrderDragHelp" xml:space="preserve"><value>Задаётся перетаскиванием в списке выбранных шагов.</value></data>
+  <data name="EditStep" xml:space="preserve"><value>Изменить шаг</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Выбрать все</value></data>
+  <data name="SelectContentTab" xml:space="preserve"><value>Выбор контента</value></data>
+  <data name="ArrangeStepsTab" xml:space="preserve"><value>Расположить шаги</value></data>
   <data name="StepsSection" xml:space="preserve"><value>Шаги</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Идентификация</value></data>
   <data name="ClassificationSection" xml:space="preserve"><value>Классификация</value></data>

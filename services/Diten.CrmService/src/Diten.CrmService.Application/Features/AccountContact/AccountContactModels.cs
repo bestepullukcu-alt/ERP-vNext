@@ -27,7 +27,9 @@ public sealed record AccountRelatedContactDto(
     string? Phone,
     string? Email,
     Guid? ReportsToContactId = null,
-    string? ReportsToName = null);
+    string? ReportsToName = null,
+    string? Specialty = null,
+    string? PhotoDataUri = null);
 
 /// <summary>Contact 360 "Linked Accounts" projection row (join AccountContactLink + Account).</summary>
 public sealed record ContactLinkedAccountDto(

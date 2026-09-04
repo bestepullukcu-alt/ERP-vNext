@@ -261,7 +261,12 @@
         columnDefs: [
             { targets: 0, className: 'control', orderable: false, render: () => '' },
             { targets: 2, render: v => `<span class="fw-medium text-heading">${esc(v)}</span>` },
-            { targets: 3, render: v => esc(typeMap[v] || v || '—') },
+            { targets: 3, render: v => {
+                const name = typeMap[v];
+                if (!name) return badge(v || '—', 'secondary');
+                const tone = { 'indication': 'primary', 'patient profile': 'info', 'product': 'success' }[String(name).trim().toLowerCase()] || 'secondary';
+                return badge(name, tone);
+            } },
             { targets: 4, render: v => badge(v, v === 'archived' ? 'secondary' : (v === 'active' ? 'success' : 'primary')) },
             { targets: 5, render: v => esc(subjectMap[v] || v || '—') },
             { targets: 6, render: v => esc(v || '—') },

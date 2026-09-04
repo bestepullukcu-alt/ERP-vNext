@@ -22,6 +22,9 @@ public sealed class ConceptNodeDetailViewModel
     public Guid ConceptNodeId { get; set; }
     public Guid SubjectId { get; set; }
     public Guid ConceptTypeId { get; set; }
+    // Resolved display labels for the classification ids (fail-soft; null when unresolved → view falls back to the id).
+    public string? SubjectName { get; set; }
+    public string? ConceptTypeName { get; set; }
     public string ConceptNodeCode { get; set; } = string.Empty;
     public string ConceptNodeName { get; set; } = string.Empty;
     public string? Description { get; set; }

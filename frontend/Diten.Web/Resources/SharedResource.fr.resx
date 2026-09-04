@@ -700,4 +700,6 @@
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>Marques</value>
   </data>
+  <data name="PlannedVisitsMenu" xml:space="preserve"><value>Visites planifiées</value></data>
+  <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>Visites planifiées</value></data>
 </root>

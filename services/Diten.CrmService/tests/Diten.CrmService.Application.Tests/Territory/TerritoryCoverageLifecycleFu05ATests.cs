@@ -284,6 +284,72 @@ public sealed class TerritoryCoverageLifecycleFu05ATests
     }
 
     [Fact]
+    public async Task Account_list_territory_node_filter_returns_only_the_covered_account()
+    {
+        var fx = Fixture();
+        var other = Guid.NewGuid();
+        fx.Assignments.Items.Add(NewAssignment(other, fx.Model.Id, "ZONE-2", "Zone Two"));
+        var accounts = new FakeAccountRepo();
+        accounts.Items.Add(NewAccount(fx.AccountId));
+        accounts.Items.Add(NewAccount(other));
+        var handler = new GetAccountListHandler(TenantFactory.Tenant(TenantA), accounts, fx.Assignments, fx.Models);
+
+        // Match on the seeded account's node id → only that account (recordsFiltered 1, recordsTotal 2).
+        var match = await handler.Handle(
+            new GetAccountListQuery(null, 1, 25, TerritoryNodeId: fx.Assignment.TerritoryNodeId.ToString()), default);
+        Assert.Single(match.Data!.Items);
+        Assert.Equal(fx.AccountId, match.Data.Items[0].Id);
+        Assert.Equal(2, match.Data.UnfilteredTotal);
+
+        // An unknown node id → zero rows, tenant total preserved.
+        var none = await handler.Handle(
+            new GetAccountListQuery(null, 1, 25, TerritoryNodeId: Guid.NewGuid().ToString()), default);
+        Assert.Empty(none.Data!.Items);
+        Assert.Equal(2, none.Data.UnfilteredTotal);
+    }
+
+    [Fact]
+    public async Task Account_list_country_scope_filter_uses_the_owning_model_scope_and_the_lifecycle_gate()
+    {
+        var fx = Fixture();
+        fx.Model.CountryScope = "TR";
+        var accounts = new FakeAccountRepo();
+        accounts.Items.Add(NewAccount(fx.AccountId));
+        var handler = new GetAccountListHandler(TenantFactory.Tenant(TenantA), accounts, fx.Assignments, fx.Models);
+
+        var match = await handler.Handle(new GetAccountListQuery(null, 1, 25, CountryScope: "tr"), default);
+        Assert.Single(match.Data!.Items);
+
+        var wrong = await handler.Handle(new GetAccountListQuery(null, 1, 25, CountryScope: "US"), default);
+        Assert.Empty(wrong.Data!.Items);
+
+        // Deactivating the owning model drops it from the coverage filter (same gate as the grid column).
+        fx.Model.Status = "archived";
+        var afterArchive = await handler.Handle(new GetAccountListQuery(null, 1, 25, CountryScope: "tr"), default);
+        Assert.Empty(afterArchive.Data!.Items);
+    }
+
+    [Fact]
+    public async Task Account_list_node_and_country_scope_filters_are_anded_together()
+    {
+        var fx = Fixture();
+        fx.Model.CountryScope = "TR";
+        var accounts = new FakeAccountRepo();
+        accounts.Items.Add(NewAccount(fx.AccountId));
+        var handler = new GetAccountListHandler(TenantFactory.Tenant(TenantA), accounts, fx.Assignments, fx.Models);
+
+        // Both chips point at the same coverage → still the one account.
+        var both = await handler.Handle(new GetAccountListQuery(
+            null, 1, 25, TerritoryNodeId: fx.Assignment.TerritoryNodeId.ToString(), CountryScope: "tr"), default);
+        Assert.Single(both.Data!.Items);
+
+        // Node matches but country scope does not → intersection is empty.
+        var conflicting = await handler.Handle(new GetAccountListQuery(
+            null, 1, 25, TerritoryNodeId: fx.Assignment.TerritoryNodeId.ToString(), CountryScope: "US"), default);
+        Assert.Empty(conflicting.Data!.Items);
+    }
+
+    [Fact]
     public async Task Coverage_query_never_mutates_the_account_or_creates_contact_coverage()
     {
         var fx = Fixture();
@@ -347,11 +413,12 @@ public sealed class TerritoryCoverageLifecycleFu05ATests
         public Task<bool> ExistsByCodeAsync(Guid tenantId, string code, Guid? excludeId, CancellationToken ct)
             => Task.FromResult(Items.Any(a => a.TenantId == tenantId && !a.IsDeleted && a.AccountCode == code && a.Id != excludeId));
 
-        public Task<(IReadOnlyList<Domain.Entities.Account> Items, long Total)> ListAsync(
-            Guid tenantId, string? search, int page, int pageSize, CancellationToken ct)
+        public Task<(IReadOnlyList<Domain.Entities.Account> Items, long Total, long UnfilteredTotal)> ListAsync(
+            Guid tenantId, string? search, int page, int pageSize, string? sortBy, string? sortDir, IReadOnlyCollection<string>? statuses, IReadOnlyCollection<string>? accountTypes, IReadOnlyCollection<Guid>? accountIdScope, CancellationToken ct)
         {
-            var q = Items.Where(a => a.TenantId == tenantId && !a.IsDeleted).ToList();
-            return Task.FromResult(((IReadOnlyList<Domain.Entities.Account>)q, (long)q.Count));
+            var tenantAll = Items.Where(a => a.TenantId == tenantId && !a.IsDeleted).ToList();
+            var q = accountIdScope is null ? tenantAll : tenantAll.Where(a => accountIdScope.Contains(a.Id)).ToList();
+            return Task.FromResult(((IReadOnlyList<Domain.Entities.Account>)q, (long)q.Count, (long)tenantAll.Count));
         }
 
         public Task<IReadOnlyList<Domain.Entities.Account>> GetChildrenAsync(Guid tenantId, Guid parentId, CancellationToken ct)

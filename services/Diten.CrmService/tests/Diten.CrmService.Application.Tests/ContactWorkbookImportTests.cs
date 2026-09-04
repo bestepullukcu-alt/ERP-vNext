@@ -922,7 +922,8 @@ public sealed class ContactWorkbookImportTests
     {
         public List<DomainContact> Items { get; } = new();
         public Task<DomainContact?> GetByIdAsync(Guid t, Guid id, CancellationToken ct) => Task.FromResult(Items.FirstOrDefault(c => c.TenantId == t && c.Id == id && !c.IsDeleted));
-        public Task<(IReadOnlyList<DomainContact> Items, long Total)> ListAsync(Guid t, string? s, int p, int ps, CancellationToken ct) => Task.FromResult(((IReadOnlyList<DomainContact>)Items, (long)Items.Count));
+        public Task<IReadOnlyList<DomainContact>> ListByIdsAsync(Guid t, IReadOnlyCollection<Guid> ids, CancellationToken ct) => Task.FromResult((IReadOnlyList<DomainContact>)Items.Where(c => c.TenantId == t && !c.IsDeleted && ids.Contains(c.Id)).ToList());
+        public Task<(IReadOnlyList<DomainContact> Items, long Total, long UnfilteredTotal)> ListAsync(Guid t, string? s, int p, int ps, string? sortBy, string? sortDir, IReadOnlyCollection<string>? statuses, IReadOnlyCollection<string>? contactTypes, CancellationToken ct) => Task.FromResult(((IReadOnlyList<DomainContact>)Items, (long)Items.Count, (long)Items.Count));
         public Task<IReadOnlyList<DomainContact>> ListAllAsync(Guid t, CancellationToken ct) => Task.FromResult((IReadOnlyList<DomainContact>)Items.Where(c => c.TenantId == t && !c.IsDeleted).ToList());
         public Task InsertAsync(DomainContact c, CancellationToken ct) { Items.Add(c); return Task.CompletedTask; }
         public Task UpdateAsync(DomainContact c, CancellationToken ct) => Task.CompletedTask;   // entities are tracked in-place
@@ -967,8 +968,8 @@ public sealed class ContactWorkbookImportTests
         public Task<DomainAccount?> GetByIdAsync(Guid t, Guid id, CancellationToken ct) => Task.FromResult(Items.FirstOrDefault(a => a.Id == id && !a.IsDeleted));
         public Task<DomainAccount?> GetByCodeAsync(Guid t, string code, CancellationToken ct) => Task.FromResult(Items.FirstOrDefault(a => a.AccountCode == code && !a.IsDeleted));
         public Task<bool> ExistsByCodeAsync(Guid t, string c, Guid? ex, CancellationToken ct) => Task.FromResult(false);
-        public Task<(IReadOnlyList<DomainAccount> Items, long Total)> ListAsync(Guid t, string? s, int p, int ps, CancellationToken ct)
-            => Task.FromResult(((IReadOnlyList<DomainAccount>)Items, (long)Items.Count));
+        public Task<(IReadOnlyList<DomainAccount> Items, long Total, long UnfilteredTotal)> ListAsync(Guid t, string? s, int p, int ps, string? sortBy, string? sortDir, IReadOnlyCollection<string>? statuses, IReadOnlyCollection<string>? accountTypes, IReadOnlyCollection<Guid>? accountIdScope, CancellationToken ct)
+            => Task.FromResult(((IReadOnlyList<DomainAccount>)Items, (long)Items.Count, (long)Items.Count));
         public Task<IReadOnlyList<DomainAccount>> GetChildrenAsync(Guid t, Guid p, CancellationToken ct) => Task.FromResult((IReadOnlyList<DomainAccount>)new List<DomainAccount>());
         public Task<bool> WouldCreateCycleAsync(Guid t, Guid a, Guid c, CancellationToken ct) => Task.FromResult(false);
         public Task InsertAsync(DomainAccount a, CancellationToken ct) { Items.Add(a); return Task.CompletedTask; }

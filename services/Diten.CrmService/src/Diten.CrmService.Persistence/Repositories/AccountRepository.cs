@@ -40,26 +40,82 @@ public sealed class AccountRepository : IAccountRepository
         return await _collection.Find(filter).AnyAsync(cancellationToken);
     }
 
-    public async Task<(IReadOnlyList<Account> Items, long Total)> ListAsync(
-        Guid tenantId, string? search, int page, int pageSize, CancellationToken cancellationToken)
+    public async Task<(IReadOnlyList<Account> Items, long Total, long UnfilteredTotal)> ListAsync(
+        Guid tenantId, string? search, int page, int pageSize, string? sortBy, string? sortDir,
+        IReadOnlyCollection<string>? statuses, IReadOnlyCollection<string>? accountTypes,
+        IReadOnlyCollection<Guid>? accountIdScope, CancellationToken cancellationToken)
     {
-        var filter = ActiveTenant(tenantId);
-        if (!string.IsNullOrWhiteSpace(search))
+        var tenantFilter = ActiveTenant(tenantId);
+        var filter = tenantFilter;
+
+        // MOD-0151 territory-coverage constraint (Territory Node / Country Scope chips), pre-resolved by the handler to
+        // the set of current-coverage account ids and ANDed on here. A non-null but empty set means the coverage filter
+        // matched nothing, so short-circuit to zero rows without a query (UnfilteredTotal still reports tenant-wide).
+        var hasIdScope = accountIdScope is not null;
+        if (hasIdScope && accountIdScope!.Count == 0)
         {
-            var term = search.Trim();
+            var unfilteredEmpty = await _collection.CountDocumentsAsync(tenantFilter, cancellationToken: cancellationToken);
+            return ([], 0, unfilteredEmpty);
+        }
+        if (hasIdScope)
+        {
+            filter &= Builders<Account>.Filter.In(a => a.Id, accountIdScope!);
+        }
+        var hasSearch = !string.IsNullOrWhiteSpace(search);
+        if (hasSearch)
+        {
+            var term = search!.Trim();
             var regex = Builders<Account>.Filter.Regex(a => a.AccountName, new MongoDB.Bson.BsonRegularExpression(term, "i"))
                         | Builders<Account>.Filter.Regex(a => a.AccountCode, new MongoDB.Bson.BsonRegularExpression(term, "i"));
             filter &= regex;
         }
 
+        // Inline-filter chips: Status / AccountType are plain stored fields, so these are cheap equality (IN)
+        // predicates ANDed onto the tenant filter. The {TenantId, ...} prefix narrows first and equality does not
+        // trigger MongoDB's 32MB in-memory sort, so no extra index is required. Multi-select ⇒ Filter.In.
+        var hasStatusFilter = statuses is { Count: > 0 };
+        var hasTypeFilter = accountTypes is { Count: > 0 };
+        if (hasStatusFilter)
+        {
+            filter &= Builders<Account>.Filter.In(a => a.Status, statuses!);
+        }
+        if (hasTypeFilter)
+        {
+            filter &= Builders<Account>.Filter.In(a => a.AccountType, accountTypes!);
+        }
+
+        // recordsFiltered (respects search + chip filters) and recordsTotal (tenant-wide, ignores both). When nothing
+        // narrows the set the two are identical, so avoid the extra count round-trip.
         var total = await _collection.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
+        var unfilteredTotal = (hasSearch || hasStatusFilter || hasTypeFilter || hasIdScope)
+            ? await _collection.CountDocumentsAsync(tenantFilter, cancellationToken: cancellationToken)
+            : total;
+
         var items = await _collection.Find(filter)
-            .SortBy(a => a.AccountName)
+            .Sort(BuildSort(sortBy, sortDir))
             .Skip((page - 1) * pageSize)
             .Limit(pageSize)
             .ToListAsync(cancellationToken);
 
-        return (items, total);
+        return (items, total, unfilteredTotal);
+    }
+
+    // Only AccountName/AccountCode are allowed sort keys: each is the second field of a {TenantId, field} index, so
+    // both ascending and descending are served as an index scan and never trigger MongoDB's 32MB in-memory sort on
+    // the full tenant set. Any other (or missing) column falls back to AccountName ascending.
+    private static SortDefinition<Account> BuildSort(string? sortBy, string? sortDir)
+    {
+        var descending = string.Equals(sortDir?.Trim(), "desc", StringComparison.OrdinalIgnoreCase);
+        return (sortBy?.Trim().ToLowerInvariant()) switch
+        {
+            "accountcode" => descending
+                ? Builders<Account>.Sort.Descending(a => a.AccountCode)
+                : Builders<Account>.Sort.Ascending(a => a.AccountCode),
+            "accountname" => descending
+                ? Builders<Account>.Sort.Descending(a => a.AccountName)
+                : Builders<Account>.Sort.Ascending(a => a.AccountName),
+            _ => Builders<Account>.Sort.Ascending(a => a.AccountName)
+        };
     }
 
     public async Task<IReadOnlyList<Account>> GetChildrenAsync(Guid tenantId, Guid parentId, CancellationToken cancellationToken)

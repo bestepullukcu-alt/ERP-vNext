@@ -56,6 +56,8 @@
   <data name="TravelingTime" xml:space="preserve"><value>Yol süresi</value></data>
   <data name="ReportDuration" xml:space="preserve"><value>Raporlama süresi</value></data>
   <data name="QuizDuration" xml:space="preserve"><value>Quiz süresi</value></data>
+  <data name="BetweenVisitTimeMinutes" xml:space="preserve"><value>Ziyaretler arası tampon</value></data>
+  <data name="BetweenVisitTimeMinutesHint" xml:space="preserve"><value>İki ardışık ziyaret arasında bırakılan tampon. Ziyaret süresine dahil değildir; paketleme motoru ardışık ziyaretler arasına uygular.</value></data>
   <data name="MonthlyDeductionsHint" xml:space="preserve"><value>Aylar dönemin aralığından gelir; eklenip çıkarılamaz. Hafta sonu ve resmî tatilleri düşmeyin: çalışma takvimi onları zaten dışlamıştır.</value></data>
   <data name="MonthsPendingPeriod" xml:space="preserve"><value>Önce bir dönem seçin; hangi ayların görüneceğine onun aralığı karar verir.</value></data>
   <data name="Month" xml:space="preserve"><value>Ay</value></data>

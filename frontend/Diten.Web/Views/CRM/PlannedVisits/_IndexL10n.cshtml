@@ -1,0 +1,93 @@
+@using Diten.Web.Views.CRM.PlannedVisits
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PlannedVisitsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="plannedvisits-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        Edit = SharedLocalizer["EditRecord"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Details = SharedLocalizer["Details"].Value,
+        @* Compact contract keys: present even though this module has no bulk-delete surface (a plan is cancelled/archived). *@
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        BulkDelete = SharedLocalizer["BulkDelete"].Value,
+        BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        RecordCreated = SharedLocalizer["RecordCreated"].Value,
+        RecordUpdated = SharedLocalizer["RecordUpdated"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        FormValidationError = SharedLocalizer["ValidationFailed"].Value,
+        EmptyState = SharedLocalizer["NoRecordsFound"].Value,
+        Loading = SharedLocalizer["Loading"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        SelectPlaceholder = SharedLocalizer["SelectPlaceholder"].Value,
+
+        PlannedVisitsTitle = Localizer["PlannedVisitsTitle"].Value,
+        VisitCode = Localizer["VisitCode"].Value,
+        Target = Localizer["Target"].Value,
+        TargetType = Localizer["TargetType"].Value,
+        TargetId = Localizer["TargetId"].Value,
+        PlannedDate = Localizer["PlannedDate"].Value,
+        ResourceId = Localizer["ResourceId"].Value,
+        VisitPurpose = Localizer["VisitPurpose"].Value,
+        VisitType = Localizer["VisitType"].Value,
+        Consent = Localizer["Consent"].Value,
+        Frequency = Localizer["Frequency"].Value,
+        CreatePlannedVisit = Localizer["CreatePlannedVisit"].Value,
+        FormTitleCreate = Localizer["FormTitleCreate"].Value,
+        FormTitleEdit = Localizer["FormTitleEdit"].Value,
+        ConfirmPlannedVisit = Localizer["ConfirmPlannedVisit"].Value,
+        ConfirmPlannedVisitConfirm = Localizer["ConfirmPlannedVisitConfirm"].Value,
+        CancelPlannedVisit = Localizer["CancelPlannedVisit"].Value,
+        CancelPlannedVisitConfirm = Localizer["CancelPlannedVisitConfirm"].Value,
+        CancellationReasonPrompt = Localizer["CancellationReasonPrompt"].Value,
+        ArchivePlannedVisit = Localizer["ArchivePlannedVisit"].Value,
+        ArchivePlannedVisitConfirm = Localizer["ArchivePlannedVisitConfirm"].Value,
+        RecordConfirmed = Localizer["RecordConfirmed"].Value,
+        RecordCancelled = Localizer["RecordCancelled"].Value,
+        RecordArchived = Localizer["RecordArchived"].Value,
+        ContractUnavailable = Localizer["ContractUnavailable"].Value,
+
+        StatusDraft = Localizer["Status_draft"].Value,
+        StatusPlanned = Localizer["Status_planned"].Value,
+        StatusConfirmed = Localizer["Status_confirmed"].Value,
+        StatusCancelled = Localizer["Status_cancelled"].Value,
+        StatusArchived = Localizer["Status_archived"].Value,
+
+        ConsentAllowed = Localizer["Consent_allowed"].Value,
+        ConsentBlocked = Localizer["Consent_blocked"].Value,
+        ConsentUnknown = Localizer["Consent_unknown"].Value,
+        ConsentNotApplicable = Localizer["Consent_not_applicable"].Value,
+
+        FreqResolved = Localizer["Frequency_resolved"].Value,
+        FreqUnknown = Localizer["Frequency_unknown"].Value,
+        FreqConflict = Localizer["Frequency_conflict"].Value,
+        FreqNotApplicable = Localizer["Frequency_not_applicable"].Value,
+
+        TargetTypeAccount = Localizer["TargetType_account"].Value,
+        TargetTypeContact = Localizer["TargetType_contact"].Value,
+        TargetTypeAccountContactLink = Localizer["TargetType_account-contact-link"].Value,
+        TargetTypePharmacy = Localizer["TargetType_pharmacy"].Value,
+
+        JourneyStage = Localizer["JourneyStage"].Value,
+        ContentSourceStrategy = Localizer["ContentSource_strategy"].Value,
+        ContentSourceManual = Localizer["ContentSource_manual"].Value
+    })
+</script>

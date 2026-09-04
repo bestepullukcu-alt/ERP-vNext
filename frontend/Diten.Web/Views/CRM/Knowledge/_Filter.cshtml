@@ -33,11 +33,7 @@
                     <div class="filter-chip">
                         <select id="filterLanguageCode" class="form-select form-select-sm select2" data-placeholder="@Localizer["LanguageCode"]"><option value="">@SharedLocalizer["ShowAll"]</option></select>
                     </div>
-                    @* Brand (single-select, raw IDs — no master lookup) *@
-                    <div class="filter-chip">
-                        <select id="filterBrandId" class="form-select form-select-sm select2" data-placeholder="@Localizer["BrandId"]"><option value="">@SharedLocalizer["ShowAll"]</option></select>
-                    </div>
-                    @* Product (single-select, raw IDs — no master lookup) *@
+                    @* Product (single-select, resolved to MDM Global Product names) *@
                     <div class="filter-chip">
                         <select id="filterProductId" class="form-select form-select-sm select2" data-placeholder="@Localizer["ProductId"]"><option value="">@SharedLocalizer["ShowAll"]</option></select>
                     </div>

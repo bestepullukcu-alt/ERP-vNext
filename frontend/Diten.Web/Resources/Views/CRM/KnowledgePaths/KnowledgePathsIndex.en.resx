@@ -78,6 +78,17 @@
   <data name="StepsHelp" xml:space="preserve"><value>Add steps in the order content should be told / learned / shown.</value></data>
   <data name="AddStep" xml:space="preserve"><value>Add Step</value></data>
   <data name="NoSteps" xml:space="preserve"><value>No steps yet.</value></data>
+  <data name="ShowArchived" xml:space="preserve"><value>Show archived</value></data>
+  <data name="ContentLibrary" xml:space="preserve"><value>Content Library</value></data>
+  <data name="ContentLibraryHelp" xml:space="preserve"><value>Published content matching this path's classification. Check a card to add it as a step.</value></data>
+  <data name="NoMatchingContent" xml:space="preserve"><value>No published content matches this classification yet.</value></data>
+  <data name="SelectedSteps" xml:space="preserve"><value>Selected Steps</value></data>
+  <data name="SelectedStepsHelp" xml:space="preserve"><value>Drag to reorder. Click a step to edit its details.</value></data>
+  <data name="StepOrderDragHelp" xml:space="preserve"><value>Set by drag-and-drop in the selected steps list.</value></data>
+  <data name="EditStep" xml:space="preserve"><value>Edit Step</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Select all</value></data>
+  <data name="SelectContentTab" xml:space="preserve"><value>Select content</value></data>
+  <data name="ArrangeStepsTab" xml:space="preserve"><value>Arrange steps</value></data>
   <data name="StepsSection" xml:space="preserve"><value>Steps</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Identity</value></data>
   <data name="ClassificationSection" xml:space="preserve"><value>Classification</value></data>

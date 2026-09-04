@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Visit Report</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Record what actually happened — mark each planned visit done, missed or rescheduled, and file the immutable visit report.</value></data>
+  <data name="ExecutionNotice" xml:space="preserve"><value>This is the execution calendar. It records outcomes and reports; it generates no plan and advances no content stage — the actual stage you record here is what the next cycle reads.</value></data>
+  <data name="View" xml:space="preserve"><value>View</value></data>
+  <data name="Day" xml:space="preserve"><value>Day</value></data>
+  <data name="Week" xml:space="preserve"><value>Week</value></data>
+  <data name="Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Resource" xml:space="preserve"><value>Rep (resource id)</value></data>
+  <data name="ResourcePlaceholder" xml:space="preserve"><value>e.g. rep-1</value></data>
+  <data name="Refresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="NoVisits" xml:space="preserve"><value>No planned visits in this window.</value></data>
+  <data name="ReportTitle" xml:space="preserve"><value>Visit report</value></data>
+  <data name="PlannedContent" xml:space="preserve"><value>Planned content (FU04)</value></data>
+  <data name="ActualStage" xml:space="preserve"><value>Actual stage presented</value></data>
+  <data name="StageIndex" xml:space="preserve"><value>Stage #</value></data>
+  <data name="MatchedPlan" xml:space="preserve"><value>Matched the planned stage</value></data>
+  <data name="OutcomeCode" xml:space="preserve"><value>Outcome code</value></data>
+  <data name="OutcomeCodePlaceholder" xml:space="preserve"><value>e.g. positive</value></data>
+  <data name="ReferenceDataHint" xml:space="preserve"><value>Outcome codes come from reference data.</value></data>
+  <data name="DoctorFeedback" xml:space="preserve"><value>Doctor feedback</value></data>
+  <data name="Samples" xml:space="preserve"><value>Samples / materials given</value></data>
+  <data name="AddSample" xml:space="preserve"><value>Add sample</value></data>
+  <data name="FollowUpRequired" xml:space="preserve"><value>Follow-up required</value></data>
+  <data name="FollowUpNotes" xml:space="preserve"><value>Follow-up notes</value></data>
+  <data name="AmendReason" xml:space="preserve"><value>Amendment reason</value></data>
+  <data name="AmendHint" xml:space="preserve"><value>The report is submitted; a correction is an append-only amendment.</value></data>
+  <data name="Submit" xml:space="preserve"><value>Submit report</value></data>
+  <data name="Amend" xml:space="preserve"><value>File amendment</value></data>
+  <data name="MarkCompleted" xml:space="preserve"><value>Completed</value></data>
+  <data name="MarkMissed" xml:space="preserve"><value>Missed</value></data>
+  <data name="MarkRescheduled" xml:space="preserve"><value>Rescheduled</value></data>
+  <data name="Report" xml:space="preserve"><value>Report</value></data>
+  <data name="StateNone" xml:space="preserve"><value>No report</value></data>
+  <data name="StateDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="StateSubmitted" xml:space="preserve"><value>Submitted</value></data>
+  <data name="StateAmended" xml:space="preserve"><value>Amended</value></data>
+  <data name="OutcomeRecorded" xml:space="preserve"><value>Outcome recorded.</value></data>
+  <data name="ReportSubmitted" xml:space="preserve"><value>Report submitted.</value></data>
+  <data name="ReportAmended" xml:space="preserve"><value>Amendment filed.</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>Action failed.</value></data>
+  <data name="ReasonPrompt" xml:space="preserve"><value>Reason code (e.g. doctor_unavailable):</value></data>
+  <data name="ReschedulePrompt" xml:space="preserve"><value>New date (yyyy-MM-dd):</value></data>
+  <data name="Quantity" xml:space="preserve"><value>Qty</value></data>
+  <data name="ItemType" xml:space="preserve"><value>Item type</value></data>
+  <data name="Remove" xml:space="preserve"><value>Remove</value></data>
+</root>

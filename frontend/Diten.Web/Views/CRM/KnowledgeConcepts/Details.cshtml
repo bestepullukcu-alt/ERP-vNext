@@ -42,8 +42,8 @@
                     <dl class="row mb-0">
                         <dt class="col-sm-4 text-muted">@Localizer["ConceptNodeCode"]</dt><dd class="col-sm-8">@n.ConceptNodeCode</dd>
                         <dt class="col-sm-4 text-muted">@Localizer["ConceptNodeName"]</dt><dd class="col-sm-8">@n.ConceptNodeName</dd>
-                        <dt class="col-sm-4 text-muted">@Localizer["SubjectId"]</dt><dd class="col-sm-8">@n.SubjectId</dd>
-                        <dt class="col-sm-4 text-muted">@Localizer["ConceptTypeId"]</dt><dd class="col-sm-8">@n.ConceptTypeId</dd>
+                        <dt class="col-sm-4 text-muted">@Localizer["SubjectId"]</dt><dd class="col-sm-8">@(string.IsNullOrEmpty(n.SubjectName) ? n.SubjectId.ToString() : n.SubjectName)</dd>
+                        <dt class="col-sm-4 text-muted">@Localizer["ConceptTypeId"]</dt><dd class="col-sm-8">@(string.IsNullOrEmpty(n.ConceptTypeName) ? n.ConceptTypeId.ToString() : n.ConceptTypeName)</dd>
                         <dt class="col-sm-4 text-muted">@Localizer["Status"]</dt><dd class="col-sm-8"><span class="badge bg-label-primary">@Dash(n.Status)</span></dd>
                         <dt class="col-sm-4 text-muted">@Localizer["Description"]</dt><dd class="col-sm-8">@Dash(n.Description)</dd>
                     </dl>

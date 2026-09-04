@@ -77,6 +77,24 @@ public sealed class TerritoryModelRepository : ITerritoryModelRepository
         return await _collection.Find(filter).ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<TerritoryModel>> ListByCountryScopesAsync(
+        Guid tenantId, IReadOnlyCollection<string> countryScopes, CancellationToken cancellationToken)
+    {
+        if (countryScopes is null || countryScopes.Count == 0) return [];
+        // Case-insensitive match on the stored scope code. The Accounts-grid chip carries the published `country`
+        // value verbatim, but scope codes have drifted in case across tenants (COUNTRY_CODES uppercase vs `country`
+        // lowercase), so match with an anchored, escaped, case-insensitive regex per distinct scope.
+        var scopeFilters = countryScopes
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .Select(s => Builders<TerritoryModel>.Filter.Regex(
+                m => m.CountryScope,
+                new MongoDB.Bson.BsonRegularExpression($"^{System.Text.RegularExpressions.Regex.Escape(s.Trim())}$", "i")))
+            .ToList();
+        if (scopeFilters.Count == 0) return [];
+        var filter = ActiveTenant(tenantId) & Builders<TerritoryModel>.Filter.Or(scopeFilters);
+        return await _collection.Find(filter).ToListAsync(cancellationToken);
+    }
+
     public async Task InsertAsync(TerritoryModel model, CancellationToken cancellationToken)
         => await _collection.InsertOneAsync(model, cancellationToken: cancellationToken);
 

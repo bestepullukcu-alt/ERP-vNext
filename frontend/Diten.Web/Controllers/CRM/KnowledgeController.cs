@@ -144,7 +144,15 @@ public sealed class KnowledgeController : Controller
         {
             Content = content,
             CanManage = HasAnyPermission(ManagePermission, ManageFallback),
-            DocumentRef = await ResolveDocumentRefAsync(content.FileRef, cancellationToken)
+            DocumentRef = await ResolveDocumentRefAsync(content.FileRef, cancellationToken),
+            SubjectName = content.SubjectId != Guid.Empty
+                ? await ResolveReferenceLabelAsync($"/api/crm/knowledge/subjects/{content.SubjectId}", cancellationToken) : null,
+            TopicName = content.TopicId is { } topicId && topicId != Guid.Empty
+                ? await ResolveReferenceLabelAsync($"/api/crm/knowledge/topics/{topicId}", cancellationToken) : null,
+            AudienceProfileName = content.AudienceProfileId is { } audienceId && audienceId != Guid.Empty
+                ? await ResolveReferenceLabelAsync($"/api/crm/knowledge/audience-profiles/{audienceId}", cancellationToken) : null,
+            ProductName = content.ProductId is { } productId && productId != Guid.Empty
+                ? await ResolveGlobalProductLabelAsync(productId.ToString(), cancellationToken) : null
         };
         return View($"{ViewRoot}/Details.cshtml", model);
     }
@@ -228,19 +236,13 @@ public sealed class KnowledgeController : Controller
         return Json(options);
     }
 
-    // Brand / Product name options (id -> "code — name") so the content list can show names instead of raw ids.
-    [HttpGet("api/brand-options")]
-    public async Task<IActionResult> BrandOptionsJson(CancellationToken ct)
-    {
-        if (RequireJson(ReadPermission, ReadFallback) is { } denied) return denied;
-        return Json(await LoadOptionsAsync("/api/mdm/brands", ct, idKey: "brandId"));
-    }
-
+    // Product name options (id -> "code — name") from the MDM Global Product master, so the content list can show names
+    // instead of raw ids. Brand is no longer surfaced in this UI, so no brand-options endpoint is exposed.
     [HttpGet("api/product-options")]
     public async Task<IActionResult> ProductOptionsJson(CancellationToken ct)
     {
         if (RequireJson(ReadPermission, ReadFallback) is { } denied) return denied;
-        return Json(await LoadOptionsAsync("/api/mdm/products", ct, idKey: "productId"));
+        return Json(await LoadGlobalProductOptionsAsync(ct));
     }
 
     [HttpGet("api/contents")]
@@ -344,8 +346,9 @@ public sealed class KnowledgeController : Controller
         // is never offered as a NEW choice (a previously saved one is still preserved below by EnsureSelectedAsync).
         var conceptTypes = await LoadOptionsAsync("/api/crm/knowledge/concept-types?includeArchived=false", ct, groupKey: "subjectId", idKey: "conceptTypeId");
         var conceptNodes = await LoadOptionsAsync("/api/crm/knowledge/concept-nodes?includeArchived=false", ct, groupKey: "conceptTypeId", idKey: "conceptNodeId");
-        var brands = await LoadOptionsAsync("/api/mdm/brands", ct, idKey: "brandId");
-        var products = await LoadOptionsAsync("/api/mdm/products", ct, idKey: "productId");
+        // Product is the MDM Global Product master (same selector the Concept-graph ExternalRef picker uses), so the
+        // dropdown lists product NAMES, not raw ids. Brand is intentionally no longer surfaced in this UI.
+        var products = await LoadGlobalProductOptionsAsync(ct);
         var campaigns = await LoadOptionsAsync("/api/crm/campaigns", ct, idKey: "campaignId");
         // Document Reference (FileRef) is a pointer to a Document Management controlled document. Creating new ones stays
         // in Document Management's governed flow (collection instance based); here we only let the user PICK an existing one.
@@ -356,8 +359,7 @@ public sealed class KnowledgeController : Controller
         await EnsureSelectedAsync(subjects, model.SubjectId, "/api/crm/knowledge/subjects/{0}", ct);
         await EnsureSelectedAsync(topics, model.TopicId, "/api/crm/knowledge/topics/{0}", ct, groupKey: "subjectId");
         await EnsureSelectedAsync(audiences, model.AudienceProfileId, "/api/crm/knowledge/audience-profiles/{0}", ct);
-        await EnsureSelectedAsync(brands, model.BrandId, "/api/mdm/brands/{0}", ct);
-        await EnsureSelectedAsync(products, model.ProductId, "/api/mdm/products/{0}", ct);
+        await EnsureGlobalProductSelectedAsync(products, model.ProductId, ct);
         await EnsureSelectedAsync(campaigns, model.CampaignId, "/api/crm/campaigns/{0}", ct);
         // A node saved earlier may now be archived (or belong to a type outside the current subject). Keeping it in the
         // list is what stops a plain Save from silently clearing ConceptNodeId — the backend V17 dirty-check only skips
@@ -370,7 +372,6 @@ public sealed class KnowledgeController : Controller
         model.AudienceProfileOptions = audiences;
         model.ConceptTypeOptions = conceptTypes;
         model.ConceptNodeOptions = conceptNodes;
-        model.BrandOptions = brands;
         model.ProductOptions = products;
         model.CampaignOptions = campaigns;
         model.DocumentOptions = documents;
@@ -487,6 +488,96 @@ public sealed class KnowledgeController : Controller
             _logger.LogWarning(ex, "Knowledge reference option load failed: {Path}", path);
         }
         return options.OrderBy(o => o.Label, StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    // Resolves a single reference id to its display label (name, or "code — name" when both exist). Used by Details so the
+    // Subject/Topic/AudienceProfile ids render as names. Returns null on a miss so the view can fall back to the raw id.
+    private async Task<string?> ResolveReferenceLabelAsync(string path, CancellationToken ct)
+    {
+        var response = await SendGatewayAsync(HttpMethod.Get, path, null, ct);
+        if (response is null || !response.IsSuccessStatusCode) return null;
+        try
+        {
+            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+            if (!doc.RootElement.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Object) return null;
+            var name = GetFirstString(data, "name", "subjectName", "topicName", "profileName", "audienceProfileName", "campaignName");
+            var code = GetFirstString(data, "code", "subjectCode", "topicCode", "profileCode", "campaignCode");
+            if (!string.IsNullOrWhiteSpace(code) && !string.IsNullOrWhiteSpace(name)) return $"{code} — {name}";
+            return name ?? code;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Knowledge reference label resolve failed: {Path}", path);
+            return null;
+        }
+    }
+
+    // MDM Global Product option list (id -> "code — name"). Reuses the read-only selector the Concept-graph ExternalRef
+    // picker uses (fields: id / canonicalCode / globalProductName). A generous page size is requested so the form select
+    // carries the master by name; a saved-but-off-page value is still restored by EnsureGlobalProductSelectedAsync.
+    private async Task<List<KnowledgeOptionViewModel>> LoadGlobalProductOptionsAsync(CancellationToken ct)
+    {
+        var options = new List<KnowledgeOptionViewModel>();
+        var response = await SendGatewayAsync(HttpMethod.Get, "/api/global-products/selector?pageSize=200", null, ct);
+        if (response is null || !response.IsSuccessStatusCode) return options;
+        try
+        {
+            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+            if (!doc.RootElement.TryGetProperty("data", out var data)) return options;
+
+            JsonElement items;
+            if (data.ValueKind == JsonValueKind.Array) items = data;
+            else if (data.ValueKind == JsonValueKind.Object && data.TryGetProperty("items", out var it)) items = it;
+            else return options;
+
+            foreach (var el in items.EnumerateArray())
+            {
+                if (el.ValueKind != JsonValueKind.Object) continue;
+                var id = GetFirstString(el, "id", "globalProductId");
+                if (string.IsNullOrWhiteSpace(id)) continue;
+                options.Add(new KnowledgeOptionViewModel { Value = id!, Label = GlobalProductLabel(el) ?? id! });
+            }
+        }
+        catch (Exception ex) { _logger.LogWarning(ex, "Knowledge global-product option load failed."); }
+        return options.OrderBy(o => o.Label, StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    private static string? GlobalProductLabel(JsonElement el)
+    {
+        var code = GetFirstString(el, "canonicalCode", "code");
+        var name = GetFirstString(el, "globalProductName", "name");
+        if (!string.IsNullOrWhiteSpace(code) && !string.IsNullOrWhiteSpace(name)) return $"{code} — {name}";
+        return name ?? code;
+    }
+
+    // Keeps an already-saved product id visible (by name) when it is not in the selector's first page — mirrors
+    // EnsureSelectedAsync but against the MDM Global Product master. Falls back to the raw id on a miss.
+    private async Task EnsureGlobalProductSelectedAsync(List<KnowledgeOptionViewModel> options, Guid? currentId, CancellationToken ct)
+    {
+        if (currentId is null || currentId == Guid.Empty) return;
+        var idStr = currentId.Value.ToString();
+        if (options.Any(o => string.Equals(o.Value, idStr, StringComparison.OrdinalIgnoreCase))) return;
+
+        var label = await ResolveGlobalProductLabelAsync(idStr, ct);
+        options.Insert(0, new KnowledgeOptionViewModel { Value = idStr, Label = label ?? idStr, IsInactive = true });
+    }
+
+    // Resolves a single Global Product id to "code — name" (or name / code). Returns null on a miss.
+    private async Task<string?> ResolveGlobalProductLabelAsync(string idStr, CancellationToken ct)
+    {
+        var response = await SendGatewayAsync(HttpMethod.Get, $"/api/global-products/{idStr}", null, ct);
+        if (response is null || !response.IsSuccessStatusCode) return null;
+        try
+        {
+            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+            if (!doc.RootElement.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Object) return null;
+            return GlobalProductLabel(data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Knowledge global-product label resolve failed for {ProductId}.", idStr);
+            return null;
+        }
     }
 
     private static string? GetFirstString(JsonElement el, params string[] names)

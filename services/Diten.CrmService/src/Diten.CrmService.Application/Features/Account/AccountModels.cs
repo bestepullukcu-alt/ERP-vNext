@@ -1,6 +1,8 @@
 namespace Diten.CrmService.Application.Features.Account;
 
-public sealed record PagedResult<T>(IReadOnlyList<T> Items, long Total, int Page, int PageSize);
+// UnfilteredTotal is the tenant-wide count ignoring the search term (DataTables recordsTotal); Total is the filtered
+// count (recordsFiltered). UnfilteredTotal defaults to 0 for callers that do not populate it (server-side grids only).
+public sealed record PagedResult<T>(IReadOnlyList<T> Items, long Total, int Page, int PageSize, long UnfilteredTotal = 0);
 
 public sealed record AccountListItemDto(
     Guid Id,

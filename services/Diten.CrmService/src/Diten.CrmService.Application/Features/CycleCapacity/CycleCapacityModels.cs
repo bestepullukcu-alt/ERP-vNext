@@ -81,6 +81,10 @@ public sealed record CycleCapacityDetailDto(
     int TravelingTime,
     int ReportDuration,
     int QuizDuration,
+
+    /// <summary>MOD-0155 FU06B — the between-visit buffer. A config input, not part of a visit's duration.</summary>
+    int BetweenVisitTimeMinutes,
+
     int DailySpendMinutes,
     int MinutesPerVisit,
 

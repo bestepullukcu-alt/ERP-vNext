@@ -56,6 +56,8 @@
   <data name="TravelingTime" xml:space="preserve"><value>Travelling time</value></data>
   <data name="ReportDuration" xml:space="preserve"><value>Reporting time</value></data>
   <data name="QuizDuration" xml:space="preserve"><value>Quiz time</value></data>
+  <data name="BetweenVisitTimeMinutes" xml:space="preserve"><value>Between-visit buffer</value></data>
+  <data name="BetweenVisitTimeMinutesHint" xml:space="preserve"><value>Buffer left between two consecutive visits. Not part of a visit's duration; the packing engine applies it between visits.</value></data>
   <data name="MonthlyDeductionsHint" xml:space="preserve"><value>The months come from the period's window and cannot be added or removed. Do not deduct weekends or public holidays: the working calendar has already excluded them.</value></data>
   <data name="MonthsPendingPeriod" xml:space="preserve"><value>Choose a cycle period first; its window decides which months appear.</value></data>
   <data name="Month" xml:space="preserve"><value>Month</value></data>
