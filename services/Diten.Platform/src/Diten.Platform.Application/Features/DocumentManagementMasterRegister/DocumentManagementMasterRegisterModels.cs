@@ -19,6 +19,10 @@ public static class DocumentMasterRegisterPermissions
     public const string Manage = "platform.document-management.master-register.manage";
     public const string Link = "platform.document-management.master-register.link";
     public const string AuditView = "platform.document-management.master-register.audit.view";
+
+    // DCP-005 — gates the effectiveness:batch read endpoint (the screen side of the effectiveness resolver). Declared
+    // with the endpoint (P-EFF-P2 Faz 3) so the controller compiles; catalogued + role-granted in the seed (Faz 4).
+    public const string EffectivenessRead = "platform.document-management.master-register.effectiveness.read";
 }
 
 public static class MasterRegisterReasonCodes
