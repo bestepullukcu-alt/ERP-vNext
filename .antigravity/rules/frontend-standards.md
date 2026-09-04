@@ -139,6 +139,28 @@ Bu kurallar, projedeki görsel tutarlılığı (consistency) korumak için ZORUN
   - *Kural*: KPI kartlarının sarmalayıcı kolon sınıfları daima **`col-12 col-sm-6 col-xl-3`** (veya modül tasarımına göre masaüstü için `col-lg-3`) şeklinde tanımlanmalıdır.
   - Mobilde `col-6` veya `col-3` gibi sıkışık yerleşimler kesinlikle kullanılmamalıdır.
 
+- **Tek büyük rakam kuralı (ZORUNLU).** Bir KPI kartında **tam olarak BİR** büyük rakam bulunur;
+  o kartın cevapladığı soru odur. Kartın taşıdığı ikinci, üçüncü değer büyük rakamın **altında,
+  küçük puntoda** durur.
+  - ⚠ Bir kartta iki değer birden gösterilecekse **ikisini yan yana sıkıştırıp puntoyu küçültmek
+    YASAKTIR.** Ölçüldü (2026-09-04, İş Raporu): dört kartın üçü büyük rakam taşırken dördüncüsü
+    iki sayıyı tek satıra sığdırmak için `--sm` değiştiricisiyle küçültülmüştü. Sonuç, dört eş
+    kartın birinin diğer üçüne benzememesi oldu — okuyan göz sıranın bozulduğunu fark eder,
+    sebebini bulamaz.
+  - Doğru çözüm: **hangi değerin kartın cevabı olduğuna karar ver**, onu büyük yaz, diğerini
+    altına küçük satır olarak koy. Karar verilemiyorsa kart iki soru soruyordur; ikiye bölünür.
+  - Büyük rakam için `--sm` benzeri küçültme değiştiricisi tanımlanmaz. Böyle bir sınıfın var
+    olması, kuralın ilk ihlalinde kalıcılaşmasını sağlar.
+
+- **Açıklama satırı taban hizası (ZORUNLU).** Bir satırdaki KPI kartlarının en alttaki açıklama /
+  dipnot metinleri **aynı yatay hizada** biter. Kart gövdeleri farklı uzunlukta içerik taşıdığı
+  için bu kendiliğinden olmaz.
+  - Uygulama: kart gövdesi `display:flex; flex-direction:column`, dipnot elemanı `margin-top:auto`.
+    Böylece dipnot içerik ne kadar kısa olursa olsun kartın dibine yaslanır.
+  - Bu stil sayfa içine yazılmaz; paylaşılan sınıf olarak `backbone-custom.css` içinde tutulur
+    (FG-003). Kart başına ayrı yükseklik/padding hesabı YASAKTIR — sabit yükseklik ilk uzun
+    metinde taşar.
+
 ---
 
 ## 🛡️ Production Safety
