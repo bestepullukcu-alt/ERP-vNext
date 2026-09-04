@@ -63,6 +63,7 @@ public sealed class UpdateCycleCapacityHandler : IRequestHandler<UpdateCycleCapa
             request.QuizDuration,
             request.Description,
             request.Months,
+            request.BetweenVisitTimeMinutes,
             cancellationToken);
 
         if (validation.Failure is not null || validation.Months is null || validation.CalendarCountryCode is null)
@@ -79,6 +80,7 @@ public sealed class UpdateCycleCapacityHandler : IRequestHandler<UpdateCycleCapa
         entity.TravelingTime = request.TravelingTime;
         entity.ReportDuration = request.ReportDuration;
         entity.QuizDuration = request.QuizDuration;
+        entity.BetweenVisitTimeMinutes = validation.BetweenVisitTimeMinutes;
         entity.Description = CycleCapacityValidation.Trim(request.Description);
         entity.Months = validation.Months.ToList();
         entity.UpdatedAt = DateTimeOffset.UtcNow;

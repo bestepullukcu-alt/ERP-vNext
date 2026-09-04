@@ -1,0 +1,33 @@
+@model Diten.Web.Models.CRM.VisitPlanningIndexViewModel
+@using Diten.Web.Views.CRM.VisitPlanning
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitPlanningIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["SessionsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@* ① Inline Filter partial *@
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/CRM/VisitPlanning/_Filter.cshtml" />
+
+@* Golden Compact: authoring happens on its own page; the create affordance lives once in the DataTable toolbar
+   (the `.add-new` button), gated by the CanGenerate flag published to index.js below. *@
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["SessionsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* ② No BulkActionBar: planning sessions have no bulk-delete surface (a draft is deleted one at a time from its row). *@
+
+@* ③ DataTable Card — contract markers rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-visit-planning" data-dt-standard="v2"> *@
+<partial name="~/Views/CRM/VisitPlanning/_DataTable.cshtml" />
+
+<script id="visitplanning-page-flags" type="application/json">{"canGenerate": @(Model.CanGenerate ? "true" : "false"), "canApply": @(Model.CanApply ? "true" : "false")}</script>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/VisitPlanning/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/VisitPlanning/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitPlanning/index.js" asp-append-version="true"></script>
+}

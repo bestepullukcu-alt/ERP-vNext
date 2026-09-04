@@ -78,6 +78,17 @@
   <data name="StepsHelp" xml:space="preserve"><value>Ajoutez les étapes dans l'ordre où le contenu doit être présenté / appris / montré.</value></data>
   <data name="AddStep" xml:space="preserve"><value>Ajouter une étape</value></data>
   <data name="NoSteps" xml:space="preserve"><value>Aucune étape pour l'instant.</value></data>
+  <data name="ShowArchived" xml:space="preserve"><value>Afficher les archivés</value></data>
+  <data name="ContentLibrary" xml:space="preserve"><value>Bibliothèque de contenu</value></data>
+  <data name="ContentLibraryHelp" xml:space="preserve"><value>Contenus publiés correspondant à la classification de ce parcours. Cochez une carte pour l'ajouter comme étape.</value></data>
+  <data name="NoMatchingContent" xml:space="preserve"><value>Aucun contenu publié ne correspond encore à cette classification.</value></data>
+  <data name="SelectedSteps" xml:space="preserve"><value>Étapes sélectionnées</value></data>
+  <data name="SelectedStepsHelp" xml:space="preserve"><value>Glissez pour réordonner. Cliquez sur une étape pour modifier ses détails.</value></data>
+  <data name="StepOrderDragHelp" xml:space="preserve"><value>Défini par glisser-déposer dans la liste des étapes sélectionnées.</value></data>
+  <data name="EditStep" xml:space="preserve"><value>Modifier l'étape</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Tout sélectionner</value></data>
+  <data name="SelectContentTab" xml:space="preserve"><value>Sélectionner le contenu</value></data>
+  <data name="ArrangeStepsTab" xml:space="preserve"><value>Organiser les étapes</value></data>
   <data name="StepsSection" xml:space="preserve"><value>Étapes</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Identité</value></data>
   <data name="ClassificationSection" xml:space="preserve"><value>Classification</value></data>

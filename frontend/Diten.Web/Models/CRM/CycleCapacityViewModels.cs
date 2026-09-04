@@ -68,6 +68,10 @@ public sealed class CycleCapacityDetailApiModel
     public int TravelingTime { get; set; }
     public int ReportDuration { get; set; }
     public int QuizDuration { get; set; }
+
+    /// <summary>MOD-0155 FU06B — the between-visit buffer, server-defaulted and range-checked.</summary>
+    public int BetweenVisitTimeMinutes { get; set; }
+
     public string? Description { get; set; }
     public List<CycleCapacityMonthApiModel> Months { get; set; } = [];
     public bool IsArchived { get; set; }
@@ -143,5 +147,9 @@ public sealed class CycleCapacityDefaultsApiModel
     public decimal Fte { get; set; }
     public string FteSource { get; set; } = string.Empty;
     public bool FteIsEditable { get; set; }
+
+    /// <summary>MOD-0155 FU06B — the between-visit buffer a new capacity is born with.</summary>
+    public int BetweenVisitTimeMinutes { get; set; }
+
     public string CountryReferenceSet { get; set; } = string.Empty;
 }

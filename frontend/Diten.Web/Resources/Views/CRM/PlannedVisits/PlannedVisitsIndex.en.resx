@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PlannedVisitsTitle" xml:space="preserve"><value>Planned Visits</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>The field team planning atom: who is visited, when, for what purpose, by which resource.</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="VisitCode" xml:space="preserve"><value>Code</value></data>
+  <data name="Target" xml:space="preserve"><value>Target</value></data>
+  <data name="TargetType" xml:space="preserve"><value>Target type</value></data>
+  <data name="TargetId" xml:space="preserve"><value>Target</value></data>
+  <data name="TargetHint" xml:space="preserve"><value>Pick the account, contact, link or pharmacy this visit is for.</value></data>
+  <data name="PlannedDate" xml:space="preserve"><value>Planned date</value></data>
+  <data name="PlannedDateFrom" xml:space="preserve"><value>From</value></data>
+  <data name="PlannedDateTo" xml:space="preserve"><value>To</value></data>
+  <data name="PlannedWindow" xml:space="preserve"><value>Time window</value></data>
+  <data name="PlannedStartTime" xml:space="preserve"><value>Start time</value></data>
+  <data name="PlannedEndTime" xml:space="preserve"><value>End time</value></data>
+  <data name="TimeWindowHint" xml:space="preserve"><value>Optional; give both or neither. The requested intent, distinct from the packed slot.</value></data>
+  <data name="PlannedDurationMinutes" xml:space="preserve"><value>Duration (min)</value></data>
+  <data name="ResourceId" xml:space="preserve"><value>Resource</value></data>
+  <data name="ResourceType" xml:space="preserve"><value>Resource type</value></data>
+  <data name="ResourceDisplayName" xml:space="preserve"><value>Resource name</value></data>
+  <data name="ResourceHint" xml:space="preserve"><value>The person/user/employee id in the owning master. Not validated here.</value></data>
+  <data name="VisitPurpose" xml:space="preserve"><value>Purpose</value></data>
+  <data name="VisitType" xml:space="preserve"><value>Visit type</value></data>
+  <data name="Objective" xml:space="preserve"><value>Objective</value></data>
+  <data name="Consent" xml:space="preserve"><value>Consent</value></data>
+  <data name="Frequency" xml:space="preserve"><value>Frequency</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Include archived</value></data>
+  <data name="CreatePlannedVisit" xml:space="preserve"><value>New plan</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>New planned visit</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit planned visit</value></data>
+  <data name="ConfirmPlannedVisit" xml:space="preserve"><value>Confirm</value></data>
+  <data name="ConfirmPlannedVisitConfirm" xml:space="preserve"><value>Confirm this plan? Consent is checked now: a blocked or unknown verdict stops the confirm.</value></data>
+  <data name="CancelPlannedVisit" xml:space="preserve"><value>Cancel plan</value></data>
+  <data name="CancelPlannedVisitConfirm" xml:space="preserve"><value>Cancel this plan? Nothing is deleted; a reason is required.</value></data>
+  <data name="CancellationReasonPrompt" xml:space="preserve"><value>Reason for cancellation</value></data>
+  <data name="CancellationReason" xml:space="preserve"><value>Cancellation reason</value></data>
+  <data name="ArchivePlannedVisit" xml:space="preserve"><value>Archive</value></data>
+  <data name="ArchivePlannedVisitConfirm" xml:space="preserve"><value>Archive this plan? Archiving is final: there is no unarchive.</value></data>
+  <data name="RecordConfirmed" xml:space="preserve"><value>Plan confirmed.</value></data>
+  <data name="RecordCancelled" xml:space="preserve"><value>Plan cancelled.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Plan archived.</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>The planned visit service is unavailable.</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="Status_planned" xml:space="preserve"><value>Planned</value></data>
+  <data name="Status_confirmed" xml:space="preserve"><value>Confirmed</value></data>
+  <data name="Status_cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>Archived</value></data>
+  <data name="Consent_allowed" xml:space="preserve"><value>Allowed</value></data>
+  <data name="Consent_blocked" xml:space="preserve"><value>Blocked</value></data>
+  <data name="Consent_unknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="Consent_not_applicable" xml:space="preserve"><value>Not applicable</value></data>
+  <data name="Frequency_resolved" xml:space="preserve"><value>Resolved</value></data>
+  <data name="Frequency_unknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="Frequency_conflict" xml:space="preserve"><value>Conflict</value></data>
+  <data name="Frequency_not_applicable" xml:space="preserve"><value>Not applicable</value></data>
+  <data name="TargetType_account" xml:space="preserve"><value>Account</value></data>
+  <data name="TargetType_contact" xml:space="preserve"><value>Contact</value></data>
+  <data name="TargetType_account-contact-link" xml:space="preserve"><value>Account-contact link</value></data>
+  <data name="TargetType_pharmacy" xml:space="preserve"><value>Pharmacy</value></data>
+  <data name="VisitPurpose_medical-visit" xml:space="preserve"><value>Medical visit</value></data>
+  <data name="VisitPurpose_product-information" xml:space="preserve"><value>Product information</value></data>
+  <data name="VisitPurpose_training" xml:space="preserve"><value>Training</value></data>
+  <data name="VisitPurpose_follow-up" xml:space="preserve"><value>Follow-up</value></data>
+  <data name="VisitPurpose_campaign" xml:space="preserve"><value>Campaign</value></data>
+  <data name="VisitPurpose_service" xml:space="preserve"><value>Service</value></data>
+  <data name="VisitPurpose_compliance" xml:space="preserve"><value>Compliance</value></data>
+  <data name="VisitPurpose_other" xml:space="preserve"><value>Other</value></data>
+  <data name="VisitType_field-visit" xml:space="preserve"><value>Field visit</value></data>
+  <data name="VisitType_remote-visit" xml:space="preserve"><value>Remote visit</value></data>
+  <data name="VisitType_phone" xml:space="preserve"><value>Phone</value></data>
+  <data name="VisitType_digital-detailing" xml:space="preserve"><value>Digital detailing</value></data>
+  <data name="VisitType_event" xml:space="preserve"><value>Event</value></data>
+  <data name="JourneyStage" xml:space="preserve"><value>Journey stage</value></data>
+  <data name="ContentSource_strategy" xml:space="preserve"><value>Strategy</value></data>
+  <data name="ContentSource_manual" xml:space="preserve"><value>Manual</value></data>
+  <data name="ContentSource" xml:space="preserve"><value>Content source</value></data>
+  <data name="WhoSection" xml:space="preserve"><value>Who</value></data>
+  <data name="WhenSection" xml:space="preserve"><value>When</value></data>
+  <data name="WhySection" xml:space="preserve"><value>Purpose</value></data>
+  <data name="ContextSection" xml:space="preserve"><value>Context</value></data>
+  <data name="ContentSection" xml:space="preserve"><value>Content position</value></data>
+  <data name="ContentSectionHint" xml:space="preserve"><value>Which journey stage this visit is on. Stored, not advanced.</value></data>
+  <data name="ResourceSection" xml:space="preserve"><value>Resource</value></data>
+  <data name="LifecycleSection" xml:space="preserve"><value>Lifecycle</value></data>
+  <data name="SlotSection" xml:space="preserve"><value>Packed slot</value></data>
+  <data name="SelectionSection" xml:space="preserve"><value>Selection origin</value></data>
+  <data name="AvailabilitySection" xml:space="preserve"><value>Availability</value></data>
+  <data name="BusinessUnit" xml:space="preserve"><value>Business unit</value></data>
+  <data name="TerritoryNodeId" xml:space="preserve"><value>Territory node</value></data>
+  <data name="CampaignId" xml:space="preserve"><value>Campaign</value></data>
+  <data name="ContentEngagementJourneyId" xml:space="preserve"><value>Journey</value></data>
+  <data name="ContentEngagementJourneyStageId" xml:space="preserve"><value>Stage</value></data>
+  <data name="StageIndex" xml:space="preserve"><value>Stage index</value></data>
+  <data name="SequenceOrder" xml:space="preserve"><value>Sequence order</value></data>
+  <data name="SlotWindow" xml:space="preserve"><value>Slot window</value></data>
+  <data name="NoJourneyBound" xml:space="preserve"><value>No journey bound to this plan.</value></data>
+  <data name="StatusLifecycleHint" xml:space="preserve"><value>The status changes only through confirm, cancel and archive.</value></data>
+  <data name="CreateStatusHint" xml:space="preserve"><value>A plan is born draft or planned; confirming is a separate step.</value></data>
+  <data name="ConsentChannelPurpose" xml:space="preserve"><value>Channel / purpose</value></data>
+  <data name="ConsentFilterNotApplied" xml:space="preserve"><value>The consent filter was not applied; no eligibility can be inferred.</value></data>
+  <data name="SelectionMode_manual" xml:space="preserve"><value>Manual</value></data>
+  <data name="SelectionMode_recommended" xml:space="preserve"><value>Recommended</value></data>
+  <data name="SelectionMode_targeted" xml:space="preserve"><value>Targeted</value></data>
+  <data name="AvailabilityWarning" xml:space="preserve"><value>The planned window is outside the contact availability (a warning, not a block).</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Quick view</value></data>
+</root>

@@ -36,12 +36,91 @@ public sealed class GetAccountListHandler : IRequestHandler<GetAccountListQuery,
         var page = request.Page < 1 ? 1 : request.Page;
         var pageSize = request.PageSize is < 1 or > 200 ? 25 : request.PageSize;
 
-        var (items, total) = await _accounts.ListAsync(tenantId, request.Search, page, pageSize, cancellationToken);
+        // Multi-select chips arrive as comma-separated codes; split into distinct, non-empty equality values.
+        var statuses = SplitFilterCsv(request.Status);
+        var accountTypes = SplitFilterCsv(request.AccountType);
+
+        // MOD-0151 territory-coverage chips (Territory Node ids / Country Scope codes). Resolve them to the set of
+        // current-coverage account ids and AND that onto the account query. Null when neither chip is set (predicate
+        // skipped); an empty set when a chip was set but nothing is currently covered (yields zero rows).
+        var accountIdScope = await ResolveTerritoryCoverageScopeAsync(
+            tenantId, request.TerritoryNodeId, request.CountryScope, cancellationToken);
+
+        var (items, total, unfilteredTotal) = await _accounts.ListAsync(
+            tenantId, request.Search, page, pageSize, request.SortBy, request.SortDir, statuses, accountTypes,
+            accountIdScope, cancellationToken);
         var dtos = items.Select(AccountMapper.ToListItem).ToList();
 
         await EnrichCurrentTerritoryAsync(tenantId, dtos, cancellationToken);
 
-        return Response<PagedResult<AccountListItemDto>>.Success(new PagedResult<AccountListItemDto>(dtos, total, page, pageSize));
+        return Response<PagedResult<AccountListItemDto>>.Success(
+            new PagedResult<AccountListItemDto>(dtos, total, page, pageSize, unfilteredTotal));
+    }
+
+    /// <summary>Splits a comma-separated chip value (multi-select) into distinct, trimmed, non-empty codes.
+    /// Returns null when nothing is selected so the repository skips the predicate entirely.</summary>
+    private static IReadOnlyCollection<string>? SplitFilterCsv(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        var parts = value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        return parts.Length > 0 ? parts : null;
+    }
+
+    /// <summary>Splits a comma-separated chip value into distinct, parseable Guids. Unparseable entries are dropped;
+    /// returns null when nothing usable is selected.</summary>
+    private static IReadOnlyCollection<Guid>? SplitGuidCsv(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        var ids = value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(p => Guid.TryParse(p, out var g) ? g : (Guid?)null)
+            .Where(g => g is not null)
+            .Select(g => g!.Value)
+            .Distinct()
+            .ToArray();
+        return ids.Length > 0 ? ids : null;
+    }
+
+    /// <summary>Resolves the Territory Node / Country Scope chips to the set of CURRENT-coverage account ids to
+    /// constrain the account query with. Reuses <see cref="AccountCurrentCoverageResolver"/> (which reuses
+    /// <see cref="TerritoryCoverageLifecyclePolicy"/> — the two-gate rule is never reimplemented and the DateTimeOffset
+    /// effective-window stays an in-memory check). Within one chip the selected values are a UNION; the two chips are
+    /// ANDed together (intersection). Returns null when neither chip is set (predicate skipped); an empty set when a
+    /// chip was set but nothing currently qualifies (⇒ zero rows).</summary>
+    private async Task<IReadOnlyCollection<Guid>?> ResolveTerritoryCoverageScopeAsync(
+        Guid tenantId, string? territoryNodeIdCsv, string? countryScopeCsv, CancellationToken cancellationToken)
+    {
+        var nodeIds = SplitGuidCsv(territoryNodeIdCsv);
+        var countryScopes = SplitFilterCsv(countryScopeCsv);
+        if (nodeIds is null && countryScopes is null) return null;
+
+        var now = DateTimeOffset.UtcNow;
+        HashSet<Guid>? byNode = null;
+        HashSet<Guid>? byScope = null;
+
+        if (nodeIds is not null)
+        {
+            byNode = await AccountCurrentCoverageResolver.ResolveCoveredAccountIdsByNodesAsync(
+                _territoryAssignments, _territoryModels, tenantId, nodeIds, now, cancellationToken);
+        }
+
+        if (countryScopes is not null)
+        {
+            byScope = await AccountCurrentCoverageResolver.ResolveCoveredAccountIdsByCountryScopesAsync(
+                _territoryAssignments, _territoryModels, tenantId, countryScopes, now, cancellationToken);
+        }
+
+        // AND the two chips (each an internal union). When only one chip is set, its set is the scope.
+        IEnumerable<Guid> combined = (byNode, byScope) switch
+        {
+            (not null, not null) => byNode.Intersect(byScope),
+            (not null, null) => byNode,
+            (null, not null) => byScope,
+            _ => []
+        };
+
+        return combined.ToList();
     }
 
     /// <summary>Projects the current (effective-now) MOD-0151 territory coverage onto each list row so the grid can

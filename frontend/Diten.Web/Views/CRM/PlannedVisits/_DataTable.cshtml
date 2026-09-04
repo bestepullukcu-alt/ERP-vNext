@@ -1,0 +1,35 @@
+@using Diten.Web.Views.CRM.PlannedVisits
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PlannedVisitsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* There is no select-all checkbox and no bulk action bar here on purpose: this module has NO bulk delete and no delete
+   at all (a plan is cancelled/archived), so a selection column would offer an action that does not exist. *@
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-planned-visits" data-dt-standard="v2" class="datatables-plannedvisits table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>@Localizer["VisitCode"]</th>
+                    <th class="all">@Localizer["Target"]</th>
+                    <th>@Localizer["PlannedDate"]</th>
+                    <th>@Localizer["ResourceId"]</th>
+                    <th>@Localizer["VisitPurpose"]</th>
+                    <th>@SharedLocalizer["Status"]</th>
+                    <th>@Localizer["Consent"]</th>
+                    <th>@Localizer["Frequency"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

@@ -49,6 +49,26 @@ public sealed class AccountTerritoryAssignmentRepository : IAccountTerritoryAssi
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<AccountTerritoryAssignment>> ListActiveByNodesAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> nodeIds, CancellationToken cancellationToken)
+    {
+        if (nodeIds is null || nodeIds.Count == 0) return [];
+        return await _collection.Find(Tenant(tenantId)
+                & Builders<AccountTerritoryAssignment>.Filter.In(a => a.TerritoryNodeId, nodeIds)
+                & Builders<AccountTerritoryAssignment>.Filter.Eq(a => a.AssignmentStatus, "active"))
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<AccountTerritoryAssignment>> ListActiveByModelIdsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> modelIds, CancellationToken cancellationToken)
+    {
+        if (modelIds is null || modelIds.Count == 0) return [];
+        return await _collection.Find(Tenant(tenantId)
+                & Builders<AccountTerritoryAssignment>.Filter.In(a => a.TerritoryModelId, modelIds)
+                & Builders<AccountTerritoryAssignment>.Filter.Eq(a => a.AssignmentStatus, "active"))
+            .ToListAsync(cancellationToken);
+    }
+
     public Task InsertManyAsync(IReadOnlyCollection<AccountTerritoryAssignment> assignments, CancellationToken cancellationToken)
         => assignments.Count == 0
             ? Task.CompletedTask

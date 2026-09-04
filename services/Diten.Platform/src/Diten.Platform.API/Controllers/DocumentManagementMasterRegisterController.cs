@@ -4,8 +4,10 @@ using Diten.Platform.API.Observability;
 using Diten.Platform.API.Security;
 using Diten.Platform.Application.Features.DocumentManagementControlledDocuments;
 using Diten.Platform.Application.Features.DocumentManagementControlledDocumentRegistration;
+using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.DocumentManagementMasterRegister;
 using Diten.Platform.Application.Features.DocumentManagementMasterRegister.Commands;
+using Diten.Platform.Application.Features.DocumentManagementMasterRegister.Models;
 using Diten.Platform.Application.Features.DocumentManagementMasterRegister.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -92,6 +94,34 @@ public sealed class DocumentManagementMasterRegisterController : CustomBaseContr
                 id,
                 new LinkControlledDocumentInput(request.ControlledDocumentId, request.ReconciliationReason),
                 CorrelationId), ct));
+
+    /// <summary>
+    /// DCP-005 (P-EFF-P2 Faz 3) — resolve the effectiveness of a batch of controlled-document identifiers against the
+    /// live Document Master Register. Screen only: it validates the request shape (a parseable <c>by</c> and at least
+    /// one non-blank identifier) and dispatches the single resolver. <c>Unresolved</c> is NOT an error — it is returned
+    /// honestly inside a 200; a 400 is emitted ONLY for a malformed request (contract §4/§5).
+    /// </summary>
+    [HttpPost("document-master-register/effectiveness:batch")]
+    [HasPermission(DocumentMasterRegisterPermissions.EffectivenessRead)]
+    public async Task<IActionResult> ResolveEffectiveness([FromBody] ResolveEffectivenessApiRequest request, CancellationToken ct)
+    {
+        if (!EffectivenessApiMapper.TryParseIdentifierKind(request?.By, out var by))
+        {
+            return CreateActionResultInstance(Response<DocumentEffectivenessResult>.Fail(
+                "The 'by' discriminator is required and must be 'code' or 'uid'.",
+                400, EffectivenessApiMapper.InvalidRequestReasonCode, CorrelationId));
+        }
+
+        if (!EffectivenessApiMapper.HasResolvableIdentifier(request!.Identifiers))
+        {
+            return CreateActionResultInstance(Response<DocumentEffectivenessResult>.Fail(
+                "At least one non-empty identifier is required.",
+                400, EffectivenessApiMapper.InvalidRequestReasonCode, CorrelationId));
+        }
+
+        return CreateActionResultInstance(await _mediator.Send(
+            new ResolveDocumentEffectivenessQuery(request.Identifiers!, by, CorrelationId), ct));
+    }
 
     private string CorrelationId =>
         string.IsNullOrWhiteSpace(_correlationContext.CorrelationId) ? HttpContext.TraceIdentifier : _correlationContext.CorrelationId!;

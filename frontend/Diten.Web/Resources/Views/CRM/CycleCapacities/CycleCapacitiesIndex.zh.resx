@@ -56,6 +56,8 @@
   <data name="TravelingTime" xml:space="preserve"><value>路途时间</value></data>
   <data name="ReportDuration" xml:space="preserve"><value>报告时间</value></data>
   <data name="QuizDuration" xml:space="preserve"><value>测验时间</value></data>
+  <data name="BetweenVisitTimeMinutes" xml:space="preserve"><value>访问间隔缓冲</value></data>
+  <data name="BetweenVisitTimeMinutesHint" xml:space="preserve"><value>两次连续访问之间保留的缓冲时间。不计入单次访问时长；排程引擎在访问之间应用。</value></data>
   <data name="MonthlyDeductionsHint" xml:space="preserve"><value>月份来自周期区间，不能增删。请勿扣减周末和法定节假日：工作日历已将其排除。</value></data>
   <data name="MonthsPendingPeriod" xml:space="preserve"><value>请先选择周期；其区间决定显示哪些月份。</value></data>
   <data name="Month" xml:space="preserve"><value>月份</value></data>

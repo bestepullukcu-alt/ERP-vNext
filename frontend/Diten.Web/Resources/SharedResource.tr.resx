@@ -766,4 +766,6 @@
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>Markalar</value>
   </data>
+  <data name="PlannedVisitsMenu" xml:space="preserve"><value>Planlanan Ziyaretler</value></data>
+  <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>Planlanan Ziyaretler</value></data>
 </root>

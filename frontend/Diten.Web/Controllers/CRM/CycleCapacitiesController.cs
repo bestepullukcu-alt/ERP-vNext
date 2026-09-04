@@ -117,7 +117,10 @@ public sealed class CycleCapacitiesController : Controller
             NonPromoProductTime = 0,
             TravelingTime = 0,
             ReportDuration = 0,
-            QuizDuration = 0
+            QuizDuration = 0,
+            // FU06B — the configured buffer, shown as the SAME number the server will write (falls back to 5 only when
+            // the contract could not be loaded).
+            BetweenVisitTimeMinutes = defaults?.BetweenVisitTimeMinutes ?? 5
         };
 
         await PopulateOptionsAsync(model, ct);
@@ -355,6 +358,7 @@ public sealed class CycleCapacitiesController : Controller
                 travelingTime = model.TravelingTime,
                 reportDuration = model.ReportDuration,
                 quizDuration = model.QuizDuration,
+                betweenVisitTimeMinutes = model.BetweenVisitTimeMinutes,
                 description = Clean(model.Description),
                 months,
                 expectedVersion = model.ExpectedVersion
@@ -371,6 +375,7 @@ public sealed class CycleCapacitiesController : Controller
             travelingTime = model.TravelingTime,
             reportDuration = model.ReportDuration,
             quizDuration = model.QuizDuration,
+            betweenVisitTimeMinutes = model.BetweenVisitTimeMinutes,
             description = Clean(model.Description),
             months
         };
@@ -390,6 +395,7 @@ public sealed class CycleCapacitiesController : Controller
         TravelingTime = detail.TravelingTime,
         ReportDuration = detail.ReportDuration,
         QuizDuration = detail.QuizDuration,
+        BetweenVisitTimeMinutes = detail.BetweenVisitTimeMinutes,
         Description = detail.Description,
         ExpectedVersion = detail.Version,
         IsArchived = detail.IsArchived,

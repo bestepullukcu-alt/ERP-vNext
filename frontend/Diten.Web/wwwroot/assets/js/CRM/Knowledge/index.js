@@ -15,9 +15,9 @@
     const filterCollapseId = 'inlineFilterCollapse';
     const personalizationClient = window.personalizationClient;
     const personalizationContext = { moduleKey: 'CRM', pageKey: 'Knowledge' };
-    const saveViewColumnIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
-    const totalColumnCount = 17;
-    const baseOrder = [[15, 'desc']];
+    const saveViewColumnIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+    const totalColumnCount = 16;
+    const baseOrder = [[14, 'desc']];
 
     let L = window.KnowledgeL10n || window.L10n || {};
     let dt = null;
@@ -26,17 +26,49 @@
     let saveFilterArmed = false;
     let defaultViewRecord = null;
     let defaultViewState = null;
-    const emptyFilters = () => ({ contentStatus: [], contentType: [], subjectId: [], topicId: '', audienceProfileId: [], languageCode: '', brandId: '', productId: '', includeArchived: 'true' });
+    const emptyFilters = () => ({ contentStatus: [], contentType: [], subjectId: [], topicId: '', audienceProfileId: [], languageCode: '', productId: '', includeArchived: 'true' });
     let appliedFilters = emptyFilters();
     let allRows = [];
-    // id -> name lookup for the Subject/Topic/AudienceProfile (taxonomy) and Brand/Product (MDM) columns.
-    const subjectMap = {}, topicMap = {}, audienceMap = {}, brandMap = {}, productMap = {};
+    // id -> name lookup for the Subject/Topic/AudienceProfile (taxonomy) and Product (MDM Global Product) columns.
+    const subjectMap = {}, topicMap = {}, audienceMap = {}, productMap = {};
 
     const getAuthHeaders = () => ({ Accept: 'application/json' });
     const esc = v => String(v ?? '').replace(/[&<>'"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[ch]));
     const badge = (v, cls = 'primary') => `<span class="badge bg-label-${cls}">${esc(v || '—')}</span>`;
     const date = v => v ? new Date(v).toLocaleString() : '—';
     const norm = v => (typeof v === 'string' ? v.trim() : (v == null ? '' : String(v)));
+
+    // ─── Content-title thumbnail / type icon (mirrors the Accounts list logo chip) ──────────────
+    // KnowledgeContent stores POINTERS (Url / FileRef), never an inline data-URI. So: an image Url →
+    // 32×32 thumbnail; otherwise a Boxicons type icon chosen by contentType (with a PDF special-case).
+    const IMAGE_URL_RE = /\.(png|jpe?g|gif|webp|svg)(\?.*)?$/i;
+    const pickTypeIcon = row => {
+        const url = norm(row && row.url).toLowerCase();
+        if (url.endsWith('.pdf') || norm(row && row.contentType).toLowerCase() === 'pdf') return 'bxs-file-pdf';
+        switch (norm(row && row.contentType).toLowerCase()) {
+            case 'presentation':       return 'bx-slideshow';
+            case 'clinical-summary':   return 'bx-file';
+            case 'faq':                return 'bx-help-circle';
+            case 'objection-handling': return 'bx-message-rounded-dots';
+            case 'video':              return 'bx-play-circle';
+            case 'brochure':           return 'bxs-file-pdf';
+            case 'quiz':               return 'bx-list-check';
+            // FileRef-backed content (a Document Management controlled-document pointer) → document icon (no doc-store fetch).
+            default:                   return norm(row && row.fileRef) ? 'bx-file' : 'bx-file-blank';
+        }
+    };
+    const iconChip = row => `<span class="rounded border d-inline-flex align-items-center justify-content-center text-muted flex-shrink-0 bg-label-secondary" style="width:32px;height:32px;"><i class="icon-base bx ${pickTypeIcon(row)}"></i></span>`;
+    // onerror falls back to the type-icon chip (its HTML is entity-escaped into data-fallback, decoded on read).
+    const imgThumb = (src, row) => `<img src="${esc(src)}" class="rounded border flex-shrink-0" style="width:32px;height:32px;object-fit:contain;background:var(--bs-body-bg);" alt="" data-fallback="${esc(iconChip(row))}" onerror="this.insertAdjacentHTML('afterend', this.dataset.fallback); this.remove();">`;
+    const titleThumb = row => {
+        const url = norm(row && row.url);
+        if (url && IMAGE_URL_RE.test(url)) return imgThumb(url, row);
+        // FileRef is a Document Management controlled-document id — stream its bytes; an image document renders, a
+        // PDF/other doc that <img> can't paint degrades to the type/doc icon via the same onerror fallback.
+        const fileRef = norm(row && row.fileRef);
+        if (fileRef) return imgThumb(`/CRM/Knowledge/document-preview/${encodeURIComponent(fileRef)}`, row);
+        return iconChip(row);
+    };
     const normArr = v => Array.isArray(v) ? Array.from(new Set(v.map(x => norm(x)).filter(Boolean))) : (norm(v) ? [norm(v)] : []);
     const hasVal = v => Array.isArray(v) ? normArr(v).length > 0 : norm(v).length > 0;
 
@@ -134,7 +166,7 @@
         fillSelect('filterSubjectId', await fetchTax('subjects', 'subjectId', 'subjectCode', 'subjectName', subjectMap), false);
         fillSelect('filterTopicId', await fetchTax('topics', 'topicId', 'topicCode', 'topicName', topicMap), true);
         fillSelect('filterAudienceProfileId', await fetchTax('audience-profiles', 'audienceProfileId', 'profileCode', 'profileName', audienceMap), false);
-        // brand / product names from MDM (via the Knowledge proxy); language stays raw (distinct loaded values).
+        // product names from the MDM Global Product master (via the Knowledge proxy); language stays raw (distinct loaded values).
         const fetchOpt = async (path, map) => {
             try {
                 const opts = await (await fetch(`${endpoint}/${path}`, { credentials: 'same-origin', headers: getAuthHeaders() })).json();
@@ -144,7 +176,6 @@
             } catch (e) { return []; }
         };
         fillSelect('filterLanguageCode', distinct('languageCode'), true);
-        fillSelect('filterBrandId', await fetchOpt('brand-options', brandMap), true);
         fillSelect('filterProductId', await fetchOpt('product-options', productMap), true);
         initSelect2();
     };
@@ -186,11 +217,10 @@
                 && matchesSingle(appliedFilters.topicId, r.topicId)
                 && matchesMulti(appliedFilters.audienceProfileId, r.audienceProfileId)
                 && matchesSingle(appliedFilters.languageCode, r.languageCode)
-                && matchesSingle(appliedFilters.brandId, r.brandId)
                 && matchesSingle(appliedFilters.productId, r.productId);
         });
     };
-    const getAppliedFilterCount = () => [appliedFilters.contentStatus, appliedFilters.contentType, appliedFilters.subjectId, appliedFilters.topicId, appliedFilters.audienceProfileId, appliedFilters.languageCode, appliedFilters.brandId, appliedFilters.productId].filter(hasVal).length + (appliedFilters.includeArchived === 'false' ? 1 : 0);
+    const getAppliedFilterCount = () => [appliedFilters.contentStatus, appliedFilters.contentType, appliedFilters.subjectId, appliedFilters.topicId, appliedFilters.audienceProfileId, appliedFilters.languageCode, appliedFilters.productId].filter(hasVal).length + (appliedFilters.includeArchived === 'false' ? 1 : 0);
 
     const readControls = () => ({
         contentStatus: window.jQuery('#filterContentStatus').val() || [],
@@ -199,7 +229,6 @@
         topicId: document.getElementById('filterTopicId')?.value || '',
         audienceProfileId: window.jQuery('#filterAudienceProfileId').val() || [],
         languageCode: document.getElementById('filterLanguageCode')?.value || '',
-        brandId: document.getElementById('filterBrandId')?.value || '',
         productId: document.getElementById('filterProductId')?.value || '',
         includeArchived: document.getElementById('filterIncludeArchived')?.value || 'true'
     });
@@ -210,7 +239,6 @@
         window.jQuery('#filterTopicId').val(f.topicId || '').trigger('change');
         window.jQuery('#filterAudienceProfileId').val(normArr(f.audienceProfileId)).trigger('change');
         window.jQuery('#filterLanguageCode').val(f.languageCode || '').trigger('change');
-        window.jQuery('#filterBrandId').val(f.brandId || '').trigger('change');
         window.jQuery('#filterProductId').val(f.productId || '').trigger('change');
         window.jQuery('#filterIncludeArchived').val(f.includeArchived || 'true').trigger('change');
     };
@@ -285,22 +313,29 @@
         columns: [
             { data: null, defaultContent: '' }, { data: 'contentCode' }, { data: 'contentTitle' }, { data: 'contentType' },
             { data: 'contentStatus' }, { data: 'subjectId' }, { data: 'topicId' }, { data: 'audienceProfileId' },
-            { data: 'languageCode' }, { data: 'contentVersion' }, { data: 'brandId' }, { data: 'productId' },
+            { data: 'languageCode' }, { data: 'contentVersion' }, { data: 'productId' },
             { data: 'effectiveFrom' }, { data: 'effectiveTo' }, { data: 'isArchived' }, { data: 'updatedAt' }, { data: null }
         ],
         columnDefs: [
             { targets: 0, className: 'control', orderable: false, render: () => '' },
-            { targets: 2, render: v => `<span class="fw-medium text-heading">${esc(v)}</span>` },
+            {
+                // Content title + file-preview thumbnail / type icon. Non-display types return the plain title so
+                // search/sort/export stay text-only (mirrors the Accounts list logo column guard).
+                targets: 2,
+                render: (v, t, row) => {
+                    if (t !== 'display') return v ?? '';
+                    return `<div class="d-flex align-items-center gap-2">${titleThumb(row)}<span class="fw-medium text-heading">${esc(v)}</span></div>`;
+                }
+            },
             { targets: [3, 4], render: v => badge(v, v === 'archived' ? 'secondary' : 'primary') },
             { targets: 5, render: v => esc(subjectMap[v] || v || '—') },
             { targets: 6, render: v => esc(topicMap[v] || v || '—') },
             { targets: 7, render: v => esc(audienceMap[v] || v || '—') },
             { targets: [8, 9], render: v => esc(v || '—') },
-            { targets: 10, render: v => esc(brandMap[v] || v || '—') },
-            { targets: 11, render: v => esc(productMap[v] || v || '—') },
-            { targets: [12, 13, 15], render: v => date(v) },
-            { targets: 14, render: v => badge(v ? L.Yes : L.No, v ? 'warning' : 'success') },
-            { targets: 16, title: L.Actions, orderable: false, searchable: false, className: 'cell-fit text-end pe-3 all', render: (v, t, row) => actions(row) }
+            { targets: 10, render: v => esc(productMap[v] || v || '—') },
+            { targets: [11, 12, 14], render: v => date(v) },
+            { targets: 13, render: v => badge(v ? L.Yes : L.No, v ? 'warning' : 'success') },
+            { targets: 15, title: L.Actions, orderable: false, searchable: false, className: 'cell-fit text-end pe-3 all', render: (v, t, row) => actions(row) }
         ],
         language: { emptyTable: L.EmptyState, processing: L.Loading },
         buttons: window.DtDefaults.exportButtons(L.CreateContent, {}, {
@@ -326,7 +361,7 @@
 
     const setupFilters = async api => {
         await loadFilterOptions();
-        // The id->name maps (Subject/Topic/Audience/Brand/Product) are only ready now, AFTER the table's first draw
+        // The id->name maps (Subject/Topic/Audience/Product) are only ready now, AFTER the table's first draw
         // rendered (and cached) the columns as raw ids. Invalidate so the renders re-run with names.
         try { api.rows().invalidate().draw(false); } catch (e) { /* table not ready */ }
         applySavedTableState(api, defaultViewState);

@@ -9,6 +9,9 @@ const ContactsList = (function () {
     let defaultViewRecord = null;
     let defaultViewState = null;
     let saveFilterArmed = false;
+    // Server-side processing: the DataTables `draw` counter of the in-flight request, echoed back by dataFilter so
+    // DataTables can match the response to its request (128,966-contact tenant — the grid MUST page on the backend).
+    let lastDrawToken = 0;
 
     const dtTableEl = document.querySelector('.datatables-contacts');
     const apiUrl = window.API?.crm ?? window.ApiBaseUrl;
@@ -656,14 +659,72 @@ const ContactsList = (function () {
             tableEl: dtTableEl,
             bulk: bulkOptions,
             ajax: {
-                url: apiUrl + '/api/crm/contacts?page=1&pageSize=500',
+                // TRUE server-side processing. The CRM list endpoint is paged (Response<PagedResult<T>>): every page,
+                // search and sort is resolved on the backend so all 128K contacts are reachable (was: one wide 500-row
+                // page filtered/paged in the browser, which hid ~128.4K rows).
+                url: apiUrl + '/api/crm/contacts',
                 type: 'GET',
                 xhrFields: { withCredentials: true },
-                dataSrc: (json) => json?.data?.items ?? json?.Data?.Items ?? []
+                // Map the DataTables request → CRM list query string.
+                data: function (d) {
+                    lastDrawToken = d.draw;
+                    const length = d.length > 0 ? d.length : 25;
+                    const params = {
+                        page: Math.floor((d.start || 0) / length) + 1,
+                        pageSize: length,
+                        search: d?.search?.value ? d.search.value : ''
+                    };
+                    // Inline-filter chips pushed to the backend (server-side). Status + Contact Type are plain stored
+                    // Contact fields, sent as comma-separated codes (multi-select ⇒ backend IN predicate). The
+                    // Country-Scope and Territory-Node chips are NOT sent: their values are MOD-0151 territory-coverage
+                    // projections (the union of the contact's linked accounts' current coverage) computed per-page in the
+                    // handler, not stored Contact fields, so they cannot become a cheap equality predicate — those two
+                    // chips remain non-functional under server-side processing.
+                    const statusVals = normalizeArray(appliedFilters.status);
+                    const typeVals = normalizeArray(appliedFilters.contactType);
+                    if (statusVals.length) params.status = statusVals.join(',');
+                    if (typeVals.length) params.contactType = typeVals.join(',');
+                    // Only displayName/contactType are backend-sortable (each backed by a {TenantId, field} index).
+                    // Their columns are the ONLY orderable ones (see columnDefs), so order[0] can only be one of them;
+                    // anything else is ignored and the backend falls back to DisplayName asc.
+                    if (Array.isArray(d.order) && d.order.length) {
+                        const col = d.columns?.[d.order[0].column];
+                        const sortName = col && (col.data || col.name);
+                        if (sortName === 'displayName' || sortName === 'contactType') {
+                            params.sortBy = sortName;
+                            params.sortDir = d.order[0].dir === 'desc' ? 'desc' : 'asc';
+                        }
+                    }
+                    return params;
+                },
+                // Reshape the Response<PagedResult> envelope into the {draw,recordsTotal,recordsFiltered,data} contract
+                // DataTables server-side expects. Runs in jQuery BEFORE DataTables reads the counts, so it is the only
+                // reliable place to remap them (a dataSrc function runs too late for recordsTotal/recordsFiltered).
+                dataFilter: function (raw) {
+                    let json;
+                    try { json = JSON.parse(raw); } catch (e) { json = {}; }
+                    const paged = json?.data ?? json?.Data ?? {};
+                    const items = paged.items ?? paged.Items ?? [];
+                    const filtered = paged.total ?? paged.Total ?? items.length;             // recordsFiltered
+                    const totalAll = paged.unfilteredTotal ?? paged.UnfilteredTotal ?? filtered; // recordsTotal
+                    return JSON.stringify({
+                        draw: lastDrawToken,
+                        recordsTotal: totalAll,
+                        recordsFiltered: filtered,
+                        data: items
+                    });
+                },
+                dataSrc: 'data'
             },
             actions: { onRowAction: rowActionHandlers },
             config: {
                 stateSave: false,
+                // True DataTables server-side processing (paging/search/sort resolved by the CRM backend).
+                serverSide: true,
+                processing: true,
+                // Default sort stays DisplayName ascending (column 2), matching the backend default and the repo's prior
+                // DisplayName ordering. displayName(2) + contactType(3) are the only backend-sortable columns.
+                order: [[2, 'asc']],
                 colReorder: { columns: ':gt(1):not(:last-child)' },
                 columns: [
                     { data: 'id', name: 'control' },
@@ -681,6 +742,10 @@ const ContactsList = (function () {
                 columnDefs: [
                     { targets: 0, className: 'control', searchable: false, orderable: false, responsivePriority: 2, render: () => '' },
                     { targets: 1, orderable: false, searchable: false, responsivePriority: 3, className: 'dt-checkboxes-cell cell-fit', render: (data) => `<input type="checkbox" class="dt-checkboxes form-check-input" value="${data}">` },
+                    // Server-side: only displayName(2) + contactType(3) are backend-sortable (indexed). professionalTitle(4),
+                    // email(5), phone(6), status(7) and the computed territory columns(8,9) are NOT sortable on the backend,
+                    // so they are non-orderable here — no misleading sort arrow, and no unindexed 32MB in-memory sort.
+                    { targets: [4, 5, 6, 7, 8, 9], orderable: false },
                     {
                         // Avatar thumbnail + name. Non-display types return the plain name so search/sort/EXPORT use the
                         // name only (the photo never enters a client-side export — PII stays off exports).

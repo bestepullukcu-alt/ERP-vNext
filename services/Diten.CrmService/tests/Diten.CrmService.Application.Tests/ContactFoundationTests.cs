@@ -292,10 +292,37 @@ public sealed class ContactFoundationTests
         public Task<Contact?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct)
             => Task.FromResult(Items.FirstOrDefault(c => c.TenantId == tenantId && c.Id == id && !c.IsDeleted));
 
-        public Task<(IReadOnlyList<Contact> Items, long Total)> ListAsync(Guid tenantId, string? search, int page, int pageSize, CancellationToken ct)
+    public Task<IReadOnlyList<Contact>> ListByIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> ids, CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<Contact>>(Array.Empty<Contact>());
+
+        public Task<(IReadOnlyList<Contact> Items, long Total, long UnfilteredTotal)> ListAsync(
+            Guid tenantId, string? search, int page, int pageSize, string? sortBy, string? sortDir,
+            IReadOnlyCollection<string>? statuses, IReadOnlyCollection<string>? contactTypes, CancellationToken ct)
         {
-            var q = Items.Where(c => c.TenantId == tenantId && !c.IsDeleted).ToList();
-            return Task.FromResult(((IReadOnlyList<Contact>)q, (long)q.Count));
+            var tenant = Items.Where(c => c.TenantId == tenantId && !c.IsDeleted).ToList();
+            IEnumerable<Contact> q = tenant;
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim();
+                q = q.Where(c =>
+                    (c.DisplayName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
+                    || (c.FirstName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
+                    || (c.LastName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
+                    || (c.Email?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false));
+            }
+            if (statuses is { Count: > 0 }) q = q.Where(c => statuses.Contains(c.Status));
+            if (contactTypes is { Count: > 0 }) q = q.Where(c => contactTypes.Contains(c.ContactType));
+
+            var descending = string.Equals(sortDir?.Trim(), "desc", StringComparison.OrdinalIgnoreCase);
+            q = (sortBy?.Trim().ToLowerInvariant()) switch
+            {
+                "contacttype" => descending ? q.OrderByDescending(c => c.ContactType) : q.OrderBy(c => c.ContactType),
+                _ => descending ? q.OrderByDescending(c => c.DisplayName) : q.OrderBy(c => c.DisplayName)
+            };
+
+            var filtered = q.ToList();
+            var page1 = filtered.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            return Task.FromResult(((IReadOnlyList<Contact>)page1, (long)filtered.Count, (long)tenant.Count));
         }
 
         public Task<IReadOnlyList<Contact>> ListAllAsync(Guid tenantId, CancellationToken ct) => Task.FromResult((IReadOnlyList<Contact>)Items.Where(c => c.TenantId == tenantId && !c.IsDeleted).ToList());
@@ -356,7 +383,7 @@ public sealed class ContactFoundationTests
         public Task<Account?> GetByIdAsync(Guid t, Guid id, CancellationToken ct) => Task.FromResult<Account?>(null);
         public Task<Account?> GetByCodeAsync(Guid t, string code, CancellationToken ct) => Task.FromResult<Account?>(null);
         public Task<bool> ExistsByCodeAsync(Guid t, string c, Guid? ex, CancellationToken ct) => Task.FromResult(false);
-        public Task<(IReadOnlyList<Account> Items, long Total)> ListAsync(Guid t, string? s, int p, int ps, CancellationToken ct) => Task.FromResult(((IReadOnlyList<Account>)new List<Account>(), 0L));
+        public Task<(IReadOnlyList<Account> Items, long Total, long UnfilteredTotal)> ListAsync(Guid t, string? s, int p, int ps, string? sortBy, string? sortDir, IReadOnlyCollection<string>? statuses, IReadOnlyCollection<string>? accountTypes, IReadOnlyCollection<Guid>? accountIdScope, CancellationToken ct) => Task.FromResult(((IReadOnlyList<Account>)new List<Account>(), 0L, 0L));
         public Task<IReadOnlyList<Account>> GetChildrenAsync(Guid t, Guid p, CancellationToken ct) => Task.FromResult((IReadOnlyList<Account>)new List<Account>());
         public Task<bool> WouldCreateCycleAsync(Guid t, Guid a, Guid c, CancellationToken ct) => Task.FromResult(false);
         public Task InsertAsync(Account a, CancellationToken ct) => Task.CompletedTask;

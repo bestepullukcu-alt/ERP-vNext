@@ -46,6 +46,7 @@ public sealed class CycleCapacityWriteValidator
         string? CalendarCountryCode,
         bool CalendarCountryIsDerived,
         IReadOnlyList<CycleCapacityMonth>? Months,
+        int BetweenVisitTimeMinutes,
         CycleCapacityValidation.Failure? Failure);
 
     public async Task<Result> ValidateAsync(
@@ -59,6 +60,7 @@ public sealed class CycleCapacityWriteValidator
         int quizDuration,
         string? description,
         IReadOnlyList<CycleCapacityMonthInput> months,
+        int? betweenVisitTimeMinutes,
         CancellationToken cancellationToken)
     {
         // 1 — the pin. A period that does not exist in this tenant answers 404 rather than 403, so the endpoint never
@@ -86,6 +88,14 @@ public sealed class CycleCapacityWriteValidator
                 travelingTime, reportDuration, quizDuration, description) is { } shapeFailure)
         {
             return Fail(shapeFailure);
+        }
+
+        // 3b — MOD-0155 FU06B: the between-visit buffer. A missing payload takes the configured default (fail-closed),
+        // so an author who never touches the field still gets a sane value; an authored value is range-checked.
+        var betweenVisit = betweenVisitTimeMinutes ?? _defaults.Current.BetweenVisitTimeMinutes;
+        if (CycleCapacityValidation.ValidateBetweenVisitTime(betweenVisit) is { } bufferFailure)
+        {
+            return Fail(bufferFailure);
         }
 
         // 4 — the calendar country (D-COUNTRY = B). Derived from a country-scoped period, otherwise authored.
@@ -127,6 +137,7 @@ public sealed class CycleCapacityWriteValidator
             country.CountryCode,
             country.IsDerived,
             stamped,
+            betweenVisit,
             Failure: null);
     }
 
@@ -171,5 +182,5 @@ public sealed class CycleCapacityWriteValidator
     }
 
     private static Result Fail(CycleCapacityValidation.Failure failure)
-        => new(null, null, false, null, failure);
+        => new(null, null, false, null, 0, failure);
 }

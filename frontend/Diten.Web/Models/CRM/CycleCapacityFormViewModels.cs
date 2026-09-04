@@ -63,6 +63,15 @@ public sealed class CycleCapacityEditViewModel
     [Required]
     public int? QuizDuration { get; set; }
 
+    /// <summary>
+    /// MOD-0155 FU06B — the buffer left between two consecutive visits when a field day is packed.
+    /// <para>Editable operator config (0–240). It is NOT part of a single visit's duration — the packing engine
+    /// (MOD-0155 FU05) applies it BETWEEN visits. Nullable-with-[Required] like the sibling minute fields so an empty
+    /// input is caught rather than silently posting 0.</para>
+    /// </summary>
+    [Required]
+    public int? BetweenVisitTimeMinutes { get; set; }
+
     public string? Description { get; set; }
 
     /// <summary>

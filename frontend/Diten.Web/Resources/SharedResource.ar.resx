@@ -705,4 +705,6 @@
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>العلامات التجارية</value>
   </data>
+  <data name="PlannedVisitsMenu" xml:space="preserve"><value>الزيارات المخططة</value></data>
+  <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>الزيارات المخططة</value></data>
 </root>

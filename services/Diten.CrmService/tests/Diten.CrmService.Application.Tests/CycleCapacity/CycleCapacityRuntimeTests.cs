@@ -69,6 +69,7 @@ public sealed class CycleCapacityRuntimeTests
                     TravelingTime = source.TravelingTime,
                     ReportDuration = source.ReportDuration,
                     QuizDuration = source.QuizDuration,
+                    BetweenVisitTimeMinutes = source.BetweenVisitTimeMinutes,
                     Description = source.Description,
                     IsArchived = source.IsArchived,
                     Version = source.Version,
@@ -191,8 +192,8 @@ public sealed class CycleCapacityRuntimeTests
 
     private sealed class FakeDefaults : ICycleCapacityDefaultsProvider
     {
-        public FakeDefaults(int dailyWorkMinutes = 480, decimal fte = 12.00m)
-            => Current = new CycleCapacityDefaults(dailyWorkMinutes, fte);
+        public FakeDefaults(int dailyWorkMinutes = 480, decimal fte = 12.00m, int betweenVisitTimeMinutes = 5)
+            => Current = new CycleCapacityDefaults(dailyWorkMinutes, fte, betweenVisitTimeMinutes);
 
         public CycleCapacityDefaults Current { get; }
     }
@@ -237,9 +238,10 @@ public sealed class CycleCapacityRuntimeTests
         int traveling = 60,
         int report = 30,
         int quiz = 10,
-        IReadOnlyList<CycleCapacityMonthInput>? months = null)
+        IReadOnlyList<CycleCapacityMonthInput>? months = null,
+        int? betweenVisit = null)
         => new(periodId, country, dailyWorkMinutes, promo, nonPromo, traveling, report, quiz, null,
-            months ?? TwoMonths());
+            months ?? TwoMonths(), betweenVisit);
 
     private sealed record Harness(
         FakeCapacityRepo Repo,
@@ -445,6 +447,10 @@ public sealed class CycleCapacityRuntimeTests
         var forbidden = typeof(CapacityEntity).GetProperties()
             .Concat(typeof(CycleCapacityMonth).GetProperties())
             .Select(p => p.Name)
+            // MOD-0155 FU06B — BetweenVisitTimeMinutes contains "Visit" but is a stored CONFIG INPUT, not a computed
+            // figure: it is authored, range-checked and never derived from the calendar. The scan targets computed
+            // visit/working-day/field-day OUTPUTS, so the one config field is excluded by name.
+            .Where(n => n != nameof(CapacityEntity.BetweenVisitTimeMinutes))
             .Where(n => n.Contains("Visit", StringComparison.OrdinalIgnoreCase)
                         || n.Contains("WorkingDay", StringComparison.OrdinalIgnoreCase)
                         || n.Contains("FieldDay", StringComparison.OrdinalIgnoreCase))
@@ -1477,5 +1483,242 @@ public sealed class CycleCapacityRuntimeTests
             2026, 2,
             new DateTimeOffset(2026, 3, 1, 0, 0, 0, TimeSpan.FromHours(3)),
             new DateTimeOffset(2026, 3, 31, 0, 0, 0, TimeSpan.Zero)));
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    // MOD-0155 FU06B — Activity Time Budget: the pure duration function, the new field, and the additive guarantee
+    // ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+    private static CapacityEntity DurationCapacity(
+        int promo = 5, int nonPromo = 3, int report = 3, int? between = null)
+        => new()
+        {
+            PromoProductTime = promo,
+            NonPromoProductTime = nonPromo,
+            TravelingTime = 60,      // present but irrelevant to a visit's duration
+            ReportDuration = report,
+            QuizDuration = 10,
+            BetweenVisitTimeMinutes = between
+        };
+
+    /// <summary>AC-F-1 — the pack's worked example, read from FU06's existing root fields: 2×5 + 1×3 + 3 = 16.</summary>
+    [Fact]
+    public void T59_VisitDuration_Reads_The_Reused_Fu06_Fields()
+    {
+        var capacity = DurationCapacity(promo: 5, nonPromo: 3, report: 3);
+
+        Assert.Equal(16, ActivityTimeBudgetCalculator.VisitDuration(capacity, promoCount: 2, nonPromoCount: 1));
+    }
+
+    /// <summary>Zero content items still costs the per-visit report charge, and nothing else.</summary>
+    [Fact]
+    public void T60_VisitDuration_With_Zero_Counts_Is_The_Report_Charge()
+    {
+        var capacity = DurationCapacity(promo: 5, nonPromo: 3, report: 7);
+
+        Assert.Equal(7, ActivityTimeBudgetCalculator.VisitDuration(capacity, 0, 0));
+    }
+
+    /// <summary>AC-F-2 — the between-visit buffer NEVER enters a single visit's duration.</summary>
+    [Fact]
+    public void T61_VisitDuration_Ignores_The_Between_Visit_Buffer()
+    {
+        var withBuffer = DurationCapacity(between: 999);
+        var withoutBuffer = DurationCapacity(between: 0);
+
+        Assert.Equal(
+            ActivityTimeBudgetCalculator.VisitDuration(withoutBuffer, 2, 1),
+            ActivityTimeBudgetCalculator.VisitDuration(withBuffer, 2, 1));
+    }
+
+    /// <summary>AC-F-3 — travel time is the route optimiser's and is not in a visit's duration; changing it moves
+    /// nothing, and the function takes no travel parameter at all.</summary>
+    [Fact]
+    public void T62_VisitDuration_Excludes_Travel_Time()
+    {
+        var a = DurationCapacity();
+        a.TravelingTime = 0;
+        var b = DurationCapacity();
+        b.TravelingTime = 480;
+
+        Assert.Equal(
+            ActivityTimeBudgetCalculator.VisitDuration(a, 2, 1),
+            ActivityTimeBudgetCalculator.VisitDuration(b, 2, 1));
+
+        var parameters = typeof(ActivityTimeBudgetCalculator)
+            .GetMethod(nameof(ActivityTimeBudgetCalculator.VisitDuration))!
+            .GetParameters().Select(p => p.Name).ToList();
+        Assert.DoesNotContain(parameters, n => n!.Contains("travel", StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>AC-F-4 — a negative content count is clamped to zero, never throwing and never subtracting.</summary>
+    [Fact]
+    public void T63_VisitDuration_Clamps_Negative_Counts_To_Zero()
+    {
+        var capacity = DurationCapacity(promo: 5, nonPromo: 3, report: 3);
+
+        Assert.Equal(3, ActivityTimeBudgetCalculator.VisitDuration(capacity, -4, -9));
+        Assert.Equal(13, ActivityTimeBudgetCalculator.VisitDuration(capacity, 2, -9)); // 2×5 + 0 + 3
+    }
+
+    /// <summary>An absurdly large count degrades to a clamped int rather than overflowing.</summary>
+    [Fact]
+    public void T64_VisitDuration_Does_Not_Overflow()
+    {
+        var capacity = DurationCapacity(promo: 480, nonPromo: 480, report: 3);
+
+        var result = ActivityTimeBudgetCalculator.VisitDuration(capacity, int.MaxValue, int.MaxValue);
+
+        Assert.True(result > 0);
+        Assert.Equal(int.MaxValue, result);
+    }
+
+    /// <summary>AC-ADD-2 — the duration function is INDEPENDENT of the capacity calculator (it never references it) and
+    /// READS the capacity without mutating it.</summary>
+    [Fact]
+    public void T65_ActivityTimeBudgetCalculator_Is_Independent_And_Read_Only()
+    {
+        // Structural independence: no reference to the capacity calculator type anywhere in the pure duration type.
+        var referenced = typeof(ActivityTimeBudgetCalculator)
+            .GetMethods()
+            .SelectMany(m => m.GetParameters().Select(p => p.ParameterType))
+            .Append(typeof(ActivityTimeBudgetCalculator))
+            .Any(t => t == typeof(CycleCapacityCalculator));
+        Assert.False(referenced);
+
+        // Read-only: the reused fields are unchanged after a call.
+        var capacity = DurationCapacity(promo: 5, nonPromo: 3, report: 3);
+        ActivityTimeBudgetCalculator.VisitDuration(capacity, 9, 9);
+        Assert.Equal(5, capacity.PromoProductTime);
+        Assert.Equal(3, capacity.NonPromoProductTime);
+        Assert.Equal(3, capacity.ReportDuration);
+    }
+
+    /// <summary>AC-ADD-3 — the reused fields are NOT duplicated. FU06B added only BetweenVisitTimeMinutes; there is no
+    /// second copy of the promo / non-promo / report minute fields under any *Minutes alias.</summary>
+    [Fact]
+    public void T66_No_Duplicate_Minute_Fields_Were_Added()
+    {
+        var names = typeof(CapacityEntity).GetProperties().Select(p => p.Name).ToList();
+
+        Assert.Contains(nameof(CapacityEntity.BetweenVisitTimeMinutes), names);
+        Assert.DoesNotContain("PromoProductTimeMinutes", names);
+        Assert.DoesNotContain("NonPromoProductTimeMinutes", names);
+        Assert.DoesNotContain("ReportDurationMinutes", names);
+
+        // The single source of truth is still FU06's own fields.
+        Assert.Contains(nameof(CapacityEntity.PromoProductTime), names);
+        Assert.Contains(nameof(CapacityEntity.NonPromoProductTime), names);
+        Assert.Contains(nameof(CapacityEntity.ReportDuration), names);
+    }
+
+    /// <summary>AC-ADD-1 — the capacity number is unchanged by FU06B: the golden 3036 still comes out with a buffer
+    /// set, because the buffer never enters the arithmetic.</summary>
+    [Fact]
+    public void T67_Between_Visit_Buffer_Does_Not_Change_The_Capacity_Number()
+    {
+        var capacity = new CapacityEntity
+        {
+            DailyWorkMinutes = 480,
+            PromoProductTime = 15,
+            NonPromoProductTime = 10,
+            TravelingTime = 60,
+            ReportDuration = 30,
+            QuizDuration = 10,
+            BetweenVisitTimeMinutes = 240, // the maximum buffer — and still no effect
+            Months = { new CycleCapacityMonth { Year = 2026, MonthNumber = 3, MeetingDays = 1, TrainingDays = 1, VacationDays = 2, MicroTargetingDayCount = 3, MicroTargetingDuration = 45, Fte = 12.00m } }
+        };
+        var window = new CycleCapacityMonthRules.MonthWindow(2026, 3, Mar1, new DateTimeOffset(2026, 3, 31, 0, 0, 0, TimeSpan.Zero));
+
+        var result = CycleCapacityCalculator.Calculate(
+            capacity, new[] { new CycleCapacityCalculator.ResolvedMonth(window, 21) });
+
+        Assert.Equal(3036, result.TotalVisitNumber);
+    }
+
+    /// <summary>AC-MIG-1 — a row written before FU06B (no buffer element) reads back with the configured default, an
+    /// explicit 0 is preserved, and nothing is written back.</summary>
+    [Fact]
+    public void T68_EnsureBetweenVisitTime_Defaults_The_Missing_Field_And_Keeps_An_Explicit_Zero()
+    {
+        // Missing (an FU06/FU07 document): null → configured default.
+        var legacy = new CapacityEntity { BetweenVisitTimeMinutes = null };
+        legacy.EnsureBetweenVisitTime(5);
+        Assert.Equal(5, legacy.BetweenVisitTimeMinutes);
+
+        // Authored zero is a real answer, not "absent": it survives normalisation.
+        var authoredZero = new CapacityEntity { BetweenVisitTimeMinutes = 0 };
+        authoredZero.EnsureBetweenVisitTime(5);
+        Assert.Equal(0, authoredZero.BetweenVisitTimeMinutes);
+
+        // An authored value is never overwritten.
+        var authored = new CapacityEntity { BetweenVisitTimeMinutes = 20 };
+        authored.EnsureBetweenVisitTime(5);
+        Assert.Equal(20, authored.BetweenVisitTimeMinutes);
+    }
+
+    /// <summary>AC-MIG-1 — normalising a legacy row for the new field leaves the FU06 TotalVisitNumber untouched.</summary>
+    [Fact]
+    public void T69_Read_Time_Buffer_Migration_Does_Not_Disturb_The_Capacity_Number()
+    {
+        var capacity = new CapacityEntity
+        {
+            DailyWorkMinutes = 480, PromoProductTime = 15, NonPromoProductTime = 10,
+            TravelingTime = 60, ReportDuration = 30, QuizDuration = 10,
+            BetweenVisitTimeMinutes = null, // an old row
+            Months = { new CycleCapacityMonth { Year = 2026, MonthNumber = 3, MeetingDays = 1, TrainingDays = 1, VacationDays = 2, MicroTargetingDayCount = 3, MicroTargetingDuration = 45, Fte = 12.00m } }
+        };
+        var window = new CycleCapacityMonthRules.MonthWindow(2026, 3, Mar1, new DateTimeOffset(2026, 3, 31, 0, 0, 0, TimeSpan.Zero));
+        var months = new[] { new CycleCapacityCalculator.ResolvedMonth(window, 21) };
+
+        var before = CycleCapacityCalculator.Calculate(capacity, months).TotalVisitNumber;
+        capacity.EnsureBetweenVisitTime(5);
+        var after = CycleCapacityCalculator.Calculate(capacity, months).TotalVisitNumber;
+
+        Assert.Equal(3036, before);
+        Assert.Equal(before, after);
+        Assert.Equal(5, capacity.BetweenVisitTimeMinutes);
+    }
+
+    /// <summary>AC-B-3 — an out-of-range buffer is refused at write time with its own reason code, and nothing is
+    /// written.</summary>
+    [Fact]
+    public async Task T70_Out_Of_Range_Buffer_Is_Refused()
+    {
+        var h = Build(TenantA);
+        var periodId = Guid.NewGuid();
+        h.Periods.Periods.Add(Period(periodId));
+
+        var response = await h.Create.Handle(
+            CreateCommand(periodId, betweenVisit: 999), CancellationToken.None);
+
+        Assert.Equal(400, response.StatusCode);
+        Assert.Contains(CycleCapacityReasonCodes.BetweenVisitTimeInvalid, response.Errors!);
+        Assert.Empty(h.Repo.Items);
+    }
+
+    /// <summary>The write path stamps the configured default when the payload omits the buffer (fail-closed), and
+    /// stores an authored value as-is — the round-trip preserves it.</summary>
+    [Fact]
+    public async Task T71_Buffer_Defaults_When_Absent_And_Round_Trips_When_Authored()
+    {
+        var h = Build(TenantA);           // FakeDefaults buffer = 5
+        var periodId = Guid.NewGuid();
+        h.Periods.Periods.Add(Period(periodId));
+
+        // Absent → configured default (5).
+        var created = await h.Create.Handle(CreateCommand(periodId), CancellationToken.None);
+        Assert.True(created.IsSuccessful);
+        Assert.Equal(5, h.Repo.Items[0].BetweenVisitTimeMinutes);
+
+        var detail = await h.GetById.Handle(new GetCycleCapacityByIdQuery(created.Data), CancellationToken.None);
+        Assert.Equal(5, detail.Data!.BetweenVisitTimeMinutes);
+
+        // Authored → stored verbatim (0 is valid and survives).
+        var edited = await h.Update.Handle(
+            new UpdateCycleCapacityCommand(created.Data, "TR", 480, 15, 10, 60, 30, 10, null, TwoMonths(), 0, 30),
+            CancellationToken.None);
+        Assert.True(edited.IsSuccessful);
+        Assert.Equal(30, h.Repo.Items[0].BetweenVisitTimeMinutes);
     }
 }

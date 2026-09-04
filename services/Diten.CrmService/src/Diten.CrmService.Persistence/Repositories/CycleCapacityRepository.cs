@@ -39,7 +39,9 @@ public sealed class CycleCapacityRepository : ICycleCapacityRepository
     /// is what makes it impossible for one read path to forget.</para>
     /// </summary>
     private CapacityEntity? Normalize(CapacityEntity? entity)
-        => entity?.EnsureMonthlyFte(_defaults.Current.Fte);
+        => entity?
+            .EnsureMonthlyFte(_defaults.Current.Fte)
+            .EnsureBetweenVisitTime(_defaults.Current.BetweenVisitTimeMinutes);
 
     private static FilterDefinition<CapacityEntity> Tenant(Guid tenantId)
         => Builders<CapacityEntity>.Filter.Where(x => x.TenantId == tenantId && !x.IsDeleted);
@@ -65,7 +67,11 @@ public sealed class CycleCapacityRepository : ICycleCapacityRepository
     public async Task<IReadOnlyList<CapacityEntity>> ListAsync(Guid tenantId, CancellationToken cancellationToken)
     {
         var rows = await _collection.Find(Tenant(tenantId)).ToListAsync(cancellationToken);
-        return rows.Select(r => r.EnsureMonthlyFte(_defaults.Current.Fte)).ToList();
+        return rows
+            .Select(r => r
+                .EnsureMonthlyFte(_defaults.Current.Fte)
+                .EnsureBetweenVisitTime(_defaults.Current.BetweenVisitTimeMinutes))
+            .ToList();
     }
 
     public async Task InsertAsync(CapacityEntity entity, CancellationToken cancellationToken)

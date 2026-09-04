@@ -37,6 +37,11 @@
         }, { type: 'info' });
     });
 
+    // Read-only Steps list: reveal / hide archived step cards.
+    document.getElementById('showArchivedSteps')?.addEventListener('change', function () {
+        document.querySelectorAll('.kp-step-archived').forEach(el => el.classList.toggle('d-none', !this.checked));
+    });
+
     document.getElementById('archivePath')?.addEventListener('click', e => {
         const name = e.currentTarget.dataset.name;
         window.showConfirm?.(L.ArchivePathConfirm || L.AreYouSure, async () => {

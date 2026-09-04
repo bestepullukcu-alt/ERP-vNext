@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Отчёт о визите</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Запишите, что произошло на самом деле — отметьте каждый запланированный визит как выполненный, пропущенный или перенесённый и оформите неизменяемый отчёт о визите.</value></data>
+  <data name="ExecutionNotice" xml:space="preserve"><value>Это календарь исполнения. Он фиксирует результаты и отчёты; он не создаёт план и не продвигает этап контента — записанный здесь фактический этап читается в следующем цикле.</value></data>
+  <data name="View" xml:space="preserve"><value>Вид</value></data>
+  <data name="Day" xml:space="preserve"><value>День</value></data>
+  <data name="Week" xml:space="preserve"><value>Неделя</value></data>
+  <data name="Date" xml:space="preserve"><value>Дата</value></data>
+  <data name="Resource" xml:space="preserve"><value>Представитель (ид ресурса)</value></data>
+  <data name="ResourcePlaceholder" xml:space="preserve"><value>напр. rep-1</value></data>
+  <data name="Refresh" xml:space="preserve"><value>Обновить</value></data>
+  <data name="NoVisits" xml:space="preserve"><value>В этом окне нет запланированных визитов.</value></data>
+  <data name="ReportTitle" xml:space="preserve"><value>Отчёт о визите</value></data>
+  <data name="PlannedContent" xml:space="preserve"><value>Запланированный контент (FU04)</value></data>
+  <data name="ActualStage" xml:space="preserve"><value>Фактически представленный этап</value></data>
+  <data name="StageIndex" xml:space="preserve"><value>Этап №</value></data>
+  <data name="MatchedPlan" xml:space="preserve"><value>Совпал с запланированным этапом</value></data>
+  <data name="OutcomeCode" xml:space="preserve"><value>Код результата</value></data>
+  <data name="OutcomeCodePlaceholder" xml:space="preserve"><value>напр. positive</value></data>
+  <data name="ReferenceDataHint" xml:space="preserve"><value>Коды результата берутся из справочных данных.</value></data>
+  <data name="DoctorFeedback" xml:space="preserve"><value>Отзыв врача</value></data>
+  <data name="Samples" xml:space="preserve"><value>Выданные образцы / материалы</value></data>
+  <data name="AddSample" xml:space="preserve"><value>Добавить образец</value></data>
+  <data name="FollowUpRequired" xml:space="preserve"><value>Требуется дальнейшее наблюдение</value></data>
+  <data name="FollowUpNotes" xml:space="preserve"><value>Заметки по наблюдению</value></data>
+  <data name="AmendReason" xml:space="preserve"><value>Причина поправки</value></data>
+  <data name="AmendHint" xml:space="preserve"><value>Отчёт отправлен; исправление — это поправка только на добавление.</value></data>
+  <data name="Submit" xml:space="preserve"><value>Отправить отчёт</value></data>
+  <data name="Amend" xml:space="preserve"><value>Внести поправку</value></data>
+  <data name="MarkCompleted" xml:space="preserve"><value>Выполнен</value></data>
+  <data name="MarkMissed" xml:space="preserve"><value>Пропущен</value></data>
+  <data name="MarkRescheduled" xml:space="preserve"><value>Перенесён</value></data>
+  <data name="Report" xml:space="preserve"><value>Отчёт</value></data>
+  <data name="StateNone" xml:space="preserve"><value>Нет отчёта</value></data>
+  <data name="StateDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="StateSubmitted" xml:space="preserve"><value>Отправлен</value></data>
+  <data name="StateAmended" xml:space="preserve"><value>Исправлен</value></data>
+  <data name="OutcomeRecorded" xml:space="preserve"><value>Результат записан.</value></data>
+  <data name="ReportSubmitted" xml:space="preserve"><value>Отчёт отправлен.</value></data>
+  <data name="ReportAmended" xml:space="preserve"><value>Поправка внесена.</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>Действие не выполнено.</value></data>
+  <data name="ReasonPrompt" xml:space="preserve"><value>Код причины (напр. doctor_unavailable):</value></data>
+  <data name="ReschedulePrompt" xml:space="preserve"><value>Новая дата (гггг-ММ-дд):</value></data>
+  <data name="Quantity" xml:space="preserve"><value>Кол-во</value></data>
+  <data name="ItemType" xml:space="preserve"><value>Тип позиции</value></data>
+  <data name="Remove" xml:space="preserve"><value>Удалить</value></data>
+</root>

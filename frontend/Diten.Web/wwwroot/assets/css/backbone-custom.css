@@ -1809,6 +1809,211 @@ div.dt-container div.dt-search input {
     row-gap: .42rem;
 }
 
+/* Route travel / lunch dividers — same box as an account card (.inbox-row), but tinted per kind. */
+.vp-route-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: .85rem 1rem;
+    border-radius: var(--bs-border-radius-lg, .5rem);
+    border: 1px solid transparent;
+    box-shadow: var(--bs-box-shadow);
+    font-size: .8125rem;
+    font-weight: 500;
+}
+
+.vp-route-divider--travel {
+    background-color: rgba(var(--bs-info-rgb), .12);
+    color: var(--bs-info);
+    border-color: rgba(var(--bs-info-rgb), .24);
+}
+
+.vp-route-divider--lunch {
+    background-color: rgba(var(--bs-warning-rgb), .14);
+    color: var(--bs-warning);
+    border-color: rgba(var(--bs-warning-rgb), .28);
+}
+
+/* Route timeline gutter — additive wrapper around the existing account cards / dividers (their styling is untouched). */
+.vp-tl-row {
+    display: grid;
+    grid-template-columns: 52px 22px minmax(0, 1fr);
+    align-items: stretch;
+}
+
+.vp-tl-time {
+    font-size: .8125rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--bs-secondary-color);
+    text-align: right;
+    white-space: nowrap;
+    padding: 1.05rem .5rem 0 0;
+}
+
+.vp-tl-rail {
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+/* Rail + dots follow the WorkCenterNext activity timeline: a hairline in --bs-border-color, small solid dots for
+   stops, a hollow ring for idle (the "event" marker there). */
+.vp-tl-rail::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: -.5rem;
+    width: 2px;
+    background: var(--bs-border-color);
+}
+
+.vp-tl-row:first-child .vp-tl-rail::before {
+    top: 1.15rem;
+}
+
+.vp-tl-row:last-child .vp-tl-rail::before {
+    bottom: auto;
+    height: 1.5rem;
+}
+
+.vp-tl-dot {
+    position: relative;
+    z-index: 1;
+    width: 8px;
+    height: 8px;
+    margin-top: 1.1rem;
+    border-radius: 50%;
+    background: var(--bs-primary);
+    box-shadow: 0 0 0 2px var(--bs-body-bg);
+}
+
+.vp-tl-dot--lunch {
+    background: var(--bs-warning);
+}
+
+/* Idle = hollow ring, same idea as the WCN "event" marker (context, not a stop). */
+.vp-tl-dot--idle {
+    background: var(--bs-body-bg);
+    box-shadow: 0 0 0 2px var(--bs-body-bg), inset 0 0 0 1.5px var(--bs-danger);
+    opacity: .85;
+}
+
+/* Genuine free/idle slot — danger dashed card, no action button. */
+.vp-route-idle {
+    display: flex;
+    align-items: center;
+    padding: .7rem 1rem;
+    border: 1px dashed rgba(var(--bs-danger-rgb), .4);
+    border-radius: var(--bs-border-radius-lg, .5rem);
+    background-color: rgba(var(--bs-danger-rgb), .06);
+    color: var(--bs-danger);
+    font-size: .8125rem;
+}
+
+.vp-tl-body {
+    min-width: 0;
+    padding-bottom: .1rem;
+}
+
+/* Inline drive-time hint (replaces the tinted card) + view-toggle hide rules. */
+.vp-tl-drive {
+    padding: .15rem 0 .15rem .25rem;
+}
+
+.vp-hide-visitnums .vp-visit-num {
+    display: none !important;
+}
+
+.vp-hide-drivetimes .vp-tl-row--travel {
+    display: none;
+}
+
+/* Map panel: SVG route canvas + reorderable stop list. */
+.vp-map-canvas {
+    background: var(--bs-body-bg);
+    border: 1px solid rgba(var(--bs-secondary-rgb), .14);
+    height: 260px;
+    overflow: hidden;
+    position: relative;
+    z-index: 0;
+}
+
+/* Native fullscreen: fill the screen so Leaflet (after invalidateSize) uses the whole area. */
+.vp-map-canvas:fullscreen {
+    height: 100%;
+    width: 100%;
+    border: 0;
+}
+
+/* Fullscreen control button (Leaflet bar). */
+.vp-map-fs {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    color: var(--bs-body-color);
+}
+
+/* Numbered route pin (Leaflet divIcon). */
+.vp-map-pin span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--bs-primary);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .35);
+}
+
+/* Pharmacy pin — amber, matching its badge; it is locked (not draggable), bound to its clinic. */
+.vp-map-pin--pharmacy span {
+    background: var(--bs-warning);
+}
+
+/* Stop rows reuse the .diten-checkitem checklist look; the number badge sits just after the move controls. */
+.vp-stop-list .diten-checkitem>.badge:first-of-type {
+    margin-inline-start: .125rem;
+}
+
+/* Linked-pharmacy selectable cards (Targets → Bağlı eczaneler). */
+.vp-pharm-card {
+    border: 1px solid var(--bs-border-color);
+    border-radius: .5rem;
+    cursor: pointer;
+    margin: 0;
+    transition: border-color .12s ease, background-color .12s ease;
+}
+
+.vp-pharm-card:hover {
+    border-color: color-mix(in sRGB, var(--bs-primary) 40%, var(--bs-border-color));
+}
+
+.vp-pharm-card--on {
+    border-color: var(--bs-primary);
+    background: color-mix(in sRGB, var(--bs-primary) 6%, var(--bs-card-bg));
+}
+
+@media (min-width: 992px) {
+    #vp-map-col .card {
+        position: sticky;
+        top: 1rem;
+    }
+}
+
+/* Route empty state — dashed card, illustration + hint (no button). */
+.vp-empty {
+    border: 1px dashed rgba(var(--bs-secondary-rgb), .28);
+    border-radius: var(--bs-border-radius-lg, .5rem);
+    background: var(--bs-card-bg, var(--bs-paper-bg));
+    padding: 2.75rem 1.5rem;
+}
+
 .inbox-row__line {
     display: flex;
     align-items: center;

@@ -1,4 +1,5 @@
 using Diten.CrmService.Application.Features.CycleCapacity.Services;
+using Diten.CrmService.Domain.Entities;
 using Microsoft.Extensions.Configuration;
 
 namespace Diten.CrmService.Infrastructure.CycleCapacity;
@@ -22,16 +23,23 @@ public sealed class ConfigurationCycleCapacityDefaultsProvider : ICycleCapacityD
     /// wrong.</summary>
     public const decimal FallbackFte = 1.00m;
 
+    /// <summary>MOD-0155 FU06B — five minutes between two visits. The pack's number, stated once.</summary>
+    public const int FallbackBetweenVisitTimeMinutes = 5;
+
     private readonly CycleCapacityDefaults _defaults;
 
     public ConfigurationCycleCapacityDefaultsProvider(IConfiguration configuration)
     {
         var dailyWorkMinutes = configuration.GetValue<int?>("CycleCapacity:DefaultDailyWorkMinutes");
         var fte = configuration.GetValue<decimal?>("CycleCapacity:DefaultFte");
+        var betweenVisit = configuration.GetValue<int?>("CycleCapacity:DefaultBetweenVisitTimeMinutes");
 
         _defaults = new CycleCapacityDefaults(
             dailyWorkMinutes is > 0 and <= 1440 ? dailyWorkMinutes.Value : FallbackDailyWorkMinutes,
-            fte is > 0m and <= 9999m ? fte.Value : FallbackFte);
+            fte is > 0m and <= 9999m ? fte.Value : FallbackFte,
+            betweenVisit is >= 0 and <= CycleCapacityLimits.MaxBufferMinutes
+                ? betweenVisit.Value
+                : FallbackBetweenVisitTimeMinutes);
     }
 
     public CycleCapacityDefaults Current => _defaults;

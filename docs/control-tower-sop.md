@@ -1,16 +1,32 @@
-# CONTROL TOWER — Çalışma Yöntemi (SOP) v2.3
+# CONTROL TOWER — Çalışma Yöntemi (SOP) v2.4
 ## Evidence-Preserving, Repository-Valid Delivery Control Plane — Agent Lane Model
 
 **Belge durumu:** Proposed canonical SOP  
-**Sürüm:** 2.3  
-**Önceki sürüm:** v2.2  
+**Sürüm:** 2.4  
+**Önceki sürüm:** v2.3  
 **Amaç:** ERP-vNext için capability → module → work-package yürütmesini; canonical authority, measured code/runtime reality, dependency gates, Agent Lane parallel development, prompt lifecycle, runtime verification, integration ve yeniden planlama ile tek bir kontrollü çalışma modelinde yönetmek.
 
 ---
 
 ## 0. Sürüm kontrolü
 
-### 0.1 v2.3'te eklenen geçerlilik ve adoption kontrolleri
+### 0.1 v2.4'te eklenen dispatch-adresleme kontrolleri
+
+v2.3 korunmuş; prompt üretiminin **hedef ajanı adreslememesi** boşluğu kapatılmıştır.
+Ölçüm: §6 entry-point tablosu belgede bir kez tanımlanıp akışın hiçbir adımından çağrılmıyordu;
+CLASSIFY çıktısı, PLAN kolonları, DoR, §17.1 metadata ve §36 template'in hiçbirinde hedef ajan alanı yoktu.
+
+1. **Entry point sınıflamanın çıktısıdır:** §11 CLASSIFY bloğuna `Entry point` + `Target agent / command` eklendi.
+2. **VER ve INT lane'lerinin adresi:** §6 tablosu dört lane tipinin dördünü de kapsıyor.
+3. **Hedef ajan alanı:** §17.1 ve §36 metadata'ya `Target Agent / Entry Point` eklendi.
+4. **Ajan giriş alanları (§17.4):** her giriş noktasının prompt'ta zorunlu kıldığı alanlar tablolanıp
+   `BLOCKED — agent/scope mismatch` kapısı tanımlandı.
+5. **Paste-ready prompt (§36.1):** metadata formu prompt değildir; her WP yapıştırılabilir tek blok taşır.
+6. **DoR:** iki yeni zorunlu kutu (§8.1).
+
+Daily Operating Card aynı turda hizalandı (§1, §3).
+
+### 0.2 v2.3'te eklenen geçerlilik ve adoption kontrolleri
 
 v2.2 korunmuş; aşağıdaki üç adoption riski kapatılmıştır:
 
@@ -27,7 +43,7 @@ v2.2 korunmuş; aşağıdaki üç adoption riski kapatılmıştır:
 5. **Agent usage guide adoption gap:** parallel Agent Lane / worktree konusu için guide'a eklenecek minimum cross-reference tanımlanmıştır.
 6. **Repository adoption gate:** SOP'un canonical ilanından önce referans-resolvability ve companion-link kontrolü eklendi.
 
-### 0.2 v2.2'de eklenen ana kontroller
+### 0.3 v2.2'de eklenen ana kontroller
 
 v2.1 korunmuş ve Agent Lane terminolojisi canonical hale getirilmiştir:
 
@@ -43,7 +59,7 @@ v2.1 korunmuş ve Agent Lane terminolojisi canonical hale getirilmiştir:
 8. CONTROL TOWER dashboard ve canonical templates Agent Lane alanlarıyla güncellendi.
 9. Ana workflow `CONTROL TOWER → Agent Lanes → Verification/Integration → CONTROL TOWER` olarak standardize edildi.
 
-### 0.3 v2.1'de eklenen ana kontroller
+### 0.4 v2.1'de eklenen ana kontroller
 
 v2.0 korunmuş ve aşağıdaki boşluklar kapatılmıştır:
 
@@ -386,6 +402,12 @@ CONTROL TOWER raw prompt üretmeden önce **iş türünü** belirler.
 | Test/quality gate | `testing-agent` |
 | Read-only audit | `/read-only-audit` / `read-only-auditor` |
 | Ambiguous bug/root-cause | `debugger` veya Profile C inspection |
+| Independent verification (VER lane) | `read-only-auditor` / `/read-only-audit` — implementer lane'inden ayrı; verdict veren lane yazma yapmaz. Vacuity kanıtı (§24.2) gerekiyorsa test yazımı ayrı `testing-agent` WP'sidir |
+| Cross-module integration (INT lane) | CONTROL TOWER runtime turu; root-cause gerekirse `debugger`. Ayrı runtime context, §25 freshness gate zorunlu |
+
+`read-only-auditor` yalnız `/read-only-audit` altında çalışır ve yazma araçları yoktur; bu, VER lane'in
+"verdict veren yazmaz" gereğini araç düzeyinde karşılar. Doğrulama sırasında kod değişmesi gerekiyorsa
+o bir REWORK WP'sidir, VER lane'in işi değildir.
 
 ## 6.1 Work Package execution profili
 
@@ -485,6 +507,8 @@ Bir implementation work package ancak aşağıdakiler PASS ise `READY` olabilir.
 - [ ] Parallel-safety değerlendirmesi tamam.
 - [ ] Risk / blast-radius sınıfı atanmış.
 - [ ] Gerekli conditional gates doldurulmuş.
+- [ ] Entry point / target agent §6'ya göre seçildi; o ajanın §17.4 zorunlu giriş alanları prompt'ta dolu.
+- [ ] Paste-ready agent prompt bloğu (§36.1) yazıldı; `Repository/Branch/HEAD` ölçülmüş değer taşıyor.
 
 Herhangi biri kritik şekilde eksikse:
 
@@ -562,7 +586,12 @@ Required pack:
 Prompt profile:
 Risk:
 Inspection required: yes/no
+Entry point (§6):
+Target agent / command:
 ```
+
+Entry point ve target agent **sınıflamanın çıktısıdır**, dispatch anının kararı değildir.
+Bu iki satır boşken plan ve prompt üretimine geçilmez.
 
 Belirsizlik varsa implementation yerine inspection başlar.
 
@@ -788,6 +817,7 @@ Build Sequence:
 Build Lane:
 Agent Lane ID:
 Agent Lane Type: DEV | INS | VER | INT
+Target Agent / Entry Point:   # §6 tablosundan; ör. `@orchestrator` + `/add-module`
 Risk Class:
 
 Target Branch:
@@ -866,6 +896,40 @@ BLOCKED — pattern mismatch
 ```
 
 Wizard default değildir; pattern kullanım sıklığı ve interaction shape'e göre seçilir.
+
+## 17.4 Hedef ajan giriş alanları — prompt alıcısına göre şekillenir
+
+Work Package metadata'sı CONTROL TOWER'ın kaydıdır; **prompt ise hedef ajanın giriş kapısına göre yazılır.**
+Her ajanın kendi zorunlu bağlam okuması ve sıfır-inisiyatif kuralı vardır: eksik alanla giden prompt iş
+üretmez, geri soru üretir. Aşağıdaki alanlar §36 metadata'sına ek değil, **paste-ready prompt bloğunun içinde**
+açıkça yazılır.
+
+| Target agent / entry point | Prompt'ta zorunlu alanlar | Neden (ajan sözleşmesi) |
+|---|---|---|
+| `@orchestrator` + `/add-module` | Module pack **yolu** + status (`approved` / `ready-for-dev`) · domain · servis · `shell` · `golden_reference` (slim/compact) + `form_field_count` · branch · beklenen alt-ajan zinciri | Aşama 0 bağlam kapısı bunları okumadan alt ajan tetiklemez; eksikse Sokratik soruya döner |
+| `module-pack-author` / `/prepare-module-pack` | Modül adı + tek cümle amaç · domain · servis · shell · form alan sayısı + isimleri · DataTable var mı · entity base + gerekçe · bilinen iş kuralları/bağımlılıklar | Pack `draft` üretir; alan sayısı Slim/Compact kararının girdisidir |
+| `backend-architect` | Hedef servis + proje yolu · aggregate/entity + alanlar · command/query listesi · validator kuralları · permission key'leri · `Response<T>` + `CustomBaseController` beklentisi | Validator yazılmadan handler yazmaz; DTO/alan uydurması yasak |
+| `frontend-ui-ux` | Area + module adı · `golden_reference` slim/compact · shell/layout adı · kolon + filtre listesi (enum alanlar Select2 chip mi) · L10n key seti · teslim öncesi `verify_datatable_page.py --area ... --module ... --reference slim/compact` | Şablonu birebir kopyalar; referans/layout belirsizse üretim durur |
+| `l10n-agent` | Modül türü (Platform 2 dil / Tenant 7 dil) · resx dosya yolları · key listesi + **her dil için gerçek metin** · SharedResource'a mı modül resx'ine mi gideceği | Placeholder/İngilizce kopya yasak; çeviri bilinmiyorsa senden ister |
+| `integration-agent` | Controller/route family · upstream + downstream path · hedef servis portu (AGENTS.md §3) · header geçişi (`Authorization`, `X-Tenant-Id`) · hangi ocelot dosyası | Port/rota uydurması yasak; kayıtlı port şeması dışına çıkamaz |
+| `security-agent` | Permission key'leri + policy · actor tipi (platform-admin / tenant_user) · tenant izolasyon yüzeyi · denetlenecek endpoint listesi | Mevcut `[HasPermission]` + JWT modeline sadık kalır, yeni model kurmaz |
+| `testing-agent` | Test edilecek handler/akış · beklenen davranış (PRD/AC) · soft-delete + TenantId izolasyon senaryoları · test projesi yolu | İş kuralı uydurmaz; AC yoksa test yazamaz |
+| `read-only-auditor` / `/read-only-audit` | Denetim modu (worktree-read-only / strict) · kapsam (path/modül) · her bulgu için `path:line` kanıt zorunluluğu · **düzeltme yok** ifadesi | Yazma aracı yoktur; düzeltme talebi bu ajana verilemez |
+| `debugger` | Semptom + tekrar üretme adımları · katman (frontend/gateway/auth/service) · log/korelasyon kanıtı · dokunulmayacak alan | Katmanlı izolasyonla kök neden arar, semptom yamamaz |
+
+**Kural:** hedef ajanın zorunlu alanlarından biri prompt'ta yoksa WP `READY` olamaz (§8.1).
+Alan eksikliğini ajanın sana soru sorarak kapatması, dispatch sonrası scope müzakeresidir ve K16'ya aykırıdır.
+
+Ajanların araç ve yazma sınırı biliniyor (`.antigravity/agents/**`). Seçilen ajanın yazma alanı ile WP'nin
+`Allowed Paths` alanı çelişiyorsa — ör. resx yolu `backend-architect`'e verilmişse — prompt dispatch edilmez:
+
+```text
+BLOCKED — agent/scope mismatch
+```
+
+`@orchestrator` tek bir DEV lane içinde birden çok uzman ajana dağıtım yapar. Bu dağıtım §16.4 single-writer
+kuralının **içinde** kalır: lane tektir, shared seam sahibi tektir. Aynı shared seam'e iki farklı **lane**
+açmak yasaktır; bir lane'in kendi içinde sıralı uzman ajan çalıştırması yasak değildir.
 
 ---
 
@@ -1688,6 +1752,7 @@ Sequence:
 Build Lane:
 Agent Lane ID:
 Agent Lane Type:
+Target Agent / Entry Point:
 
 Authority:
 - Identity:
@@ -1775,6 +1840,40 @@ Output Contract:
 - Blockers
 - Remaining gaps
 ```
+
+## 36.1 Agent Prompt (paste-ready)
+
+Yukarıdaki blok CONTROL TOWER'ın **kaydıdır**. Her Work Package ayrıca, hedef ajana olduğu gibi
+yapıştırılabilen tek bir prompt bloğu taşır. Metadata formu prompt değildir; yapıştırılamayan WP
+dispatch edilemez.
+
+```text
+## Agent Prompt
+
+@[.antigravity/agents/{agent}.md]        # veya: /{workflow}  — §6 entry point
+WP: {WP ID} · Prompt {Prompt ID} v{version}
+
+Repository: {path} · Branch: {branch} · Expected HEAD: {sha} · Worktree: {path}
+
+Önce oku (sırayla):
+{authority paths — module pack, domain-config, AGENTS.md, ilgili .antigravity/rules/**}
+
+{§17.4 tablosundan hedef ajanın zorunlu giriş alanları — doldurulmuş halde}
+
+NE:      {bounded objective / runtime outcome}
+NEDEN:   {authority + neden şimdi}
+NASIL:   {pattern, persistence L1|L2|L3, consistency, conditional gates}
+YAPMA:   {protected paths, out-of-scope, invention yasağı}
+DOĞRULA: {acceptance criteria + validation komutları + required evidence level E0-E5}
+
+Durma koşulları: missing contract · ownership conflict · protected-path ihtiyacı ·
+branch/HEAD mismatch · unplanned migration. Kapsamı kendin genişletme; dur ve raporla.
+
+Rapor formatı: §22 structured report.
+Senin PASS'in kapanış değildir (K13).
+```
+
+`Repository:` alanı **ölçülmüş** değerdir; başka makineden kalan mutlak yol kopyalanmaz (§20 preflight).
 
 ---
 

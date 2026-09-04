@@ -72,7 +72,8 @@ public sealed class KnowledgeContentEditViewModel : IValidatableObject
     // never sent to the backend, so no FU02 field is added.
     public IReadOnlyList<KnowledgeOptionViewModel> ConceptTypeOptions { get; set; } = [];
     public IReadOnlyList<KnowledgeOptionViewModel> ConceptNodeOptions { get; set; } = [];
-    public IReadOnlyList<KnowledgeOptionViewModel> BrandOptions { get; set; } = [];
+    // Brand is no longer surfaced in this UI (BrandOptions removed). The stored KnowledgeContent.BrandId is preserved via
+    // a hidden field on the form so an edit never wipes it. Product is now resolved against the MDM Global Product master.
     public IReadOnlyList<KnowledgeOptionViewModel> ProductOptions { get; set; } = [];
     public IReadOnlyList<KnowledgeOptionViewModel> CampaignOptions { get; set; } = [];
     public IReadOnlyList<KnowledgeOptionViewModel> DocumentOptions { get; set; } = [];
@@ -163,6 +164,14 @@ public sealed class KnowledgeContentPageViewModel
     // Resolved when FileRef points to a Document Management controlled document, so Details can show its title and a
     // preview link instead of a raw id. Null for legacy/free-text FileRef values.
     public KnowledgeDocumentRefViewModel? DocumentRef { get; set; }
+
+    // Resolved display labels for the classification/reference ids so Details shows NAMES, not raw GUIDs. Subject/Topic/
+    // AudienceProfile come from the CRM Knowledge taxonomy; Product from the MDM Global Product master. Null when the id
+    // is empty or the lookup misses (the view then falls back to the raw id).
+    public string? SubjectName { get; set; }
+    public string? TopicName { get; set; }
+    public string? AudienceProfileName { get; set; }
+    public string? ProductName { get; set; }
 }
 
 public sealed class KnowledgeDocumentRefViewModel

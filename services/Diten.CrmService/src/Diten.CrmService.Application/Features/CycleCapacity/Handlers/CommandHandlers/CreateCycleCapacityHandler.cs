@@ -60,6 +60,7 @@ public sealed class CreateCycleCapacityHandler : IRequestHandler<CreateCycleCapa
             request.QuizDuration,
             request.Description,
             request.Months,
+            request.BetweenVisitTimeMinutes,
             cancellationToken);
 
         if (validation.Failure is not null || validation.Months is null || validation.CalendarCountryCode is null)
@@ -96,6 +97,10 @@ public sealed class CreateCycleCapacityHandler : IRequestHandler<CreateCycleCapa
             TravelingTime = request.TravelingTime,
             ReportDuration = request.ReportDuration,
             QuizDuration = request.QuizDuration,
+
+            // FU06B — the between-visit buffer, resolved (payload or configured default) and range-checked by the write
+            // validator. It is stored but never enters the capacity arithmetic.
+            BetweenVisitTimeMinutes = validation.BetweenVisitTimeMinutes,
 
             // FU07 — the FTE now lives on each month and is stamped by the write validator, from the same configured
             // average. Nothing capacity-wide is written here any more.

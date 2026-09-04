@@ -140,6 +140,14 @@ public sealed class KnowledgePathsController : Controller
         var path = await LoadPathAsync(id, ct);
         if (path is null) return NotFound();
 
+        // Resolve the classification ids to display labels (fail-soft; the view falls back to the id when null).
+        if (path.SubjectId != Guid.Empty)
+            path.SubjectName = await ResolveReferenceLabelAsync($"/api/crm/knowledge/subjects/{path.SubjectId}", ct);
+        if (path.TopicId is { } topicId && topicId != Guid.Empty)
+            path.TopicName = await ResolveReferenceLabelAsync($"/api/crm/knowledge/topics/{topicId}", ct);
+        if (path.AudienceProfileId is { } audienceId && audienceId != Guid.Empty)
+            path.AudienceProfileName = await ResolveReferenceLabelAsync($"/api/crm/knowledge/audience-profiles/{audienceId}", ct);
+
         var model = new KnowledgePathPageViewModel
         {
             Path = path,
@@ -345,6 +353,28 @@ public sealed class KnowledgePathsController : Controller
         var response = await SendGatewayAsync(HttpMethod.Get, $"/api/crm/knowledge/paths/{id}", null, ct);
         if (response is null || !response.IsSuccessStatusCode) return null;
         return (await response.Content.ReadFromJsonAsync<KnowledgePathGatewayResponse<KnowledgePathDetailViewModel>>(_json, ct))?.Data;
+    }
+
+    // Resolve a single reference (subject/topic/audience-profile) id to a "code — name" label. Fail-soft: any error
+    // returns null so the Details page falls back to rendering the raw id. Mirrors KnowledgeController.ResolveReferenceLabelAsync.
+    private async Task<string?> ResolveReferenceLabelAsync(string path, CancellationToken ct)
+    {
+        var response = await SendGatewayAsync(HttpMethod.Get, path, null, ct);
+        if (response is null || !response.IsSuccessStatusCode) return null;
+        try
+        {
+            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+            if (!doc.RootElement.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Object) return null;
+            var name = GetFirstString(data, "name", "subjectName", "topicName", "profileName", "audienceProfileName");
+            var code = GetFirstString(data, "code", "subjectCode", "topicCode", "profileCode");
+            if (!string.IsNullOrWhiteSpace(code) && !string.IsNullOrWhiteSpace(name)) return $"{code} — {name}";
+            return name ?? code;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "KnowledgePath reference label resolve failed: {Path}", path);
+            return null;
+        }
     }
 
     private async Task<IActionResult> ProxyGetAsync(string path, string permission, CancellationToken ct, params string[] fallbacks)

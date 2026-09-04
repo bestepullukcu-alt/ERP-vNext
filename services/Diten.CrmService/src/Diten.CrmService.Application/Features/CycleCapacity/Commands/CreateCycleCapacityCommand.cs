@@ -21,4 +21,7 @@ public sealed record CreateCycleCapacityCommand(
     int ReportDuration,
     int QuizDuration,
     string? Description,
-    IReadOnlyList<CycleCapacityMonthInput> Months) : IRequest<Response<Guid>>;
+    IReadOnlyList<CycleCapacityMonthInput> Months,
+    // MOD-0155 FU06B — the between-visit buffer. Nullable and trailing: a caller that omits it takes the server's
+    // configured default, so an existing caller compiles unchanged and an absent field is not an error.
+    int? BetweenVisitTimeMinutes = null) : IRequest<Response<Guid>>;

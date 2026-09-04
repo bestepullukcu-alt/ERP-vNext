@@ -49,6 +49,10 @@ public sealed record CycleCapacitySupportedFilters(IReadOnlyList<string> List)
 public sealed record CycleCapacityContractLimits(
     int MaxMinutesPerDay,
     int MaxMinutesPerVisit,
+
+    /// <summary>MOD-0155 FU06B — the between-visit buffer ceiling, published so the editor enforces the same number.</summary>
+    int MaxBufferMinutes,
+
     int MinDailyWorkMinutes,
     int MaxDailyWorkMinutes,
     int MinYear,
@@ -63,6 +67,7 @@ public sealed record CycleCapacityContractLimits(
     public static CycleCapacityContractLimits Current => new(
         CycleCapacityLimits.MaxMinutesPerDay,
         CycleCapacityLimits.MaxMinutesPerVisit,
+        CycleCapacityLimits.MaxBufferMinutes,
         CycleCapacityLimits.MinDailyWorkMinutes,
         CycleCapacityLimits.MaxDailyWorkMinutes,
         CycleCapacityLimits.MinYear,
@@ -87,6 +92,11 @@ public sealed record CycleCapacityDefaultsDto(
     decimal Fte,
     string FteSource,
     bool FteIsEditable,
+
+    /// <summary>MOD-0155 FU06B — the between-visit buffer a new capacity is born with, so the create form shows the
+    /// same number the server will write.</summary>
+    int BetweenVisitTimeMinutes,
+
     string CountryReferenceSet);
 
 /// <summary>Machine-readable refusal codes, so a UI and a smoke script can branch without parsing prose.</summary>

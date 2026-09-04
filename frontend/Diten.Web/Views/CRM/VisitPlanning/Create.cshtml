@@ -1,0 +1,17 @@
+@model Diten.Web.Models.CRM.VisitPlanningSessionPageViewModel
+@using Diten.Web.Views.CRM.VisitPlanning
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitPlanningIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleCreate"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "create";
+}
+
+<partial name="~/Views/CRM/VisitPlanning/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="~/Views/CRM/VisitPlanning/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/VisitPlanning/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitPlanning/form.js" asp-append-version="true"></script>
+}

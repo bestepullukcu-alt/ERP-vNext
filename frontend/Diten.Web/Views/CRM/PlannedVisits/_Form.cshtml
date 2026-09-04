@@ -1,0 +1,203 @@
+@model Diten.Web.Models.CRM.PlannedVisitEditViewModel
+@using Diten.Web.Views.CRM.PlannedVisits
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PlannedVisitsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var action = isEdit ? "Edit" : "Create";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/PlannedVisits">@Localizer["PlannedVisitsTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/CRM/PlannedVisits" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        <button type="submit" form="plannedVisitForm" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>
+
+@* The form loads its vocabulary and pickers from the runtime contract + proxied MOD-0149/0150/0162 reads via form.js —
+   no hardcoded target type, purpose, visit type, status or source anywhere. The section/card map here mirrors
+   Details.cshtml (WhoSection, ContentSection, ResourceSection, ContextSection, LifecycleSection) so the Compact
+   information architecture stays identical between authoring and reading. *@
+<form id="plannedVisitForm" asp-controller="PlannedVisits" asp-action="@action"
+      asp-route-plannedVisitId="@Model.PlannedVisitId" method="post" class="needs-validation" novalidate
+      data-mode="@(isEdit ? "edit" : "create")"
+      data-contract-url="/CRM/PlannedVisits/api/contract"
+      data-accounts-url="/CRM/PlannedVisits/api/accounts"
+      data-contacts-url="/CRM/PlannedVisits/api/contacts"
+      data-journeys-url="/CRM/PlannedVisits/api/journeys">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="PlannedVisitId" />
+    <input type="hidden" asp-for="ExpectedVersion" />
+    <input type="hidden" asp-for="Source" value="@(Model.Source ?? "manual")" />
+    <input type="hidden" asp-for="ContentSource" id="contentSource" />
+    <input type="hidden" asp-for="TerritoryModelId" />
+    <input type="hidden" asp-for="TargetDisplay" id="targetDisplay" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <!-- Main Column (Left): Who + Content -->
+        <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+            <section class="card">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["WhoSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <label asp-for="VisitCode" class="form-label fw-medium">@Localizer["VisitCode"] <span class="text-danger">*</span></label>
+                            <input asp-for="VisitCode" class="form-control" maxlength="64" required readonly="@(isEdit ? "readonly" : null)" />
+                            <span asp-validation-for="VisitCode" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="TargetType" class="form-label fw-medium">@Localizer["TargetType"] <span class="text-danger">*</span></label>
+                            <select asp-for="TargetType" id="targetType" class="form-select" required data-selected="@Model.TargetType"></select>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="TargetId" class="form-label fw-medium">@Localizer["TargetId"] <span class="text-danger">*</span></label>
+                            <select asp-for="TargetId" id="targetId" class="form-select" required data-selected="@(Model.TargetId?.ToString())" data-display="@Model.TargetDisplay">
+                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                            </select>
+                            <div class="form-text">@Localizer["TargetHint"]</div>
+                            <span asp-validation-for="TargetId" class="text-danger small mt-1"></span>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <label asp-for="PlannedDate" class="form-label fw-medium">@Localizer["PlannedDate"] <span class="text-danger">*</span></label>
+                            <input asp-for="PlannedDate" type="date" class="form-control" required value="@Model.PlannedDate?.UtcDateTime.ToString("yyyy-MM-dd")" />
+                            <span asp-validation-for="PlannedDate" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label asp-for="PlannedStartTime" class="form-label fw-medium">@Localizer["PlannedStartTime"]</label>
+                            <input asp-for="PlannedStartTime" type="time" class="form-control" />
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label asp-for="PlannedEndTime" class="form-label fw-medium">@Localizer["PlannedEndTime"]</label>
+                            <input asp-for="PlannedEndTime" type="time" class="form-control" />
+                            <div class="form-text">@Localizer["TimeWindowHint"]</div>
+                        </div>
+                        <div class="col-12 col-md-2">
+                            <label asp-for="PlannedDurationMinutes" class="form-label fw-medium">@Localizer["PlannedDurationMinutes"]</label>
+                            <input asp-for="PlannedDurationMinutes" type="number" min="1" max="1440" class="form-control" />
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label asp-for="VisitPurpose" class="form-label fw-medium">@Localizer["VisitPurpose"] <span class="text-danger">*</span></label>
+                            <select asp-for="VisitPurpose" id="visitPurpose" class="form-select" required data-selected="@Model.VisitPurpose"></select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="VisitType" class="form-label fw-medium">@Localizer["VisitType"] <span class="text-danger">*</span></label>
+                            <select asp-for="VisitType" id="visitType" class="form-select" required data-selected="@Model.VisitType"></select>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Objective" class="form-label fw-medium">@Localizer["Objective"]</label>
+                            <textarea asp-for="Objective" class="form-control" rows="2" maxlength="1000"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Notes" class="form-label fw-medium">@SharedLocalizer["Description"]</label>
+                            <textarea asp-for="Notes" class="form-control" rows="4" maxlength="2000"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["ContentSection"]</h6>
+                    <p class="text-muted small mb-3">@Localizer["ContentSectionHint"]</p>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="ContentEngagementJourneyId" class="form-label fw-medium">@Localizer["ContentEngagementJourneyId"]</label>
+                            <select asp-for="ContentEngagementJourneyId" id="journeyId" class="form-select" data-selected="@(Model.ContentEngagementJourneyId?.ToString())">
+                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="ContentEngagementJourneyStageId" class="form-label fw-medium">@Localizer["ContentEngagementJourneyStageId"]</label>
+                            <select asp-for="ContentEngagementJourneyStageId" id="stageId" class="form-select" data-selected="@(Model.ContentEngagementJourneyStageId?.ToString())">
+                                <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                            </select>
+                            <div class="mt-2">
+                                <span id="contentSourceBadge" class="badge bg-label-secondary d-none"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right): Resource + Context + Lifecycle -->
+        <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+            <section class="card">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ResourceSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="ResourceId" class="form-label fw-medium">@Localizer["ResourceId"] <span class="text-danger">*</span></label>
+                            <input asp-for="ResourceId" class="form-control" maxlength="128" required />
+                            <div class="form-text">@Localizer["ResourceHint"]</div>
+                            <span asp-validation-for="ResourceId" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="ResourceType" class="form-label fw-medium">@Localizer["ResourceType"] <span class="text-danger">*</span></label>
+                            <select asp-for="ResourceType" id="resourceType" class="form-select" required data-selected="@Model.ResourceType"></select>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="ResourceDisplayName" class="form-label fw-medium">@Localizer["ResourceDisplayName"]</label>
+                            <input asp-for="ResourceDisplayName" class="form-control" maxlength="200" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ContextSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="BusinessUnit" class="form-label fw-medium">@Localizer["BusinessUnit"]</label>
+                            <input asp-for="BusinessUnit" class="form-control" maxlength="60" />
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="TerritoryNodeId" class="form-label fw-medium">@Localizer["TerritoryNodeId"]</label>
+                            <input asp-for="TerritoryNodeId" class="form-control" placeholder="00000000-0000-0000-0000-000000000000" />
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="CampaignId" class="form-label fw-medium">@Localizer["CampaignId"]</label>
+                            <input asp-for="CampaignId" class="form-control" placeholder="00000000-0000-0000-0000-000000000000" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LifecycleSection"]</h6>
+                    @if (isEdit)
+                    {
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-muted">@SharedLocalizer["Status"]</span>
+                            <span class="badge bg-label-primary">@Localizer["Status_" + (Model.PlanStatus ?? "draft")]</span>
+                        </div>
+                        <div class="form-text">@Localizer["StatusLifecycleHint"]</div>
+                    }
+                    else
+                    {
+                        <label asp-for="PlanStatus" class="form-label fw-medium">@SharedLocalizer["Status"]</label>
+                        <select asp-for="PlanStatus" id="planStatus" class="form-select" data-selected="@(Model.PlanStatus ?? "draft")"></select>
+                        <div class="form-text">@Localizer["CreateStatusHint"]</div>
+                    }
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

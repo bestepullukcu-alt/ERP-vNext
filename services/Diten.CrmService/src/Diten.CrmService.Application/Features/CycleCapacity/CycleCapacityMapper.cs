@@ -50,6 +50,9 @@ public static class CycleCapacityMapper
         c.TravelingTime,
         c.ReportDuration,
         c.QuizDuration,
+        // Read-time normalised before it reaches here (repository EnsureBetweenVisitTime), so an old row shows the
+        // configured default rather than 0.
+        c.BetweenVisitTimeMinutes.GetValueOrDefault(),
         c.DailySpendMinutes(),
         c.MinutesPerVisit(),
         // The FTE is never editable in this FU. It is published as a flag so the form does not hardcode the rule, and

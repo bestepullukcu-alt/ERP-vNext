@@ -180,12 +180,29 @@ public sealed class ListContactsHandler : IRequestHandler<ListContactsQuery, Res
         var page = request.Page < 1 ? 1 : request.Page;
         var pageSize = request.PageSize is < 1 or > 200 ? 25 : request.PageSize;
 
-        var (items, total) = await _contacts.ListAsync(tenantId, request.Search, page, pageSize, cancellationToken);
+        // Multi-select chips arrive as comma-separated codes; split into distinct, non-empty equality values.
+        var statuses = SplitFilterCsv(request.Status);
+        var contactTypes = SplitFilterCsv(request.ContactType);
+
+        var (items, total, unfilteredTotal) = await _contacts.ListAsync(
+            tenantId, request.Search, page, pageSize, request.SortBy, request.SortDir, statuses, contactTypes, cancellationToken);
         var dtos = items.Select(ContactMapper.ToListItem).ToList();
 
         await EnrichLinkedTerritoryAsync(tenantId, dtos, cancellationToken);
 
-        return Response<PagedResult<ContactListItemDto>>.Success(new PagedResult<ContactListItemDto>(dtos, total, page, pageSize));
+        return Response<PagedResult<ContactListItemDto>>.Success(
+            new PagedResult<ContactListItemDto>(dtos, total, page, pageSize, unfilteredTotal));
+    }
+
+    /// <summary>Splits a comma-separated chip value (multi-select) into distinct, trimmed, non-empty codes.
+    /// Returns null when nothing is selected so the repository skips the predicate entirely.</summary>
+    private static IReadOnlyCollection<string>? SplitFilterCsv(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        var parts = value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        return parts.Length > 0 ? parts : null;
     }
 
     /// <summary>Projects the contact's current territory coverage onto each list row so the grid can show/filter it.
@@ -260,7 +277,7 @@ public sealed class SearchContactsHandler : IRequestHandler<SearchContactsQuery,
         }
 
         var limit = request.Limit is < 1 or > 50 ? 20 : request.Limit;
-        var (items, _) = await _contacts.ListAsync(tenantId, request.Search, 1, limit, cancellationToken);
+        var (items, _, _) = await _contacts.ListAsync(tenantId, request.Search, 1, limit, null, null, null, null, cancellationToken);
         IReadOnlyList<ContactSearchResultDto> results = items.Select(ContactMapper.ToSearchResult).ToList();
 
         return Response<IReadOnlyList<ContactSearchResultDto>>.Success(results);

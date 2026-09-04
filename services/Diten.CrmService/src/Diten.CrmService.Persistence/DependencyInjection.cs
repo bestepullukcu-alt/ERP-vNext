@@ -215,6 +215,23 @@ public static class DependencyInjection
         // preview path pass a TRANSIENT capacity that has no row behind it.
         services.AddScoped<Application.Features.CycleCapacity.Services.CycleCapacityEstimator>();
 
+        // MOD-0155 FU01 - PlannedVisit: the field team's planning atom (one collection). No delete: a plan is
+        // cancelled/archived so its history stays readable. Single-document writes only, guarded by the Version token.
+        services.AddScoped<IPlannedVisitRepository, PlannedVisitRepository>();
+
+        // MOD-0155 FU05 - PlanningSession staging store + the atomic apply/re-plan unit of work. The unit of work spans
+        // planning_sessions + planned_visits in one all-or-nothing operation (transaction on a replica set, compensated
+        // sequential writes on dev standalone Mongo), so a half-applied plan can never survive (D-APPLY-ATOMICITY = C).
+        services.AddScoped<IPlanningSessionRepository, PlanningSessionRepository>();
+        services.AddScoped<IPlanningSessionApplyUnitOfWork, PlanningSessionApplyUnitOfWork>();
+
+        // MOD-0155 FU02 - VisitReport: the immutable record of an EXECUTED visit (one collection). No delete: a report is
+        // a compliance record, corrections are append-only amendments. Single-document writes only, guarded by the
+        // Version token - the report submit/amend touch only this aggregate, and the D-EXECUTION-STATUS = A plan
+        // reflection is a documented no-op (FU01 has no "executed" transition, F-EXECUTED-MARKER), so there is no second
+        // aggregate to keep consistent and no multi-document transaction is needed.
+        services.AddScoped<IVisitReportRepository, VisitReportRepository>();
+
         TryEnsureIndexes(client.GetDatabase(databaseName));
 
         return services;
@@ -731,6 +748,176 @@ public static class DependencyInjection
         if (!BsonClassMap.IsClassMapRegistered(typeof(CycleCapacityMonth)))
         {
             BsonClassMap.RegisterClassMap<CycleCapacityMonth>(map => map.AutoMap());
+        }
+
+        // MOD-0155 FU01 - PlannedVisit and its SIX embedded types. Every Guid FK on the root AND on each embedded type
+        // takes the string-Guid convention, or the ids (TargetId, Content.JourneyId/StageId/StrategyTemplateId,
+        // Selection.SegmentId/CampaignId, Consent.MatchedConsentId/MatchedPreferenceIds, Frequency.SelectedFrequencyPolicyId)
+        // serialize as a string while the stored value is binary and every by-id filter silently returns NOTHING (the
+        // AccountTerritoryAssignment lesson). An embedded type omitted from the class maps is the documented CRM trap, so
+        // every one is registered - even the two (ResourceRef, ScheduleSlot) that carry no Guid, so the driver never
+        // treats them as anonymous. PlannedDate is a DateOnly stored as a "yyyy-MM-dd" STRING so it is sortable/indexable
+        // without the DateTimeOffset parallel-arrays trap the whole DateOnly choice exists to avoid.
+        var dateOnlyString = new Serialization.DateOnlyStringSerializer();
+        Map<PlannedVisit>(map =>
+        {
+            map.GetMemberMap(v => v.TargetId).SetSerializer(stringGuid);
+            map.GetMemberMap(v => v.AccountId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            map.GetMemberMap(v => v.ContactId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            map.GetMemberMap(v => v.AccountContactLinkId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            map.GetMemberMap(v => v.TerritoryNodeId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            map.GetMemberMap(v => v.TerritoryModelId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            map.GetMemberMap(v => v.CampaignId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            map.GetMemberMap(v => v.PositionId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            map.GetMemberMap(v => v.PlannedDate).SetSerializer(dateOnlyString);
+        });
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlannedVisitResourceRef)))
+        {
+            BsonClassMap.RegisterClassMap<PlannedVisitResourceRef>(map => map.AutoMap());
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlannedVisitScheduleSlot)))
+        {
+            BsonClassMap.RegisterClassMap<PlannedVisitScheduleSlot>(map =>
+            {
+                map.AutoMap();
+                map.UnmapMember(s => s.IsPacked);
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlannedVisitFrequencyProvenance)))
+        {
+            BsonClassMap.RegisterClassMap<PlannedVisitFrequencyProvenance>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(f => f.SelectedFrequencyPolicyId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlannedVisitConsentProvenance)))
+        {
+            BsonClassMap.RegisterClassMap<PlannedVisitConsentProvenance>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(c => c.MatchedConsentId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+                map.GetMemberMap(c => c.MatchedPreferenceIds)
+                    .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlannedVisitContentRef)))
+        {
+            BsonClassMap.RegisterClassMap<PlannedVisitContentRef>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(c => c.JourneyId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+                map.GetMemberMap(c => c.StageId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+                map.GetMemberMap(c => c.StrategyTemplateId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlannedVisitSelectionProvenance)))
+        {
+            BsonClassMap.RegisterClassMap<PlannedVisitSelectionProvenance>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(s => s.SegmentId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+                map.GetMemberMap(s => s.CampaignId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+                map.GetMemberMap(s => s.StrategyTemplateId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlannedVisitAvailabilitySnapshot)))
+        {
+            BsonClassMap.RegisterClassMap<PlannedVisitAvailabilitySnapshot>(map => map.AutoMap());
+        }
+
+        // MOD-0155 FU05 - PlanningSession (thin staging aggregate) and its THREE embedded types + one embedded contact.
+        // Every Guid FK on the root AND on each embedded type takes the string-Guid convention, or the ids
+        // (CyclePeriodId, Selection.SelectedAccountIds/SelectedPharmacyIds/SegmentId/CampaignId, the contact's
+        // ContactId/AccountId/AccountContactLinkId, Provenance.SegmentId/CampaignId/StrategyTemplateId,
+        // CommittedPlannedVisitIds) serialize as a string while the stored value is binary and every by-id filter
+        // silently returns NOTHING (the AccountTerritoryAssignment lesson). An embedded type omitted from the class maps
+        // is the documented CRM new-aggregate trap, so every one is registered - even the generation-state block that
+        // carries no Guid, so the driver never treats it as anonymous. List<Guid> members use the enumerable string-Guid
+        // serializer (like TerritoryRuleCriteria's account-id lists). No DateTimeOffset is a co-sorted index key.
+        Map<PlanningSession>(map =>
+        {
+            map.GetMemberMap(s => s.CyclePeriodId).SetSerializer(stringGuid);
+            map.GetMemberMap(s => s.CommittedPlannedVisitIds)
+                .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+        });
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningSessionSelection)))
+        {
+            BsonClassMap.RegisterClassMap<PlanningSessionSelection>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(s => s.SelectedAccountIds)
+                    .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+                map.GetMemberMap(s => s.SelectedPharmacyIds)
+                    .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+                map.GetMemberMap(s => s.SegmentId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+                map.GetMemberMap(s => s.CampaignId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningSessionSelectedContact)))
+        {
+            BsonClassMap.RegisterClassMap<PlanningSessionSelectedContact>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(c => c.ContactId).SetSerializer(stringGuid);
+                map.GetMemberMap(c => c.AccountId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+                map.GetMemberMap(c => c.AccountContactLinkId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningSessionGenerationState)))
+        {
+            BsonClassMap.RegisterClassMap<PlanningSessionGenerationState>(map => map.AutoMap());
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningSessionProvenance)))
+        {
+            BsonClassMap.RegisterClassMap<PlanningSessionProvenance>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(p => p.SegmentId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+                map.GetMemberMap(p => p.CampaignId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+                map.GetMemberMap(p => p.StrategyTemplateId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            });
+        }
+
+        // MOD-0155 FU02 - VisitReport and its FOUR embedded types. The root carries a Guid FK of its own
+        // (PlannedVisitId), and the embedded ContentActuals / Sample carry snapshot Guids (JourneyId, StageId, ItemId).
+        // Every one takes the string-Guid convention, or the ids serialize as a string while the stored value is binary
+        // and every by-id filter (the report-for-a-visit lookup, the calendar-join by plan-id set) silently returns
+        // NOTHING (the AccountTerritoryAssignment lesson). An embedded type omitted from the class maps is the documented
+        // CRM new-aggregate trap, so every one is registered - even Feedback / Amendment which carry no Guid, so the
+        // driver never treats them as anonymous. RescheduleToDate is a DateOnly stored as a "yyyy-MM-dd" STRING (the FU01
+        // pattern) so a date pairing never trips the DateTimeOffset parallel-arrays 500; ExecutedAt/SubmittedAt/AmendedAt
+        // are lone DateTimeOffsets and are never co-sorted.
+        Map<VisitReport>(map =>
+        {
+            map.GetMemberMap(r => r.PlannedVisitId).SetSerializer(stringGuid);
+            map.GetMemberMap(r => r.RescheduleToDate).SetSerializer(
+                new NullableSerializer<DateOnly>(dateOnlyString));
+        });
+        if (!BsonClassMap.IsClassMapRegistered(typeof(VisitReportContentActuals)))
+        {
+            BsonClassMap.RegisterClassMap<VisitReportContentActuals>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(c => c.JourneyId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+                map.GetMemberMap(c => c.StageId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(VisitReportSample)))
+        {
+            BsonClassMap.RegisterClassMap<VisitReportSample>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(s => s.ItemId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(VisitReportFeedback)))
+        {
+            BsonClassMap.RegisterClassMap<VisitReportFeedback>(map => map.AutoMap());
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(VisitReportAmendment)))
+        {
+            BsonClassMap.RegisterClassMap<VisitReportAmendment>(map => map.AutoMap());
         }
 
         _classMapsRegistered = true;
@@ -1352,6 +1539,61 @@ public static class DependencyInjection
                 Builders<Domain.Entities.StrategyTemplate>.IndexKeys
                     .Ascending(t => t.TenantId).Ascending("SegmentBindings.SegmentId"),
                 new CreateIndexOptions { Name = "ix_strategy_templates_tenant_segment_binding" }));
+
+            // MOD-0155 FU01 - planned_visits. PlannedDate is a DateOnly stored as a "yyyy-MM-dd" STRING, so it is a
+            // plain scalar here and safe to index/sort - which is the whole reason the field is a DateOnly and not a
+            // DateTimeOffset (a co-sorted DateTimeOffset pair is the parallel-arrays 500). ArchivedAt/CreatedAt/UpdatedAt
+            // are DateTimeOffset (BSON arrays) and are deliberately NEVER index keys. VisitCode uniqueness is enforced in
+            // the create handler (an archived code is reusable, which a partial filter cannot express, and $ne in a
+            // partial-index filter crash-loops the service at startup), so this is a plain lookup index rather than a
+            // unique one.
+            var plannedVisits = database.GetCollection<PlannedVisit>(PlannedVisitRepository.CollectionName);
+            plannedVisits.Indexes.CreateOne(new CreateIndexModel<PlannedVisit>(
+                Builders<PlannedVisit>.IndexKeys.Ascending(v => v.TenantId).Ascending(v => v.VisitCode),
+                new CreateIndexOptions { Name = "ix_planned_visits_tenant_code" }));
+            plannedVisits.Indexes.CreateOne(new CreateIndexModel<PlannedVisit>(
+                Builders<PlannedVisit>.IndexKeys
+                    .Ascending(v => v.TenantId).Ascending(v => v.PlannedDate).Ascending(v => v.PlanStatus),
+                new CreateIndexOptions { Name = "ix_planned_visits_tenant_date_status" }));
+            plannedVisits.Indexes.CreateOne(new CreateIndexModel<PlannedVisit>(
+                Builders<PlannedVisit>.IndexKeys
+                    .Ascending(v => v.TenantId).Ascending("Resource.ResourceId").Ascending(v => v.PlannedDate),
+                new CreateIndexOptions { Name = "ix_planned_visits_tenant_resource_date" }));
+            plannedVisits.Indexes.CreateOne(new CreateIndexModel<PlannedVisit>(
+                Builders<PlannedVisit>.IndexKeys
+                    .Ascending(v => v.TenantId).Ascending(v => v.TargetType).Ascending(v => v.TargetId),
+                new CreateIndexOptions { Name = "ix_planned_visits_tenant_target" }));
+
+            // MOD-0155 FU05 - planning_sessions. Plain lookup indexes only; NO $ne partial filter (a $ne in a partial
+            // index filter crash-loops the service at startup). CreatedAt is a DateTimeOffset (BSON array) and is
+            // deliberately never an index key. The session-for-rep-in-period lookup and the status filter are the two
+            // access paths the console needs.
+            var planningSessions = database.GetCollection<PlanningSession>(PlanningSessionRepository.CollectionName);
+            planningSessions.Indexes.CreateOne(new CreateIndexModel<PlanningSession>(
+                Builders<PlanningSession>.IndexKeys
+                    .Ascending(s => s.TenantId).Ascending(s => s.CyclePeriodId).Ascending(s => s.ResourceId),
+                new CreateIndexOptions { Name = "ix_planning_sessions_tenant_period_resource" }));
+            planningSessions.Indexes.CreateOne(new CreateIndexModel<PlanningSession>(
+                Builders<PlanningSession>.IndexKeys.Ascending(s => s.TenantId).Ascending(s => s.Status),
+                new CreateIndexOptions { Name = "ix_planning_sessions_tenant_status" }));
+
+            // MOD-0155 FU02 - visit_reports. Plain lookup indexes only; NO $ne partial filter (a $ne in a partial index
+            // filter crash-loops the service at startup). The report-for-a-visit lookup (TenantId+PlannedVisitId) + the
+            // status filter are the two access paths; ContentActuals.StageIndex is indexed for the "last completed stage
+            // per doctor" §4.4 read. ExecutedAt/SubmittedAt/AmendedAt/CreatedAt/UpdatedAt are DateTimeOffset (BSON arrays)
+            // and are deliberately NEVER index keys and never co-sorted (the CRM parallel-arrays 500).
+            var visitReports = database.GetCollection<VisitReport>(VisitReportRepository.CollectionName);
+            visitReports.Indexes.CreateOne(new CreateIndexModel<VisitReport>(
+                Builders<VisitReport>.IndexKeys.Ascending(r => r.TenantId).Ascending(r => r.PlannedVisitId),
+                new CreateIndexOptions { Name = "ix_visit_reports_tenant_planned_visit" }));
+            visitReports.Indexes.CreateOne(new CreateIndexModel<VisitReport>(
+                Builders<VisitReport>.IndexKeys.Ascending(r => r.TenantId).Ascending(r => r.ReportStatus),
+                new CreateIndexOptions { Name = "ix_visit_reports_tenant_status" }));
+            visitReports.Indexes.CreateOne(new CreateIndexModel<VisitReport>(
+                Builders<VisitReport>.IndexKeys
+                    .Ascending(r => r.TenantId).Ascending(r => r.ReportedByResourceId)
+                    .Ascending("ContentActuals.StageIndex"),
+                new CreateIndexOptions { Name = "ix_visit_reports_tenant_resource_stage" }));
         }
         catch (MongoException)
         {

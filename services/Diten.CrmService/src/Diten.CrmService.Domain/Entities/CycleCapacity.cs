@@ -69,6 +69,20 @@ public sealed class CycleCapacity : EntityBase
     /// <summary>Minutes spent on quizzes/knowledge checks on a field DAY.</summary>
     public int QuizDuration { get; set; }
 
+    /// <summary>
+    /// MOD-0155 FU06B — the buffer left between two CONSECUTIVE visits when a field day is packed. NEW in FU06B; FU06
+    /// carried <see cref="TravelingTime"/> but never a between-visit tampon.
+    /// <para><b>It is NOT part of a single visit's duration</b> and takes no part in
+    /// <see cref="ActivityTimeBudgetCalculator"/> (see MOD-0155 FU05 packing, which applies it BETWEEN visits). It is
+    /// stored here only so the packing engine can read one configured value.</para>
+    /// <para><b>Nullable on purpose (read-time migration, D-MIGRATION).</b> A document written before FU06B has no such
+    /// element and deserializes as <c>null</c>, which <see cref="EnsureBetweenVisitTime"/> fills with the configured
+    /// default — while an author who deliberately set <c>0</c> keeps it, because <c>0</c> and "absent" are different
+    /// answers. There is nothing to backfill: only this one new field needs a default, and the reused FU06 fields are
+    /// already present on every row.</para>
+    /// </summary>
+    public int? BetweenVisitTimeMinutes { get; set; }
+
     public string? Description { get; set; }
 
     /// <summary>
@@ -133,6 +147,24 @@ public sealed class CycleCapacity : EntityBase
             month.FteSource = CycleCapacityFteSources.InterimDefault;
         }
 
+        return this;
+    }
+
+    /// <summary>
+    /// MOD-0155 FU06B — gives the capacity a between-visit buffer when the stored row predates the field.
+    /// <para><b>Read-time normalisation, not a migration</b> — the same device as <see cref="EnsureMonthlyFte"/> and
+    /// <c>CyclePeriod.EnsureScopeType()</c>: nothing is written back, no backfill script exists, and the value is
+    /// persisted only when the row is next written for its own reasons. A missing element (an FU06/FU07 row) reads as
+    /// <c>null</c> and takes the configured default; an explicit <c>0</c> is left alone, because <c>0</c> and "absent"
+    /// are different answers.</para>
+    /// <para>It touches ONLY this new field. The reused FU06 duration fields
+    /// (<see cref="PromoProductTime"/>/<see cref="NonPromoProductTime"/>/<see cref="ReportDuration"/>) already exist on
+    /// every row, so there is nothing to seed — and the FU06 <c>TotalVisitNumber</c> is unaffected, this field never
+    /// entering the capacity arithmetic.</para>
+    /// </summary>
+    public CycleCapacity EnsureBetweenVisitTime(int configuredDefault)
+    {
+        BetweenVisitTimeMinutes ??= configuredDefault;
         return this;
     }
 
@@ -278,6 +310,10 @@ public static class CycleCapacityReasonCodes
     public const string DeductionInvalid = "cycle_capacity_deduction_invalid";
     public const string MonthFteInvalid = "cycle_capacity_month_fte_invalid";
     public const string DescriptionInvalid = "cycle_capacity_description_invalid";
+
+    /// <summary>MOD-0155 FU06B — the between-visit buffer is outside its published range.</summary>
+    public const string BetweenVisitTimeInvalid = "cycle_capacity_between_visit_time_invalid";
+
     public const string ConcurrencyConflict = "cycle_capacity_concurrency_conflict";
     public const string NotFound = "cycle_capacity_not_found";
 
@@ -286,7 +322,7 @@ public static class CycleCapacityReasonCodes
         CapacityOk, CalendarUnresolved, CalendarForbidden, CountryUnderivable, MonthOutOfPeriod, DuplicateCapacity,
         VisitMinutesZero, PeriodClosed, PeriodNotFound, PinImmutable, CountryRequired, CountryUnknown,
         ReferenceSetUnpublished, DailyWorkMinutesInvalid, ActivityMinutesInvalid, DailySpendExceedsDay, MonthsRequired,
-        MonthInvalid, MonthDuplicate, DeductionInvalid, MonthFteInvalid, DescriptionInvalid,
+        MonthInvalid, MonthDuplicate, DeductionInvalid, MonthFteInvalid, DescriptionInvalid, BetweenVisitTimeInvalid,
         ConcurrencyConflict, NotFound
     };
 }
@@ -299,6 +335,10 @@ public static class CycleCapacityLimits
 
     /// <summary>A single visit longer than eight hours is a data-entry error, not a visit.</summary>
     public const int MaxMinutesPerVisit = 480;
+
+    /// <summary>MOD-0155 FU06B — the between-visit buffer. A four-hour gap between two visits is a scheduling error,
+    /// not a buffer, so the ceiling is four hours.</summary>
+    public const int MaxBufferMinutes = 240;
 
     public const int MinDailyWorkMinutes = 1;
     public const int MaxDailyWorkMinutes = 1440;

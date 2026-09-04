@@ -11,8 +11,18 @@ public interface IAccountRepository
 
     Task<bool> ExistsByCodeAsync(Guid tenantId, string accountCode, Guid? excludeId, CancellationToken cancellationToken);
 
-    Task<(IReadOnlyList<Account> Items, long Total)> ListAsync(
-        Guid tenantId, string? search, int page, int pageSize, CancellationToken cancellationToken);
+    /// <summary>Server-side paged list. <paramref name="sortBy"/> accepts "accountName"/"accountCode" (both
+    /// backed by a {TenantId, field} index so descending stays an index scan, never a 32MB in-memory sort);
+    /// any other value falls back to AccountName ascending. Returns the filtered <c>Total</c> plus the
+    /// tenant-wide <c>UnfilteredTotal</c> (search ignored) for DataTables recordsTotal.
+    /// <para><paramref name="accountIdScope"/> is the MOD-0151 territory-coverage account-id constraint (the grid's
+    /// Territory Node / Country Scope chips, resolved to current-coverage account ids in the handler). Null skips the
+    /// predicate entirely; a non-null but EMPTY set means "nothing matched the coverage filter" and yields zero rows
+    /// (while UnfilteredTotal stays the tenant-wide count).</para></summary>
+    Task<(IReadOnlyList<Account> Items, long Total, long UnfilteredTotal)> ListAsync(
+        Guid tenantId, string? search, int page, int pageSize, string? sortBy, string? sortDir,
+        IReadOnlyCollection<string>? statuses, IReadOnlyCollection<string>? accountTypes,
+        IReadOnlyCollection<Guid>? accountIdScope, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<Account>> GetChildrenAsync(Guid tenantId, Guid parentId, CancellationToken cancellationToken);
 

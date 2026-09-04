@@ -10,6 +10,9 @@ const AccountsList = (function () {
     let defaultViewRecord = null;
     let defaultViewState = null;
     let saveFilterArmed = false;
+    // Server-side processing: the DataTables `draw` counter of the in-flight request, echoed back by dataFilter so
+    // DataTables can match the response to its request (43,374-account tenant — the grid MUST page on the backend).
+    let lastDrawToken = 0;
 
     const dtTableEl = document.querySelector('.datatables-accounts');
     const apiUrl = window.API?.crm ?? window.ApiBaseUrl;
@@ -20,7 +23,9 @@ const AccountsList = (function () {
     const saveViewColumnIndexes = [2, 3, 4, 5, 6, 7, 8];
     const totalColumnCount = 10;
     const defaultVisibleColumnIndexes = [2, 3, 4, 5, 6, 7, 8];
-    const baseOrder = [[2, 'asc']];
+    // AccountName ascending (column 3) is the server-side default sort; keep the SaveView baseline in sync so the
+    // grid does not read as "dirty" on first load.
+    const baseOrder = [[3, 'asc']];
     let appliedFilters = { status: [], accountType: [], countryScope: [], territoryNode: [] };
     // Country-scope + territory-node options come from MOD-0151 Territory Management (distinct across the tenant),
     // not just from the accounts on this page. Loaded once in setupFilters; falls back to row-derived values if empty.
@@ -363,8 +368,10 @@ const AccountsList = (function () {
             const data = await res.json();
             territoryLookups = {
                 countryScopes: Array.isArray(data?.countryScopes) ? data.countryScopes.map(normalizeString).filter(Boolean) : [],
+                // Each node carries its id (the value sent to the backend for precise coverage filtering), its display
+                // name, and its owning model's country scope (drives the cascade).
                 nodes: Array.isArray(data?.nodes)
-                    ? data.nodes.map((n) => ({ name: normalizeString(n?.name), countryScope: normalizeString(n?.countryScope) })).filter((n) => n.name)
+                    ? data.nodes.map((n) => ({ id: normalizeString(n?.id), name: normalizeString(n?.name), countryScope: normalizeString(n?.countryScope) })).filter((n) => n.id && n.name)
                     : []
             };
         } catch (error) {
@@ -380,8 +387,9 @@ const AccountsList = (function () {
     const rowTerritoryNodes = (api) => {
         const out = [];
         api?.rows()?.data()?.each((row) => {
+            const id = normalizeString(row?.territoryNodeId);
             const name = normalizeString(row?.territoryNodeName);
-            if (name) out.push({ name, countryScope: normalizeString(row?.territoryCountryScope) });
+            if (id && name) out.push({ id, name, countryScope: normalizeString(row?.territoryCountryScope) });
         });
         return out;
     };
@@ -402,16 +410,18 @@ const AccountsList = (function () {
         const countries = normalizeArray(selectedCountries);
         const prevSelected = normalizeArray($('#filterTerritory').val());
         const source = territoryLookups.nodes.length ? territoryLookups.nodes : rowTerritoryNodes(api);
-        const names = new Set();
+        // The chip VALUE is the node id (sent to the backend); the TEXT is the display name. Distinct on id, narrowed
+        // to the selected country scope(s).
+        const byId = new Map();
         source.forEach((n) => {
-            if (!n.name) return;
+            if (!n.id || !n.name) return;
             if (countries.length && !countries.includes(normalizeString(n.countryScope))) return;
-            names.add(n.name);
+            if (!byId.has(n.id)) byId.set(n.id, n.name);
         });
-        appendOptions(select, Array.from(names)
-            .sort((a, b) => a.localeCompare(b))
-            .map((value) => ({ value, text: value })));
-        $('#filterTerritory').val(prevSelected.filter((v) => names.has(v)));
+        appendOptions(select, Array.from(byId.entries())
+            .sort((a, b) => a[1].localeCompare(b[1]))
+            .map(([value, text]) => ({ value, text })));
+        $('#filterTerritory').val(prevSelected.filter((v) => byId.has(v)));
     };
 
     const setupFilters = async (api) => {
@@ -567,16 +577,76 @@ const AccountsList = (function () {
             tableEl: dtTableEl,
             bulk: bulkOptions,
             ajax: {
-                // The CRM list endpoint is paged (Response<PagedResult<T>>); the grid filters client-side,
-                // so request a wide page and unwrap data.items.
-                url: apiUrl + '/api/crm/accounts?page=1&pageSize=500',
+                // TRUE server-side processing. The CRM list endpoint is paged (Response<PagedResult<T>>): every page,
+                // search and sort is resolved on the backend so all 43K accounts are reachable (was: one wide 500-row
+                // page filtered/paged in the browser, which hid ~42.9K rows).
+                url: apiUrl + '/api/crm/accounts',
                 type: 'GET',
                 xhrFields: { withCredentials: true },
-                dataSrc: (json) => json?.data?.items ?? json?.Data?.Items ?? []
+                // Map the DataTables request → CRM list query string.
+                data: function (d) {
+                    lastDrawToken = d.draw;
+                    const length = d.length > 0 ? d.length : 25;
+                    const params = {
+                        page: Math.floor((d.start || 0) / length) + 1,
+                        pageSize: length,
+                        search: d?.search?.value ? d.search.value : ''
+                    };
+                    // Inline-filter chips pushed to the backend (server-side). Status + Account Type are plain stored
+                    // Account fields, sent as comma-separated codes (multi-select ⇒ backend IN predicate). The
+                    // Country-Scope and Territory-Node chips are MOD-0151 territory-coverage projections, not stored
+                    // Account fields: the backend resolves them to the set of current-coverage account ids (both
+                    // lifecycle gates at now) and ANDs that onto the query. The Country-Scope chip carries the owning
+                    // model's `country` scope code; the Territory-Node chip carries the node id (both comma-separated).
+                    const statusVals = normalizeArray(appliedFilters.status);
+                    const typeVals = normalizeArray(appliedFilters.accountType);
+                    const countryScopeVals = normalizeArray(appliedFilters.countryScope);
+                    const nodeVals = normalizeArray(appliedFilters.territoryNode);
+                    if (statusVals.length) params.status = statusVals.join(',');
+                    if (typeVals.length) params.accountType = typeVals.join(',');
+                    if (countryScopeVals.length) params.countryScope = countryScopeVals.join(',');
+                    if (nodeVals.length) params.territoryNodeId = nodeVals.join(',');
+                    // Only accountCode/accountName are backend-sortable (each backed by a {TenantId, field} index).
+                    // Their columns are the ONLY orderable ones (see columnDefs), so order[0] can only be one of them;
+                    // anything else is ignored and the backend falls back to AccountName asc.
+                    if (Array.isArray(d.order) && d.order.length) {
+                        const col = d.columns?.[d.order[0].column];
+                        const sortName = col && (col.data || col.name);
+                        if (sortName === 'accountCode' || sortName === 'accountName') {
+                            params.sortBy = sortName;
+                            params.sortDir = d.order[0].dir === 'desc' ? 'desc' : 'asc';
+                        }
+                    }
+                    return params;
+                },
+                // Reshape the Response<PagedResult> envelope into the {draw,recordsTotal,recordsFiltered,data} contract
+                // DataTables server-side expects. Runs in jQuery BEFORE DataTables reads the counts, so it is the only
+                // reliable place to remap them (a dataSrc function runs too late for recordsTotal/recordsFiltered).
+                dataFilter: function (raw) {
+                    let json;
+                    try { json = JSON.parse(raw); } catch (e) { json = {}; }
+                    const paged = json?.data ?? json?.Data ?? {};
+                    const items = paged.items ?? paged.Items ?? [];
+                    const filtered = paged.total ?? paged.Total ?? items.length;             // recordsFiltered
+                    const totalAll = paged.unfilteredTotal ?? paged.UnfilteredTotal ?? filtered; // recordsTotal
+                    return JSON.stringify({
+                        draw: lastDrawToken,
+                        recordsTotal: totalAll,
+                        recordsFiltered: filtered,
+                        data: items
+                    });
+                },
+                dataSrc: 'data'
             },
             actions: { onRowAction: rowActionHandlers },
             config: {
                 stateSave: false,
+                // True DataTables server-side processing (paging/search/sort resolved by the CRM backend).
+                serverSide: true,
+                processing: true,
+                // Default sort stays AccountName ascending (column 3), matching the backend default and the repo's
+                // prior AccountName ordering. accountCode(2) + accountName(3) are the only backend-sortable columns.
+                order: [[3, 'asc']],
                 colReorder: { columns: ':gt(1):not(:last-child)' },
                 columns: [
                     { data: 'id', name: 'control' },
@@ -593,6 +663,10 @@ const AccountsList = (function () {
                 columnDefs: [
                     { targets: 0, className: 'control', searchable: false, orderable: false, responsivePriority: 2, render: () => '' },
                     { targets: 1, orderable: false, searchable: false, responsivePriority: 3, className: 'dt-checkboxes-cell cell-fit', render: (data) => `<input type="checkbox" class="dt-checkboxes form-check-input" value="${data}">` },
+                    // Server-side: only accountCode(2) + accountName(3) are backend-sortable (indexed). accountType(4),
+                    // accountCategory(5), status(6) and the computed territory columns(7,8) are NOT sortable on the
+                    // backend, so they are non-orderable here — no misleading sort arrow, and no unindexed 32MB sort.
+                    { targets: [4, 5, 6, 7, 8], orderable: false },
                     { targets: 2, render: (data) => `<span class="fw-medium text-heading">${data ?? ''}</span>` },
                     {
                         // Logo thumbnail + account name (mirrors the Contacts list avatar). Non-display types return the

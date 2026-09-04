@@ -78,6 +78,17 @@
   <data name="StepsHelp" xml:space="preserve"><value>أضف الخطوات بالترتيب الذي يجب أن يُعرض/يُتعلّم/يُقدَّم به المحتوى.</value></data>
   <data name="AddStep" xml:space="preserve"><value>إضافة خطوة</value></data>
   <data name="NoSteps" xml:space="preserve"><value>لا توجد خطوات بعد.</value></data>
+  <data name="ShowArchived" xml:space="preserve"><value>إظهار المؤرشفة</value></data>
+  <data name="ContentLibrary" xml:space="preserve"><value>مكتبة المحتوى</value></data>
+  <data name="ContentLibraryHelp" xml:space="preserve"><value>المحتوى المنشور المطابق لتصنيف هذا المسار. حدّد بطاقة لإضافتها كخطوة.</value></data>
+  <data name="NoMatchingContent" xml:space="preserve"><value>لا يوجد محتوى منشور مطابق لهذا التصنيف بعد.</value></data>
+  <data name="SelectedSteps" xml:space="preserve"><value>الخطوات المحددة</value></data>
+  <data name="SelectedStepsHelp" xml:space="preserve"><value>اسحب لإعادة الترتيب. انقر على خطوة لتعديل تفاصيلها.</value></data>
+  <data name="StepOrderDragHelp" xml:space="preserve"><value>يُحدَّد بالسحب والإفلات في قائمة الخطوات المحددة.</value></data>
+  <data name="EditStep" xml:space="preserve"><value>تعديل الخطوة</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>تحديد الكل</value></data>
+  <data name="SelectContentTab" xml:space="preserve"><value>اختيار المحتوى</value></data>
+  <data name="ArrangeStepsTab" xml:space="preserve"><value>ترتيب الخطوات</value></data>
   <data name="StepsSection" xml:space="preserve"><value>الخطوات</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>الهوية</value></data>
   <data name="ClassificationSection" xml:space="preserve"><value>التصنيف</value></data>

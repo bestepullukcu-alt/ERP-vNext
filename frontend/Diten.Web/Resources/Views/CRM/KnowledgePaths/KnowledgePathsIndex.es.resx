@@ -78,6 +78,17 @@
   <data name="StepsHelp" xml:space="preserve"><value>Agregue los pasos en el orden en que el contenido debe presentarse / aprenderse / mostrarse.</value></data>
   <data name="AddStep" xml:space="preserve"><value>Agregar paso</value></data>
   <data name="NoSteps" xml:space="preserve"><value>Aún no hay pasos.</value></data>
+  <data name="ShowArchived" xml:space="preserve"><value>Mostrar archivados</value></data>
+  <data name="ContentLibrary" xml:space="preserve"><value>Biblioteca de contenido</value></data>
+  <data name="ContentLibraryHelp" xml:space="preserve"><value>Contenido publicado que coincide con la clasificación de esta ruta. Marque una tarjeta para añadirla como paso.</value></data>
+  <data name="NoMatchingContent" xml:space="preserve"><value>Aún no hay contenido publicado que coincida con esta clasificación.</value></data>
+  <data name="SelectedSteps" xml:space="preserve"><value>Pasos seleccionados</value></data>
+  <data name="SelectedStepsHelp" xml:space="preserve"><value>Arrastre para reordenar. Haga clic en un paso para editar sus detalles.</value></data>
+  <data name="StepOrderDragHelp" xml:space="preserve"><value>Se define arrastrando y soltando en la lista de pasos seleccionados.</value></data>
+  <data name="EditStep" xml:space="preserve"><value>Editar paso</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Seleccionar todo</value></data>
+  <data name="SelectContentTab" xml:space="preserve"><value>Seleccionar contenido</value></data>
+  <data name="ArrangeStepsTab" xml:space="preserve"><value>Organizar pasos</value></data>
   <data name="StepsSection" xml:space="preserve"><value>Pasos</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Identidad</value></data>
   <data name="ClassificationSection" xml:space="preserve"><value>Clasificación</value></data>

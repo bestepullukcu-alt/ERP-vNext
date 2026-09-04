@@ -11,7 +11,9 @@ public sealed record GetContactByIdQuery(Guid Id) : IRequest<Response<ContactDet
 public sealed record GetContactOverviewQuery(Guid Id, bool CanReadConsent = false, bool CanReadPreference = false)
     : IRequest<Response<ContactOverviewDto>>;
 
-public sealed record ListContactsQuery(string? Search, int Page, int PageSize)
+public sealed record ListContactsQuery(
+    string? Search, int Page, int PageSize, string? SortBy = null, string? SortDir = null,
+    string? Status = null, string? ContactType = null)
     : IRequest<Response<PagedResult<ContactListItemDto>>>;
 
 /// <summary>Minimal typeahead used later by the Account-link tasks (FU03). Returns lightweight results only.</summary>

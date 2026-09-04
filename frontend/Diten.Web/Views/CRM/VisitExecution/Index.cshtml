@@ -1,0 +1,178 @@
+@model Diten.Web.Models.CRM.VisitExecutionIndexViewModel
+@using Diten.Web.Views.CRM.VisitExecution
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitExecutionIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0155 FU02 — the Visit Report EXECUTION calendar (D-CALENDAR-UI = A, bespoke tenant-shell). NOT a Golden
+    DataTable surface: it is a Day/Week execution calendar with inline mark-done + a report offcanvas. Every call is a
+    same-origin proxy to the Gateway under /CRM/VisitExecution/api/*.
+*@
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["PageTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div class="alert alert-info d-flex align-items-start gap-2" role="alert">
+    <i class="bx bx-info-circle mt-1"></i>
+    <div>@Localizer["ExecutionNotice"]</div>
+</div>
+
+<div id="ve-root"
+     data-can-record="@Model.CanRecord.ToString().ToLowerInvariant()"
+     data-can-amend="@Model.CanAmend.ToString().ToLowerInvariant()">
+
+    @* ── toolbar: window + resource + view mode ─────────────────────────────────────────────── *@
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-auto">
+                    <label class="form-label">@Localizer["View"]</label>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-primary active" id="ve-view-day">@Localizer["Day"]</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="ve-view-week">@Localizer["Week"]</button>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <label class="form-label" for="ve-anchor">@Localizer["Date"]</label>
+                    <input type="date" class="form-control form-control-sm" id="ve-anchor" />
+                </div>
+                <div class="col-auto">
+                    <label class="form-label" for="ve-resource">@Localizer["Resource"]</label>
+                    <input type="text" class="form-control form-control-sm" id="ve-resource"
+                           placeholder="@Localizer["ResourcePlaceholder"]" />
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-sm btn-primary" id="ve-refresh">
+                        <i class="bx bx-refresh"></i> @Localizer["Refresh"]
+                    </button>
+                </div>
+                <div class="col text-end">
+                    <span class="small text-muted" id="ve-window-label"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── the calendar grid (day columns, each holding the window's visits) ─────────────────────── *@
+    <div class="card">
+        <div class="card-body p-2">
+            <div id="ve-calendar" class="d-flex gap-2 overflow-auto"></div>
+            <div id="ve-empty" class="text-muted small p-3 d-none">@Localizer["NoVisits"]</div>
+        </div>
+    </div>
+</div>
+
+@* ── Visit Report offcanvas (report a completed visit + view/amend an existing report) ─────────── *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="ve-report-offcanvas" aria-labelledby="ve-report-title" style="width: 480px;">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="ve-report-title">@Localizer["ReportTitle"]</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <input type="hidden" id="ve-report-planned-visit-id" />
+        <input type="hidden" id="ve-report-id" />
+        <input type="hidden" id="ve-report-version" />
+        <input type="hidden" id="ve-report-state" />
+
+        @* planned vs actual content (FU04-planned is read-only) *@
+        <div class="mb-3">
+            <label class="form-label">@Localizer["PlannedContent"]</label>
+            <div class="form-control form-control-sm bg-light" id="ve-planned-content" readonly>—</div>
+        </div>
+
+        <div class="row g-2 mb-2">
+            <div class="col-8">
+                <label class="form-label" for="ve-actual-stage-code">@Localizer["ActualStage"]</label>
+                <input type="text" class="form-control form-control-sm" id="ve-actual-stage-code" />
+            </div>
+            <div class="col-4">
+                <label class="form-label" for="ve-actual-stage-index">@Localizer["StageIndex"]</label>
+                <input type="number" min="0" class="form-control form-control-sm" id="ve-actual-stage-index" />
+            </div>
+        </div>
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="ve-matched-plan" />
+            <label class="form-check-label" for="ve-matched-plan">@Localizer["MatchedPlan"]</label>
+        </div>
+
+        <div class="mb-2">
+            <label class="form-label" for="ve-outcome-code">@Localizer["OutcomeCode"]</label>
+            <input type="text" class="form-control form-control-sm" id="ve-outcome-code"
+                   list="ve-outcome-codes" placeholder="@Localizer["OutcomeCodePlaceholder"]" />
+            <datalist id="ve-outcome-codes"></datalist>
+            <div class="form-text">@Localizer["ReferenceDataHint"]</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="ve-feedback">@Localizer["DoctorFeedback"]</label>
+            <textarea class="form-control form-control-sm" id="ve-feedback" rows="3"></textarea>
+        </div>
+
+        @* samples / materials given *@
+        <div class="mb-2 d-flex justify-content-between align-items-center">
+            <label class="form-label mb-0">@Localizer["Samples"]</label>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="ve-add-sample">
+                <i class="bx bx-plus"></i> @Localizer["AddSample"]
+            </button>
+        </div>
+        <div id="ve-samples" class="mb-3"></div>
+
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="ve-follow-up" />
+            <label class="form-check-label" for="ve-follow-up">@Localizer["FollowUpRequired"]</label>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="ve-follow-up-notes">@Localizer["FollowUpNotes"]</label>
+            <textarea class="form-control form-control-sm" id="ve-follow-up-notes" rows="2"></textarea>
+        </div>
+
+        @* amendment reason (shown only when the report is already finalised) *@
+        <div class="mb-3 d-none" id="ve-amend-block">
+            <label class="form-label" for="ve-amend-reason">@Localizer["AmendReason"]</label>
+            <input type="text" class="form-control form-control-sm" id="ve-amend-reason" />
+            <div class="form-text">@Localizer["AmendHint"]</div>
+        </div>
+
+        <div id="ve-report-status" class="small text-muted mb-2"></div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-success" id="ve-submit-report" disabled="@(!Model.CanRecord)">
+                <i class="bx bx-check"></i> @Localizer["Submit"]
+            </button>
+            <button type="button" class="btn btn-outline-warning d-none" id="ve-amend-report" disabled="@(!Model.CanAmend)">
+                <i class="bx bx-edit"></i> @Localizer["Amend"]
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        window.VisitExecutionL10n = {
+            markCompleted: '@Localizer["MarkCompleted"]',
+            markMissed: '@Localizer["MarkMissed"]',
+            markRescheduled: '@Localizer["MarkRescheduled"]',
+            report: '@Localizer["Report"]',
+            none: '@Localizer["StateNone"]',
+            draft: '@Localizer["StateDraft"]',
+            submitted: '@Localizer["StateSubmitted"]',
+            amended: '@Localizer["StateAmended"]',
+            outcomeRecorded: '@Localizer["OutcomeRecorded"]',
+            reportSubmitted: '@Localizer["ReportSubmitted"]',
+            reportAmended: '@Localizer["ReportAmended"]',
+            actionFailed: '@Localizer["ActionFailed"]',
+            reasonPrompt: '@Localizer["ReasonPrompt"]',
+            reschedulePrompt: '@Localizer["ReschedulePrompt"]',
+            noVisits: '@Localizer["NoVisits"]',
+            qty: '@Localizer["Quantity"]',
+            itemType: '@Localizer["ItemType"]',
+            remove: '@Localizer["Remove"]'
+        };
+    </script>
+    <script src="~/assets/js/CRM/VisitExecution/visit-execution.js" asp-append-version="true"></script>
+}

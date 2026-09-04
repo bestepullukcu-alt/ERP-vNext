@@ -24,8 +24,17 @@ public sealed class ContactController : CustomBaseController
 
     [HttpGet]
     [HasPermission("crm.contact.read")]
-    public async Task<IActionResult> List([FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 25, CancellationToken cancellationToken = default)
-        => CreateActionResultInstance(await _mediator.Send(new ListContactsQuery(search, page, pageSize), cancellationToken));
+    public async Task<IActionResult> List(
+        [FromQuery] string? search,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 25,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] string? sortDir = null,
+        [FromQuery] string? status = null,
+        [FromQuery] string? contactType = null,
+        CancellationToken cancellationToken = default)
+        => CreateActionResultInstance(await _mediator.Send(
+            new ListContactsQuery(search, page, pageSize, sortBy, sortDir, status, contactType), cancellationToken));
 
     [HttpGet("search")]
     [HasPermission("crm.contact.read")]

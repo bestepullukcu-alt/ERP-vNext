@@ -94,17 +94,17 @@
                     <div class="col-12 col-md-6">
                         <div class="backbone-preview-field"><i class="bx bx-category"></i><div>
                             <div class="backbone-preview-label">@Localizer["SubjectId"]</div>
-                            <div class="backbone-preview-value mt-1 text-break">@Show(p.SubjectId)</div></div></div>
+                            <div class="backbone-preview-value mt-1 text-break">@(string.IsNullOrEmpty(p.SubjectName) ? Show(p.SubjectId) : p.SubjectName)</div></div></div>
                     </div>
                     <div class="col-12 col-md-6">
                         <div class="backbone-preview-field"><i class="bx bx-sitemap"></i><div>
                             <div class="backbone-preview-label">@Localizer["TopicId"]</div>
-                            <div class="backbone-preview-value mt-1 text-break">@Show(p.TopicId)</div></div></div>
+                            <div class="backbone-preview-value mt-1 text-break">@(string.IsNullOrEmpty(p.TopicName) ? Show(p.TopicId) : p.TopicName)</div></div></div>
                     </div>
                     <div class="col-12 col-md-6">
                         <div class="backbone-preview-field"><i class="bx bx-user-detail"></i><div>
                             <div class="backbone-preview-label">@Localizer["AudienceProfileId"]</div>
-                            <div class="backbone-preview-value mt-1 text-break">@Show(p.AudienceProfileId)</div></div></div>
+                            <div class="backbone-preview-value mt-1 text-break">@(string.IsNullOrEmpty(p.AudienceProfileName) ? Show(p.AudienceProfileId) : p.AudienceProfileName)</div></div></div>
                     </div>
                     <div class="col-12 col-md-6">
                         <div class="backbone-preview-field"><i class="bx bx-globe"></i><div>
@@ -114,51 +114,6 @@
                 </div>
             </section>
 
-            <section class="card backbone-preview-section p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["StepsSection"]</h6>
-                @if (p.Steps.Count == 0)
-                {
-                    <div class="text-muted">@Localizer["NoSteps"]</div>
-                }
-                else
-                {
-                    <div class="table-responsive">
-                        <table class="table table-sm mb-0 align-middle">
-                            <thead><tr>
-                                <th>@Localizer["StepOrder"]</th>
-                                <th>@Localizer["StepCode"]</th>
-                                <th>@Localizer["StepTitle"]</th>
-                                <th>@Localizer["StepType"]</th>
-                                <th>@Localizer["IsRequired"]</th>
-                                <th>@Localizer["CompletionRule"]</th>
-                                <th>@Localizer["ContentResolution"]</th>
-                                <th>@Localizer["BranchConditions"]</th>
-                                <th>@Localizer["Status"]</th>
-                            </tr></thead>
-                            <tbody>
-                                @foreach (var s in p.Steps.OrderBy(x => x.IsArchived).ThenBy(x => x.StepOrder))
-                                {
-                                    <tr class="@(s.IsArchived ? "text-muted" : "")">
-                                        <td>@s.StepOrder</td>
-                                        <td>@s.StepCode</td>
-                                        <td>
-                                            @s.StepTitle
-                                            @if (s.IsCrossSubjectStep) { <span class="badge bg-label-secondary ms-1">@Localizer["CrossSubject"]</span> }
-                                            @if (s.IsCrossLanguageStep) { <span class="badge bg-label-secondary ms-1">@Localizer["CrossLanguage"]</span> }
-                                        </td>
-                                        <td>@s.StepType</td>
-                                        <td>@(s.IsRequired ? Localizer["Yes"] : Localizer["No"])</td>
-                                        <td>@s.CompletionRule</td>
-                                        <td><span class="badge @ResolutionBadge(s.ContentResolutionStatus)">@s.ContentResolutionStatus</span></td>
-                                        <td>@(s.BranchConditions.Count > 0 ? s.BranchConditions.Count.ToString() : "—")</td>
-                                        <td>@(s.IsArchived ? Localizer["Archived"] : Localizer["Active"])</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                }
-            </section>
         </div>
 
         <div class="col-12 col-lg-4 d-flex flex-column gap-4">
@@ -204,6 +159,73 @@
                             </div></div></div>
                     </div>
                 </div>
+            </section>
+        </div>
+    </div>
+
+    @* Steps — full-width row below the 8-4 identity/classification/scheduling block. *@
+    <div class="row g-4 mt-4">
+        <div class="col-12">
+            <section class="card backbone-preview-section p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["StepsSection"]</h6>
+                    @if (p.Steps.Any(s => s.IsArchived))
+                    {
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" id="showArchivedSteps">
+                            <label class="form-check-label" for="showArchivedSteps">@Localizer["ShowArchived"]</label>
+                        </div>
+                    }
+                </div>
+                @if (p.Steps.Count == 0)
+                {
+                    <div class="text-muted">@Localizer["NoSteps"]</div>
+                }
+                else
+                {
+                    <div class="d-flex flex-column gap-3">
+                        @* Active steps first, then archived (hidden by default; revealed by the Show-archived switch). *@
+                        @foreach (var s in p.Steps.Where(x => !x.IsArchived).OrderBy(x => x.StepOrder)
+                                    .Concat(p.Steps.Where(x => x.IsArchived).OrderBy(x => x.StepOrder)))
+                        {
+                            <article class="inbox-row p-3 @(s.IsArchived ? "kp-step-archived d-none opacity-75" : "")" style="cursor:default;">
+                                <div class="inbox-row__main">
+                                    <div class="inbox-row__line inbox-row__line--primary d-flex align-items-center gap-2 flex-wrap">
+                                        <span class="badge inbox-row__type inbox-row__badge-outline inbox-row__badge--type-default flex-shrink-0">@s.StepType</span>
+                                        <span class="badge inbox-row__status @ResolutionBadge(s.ContentResolutionStatus) flex-shrink-0">@s.ContentResolutionStatus</span>
+                                        @if (!string.IsNullOrEmpty(s.VersionPinPolicy))
+                                        {
+                                            <span class="badge inbox-row__badge-outline inbox-row__badge--role-approver flex-shrink-0">@s.VersionPinPolicy</span>
+                                        }
+                                        @if (s.IsCrossSubjectStep) { <span class="badge bg-label-secondary flex-shrink-0">@Localizer["CrossSubject"]</span> }
+                                        @if (s.IsCrossLanguageStep) { <span class="badge bg-label-secondary flex-shrink-0">@Localizer["CrossLanguage"]</span> }
+                                        @if (s.IsArchived) { <span class="badge bg-label-warning flex-shrink-0">@Localizer["Archived"]</span> }
+                                        <h5 class="inbox-row__title mb-0 text-truncate">@s.StepTitle</h5>
+                                    </div>
+                                    <div class="inbox-row__line inbox-row__line--secondary text-muted">
+                                        <span class="inbox-row__required-arrow">→</span>
+                                        <span class="inbox-row__required-text">@s.StepCode</span>
+                                        <span class="inbox-row__meta-separator">•</span>
+                                        <span>@(string.IsNullOrEmpty(s.CompletionRule) ? s.StepType : s.CompletionRule)</span>
+                                    </div>
+                                    <div class="inbox-row__line inbox-row__line--tertiary text-muted">
+                                        <span class="inbox-row__meta-item"><i class="bx bx-hash inbox-row__calendar-icon"></i><span>#@s.StepOrder</span></span>
+                                        @if (s.IsRequired)
+                                        {
+                                            <span class="inbox-row__meta-separator">•</span>
+                                            <span class="badge inbox-row__priority">@Localizer["IsRequired"]</span>
+                                        }
+                                        @if (s.BranchConditions.Count > 0)
+                                        {
+                                            <span class="inbox-row__meta-separator">•</span>
+                                            <span class="badge bg-label-secondary">@Localizer["BranchConditions"]: @s.BranchConditions.Count</span>
+                                        }
+                                    </div>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                }
             </section>
         </div>
     </div>

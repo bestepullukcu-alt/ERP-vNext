@@ -1,6 +1,6 @@
 # CONTROL TOWER — Daily Operating Card v1.0
 
-> **Purpose:** günlük Control Tower turu için hızlı gate. Yeni authority yaratmaz. Ayrıntı için [CONTROL TOWER SOP](./control-tower-sop.md) (v2.3).
+> **Purpose:** günlük Control Tower turu için hızlı gate. Yeni authority yaratmaz. Ayrıntı için [CONTROL TOWER SOP](./control-tower-sop.md) (v2.4).
 
 ## 1. START / DoR — dispatch etmeden önce
 
@@ -11,6 +11,7 @@
 - [ ] **Scope:** allowed paths + protected paths açık.
 - [ ] **Git isolation:** repo / branch / expected HEAD / worktree / dirty baseline ölçüldü.
 - [ ] **Execution:** Profile A/B/C + Agent Lane ID/Type + risk class açık.
+- [ ] **Target agent:** entry point §6'dan seçildi; o ajanın §17.4 zorunlu giriş alanları dolu; paste-ready prompt (§36.1) hazır.
 - [ ] **Acceptance:** golden/contract/inspection flow + measurable AC + required evidence level açık.
 
 **Bir kritik madde FAIL → implementation dispatch yok.**
@@ -28,12 +29,13 @@
 ```text
 WP / Prompt ID + version
 Agent Lane ID / Type
+Target agent / entry point
 Repository / Branch / HEAD / Worktree
 Depends on / Parallel-safe with
 Allowed paths / Protected paths
 ```
 
-Aşağıdakilerde STOP: wrong branch/HEAD, overlapping dirty files, draft pack, missing contract, ownership conflict, unplanned migration.
+Aşağıdakilerde STOP: wrong branch/HEAD, overlapping dirty files, draft pack, missing contract, ownership conflict, unplanned migration, **agent/scope mismatch**.
 
 ## 4. EVIDENCE LEVEL
 

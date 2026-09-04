@@ -56,6 +56,8 @@
   <data name="TravelingTime" xml:space="preserve"><value>وقت التنقل</value></data>
   <data name="ReportDuration" xml:space="preserve"><value>وقت إعداد التقارير</value></data>
   <data name="QuizDuration" xml:space="preserve"><value>وقت الاختبار</value></data>
+  <data name="BetweenVisitTimeMinutes" xml:space="preserve"><value>الفاصل بين الزيارات</value></data>
+  <data name="BetweenVisitTimeMinutesHint" xml:space="preserve"><value>الوقت الفاصل بين زيارتين متتاليتين. ليس جزءًا من مدة الزيارة؛ يطبقه محرك الجدولة بين الزيارات.</value></data>
   <data name="MonthlyDeductionsHint" xml:space="preserve"><value>الأشهر مأخوذة من نطاق الفترة ولا يمكن إضافتها أو حذفها. لا تخصم عطل نهاية الأسبوع أو العطل الرسمية: تقويم العمل استبعدها بالفعل.</value></data>
   <data name="MonthsPendingPeriod" xml:space="preserve"><value>اختر فترة أولًا؛ نطاقها يحدد الأشهر التي تظهر.</value></data>
   <data name="Month" xml:space="preserve"><value>الشهر</value></data>

@@ -42,6 +42,13 @@ internal sealed class FakeTerritoryModelRepo : ITerritoryModelRepository
         => Task.FromResult((IReadOnlyList<TerritoryModel>)Items
             .Where(m => m.TenantId == tenantId && !m.IsDeleted && ids.Contains(m.Id)).ToList());
 
+    public Task<IReadOnlyList<TerritoryModel>> ListByCountryScopesAsync(Guid tenantId, IReadOnlyCollection<string> countryScopes, CancellationToken ct)
+        => Task.FromResult((IReadOnlyList<TerritoryModel>)Items
+            .Where(m => m.TenantId == tenantId && !m.IsDeleted
+                        && m.CountryScope is not null
+                        && countryScopes.Any(s => string.Equals(s?.Trim(), m.CountryScope, StringComparison.OrdinalIgnoreCase)))
+            .ToList());
+
     public Task InsertAsync(TerritoryModel model, CancellationToken ct) { Items.Add(model); return Task.CompletedTask; }
 
     /// <summary>Replaces the stored instance (the FU08 apply path hands back a CLONE, so a no-op fake would hide
@@ -458,6 +465,20 @@ internal sealed class FakeAccountTerritoryAssignmentRepo : IAccountTerritoryAssi
         Guid tenantId, IReadOnlyCollection<Guid> accountIds, CancellationToken ct)
         => Task.FromResult((IReadOnlyList<AccountTerritoryAssignment>)Items
             .Where(a => a.TenantId == tenantId && !a.IsDeleted && accountIds.Contains(a.AccountId)
+                        && string.Equals(a.AssignmentStatus, "active", StringComparison.OrdinalIgnoreCase))
+            .ToList());
+    /// <summary>Mirrors the Mongo repository: node-id + status filter in the query, effective-window in memory by the caller.</summary>
+    public Task<IReadOnlyList<AccountTerritoryAssignment>> ListActiveByNodesAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> nodeIds, CancellationToken ct)
+        => Task.FromResult((IReadOnlyList<AccountTerritoryAssignment>)Items
+            .Where(a => a.TenantId == tenantId && !a.IsDeleted && nodeIds.Contains(a.TerritoryNodeId)
+                        && string.Equals(a.AssignmentStatus, "active", StringComparison.OrdinalIgnoreCase))
+            .ToList());
+    /// <summary>Mirrors the Mongo repository: model-id + status filter in the query, effective-window in memory by the caller.</summary>
+    public Task<IReadOnlyList<AccountTerritoryAssignment>> ListActiveByModelIdsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> modelIds, CancellationToken ct)
+        => Task.FromResult((IReadOnlyList<AccountTerritoryAssignment>)Items
+            .Where(a => a.TenantId == tenantId && !a.IsDeleted && modelIds.Contains(a.TerritoryModelId)
                         && string.Equals(a.AssignmentStatus, "active", StringComparison.OrdinalIgnoreCase))
             .ToList());
     public Task InsertManyAsync(IReadOnlyCollection<AccountTerritoryAssignment> assignments, CancellationToken ct)

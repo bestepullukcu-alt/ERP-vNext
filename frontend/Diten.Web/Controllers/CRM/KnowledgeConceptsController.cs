@@ -137,6 +137,22 @@ public sealed class KnowledgeConceptsController : Controller
         if (RequirePage(ReadPermission, ReadFallback) is { } denied) return denied;
         var node = await LoadNodeAsync(id, ct);
         if (node is null) return NotFound();
+
+        // Resolve the classification ids to display labels (fail-soft; the view falls back to the id when null).
+        // Reuses LoadOptionsAsync — the same subject / concept-type reference lists the Create/Edit prep loads.
+        if (node.SubjectId != Guid.Empty)
+        {
+            var subjects = await LoadOptionsAsync("/api/crm/knowledge/subjects?includeArchived=false", ct, idKey: "subjectId");
+            node.SubjectName = subjects.FirstOrDefault(o =>
+                string.Equals(o.Value, node.SubjectId.ToString(), StringComparison.OrdinalIgnoreCase))?.Label;
+        }
+        if (node.ConceptTypeId != Guid.Empty)
+        {
+            var types = await LoadOptionsAsync("/api/crm/knowledge/concept-types?includeArchived=false", ct, idKey: "conceptTypeId");
+            node.ConceptTypeName = types.FirstOrDefault(o =>
+                string.Equals(o.Value, node.ConceptTypeId.ToString(), StringComparison.OrdinalIgnoreCase))?.Label;
+        }
+
         var model = new ConceptNodePageViewModel { Node = node, CanManage = HasAnyPermission(ManagePermission, ManageFallback) };
         return View($"{ViewRoot}/Details.cshtml", model);
     }

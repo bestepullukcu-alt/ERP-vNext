@@ -123,6 +123,17 @@
                             <div class="form-text">@Localizer["PerDayHint"]</div>
                             <span asp-validation-for="QuizDuration" class="text-danger small mt-1"></span>
                         </div>
+                        @* MOD-0155 FU06B — the between-visit buffer. Editable config; it is NOT part of a visit's
+                           duration (the packing engine applies it BETWEEN visits), so it lives beside the minute
+                           budget rather than in the live budget warning. *@
+                        <div class="col-12 col-md-6">
+                            <label asp-for="BetweenVisitTimeMinutes" class="form-label fw-medium">
+                                @Localizer["BetweenVisitTimeMinutes"] <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="BetweenVisitTimeMinutes" type="number" class="form-control" min="0" max="240" required />
+                            <div class="form-text">@Localizer["BetweenVisitTimeMinutesHint"]</div>
+                            <span asp-validation-for="BetweenVisitTimeMinutes" class="text-danger small mt-1"></span>
+                        </div>
                         <div class="col-12">
                             @* Live, advisory only. The runtime enforces both rules; this just stops an author saving a
                                shape it will refuse. *@

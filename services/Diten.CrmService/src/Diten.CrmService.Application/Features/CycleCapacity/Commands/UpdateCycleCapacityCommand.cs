@@ -20,4 +20,7 @@ public sealed record UpdateCycleCapacityCommand(
     int QuizDuration,
     string? Description,
     IReadOnlyList<CycleCapacityMonthInput> Months,
-    int? ExpectedVersion) : IRequest<Response<bool>>;
+    int? ExpectedVersion,
+    // MOD-0155 FU06B — the between-visit buffer. Nullable and trailing: an omitting caller takes the configured
+    // default, so existing positional callers compile unchanged.
+    int? BetweenVisitTimeMinutes = null) : IRequest<Response<bool>>;

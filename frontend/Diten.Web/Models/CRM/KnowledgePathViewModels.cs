@@ -68,6 +68,10 @@ public sealed class KnowledgePathDetailViewModel
     public Guid SubjectId { get; set; }
     public Guid? TopicId { get; set; }
     public Guid? AudienceProfileId { get; set; }
+    // Resolved display labels for the classification ids (fail-soft; null when unresolved → view falls back to the id).
+    public string? SubjectName { get; set; }
+    public string? TopicName { get; set; }
+    public string? AudienceProfileName { get; set; }
     public string Objective { get; set; } = string.Empty;
     public string? LanguageCode { get; set; }
     public string PathVersion { get; set; } = string.Empty;

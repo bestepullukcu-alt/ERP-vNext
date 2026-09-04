@@ -257,13 +257,9 @@
             <div class="card-body p-4">
                 <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ReferencesSection"]</h6>
                 <div class="row g-3">
-                    <div class="col-12">
-                        <label asp-for="BrandId" class="form-label fw-medium">@Localizer["BrandId"]</label>
-                        <select asp-for="BrandId" class="select2 form-select">
-                            <option value="">@Localizer["SelectOption"]</option>
-                            @foreach (var o in Model.BrandOptions) { <option value="@o.Value">@o.Label@(o.IsInactive ? $" ({archivedTag})" : "")</option> }
-                        </select>
-                    </div>
+                    @* Brand is intentionally not surfaced in this UI. The stored KnowledgeContent.BrandId is preserved via a
+                       hidden field so editing a record never wipes a previously set brand. *@
+                    <input type="hidden" asp-for="BrandId" />
                     <div class="col-12">
                         <label asp-for="ProductId" class="form-label fw-medium">@Localizer["ProductId"]</label>
                         <select asp-for="ProductId" class="select2 form-select">

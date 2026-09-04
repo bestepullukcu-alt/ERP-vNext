@@ -19,6 +19,12 @@ public interface ITerritoryModelRepository
     /// range filter.</summary>
     Task<IReadOnlyList<TerritoryModel>> ListByIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken);
 
+    /// <summary>Non-soft-deleted models of the tenant whose <c>CountryScope</c> is one of <paramref name="countryScopes"/>
+    /// (case-insensitive) — resolves the owning models for the Accounts-grid Country Scope filter. The operational
+    /// validity (status/effective-window) is still evaluated in memory by <c>TerritoryCoverageLifecyclePolicy</c>, so
+    /// this returns every scope-matching model regardless of status.</summary>
+    Task<IReadOnlyList<TerritoryModel>> ListByCountryScopesAsync(Guid tenantId, IReadOnlyCollection<string> countryScopes, CancellationToken cancellationToken);
+
     Task InsertAsync(TerritoryModel model, CancellationToken cancellationToken);
 
     Task UpdateAsync(TerritoryModel model, CancellationToken cancellationToken);

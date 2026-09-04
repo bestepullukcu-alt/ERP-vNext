@@ -30,6 +30,7 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
     private const string SegmentsRead = "crm.segment.read";
     private const string StrategyTemplatesRead = "crm.strategy-template.read";
     private const string CampaignsRead = "crm.campaign.read";
+    private const string PlannedVisitsRead = "crm.planned-visit.read";
     private const string CyclePeriodsRead = "crm.cycle-period.read";
     private const string CycleCapacityRead = "crm.cycle-capacity.read";
     private const string ConsentRead = "crm.consent.read";
@@ -87,6 +88,13 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                     new ModuleManifestAction("MANAGE", "New Campaign", "crm.campaign.manage", "Toolbar", 10, false, true, false),
                     new ModuleManifestAction("MANAGE_TARGETS", "Manage Targets", "crm.campaign.target.manage", "RowAction", 20, false, false, true),
                     new ModuleManifestAction("SNAPSHOT", "Take Snapshot", "crm.campaign.snapshot.create", "RowAction", 30, false, false, true)
+                ]),
+                // MOD-0155-FU01 Visit Planning / Planned Visit — the field team's planning atom. confirm is a SEPARATE
+                // key from manage (author-vs-confirmer SoD); there is no delete/bulk-delete surface (cancel/archive).
+                new ModuleManifestPage("PLANNED_VISITS", "Planned Visits", "/CRM/PlannedVisits", PlannedVisitsRead, null, true, "List", 65,
+                [
+                    new ModuleManifestAction("MANAGE", "New Planned Visit", "crm.planned-visit.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("CONFIRM", "Confirm", "crm.planned-visit.confirm", "RowAction", 20, false, false, true)
                 ]),
                 new ModuleManifestPage("CYCLE_PERIODS", "Cycle Periods", "/CRM/CyclePeriods", CyclePeriodsRead, null, true, "List", 70,
                 [

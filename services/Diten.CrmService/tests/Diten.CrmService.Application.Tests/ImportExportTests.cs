@@ -237,7 +237,7 @@ public sealed class ImportExportTests
         public Task<Account?> GetByIdAsync(Guid t, Guid id, CancellationToken ct) => Task.FromResult(Items.FirstOrDefault(a => a.TenantId == t && a.Id == id && !a.IsDeleted));
         public Task<Account?> GetByCodeAsync(Guid t, string code, CancellationToken ct) => Task.FromResult(Items.FirstOrDefault(a => a.TenantId == t && a.AccountCode == code && !a.IsDeleted));
         public Task<bool> ExistsByCodeAsync(Guid t, string c, Guid? ex, CancellationToken ct) => Task.FromResult(false);
-        public Task<(IReadOnlyList<Account> Items, long Total)> ListAsync(Guid t, string? s, int p, int ps, CancellationToken ct) => Task.FromResult(((IReadOnlyList<Account>)new List<Account>(), 0L));
+        public Task<(IReadOnlyList<Account> Items, long Total, long UnfilteredTotal)> ListAsync(Guid t, string? s, int p, int ps, string? sortBy, string? sortDir, IReadOnlyCollection<string>? statuses, IReadOnlyCollection<string>? accountTypes, IReadOnlyCollection<Guid>? accountIdScope, CancellationToken ct) => Task.FromResult(((IReadOnlyList<Account>)new List<Account>(), 0L, 0L));
         public Task<IReadOnlyList<Account>> GetChildrenAsync(Guid t, Guid p, CancellationToken ct) => Task.FromResult((IReadOnlyList<Account>)new List<Account>());
         public Task<bool> WouldCreateCycleAsync(Guid t, Guid a, Guid c, CancellationToken ct) => Task.FromResult(false);
         public Task InsertAsync(Account a, CancellationToken ct) { Items.Add(a); return Task.CompletedTask; }
@@ -248,7 +248,10 @@ public sealed class ImportExportTests
     {
         public List<Contact> Items { get; } = new();
         public Task<Contact?> GetByIdAsync(Guid t, Guid id, CancellationToken ct) => Task.FromResult(Items.FirstOrDefault(c => c.TenantId == t && c.Id == id && !c.IsDeleted));
-        public Task<(IReadOnlyList<Contact> Items, long Total)> ListAsync(Guid t, string? s, int p, int ps, CancellationToken ct) => Task.FromResult(((IReadOnlyList<Contact>)new List<Contact>(), 0L));
+    public Task<IReadOnlyList<Contact>> ListByIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> ids, CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<Contact>>(Array.Empty<Contact>());
+
+        public Task<(IReadOnlyList<Contact> Items, long Total, long UnfilteredTotal)> ListAsync(Guid t, string? s, int p, int ps, string? sortBy, string? sortDir, IReadOnlyCollection<string>? statuses, IReadOnlyCollection<string>? contactTypes, CancellationToken ct) => Task.FromResult(((IReadOnlyList<Contact>)new List<Contact>(), 0L, 0L));
         public Task<IReadOnlyList<Contact>> ListAllAsync(Guid t, CancellationToken ct) => Task.FromResult((IReadOnlyList<Contact>)Items.Where(c => c.TenantId == t && !c.IsDeleted).ToList());
         public Task InsertAsync(Contact c, CancellationToken ct) { Items.Add(c); return Task.CompletedTask; }
         public Task UpdateAsync(Contact c, CancellationToken ct) => Task.CompletedTask;

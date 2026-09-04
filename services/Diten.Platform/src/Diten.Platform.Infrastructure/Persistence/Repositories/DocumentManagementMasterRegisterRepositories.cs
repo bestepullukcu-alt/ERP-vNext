@@ -26,6 +26,36 @@ public sealed class DocumentMasterRegisterRepository : TenantRepository<Document
     public Task<DocumentMasterRegisterEntry?> GetByControlledDocumentIdAsync(Guid controlledDocumentId, CancellationToken ct = default) =>
         Collection.Find(And(Builders<DocumentMasterRegisterEntry>.Filter.Eq(x => x.ControlledDocumentId, controlledDocumentId))).FirstOrDefaultAsync(ct)!;
 
+    // DCP-005 Phase 2 — indexed $in pushdown for the effectiveness resolver's batch, replacing the interface default's
+    // full tenant scan. Tenant scope stays enforced by ExecutionFilter (via And). Behaviour matches the default: only
+    // rows whose PermanentUid/DocumentCode is one of the (trimmed, de-duplicated) requested identifiers are returned.
+    public async Task<IReadOnlyList<DocumentMasterRegisterEntry>> GetByPermanentUidsAsync(IReadOnlyCollection<string> permanentUids, CancellationToken ct = default)
+    {
+        var wanted = Normalize(permanentUids);
+        if (wanted.Count == 0)
+        {
+            return [];
+        }
+
+        return await Collection.Find(And(Builders<DocumentMasterRegisterEntry>.Filter.In(x => x.PermanentUid, wanted))).ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<DocumentMasterRegisterEntry>> GetByDocumentCodesAsync(IReadOnlyCollection<string> documentCodes, CancellationToken ct = default)
+    {
+        var wanted = Normalize(documentCodes);
+        if (wanted.Count == 0)
+        {
+            return [];
+        }
+
+        return await Collection.Find(And(Builders<DocumentMasterRegisterEntry>.Filter.In(x => x.DocumentCode, wanted))).ToListAsync(ct);
+    }
+
+    private static List<string> Normalize(IReadOnlyCollection<string>? keys) =>
+        keys is null
+            ? []
+            : keys.Where(k => !string.IsNullOrWhiteSpace(k)).Select(k => k.Trim()).Distinct(StringComparer.Ordinal).ToList();
+
     public async Task<IReadOnlyList<DocumentMasterRegisterEntry>> ListAsync(MasterRegisterListFilter filter, CancellationToken ct = default)
     {
         var f = Builders<DocumentMasterRegisterEntry>.Filter;

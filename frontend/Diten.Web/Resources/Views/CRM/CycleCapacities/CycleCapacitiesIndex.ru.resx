@@ -56,6 +56,8 @@
   <data name="TravelingTime" xml:space="preserve"><value>Время в пути</value></data>
   <data name="ReportDuration" xml:space="preserve"><value>Время отчётности</value></data>
   <data name="QuizDuration" xml:space="preserve"><value>Время тестирования</value></data>
+  <data name="BetweenVisitTimeMinutes" xml:space="preserve"><value>Буфер между визитами</value></data>
+  <data name="BetweenVisitTimeMinutesHint" xml:space="preserve"><value>Промежуток между двумя последовательными визитами. Не входит в длительность визита; механизм планирования применяет его между визитами.</value></data>
   <data name="MonthlyDeductionsHint" xml:space="preserve"><value>Месяцы берутся из окна периода и не добавляются и не удаляются. Не вычитайте выходные и праздники: рабочий календарь уже их исключил.</value></data>
   <data name="MonthsPendingPeriod" xml:space="preserve"><value>Сначала выберите период; его окно определяет, какие месяцы появятся.</value></data>
   <data name="Month" xml:space="preserve"><value>Месяц</value></data>

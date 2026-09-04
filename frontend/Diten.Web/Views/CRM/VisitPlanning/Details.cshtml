@@ -1,0 +1,359 @@
+@model Diten.Web.Models.CRM.VisitPlanningSessionPageViewModel
+@using Diten.Web.Views.CRM.VisitPlanning
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitPlanningIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = SharedLocalizer["Details"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@* Road-map Details. The plan summary is a tenant-style horizontal header card; Targets + Route are pill tabs. Section
+   map stays [PlanSection, RouteSection] (the header card carries a visually-hidden PlanSection landmark heading; the Route
+   pane carries the RouteSection heading; the Targets pane is a plain card) so parity with _Form.cshtml holds.
+   Bodies are filled client-side by details.js from /api/sessions/{id} + /api/preview. *@
+<div class="visit-planning-details"
+     id="visit-planning-details"
+     data-session-id="@Model.SessionId"
+     data-can-generate="@Model.CanGenerate.ToString().ToLowerInvariant()"
+     data-can-apply="@Model.CanApply.ToString().ToLowerInvariant()">
+
+    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div>
+            <h5 class="mb-0">@SharedLocalizer["Details"] · <span id="vp-plan-title-crumb">—</span></h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/CRM/VisitPlanning">@Localizer["SessionsTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@SharedLocalizer["Details"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <a href="/CRM/VisitPlanning" class="btn btn-label-secondary">@SharedLocalizer["Back"]</a>
+            @if (Model.CanGenerate)
+            {
+                <a href="/CRM/VisitPlanning/Edit/@Model.SessionId" class="btn btn-primary">@SharedLocalizer["Edit"]</a>
+            }
+        </div>
+    </div>
+
+    <div id="vp-detail-status" class="small text-muted mb-3"></div>
+
+    @* ── Plan summary — WCN-style SUMMARY card (icon/label/value grid). Absorbs the old Route card's range + working
+       hours. PlanSection landmark kept for section-map parity. Hidden #vp-plan-title/#vp-plan-code kept so details.js
+       (which sets them) stays no-op-safe; the visible title lives in the breadcrumb. ── *@
+    @{ var vpHasActions = Model.CanGenerate || Model.CanApply; }
+    <div class="row g-4 mb-4">
+    <div class="col-12 @(vpHasActions ? "col-lg-8" : "")">
+    <div class="card wcn-detail-card p-4 h-100">
+    <section class="wcn-detail-section wcn-sum">
+        <h6 class="visually-hidden">@Localizer["PlanSection"]</h6>
+        <span class="visually-hidden" id="vp-plan-title">—</span><span class="visually-hidden" id="vp-plan-code">—</span>
+        <div class="wcn-sum-main">
+            <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-info-circle dt-card-icon" aria-hidden="true"></i>@Localizer["PlanSummaryLabel"]</h6>
+            <div class="row g-4">
+                <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-calendar" aria-hidden="true"></i><div><div class="backbone-preview-label">@Localizer["CyclePeriod"]</div><div class="backbone-preview-value mt-1" id="vp-d-period">—</div></div></div></div>
+                <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-user" aria-hidden="true"></i><div><div class="backbone-preview-label">@Localizer["Rep"]</div><div class="backbone-preview-value mt-1" id="vp-d-rep">—</div></div></div></div>
+                <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-calendar-week" aria-hidden="true"></i><div><div class="backbone-preview-label">@Localizer["WeekLabel"]</div><div class="backbone-preview-value mt-1" id="vp-d-week">—</div></div></div></div>
+                <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-flag" aria-hidden="true"></i><div><div class="backbone-preview-label">@SharedLocalizer["Status"]</div><div class="backbone-preview-value mt-1" id="vp-d-status-strip">—</div></div></div></div>
+                <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-map-alt" aria-hidden="true"></i><div><div class="backbone-preview-label">@Localizer["DateRangeLabel"]</div><div class="backbone-preview-value mt-1" id="vp-route-range">—</div></div></div></div>
+                <div class="col-12 col-md-6"><div class="backbone-preview-field"><i class="bx bx-time-five" aria-hidden="true"></i><div><div class="backbone-preview-label">@Localizer["WorkingHours"]</div><div class="backbone-preview-value mt-1">09:00–18:00</div></div></div></div>
+            </div>
+        </div>
+    </section>
+    </div>
+    </div>
+
+    @* ── Plan actions — WCN-style AVAILABLE ACTIONS panel (primary Save + secondary Generate / Re-plan). ── *@
+    @if (vpHasActions)
+    {
+        <div class="col-12 col-lg-4">
+        <div class="card wcn-detail-card p-4 h-100">
+        <div class="wcn-detail-section wcn-acts">
+            <div class="wcn-acts-main">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-bolt-circle dt-card-icon" aria-hidden="true"></i>@Localizer["ActionsAvailable"]</h6>
+                <ul class="wcn-actrail">
+                    @if (Model.CanApply)
+                    {
+                        <li class="wcn-act wcn-act-primary">
+                            <button type="button" class="wcn-act-btn wcn-act-fill wcn-act-fill-success" id="vp-apply"><i class="bx bx-save" aria-hidden="true"></i><span>@Localizer["SaveWeekPlan"]</span></button>
+                            <p class="wcn-act-outcome">@Localizer["SaveWeekPlanHint"]</p>
+                        </li>
+                    }
+                    <li class="wcn-acts-row">
+                        <ul class="wcn-actrail-secondary">
+                            @if (Model.CanGenerate)
+                            {
+                                <li class="wcn-act"><button type="button" class="wcn-act-btn wcn-act-bare" id="vp-preview"><i class="bx bx-play" aria-hidden="true"></i><span>@Localizer["RouteAction"]</span></button></li>
+                            }
+                            @if (Model.CanApply)
+                            {
+                                <li class="wcn-act"><button type="button" class="wcn-act-btn wcn-act-bare" id="vp-replan"><i class="bx bx-refresh" aria-hidden="true"></i><span>@Localizer["Replan"]</span></button></li>
+                            }
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        </div>
+        </div>
+    }
+    </div>
+
+    @* ── Supply-vs-demand stat tiles — above the tabs, matching the Tenant-Details stat-card markup verbatim. ── *@
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card h-100">
+                <div class="card-body d-flex align-items-center gap-3 p-3">
+                    <div class="avatar"><span class="avatar-initial rounded bg-label-primary"><i class="bx bx-box"></i></span></div>
+                    <div><small class="text-muted d-block">@Localizer["SupplyLabel"]</small><h5 class="mb-0" id="vp-sd-supply">—</h5></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card h-100">
+                <div class="card-body d-flex align-items-center gap-3 p-3">
+                    <div class="avatar"><span class="avatar-initial rounded bg-label-info"><i class="bx bx-target-lock"></i></span></div>
+                    <div><small class="text-muted d-block">@Localizer["DemandLabel"]</small><h5 class="mb-0" id="vp-sd-demand">—</h5></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card h-100">
+                <div class="card-body d-flex align-items-center gap-3 p-3">
+                    <div class="avatar"><span class="avatar-initial rounded bg-label-success"><i class="bx bx-calendar-check"></i></span></div>
+                    <div><small class="text-muted d-block">@Localizer["ScheduledLabel"]</small><h5 class="mb-0" id="vp-sd-scheduled">—</h5></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card h-100">
+                <div class="card-body d-flex align-items-center gap-3 p-3">
+                    <div class="avatar"><span class="avatar-initial rounded bg-label-warning"><i class="bx bx-calendar-x"></i></span></div>
+                    <div><small class="text-muted d-block">@Localizer["UnscheduledLabel"]</small><h5 class="mb-0" id="vp-sd-unscheduled">—</h5></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── Targets / Route pill tabs (structure mirrors Platform/Tenants/Details.cshtml). ── *@
+    <div class="card mb-4">
+        <div class="card-header p-3">
+            <div class="nav-align-top">
+                <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap" role="tablist">
+                    <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                        <button type="button" class="nav-link active small border shadow-none wc-tab-compact" id="vp-tab-targets-btn" data-bs-toggle="tab" data-bs-target="#vp-tab-targets" role="tab" aria-controls="vp-tab-targets" aria-selected="true">
+                            <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-user-pin me-1 wc-tab-icon"></i>@Localizer["TargetsSection"]</span>
+                            <i class="bx bx-user-pin d-sm-none wc-tab-icon"></i>
+                        </button>
+                    </li>
+                    <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                        <button type="button" class="nav-link small border shadow-none wc-tab-compact" id="vp-tab-route-btn" data-bs-toggle="tab" data-bs-target="#vp-tab-route" role="tab" aria-controls="vp-tab-route" aria-selected="false" tabindex="-1">
+                            <span class="d-none d-sm-inline-flex align-items-center"><i class="bx bx-map-alt me-1 wc-tab-icon"></i>@Localizer["RouteSection"]</span>
+                            <i class="bx bx-map-alt d-sm-none wc-tab-icon"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content p-0">
+
+        @* Tab 1 — Targets: master (clinic/hospital DataTable) → detail (its doctors DataTable). Plain card (not a section). *@
+        <div class="tab-pane fade show active" id="vp-tab-targets" role="tabpanel" aria-labelledby="vp-tab-targets-btn">
+            <div class="card p-4">
+                @* Header: title + live "N doctors, M pharmacies selected" subtitle + save. *@
+                <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
+                    <div>
+                        <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["TargetsSection"]</h6>
+                        <span class="text-muted small" id="vp-targets-subtitle">—</span>
+                    </div>
+                    @if (Model.CanGenerate)
+                    {
+                        <button type="button" class="btn btn-sm btn-success" id="vp-save-targets"><i class="bx bx-save me-1"></i>@Localizer["SaveTargets"]</button>
+                    }
+                </div>
+
+                <div class="row g-4">
+                    @* ── LEFT — target clinics / hospitals ── *@
+                    <div class="col-12 col-lg-4" id="vp-accounts-col">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <label class="form-label fw-medium mb-0">@Localizer["AccountsPanel"]</label>
+                            <span class="badge bg-label-secondary" id="vp-accounts-count">—</span>
+                        </div>
+                        @if (Model.CanGenerate)
+                        {
+                            <div class="mb-2">
+                                <select id="vp-add-account" class="form-select form-select-sm select2" data-placeholder="@Localizer["AddAccount"]"><option value=""></option></select>
+                            </div>
+                        }
+                        <div class="card-datatable table-responsive">
+                            <table id="dt-vp-accounts" class="table border-top">
+                                <thead><tr>
+                                    <th>@Localizer["ColAccount"]</th>
+                                    <th>@Localizer["ColType"]</th>
+                                    <th>@Localizer["ColCity"]</th>
+                                    <th class="text-end">@Localizer["Actions"]</th>
+                                </tr></thead>
+                            </table>
+                        </div>
+                        <div class="form-text">@Localizer["AccountsHint"]</div>
+                    </div>
+
+                    @* ── MIDDLE — selected account: doctors / linked-pharmacies sub-tabs ── *@
+                    <div class="col-12 col-lg-5 d-none" id="vp-contacts-panel">
+                        <div class="text-muted text-uppercase small mb-1">@Localizer["SelectedAccount"]</div>
+                        <h5 class="mb-1" id="vp-contacts-for">—</h5>
+                        <div class="text-muted small mb-3" id="vp-contacts-meta">—</div>
+
+                        <div class="nav-align-top mb-3">
+                            <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap" role="tablist">
+                                <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                                    <button type="button" class="nav-link active small border shadow-none wc-tab-compact" id="vp-subtab-doctors-btn" data-bs-toggle="tab" data-bs-target="#vp-subtab-doctors" role="tab" aria-selected="true"><i class="bx bx-user me-1 wc-tab-icon"></i>@Localizer["ContactsPanel"] <span class="badge bg-label-secondary ms-1" id="vp-doctors-count">0</span></button>
+                                </li>
+                                <li class="nav-item mb-1 mb-sm-0" role="presentation">
+                                    <button type="button" class="nav-link small border shadow-none wc-tab-compact" id="vp-subtab-pharm-btn" data-bs-toggle="tab" data-bs-target="#vp-subtab-pharm" role="tab" aria-selected="false" tabindex="-1"><i class="bx bx-plus-medical me-1 wc-tab-icon"></i>@Localizer["LinkedPharmacies"] <span class="badge bg-label-secondary ms-1" id="vp-pharm-count">0</span></button>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="tab-content p-0">
+                            <div class="tab-pane fade show active" id="vp-subtab-doctors" role="tabpanel">
+                                <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                                    <input type="text" class="form-control form-control-sm flex-grow-1" id="vp-doctor-search" placeholder="@Localizer["SearchDoctor"]" style="max-width:260px;">
+                                    <button type="button" class="btn btn-sm btn-label-secondary" id="vp-select-all-doctors"><i class="bx bx-check-double me-1"></i>@Localizer["SelectAllDoctors"]</button>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 flex-wrap mb-3" id="vp-specialty-pills"></div>
+                                <div class="card-datatable table-responsive">
+                                    <table id="dt-vp-contacts" class="table border-top">
+                                        <thead><tr>
+                                            <th>@Localizer["ColSelected"]</th>
+                                            <th>@Localizer["ColContact"]</th>
+                                            <th>@Localizer["ColSpecialty"]</th>
+                                            <th>@Localizer["ColLinked"]</th>
+                                        </tr></thead>
+                                    </table>
+                                </div>
+                                <div class="form-text" id="vp-contacts-hint">@Localizer["PickAccountForContacts"]</div>
+                            </div>
+                            <div class="tab-pane fade" id="vp-subtab-pharm" role="tabpanel">
+                                <div id="vp-pharmacies" class="d-flex flex-column gap-2"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @* ── RIGHT — selection summary (dark stat card) + selected chips ── *@
+                    <div class="col-12 col-lg-3">
+                        <div class="card bg-dark text-white mb-3">
+                            <div class="card-body">
+                                <div class="text-uppercase small opacity-75 mb-3">@Localizer["SelectionSummary"]</div>
+                                <div class="row g-2 text-center">
+                                    <div class="col-4"><h4 class="mb-0" id="vp-sum-doctors">0</h4><small class="opacity-75">@Localizer["StatDoctors"]</small></div>
+                                    <div class="col-4"><h4 class="mb-0" id="vp-sum-pharm">0</h4><small class="opacity-75">@Localizer["StatPharmacies"]</small></div>
+                                    <div class="col-4"><h4 class="mb-0" id="vp-sum-accounts">0</h4><small class="opacity-75">@Localizer["StatAccounts"]</small></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="fw-semibold small">@Localizer["SelectedLabel"]</span>
+                                    <button type="button" class="btn btn-sm btn-text-secondary p-0" id="vp-clear-selection">@Localizer["ClearSelection"]</button>
+                                </div>
+                                <div id="vp-selection-chips" class="d-flex flex-column gap-2"><div class="text-muted small">—</div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-text mt-2" id="vp-targets-status"></div>
+            </div>
+        </div>
+
+        @* Tab 2 — Route: the road-map view (RouteSection heading kept for section-map parity). *@
+        <div class="tab-pane fade" id="vp-tab-route" role="tabpanel" aria-labelledby="vp-tab-route-btn">
+            @* Card-less: the route content stands on its own; the RouteSection h6 stays (visually-hidden) as the section-map landmark. *@
+            <section>
+                <h6 class="visually-hidden">@Localizer["RouteSection"]</h6>
+
+                @* Day chips (left) + route controls & view toggles (right) share one card header. Reset-optimal + the
+                   (hidden) week select sit in the control row; the old standalone strip + empty territory gap were
+                   removed so this card follows the tabs card at the same rhythm as the tenant detail. *@
+                <div class="card mb-4">
+                    <div class="card-header p-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <div class="nav-align-top">
+                            <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap" id="vp-day-tabs" role="tablist"></ul>
+                        </div>
+                        @* Route controls + a filter button (WorkCenterNext style) that opens/closes the view-toggle panel. *@
+                        <div class="d-flex align-items-center gap-2 flex-wrap" id="vp-route-toggles">
+                            <button type="button" id="vp-reset-optimal" class="btn btn-sm btn-label-secondary d-none"><i class="bx bx-reset me-1"></i>@Localizer["ResetOptimal"]</button>
+                            <select id="vp-week" class="form-select form-select-sm w-auto d-none" aria-label="@Localizer["WeekLabel"]"></select>
+                            <button type="button" class="btn btn-icon btn-label-secondary" id="vp-view-filter-btn" data-bs-toggle="collapse" data-bs-target="#vp-view-filters" aria-controls="vp-view-filters" aria-expanded="false" title="@Localizer["ViewOptions"]" aria-label="@Localizer["ViewOptions"]"><i class="icon-base bx bx-filter-alt icon-sm"></i></button>
+                        </div>
+                    </div>
+                    @* Collapsible view-toggle panel — opened by the filter button. Map / Visit # / Drive times switches. *@
+                    <div class="collapse" id="vp-view-filters">
+                        <div class="card-body pt-0 pb-3 border-top">
+                            <div class="d-flex align-items-center gap-4 flex-wrap pt-3">
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="vp-toggle-map" checked>
+                                    <label class="form-check-label small" for="vp-toggle-map">@Localizer["ToggleMap"]</label>
+                                </div>
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="vp-toggle-visitnums" checked>
+                                    <label class="form-check-label small" for="vp-toggle-visitnums">@Localizer["ToggleVisitNumbers"]</label>
+                                </div>
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="vp-toggle-drivetimes" checked>
+                                    <label class="form-check-label small" for="vp-toggle-drivetimes">@Localizer["ToggleDriveTimes"]</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* Out-of-territory warnings — filled by renderDay when a stop is outside coverage (empty otherwise). *@
+                <div id="vp-territory-warnings"></div>
+
+                @* Two columns: the day plan (summary + timeline) on the left, the SVG route map on the right. *@
+                <div id="vp-route-view" class="row g-3">
+                    <div id="vp-route-main" class="col-12 col-lg-8">
+                        @* Per-day summary report (visits / stops / field time / free time) — populated by renderDay. *@
+                        <div id="vp-day-summary" class="mb-3"></div>
+                        <div id="vp-route-warnings"></div>
+                        <div id="vp-visit-cards" class="d-flex flex-column gap-2">
+                            <div class="vp-empty d-flex flex-column align-items-center justify-content-center text-center">
+                                <svg width="96" height="84" viewBox="0 0 96 84" fill="none" aria-hidden="true">
+                                    <rect x="20" y="12" width="56" height="44" rx="8" fill="rgba(var(--bs-primary-rgb),.08)"></rect>
+                                    <path d="M30 52 L46 24 L60 52" stroke="rgba(var(--bs-primary-rgb),.35)" stroke-width="2" fill="none"></path>
+                                    <circle cx="34" cy="42" r="3.5" fill="var(--bs-primary)"></circle>
+                                    <circle cx="48" cy="32" r="3.5" fill="var(--bs-primary)"></circle>
+                                    <circle cx="62" cy="40" r="3.5" fill="var(--bs-primary)"></circle>
+                                </svg>
+                                <h5 class="mb-1 mt-3">@Localizer["NoPlanTitle"]</h5>
+                                <div class="text-muted small" style="max-width:340px;">@Localizer["NoPlanDesc"]</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="vp-map-col" class="col-12 col-lg-4">
+                        <div id="vp-map-panel"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    @* Leaflet (vendored) — the Route tab's real map (OSM tiles), same stack as the Account/Contact location pickers. *@
+    <link rel="stylesheet" href="~/assets/vendor/libs/leaflet/leaflet.css" />
+}
+
+@section Scripts {
+    <partial name="~/Views/CRM/VisitPlanning/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/VisitPlanning/index.l10n.js" asp-append-version="true"></script>
+    @* SortableJS (not globally loaded on the tenant shell) — drives the drag-reorder of doctor visits inside a route block. *@
+    <script src="~/assets/vendor/libs/sortablejs/sortable.js" asp-append-version="true"></script>
+    <script src="~/assets/vendor/libs/leaflet/leaflet.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitPlanning/details.js" asp-append-version="true"></script>
+}

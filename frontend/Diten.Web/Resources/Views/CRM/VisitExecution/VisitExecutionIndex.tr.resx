@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Ziyaret Raporu</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gerçekte ne olduğunu kaydedin — her planlı ziyareti tamamlandı, kaçırıldı veya ertelendi olarak işaretleyin ve değiştirilemez ziyaret raporunu doldurun.</value></data>
+  <data name="ExecutionNotice" xml:space="preserve"><value>Bu, uygulama takvimidir. Sonuçları ve raporları kaydeder; plan üretmez ve içerik aşamasını ilerletmez — burada kaydettiğiniz gerçek aşama bir sonraki döngünün okuduğu değerdir.</value></data>
+  <data name="View" xml:space="preserve"><value>Görünüm</value></data>
+  <data name="Day" xml:space="preserve"><value>Gün</value></data>
+  <data name="Week" xml:space="preserve"><value>Hafta</value></data>
+  <data name="Date" xml:space="preserve"><value>Tarih</value></data>
+  <data name="Resource" xml:space="preserve"><value>Temsilci (kaynak kimliği)</value></data>
+  <data name="ResourcePlaceholder" xml:space="preserve"><value>örn. rep-1</value></data>
+  <data name="Refresh" xml:space="preserve"><value>Yenile</value></data>
+  <data name="NoVisits" xml:space="preserve"><value>Bu aralıkta planlı ziyaret yok.</value></data>
+  <data name="ReportTitle" xml:space="preserve"><value>Ziyaret raporu</value></data>
+  <data name="PlannedContent" xml:space="preserve"><value>Planlanan içerik (FU04)</value></data>
+  <data name="ActualStage" xml:space="preserve"><value>Sunulan gerçek aşama</value></data>
+  <data name="StageIndex" xml:space="preserve"><value>Aşama #</value></data>
+  <data name="MatchedPlan" xml:space="preserve"><value>Planlanan aşamayla eşleşti</value></data>
+  <data name="OutcomeCode" xml:space="preserve"><value>Sonuç kodu</value></data>
+  <data name="OutcomeCodePlaceholder" xml:space="preserve"><value>örn. positive</value></data>
+  <data name="ReferenceDataHint" xml:space="preserve"><value>Sonuç kodları referans verilerinden gelir.</value></data>
+  <data name="DoctorFeedback" xml:space="preserve"><value>Doktor geri bildirimi</value></data>
+  <data name="Samples" xml:space="preserve"><value>Verilen numuneler / materyaller</value></data>
+  <data name="AddSample" xml:space="preserve"><value>Numune ekle</value></data>
+  <data name="FollowUpRequired" xml:space="preserve"><value>Takip gerekli</value></data>
+  <data name="FollowUpNotes" xml:space="preserve"><value>Takip notları</value></data>
+  <data name="AmendReason" xml:space="preserve"><value>Düzeltme nedeni</value></data>
+  <data name="AmendHint" xml:space="preserve"><value>Rapor gönderildi; düzeltme yalnızca eklenen bir değişiklik kaydıdır.</value></data>
+  <data name="Submit" xml:space="preserve"><value>Raporu gönder</value></data>
+  <data name="Amend" xml:space="preserve"><value>Düzeltme kaydet</value></data>
+  <data name="MarkCompleted" xml:space="preserve"><value>Tamamlandı</value></data>
+  <data name="MarkMissed" xml:space="preserve"><value>Kaçırıldı</value></data>
+  <data name="MarkRescheduled" xml:space="preserve"><value>Ertelendi</value></data>
+  <data name="Report" xml:space="preserve"><value>Rapor</value></data>
+  <data name="StateNone" xml:space="preserve"><value>Rapor yok</value></data>
+  <data name="StateDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StateSubmitted" xml:space="preserve"><value>Gönderildi</value></data>
+  <data name="StateAmended" xml:space="preserve"><value>Düzeltildi</value></data>
+  <data name="OutcomeRecorded" xml:space="preserve"><value>Sonuç kaydedildi.</value></data>
+  <data name="ReportSubmitted" xml:space="preserve"><value>Rapor gönderildi.</value></data>
+  <data name="ReportAmended" xml:space="preserve"><value>Düzeltme kaydedildi.</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>İşlem başarısız.</value></data>
+  <data name="ReasonPrompt" xml:space="preserve"><value>Neden kodu (örn. doctor_unavailable):</value></data>
+  <data name="ReschedulePrompt" xml:space="preserve"><value>Yeni tarih (yyyy-AA-gg):</value></data>
+  <data name="Quantity" xml:space="preserve"><value>Adet</value></data>
+  <data name="ItemType" xml:space="preserve"><value>Öğe türü</value></data>
+  <data name="Remove" xml:space="preserve"><value>Kaldır</value></data>
+</root>

@@ -200,10 +200,10 @@ public sealed class AccountFoundationTests
         public Task<bool> ExistsByCodeAsync(Guid tenantId, string code, Guid? excludeId, CancellationToken ct)
             => Task.FromResult(Items.Any(a => a.TenantId == tenantId && !a.IsDeleted && a.AccountCode == code && a.Id != excludeId));
 
-        public Task<(IReadOnlyList<Account> Items, long Total)> ListAsync(Guid tenantId, string? search, int page, int pageSize, CancellationToken ct)
+        public Task<(IReadOnlyList<Account> Items, long Total, long UnfilteredTotal)> ListAsync(Guid tenantId, string? search, int page, int pageSize, string? sortBy, string? sortDir, IReadOnlyCollection<string>? statuses, IReadOnlyCollection<string>? accountTypes, IReadOnlyCollection<Guid>? accountIdScope, CancellationToken ct)
         {
             var q = Items.Where(a => a.TenantId == tenantId && !a.IsDeleted).ToList();
-            return Task.FromResult(((IReadOnlyList<Account>)q, (long)q.Count));
+            return Task.FromResult(((IReadOnlyList<Account>)q, (long)q.Count, (long)q.Count));
         }
 
         public Task<IReadOnlyList<Account>> GetChildrenAsync(Guid tenantId, Guid parentId, CancellationToken ct)

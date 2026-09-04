@@ -285,7 +285,7 @@ public sealed class TerritoryReadinessFu09ATests
         public Task<Account?> GetByIdAsync(Guid t, Guid id, CancellationToken ct) => Task.FromResult(Items.FirstOrDefault(x => x.TenantId == t && x.Id == id && !x.IsDeleted));
         public Task<Account?> GetByCodeAsync(Guid t, string code, CancellationToken ct) => Task.FromResult(Items.FirstOrDefault(x => x.TenantId == t && x.AccountCode == code));
         public Task<bool> ExistsByCodeAsync(Guid t, string c, Guid? e, CancellationToken ct) => Task.FromResult(false);
-        public Task<(IReadOnlyList<Account> Items, long Total)> ListAsync(Guid t, string? s, int p, int ps, CancellationToken ct) => Task.FromResult(((IReadOnlyList<Account>)Items.Where(x => x.TenantId == t).ToList(), (long)Items.Count));
+        public Task<(IReadOnlyList<Account> Items, long Total, long UnfilteredTotal)> ListAsync(Guid t, string? s, int p, int ps, string? sortBy, string? sortDir, IReadOnlyCollection<string>? statuses, IReadOnlyCollection<string>? accountTypes, IReadOnlyCollection<Guid>? accountIdScope, CancellationToken ct) => Task.FromResult(((IReadOnlyList<Account>)Items.Where(x => x.TenantId == t).ToList(), (long)Items.Count, (long)Items.Count));
         public Task<IReadOnlyList<Account>> GetChildrenAsync(Guid t, Guid p, CancellationToken ct) => Task.FromResult<IReadOnlyList<Account>>([]);
         public Task<bool> WouldCreateCycleAsync(Guid t, Guid a, Guid p, CancellationToken ct) => Task.FromResult(false);
         public Task InsertAsync(Account a, CancellationToken ct) => throw new InvalidOperationException("read-only test");
@@ -295,7 +295,10 @@ public sealed class TerritoryReadinessFu09ATests
     {
         public List<Contact> Items { get; } = [];
         public Task<Contact?> GetByIdAsync(Guid t, Guid id, CancellationToken ct) => Task.FromResult(Items.FirstOrDefault(x => x.TenantId == t && x.Id == id));
-        public Task<(IReadOnlyList<Contact> Items, long Total)> ListAsync(Guid t, string? s, int p, int ps, CancellationToken ct) => Task.FromResult(((IReadOnlyList<Contact>)Items, (long)Items.Count));
+    public Task<IReadOnlyList<Contact>> ListByIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> ids, CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<Contact>>(Array.Empty<Contact>());
+
+        public Task<(IReadOnlyList<Contact> Items, long Total, long UnfilteredTotal)> ListAsync(Guid t, string? s, int p, int ps, string? sortBy, string? sortDir, IReadOnlyCollection<string>? statuses, IReadOnlyCollection<string>? contactTypes, CancellationToken ct) => Task.FromResult(((IReadOnlyList<Contact>)Items, (long)Items.Count, (long)Items.Count));
         public Task<IReadOnlyList<Contact>> ListAllAsync(Guid t, CancellationToken ct) => Task.FromResult((IReadOnlyList<Contact>)Items);
         public Task InsertAsync(Contact c, CancellationToken ct) => throw new InvalidOperationException("read-only test");
         public Task UpdateAsync(Contact c, CancellationToken ct) => throw new InvalidOperationException("read-only test");

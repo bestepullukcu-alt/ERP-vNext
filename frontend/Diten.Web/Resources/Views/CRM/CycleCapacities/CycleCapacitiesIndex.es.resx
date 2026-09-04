@@ -56,6 +56,8 @@
   <data name="TravelingTime" xml:space="preserve"><value>Tiempo de desplazamiento</value></data>
   <data name="ReportDuration" xml:space="preserve"><value>Tiempo de reporte</value></data>
   <data name="QuizDuration" xml:space="preserve"><value>Tiempo de cuestionario</value></data>
+  <data name="BetweenVisitTimeMinutes" xml:space="preserve"><value>Margen entre visitas</value></data>
+  <data name="BetweenVisitTimeMinutesHint" xml:space="preserve"><value>Margen dejado entre dos visitas consecutivas. No forma parte de la duración de una visita; el motor de planificación lo aplica entre visitas.</value></data>
   <data name="MonthlyDeductionsHint" xml:space="preserve"><value>Los meses provienen de la ventana del periodo y no se pueden añadir ni quitar. No deduzca fines de semana ni festivos: el calendario laboral ya los ha excluido.</value></data>
   <data name="MonthsPendingPeriod" xml:space="preserve"><value>Elija primero un periodo; su ventana decide qué meses aparecen.</value></data>
   <data name="Month" xml:space="preserve"><value>Mes</value></data>

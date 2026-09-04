@@ -439,8 +439,9 @@ public sealed class AccountsController : Controller
             .OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-        // node name → owning model's country scope (for the cascade). Distinct on (name, countryScope).
-        var nodePairs = new List<(string Name, string? CountryScope)>();
+        // node id → name + owning model's country scope (for the cascade). The chip value is the node id (the backend
+        // filters coverage by node id precisely); the name is display only. Distinct on the node id.
+        var nodeTriples = new List<(Guid Id, string Name, string? CountryScope)>();
         foreach (var model in models)
         {
             var hierarchy = await LoadTerritoryNodesAsync(model.Id);
@@ -449,16 +450,16 @@ public sealed class AccountsController : Controller
                 continue;
             }
 
-            foreach (var node in hierarchy.Nodes.Where(n => !string.IsNullOrWhiteSpace(n.Name)))
+            foreach (var node in hierarchy.Nodes.Where(n => n.Id != Guid.Empty && !string.IsNullOrWhiteSpace(n.Name)))
             {
-                nodePairs.Add((node.Name.Trim(), model.CountryScope?.Trim()));
+                nodeTriples.Add((node.Id, node.Name.Trim(), model.CountryScope?.Trim()));
             }
         }
 
-        var nodes = nodePairs
-            .DistinctBy(x => (x.Name.ToLowerInvariant(), (x.CountryScope ?? string.Empty).ToLowerInvariant()))
+        var nodes = nodeTriples
+            .DistinctBy(x => x.Id)
             .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
-            .Select(x => new { name = x.Name, countryScope = x.CountryScope })
+            .Select(x => new { id = x.Id, name = x.Name, countryScope = x.CountryScope })
             .ToList();
 
         return Json(new { countryScopes, nodes });

@@ -705,4 +705,6 @@
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>Бренды</value>
   </data>
+  <data name="PlannedVisitsMenu" xml:space="preserve"><value>Запланированные визиты</value></data>
+  <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>Запланированные визиты</value></data>
 </root>

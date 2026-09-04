@@ -117,7 +117,8 @@ public sealed class CycleCapacitiesController : CustomBaseController
                 request.ReportDuration,
                 request.QuizDuration,
                 request.Description,
-                ToMonths(request.Months)),
+                ToMonths(request.Months),
+                request.BetweenVisitTimeMinutes),
             cancellationToken));
 
     /// <summary>An edit. The route carries the capacity's own id and the body carries no cycle period at all: the pin
@@ -138,7 +139,8 @@ public sealed class CycleCapacitiesController : CustomBaseController
                 request.QuizDuration,
                 request.Description,
                 ToMonths(request.Months),
-                request.ExpectedVersion),
+                request.ExpectedVersion,
+                request.BetweenVisitTimeMinutes),
             cancellationToken));
 
     /// <summary>Retires a capacity — a SOFT archive that also frees its period for a fresh one. There is no delete
