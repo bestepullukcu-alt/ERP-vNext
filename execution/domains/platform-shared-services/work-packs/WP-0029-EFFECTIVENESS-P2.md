@@ -137,7 +137,23 @@ Agent Verdict: PASS · Verification Verdict: PASS · CT Status: ACCEPTED · Evid
 | Faz 4 — RBAC+seed | e13e0477 | ✅ ACCEPTED | kod E2 (escalation temiz) + **canlı 200 grant (E4)**; 403 residual non-blocking |
 | Faz 2 — repo $in | cd7211a6 | ✅ ACCEPTED | 50 test; Faz 1 dosyası unchanged |
 
-**WP-0029-EFFECTIVENESS-P2 → TAM ACCEPTED (2026-09-04).** Tek residual: negatif 403 teyidi (düşük risk).
+### R1 — enum wire-format düzeltmesi (Görev Merkezi itirazı üzerine) → **ACCEPTED**
+```text
+Commit: bfbec86d "fix(docmgmt): DCP-005 effectiveness state serializes as string (wire contract)"
+Agent: PASS · Verification: PASS · CT: ACCEPTED · Evidence: E2
+```
+- Kusur: `DocumentEffectivenessState` HTTP sınırını geçiyor ama `[JsonConverter(JsonStringEnumConverter)]` yoktu → tel üzerinde SAYI (canlı `state:2`). Yazılı kural: TaskEnums.cs:7-11 (16 emsal). Görev Merkezi Adım 2'yi buna bağlamıştı.
+- Fix: yalnız `DocumentEffectivenessState`'e attribute + using; **global serializer değişmedi** (kural yasaklıyor; sızma yok — grep teyit); `DocumentIdentifierKind`'e dokunulmadı (tel üzerinden geçmiyor).
+- CT doğrulama: 2 dosya +52; izole worktree **35/35** (31 + 4 yeni wire-format); vacuity gerçek (test attribute'a güveniyor, `"state":"Unresolved"` var / `state:2` yok).
+
+### Görev Merkezi cevabı işlendi (2026-09-04)
+- **G1 = (a) ONAYLANDI** (register CSV UID'lerini sahiplenir, `by="uid"`) → **Adım 0 register tohumu bizim sıradaki WP** (unblocked).
+- **Adım 2 freeze = enum adı** (lifecycleStatus) — CT katılıyor; `blockedReason` metni değil.
+- **BL-060** (Mutabakat sidebar link'i manifest'e taşınsın; `_LayoutTenantShell.cshtml:243-259` elle yazılmış) → ayrı düşük-öncelik doküman-yönetimi follow-up'ı.
+
+---
+
+**WP-0029-EFFECTIVENESS-P2 → TAM ACCEPTED (2026-09-04).** Residual'lar: negatif 403 teyidi + R1 canlı tel doğrulaması (fleet restart sonrası `state:"Unresolved"`), ikisi de düşük risk.
 Faz 1 (WP-...-F1) + P2 birlikte = **DCP-005 doküman-yönetimi tarafı / Adım 1 KOD-TAMAM ve doğrulandı.**
 Kalan (bu WP dışı): (1) Adım 0 register tohumu — G1 (a/b join, Görev Merkezi) kararına bağlı; (2) Görev Merkezi'ne "Adım 1 hazır" sinyali → onların Adım 2–3'ü; (3) opsiyonel 403 teyidi.
 
