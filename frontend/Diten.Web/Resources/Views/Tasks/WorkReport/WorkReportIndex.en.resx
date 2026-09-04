@@ -31,9 +31,14 @@
   <data name="Completed" xml:space="preserve"><value>Completed</value></data>
   <data name="Cancelled" xml:space="preserve"><value>Cancelled</value></data>
   <data name="OutcomesTitle" xml:space="preserve"><value>How work ended</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>Period summary</value></data>
+  <data name="SummaryPeriod" xml:space="preserve"><value>Period</value></data>
+  <data name="SummaryDays" xml:space="preserve"><value>{0} days</value></data>
+  <data name="SummaryScopeNote" xml:space="preserve"><value>{0} · {1}</value></data>
   <data name="OutcomesQuestion" xml:space="preserve"><value>What did the closures decide?</value></data>
   <data name="OutcomesEmpty" xml:space="preserve"><value>No closure was recorded with an outcome.</value></data>
   <data name="TimelinessTitle" xml:space="preserve"><value>Against the deadline</value></data>
+  <data name="SharePercent" xml:space="preserve"><value>{0}%</value></data>
   <data name="TimelinessQuestion" xml:space="preserve"><value>Did the work land on time?</value></data>
   <data name="OnTime" xml:space="preserve"><value>On time</value></data>
   <data name="Late" xml:space="preserve"><value>Late</value></data>
@@ -45,17 +50,26 @@
   <data name="CycleTimeDays" xml:space="preserve"><value>{0} days</value></data>
   <data name="CycleTimeOver" xml:space="preserve"><value>over {0} closed</value></data>
   <data name="ReworkTitle" xml:space="preserve"><value>Came back</value></data>
-  <data name="ReworkTasks" xml:space="preserve"><value>{0} tasks</value></data>
-  <data name="ReworkReturns" xml:space="preserve"><value>{0} returns in total</value></data>
   <data name="UnattendedTitle" xml:space="preserve"><value>Waiting for someone</value></data>
   <data name="UnattendedHint" xml:space="preserve"><value>Open work nobody is holding, right now.</value></data>
   <data name="EffortTitle" xml:space="preserve"><value>Plan against actual</value></data>
-  <data name="EffortHours" xml:space="preserve"><value>{0} h estimated · {1} h spent</value></data>
+  <data name="UnitDays" xml:space="preserve"><value>days</value></data>
+  <data name="UnitTasks" xml:space="preserve"><value>tasks</value></data>
+  <data name="UnitOpenWork" xml:space="preserve"><value>open</value></data>
+  <data name="ReworkQualifier" xml:space="preserve"><value>work sent back to its owner</value></data>
+  <data name="UnattendedQualifier" xml:space="preserve"><value>nobody has taken these on</value></data>
+  <data name="LabelMedian" xml:space="preserve"><value>Median</value></data>
+  <data name="LabelUntilCancelled" xml:space="preserve"><value>Until cancelled</value></data>
+  <data name="LabelCancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="LabelTotalReturns" xml:space="preserve"><value>Total returns</value></data>
+  <data name="LabelEstimated" xml:space="preserve"><value>Estimated</value></data>
+  <data name="AgingUpTo7Label" xml:space="preserve"><value>0–7 days</value></data>
+  <data name="AgingFrom8To30Label" xml:space="preserve"><value>8–30 days</value></data>
+  <data name="AgingOlderThan30Label" xml:space="preserve"><value>30+ days</value></data>
+  <data name="EffortSpentUnit" xml:space="preserve"><value>h spent</value></data>
+  <data name="Hours" xml:space="preserve"><value>{0} h</value></data>
   <data name="EffortOver" xml:space="preserve"><value>over {0} tasks</value></data>
   <data name="EffortHint" xml:space="preserve"><value>A signal about the PLAN, never about a person.</value></data>
-  <data name="CycleTimeMedian" xml:space="preserve"><value>median {0}</value></data>
-  <data name="CancelTime" xml:space="preserve"><value>Until cancelled: average {0} · median {1} ({2} cancelled)</value></data>
-  <data name="AgingBuckets" xml:space="preserve"><value>Age of open work — 0-7 days: {0} · 8-30 days: {1} · 30+ days: {2}</value></data>
   <data name="TrendSame" xml:space="preserve"><value>same as the previous period</value></data>
   <data name="TrendUp" xml:space="preserve"><value>+{0} against the previous period (was {1})</value></data>
   <data name="TrendDown" xml:space="preserve"><value>-{0} against the previous period (was {1})</value></data>
@@ -74,6 +88,7 @@
   <data name="PriorityMedium" xml:space="preserve"><value>Medium</value></data>
   <data name="ItemsClose" xml:space="preserve"><value>Close</value></data>
   <data name="ItemsEmpty" xml:space="preserve"><value>No tasks match this cell.</value></data>
+  <data name="ItemsEmptyHint" xml:space="preserve"><value>No task in the selected period falls into this measure.</value></data>
   <data name="ItemsLoadFailed" xml:space="preserve"><value>The list could not be loaded.</value></data>
   <data name="ItemsCount" xml:space="preserve"><value>Showing {0} of {1}</value></data>
   <data name="ItemsShowMore" xml:space="preserve"><value>Show {0} more</value></data>
@@ -86,6 +101,7 @@
   <data name="ItemsAging30plus" xml:space="preserve"><value>Open 30+ days</value></data>
   <data name="ItemsColDue" xml:space="preserve"><value>due {0}</value></data>
   <data name="FiltersToggle" xml:space="preserve"><value>Filters</value></data>
+  <data name="Action" xml:space="preserve"><value>Action</value></data>
   <data name="OutcomesOther" xml:space="preserve"><value>Other outcomes</value></data>
   <data name="ItemsColClosed" xml:space="preserve"><value>closed {0}</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>Low</value></data>

@@ -31,9 +31,14 @@
   <data name="Completed" xml:space="preserve"><value>Tamamlanan</value></data>
   <data name="Cancelled" xml:space="preserve"><value>İptal edilen</value></data>
   <data name="OutcomesTitle" xml:space="preserve"><value>İş nasıl bitti</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>Dönem özeti</value></data>
+  <data name="SummaryPeriod" xml:space="preserve"><value>Dönem</value></data>
+  <data name="SummaryDays" xml:space="preserve"><value>{0} gün</value></data>
+  <data name="SummaryScopeNote" xml:space="preserve"><value>{0} · {1}</value></data>
   <data name="OutcomesQuestion" xml:space="preserve"><value>Kapanışlar neye karar verdi?</value></data>
   <data name="OutcomesEmpty" xml:space="preserve"><value>Sonucu kayıtlı bir kapanış yok.</value></data>
   <data name="TimelinessTitle" xml:space="preserve"><value>Termine göre</value></data>
+  <data name="SharePercent" xml:space="preserve"><value>%{0}</value></data>
   <data name="TimelinessQuestion" xml:space="preserve"><value>İş zamanında bitti mi?</value></data>
   <data name="OnTime" xml:space="preserve"><value>Zamanında</value></data>
   <data name="Late" xml:space="preserve"><value>Geciken</value></data>
@@ -45,17 +50,26 @@
   <data name="CycleTimeDays" xml:space="preserve"><value>{0} gün</value></data>
   <data name="CycleTimeOver" xml:space="preserve"><value>{0} kapanan iş üzerinden</value></data>
   <data name="ReworkTitle" xml:space="preserve"><value>Geri gelen</value></data>
-  <data name="ReworkTasks" xml:space="preserve"><value>{0} görev</value></data>
-  <data name="ReworkReturns" xml:space="preserve"><value>toplam {0} geri dönüş</value></data>
   <data name="UnattendedTitle" xml:space="preserve"><value>Sahibini bekleyen</value></data>
   <data name="UnattendedHint" xml:space="preserve"><value>Şu anda kimsenin üstlenmediği açık işler.</value></data>
   <data name="EffortTitle" xml:space="preserve"><value>Plan ve gerçekleşen</value></data>
-  <data name="EffortHours" xml:space="preserve"><value>{0} sa tahmin · {1} sa harcanan</value></data>
+  <data name="UnitDays" xml:space="preserve"><value>gün</value></data>
+  <data name="UnitTasks" xml:space="preserve"><value>görev</value></data>
+  <data name="UnitOpenWork" xml:space="preserve"><value>açık iş</value></data>
+  <data name="ReworkQualifier" xml:space="preserve"><value>sahibine geri dönen iş</value></data>
+  <data name="UnattendedQualifier" xml:space="preserve"><value>kimsenin üstlenmediği</value></data>
+  <data name="LabelMedian" xml:space="preserve"><value>Ortanca</value></data>
+  <data name="LabelUntilCancelled" xml:space="preserve"><value>İptale kadar</value></data>
+  <data name="LabelCancelled" xml:space="preserve"><value>İptal edilen</value></data>
+  <data name="LabelTotalReturns" xml:space="preserve"><value>Toplam geri dönüş</value></data>
+  <data name="LabelEstimated" xml:space="preserve"><value>Tahmin edilen</value></data>
+  <data name="AgingUpTo7Label" xml:space="preserve"><value>0–7 gün</value></data>
+  <data name="AgingFrom8To30Label" xml:space="preserve"><value>8–30 gün</value></data>
+  <data name="AgingOlderThan30Label" xml:space="preserve"><value>30+ gün</value></data>
+  <data name="EffortSpentUnit" xml:space="preserve"><value>sa harcanan</value></data>
+  <data name="Hours" xml:space="preserve"><value>{0} sa</value></data>
   <data name="EffortOver" xml:space="preserve"><value>{0} görev üzerinden</value></data>
   <data name="EffortHint" xml:space="preserve"><value>PLANA dair bir gösterge, kişiye dair değil.</value></data>
-  <data name="CycleTimeMedian" xml:space="preserve"><value>ortanca {0}</value></data>
-  <data name="CancelTime" xml:space="preserve"><value>İptale kadar: ortalama {0} · ortanca {1} ({2} iptal)</value></data>
-  <data name="AgingBuckets" xml:space="preserve"><value>Açık işin yaşı — 0-7 gün: {0} · 8-30 gün: {1} · 30+ gün: {2}</value></data>
   <data name="TrendSame" xml:space="preserve"><value>önceki dönemle aynı</value></data>
   <data name="TrendUp" xml:space="preserve"><value>önceki döneme göre +{0} (önceki: {1})</value></data>
   <data name="TrendDown" xml:space="preserve"><value>önceki döneme göre -{0} (önceki: {1})</value></data>
@@ -74,6 +88,7 @@
   <data name="PriorityMedium" xml:space="preserve"><value>Orta</value></data>
   <data name="ItemsClose" xml:space="preserve"><value>Kapat</value></data>
   <data name="ItemsEmpty" xml:space="preserve"><value>Bu hücreyle eşleşen görev yok.</value></data>
+  <data name="ItemsEmptyHint" xml:space="preserve"><value>Seçilen dönemde bu ölçüye giren görev bulunmuyor.</value></data>
   <data name="ItemsLoadFailed" xml:space="preserve"><value>Liste yüklenemedi.</value></data>
   <data name="ItemsCount" xml:space="preserve"><value>{1} kayıttan {0} tanesi gösteriliyor</value></data>
   <data name="ItemsShowMore" xml:space="preserve"><value>{0} kayıt daha göster</value></data>
@@ -86,6 +101,7 @@
   <data name="ItemsAging30plus" xml:space="preserve"><value>30+ gün açık</value></data>
   <data name="ItemsColDue" xml:space="preserve"><value>termin {0}</value></data>
   <data name="FiltersToggle" xml:space="preserve"><value>Filtreler</value></data>
+  <data name="Action" xml:space="preserve"><value>İşlem</value></data>
   <data name="OutcomesOther" xml:space="preserve"><value>Diğer sonuçlar</value></data>
   <data name="ItemsColClosed" xml:space="preserve"><value>kapanış {0}</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>Düşük</value></data>

@@ -22,12 +22,32 @@
     var defaultFrom = defaultTo.AddDays(-30);
 }
 
-<div class="mb-3">
-    <h5 class="mb-0">@Localizer["Title"]</h5>
-    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+@*
+    ⚠ THE BADGE'S HOST IS DECOUPLED FROM THE BUTTONS THAT PRODUCE IT.
+    The shared required-fields tracker (`wwwroot/assets/js/custom/required-fields-tracker.js`) normally renders
+    its "Zorunlu: N / M" badge as the first child of the submit button's own parent — a fine default when the
+    submit button already sits in a page's title-row action group (`Tasks/_Form.cshtml`,
+    `GoldenReferenceCompact/_Form.cshtml`), a poor one here, where Apply and the filter toggle belong beside the
+    date/kırılım inputs they act on, not up in the header. `data-required-tracker-target` (read at
+    `required-fields-tracker.js:72-73`) is the tracker's own explicit override for exactly this — it renders into
+    `#wrRequiredBadgeHost` below regardless of where the submit button lives, so the badge can sit next to the
+    title while Apply and the filter toggle stay exactly where a reader looking for "narrow this report" expects
+    them: beside the fields they narrow.
+*@
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["Title"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+    <div id="wrRequiredBadgeHost" class="d-flex align-items-center"></div>
 </div>
 
 <section class="card mb-4">
+    @*
+        ⚠ `p-3`, NOT THE `p-4` THE CONTENT CARDS BELOW USE. This card is a control bar — three inputs and three
+        buttons on one line — and 24px of air around a 40px-tall row reads as a gap rather than a frame. The KPI
+        and chart cards keep `p-4` because they hold reading material, which wants the breathing room.
+    *@
     <div class="card-body p-4">
         @*
             THE FILTER. The period and the breakdown are the report's IDENTITY — which window, which axis — and
@@ -42,19 +62,20 @@
             `index.js` bridges it back to `addEventListener('change', ...)` the same way `Tasks/form.js` already
             does — otherwise the company→unit narrowing below goes silently deaf.
         *@
-        <form id="workReportFilter" class="row g-3 align-items-end" novalidate>
-            <div class="col-12 col-md-3">
+        <form id="workReportFilter" class="row g-3 align-items-end" novalidate
+              data-required-tracker-target="#wrRequiredBadgeHost">
+            <div class="col-12 col-md-6 col-xl-2">
                 <label for="wrFrom" class="form-label fw-medium">@Localizer["From"]</label>
                 <input type="text" id="wrFrom" class="form-control flatpickr-date" autocomplete="off" required
                        value="@defaultFrom.ToString("yyyy-MM-dd")" />
             </div>
-            <div class="col-12 col-md-3">
+            <div class="col-12 col-md-6 col-xl-2">
                 <label for="wrTo" class="form-label fw-medium">@Localizer["To"]</label>
                 @* Exclusive, exactly as the API reads it — the value shown is the first day NOT counted. *@
                 <input type="text" id="wrTo" class="form-control flatpickr-date" autocomplete="off" required
                        value="@defaultTo.ToString("yyyy-MM-dd")" />
             </div>
-            <div class="col-12 col-md-3">
+            <div class="col-12 col-md-6 col-xl-3">
                 <label for="wrGroupBy" class="form-label fw-medium">@Localizer["GroupBy"]</label>
                 @* CODE values that travel, never translated words — the same rule every other picker here follows. *@
                 <select id="wrGroupBy" class="form-select select2" data-minimum-results-for-search="Infinity">
@@ -66,26 +87,62 @@
                     <option value="LegalEntity">@Localizer["GroupByLegalEntity"]</option>
                 </select>
             </div>
-            <div class="col-auto">
-                <label class="form-label fw-medium d-block">&nbsp;</label>
-                @*
-                    ⚠ THE ACTIVE-FILTER COUNT IS NOT COSMETIC — it is what keeps a narrowed report from being
-                    mistaken for the whole. The badge is the SAME shape WorkCenterNext's own filter toggle uses
-                    (`badge-center rounded-pill bg-primary position-absolute`, `wwwroot/assets/js/WorkCenterNext/app.js`),
-                    so a reader who already knows that idiom recognises this one. Zero active filters → no badge.
-                *@
-                <button type="button" class="btn btn-icon btn-label-secondary position-relative"
-                        data-bs-toggle="collapse" data-bs-target="#wrFilterCollapse"
-                        aria-expanded="false" aria-controls="wrFilterCollapse"
-                        title="@Localizer["FiltersToggle"]" aria-label="@Localizer["FiltersToggle"]">
-                    <i class="icon-base bx bx-filter-alt icon-sm"></i>
-                    <span class="badge badge-center rounded-pill bg-primary position-absolute top-0 end-0 translate-middle"
-                          data-wr-filter-count hidden>0</span>
-                </button>
-            </div>
-            <div class="col-12 col-md-auto ms-md-auto">
-                <label class="form-label fw-medium d-block d-md-none">&nbsp;</label>
-                <button type="submit" class="btn btn-primary w-100">@Localizer["Apply"]</button>
+            @*
+                ⚠ THE THREE BUTTONS ARE ONE COLUMN, NOT THREE — AND THAT IS A WRAPPING FIX.
+                As separate grid columns they wrapped independently: at a normal content width the action
+                menu and the filter toggle held the first line and pushed "Apply" — the one control the form
+                actually submits with — down onto a line of its own. Read left to right that put the primary
+                action below its own form. One column keeps the trio together and lets them wrap as a unit.
+            *@
+            @*
+                ⚠ THE BREAKPOINT IS `xl`, AND IT WAS MEASURED RATHER THAN CHOSEN. Three `col-md-3` fields take
+                75% of the row, and the button group is 272px wide — so between 768px and roughly 1150px the
+                remaining quarter could not hold it and the group dropped onto a line of its own, right-aligned,
+                with a hole to its left where the fields had stopped. From `md` the fields pair up two per row
+                instead, so the group shares the second row with the breakdown picker; only at `xl`, where the
+                measurement says all four fit, do they go back onto one line.
+
+                ⚠ AND THE BLANK LABEL FOLLOWS THE SAME BREAKPOINT. It exists ONLY to drop the buttons to the
+                baseline of the fields beside them; on a row of their own it is 24px of empty space above the
+                buttons and nothing else.
+            *@
+            <div class="col-12 col-md-6 col-xl-auto ms-xl-auto">
+                <label class="form-label fw-medium d-none d-xl-block">&nbsp;</label>
+                <div class="d-flex align-items-center gap-2">
+                    @*
+                        ⚠ VISUAL SHELL ONLY — no drill-down, no export, no data behaviour wired to it. The user asked
+                        for this specific shape (the DataTable "Action" collection button from `dt-defaults.js:724`:
+                        gear icon + label + the chevron `dropdown-toggle` itself draws) placed here so the page's
+                        silhouette matches its DataTable siblings, WITHOUT deciding yet what belongs inside — this
+                        screen has no rows to bulk-act on the way a DataTable does, so the menu stays empty rather
+                        than guessing at a behaviour nobody asked for.
+                    *@
+                    <div class="dropdown">
+                        <button class="btn btn-label-secondary dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="d-flex align-items-center gap-2">
+                                <i class="icon-base bx bx-cog icon-sm"></i>
+                                <span class="d-none d-sm-inline-block">@Localizer["Action"]</span>
+                            </span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end"></ul>
+                    </div>
+                    @*
+                        ⚠ THE ACTIVE-FILTER COUNT IS NOT COSMETIC — it is what keeps a narrowed report from being
+                        mistaken for the whole. The badge is the SAME shape WorkCenterNext's own filter toggle uses
+                        (`badge-center rounded-pill bg-primary position-absolute`, `wwwroot/assets/js/WorkCenterNext/app.js`),
+                        so a reader who already knows that idiom recognises this one. Zero active filters → no badge.
+                    *@
+                    <button type="button" class="btn btn-icon btn-label-secondary position-relative"
+                            data-bs-toggle="collapse" data-bs-target="#wrFilterCollapse"
+                            aria-expanded="false" aria-controls="wrFilterCollapse"
+                            title="@Localizer["FiltersToggle"]" aria-label="@Localizer["FiltersToggle"]">
+                        <i class="icon-base bx bx-filter-alt icon-sm"></i>
+                        <span class="badge badge-center rounded-pill bg-primary position-absolute top-0 end-0 translate-middle"
+                              data-wr-filter-count hidden>0</span>
+                    </button>
+                    <button type="submit" class="btn btn-primary flex-grow-1 flex-md-grow-0">@Localizer["Apply"]</button>
+                </div>
             </div>
 
             @*
@@ -101,14 +158,20 @@
                 what gives the select2 boxes here their compact sizing and spacing, for free, from
                 `backbone-custom.css`, without a single new CSS rule for the shape of a filter chip.
             *@
-            <div class="col-12">
-                <div class="collapse" id="wrFilterCollapse">
-                    <div class="pt-3 mt-1 border-top dt-filter-host">
-                        <div class="dt-filter-bar d-flex flex-wrap gap-3">
+            @*
+                ⚠ THE COLLAPSE AND THE COLUMN ARE ONE ELEMENT, AND THAT IS A LAYOUT FIX, NOT A TIDY-UP.
+                They used to be nested — `<div class="col-12"><div class="collapse">` — and `.collapse:not(.show)`
+                only hides the INNER div. The outer column stayed in the grid: zero height, but still carrying the
+                `g-3` gutter's `margin-top: 12px`, so a closed filter panel silently added 12px of dead space to
+                the bottom of this card and made it look bottom-heavy (measured: 18px above, 40px below).
+                Collapsing the column ITSELF removes the whole flex item, margin and all.
+            *@
+            <div class="col-12 collapse" id="wrFilterCollapse">
+                    <div class="pt-3 dt-filter-host">
+                        <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
                             <div class="filter-chip">
-                                <label for="wrLegalEntity" class="form-label fw-medium">@Localizer["FilterLegalEntity"]</label>
-                                <select id="wrLegalEntity" class="form-select select2" data-wr-filter
-                                        data-placeholder="@Localizer["FilterAny"]">
+                                <select id="wrLegalEntity" class="form-select form-select-sm select2" data-wr-filter disabled
+                                        data-placeholder="@Localizer["FilterLegalEntity"]">
                                     @*
                                         ⚠ THE EMPTY OPTION IS LOAD-BEARING, NOT DECORATIVE — LIVE-VERIFIED MISSING IN THE
                                         FIRST DRAFT OF THIS DILIM. select2's placeholder and its "clear" affordance both
@@ -122,10 +185,9 @@
                                 </select>
                             </div>
                             <div class="filter-chip">
-                                <label for="wrUnit" class="form-label fw-medium">@Localizer["FilterUnit"]</label>
                                 @* Narrowed by the company above — picking a company shows only its units. *@
-                                <select id="wrUnit" class="form-select select2" data-wr-filter
-                                        data-placeholder="@Localizer["FilterAny"]">
+                                <select id="wrUnit" class="form-select form-select-sm select2" data-wr-filter disabled
+                                        data-placeholder="@Localizer["FilterUnit"]">
                                     @*
                                         ⚠ THE EMPTY OPTION IS LOAD-BEARING, NOT DECORATIVE — LIVE-VERIFIED MISSING IN THE
                                         FIRST DRAFT OF THIS DILIM. select2's placeholder and its "clear" affordance both
@@ -139,9 +201,8 @@
                                 </select>
                             </div>
                             <div class="filter-chip">
-                                <label for="wrTaskType" class="form-label fw-medium">@Localizer["FilterTaskType"]</label>
-                                <select id="wrTaskType" class="form-select select2" data-wr-filter
-                                        data-placeholder="@Localizer["FilterAny"]">
+                                <select id="wrTaskType" class="form-select form-select-sm select2" data-wr-filter disabled
+                                        data-placeholder="@Localizer["FilterTaskType"]">
                                     @*
                                         ⚠ THE EMPTY OPTION IS LOAD-BEARING, NOT DECORATIVE — LIVE-VERIFIED MISSING IN THE
                                         FIRST DRAFT OF THIS DILIM. select2's placeholder and its "clear" affordance both
@@ -155,9 +216,8 @@
                                 </select>
                             </div>
                             <div class="filter-chip">
-                                <label for="wrAssignee" class="form-label fw-medium">@Localizer["FilterAssignee"]</label>
-                                <select id="wrAssignee" class="form-select select2" data-wr-filter
-                                        data-placeholder="@Localizer["FilterAny"]">
+                                <select id="wrAssignee" class="form-select form-select-sm select2" data-wr-filter disabled
+                                        data-placeholder="@Localizer["FilterAssignee"]">
                                     @*
                                         ⚠ THE EMPTY OPTION IS LOAD-BEARING, NOT DECORATIVE — LIVE-VERIFIED MISSING IN THE
                                         FIRST DRAFT OF THIS DILIM. select2's placeholder and its "clear" affordance both
@@ -171,10 +231,9 @@
                                 </select>
                             </div>
                             <div class="filter-chip">
-                                <label for="wrPriority" class="form-label fw-medium">@Localizer["FilterPriority"]</label>
                                 @* CODE values that travel, never translated words — the rule every picker on this page follows. *@
-                                <select id="wrPriority" class="form-select select2" data-wr-filter
-                                        data-placeholder="@Localizer["FilterAny"]">
+                                <select id="wrPriority" class="form-select form-select-sm select2" data-wr-filter
+                                        data-placeholder="@Localizer["FilterPriority"]">
                                     <option value="">@Localizer["FilterAny"]</option>
                                     <option value="High">@Localizer["PriorityHigh"]</option>
                                     <option value="Medium">@Localizer["PriorityMedium"]</option>
@@ -183,26 +242,66 @@
                             </div>
                         </div>
                     </div>
-                </div>
             </div>
         </form>
 
-        <p class="text-muted mb-0 mt-3" data-wr-status role="status" aria-live="polite"></p>
+        @*
+            ⚠ NO `mt-3` HERE — the gap above this line is owned by `backbone-custom.css`, which gives it ONLY
+            when there is a sentence to separate. The utility class could not do that: it is `!important`, so it
+            applied its 12px even when the element was empty, and an empty status line was padding the bottom of
+            this card every moment the screen had nothing to say.
+        *@
+        <p class="text-muted mb-0" data-wr-status role="status" aria-live="polite"></p>
+    </div>
+
+    @*
+        ⚠ WHAT THE NUMBERS COVER, ATTACHED TO WHAT CHOOSES IT — the scope line now closes the filter card
+        rather than floating between the card and the tiles. It is the same question the form above asks
+        ("which work is this report about?"), so it belongs to the same object; adrift between two cards it
+        read as a page-level announcement and a reader could take it for a dismissible notice.
+
+        ⚠ AND IT IS STILL A BADGE, NEVER AN ALERT. "There is no work" and "there is no work I may SEE" draw
+        the identical empty chart, and a reader takes the second for the first every time; a dismissible alert
+        would let that distinction be closed away and a narrowed report would then read as the whole tenant's.
+        The API publishes `scopeApplied` for exactly this reason, and this stays rendered from the response,
+        never guessed from the permission.
+
+        ⚠ `hidden` SITS ON THE OUTER STRIP, WHICH IS A PLAIN BLOCK. `d-flex` and Bootstrap's own `[hidden]`
+        rule are BOTH `!important`; putting them on one element makes the winner a question of source order in
+        a file neither of them lives in. The flex row is the inner div, so nothing competes.
+    *@
+    <div class="wr-scope-bar px-4 py-3" data-wr-scope hidden>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="badge" data-wr-scope-badge></span>
+            @*
+                ⚠ DILIM 1f — A DISPLAY PREFERENCE, NEVER A PERMISSION GRANTED HERE. Both chips exist in the markup
+                whether or not this reader can reach tenant-wide; `index.js` shows this pair INSTEAD OF the static badge
+                above only once a real response has PROVEN the caller can reach tenant-wide (`scopeApplied === 'tenant'`
+                on some load) — never guessed from a permission this screen does not itself check. A reader who can only
+                ever see their own scope keeps the single quiet badge exactly as before; a chip that cannot change
+                anything when clicked would read as broken.
+            *@
+            @*
+                ⚠ THE SEGMENTED CONTROL IS THE PRODUCT'S OWN, NOT A NEW ONE — `.wcn-segments` / `.wcn-seg` in
+                backbone-custom.css, the control Görev Merkezi already uses for its status switch. It was an
+                outline `btn-group` before, and that is this product's vocabulary for an ACTION: two buttons
+                sitting there read as "press me and something happens", when what they actually offer is a
+                VIEW preference. A segmented control is the shape that says "one of these is currently true".
+                Reusing the existing one also means no new colour, no new hover state, and nothing for this
+                screen to keep in sync with a control that already exists two screens away.
+            *@
+            <div class="wcn-segments" role="group" data-wr-scope-chips hidden>
+                <button type="button" class="wcn-seg" data-wr-scope-chip="tenant" aria-pressed="false">
+                    <i class="icon-base bx bx-buildings icon-sm" aria-hidden="true"></i>@Localizer["ScopeTenant"]
+                </button>
+                <button type="button" class="wcn-seg" data-wr-scope-chip="own" aria-pressed="false">
+                    <i class="icon-base bx bx-user icon-sm" aria-hidden="true"></i>@Localizer["ScopeScoped"]
+                </button>
+            </div>
+            <span class="text-muted small" data-wr-scope-hint></span>
+        </div>
     </div>
 </section>
-
-@*
-    ⚠ WHAT THE NUMBERS COVER, NEXT TO THE NUMBERS THAT COVER IT — not inside the filter card any more, and
-    deliberately still a quiet badge rather than an alert. "There is no work" and "there is no work I may SEE"
-    draw the identical empty chart, and a reader takes the second for the first every time; a dismissible alert
-    would let that distinction be closed away and then a narrowed report reads as the whole tenant's. The API
-    publishes `scopeApplied` for exactly this reason, and this stays rendered from the response, never guessed
-    from the permission.
-*@
-<div class="d-flex align-items-center gap-2 mb-3" data-wr-scope hidden>
-    <span class="badge" data-wr-scope-badge></span>
-    <span class="text-muted small" data-wr-scope-hint></span>
-</div>
 
 @*
     THE TILES — one NUMBER each. A chart for a single figure is decoration, and this screen has a rule against
@@ -213,77 +312,134 @@
     figure), reused rather than invented. The CONTENT is untouched: median beside the average, the cancellation
     span, the trend arrow and the ageing line are exactly what 1b and 1c put here — only the card's shell moved.
 *@
+@*
+    ── WHILE THE REPORT IS ON ITS WAY ──────────────────────────────────────────────────────────────────────
+    ⚠ THREE STATES USED TO LOOK IDENTICAL, AND THAT IS THE DEFECT THIS CLOSES. "Loading", "no work in this
+    period" and "the report failed" all rendered as the same empty screen, so a reader could not tell a slow
+    network from an empty period from a broken call. The skeleton is the FIRST of the three; the other two
+    already had their own sentence and now they are the only things that can appear instead of it.
+
+    ⚠ THE LANGUAGE IS BORROWED WHOLE — `.shimmer` + `.skeleton-row` + `.backbone-skeleton`, the same blocks
+    the DataTable pages use. A second skeleton dialect on one product is a bigger problem than no skeleton on
+    one screen. The ONLY thing added is `.wr-skeleton`, which opts these two regions out of the shared
+    wrapper's `display:none` without touching the rule the other pages depend on.
+
+    ⚠ AND THE GRID IS THE REAL ONE. The columns, the card shell and the padding are copied from the tiles row
+    below, not approximated, because the whole point is that nothing MOVES when the data lands.
+*@
+<div class="row g-4 mb-4 backbone-skeleton wr-skeleton" data-wr-skeleton-tiles>
+    @for (var i = 0; i < 4; i++)
+    {
+        <div class="col-12 col-sm-6 col-xl-3">
+            <section class="card h-100" aria-hidden="true">
+                @*
+                    The blocks mirror the real card's own layers — icon, heading, figure, qualifier, the facts
+                    table with its divider, and the floor — so the placeholder's height FOLLOWS the card's
+                    shape instead of being a number somebody guessed and then forgot to update.
+                *@
+                <div class="card-body p-4">
+                    <div class="shimmer skeleton-row wr-skel-avatar"></div>
+                    <div class="shimmer skeleton-row wr-skel-title"></div>
+                    <div class="shimmer skeleton-row wr-skel-figure"></div>
+                    <div class="shimmer skeleton-row wr-skel-line wr-skel-short"></div>
+                    <div class="wr-skel-facts">
+                        <div class="shimmer skeleton-row wr-skel-line"></div>
+                        <div class="shimmer skeleton-row wr-skel-line"></div>
+                        <div class="shimmer skeleton-row wr-skel-line wr-skel-short"></div>
+                    </div>
+                    <div class="shimmer skeleton-row wr-skel-foot skeleton-row-last"></div>
+                </div>
+            </section>
+        </div>
+    }
+</div>
+
 <div class="row g-4 mb-4" data-wr-tiles hidden>
-    <div class="col-12 col-md-6 col-xl-3">
-        <section class="card h-100">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <section class="card h-100 wr-kpi wr-kpi--cycle">
             <div class="card-body p-4">
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <div class="avatar flex-shrink-0"><span class="avatar-initial rounded bg-label-primary"><i class="bx bx-time-five"></i></span></div>
                     <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["CycleTimeTitle"]</h6>
                 </div>
-                <p class="h4 mb-1" data-wr-cycle-value></p>
-                @* MEDIAN BESIDE THE AVERAGE, never instead of it — a large gap between them says "there is a
-                   tail", which is the finding. Either number alone invites the wrong decision. *@
-                <p class="text-muted small mb-0" data-wr-cycle-median></p>
-                <p class="text-muted small mb-0" data-wr-cycle-over></p>
-                @* Direction against the previous period. Drawn from two real numbers the server measured, not
-                   from a pre-computed arrow nobody can check. *@
-                <p class="small mb-0" data-wr-cycle-trend hidden></p>
-                @* ⚠ CANCELLATIONS READ SEPARATELY. Averaged into the line above they turned "how long our work
-                   takes" into "how long before we gave up" — the defect this slice repairs. *@
-                <p class="text-muted small mb-0 mt-2" data-wr-cancel-value hidden></p>
+                <p class="wr-answer mb-0">
+                    <span class="wr-figure" data-wr-cycle-value></span><span class="wr-unit" data-wr-cycle-unit></span>
+                </p>
+                <p class="wr-qual mb-0" data-wr-cycle-over></p>
+                <dl class="wr-facts" data-wr-cycle-facts></dl>
+                <div class="wr-kpi-foot">
+                    <p class="mb-0" data-wr-cycle-trend hidden></p>
+                </div>
             </div>
         </section>
     </div>
-    <div class="col-12 col-md-6 col-xl-3">
-        <section class="card h-100">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <section class="card h-100 wr-kpi wr-kpi--rework">
             <div class="card-body p-4">
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <div class="avatar flex-shrink-0"><span class="avatar-initial rounded bg-label-warning"><i class="bx bx-revision"></i></span></div>
                     <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["ReworkTitle"]</h6>
                 </div>
-                @* ⚠ THE WHOLE LINE OPENS THE TASKS BEHIND IT — Dilim 1c. `data-wr-click="Returned"` is read by
-                   the same delegated handler every other clickable number uses; nothing here is bespoke. *@
-                <p class="h4 mb-1 wr-clickable" data-wr-rework-tasks data-wr-click="Returned"
-                   role="button" tabindex="0"></p>
-                <p class="small mb-0" data-wr-rework-trend hidden></p>
-                <p class="text-muted small mb-0" data-wr-rework-returns></p>
+                <p class="wr-answer mb-0">
+                    <span class="wr-figure wr-clickable" data-wr-rework-tasks data-wr-click="Returned"
+                          role="button" tabindex="0"></span><span class="wr-unit">@Localizer["UnitTasks"]</span>
+                </p>
+                <p class="wr-qual mb-0">@Localizer["ReworkQualifier"]</p>
+                <dl class="wr-facts" data-wr-rework-facts></dl>
+                <div class="wr-kpi-foot">
+                    <p class="mb-0" data-wr-rework-trend hidden></p>
+                </div>
             </div>
         </section>
     </div>
-    <div class="col-12 col-md-6 col-xl-3">
-        <section class="card h-100">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <section class="card h-100 wr-kpi wr-kpi--unattended">
             <div class="card-body p-4">
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <div class="avatar flex-shrink-0"><span class="avatar-initial rounded bg-label-danger"><i class="bx bx-user-x"></i></span></div>
                     <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["UnattendedTitle"]</h6>
                 </div>
-                <p class="h4 mb-1 wr-clickable" data-wr-unattended-value data-wr-click="Unattended"
-                   role="button" tabindex="0"></p>
-                @* AGEING — open work at the PERIOD'S END, so the same period says the same thing months later.
-                   It sits in this card because it answers the same question the card asks: what is waiting. *@
-                <p class="small mb-0 mt-2" data-wr-aging hidden></p>
-                <p class="text-muted small mb-0">@Localizer["UnattendedHint"]</p>
+                <p class="wr-answer mb-0">
+                    <span class="wr-figure wr-clickable" data-wr-unattended-value data-wr-click="Unattended"
+                          role="button" tabindex="0"></span><span class="wr-unit">@Localizer["UnitOpenWork"]</span>
+                </p>
+                <p class="wr-qual mb-0">@Localizer["UnattendedQualifier"]</p>
+                @*
+                    AGEING — open work at the PERIOD'S END, so the same period says the same thing months later.
+                    It sits in this card because it answers the same question the card asks: what is waiting.
+                *@
+                <dl class="wr-facts" data-wr-aging hidden></dl>
+                <div class="wr-kpi-foot">
+                    <p class="text-muted mb-0 wr-note"><i class="icon-base bx bx-error-circle icon-xs"></i><span>@Localizer["UnattendedHint"]</span></p>
+                </div>
             </div>
         </section>
     </div>
-    <div class="col-12 col-md-6 col-xl-3">
-        <section class="card h-100">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <section class="card h-100 wr-kpi wr-kpi--effort">
             <div class="card-body p-4">
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <div class="avatar flex-shrink-0"><span class="avatar-initial rounded bg-label-info"><i class="bx bx-bar-chart-alt-2"></i></span></div>
                     <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["EffortTitle"]</h6>
                 </div>
-                <p class="h6 mb-1" data-wr-effort-value></p>
-                <p class="text-muted small mb-1" data-wr-effort-over></p>
                 @*
-                    ⚠ HOURS AND A COUNT — NEVER A RATIO, AND THE NOTE SAYS WHY.
-                    Pack §8 excludes an efficiency percentage outright: turning estimate-versus-actual into a
-                    personal score makes people inflate estimates, which corrupts the only planning input the
-                    system has. The variance is a fact about the PLAN, and this line stops a reader doing the
-                    division in their head and attributing it to a person.
+                    ⚠ ONE BIG FIGURE, AND IT IS THE SPENT HOURS — UI-026's single-figure rule. An estimate is a
+                    plan somebody wrote down; spent hours are what actually happened, and a report publishes
+                    what happened. The estimate keeps its own row below, never divided into it — see the note.
                 *@
-                <p class="text-muted small mb-0 fst-italic">@Localizer["EffortHint"]</p>
+                <p class="wr-answer mb-0">
+                    <span class="wr-figure" data-wr-effort-value></span><span class="wr-unit">@Localizer["EffortSpentUnit"]</span>
+                </p>
+                <p class="wr-qual mb-0" data-wr-effort-over></p>
+                <dl class="wr-facts" data-wr-effort-facts></dl>
+                <div class="wr-kpi-foot">
+                    @*
+                        ⚠ HOURS AND A COUNT — NEVER A RATIO. Pack §8 excludes an efficiency percentage outright:
+                        turning estimate-versus-actual into a personal score makes people inflate estimates,
+                        which corrupts the only planning input the system has.
+                    *@
+                    <p class="text-muted mb-0 fst-italic">@Localizer["EffortHint"]</p>
+                </div>
             </div>
         </section>
     </div>
@@ -301,34 +457,180 @@
     TYPE picker was added: the shape is decided by what the axis IS, not by a preference a reader could set to
     something that misreads the data.
 *@
-<div class="row g-4" data-wr-charts hidden>
+@*
+    The chart skeletons carry the REAL chart heights (see `renderFlow`/`renderTimeliness`: 260, and the
+    outcomes bar's own 220 floor). A shorter placeholder would hand the reader a page that jumps the moment
+    the first series is drawn, which is the thing a skeleton exists to prevent.
+*@
+<div class="row g-4 backbone-skeleton wr-skeleton" data-wr-skeleton-charts>
     <div class="col-12 col-xl-6">
-        <section class="card h-100">
+        <section class="card h-100" aria-hidden="true">
             <div class="card-body p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["FlowTitle"]</h6>
-                <p class="text-muted small mb-3">@Localizer["FlowQuestion"]</p>
-                <div data-wr-chart-flow></div>
-                <p class="small mb-0 mt-2" data-wr-flow-trend hidden></p>
+                <div class="shimmer skeleton-row wr-skel-title"></div>
+                <div class="shimmer skeleton-row wr-skel-line wr-skel-short"></div>
+                <div class="shimmer skeleton-row wr-skel-chart skeleton-row-last"></div>
             </div>
         </section>
     </div>
     <div class="col-12 col-xl-6">
-        <section class="card h-100">
+        <section class="card h-100" aria-hidden="true">
             <div class="card-body p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["TimelinessTitle"]</h6>
-                <p class="text-muted small mb-3">@Localizer["TimelinessQuestion"]</p>
-                <div data-wr-chart-timeliness></div>
-                <p class="small mb-0 mt-2" data-wr-late-trend hidden></p>
+                <div class="shimmer skeleton-row wr-skel-title"></div>
+                <div class="shimmer skeleton-row wr-skel-line wr-skel-short"></div>
+                <div class="shimmer skeleton-row wr-skel-chart skeleton-row-last"></div>
             </div>
         </section>
     </div>
     <div class="col-12">
+        <section class="card h-100" aria-hidden="true">
+            <div class="card-body p-4">
+                <div class="shimmer skeleton-row wr-skel-title"></div>
+                <div class="shimmer skeleton-row wr-skel-line wr-skel-short"></div>
+                <div class="shimmer skeleton-row wr-skel-chart wr-skel-chart-sm skeleton-row-last"></div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<div class="row g-4" data-wr-charts hidden>
+    <div class="col-12 col-xl-6">
         <section class="card h-100">
             <div class="card-body p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["OutcomesTitle"]</h6>
-                <p class="text-muted small mb-3">@Localizer["OutcomesQuestion"]</p>
+                <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                    <div>
+                        <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["FlowTitle"]</h6>
+                        <p class="text-muted small mb-0">@Localizer["FlowQuestion"]</p>
+                    </div>
+                    <p class="mb-0" data-wr-flow-trend hidden></p>
+                </div>
+                <div data-wr-chart-flow></div>
+            </div>
+        </section>
+    </div>
+    <div class="col-12 col-xl-6">
+        <section class="card h-100">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                    <div>
+                        <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["TimelinessTitle"]</h6>
+                        <p class="text-muted small mb-0">@Localizer["TimelinessQuestion"]</p>
+                    </div>
+                    <p class="mb-0" data-wr-late-trend hidden></p>
+                </div>
+                @*
+                    ⚠ THE LEGEND IS OURS, NOT THE LIBRARY'S — and only because the library's cannot do the one
+                    thing this legend is for. Apex renders its entries as a single flex line of text, so the
+                    counts and shares land wherever each label happens to end and the eye cannot compare them
+                    down a column. Three aligned columns (name · count · share) is what turns three lines into
+                    a table you can read at a glance, and it needs real markup.
+
+                    ⚠ AND THE NUMBERS IN IT OPEN THEIR OWN WORK, like every other published number on this
+                    screen (Dilim 1c). Each row carries `data-wr-click` and is read by the SAME delegated
+                    handler the chart, the tiles and the ageing sentence already use — a legend that printed
+                    counts you could not click would be the one dead number on the page.
+                *@
+                <div class="wr-donut d-flex flex-wrap align-items-center gap-3">
+                    <div class="wr-donut-chart" data-wr-chart-timeliness></div>
+                    <ul class="wr-legend list-unstyled mb-0" data-wr-timeliness-legend></ul>
+                </div>
+            </div>
+        </section>
+    </div>
+    <div class="col-12 col-xl-8">
+        <section class="card h-100">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                    <div>
+                        <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["OutcomesTitle"]</h6>
+                        <p class="text-muted small mb-0">@Localizer["OutcomesQuestion"]</p>
+                    </div>
+                </div>
                 <div data-wr-chart-outcomes></div>
                 <p class="text-muted mb-0" data-wr-outcomes-empty hidden>@Localizer["OutcomesEmpty"]</p>
+            </div>
+        </section>
+    </div>
+    @*
+        ── THE PERIOD, IN ONE COLUMN ────────────────────────────────────────────────────────────────────────
+        ⚠ THE CARD IS `Platform/Tenants/Create.cshtml`'s OWN SUMMARY CARD, borrowed rather than designed: the
+        8/4 split, the `d-flex justify-content-between` rows with a muted label and a
+        `fw-medium font-monospace text-heading` value, the `<hr>`, and the coloured `bxs-circle` footnote all
+        come from there. Even the decision to set these figures in a monospaced face is that card's, not this
+        screen's — which is why not one line of CSS is added for this panel.
+
+        ⚠ EVERY NUMBER HERE IS ALSO SOMEWHERE ELSE ON THIS PAGE, and that is the honest cost of a summary. It
+        is paid down the only way it can be: each figure OPENS THE SAME BUCKET its tile or its bar opens, from
+        the same `data-wr-click` vocabulary, so the two can disagree about presentation but never about which
+        rows they mean.
+
+        ⚠ AND NO RATIO. A "completion rate" of closed ÷ opened was in the design this came from and is left
+        out on purpose: the work that CLOSED in a period is mostly not the work that OPENED in it, so the
+        division is not a rate of anything — it falls when demand rises even if the team finished twice as
+        much. See `EffortHint` for the same rule stated at the other end of the screen.
+    *@
+    <div class="col-12 col-xl-4">
+        @*
+            ⚠ `d-flex flex-column` + `mt-auto` ON THE DIVIDER — the card matches the chart beside it in height
+            (both `h-100`), which is right and stays; the question is where the LEFTOVER space goes. It was
+            falling under the last line, so the note floated 37px above the card's floor while the card's own
+            padding is 16 — the note looked abandoned rather than placed. Pinning the divider to the bottom
+            moves that slack ABOVE it, where a divider's job is to absorb it.
+        *@
+        <section class="card h-100" data-wr-summary hidden>
+            <div class="card-body p-4 d-flex flex-column">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SummaryTitle"]</h6>
+
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted">@Localizer["SummaryPeriod"]</span>
+                    <span class="fw-medium font-monospace text-heading" data-wr-summary-days></span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted">@Localizer["Opened"]</span>
+                    <span class="fw-medium font-monospace text-heading wr-clickable"
+                          data-wr-summary-opened data-wr-click="Opened" role="button" tabindex="0"></span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted">@Localizer["Closed"]</span>
+                    <span class="fw-medium font-monospace text-heading wr-clickable"
+                          data-wr-summary-closed data-wr-click="Closed" role="button" tabindex="0"></span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted">@Localizer["Completed"]</span>
+                    <span class="fw-medium font-monospace text-heading wr-clickable"
+                          data-wr-summary-completed data-wr-click="Completed" role="button" tabindex="0"></span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted">@Localizer["Cancelled"]</span>
+                    <span class="fw-medium font-monospace text-heading wr-clickable"
+                          data-wr-summary-cancelled data-wr-click="Cancelled" role="button" tabindex="0"></span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">@Localizer["UnattendedTitle"]</span>
+                    <span class="fw-medium font-monospace text-heading wr-clickable"
+                          data-wr-summary-unattended data-wr-click="Unattended" role="button" tabindex="0"></span>
+                </div>
+
+                @*
+                    ⚠ `mb-3 mt-auto`, NOT `my-3 mt-auto`. Both are spacing utilities of equal specificity, so
+                    which of `my-3`'s margin-top and `mt-auto` wins would be decided by their order inside
+                    Bootstrap's own generated stylesheet — a coin toss this file cannot see. Naming only the
+                    bottom margin leaves nothing to collide with.
+                *@
+                <hr class="mb-3 mt-auto" />
+                @*
+                    The period and the scope the numbers above were computed under — read from the RESPONSE
+                    (`scopeApplied`), never from the picker, for the reason `renderScope` gives.
+                *@
+                @*
+                    ⚠ `align-items-center` AND NO `mt-1` — back to the borrowed pattern exactly. The nudge was
+                    mine, and it was a guess: MEASURED, `align-items-start` plus a 4px top margin put the dot's
+                    centre 2.5px BELOW the sentence's. The card this was copied from centres the two and adds
+                    nothing, which is the same answer arrived at honestly.
+                *@
+                <div class="d-flex align-items-center">
+                    <i class="bx bxs-circle text-success me-2"></i>
+                    <small class="text-muted" data-wr-summary-note></small>
+                </div>
             </div>
         </section>
     </div>
@@ -336,8 +638,12 @@
     <div class="col-12 col-xl-6" data-wr-groups-card hidden>
         <section class="card h-100">
             <div class="card-body p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-1" data-wr-groups-title></h6>
-                <p class="text-muted small mb-3">@Localizer["GroupsQuestion"]</p>
+                <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                    <div>
+                        <h6 class="text-uppercase text-heading fw-semibold mb-0" data-wr-groups-title></h6>
+                        <p class="text-muted small mb-0">@Localizer["GroupsQuestion"]</p>
+                    </div>
+                </div>
                 <div data-wr-chart-groups></div>
                 @*
                     ⚠ THE CAP, SAID OUT LOUD. Fifty groups is a reading limit; beyond it the tail is folded into
@@ -372,12 +678,37 @@
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
                 aria-label="@Localizer["ItemsClose"]"></button>
     </div>
-    <div class="offcanvas-body p-4">
+    @*
+        ⚠ THE BODY IS A PANEL SURFACE, NOT WHITE — the rows below are cards, and a card only reads as a card
+        when the thing behind it is a shade darker. That is the same relationship the page already has with
+        its own cards, borrowed rather than invented.
+    *@
+    <div class="offcanvas-body p-4 wr-items-body">
         <p class="text-muted small mb-3" data-wr-items-count></p>
         <p class="text-muted" data-wr-items-loading hidden>@Localizer["Loading"]</p>
-        <p class="text-muted" data-wr-items-empty hidden>@Localizer["ItemsEmpty"]</p>
+        @*
+            ⚠ AN EMPTY CELL IS A STATE, NOT AN ERROR. As one muted sentence pinned to the top-left it read as
+            a failure notice; centred with its own icon and a second line it reads as "there is nothing here",
+            which is what actually happened. The dashed border says the same thing the rows' solid ones do —
+            a card is meant to be here, and it has no contents.
+        *@
+        @*
+            ⚠ `.sp-emptybox` IS THE PRODUCT'S OWN EMPTY BOX, borrowed rather than rebuilt — the dashed border,
+            the padding and the icon sizing already live there. Only the SURFACE is added on top: the panel
+            behind this is grey and the results are white cards, so an empty box on the grey read as a hole in
+            the panel rather than as a card with nothing in it.
+
+            ⚠ AND THE ICON IS ONE THAT EXISTS. `bx-inbox` is not in this product's icon font — it rendered as
+            an empty grey square, which is worse than no icon at all because it reads as a broken image.
+            `bx-archive` is defined and already used across the product; `IconExistsInTheFont` now checks it.
+        *@
+        <div class="wr-items-empty sp-emptybox text-center text-muted" data-wr-items-empty hidden>
+            <i class="bx bx-archive"></i>
+            <p class="wr-items-empty-title mb-1">@Localizer["ItemsEmpty"]</p>
+            <p class="small mb-0">@Localizer["ItemsEmptyHint"]</p>
+        </div>
         <p class="text-danger" data-wr-items-error hidden>@Localizer["ItemsLoadFailed"]</p>
-        <div data-wr-items-list></div>
+        <div class="wr-items-list" data-wr-items-list></div>
         <button type="button" class="btn btn-outline-primary btn-sm mt-3" data-wr-items-more hidden>
             @* Text filled in by the script with the real remaining count — see ItemsShowMore. *@
         </button>

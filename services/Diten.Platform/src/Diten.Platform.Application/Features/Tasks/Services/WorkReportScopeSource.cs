@@ -6,6 +6,30 @@ using Microsoft.Extensions.Logging;
 namespace Diten.Platform.Application.Features.Tasks.Services;
 
 /// <summary>
+/// WHICH SCOPE A READER ASKED TO SEE — Dilim 1f. A PREFERENCE, never a permission.
+///
+/// <para><b>⚠ THE ONE RULE THIS TYPE EXISTS TO CARRY: a preference can only NARROW, never widen.</b>
+/// <see cref="Own"/> is honoured unconditionally — even from a caller who could see the whole tenant, because
+/// asking to see less of what you are already entitled to is never a security question. <see cref="Tenant"/> is
+/// honoured ONLY when <see cref="IActorPermissionContext"/> already says so; asked for by anyone else, it is
+/// silently ignored rather than rejected — see <see cref="WorkReportScopeSource.ResolveAsync"/> for why a 403
+/// is the wrong answer here.</para>
+/// </summary>
+/// <remarks>
+/// ⚠ STRING ON THE WIRE, for the reason every other enum in this file is: a bare number reaching a client is a
+/// defect this module has already shipped twice.
+/// </remarks>
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+public enum WorkReportScopePreference
+{
+    /// <summary>Just the caller's own — narrows even a tenant-wide grant. See the type's own remarks.</summary>
+    Own = 0,
+
+    /// <summary>The whole tenant — granted ONLY if the caller's permission already allows it.</summary>
+    Tenant = 1
+}
+
+/// <summary>
 /// WHOSE WORK A WORK-REPORT CALLER MAY SEE — resolved in ONE place, for every reader of the report.
 ///
 /// <para><b>⚠ EXTRACTED IN DILIM 1c, AND EXTRACTED RATHER THAN COPIED.</b> The list endpoint needs exactly the
@@ -28,7 +52,13 @@ namespace Diten.Platform.Application.Features.Tasks.Services;
 /// </summary>
 public interface IWorkReportScopeSource
 {
-    Task<WorkReportScope> ResolveAsync(CancellationToken ct = default);
+    /// <param name="preference">
+    /// A DISPLAY preference, not a grant — see <see cref="WorkReportScopePreference"/>. Null means "whatever the
+    /// caller's permission already defaults to", which is BOTH the pre-1f behaviour (nothing regresses when no
+    /// caller ever sends this) and exactly what <see cref="WorkReportScopePreference.Tenant"/> falls back to
+    /// when the permission is missing — there is one fallback path, not two.
+    /// </param>
+    Task<WorkReportScope> ResolveAsync(WorkReportScopePreference? preference = null, CancellationToken ct = default);
 }
 
 /// <inheritdoc />
@@ -61,18 +91,44 @@ public sealed class WorkReportScopeSource : IWorkReportScopeSource
         _logger = logger;
     }
 
-    public async Task<WorkReportScope> ResolveAsync(CancellationToken ct = default)
+    public async Task<WorkReportScope> ResolveAsync(
+        WorkReportScopePreference? preference = null,
+        CancellationToken ct = default)
     {
+        /*
+         * ⚠ `Own` IS HONOURED FIRST, UNCONDITIONALLY — before the permission check below ever runs. A caller
+         * entitled to the whole tenant asking to see less of what they already hold is never a security
+         * question; short-circuiting here is what makes that true regardless of what the permission check
+         * would otherwise have granted.
+         */
+        if (preference == WorkReportScopePreference.Own)
+        {
+            return await ResolveOwnScopeAsync(ct);
+        }
+
         /*
          * A PLATFORM actor is above a single tenant and already passes every permission check by definition
          * (IActorPermissionContext.IsPlatformActor). Making it walk the org tree of a tenant it does not belong
          * to would resolve to nothing and report an empty page to the one caller who is entitled to everything.
+         *
+         * ⚠ `preference == Tenant` READS EXACTLY LIKE `preference == null` HERE, ON PURPOSE. Both ask for
+         * tenant-wide if the permission allows it; the only difference is what happens when it does NOT — and
+         * that difference lives entirely in the fall-through below, not in this condition. A caller who asked
+         * for `Tenant` without the permission is not attempting an escalation to be rejected; they are stating a
+         * DISPLAY preference for a permission they do not hold, and the honest answer is what they were always
+         * going to get anyway: their own scope. See the type's own remarks for why a 403 is the wrong answer.
          */
         if (_permissions.IsPlatformActor || _permissions.Has(TaskPermissions.WorkReportReadTenantWide))
         {
             return WorkReportScope.TenantWideScope();
         }
 
+        return await ResolveOwnScopeAsync(ct);
+    }
+
+    /// <summary>The caller's OWN resolved scope — org units, positions and people they hold, never the tenant.</summary>
+    private async Task<WorkReportScope> ResolveOwnScopeAsync(CancellationToken ct)
+    {
         if (!_tenantContext.IsResolved || _currentUser.UserId == Guid.Empty)
         {
             // No tenant or no identifiable caller: there is nobody to compute a scope for.

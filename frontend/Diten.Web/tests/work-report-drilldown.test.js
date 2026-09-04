@@ -29,6 +29,16 @@ const NEW_KEYS = [
 ];
 
 const LABELS = {
+  summaryTitle: "Period summary", summaryPeriod: "Period", summaryDays: "{0} days",
+  summaryScopeNote: "{0} · {1}",
+
+  unitDays: "days", unitTasks: "tasks", unitOpenWork: "open",
+  reworkQualifier: "work sent back to its owner", unattendedQualifier: "nobody has taken these on",
+  labelMedian: "Median", labelUntilCancelled: "Until cancelled", labelCancelled: "Cancelled",
+  labelTotalReturns: "Total returns", labelEstimated: "Estimated",
+  agingUpTo7Label: "0-7 days", agingFrom8To30Label: "8-30 days", agingOlderThan30Label: "30+ days",
+  effortSpentUnit: "h spent", hours: "{0} h",
+
   scopeScoped: "Your scope", scopeTenant: "Whole tenant",
   scopeScopedHint: "Counts only the work you are entitled to see.",
   scopeTenantHint: "Counts every task in the tenant.",
@@ -38,18 +48,18 @@ const LABELS = {
   periodInvalid: "The end of the period must come after its start.",
   flowTitle: "Opened and closed", opened: "Opened", closed: "Closed", completed: "Completed", cancelled: "Cancelled",
   onTime: "On time", late: "Late", withoutDueDate: "No deadline set", timelinessTitle: "Against the deadline",
+  sharePercent: "{0}%",
   outcomesEmpty: "No closure was recorded with an outcome.",
   groupsTitle: "By {0}", groupUnnamed: "Not set", groupByOrganizationUnit: "Organisation unit",
-  cycleTimeDays: "{0} days", cycleTimeOver: "over {0} closed", reworkTasks: "{0} tasks",
-  reworkReturns: "{0} returns in total", effortHours: "{0} h estimated · {1} h spent", effortOver: "over {0} tasks",
+  cycleTimeDays: "{0} days", cycleTimeOver: "over {0} closed",
+  effortOver: "over {0} tasks",
   notMeasured: "Not measured", groupByLegalEntity: "Company", groupUnassigned: "Company unknown",
   groupOther: "All other groups", groupsTruncated: "Showing the busiest {0}; {1} more are folded in.",
   filterAny: "Any", priorityHigh: "High", priorityMedium: "Medium", priorityLow: "Low",
-  cycleTimeMedian: "median {0}", cancelTime: "Until cancelled: average {0} · median {1} ({2} cancelled)",
-  agingBuckets: "Age of open work — 0-7 days: {0} · 8-30 days: {1} · 30+ days: {2}",
   trendSame: "same as the previous period", trendUp: "+{0} against the previous period (was {1})",
   trendDown: "-{0} against the previous period (was {1})",
-  itemsClose: "Close", itemsEmpty: "No tasks match this cell.", itemsLoadFailed: "The list could not be loaded.",
+  itemsClose: "Close", itemsEmpty: "No tasks match this cell.",
+  itemsEmptyHint: "No task in the selected period falls into this measure.", itemsLoadFailed: "The list could not be loaded.",
   itemsCount: "Showing {0} of {1}", itemsShowMore: "Show {0} more", itemsStatusOpen: "Open",
   itemsUnassigned: "Unassigned", itemsSubtitleRange: "{0} – {1}", itemsSubtitleWithGroup: "{0} · {1}",
   itemsAging0to7: "Open 0-7 days", itemsAging8to30: "Open 8-30 days", itemsAging30plus: "Open 30+ days",
@@ -66,24 +76,33 @@ const MARKUP = `
   </form>
   <div data-wr-scope hidden><span data-wr-scope-badge></span><span data-wr-scope-hint></span></div>
   <p data-wr-status></p>
+  <div data-wr-skeleton-tiles hidden></div>
+  <div data-wr-skeleton-charts hidden></div>
   <div data-wr-tiles hidden>
-    <p data-wr-cycle-value></p><p data-wr-cycle-median></p><p data-wr-cycle-over></p>
-    <p data-wr-cycle-trend hidden></p><p data-wr-cancel-value hidden></p>
-    <p data-wr-rework-tasks data-wr-click="Returned" role="button" tabindex="0"></p>
-    <p data-wr-rework-returns></p><p data-wr-rework-trend hidden></p>
-    <p data-wr-unattended-value data-wr-click="Unattended" role="button" tabindex="0"></p>
-    <p data-wr-aging hidden></p>
-    <p data-wr-effort-value></p><p data-wr-effort-over></p>
+    <p data-wr-cycle-value></p><p data-wr-cycle-unit></p><p data-wr-cycle-over></p>
+    <dl data-wr-cycle-facts></dl><p data-wr-cycle-trend hidden></p>
+    <p data-wr-rework-tasks data-wr-click="Returned" role="button" tabindex="0"></p><dl data-wr-rework-facts></dl><p data-wr-rework-trend hidden></p>
+    <p data-wr-unattended-value data-wr-click="Unattended" role="button" tabindex="0"></p><dl data-wr-aging hidden></dl>
+    <p data-wr-effort-value></p><p data-wr-effort-over></p><dl data-wr-effort-facts></dl>
   </div>
   <select id="wrLegalEntity"><option value="">Any</option></select>
   <select id="wrUnit"><option value="">Any</option></select>
   <select id="wrTaskType"><option value="">Any</option></select>
   <select id="wrAssignee"><option value="">Any</option></select>
   <select id="wrPriority"><option value="">Any</option></select>
+  <div data-wr-summary hidden>
+    <span data-wr-summary-days></span>
+    <span data-wr-summary-opened data-wr-click="Opened"></span>
+    <span data-wr-summary-closed data-wr-click="Closed"></span>
+    <span data-wr-summary-completed data-wr-click="Completed"></span>
+    <span data-wr-summary-cancelled data-wr-click="Cancelled"></span>
+    <span data-wr-summary-unattended data-wr-click="Unattended"></span>
+    <span data-wr-summary-note></span>
+  </div>
   <div data-wr-charts hidden>
     <div data-wr-chart-flow></div><p data-wr-flow-trend hidden></p>
     <div data-wr-chart-outcomes></div><p data-wr-outcomes-empty hidden></p>
-    <div data-wr-chart-timeliness></div><p data-wr-late-trend hidden></p>
+    <div data-wr-chart-timeliness></div><ul data-wr-timeliness-legend></ul><p data-wr-late-trend hidden></p>
     <div data-wr-groups-card hidden><h6 data-wr-groups-title></h6><div data-wr-chart-groups></div>
       <p data-wr-groups-truncated hidden></p></div>
   </div>
@@ -92,7 +111,7 @@ const MARKUP = `
     <div class="offcanvas-body">
       <p data-wr-items-count></p>
       <p data-wr-items-loading hidden></p>
-      <p data-wr-items-empty hidden>${LABELS.itemsEmpty}</p>
+      <div data-wr-items-empty hidden><p>${LABELS.itemsEmpty}</p><p>${LABELS.itemsEmptyHint}</p></div>
       <p data-wr-items-error hidden>${LABELS.itemsLoadFailed}</p>
       <div data-wr-items-list></div>
       <button type="button" data-wr-items-more hidden></button>
@@ -104,6 +123,7 @@ const MARKUP = `
 
 let drawn = [];
 let fetchCalls = [];
+let fetchResponse = null;
 
 /** A minimal, faithful ApexCharts double that ALSO fires the click handler this file wires up — the harness
  *  used by the earlier WorkReport suites never needed to, because nothing was clickable before this slice. */
@@ -130,9 +150,17 @@ const boot = () => {
     })
   };
 
+  fetchResponse = null;
   global.fetch = (url) => {
     fetchCalls.push(url);
-    return Promise.resolve({ ok: false, json: () => Promise.resolve(null) });
+    /*
+     * ⚠ THE DEFAULT IS STILL A FAILED FETCH. Every test written before this one asserts on the REQUEST and
+     * relies on nothing rendering; only a test that sets `fetchResponse` gets a body back, so adding one
+     * cannot quietly change what the others are measuring.
+     */
+    return fetchResponse
+      ? Promise.resolve({ ok: true, json: () => Promise.resolve(fetchResponse) })
+      : Promise.resolve({ ok: false, json: () => Promise.resolve(null) });
   };
 
   loadScript("wwwroot/assets/js/Tasks/WorkReport/index.js");
@@ -202,17 +230,19 @@ describe("(1) every published cell is reachable, and only through the shared doo
     expect(parseQuery(fetchCalls[1]).bucket).toBe("Returned");
   });
 
-  it("opens the three ageing bands SEPARATELY, from inside one templated sentence", () => {
+  it("opens the three ageing bands SEPARATELY, one row each", () => {
     /*
-     * ⚠ THE SENTENCE ITSELF IS UNTOUCHED — Dilim 1b's own test reads `.textContent` of this element and
-     * expects the full localized string. Wrapping the three numbers in clickable spans must not change that
-     * concatenation, which is exactly what this test (and 1b's, run alongside it) proves.
+     * ⚠ THESE WERE THREE NUMBERS INSIDE ONE LOCALIZED SENTENCE UNTIL THE CARDS GOT ONE SKELETON, and what this
+     * test guards did not change with the shape: three bands, three DIFFERENT buckets, in the order the card
+     * lists them. The old failure it was written against — one handler wired to all three, so every band
+     * opened the first one — is just as possible in rows as it was in spans.
      */
     const screen = boot();
     screen.setLastQuery({ from: "2026-06-01", to: "2026-07-01", groupBy: "None" });
     screen.render(busy());
 
-    expect(text("[data-wr-aging]")).toBe("Age of open work — 0-7 days: 2 · 8-30 days: 1 · 30+ days: 5");
+    const rows = [...document.querySelectorAll("[data-wr-aging] dt")].map((dt) => dt.textContent);
+    expect(rows, "the bands stopped being named").toEqual(["0-7 days", "8-30 days", "30+ days"]);
 
     const spans = document.querySelectorAll("[data-wr-aging] [data-wr-click]");
     expect(spans, "no clickable spans were built inside the sentence").toHaveLength(3);
@@ -232,13 +262,25 @@ describe("(1) every published cell is reachable, and only through the shared doo
     expect(parseQuery(fetchCalls[0]).bucket).toBe("Completed");
   });
 
-  it("opens the TIMELINESS chart's own series — one point each, series is the click", () => {
-    const screen = boot();
-    screen.setLastQuery({ from: "2026-06-01", to: "2026-07-01", groupBy: "None" });
-    screen.render(busy());
+  it("EVERY slice of the timeliness ring opens its OWN band — not just the one that happens to be first", () => {
+    /*
+     * ⚠ THIS TEST GREW A CASE WHEN THE CHART BECAME A DONUT, AND THE REASON IS THE WHOLE POINT.
+     * As a stacked bar each band was its own SERIES and the handler read `seriesIndex`; as a donut the three
+     * bands are three POINTS of one series and apex reports them in `dataPointIndex`. A handler left reading
+     * the old field throws nothing and logs nothing — `seriesIndex` is 0 for every slice of a donut, so every
+     * click would have opened "on time", and a reader chasing late work would have been handed the opposite
+     * of what they asked for. One case per slice is what makes that failure visible.
+     */
+    const bands = [[0, "OnTime"], [1, "Late"], [2, "WithoutDueDate"]];
+    bands.forEach(([index, bucket]) => {
+      const screen = boot();
+      screen.setLastQuery({ from: "2026-06-01", to: "2026-07-01", groupBy: "None" });
+      screen.render(busy());
+      fetchCalls = [];   // each slice is measured on its own, not on the tail of the previous one
 
-    clickChart("[data-wr-chart-timeliness]", 1, 0);   // the "Late" series
-    expect(parseQuery(fetchCalls[0]).bucket).toBe("Late");
+      clickChart("[data-wr-chart-timeliness]", 0, index);
+      expect(parseQuery(fetchCalls[0]).bucket, `slice ${index} opened the wrong band`).toBe(bucket);
+    });
   });
 
   it("opens an OUTCOME slice with the RAW CODE, never the translated label", () => {
@@ -311,6 +353,178 @@ describe("(1) every published cell is reachable, and only through the shared doo
       expect(handler, "a chart click handler bypasses openItems").toMatch(/openItems\(/);
       expect(handler, "a chart click handler calls fetch directly").not.toMatch(/\bfetch\(/);
     });
+  });
+});
+
+describe("(1c) the period summary repeats figures, never meanings", () => {
+  it("publishes the flow the tiles and bars already publish, from the same payload", () => {
+    const screen = boot();
+    screen.render(busy());
+
+    // busy(): opened 12, closed 9, completed 7, cancelled 2, unattended 4.
+    expect(text("[data-wr-summary-opened]")).toBe("12");
+    expect(text("[data-wr-summary-closed]")).toBe("9");
+    expect(text("[data-wr-summary-completed]")).toBe("7");
+    expect(text("[data-wr-summary-cancelled]")).toBe("2");
+    expect(text("[data-wr-summary-unattended]")).toBe("4");
+    expect(hidden("[data-wr-summary]"), "the summary never appeared").toBe(false);
+  });
+
+  it("counts the period's days with `to` EXCLUSIVE, the way the query sends it", () => {
+    /*
+     * ⚠ `to` IS THE FIRST DAY NOT COUNTED — that is what the picker's value means and what `load()` sends.
+     * A plain difference is therefore already the number of days IN the period; the tempting "+1 to include
+     * both ends" would report 31 for a month and disagree with every count beside it.
+     */
+    const screen = boot();
+    screen.render(busy({ from: "2026-06-01T00:00:00Z", to: "2026-07-01T00:00:00Z" }));
+    expect(text("[data-wr-summary-days]")).toBe("30 days");
+  });
+
+  it("names the scope the SERVER applied, not the one a chip asked for", () => {
+    const screen = boot();
+    screen.render(busy({ scopeApplied: "tenant" }));
+    expect(text("[data-wr-summary-note]")).toContain(LABELS.scopeTenant);
+
+    screen.render(busy({ scopeApplied: "scoped" }));
+    expect(text("[data-wr-summary-note]"), "the note kept a scope the report was not computed under")
+      .toContain(LABELS.scopeScoped);
+  });
+
+  it("opens the SAME bucket the tile beside it opens — every row of it", async () => {
+    /*
+     * ⚠ THIS IS WHAT PAYS FOR THE REPETITION. Every figure in this panel is also somewhere else on the page,
+     * which is only safe while the two cannot disagree about WHICH ROWS they mean. A summary row wired to a
+     * bucket of its own — or to none — would be a second, unwatched answer to a question the tiles already
+     * answer.
+     */
+    const rows = [["opened", "Opened"], ["closed", "Closed"], ["completed", "Completed"],
+                  ["cancelled", "Cancelled"], ["unattended", "Unattended"]];
+
+    /*
+     * ⚠ THE SHIPPED MARKUP IS CHECKED FIRST, AND THE FIRST DRAFT OF THIS TEST DID NOT. The buckets are static
+     * attributes in the view; the jsdom fixture carries its OWN copy of them, so a row mis-wired in
+     * `WorkReport.cshtml` — cancelled pointing at "Closed", say — left this test measuring the fixture's
+     * agreement with itself and passing. Live-sabotaged and confirmed green before this block existed. The
+     * fixture proves the CLICK reaches `openItems`; only the view can prove it names the right bucket.
+     */
+    rows.forEach(([hook, bucket]) => {
+      const tag = new RegExp(`data-wr-summary-${hook}[^>]*`).exec(VIEW);
+      expect(tag, `the ${hook} row is gone from the view`).toBeTruthy();
+      expect(tag[0], `the ${hook} row is wired to the wrong bucket in the shipped markup`)
+        .toContain(`data-wr-click="${bucket}"`);
+    });
+
+    for (const [hook, bucket] of rows) {
+      const screen = boot();
+      screen.setLastQuery({ from: "2026-06-01", to: "2026-07-01", groupBy: "None" });
+      screen.render(busy());
+      fetchCalls = [];
+
+      document.querySelector(`[data-wr-summary-${hook}]`).click();
+      expect(parseQuery(fetchCalls[0]).bucket, `the ${hook} row opened the wrong work`).toBe(bucket);
+    }
+  });
+
+  it("computes no rate — closed over opened is not a completion rate", () => {
+    /*
+     * The design this panel came from carried "completion rate 19% · 16/83". The work that CLOSED in a period
+     * is mostly not the work that OPENED in it, so that division is not a rate of anything: it falls when
+     * demand rises even if the team finished twice as much. Checked in the shipped renderer, because it is a
+     * one-line convenience away from coming back.
+     */
+    const fn = SCRIPT.slice(SCRIPT.indexOf("var renderSummary"), SCRIPT.indexOf("var renderTiles"));
+    expect(fn, "the summary started dividing published figures")
+      .not.toMatch(/flow\.(opened|closed|completed)\s*\/|\/\s*flow\.(opened|closed)/);
+    expect(fn, "a rate or a share appeared in the summary").not.toMatch(/rate|percent|share/i);
+  });
+});
+
+describe("(1b) one result, one card — what a row actually says", () => {
+  const openWith = async (items) => {
+    const screen = boot();
+    screen.setLastQuery({ from: "2026-06-01", to: "2026-07-01", groupBy: "None" });
+    screen.render(busy());
+    fetchResponse = { data: { total: items.length, skip: 0, hasMore: false, items } };
+    await screen.openItems("Closed");
+    return [...document.querySelectorAll("[data-wr-items-list] a")];
+  };
+
+  it("renders each result as the product's OWN work-item row, linking to the task", async () => {
+    /*
+     * ⚠ THE ROW IS BORROWED, NOT BUILT. `.wcn-row` is Görev Merkezi's work-item card — padding, radius,
+     * hover tint, focus ring and skin-aware border/shadow already decided. This panel lists work items too,
+     * so a bespoke row here would be a second answer to a question the product already answered, drifting
+     * from it the first time either side is touched.
+     */
+    const rows = await openWith([
+      { id: "t1", title: "Regression — open subtask", lifecycle: "Done", assigneeUserId: "u1",
+        dueAt: "2026-09-01T00:00:00Z", closedAt: "2026-08-25T00:00:00Z" }
+    ]);
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0].className, "the row stopped being the shared work-item card").toContain("wcn-row");
+    expect(rows[0].getAttribute("href"), "the row stopped opening the task").toBe("/WorkCenterNext/Details/t1");
+  });
+
+  it("says the state in WORDS as well as in colour, and the two always agree", async () => {
+    /*
+     * ⚠ COLOUR ALONE EXCLUDES ANYONE WHO CANNOT SEPARATE THE TWO HUES, so the badge spells the state out and
+     * the bar is a scanning aid on top of a label. And they are read from ONE table in the script: a row
+     * whose bar said "done" while its badge said "cancelled" would be worse than a row with neither, because
+     * a reader trusts a colour faster than they read a word and would be trusting the wrong one.
+     */
+    const rows = await openWith([
+      { id: "d", title: "Finished", lifecycle: "Done" },
+      { id: "c", title: "Abandoned", lifecycle: "Cancelled" },
+      { id: "o", title: "Still going", lifecycle: "InProgress" }
+    ]);
+
+    const read = (row) => ({
+      word: row.querySelector(".badge").textContent,
+      badge: row.querySelector(".badge").className,
+      accent: row.querySelector(".wcn-row-accent").className
+    });
+
+    expect(rows.map(read)).toEqual([
+      { word: LABELS.completed, badge: "badge bg-label-success", accent: "wcn-row-accent wcn-row-accent-success" },
+      { word: LABELS.cancelled, badge: "badge bg-label-danger", accent: "wcn-row-accent wcn-row-accent-danger" },
+      // Every non-terminal state reads as one word here; which one it is in detail is the detail page's question.
+      { word: LABELS.itemsStatusOpen, badge: "badge bg-label-secondary", accent: "wcn-row-accent wcn-row-accent-secondary" }
+    ]);
+  });
+
+  it("stacks the facts instead of stringing them into one sentence", async () => {
+    /*
+     * ⚠ THE DEFECT THIS PINS. Status, person and two dates used to be one line of dot-separated clauses that
+     * broke wherever the panel's width happened to fall, so no two rows stood the same height and nothing
+     * lined up down the list. Title and state on the first line, person and dates on the second.
+     */
+    const rows = await openWith([
+      { id: "t1", title: "Regression — open subtask", lifecycle: "Done", assigneeUserId: "u1",
+        dueAt: "2026-09-01T00:00:00Z", closedAt: "2026-08-25T00:00:00Z" }
+    ]);
+
+    expect(rows[0].querySelector(".wr-item-title").textContent).toBe("Regression — open subtask");
+    // The person is named in full beside the monogram — two letters alone would identify nobody.
+    expect(rows[0].querySelector(".wr-item-who").textContent).toContain("u1");
+    expect(rows[0].querySelector(".wr-item-avatar").textContent).toBe("U1");
+    expect(rows[0].querySelector(".wr-item-dates").textContent).toMatch(/due .+ · closed .+/);
+
+    // And the state is NOT in the meta line any more — that is what "stacked" means here.
+    expect(rows[0].querySelector(".wr-item-meta").textContent).not.toContain(LABELS.completed);
+  });
+
+  it("draws an empty cell as a state, with both of its lines", async () => {
+    // As one muted sentence pinned to the top-left it read as a failure notice. PRESENCE FIRST: the rows above
+    // prove the list renders, so an empty result here is a state rather than a panel that never worked.
+    const rows = await openWith([]);
+    expect(rows).toHaveLength(0);
+
+    const empty = document.querySelector("[data-wr-items-empty]");
+    expect(empty.hidden, "the empty state stayed hidden on an empty cell").toBe(false);
+    expect(empty.textContent).toContain(LABELS.itemsEmpty);
+    expect(empty.textContent, "the empty state lost its second line").toContain(LABELS.itemsEmptyHint);
   });
 });
 
@@ -406,7 +620,10 @@ describe("(3) the panel itself", () => {
 
     return screen.openItems("Cancelled").then(() => {
       expect(hidden("[data-wr-items-empty]"), "the empty state never appeared").toBe(false);
-      expect(text("[data-wr-items-empty]")).toBe(LABELS.itemsEmpty);
+      // ⚠ `toContain`, NOT `toBe` — the empty state grew a second, explanatory line when it stopped being one
+      // muted sentence pinned to the top-left and became a state. What this test guards is that the panel
+      // SAYS something rather than showing a blank list; both lines are asserted by name in (1b).
+      expect(text("[data-wr-items-empty]")).toContain(LABELS.itemsEmpty);
     });
   });
 
@@ -569,7 +786,19 @@ describe("(4) the house rules travel with this slice too", () => {
       .filter((line) => !line.trim().startsWith("*") && !line.trim().startsWith("//"))
       .join("\n");
     expect(arithmetic).not.toMatch(/spentHours\s*\/|\/\s*estimatedHours/);
-    expect(arithmetic).not.toMatch(/efficiency|multiplier|productivityScore|percent/i);
+    /*
+     * ⚠ THE WORD BAN NARROWED, AND THE RULE DID NOT (2026-09-04). This line used to also forbid the substring
+     * "percent" anywhere in the file. That was a net cast around a NAME, and the timeliness ring's legend —
+     * which states the share each band is OF THE RING ALREADY DRAWN — tripped it on `SharePercent`, a
+     * localisation key. A composition of one axis is not the forbidden figure: pack §8 excludes dividing
+     * ESTIMATE by SPENT and attributing the result to a person, because that makes people inflate estimates
+     * and corrupts the only planning input the system has.
+     *
+     * So the ban now names what it means. The division itself is still forbidden by the line above, the
+     * forbidden figure's names are still forbidden here, and `The_effort_card_never_publishes_a_share` was
+     * added to watch the actual card — a guard on the rendered output, which the substring net never was.
+     */
+    expect(arithmetic).not.toMatch(/efficiency|multiplier|productivityScore/i);
   });
 
   it("this slice added no card and no chart — only a panel that opens beside the report", () => {

@@ -17,13 +17,18 @@ namespace Diten.Platform.Application.Features.Tasks.Handlers.QueryHandlers;
 /// Optional narrowing. ⚠ It NARROWS the caller's scope and can never widen it — see
 /// <see cref="WorkReportFilter"/>. Nothing here is a permission.
 /// </param>
+/// <param name="ScopePreference">
+/// Dilim 1f — a DISPLAY preference for which scope to apply, never a grant. See
+/// <see cref="WorkReportScopePreference"/> for the one rule it obeys: it can only narrow.
+/// </param>
 public sealed record WorkReportQuery(
     DateTimeOffset From,
     DateTimeOffset To,
     WorkReportGroupBy GroupBy,
     string CorrelationId,
     WorkReportFilter? Filter = null,
-    bool ComparePrevious = false)
+    bool ComparePrevious = false,
+    WorkReportScopePreference? ScopePreference = null)
     : IRequest<Response<WorkReportDto>>;
 
 /// <summary>
@@ -74,7 +79,7 @@ public sealed class WorkReportQueryHandler : IRequestHandler<WorkReportQuery, Re
                 400, TaskReasonCodes.ValidationFailed, query.CorrelationId);
         }
 
-        var scope = await _scope.ResolveAsync(ct);
+        var scope = await _scope.ResolveAsync(query.ScopePreference, ct);
         if (scope.MatchesNothing)
         {
             /*

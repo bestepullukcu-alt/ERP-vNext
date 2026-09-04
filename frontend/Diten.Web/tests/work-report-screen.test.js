@@ -21,9 +21,16 @@ const resx = (lang) =>
 
 /** The l10n island the view renders, with the key casing MVC's serializer produces. */
 const LABELS = {
-  cycleTimeMedian: "median {0}",
-  cancelTime: "Until cancelled: average {0} · median {1} ({2} cancelled)",
-  agingBuckets: "Age of open work — 0-7 days: {0} · 8-30 days: {1} · 30+ days: {2}",
+  summaryTitle: "Period summary", summaryPeriod: "Period", summaryDays: "{0} days",
+  summaryScopeNote: "{0} · {1}",
+
+  unitDays: "days", unitTasks: "tasks", unitOpenWork: "open",
+  reworkQualifier: "work sent back to its owner", unattendedQualifier: "nobody has taken these on",
+  labelMedian: "Median", labelUntilCancelled: "Until cancelled", labelCancelled: "Cancelled",
+  labelTotalReturns: "Total returns", labelEstimated: "Estimated",
+  agingUpTo7Label: "0-7 days", agingFrom8To30Label: "8-30 days", agingOlderThan30Label: "30+ days",
+  effortSpentUnit: "h spent", hours: "{0} h",
+
   trendSame: "same as the previous period",
   trendUp: "+{0} against the previous period (was {1})",
   trendDown: "-{0} against the previous period (was {1})",
@@ -45,15 +52,13 @@ const LABELS = {
   late: "Late",
   withoutDueDate: "No deadline set",
   timelinessTitle: "Against the deadline",
+  sharePercent: "{0}%",
   outcomesEmpty: "No closure was recorded with an outcome.",
   groupsTitle: "By {0}",
   groupUnnamed: "Not set",
   groupByOrganizationUnit: "Organisation unit",
   cycleTimeDays: "{0} days",
   cycleTimeOver: "over {0} closed",
-  reworkTasks: "{0} tasks",
-  reworkReturns: "{0} returns in total",
-  effortHours: "{0} h estimated · {1} h spent",
   effortOver: "over {0} tasks",
   notMeasured: "Not measured",
   groupByLegalEntity: "Company",
@@ -81,24 +86,35 @@ const MARKUP = `
     <select id="wrGroupBy"><option value="None" selected>None</option><option value="OrganizationUnit">Unit</option></select>
     <button type="submit">Apply</button>
   </form>
-  <div data-wr-scope hidden><span data-wr-scope-badge></span><span data-wr-scope-hint></span></div>
+  <div data-wr-scope hidden><span data-wr-scope-badge></span><div data-wr-scope-chips hidden><button data-wr-scope-chip="tenant" aria-pressed="false">${LABELS.scopeTenant}</button><button data-wr-scope-chip="own" aria-pressed="false">${LABELS.scopeScoped}</button></div><span data-wr-scope-hint></span></div>
   <p data-wr-status></p>
+  <div data-wr-skeleton-tiles hidden></div>
+  <div data-wr-skeleton-charts hidden></div>
   <div data-wr-tiles hidden>
-    <p data-wr-cycle-value></p><p data-wr-cycle-median></p><p data-wr-cycle-over></p>
-    <p data-wr-cycle-trend hidden></p><p data-wr-cancel-value hidden></p>
-    <p data-wr-rework-tasks></p><p data-wr-rework-returns></p><p data-wr-rework-trend hidden></p>
-    <p data-wr-unattended-value></p><p data-wr-aging hidden></p>
-    <p data-wr-effort-value></p><p data-wr-effort-over></p>
+    <p data-wr-cycle-value></p><p data-wr-cycle-unit></p><p data-wr-cycle-over></p>
+    <dl data-wr-cycle-facts></dl><p data-wr-cycle-trend hidden></p>
+    <p data-wr-rework-tasks data-wr-click="Returned" role="button" tabindex="0"></p><dl data-wr-rework-facts></dl><p data-wr-rework-trend hidden></p>
+    <p data-wr-unattended-value data-wr-click="Unattended" role="button" tabindex="0"></p><dl data-wr-aging hidden></dl>
+    <p data-wr-effort-value></p><p data-wr-effort-over></p><dl data-wr-effort-facts></dl>
   </div>
   <select id="wrLegalEntity"><option value="">Any</option></select>
   <select id="wrUnit"><option value="">Any</option></select>
   <select id="wrTaskType"><option value="">Any</option></select>
   <select id="wrAssignee"><option value="">Any</option></select>
   <select id="wrPriority"><option value="">Any</option></select>
+  <div data-wr-summary hidden>
+    <span data-wr-summary-days></span>
+    <span data-wr-summary-opened data-wr-click="Opened"></span>
+    <span data-wr-summary-closed data-wr-click="Closed"></span>
+    <span data-wr-summary-completed data-wr-click="Completed"></span>
+    <span data-wr-summary-cancelled data-wr-click="Cancelled"></span>
+    <span data-wr-summary-unattended data-wr-click="Unattended"></span>
+    <span data-wr-summary-note></span>
+  </div>
   <div data-wr-charts hidden>
     <div data-wr-chart-flow></div><p data-wr-flow-trend hidden></p>
     <div data-wr-chart-outcomes></div><p data-wr-outcomes-empty hidden></p>
-    <div data-wr-chart-timeliness></div><p data-wr-late-trend hidden></p>
+    <div data-wr-chart-timeliness></div><ul data-wr-timeliness-legend></ul><p data-wr-late-trend hidden></p>
     <div data-wr-groups-card hidden><h6 data-wr-groups-title></h6><div data-wr-chart-groups></div>
       <p data-wr-groups-truncated hidden></p></div>
   </div>
@@ -185,13 +201,22 @@ describe("(a) the screen says WHAT the numbers cover", () => {
   });
 
   it("says so differently when the report covers the whole tenant", () => {
-    // Non-vacuity for the test above: the badge has to CHANGE, or it is a constant that happens to read right.
+    /*
+     * ⚠ SHAPE UPDATED IN DILIM 1f. A response that comes back `scopeApplied: 'tenant'` now PROVES the caller
+     * can reach tenant-wide, so the screen switches from the static info badge to the two scope CHIPS (see
+     * `renderScope`) — the badge alone would leave a reader with a tenant-wide grant no way to narrow back to
+     * their own team. The hint sentence is the part of the original protective intent this test still checks
+     * directly; which chip is marked active is the badge's replacement.
+     */
     const screen = boot();
     screen.render(busy({ scopeApplied: "tenant" }));
 
-    expect(text("[data-wr-scope-badge]")).toBe(LABELS.scopeTenant);
+    expect(hidden("[data-wr-scope-badge]"), "the static badge stayed visible once tenant-wide was proven").toBe(true);
+    expect(hidden("[data-wr-scope-chips]"), "the chip pair never appeared").toBe(false);
+    expect(document.querySelector('[data-wr-scope-chip="tenant"]').getAttribute("aria-pressed")).toBe("true");
+    expect(document.querySelector('[data-wr-scope-chip="own"]').getAttribute("aria-pressed")).toBe("false");
     expect(text("[data-wr-scope-hint]")).toBe(LABELS.scopeTenantHint);
-    expect(text("[data-wr-scope-badge]")).not.toBe(LABELS.scopeScoped);
+    expect(text("[data-wr-scope-hint]")).not.toBe(LABELS.scopeScopedHint);
   });
 
   it("reads the scope from the RESPONSE, never from a permission the browser guessed", () => {
@@ -310,7 +335,7 @@ describe("(c) outcome labels arrive translated, never as raw codes", () => {
 });
 
 describe("(d) no efficiency percentage is computed anywhere", () => {
-  it("prints estimated and spent side by side and never divides them", () => {
+  it("prints spent as the card's figure and estimated beneath it, and never divides them", () => {
     /*
      * ⚠ PACK §8, AT THIS LAYER. 5a keeps the ratio out of the contract
      * (`There_is_no_efficiency_percentage_anywhere_in_the_contract`); a screen that divided two published
@@ -320,14 +345,49 @@ describe("(d) no efficiency percentage is computed anywhere", () => {
     const screen = boot();
     screen.render(busy());
 
-    expect(text("[data-wr-effort-value]")).toBe("40 h estimated · 60 h spent");
+    /*
+     * ⚠ TWO ELEMENTS NOW, AND BOTH ARE ASSERTED — UI-026 gave this card ONE headline figure (spent, because
+     * it is what happened) with the estimate as a small line under it. Stacking them is where a ratio becomes
+     * tempting, so this test got MORE specific rather than less: it names each number's own hook, so an
+     * "improvement" that quietly dropped the estimate — leaving a lone hours figure a reader would take for
+     * the plan — cannot pass. 40 and 60 both reach the screen; nothing between them is computed.
+     */
+    expect(text("[data-wr-effort-value]"), "the spent hours are not the card's figure").toBe("60");
+    expect(document.querySelector("[data-wr-effort-facts]").textContent,
+      "the estimate stopped being published").toContain("40 h");
     expect(text("[data-wr-effort-over]")).toBe("over 6 tasks");
+
+    // No shrink modifier can come back: a card that cannot fit its figure is a card asking two questions.
+    expect(VIEW, "the --sm figure escape hatch is back in the view").not.toContain("wr-figure--sm");
     /*
      * 60/40 = 1.5 — the number a ratio would produce, and it must appear nowhere. The hours moved from 52 to 60
      * in Dilim 1b: 52/40 renders as 1.3, and the cycle-time average this slice put on the card is 11.33, so the
      * old guard would have been tripped by a legitimate duration rather than by a ratio.
      */
     expect(document.body.textContent).not.toMatch(/1\.5|150\s*%|0\.66|0\.67/);
+  });
+
+  it("the effort card never publishes a share", () => {
+    /*
+     * ⚠ THE GUARD THAT REPLACED A SUBSTRING BAN. The old rule forbade the word "percent" anywhere in the
+     * script — a net around a name, which the timeliness ring's honest share tripped while never once
+     * looking at the card the rule was written to protect. This watches that card's OWN rendered output:
+     * estimated and spent may both be published, and nothing between them may be.
+     */
+    const screen = boot();
+    screen.render(busy());
+
+    ["[data-wr-effort-value]", "[data-wr-effort-facts]", "[data-wr-effort-over]"].forEach((sel) => {
+      const el = document.querySelector(sel);
+      expect(el, `${sel} is gone from the card`).toBeTruthy();
+      expect(el.textContent, `${sel} published a share`).not.toMatch(/%|\bratio\b|\bx\b/i);
+    });
+
+    // 60 and 40 are both on the card; 60/40 = 1.5 and 40/60 = 0.67 are on neither.
+    const card = ["[data-wr-effort-value]", "[data-wr-effort-facts]"].map((s) => document.querySelector(s).textContent).join(" ");
+    expect(card).toContain("60");
+    expect(card).toContain("40");
+    expect(card).not.toMatch(/1\.5|0\.6[67]|150/);
   });
 
   it("has no division, percentage or score in the source at all", () => {
@@ -405,8 +465,15 @@ describe("each visual answers ONE question", () => {
     const screen = boot();
     screen.render(busy());
 
-    const names = chartFor("[data-wr-chart-timeliness]").options.series.map((s) => s.name);
-    expect(names).toEqual([LABELS.onTime, LABELS.late, LABELS.withoutDueDate]);
+    /*
+     * ⚠ READS `labels`, NOT `series[].name` — the chart is a donut, whose bands are POINTS of one series
+     * rather than three series. The INVARIANT is unchanged and is the only thing this test ever cared about:
+     * undated work is a band of its own. Its count is asserted beside the name so a band that kept its label
+     * while its figure was folded into on-time could not pass.
+     */
+    const chart = chartFor("[data-wr-chart-timeliness]");
+    expect(chart.options.labels).toEqual([LABELS.onTime, LABELS.late, LABELS.withoutDueDate]);
+    expect(chart.options.series.length, "the three bands did not stay three values").toBe(3);
   });
 
   it("prints an absent cycle-time average as words, never as zero", () => {

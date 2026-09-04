@@ -5336,11 +5336,20 @@ tags.diten-tags .tagify__input {
 .wcn-filterbar { display: flex; align-items: center; gap: .875rem; flex-wrap: wrap; margin-block-end: .75rem; }
 .wcn-filterbar .wcn-segments { margin-block-end: 0; flex: 0 0 auto; }
 .wcn-filterbar .wcn-quickfilters, .wcn-filterbar .wcn-chips { margin-block-end: 0; }
+/* ⚠ THE CORNER SCALE IS THE PRODUCT'S, NOT THIS CONTROL'S (2026-09-04). MEASURED on the work-report screen,
+   where this control was reused: card 6px · Apply button 6px · date inputs 6px · select2 6px · avatar 6px ·
+   small chips 4px — and this box 10px with 8px segments, the only two values on the screen at that scale. It
+   read as a component borrowed from somewhere else, which is exactly what it was.
+
+   ⚠ FIXED HERE, IN THE SHARED RULE, NOT SCOPED TO THE NEW SCREEN. A per-screen override would have left the
+   SAME control wearing two different corner scales in two places — the drift this file keeps warning about,
+   introduced deliberately. Görev Merkezi's own filter bar moves with it, on purpose.
+   6px is the control scale and 4px the chip scale, both already in use across the product. */
 .wcn-segments { display: inline-flex; gap: .125rem; padding: .25rem; margin-block-end: .75rem;
-    background: var(--bs-paper-bg); border: 1px solid var(--bs-border-color); border-radius: .625rem; }
+    background: var(--bs-paper-bg); border: 1px solid var(--bs-border-color); border-radius: .375rem; }
 .wcn-seg { display: inline-flex; align-items: center; gap: .4rem; border: 0; background: transparent;
     color: var(--bs-secondary-color); font-size: .8125rem; font-weight: 600; padding: .4rem .85rem;
-    border-radius: .5rem; cursor: pointer; transition: background .12s ease, color .12s ease; }
+    border-radius: .25rem; cursor: pointer; transition: background .12s ease, color .12s ease; }
 .wcn-seg:hover:not(.active) { color: var(--bs-body-color); background: rgba(var(--bs-primary-rgb), .07); }
 .wcn-seg.active { background: var(--bs-primary); color: #fff; box-shadow: 0 1px 3px rgba(var(--bs-primary-rgb), .4); }
 .wcn-seg-count { font-size: .6875rem; font-weight: 700; line-height: 1; padding: .1rem .4rem;
@@ -8812,11 +8821,291 @@ body:has(.offcanvas.show) .flatpickr-calendar.open { z-index: 1095; }
     border-radius: 2px;
 }
 
-/* The row inside the items panel — one task, and the whole row opens its detail page. */
-.wr-item-row {
-    cursor: pointer;
+/* ── THE DRILL-DOWN PANEL'S LIST ────────────────────────────────────────────────────────────────────────
+   Each result is a CARD, and the card is `.wcn-row` — Görev Merkezi's own work-item row, borrowed whole with
+   its padding, radius, hover tint, focus ring and skin-aware border/shadow. This panel lists work items too;
+   nothing about that row needed reinventing, and reusing it means a reader recognises the object.
+
+   ⚠ THE OLD `:hover` RULE HERE IS GONE ON PURPOSE. It painted `--bs-tertiary-bg`, which would now fight the
+   tint `.wcn-row:hover` already applies — two hover colours on one element, decided by source order in a file
+   neither of them lives in. Only three things are added below, and none touches how `.wcn-row` looks: the
+   surface behind the rows, the gap between them, and the layout INSIDE one. */
+.wr-items-body { background: var(--bs-body-bg); }
+.wr-items-list { display: flex; flex-direction: column; gap: .5rem; }
+
+/* The row is a link, so it needs the two things `.wcn-row` assumes a div already has. */
+.wr-item-row { text-decoration: none; color: inherit; align-items: stretch; }
+.wr-item-row:hover { color: inherit; }
+
+.wr-item-main { display: flex; flex-direction: column; gap: .25rem; min-inline-size: 0; flex: 1; }
+
+/* ⚠ TITLE AND STATE ON ONE LINE, AND THE TITLE IS THE ONE THAT SHRINKS. `min-inline-size: 0` on the flex
+   child is what lets the title truncate instead of pushing the badge out of the row — without it a long task
+   name silently shoves the state off the visible width. */
+.wr-item-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; }
+.wr-item-title { font-size: .8125rem; font-weight: 500; line-height: 1.35; min-inline-size: 0; }
+.wr-item-head .badge { flex: 0 0 auto; font-size: .6875rem; font-weight: 500; }
+
+/* ⚠ THE SECOND LINE WRAPS AS TWO PIECES, NOT AS ONE SENTENCE. These were dot-separated clauses on a single
+   line that broke wherever the width fell, so no two rows stood the same height and nothing lined up down
+   the list. As two flex items each keeps its own shape when the panel narrows. */
+.wr-item-meta {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: .125rem .75rem; font-size: .6875rem; color: var(--bs-secondary-color);
+}
+.wr-item-who { display: inline-flex; align-items: center; gap: .375rem; min-inline-size: 0; }
+.wr-item-dates { font-variant-numeric: tabular-nums; }
+
+/* A shape for the person, never a replacement for the name — see `monogram` for why the full value stays. */
+.wr-item-avatar {
+    inline-size: 1.125rem; block-size: 1.125rem; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+    font-size: .5625rem; font-weight: 600;
+    background: rgba(var(--bs-primary-rgb), .12); color: var(--bs-primary);
 }
 
-.wr-item-row:hover {
-    background-color: var(--bs-tertiary-bg);
+/* ⚠ AN EMPTY CELL IS A STATE, NOT AN ERROR. One muted sentence pinned to the top-left read as a failure
+   notice. The box itself is `.sp-emptybox`, the product's own dashed empty-state — border, padding and icon
+   sizing all come from there, and nothing about them is restated here.
+
+   The one thing added is the SURFACE. This panel's background is grey and its results are white cards; a
+   dashed box with no fill read as a hole punched in the panel rather than as a card with nothing in it.
+
+   ⚠ `--bs-paper-bg`, NOT `--bs-card-bg`, AND THAT IS A MEASURED CORRECTION. Sneat declares `--bs-card-bg` on
+   `.card` itself, not on `:root` — outside a card it resolves to nothing, so `background: var(--bs-card-bg)`
+   here was a rule that existed in the stylesheet and painted absolutely nothing (measured: `rgba(0,0,0,0)`
+   on a box that was supposed to be white). `--bs-paper-bg` IS a root token, and it is the same one
+   `.wcn-row` — the result cards this box stands in place of — is painted with. */
+.wr-items-empty { background: var(--bs-paper-bg); }
+.wr-items-empty-title { font-size: .8125rem; font-weight: 500; color: var(--bs-body-color); }
+
+/*
+ * MOD-0024 — the work report's STATUS LINE, when it has nothing to say.
+ *
+ * ⚠ AN EMPTY ELEMENT'S MARGIN IS STILL A MARGIN. This line needs air above its sentence ("Loading…", "No work
+ * in this period") — but the sentence is absent most of the time, and a plain `mt-3` left its 12px behind as
+ * dead space at the bottom of the filter card (measured: 18px of air above the controls, 40px below them).
+ *
+ * The utility class could not express the difference: Bootstrap ships `.mt-3` as `!important`, so an
+ * `[data-wr-status]:empty { margin-top: 0 }` override lost to it despite winning on specificity. So the class
+ * is gone from the markup and the margin lives here, granted only when there IS something to separate.
+ */
+[data-wr-status]:not(:empty) {
+    margin-block-start: 12px;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════════════════════════════
+   MOD-0024 · WORK REPORT — the reading surface
+   Every rule here exists because the SAME information was already on screen and was not being read.
+   ══════════════════════════════════════════════════════════════════════════════════════════════════════ */
+
+/* An accent rail per tile. Four cards of identical weight make a reader start at the left and work across;
+   the rail gives each one an identity so a glance can land on the right card. Colour follows meaning — the
+   same success/danger/info vocabulary the rest of this product uses, never a decorative palette. */
+.wr-kpi { border-top: 2px solid transparent; }
+.wr-kpi--cycle { border-top-color: #ff9f43; }
+.wr-kpi--rework { border-top-color: #666cff; }
+.wr-kpi--unattended { border-top-color: #ea5455; }
+.wr-kpi--effort { border-top-color: #00cfe8; }
+
+/* The one figure the card exists for, sized so it wins the card. `h4` made it compete with the heading.
+   ⚠ THERE IS NO `--sm` VARIANT, AND THAT ABSENCE IS THE RULE (UI-026). One existed for exactly one card that
+   wanted two numbers on one line; the card ended up looking unlike its three siblings and a reader could see
+   the row was broken without being able to say why. A shrink modifier is the escape hatch that makes the
+   violation permanent — a card that cannot fit its figure is a card asking two questions, and it splits. */
+.wr-figure { font-size: 1.75rem; line-height: 1.25; font-weight: 600; }
+
+/* ── THE FOOTNOTE FLOOR (UI-026) ────────────────────────────────────────────────────────────────────────
+   Four cards in a row carry different amounts of text, so their closing sentences ended at four different
+   heights and the row read as ragged. A column body plus `margin-top:auto` on the closing block pins them to
+   one baseline.
+
+   ⚠ NO FIXED HEIGHT. The cancellation span and the ageing sentence both grow with their numbers and with
+   whichever of seven languages is rendering them; a pinned height would clip the first long one silently.
+   ⚠ AND THE FLOOR IS A WRAPPER, NOT THE LAST ELEMENT. Every card's last element is conditional — no
+   cancellations, no previous period, no open work each hide one — and `margin-top:auto` on a hidden element
+   pushes nothing. The wrapper is always in the layout; what it holds may come and go. */
+.wr-kpi .card-body { display: flex; flex-direction: column; }
+
+/* ⚠ THE FOOT IS ONE TYPOGRAPHIC SLOT, whatever lands in it. A delta and a caveat are different sentences but
+   the same KIND of line — the card's last word — and at two different sizes they read as two different rows
+   in a layout built on four cards sharing one anatomy. Set once here rather than per element, so a new kind
+   of footnote inherits it instead of choosing again. */
+.wr-kpi-foot { margin-top: auto; padding-top: .75rem; font-size: .75rem; }
+
+/* ── THE PERIOD DELTA, AS A PILL ────────────────────────────────────────────────────────────────────────
+   It was a bare coloured sentence and read as body text, so the one line saying which DIRECTION things moved
+   looked like a footnote. The tint comes from `currentColor`, so it is the SAME class carrying the meaning
+   (`text-success` / `text-danger` / `text-muted`) that draws the background — there is nothing to keep in
+   sync and no second place to get the sign wrong. */
+.wr-trend {
+    display: inline-flex;
+    align-items: center;
+    /*
+     * ⚠ ZEROED HERE, NOT IN THE MARKUP, BECAUSE THE MARKUP CANNOT HOLD IT. `trend()` in index.js REPLACES the
+     * element's whole className on every render, so a `mb-0` written in the view survives exactly until the
+     * first report loads. MEASURED before this line existed: the paragraph fell back to Bootstrap's default
+     * `p { margin-bottom: 1rem }`, leaving 16px of dead space UNDER the delta — so the two cards with a delta
+     * ended their last line at y=564 while the two with a note ended at y=580, in a row of cards whose whole
+     * point is that their lines align.
+     */
+    margin: 0;
+    gap: .375rem;
+    padding: .3125rem .625rem;
+    border-radius: .375rem;
+    font-size: .8125rem;
+    line-height: 1.4;
+    background-color: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+/* ⚠ THE ARROW IS A PSEUDO-ELEMENT ON PURPOSE. Written into the text it would join the sentence that seven
+   translations and this module's tests read back with `.textContent`; `::before` is invisible to both. */
+.wr-trend--up::before { content: "\2197"; font-weight: 600; }
+.wr-trend--down::before { content: "\2198"; font-weight: 600; }
+.wr-trend--flat::before { content: "\2014"; font-weight: 600; }
+
+
+/* ── THE AGEING BANDS ───────────────────────────────────────────────────────────────────────────────────
+   Still ONE localized sentence — the three numbers are chips inside it, not three elements. Splitting it
+   would ask a different question in every language whose translator reordered the clauses, which is exactly
+   why `tfHtml` wraps tokens rather than emitting siblings. See its comment. */
+.wr-aging { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem; }
+.wr-aging .wr-clickable {
+    text-decoration: none;
+    padding: .125rem .375rem;
+    border-radius: .25rem;
+    font-weight: 600;
+    background-color: rgba(var(--bs-primary-rgb), .12);
+}
+
+/* A caveat that reads as a caveat. Same words, same muted weight — it just stops looking like a caption. */
+.wr-note { display: flex; align-items: flex-start; gap: .375rem; }
+
+/* ── THE SCOPE STRIP CLOSES THE FILTER CARD ─────────────────────────────────────────────────────────────
+   The line saying WHICH work the report covers now sits inside the card that chooses it, separated by the
+   card's own divider.
+
+   ⚠ NO NEW COLOUR WAS INVENTED. `--bs-light-bg-subtle` is the product's own next surface above white on a
+   card — the same token the completed checklist row and the finished subtask row already use, chosen there
+   after `--bs-secondary-bg` measured 1.83 contrast (see that rule's note). A one-off off-white here would be
+   a second answer to a question this codebase already answered.
+   The border and the corner radius are the card's own tokens for the same reason. */
+/* The shared segmented control carries a bottom margin for the filter bar it was written for; inside this
+   strip the padding owns the spacing. Only the margin is overridden — never the control's own look. */
+.wr-scope-bar .wcn-segments { margin-block-end: 0; }
+
+.wr-scope-bar {
+    border-top: 1px solid var(--bs-border-color);
+    background: var(--bs-light-bg-subtle);
+    border-bottom-left-radius: var(--bs-card-border-radius);
+    border-bottom-right-radius: var(--bs-card-border-radius);
+}
+
+/* ── THE TIMELINESS RING AND ITS LEGEND ─────────────────────────────────────────────────────────────────
+   Chart left, legend right, wrapping under it when the card gets narrow. */
+.wr-donut-chart { flex: 1 1 15rem; min-inline-size: 0; }
+.wr-legend { flex: 0 0 auto; min-inline-size: 12rem; }
+
+/* ⚠ A GRID, BECAUSE THE POINT IS THE COLUMNS. The library's own legend prints one flex line per entry, so
+   every count starts wherever its label happened to end and the numbers cannot be compared down the page.
+   Four tracks — swatch · name · count · share — put them under each other. */
+.wr-legend > li {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: center;
+    gap: .5rem .75rem;
+    padding-block: .25rem;
+    cursor: pointer;
+    border-radius: .25rem;
+}
+.wr-legend > li:hover { background: rgba(var(--bs-primary-rgb), .07); }
+
+/* ⚠ TABULAR FIGURES ARE WHAT ACTUALLY ALIGNS THE COLUMNS. In the default proportional face a `1` is
+   narrower than a `4`, so right-aligned numbers still wobble by a pixel or two per digit — enough to read
+   as sloppy in a three-row list where alignment is the whole point. */
+.wr-legend-count,
+.wr-legend-share { font-variant-numeric: tabular-nums; text-align: end; }
+.wr-legend-count { font-weight: 600; }
+.wr-legend-share { color: var(--bs-secondary-color); min-inline-size: 2.75rem; }
+
+/* ⚠ THESE THREE VALUES ARE ALSO IN `TIMELINESS_COLORS` (Tasks/WorkReport/index.js) — apex takes colours as
+   JS values and this file may not write `element.style` (FG-003), so the ring and its swatches are coloured
+   from two places. A test reads both and fails if they ever disagree. */
+.wr-legend-dot { inline-size: .625rem; block-size: .625rem; border-radius: 50%; }
+.wr-legend-dot--ontime { background: #28c76f; }
+.wr-legend-dot--late { background: #ea5455; }
+.wr-legend-dot--undated { background: #a8aaae; }
+
+/* ── ONE SKELETON FOR FOUR KPI CARDS ────────────────────────────────────────────────────────────────────
+   Identity → answer → qualifier → facts → floor. The four cards used to have four different anatomies —
+   one carried three prose lines, another carried one, a third a sentence plus a note — so four cards sitting
+   side by side made the eye re-learn each one. */
+
+/* The answer: the bare number carries the weight, the unit stays a quiet word beside it. */
+.wr-answer { display: flex; align-items: baseline; gap: .375rem; }
+.wr-figure { font-size: 1.75rem; line-height: 1.2; font-weight: 600; }
+.wr-unit { font-size: .8125rem; color: var(--bs-secondary-color); }
+
+/* One line saying what the number IS. "6.39 days" alone does not say the average of what. */
+.wr-qual { font-size: .75rem; color: var(--bs-secondary-color); margin-block-start: .125rem; }
+
+/* ── THE FACTS TABLE ────────────────────────────────────────────────────────────────────────────────────
+   ⚠ TWO COLUMNS, NOT SENTENCES, AND THE RIGHT EDGE IS THE POINT. Every value lands on the same right-hand
+   edge — and because all four cards use this one rule, that edge is shared ACROSS the row, so the numbers of
+   four different cards read down a single line. Prose could never do that.
+
+   ⚠ TABULAR FIGURES, for the reason the ring's legend needs them: in the proportional face a `1` is narrower
+   than a `4`, so right-aligned numbers still wobble per digit — enough to undo the alignment this exists for. */
+.wr-facts {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: .3125rem .75rem;
+    margin: .75rem 0 0;
+    padding-block-start: .625rem;
+    border-block-start: 1px solid var(--bs-border-color);
+    font-size: .75rem;
+}
+.wr-facts dt { color: var(--bs-secondary-color); font-weight: 400; margin: 0; }
+.wr-facts dd { margin: 0; text-align: end; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ⚠ THE DELTA IS QUIET IN A CARD AND A PILL IN A CHART HEADER, ON PURPOSE. At a card's floor it is a footnote
+   on the figure above it; filled, it outweighed the number it was commenting on. In a chart header it sits
+   beside a title with nothing else around it and needs the shape to be found at all. Same helper, same
+   meaning class — only the surface differs, so nothing has to be kept in sync. */
+/* ⚠ `font-size: inherit` IS THE WHOLE REASON THIS LINE MENTIONS SIZE AT ALL. `.wr-trend` carries its own
+   .8125rem for the chart headers, and a class on the element beats the size the floor sets by inheritance —
+   MEASURED: the two cards with a delta rendered their floor at 13px while the two with a note rendered 12px,
+   the same split this rule was added to close, only swapped. */
+.wr-kpi .wr-trend { display: flex; background: none; padding: 0; font-size: inherit; }
+
+/* ── MOD-0024 · THE WORK REPORT'S LOADING SKELETON ──────────────────────────────────────────────────────
+   ⚠ NO NEW SKELETON LANGUAGE. The blocks are `.shimmer` + `.skeleton-row`, the same ones the DataTable pages
+   already use; only their SIZES are named here, because a card's figure and a chart's canvas are not the
+   height of a table row and a placeholder that lies about height is a page that jumps.
+
+   `.backbone-skeleton` is `display:none` by design — every other page reveals it with jQuery's `fadeIn`,
+   which writes an inline style. This screen may not (FG-003), so it toggles the `hidden` attribute through
+   the same `show()` helper every other region here uses, and this one rule is what lets that work. Scoped to
+   `.wr-skeleton` so the 81 pages relying on the shared rule are untouched. */
+.backbone-skeleton.wr-skeleton:not([hidden]) { display: flex; }
+
+/* ⚠ EVERY SIZE BELOW IS SCOPED UNDER `.wr-skeleton`, AND THAT IS NOT TIDINESS — IT IS THE CASCADE.
+   The shared `.backbone-skeleton .skeleton-row` rule is two classes deep and pins every block to 24px; a
+   single-class `.wr-skel-*` loses to it silently. MEASURED with the flat selectors: the chart placeholder
+   asked for 260px and rendered 24, so the skeleton stood 340px shorter than the report it stands in for —
+   the page shrank on Apply and grew back on arrival, which is the jump this whole slice exists to prevent.
+   Two classes deep, declared after the shared rule, is what makes these win. */
+.wr-skeleton .wr-skel-avatar { block-size: 1.875rem; inline-size: 1.875rem; margin-block-end: 1rem; }
+.wr-skeleton .wr-skel-title { block-size: .75rem; inline-size: 60%; margin-block-end: 1rem; }
+.wr-skeleton .wr-skel-figure { block-size: 1.75rem; inline-size: 45%; margin-block-end: .5rem; }
+.wr-skeleton .wr-skel-line { block-size: .625rem; margin-block-end: .5rem; }
+.wr-skeleton .wr-skel-short { inline-size: 70%; }
+
+/* The facts table's own shape: a divider, then a row per fact. */
+.wr-skeleton .wr-skel-facts { margin-block-start: .75rem; padding-block-start: .625rem; border-block-start: 1px solid var(--bs-border-color); }
+.wr-skeleton .wr-skel-foot { margin-block-start: .25rem; block-size: .75rem; inline-size: 80%; }
+
+/* The chart heights are the ones `renderFlow`/`renderTimeliness` pass to apex (260) and the outcomes bar's
+   own floor (220). Named here so a change to either is a change in two places a test can compare. */
+.wr-skeleton .wr-skel-chart { block-size: 260px; margin-block-start: .5rem; }
+.wr-skeleton .wr-skel-chart-sm { block-size: 220px; }

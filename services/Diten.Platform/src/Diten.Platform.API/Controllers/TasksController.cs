@@ -5,6 +5,7 @@ using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Application.Features.Tasks.Queries;
 using Diten.Platform.Application.Features.Tasks.Handlers.QueryHandlers;
+using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Domain.Enums.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -551,6 +552,12 @@ public sealed class TasksController : CustomBaseController
         /// <summary>Also measure the preceding period of the same length. The SERVER decides which days those
         /// are — see WorkReportDto.Previous for why that definition may not be duplicated in a client.</summary>
         [FromQuery] bool comparePrevious = false,
+        /// <summary>
+        /// Dilim 1f — a DISPLAY preference ("tenant" or "own"), never a permission. Omitted, it changes nothing:
+        /// the caller gets exactly what they got before this parameter existed. See
+        /// <see cref="WorkReportScopePreference"/> for the one rule it obeys.
+        /// </summary>
+        [FromQuery] WorkReportScopePreference? scope = null,
         CancellationToken ct = default)
     {
         /*
@@ -562,7 +569,7 @@ public sealed class TasksController : CustomBaseController
             legalEntityId, organizationUnitId, assigneeUserId, taskTypeCode, priority);
 
         var response = await _mediator.Send(
-            new WorkReportQuery(from, to, groupBy, CorrelationId, filter, comparePrevious), ct);
+            new WorkReportQuery(from, to, groupBy, CorrelationId, filter, comparePrevious, scope), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -602,6 +609,11 @@ public sealed class TasksController : CustomBaseController
         [FromQuery] Guid? assigneeUserId = null,
         [FromQuery] string? taskTypeCode = null,
         [FromQuery] TaskPriority? priority = null,
+        /// <summary>
+        /// ⚠ THE SAME PREFERENCE THE LOADED REPORT USED — the caller sends back whatever `scopeApplied` (or the
+        /// preference they picked) it saw, so a click opens a list scoped exactly like the tile it came from.
+        /// </summary>
+        [FromQuery] WorkReportScopePreference? scope = null,
         CancellationToken ct = default)
     {
         // ⚠ THE SAME FILTER SHAPE AS THE REPORT, deliberately — a list asked for under a filter the numbers
@@ -611,7 +623,7 @@ public sealed class TasksController : CustomBaseController
 
         var response = await _mediator.Send(
             new WorkReportItemsQuery(
-                from, to, bucket, CorrelationId, groupBy, argument, groupKey, skip, filter),
+                from, to, bucket, CorrelationId, groupBy, argument, groupKey, skip, filter, scope),
             ct);
 
         return CreateActionResultInstance(response);

@@ -31,9 +31,14 @@
   <data name="Completed" xml:space="preserve"><value>已完成</value></data>
   <data name="Cancelled" xml:space="preserve"><value>已取消</value></data>
   <data name="OutcomesTitle" xml:space="preserve"><value>工作如何结束</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>期间摘要</value></data>
+  <data name="SummaryPeriod" xml:space="preserve"><value>期间</value></data>
+  <data name="SummaryDays" xml:space="preserve"><value>{0} 天</value></data>
+  <data name="SummaryScopeNote" xml:space="preserve"><value>{0} · {1}</value></data>
   <data name="OutcomesQuestion" xml:space="preserve"><value>这些关闭做出了什么决定？</value></data>
   <data name="OutcomesEmpty" xml:space="preserve"><value>没有记录带结果的关闭。</value></data>
   <data name="TimelinessTitle" xml:space="preserve"><value>对照截止日期</value></data>
+  <data name="SharePercent" xml:space="preserve"><value>{0}%</value></data>
   <data name="TimelinessQuestion" xml:space="preserve"><value>工作按时完成了吗？</value></data>
   <data name="OnTime" xml:space="preserve"><value>按时</value></data>
   <data name="Late" xml:space="preserve"><value>逾期</value></data>
@@ -45,17 +50,26 @@
   <data name="CycleTimeDays" xml:space="preserve"><value>{0} 天</value></data>
   <data name="CycleTimeOver" xml:space="preserve"><value>基于 {0} 项已关闭</value></data>
   <data name="ReworkTitle" xml:space="preserve"><value>被退回</value></data>
-  <data name="ReworkTasks" xml:space="preserve"><value>{0} 项任务</value></data>
-  <data name="ReworkReturns" xml:space="preserve"><value>共 {0} 次退回</value></data>
   <data name="UnattendedTitle" xml:space="preserve"><value>等待认领</value></data>
   <data name="UnattendedHint" xml:space="preserve"><value>当前无人认领的开启工作。</value></data>
   <data name="EffortTitle" xml:space="preserve"><value>计划与实际</value></data>
-  <data name="EffortHours" xml:space="preserve"><value>预估 {0} 小时 · 实际 {1} 小时</value></data>
+  <data name="UnitDays" xml:space="preserve"><value>天</value></data>
+  <data name="UnitTasks" xml:space="preserve"><value>项任务</value></data>
+  <data name="UnitOpenWork" xml:space="preserve"><value>项未完成</value></data>
+  <data name="ReworkQualifier" xml:space="preserve"><value>被退回给负责人的工作</value></data>
+  <data name="UnattendedQualifier" xml:space="preserve"><value>尚无人认领</value></data>
+  <data name="LabelMedian" xml:space="preserve"><value>中位数</value></data>
+  <data name="LabelUntilCancelled" xml:space="preserve"><value>至取消为止</value></data>
+  <data name="LabelCancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="LabelTotalReturns" xml:space="preserve"><value>退回总数</value></data>
+  <data name="LabelEstimated" xml:space="preserve"><value>预估</value></data>
+  <data name="AgingUpTo7Label" xml:space="preserve"><value>0–7 天</value></data>
+  <data name="AgingFrom8To30Label" xml:space="preserve"><value>8–30 天</value></data>
+  <data name="AgingOlderThan30Label" xml:space="preserve"><value>30 天以上</value></data>
+  <data name="EffortSpentUnit" xml:space="preserve"><value>小时实际</value></data>
+  <data name="Hours" xml:space="preserve"><value>{0} 小时</value></data>
   <data name="EffortOver" xml:space="preserve"><value>基于 {0} 项任务</value></data>
   <data name="EffortHint" xml:space="preserve"><value>这是关于「计划」的信号，绝非关于个人。</value></data>
-  <data name="CycleTimeMedian" xml:space="preserve"><value>中位数 {0}</value></data>
-  <data name="CancelTime" xml:space="preserve"><value>至取消：平均 {0} · 中位数 {1}（已取消 {2} 项）</value></data>
-  <data name="AgingBuckets" xml:space="preserve"><value>未结工作的时长 — 0-7 天：{0} · 8-30 天：{1} · 30 天以上：{2}</value></data>
   <data name="TrendSame" xml:space="preserve"><value>与上一周期持平</value></data>
   <data name="TrendUp" xml:space="preserve"><value>较上一周期 +{0}（此前 {1}）</value></data>
   <data name="TrendDown" xml:space="preserve"><value>较上一周期 -{0}（此前 {1}）</value></data>
@@ -74,6 +88,7 @@
   <data name="PriorityMedium" xml:space="preserve"><value>中</value></data>
   <data name="ItemsClose" xml:space="preserve"><value>关闭</value></data>
   <data name="ItemsEmpty" xml:space="preserve"><value>没有与此单元格匹配的任务。</value></data>
+  <data name="ItemsEmptyHint" xml:space="preserve"><value>所选时间段内没有任务符合此度量。</value></data>
   <data name="ItemsLoadFailed" xml:space="preserve"><value>无法加载列表。</value></data>
   <data name="ItemsCount" xml:space="preserve"><value>显示 {1} 项中的 {0} 项</value></data>
   <data name="ItemsShowMore" xml:space="preserve"><value>再显示 {0} 项</value></data>
@@ -86,6 +101,7 @@
   <data name="ItemsAging30plus" xml:space="preserve"><value>开放 30 天以上</value></data>
   <data name="ItemsColDue" xml:space="preserve"><value>截止 {0}</value></data>
   <data name="FiltersToggle" xml:space="preserve"><value>筛选</value></data>
+  <data name="Action" xml:space="preserve"><value>操作</value></data>
   <data name="OutcomesOther" xml:space="preserve"><value>其他结果</value></data>
   <data name="ItemsColClosed" xml:space="preserve"><value>关闭 {0}</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>低</value></data>

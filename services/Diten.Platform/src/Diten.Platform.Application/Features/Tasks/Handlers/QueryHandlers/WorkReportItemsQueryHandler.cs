@@ -14,6 +14,11 @@ namespace Diten.Platform.Application.Features.Tasks.Handlers.QueryHandlers;
 /// The SAME optional narrowing the numbers were computed under. ⚠ It narrows the caller's scope and can never
 /// widen it — see <see cref="WorkReportFilter"/>. Nothing here is a permission.
 /// </param>
+/// <param name="ScopePreference">
+/// ⚠ THE SAME PREFERENCE THE REPORT WAS LOADED UNDER, not read freshly from the caller's current permission.
+/// A number counted under "your scope" has to open a list counted under the SAME scope — resolving this
+/// independently would let a click widen past what its own tile just reported.
+/// </param>
 public sealed record WorkReportItemsQuery(
     DateTimeOffset From,
     DateTimeOffset To,
@@ -23,7 +28,8 @@ public sealed record WorkReportItemsQuery(
     string? Argument = null,
     string? GroupKey = null,
     int Skip = 0,
-    WorkReportFilter? Filter = null)
+    WorkReportFilter? Filter = null,
+    WorkReportScopePreference? ScopePreference = null)
     : IRequest<Response<WorkReportItemsDto>>;
 
 /// <summary>
@@ -69,7 +75,7 @@ public sealed class WorkReportItemsQueryHandler
                 400, TaskReasonCodes.ValidationFailed, query.CorrelationId);
         }
 
-        var scope = await _scope.ResolveAsync(ct);
+        var scope = await _scope.ResolveAsync(query.ScopePreference, ct);
 
         /*
          * ⚠ SCOPE FIRST, FILTER SECOND — the same order, and the same reason. The scope comes from the caller's

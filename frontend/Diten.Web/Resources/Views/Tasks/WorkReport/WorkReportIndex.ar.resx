@@ -31,9 +31,14 @@
   <data name="Completed" xml:space="preserve"><value>مكتملة</value></data>
   <data name="Cancelled" xml:space="preserve"><value>ملغاة</value></data>
   <data name="OutcomesTitle" xml:space="preserve"><value>كيف انتهى العمل</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>ملخص الفترة</value></data>
+  <data name="SummaryPeriod" xml:space="preserve"><value>الفترة</value></data>
+  <data name="SummaryDays" xml:space="preserve"><value>{0} يوم</value></data>
+  <data name="SummaryScopeNote" xml:space="preserve"><value>{0} · {1}</value></data>
   <data name="OutcomesQuestion" xml:space="preserve"><value>ماذا قرّرت عمليات الإغلاق؟</value></data>
   <data name="OutcomesEmpty" xml:space="preserve"><value>لم يُسجَّل أي إغلاق بنتيجة.</value></data>
   <data name="TimelinessTitle" xml:space="preserve"><value>مقابل الموعد النهائي</value></data>
+  <data name="SharePercent" xml:space="preserve"><value>{0}٪</value></data>
   <data name="TimelinessQuestion" xml:space="preserve"><value>هل أُنجز العمل في وقته؟</value></data>
   <data name="OnTime" xml:space="preserve"><value>في الوقت</value></data>
   <data name="Late" xml:space="preserve"><value>متأخر</value></data>
@@ -45,17 +50,26 @@
   <data name="CycleTimeDays" xml:space="preserve"><value>{0} يوم</value></data>
   <data name="CycleTimeOver" xml:space="preserve"><value>على {0} مغلقة</value></data>
   <data name="ReworkTitle" xml:space="preserve"><value>أُعيدت</value></data>
-  <data name="ReworkTasks" xml:space="preserve"><value>{0} مهمة</value></data>
-  <data name="ReworkReturns" xml:space="preserve"><value>{0} إعادة إجمالًا</value></data>
   <data name="UnattendedTitle" xml:space="preserve"><value>بانتظار من يتسلّمها</value></data>
   <data name="UnattendedHint" xml:space="preserve"><value>عمل مفتوح لا يحمله أحد، الآن.</value></data>
   <data name="EffortTitle" xml:space="preserve"><value>الخطة مقابل الفعلي</value></data>
-  <data name="EffortHours" xml:space="preserve"><value>{0} ساعة مقدَّرة · {1} ساعة مُنفَقة</value></data>
+  <data name="UnitDays" xml:space="preserve"><value>يوم</value></data>
+  <data name="UnitTasks" xml:space="preserve"><value>مهمة</value></data>
+  <data name="UnitOpenWork" xml:space="preserve"><value>مفتوحة</value></data>
+  <data name="ReworkQualifier" xml:space="preserve"><value>عمل أُعيد إلى صاحبه</value></data>
+  <data name="UnattendedQualifier" xml:space="preserve"><value>لم يتولّها أحد</value></data>
+  <data name="LabelMedian" xml:space="preserve"><value>الوسيط</value></data>
+  <data name="LabelUntilCancelled" xml:space="preserve"><value>حتى الإلغاء</value></data>
+  <data name="LabelCancelled" xml:space="preserve"><value>الملغاة</value></data>
+  <data name="LabelTotalReturns" xml:space="preserve"><value>إجمالي الإرجاعات</value></data>
+  <data name="LabelEstimated" xml:space="preserve"><value>المقدَّر</value></data>
+  <data name="AgingUpTo7Label" xml:space="preserve"><value>٠–٧ أيام</value></data>
+  <data name="AgingFrom8To30Label" xml:space="preserve"><value>٨–٣٠ يومًا</value></data>
+  <data name="AgingOlderThan30Label" xml:space="preserve"><value>أكثر من ٣٠ يومًا</value></data>
+  <data name="EffortSpentUnit" xml:space="preserve"><value>ساعة مُنفَقة</value></data>
+  <data name="Hours" xml:space="preserve"><value>{0} ساعة</value></data>
   <data name="EffortOver" xml:space="preserve"><value>على {0} مهمة</value></data>
   <data name="EffortHint" xml:space="preserve"><value>مؤشّر على الخطة، لا على شخص.</value></data>
-  <data name="CycleTimeMedian" xml:space="preserve"><value>الوسيط {0}</value></data>
-  <data name="CancelTime" xml:space="preserve"><value>حتى الإلغاء: المتوسط {0} · الوسيط {1} ({2} ملغاة)</value></data>
-  <data name="AgingBuckets" xml:space="preserve"><value>عمر العمل المفتوح — 0-7 أيام: {0} · 8-30 يومًا: {1} · أكثر من 30 يومًا: {2}</value></data>
   <data name="TrendSame" xml:space="preserve"><value>مثل الفترة السابقة</value></data>
   <data name="TrendUp" xml:space="preserve"><value>+{0} مقارنة بالفترة السابقة (كانت {1})</value></data>
   <data name="TrendDown" xml:space="preserve"><value>-{0} مقارنة بالفترة السابقة (كانت {1})</value></data>
@@ -74,6 +88,7 @@
   <data name="PriorityMedium" xml:space="preserve"><value>متوسطة</value></data>
   <data name="ItemsClose" xml:space="preserve"><value>إغلاق</value></data>
   <data name="ItemsEmpty" xml:space="preserve"><value>لا توجد مهام تطابق هذه الخلية.</value></data>
+  <data name="ItemsEmptyHint" xml:space="preserve"><value>لا توجد مهمة ضمن الفترة المحددة تندرج تحت هذا المقياس.</value></data>
   <data name="ItemsLoadFailed" xml:space="preserve"><value>تعذر تحميل القائمة.</value></data>
   <data name="ItemsCount" xml:space="preserve"><value>عرض {0} من {1}</value></data>
   <data name="ItemsShowMore" xml:space="preserve"><value>إظهار {0} إضافية</value></data>
@@ -86,6 +101,7 @@
   <data name="ItemsAging30plus" xml:space="preserve"><value>مفتوحة منذ أكثر من 30 يومًا</value></data>
   <data name="ItemsColDue" xml:space="preserve"><value>الاستحقاق {0}</value></data>
   <data name="FiltersToggle" xml:space="preserve"><value>عوامل التصفية</value></data>
+  <data name="Action" xml:space="preserve"><value>إجراء</value></data>
   <data name="OutcomesOther" xml:space="preserve"><value>نتائج أخرى</value></data>
   <data name="ItemsColClosed" xml:space="preserve"><value>أُغلقت {0}</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>منخفضة</value></data>

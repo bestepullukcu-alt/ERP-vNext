@@ -25,9 +25,27 @@ const resx = (lang) =>
   fs.readFileSync(web("Resources", "Views", "Tasks", "WorkReport", `WorkReportIndex.${lang}.resx`), "utf8");
 
 /** The keys THIS slice added — every one of them has to exist, translated, in all seven files. */
-const NEW_KEYS = ["CycleTimeMedian", "CancelTime", "AgingBuckets", "TrendSame", "TrendUp", "TrendDown"];
+/*
+ * ⚠ THE KEYS 1b OWNS, RENAMED WITH THE SKELETON. `CycleTimeMedian`, `CancelTime` and `AgingBuckets` were
+ * whole sentences with `{0}` slots; the four cards now share a two-column facts table, so each of those
+ * sentences became a LABEL beside its own value. The rule this list enforces is unchanged — every string 1b
+ * put on screen exists in all seven languages and is actually translated — only the strings changed shape.
+ */
+const NEW_KEYS = ["LabelMedian", "LabelUntilCancelled", "LabelCancelled",
+  "AgingUpTo7Label", "AgingFrom8To30Label", "AgingOlderThan30Label",
+  "TrendSame", "TrendUp", "TrendDown"];
 
 const LABELS = {
+  summaryTitle: "Period summary", summaryPeriod: "Period", summaryDays: "{0} days",
+  summaryScopeNote: "{0} · {1}",
+
+  unitDays: "days", unitTasks: "tasks", unitOpenWork: "open",
+  reworkQualifier: "work sent back to its owner", unattendedQualifier: "nobody has taken these on",
+  labelMedian: "Median", labelUntilCancelled: "Until cancelled", labelCancelled: "Cancelled",
+  labelTotalReturns: "Total returns", labelEstimated: "Estimated",
+  agingUpTo7Label: "0-7 days", agingFrom8To30Label: "8-30 days", agingOlderThan30Label: "30+ days",
+  effortSpentUnit: "h spent", hours: "{0} h",
+
   scopeScoped: "Your scope",
   scopeTenant: "Whole tenant",
   scopeScopedHint: "Counts only the work you are entitled to see.",
@@ -46,15 +64,13 @@ const LABELS = {
   late: "Late",
   withoutDueDate: "No deadline set",
   timelinessTitle: "Against the deadline",
+  sharePercent: "{0}%",
   outcomesEmpty: "No closure was recorded with an outcome.",
   groupsTitle: "By {0}",
   groupUnnamed: "Not set",
   groupByOrganizationUnit: "Organisation unit",
   cycleTimeDays: "{0} days",
   cycleTimeOver: "over {0} closed",
-  reworkTasks: "{0} tasks",
-  reworkReturns: "{0} returns in total",
-  effortHours: "{0} h estimated · {1} h spent",
   effortOver: "over {0} tasks",
   notMeasured: "Not measured",
   groupByLegalEntity: "Company",
@@ -65,9 +81,6 @@ const LABELS = {
   priorityHigh: "High",
   priorityMedium: "Medium",
   priorityLow: "Low",
-  cycleTimeMedian: "median {0}",
-  cancelTime: "Until cancelled: average {0} · median {1} ({2} cancelled)",
-  agingBuckets: "Age of open work — 0-7 days: {0} · 8-30 days: {1} · 30+ days: {2}",
   trendSame: "same as the previous period",
   trendUp: "+{0} against the previous period (was {1})",
   trendDown: "-{0} against the previous period (was {1})"
@@ -88,22 +101,33 @@ const MARKUP = `
   </form>
   <div data-wr-scope hidden><span data-wr-scope-badge></span><span data-wr-scope-hint></span></div>
   <p data-wr-status></p>
+  <div data-wr-skeleton-tiles hidden></div>
+  <div data-wr-skeleton-charts hidden></div>
   <div data-wr-tiles hidden>
-    <p data-wr-cycle-value></p><p data-wr-cycle-median></p><p data-wr-cycle-over></p>
-    <p data-wr-cycle-trend hidden></p><p data-wr-cancel-value hidden></p>
-    <p data-wr-rework-tasks></p><p data-wr-rework-returns></p><p data-wr-rework-trend hidden></p>
-    <p data-wr-unattended-value></p><p data-wr-aging hidden></p>
-    <p data-wr-effort-value></p><p data-wr-effort-over></p>
+    <p data-wr-cycle-value></p><p data-wr-cycle-unit></p><p data-wr-cycle-over></p>
+    <dl data-wr-cycle-facts></dl><p data-wr-cycle-trend hidden></p>
+    <p data-wr-rework-tasks data-wr-click="Returned" role="button" tabindex="0"></p><dl data-wr-rework-facts></dl><p data-wr-rework-trend hidden></p>
+    <p data-wr-unattended-value data-wr-click="Unattended" role="button" tabindex="0"></p><dl data-wr-aging hidden></dl>
+    <p data-wr-effort-value></p><p data-wr-effort-over></p><dl data-wr-effort-facts></dl>
   </div>
   <select id="wrLegalEntity"><option value="">Any</option></select>
   <select id="wrUnit"><option value="">Any</option></select>
   <select id="wrTaskType"><option value="">Any</option></select>
   <select id="wrAssignee"><option value="">Any</option></select>
   <select id="wrPriority"><option value="">Any</option></select>
+  <div data-wr-summary hidden>
+    <span data-wr-summary-days></span>
+    <span data-wr-summary-opened data-wr-click="Opened"></span>
+    <span data-wr-summary-closed data-wr-click="Closed"></span>
+    <span data-wr-summary-completed data-wr-click="Completed"></span>
+    <span data-wr-summary-cancelled data-wr-click="Cancelled"></span>
+    <span data-wr-summary-unattended data-wr-click="Unattended"></span>
+    <span data-wr-summary-note></span>
+  </div>
   <div data-wr-charts hidden>
     <div data-wr-chart-flow></div><p data-wr-flow-trend hidden></p>
     <div data-wr-chart-outcomes></div><p data-wr-outcomes-empty hidden></p>
-    <div data-wr-chart-timeliness></div><p data-wr-late-trend hidden></p>
+    <div data-wr-chart-timeliness></div><ul data-wr-timeliness-legend></ul><p data-wr-late-trend hidden></p>
     <div data-wr-groups-card hidden><h6 data-wr-groups-title></h6><div data-wr-chart-groups></div>
       <p data-wr-groups-truncated hidden></p></div>
   </div>
@@ -132,6 +156,25 @@ const boot = () => {
 };
 
 /** The response shape 1b publishes — `count`, `cancellationTime` and `aging` are this slice's additions. */
+
+/**
+ * The facts table of one card, read back as [label, value] pairs.
+ *
+ * ⚠ THE PAIRS ARE THE POINT. These used to be prose lines, and a test could only assert the whole sentence;
+ * as a two-column list each fact can be named and checked on its own, so a row that quietly disappeared while
+ * the sentence still read fine cannot pass.
+ */
+const facts = (selector) => {
+  const dl = document.querySelector(selector);
+  if (!dl) { return null; }
+  const out = [];
+  [...dl.children].forEach((el) => {
+    if (el.tagName === "DT") { out.push([el.textContent, ""]); }
+    else if (out.length) { out[out.length - 1][1] = el.textContent; }
+  });
+  return out;
+};
+
 const bucket = (over) => Object.assign({
   key: null,
   label: null,
@@ -202,8 +245,9 @@ describe("(1) the median stands BESIDE the average, never instead of it", () => 
     const screen = boot();
     screen.render(busy());
 
-    expect(text("[data-wr-cycle-value]")).toBe("11.33 days");
-    expect(text("[data-wr-cycle-median]")).toBe("median 10 days");
+    expect(text("[data-wr-cycle-value]")).toBe("11.33");
+    expect(text("[data-wr-cycle-unit]"), "the unit left the answer line").toBe("days");
+    expect(facts("[data-wr-cycle-facts]")).toContainEqual(["Median", "10 days"]);
   });
 
   it("computes neither of them in the browser", () => {
@@ -231,7 +275,9 @@ describe("(1) the median stands BESIDE the average, never instead of it", () => 
     }));
 
     expect(text("[data-wr-cycle-value]")).toBe(LABELS.notMeasured);
-    expect(text("[data-wr-cycle-median]")).toBe("median Not measured");
+    // ⚠ AND NO UNIT BESIDE IT. "Not measured days" is not a sentence anybody means.
+    expect(text("[data-wr-cycle-unit]"), "an unmeasured average kept its unit").toBe("");
+    expect(facts("[data-wr-cycle-facts]")).toContainEqual(["Median", LABELS.notMeasured]);
     expect(document.body.textContent, "an absent duration was drawn as a zero").not.toMatch(/\b0 days\b/);
   });
 });
@@ -247,9 +293,10 @@ describe("(2) K-1 — abandoned work is read SEPARATELY from finished work", () 
     const screen = boot();
     screen.render(busy());
 
-    expect(text("[data-wr-cycle-value]")).toBe("11.33 days");
-    expect(hidden("[data-wr-cancel-value]"), "the cancellation span was never shown").toBe(false);
-    expect(text("[data-wr-cancel-value]")).toBe("Until cancelled: average 8.75 days · median 8 days (2 cancelled)");
+    expect(text("[data-wr-cycle-value]")).toBe("11.33");
+    const rows = facts("[data-wr-cycle-facts]");
+    expect(rows, "the cancellation span was never shown").toContainEqual(["Until cancelled", "8.75 days"]);
+    expect(rows).toContainEqual(["Cancelled", "2"]);
 
     expect(document.body.textContent, "the two spans were averaged back together").not.toContain("3.99");
   });
@@ -268,7 +315,11 @@ describe("(2) K-1 — abandoned work is read SEPARATELY from finished work", () 
       })
     }));
 
-    expect(hidden("[data-wr-cancel-value]")).toBe(true);
+    // The ROW is gone, not zeroed — the median row beside it proves the table still rendered.
+    const rows = facts("[data-wr-cycle-facts]");
+    expect(rows.map((r) => r[0]), "a cancellation row appeared with nothing cancelled")
+      .not.toContain("Until cancelled");
+    expect(rows.map((r) => r[0]), "the facts table stopped rendering entirely").toContain("Median");
   });
 });
 
@@ -302,7 +353,14 @@ describe("(4) ageing — measured at the PERIOD'S END, which is what makes it ev
     screen.render(busy());
 
     expect(hidden("[data-wr-aging]")).toBe(false);
-    expect(text("[data-wr-aging]")).toBe("Age of open work — 0-7 days: 2 · 8-30 days: 1 · 30+ days: 5");
+    /*
+     * ⚠ THIS ASSERTED ONE LOCALIZED SENTENCE UNTIL THE CARDS GOT ONE SKELETON. The three bands are now rows of
+     * the same facts table every other card uses, so each band is named and checked on its own — a band that
+     * silently stopped rendering used to leave a sentence that still read as a sentence.
+     */
+    expect(facts("[data-wr-aging]")).toEqual([
+      ["0-7 days", "2"], ["8-30 days", "1"], ["30+ days", "5"]
+    ]);
   });
 
   it("does not compute an age in the browser from a date and a clock", () => {
@@ -402,7 +460,8 @@ describe("(5) the comparison against the previous period", () => {
     screen.render(report());
     expect(hidden("[data-wr-cycle-trend]"), "a stale direction survived an empty period").toBe(true);
     expect(hidden("[data-wr-aging]")).toBe(true);
-    expect(hidden("[data-wr-cancel-value]")).toBe(true);
+    expect(facts("[data-wr-cycle-facts]").map((r) => r[0]),
+      "a stale cancellation row survived an empty period").not.toContain("Until cancelled");
   });
 });
 
@@ -423,7 +482,7 @@ describe("(6) this slice added numbers, not layout", () => {
   it("keeps every new line inside an existing card rather than after it", () => {
     // The hooks sit between the card's own value and its closing tag, so nothing floats loose in the grid.
     const card = VIEW.slice(VIEW.indexOf("data-wr-cycle-value"), VIEW.indexOf("data-wr-rework-tasks"));
-    ["data-wr-cycle-median", "data-wr-cycle-trend", "data-wr-cancel-value"].forEach((hook) => {
+    ["data-wr-cycle-unit", "data-wr-cycle-over", "data-wr-cycle-facts", "data-wr-cycle-trend"].forEach((hook) => {
       expect(card.includes(hook), `${hook} escaped the cycle-time card`).toBe(true);
     });
   });
@@ -433,7 +492,19 @@ describe("(6) this slice added numbers, not layout", () => {
     // wearing statistics.
     const code = SCRIPT.split("\n").filter((l) => !l.trim().startsWith("*") && !l.trim().startsWith("//")).join("\n");
     expect(code).not.toMatch(/spentHours\s*\/|\/\s*estimatedHours|medianDays\s*\//);
-    expect(code).not.toMatch(/efficiency|multiplier|productivityScore|percent/i);
+    /*
+     * ⚠ THE WORD BAN NARROWED, AND THE RULE DID NOT (2026-09-04). This line used to also forbid the substring
+     * "percent" anywhere in the file. That was a net cast around a NAME, and the timeliness ring's legend —
+     * which states the share each band is OF THE RING ALREADY DRAWN — tripped it on `SharePercent`, a
+     * localisation key. A composition of one axis is not the forbidden figure: pack §8 excludes dividing
+     * ESTIMATE by SPENT and attributing the result to a person, because that makes people inflate estimates
+     * and corrupts the only planning input the system has.
+     *
+     * So the ban now names what it means. The division itself is still forbidden by the line above, the
+     * forbidden figure's names are still forbidden here, and `The_effort_card_never_publishes_a_share` was
+     * added to watch the actual card — a guard on the rendered output, which the substring net never was.
+     */
+    expect(code).not.toMatch(/efficiency|multiplier|productivityScore/i);
   });
 });
 
@@ -481,11 +552,19 @@ describe("(7) seven languages, and no raw key on screen", () => {
     };
 
     LANGS.forEach((lang) => {
-      expect(value(lang, "CycleTimeMedian"), `CycleTimeMedian/${lang}`).toContain("{0}");
-      ["{0}", "{1}", "{2}"].forEach((token) => {
-        expect(value(lang, "AgingBuckets").includes(token), `AgingBuckets/${lang} lost ${token}`).toBe(true);
-        expect(value(lang, "CancelTime").includes(token), `CancelTime/${lang} lost ${token}`).toBe(true);
+      /*
+       * ⚠ THE SENTENCES THAT CARRIED {0}..{2} ARE GONE, AND THAT IS WHY THIS LIST SHRANK. A facts-table LABEL
+       * takes no placeholder — its value is a separate cell — so demanding one would fail for every language.
+       * What still carries slots is checked here, and the labels are checked NOT to carry one: a `{0}` left in
+       * a label would render the brace to the reader.
+       */
+      ["LabelMedian", "LabelUntilCancelled", "LabelCancelled",
+       "AgingUpTo7Label", "AgingFrom8To30Label", "AgingOlderThan30Label"].forEach((key) => {
+        expect(value(lang, key), `${key}/${lang} is empty`).toBeTruthy();
+        expect(value(lang, key), `${key}/${lang} still carries a placeholder`).not.toContain("{0}");
       });
+      expect(value(lang, "CycleTimeDays"), `CycleTimeDays/${lang}`).toContain("{0}");
+      expect(value(lang, "CycleTimeOver"), `CycleTimeOver/${lang}`).toContain("{0}");
       ["{0}", "{1}"].forEach((token) => {
         expect(value(lang, "TrendUp").includes(token), `TrendUp/${lang} lost ${token}`).toBe(true);
         expect(value(lang, "TrendDown").includes(token), `TrendDown/${lang} lost ${token}`).toBe(true);

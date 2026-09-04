@@ -31,9 +31,14 @@
   <data name="Completed" xml:space="preserve"><value>Выполнено</value></data>
   <data name="Cancelled" xml:space="preserve"><value>Отменено</value></data>
   <data name="OutcomesTitle" xml:space="preserve"><value>Чем закончилась работа</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>Сводка за период</value></data>
+  <data name="SummaryPeriod" xml:space="preserve"><value>Период</value></data>
+  <data name="SummaryDays" xml:space="preserve"><value>{0} дн.</value></data>
+  <data name="SummaryScopeNote" xml:space="preserve"><value>{0} · {1}</value></data>
   <data name="OutcomesQuestion" xml:space="preserve"><value>Что решили эти закрытия?</value></data>
   <data name="OutcomesEmpty" xml:space="preserve"><value>Ни одно закрытие не записано с результатом.</value></data>
   <data name="TimelinessTitle" xml:space="preserve"><value>Относительно срока</value></data>
+  <data name="SharePercent" xml:space="preserve"><value>{0} %</value></data>
   <data name="TimelinessQuestion" xml:space="preserve"><value>Успела ли работа в срок?</value></data>
   <data name="OnTime" xml:space="preserve"><value>В срок</value></data>
   <data name="Late" xml:space="preserve"><value>С опозданием</value></data>
@@ -45,17 +50,26 @@
   <data name="CycleTimeDays" xml:space="preserve"><value>{0} дн.</value></data>
   <data name="CycleTimeOver" xml:space="preserve"><value>по {0} закрытым</value></data>
   <data name="ReworkTitle" xml:space="preserve"><value>Вернулось</value></data>
-  <data name="ReworkTasks" xml:space="preserve"><value>{0} задач</value></data>
-  <data name="ReworkReturns" xml:space="preserve"><value>всего {0} возвратов</value></data>
   <data name="UnattendedTitle" xml:space="preserve"><value>Ждёт исполнителя</value></data>
   <data name="UnattendedHint" xml:space="preserve"><value>Открытая работа, которую сейчас никто не ведёт.</value></data>
   <data name="EffortTitle" xml:space="preserve"><value>План и факт</value></data>
-  <data name="EffortHours" xml:space="preserve"><value>{0} ч оценка · {1} ч затрачено</value></data>
+  <data name="UnitDays" xml:space="preserve"><value>дн.</value></data>
+  <data name="UnitTasks" xml:space="preserve"><value>задач</value></data>
+  <data name="UnitOpenWork" xml:space="preserve"><value>открытых</value></data>
+  <data name="ReworkQualifier" xml:space="preserve"><value>работа, возвращённая владельцу</value></data>
+  <data name="UnattendedQualifier" xml:space="preserve"><value>никто не взял в работу</value></data>
+  <data name="LabelMedian" xml:space="preserve"><value>Медиана</value></data>
+  <data name="LabelUntilCancelled" xml:space="preserve"><value>До отмены</value></data>
+  <data name="LabelCancelled" xml:space="preserve"><value>Отменено</value></data>
+  <data name="LabelTotalReturns" xml:space="preserve"><value>Всего возвратов</value></data>
+  <data name="LabelEstimated" xml:space="preserve"><value>Оценка</value></data>
+  <data name="AgingUpTo7Label" xml:space="preserve"><value>0–7 дн.</value></data>
+  <data name="AgingFrom8To30Label" xml:space="preserve"><value>8–30 дн.</value></data>
+  <data name="AgingOlderThan30Label" xml:space="preserve"><value>30+ дн.</value></data>
+  <data name="EffortSpentUnit" xml:space="preserve"><value>ч затрачено</value></data>
+  <data name="Hours" xml:space="preserve"><value>{0} ч</value></data>
   <data name="EffortOver" xml:space="preserve"><value>по {0} задачам</value></data>
   <data name="EffortHint" xml:space="preserve"><value>Сигнал о ПЛАНЕ, а не о человеке.</value></data>
-  <data name="CycleTimeMedian" xml:space="preserve"><value>медиана {0}</value></data>
-  <data name="CancelTime" xml:space="preserve"><value>До отмены: в среднем {0} · медиана {1} (отменено: {2})</value></data>
-  <data name="AgingBuckets" xml:space="preserve"><value>Возраст незакрытой работы — 0-7 дней: {0} · 8-30 дней: {1} · 30+ дней: {2}</value></data>
   <data name="TrendSame" xml:space="preserve"><value>как в предыдущем периоде</value></data>
   <data name="TrendUp" xml:space="preserve"><value>+{0} к предыдущему периоду (было {1})</value></data>
   <data name="TrendDown" xml:space="preserve"><value>-{0} к предыдущему периоду (было {1})</value></data>
@@ -74,6 +88,7 @@
   <data name="PriorityMedium" xml:space="preserve"><value>Средний</value></data>
   <data name="ItemsClose" xml:space="preserve"><value>Закрыть</value></data>
   <data name="ItemsEmpty" xml:space="preserve"><value>Нет задач, соответствующих этой ячейке.</value></data>
+  <data name="ItemsEmptyHint" xml:space="preserve"><value>В выбранном периоде нет задач, попадающих в этот показатель.</value></data>
   <data name="ItemsLoadFailed" xml:space="preserve"><value>Не удалось загрузить список.</value></data>
   <data name="ItemsCount" xml:space="preserve"><value>Показано {0} из {1}</value></data>
   <data name="ItemsShowMore" xml:space="preserve"><value>Показать ещё {0}</value></data>
@@ -86,6 +101,7 @@
   <data name="ItemsAging30plus" xml:space="preserve"><value>Открыто более 30 дней</value></data>
   <data name="ItemsColDue" xml:space="preserve"><value>срок {0}</value></data>
   <data name="FiltersToggle" xml:space="preserve"><value>Фильтры</value></data>
+  <data name="Action" xml:space="preserve"><value>Действие</value></data>
   <data name="OutcomesOther" xml:space="preserve"><value>Другие результаты</value></data>
   <data name="ItemsColClosed" xml:space="preserve"><value>закрыто {0}</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>Низкий</value></data>
