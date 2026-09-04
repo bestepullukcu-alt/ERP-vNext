@@ -4057,10 +4057,21 @@ div.dt-container div.dt-search input {
     padding: 2rem 1rem;
 }
 
+/* ⚠ line-height:1 IS THE FIX, NOT DECORATION. Without it the <i> inherits the body's 1.375,
+   so a 28px glyph sits in a 38.5px box — 10.5px of dead space that lands UNEVENLY above and
+   below the mark, and the icon reads as badly centred rather than as badly spaced. Measured
+   2026-09-04 on the work report's empty-results panel. An icon font's glyph carries its own
+   optical padding; a second line-box on top of it only shifts it. */
 .sp-emptybox i {
     font-size: 1.75rem;
+    line-height: 1;
     opacity: 0.5;
     display: block;
+    /* ⚠ `text-align:center` ON THE PARENT DOES NOT CENTRE THIS. That property centres INLINE
+       content; a block-level box is placed by its own margins, so the icon sat hard against the
+       left edge while the two sentences under it were centred — which reads as a broken layout,
+       not as a quiet empty state. `margin-inline:auto` is what actually centres a block. */
+    margin-inline: auto;
     margin-bottom: 0.5rem;
 }
 

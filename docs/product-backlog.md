@@ -3806,3 +3806,65 @@ uygulanmış. Kural (`frontend-js-standard.md:40-41`) Platform/admin için
 gibi platform ekranları `direct-gateway` kullanıyor. Proxy profili bu arızaya
 yapısal olarak bağışık olduğu için, bu tutarsızlık yalnız stil meselesi değil.
 Ayrı madde açılmalı.
+
+---
+
+### BL-334 — Rol İzinleri ekranında doğru izni bulmak pratikte imkânsız (2026-09-04, CANLI, sahip gördü)
+
+**Durum:** AÇIK · **Boyut:** M · **Sahip:** erişim yönetimi / platform UI
+
+Ekran 236 izni listeliyor ve kullanıcıya "hangisini seçmeliyim" sorusunda
+hiçbir yardım vermiyor. Sahip bugün canlıda bir role görev izinleri eklemeye
+çalıştı; beş izin ekledi ve **en kritik olanı atladı**.
+
+**Ölçülmüş vaka (2026-09-04, canlı).** Görev atanan kullanıcı görevi kabul
+edemiyordu. Ekranda dört buton kilitliydi: Kabul et · Planla · Bilgi bekle ·
+İade et. Sahip role şunları ekledi:
+
+    ✅ tasks.claim · tasks.complete · tasks.create · tasks.delete · tasks.read
+    ❌ tasks.update        ← dördünün DE bağlı olduğu izin
+
+`update` eksik olduğu için hiçbiri açılmadı. Ekranda o dört butonun tek bir
+izne bağlı olduğunu söyleyen hiçbir şey yok.
+
+Sayıyı üreten komut (kayıt bayatlamasın diye):
+
+    mongosh --quiet diten_auth_v3 --eval \
+      'db.permissions.aggregate([{$group:{_id:"$Module",n:{$sum:1}}},{$sort:{n:-1}}])'
+
+**Dört ayrı kusur, hepsi ölçüldü:**
+
+1. **Gruplar işe yaramıyor.** `Module` alanına göre 23 grup var ama dağılım
+   bozuk: `platform` tek başına **167 izin** taşıyor — bu bir grup değil, çöp
+   kutusu. Yanında `crm` 41, `crm-contact` 8 (neden ayrı belli değil),
+   `mod0251` 14 — bu sonuncusu bir MODÜL KODU, kullanıcıya böyle görünüyor.
+
+   ⚠ `platform` 167'nin yeniden gruplanması manifest işi DEĞİL: 87'si
+   `IsSystem: true` ve `InternalPermissionsController.cs:130` `moduleLocked`
+   kuralı bunları kasten kilitliyor (yetki yükselme sınırı). Bu bir izin göçü.
+
+2. **İzin ↔ ekran bağı görünmüyor.** `platform.tasks.update`'in "Kabul et /
+   Planla / Bilgi bekle / İade et / Başlat" butonlarını açtığı hiçbir yerde
+   yazmıyor. Kullanıcı anahtarın adından tahmin etmek zorunda — ve `update`
+   adı bu dört fiilin hiçbirini çağrıştırmıyor.
+
+3. **Eksik izni ekran söylemiyor.** Kullanıcı tarafında mesaj yalnız "Bu işlem
+   için yetkiniz yok" diyor. HANGİ izin eksik olduğunu söylemiyor; yönetici
+   tarafında da "bu butonu açan izin şudur" bilgisi yok. İki uç da sebebi
+   biliyor, ikisi de sessiz.
+
+4. **Tehlikeli izin uyarısız.** `tasks.delete` "General User" adlı bir role
+   tek tıkla eklenebiliyor; ekran bunun silme yetkisi olduğunu ve denetim izini
+   etkilediğini söylemiyor.
+
+**Kapanış ölçütü:** bir yönetici, "kullanıcı görevi kabul edemiyor" cümlesinden
+yola çıkıp doğru izni **arama yapmadan, tahmin etmeden** bulabilmeli. Ölçümü:
+aynı senaryoyu bilmeyen birine verip kaç denemede doğru izni eklediğine bakmak.
+
+**Yön önerisi (tasarım kararı sahipte):** izinleri anahtar adına göre değil
+**ekrandaki eyleme göre** gruplamak — "Görev üzerinde çalışma" başlığı altında
+accept/plan/inquire/return/start'ı tek satırda toplamak gibi. Bugün kullanıcı
+fiilden anahtara çeviri yapmak zorunda ve o çeviri hiçbir yerde yazılı değil.
+
+**İlişkili:** [[BL-333]] (aynı izin sisteminin token'ı 21,5 KB'a şişirmesi) —
+ikisi de "407 izin tek düzlemde duruyor" kökünden geliyor.
