@@ -88,6 +88,7 @@ builder.Host.UseSerilog((context, services, loggerConfiguration) =>
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
+builder.Services.AddTrustedServiceTokenValidation(builder.Configuration);
 
 /*
  * BL-024 Phase 2 — "does the caller hold permission P", answered from the request's claims.
