@@ -179,6 +179,30 @@ public sealed class DependencyInjectionSmokeTests
         Assert.DoesNotContain("AddAuthentication(TrustedServiceTokenValidationExtensions.AuthenticationScheme", program, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void Program_RegistersTrustedSourceAuditIntentAgainstRs256ServiceTokenSchemeOnly()
+    {
+        var root = FindRepositoryRoot();
+        var program = File.ReadAllText(Path.Combine(
+            root,
+            "services", "Diten.Platform", "src", "Diten.Platform.API", "Program.cs"));
+        var dependencyInjection = File.ReadAllText(Path.Combine(
+            root,
+            "services", "Diten.Platform", "src", "Diten.Platform.Infrastructure", "DependencyInjection.cs"));
+
+        Assert.Contains("AddTrustedServiceTokenValidation(builder.Configuration)", program, StringComparison.Ordinal);
+        Assert.Contains("AddScoped<ITrustedSourceAuditIntentServiceIdentity", program, StringComparison.Ordinal);
+        Assert.Contains("AddScoped<ITrustedSourceAuditIntentRequestExecutor", program, StringComparison.Ordinal);
+        Assert.Contains("ITrustedSourceAuditIntentAcceptanceService", dependencyInjection, StringComparison.Ordinal);
+        Assert.Contains("ITrustedSourceAuditIntentOutbox", dependencyInjection, StringComparison.Ordinal);
+        Assert.DoesNotContain("TrustedSourceAuditIntentCredentialOptions", program, StringComparison.Ordinal);
+        Assert.DoesNotContain("ITrustedSourceAuditIntentCredentialAuthenticator", program, StringComparison.Ordinal);
+        Assert.DoesNotContain("AddJwtBearer(TrustedSourceAuditIntentServiceIdentity.AuthenticationScheme", program, StringComparison.Ordinal);
+        Assert.DoesNotContain("AddHostedService<TrustedSourceAuditIntent", program, StringComparison.Ordinal);
+        Assert.DoesNotContain("AddHostedService<TrustedSourceAuditIntent", dependencyInjection, StringComparison.Ordinal);
+        Assert.False(typeof(IHostedService).IsAssignableFrom(typeof(TrustedSourceAuditIntentRequestExecutor)));
+    }
+
     private static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

@@ -163,6 +163,9 @@ builder.Services.AddSingleton<ITrustedLegalEntityScopeCredentialAuthenticator, T
 builder.Services.AddScoped<ITrustedLegalEntityScopeJwtContext, TrustedLegalEntityScopeJwtContext>();
 builder.Services.AddScoped<ITrustedLegalEntityScopeRequestExecutor, TrustedLegalEntityScopeRequestExecutor>();
 builder.Services.AddSingleton<IOrgDataScopeCandidateAvailabilityClassifier, MongoOrgDataScopeCandidateAvailabilityClassifier>();
+builder.Services.AddScoped<ITrustedSourceAuditIntentServiceIdentity, TrustedSourceAuditIntentServiceIdentity>();
+builder.Services.AddSingleton<Diten.Platform.API.Models.Audit.TrustedSourceAuditIntentRequestParser>();
+builder.Services.AddScoped<ITrustedSourceAuditIntentRequestExecutor, TrustedSourceAuditIntentRequestExecutor>();
 
 // AG-STEP-011 / MOD-0018-FU14 Group B — self-explain observer (API-layer; reuses the API-layer PermissionClaimEvaluator).
 builder.Services.AddScoped<Diten.Platform.API.Observability.ICorrelationContext, Diten.Platform.API.Observability.CorrelationContext>();

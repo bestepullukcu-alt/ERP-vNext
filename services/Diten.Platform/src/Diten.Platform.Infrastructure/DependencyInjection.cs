@@ -5,6 +5,7 @@ using Diten.BuildingBlocks.Security.Secrets;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Authorization;
 using Diten.Platform.Application.Contracts.Audit;
+using Diten.Platform.Application.Features.Audit;
 using Diten.Platform.Application.Features.Lookups.Services;
 using Diten.Platform.Application.Features.EntitlementAttestations;
 using Diten.Platform.Application.Features.Notifications.Services;
@@ -497,6 +498,8 @@ public static class DependencyInjection
         services.AddScoped<AuditOutboxRepository>();
         services.AddScoped<IAuditOutboxWriter>(provider => provider.GetRequiredService<AuditOutboxRepository>());
         services.AddScoped<ITransactionalAuditOutboxWriter>(provider => provider.GetRequiredService<AuditOutboxRepository>());
+        services.AddScoped<ITrustedSourceAuditIntentOutbox>(provider => provider.GetRequiredService<AuditOutboxRepository>());
+        services.AddScoped<ITrustedSourceAuditIntentAcceptanceService, TrustedSourceAuditIntentAcceptanceService>();
         services.AddScoped<IAuditOutboxProcessingRepository>(provider => provider.GetRequiredService<AuditOutboxRepository>());
         services.AddSingleton<AuditOutboxWorkerOptions>();
         services.AddScoped<AuditOutboxPayloadMapper>();

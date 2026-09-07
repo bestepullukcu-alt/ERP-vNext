@@ -1,4 +1,6 @@
+using System.Globalization;
 using Diten.Platform.Application.Contracts.Audit;
+using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Persistence;
 using Diten.Platform.Infrastructure.Persistence.Migrations;
@@ -11,6 +13,7 @@ using MongoDB.Driver;
 namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 
 internal sealed class AuditOutboxRepository : IAuditOutboxWriter, ITransactionalAuditOutboxWriter
+    , ITrustedSourceAuditIntentOutbox
     , IAuditOutboxProcessingRepository
 {
     private readonly IMongoCollection<AuditOutboxMessage> _collection;
@@ -79,6 +82,57 @@ internal sealed class AuditOutboxRepository : IAuditOutboxWriter, ITransactional
         request.Validate();
 
         return await TryInsertAsync(ToPersistenceMessage(request), ct);
+    }
+
+    public async Task<TrustedSourceAuditIntentAcceptanceResult> AcceptAsync(
+        TrustedSourceAuditIntentEnvelope envelope,
+        string centralIdempotencyKey,
+        string sourceIntentFingerprint,
+        string mappedEntityType,
+        AuditOperation mappedOperation,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(envelope);
+
+        if (string.IsNullOrWhiteSpace(centralIdempotencyKey)
+            || string.IsNullOrWhiteSpace(sourceIntentFingerprint)
+            || string.IsNullOrWhiteSpace(mappedEntityType))
+        {
+            throw new ArgumentException("Trusted source audit outbox material is required.");
+        }
+
+        var message = ToTrustedSourcePersistenceMessage(
+            envelope,
+            centralIdempotencyKey,
+            sourceIntentFingerprint,
+            mappedEntityType,
+            mappedOperation);
+
+        try
+        {
+            if (await TryInsertAsync(message, ct))
+            {
+                return TrustedSourceAuditIntentAcceptanceResult.Accepted(ToAcceptanceReceipt(message, duplicate: false));
+            }
+
+            var winner = await GetByIdempotencyKeyAsync(centralIdempotencyKey, ct);
+            if (winner is null)
+            {
+                return TrustedSourceAuditIntentAcceptanceResult.Unavailable();
+            }
+
+            return HasExactFingerprint(winner, sourceIntentFingerprint)
+                ? TrustedSourceAuditIntentAcceptanceResult.Duplicate(ToAcceptanceReceipt(winner, duplicate: true))
+                : TrustedSourceAuditIntentAcceptanceResult.IdempotencyConflict();
+        }
+        catch (MongoException)
+        {
+            return TrustedSourceAuditIntentAcceptanceResult.Unavailable();
+        }
+        catch (InvalidOperationException)
+        {
+            return TrustedSourceAuditIntentAcceptanceResult.Unavailable();
+        }
     }
 
     private async Task<bool> TryInsertAsync(AuditOutboxMessage message, CancellationToken ct = default)
@@ -394,6 +448,113 @@ internal sealed class AuditOutboxRepository : IAuditOutboxWriter, ITransactional
         AuditOutboxTemporalStorageCompatibility.ApplyCurrentVersion(message);
         return message;
     }
+
+    private static AuditOutboxMessage ToTrustedSourcePersistenceMessage(
+        TrustedSourceAuditIntentEnvelope envelope,
+        string centralIdempotencyKey,
+        string sourceIntentFingerprint,
+        string mappedEntityType,
+        AuditOperation mappedOperation)
+    {
+        var sourceIntent = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            [nameof(envelope.SourceService)] = envelope.SourceService,
+            [nameof(envelope.ContractVersion)] = envelope.ContractVersion,
+            [nameof(envelope.IntentId)] = envelope.IntentId,
+            [nameof(envelope.TenantId)] = envelope.TenantId,
+            [nameof(envelope.AggregateType)] = envelope.AggregateType,
+            [nameof(envelope.AggregateId)] = envelope.AggregateId,
+            [nameof(envelope.PreVersion)] = envelope.PreVersion,
+            [nameof(envelope.PostVersion)] = envelope.PostVersion,
+            [nameof(envelope.Operation)] = envelope.Operation,
+            [nameof(envelope.ActorId)] = envelope.ActorId,
+            [nameof(envelope.CorrelationId)] = envelope.CorrelationId,
+            [nameof(envelope.CausationId)] = envelope.CausationId,
+            [nameof(envelope.CommandId)] = envelope.CommandId,
+            [nameof(envelope.Sequence)] = envelope.Sequence,
+            [nameof(envelope.TimestampUtc)] = envelope.TimestampUtc,
+            [nameof(envelope.EvidenceHash)] = envelope.EvidenceHash,
+            [nameof(envelope.SnapshotReference)] = envelope.SnapshotReference,
+            [nameof(envelope.IdempotencyKey)] = envelope.IdempotencyKey
+        };
+
+        var metadata = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["SourceIntentId"] = envelope.IntentId,
+            ["SourceAggregateType"] = envelope.AggregateType,
+            ["SourceOperation"] = envelope.Operation,
+            ["SourceActorId"] = envelope.ActorId,
+            ["CausationId"] = envelope.CausationId,
+            ["CommandId"] = envelope.CommandId,
+            ["Sequence"] = envelope.Sequence,
+            ["EvidenceHash"] = envelope.EvidenceHash,
+            ["SnapshotReference"] = envelope.SnapshotReference,
+            ["SourceIdempotencyKey"] = envelope.IdempotencyKey,
+            ["SourceIntentFingerprint"] = sourceIntentFingerprint,
+            ["ContractVersion"] = envelope.ContractVersion
+        };
+
+        var payload = new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["TenantId"] = envelope.TenantId,
+            ["CorrelationId"] = envelope.CorrelationId,
+            ["RequestType"] = "TrustedSourceAuditIntent",
+            ["ActorType"] = AuditActorType.Service,
+            ["Category"] = AuditCategory.MasterData,
+            ["EntityType"] = mappedEntityType,
+            ["EntityId"] = envelope.AggregateId,
+            ["Operation"] = mappedOperation,
+            ["Outcome"] = AuditOutcome.Succeeded,
+            ["Metadata"] = metadata,
+            ["OccurredAtUtc"] = envelope.TimestampUtc.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture),
+            ["SourceService"] = envelope.SourceService,
+            ["SourceModule"] = "product-item-sku-master",
+            ["SourceIntentFingerprint"] = sourceIntentFingerprint,
+            ["SourceIntent"] = sourceIntent
+        };
+
+        var message = new AuditOutboxMessage
+        {
+            TenantId = envelope.TenantId,
+            CorrelationId = envelope.CorrelationId,
+            IdempotencyKey = centralIdempotencyKey,
+            RequestType = "TrustedSourceAuditIntent",
+            Operation = mappedOperation,
+            EntityType = mappedEntityType,
+            EntityId = envelope.AggregateId,
+            Payload = payload
+        };
+
+        AuditOutboxTemporalStorageCompatibility.ApplyCurrentVersion(message);
+        return message;
+    }
+
+    private static bool HasExactFingerprint(AuditOutboxMessage message, string expectedFingerprint)
+    {
+        if (!message.Payload.TryGetValue("SourceIntentFingerprint", out var value))
+        {
+            return false;
+        }
+
+        var actual = value switch
+        {
+            string text => text,
+            BsonString bsonString => bsonString.Value,
+            _ => null
+        };
+
+        return string.Equals(actual, expectedFingerprint, StringComparison.Ordinal);
+    }
+
+    private static TrustedSourceAuditIntentAcceptanceReceipt ToAcceptanceReceipt(
+        AuditOutboxMessage message,
+        bool duplicate) =>
+        new(
+            message.Id.ToString("N"),
+            message.IdempotencyKey,
+            "mod-0290.audit-intent.v1",
+            message.CreatedAtUtc,
+            duplicate);
 
     private static AuditOutboxProcessingItem ToProcessingItem(AuditOutboxMessage message)
     {
