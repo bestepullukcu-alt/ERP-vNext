@@ -6,7 +6,7 @@ service: Diten.Platform
 shell: tenant
 golden_reference: compact
 entity_base: BaseEntity
-status: draft
+status: ready-for-dev
 owner: platform-shared-services / organization-governance-owner
 branch: feature/pss/mod-0288-fu03-organization-unit-screen
 started: 2026-09-07
@@ -124,16 +124,53 @@ take two languages; this is a tenant module and takes seven.
 Keys follow the existing pattern measured in the tree — `OrgUnitTypeDepartment`, `OrgUnitTypeDivision`,
 `OrgUnitTypeBranch`, `OrgUnitTypeTeam`, `OrgUnitTypeHQ` — so the new type is `OrgUnitTypeGroupFunction`.
 
-New keys required:
+**Approved wording (owner, 2026-09-07).** These are the strings, not suggestions. An implementer does not
+invent a translation; a missing language is a blocker, not a TODO.
 
-| Key | Purpose |
+| Key | en | tr | fr |
+|---|---|---|---|
+| `FunctionalParentLabel` | Functional parent unit | İşlevsel üst birim | Unité parente fonctionnelle |
+| `AdministrativeParentLabel` | Administrative parent unit | İdari üst birim | Unité parente administrative |
+| `OrgUnitTypeGroupFunction` | Group function | Grup fonksiyonu | Fonction de groupe |
+| `CustomFieldsSectionTitle` | Custom fields | Özel alanlar | Champs personnalisés |
+| `CustomFieldRequiredError` | This field is required | Bu alan zorunludur | Ce champ est obligatoire |
+| `CustomFieldTypeError` | The value does not match the field type | Değer alan tipine uymuyor | La valeur ne correspond pas au type du champ |
+
+| Key | es | ru |
+|---|---|---|
+| `FunctionalParentLabel` | Unidad superior funcional | Функциональное вышестоящее подразделение |
+| `AdministrativeParentLabel` | Unidad superior administrativa | Административное вышестоящее подразделение |
+| `OrgUnitTypeGroupFunction` | Función de grupo | Групповая функция |
+| `CustomFieldsSectionTitle` | Campos personalizados | Пользовательские поля |
+| `CustomFieldRequiredError` | Este campo es obligatorio | Это поле обязательно |
+| `CustomFieldTypeError` | El valor no coincide con el tipo de campo | Значение не соответствует типу поля |
+
+| Key | zh | ar |
+|---|---|---|
+| `FunctionalParentLabel` | 职能上级单位 | الوحدة الأم الوظيفية |
+| `AdministrativeParentLabel` | 行政上级单位 | الوحدة الأم الإدارية |
+| `OrgUnitTypeGroupFunction` | 集团职能 | وظيفة المجموعة |
+| `CustomFieldsSectionTitle` | 自定义字段 | حقول مخصصة |
+| `CustomFieldRequiredError` | 此字段为必填项 | هذا الحقل مطلوب |
+| `CustomFieldTypeError` | 值与字段类型不匹配 | القيمة لا تطابق نوع الحقل |
+
+`AdministrativeParentHelp` — the one string that must not be shortened, because it states the rule FU02 §8
+decision 2 exists to protect:
+
+| | |
 |---|---|
-| `OrgUnitTypeGroupFunction` | the new unit type |
-| `FunctionalParentLabel` | **never a bare "Parent"** — FU02 §21.1 forbids an unqualified label once two lines exist |
-| `AdministrativeParentLabel` | — |
-| `AdministrativeParentHelp` | states that empty means *no administrative line*, not "same as functional" |
-| `CustomFieldsSectionTitle` | — |
-| `CustomFieldRequiredError`, `CustomFieldTypeError` | client-side validation |
+| **en** | If left empty, there is no administrative line. It does not fall back to the functional parent. |
+| **tr** | Boş bırakılırsa idari hat tanımsızdır. İşlevsel üst birimin yerine geçmez. |
+| **fr** | Si laissé vide, il n'y a pas de ligne administrative. Elle ne se rabat pas sur l'unité parente fonctionnelle. |
+| **es** | Si se deja vacío, no hay línea administrativa. No recurre a la unidad superior funcional. |
+| **ru** | Если оставить пустым, административная линия отсутствует. Она не заменяется функциональной. |
+| **zh** | 留空表示没有行政线。不会回退到职能上级单位。 |
+| **ar** | إذا تُرك فارغًا، فلا يوجد خط إداري. ولا يعود إلى الوحدة الأم الوظيفية. |
+
+⚠ **Chinese and Arabic need a native review before release.** The grammar is sound and the terms are the
+standard corporate ones, but the wording here was produced by Control Tower and not verified by a speaker.
+Recorded as a release gate rather than a silent risk — an unreviewed governance label is worse than an
+obviously missing one, because nobody looks at it twice.
 
 ⚠ The existing `Parent` label is renamed to the functional form. A screen showing "Üst birim" beside "İdari üst
 birim" tells the reader the first one is not a line — which is exactly the confusion FU02 §21.1 exists to
@@ -201,5 +238,6 @@ form stays editable. Hiding the whole form, or showing an editable control that 
 - [x] First draft's dead-file error corrected in place and recorded, not quietly fixed.
 - [x] Exact allowlist replaces planning roots (§5).
 - [x] Permission keys taken from FU02 §14, not re-invented.
-- [ ] Seven-language label wording approved by the owner.
+- [x] Seven-language label wording approved by the owner (2026-09-07); strings are in §7.
+- [ ] Native review of the Chinese and Arabic strings before release (§7).
 - [ ] Separate implementation and production authority; this pack grants neither.

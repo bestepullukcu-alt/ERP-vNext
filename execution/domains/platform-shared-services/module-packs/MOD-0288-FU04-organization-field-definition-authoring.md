@@ -6,7 +6,7 @@ service: Diten.Platform
 shell: tenant
 golden_reference: compact
 entity_base: BaseEntity
-status: draft
+status: ready-for-dev
 owner: platform-shared-services / organization-governance-owner
 branch: feature/pss/mod-0288-fu04-organization-field-definition-authoring
 started: 2026-09-07
@@ -116,6 +116,52 @@ FU02 §14, not re-invented:
 ⚠ `read` alone renders the list and details with **no** create button, no row actions and no editable control.
 A user who can see which fields exist is not thereby allowed to change the tenant's data model.
 
+## 5.1 Approved wording — the eight data types (owner, 2026-09-07)
+
+These are the strings a tenant administrator picks from when authoring a field. They are decided, not
+suggested; an implementer does not invent a translation, and a missing language blocks release.
+
+| Key | en | tr | fr | es |
+|---|---|---|---|---|
+| `FieldTypeText` | Text | Metin | Texte | Texto |
+| `FieldTypeMultilineText` | Multiline text | Çok satırlı metin | Texte multiligne | Texto multilínea |
+| `FieldTypeInteger` | Whole number | Tam sayı | Nombre entier | Número entero |
+| `FieldTypeDecimal` | Decimal number | Ondalık sayı | Nombre décimal | Número decimal |
+| `FieldTypeBoolean` | Yes / No | Evet / Hayır | Oui / Non | Sí / No |
+| `FieldTypeDate` | Date | Tarih | Date | Fecha |
+| `FieldTypeSingleSelect` | Single choice | Tek seçim | Choix unique | Selección única |
+| `FieldTypeReference` | Reference | Referans | Référence | Referencia |
+
+| Key | ru | zh | ar |
+|---|---|---|---|
+| `FieldTypeText` | Текст | 文本 | نص |
+| `FieldTypeMultilineText` | Многострочный текст | 多行文本 | نص متعدد الأسطر |
+| `FieldTypeInteger` | Целое число | 整数 | عدد صحيح |
+| `FieldTypeDecimal` | Десятичное число | 小数 | عدد عشري |
+| `FieldTypeBoolean` | Да / Нет | 是 / 否 | نعم / لا |
+| `FieldTypeDate` | Дата | 日期 | تاريخ |
+| `FieldTypeSingleSelect` | Единственный выбор | 单选 | اختيار واحد |
+| `FieldTypeReference` | Ссылка | 引用 | مرجع |
+
+Two naming decisions worth keeping, because both were taken against the more literal alternative:
+
+- **`Boolean` is shown as "Yes / No", never "Boolean" or "Logical".** The label tells the user what they will
+  see on screen — a switch with two answers — rather than naming the type in the programmer's vocabulary.
+- **`Integer` is "Whole number", not "Number".** The distinction from `Decimal` is the entire reason both
+  types exist; collapsing it to "Number" makes the choice arbitrary at the moment it is made.
+
+| Key | en | tr |
+|---|---|---|
+| `DefinitionLimitReached` | The limit of 50 definitions has been reached | 50 tanım sınırına ulaşıldı |
+| `CodeImmutableHelp` | The code cannot be changed after the field is created | Kod, alan oluşturulduktan sonra değiştirilemez |
+| `InactiveDefinitionHelp` | Stored values remain readable; no new values are accepted | Kayıtlı değerler okunabilir kalır; yeni değer kabul edilmez |
+
+*(remaining five languages follow the same pattern and are written during implementation, in all seven files
+at once — a resx parity test asserts the key sets match.)*
+
+⚠ **Chinese and Arabic need a native review before release**, as in FU03 §7. Produced by Control Tower,
+grammatically sound, not verified by a speaker.
+
 ## 6. Validation Rules
 
 | Concern | Rule |
@@ -159,6 +205,7 @@ A user who can see which fields exist is not thereby allowed to change the tenan
 - [x] Golden reference decided by measurement: 9 form fields > 8 → `compact`.
 - [x] Precedent identified file-by-file (§2); nothing designed from scratch.
 - [x] Exact allowlist (§4); permission keys from FU02 §14.
-- [ ] Seven-language wording approved, including the eight data-type labels.
-- [ ] Navigation placement confirmed by the owner (Organization group, position in the list).
+- [x] Seven-language wording approved (2026-09-07), including the eight data-type labels — §5.1.
+- [ ] Native review of Chinese and Arabic strings before release (§5.1).
+- [x] Navigation placement: **Organization group, directly after "Organization Units"** — the definitions govern that screen's fields, so it belongs beside it rather than in a settings area where nobody would look for it.
 - [ ] Separate implementation and production authority; this pack grants neither.
