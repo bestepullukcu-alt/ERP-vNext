@@ -325,7 +325,15 @@ public static class DependencyInjection
         services.AddScoped<INotificationDispatchRepository, NotificationDispatchRepository>();
         services.AddScoped<INotificationEventDefinitionRepository, NotificationEventDefinitionRepository>();
         services.AddScoped<IUserNotificationRepository, UserNotificationRepository>();
-        services.AddScoped<IOrganizationUnitRepository, OrganizationUnitRepository>();
+        // ONE instance answers both contracts: the unit repository and, for MOD-0288-FU02, the reporting
+        // graph. Registering the concrete type first is what keeps them the same object per request — two
+        // registrations of the same class would give the graph guard a different tenant-scoped instance.
+        services.AddScoped<OrganizationUnitRepository>();
+        services.AddScoped<IOrganizationUnitRepository>(sp => sp.GetRequiredService<OrganizationUnitRepository>());
+        services.AddScoped<IOrganizationReportingGraphRepository>(sp => sp.GetRequiredService<OrganizationUnitRepository>());
+        // MOD-0288-FU02 — tenant-defined Organization Unit field definitions and values.
+        services.AddScoped<IOrganizationFieldDefinitionRepository, OrganizationFieldDefinitionRepository>();
+        services.AddScoped<IOrganizationFieldValueRepository, OrganizationFieldValueRepository>();
         services.AddScoped<IPositionRepository, PositionRepository>();
         services.AddScoped<IPositionAssignmentRepository, PositionAssignmentRepository>();
         services.AddScoped<IPersonReferenceRepository, PersonReferenceRepository>();

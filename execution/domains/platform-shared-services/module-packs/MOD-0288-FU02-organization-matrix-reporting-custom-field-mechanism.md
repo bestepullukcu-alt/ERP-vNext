@@ -501,6 +501,145 @@ grep -rn "OrganizationUnitId" services/Diten.HcmService/src --include='*.cs'
 The first command measures current Organization Unit/Position counts in the named local database. The second
 enumerates HCM source reads/usages; neither result is asserted by this draft.
 
+### 19.1 Implementation turn — 2026-09-07
+
+**Preflight, run rather than quoted.** `organization_units` 15 / `positions` 14 in `diten_personalization_dev`;
+`OrganizationUnitId` appears 7 times across `services/Diten.HcmService/src`, matching the figure §7 recorded, so
+HCM's consumption is still identity-only and no HCM file changed.
+
+**Build:** `dotnet build services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj -c Debug` —
+0 warnings, 0 errors.
+
+**Tests:** the TenantOrganization namespace is 153/153 green. The full Platform application suite is
+4,049 tests with 63 distinct failures, and **every one of them is present on the pre-change baseline** — a
+detached worktree at `56851b39` was built and run for exactly this comparison. The set difference in the
+regression direction is empty. The failures are BusinessReferenceData Mongo-harness tests, DocumentManagement
+lifecycle/manifest tests and `Mod0029Fu29aEndpointAttributionTests`; none touches organization.
+
+⚠ **An environment finding that will bite the next implementation turn, and it is DB-010 exactly.** The
+`BusinessReferenceData` test harness still opens a database per run with a GUID suffix — the pattern §17
+forbids and for the stated reason. After this turn's repeated suite runs the local mongod held 47 such
+databases (`diten_platform_brd_itest_gsku_*`, `_asn_*`, `_pub_*`), and the full suite degraded from 3m12s to
+not finishing at all. mongod itself stayed healthy and answered `ping`, with no long-running operations, so the
+cost is the accumulated file handles rather than a crash — the slow half of the failure DB-010 describes. The
+FU02 tests themselves stay at well under a second. **Nothing was deleted:** the residue is another module's
+test data and its removal is that owner's call, not this turn's. It is recorded here so the next full-suite
+measurement on this machine is not misread as an FU02 regression.
+
+**Every rule was sabotaged and the falling test recorded** — a rule whose sabotage stays green is not being
+guarded. Two of the first twelve sabotages stayed green, and neither meant what it looked like: the graph
+concurrency sabotage had broken the `$inc` branch while the test's two writers both race on the `_id` INSERT
+branch (the first mutation of a tenant finds no token document), and the value-uniqueness sabotage had broken a
+handler while the test measured the repository. Both were re-aimed rather than explained away, and the tests
+were strengthened in the process — the race now runs twelve rounds so that both CAS branches are exercised and
+a round that happens to serialize cannot hide a broken guard, and value uniqueness is now proven against a real
+Mongo unique partial index rather than against a fake that agrees with it.
+
+⚠ **One limit, stated rather than glossed.** The unique index's *declaration* cannot be sabotage-proven on its
+own: `PlatformSchemaContractMongoTests` compares what the manifest declares against what Mongo built, and both
+sides read the same manifest, so removing `Unique = true` moves them together. What IS proven is the behaviour —
+a real duplicate insert is refused, a soft-deleted row frees the pair again, and the repository reports the
+refusal as `false` rather than throwing or storing a second row.
+
+### 19.1a Sabotage proofs — which line was broken, which test fell
+
+Fourteen rules, each broken in production code, the named test observed RED, the break reverted and the test
+observed GREEN again.
+
+| Rule | Line broken | Test that fell |
+|---|---|---|
+| Combined-graph cycle | `Edges`: administrative edge suppressed | `A_cross_line_cycle_is_rejected_even_though_each_line_alone_is_acyclic` |
+| Depth bound | `MaxDepth = 32` → `64` | `Depth_is_bounded_at_thirty_two_ancestors` |
+| Batched hop reads | level `GetByIdsAsync` → one call per node | `The_guard_reads_one_level_per_round_trip_rather_than_one_node_per_hop` |
+| Reporting-line permission split | the `403` guard disabled | `Ordinary_update_may_rename_a_unit_but_not_re_hang_it` |
+| Structure token — INSERT branch | duplicate-key catch returns `true` | `Two_concurrent_reparentings_cannot_both_land` |
+| Structure token — `$inc` branch | `MatchedCount == 1` → `true` | `Two_concurrent_reparentings_cannot_both_land` |
+| 50 active definitions | `ValidateDefinitionCount` returns `null` | `The_fifty_first_active_definition_is_refused` |
+| `IsQueryable` server-side | the `!IsQueryable` branch disabled | `A_filter_naming_a_non_queryable_definition_is_a_400_and_not_a_narrowed_result` |
+| Strict enum parsing | classification parse falls back to default | `An_unrecognised_classification_is_refused_rather_than_silently_normal` |
+| Classification on read | `mayRead` hard-coded `true` | `A_restricted_value_is_omitted_from_the_payload_without_the_grant` |
+| One value per unit+definition | duplicate-key catch condition disabled | `The_database_itself_refuses_a_second_value_for_the_same_unit_and_definition` |
+| Type change with values stored | the `AnyForDefinition` guard disabled | `The_type_cannot_change_once_a_value_exists` |
+| `SafeDisplayMetadata` ban (§21.2) | untyped dictionary added to `OrganizationFieldValue` | `No_organization_code_carries_data_through_an_untyped_string_dictionary` |
+| Approval-path isolation (§16.4) | *(guarded by the same architecture test file)* | `No_organization_code_references_the_approval_or_task_scope_path` |
+
+### 19.2 Deviations from §5, stated rather than absorbed
+
+Four, and each is a consequence the allowlist did not anticipate rather than a widening of scope.
+
+1. **A third collection constant.** §5 says `PlatformCollections.cs` gains "two new collection constants"; it
+   gains three. §12 requires the graph guarantee to live "where all processes meet — a database-level guard, a
+   single-document compare-and-set on a per-tenant structure token", and a document needs a collection. It is
+   `organization_structure_tokens`, keyed `_id` = TenantId, so Mongo's implicit `_id` index is the only index it
+   uses and **no index outside §5's exhaustive list was created.**
+
+2. **A second repository interface, in the allowlisted file.** `IOrganizationReportingGraphRepository` is
+   declared inside `IOrganizationUnitRepository.cs` — no new file. Widening `IOrganizationUnitRepository` itself
+   would have forced unrelated test doubles across the suite to grow three members they have no opinion about,
+   and a double that grows a member it does not care about grows it as a stub. A stub that answers "token 0,
+   nothing changed" is exactly the wrong answer for a guard that depends on it.
+
+3. **Two test files outside the allowlist changed, mechanically.**
+   `TenantOrganization/TenantOrganizationRulesTests.cs` and
+   `TenantOrganization/OrganizationEnterpriseFieldsTests.cs` — constructor arity only, since the two
+   Organization Unit handlers now also take the graph repository. No assertion, expectation or status code in
+   either file was altered.
+
+4. **Three allowlisted files were NOT changed, because they needed nothing.**
+   `Diten.Platform.Application/DependencyInjection.cs` (MediatR and FluentValidation register handlers and
+   validators by assembly scan), and both Organization Unit query handlers (they project through
+   `TenantOrganizationMapper.ToDto`, which now carries both lines, so exposing the second line took no edit
+   there).
+
+### 19.3 One thing the pack got wrong about its own permission split
+
+§14 separates "rename a unit" from "move a unit", and the obvious implementation — a second endpoint that takes
+the same `OrganizationUnitRequest` — enforces only half of it. The holder of
+`platform.organization-units.reporting-line.update` could then rename the unit, move it to another legal entity
+or retire it: one permission, every field, granted by the shape of a request rather than by anyone's decision.
+
+The endpoint therefore takes `OrganizationUnitReportingLinesRequest` — two ids and nothing else — and its
+handler reads every other field back from storage before delegating to the ordinary update path. There is no
+code path from that request to any other property, which is a stronger statement than a validation rule.
+
+### 19.4 Decisions the implementation had to make, and why
+
+- **Cycle, depth and self-reference keep answering `409`, not the `400` §13 lists.** §16 criterion 10 requires
+  existing contracts to stay backward compatible, and the live endpoint answers 409 for exactly these inputs
+  today. Two existing tests assert it. Criterion 10 outranks a status code in a failure-path list, so the code
+  was left alone and this is recorded instead of silently resolved.
+- **The reporting-line permission check runs AFTER validation, not before.** An invalid parent — cycle,
+  cross-legal-entity, missing — answers precisely what it answered before FU02. Only a *valid* move by a caller
+  without `platform.organization-units.reporting-line.update` is the new `403`. Putting the 403 first would
+  have changed the reply to inputs that were already being refused, and it discloses nothing either way, since
+  anyone who can update a unit can already read the tree.
+- **A line sent unchanged is not a change.** An editor that round-trips the whole record keeps working under
+  `…update` alone; only an actual move needs the new key. Without this, §14's separation would have broken
+  every existing Organization Unit edit screen for a rule about moving.
+- **Create is not guarded by the structure token, and the proof is short.** A new unit's id is unknown to every
+  other writer, so nothing can point at it and no path can return to it — a create cannot close a cycle.
+  Guarding it would turn a fifty-unit import into forty-nine `409`s to buy nothing.
+- **A new caveat the pack did not state.** §8 decision 5 permits range and sort on "a single explicitly typed
+  definition". Implementing it exposed a second problem: values are stored as canonical strings, and for
+  `Integer`/`Decimal` the lexicographic order is not the numeric one — `"10"` sorts before `"9"`. A parallel
+  numeric field would fix it and would need an index §5 does not authorize, so **v1 refuses numeric range and
+  sort** rather than answering them wrongly. Same reasoning as `IsQueryable`: a wrong ordering looks exactly
+  like a right one.
+- **Classification is enforced on read through `IActorPermissionContext`**, with the required key DERIVED from
+  the classification (`platform.organization-units.custom-fields.read.{classification}`) rather than
+  enumerated. §14 fixes six keys and then requires "the classification's own read grant" without naming it;
+  deriving keeps the two from drifting when a classification is added. A restricted value the caller may not
+  read is **omitted** from the payload and the row is flagged `Redacted` — the row itself is still returned,
+  because dropping it would narrow the result silently.
+- **The concurrency test needs its own threads.** A `Barrier` blocks the thread that reaches it, and under the
+  full suite the thread pool is already saturated by other classes, so two `Task.Run` writers deadlocked
+  waiting for a pool that grows one thread per second — the suite hung rather than failed, which is the worse
+  outcome because it looks like slowness. The writers now start with `TaskCreationOptions.LongRunning`.
+  Recorded because the next concurrency test in this repository will hit exactly the same thing.
+- **No regex in `ValidationRules`.** It is the one "declarative" constraint that is really a program, and an
+  administrator-supplied one is a denial of service with a friendly name. Length, range, options and reference
+  target are data the server compares against.
+
 ## 20. Follow-up Items
 
 - Separate small change for Organization Unit type `Group function` plus its seven-language label; it neither
