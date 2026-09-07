@@ -667,6 +667,9 @@
   <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
     <value>Ürün / Kalem / SKU Ana Verisi</value>
   </data>
+  <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
+    <value>Marka / Ürün Ana Verisi</value>
+  </data>
   <data name="Nav.Page.GLOBALPRODUCTS" xml:space="preserve">
     <value>Küresel Ürünler</value>
   </data>
@@ -759,5 +762,8 @@
   </data>
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>Markalar</value>
+  </data>
+  <data name="Nav.Page.PRODUCTS" xml:space="preserve">
+    <value>Ürünler</value>
   </data>
 </root>

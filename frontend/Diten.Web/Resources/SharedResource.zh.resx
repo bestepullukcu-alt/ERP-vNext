@@ -606,6 +606,9 @@
   <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
     <value>产品／物料／SKU 主数据</value>
   </data>
+  <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
+    <value>品牌／产品主数据</value>
+  </data>
   <data name="Nav.Page.GLOBALPRODUCTS" xml:space="preserve">
     <value>全球产品</value>
   </data>
@@ -698,5 +701,8 @@
   </data>
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>品牌</value>
+  </data>
+  <data name="Nav.Page.PRODUCTS" xml:space="preserve">
+    <value>产品</value>
   </data>
 </root>

@@ -606,6 +606,9 @@
   <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
     <value>البيانات الرئيسية للمنتج / الصنف / وحدة حفظ المخزون</value>
   </data>
+  <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
+    <value>البيانات الرئيسية للعلامة التجارية / المنتج</value>
+  </data>
   <data name="Nav.Page.GLOBALPRODUCTS" xml:space="preserve">
     <value>المنتجات العالمية</value>
   </data>
@@ -698,5 +701,8 @@
   </data>
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>العلامات التجارية</value>
+  </data>
+  <data name="Nav.Page.PRODUCTS" xml:space="preserve">
+    <value>المنتجات</value>
   </data>
 </root>

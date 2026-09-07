@@ -346,6 +346,17 @@ Yalnız aşağıdaki yollarda değişiklik yapılabilir:
 - `services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/**` — yalnız Brand/Product DI kaydı
 - repo-standard `Diten.MdmService` test yolları — yalnız MOD-0290-FU02 testleri
 
+**Onaylı exact manifest-ownership amendment'i (2026-08-30):**
+
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Program.cs` — yalnız
+  `AddSingleton<IModuleManifestProvider, BrandProductMasterManifestProvider>()` kaydı.
+
+Bu tek satırlık genişletme, `mdm.brands.*` ve `mdm.products.*` permission sahipliğini
+`brand-product-master` manifestinde tutmak ve `ProductItemSkuMasterManifestProvider` içindeki çapraz-modül
+`BRANDS` sayfa bağımlılığını kaldırmak için gereklidir. Kullanıcı amendment'i ve ona bağlı runtime/test
+code-start'ını 2026-08-30 tarihinde açıkça onayladı. Yetki yalnız bu registration satırı, mevcut
+`ModuleRegistration/**` ve FU02 test/evidence yollarıyla sınırlıdır; pack status'u değiştirilmez.
+
 **Gateway (dar)**
 - `gateway/Diten.ApiGateway/ocelot.json` — yalnız §15'teki beş route bloğu
 
@@ -1096,6 +1107,24 @@ hand-edit **yapılmaz**.
 - [x] Kullanıcı yerleşim kararını (MDM) ve `ready-for-dev` hedefini açıkça onayladı.
 
 ## 24. Implementation Notes
+
+### 2026-08-30 manifest ownership remediation evidence
+
+- `mdm.brands.*` and `mdm.products.*` remain owned by the dedicated `brand-product-master` manifest; the
+  `product-item-sku-master` manifest no longer declares the cross-module `BRANDS` page dependency.
+- The dedicated manifest mirrors the real `/MasterData/Brands` and `/MasterData/Products` tenant routes and their
+  exact eight controller-enforced permissions. Each page declares its real create, detail, edit and archive UI
+  actions; no delete or invented permission is present.
+- MDM registers all three independent providers (`legal-entity`, `brand-product-master`,
+  `product-item-sku-master`) through the existing best-effort hosted registration service. One provider's retry
+  does not duplicate or suppress either of the other manifests.
+- Focused manifest/registration tests: `23/23` passed. Focused Brand/Product controller contract tests: `7/7`
+  passed. Full MDM Release suite: `1043/1043` passed, skipped `0`. MDM API Release build: `0` warnings,
+  `0` errors. `git diff --check` passed for the scoped change set.
+- The separately approved navigation-localization amendment added only `Nav.Module.BRANDPRODUCTMASTER` and
+  `Nav.Page.PRODUCTS` to all seven tenant `SharedResource` files; the existing `Nav.Page.BRANDS` values were
+  preserved. `NavManifestL10nGuardTests` passed `6/6`, skipped `0`, and the frontend Release build completed with
+  `0` warnings and `0` errors. No layout, controller, view, JavaScript or other frontend resource changed.
 
 - **CRM'e hiç dokunulmaz.** Bu pack CRM tarafında tek bir dosya bile değiştirmez; Campaign'in `BrandId`/`ProductId`
   alanları FU02'den sonra da **format-level optional referans** olarak kalır. Campaign'in bu master'ı gerçekten

@@ -606,6 +606,9 @@
   <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
     <value>Мастер-данные продукта / позиции / SKU</value>
   </data>
+  <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
+    <value>Мастер-данные брендов / продуктов</value>
+  </data>
   <data name="Nav.Page.GLOBALPRODUCTS" xml:space="preserve">
     <value>Глобальные продукты</value>
   </data>
@@ -698,5 +701,8 @@
   </data>
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>Бренды</value>
+  </data>
+  <data name="Nav.Page.PRODUCTS" xml:space="preserve">
+    <value>Продукты</value>
   </data>
 </root>

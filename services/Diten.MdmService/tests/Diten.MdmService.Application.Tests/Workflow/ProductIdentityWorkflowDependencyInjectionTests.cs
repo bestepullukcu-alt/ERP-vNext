@@ -69,6 +69,7 @@ public sealed class ProductIdentityWorkflowDependencyInjectionTests
         Assert.Contains("ProductIdentityWorkflowRecoveryCommandLine.IsRequested(args)", source, StringComparison.Ordinal);
         Assert.Contains("AddHostedService<FirstGskuIdentityWorkflowRecoveryWorker>()", source, StringComparison.Ordinal);
         Assert.Contains("FirstGskuIdentityWorkflowRecoveryCommandLine.IsRequested(args)", source, StringComparison.Ordinal);
+        Assert.Contains("AddScoped<FirstGskuIdentityRetirementProcessor>()", source, StringComparison.Ordinal);
         Assert.Contains("ValidateOnStart()", source, StringComparison.Ordinal);
         Assert.DoesNotContain("TRUSTED_WORKFLOW_CONSUMER", source, StringComparison.Ordinal);
         Assert.False(new Diten.MdmService.Api.Configuration.ProductIdentityWorkflowWorkerOptions().Enabled);

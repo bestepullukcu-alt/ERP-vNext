@@ -21,7 +21,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.True(Manifest.IsTenantAssignable);
         Assert.False(Manifest.IsBaseline);
 
-        Assert.Equal(7, Manifest.Pages.Count);
+        Assert.Equal(6, Manifest.Pages.Count);
         var globalProducts = Assert.Single(Manifest.Pages, page => page.PageCode == "GLOBAL_PRODUCTS");
         Assert.Equal("/MasterDataManagement/GlobalProducts", globalProducts.RoutePath);
         Assert.Equal("mdm.global-products.read", globalProducts.RequiredPermission);
@@ -40,10 +40,6 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.Equal("/MDM/ProductAbbreviationRegister", productAbbreviations.RoutePath);
         Assert.Equal("mdm.product-abbreviations.read", productAbbreviations.RequiredPermission);
         Assert.False(productAbbreviations.IsNavigationVisible);
-        var brands = Assert.Single(Manifest.Pages, page => page.PageCode == "BRANDS");
-        Assert.Equal("/MasterData/Brands", brands.RoutePath);
-        Assert.Equal("mdm.brands.read", brands.RequiredPermission);
-        Assert.True(brands.IsNavigationVisible);
         var productScopes = Assert.Single(Manifest.Pages, page => page.PageCode == "PRODUCT_LEGAL_ENTITY_SCOPES");
         Assert.Equal("/MasterDataManagement/ProductLegalEntityScopes", productScopes.RoutePath);
         Assert.Equal("mdm.product-legal-entity-scopes.read", productScopes.RequiredPermission);
@@ -71,7 +67,6 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.Equal(
             new[]
             {
-                "mdm.brands.read",
                 "mdm.finished-goods.create",
                 "mdm.finished-goods.read",
                 "mdm.finished-goods.retire",
@@ -105,14 +100,15 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.product-legal-entity-scopes.replace"
             },
             declared.OrderBy(value => value, StringComparer.Ordinal));
-        Assert.Equal(32, declared.Count);
+        Assert.Equal(31, declared.Count);
         var nonControllerPermissions = new HashSet<string>(StringComparer.Ordinal)
         {
-            "mdm.brands.read",
             "mdm.product-legal-entity-scope-rollout.activate",
             "mdm.product-legal-entity-scope-rollout.rollback"
         };
         Assert.True(declared.Where(permission => !nonControllerPermissions.Contains(permission)).ToHashSet(StringComparer.Ordinal).SetEquals(enforced));
+        Assert.DoesNotContain(declared, permission => permission.StartsWith("mdm.brands.", StringComparison.Ordinal));
+        Assert.DoesNotContain(declared, permission => permission.StartsWith("mdm.products.", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -172,7 +168,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     [Fact]
     public void Recovery_is_one_invisible_system_action_on_existing_global_products_page()
     {
-        Assert.Equal(7, Manifest.Pages.Count);
+        Assert.Equal(6, Manifest.Pages.Count);
         var page = Assert.Single(Manifest.Pages, item => item.PageCode == "GLOBAL_PRODUCTS");
         var action = Assert.Single(page.Actions,
             item => item.ActionCode == "RECOVER_ORPHANED_LIFECYCLE_OPERATION");

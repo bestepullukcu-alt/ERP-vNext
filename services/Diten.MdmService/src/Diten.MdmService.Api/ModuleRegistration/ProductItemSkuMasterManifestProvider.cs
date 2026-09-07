@@ -146,20 +146,6 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                         new ModuleManifestAction("RETIRE", "Retire", ProductAbbreviationsRetire, "RowAction", 70, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("VIEW_AUDIT", "View Audit", ProductAbbreviationsAudit, "RowAction", 80, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
                     ]),
-                // MOD-0290-FU02 Brand master — post main-sync catalogue registration (2026-08-28). Brand lives in
-                // this module (Brand + Product both landed in MDM MOD-0290). The hand-written CRM tenant-shell link
-                // it used to share was removed with main's MOD-0285 DynamicModuleMenu adoption, so this descriptor is
-                // now the only source of the sidebar entry. RequiredPermission is the verbatim key BrandsController enforces.
-                new ModuleManifestPage(
-                    PageCode: "BRANDS",
-                    DisplayName: "Brands",
-                    RoutePath: "/MasterData/Brands",
-                    RequiredPermission: "mdm.brands.read",
-                    ParentPageCode: null,
-                    IsNavigationVisible: true,
-                    PageType: "List",
-                    SortOrder: 5,
-                    Actions: []),
                 new ModuleManifestPage(
                     PageCode: "PRODUCT_LEGAL_ENTITY_SCOPES",
                     DisplayName: "Product Legal Entity Scopes",
