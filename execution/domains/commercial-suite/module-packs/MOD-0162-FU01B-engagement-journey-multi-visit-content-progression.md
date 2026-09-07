@@ -41,7 +41,7 @@ dependencies:
 > The historical hold note follows.
 >
 > **⏸️ (historical) APPROVAL HELD (2026-08-09) — was `status: draft`.** Governance review
-> [mod-0162-boundary-approval-review-fu01-fu01a-fu01b-fu01c-2026-08-09.md](../../../../docs/audits/mod-0162-boundary-approval-review-fu01-fu01a-fu01b-fu01c-2026-08-09.md).
+> [mod-0162-boundary-approval-review-fu01-fu01a-fu01b-fu01c-2026-08-09.md](../../../../docs/audits/2026-08/mod-0162-boundary-approval-review-fu01-fu01a-fu01b-fu01c-2026-08-09.md).
 > Pack içerik-eksiksiz ve model/boundary sağlam; **ancak §15'te kendi belirttiği işaretsiz gating acceptance
 > criterion** var: *"F1 adlandırma uzlaştırması (EA): `EngagementJourney` ↔ MOD-0166 'journey' ayrımı kalıcı
 > olarak kayda geçmeli."* MOD-0166 Journeys & Automation, Blueprint'te *journey definitions* SoR'una sahip **canlı

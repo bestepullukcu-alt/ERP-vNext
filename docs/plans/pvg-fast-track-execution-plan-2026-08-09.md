@@ -1,6 +1,6 @@
 # PVG Fast-Track Execution Plan - 2026-08-09
 
-> **Supersedes the planning posture of** [`docs/audits/pvg-development-replanning-audit-2026-08-09.md`](../audits/pvg-development-replanning-audit-2026-08-09.md).
+> **Supersedes the planning posture of** [`docs/audits/2026-08/pvg-development-replanning-audit-2026-08-09.md`](../audits/pvg-development-replanning-audit-2026-08-09.md).
 > It does **not** contradict that audit's findings. Every blocker it recorded is still real. This plan changes
 > **how those blockers are closed**, not whether they exist.
 >

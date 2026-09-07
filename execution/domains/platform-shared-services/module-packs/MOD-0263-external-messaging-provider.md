@@ -62,7 +62,7 @@ form_field_count: 0
 - SMS, push, WhatsApp, Slack, Teams, webhook, or any non-email channel.
 - Notification preference filtering (MOD-0287).
 - Tenant notification settings UI (deferred MOD-0027 UI pack).
-- Migration of existing Auth/Platform invitation/password reset/MFA email senders (tracked in `docs/audits/mod-0027-email-migration-inventory.md` — separate migration pack required).
+- Migration of existing Auth/Platform invitation/password reset/MFA email senders (tracked in `docs/audits/2026-05/mod-0027-email-migration-inventory.md` — separate migration pack required).
 - Gateway/Ocelot route changes (MOD-0263 introduces no HTTP endpoints).
 - `.antigravity/**`, archive controllers/views, frontend Razor/DataTable/RESX, other domain services.
 
@@ -285,7 +285,7 @@ Adapter-level validation is a thin re-check; it does not duplicate or replace MO
 - [ ] No file under `services/Diten.Platform/src/Diten.Platform.Domain/Entities/Notifications/**` is modified.
 - [ ] No frontend, gateway, archive, `.antigravity`, or cross-domain service path is modified.
 - [ ] Logs emitted from `SmtpMessagingProvider` contain only safe metadata: `ProviderCode`, `DispatchId`, `TenantId`, `CorrelationId`, `Status`, `ErrorCode`, `DurationMs`. They do not contain recipient lists, body content, subject lines beyond the first 80 chars (optionally redacted), provider raw response, or secret values.
-- [ ] Migration of existing Auth/Platform ad-hoc email senders (A1/A2/P1/P2 in `docs/audits/mod-0027-email-migration-inventory.md`) is **NOT** performed by MOD-0263 and remains owned by a future migration pack.
+- [ ] Migration of existing Auth/Platform ad-hoc email senders (A1/A2/P1/P2 in `docs/audits/2026-05/mod-0027-email-migration-inventory.md`) is **NOT** performed by MOD-0263 and remains owned by a future migration pack.
 
 ## 17. Test Expectations
 ### Build
@@ -385,7 +385,7 @@ Adapter-level validation is a thin re-check; it does not duplicate or replace MO
 - No new health framework, no new endpoint, no new options binding outside MOD-0041 conventions.
 
 ### Batch 4 — Migration enablement (NOT executed by this pack)
-- Hand-off to a dedicated migration pack covering A1/A2/P1/P2 from `docs/audits/mod-0027-email-migration-inventory.md`.
+- Hand-off to a dedicated migration pack covering A1/A2/P1/P2 from `docs/audits/2026-05/mod-0027-email-migration-inventory.md`.
 - MOD-0263 does not perform any migration.
 
 ## 20. Follow-up Items

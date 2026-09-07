@@ -39,9 +39,9 @@ pack (§16 öneri) → PREREQ authoring template (bu dosya) → operator authori
 | Kaynak | Ne için |
 |---|---|
 | [MOD-0151 module pack](../module-packs/MOD-0151-territory-management.md) — §4, §8, §9, §10, §16, §20, §23 | Set listesi, metadata ihtiyaçları, activation gate kuralları, kabul edilmiş kararlar |
-| [MOD-0151 pack prep audit](../../../../docs/audits/mod-0151-territory-management-pack-prep-2026-07-23.md) | Tasarım gerekçeleri, Blueprint hizalaması |
-| [MOD-0150 authoring template](../../../../docs/audits/mod-0150-required-reference-authoring-template.md) + `.json` | **Precedent** — dosya yapısı, operator akışı, SoD kuralı, smoke checklist |
-| [MOD-0149 reference readiness](../../../../docs/audits/mod-0149-crm-reference-data-readiness.md) | İlk CRM reference governance akışı |
+| [MOD-0151 pack prep audit](../../../../docs/audits/2026-07/mod-0151-territory-management-pack-prep-2026-07-23.md) | Tasarım gerekçeleri, Blueprint hizalaması |
+| [MOD-0150 authoring template](../../../../docs/audits/2026-08/mod-0150-required-reference-authoring-template.md) + `.json` | **Precedent** — dosya yapısı, operator akışı, SoD kuralı, smoke checklist |
+| [MOD-0149 reference readiness](../../../../docs/audits/2026-08/mod-0149-crm-reference-data-readiness.md) | İlk CRM reference governance akışı |
 | [domain-config.md](../domain-config.md) · [crm-sor-boundary.md](../crm-sor-boundary.md) | Reference değerlerinin MOD-0048'e ait olduğu sınır kuralı |
 | `AGENTS.md` · `.antigravity/rules/` | Protected path + engineering kuralları |
 

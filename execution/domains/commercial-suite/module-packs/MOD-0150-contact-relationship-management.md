@@ -51,8 +51,8 @@ dependencies:
 > | D7 | Consent seam read-only / no-op when MOD-0164 absent | ✅ approve (MOD-0164 has no pack yet) |
 >
 > **MOD-0150-PREREQ complete (2026-07-17):** the MOD-0048 required-set authoring template + operator checklist are ready
-> ([template md](../../../docs/audits/mod-0150-required-reference-authoring-template.md) ·
-> [template json](../../../docs/audits/mod-0150-required-reference-authoring-template.json)) — counts 9/4/7/6/4,
+> ([template md](../../../docs/audits/2026-08/mod-0150-required-reference-authoring-template.md) ·
+> [template json](../../../docs/audits/2026-08/mod-0150-required-reference-authoring-template.json)) — counts 9/4/7/6/4,
 > lowercase-kebab, no duplicates, account-relationship-type metadata (direction/inverse/self). Status is now
 > **ready-for-dev**, `runtime_code_allowed: true` scoped **FU01-only**. **Operator must publish the 5 required sets in
 > MOD-0048 before the FU01 create smoke** (create/update validation returns controlled 400 until then) — a runtime
@@ -61,7 +61,7 @@ dependencies:
 > ### Scope update — `FU-contact-availability-visit-preference` (2026-08-01)
 > **Additive authorization.** MOD-0150 now also owns **`ContactAvailability` / `VisitPreference` master data, scoped to
 > `AccountContactLink`** (§20). The requirement was recorded during **MOD-0151 FU09A** pack authorization
-> ([evidence](../../../../docs/audits/mod-0151-fu09a-visit-route-readiness-boundaries-pack-authorization-2026-08-01.md)):
+> ([evidence](../../../../docs/audits/2026-08/mod-0151-fu09a-visit-route-readiness-boundaries-pack-authorization-2026-08-01.md)):
 > route readiness cannot answer *"can this doctor be visited here, on this day, in this window?"* unless availability is
 > mastered somewhere — and it **cannot be a flat field on `Contact`**, because the same doctor works at several
 > hospitals / clinics / pharmacies with **different** days and hours per location. `AccountContactLink` (D1, M:N) is

@@ -162,7 +162,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
 6. **Phase 6: Dokümantasyon ve Denetim (documentation-writer & user-manual-generator)**
    - `documentation-writer` → Yeni modülün API dokümanlarını (Swagger/README) güncelle.
    - `user-manual-generator` → Son kullanıcı kılavuzunu hazırla (modülün ekranları, alanları, adım adım rehber).
-   - **Mimari Denetim (Audit Report):** Geliştirilen modülün standartlara uygunluğunu belgeleyen bir denetim raporu oluştur ve `/docs/audits/{module-name}-audit.md` adresine kaydet.
+   - **Mimari Denetim (Audit Report):** Geliştirilen modülün standartlara uygunluğunu belgeleyen bir denetim raporu oluştur ve `docs/audits/{yyyy-mm}/{module-name}-audit-{yyyy-mm-dd}.md` adresine kaydet (ay klasoru; bkz. `.antigravity/rules/docs-organization.md` K4).
    - ⛔ **BLOCKER:** Bu faz atlanamaz. Orchestration Report'ta "Dokümantasyon ve Denetim tamamlandı" işaretlenmeden modül **kapanmaz**. `documentation-writer`, `user-manual-generator` ve Audit Report tamamlanmadan "teslim edildi" denilmez.
 
 ## ⚖️ Altın Kurallar

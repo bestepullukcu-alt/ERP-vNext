@@ -75,8 +75,8 @@ Bu kuralın tutup tutmadığı komutla görülür, göz kararıyla değil:
     # K1 — kökte README.md disinda dosya var mi? (0 olmali)
     find docs -maxdepth 1 -type f ! -name 'README.md' ! -name '.DS_Store' | wc -l
 
-    # K4 — audits/ kokunde dagilmis dosya var mi? (0 olmali)
-    find docs/audits -maxdepth 1 -type f | wc -l
+    # K4 — audits/ kokunde dagilmis dosya var mi? (README disinda 0 olmali)
+    find docs/audits -maxdepth 1 -type f ! -name 'README.md' | wc -l
 
     # K6 — 1 MB ustu ikili
     find docs -type f -size +1M

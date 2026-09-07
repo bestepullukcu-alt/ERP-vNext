@@ -25,4 +25,4 @@ The secrets foundation removes committed production secrets, validates required 
 
 ## Verification
 
-Use the production secret scan tooling and service builds described in `docs/audits/pss-mod-0012-secrets-configuration-vault-audit-2026-05-12.md`.
+Use the production secret scan tooling and service builds described in `docs/audits/2026-05/pss-mod-0012-secrets-configuration-vault-audit-2026-05-12.md`.

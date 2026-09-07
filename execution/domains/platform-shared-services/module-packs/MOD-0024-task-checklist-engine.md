@@ -461,7 +461,7 @@ is applied after the command result.
 - `frontend/Diten.Web/wwwroot/assets/css/backbone-custom.css`
   - Only selectors scoped to `.wcn-*`, `.wcn-app`, or `.wcn-full-detail-*`.
 - Focused WorkCenterNext frontend tests under the existing test convention discovered at implementation time.
-- `docs/audits/mod-0024-workcenter-task-detail-audit.md`
+- `docs/audits/2026-07/mod-0024-workcenter-task-detail-audit.md`
 - `docs/workcenter-rebuild-spec.md`
   - Documentation reconciliation only; implementation scope must not silently expand from this file.
 

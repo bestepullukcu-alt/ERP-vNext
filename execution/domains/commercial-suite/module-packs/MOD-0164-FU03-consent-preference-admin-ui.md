@@ -173,7 +173,7 @@ Yalnız aşağıdaki alanlarda değişiklik yapılabilir:
 - `frontend/Diten.Web/Resources/SharedResource.{en,fr,es,zh,ar,ru,tr}.resx` — yalnız Consent & Preferences
   menü/shared archive/validation key'leri; var olan key'ler tekrar eklenmez.
 - `frontend/Diten.Web/Views/Shared/_LayoutTenantShell.cshtml` — yalnız §6'daki dar navigation istisnası.
-- `docs/audits/mod-0164-fu03-consent-preference-admin-ui-implementation-2026-08-03.md` — implementation evidence.
+- `docs/audits/2026-08/mod-0164-fu03-consent-preference-admin-ui-implementation-2026-08-03.md` — implementation evidence.
 
 Var olan ortak frontend helper'ları tüketilebilir; değiştirilmeleri bu pack tarafından yetkilendirilmez. Ortak
 helper değişikliği zorunlu görünürse orchestrator durur ve ayrı authorization ister.

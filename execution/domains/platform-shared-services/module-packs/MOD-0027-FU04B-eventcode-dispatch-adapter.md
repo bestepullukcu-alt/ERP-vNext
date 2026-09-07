@@ -230,7 +230,7 @@ Handler yalnızca `INotificationEventDispatchAdapter`'ı çağırır. Producer'l
 - [x] **Owner review (RESOLVED — 2026-07-08):** architecture-ba-reviewer **PASS**; mimari/precision blocker yok. 2 opsiyonel not eklendi (§5 template fallback, §16 unit/smoke ayrımı). Status `draft` → **`ready-for-dev`**.
 
 ### Durum (CLOSED)
-- **İmplement + closed out 2026-07-08 (PASS-with-note).** `INotificationEventDispatchAdapter` + thin command/handler + DI; **13/0** adapter testi (tüm failure path + 3 tenant proof + passthrough), **suite 1166/0**, Platform.API 0 hata. `QueueEmailNotificationCommand`/handler + producer'lar değişmedi. Bkz. [FU04B smoke audit](../../../../docs/audits/pss-mod-0027-fu04b-eventcode-dispatch-adapter-smoke-2026-07-08.md). Note: unit proof yalnızca resolution+delegation; gerçek render/send FU02 handler'da. **Status: `completed`.**
+- **İmplement + closed out 2026-07-08 (PASS-with-note).** `INotificationEventDispatchAdapter` + thin command/handler + DI; **13/0** adapter testi (tüm failure path + 3 tenant proof + passthrough), **suite 1166/0**, Platform.API 0 hata. `QueueEmailNotificationCommand`/handler + producer'lar değişmedi. Bkz. [FU04B smoke audit](../../../../docs/audits/2026-07/pss-mod-0027-fu04b-eventcode-dispatch-adapter-smoke-2026-07-08.md). Note: unit proof yalnızca resolution+delegation; gerçek render/send FU02 handler'da. **Status: `completed`.**
 - Açık governance/blocker: **YOK.**
 
 ### TBD (implementasyonda netleşir)

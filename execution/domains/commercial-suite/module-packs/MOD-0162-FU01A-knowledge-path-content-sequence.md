@@ -31,7 +31,7 @@ dependencies:
 # MOD-0162-FU01A — KnowledgePath / Content Sequence Boundary
 
 > **✅ BOUNDARY APPROVAL (2026-08-09) — `status: draft → approved`.** Governance review
-> [mod-0162-boundary-approval-review-fu01-fu01a-fu01b-fu01c-2026-08-09.md](../../../../docs/audits/mod-0162-boundary-approval-review-fu01-fu01a-fu01b-fu01c-2026-08-09.md)
+> [mod-0162-boundary-approval-review-fu01-fu01a-fu01b-fu01c-2026-08-09.md](../../../../docs/audits/2026-08/mod-0162-boundary-approval-review-fu01-fu01a-fu01b-fu01c-2026-08-09.md)
 > ile onaylandı. `runtime_code_allowed` **`false` kalır**; KnowledgePath runtime, MOD-0162-FU02 **kapsamı dışıdır**
 > ve ayrı bir implementation FU'su gerektirir (FU02 §20/F-A/B/C). İçerik-tekil (FU01) ↔ path-zincir ayrımı ve
 > `NextContentId`/`BrandContentFlow`/VisitPlan-gömme yasağı doğrulandı. MOD-0155 açılmadı.

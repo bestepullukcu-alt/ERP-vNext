@@ -88,7 +88,7 @@ Blueprint (`Blueprint_Data`) satırları, dokuz modülün canonical adlarını *
 - RBAC: `platform.workflow.definitions.view/manage/publish`, `instances.start/view`, `tasks.approve/reject/delegate` (DefaultRolePermissionTemplate seed).
 - Frontend: `Controllers/WorkflowController.cs` + `Views/Platform/Workflow` + 7-dil resx.
 - Tests: 9 dosya (`WorkflowTaskTransitionTests`, `WorkflowSlaEscalationTests`, `WorkflowTemplateVersionPublishTests`, `WorkflowTransitionGateTests`, `WorkflowInstanceStartTests`, ...).
-- **Runtime:** `docs/audits/crm-capability-progress-review-2026-07-31.md:229` "MOD-0023 Workflow ... runtime **mevcut**" der; ancak **adanmış** uçtan-uca approval golden-flow smoke closeout dokümanı yok. Önceki blocker (ocelot route + permission seed) artık giderilmiş görünüyor.
+- **Runtime:** `docs/audits/2026-07/crm-capability-progress-review-2026-07-31.md:229` "MOD-0023 Workflow ... runtime **mevcut**" der; ancak **adanmış** uçtan-uca approval golden-flow smoke closeout dokümanı yok. Önceki blocker (ocelot route + permission seed) artık giderilmiş görünüyor.
 
 ### MOD-0028 — Documentation Management — PARTIALLY_IMPLEMENTED
 - Registry: `MOD-0028 | Documentation & Evidence Management | review / planned` + FU01–FU06.
@@ -97,7 +97,7 @@ Blueprint (`Blueprint_Data`) satırları, dokuz modülün canonical adlarını *
 - Frontend: `Views/DocumentManagement/*` (ControlledDocuments, MasterRegister, TemplateMasters/Variants, AccessMatrix, QmsBaselines, Instantiations, Reconciliation, RepositoryAssessments).
 - Gateway: `/api/v1/document-management`, `/api/v1/document-management/{everything}`.
 - RBAC/Audit: doc-management permission seed (memory: manual grants tenant 97C5), audit entegrasyonu var.
-- **Runtime:** ControlledDocuments authenticated runtime smoke MOD-0029 FU dizisinde **geçti** (`mod-0029-fu36d-fu37d-authenticated-runtime-smoke-*`); **ancak** FU06 Corporate Collection Instance → `docs/audits/mod-0028-fu06-runtime-smoke-reconciliation-2026-07-25.md` **BLOCKED** (Mongo partial index `$ne` reddi Platform startup'ı çökertiyor).
+- **Runtime:** ControlledDocuments authenticated runtime smoke MOD-0029 FU dizisinde **geçti** (`mod-0029-fu36d-fu37d-authenticated-runtime-smoke-*`); **ancak** FU06 Corporate Collection Instance → `docs/audits/2026-07/mod-0028-fu06-runtime-smoke-reconciliation-2026-07-25.md` **BLOCKED** (Mongo partial index `$ne` reddi Platform startup'ı çökertiyor).
 
 ### MOD-0031 — Evidence Linking Service — SPECIFICATION_ONLY
 - Registry: `MOD-0031 | Evidence Linking Service | review / planned`.

@@ -252,10 +252,10 @@ Email · `tenant.reactivated.email` ✅ · RequiredVariables **TenantDisplayName
 - [x] **BLOCKER (scope onayı) — FU03 owner sign-off (RESOLVED via FU03A bridge path — 2026-07-08):** architecture-ba-reviewer sign-off VERİLDİ; FU03-side additive foundation (entity/enum/validation/sync-guard/seed-iskelet) **`MOD-0027-FU03A` bridge pack'ine** taşındı. FU04A artık FU03 kontratına dokunmaz. **Kalan bağımlılık: FU03A implementation + merge + FU03 regression gate** (aşağıda).
 
 ### Dependency (RESOLVED)
-- [x] **FU03A bridge implement + merge + regression gate (RESOLVED — 2026-07-08):** `MOD-0027-FU03A` (SourceType/PlatformSeed foundation) **implement edildi + closed out (PASS-with-note)**; tests 1148/0, fleet live-boot-clean smoke, seed no-op. Bkz. [FU03A smoke audit](../../../../docs/audits/pss-mod-0027-fu03a-notification-event-sourcetype-platformseed-bridge-smoke-2026-07-08.md). Foundation (enum/entity/validation/sync-guard/seed-iskelet) hazır; FU04A artık yalnızca tenant seed içeriği ekler.
+- [x] **FU03A bridge implement + merge + regression gate (RESOLVED — 2026-07-08):** `MOD-0027-FU03A` (SourceType/PlatformSeed foundation) **implement edildi + closed out (PASS-with-note)**; tests 1148/0, fleet live-boot-clean smoke, seed no-op. Bkz. [FU03A smoke audit](../../../../docs/audits/2026-07/pss-mod-0027-fu03a-notification-event-sourcetype-platformseed-bridge-smoke-2026-07-08.md). Foundation (enum/entity/validation/sync-guard/seed-iskelet) hazır; FU04A artık yalnızca tenant seed içeriği ekler.
 
 ### Durum (CLOSED)
-- **İmplement + closed out 2026-07-08 (PASS-with-note).** 3 tenant event PlatformSeed olarak eklendi; **canlı Active seed** (Mongo doğrulandı, tam 3, duplicate yok); tests 1153/0. Bkz. [FU04A smoke audit](../../../../docs/audits/pss-mod-0027-fu04a-tenant-management-notification-event-opt-in-smoke-2026-07-08.md). Note: authenticated API JSON list/slots fetch canlı yapılmadı (Mongo persist + unit test telafi). **Status: `completed`.**
+- **İmplement + closed out 2026-07-08 (PASS-with-note).** 3 tenant event PlatformSeed olarak eklendi; **canlı Active seed** (Mongo doğrulandı, tam 3, duplicate yok); tests 1153/0. Bkz. [FU04A smoke audit](../../../../docs/audits/2026-07/pss-mod-0027-fu04a-tenant-management-notification-event-opt-in-smoke-2026-07-08.md). Note: authenticated API JSON list/slots fetch canlı yapılmadı (Mongo persist + unit test telafi). **Status: `completed`.**
 - Açık blocker: **YOK.**
 
 ### İmplementasyon scope (BAĞLAYICI — sadece tenant seed içeriği)
