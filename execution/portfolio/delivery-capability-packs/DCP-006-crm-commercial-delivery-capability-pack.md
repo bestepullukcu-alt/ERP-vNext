@@ -9,7 +9,7 @@ owner_domain: commercial-suite
 owner: module-pack-author / enterprise-architect (pending)
 branch: feature/crm-integration
 created: 2026-08-25
-canonical_source: "docs/reference/blueprint/System Capability & Implementation Blueprint - master 7.xlsx#Blueprint_Data"
+canonical_source: "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx#Blueprint_Data"
 canonical_source_warning: "Master 8.1 NOT present in repo (only 'master 7.xlsx' + a duplicate copy under commercial-suite). All canonical MOD/FU bindings below are proven against Master 7. Master 8.1 remains the intended business/model authority; re-verify on ingest."
 inputs:
   - "execution/registries/module-id-registry.md (Commercial Suite reservation block, 27 IDs)"
@@ -29,7 +29,7 @@ scope_note: "Governance/orchestration contract only. Mints NO runtime, NO MOD-xx
 
 ## 0. Blueprint version notice (mandatory)
 
-Rule 1 requires Master 8.1 as canonical. **Master 8.1 is absent from the repository** — only `docs/reference/blueprint/System Capability & Implementation Blueprint - master 7.xlsx` (and a duplicate `… master 7 (3).xlsx` under `commercial-suite/`) exist. Every canonical binding in this pack is therefore proven against **Master 7** via `verify_module_id.py`, whose `BLUEPRINT` constant also points at Master 7. **Action required:** re-run all preflights against Master 8.1 once it lands; treat any 8.1 divergence as authoritative over this draft.
+Rule 1 requires Master 8.1 as canonical. **Master 8.1 is absent from the repository** — only `docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx` (and a duplicate `… master 7 (3).xlsx` under `commercial-suite/`) exist. Every canonical binding in this pack is therefore proven against **Master 7** via `verify_module_id.py`, whose `BLUEPRINT` constant also points at Master 7. **Action required:** re-run all preflights against Master 8.1 once it lands; treat any 8.1 divergence as authoritative over this draft.
 
 ## 1. Program scope
 

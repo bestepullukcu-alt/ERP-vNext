@@ -225,7 +225,7 @@ yalnız doğru başlığın altına gider.
 
 - **Nedir:** `OrgUnitType` enum'u şu an: Department, Division, Branch, Team, HQ. Grup yapısındaki depo (Monom, distributor deposu), üretim tesisi (Poland, Migual), saha satış (rep office) için ayrı tip yok — bugün Branch/Division ile temsil ediliyor.
 - **Neden ertelendi:** Küçük ama ürün-kararı gerektiren bir tip genişletmesi.
-- **Yapım tetikleyicisi:** **Blueprint'e (`docs/reference/blueprint/System Capability & Implementation Blueprint - master 7.xlsx`) bakılarak, org-model buna uygunsa yapılacak** — aksi halde mevcut tiplerle temsil devam.
+- **Yapım tetikleyicisi:** **Blueprint'e (`docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx`) bakılarak, org-model buna uygunsa yapılacak** — aksi halde mevcut tiplerle temsil devam.
 - **İlgili:** MOD-0288 Organization.
 
 ### BL-007 — Business Partner / Distributor master

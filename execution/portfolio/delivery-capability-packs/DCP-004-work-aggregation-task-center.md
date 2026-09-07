@@ -12,7 +12,7 @@ owner: enterprise-architect / platform-team
 created: 2026-07-24
 approved: 2026-07-24
 approved_by: enterprise-architect
-canonical_source: "docs/reference/blueprint/System Capability & Implementation Blueprint - master 7.xlsx#Blueprint_Data (NO matching MOD row — verified)"
+canonical_source: "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx#Blueprint_Data (NO matching MOD row — verified)"
 executable_authority: "frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/fixture-contract.js"
 intent_reference: "docs/reference/modules/tenant/workcenter/workcenter-rebuild-spec.md (v2) — intent only, NOT authority"
 identity_gate: "python3 .antigravity/scripts/verify_module_id.py . --candidate CAND-CAP-0006 --name \"Work Aggregation / Task Center (Görev Merkezi)\" → exit 0 (2026-07-24)"
