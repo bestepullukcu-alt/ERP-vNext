@@ -14,7 +14,12 @@ public static class PositionSeed
 
     public static async Task EnsureSeededAsync(IMongoDatabase database, CancellationToken ct = default)
     {
-        var orgCol = database.GetCollection<OrganizationUnit>("organizationUnits");
+        // FIX-ORG-UNIT-SEED-COLLECTION — this read the literal "organizationUnits" while every other
+        // reader uses PlatformCollections.OrganizationUnits ("organization_units"). It therefore never
+        // saw a real unit, invented a phantom "HEADQUARTERS" in a collection no screen reads, and hung
+        // five mock positions off it — positions that exist, resolve to no unit, and carry no Status,
+        // so every assignment lookup skips them as PositionNotActive.
+        var orgCol = database.GetCollection<OrganizationUnit>(PlatformCollections.OrganizationUnits);
         var posCol = database.GetCollection<Position>(PlatformCollections.Positions);
 
         // Seed for DefaultTenantId and Tenant97c5Id
