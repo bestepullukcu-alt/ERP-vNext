@@ -3326,7 +3326,7 @@ doğrulama yardımcıları, ayrı değerlendirilmeli).
      **ölçülsün ve raporlansın** — telafi gerekiyorsa ayrı iş olarak açılsın
 
 ### BL-316 — MOD-0162'nin beyan edilmiş SoR'u kavram modelini KAPSAMIYOR; ConceptGraph sınırın dışına yazıldı (2026-09-01, ölçüldü)
-> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+> **DURUM:** RESOLVED (2026-09-07, DEC-SCMM-01 seçenek H) · **SAHİP:** CAND-CAP-0011 (yeni Marketing owner) — concept foundation MOD-0162'de kalır; SCMM/UCLN üst katman CAND-CAP-0011'e; MOD-0167'den UCLN kaldırıldı. Bkz. docs/decisions/DEC-SCMM-01-bl316-ownership-decision-brief.md
 
 - **Ölçüm — Blueprint master 8.1, `Blueprint_Data` sayfası, MOD-0162 satırı:**
 
