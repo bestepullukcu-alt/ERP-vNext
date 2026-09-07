@@ -525,15 +525,16 @@ public static class DataSeeder
             new("platform", "document-management.signature-policies", "manage", "Manage Signature Policies", "Permission to manage electronic signature policies"),
 
             // MOD-0023 — Workflow Config / Approval Templates permissions (13). Keys must match the
-            // constants in Diten.Platform WorkflowPermissions (platform.workflow.*). Platform-scoped, so
-            // the DefaultRolePermissionTemplate grants them to SuperAdmin (full catalog) only.
+            // constants in Diten.Platform WorkflowPermissions (platform.workflow.*). Workflow control-plane
+            // permissions stay PlatformAdmin. FU24/FU25 explicitly make start/approve/reject tenant-scoped so bounded
+            // tenant responsibility roles can start and decide assigned records; default Admin/Viewer still receive none.
             new("platform", "workflow.definitions", "view", "View Workflow Definitions", "Permission to view workflow approval templates and versions", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
             new("platform", "workflow.definitions", "manage", "Manage Workflow Definitions", "Permission to create and edit workflow approval templates", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
             new("platform", "workflow.definitions", "publish", "Publish Workflow Definition", "Permission to publish an immutable workflow template version", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
-            new("platform", "workflow.instances", "start", "Start Workflow Instance", "Permission to start a workflow approval instance", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
+            new("platform", "workflow.instances", "start", "Start Workflow Instance", "Permission to start a workflow approval instance", moduleOverride: "workflow", scope: PermissionScope.Tenant),
             new("platform", "workflow.instances", "view", "View Workflow Instances", "Permission to view workflow instances and approval tasks", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
-            new("platform", "workflow.tasks", "approve", "Approve Workflow Task", "Permission to approve a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
-            new("platform", "workflow.tasks", "reject", "Reject Workflow Task", "Permission to reject a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
+            new("platform", "workflow.tasks", "approve", "Approve Workflow Task", "Permission to approve a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.Tenant),
+            new("platform", "workflow.tasks", "reject", "Reject Workflow Task", "Permission to reject a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.Tenant),
             new("platform", "workflow.tasks", "delegate", "Delegate Workflow Task", "Permission to delegate a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
             new("platform", "workflow.tasks", "request-info", "Request Info on Workflow Task", "Permission to request additional information on a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
             new("platform", "workflow.tasks", "cancel", "Cancel Workflow Task", "Permission to cancel a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
@@ -617,7 +618,8 @@ public static class DataSeeder
     // authoritative Scope by Key. This is REQUIRED now that Module is the manifest ModuleCode: a Module-derived
     // ClassifyScope reconcile would wrongly force workflow (Module="workflow") to Tenant and leak a platform-admin
     // module into tenant roles. The seed literals carry the correct Scope explicitly where it diverges from the
-    // Module classification (workflow → PlatformAdmin), so reconciling by Key keeps the boundary exact.
+    // Module classification: Workflow control-plane stays PlatformAdmin, while FU24/FU25's exact instance-start and
+    // task approve/reject execution keys are Tenant. Reconciling by Key keeps both boundaries exact.
     // Synced-only permissions (not in the seed list) are intentionally NOT touched — their Scope is route-derived and
     // carried by the catalog sync (authoritative), so this reconcile must never overwrite it. Idempotent + Scope-only:
     // the server-side $ne skips rows already correct (and matches rows where the field is absent → legacy backfill).

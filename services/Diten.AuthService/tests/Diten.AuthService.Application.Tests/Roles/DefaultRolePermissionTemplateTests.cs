@@ -27,6 +27,49 @@ public sealed class DefaultRolePermissionTemplateTests
     }
 
     [Fact]
+    public void Service_client_provisioning_is_platform_admin_only()
+    {
+        var catalog = new List<Permission>
+        {
+            new(
+                "auth",
+                "service-clients",
+                "provision",
+                "Provision Service Clients",
+                null,
+                moduleOverride: "platform",
+                scope: PermissionScope.PlatformAdmin)
+        };
+
+        Assert.Equal(
+            [DefaultRolePermissionTemplate.ServiceClientProvisionPermission],
+            DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.SuperAdminRole, catalog)
+                .Select(permission => permission.Key));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.AdminRole, catalog));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.ViewerRole, catalog));
+        Assert.False(DefaultRolePermissionTemplate.IsTenantAssignable(catalog[0]));
+    }
+
+    [Fact]
+    public void Tenant_workflow_execution_keys_are_assignable_but_not_default_Admin_or_Viewer_grants()
+    {
+        var catalog = new List<Permission>
+        {
+            new("platform", "workflow.instances", "start", "Start Workflow Instance", null,
+                moduleOverride: "workflow", scope: PermissionScope.Tenant),
+            new("platform", "workflow.tasks", "approve", "Approve Workflow Task", null,
+                moduleOverride: "workflow", scope: PermissionScope.Tenant),
+            new("platform", "workflow.tasks", "reject", "Reject Workflow Task", null,
+                moduleOverride: "workflow", scope: PermissionScope.Tenant)
+        };
+
+        Assert.All(catalog, permission => Assert.True(DefaultRolePermissionTemplate.IsTenantAssignable(permission)));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.AdminRole, catalog));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.ViewerRole, catalog));
+        Assert.Equal(3, DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.SuperAdminRole, catalog).Count);
+    }
+
+    [Fact]
     public void Admin_gets_auth_and_mdm_only_never_platform()
     {
         var keys = DefaultRolePermissionTemplate.SelectFor("Admin", Catalog()).Select(p => p.Key).ToList();
@@ -69,6 +112,22 @@ public sealed class DefaultRolePermissionTemplateTests
             new("mdm", "lskus", "read", "Read LSKUs", null,
                 moduleOverride: "product-item-sku-master"),
             new("mdm", "lskus", "create", "Create LSKUs", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "global-products", "submit", "Submit Global Products", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "global-products", "retire", "Retire Global Products", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "finished-goods", "submit", "Submit Finished Goods", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "finished-goods", "retire", "Retire Finished Goods", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "gskus", "submit", "Submit GSKUs", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "gskus", "retire", "Retire GSKUs", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "lskus", "submit", "Submit LSKUs", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "lskus", "retire", "Retire LSKUs", null,
                 moduleOverride: "product-item-sku-master"),
             new("mdm", "product-abbreviations", "read", "Read Product Abbreviations", null,
                 moduleOverride: "product-item-sku-master"),
@@ -113,6 +172,8 @@ public sealed class DefaultRolePermissionTemplateTests
         Assert.DoesNotContain("mdm.lskus.read", viewerKeys);
         Assert.DoesNotContain("mdm.lskus.create", viewerKeys);
         Assert.DoesNotContain("mdm.lskus.create", adminKeys);
+        Assert.DoesNotContain("mdm.global-products.submit", adminKeys);
+        Assert.DoesNotContain("mdm.finished-goods.retire", viewerKeys);
         Assert.DoesNotContain("mdm.product-abbreviations.read", viewerKeys);
         Assert.DoesNotContain("mdm.product-abbreviations.read", adminKeys);
         Assert.DoesNotContain("mdm.product-legal-entity-scopes.read", viewerKeys);
@@ -121,12 +182,20 @@ public sealed class DefaultRolePermissionTemplateTests
             [
                 "mdm.finished-goods.create",
                 "mdm.finished-goods.read",
+                "mdm.finished-goods.retire",
+                "mdm.finished-goods.submit",
                 "mdm.global-products.create",
                 "mdm.global-products.read",
+                "mdm.global-products.retire",
+                "mdm.global-products.submit",
                 "mdm.gskus.create",
                 "mdm.gskus.read",
+                "mdm.gskus.retire",
+                "mdm.gskus.submit",
                 "mdm.lskus.create",
                 "mdm.lskus.read",
+                "mdm.lskus.retire",
+                "mdm.lskus.submit",
                 "mdm.product-abbreviations.approve",
                 "mdm.product-abbreviations.audit",
                 "mdm.product-abbreviations.cancel",

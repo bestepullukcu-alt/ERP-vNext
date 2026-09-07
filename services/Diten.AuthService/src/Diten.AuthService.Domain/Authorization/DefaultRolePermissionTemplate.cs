@@ -16,6 +16,7 @@ public static class DefaultRolePermissionTemplate
 
     public const string PlatformModule = "platform";
     public const string ReadAction = "read";
+    public const string ServiceClientProvisionPermission = "auth.service-clients.provision";
 
     // FIX-PERM-ATTRIBUTION-2 — reference-data is a genuine, distinct Module (RoleAssignments grouping,
     // ModulePermissionResolver entitlement matching) but its screens are ALL platform-admin-only
@@ -76,6 +77,14 @@ public static class DefaultRolePermissionTemplate
             "mdm.gskus.create",
             "mdm.lskus.read",
             "mdm.lskus.create",
+            "mdm.global-products.submit",
+            "mdm.global-products.retire",
+            "mdm.finished-goods.submit",
+            "mdm.finished-goods.retire",
+            "mdm.gskus.submit",
+            "mdm.gskus.retire",
+            "mdm.lskus.submit",
+            "mdm.lskus.retire",
             "mdm.product-abbreviations.read",
             "mdm.product-abbreviations.request",
             "mdm.product-abbreviations.cancel",
