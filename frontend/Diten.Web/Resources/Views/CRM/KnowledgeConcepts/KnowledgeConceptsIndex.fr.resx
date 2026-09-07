@@ -155,4 +155,17 @@
   <data name="GlobalProductSearching" xml:space="preserve"><value>Searching...</value></data>
   <data name="GlobalProductNoResults" xml:space="preserve"><value>No global product matched.</value></data>
   <data name="ExternalRefIdHint" xml:space="preserve"><value>Free-text identifier in the referenced system.</value></data>
+  <data name="Color" xml:space="preserve"><value>Couleur</value></data>
+  <data name="IsGroup" xml:space="preserve"><value>Type de groupe</value></data>
+  <data name="IsList" xml:space="preserve"><value>Type de liste</value></data>
+  <data name="ParentConceptType" xml:space="preserve"><value>Type de concept parent</value></data>
+  <data name="ParentConceptTypeNote" xml:space="preserve"><value>Type parent au sein du même sujet. Le type lui-même et ses descendants ne peuvent pas être sélectionnés.</value></data>
+  <data name="ConnectionMode" xml:space="preserve"><value>Mode de connexion</value></data>
+  <data name="ConnectExisting" xml:space="preserve"><value>Relier deux nœuds existants</value></data>
+  <data name="ConnectNewNode" xml:space="preserve"><value>Créer un nouveau nœud et relier</value></data>
+  <data name="NewNodeSection" xml:space="preserve"><value>Nouveau nœud</value></data>
+  <data name="CounterpartNode" xml:space="preserve"><value>Nœud à relier</value></data>
+  <data name="NewNodeDirection" xml:space="preserve"><value>Direction</value></data>
+  <data name="NewNodeAsSource" xml:space="preserve"><value>Nouveau nœud → contrepartie</value></data>
+  <data name="NewNodeAsTarget" xml:space="preserve"><value>Contrepartie → nouveau nœud</value></data>
 </root>

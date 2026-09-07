@@ -92,6 +92,9 @@
     const loadNodes = async () => {
         try {
             const data = await envelope(await fetch(`${base}/concept-nodes?includeArchived=true`, { credentials: 'same-origin', headers }));
+            // Idempotent: a combined-write (②) reloads nodes so the new node resolves in labels + pickers.
+            nodeRows.length = 0;
+            Object.keys(nodeMap).forEach(k => delete nodeMap[k]);
             (data?.items || []).forEach(n => {
                 nodeMap[n.conceptNodeId] = {
                     label: `${n.conceptNodeCode} — ${n.conceptNodeName}`,
@@ -456,6 +459,15 @@
     const statusBadge = v => badge(v, v === 'archived' ? 'secondary' : (v === 'active' || v === 'published' ? 'success' : 'primary'));
     const archivedBadge = v => badge(v ? L.Yes : L.No, v ? 'warning' : 'success');
     const nameCell = v => `<span class="fw-medium text-heading">${esc(v)}</span>`;
+    // SCMM-09 (①): ConceptType name cell carries a colour swatch + group/list badges (kompakt, no extra columns).
+    const colorSwatch = c => c
+        ? `<span class="d-inline-block rounded-circle me-2 align-middle flex-shrink-0" style="width:10px;height:10px;background:${esc(c)};border:1px solid rgba(0,0,0,.15)" title="${esc(c)}"></span>`
+        : '';
+    const typeNameCell = (v, row) => {
+        const badges = (row.isGroup ? ` <span class="badge bg-label-info">${esc(L.IsGroup || 'Group')}</span>` : '')
+            + (row.isList ? ` <span class="badge bg-label-secondary">${esc(L.IsList || 'List')}</span>` : '');
+        return `<span class="d-inline-flex align-items-center">${colorSwatch(row.color)}<span class="fw-medium text-heading">${esc(v)}</span></span>${badges}`;
+    };
     const refCell = (v, label) => v ? `<span class="text-muted" title="${esc(v)}">${esc(label(v))}</span>` : '<span class="text-muted">—</span>';
     const conformanceBadge = v => v
         ? `<span class="badge bg-label-success">${esc(L.Conforming || 'Conforming')}</span>`
@@ -479,7 +491,7 @@
                 { data:'sortOrder' }, { data:'description' }, { data:'isArchived' }, { data:'updatedAt' }, act],
             columnDefs: [
                 { targets:0, className:'control', orderable:false, render:() => '' },
-                { targets:2, render:v => nameCell(v) },
+                { targets:2, render:(v, t, row) => typeNameCell(v, row) },
                 { targets:3, render:v => refCell(v, labelSubject) },
                 { targets:4, render:v => statusBadge(v) },
                 { targets:6, render:v => muted(v) },
@@ -680,6 +692,38 @@
     // "archived" is deliberately not offered: archiving is its own action and an update carrying it is a 400.
     const liveStatuses = name => vocab(name).filter(o => o.value !== 'archived');
 
+    // SCMM-09 (①): cycle-safe parent-type options. The backend rejects a self/cycle parent (RM1, 400); the UI mirrors
+    // that by excluding the type itself and all of its descendants from the picker. Same subject, non-archived only.
+    const typeDescendants = rootId => {
+        const childrenOf = {};
+        state['concept-types'].rows.forEach(t => {
+            const p = t.parentConceptTypeId;
+            if (p) (childrenOf[p] = childrenOf[p] || []).push(t.conceptTypeId);
+        });
+        const out = new Set();
+        const stack = [rootId];
+        while (stack.length) {
+            const cur = stack.pop();
+            (childrenOf[cur] || []).forEach(c => { if (!out.has(c)) { out.add(c); stack.push(c); } });
+        }
+        return out;
+    };
+    const parentTypeOptions = (subjectId, selfId) => {
+        const excluded = selfId ? typeDescendants(selfId) : new Set();
+        return state['concept-types'].rows
+            .filter(t => String(t.subjectId) === String(subjectId)
+                && !t.isArchived
+                && String(t.conceptTypeId) !== String(selfId)
+                && !excluded.has(t.conceptTypeId))
+            .map(t => ({ value: t.conceptTypeId, text: `${t.conceptTypeCode} — ${t.conceptTypeName}` }));
+    };
+    const refreshTypeParentPicker = () => {
+        const subjectId = norm(document.getElementById('typeSubjectId')?.value);
+        const selfId = norm(document.getElementById('typeFormId')?.value);
+        fillFormSelect('typeParentConceptTypeId', parentTypeOptions(subjectId, selfId), true, null, null);
+        initFormSelect2('offcanvasTypeCreateEdit');
+    };
+
     // ─── Tab 1 · ConceptType form ────────────────────────────────────────────
     const openTypeForm = row => {
         const form = document.getElementById('conceptTypeForm');
@@ -687,6 +731,9 @@
         showAlert('conceptTypeFormAlert', '');
         fillFormSelect('typeSubjectId', liveSubjects(row?.subjectId), true, row?.subjectId, labelSubject(row?.subjectId));
         fillFormSelect('typeStatus', liveStatuses('conceptStatuses'), false, row?.status, row?.status);
+        // SCMM-09 (①): cycle-safe parent picker (same subject, excludes self + descendants).
+        fillFormSelect('typeParentConceptTypeId', parentTypeOptions(row?.subjectId, row?.conceptTypeId), true,
+            row?.parentConceptTypeId, labelType(row?.parentConceptTypeId));
         initFormSelect2('offcanvasTypeCreateEdit');
 
         setValue('typeFormId', row?.conceptTypeId || '');
@@ -696,6 +743,15 @@
         setValue('typeStatus', row?.status || 'active');
         setValue('typeSortOrder', row?.sortOrder ?? 0);
         setValue('typeDescription', row?.description || '');
+        // SCMM-09 (①): color / group / list / parent.
+        setValue('typeParentConceptTypeId', row?.parentConceptTypeId || '');
+        const typeColor = row?.color || '';
+        const colorText = document.getElementById('typeColor');
+        const colorPicker = document.getElementById('typeColorPicker');
+        if (colorText) colorText.value = typeColor;
+        if (colorPicker) colorPicker.value = typeColor || '#6366f1';
+        document.getElementById('typeIsGroup').checked = !!row?.isGroup;
+        document.getElementById('typeIsList').checked = !!row?.isList;
         // SubjectId and the code are not in the update contract — they are fixed at creation.
         setDisabled('typeSubjectId', !!row);
         setReadOnly('typeConceptTypeCode', !!row);
@@ -709,7 +765,12 @@
             conceptTypeName: norm(document.getElementById('typeConceptTypeName').value),
             description: norm(document.getElementById('typeDescription').value) || null,
             sortOrder: Number(document.getElementById('typeSortOrder').value || 0),
-            status: norm(document.getElementById('typeStatus').value) || null
+            status: norm(document.getElementById('typeStatus').value) || null,
+            // SCMM-09 (①) — additive fields carried on both create and update.
+            color: norm(document.getElementById('typeColor').value) || null,
+            isGroup: document.getElementById('typeIsGroup').checked,
+            isList: document.getElementById('typeIsList').checked,
+            parentConceptTypeId: norm(document.getElementById('typeParentConceptTypeId').value) || null
         };
         if (!id) {
             payload.subjectId = norm(document.getElementById('typeSubjectId').value);
@@ -737,6 +798,24 @@
         setValue('relFromNodeId', from || '');
         setValue('relToNodeId', to || '');
     };
+    // SCMM-09 (②): the new-node pickers (type + counterpart) are scoped to the chosen subject, exactly like From/To.
+    const refreshRelationshipNewNodePickers = () => {
+        const subjectId = norm(document.getElementById('relSubjectId').value);
+        fillFormSelect('relNewNodeTypeId', typeOptionsFor(subjectId), true, null, null);
+        fillFormSelect('relCounterpartNodeId', nodeOptionsFor(subjectId, null), true, null, null);
+        initFormSelect2('offcanvasRelationshipCreateEdit');
+    };
+    const REL_EXISTING_NODE_IDS = ['relFromNodeId', 'relToNodeId'];
+    const REL_NEW_NODE_IDS = ['relNewNodeTypeId', 'relNewNodeCode', 'relNewNodeName', 'relNewNodeEffectiveFrom', 'relCounterpartNodeId'];
+    // Toggle blocks + disable the inactive one's inputs so native `required` validation only fires on the active mode.
+    const setRelationshipMode = mode => {
+        const isNew = mode === 'new-node';
+        document.getElementById('relExistingNodesBlock')?.classList.toggle('d-none', isNew);
+        document.getElementById('relNewNodeBlock')?.classList.toggle('d-none', !isNew);
+        REL_EXISTING_NODE_IDS.forEach(id => setDisabled(id, isNew));
+        REL_NEW_NODE_IDS.forEach(id => setDisabled(id, !isNew));
+    };
+
     const openRelationshipForm = row => {
         const form = document.getElementById('conceptRelationshipForm');
         form.reset();
@@ -759,6 +838,19 @@
         setValue('relEffectiveFrom', row ? toDateInput(row.effectiveFrom) : todayInput());
         setValue('relEffectiveTo', toDateInput(row?.effectiveTo));
 
+        // SCMM-09 (②): combined write is a create-only convenience — the mode selector is hidden on edit.
+        refreshRelationshipNewNodePickers();
+        setValue('relNewNodeTypeId', '');
+        setValue('relCounterpartNodeId', '');
+        document.getElementById('relNewNodeCode').value = '';
+        document.getElementById('relNewNodeName').value = '';
+        setValue('relNewNodeEffectiveFrom', todayInput());
+        document.getElementById('relNewNodeSource').checked = true;
+        document.getElementById('relModeExisting').checked = true;
+        document.getElementById('relModeNewNode').checked = false;
+        document.getElementById('relModeBlock')?.classList.toggle('d-none', !!row);
+        setRelationshipMode('existing');
+
         // Subject, both endpoints, the type and the code are fixed at creation: the update contract carries none.
         ['relSubjectId', 'relFromNodeId', 'relToNodeId', 'relRelationshipType'].forEach(id => setDisabled(id, !!row));
         setReadOnly('relRelationshipCode', !!row);
@@ -770,6 +862,35 @@
     };
     const submitRelationshipForm = async () => {
         const id = norm(document.getElementById('relationshipFormId').value);
+        const mode = document.querySelector('input[name="relMode"]:checked')?.value || 'existing';
+
+        // SCMM-09 (②): combined write — new node + edge in ONE atomic call (create-only).
+        if (!id && mode === 'new-node') {
+            const newNodeIsSource = (document.querySelector('input[name="relNewNodeIsSource"]:checked')?.value || 'true') === 'true';
+            const combined = {
+                subjectId: norm(document.getElementById('relSubjectId').value),
+                conceptTypeId: norm(document.getElementById('relNewNodeTypeId').value),
+                conceptNodeCode: norm(document.getElementById('relNewNodeCode').value),
+                conceptNodeName: norm(document.getElementById('relNewNodeName').value),
+                nodeEffectiveFrom: fromDateInput(document.getElementById('relNewNodeEffectiveFrom').value),
+                counterpartConceptNodeId: norm(document.getElementById('relCounterpartNodeId').value),
+                relationshipType: norm(document.getElementById('relRelationshipType').value),
+                relationshipCode: norm(document.getElementById('relRelationshipCode').value),
+                relationshipName: norm(document.getElementById('relRelationshipName').value),
+                relationshipEffectiveFrom: fromDateInput(document.getElementById('relEffectiveFrom').value),
+                newNodeIsSource,
+                direction: norm(document.getElementById('relDirection').value) || null,
+                priority: Number(document.getElementById('relPriority').value || 0),
+                relationshipStatus: norm(document.getElementById('relStatus').value) || null,
+                relationshipEffectiveTo: fromDateInput(document.getElementById('relEffectiveTo').value)
+            };
+            await envelope(await fetch(`${base}/concept-nodes/with-relationship`, {
+                method: 'POST', credentials: 'same-origin', headers: jsonHeaders, body: JSON.stringify(combined)
+            }));
+            await loadNodes(); // the new node must resolve in edge labels + node pickers
+            return false;      // created
+        }
+
         const payload = {
             relationshipName: norm(document.getElementById('relRelationshipName').value),
             effectiveFrom: fromDateInput(document.getElementById('relEffectiveFrom').value),
@@ -922,6 +1043,14 @@
             setText('pv-type-subject', labelSubject(row.subjectId));
             setBadge('pv-type-status', row.status, row.status === 'active' ? 'success' : 'secondary');
             setText('pv-type-sortorder', row.sortOrder);
+            // SCMM-09 (①) — colour swatch + parent + group/list flags.
+            const pvColor = document.getElementById('pv-type-color');
+            if (pvColor) pvColor.innerHTML = row.color
+                ? `${colorSwatch(row.color)}<span class="align-middle">${esc(row.color)}</span>`
+                : '<span class="text-muted">—</span>';
+            setText('pv-type-parent', row.parentConceptTypeId ? labelType(row.parentConceptTypeId) : '');
+            setBadge('pv-type-group', row.isGroup ? L.Yes : L.No, row.isGroup ? 'info' : 'secondary');
+            setBadge('pv-type-list', row.isList ? L.Yes : L.No, row.isList ? 'info' : 'secondary');
             setText('pv-type-description', row.description);
             setBadge('pv-type-archived', row.isArchived ? L.Yes : L.No, row.isArchived ? 'warning' : 'success');
             setText('pv-type-updated', stamp(row.updatedAt || row.createdAt));
@@ -1091,8 +1220,25 @@
             el.addEventListener('change', handler);
             if (window.jQuery) window.jQuery(el).on('change', handler);
         };
-        bind('relSubjectId', () => refreshRelationshipNodePickers(null));
+        bind('relSubjectId', () => { refreshRelationshipNodePickers(null); refreshRelationshipNewNodePickers(); });
         bind('tplSubjectId', () => { sequence = []; renderSequence(false); refreshTemplateTypePicker(); });
+        // SCMM-09 (①): subject drives the cycle-safe parent-type picker on the ConceptType form.
+        bind('typeSubjectId', () => refreshTypeParentPicker());
+        // SCMM-09 (②): connection-mode radios toggle the existing/new-node blocks.
+        document.querySelectorAll('input[name="relMode"]').forEach(radio =>
+            radio.addEventListener('change', () => setRelationshipMode(radio.value)));
+    };
+
+    // SCMM-09 (①): keep the native colour picker and the hex text input in sync (either can drive the value).
+    const bindTypeColorSync = () => {
+        const picker = document.getElementById('typeColorPicker');
+        const text = document.getElementById('typeColor');
+        if (!picker || !text) return;
+        picker.addEventListener('input', () => { text.value = picker.value; });
+        text.addEventListener('input', () => {
+            const v = text.value.trim();
+            if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v)) picker.value = v;
+        });
     };
 
     KINDS.forEach(kind => {
@@ -1132,6 +1278,7 @@
 
     registerTableFilter();
     bindSubjectCascade();
+    bindTypeColorSync();
     (async () => {
         L = window.ConceptL10n || window.L10n || {};
         // The contract first (it supplies every vocabulary the filters and forms pick from), then the read-only

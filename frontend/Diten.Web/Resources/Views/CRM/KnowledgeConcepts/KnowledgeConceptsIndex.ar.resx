@@ -155,4 +155,17 @@
   <data name="GlobalProductSearching" xml:space="preserve"><value>Searching...</value></data>
   <data name="GlobalProductNoResults" xml:space="preserve"><value>No global product matched.</value></data>
   <data name="ExternalRefIdHint" xml:space="preserve"><value>Free-text identifier in the referenced system.</value></data>
+  <data name="Color" xml:space="preserve"><value>اللون</value></data>
+  <data name="IsGroup" xml:space="preserve"><value>نوع المجموعة</value></data>
+  <data name="IsList" xml:space="preserve"><value>نوع القائمة</value></data>
+  <data name="ParentConceptType" xml:space="preserve"><value>نوع المفهوم الأصل</value></data>
+  <data name="ParentConceptTypeNote" xml:space="preserve"><value>النوع الأصل ضمن نفس الموضوع. لا يمكن اختيار النوع نفسه أو الأنواع المتفرعة منه.</value></data>
+  <data name="ConnectionMode" xml:space="preserve"><value>وضع الربط</value></data>
+  <data name="ConnectExisting" xml:space="preserve"><value>ربط عقدتين موجودتين</value></data>
+  <data name="ConnectNewNode" xml:space="preserve"><value>إنشاء عقدة جديدة وربطها</value></data>
+  <data name="NewNodeSection" xml:space="preserve"><value>عقدة جديدة</value></data>
+  <data name="CounterpartNode" xml:space="preserve"><value>العقدة المراد ربطها</value></data>
+  <data name="NewNodeDirection" xml:space="preserve"><value>الاتجاه</value></data>
+  <data name="NewNodeAsSource" xml:space="preserve"><value>العقدة الجديدة ← العقدة المقابلة</value></data>
+  <data name="NewNodeAsTarget" xml:space="preserve"><value>العقدة المقابلة ← العقدة الجديدة</value></data>
 </root>

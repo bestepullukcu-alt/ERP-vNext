@@ -36,14 +36,76 @@
                     <div class="form-text">@Localizer["NodePickerSubjectFirst"]</div>
                 </div>
 
-                <div class="col-12">
-                    <label for="relFromNodeId" class="form-label fw-medium">@Localizer["FromConceptNode"] <span class="text-danger">*</span></label>
-                    <select id="relFromNodeId" class="form-select concept-form-select2" data-placeholder="@Localizer["SelectOption"]" required></select>
+                @* SCMM-09 (②): connect two existing nodes (default) OR create a new node and connect it (legacy "New
+                   UCLN List"). The mode selector is hidden on edit — a combined write is a create-only convenience. *@
+                <div class="col-12" id="relModeBlock">
+                    <label class="form-label fw-medium d-block">@Localizer["ConnectionMode"]</label>
+                    <div class="d-flex flex-column flex-sm-row gap-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="relMode" id="relModeExisting" value="existing" checked />
+                            <label class="form-check-label" for="relModeExisting">@Localizer["ConnectExisting"]</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="relMode" id="relModeNewNode" value="new-node" />
+                            <label class="form-check-label" for="relModeNewNode">@Localizer["ConnectNewNode"]</label>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="col-12">
-                    <label for="relToNodeId" class="form-label fw-medium">@Localizer["ToConceptNode"] <span class="text-danger">*</span></label>
-                    <select id="relToNodeId" class="form-select concept-form-select2" data-placeholder="@Localizer["SelectOption"]" required></select>
+                <div class="col-12" id="relExistingNodesBlock">
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <label for="relFromNodeId" class="form-label fw-medium">@Localizer["FromConceptNode"] <span class="text-danger">*</span></label>
+                            <select id="relFromNodeId" class="form-select concept-form-select2" data-placeholder="@Localizer["SelectOption"]" required></select>
+                        </div>
+                        <div class="col-12">
+                            <label for="relToNodeId" class="form-label fw-medium">@Localizer["ToConceptNode"] <span class="text-danger">*</span></label>
+                            <select id="relToNodeId" class="form-select concept-form-select2" data-placeholder="@Localizer["SelectOption"]" required></select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 d-none" id="relNewNodeBlock">
+                    <div class="card border shadow-none">
+                        <div class="card-body p-3">
+                            <h6 class="mb-3">@Localizer["NewNodeSection"]</h6>
+                            <div class="row g-4">
+                                <div class="col-12">
+                                    <label for="relNewNodeTypeId" class="form-label fw-medium">@Localizer["ConceptTypeId"] <span class="text-danger">*</span></label>
+                                    <select id="relNewNodeTypeId" class="form-select concept-form-select2" data-placeholder="@Localizer["SelectOption"]" required disabled></select>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label for="relNewNodeCode" class="form-label fw-medium">@Localizer["ConceptNodeCode"] <span class="text-danger">*</span></label>
+                                    <input type="text" id="relNewNodeCode" class="form-control" maxlength="120" required disabled />
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label for="relNewNodeName" class="form-label fw-medium">@Localizer["ConceptNodeName"] <span class="text-danger">*</span></label>
+                                    <input type="text" id="relNewNodeName" class="form-control" maxlength="240" required disabled />
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label for="relNewNodeEffectiveFrom" class="form-label fw-medium">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
+                                    <input type="date" id="relNewNodeEffectiveFrom" class="form-control" required disabled />
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label for="relCounterpartNodeId" class="form-label fw-medium">@Localizer["CounterpartNode"] <span class="text-danger">*</span></label>
+                                    <select id="relCounterpartNodeId" class="form-select concept-form-select2" data-placeholder="@Localizer["SelectOption"]" required disabled></select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-medium d-block">@Localizer["NewNodeDirection"]</label>
+                                    <div class="d-flex flex-column flex-sm-row gap-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="relNewNodeIsSource" id="relNewNodeSource" value="true" checked />
+                                            <label class="form-check-label" for="relNewNodeSource">@Localizer["NewNodeAsSource"]</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="relNewNodeIsSource" id="relNewNodeTarget" value="false" />
+                                            <label class="form-check-label" for="relNewNodeTarget">@Localizer["NewNodeAsTarget"]</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="col-12">

@@ -155,4 +155,17 @@
   <data name="GlobalProductSearching" xml:space="preserve"><value>Searching...</value></data>
   <data name="GlobalProductNoResults" xml:space="preserve"><value>No global product matched.</value></data>
   <data name="ExternalRefIdHint" xml:space="preserve"><value>Free-text identifier in the referenced system.</value></data>
+  <data name="Color" xml:space="preserve"><value>颜色</value></data>
+  <data name="IsGroup" xml:space="preserve"><value>分组类型</value></data>
+  <data name="IsList" xml:space="preserve"><value>列表类型</value></data>
+  <data name="ParentConceptType" xml:space="preserve"><value>父概念类型</value></data>
+  <data name="ParentConceptTypeNote" xml:space="preserve"><value>同一主题下的父类型。该类型本身及其子类型不可选择。</value></data>
+  <data name="ConnectionMode" xml:space="preserve"><value>连接模式</value></data>
+  <data name="ConnectExisting" xml:space="preserve"><value>连接两个已有节点</value></data>
+  <data name="ConnectNewNode" xml:space="preserve"><value>新建节点并连接</value></data>
+  <data name="NewNodeSection" xml:space="preserve"><value>新节点</value></data>
+  <data name="CounterpartNode" xml:space="preserve"><value>要连接的节点</value></data>
+  <data name="NewNodeDirection" xml:space="preserve"><value>方向</value></data>
+  <data name="NewNodeAsSource" xml:space="preserve"><value>新节点 → 对应节点</value></data>
+  <data name="NewNodeAsTarget" xml:space="preserve"><value>对应节点 → 新节点</value></data>
 </root>
