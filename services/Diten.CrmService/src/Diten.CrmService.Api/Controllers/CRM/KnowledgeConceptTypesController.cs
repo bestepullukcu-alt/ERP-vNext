@@ -43,7 +43,8 @@ public sealed class KnowledgeConceptTypesController : CustomBaseController
         => CreateActionResultInstance(await _mediator.Send(
             new CreateConceptTypeCommand(
                 request.SubjectId, request.ConceptTypeCode, request.ConceptTypeName, request.Description,
-                request.SortOrder, request.Status),
+                request.SortOrder, request.Status, request.Color, request.IsGroup, request.IsList,
+                request.ParentConceptTypeId),
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/concept-types/{conceptTypeId:guid}")]
@@ -52,7 +53,8 @@ public sealed class KnowledgeConceptTypesController : CustomBaseController
         Guid conceptTypeId, [FromBody] UpdateConceptTypeRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new UpdateConceptTypeCommand(
-                conceptTypeId, request.ConceptTypeName, request.Description, request.SortOrder, request.Status),
+                conceptTypeId, request.ConceptTypeName, request.Description, request.SortOrder, request.Status,
+                request.Color, request.IsGroup, request.IsList, request.ParentConceptTypeId),
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/concept-types/{conceptTypeId:guid}/archive")]

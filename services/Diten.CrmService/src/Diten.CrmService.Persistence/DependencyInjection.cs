@@ -537,7 +537,13 @@ public static class DependencyInjection
         // binary, and the lookup silently returns NOTHING (the failure AccountTerritoryAssignment already hit). For a
         // graph that would mean "this subject has no nodes/edges" on every read — silently. OrderedConceptTypes is a
         // List<Guid> and needs the enumerable string-Guid serializer (like TerritoryRuleCriteria account-id lists).
-        Map<ConceptType>(map => map.GetMemberMap(x => x.SubjectId).SetSerializer(stringGuid));
+        Map<ConceptType>(map =>
+        {
+            map.GetMemberMap(x => x.SubjectId).SetSerializer(stringGuid);
+            // SCMM-09 (①) — hierarchical parent FK. Without the string-Guid serializer this nullable Guid would store as
+            // binary and every parent lookup would silently return nothing (the new-aggregate class-map trap).
+            map.GetMemberMap(x => x.ParentConceptTypeId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+        });
         Map<ConceptNode>(map =>
         {
             map.GetMemberMap(x => x.SubjectId).SetSerializer(stringGuid);

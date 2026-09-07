@@ -51,6 +51,7 @@ public sealed class ConceptGraphRuntimeTests
         public UpdateConceptTypeHandler UpdateType() => new(Tenant(TenantId), new NullActorContext(), Types);
         public ArchiveConceptTypeHandler ArchiveType() => new(Tenant(TenantId), new NullActorContext(), Types);
         public ListConceptTypesHandler ListTypes(Guid? t = null) => new(Tenant(t ?? TenantId), Types);
+        public GetConceptTypeHandler GetType() => new(Tenant(TenantId), Types);
 
         public CreateConceptNodeHandler CreateNode() => new(Tenant(TenantId), new NullActorContext(), Nodes, Types);
         public UpdateConceptNodeHandler UpdateNode() => new(Tenant(TenantId), new NullActorContext(), Nodes);
@@ -669,6 +670,73 @@ public sealed class ConceptGraphRuntimeTests
         Assert.Contains(n1, nodeIds);
         Assert.Contains(n2, nodeIds);
         Assert.DoesNotContain(n3, nodeIds); // third layer never surfaces (fixed depth)
+    }
+
+    // ---------------- SCMM-09 (①) ConceptType extend: color / isGroup / isList / parent ----------------
+
+    [Fact] // 39  new fields round-trip through create + read
+    public async Task Create_type_with_new_fields_round_trips()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var created = await fx.CreateType().Handle(new CreateConceptTypeCommand(
+            subjectId, "grp", "Group type", Status: ConceptStatuses.Active,
+            Color: "#3366FF", IsGroup: true, IsList: true), default);
+        Assert.Equal(201, created.StatusCode);
+
+        var dto = (await fx.GetType().Handle(new GetConceptTypeQuery(created.Data), default)).Data!;
+        Assert.Equal("#3366FF", dto.Color);
+        Assert.True(dto.IsGroup);
+        Assert.True(dto.IsList);
+        Assert.Null(dto.ParentConceptTypeId);
+    }
+
+    [Fact] // 40  invalid hex color rejected
+    public async Task Create_type_invalid_color_returns_400()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var r = await fx.CreateType().Handle(new CreateConceptTypeCommand(
+            subjectId, "c", "Coloured", Color: "blue"), default);
+        Assert.Equal(400, r.StatusCode);
+    }
+
+    [Fact] // 41  RM1 parent hierarchy: valid parent accepted, then cycle rejected
+    public async Task Parent_type_valid_then_cycle_returns_400()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var a = await fx.SeedType(subjectId, "A");
+        var b = await fx.CreateType().Handle(new CreateConceptTypeCommand(
+            subjectId, "B", "B", Status: ConceptStatuses.Active, ParentConceptTypeId: a), default);
+        Assert.Equal(201, b.StatusCode); // B -> A is fine
+
+        // A -> B would close the A -> B -> A loop.
+        var cycle = await fx.UpdateType().Handle(new UpdateConceptTypeCommand(
+            a, "A", ParentConceptTypeId: b.Data), default);
+        Assert.Equal(400, cycle.StatusCode);
+    }
+
+    [Fact] // 42  RM1 self-parent rejected
+    public async Task Self_parent_returns_400()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var a = await fx.SeedType(subjectId, "A");
+        var r = await fx.UpdateType().Handle(new UpdateConceptTypeCommand(a, "A", ParentConceptTypeId: a), default);
+        Assert.Equal(400, r.StatusCode);
+    }
+
+    [Fact] // 43  RM1 cross-subject parent rejected
+    public async Task Cross_subject_parent_returns_400()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectA = fx.SeedSubject();
+        var subjectB = fx.SeedSubject();
+        var parentInB = await fx.SeedType(subjectB, "PB");
+        var r = await fx.CreateType().Handle(new CreateConceptTypeCommand(
+            subjectA, "child", "Child", ParentConceptTypeId: parentInB), default);
+        Assert.Equal(400, r.StatusCode);
     }
 
     // ============================================================ in-memory fakes

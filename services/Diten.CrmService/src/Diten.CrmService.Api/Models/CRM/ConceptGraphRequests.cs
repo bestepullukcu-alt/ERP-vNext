@@ -9,13 +9,21 @@ public sealed record CreateConceptTypeRequest(
     string ConceptTypeName,
     string? Description = null,
     int SortOrder = 0,
-    string? Status = null);
+    string? Status = null,
+    string? Color = null,
+    bool IsGroup = false,
+    bool IsList = false,
+    Guid? ParentConceptTypeId = null);
 
 public sealed record UpdateConceptTypeRequest(
     string ConceptTypeName,
     string? Description = null,
     int SortOrder = 0,
-    string? Status = null);
+    string? Status = null,
+    string? Color = null,
+    bool IsGroup = false,
+    bool IsList = false,
+    Guid? ParentConceptTypeId = null);
 
 public sealed record CreateConceptNodeRequest(
     Guid SubjectId,

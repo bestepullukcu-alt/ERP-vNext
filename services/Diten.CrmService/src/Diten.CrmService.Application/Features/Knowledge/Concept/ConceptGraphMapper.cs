@@ -7,7 +7,8 @@ namespace Diten.CrmService.Application.Features.Knowledge.Concept;
 public static class ConceptGraphMapper
 {
     public static ConceptTypeDto ToDto(ConceptType t) => new(
-        t.Id, t.SubjectId, t.ConceptTypeCode, t.ConceptTypeName, t.Description, t.SortOrder, t.Status,
+        t.Id, t.SubjectId, t.ConceptTypeCode, t.ConceptTypeName, t.Description, t.SortOrder,
+        t.Color, t.IsGroup, t.IsList, t.ParentConceptTypeId, t.Status,
         t.CreatedAt, t.CreatedBy, t.UpdatedAt, t.UpdatedBy, t.ArchivedAt, t.ArchivedBy, t.IsArchived());
 
     public static ConceptNodeDto ToDto(ConceptNode n) => new(
