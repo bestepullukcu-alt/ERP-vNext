@@ -39,8 +39,11 @@ Her yeni sürüm, modül veya kritik hata düzeltmesi (hotfix) yayına alınmada
 - [ ] **Boş Durum:** Tablo boşsa "No records found" mesajı düzgün gösteriliyor mu?
 
 ## 📝 6. Dokümantasyon
-- [ ] **API Dokümanı:** Yeni modülün Swagger/README dokümanı güncellenmiş mi?
-- [ ] **Kullanıcı Kılavuzu:** Son kullanıcı için ekran rehberi hazırlanmış mı?
+- [ ] **API Dokümanı:** `docs/reference/architecture/api/` altında güncellenmiş mi?
+      Servis README'si `services/<servis>/README.md` yerinde mi?
+- [ ] **Kullanıcı Kılavuzu:** `docs/guides/<modül>/index.html` — resimli, tek dosya HTML olarak var mı?
+- [ ] **Yol kontrolü:** Yukarıdaki maddeler **dosya yolu yazılmadan** işaretlenemez
+      (bkz. `.antigravity/rules/docs-organization.md` §3.1).
 - [ ] **CHANGELOG:** Breaking change varsa `CHANGELOG.md`'ye kaydedilmiş mi?
 
 ---

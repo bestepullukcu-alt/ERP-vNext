@@ -64,7 +64,8 @@ Ajan, kullanıcının module pack'teki golden karara göre iki farklı detay/gir
 
 ## 📸 Çıktı Formatı — Markdown DEĞİL
 
-Kılavuz **tek dosya HTML** olarak üretilir (`docs/guides/<modul>/index.html`).
+Kılavuz **tek dosya HTML** olarak üretilir (`docs/guides/<modül>/index.html`).
+Yer kuralı: `.antigravity/rules/docs-organization.md` §3.1 — `docs/` köküne yazmak yasaktır.
 Markdown kılavuz üretilmez; mevcut `.md` kılavuzlar bu formata taşınacaktır.
 
 Sebep ölçüldü: `docs/` altında bugün 2 kılavuz var ve **sıfır ekran görüntüsü**.

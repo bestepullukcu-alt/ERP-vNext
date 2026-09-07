@@ -116,6 +116,11 @@ Kullanıcı "son kontrolleri yap" veya "testleri çalıştır" dediğinde kod ya
 2. xUnit testlerinin (.NET) çalıştırılıp çalıştırılmadığını kontrol et.
 3. Tüm `.resx` dosyalarının eksiksiz (Key senkronizasyonu) olduğunu doğrula (Platform için 2, Tenant için 7 dil).
 4. (Varsa) `.antigravity/scripts/` altındaki python doğrulama scriptlerini (security_scan vb.) çalıştır.
+5. Üretilen her belgenin **dosya yolunu** raporda yaz. "Doküman hazırlandı" tek başına
+   kabul edilmez: yolu olmayan belge bulunamaz, bulunamayan belge yoktur.
+   Adresler: `.antigravity/rules/docs-organization.md` §3.1.
+6. `docs/` kökünde `README.md` dışında dosya kalmadığını doğrula:
+   `find docs -maxdepth 1 -type f ! -name 'README.md' | wc -l` → **0**
 
 ---
 
@@ -125,3 +130,22 @@ Kullanıcı "son kontrolleri yap" veya "testleri çalıştır" dediğinde kod ya
 - **Kurallar Konumu:** `.antigravity/rules/`
 - **Yetenekler Konumu:** `.antigravity/skills/`
 - **İş Akışları Konumu:** `.antigravity/workflows/`
+
+---
+
+## 📄 BELGE NEREYE YAZILIR (ZORUNLU)
+
+`docs/` **köküne dosya yazılmaz.** Klasörü, belgenin zamanla nasıl davrandığı belirler —
+konusu değil. Sırayla sor, ilk "evet"te dur:
+
+| # | soru | klasör |
+| :-- | :--- | :--- |
+| 1 | Biz mi yazdık? **Hayır**, dışarıdan geldi | `docs/vendor/` |
+| 2 | Belirli bir tarihte olanı mı kaydediyor, bir daha değişmeyecek mi? | `docs/records/` |
+| 3 | Henüz olmamış bir şeyi mi anlatıyor? | `docs/roadmap/` |
+| 4 | Birine bir işi nasıl yapacağını mı öğretiyor? | `docs/guides/` |
+| 5 | Bugünün gerçeğini mi anlatıyor, değişince güncellenecek mi? | `docs/reference/` |
+
+Modül kapanışında üretilen belgelerin tam adresleri (API dokümanı, kullanıcı kılavuzu,
+ADR, denetim raporu, servis README) ve taşıma protokolü:
+**`.antigravity/rules/docs-organization.md`** — beşinci bir üst klasör açmak Control Tower kararıdır.
