@@ -26,14 +26,15 @@ The first source is `Diten.MDM`. The first consumer is MOD-0290 Product / Item /
 
 The acknowledgement boundary is **durable central outbox acceptance**. It is not final `audit_events` persistence. Final outbox processing and `AuditEvent` read-back remain MOD-0021 health/operations evidence and are not a synchronous MDM receipt prerequisite.
 
+The original implementation used an FU01-local HMAC JWT scheme plus a second Platform credential and tenant allow-list. MOD-0033-FU02 now owns service-client credential lifecycle, tenant/audience grant and Auth-issued RS256 token issuance. The named reconciliation step **R1 — Adopt MOD-0033 TrustedServiceToken Authority** removes the duplicate FU01 trust source; the already-delivered audit envelope, mapping, outbox acceptance and replay behavior remain unchanged.
+
 ## 2. Ownership and Boundaries
 
 ### In scope
 
 - One Platform-internal source-intent acceptance endpoint for `Diten.MDM`.
-- Dedicated MDM audit-source credential with active/previous-secret overlap and revocation semantics.
-- Independently validated service JWT identity.
-- Server-side tenant grant; body/header tenant claims never grant access.
+- Independently validated Auth-issued RS256 service JWT through the MOD-0033-FU02 named `TrustedServiceToken` scheme.
+- Auth-owned persisted service-client tenant/audience grant checked before token issuance; body/header tenant values never grant access.
 - Exact immutable versioned intent envelope and strict unknown-field rejection.
 - Exact source-operation-to-MOD-0021 mapping; numeric enum passthrough is forbidden.
 - Deterministic central idempotency, exact replay and payload-drift conflict.
@@ -70,8 +71,6 @@ The acknowledgement boundary is **durable central outbox acceptance**. It is not
 
 ### New API/security objects
 
-- `TrustedSourceAuditIntentCredentialOptions` for the single `Diten.MDM` source.
-- `ITrustedSourceAuditIntentCredentialAuthenticator` / `TrustedSourceAuditIntentCredentialAuthenticator`.
 - `ITrustedSourceAuditIntentServiceIdentity` / `TrustedSourceAuditIntentServiceIdentity`.
 - `ITrustedSourceAuditIntentRequestExecutor` / `TrustedSourceAuditIntentRequestExecutor`.
 - Strict request model/parser and `InternalTrustedSourceAuditIntentController`.
@@ -82,10 +81,8 @@ The acknowledgement boundary is **durable central outbox acceptance**. It is not
 
 ### Headers
 
-- `Authorization: Bearer <independently validated service JWT>`.
-- `X-Audit-Source-Credential-Id` — exactly one value.
-- `X-Audit-Source-Credential` — exactly one value.
-- `X-Audit-Source-Audience` — exactly `TRUSTED_AUDIT_SOURCE_INGEST`.
+- `Authorization: Bearer <Auth-issued RS256 service token>` is the only accepted authority header and must have exactly one value.
+- Legacy `X-Audit-Source-Credential-Id`, `X-Audit-Source-Credential` and `X-Audit-Source-Audience` headers are forbidden and return non-disclosing `403`; they are never ignored as harmless extras.
 - `X-Tenant-Id` is forbidden.
 
 ### Existing objects reused, not forked
@@ -105,7 +102,7 @@ No new SoR entity or Mongo collection is introduced. Frontmatter uses `entity_ba
 | `SourceService` | string | Yes | Exact ordinal `Diten.MDM`; max 64. |
 | `ContractVersion` | string | Yes | Exact ordinal `mod-0290.audit-intent.v1`; max 64. |
 | `IntentId` | Guid | Yes | Non-empty. |
-| `TenantId` | Guid | Yes | Non-empty; must equal independently validated JWT tenant and an exact server-side grant. |
+| `TenantId` | Guid | Yes | Non-empty; must equal the independently validated JWT tenant. The tenant/audience grant was already authoritatively checked by MOD-0033 before token issuance. |
 | `AggregateType` | string | Yes | Exact canonical name from the mapping table; numeric values rejected. |
 | `AggregateId` | Guid | Yes | Non-empty. |
 | `PreVersion` | int | Yes | `>= -1`. |
@@ -154,7 +151,7 @@ All rows map to `AuditCategory.MasterData`, `AuditOutcome.Succeeded`, `SourceSer
 
 ## 5. Repo Scope
 
-This is an exhaustive code-start allow-list. A later implementation may touch only these paths after the pack is approved/ready-for-dev and the user separately authorizes code-start.
+The original Section 5 implementation is preserved as historical delivery evidence. R1 is a new, separately gated remediation step. No R1 runtime or test change is authorized by the earlier FU01 code-start approval.
 
 ### Runtime allow-list
 
@@ -168,11 +165,8 @@ This is an exhaustive code-start allow-list. A later implementation may touch on
 - `services/Diten.Platform/src/Diten.Platform.Application/Features/Audit/TrustedSourceAuditIntentOperationMap.cs` — new.
 - `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/AuditOutboxRepository.cs` — existing, narrow interface implementation only.
 - `services/Diten.Platform/src/Diten.Platform.Infrastructure/DependencyInjection.cs` — existing, narrow DI registration only.
-- `services/Diten.Platform/src/Diten.Platform.API/Configuration/TrustedSourceAuditIntentCredentialOptions.cs` — new.
 - `services/Diten.Platform/src/Diten.Platform.API/Models/Audit/TrustedSourceAuditIntentRequest.cs` — new.
 - `services/Diten.Platform/src/Diten.Platform.API/Models/Audit/TrustedSourceAuditIntentRequestParser.cs` — new.
-- `services/Diten.Platform/src/Diten.Platform.API/Security/ITrustedSourceAuditIntentCredentialAuthenticator.cs` — new.
-- `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedSourceAuditIntentCredentialAuthenticator.cs` — new.
 - `services/Diten.Platform/src/Diten.Platform.API/Security/ITrustedSourceAuditIntentServiceIdentity.cs` — new.
 - `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedSourceAuditIntentServiceIdentity.cs` — new.
 - `services/Diten.Platform/src/Diten.Platform.API/Security/ITrustedSourceAuditIntentRequestExecutor.cs` — new.
@@ -191,6 +185,33 @@ This is an exhaustive code-start allow-list. A later implementation may touch on
 - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/TrustedSourceAuditIntentTwoServiceContractTests.cs` — new, exact MDM wire fixture/receipt contract.
 - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/DependencyInjectionSmokeTests.cs` — existing, registration/non-hosted assertions only.
 - Existing MOD-0021 audit/outbox test files may be executed as regression evidence but not edited unless separately added to this allow-list by owner-approved pack revision.
+
+### R1 — Adopt MOD-0033 TrustedServiceToken Authority (separate code-start)
+
+R1 may change only the following exact paths. All other FU01 runtime, acceptance, persistence, mapping and parser files are reuse-only.
+
+Modify:
+
+- `services/Diten.Platform/src/Diten.Platform.API/Security/ITrustedSourceAuditIntentServiceIdentity.cs` — remove the FU01-local allowed-tenant-set argument; return only the independently validated token identity and tenant, plus an explicit `Unavailable` result for invalid validator configuration.
+- `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedSourceAuditIntentServiceIdentity.cs` — authenticate only `TrustedServiceTokenValidationExtensions.AuthenticationScheme`, retain defense-in-depth exact service/audience/tenant cardinality checks, and map validator-configuration `InvalidOperationException` to `IdentityResult.Unavailable` without falling back to another scheme.
+- `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedSourceAuditIntentRequestExecutor.cs` — remove the second credential dependency and required legacy headers; enforce one bearer header, reject legacy credential headers and `X-Tenant-Id`, require token tenant = envelope tenant, and map `IdentityResult.Unavailable` to non-leaking `503 AUDIT_SOURCE_INTENT_UNAVAILABLE` before body/repository dispatch.
+- `services/Diten.Platform/src/Diten.Platform.API/Program.cs` — remove the FU01-local credential options, HMAC/JwtSettings named bearer registration and credential-authenticator DI; reuse the MOD-0033 named RS256 scheme without changing the human JWT default.
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/TrustedSourceAuditIntentSecurityTests.cs` — replace the obsolete double-credential/static-grant tests with bearer-only scheme, downgrade-rejection, tenant-equality and validator-configuration `InvalidOperationException` → `503` tests.
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/DependencyInjectionSmokeTests.cs` — prove the old FU01 scheme/config/authenticator is absent and the MOD-0033 named scheme is reused without becoming a hosted service or human default.
+
+Delete:
+
+- `services/Diten.Platform/src/Diten.Platform.API/Configuration/TrustedSourceAuditIntentCredentialOptions.cs`.
+- `services/Diten.Platform/src/Diten.Platform.API/Security/ITrustedSourceAuditIntentCredentialAuthenticator.cs`.
+- `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedSourceAuditIntentCredentialAuthenticator.cs`.
+
+MOD-0033-FU02 files are predecessor artifacts and **reuse-only** in R1; R1 may not edit or fork them:
+
+- `services/Diten.Platform/src/Diten.Platform.API/Configuration/TrustedServiceTokenValidationOptions.cs`.
+- `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedServiceTokenValidationExtensions.cs`.
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Security/TrustedServiceTokenValidationTests.cs`.
+
+R1 code-start is blocked until the user separately approves this exact remediation allow-list and the implementation base contains an immutable, verified MOD-0033-FU02 predecessor.
 
 ### Governance write scope
 
@@ -216,17 +237,21 @@ This is an exhaustive code-start allow-list. A later implementation may touch on
 - MOD-0021 existing `audit_outbox`, unique idempotency index, worker, mapper and `AuditEvent` store.
 - MOD-0290 existing `LocalAuditIntent`, `AuditIntentContract.BuildCentralIdempotencyKey`, fenced delivery repository and exact 15 operation vocabulary.
 - MOD-0290-FU03 H1b requires central acceptance only for its type 7/8 activation/suspension intents; final audit-event persistence is observed asynchronously.
-- Existing Platform JWT bearer validation and tenant registry/context.
-- Dedicated source credential and server-side tenant grant supplied through environment/secret provisioning only after separate operational approval.
+- MOD-0033-FU02 owns the dedicated `Diten.MDM` client identity, credential rotation, persisted exact tenant/audience grant, Auth-issued RS256 token and Platform `TrustedServiceToken` current/previous public-key validator.
+- FU02 temporal compatibility/migration code is a predecessor of the current FU01 implementation. Its operational migration and cutover remain separate prerequisites for FU01 operational completion.
+- Integration base must be a verified successor containing the implementation-time integration baseline, MOD-0021-FU02, the existing MOD-0021-FU01 provider implementation and the immutable MOD-0033-FU02 predecessor `8998103bf3cda83a8742f433021c167bc3179cbf`. The historical local observation of `c2cc8e10` in §19 is not current remote-main verification. The branches may not be implicitly rebased, cherry-picked or copied.
 
 Lookup/reference-data decision: no lookup key or business reference-data family is required. Operation/aggregate vocabulary is an invariant mapping table, not editable lookup data.
 
 ## 8. Runtime Constraints
 
-- Processing order is fixed: request-size/duplicate-header guard → dedicated credential → independently validated service JWT → exact service identity/audience → JWT tenant → server-side tenant grant → strict body parse → tenant equality → envelope validation/mapping → canonical fingerprint → durable outbox acceptance.
-- JWT must contain exactly one `actor_type=service`, one `service_name=Diten.MDM`, one non-empty `tenant_id`, and the approved audience. A tenant-user JWT, platform-admin JWT or self-declared body actor cannot act as the transport service.
+- Processing order is fixed: request-size and duplicate/forbidden-header guard → named `TrustedServiceToken` RS256 authentication → exact service identity/audience/claim cardinality → JWT tenant extraction → strict body parse → token/envelope tenant equality → envelope validation/mapping → canonical fingerprint → durable outbox acceptance.
+- JWT must satisfy the exact MOD-0033 contract: RS256, known non-expired `kid`, exact issuer, exact 300-second lifetime, exactly one `actor_type=service`, one `service_name=Diten.MDM`, one non-empty `tenant_id`, and exact `TRUSTED_AUDIT_SOURCE_INGEST` audience. A tenant-user JWT, platform-admin JWT or self-declared body actor cannot act as the transport service.
 - `X-Tenant-Id` is always rejected. `TenantId` from the envelope is equality evidence only, never authorization.
-- Credential configuration contains exact allowed tenant IDs. Missing/empty/malformed grants fail closed. No wildcard, default tenant or body/header fallback is allowed.
+- The exact tenant/audience grant is checked by Auth before issuance and cryptographically attested by the short-lived token. Platform does not maintain a second tenant allow-list or accept a wildcard/default/body/header fallback.
+- Grant disable/revoke has a bounded maximum propagation delay equal to the already-issued token's exact 300-second lifetime. Platform does not introspect Auth per request; accepting this bounded lag is the price of one authoritative grant source and must be approved by the Security and Operations owners before R1 code-start.
+- Legacy `X-Audit-Source-Credential-Id`, `X-Audit-Source-Credential` and `X-Audit-Source-Audience` headers return `403` before body parse or repository access. There is no HMAC/JwtSettings or human-token fallback.
+- Missing/malformed TrustedServiceToken public-key/issuer configuration fails closed as `503 AUDIT_SOURCE_INTENT_UNAVAILABLE`; it is never translated to `401`, allowed through, or retried against the human JWT scheme.
 - Request body maximum is 32 KiB. Snapshot/evidence bodies are prohibited; only a SHA-256 hash and optional bounded reference are accepted.
 - Acceptance has a two-second linked server budget. Caller cancellation propagates unchanged.
 - The endpoint is never routed through browser/Gateway and never permits anonymous semantic access despite using a custom internal executor.
@@ -265,9 +290,9 @@ Not applicable. This pack creates no frontend files, route, menu, form, Save Vie
 | Input | Required | Validation | Failure |
 |---|---|---|---|
 | Request body | Yes | JSON object, max 32 KiB, exact known properties, no duplicate properties | `400 AUDIT_SOURCE_INTENT_INVALID` or `413 AUDIT_SOURCE_INTENT_TOO_LARGE` |
-| Dedicated headers | Yes | Exactly one value each; exact identifier/audience; active/previous secret rules | `401/403` |
-| Service JWT | Yes | Independently authenticated; exact service actor/name/audience and one tenant | `401/403` |
-| Tenant binding | Yes | JWT tenant = envelope tenant = exact server-side grant | non-leaking `403 AUDIT_SOURCE_INTENT_FORBIDDEN` |
+| Authorization | Yes | Exactly one bearer value; MOD-0033 named RS256 scheme, exact current/previous `kid`, issuer, 300-second lifetime and ten-claim service contract | `401/403` |
+| Legacy/source tenant headers | Forbidden | Any old FU01 credential/audience header or `X-Tenant-Id` is a downgrade attempt | non-leaking `403 AUDIT_SOURCE_INTENT_FORBIDDEN` |
+| Tenant binding | Yes | JWT tenant = envelope tenant; grant authority is the Auth issuance decision | non-leaking `403 AUDIT_SOURCE_INTENT_FORBIDDEN` |
 | Contract/source | Yes | Exact ordinal version and source service | `409 AUDIT_SOURCE_INTENT_CONTRACT_UNSUPPORTED` |
 | IDs/version/sequence | Yes | Rules in §4 | `400 AUDIT_SOURCE_INTENT_INVALID` |
 | Aggregate/operation | Yes | Exact pair in §4 mapping; numeric values/aliases/case folding rejected | `409 AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED` |
@@ -278,9 +303,10 @@ No trim/case-fold/alias/fuzzy normalization is used for source service, contract
 
 ## 13. Failure Path to Verify
 
-- **Missing/wrong/revoked credential** → `401`; no JWT/body dispatch and no outbox write.
-- **Wrong service identity/audience or ungranted tenant** → `403`; no tenant existence leak and no outbox write.
-- **`X-Tenant-Id`, duplicate auth headers or tenant mismatch** → `403`; body tenant cannot switch context.
+- **Missing/malformed/cryptographically invalid bearer** → `401`; no body dispatch and no outbox write.
+- **Wrong service identity/audience/claim cardinality, human token or tenant mismatch** → `403`; no tenant existence leak and no outbox write.
+- **Legacy FU01 credential headers, `X-Tenant-Id` or duplicate auth headers** → `403`; no downgrade or body-derived tenant switch is possible.
+- **Invalid/missing named-validator issuer/public-key configuration** → `503 AUDIT_SOURCE_INTENT_UNAVAILABLE`; no body parse, repository access or scheme fallback.
 - **Malformed/unknown/duplicate JSON property, numeric enum, invalid GUID/version/hash** → `400`; no write.
 - **Unsupported contract or aggregate-operation pair** → `409`; no write.
 - **Oversized request** → `413`; body is not dispatched.
@@ -297,12 +323,13 @@ No trim/case-fold/alias/fuzzy normalization is used for source service, contract
 
 - This endpoint does not use human RBAC permission keys and is not `[AllowAnonymous]` in the trust sense; it uses a dedicated, fail-closed internal executor.
 - Transport identity and business actor are separate:
-  - transport: independently validated `service` JWT + dedicated MDM source credential;
+  - transport: independently validated Auth-issued RS256 `TrustedServiceToken` bearer;
   - business actor: immutable `ActorId` in the signed/authenticated source envelope and resulting audit metadata.
 - Exact consumer: `Diten.MDM`.
 - Exact audience: `TRUSTED_AUDIT_SOURCE_INGEST`.
-- Exact tenant grant: server-side allow-list; wildcard forbidden.
+- Exact tenant grant: persisted and enforced by MOD-0033/Auth before token issuance; wildcard forbidden.
 - Raw tenant header/body values never create authority.
+- Platform does not keep an FU01-specific shared secret, HMAC validation key or duplicate tenant grant.
 - Existing shared `AuthService:InternalApiKey` endpoint is not used for this contract.
 
 ## 15. Gateway / API Routing Decision
@@ -312,15 +339,16 @@ Decision: Gateway change is unnecessary and forbidden.
 - The endpoint is service-to-service on Platform's internal API surface.
 - Browser/frontend callers are not supported.
 - No Ocelot base/catch-all pair is added.
-- MOD-0290's future client calls the configured Platform internal base address with the dedicated credential and service JWT under its own separately approved Class C step.
+- MOD-0290's future client obtains a short-lived token from the MOD-0033 Auth issuance endpoint and calls the configured Platform internal base address with only that bearer under its own separately approved Class C step.
 
 ## 16. Acceptance Criteria
 
 - [ ] DCP-002 verifier passes for `MOD-0021-FU01` under parent `MOD-0021`.
 - [ ] Exactly one new internal endpoint exists: `POST /api/internal/v1/audit/source-intents/accept`.
 - [ ] Existing shared-key `/api/internal/audit/append` is neither widened nor used by this contract.
-- [ ] Dedicated credential, independently validated service JWT and server-side tenant grant are all required before body dispatch.
+- [ ] Only the independently validated MOD-0033 RS256 service token is accepted; the grant is enforced by Auth before issuance and no second Platform credential/grant source remains.
 - [ ] `X-Tenant-Id`, body-derived authority, wildcard tenant grant and platform/tenant-user JWTs are rejected.
+- [ ] All three legacy `X-Audit-Source-*` headers are rejected with `403` before body parse/repository access.
 - [ ] Exact immutable envelope, 32 KiB limit and 15-row mapping table are enforced without numeric enum passthrough.
 - [ ] New acceptance reuses `audit_outbox`; no new entity, collection, index, outbox, worker or final audit store is created.
 - [ ] `201` is returned only after durable outbox insert.
@@ -340,9 +368,12 @@ Decision: Gateway change is unnecessary and forbidden.
 - Strict JSON parser: exact fields, duplicate/unknown fields, case drift, numeric enums, size limit.
 - All 15 mapping rows plus every invalid pair.
 - Canonical fingerprint stability across JSON property order/whitespace and sensitivity to every semantic field.
-- Dedicated credential active/previous overlap, expiry, revocation and fixed-time secret checks.
-- JWT actor/service/audience/tenant cardinality, `X-Tenant-Id` rejection and server-side tenant-grant enforcement.
-- Request ordering proves credential/JWT/grant failures occur before body dispatch or repository access.
+- Direct A→B→FU01 scheme evidence: an Auth-issued current-key token passes the Platform named scheme and FU01 endpoint; an eligible previous-key token passes only strictly before overlap expiry.
+- Wrong/unknown/missing `kid`, HS256, `none`, wrong issuer/audience/service, human claims, duplicate claims and non-exact 300-second lifetime fail closed before body/repository dispatch.
+- Authorization is the only accepted authority header; missing/duplicate bearer, `X-Tenant-Id` and every legacy `X-Audit-Source-*` header are rejected before body dispatch or repository access.
+- Invalid/missing TrustedServiceToken validator configuration raises no unhandled response: `IdentityResult.Unavailable` maps deterministically to `503 AUDIT_SOURCE_INTENT_UNAVAILABLE`, and the body/repository remains untouched.
+- Token tenant must equal envelope tenant. Auth grant disable/revoke prevents new issuance; an already-issued token remains bounded by the exact 300-second lifetime and no longer.
+- DI/static contract tests prove the old `TrustedSourceAuditIntent` HMAC/JwtSettings scheme, options and authenticator are absent while the human JWT default remains unchanged.
 - Exact `Response<T>` codes for 400/401/403/409/413/503/504.
 
 ### Real Mongo (`mongodb://127.0.0.1:27017`)
@@ -391,15 +422,17 @@ Decision: Gateway change is unnecessary and forbidden.
 - [x] Exact endpoint, envelope, mapping, idempotency, acknowledgement and failure contracts written.
 - [x] Exhaustive runtime/test allow-list and protected paths written.
 - [ ] Audit owner accepts the 15-row mapping and `mod-0290.audit-intent.v1` wire contract.
-- [ ] Security owner accepts dedicated credential + service JWT + server-side tenant grant and exact header/claim contract.
+- [ ] Security owner accepts R1's single MOD-0033 RS256 authority, explicit legacy-header rejection and bounded 300-second grant-revocation lag.
 - [ ] MDM/Product Data owner confirms its future client emits the exact v1 envelope and does not use shared internal key/body tenant trust.
-- [ ] Operations owner accepts the two-second/32-KiB bounds and secret/tenant-grant provisioning model.
+- [ ] Operations owner accepts the two-second/32-KiB bounds, Auth-owned client/grant provisioning, Platform public-key rotation and bounded token-revocation lag.
 - [x] The implementation base contains verified successors of `2935f9d1` and `aced8c84`; real-Mongo tests use only
   `SchemaProfile.AccessGovernance` under DB-010.
 - [x] Real-Mongo evidence classifies the existing audit-outbox `DateTimeOffset` claim ordering/range behavior. Any
   serializer, migration or shared index fix remains outside this pack and blocks operational completion if unresolved.
 - [x] Pack status explicitly promoted to `ready-for-dev` by user approval on 2026-08-28.
 - [x] User separately authorized Section 5 runtime/test code-start on 2026-08-28.
+- [ ] R1 exact remediation allow-list receives a new explicit user code-start approval; the prior Section 5 approval does not authorize this security-contract replacement.
+- [ ] R1 base is a verified successor containing the implementation-time integration baseline, MOD-0021-FU02, existing FU01 and immutable MOD-0033-FU02 predecessor `8998103bf3cda83a8742f433021c167bc3179cbf`; the historical `c2cc8e10` observation is not current remote-main verification.
 
 ## 19. Implementation Notes
 
@@ -407,7 +440,7 @@ Decision: Gateway change is unnecessary and forbidden.
   - `python .antigravity/scripts/verify_module_id.py . --check-id MOD-0021-FU01 --name "Trusted Durable Source Audit Intent Ingestion" --parent MOD-0021`
   - Result on 2026-08-28: `OK MOD-0021-FU01: proven against Blueprint/registry.`
 - The current `/api/internal/audit/append` is not sufficient: it uses the shared internal key, trusts body tenant after middleware bypass, derives a generic idempotency key, and cannot distinguish exact replay from payload drift.
-- The current governed human/JWT append endpoint is also not the service contract: it has no dedicated MDM source credential or server-side source tenant grant and does not accept the DCP-004 source idempotency material.
+- The current governed human/JWT append endpoint is also not the service contract: it does not use the exact MOD-0033 service-token scheme and does not accept the DCP-004 source idempotency material.
 - Phase 1.5 architecture was user-approved and the pack was promoted to `ready-for-dev`; the user separately authorized Section 5 runtime/test code-start on 2026-08-28. Configuration, credential, tenant-grant and operational-run authority remain outside that approval.
 - The existing `audit_outbox` unique key and record identity are sufficient for durable acceptance if duplicate-key races are followed by exact winner read-back and fingerprint comparison.
 - The accepted outbox payload must remain compatible with the existing `AuditOutboxPayloadMapper`; this pack does not authorize a mapper fork.
@@ -432,8 +465,20 @@ Decision: Gateway change is unnecessary and forbidden.
 - Runtime/test evidence on 2026-08-28: focused FU01 `73/73`, existing Audit Outbox plus FU01 regression `148/148`,
   and full Platform `2783/2783`, all with zero skipped. The six real-Mongo cases used `localhost:27017` and only
   `SchemaProfile.AccessGovernance`; Release Platform API build completed with zero errors and four existing warnings.
-- Independent rereview closed the named-JWT audience conflict, exact claim casing, mapper compatibility,
-  bounded SnapshotReference, full two-second budget and one-public-type-per-file findings. No runtime blocker remains.
+- Independent rereview of the original implementation closed its named-JWT audience conflict, exact claim casing,
+  mapper compatibility, bounded SnapshotReference, full two-second budget and one-public-type-per-file findings. That
+  evidence predates R1 and does not claim the MOD-0033 alignment blocker is closed.
+- R1 code-truth reconciliation on 2026-08-28 found that the delivered FU01 branch still registers its own
+  `TrustedSourceAuditIntent` HMAC/JwtSettings bearer scheme and requires an additional `X-Audit-Source-*` credential
+  plus Platform tenant allow-list. MOD-0033-FU02 supersedes those trust facts with one Auth-issued RS256 named scheme.
+  This pack revision records the replacement plan only; it does not claim the runtime has been aligned.
+- The committed FU01 implementation is `baee3fef` on top of FU02 `635ef04f`, both based on `61ffac26`. On
+  2026-08-28, local ancestry inspection recorded `c2cc8e10` as 28 commits ahead of that base with overlapping Platform
+  files; this is a historical local observation, not current remote-main verification. The MOD-0033-FU02 predecessor is
+  immutably preserved locally at `8998103bf3cda83a8742f433021c167bc3179cbf`. R1 therefore cannot begin by implicit
+  rebase/cherry-pick or by copying a second validator. An explicit combined integration base is a fail-closed prerequisite.
+  This historical FU01 branch/pack does not re-verify later integration worktrees or commits and makes no conclusion
+  about their runtime alignment.
 
 ## 20. Follow-up Items
 
@@ -441,11 +486,13 @@ Decision: Gateway change is unnecessary and forbidden.
 - End-to-end FU03 H1b activation/suspension acceptance can close only after this provider pack and the MDM client step both pass.
 - FU02 operational migration execution and Production/Staging temporal cutover remain separately authorized work;
   FU01 does not execute them or mutate existing outbox data.
-- Production/Staging credential and tenant-grant provisioning, rotation/revocation runbook and live smoke require separate operational authorization.
+- Auth service-client credential/tenant-grant provisioning, signing/private-key configuration, Platform public-key configuration, rotation/revocation runbook and live smoke require separate operational authorization.
 - Final outbox-worker-to-`AuditEvent` processing/read-back, retry/dead-letter alerts and health metrics remain MOD-0021 operations evidence.
 - Source-side retention/purge/redaction and compact-receipt timing remain MOD-0290 G4 gates; this provider does not own them.
 - Additional source services or contract versions require separate owner-approved allow-list/mapping changes; wildcard multi-source ingestion is forbidden.
 
-> Module pack `review` durumundadır. Section 5 runtime/test implementation tamamlandı ve doğrulandı. Configuration,
-> credential, tenant-grant, MDM source client, operational-run ve Production/Staging enablement hâlâ ayrı onay kapılarıdır.
+> Module pack `review` durumundadır. İlk Section 5 runtime/test implementation tamamlandı ve doğrulandı; R1 güvenlik
+> reconciliation yalnız planlanmıştır ve yeni exact code-start onayı bekler. R1 tamamlanmadan FU01 MOD-0033 ile
+> hizalı sayılmaz. Configuration, credential, tenant-grant, MDM source client, FU02 operational migration/cutover,
+> operational-run ve Production/Staging enablement hâlâ ayrı onay kapılarıdır.
 > Backend-only olduğu için Golden Reference `none`; UI/DataTable sapması yoktur.
