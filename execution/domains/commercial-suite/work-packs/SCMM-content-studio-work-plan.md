@@ -72,7 +72,7 @@
 ### R1 — Shared foundation (Gate G1: runtime proof + remediation)
 | WP | İş | Owner | Modül | Dep | CT notu |
 |---|---|---|---|---|---|
-| SCMM-05 | Authz+audit harden | Platform+security | MOD-0018+0021 | 04 | 🟠 **GATE NOT PASSED (2026-09-07, WP-SCMM-05)** — MOD-0018/0021 HARDEN; release yolu 🔴 BLOCKED (audit fail-soft). Remediation: **R1** MOD-0021 durable-audit (owning-team) · **R2** MOD-0018 ABAC (owning-team) · **S1** canonical key seed / **S2** Knowledge audit-wiring / **S3** SoD (bizim). **S1 → SCMM-09 authz'ını açar (owning-team'e bağlı değil).** |
+| SCMM-05 | Authz+audit harden | Platform+security | MOD-0018+0021 | 04 | 🟠 **GATE NOT PASSED (2026-09-07, WP-SCMM-05)** — MOD-0018/0021 HARDEN; release yolu 🔴 BLOCKED (audit fail-soft). Remediation: **R1** MOD-0021 durable-audit (owning-team) · **R2** MOD-0018 ABAC (owning-team) · **S1** canonical key seed / **S2** Knowledge audit-wiring / **S3** SoD (bizim). **S1 ✅ DONE (2026-09-07, WP-SCMM-05-S1, commits 4231dd9d+cfa44307, CT-ACCEPTED E2) → SCMM-09 authz AÇIK.** R1/R2 owning-team + S2/S3 + E3 kalan. |
 | SCMM-06 | Review routing+delegation kanıtla | Workflow lead | MOD-0023(+0288?) | 04 | 🔴 MOD-0288 kimlik netleştir |
 | SCMM-07 | Doc+evidence servisleri kanıtla | Doc/evidence lead | MOD-0028+0031+0262 | 04 | 🔴 MOD-0031 spec-only → foundation tamamla |
 | SCMM-08 | Ref+integration servisleri qualify | Integration lead | MOD-0290+0288+0032 | 04 | MOD-0040 boundary |
