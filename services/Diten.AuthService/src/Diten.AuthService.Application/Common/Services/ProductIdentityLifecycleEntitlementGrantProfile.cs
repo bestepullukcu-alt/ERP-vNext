@@ -4,7 +4,7 @@ namespace Diten.AuthService.Application.Common.Services;
 
 /// <summary>
 /// Exact entitlement grant profile for Product Identity lifecycle permissions. Approval and rejection remain
-/// Workflow-owned; this profile owns only submit/retire and consumes the existing Workflow catalog dependencies.
+/// Workflow-owned; this profile owns the bounded product lifecycle keys and consumes existing Workflow dependencies.
 /// </summary>
 public static class ProductIdentityLifecycleEntitlementGrantProfile
 {
@@ -14,6 +14,10 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
     public const string GlobalProductsCreate = "mdm.global-products.create";
     public const string GlobalProductsSubmit = "mdm.global-products.submit";
     public const string GlobalProductsRetire = "mdm.global-products.retire";
+    public const string GlobalProductsUpdate = "mdm.global-products.update";
+    public const string GlobalProductsWithdraw = "mdm.global-products.withdraw";
+    public const string GlobalProductsRequestCorrection = "mdm.global-products.request-correction";
+    public const string GlobalProductsRequestRetirement = "mdm.global-products.request-retirement";
     public const string GskusRead = "mdm.gskus.read";
     public const string GskusCreate = "mdm.gskus.create";
     public const string GskusSubmit = "mdm.gskus.submit";
@@ -54,6 +58,10 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
         {
             GlobalProductsSubmit,
             GlobalProductsRetire,
+            GlobalProductsUpdate,
+            GlobalProductsWithdraw,
+            GlobalProductsRequestCorrection,
+            GlobalProductsRequestRetirement,
             GskusSubmit,
             GskusRetire,
             LskusSubmit,
@@ -78,7 +86,16 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
             "Product Data Steward",
             "Creates and submits Product Identity records without checker or retirement authority.",
             BasePermissionKeys.Concat(
-                    [GlobalProductsSubmit, GskusSubmit, LskusSubmit, FinishedGoodsSubmit, WorkflowInstancesStart])
+                    [
+                        GlobalProductsSubmit,
+                        GlobalProductsUpdate,
+                        GlobalProductsWithdraw,
+                        GlobalProductsRequestCorrection,
+                        GskusSubmit,
+                        LskusSubmit,
+                        FinishedGoodsSubmit,
+                        WorkflowInstancesStart
+                    ])
                 .ToHashSet(StringComparer.Ordinal)),
         new(
             ApproverRole,
@@ -97,11 +114,13 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
         new(
             RetirementStewardRole,
             "Product Identity Retirement Steward",
-            "Retires Product Identity records subject to MDM child-admission and version fences.",
+            "Requests Global Product retirement and retires remaining Product Identity records subject to MDM fences.",
             new HashSet<string>(StringComparer.Ordinal)
             {
                 GlobalProductsRead,
-                GlobalProductsRetire,
+                GlobalProductsWithdraw,
+                GlobalProductsRequestRetirement,
+                WorkflowInstancesStart,
                 GskusRead,
                 GskusRetire,
                 LskusRead,
@@ -126,13 +145,15 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
         var supplied = permissionKeys.ToList();
         var lifecycle = supplied.Where(IsLifecycleCandidateKey).ToHashSet(StringComparer.Ordinal);
         var basePermissions = supplied.Where(IsBasePermissionKey).ToHashSet(StringComparer.Ordinal);
+        var relevantCount = supplied.Count(key => IsLifecycleCandidateKey(key) || IsBasePermissionKey(key));
 
         if (!lifecycle.SetEquals(PermissionKeys)
             || !basePermissions.SetEquals(BasePermissionKeys)
+            || relevantCount != PermissionKeys.Count + BasePermissionKeys.Count
             || supplied.Any(key => key.StartsWith("mdm.product-definition-revisions.", StringComparison.OrdinalIgnoreCase)))
         {
             throw new InvalidOperationException(
-                "Product Identity lifecycle reconciliation requires the exact eight base and eight submit/retire keys, with no Revision or product approve/reject key.");
+                "Product Identity lifecycle reconciliation requires the exact eight base and twelve lifecycle keys, with no Revision or product approve/reject key.");
         }
     }
 

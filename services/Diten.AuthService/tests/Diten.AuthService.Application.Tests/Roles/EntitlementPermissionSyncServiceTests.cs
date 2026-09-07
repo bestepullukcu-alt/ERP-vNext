@@ -954,12 +954,12 @@ public sealed class EntitlementPermissionSyncServiceTests
     }
 
     [Fact]
-    public async Task Product_identity_lifecycle_profile_composes_exact_thirteen_seven_eight_roles_with_ABB_and_scope()
+    public async Task Product_identity_lifecycle_profile_composes_exact_sixteen_seven_ten_roles_with_ABB_and_scope()
     {
         var catalog = ProductIdentityLifecycleCompositeCatalog();
         var (svc, roles, rolePerms) = BuildWith(catalog);
         var declaredKeys = ProductIdentityDeclaredKeys(catalog);
-        Assert.Equal(30, declaredKeys.Length);
+        Assert.Equal(34, declaredKeys.Length);
 
         await svc.GrantModuleWithKeysAsync(
             TenantA,
@@ -967,9 +967,9 @@ public sealed class EntitlementPermissionSyncServiceTests
             declaredKeys,
             Actor);
 
-        Assert.Equal(13, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole).Count);
+        Assert.Equal(16, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole).Count);
         Assert.Equal(7, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole).Count);
-        Assert.Equal(8, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole).Count);
+        Assert.Equal(10, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole).Count);
 
         var admin = ProductRoleKeys(roles, rolePerms, catalog, DefaultRolePermissionTemplate.AdminRole);
         var viewer = ProductRoleKeys(roles, rolePerms, catalog, DefaultRolePermissionTemplate.ViewerRole);
