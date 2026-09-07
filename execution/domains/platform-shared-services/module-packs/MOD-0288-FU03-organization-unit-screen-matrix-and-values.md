@@ -4,14 +4,14 @@ name: Organization Unit Screen — Matrix Line and Custom Field Values
 domain: platform-shared-services
 service: Diten.Platform
 shell: tenant
-golden_reference: slim
+golden_reference: compact
 entity_base: BaseEntity
 status: draft
 owner: platform-shared-services / organization-governance-owner
 branch: feature/pss/mod-0288-fu03-organization-unit-screen
 started: 2026-09-07
 target: governance-review
-form_field_count: 6
+form_field_count: 11
 production_authority: none
 ---
 
@@ -22,10 +22,15 @@ production_authority: none
 > either one: the API accepts them, nothing on screen offers them. This pack closes that for the **unit
 > screen**. It creates no deployment or production authority; `production_authority: none`.
 >
-> **Why this is not one pack with the definition screens.** Measured: the unit offcanvas carries 3 inputs and
-> 2 selects — five fields, `slim`. The Task field-definition form carries 11 inputs and 6 selects — seventeen,
-> `compact`. `module-pack-standard` line 109 requires a pack's entire file structure to imitate its one golden
-> reference exactly, so two classes cannot share a pack. Definition authoring is **MOD-0288-FU04**.
+> ⚠ **Corrected 2026-09-07 — the first draft measured a dead file.** It classified the unit screen as `slim`
+> from `_CreateEditOffcanvas.cshtml` and its five fields. That partial is called from nowhere:
+> `OrganizationUnitsController.Create` and `.Edit` both return `Form.cshtml`, a full page. The live form
+> carries 4 inputs, 5 selects and 1 textarea — **ten fields, `compact`** — and Positions and
+> PositionAssignments route to `Form.cshtml` too. Everything below follows the live surface.
+>
+> **Why still separate from MOD-0288-FU04.** No longer the golden reference — both are `compact` — but the
+> work: FU03 widens a screen people already use, FU04 creates a screen set that does not exist. Different risk,
+> different verification, and a regression in one must not block the other.
 
 ## 1. Module Summary
 
@@ -74,7 +79,7 @@ Exact allowlist, built from the tree on 2026-09-07. No wildcards.
 | File | Change |
 |---|---|
 | `services/Diten.Platform/src/Diten.Platform.Domain/Entities/Organization/OrganizationEnums.cs` | append `GroupFunction` to `OrgUnitType` |
-| `frontend/Diten.Web/Views/Organization/OrganizationUnits/_CreateEditOffcanvas.cshtml` | administrative-parent select; custom-value container |
+| `frontend/Diten.Web/Views/Organization/OrganizationUnits/Form.cshtml` | administrative-parent select; custom-value container. **The live create/edit surface** — both actions return it. |
 | `frontend/Diten.Web/Views/Organization/OrganizationUnits/Details.cshtml` | both lines, line-qualified; custom values |
 | `frontend/Diten.Web/Views/Organization/OrganizationUnits/_DataTable.cshtml` | administrative parent as an optional column |
 | `frontend/Diten.Web/Views/Organization/OrganizationUnits/_Filter.cshtml` | filter by administrative parent |
@@ -94,18 +99,22 @@ Exact allowlist, built from the tree on 2026-09-07. No wildcards.
 
 ## 6. Layout & Shell Contract
 
-`shell: tenant` → `_LayoutTenantShell`, which the existing unit views already use. `golden_reference: slim`:
-create and edit stay in `_CreateEditOffcanvas.cshtml`; no full-page form is introduced.
+`shell: tenant` → `_LayoutTenantShell`, already used by the unit views. `golden_reference: compact`: create
+and edit are the full page `Form.cshtml`, reached through the `Create` and `Edit` actions. **No offcanvas is
+introduced or revived.**
 
-Field count after this pack: **6 fixed fields** (five existing plus the administrative parent) — still within
-the slim ceiling of eight.
+Field count after this pack: **11 fixed fields** — ten live today plus the administrative parent.
 
-⚠ **Custom value inputs do not count toward that ceiling.** They are dynamic, their number depends on how many
-definitions a tenant has authored, and they are rendered into a container rather than declared in the form.
-The golden reference governs the *layout decision*, which is fixed at six. Recorded because a tenant with ten
-definitions will show sixteen controls in a slim offcanvas, and the next reader will otherwise call that a
-violation. If that proves unusable in practice, the answer is a separate values surface — a new pack, not a
-silent reclassification of this one.
+⚠ **Custom value inputs are dynamic and are not part of that count.** Their number depends on how many
+definitions the tenant authored; they render into a container rather than being declared in the form. A full
+page absorbs them far better than the abandoned offcanvas would have — which is the second reason the earlier
+`slim` classification was wrong rather than merely imprecise.
+
+**Dead partials.** `_CreateEditOffcanvas.cshtml` is referenced from nowhere, and the same pattern exists under
+Positions and PositionAssignments. Deleting them is NOT in this pack's scope: they belong to the other two
+screens as much as to this one, and removing a file nothing calls still deserves its own decision. Recorded so
+the next reader does not mistake them for the surface being changed — which is precisely what happened to this
+pack's first draft.
 
 ## 7. Localization — the seven-language gate
 
@@ -188,9 +197,9 @@ form stays editable. Hiding the whole form, or showing an editable control that 
 ## 13. Ready-for-dev Checklist
 
 - [x] Shell and actor decided: `tenant` / tenant organization administrator (FU02 §14).
-- [x] Golden reference decided by measurement: 5 existing fields + 1 = 6, `slim`.
+- [x] Golden reference decided by measuring the LIVE form: 10 + 1 = 11, `compact`.
+- [x] First draft's dead-file error corrected in place and recorded, not quietly fixed.
 - [x] Exact allowlist replaces planning roots (§5).
 - [x] Permission keys taken from FU02 §14, not re-invented.
 - [ ] Seven-language label wording approved by the owner.
-- [ ] Decision: does a slim offcanvas remain usable once a tenant authors many definitions (§6)?
 - [ ] Separate implementation and production authority; this pack grants neither.
