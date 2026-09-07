@@ -185,7 +185,9 @@ Canonical roster 20 agent file'dir: 1 `orchestrator` + aşağıdaki 19 specialis
 - [x] Quality Gate Datatable checklist işaretlendi (`verify_datatable_page.py --reference slim|compact` PASS).
 - [x] CRUD sayfaları tamamlandı: Create ✓ / Details ✓ / Edit ✓ (bkz. add-module.md Phase 4a)
 - [x] **Runtime Smoke Test (Phase 4.5):** Kanal A/B/C'den hangisi uygulandı + sonuç (ek: log/screenshot/kullanıcı onayı).
-- [x] Dokümantasyon yazıldı: API dokümanı (documentation-writer) ✓ / Kullanıcı kılavuzu (user-manual-generator) ✓
+- [x] Dokümantasyon yazıldı **ve doğru klasöre kondu** (bkz. `rules/docs-organization.md` §3.1):
+      API dokümanı → `docs/reference/architecture/api/` ✓ / Kullanıcı kılavuzu → `docs/guides/<modül>/index.html` ✓ /
+      ADR (karar alındıysa) → `docs/records/decisions/<yyyy-mm>/` ✓ — yol yazılmadan bu madde işaretlenemez.
 - [x] **Backlog kapanış kaydı (demir kural #10):** `git diff --name-only <base>..HEAD -- docs/roadmap/backlog/product-backlog.md` çıktısı buraya yapıştırılır. Boş çıktı = madde işaretlenemez.
 - [x] **Kapanışın derecesi (demir kural #10):** Kayıt **✅** mi **⚠️ KISMİ** mi olarak yazıldı? ⚠️ ise **doğrulanacak davranışların adım adım listesi** kayda kondu mu? Canlı doğrulama yapılmadan ✅ yazmak **ihlaldir** — kod bitti + testler yeşil, kapanış için yetmez.
 

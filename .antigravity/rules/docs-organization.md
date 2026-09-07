@@ -88,6 +88,28 @@ tam boy saklanır.
 
 **K8 · Taşıma referans kırar — protokolsüz taşınmaz.** Bkz. §4.
 
+## 3.1 Modül bitince üretilen belgeler nereye gider
+
+Kurallar bir modül tamamlanınca kullanıcı kılavuzu, API dokümanı ve mimari
+denetim üretilmesini istiyor (`orchestrator.md` kapanış listesi,
+`add-module.md` Faz 4, `release-checklist.md`). **Nereye konacağını hiçbiri
+söylemiyordu.** Tablo bunu bağlar; her satırın gerekçesi §1'deki beş sorudur.
+
+| belge | üreten | nereye | hangi soru |
+| :--- | :--- | :--- | :--- |
+| Servis README / Quick Start | `documentation-writer` | `services/<servis>/README.md` | **docs'a değil** — kodla birlikte değişir, kodla birlikte gözden geçirilir |
+| API dokümanı (Swagger/OpenAPI) | `documentation-writer` | şema koddan üretilir; **anlatısı** `docs/reference/architecture/api/` | bugünün gerçeği (5) |
+| ADR — mimari karar kaydı | `documentation-writer` | `docs/records/decisions/<yyyy-mm>/` | tarihli kayıt (2) — ADR düzeltilmez, yerine yenisi yazılır ve eskisi `Superseded` işaretlenir |
+| Kullanıcı kılavuzu | `user-manual-generator` | `docs/guides/<modül>/index.html` | nasıl yapılır (4) |
+| Modül belgesi (spec, karar notu) | orchestrator | `docs/reference/modules/{platform\|tenant}/<modül>/` | bugünün gerçeği (5) |
+| Mimari denetim raporu | denetim adımı | `docs/records/audits/<yyyy-mm>/` | tarihli kayıt (2) |
+| CHANGELOG / sürüm notu | `documentation-writer` | `docs/records/releases/` | tarihli kayıt (2) |
+| `llms.txt` | `documentation-writer` | **repo kökü** | ajanların giriş noktası; `docs/` altında aranmaz |
+
+⚠ ADR ile `reference/architecture/` karıştırılmaz. ADR **bir kararın o günkü
+gerekçesidir** ve dondurulur. `reference/architecture/` **bugünkü mimarinin
+anlatısıdır** ve gerçek değişince güncellenir. Aynı konuda ikisi de bulunur.
+
 ## 4. Taşıma protokolü
 
 Bir belge yer değiştirdiğinde ona işaret eden her şey kırılır. 2026-09-07
