@@ -133,6 +133,56 @@ Kullanıcı "son kontrolleri yap" veya "testleri çalıştır" dediğinde kod ya
 
 ---
 
+---
+
+## 🗺️ KURAL HARİTASI — hangi işte hangi kural
+
+`.antigravity/rules/` altında 38 kural var ve bu dosya dışında hiçbiri
+`always_on` değil. Kural, ona atıf verildiği kadar görünür; bu harita atfın
+tek merkezi. **İşe başlamadan önce satırını bul ve o kuralları oku.**
+
+### Daima — istisnasız
+`multi-tenancy` kiracı izolasyonu · `security-jwt` token ve yetki ·
+`git-safety` dal ve commit güvenliği · `code-style` kod stili ·
+`docs-organization` belge nereye yazılır
+
+### Backend / handler yazıyorsan
+`handler-design` · `repository-standard` · `response-envelope` ·
+`pipeline-behaviors` · `entity-base-template` · `entity-versioning` ·
+`mongo-indexing` · `api-conventions` · `routes` · `ports`
+
+### Ekran / sayfa yazıyorsan
+`frontend-standards` genel · `views-organization` dosya yerleşimi ·
+`frontend-js-standard` · `premium-modal-standard` uyarı ve modal ·
+liste → `frontend-datatable-template` · detay → `frontend-details-template` ·
+create/edit → `frontend-form-template`
+
+### Kullanıcıya görünen metin varsa
+`localization-standard` (Platform 2 dil · Tenant 7 dil) ·
+`dynamic-localization-standard` çalışma zamanı çeviri
+
+### Yetki, izin, lookup dokunuyorsan
+`permission-key-standard` izin anahtarı · `business-module-enforcement-standard`
+modül yetki zorlaması · `platform-lookups-reference-data` referans veri ·
+`platform-global-search-registry` Ctrl+K kaydı
+
+### Yeni modül / pack açıyorsan
+`module-pack-standard` · `capability-pack-standard` ·
+`module-self-registration-standard` manifest
+
+### Ortam, çalıştırma, kayıt
+`dev-runbook` yerel ortam · `configuration-safety` ayar ve bağımlılık ·
+`logging-observability` log · `git-backup-policy` yedek ve isimlendirme
+
+### Mimari kararlar
+`erp-architecture` · `diten_standards`
+
+### Görev Merkezi'ne bağlanıyorsan
+`workcenter-bridge-standard` — köprü yasakları (WC-D1)
+
+⚠ Bu harita eksikse kural görünmez olur. Yeni bir kural dosyası eklendiğinde
+**aynı commit'te** buraya satırı yazılır; yazılmayan kural yetimdir.
+
 ## 📄 BELGE NEREYE YAZILIR (ZORUNLU)
 
 `docs/` **köküne dosya yazılmaz.** Klasörü, belgenin zamanla nasıl davrandığı belirler —
