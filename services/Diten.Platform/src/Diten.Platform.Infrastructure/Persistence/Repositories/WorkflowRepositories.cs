@@ -153,6 +153,57 @@ public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstan
         return Collection.Find(filter).FirstOrDefaultAsync(ct)!;
     }
 
+    public async Task<(WorkflowInstance Instance, bool Created)> ReserveTrustedStartAsync(
+        WorkflowInstance instance,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            return (await CreateAsync(instance, ct), true);
+        }
+        catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            var existing = await GetByIdempotencyKeyAsync(instance.IdempotencyKey!, ct);
+            if (existing is null)
+            {
+                throw;
+            }
+
+            return (existing, false);
+        }
+    }
+
+    public async Task<bool> AdvanceStartCheckpointAsync(
+        Guid instanceId,
+        int expectedVersion,
+        WorkflowStartCheckpoint expectedCheckpoint,
+        WorkflowStartCheckpoint nextCheckpoint,
+        CancellationToken ct = default)
+    {
+        if ((int)nextCheckpoint != (int)expectedCheckpoint + 1)
+        {
+            return false;
+        }
+
+        var filter = Builders<WorkflowInstance>.Filter.And(
+            ExecutionFilter,
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Id, instanceId),
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Version, expectedVersion),
+            Builders<WorkflowInstance>.Filter.Eq(x => x.StartCheckpoint, expectedCheckpoint));
+        var update = Builders<WorkflowInstance>.Update
+            .Set(x => x.StartCheckpoint, nextCheckpoint)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+            .Inc(x => x.Version, 1);
+        if (nextCheckpoint == WorkflowStartCheckpoint.Completed)
+        {
+            update = update
+                .Set(x => x.Status, WorkflowInstanceStatus.Active)
+                .Set(x => x.LastTransitionAt, DateTimeOffset.UtcNow);
+        }
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
+    }
+
     // "Latest" is picked in memory, NOT by a server-side sort — and it must stay that way until BL-030 lands.
     // No DateTimeOffsetSerializer is registered (see Diten.Platform.Infrastructure/DependencyInjection.cs), so the
     // driver persists every DateTimeOffset as a BSON array [ticks, offsetMinutes]. Sorting on TWO such fields makes
@@ -223,6 +274,19 @@ public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IAp
             ExecutionFilter,
             Builders<ApprovalTask>.Filter.Eq(x => x.WorkflowInstanceId, workflowInstanceId));
         return Collection.Find(filter).SortBy(x => x.CreatedAt).FirstOrDefaultAsync(ct)!;
+    }
+
+    public async Task<ApprovalTask> EnsureTrustedStartTaskAsync(ApprovalTask task, CancellationToken ct = default)
+    {
+        try
+        {
+            return await CreateAsync(task, ct);
+        }
+        catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            return await GetByIdAsync(task.Id, ct) ??
+                throw new InvalidOperationException("Duplicate workflow task could not be re-read in tenant scope.");
+        }
     }
 
     public Task<ApprovalTask?> GetActiveByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default)
@@ -305,6 +369,21 @@ public sealed class RuntimeAssignmentSnapshotRepository
             Builders<RuntimeAssignmentSnapshot>.Filter.Eq(x => x.WorkflowInstanceId, workflowInstanceId));
         return await Collection.Find(filter).SortByDescending(x => x.ResolvedAt).ToListAsync(ct);
     }
+
+    public async Task<RuntimeAssignmentSnapshot> EnsureTrustedStartSnapshotAsync(
+        RuntimeAssignmentSnapshot snapshot,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            return await CreateAsync(snapshot, ct);
+        }
+        catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            return await GetByIdAsync(snapshot.Id, ct) ??
+                throw new InvalidOperationException("Duplicate workflow assignment snapshot could not be re-read in tenant scope.");
+        }
+    }
 }
 
 public sealed class WorkflowTransitionLogRepository : TenantRepository<WorkflowTransitionLog>, IWorkflowTransitionLogRepository
@@ -347,6 +426,21 @@ public sealed class WorkflowTransitionLogRepository : TenantRepository<WorkflowT
 
     public Task<WorkflowTransitionLog> AppendAsync(WorkflowTransitionLog log, CancellationToken ct = default) =>
         CreateAsync(log, ct);
+
+    public async Task<WorkflowTransitionLog> EnsureTrustedStartLogAsync(
+        WorkflowTransitionLog log,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            return await CreateAsync(log, ct);
+        }
+        catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            return await GetByIdAsync(log.Id, ct) ??
+                throw new InvalidOperationException("Duplicate workflow start log could not be re-read in tenant scope.");
+        }
+    }
 
     public async Task<long> GetLatestSequenceNoAsync(Guid workflowInstanceId, CancellationToken ct = default)
     {

@@ -70,6 +70,94 @@ public sealed class TrustedServiceTokenValidationTests : IDisposable
     }
 
     [Fact]
+    public async Task Workflow_scheme_accepts_only_workflow_audience_without_weakening_audit_scheme()
+    {
+        var options = Options();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [$"{TrustedServiceTokenValidationOptions.SectionName}:Issuer"] = options.Issuer,
+                [$"{TrustedServiceTokenValidationOptions.SectionName}:CurrentKeyId"] = options.CurrentKeyId,
+                [$"{TrustedServiceTokenValidationOptions.SectionName}:CurrentPublicKeyPem"] = options.CurrentPublicKeyPem,
+                ["JwtSettings:Issuer"] = "human-issuer",
+                ["JwtSettings:Audience"] = "human-audience",
+                ["JwtSettings:Secret"] = new string('s', 64)
+            })
+            .Build();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddAuthentication("HumanBearer");
+        services.AddTrustedServiceTokenValidation(configuration, _clock);
+        await using var provider = services.BuildServiceProvider();
+        var token = Token(
+            _current,
+            "current-key",
+            SecurityAlgorithms.RsaSha256,
+            audience: TrustedServiceTokenValidationExtensions.WorkflowRequiredAudience);
+
+        var workflow = await AuthenticateAsync(
+            provider,
+            token,
+            TrustedServiceTokenValidationExtensions.WorkflowAuthenticationScheme);
+        var audit = await AuthenticateAsync(
+            provider,
+            token,
+            TrustedServiceTokenValidationExtensions.AuthenticationScheme);
+
+        Assert.True(workflow.Succeeded);
+        Assert.True(TrustedServiceTokenValidationExtensions.HasExactWorkflowServiceClaims(
+            new JsonWebToken(token),
+            Issuer));
+        Assert.False(audit.Succeeded);
+    }
+
+    [Fact]
+    public async Task Delegated_user_scheme_reads_only_exact_delegated_header_and_validates_human_jwt()
+    {
+        const string secret = "delegated-user-secret-with-at-least-thirty-two-bytes";
+        const string humanIssuer = "https://auth.human.local";
+        const string humanAudience = "diten-platform";
+        var options = Options();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [$"{TrustedServiceTokenValidationOptions.SectionName}:Issuer"] = options.Issuer,
+                [$"{TrustedServiceTokenValidationOptions.SectionName}:CurrentKeyId"] = options.CurrentKeyId,
+                [$"{TrustedServiceTokenValidationOptions.SectionName}:CurrentPublicKeyPem"] = options.CurrentPublicKeyPem,
+                ["JwtSettings:Issuer"] = humanIssuer,
+                ["JwtSettings:Audience"] = humanAudience,
+                ["JwtSettings:Secret"] = secret
+            })
+            .Build();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddAuthentication("HumanBearer");
+        services.AddTrustedServiceTokenValidation(configuration, _clock);
+        await using var provider = services.BuildServiceProvider();
+        var now = DateTime.UtcNow;
+        var jwt = new JwtSecurityToken(
+            humanIssuer,
+            humanAudience,
+            [
+                new Claim(JwtRegisteredClaimNames.Sub, Guid.NewGuid().ToString("D")),
+                new Claim("tenant_id", Guid.NewGuid().ToString("D")),
+                new Claim("actor_type", "tenant_user")
+            ],
+            now,
+            now.AddMinutes(5),
+            new SigningCredentials(
+                new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(secret)),
+                SecurityAlgorithms.HmacSha256));
+        var token = new JwtSecurityTokenHandler().WriteToken(jwt);
+
+        var accepted = await AuthenticateDelegatedAsync(provider, token, useDelegatedHeader: true);
+        var authorizationFallback = await AuthenticateDelegatedAsync(provider, token, useDelegatedHeader: false);
+
+        Assert.True(accepted.Succeeded);
+        Assert.False(authorizationFallback.Succeeded);
+    }
+
+    [Fact]
     public void Previous_key_is_accepted_only_strictly_before_overlap_expiry()
     {
         var options = Options(previousValidUntilUtc: _clock.GetUtcNow().AddMinutes(1));
@@ -250,12 +338,36 @@ public sealed class TrustedServiceTokenValidationTests : IDisposable
         return (principal, validatedToken);
     }
 
-    private static async Task<AuthenticateResult> AuthenticateAsync(IServiceProvider provider, string token)
+    private static async Task<AuthenticateResult> AuthenticateAsync(
+        IServiceProvider provider,
+        string token,
+        string scheme = TrustedServiceTokenValidationExtensions.AuthenticationScheme)
     {
         await using var scope = provider.CreateAsyncScope();
         var context = new DefaultHttpContext { RequestServices = scope.ServiceProvider };
         context.Request.Headers.Authorization = $"Bearer {token}";
-        return await context.AuthenticateAsync(TrustedServiceTokenValidationExtensions.AuthenticationScheme);
+        return await context.AuthenticateAsync(scheme);
+    }
+
+    private static async Task<AuthenticateResult> AuthenticateDelegatedAsync(
+        IServiceProvider provider,
+        string token,
+        bool useDelegatedHeader)
+    {
+        await using var scope = provider.CreateAsyncScope();
+        var context = new DefaultHttpContext { RequestServices = scope.ServiceProvider };
+        if (useDelegatedHeader)
+        {
+            context.Request.Headers[TrustedServiceTokenValidationExtensions.DelegatedAuthorizationHeader] =
+                $"Bearer {token}";
+        }
+        else
+        {
+            context.Request.Headers.Authorization = $"Bearer {token}";
+        }
+
+        return await context.AuthenticateAsync(
+            TrustedServiceTokenValidationExtensions.WorkflowDelegatedUserAuthenticationScheme);
     }
 
     private string Token(

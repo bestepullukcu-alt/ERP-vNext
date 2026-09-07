@@ -4,6 +4,10 @@ using Diten.Platform.Application.Features.BusinessReferenceData.Handlers.QueryHa
 using Diten.Platform.Application.Features.BusinessReferenceData.Queries;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.BusinessReferenceData.Models;
+using Diten.Platform.Application.Features.Workflow.Services;
+using Diten.Platform.API.Configuration;
+using Diten.Platform.Common.Tenancy;
+using Diten.Platform.Domain.Repositories;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Diten.Platform.API.Services.BusinessReferenceData;
@@ -16,12 +20,55 @@ using Diten.Platform.Application.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Moq;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests;
 
 public sealed class DependencyInjectionSmokeTests
 {
+    [Fact]
+    public void Trusted_workflow_start_policy_resolves_without_options_cycle_and_defaults_to_deny()
+    {
+        var services = new ServiceCollection();
+        services.AddOptions<TrustedWorkflowStartAuthorizationOptions>();
+        services.AddSingleton<IValidateOptions<TrustedWorkflowStartAuthorizationOptions>,
+            TrustedWorkflowStartAuthorizationOptionsValidator>();
+        services.AddSingleton<ITrustedWorkflowStartAuthorizationPolicy,
+            ConfiguredTrustedWorkflowStartAuthorizationPolicy>();
+
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true
+        });
+        var policy = provider.GetRequiredService<ITrustedWorkflowStartAuthorizationPolicy>();
+
+        Assert.False(policy.IsAuthorized(new(
+            Guid.NewGuid(), "Diten.MDM", "TRUSTED_WORKFLOW_CONSUMER",
+            "GlobalProduct", Guid.NewGuid(), null)));
+    }
+
+    [Fact]
+    public void AddApplication_ResolvesTrustedWorkflowStartCoordinator()
+    {
+        var services = new ServiceCollection();
+        services.AddApplication();
+        services.AddSingleton(Mock.Of<IWorkflowTemplateRepository>());
+        services.AddSingleton(Mock.Of<IWorkflowTemplateVersionRepository>());
+        services.AddSingleton(Mock.Of<IWorkflowInstanceRepository>());
+        services.AddSingleton(Mock.Of<IApprovalTaskRepository>());
+        services.AddSingleton(Mock.Of<IRuntimeAssignmentSnapshotRepository>());
+        services.AddSingleton(Mock.Of<IWorkflowTransitionLogRepository>());
+        services.AddSingleton(Mock.Of<ITenantContext>());
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        Assert.IsType<WorkflowInstanceStartCoordinator>(
+            scope.ServiceProvider.GetRequiredService<IWorkflowInstanceStartCoordinator>());
+    }
+
     [Fact]
     public void AddApplication_RegistersPlatformCatalogContract()
     {
@@ -164,6 +211,10 @@ public sealed class DependencyInjectionSmokeTests
         Assert.Equal(baseline.DefaultSignInScheme, authentication.DefaultSignInScheme);
         Assert.Equal(baseline.DefaultSignOutScheme, authentication.DefaultSignOutScheme);
         Assert.NotNull(await schemes.GetSchemeAsync(TrustedServiceTokenValidationExtensions.AuthenticationScheme));
+        Assert.NotNull(await schemes.GetSchemeAsync(
+            TrustedServiceTokenValidationExtensions.WorkflowAuthenticationScheme));
+        Assert.NotNull(await schemes.GetSchemeAsync(
+            TrustedServiceTokenValidationExtensions.WorkflowDelegatedUserAuthenticationScheme));
     }
 
     [Fact]
@@ -177,6 +228,25 @@ public sealed class DependencyInjectionSmokeTests
         Assert.Contains("AddInfrastructure(builder.Configuration, builder.Environment)", program, StringComparison.Ordinal);
         Assert.Contains("AddTrustedServiceTokenValidation(builder.Configuration)", program, StringComparison.Ordinal);
         Assert.DoesNotContain("AddAuthentication(TrustedServiceTokenValidationExtensions.AuthenticationScheme", program, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Program_RegistersTrustedWorkflowTransportWithoutHostedOrDefaultSchemeMutation()
+    {
+        var root = FindRepositoryRoot();
+        var program = File.ReadAllText(Path.Combine(
+            root,
+            "services", "Diten.Platform", "src", "Diten.Platform.API", "Program.cs"));
+
+        Assert.Contains("TrustedWorkflowConsumerRequestParser", program, StringComparison.Ordinal);
+        Assert.Contains("ITrustedWorkflowConsumerRequestExecutor", program, StringComparison.Ordinal);
+        Assert.Contains("TrustedWorkflowConsumerRequestExecutor", program, StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "AddAuthentication(TrustedServiceTokenValidationExtensions.WorkflowAuthenticationScheme",
+            program,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain("AddHostedService<TrustedWorkflow", program, StringComparison.Ordinal);
+        Assert.False(typeof(IHostedService).IsAssignableFrom(typeof(TrustedWorkflowConsumerRequestExecutor)));
     }
 
     [Fact]

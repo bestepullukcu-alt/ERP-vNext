@@ -68,6 +68,7 @@ describe("WorkCenterNext work-items API seam (WC-1b)", () => {
     expect(item.sourceId).toBe("INV-42");
     expect(item.actions[0].code).toBe("approve");
     expect(item.actions[0].enabled).toBe(true);
+    expect(item.concurrency.token).toBe("17");
   });
 
   it("passes the executable contract (validateWorkItem) for every projected item", () => {

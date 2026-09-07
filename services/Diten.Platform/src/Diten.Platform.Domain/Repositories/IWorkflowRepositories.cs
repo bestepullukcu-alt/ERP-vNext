@@ -50,6 +50,17 @@ public interface IWorkflowInstanceRepository
         CancellationToken ct = default);
     Task<IReadOnlyList<WorkflowInstance>> GetAllForTenantAsync(CancellationToken ct = default);
     Task<bool> UpdateAsync(WorkflowInstance instance, int expectedVersion, CancellationToken ct = default);
+    async Task<(WorkflowInstance Instance, bool Created)> ReserveTrustedStartAsync(
+        WorkflowInstance instance,
+        CancellationToken ct = default) =>
+        (await CreateAsync(instance, ct), true);
+    Task<bool> AdvanceStartCheckpointAsync(
+        Guid instanceId,
+        int expectedVersion,
+        Domain.Enums.Workflow.WorkflowStartCheckpoint expectedCheckpoint,
+        Domain.Enums.Workflow.WorkflowStartCheckpoint nextCheckpoint,
+        CancellationToken ct = default) =>
+        Task.FromResult(false);
     Task<bool> UpdateEscalationOrTimeoutAsync(WorkflowInstance instance, int expectedVersion, CancellationToken ct = default) =>
         UpdateAsync(instance, expectedVersion, ct);
 }
@@ -68,6 +79,8 @@ public interface IApprovalTaskRepository
         CancellationToken ct = default) =>
         GetAllForTenantAsync(ct);
     Task<bool> UpdateAsync(ApprovalTask task, int expectedVersion, CancellationToken ct = default);
+    Task<ApprovalTask> EnsureTrustedStartTaskAsync(ApprovalTask task, CancellationToken ct = default) =>
+        CreateAsync(task, ct);
     Task<bool> UpdateEscalationAsync(ApprovalTask task, int expectedVersion, CancellationToken ct = default) =>
         UpdateAsync(task, expectedVersion, ct);
 }
@@ -77,6 +90,10 @@ public interface IRuntimeAssignmentSnapshotRepository
     Task<RuntimeAssignmentSnapshot> CreateAsync(RuntimeAssignmentSnapshot snapshot, CancellationToken ct = default);
     Task<RuntimeAssignmentSnapshot?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task<IReadOnlyList<RuntimeAssignmentSnapshot>> ListByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default);
+    Task<RuntimeAssignmentSnapshot> EnsureTrustedStartSnapshotAsync(
+        RuntimeAssignmentSnapshot snapshot,
+        CancellationToken ct = default) =>
+        CreateAsync(snapshot, ct);
 }
 
 public interface IWorkflowTransitionLogRepository
@@ -98,6 +115,10 @@ public interface IWorkflowTransitionLogRepository
         CancellationToken ct = default);
     Task<long> GetLatestSequenceNoAsync(Guid workflowInstanceId, CancellationToken ct = default);
     Task<IReadOnlyList<WorkflowTransitionLog>> ListByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default);
+    Task<WorkflowTransitionLog> EnsureTrustedStartLogAsync(
+        WorkflowTransitionLog log,
+        CancellationToken ct = default) =>
+        CreateAsync(log, ct);
 }
 
 public interface ISlaEscalationRuleRepository

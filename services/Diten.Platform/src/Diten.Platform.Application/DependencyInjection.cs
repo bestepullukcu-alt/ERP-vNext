@@ -301,6 +301,8 @@ public static class DependencyInjection
         // A3 — workflow transition gate (defence-in-depth): business modules inject this and must check it
         // BEFORE committing a state transition. Blocked ⇒ do not commit (not best-effort).
         services.AddScoped<Contracts.IWorkflowTransitionGate, Services.WorkflowTransitionGate>();
+        services.AddScoped<Features.Workflow.Services.IWorkflowInstanceStartCoordinator,
+            Features.Workflow.Services.WorkflowInstanceStartCoordinator>();
 
         // WC-1 (DCP-004) — read-only work-item projection + provider abstraction. The
         // projection service is pure; providers are registered as an IEnumerable so WC-5 adds more without

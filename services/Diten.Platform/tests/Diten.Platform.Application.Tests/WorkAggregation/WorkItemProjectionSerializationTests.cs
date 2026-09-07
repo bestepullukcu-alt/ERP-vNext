@@ -100,4 +100,23 @@ public sealed class WorkItemProjectionSerializationTests
         Assert.Equal("invoice", titleArgs.GetProperty("objectType").GetString());
         Assert.Equal("INV-1", titleArgs.GetProperty("objectId").GetString());
     }
+
+    [Fact]
+    public void Serializes_truthful_people_and_omits_explicit_absence()
+    {
+        var withPeople = Sample() with
+        {
+            Assignee = new WorkItemPersonDto("assignee", IsCurrentUser: true),
+            Requester = new WorkItemPersonDto("requester")
+        };
+
+        using var presentDoc = JsonDocument.Parse(JsonSerializer.Serialize(withPeople, WebOptions));
+        Assert.Equal("assignee", presentDoc.RootElement.GetProperty("assignee").GetProperty("id").GetString());
+        Assert.True(presentDoc.RootElement.GetProperty("assignee").GetProperty("isCurrentUser").GetBoolean());
+        Assert.Equal("requester", presentDoc.RootElement.GetProperty("requester").GetProperty("id").GetString());
+
+        using var absentDoc = JsonDocument.Parse(JsonSerializer.Serialize(Sample(), WebOptions));
+        Assert.False(absentDoc.RootElement.TryGetProperty("assignee", out _));
+        Assert.False(absentDoc.RootElement.TryGetProperty("requester", out _));
+    }
 }

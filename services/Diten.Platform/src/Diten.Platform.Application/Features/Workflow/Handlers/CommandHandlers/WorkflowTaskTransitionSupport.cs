@@ -36,6 +36,7 @@ internal sealed class WorkflowTaskTransitionSupport
         string actorId,
         string reasonCode,
         string idempotencyKey,
+        int? expectedVersion,
         string? comment,
         string? evidenceRef,
         string correlationId,
@@ -43,12 +44,11 @@ internal sealed class WorkflowTaskTransitionSupport
     {
         actorId = actorId.Trim();
         reasonCode = reasonCode.Trim();
-        idempotencyKey = idempotencyKey.Trim();
 
         var existingLog = await _logRepository.GetByTaskActionIdempotencyKeyAsync(taskId, action, idempotencyKey, ct);
         if (existingLog is not null)
         {
-            return await BuildIdempotentResponseAsync(existingLog, correlationId, ct);
+            return await BuildActorBoundIdempotentResponseAsync(existingLog, actorId, correlationId, ct);
         }
 
         var task = await _taskRepository.GetByIdAsync(taskId, ct);
@@ -59,6 +59,11 @@ internal sealed class WorkflowTaskTransitionSupport
                 404,
                 WorkflowReasonCodes.NotFoundNonLeakage,
                 correlationId);
+        }
+
+        if (expectedVersion.HasValue && task.Version != expectedVersion.Value)
+        {
+            return StaleVersion(correlationId);
         }
 
         if (task.Status is not (ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence))
@@ -312,6 +317,7 @@ internal sealed class WorkflowTaskTransitionSupport
         string delegatePrincipalId,
         string reasonCode,
         string idempotencyKey,
+        int? expectedVersion,
         string? comment,
         string correlationId,
         CancellationToken ct)
@@ -319,7 +325,6 @@ internal sealed class WorkflowTaskTransitionSupport
         actorId = actorId.Trim();
         delegatePrincipalId = delegatePrincipalId.Trim();
         reasonCode = reasonCode.Trim();
-        idempotencyKey = idempotencyKey.Trim();
 
         if (string.Equals(actorId, delegatePrincipalId, StringComparison.Ordinal))
         {
@@ -337,7 +342,7 @@ internal sealed class WorkflowTaskTransitionSupport
             ct);
         if (existingLog is not null)
         {
-            return await BuildIdempotentResponseAsync(existingLog, correlationId, ct);
+            return await BuildActorBoundIdempotentResponseAsync(existingLog, actorId, correlationId, ct);
         }
 
         var context = await LoadTransitionContextAsync(taskId, correlationId, requireAssignment: true, ct);
@@ -349,6 +354,10 @@ internal sealed class WorkflowTaskTransitionSupport
         var task = context.Task!;
         var instance = context.Instance!;
         var snapshot = context.Snapshot!;
+        if (expectedVersion.HasValue && task.Version != expectedVersion.Value)
+        {
+            return StaleVersion(correlationId);
+        }
         if (!IsOpen(task))
         {
             return InvalidState(correlationId);
@@ -363,6 +372,7 @@ internal sealed class WorkflowTaskTransitionSupport
         var previousInstanceStatus = instance.Status;
         var newSnapshot = new RuntimeAssignmentSnapshot
         {
+            Id = DeriveDelegateSnapshotId(task.TenantId, task.Id, idempotencyKey),
             TenantId = task.TenantId,
             WorkflowInstanceId = instance.Id,
             ApprovalTaskId = task.Id,
@@ -372,7 +382,11 @@ internal sealed class WorkflowTaskTransitionSupport
             ResolvedAt = DateTime.UtcNow,
             TieBreakExplanation = "single_candidate"
         };
-        var createdSnapshot = await _snapshotRepository.CreateAsync(newSnapshot, ct);
+        var createdSnapshot = await _snapshotRepository.EnsureTrustedStartSnapshotAsync(newSnapshot, ct);
+        if (!MatchesDelegateSnapshot(createdSnapshot, newSnapshot))
+        {
+            return StaleVersion(correlationId);
+        }
 
         task.Status = ApprovalTaskStatus.WaitingApproval;
         task.AssignmentSnapshotId = createdSnapshot.Id;
@@ -405,6 +419,7 @@ internal sealed class WorkflowTaskTransitionSupport
         string? targetPrincipalId,
         string reasonCode,
         string idempotencyKey,
+        int? expectedVersion,
         string? comment,
         string? evidenceRef,
         string correlationId,
@@ -412,7 +427,6 @@ internal sealed class WorkflowTaskTransitionSupport
     {
         actorId = actorId.Trim();
         reasonCode = reasonCode.Trim();
-        idempotencyKey = idempotencyKey.Trim();
 
         var existingLog = await _logRepository.GetByTaskActionIdempotencyKeyAsync(
             taskId,
@@ -421,7 +435,7 @@ internal sealed class WorkflowTaskTransitionSupport
             ct);
         if (existingLog is not null)
         {
-            return await BuildIdempotentResponseAsync(existingLog, correlationId, ct);
+            return await BuildActorBoundIdempotentResponseAsync(existingLog, actorId, correlationId, ct);
         }
 
         var context = await LoadTransitionContextAsync(taskId, correlationId, requireAssignment: true, ct);
@@ -433,6 +447,10 @@ internal sealed class WorkflowTaskTransitionSupport
         var task = context.Task!;
         var instance = context.Instance!;
         var snapshot = context.Snapshot!;
+        if (expectedVersion.HasValue && task.Version != expectedVersion.Value)
+        {
+            return StaleVersion(correlationId);
+        }
         if (!IsOpen(task))
         {
             return InvalidState(correlationId);
@@ -670,6 +688,49 @@ internal sealed class WorkflowTaskTransitionSupport
             403,
             WorkflowReasonCodes.WorkflowActorDenied,
             correlationId);
+
+    private static Response<WorkflowTaskTransitionResponse> StaleVersion(string correlationId) =>
+        Response<WorkflowTaskTransitionResponse>.Fail(
+            "Workflow task version is stale.",
+            409,
+            WorkflowReasonCodes.WorkflowTransitionConflict,
+            correlationId);
+
+    private async Task<Response<WorkflowTaskTransitionResponse>> BuildActorBoundIdempotentResponseAsync(
+        WorkflowTransitionLog existingLog,
+        string actorId,
+        string correlationId,
+        CancellationToken ct)
+    {
+        if (!string.Equals(existingLog.ActorId, actorId, StringComparison.Ordinal) ||
+            !string.Equals(existingLog.ActorRef, actorId, StringComparison.Ordinal))
+        {
+            return ActorDenied(correlationId);
+        }
+
+        return await BuildIdempotentResponseAsync(existingLog, correlationId, ct);
+    }
+
+    private static Guid DeriveDelegateSnapshotId(Guid tenantId, Guid taskId, string idempotencyKey)
+    {
+        var canonicalIdentity = $"{tenantId:D}|{taskId:D}|{WorkflowTransitionAction.Delegate:D}|{idempotencyKey}";
+        var hash = System.Security.Cryptography.SHA256.HashData(
+            System.Text.Encoding.UTF8.GetBytes(canonicalIdentity));
+        return new Guid(hash.AsSpan(0, 16));
+    }
+
+    private static bool MatchesDelegateSnapshot(
+        RuntimeAssignmentSnapshot persisted,
+        RuntimeAssignmentSnapshot requested) =>
+        persisted.Id == requested.Id &&
+        persisted.TenantId == requested.TenantId &&
+        persisted.WorkflowInstanceId == requested.WorkflowInstanceId &&
+        persisted.ApprovalTaskId == requested.ApprovalTaskId &&
+        string.Equals(persisted.ResolverSource, requested.ResolverSource, StringComparison.Ordinal) &&
+        string.Equals(persisted.ResolvedPrincipalId, requested.ResolvedPrincipalId, StringComparison.Ordinal) &&
+        persisted.CandidatePrincipalIds.SequenceEqual(requested.CandidatePrincipalIds, StringComparer.Ordinal) &&
+        string.Equals(persisted.TieBreakExplanation, requested.TieBreakExplanation, StringComparison.Ordinal) &&
+        !persisted.IsDeleted;
 
     private async Task<Response<WorkflowTaskTransitionResponse>> BuildIdempotentResponseAsync(
         WorkflowTransitionLog existingLog,

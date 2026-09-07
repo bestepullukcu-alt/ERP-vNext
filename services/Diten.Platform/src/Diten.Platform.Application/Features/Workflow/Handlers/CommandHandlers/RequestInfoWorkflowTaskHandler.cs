@@ -26,6 +26,7 @@ public sealed class RequestInfoWorkflowTaskHandler
             request.Request.TargetPrincipalId,
             request.Request.ReasonCode,
             request.Request.IdempotencyKey,
+            request.Request.ExpectedVersion,
             request.Request.Comment,
             request.Request.EvidenceRef,
             request.CorrelationId,
