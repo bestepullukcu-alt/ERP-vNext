@@ -17,13 +17,16 @@ production_authority: none
 
 # MOD-0288-FU04 — Organization Field Definition Authoring
 
-> **Draft (2026-09-07).** FU02 delivered the definition and value backend; FU03 puts *values* on the unit
-> screen. Neither lets anyone **author a definition**, so today a tenant's field list can only be created by
-> calling the API directly. This pack adds the authoring surface. `production_authority: none`.
+> **Ready-for-dev (2026-09-07).** FU02 delivered the definition and value backend; FU03 puts *values* on the
+> unit screen. Neither lets anyone **author a definition**, so today a tenant's field list can only be created
+> by calling the API directly. This pack adds the authoring surface. `production_authority: none`.
 >
-> **Why separate from FU03.** Measured on 2026-09-07: the unit offcanvas is five fields (`slim`), the
-> definition form is seventeen controls in the Task precedent (`compact`). `module-pack-standard` line 109
-> makes a pack imitate one golden reference exactly; the two classes cannot share a pack.
+> **Why separate from FU03.** An earlier draft said the two differed by golden reference — unit screen `slim`,
+> this one `compact`. That was wrong on both counts and is corrected here: the five-field offcanvas it measured
+> is a dead partial no route reaches, and the live unit form carries ten fields, so **both packs are
+> `compact`**. The split stands on the work instead: FU03 widens a screen people already use, this pack builds
+> a screen set that does not exist. Different risk, different verification, and a regression in one must not
+> hold the other.
 
 ## 1. Module Summary
 
