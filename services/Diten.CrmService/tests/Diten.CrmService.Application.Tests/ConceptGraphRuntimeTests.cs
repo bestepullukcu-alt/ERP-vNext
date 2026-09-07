@@ -1,4 +1,5 @@
 using Diten.CrmService.Application.Common;
+using Diten.CrmService.Application.Features.Knowledge.Concept;
 using Diten.CrmService.Application.Features.Knowledge.Concept.ChainTemplate;
 using Diten.CrmService.Application.Features.Knowledge.Concept.Contract;
 using Diten.CrmService.Application.Features.Knowledge.Concept.Graph;
@@ -842,7 +843,62 @@ public sealed class ConceptGraphRuntimeTests
         Assert.Equal(r.Data!.ConceptNodeId, edge.ToConceptNodeId);
     }
 
+    // ---------------- SCMM-09 (audit bundle) ----------------
+
+    [Fact] // 49  concept create emits an audit event carrying object type + id + version
+    public async Task Concept_type_create_emits_audit_event()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var audit = new CapturingConceptAudit();
+        var handler = new CreateConceptTypeHandler(Tenant(TenantA), new NullActorContext(), fx.Types, fx.Subjects, audit);
+
+        var r = await handler.Handle(new CreateConceptTypeCommand(subjectId, "indication", "Indication"), default);
+
+        Assert.Equal(201, r.StatusCode);
+        var evt = Assert.Single(audit.Events);
+        Assert.Equal(ConceptGraphReasonCodes.TypeCreated, evt.Event);
+        Assert.Equal(KnowledgeConceptAuditEntities.ConceptType, evt.EntityType);
+        Assert.Equal(r.Data, evt.EntityId);      // object id
+        Assert.Equal(0, evt.Version);            // object/version (fresh create)
+    }
+
+    [Fact] // 50  combined-write emits a single combined audit event
+    public async Task Combined_write_emits_audit_event()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var typeId = await fx.SeedType(subjectId);
+        var counterpart = await fx.SeedNode(subjectId, typeId, "N1");
+        var audit = new CapturingConceptAudit();
+        var handler = new CreateConceptNodeWithRelationshipHandler(
+            Tenant(TenantA), new NullActorContext(), fx.Nodes, fx.Types, fx.Relationships, fx.Templates,
+            new FakeCombinedUow(fx.Nodes, fx.Relationships), audit);
+
+        var r = await handler.Handle(new CreateConceptNodeWithRelationshipCommand(
+            subjectId, typeId, "n-new", "New value", Jan1,
+            counterpart, ConceptRelationshipTypes.LeadsTo, "R1", "R1", Jan1), default);
+
+        Assert.Equal(201, r.StatusCode);
+        var evt = Assert.Single(audit.Events);
+        Assert.Equal(KnowledgeConceptAuditEvents.NodeWithRelationshipCreated, evt.Event);
+        Assert.Equal(KnowledgeConceptAuditEntities.ConceptNode, evt.EntityType);
+        Assert.Equal(r.Data!.ConceptNodeId, evt.EntityId);
+    }
+
     // ============================================================ in-memory fakes
+
+    private sealed class CapturingConceptAudit : IKnowledgeConceptAuditPublisher
+    {
+        public List<(string Event, string EntityType, Guid EntityId, int Version, string? Detail)> Events { get; } = new();
+
+        public Task PublishAsync(string eventName, Guid tenantId, string entityType, Guid entityId, int version,
+            string? detail, CancellationToken cancellationToken)
+        {
+            Events.Add((eventName, entityType, entityId, version, detail));
+            return Task.CompletedTask;
+        }
+    }
 
     private sealed class FakeCombinedUow : IConceptNodeWithRelationshipUnitOfWork
     {

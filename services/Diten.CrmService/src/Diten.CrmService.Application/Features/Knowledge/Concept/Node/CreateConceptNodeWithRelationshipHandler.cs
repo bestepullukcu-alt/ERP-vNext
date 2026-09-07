@@ -25,6 +25,7 @@ public sealed class CreateConceptNodeWithRelationshipHandler
     private readonly IConceptRelationshipRepository _relationships;
     private readonly IConceptChainTemplateRepository _templates;
     private readonly IConceptNodeWithRelationshipUnitOfWork _unitOfWork;
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
 
     public CreateConceptNodeWithRelationshipHandler(
         ITenantContext tenant,
@@ -33,7 +34,8 @@ public sealed class CreateConceptNodeWithRelationshipHandler
         IConceptTypeRepository types,
         IConceptRelationshipRepository relationships,
         IConceptChainTemplateRepository templates,
-        IConceptNodeWithRelationshipUnitOfWork unitOfWork)
+        IConceptNodeWithRelationshipUnitOfWork unitOfWork,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
@@ -42,6 +44,7 @@ public sealed class CreateConceptNodeWithRelationshipHandler
         _relationships = relationships;
         _templates = templates;
         _unitOfWork = unitOfWork;
+        _audit = audit;
     }
 
     public async Task<Response<ConceptNodeWithRelationshipResult>> Handle(
@@ -217,6 +220,13 @@ public sealed class CreateConceptNodeWithRelationshipHandler
         };
 
         await _unitOfWork.CommitAsync(node, edge, cancellationToken);
+
+        if (_audit is not null)
+        {
+            await _audit.PublishAsync(KnowledgeConceptAuditEvents.NodeWithRelationshipCreated, tenantId,
+                KnowledgeConceptAuditEntities.ConceptNode, node.Id, node.Version,
+                $"{node.ConceptNodeCode};edge={edge.Id}", cancellationToken);
+        }
 
         return Response<ConceptNodeWithRelationshipResult>.Success(
             new ConceptNodeWithRelationshipResult(node.Id, edge.Id), 201);

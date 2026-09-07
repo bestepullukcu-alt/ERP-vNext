@@ -77,14 +77,17 @@ public sealed class CreateConceptTypeHandler : IRequestHandler<CreateConceptType
     private readonly IActorContext _actor;
     private readonly IConceptTypeRepository _types;
     private readonly ISubjectRepository _subjects;
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
 
     public CreateConceptTypeHandler(
-        ITenantContext tenant, IActorContext actor, IConceptTypeRepository types, ISubjectRepository subjects)
+        ITenantContext tenant, IActorContext actor, IConceptTypeRepository types, ISubjectRepository subjects,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _types = types;
         _subjects = subjects;
+        _audit = audit;
     }
 
     public async Task<Response<Guid>> Handle(CreateConceptTypeCommand request, CancellationToken cancellationToken)
@@ -151,6 +154,12 @@ public sealed class CreateConceptTypeHandler : IRequestHandler<CreateConceptType
         };
 
         await _types.InsertAsync(entity, cancellationToken);
+        if (_audit is not null)
+        {
+            await _audit.PublishAsync(ConceptGraphReasonCodes.TypeCreated, tenantId,
+                KnowledgeConceptAuditEntities.ConceptType, entity.Id, entity.Version, entity.ConceptTypeCode, cancellationToken);
+        }
+
         return Response<Guid>.Success(entity.Id, 201);
     }
 }
@@ -160,12 +169,16 @@ public sealed class UpdateConceptTypeHandler : IRequestHandler<UpdateConceptType
     private readonly ITenantContext _tenant;
     private readonly IActorContext _actor;
     private readonly IConceptTypeRepository _types;
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
 
-    public UpdateConceptTypeHandler(ITenantContext tenant, IActorContext actor, IConceptTypeRepository types)
+    public UpdateConceptTypeHandler(
+        ITenantContext tenant, IActorContext actor, IConceptTypeRepository types,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _types = types;
+        _audit = audit;
     }
 
     public async Task<Response<bool>> Handle(UpdateConceptTypeCommand request, CancellationToken cancellationToken)
@@ -221,6 +234,12 @@ public sealed class UpdateConceptTypeHandler : IRequestHandler<UpdateConceptType
         entity.UpdatedBy = _actor.ActorName;
 
         await _types.UpdateAsync(entity, cancellationToken);
+        if (_audit is not null)
+        {
+            await _audit.PublishAsync(ConceptGraphReasonCodes.TypeUpdated, tenantId,
+                KnowledgeConceptAuditEntities.ConceptType, entity.Id, entity.Version, entity.ConceptTypeCode, cancellationToken);
+        }
+
         return Response<bool>.Success(true);
     }
 }
@@ -230,12 +249,16 @@ public sealed class ArchiveConceptTypeHandler : IRequestHandler<ArchiveConceptTy
     private readonly ITenantContext _tenant;
     private readonly IActorContext _actor;
     private readonly IConceptTypeRepository _types;
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
 
-    public ArchiveConceptTypeHandler(ITenantContext tenant, IActorContext actor, IConceptTypeRepository types)
+    public ArchiveConceptTypeHandler(
+        ITenantContext tenant, IActorContext actor, IConceptTypeRepository types,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _types = types;
+        _audit = audit;
     }
 
     public async Task<Response<bool>> Handle(ArchiveConceptTypeCommand request, CancellationToken cancellationToken)
@@ -264,6 +287,12 @@ public sealed class ArchiveConceptTypeHandler : IRequestHandler<ArchiveConceptTy
         entity.UpdatedBy = _actor.ActorName;
 
         await _types.UpdateAsync(entity, cancellationToken);
+        if (_audit is not null)
+        {
+            await _audit.PublishAsync(ConceptGraphReasonCodes.TypeArchived, tenantId,
+                KnowledgeConceptAuditEntities.ConceptType, entity.Id, entity.Version, entity.ConceptTypeCode, cancellationToken);
+        }
+
         return Response<bool>.Success(true);
     }
 }

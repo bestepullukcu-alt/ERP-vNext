@@ -39,11 +39,17 @@ public static class DependencyInjection
             services.AddHttpClient<HttpCrmAuditPublisher>();
             services.AddScoped<IAccountAuditPublisher>(sp => sp.GetRequiredService<HttpCrmAuditPublisher>());
             services.AddScoped<Application.Features.Contact.IContactAuditPublisher>(sp => sp.GetRequiredService<HttpCrmAuditPublisher>());
+            // SCMM-09 audit bundle — concept graph events forwarded with SourceModule "MOD-0162".
+            services.AddScoped<Application.Features.Knowledge.Concept.IKnowledgeConceptAuditPublisher>(
+                sp => sp.GetRequiredService<HttpCrmAuditPublisher>());
         }
         else
         {
             services.AddScoped<IAccountAuditPublisher, LoggingAccountAuditPublisher>();
             services.AddScoped<Application.Features.Contact.IContactAuditPublisher, LoggingContactAuditPublisher>();
+            // SCMM-09 audit bundle — structured-logging fallback for concept graph events.
+            services.AddScoped<Application.Features.Knowledge.Concept.IKnowledgeConceptAuditPublisher,
+                LoggingKnowledgeConceptAuditPublisher>();
         }
 
         // MOD-0150 FU05 — read-only consent/preference seam. Default is the no-op reader (MOD-0164 not built yet);
