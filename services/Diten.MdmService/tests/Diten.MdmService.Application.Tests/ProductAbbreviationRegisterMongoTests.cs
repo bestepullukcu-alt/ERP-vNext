@@ -147,6 +147,43 @@ public sealed class ProductAbbreviationRegisterMongoTests
         Assert.Equal(1, persisted.Version);
         Assert.NotNull(await scope.Ledger(scope.TenantA).GetByIdAsync(entry.AllocationLedgerId));
         Assert.Single(await scope.History(scope.TenantA).GetForRegisterEntryAsync(entry.Id));
+        var intent = Assert.Single(persisted.AuditIntents);
+        Assert.Equal(AuditAggregateType.ProductAbbreviation, intent.AggregateType);
+        Assert.Equal(ProductAuditOperation.ProductAbbreviationAllocationCancelled, intent.Operation);
+        Assert.Equal(0, intent.PreVersion);
+        Assert.Equal(1, intent.PostVersion);
+        Assert.False(await scope.Register(scope.TenantB).AppendAuditIntentIfAbsentAsync(entry.Id, intent));
+        Assert.True(await scope.Register(scope.TenantA).AppendAuditIntentIfAbsentAsync(entry.Id, intent));
+        Assert.Single((await scope.Register(scope.TenantA).GetByIdAsync(entry.Id))!.AuditIntents);
+
+        var delivery = new AuditIntentDeliveryRepository(
+            scope.Database,
+            scope.Context(scope.TenantA),
+            TimeProvider.System);
+        var workItem = Assert.Single(
+            await delivery.DiscoverEligibleAsync(10),
+            item => item.Locator.IntentId == intent.IntentId);
+        Assert.Equal(AuditAggregateType.ProductAbbreviation, workItem.Locator.AggregateType);
+        var claim = Assert.IsType<AuditIntentClaim>(await delivery.TryClaimAsync(
+            workItem.Locator,
+            workItem.ClaimGeneration,
+            "abb-audit-worker",
+            TimeSpan.FromMinutes(1)));
+        var acceptedAt = DateTimeOffset.UtcNow;
+        const string contractVersion = "abb-audit-contract-v1";
+        var acknowledgement = new AuditIntentAcknowledgement(
+            "abb-central-receipt",
+            AuditIntentContract.BuildCentralIdempotencyKey(tenantId: scope.TenantA, intentId: intent.IntentId,
+                contractVersion),
+            contractVersion,
+            acceptedAt);
+        Assert.True(await delivery.MarkDeliveredAsync(claim, acknowledgement));
+        Assert.True(await delivery.CompactDeliveredAsync(claim, "abb-compact-receipt"));
+        var delivered = await scope.Register(scope.TenantA).GetByIdAsync(entry.Id);
+        Assert.Empty(delivered!.AuditIntents);
+        Assert.Single(delivered.AuditIntentReceipts);
+        Assert.Equal(1, delivered.Version);
+        Assert.Empty(await delivery.DiscoverEligibleAsync(10));
 
         var reuse = await scope.Ledger(scope.TenantA).AllocateAsync(
             Allocation("OWN", "owner-cancel-reuse", Guid.NewGuid(), Guid.NewGuid()));

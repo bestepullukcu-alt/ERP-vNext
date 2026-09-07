@@ -7,6 +7,9 @@ public static class ProductIdentityLifecyclePermissions
 {
     public const string GlobalProductSubmit = "mdm.global-products.submit";
     public const string GlobalProductRetire = "mdm.global-products.retire";
+    public const string GlobalProductWithdraw = "mdm.global-products.withdraw";
+    public const string GlobalProductRequestCorrection = "mdm.global-products.request-correction";
+    public const string GlobalProductRequestRetirement = "mdm.global-products.request-retirement";
 }
 
 public sealed record SubmitGlobalProductIdentityRequest(
@@ -21,6 +24,13 @@ public sealed record ReconcileGlobalProductIdentityDecisionRequest(
     ProductIdentityWorkflowDecisionEvidence DecisionEvidence);
 
 public sealed record RetireGlobalProductIdentityRequest(
+    Guid GlobalProductId,
+    int ExpectedVersion,
+    Guid OperationId,
+    string ReasonCode,
+    string? Comment);
+
+public sealed record WithdrawGlobalProductIdentityApprovalRequest(
     Guid GlobalProductId,
     int ExpectedVersion,
     Guid OperationId,

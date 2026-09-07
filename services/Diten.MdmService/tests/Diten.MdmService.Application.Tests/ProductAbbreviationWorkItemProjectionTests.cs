@@ -55,7 +55,7 @@ public sealed class ProductAbbreviationWorkItemProjectionTests
         var batchCalls = 0;
         var register = Stub<IProductAbbreviationRegisterRepository>((method, _) => method.Name switch
         {
-            nameof(IProductAbbreviationRegisterRepository.GetInitialPendingWorkItemsAsync)
+            nameof(IProductAbbreviationRegisterRepository.GetPendingWorkItemsAsync)
                 => Task.FromResult<IReadOnlyList<ProductAbbreviationRegisterEntry>>([entry]),
             _ => throw new InvalidOperationException(method.Name)
         });
@@ -96,7 +96,7 @@ public sealed class ProductAbbreviationWorkItemProjectionTests
         var tenantId = Guid.NewGuid();
         var register = Stub<IProductAbbreviationRegisterRepository>((method, _) => method.Name switch
         {
-            nameof(IProductAbbreviationRegisterRepository.GetInitialPendingWorkItemsAsync)
+            nameof(IProductAbbreviationRegisterRepository.GetPendingWorkItemsAsync)
                 => Task.FromResult<IReadOnlyList<ProductAbbreviationRegisterEntry>>(
                     Enumerable.Range(0, 101).Select(_ => Entry(Guid.NewGuid(), Guid.NewGuid().ToString("D"))).ToArray()),
             _ => throw new InvalidOperationException(method.Name)
@@ -110,6 +110,48 @@ public sealed class ProductAbbreviationWorkItemProjectionTests
         Assert.False(result.IsSuccessful);
         Assert.Equal(503, result.StatusCode);
         Assert.Equal("ABBREVIATION_WORK_ITEM_BOUND_EXCEEDED", result.ReasonCode);
+    }
+
+    [Fact]
+    public async Task Projection_distinguishes_correction_and_retirement_and_does_not_invent_retirement_cancel()
+    {
+        var tenantId = Guid.NewGuid();
+        var actor = "retirement-maker";
+        var product = new GlobalProduct { Id = Guid.NewGuid(), CanonicalCode = "GP-1", GlobalProductName = "Product" };
+        var former = Entry(product.Id, "former-maker");
+        former.LifecycleStatus = ProductAbbreviationLifecycleStatus.ACTIVE;
+        var correction = Entry(product.Id, "correction-maker");
+        correction.ReplacesEntryId = former.Id;
+        var retirement = Entry(product.Id, "original-maker");
+        retirement.LifecycleStatus = ProductAbbreviationLifecycleStatus.ACTIVE;
+        retirement.RetirementRequestId = "retirement-request";
+        retirement.RetirementRequestedByCanonicalSubjectId = actor;
+        retirement.RetirementRequestedAtUtc = DateTimeOffset.UtcNow;
+        var register = Stub<IProductAbbreviationRegisterRepository>((method, args) => method.Name switch
+        {
+            nameof(IProductAbbreviationRegisterRepository.GetPendingWorkItemsAsync)
+                => Task.FromResult<IReadOnlyList<ProductAbbreviationRegisterEntry>>([correction, retirement]),
+            nameof(IProductAbbreviationRegisterRepository.GetByIdAsync)
+                => Task.FromResult<ProductAbbreviationRegisterEntry?>((Guid)args![0]! == former.Id ? former : null),
+            _ => throw new InvalidOperationException(method.Name)
+        });
+        var products = Stub<IGlobalProductRepository>((method, _) => method.Name switch
+        {
+            nameof(IGlobalProductRepository.GetByIdsAsync)
+                => Task.FromResult<IReadOnlyList<GlobalProduct>>([product]),
+            _ => throw new InvalidOperationException(method.Name)
+        });
+
+        var result = await Handler(register, products, tenantId, actor).Handle(
+            new GetProductAbbreviationWorkItemsQuery("team"), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(2, result.Data!.Items.Count);
+        var correctionItem = Assert.Single(result.Data.Items, x => x.Source.ObjectType == ProductAbbreviationWorkItemContract.CorrectionObjectType);
+        Assert.Equal(["approve", "reject"], correctionItem.Actions.Select(x => x.Code).ToArray());
+        var retirementItem = Assert.Single(result.Data.Items, x => x.Source.ObjectType == ProductAbbreviationWorkItemContract.RetirementObjectType);
+        Assert.Empty(retirementItem.Actions);
+        Assert.Null(retirementItem.PrimaryActionCode);
     }
 
     private static GetProductAbbreviationWorkItemsHandler Handler(

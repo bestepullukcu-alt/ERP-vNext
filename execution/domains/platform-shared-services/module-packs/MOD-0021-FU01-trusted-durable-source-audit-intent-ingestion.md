@@ -436,6 +436,26 @@ Decision: Gateway change is unnecessary and forbidden.
 
 ## 19. Implementation Notes
 
+### 2026-09-05 LSKU approval-withdrawal mapping extension
+
+The trusted source operation map now accepts the single exact ordinal pair `Lsku + LskuIdentityApprovalWithdrawn`
+as `LifecycleTransition`. No wildcard, numeric, casing, whitespace or aggregate substitution was added. The combined
+focused contract suite passes `66/66`, zero skipped. MDM real-Mongo evidence separately proves that the corresponding
+audit intent is appended once in the same transaction that returns the immutable LSKU identity to Draft and advances
+the bound Workflow operation; API/Auth/frontend/live acceptance remain outside this mapping evidence.
+
+### 2026-09-05 ABB exact-operation mapping extension
+
+The trusted source operation map now accepts only the eleven exact ordinal `ProductAbbreviation` operation pairs
+frozen in MOD-0290-FU01. Allocation/correction request maps to `Create`; approval, rejection, cancellation and
+retirement request/rejection map to `LifecycleTransition`; retirement approval maps to `Deactivate`. The independent
+focused contract rerun passes `72/72`, including lowercase, numeric and whitespace alias rejection. MDM now embeds each exact replay-stable
+intent after immutable ABB history, and the existing delivery repository supports `ProductAbbreviation` discovery,
+claim, acknowledgement and compaction without changing business version. Real-Mongo evidence proves tenant fencing,
+single exact append replay and compact receipt. Live authenticated WorkCenter receipt acceptance remains operational
+evidence and is not asserted by this code proof. MongoDB was OS-stopped during the independent rerun, so the previously
+captured real-Mongo evidence was retained rather than replaced by a skip, fake or in-memory result.
+
 - Preflight command (mechanical compatibility evidence):
   - `python .antigravity/scripts/verify_module_id.py . --check-id MOD-0021-FU01 --name "Trusted Durable Source Audit Intent Ingestion" --parent MOD-0021`
   - Result on 2026-08-28: `OK MOD-0021-FU01: proven against Blueprint/registry.`
@@ -490,6 +510,25 @@ Decision: Gateway change is unnecessary and forbidden.
 - Final outbox-worker-to-`AuditEvent` processing/read-back, retry/dead-letter alerts and health metrics remain MOD-0021 operations evidence.
 - Source-side retention/purge/redaction and compact-receipt timing remain MOD-0290 G4 gates; this provider does not own them.
 - Additional source services or contract versions require separate owner-approved allow-list/mapping changes; wildcard multi-source ingestion is forbidden.
+
+### MOD-0290 GSKU / Revision lifecycle mapping evidence (2026-09-05)
+
+The trusted v1 source-operation map now accepts the seventeen owner-approved, exact ordinal Product Definition Revision
+and GSKU lifecycle pairs recorded by MOD-0290 Section 19.17.4. Submit, approve, reject, maker withdrawal and the four
+GSKU correction outcomes and the three GSKU retirement-request outcomes map only to
+`LifecycleTransition`; retire maps only to `Deactivate`. Numeric enum values, case variants, whitespace aliases,
+aggregate substitution, wildcard matching and unknown-operation fallback remain rejected. Focused Platform audit
+contract results and repository whitespace validation are recorded in the implementation handoff; no endpoint,
+credential, configuration, data, process, migration, commit or push operation was performed by this amendment.
+
+### MOD-0290 LSKU retirement-request mapping evidence (2026-09-05)
+
+The trusted v1 source-operation map accepts only the three exact owner-approved retirement pairs:
+`LskuRetirementRequested -> LifecycleTransition`, `LskuRetirementRejected -> LifecycleTransition`, and
+`LskuIdentityRetired -> Deactivate`. Existing exact LSKU create/submit/approve/reject/withdraw rows remain unchanged;
+numeric values, casing variants, whitespace aliases, aggregate substitutions and wildcards remain rejected. The
+combined focused trusted-audit contract passed `72/72`, zero skipped. No endpoint, credential, configuration, data,
+process, migration, commit or push action was performed by this amendment.
 
 > Module pack `review` durumundadır. İlk Section 5 runtime/test implementation ve R1 MOD-0033 RS256 authority
 > reconciliation tamamlandı ve doğrulandı. Configuration, credential, tenant-grant, MDM source client, FU02 operational migration/cutover,

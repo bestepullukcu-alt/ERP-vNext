@@ -443,6 +443,13 @@ Implementation evidence on 2026-08-09:
 - This evidence is Local Development only. Production/Staging reconciliation and enablement remain prohibited and
   separately gated.
 
+**Independent ABB closure review (2026-09-05):** isolated Auth non-Mongo ABB/default-role coverage passed `28/28`
+with zero failures and zero skips. The exact responsibility matrix and Admin/Viewer read-only defaults were unchanged.
+The single real-Mongo onboarding test was attempted but could not connect because the local MongoDB OS service is
+stopped; it was not skipped or replaced. The previously captured real-`localhost:27017` ABB matrix remains `65/65`
+evidence and requires a fresh rerun when MongoDB is deliberately restored. No role, grant, assignment, credential,
+configuration, process or business-data mutation was performed by this review.
+
 ## 20. Follow-up Items
 
 **Completed Local Development live acceptance order (2026-08-09):**

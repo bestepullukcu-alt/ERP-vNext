@@ -6,13 +6,33 @@ namespace Diten.AuthService.Application.Tests.Roles;
 public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
 {
     [Fact]
-    public void Profile_owns_exact_eight_submit_retire_keys_and_zero_revision_or_decision_keys()
+    public void Profile_owns_exact_eighteen_lifecycle_keys_and_zero_revision_or_decision_keys()
     {
-        Assert.Equal(8, ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys.Count);
+        Assert.Equal(18, ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys.Count);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsUpdate,
+            ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsWithdraw,
+            ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsRequestCorrection,
+            ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsRequestRetirement,
+            ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GskusUpdate,
+            ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GskusWithdraw,
+            ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GskusRequestCorrection,
+            ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GskusRequestRetirement,
+            ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GskusRetire,
+            ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.LskusWithdraw,
+            ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.LskusRequestRetirement,
+            ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys);
         Assert.All(ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys, key =>
         {
-            Assert.True(key.EndsWith(".submit", StringComparison.Ordinal)
-                        || key.EndsWith(".retire", StringComparison.Ordinal));
             Assert.DoesNotContain("product-definition-revisions", key, StringComparison.Ordinal);
             Assert.DoesNotContain(".approve", key, StringComparison.Ordinal);
             Assert.DoesNotContain(".reject", key, StringComparison.Ordinal);
@@ -22,14 +42,14 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
     }
 
     [Fact]
-    public void Dedicated_roles_have_exact_thirteen_seven_eight_matrices()
+    public void Dedicated_roles_have_exact_twenty_seven_ten_matrices()
     {
         var roles = ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles
             .ToDictionary(role => role.RoleName, StringComparer.Ordinal);
 
-        Assert.Equal(13, roles[ProductIdentityLifecycleEntitlementGrantProfile.StewardRole].PermissionKeys.Count);
+        Assert.Equal(20, roles[ProductIdentityLifecycleEntitlementGrantProfile.StewardRole].PermissionKeys.Count);
         Assert.Equal(7, roles[ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole].PermissionKeys.Count);
-        Assert.Equal(8, roles[ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole].PermissionKeys.Count);
+        Assert.Equal(10, roles[ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole].PermissionKeys.Count);
 
         var approver = roles[ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole].PermissionKeys;
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.WorkflowInstancesStart,
@@ -40,6 +60,24 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.WorkflowTasksReject, approver);
         Assert.DoesNotContain(approver, key => key.StartsWith("mdm.", StringComparison.Ordinal)
                                                && !key.EndsWith(".read", StringComparison.Ordinal));
+
+        var steward = roles[ProductIdentityLifecycleEntitlementGrantProfile.StewardRole].PermissionKeys;
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsUpdate, steward);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsWithdraw, steward);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsRequestCorrection, steward);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GskusUpdate, steward);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GskusWithdraw, steward);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GskusRequestCorrection, steward);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.LskusWithdraw, steward);
+        var retirement = roles[ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole].PermissionKeys;
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsWithdraw, retirement);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsRequestRetirement, retirement);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.WorkflowInstancesStart, retirement);
+        Assert.DoesNotContain(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsRetire, retirement);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GskusRequestRetirement, retirement);
+        Assert.DoesNotContain(ProductIdentityLifecycleEntitlementGrantProfile.GskusRetire, retirement);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.LskusRequestRetirement, retirement);
+        Assert.DoesNotContain(ProductIdentityLifecycleEntitlementGrantProfile.LskusRetire, retirement);
     }
 
     [Theory]
@@ -48,6 +86,7 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
     [InlineData("reject")]
     [InlineData("revision")]
     [InlineData("alias")]
+    [InlineData("duplicate")]
     public void Declared_permission_set_fails_closed_on_drift(string drift)
     {
         var keys = ProductIdentityLifecycleEntitlementGrantProfile.BasePermissionKeys
@@ -63,10 +102,69 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
                 keys[keys.IndexOf(ProductIdentityLifecycleEntitlementGrantProfile.GskusSubmit)] =
                     ProductIdentityLifecycleEntitlementGrantProfile.GskusSubmit.ToUpperInvariant();
                 break;
+            case "duplicate":
+                keys.Add(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsRequestRetirement);
+                break;
         }
 
         Assert.Throws<InvalidOperationException>(() =>
             ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet(keys));
+    }
+
+    [Theory]
+    [InlineData("module")]
+    [InlineData("resource")]
+    [InlineData("action")]
+    [InlineData("scope")]
+    [InlineData("deleted")]
+    public void New_global_product_permissions_require_exact_active_tenant_tuples(string drift)
+    {
+        var declared = ProductCatalog();
+        var targetIndex = declared.FindIndex(permission =>
+            permission.Key == ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsRequestRetirement);
+        Assert.True(targetIndex >= 0);
+        declared[targetIndex] = new Permission(
+            "mdm",
+            drift == "resource" ? "global-product" : "global-products",
+            drift == "action" ? "retire" : "request-retirement",
+            "Request Retirement",
+            null,
+            moduleOverride: drift == "module" ? "another-module" : ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            scope: drift == "scope" ? PermissionScope.PlatformAdmin : PermissionScope.Tenant)
+        { IsDeleted = drift == "deleted" };
+
+        Assert.Throws<InvalidOperationException>(() =>
+            ProductIdentityLifecycleEntitlementGrantProfile.ValidateAndResolveDefinitions(
+                declared,
+                declared.Concat(SharedDependencies())));
+    }
+
+    [Theory]
+    [InlineData("module")]
+    [InlineData("resource")]
+    [InlineData("action")]
+    [InlineData("scope")]
+    [InlineData("deleted")]
+    public void New_gsku_permissions_require_exact_active_tenant_tuples(string drift)
+    {
+        var declared = ProductCatalog();
+        var targetIndex = declared.FindIndex(permission =>
+            permission.Key == ProductIdentityLifecycleEntitlementGrantProfile.GskusRequestRetirement);
+        Assert.True(targetIndex >= 0);
+        declared[targetIndex] = new Permission(
+            "mdm",
+            drift == "resource" ? "gsku" : "gskus",
+            drift == "action" ? "retire" : "request-retirement",
+            "Request GSKU Retirement",
+            null,
+            moduleOverride: drift == "module" ? "another-module" : ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            scope: drift == "scope" ? PermissionScope.PlatformAdmin : PermissionScope.Tenant)
+        { IsDeleted = drift == "deleted" };
+
+        Assert.Throws<InvalidOperationException>(() =>
+            ProductIdentityLifecycleEntitlementGrantProfile.ValidateAndResolveDefinitions(
+                declared,
+                declared.Concat(SharedDependencies())));
     }
 
     [Fact]

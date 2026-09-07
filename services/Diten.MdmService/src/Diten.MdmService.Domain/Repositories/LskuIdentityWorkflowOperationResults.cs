@@ -61,7 +61,29 @@ public sealed record LskuIdentityWorkflowCheckpointMutation(
     ReferenceCatalogSelection? ApprovalMarketSelection = null,
     long? MarketValidatedAtUtcTicksV1 = null,
     string? ApprovalMarketProofFingerprint = null,
+    Guid? WithdrawalCommandId = null,
+    string? WithdrawalFingerprint = null,
+    Guid? WithdrawalRequesterSubjectId = null,
+    int? WithdrawalExpectedLskuVersion = null,
+    string? WithdrawalReasonCode = null,
+    string? WithdrawalComment = null,
+    int? WithdrawalExpectedWorkflowInstanceVersion = null,
+    int? WithdrawalExpectedApprovalTaskVersion = null,
+    Guid? WithdrawalTransitionLogId = null,
+    long? WithdrawalObservedAtUtcTicksV1 = null,
+    long? WithdrawalTransitionSequence = null,
+    int? WithdrawalResultWorkflowInstanceVersion = null,
+    int? WithdrawalResultApprovalTaskVersion = null,
+    string? WithdrawalTaskStatus = null,
+    string? WithdrawalInstanceStatus = null,
+    string? WithdrawalObjectRef = null,
     bool ReleaseLease = false);
+
+public sealed record LskuIdentityWithdrawalWriteResult(
+    bool Succeeded,
+    bool IsReplay,
+    Lsku? Lsku,
+    string? ErrorCode);
 
 public sealed record LskuIdentityWorkflowTenantPartitionPage(
     IReadOnlyList<Guid> TenantIds,

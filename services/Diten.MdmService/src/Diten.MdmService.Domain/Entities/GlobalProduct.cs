@@ -11,6 +11,7 @@ public sealed class GlobalProduct : EntityBase, IAuditIntentAggregate
     public Guid CodeReservationId { get; set; }
     public ProductIdentityLifecycleStatus LifecycleStatus { get; set; } = ProductIdentityLifecycleStatus.Draft;
     public ProductIdentityWorkflowBinding? WorkflowBinding { get; set; }
+    public GlobalProductActiveLifecycleOperationBinding? ActiveLifecycleOperation { get; set; }
     public List<ProductChildCreationAdmission> ChildCreationAdmissions { get; set; } = [];
     public List<LocalAuditIntent> AuditIntents { get; set; } = [];
     public List<LocalAuditIntentReceipt> AuditIntentReceipts { get; set; } = [];

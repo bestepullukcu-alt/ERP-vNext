@@ -65,6 +65,18 @@ public static class DependencyInjection
             ProductLegalEntityScopeOperationalReadinessRepository>();
         services.AddScoped<IGlobalProductIdentityWorkflowOperationRepository,
             GlobalProductIdentityWorkflowOperationRepository>();
+        services.AddScoped<IGlobalProductCorrectionOperationRepository,
+            GlobalProductCorrectionOperationRepository>();
+        services.AddScoped<IGlobalProductRetirementRequestOperationRepository,
+            GlobalProductRetirementRequestOperationRepository>();
+        services.AddScoped<IGskuCorrectionWorkflowOperationRepository,
+            GskuCorrectionWorkflowOperationRepository>();
+        services.AddScoped<IGskuCorrectionWorkflowTenantDiscoveryRepository,
+            GskuCorrectionWorkflowTenantDiscoveryRepository>();
+        services.AddScoped<IGskuRetirementRequestOperationRepository,
+            GskuRetirementRequestOperationRepository>();
+        services.AddScoped<IGskuRetirementRequestWorkflowTenantDiscoveryRepository,
+            GskuRetirementRequestWorkflowTenantDiscoveryRepository>();
         services.AddScoped<IGlobalProductIdentityWorkflowTenantPartitionDiscovery,
             GlobalProductIdentityWorkflowTenantPartitionDiscoveryRepository>();
         services.AddScoped<IFirstGskuIdentityWorkflowOperationRepository,
@@ -75,6 +87,8 @@ public static class DependencyInjection
             FirstGskuIdentityWorkflowTenantPartitionDiscoveryRepository>();
         services.AddScoped<ILskuIdentityWorkflowOperationRepository,
             LskuIdentityWorkflowOperationRepository>();
+        services.AddScoped<ILskuRetirementRequestOperationRepository,
+            LskuRetirementRequestOperationRepository>();
         services.AddScoped<ILskuIdentityWorkflowTenantPartitionDiscovery,
             LskuIdentityWorkflowTenantPartitionDiscoveryRepository>();
         services.AddScoped<IFinishedGoodIdentityWorkflowOperationRepository,

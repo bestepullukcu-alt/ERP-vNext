@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using Diten.MdmService.Application.Contracts.ReferenceData;
 using Diten.MdmService.Application.Contracts.Workflow;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
@@ -5,6 +8,7 @@ using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Domain.ValueObjects;
+using PersistedCancellationEvidence = Diten.MdmService.Domain.ValueObjects.ProductIdentityWorkflowCancellationEvidence;
 
 namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 
@@ -118,8 +122,311 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         TimeSpan leaseDuration,
         TimeSpan retryDelay,
         CancellationToken cancellationToken = default) =>
-        ProcessAsync(operation, null, leaseOwner, leaseDuration, retryDelay,
-            stopWhenAwaitingDecision: false, cancellationToken);
+        operation.WithdrawalCommandId.HasValue && operation.Checkpoint is
+            FirstGskuIdentityWorkflowCheckpoint.WithdrawalRequested
+            or FirstGskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved
+            or FirstGskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown
+            or FirstGskuIdentityWorkflowCheckpoint.WithdrawalObserved
+            or FirstGskuIdentityWorkflowCheckpoint.WithdrawalApplied
+            or FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay
+            ? ProcessWithdrawalAsync(operation, null, leaseOwner, leaseDuration, retryDelay, cancellationToken)
+            : ProcessAsync(operation, null, leaseOwner, leaseDuration, retryDelay,
+                stopWhenAwaitingDecision: false, cancellationToken);
+
+    public async Task<FirstGskuIdentityWorkflowProcessingResult> WithdrawInteractiveAsync(
+        Guid tenantId,
+        Guid gskuId,
+        int expectedGskuVersion,
+        Guid commandId,
+        Guid requesterSubjectId,
+        string reasonCode,
+        string? comment,
+        string delegatedUserToken,
+        TimeSpan leaseDuration,
+        TimeSpan retryDelay,
+        CancellationToken cancellationToken = default)
+    {
+        if (tenantId == Guid.Empty || gskuId == Guid.Empty || commandId == Guid.Empty
+            || requesterSubjectId == Guid.Empty || expectedGskuVersion < 1
+            || !ExactText(reasonCode, 128) || !OptionalExactText(comment, 2000)
+            || string.IsNullOrWhiteSpace(delegatedUserToken))
+            return Fail("FIRST_GSKU_IDENTITY_WITHDRAWAL_INVALID", 400);
+
+        var gsku = await gskus.GetByIdAsync(gskuId, cancellationToken);
+        if (gsku is null) return Fail("GSKU_NOT_FOUND", 404);
+        var revision = await revisions.GetByIdAsync(gsku.ProductDefinitionRevisionId, cancellationToken);
+        if (revision is null || gsku.IdentityWorkflowBinding is not { } binding
+            || revision.IdentityWorkflowBinding is not { } revisionBinding)
+            return Fail("FIRST_GSKU_IDENTITY_PAIR_INCONSISTENT", 409);
+        if (binding.SubmitterSubjectId != requesterSubjectId
+            || revisionBinding.SubmitterSubjectId != requesterSubjectId)
+            return Fail("FIRST_GSKU_IDENTITY_WITHDRAWAL_NOT_REQUESTER", 403);
+        if (!SameBinding(binding, revisionBinding))
+            return Fail("FIRST_GSKU_IDENTITY_WORKFLOW_BINDING_CONFLICT", 409);
+
+        var operation = await operations.GetByStartIdempotencyKeyAsync(
+            binding.StartIdempotencyKey, cancellationToken);
+        if (operation is null || operation.TenantId != tenantId
+            || operation.GskuId != gskuId
+            || operation.ProductDefinitionRevisionId != revision.Id
+            || operation.MakerSubjectId != requesterSubjectId
+            || operation.WorkflowInstanceId != binding.WorkflowInstanceId
+            || operation.ApprovalTaskId != binding.ApprovalTaskId
+            || operation.WorkflowTemplateId != binding.WorkflowTemplateId
+            || operation.WorkflowTemplateVersionId != binding.WorkflowTemplateVersionId)
+            return Fail("FIRST_GSKU_IDENTITY_WORKFLOW_BINDING_CONFLICT", 409);
+
+        var fingerprint = WithdrawalFingerprint(tenantId, gskuId, expectedGskuVersion,
+            commandId, requesterSubjectId, reasonCode, comment, binding);
+        if (operation.WithdrawalCommandId.HasValue
+            && !ExactWithdrawalFacts(operation, commandId, fingerprint, requesterSubjectId,
+                expectedGskuVersion, reasonCode, comment))
+            return Fail("FIRST_GSKU_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT", 409);
+        if (operation.WithdrawalCommandId.HasValue
+            && operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.Completed)
+            return ExactWithdrawalState(operation, revision, gsku)
+                ? Success(operation, true)
+                : Fail("FIRST_GSKU_IDENTITY_WITHDRAWAL_REPLAY_DRIFT", 409);
+        if (gsku.Version != expectedGskuVersion
+            || revision.Version != operation.ExpectedRevisionVersion + 1
+            || gsku.LifecycleStatus != ProductIdentityLifecycleStatus.PendingIdentityApproval
+            || revision.LifecycleStatus != ProductIdentityLifecycleStatus.PendingIdentityApproval)
+            return Fail("FIRST_GSKU_IDENTITY_STATE_CONFLICT", 409);
+        if (!operation.WithdrawalCommandId.HasValue
+            && operation.Checkpoint != FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision)
+            return Fail("FIRST_GSKU_IDENTITY_WORKFLOW_STATE_CONFLICT", 409);
+
+        var result = await ProcessWithdrawalAsync(operation, delegatedUserToken,
+            $"withdraw-{requesterSubjectId:N}", leaseDuration, retryDelay, cancellationToken,
+            commandId, fingerprint, requesterSubjectId, expectedGskuVersion, reasonCode, comment);
+        return result with { IsReplay = operation.WithdrawalCommandId.HasValue || result.IsReplay };
+    }
+
+    private async Task<FirstGskuIdentityWorkflowProcessingResult> ProcessWithdrawalAsync(
+        FirstGskuIdentityWorkflowOperation initial,
+        string? delegatedUserToken,
+        string leaseOwner,
+        TimeSpan leaseDuration,
+        TimeSpan retryDelay,
+        CancellationToken cancellationToken,
+        Guid? commandId = null,
+        string? fingerprint = null,
+        Guid? requesterSubjectId = null,
+        int? expectedGskuVersion = null,
+        string? reasonCode = null,
+        string? comment = null)
+    {
+        var operation = initial;
+        for (var step = 0; step < 10; step++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision
+                && operation.WithdrawalCommandId.HasValue
+                && (!commandId.HasValue || operation.LastFailureCode is not null))
+                return Fail(operation, operation.LastFailureCode
+                    ?? "FIRST_GSKU_IDENTITY_WORKFLOW_DECISION_PENDING", 409);
+            if (operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.Completed)
+                return operation.WithdrawalCommandId.HasValue
+                    ? Success(operation, true)
+                    : Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_STATE_CONFLICT", 409);
+            if (operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired)
+                return Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED", 409);
+
+            var now = timeProvider.GetUtcNow();
+            var claim = await operations.TryClaimAsync(new(
+                operation.OperationId, operation.OperationFingerprint, [operation.Checkpoint],
+                leaseOwner, now.UtcTicks, now.Add(leaseDuration).UtcTicks), cancellationToken);
+            if (claim is null) return Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_BUSY", 409);
+
+            bool advanced;
+            switch (operation.Checkpoint)
+            {
+                case FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision:
+                    if (!commandId.HasValue || fingerprint is null || !requesterSubjectId.HasValue
+                        || !expectedGskuVersion.HasValue || reasonCode is null)
+                    {
+                        advanced = await AdvanceAsync(claim, operation.Checkpoint, now,
+                            errorCode: "FIRST_GSKU_IDENTITY_WORKFLOW_DECISION_PENDING",
+                            releaseLease: true, cancellationToken: cancellationToken);
+                        break;
+                    }
+                    advanced = await operations.AdvanceAsync(claim, new(
+                        FirstGskuIdentityWorkflowCheckpoint.WithdrawalRequested,
+                        ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
+                        WithdrawalCommandId: commandId,
+                        WithdrawalFingerprint: fingerprint,
+                        WithdrawalRequesterSubjectId: requesterSubjectId,
+                        WithdrawalExpectedGskuVersion: expectedGskuVersion,
+                        WithdrawalReasonCode: reasonCode,
+                        WithdrawalComment: comment,
+                        ReleaseLease: true), cancellationToken);
+                    break;
+                case FirstGskuIdentityWorkflowCheckpoint.WithdrawalRequested:
+                    advanced = await ObserveWithdrawalPreflightAsync(
+                        operation, claim, now, retryDelay, cancellationToken);
+                    break;
+                case FirstGskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved:
+                case FirstGskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown:
+                case FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay:
+                    advanced = await ObserveWithdrawalAsync(
+                        operation, claim, delegatedUserToken, now, retryDelay, cancellationToken);
+                    break;
+                case FirstGskuIdentityWorkflowCheckpoint.WithdrawalObserved:
+                    advanced = await ApplyWithdrawalAsync(operation, claim, now, cancellationToken);
+                    break;
+                case FirstGskuIdentityWorkflowCheckpoint.WithdrawalApplied:
+                    advanced = await VerifyWithdrawalAndCompleteAsync(
+                        operation, claim, now, cancellationToken);
+                    break;
+                default:
+                    return Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_STATE_CONFLICT", 409);
+            }
+            if (!advanced)
+                return Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT", 409);
+            operation = await operations.GetByOperationIdAsync(operation.OperationId, cancellationToken)
+                ?? throw new InvalidOperationException("FIRST_GSKU_IDENTITY_WORKFLOW_OPERATION_LOST");
+            if (operation.NextAttemptAtUtcTicksV1 > timeProvider.GetUtcNow().UtcTicks)
+                return Fail(operation, operation.LastFailureCode
+                    ?? "FIRST_GSKU_IDENTITY_WORKFLOW_RETRY_SCHEDULED", 503);
+            if (operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay
+                && string.IsNullOrWhiteSpace(delegatedUserToken))
+                return Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED", 409);
+        }
+        return Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_STEP_BUDGET_EXCEEDED", 503);
+    }
+
+    private async Task<bool> ObserveWithdrawalPreflightAsync(
+        FirstGskuIdentityWorkflowOperation operation,
+        FirstGskuIdentityWorkflowClaim claim,
+        DateTimeOffset now,
+        TimeSpan retryDelay,
+        CancellationToken cancellationToken)
+    {
+        if (!CompleteWithdrawalRequest(operation) || !CompleteStartProof(operation))
+            return await QuarantineAsync(claim,
+                "FIRST_GSKU_IDENTITY_WITHDRAWAL_CONTRACT_INVALID", now, cancellationToken);
+        var result = await workflowClient.GetCancellationPreflightAsync(operation.TenantId,
+            new(operation.WorkflowInstanceId!.Value, operation.ApprovalTaskId!.Value,
+                operation.ObjectType, operation.ObjectId, operation.MakerSubjectId), cancellationToken);
+        if (result.Outcome == ProductIdentityWorkflowTransportOutcome.Success && result.Value is { } value)
+        {
+            if (value.WorkflowInstanceId != operation.WorkflowInstanceId
+                || value.ApprovalTaskId != operation.ApprovalTaskId
+                || !string.Equals(value.ObjectType, operation.ObjectType, StringComparison.Ordinal)
+                || !string.Equals(value.ObjectId, operation.ObjectId, StringComparison.Ordinal)
+                || value.WorkflowInstanceVersion <= 0 || value.ApprovalTaskVersion <= 0)
+                return await QuarantineAsync(claim,
+                    "FIRST_GSKU_IDENTITY_WITHDRAWAL_PREFLIGHT_INVALID", now, cancellationToken);
+            return await operations.AdvanceAsync(claim, new(
+                FirstGskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved,
+                ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
+                WithdrawalExpectedWorkflowInstanceVersion: value.WorkflowInstanceVersion,
+                WithdrawalExpectedApprovalTaskVersion: value.ApprovalTaskVersion,
+                WithdrawalObjectRef: value.ObjectRef,
+                ReleaseLease: true), cancellationToken);
+        }
+        if (result.Outcome is ProductIdentityWorkflowTransportOutcome.Conflict
+            or ProductIdentityWorkflowTransportOutcome.NotFound)
+            return await AdvanceAsync(claim, FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision,
+                now, result.ErrorCode, true, cancellationToken);
+        return Retryable(result.Outcome)
+            ? await ScheduleRetryAsync(claim, operation.Checkpoint, result.ErrorCode,
+                now, retryDelay, cancellationToken)
+            : await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
+    }
+
+    private async Task<bool> ObserveWithdrawalAsync(
+        FirstGskuIdentityWorkflowOperation operation,
+        FirstGskuIdentityWorkflowClaim claim,
+        string? delegatedUserToken,
+        DateTimeOffset now,
+        TimeSpan retryDelay,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(delegatedUserToken))
+            return await AdvanceAsync(claim, FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
+                now, "FIRST_GSKU_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED", true, cancellationToken);
+        if (!CompleteWithdrawalPreflight(operation))
+            return await QuarantineAsync(claim,
+                "FIRST_GSKU_IDENTITY_WITHDRAWAL_PREFLIGHT_INVALID", now, cancellationToken);
+        var request = new ProductIdentityWorkflowCancellationRequest(
+            operation.WorkflowInstanceId!.Value,
+            operation.ApprovalTaskId!.Value,
+            operation.ObjectType,
+            operation.ObjectId,
+            operation.MakerSubjectId,
+            operation.WithdrawalExpectedWorkflowInstanceVersion!.Value,
+            operation.WithdrawalExpectedApprovalTaskVersion!.Value,
+            operation.WithdrawalReasonCode!,
+            operation.WithdrawalComment,
+            operation.WithdrawalCommandId!.Value.ToString("D"));
+        var result = await workflowClient.CancelAsync(
+            operation.TenantId, request, delegatedUserToken, cancellationToken);
+        if (result.Outcome == ProductIdentityWorkflowTransportOutcome.Success && result.Value is { } evidence)
+        {
+            return await operations.AdvanceAsync(claim, new(
+                FirstGskuIdentityWorkflowCheckpoint.WithdrawalObserved,
+                ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
+                WithdrawalTransitionLogId: evidence.TransitionLogId,
+                WithdrawalObservedAtUtcTicksV1: evidence.DecisionAt.UtcTicks,
+                WithdrawalTransitionSequence: evidence.TransitionSequence,
+                WithdrawalResultWorkflowInstanceVersion: evidence.WorkflowInstanceVersion,
+                WithdrawalResultApprovalTaskVersion: evidence.ApprovalTaskVersion,
+                WithdrawalTaskStatus: evidence.TaskStatus,
+                WithdrawalInstanceStatus: evidence.InstanceStatus,
+                WithdrawalObjectRef: evidence.ObjectRef,
+                ReleaseLease: true), cancellationToken);
+        }
+        if (Retryable(result.Outcome))
+            return await ScheduleRetryAsync(claim,
+                FirstGskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown,
+                result.ErrorCode, now, retryDelay, cancellationToken);
+        if (result.Outcome is ProductIdentityWorkflowTransportOutcome.Conflict
+            or ProductIdentityWorkflowTransportOutcome.NotFound)
+            return await AdvanceAsync(claim, FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision,
+                now, result.ErrorCode, true, cancellationToken);
+        return await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
+    }
+
+    private async Task<bool> ApplyWithdrawalAsync(
+        FirstGskuIdentityWorkflowOperation operation,
+        FirstGskuIdentityWorkflowClaim claim,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        if (!TryRehydrateCancellationEvidence(operation, out var evidence))
+            return await QuarantineAsync(claim,
+                "FIRST_GSKU_IDENTITY_WITHDRAWAL_EVIDENCE_INVALID", now, cancellationToken);
+        var revision = await revisions.GetByIdAsync(operation.ProductDefinitionRevisionId, cancellationToken);
+        var gsku = await gskus.GetByIdAsync(operation.GskuId, cancellationToken);
+        if (revision is null || gsku is null)
+            return await QuarantineAsync(claim, "FIRST_GSKU_IDENTITY_PAIR_INCONSISTENT", now,
+                cancellationToken);
+        var revisionAudit = CreateWithdrawalAudit(revision, AuditAggregateType.ProductDefinitionRevision,
+            ProductAuditOperation.ProductDefinitionRevisionIdentityApprovalWithdrawn,
+            operation.ExpectedRevisionVersion + 1, operation, evidence);
+        var gskuAudit = CreateWithdrawalAudit(gsku, AuditAggregateType.Gsku,
+            ProductAuditOperation.GskuIdentityApprovalWithdrawn,
+            operation.WithdrawalExpectedGskuVersion!.Value, operation, evidence);
+        var result = await operations.ApplyWithdrawalAsync(
+            claim, operation, evidence, revisionAudit, gskuAudit, now.UtcTicks, cancellationToken);
+        return result.Succeeded;
+    }
+
+    private async Task<bool> VerifyWithdrawalAndCompleteAsync(
+        FirstGskuIdentityWorkflowOperation operation,
+        FirstGskuIdentityWorkflowClaim claim,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        var revision = await revisions.GetByIdAsync(operation.ProductDefinitionRevisionId, cancellationToken);
+        var gsku = await gskus.GetByIdAsync(operation.GskuId, cancellationToken);
+        if (!ExactWithdrawalState(operation, revision, gsku))
+            return await QuarantineAsync(claim,
+                "FIRST_GSKU_IDENTITY_WITHDRAWAL_LOCAL_STATE_INCONSISTENT", now, cancellationToken);
+        return await AdvanceAsync(claim, FirstGskuIdentityWorkflowCheckpoint.Completed,
+            now, releaseLease: true, cancellationToken: cancellationToken);
+    }
 
     private async Task<FirstGskuIdentityWorkflowProcessingResult> ProcessAsync(
         FirstGskuIdentityWorkflowOperation initial,
@@ -721,6 +1028,198 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         return Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
             System.Text.Encoding.UTF8.GetBytes(facts))).ToLowerInvariant();
     }
+
+    private static bool CompleteWithdrawalRequest(FirstGskuIdentityWorkflowOperation operation) =>
+        operation.WithdrawalCommandId is { } commandId && commandId != Guid.Empty
+        && operation.WithdrawalRequesterSubjectId == operation.MakerSubjectId
+        && operation.WithdrawalExpectedGskuVersion is > 0
+        && ExactText(operation.WithdrawalReasonCode, 128)
+        && OptionalExactText(operation.WithdrawalComment, 2000)
+        && ExactText(operation.WithdrawalFingerprint, 256);
+
+    private static bool CompleteWithdrawalPreflight(FirstGskuIdentityWorkflowOperation operation) =>
+        CompleteWithdrawalRequest(operation)
+        && operation.WithdrawalExpectedWorkflowInstanceVersion is > 0
+        && operation.WithdrawalExpectedApprovalTaskVersion is > 0;
+
+    private static bool ExactWithdrawalFacts(
+        FirstGskuIdentityWorkflowOperation operation,
+        Guid commandId,
+        string fingerprint,
+        Guid requesterSubjectId,
+        int expectedGskuVersion,
+        string reasonCode,
+        string? comment) =>
+        operation.WithdrawalCommandId == commandId
+        && operation.WithdrawalRequesterSubjectId == requesterSubjectId
+        && operation.WithdrawalExpectedGskuVersion == expectedGskuVersion
+        && string.Equals(operation.WithdrawalFingerprint, fingerprint, StringComparison.Ordinal)
+        && string.Equals(operation.WithdrawalReasonCode, reasonCode, StringComparison.Ordinal)
+        && string.Equals(operation.WithdrawalComment, comment, StringComparison.Ordinal);
+
+    private static string WithdrawalFingerprint(
+        Guid tenantId,
+        Guid gskuId,
+        int expectedGskuVersion,
+        Guid commandId,
+        Guid requesterSubjectId,
+        string reasonCode,
+        string? comment,
+        FirstGskuIdentityWorkflowBinding binding)
+    {
+        var canonical = string.Join('|',
+            tenantId.ToString("D"),
+            gskuId.ToString("D"),
+            expectedGskuVersion.ToString(CultureInfo.InvariantCulture),
+            commandId.ToString("D"),
+            requesterSubjectId.ToString("D"),
+            reasonCode,
+            comment ?? string.Empty,
+            binding.WorkflowInstanceId.ToString("D"),
+            binding.ApprovalTaskId.ToString("D"));
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical))).ToLowerInvariant();
+    }
+
+    private static bool TryRehydrateCancellationEvidence(
+        FirstGskuIdentityWorkflowOperation operation,
+        out PersistedCancellationEvidence evidence)
+    {
+        evidence = null!;
+        if (!CompleteWithdrawalPreflight(operation)
+            || operation.WithdrawalTransitionLogId is not { } logId || logId == Guid.Empty
+            || operation.WithdrawalObservedAtUtcTicksV1 is not > 0
+            || operation.WithdrawalTransitionSequence is not > 0
+            || operation.WithdrawalResultWorkflowInstanceVersion is not > 0
+            || operation.WithdrawalResultApprovalTaskVersion is not > 0
+            || operation.WorkflowInstanceId is not { } instanceId
+            || operation.ApprovalTaskId is not { } taskId
+            || operation.WorkflowTemplateId is not { } templateId
+            || operation.WorkflowTemplateVersionId is not { } templateVersionId
+            || !Guid.TryParseExact(operation.ObjectId, "D", out var objectId))
+            return false;
+        evidence = new()
+        {
+            WorkflowInstanceId = instanceId,
+            ApprovalTaskId = taskId,
+            WorkflowTemplateId = templateId,
+            WorkflowTemplateVersionId = templateVersionId,
+            ObjectType = operation.ObjectType,
+            ObjectId = objectId,
+            ObjectRef = operation.WithdrawalObjectRef ?? operation.ObjectRef,
+            RequesterSubjectId = operation.MakerSubjectId,
+            ReasonCode = operation.WithdrawalReasonCode!,
+            Comment = operation.WithdrawalComment,
+            CancelledAtUtc = new DateTimeOffset(operation.WithdrawalObservedAtUtcTicksV1.Value, TimeSpan.Zero),
+            TransitionSequence = operation.WithdrawalTransitionSequence.Value,
+            TransitionLogId = logId,
+            TaskStatus = operation.WithdrawalTaskStatus ?? string.Empty,
+            InstanceStatus = operation.WithdrawalInstanceStatus ?? string.Empty,
+            WorkflowInstanceVersion = operation.WithdrawalResultWorkflowInstanceVersion.Value,
+            ApprovalTaskVersion = operation.WithdrawalResultApprovalTaskVersion.Value,
+            IdempotencyKey = operation.WithdrawalCommandId!.Value.ToString("D")
+        };
+        return evidence.TaskStatus == "Cancelled" && evidence.InstanceStatus == "Cancelled";
+    }
+
+    private static bool ExactWithdrawalState(
+        FirstGskuIdentityWorkflowOperation operation,
+        ProductDefinitionRevision? revision,
+        Gsku? gsku)
+    {
+        if (revision is null || gsku is null
+            || !TryRehydrateCancellationEvidence(operation, out var evidence)
+            || revision.Version != operation.ExpectedRevisionVersion + 2
+            || gsku.Version != operation.WithdrawalExpectedGskuVersion + 1
+            || revision.LifecycleStatus != ProductIdentityLifecycleStatus.Draft
+            || gsku.LifecycleStatus != ProductIdentityLifecycleStatus.Draft)
+            return false;
+        var expectedRevision = CreateWithdrawalAudit(revision,
+            AuditAggregateType.ProductDefinitionRevision,
+            ProductAuditOperation.ProductDefinitionRevisionIdentityApprovalWithdrawn,
+            operation.ExpectedRevisionVersion + 1, operation, evidence);
+        var expectedGsku = CreateWithdrawalAudit(gsku,
+            AuditAggregateType.Gsku,
+            ProductAuditOperation.GskuIdentityApprovalWithdrawn,
+            operation.WithdrawalExpectedGskuVersion!.Value, operation, evidence);
+        return revision.AuditIntents.Count(intent => ExactImmutableAuditIntent(intent, expectedRevision)) == 1
+            && gsku.AuditIntents.Count(intent => ExactImmutableAuditIntent(intent, expectedGsku)) == 1;
+    }
+
+    private static LocalAuditIntent CreateWithdrawalAudit(
+        EntityBase aggregate,
+        AuditAggregateType aggregateType,
+        ProductAuditOperation auditOperation,
+        int expectedVersion,
+        FirstGskuIdentityWorkflowOperation operation,
+        PersistedCancellationEvidence evidence)
+    {
+        var operationKey = operation.WithdrawalCommandId!.Value.ToString("D");
+        var canonical = string.Join('|',
+            aggregate.TenantId.ToString("D"), aggregateType, aggregate.Id.ToString("D"),
+            auditOperation, expectedVersion.ToString(CultureInfo.InvariantCulture),
+            evidence.WorkflowInstanceId.ToString("D"), evidence.ApprovalTaskId.ToString("D"),
+            evidence.RequesterSubjectId.ToString("D"), evidence.TransitionLogId.ToString("D"),
+            evidence.TransitionSequence.ToString(CultureInfo.InvariantCulture),
+            evidence.CancelledAtUtc.ToString("O"), evidence.ReasonCode, evidence.Comment ?? string.Empty);
+        return new LocalAuditIntent
+        {
+            IntentId = DeterministicGuid(
+                $"{aggregate.TenantId:D}|{aggregateType}|{aggregate.Id:D}|{auditOperation}|{operationKey}"),
+            TenantId = aggregate.TenantId,
+            AggregateType = aggregateType,
+            AggregateId = aggregate.Id,
+            PreVersion = expectedVersion,
+            PostVersion = expectedVersion + 1,
+            Operation = auditOperation,
+            ActorId = evidence.RequesterSubjectId.ToString("D"),
+            CorrelationId = operationKey,
+            CausationId = operation.StartIdempotencyKey,
+            CommandId = operationKey,
+            Sequence = expectedVersion + 1L,
+            TimestampUtc = evidence.CancelledAtUtc,
+            TimestampUtcTicksV1 = evidence.CancelledAtUtc.UtcTicks,
+            TemporalStorageVersion = AuditIntentTemporalStorage.CurrentVersion,
+            EvidenceHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical))),
+            SnapshotReference = $"{aggregateType}/{aggregate.Id:N}/{expectedVersion + 1}",
+            DeliveryState = AuditIntentDeliveryState.Pending,
+            IdempotencyKey = operationKey
+        };
+    }
+
+    private static Guid DeterministicGuid(string value)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(value));
+        Span<byte> guidBytes = stackalloc byte[16];
+        bytes.AsSpan(0, 16).CopyTo(guidBytes);
+        guidBytes[7] = (byte)((guidBytes[7] & 0x0F) | 0x50);
+        guidBytes[8] = (byte)((guidBytes[8] & 0x3F) | 0x80);
+        return new Guid(guidBytes);
+    }
+
+    private static bool SameBinding(
+        FirstGskuIdentityWorkflowBinding left,
+        FirstGskuIdentityWorkflowBinding right) =>
+        left.WorkflowInstanceId == right.WorkflowInstanceId
+        && left.WorkflowTemplateId == right.WorkflowTemplateId
+        && left.WorkflowTemplateVersionId == right.WorkflowTemplateVersionId
+        && left.ApprovalTaskId == right.ApprovalTaskId
+        && left.AssignmentSnapshotId == right.AssignmentSnapshotId
+        && left.StartTransitionLogId == right.StartTransitionLogId
+        && left.GskuId == right.GskuId
+        && left.ProductDefinitionRevisionId == right.ProductDefinitionRevisionId
+        && left.SubmitterSubjectId == right.SubmitterSubjectId
+        && left.ObjectType == right.ObjectType
+        && left.ObjectRef == right.ObjectRef
+        && left.StartIdempotencyKey == right.StartIdempotencyKey
+        && left.StartRequestFingerprint == right.StartRequestFingerprint;
+
+    private static bool ExactText(string? value, int maximum) =>
+        value is { Length: > 0 } && value.Length <= maximum
+        && string.Equals(value, value.Trim(), StringComparison.Ordinal)
+        && !value.Any(char.IsControl);
+
+    private static bool OptionalExactText(string? value, int maximum) =>
+        value is null || ExactText(value, maximum);
 
     private Task<bool> ScheduleRetryAsync(
         FirstGskuIdentityWorkflowClaim claim,

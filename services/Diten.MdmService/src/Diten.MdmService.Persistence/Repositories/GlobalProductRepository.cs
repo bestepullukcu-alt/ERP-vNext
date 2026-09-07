@@ -62,6 +62,16 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
                 & Builders<GlobalProduct>.Filter.Eq(x => x.GlobalProductNameNormalized, normalizedName))
             .AnyAsync(cancellationToken);
 
+    public async Task<bool> NameExistsOtherThanAsync(
+        string normalizedName,
+        Guid excludedProductId,
+        CancellationToken cancellationToken = default)
+        => await _globalProducts.Find(
+                TenantIncludingDeletedFilter
+                & Builders<GlobalProduct>.Filter.Eq(x => x.GlobalProductNameNormalized, normalizedName)
+                & Builders<GlobalProduct>.Filter.Ne(x => x.Id, excludedProductId))
+            .AnyAsync(cancellationToken);
+
     public async Task<GlobalProductPage> GetPageAsync(
         int pageNumber,
         int pageSize,
@@ -323,6 +333,80 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         }
     }
 
+    public async Task<GlobalProductLifecycleWriteResult> UpdateDraftAsync(
+        Guid id,
+        string globalProductName,
+        string normalizedName,
+        int expectedVersion,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(auditIntent);
+        cancellationToken.ThrowIfCancellationRequested();
+        var contractError = id == Guid.Empty
+                            || expectedVersion < 0
+                            || !GlobalProductNameRules.HasValidLength(globalProductName)
+                            || !string.Equals(
+                                globalProductName,
+                                GlobalProductNameRules.CleanVisible(globalProductName),
+                                StringComparison.Ordinal)
+                            || !string.Equals(
+                                normalizedName,
+                                GlobalProductNameRules.NormalizeDuplicateKey(globalProductName),
+                                StringComparison.Ordinal)
+            ? "GLOBAL_PRODUCT_UPDATE_CONTRACT_INVALID"
+            : ValidateAuditIntent(
+                id,
+                expectedVersion,
+                ProductAuditOperation.GlobalProductDraftUpdated,
+                auditIntent);
+        if (contractError is not null)
+        {
+            return new(false, null, contractError);
+        }
+
+        var replay = await FindReplayAsync(id, auditIntent, cancellationToken);
+        if (replay is not null)
+        {
+            return replay;
+        }
+
+        var filter = ActiveTenantFilter
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.Id, id)
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.Version, expectedVersion)
+                     & Builders<GlobalProduct>.Filter.Eq(
+                         x => x.LifecycleStatus,
+                         ProductIdentityLifecycleStatus.Draft)
+                     & Builders<GlobalProduct>.Filter.Where(
+                         x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        var update = Builders<GlobalProduct>.Update
+            .Set(x => x.GlobalProductName, globalProductName)
+            .Set(x => x.GlobalProductNameNormalized, normalizedName)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+            .Inc(x => x.Version, 1)
+            .Push(x => x.AuditIntents, auditIntent);
+        try
+        {
+            var updated = await _globalProducts.FindOneAndUpdateAsync(
+                filter,
+                update,
+                new FindOneAndUpdateOptions<GlobalProduct> { ReturnDocument = ReturnDocument.After },
+                cancellationToken);
+            return updated is not null
+                ? new(true, updated)
+                : await ClassifyDraftUpdateFailureAsync(id, expectedVersion, auditIntent, cancellationToken);
+        }
+        catch (MongoCommandException exception) when (exception.Code == 11000)
+        {
+            return new(false, await GetByIdAsync(id, cancellationToken), "GLOBAL_PRODUCT_NAME_DUPLICATE");
+        }
+        catch (MongoWriteException exception) when (
+            exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            return new(false, await GetByIdAsync(id, cancellationToken), "GLOBAL_PRODUCT_NAME_DUPLICATE");
+        }
+    }
+
     public async Task<GlobalProductLifecycleWriteResult> SubmitIdentityAsync(
         Guid id,
         int expectedVersion,
@@ -507,6 +591,7 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
                      & Builders<GlobalProduct>.Filter.Eq(
                          x => x.LifecycleStatus,
                          ProductIdentityLifecycleStatus.IdentityApproved)
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
                      & Builders<GlobalProduct>.Filter.Size(
                          x => x.ChildCreationAdmissions,
                          0)
@@ -531,6 +616,330 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         if (current?.ChildCreationAdmissions.Count > 0)
         {
             return new(false, current, "PRODUCT_CHILD_CREATION_IN_PROGRESS");
+        }
+
+        if (current?.ActiveLifecycleOperation is not null)
+        {
+            return new(false, current, "GLOBAL_PRODUCT_LIFECYCLE_OPERATION_ACTIVE");
+        }
+
+        return await ClassifyLifecycleFailureAsync(id, expectedVersion, auditIntent, cancellationToken);
+    }
+
+    public async Task<GlobalProductLifecycleWriteResult> AcquireLifecycleOperationAsync(
+        Guid id,
+        int expectedVersion,
+        GlobalProductActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(binding);
+        ArgumentNullException.ThrowIfNull(auditIntent);
+        var expectedAuditOperation = binding.Kind switch
+        {
+            GlobalProductLifecycleOperationKind.Correction =>
+                ProductAuditOperation.GlobalProductCorrectionRequested,
+            GlobalProductLifecycleOperationKind.Retirement =>
+                ProductAuditOperation.GlobalProductRetirementRequested,
+            _ => (ProductAuditOperation?)null
+        };
+        var contractError = expectedAuditOperation.HasValue
+            ? ValidateAuditIntent(id, expectedVersion, expectedAuditOperation.Value, auditIntent)
+            : "GLOBAL_PRODUCT_LIFECYCLE_OPERATION_INVALID";
+        if (contractError is not null || binding.OperationId == Guid.Empty
+            || binding.Kind is not (GlobalProductLifecycleOperationKind.Correction
+                or GlobalProductLifecycleOperationKind.Retirement)
+            || binding.BaseProductVersion != expectedVersion)
+            return new(false, null, contractError ?? "GLOBAL_PRODUCT_LIFECYCLE_OPERATION_INVALID");
+        var replay = await FindReplayAsync(id, auditIntent, cancellationToken);
+        if (replay is not null) return replay;
+        var filter = ActiveTenantFilter
+            & Builders<GlobalProduct>.Filter.Eq(x => x.Id, id)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.LifecycleStatus,
+                ProductIdentityLifecycleStatus.IdentityApproved)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
+            & Builders<GlobalProduct>.Filter.Size(x => x.ChildCreationAdmissions, 0)
+            & Builders<GlobalProduct>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        var update = Builders<GlobalProduct>.Update
+            .Set(x => x.ActiveLifecycleOperation, binding)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+            .Inc(x => x.Version, 1)
+            .Push(x => x.AuditIntents, auditIntent);
+        var updated = await _globalProducts.FindOneAndUpdateAsync(filter, update,
+            new() { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        if (updated is not null) return new(true, updated);
+        var current = await GetByIdAsync(id, cancellationToken);
+        if (current?.ChildCreationAdmissions.Count > 0)
+            return new(false, current, "PRODUCT_CHILD_CREATION_IN_PROGRESS");
+        if (current?.ActiveLifecycleOperation is not null)
+            return new(false, current, "GLOBAL_PRODUCT_LIFECYCLE_OPERATION_ACTIVE");
+        return await ClassifyLifecycleFailureAsync(id, expectedVersion, auditIntent, cancellationToken);
+    }
+
+    public async Task<GlobalProductLifecycleWriteResult> ApplyCorrectionDecisionAsync(
+        Guid id,
+        int expectedVersion,
+        GlobalProductActiveLifecycleOperationBinding binding,
+        string? approvedName,
+        string? approvedNormalizedName,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(binding);
+        ArgumentNullException.ThrowIfNull(auditIntent);
+        var isApproved = approvedName is not null || approvedNormalizedName is not null;
+        var operation = isApproved ? ProductAuditOperation.GlobalProductCorrectionApplied
+            : auditIntent.Operation;
+        var allowedTerminal = operation is ProductAuditOperation.GlobalProductCorrectionApplied
+            or ProductAuditOperation.GlobalProductCorrectionRejected;
+        var contractError = allowedTerminal ? ValidateAuditIntent(id, expectedVersion, operation, auditIntent)
+            : "AUDIT_INTENT_CONTRACT_INVALID";
+        if (contractError is not null || binding.Kind != GlobalProductLifecycleOperationKind.Correction
+            || binding.OperationId == Guid.Empty || binding.BaseProductVersion + 1 != expectedVersion
+            || (isApproved && (string.IsNullOrWhiteSpace(approvedName)
+                || string.IsNullOrWhiteSpace(approvedNormalizedName))))
+            return new(false, null, contractError ?? "GLOBAL_PRODUCT_CORRECTION_CONTRACT_INVALID");
+        var replay = await FindReplayAsync(id, auditIntent, cancellationToken);
+        if (replay is not null) return replay;
+        var filter = ActiveTenantFilter
+            & Builders<GlobalProduct>.Filter.Eq(x => x.Id, id)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.LifecycleStatus,
+                ProductIdentityLifecycleStatus.IdentityApproved)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.Kind, binding.Kind)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.OperationId, binding.OperationId)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.BaseProductVersion,
+                binding.BaseProductVersion)
+            & Builders<GlobalProduct>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        var update = Builders<GlobalProduct>.Update
+            .Set(x => x.ActiveLifecycleOperation, null)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+            .Inc(x => x.Version, 1)
+            .Push(x => x.AuditIntents, auditIntent);
+        if (isApproved)
+            update = update.Set(x => x.GlobalProductName, approvedName!)
+                .Set(x => x.GlobalProductNameNormalized, approvedNormalizedName!);
+        try
+        {
+            var updated = await _globalProducts.FindOneAndUpdateAsync(filter, update,
+                new() { ReturnDocument = ReturnDocument.After }, cancellationToken);
+            if (updated is not null) return new(true, updated);
+        }
+        catch (MongoCommandException exception) when (exception.Code == 11000)
+        {
+            return new(false, await GetByIdAsync(id, cancellationToken),
+                "GLOBAL_PRODUCT_CORRECTION_NAME_CONFLICT");
+        }
+        catch (MongoWriteException exception) when (
+            exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            return new(false, await GetByIdAsync(id, cancellationToken),
+                "GLOBAL_PRODUCT_CORRECTION_NAME_CONFLICT");
+        }
+        return await ClassifyLifecycleFailureAsync(id, expectedVersion, auditIntent, cancellationToken);
+    }
+
+    public async Task<GlobalProductLifecycleWriteResult> RecordCorrectionConflictAsync(
+        Guid id,
+        int expectedVersion,
+        GlobalProductActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(binding);
+        ArgumentNullException.ThrowIfNull(auditIntent);
+        var contractError = ValidateAuditIntent(id, expectedVersion,
+            ProductAuditOperation.GlobalProductCorrectionManualReconciliationRequired, auditIntent);
+        if (contractError is not null || binding.Kind != GlobalProductLifecycleOperationKind.Correction)
+            return new(false, null, contractError ?? "GLOBAL_PRODUCT_CORRECTION_CONTRACT_INVALID");
+        var replay = await FindReplayAsync(id, auditIntent, cancellationToken);
+        if (replay is not null) return replay;
+        var filter = ActiveTenantFilter
+            & Builders<GlobalProduct>.Filter.Eq(x => x.Id, id)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.Kind, binding.Kind)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.OperationId, binding.OperationId)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.BaseProductVersion,
+                binding.BaseProductVersion)
+            & Builders<GlobalProduct>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        var update = Builders<GlobalProduct>.Update
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+            .Inc(x => x.Version, 1)
+            .Push(x => x.AuditIntents, auditIntent);
+        var updated = await _globalProducts.FindOneAndUpdateAsync(filter, update,
+            new() { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        return updated is not null ? new(true, updated)
+            : await ClassifyLifecycleFailureAsync(id, expectedVersion, auditIntent, cancellationToken);
+    }
+
+    public async Task<GlobalProductLifecycleWriteResult> ApplyRetirementDecisionAsync(
+        Guid id,
+        int expectedVersion,
+        GlobalProductActiveLifecycleOperationBinding binding,
+        bool approved,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(binding);
+        ArgumentNullException.ThrowIfNull(auditIntent);
+        var operation = approved ? ProductAuditOperation.GlobalProductIdentityRetired : auditIntent.Operation;
+        var contractError = ValidateAuditIntent(id, expectedVersion, operation, auditIntent);
+        if (operation is not (ProductAuditOperation.GlobalProductIdentityRetired
+                or ProductAuditOperation.GlobalProductRetirementRejected)
+            || contractError is not null
+            || binding.Kind != GlobalProductLifecycleOperationKind.Retirement
+            || binding.OperationId == Guid.Empty || binding.BaseProductVersion + 1 != expectedVersion)
+            return new(false, null, contractError ?? "GLOBAL_PRODUCT_RETIREMENT_CONTRACT_INVALID");
+        var replay = await FindReplayAsync(id, auditIntent, cancellationToken);
+        if (replay is not null) return replay;
+        if (approved && await FindRetirementBlockerAsync(id, cancellationToken) is { } blocker)
+            return new(false, await GetByIdAsync(id, cancellationToken), blocker);
+        var filter = ActiveTenantFilter
+            & Builders<GlobalProduct>.Filter.Eq(x => x.Id, id)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.LifecycleStatus,
+                ProductIdentityLifecycleStatus.IdentityApproved)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.Kind, binding.Kind)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.OperationId, binding.OperationId)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.BaseProductVersion,
+                binding.BaseProductVersion)
+            & Builders<GlobalProduct>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        if (approved)
+            filter &= Builders<GlobalProduct>.Filter.Size(x => x.ChildCreationAdmissions, 0);
+        var update = Builders<GlobalProduct>.Update
+            .Set(x => x.ActiveLifecycleOperation, null)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+            .Inc(x => x.Version, 1)
+            .Push(x => x.AuditIntents, auditIntent);
+        if (approved) update = update.Set(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Retired);
+        var updated = await _globalProducts.FindOneAndUpdateAsync(filter, update,
+            new() { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        return updated is not null ? new(true, updated)
+            : await ClassifyLifecycleFailureAsync(id, expectedVersion, auditIntent, cancellationToken);
+    }
+
+    public async Task<GlobalProductLifecycleWriteResult> RecordRetirementConflictAsync(
+        Guid id,
+        int expectedVersion,
+        GlobalProductActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(binding);
+        ArgumentNullException.ThrowIfNull(auditIntent);
+        var contractError = ValidateAuditIntent(id, expectedVersion,
+            ProductAuditOperation.GlobalProductRetirementManualReconciliationRequired, auditIntent);
+        if (contractError is not null || binding.Kind != GlobalProductLifecycleOperationKind.Retirement)
+            return new(false, null, contractError ?? "GLOBAL_PRODUCT_RETIREMENT_CONTRACT_INVALID");
+        var replay = await FindReplayAsync(id, auditIntent, cancellationToken);
+        if (replay is not null) return replay;
+        var filter = ActiveTenantFilter
+            & Builders<GlobalProduct>.Filter.Eq(x => x.Id, id)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.Kind, binding.Kind)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.OperationId, binding.OperationId)
+            & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation!.BaseProductVersion,
+                binding.BaseProductVersion)
+            & Builders<GlobalProduct>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        var update = Builders<GlobalProduct>.Update.Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+            .Inc(x => x.Version, 1).Push(x => x.AuditIntents, auditIntent);
+        var updated = await _globalProducts.FindOneAndUpdateAsync(filter, update,
+            new() { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        return updated is not null ? new(true, updated)
+            : await ClassifyLifecycleFailureAsync(id, expectedVersion, auditIntent, cancellationToken);
+    }
+
+    public async Task<GlobalProductLifecycleWriteResult> WithdrawIdentityApprovalAsync(
+        Guid id,
+        int expectedVersion,
+        ProductIdentityWorkflowCancellationEvidence cancellationEvidence,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(cancellationEvidence);
+        ArgumentNullException.ThrowIfNull(auditIntent);
+        cancellationToken.ThrowIfCancellationRequested();
+        if (await GetByIdAsync(id, cancellationToken) is null)
+        {
+            return new(false, null, "PRODUCT_IDENTITY_NOT_FOUND");
+        }
+        var contractError = ValidateCancellationEvidence(id, cancellationEvidence)
+                            ?? ValidateAuditIntent(
+                                id,
+                                expectedVersion,
+                                ProductAuditOperation.GlobalProductIdentityApprovalWithdrawn,
+                                auditIntent);
+        if (contractError is not null)
+        {
+            return new(false, null, contractError);
+        }
+
+        var replay = await FindReplayAsync(id, auditIntent, cancellationToken);
+        if (replay is not null)
+        {
+            return replay.Succeeded
+                   && !SameCancellationEvidence(
+                       replay.GlobalProduct?.WorkflowBinding?.CancellationEvidence,
+                       cancellationEvidence)
+                ? new(false, replay.GlobalProduct, "PRODUCT_IDENTITY_IDEMPOTENCY_CONFLICT")
+                : replay;
+        }
+
+        var filter = ActiveTenantFilter
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.Id, id)
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.Version, expectedVersion)
+                     & Builders<GlobalProduct>.Filter.Eq(
+                         x => x.LifecycleStatus,
+                         ProductIdentityLifecycleStatus.PendingIdentityApproval)
+                     & Builders<GlobalProduct>.Filter.Eq(
+                         x => x.WorkflowBinding!.WorkflowInstanceId,
+                         cancellationEvidence.WorkflowInstanceId)
+                     & Builders<GlobalProduct>.Filter.Eq(
+                         x => x.WorkflowBinding!.ApprovalTaskId,
+                         cancellationEvidence.ApprovalTaskId)
+                     & Builders<GlobalProduct>.Filter.Eq(
+                         x => x.WorkflowBinding!.WorkflowTemplateId,
+                         cancellationEvidence.WorkflowTemplateId)
+                     & Builders<GlobalProduct>.Filter.Eq(
+                         x => x.WorkflowBinding!.WorkflowTemplateVersionId,
+                         cancellationEvidence.WorkflowTemplateVersionId)
+                     & Builders<GlobalProduct>.Filter.Eq(
+                         x => x.WorkflowBinding!.ObjectType,
+                         cancellationEvidence.ObjectType)
+                     & Builders<GlobalProduct>.Filter.Eq(
+                         x => x.WorkflowBinding!.ObjectId,
+                         cancellationEvidence.ObjectId)
+                     & Builders<GlobalProduct>.Filter.Eq(
+                         x => x.WorkflowBinding!.SubmitterSubjectId,
+                         cancellationEvidence.RequesterSubjectId)
+                     & Builders<GlobalProduct>.Filter.Eq(
+                         x => x.WorkflowBinding!.CancellationEvidence,
+                         null)
+                     & Builders<GlobalProduct>.Filter.Where(
+                         x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        var update = Builders<GlobalProduct>.Update
+            .Set(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Draft)
+            .Set(x => x.WorkflowBinding!.CancellationEvidence, cancellationEvidence)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+            .Inc(x => x.Version, 1)
+            .Push(x => x.AuditIntents, auditIntent);
+        var updated = await _globalProducts.FindOneAndUpdateAsync(
+            filter,
+            update,
+            new FindOneAndUpdateOptions<GlobalProduct> { ReturnDocument = ReturnDocument.After },
+            cancellationToken);
+        if (updated is not null)
+        {
+            return new(true, updated);
+        }
+
+        var current = await GetByIdAsync(id, cancellationToken);
+        if (current is not null
+            && current.Version == expectedVersion
+            && current.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval)
+        {
+            return new(false, current, "WORKFLOW_BINDING_CONFLICT");
         }
 
         return await ClassifyLifecycleFailureAsync(id, expectedVersion, auditIntent, cancellationToken);
@@ -568,6 +977,10 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         {
             return new(false, current, "PARENT_NOT_IDENTITY_APPROVED");
         }
+        if (current.ActiveLifecycleOperation is not null)
+        {
+            return new(false, current, "GLOBAL_PRODUCT_LIFECYCLE_OPERATION_ACTIVE");
+        }
         if (current.ChildCreationAdmissions.Count >= ProductChildCreationAdmission.MaximumActiveAdmissions)
         {
             return new(false, current, "PRODUCT_CHILD_ADMISSION_LIMIT_REACHED");
@@ -584,6 +997,7 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
                      & Builders<GlobalProduct>.Filter.Eq(
                          x => x.LifecycleStatus,
                          ProductIdentityLifecycleStatus.IdentityApproved)
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
                      & Builders<GlobalProduct>.Filter.Not(
                          Builders<GlobalProduct>.Filter.ElemMatch(
                              x => x.ChildCreationAdmissions,
@@ -615,6 +1029,10 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         if (current?.LifecycleStatus != ProductIdentityLifecycleStatus.IdentityApproved)
         {
             return new(false, current, "PARENT_NOT_IDENTITY_APPROVED");
+        }
+        if (current.ActiveLifecycleOperation is not null)
+        {
+            return new(false, current, "GLOBAL_PRODUCT_LIFECYCLE_OPERATION_ACTIVE");
         }
 
         return new(false, current, "PRODUCT_CHILD_ADMISSION_LIMIT_REACHED");
@@ -871,6 +1289,34 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         return new(false, current, "PRODUCT_IDENTITY_STATE_CONFLICT");
     }
 
+    private async Task<GlobalProductLifecycleWriteResult> ClassifyDraftUpdateFailureAsync(
+        Guid id,
+        int expectedVersion,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken)
+    {
+        var replay = await FindReplayAsync(id, auditIntent, cancellationToken);
+        if (replay is not null)
+        {
+            return replay;
+        }
+
+        var current = await GetByIdAsync(id, cancellationToken);
+        if (current is null)
+        {
+            return new(false, null, "GLOBAL_PRODUCT_NOT_FOUND");
+        }
+        if (current.Version != expectedVersion)
+        {
+            return new(false, current, "GLOBAL_PRODUCT_CONCURRENCY_CONFLICT");
+        }
+        if (current.AuditIntents.Count >= AuditIntentLimits.MaxPerAggregate)
+        {
+            return new(false, current, "AUDIT_INTENT_CAPACITY_EXCEEDED");
+        }
+        return new(false, current, "GLOBAL_PRODUCT_STATE_CONFLICT");
+    }
+
     private async Task<string?> FindRetirementBlockerAsync(Guid globalProductId, CancellationToken cancellationToken)
     {
         var revisionFilter = Builders<ProductDefinitionRevision>.Filter.Eq(x => x.TenantId, _tenantId)
@@ -944,10 +1390,63 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
             || string.IsNullOrWhiteSpace(binding.StartRequestFingerprint)
             || binding.SubmittedAtUtc.Offset != TimeSpan.Zero
             || (binding.DueAtUtc is { } dueAtUtc && dueAtUtc.Offset != TimeSpan.Zero)
-            || binding.TerminalDecision is not null)
+            || binding.TerminalDecision is not null
+            || binding.CancellationEvidence is not null)
             return "WORKFLOW_BINDING_CONTRACT_INVALID";
         return null;
     }
+
+    private static string? ValidateCancellationEvidence(
+        Guid aggregateId,
+        ProductIdentityWorkflowCancellationEvidence evidence)
+    {
+        if (evidence.WorkflowInstanceId == Guid.Empty
+            || evidence.ApprovalTaskId == Guid.Empty
+            || evidence.WorkflowTemplateId == Guid.Empty
+            || evidence.WorkflowTemplateVersionId == Guid.Empty
+            || !string.Equals(evidence.ObjectType, "GlobalProduct", StringComparison.Ordinal)
+            || evidence.ObjectId != aggregateId
+            || string.IsNullOrWhiteSpace(evidence.ObjectRef)
+            || evidence.RequesterSubjectId == Guid.Empty
+            || string.IsNullOrWhiteSpace(evidence.ReasonCode)
+            || evidence.CancelledAtUtc == default
+            || evidence.CancelledAtUtc.Offset != TimeSpan.Zero
+            || evidence.TransitionSequence <= 0
+            || evidence.TransitionLogId == Guid.Empty
+            || !string.Equals(evidence.TaskStatus, "Cancelled", StringComparison.Ordinal)
+            || !string.Equals(evidence.InstanceStatus, "Cancelled", StringComparison.Ordinal)
+            || evidence.WorkflowInstanceVersion <= 0
+            || evidence.ApprovalTaskVersion <= 0
+            || string.IsNullOrWhiteSpace(evidence.IdempotencyKey))
+        {
+            return "WORKFLOW_CANCELLATION_EVIDENCE_INVALID";
+        }
+
+        return null;
+    }
+
+    private static bool SameCancellationEvidence(
+        ProductIdentityWorkflowCancellationEvidence? actual,
+        ProductIdentityWorkflowCancellationEvidence expected) =>
+        actual is not null
+        && actual.WorkflowInstanceId == expected.WorkflowInstanceId
+        && actual.ApprovalTaskId == expected.ApprovalTaskId
+        && actual.WorkflowTemplateId == expected.WorkflowTemplateId
+        && actual.WorkflowTemplateVersionId == expected.WorkflowTemplateVersionId
+        && string.Equals(actual.ObjectType, expected.ObjectType, StringComparison.Ordinal)
+        && actual.ObjectId == expected.ObjectId
+        && string.Equals(actual.ObjectRef, expected.ObjectRef, StringComparison.Ordinal)
+        && actual.RequesterSubjectId == expected.RequesterSubjectId
+        && string.Equals(actual.ReasonCode, expected.ReasonCode, StringComparison.Ordinal)
+        && string.Equals(actual.Comment, expected.Comment, StringComparison.Ordinal)
+        && actual.CancelledAtUtc.EqualsExact(expected.CancelledAtUtc)
+        && actual.TransitionSequence == expected.TransitionSequence
+        && actual.TransitionLogId == expected.TransitionLogId
+        && string.Equals(actual.TaskStatus, expected.TaskStatus, StringComparison.Ordinal)
+        && string.Equals(actual.InstanceStatus, expected.InstanceStatus, StringComparison.Ordinal)
+        && actual.WorkflowInstanceVersion == expected.WorkflowInstanceVersion
+        && actual.ApprovalTaskVersion == expected.ApprovalTaskVersion
+        && string.Equals(actual.IdempotencyKey, expected.IdempotencyKey, StringComparison.Ordinal);
 
     private static string? ValidateDecisionEvidence(Guid aggregateId, ProductIdentityWorkflowDecisionEvidence evidence)
     {

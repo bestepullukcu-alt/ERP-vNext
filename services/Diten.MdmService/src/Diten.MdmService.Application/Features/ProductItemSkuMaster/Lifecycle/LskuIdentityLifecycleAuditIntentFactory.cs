@@ -88,6 +88,35 @@ public static class LskuIdentityLifecycleAuditIntentFactory
             evidence);
     }
 
+    public static LocalAuditIntent CreateWithdrawal(
+        Lsku product,
+        int expectedVersion,
+        ProductIdentityWorkflowCancellationEvidence cancellation)
+    {
+        var evidence = EncodeFacts(product.TenantId.ToString("D"), product.Id.ToString("D"),
+            cancellation.WorkflowInstanceId.ToString("D"), cancellation.ApprovalTaskId.ToString("D"),
+            cancellation.RequesterSubjectId.ToString("D"), cancellation.ReasonCode, cancellation.Comment,
+            cancellation.CancelledAtUtc.ToString("O"), cancellation.TransitionSequence,
+            cancellation.TransitionLogId.ToString("D"), cancellation.TaskStatus, cancellation.InstanceStatus);
+        return Create(product, ProductAuditOperation.LskuIdentityApprovalWithdrawn, expectedVersion,
+            cancellation.RequesterSubjectId, cancellation.IdempotencyKey,
+            cancellation.WorkflowInstanceId.ToString("D"), cancellation.CancelledAtUtc, evidence);
+    }
+
+    public static LocalAuditIntent CreateRetirementOperation(
+        Lsku product, int expectedVersion, Guid operationId, Guid actorId,
+        ProductAuditOperation operation, string reason, DateTimeOffset timestampUtc)
+    {
+        if (operation is not (ProductAuditOperation.LskuRetirementRequested
+            or ProductAuditOperation.LskuRetirementRejected
+            or ProductAuditOperation.LskuIdentityRetired))
+            throw new ArgumentException("LSKU retirement audit operation is invalid.");
+        var key = operationId.ToString("D");
+        return Create(product, operation, expectedVersion, actorId, key, key, timestampUtc,
+            EncodeFacts(product.TenantId.ToString("D"), product.Id.ToString("D"), key,
+                actorId.ToString("D"), reason));
+    }
+
     private static LocalAuditIntent Create(
         Lsku product,
         ProductAuditOperation operation,

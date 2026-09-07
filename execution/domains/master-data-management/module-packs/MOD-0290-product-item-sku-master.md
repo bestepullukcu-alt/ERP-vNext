@@ -8,9 +8,9 @@ golden_reference: slim
 entity_base: EntityBase
 status: in-progress
 owner: product-data-owner / mdm-domain-team
-branch: feature/mdm/mod-0290-product-item-sku-master
+branch: feature/mdm/mod-0290-product-identity-final-integration
 started: "2026-08-01T12:32:42Z"
-target: "Local Development code-truth: Global Product end-to-end; Product Definition Revision/First GSKU; verified GSKU provider/publication/resolver; GSKU and LSKU A-G; Finished Good A-E; four-register Save View hardening; lifecycle, regulatory/master-data, deferred-navigation and Production-readiness gates remain open"
+target: "Local Development code-truth: Global Product create/edit/submit/withdraw/approve/correct/retire with WorkCenter; Product Definition Revision/First GSKU; verified GSKU provider/publication/resolver; GSKU and LSKU A-G; Finished Good A-E; four-register Save View hardening; remaining identity lifecycles, regulatory/master-data, deferred-navigation and Production-readiness gates remain open"
 form_field_count: 2
 parent_dcp: execution/portfolio/delivery-capability-packs/DCP-004-mod-0290-sku-coding-foundation-readiness.md
 domain_contract: execution/domains/master-data-management/domain-contracts/MOD-0290-sku-coding-foundation-domain-contract.md
@@ -22,10 +22,11 @@ canonical_blueprint: docs/System Capability & Implementation Blueprint - master 
 > **In-progress/code-truth guard (2026-08-09):** This pack records the implemented Local Development scope proved in
 > Section 19: Global Product end-to-end, Product Definition Revision/First GSKU, verified GSKU provider/publication,
 > GSKU A-G, LSKU A-G, Finished Good A-E and shared Save View hardening. It grants no new runtime authority and makes no
-> Production-readiness claim. WorkCenter lifecycle, the separately listed master-data/regulatory backlogs, remaining
+> Production-readiness claim. Global Product WorkCenter lifecycle is now proven in Local Development; other identity
+> lifecycles, the separately listed master-data/regulatory backlogs, remaining
 > navigation decisions and Production enablement retain their own gates.
 >
-> **Branch guard:** Implementation is restricted to `feature/mdm/mod-0290-product-item-sku-master`; no stage, commit or
+> **Branch guard:** Implementation is restricted to `feature/mdm/mod-0290-product-identity-final-integration`; no stage, commit or
 > push is authorized by this pack status.
 >
 > **Finished Good named-step guard:** A-E and the authorized Local Development live create/read smoke are implemented.
@@ -35,7 +36,8 @@ canonical_blueprint: docs/System Capability & Implementation Blueprint - master 
 > Gateway, frontend and ABB-consumption subwork remains planning-only and creates no new DCP/FU/registry identity.
 >
 > **Superseding Global Product status (2026-08-09):** Backend/API, Gateway, frontend, permission onboarding and Local
-> Development create/read smoke are complete. ABB consumption, lifecycle and Production gates remain open.
+> Development create/read smoke and Global Product lifecycle/WorkCenter acceptance are complete. ABB consumption and
+> Production gates remain open.
 
 > **GSKU Register named-step guard:** A-G are implemented and evidenced, including permissions, verified provider
 > publication/resolution and Local Development create/read/replay. `GS-000000000003` is the retained pilot proof.
@@ -4047,6 +4049,537 @@ contracts close; it is not authority to add source files or to declare lifecycle
 - [ ] Additional-GSKU cardinality/ownership receives a separate owner decision before any implementation.
 - [ ] H receives exact operational values and predecessor evidence before Local Development mutation.
 
+### Global Product lifecycle UX completion — code-truth amendment (planning only, runtime unauthorized)
+
+#### Identity, code-truth and owner decisions
+
+This is a named completion step of `MOD-0290 Product / Item / SKU Master`; it does not create a new `MOD`, `FU`,
+`CAND-CAP` or registry row. It supersedes only the earlier Global Product UI statements that deliberately prohibited
+edit, withdraw, correction and WorkCenter-mediated retirement. It does not widen the other three Product Identity
+aggregates. Runtime, test, configuration, credential and data changes require the separately listed code-start gates.
+
+Measured code truth on 2026-09-04:
+
+- Global Product create persists one trimmed name and produces a Draft aggregate. There is no update command/API.
+- `Draft -> PendingIdentityApproval` submit and `IdentityApproved -> Retired` direct MDM transitions exist with
+  expected-version, idempotency and append-only audit intent fencing.
+- Native Workflow/WorkCenter owns approve/reject presentation; MDM remains the lifecycle authority and applies the
+  terminal decision through its durable operation/reconciler.
+- The tenant UI exposes create, details, submit and direct retire only. Pending rows and approved users without retire
+  permission receive details only. There is no withdraw or approved correction request.
+- Hard delete, generic enable/disable and in-place overwrite of an approved name are not valid Product Identity
+  lifecycle semantics and remain prohibited.
+
+The owner decisions for this amendment are:
+
+1. **Draft edit is direct source-owned correction.** The maker may change only `GlobalProductName` while the aggregate
+   is `DRAFT`, using expected version and exact idempotent replay. It does not start Workflow and does not bypass
+   tenant, reservation or audit rules.
+2. **Pending withdraw is requester-owned cancellation, not approval rejection.** Only the canonical human requester
+   who owns the active lifecycle operation may request withdrawal. MDM must first obtain authoritative Workflow
+   cancellation evidence, then atomically restore `DRAFT`; a browser-only reset or local state change before Workflow
+   cancellation is forbidden. WorkCenter may cease showing the cancelled native Workflow item, but MDM remains the
+   authority for the Product state.
+3. **Approved correction is a proposed-value workflow.** The approved name stays effective and immutable while a
+   correction request is pending. The durable request stores the bounded proposed name, base product version, maker,
+   workflow binding and audit evidence. Approval atomically applies the proposed name and increments version;
+   rejection leaves the approved product unchanged. A second active correction request is rejected.
+4. **Retirement becomes a maker-checker request.** The normal UI no longer invokes direct retirement. A retirement
+   request starts a native Workflow item; WorkCenter approve/reject remains the human decision surface; MDM revalidates
+   child/admission/version fences and applies `RETIRED` only after authoritative approved terminal evidence.
+5. **Existing direct retire is a bounded compatibility seam, not the target UX.** It remains callable only until the
+   new retirement-request path has passed Local Development replay/crash/deny acceptance. It is hidden from the normal
+   tenant UI immediately when the new request surface is enabled, retains all current fences, and may not be granted to
+   a broader role. Removal requires a later code-truth amendment after caller census proves zero supported consumers.
+6. **One source writer.** WorkCenter never mutates Global Product. Every edit/withdraw/correction/retirement outcome is
+   persisted by MDM with tenant-first lookup, expected-version CAS, deterministic operation identity, stable replay,
+   append-only audit intent and fail-closed crash recovery.
+
+#### API and UI state matrix
+
+| Product state / active request | User action shown in Global Product register | Source API intent | WorkCenter behavior | Result |
+|---|---|---|---|---|
+| `DRAFT`, no active workflow | Edit, Submit, Details when separately permitted | `PUT /api/global-products/{id}` or existing submit | None for Edit; Submit starts the existing native approval workflow | Edit keeps Draft and increments version; submit becomes Pending |
+| `PENDING_IDENTITY_APPROVAL`, requester | Withdraw, Details | `POST /api/global-products/{id}/withdraw` | Existing workflow task/instance is authoritatively cancelled; no new MDM provider/action | MDM returns to Draft only after verified cancellation evidence |
+| `PENDING_IDENTITY_APPROVAL`, non-requester | Details only | none | Eligible approver uses native WorkCenter approve/reject | No requester impersonation |
+| `IDENTITY_APPROVED`, no active correction/retirement | Request Correction, Request Retirement, Details when separately permitted | `POST /api/global-products/{id}/correction-requests`; `POST /api/global-products/{id}/retirement-requests` | Each request starts its own native approval workflow | Approved product remains effective until a terminal approved decision is applied |
+| `IDENTITY_APPROVED`, correction pending | Details only in this tenant UI slice | no tenant-UI mutation | Native correction approval item | Approve applies proposed name; reject/cancel preserves current name |
+| `IDENTITY_APPROVED`, retirement pending | Details only in this tenant UI slice | no tenant-UI mutation | Native retirement approval item | Approve revalidates fences then retires; reject/cancel preserves approved state |
+| `RETIRED` | Details only | none | No active item | No edit, submit, correction, retirement, delete or reactivation |
+
+The UI action menu is state **and** permission driven. A hidden action is not authorization. The list DTO deliberately
+carries no action projection. Read-authorized rows always retain their kebab; opening it first re-fetches same-origin
+detail. The ordered detail `AvailableActions` list is then produced by MDM from current server state, canonical human
+actor permissions, requester ownership and the active-operation binding. The browser neither derives actions from
+status nor intersects the result with independently inferred claims. Approved correction and retirement use Premium
+input/confirm surfaces; reject/approve remains WorkCenter-native. Seven-locale labels and stable refusal codes are
+mandatory.
+
+The only stable action codes are ordered as `DETAILS`, `EDIT`, `SUBMIT`, `WITHDRAW_APPROVAL`,
+`REQUEST_CORRECTION`, `REQUEST_RETIREMENT`. `DETAILS` is present for every visible record; `EDIT` and `SUBMIT` are
+Draft-only with their respective permission; `WITHDRAW_APPROVAL` is Pending-only for the canonical submitter with
+withdraw permission; correction and retirement request codes are IdentityApproved-only, require their respective
+permission and require no active lifecycle operation. `GlobalProductDetailDto` exposes this as ordered
+`IReadOnlyList<string> AvailableActions`; it does not expose actor, requester, raw permissions or active-binding
+identifiers. Unknown codes fail closed in the tenant UI.
+
+#### Permission and responsibility-role delta (requires separate MOD-0018 owner approval)
+
+Proposed additive MDM keys:
+
+| Key | Intended role | Scope |
+|---|---|---|
+| `mdm.global-products.update` | `ProductDataSteward` | Draft-only name correction; no approved overwrite |
+| `mdm.global-products.withdraw` | `ProductDataSteward`, `ProductIdentityRetirementSteward` | Canonical submitter-only withdrawal of Pending identity approval |
+| `mdm.global-products.request-correction` | `ProductDataSteward` | Create one correction proposal from IdentityApproved |
+| `mdm.global-products.request-retirement` | `ProductIdentityRetirementSteward` | Create one retirement proposal from IdentityApproved |
+
+The existing `mdm.global-products.approve` / `reject` keys and native Workflow task-decision keys remain the approver
+surface. `mdm.global-products.retire` is retained only for the compatibility seam during the measured transition and
+is not a substitute for `request-retirement`. Tenant Admin/Viewer receive none of the four new keys automatically.
+No automatic user-role assignment is permitted. Auth profile/runtime changes require a code-truth amendment to the
+applicable existing `MOD-0018` Product Identity onboarding pack; this planning step deliberately invents no FU identity.
+
+The proposed exact dedicated-role cardinality after atomic rollout is `16 / 7 / 10`: `ProductDataSteward` grows from
+13 to 16 by adding update, withdraw and request-correction; `ProductIdentityApprover` stays 7;
+`ProductIdentityRetirementSteward` grows from 8 to 10 by replacing Global Product direct-retire with
+request-retirement and adding withdraw plus the already catalogued `platform.workflow.instances.start` dependency.
+The other three aggregate retire grants remain unchanged. The rollout must not temporarily leave both Global Product
+direct-retire and request-retirement in the desired role grant set; manual/system grants are preserved by source.
+The `product-item-sku-master` manifest/catalog descriptor correspondingly grows from the measured 30 owned keys to
+exactly 34 owned keys. FU25's exact-descriptor validator must be amended atomically; permissive prefix matching or an
+open-ended descriptor is forbidden.
+
+#### Ordered implementation phases and exact allow-list drafts
+
+Every phase below is planning-only until its exact code-start is separately approved. Before code-start, paths must be
+revalidated against the then-current branch and removed when reuse is sufficient. Anything not listed for the active
+phase is protected.
+
+**L1 — Draft edit domain, persistence and API**
+
+Runtime allow-list:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/GlobalProduct.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductAuditOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGlobalProductRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GlobalProductRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/ProductItemSkuMasterModels.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Queries/GetGlobalProductByIdQuery.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/QueryHandlers/GetGlobalProductByIdHandler.cs`
+- new `Lifecycle/Commands/UpdateGlobalProductDraftCommand.cs`
+- new `Lifecycle/Handlers/CommandHandlers/UpdateGlobalProductDraftHandler.cs`
+- new `Lifecycle/Validators/UpdateGlobalProductDraftValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/GlobalProductsController.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs`
+
+Test allow-list: existing `GlobalProductLifecycleUnitTests.cs`, `GlobalProductLifecycleMongoTests.cs`,
+`GlobalProductApiMongoTests.cs`, `GlobalProductLifecycleAuthorizationTests.cs` and
+`ModuleRegistration/ProductItemSkuMasterManifestProviderTests.cs`, plus new focused
+`GlobalProductAvailableActionsTests.cs`. Acceptance requires Draft-only CAS, scalar-counted
+200-character name validation, duplicate-name conflict, exact replay, stale-version conflict, no approved/pending/
+retired mutation, tenant non-disclosure and one audit intent. Update success is exactly HTTP 200 and its envelope
+contains operation ID, resulting state and version. The detail query begins the ordered server-owned action projection
+with `DETAILS` for every visible record plus Draft-only `EDIT` / `SUBMIT` according to canonical actor permissions;
+the list DTO remains unchanged and action-free.
+
+**L2 — Active approval withdrawal contract**
+
+MDM runtime allow-list:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/GlobalProduct.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/ProductIdentityWorkflowBinding.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductAuditOperation.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGlobalProductRepository.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GlobalProductRepository.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/GlobalProductIdentityWorkflowOperation.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/GlobalProductIdentityWorkflowCheckpoint.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGlobalProductIdentityWorkflowOperationRepository.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/GlobalProductIdentityWorkflowOperationResults.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GlobalProductIdentityWorkflowOperationRepository.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Workflow/IProductIdentityWorkflowClient.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Workflow/ProductIdentityWorkflowTransportModels.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Workflow/PlatformProductIdentityWorkflowClient.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/GlobalProductIdentityWorkflowProcessor.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/ProductIdentityLifecycleAuditIntentFactory.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/ProductItemSkuMasterModels.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Queries/GetGlobalProductByIdQuery.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/QueryHandlers/GetGlobalProductByIdHandler.cs`;
+- new `Lifecycle/Commands/WithdrawGlobalProductIdentityApprovalCommand.cs`;
+- new `Lifecycle/Handlers/CommandHandlers/WithdrawGlobalProductIdentityApprovalHandler.cs`;
+- new `Lifecycle/Validators/WithdrawGlobalProductIdentityApprovalValidator.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/GlobalProductsController.cs`.
+
+External dependency is now the requester-owned trusted cancellation amendment frozen in
+`MOD-0023-FU02 — Trusted Consumer Workflow Start and Terminal Decision Evidence Foundation`. The Platform runtime and
+real-Mongo cancellation contract must be implemented and green before this MDM phase starts. The existing generic
+task-cancel endpoint, client-authored actor and `platform.workflow.tasks.cancel` permission remain prohibited.
+
+The MDM sequence is fail-closed and ordered: read the product and durable workflow operation; prove that the
+delegated human subject is the persisted maker; call trusted cancellation preflight with the exact tenant,
+trusted-client, object, task, instance and maker graph; call trusted cancellation with the returned task and
+instance versions and a deterministic withdrawal idempotency key; strictly validate the authoritative cancelled
+evidence; then and only then CAS the Global Product from `PendingIdentityApproval` to `Draft` once. The immutable
+cancellation evidence remains in `ProductIdentityWorkflowBinding`; no workflow history is cleared. The product
+technical version advances exactly once and exactly one `GlobalProductIdentityApprovalWithdrawn` audit intent is
+appended. Timeout, 503/504, malformed evidence, stale versions and unknown outcomes leave the product Pending and the
+same durable operation retries. No new collection, provider, Gateway route, frontend surface or WorkCenter action is
+introduced by L2.
+
+Test allow-list is exactly `GlobalProductIdentityWorkflowOperationMongoTests.cs`,
+`GlobalProductIdentityWorkflowProcessorTests.cs`, `Workflow/PlatformProductIdentityWorkflowClientTests.cs`,
+`GlobalProductIdentityWorkflowRecoveryWorkerMongoTests.cs`, `GlobalProductIdentityWorkflowRecoveryRunnerTests.cs`,
+`GlobalProductLifecycleUnitTests.cs`, `GlobalProductLifecycleMongoTests.cs`, `GlobalProductLifecycleAuthorizationTests.cs`,
+`GlobalProductApiMongoTests.cs`, `GlobalProductAvailableActionsTests.cs`, new
+`GlobalProductIdentityApprovalWithdrawalTests.cs` and new
+`GlobalProductIdentityApprovalWithdrawalAuthorizationTests.cs`. Required proofs are:
+requester/non-requester, client/object/tenant/maker mismatch, cancel-versus-approve race, lost response, exact replay,
+cancellation timeout/unknown result, stale task or instance version, MDM remaining Pending until verified
+cancellation, and one successful Pending-to-Draft CAS with one immutable binding update and one audit intent. The
+earlier L2 list omitted the aggregate CAS, workflow binding and audit-intent files; this reconciled list supersedes
+that incomplete planning draft. Verified withdrawal and its exact replay return HTTP 200 with operation ID, Draft
+state and resulting version. The detail handler adds `WITHDRAW_APPROVAL` only when current state is Pending, the
+canonical subject is the persisted submitter and the actor has withdraw permission; it never exposes the submitter ID.
+
+L2 reconciliation evidence (2026-09-04): `origin/main` at
+`dcb6509ff69adaad3e135f5d6cfb88151f3075c3` and the integration worktree at
+`ed5188dc16247fee49728c87c185e87a7ae79e40` were inspected read-only. The existing trusted Workflow controller has
+start, start-result and terminal approve/reject evidence but no trusted cancellation route. The public cancel path
+was measured and rejected for this use because it accepts client-authored actor data, carries no task/instance
+expected versions, does not bind the trusted client/object/maker graph and performs separate task/instance writes.
+The corresponding exact Platform seam is now frozen as a planning amendment in `MOD-0023-FU02`; neither Platform nor
+MDM cancellation runtime was started by this reconciliation.
+
+L2 implementation evidence (2026-09-04): the MDM trusted client now performs the exact service-only cancellation
+preflight and delegated requester cancellation calls with header-only deterministic idempotency, strict tenant/object/
+maker/version/evidence validation and the shared 2,000-character optional-comment bound. The durable operation records
+request, preflight, unknown outcome, authoritative cancellation evidence and local application checkpoints. Only a
+verified cancellation can perform the single atomic Pending-to-Draft CAS, immutable binding evidence update and one
+withdrawal audit intent. Timeout/unknown outcome preserves Pending for exact maker replay; approve-versus-withdraw
+conflict returns the operation to normal terminal-decision observation. Exact post-success replay first resolves the
+persisted binding/operation/fingerprint and returns the coherent Draft/version/evidence/audit result without a second
+mutation. Focused MDM client/API/manifest/processor/real-Mongo regression passed 119/119 with zero skipped; the narrower
+processor plus real-Mongo lifecycle run passed 23/23. MDM Release build passed with zero errors and five pre-existing
+warnings using isolated output because the running Development host held the default output assemblies open.
+
+**L3 — Approved correction request operation and native Workflow binding**
+
+Code-truth reconciliation (2026-09-04): the existing `IProductIdentityWorkflowClient` already exposes the exact
+reusable `StartAsync`, `GetStartResultAsync` and `GetTerminalEvidenceAsync` seams. Its transport models preserve the
+trusted service identity, delegated maker, header-only idempotency key, tenant, source object, template/version,
+approval-task and terminal approve/reject evidence without persisting credentials. The current Platform trusted
+consumer controller and exact tuple authorization are generic across an allow-listed object type/template pair.
+Therefore L3 requires no new Platform runtime route, WorkCenter provider or action dispatcher. Local Development
+must later add a distinct correction object/template tuple through the separately gated operational configuration;
+the exact Workflow object type is `GlobalProductCorrection`. Its template/options binding is operator-owned and
+must be distinct from the Global Product identity-approval template. Equality by exact template ID or exact template
+code fails startup and request preflight before operation, product, Workflow or audit mutation.
+
+Runtime allow-list:
+
+- new `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/GlobalProductCorrectionOperation.cs`;
+- new `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/GlobalProductCorrectionCheckpoint.cs`;
+- new `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/GlobalProductLifecycleOperationKind.cs`;
+- new `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/GlobalProductActiveLifecycleOperationBinding.cs`;
+- new `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGlobalProductCorrectionOperationRepository.cs`;
+- new `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/GlobalProductCorrectionOperationResults.cs`;
+- new `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GlobalProductCorrectionOperationRepository.cs`;
+- new `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Commands/StartGlobalProductCorrectionWorkflowCommand.cs`;
+- new `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/StartGlobalProductCorrectionWorkflowHandler.cs`;
+- new `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Validators/StartGlobalProductCorrectionWorkflowValidator.cs`;
+- new `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/GlobalProductCorrectionWorkflowStartRequestFactory.cs`;
+- new `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/GlobalProductCorrectionWorkflowProcessor.cs`;
+- new `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/GlobalProductCorrectionAuditIntentFactory.cs`;
+- new `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/GlobalProductCorrectionWorkflowOptions.cs`;
+- new `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/GlobalProductCorrectionWorkflowWorkerOptions.cs`;
+- new `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/GlobalProductCorrectionRecoveryRunner.cs`;
+- new `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/GlobalProductCorrectionRecoveryWorker.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Workflow/IProductIdentityWorkflowClient.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Workflow/ProductIdentityWorkflowTransportModels.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Workflow/PlatformProductIdentityWorkflowClient.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/GlobalProduct.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductAuditOperation.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGlobalProductRepository.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GlobalProductRepository.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/ProductIdentityLifecycleModels.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/ProductItemSkuMasterModels.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Queries/GetGlobalProductByIdQuery.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/QueryHandlers/GetGlobalProductByIdHandler.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/GlobalProductsController.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/DependencyInjection.cs`;
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Program.cs`.
+
+Correction uses its own default-disabled worker/runner because the current `ProductIdentityWorkflowRecoveryRunner`
+discovers only `GlobalProductIdentityWorkflowOperation` and applies an identity-specific Product Legal Entity rollout
+guard. Extending it would either strand correction operations in Enforced mode or silently change the proven identity
+recovery contract. Existing identity worker/runner/options therefore remain protected. `AuditAggregateType.GlobalProduct`
+is reused unchanged, so `AuditAggregateType.cs` is removed from the allow-list. Existing service-token identity
+issuance/rotation is reused; no new Auth client, credential field or secret-bearing model is permitted.
+
+Test allow-list: new `GlobalProductCorrectionWorkflowOptionsTests.cs`,
+`GlobalProductCorrectionWorkflowStartRequestFactoryTests.cs`, `GlobalProductCorrectionUnitTests.cs`,
+`GlobalProductLifecycleOperationAdmissionMongoTests.cs`,
+`GlobalProductCorrectionOperationMongoTests.cs`, `GlobalProductCorrectionWorkflowProcessorTests.cs`,
+`GlobalProductCorrectionRecoveryWorkerMongoTests.cs` and `GlobalProductCorrectionRecoveryRunnerTests.cs`; narrow
+existing `Workflow/PlatformProductIdentityWorkflowClientTests.cs`,
+`Workflow/ProductIdentityWorkflowDependencyInjectionTests.cs`,
+`Workflow/ProductIdentityWorkflowNoCredentialPersistenceTests.cs`, `GlobalProductApiMongoTests.cs`,
+`GlobalProductLifecycleAuthorizationTests.cs` and
+`ModuleRegistration/ProductItemSkuMasterManifestProviderTests.cs`, plus `GlobalProductAvailableActionsTests.cs`.
+
+Acceptance includes default-disabled/fail-closed correction configuration, one exact distinct correction
+`GlobalProductCorrection` object/template tuple, immutable bounded proposed-name snapshot and fingerprint, no second
+active lifecycle operation of either correction or retirement kind, maker-checker and approve/reject. Requester-cancel
+is deliberately not exposed for correction in this MVP because the existing terminal-evidence contract is
+approve/reject-only and L6 declares no correction-cancel action. The processor rejects fabricated Cancel evidence;
+adding correction withdrawal later requires a separately frozen MDM action using the trusted-cancellation seam.
+Acceptance also covers base-version drift, normalized-name conflict revalidation at terminal apply, crash at every
+checkpoint, exact Workflow binding, no secret/token persistence, tenant isolation, approved name unchanged until
+authoritative approval, rejection preserving the current approved name, exactly one apply/audit result and stable
+replay after apply.
+Real-Mongo tests must prove tenant-first unique operation/idempotency indexes, lease/CAS recovery, lost-response
+start-result recovery, terminal-evidence drift rejection, approve-versus-reject and correction-versus-retirement
+admission races. A newly accepted or exact in-progress correction replay returns HTTP 202; a terminal
+exact replay/read-back returns HTTP 200. Both envelopes contain operation ID, operation state and product version.
+The detail handler adds `REQUEST_CORRECTION` only for IdentityApproved + canonical request-correction permission + no
+active operation and returns no raw permission, requester or binding identifiers.
+
+The three former owner blockers are resolved by the control-tower decision of 2026-09-04:
+
+1. `GlobalProduct.ActiveLifecycleOperation` is the single source-owned admission fence. The binding contains exactly
+   operation kind, operation ID and pre-admission base product version. Acquisition is one expected-version CAS on
+   the tenant-owned, non-deleted, `IdentityApproved` Global Product and leaves the effective name unchanged. A
+   correction repository read followed by a retirement repository read, or the reverse, is never an admission
+   decision. A competing operation loses the product CAS and performs no external Workflow start.
+2. Terminal correction approve/reject releases that binding only when kind, operation ID, base version and current
+   expected product version all match. Approve atomically applies the proposal, releases the binding and appends one
+   audit intent. Reject atomically releases the binding and appends one audit intent without changing the approved
+   name. Cancel evidence is fail-closed in this MVP. Lost responses replay the same result and never release another
+   operation's binding.
+3. The MVP proposal contains only `GlobalProductName`, validated with the existing Unicode-scalar maximum of 200.
+   Normalized duplicate detection runs before admission and again immediately before terminal approval apply. If a
+   name race is detected after Workflow approval, the name and binding remain unchanged, the operation becomes
+   `ManualReconciliationRequired`, and exactly one stable conflict audit intent is appended. The processor must not
+   fabricate completion, auto-reject the Workflow decision or free the admission fence.
+
+These decisions complete L3 Phase 1.5 ownership planning but do not themselves grant runtime code-start.
+
+**L4 — WorkCenter-mediated retirement request and direct-retire compatibility fencing**
+
+Control-tower code-truth reconciliation (2026-09-04) freezes the retirement Workflow object type as exact
+`GlobalProductRetirement`. The configured retirement template ID/code must be pairwise distinct from both the Global
+Product identity-approval template and the `GlobalProductCorrection` template. Any ID or code equality, partial
+configuration, alias/case drift or inability to prove all three tuples distinct fails startup and request preflight
+before operation, product, Workflow or audit mutation.
+
+Runtime allow-list reuses the L3 shared Workflow client/transport and the exact
+`GlobalProductActiveLifecycleOperationBinding`, `GlobalProductLifecycleOperationKind`, Global Product entity,
+repository, audit, `ProductIdentityLifecycleModels`, controller, manifest, Persistence DI and API `Program.cs` paths.
+It also reuses the L3-authorized `ProductItemSkuMasterModels.cs`, `GetGlobalProductByIdQuery.cs` and
+`GetGlobalProductByIdHandler.cs` detail-projection paths.
+It does not reuse the correction-specific options or recovery worker/runner. The retirement-specific allow-list
+additionally permits these exact new files:
+`Domain/Entities/GlobalProductRetirementRequestOperation.cs`,
+`Domain/Enums/GlobalProductRetirementRequestCheckpoint.cs`,
+`Domain/Repositories/IGlobalProductRetirementRequestOperationRepository.cs`,
+`Domain/Repositories/GlobalProductRetirementRequestOperationResults.cs`,
+`Persistence/Repositories/GlobalProductRetirementRequestOperationRepository.cs`,
+`Api/Configuration/GlobalProductRetirementRequestWorkflowOptions.cs`,
+`Api/Configuration/GlobalProductRetirementRequestWorkflowWorkerOptions.cs`,
+`Api/Services/ProductItemSkuMaster/GlobalProductRetirementRequestRecoveryRunner.cs`,
+`Api/Services/ProductItemSkuMaster/GlobalProductRetirementRequestRecoveryWorker.cs`,
+`Application/Features/ProductItemSkuMaster/Workflow/Commands/StartGlobalProductRetirementRequestWorkflowCommand.cs`,
+`Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/StartGlobalProductRetirementRequestWorkflowHandler.cs`,
+`Application/Features/ProductItemSkuMaster/Workflow/Validators/StartGlobalProductRetirementRequestWorkflowValidator.cs`,
+`Application/Features/ProductItemSkuMaster/Workflow/GlobalProductRetirementRequestWorkflowStartRequestFactory.cs`,
+`Application/Features/ProductItemSkuMaster/Workflow/GlobalProductRetirementRequestWorkflowProcessor.cs` and
+`Application/Features/ProductItemSkuMaster/Lifecycle/GlobalProductRetirementRequestAuditIntentFactory.cs`.
+Existing `RetireGlobalProductIdentityCommand.cs`, `RetireGlobalProductIdentityHandler.cs`,
+`RetireGlobalProductIdentityValidator.cs`, repository retirement CAS and
+`ProductIdentityLifecycleAuditIntentFactory.cs` may be changed only to share the already proven final retirement
+primitive; they may not become a second writer. The controller and manifest may add `request-retirement` while
+retaining the existing `retire` route/action as deprecated compatibility. Manifest semantics are exact:
+`REQUEST_RETIREMENT` is the normal dangerous RowAction, while existing `RETIRE` becomes a non-row, non-toolbar
+`System` compatibility action so its permission remains catalogued without advertising a normal tenant action.
+No WorkCenter provider/dispatcher class, Platform bridge class or manifest address is added. Native Workflow owns the
+work item and approve/reject dispatch; MDM owns final retirement and child/admission revalidation.
+
+Retirement admission uses the same aggregate CAS fence as correction. It cannot start Workflow while any correction
+or retirement binding is active. Terminal reject/cancel releases only the exact retirement operation binding and
+preserves the approved product. Terminal approve revalidates child/admission fences, retires the product, releases
+the same binding and appends the final audit intent in one product CAS. If approved terminal evidence arrives after
+child/admission or version drift, the operation becomes audit-backed `ManualReconciliationRequired`, retains the
+binding and never reports or fabricates retirement completion.
+
+There is exactly one final retirement primitive with two explicit fenced modes. Deprecated compatibility mode is
+permitted only when `ActiveLifecycleOperation` is null; any correction or retirement binding returns stable HTTP 409
+without product, Workflow or audit mutation. Workflow-apply mode requires the exact
+`Retirement + OperationId + BaseProductVersion` binding and may clear only that binding. At terminal approval it
+revalidates the current product version plus Revision, GSKU and child-creation admission fences, then performs one CAS
+that retires the product, clears the exact binding and appends exactly one audit intent. Any version, child, admission
+or binding drift records the retirement operation as `ManualReconciliationRequired`, retains the binding and leaves
+the approved product unchanged. Neither mode may call or compose a second lifecycle writer.
+
+The append-only audit vocabulary is frozen as follows: `GlobalProductRetirementRequested = 45`,
+`GlobalProductRetirementRejected = 46`, `GlobalProductRetirementCancelled = 47` and
+`GlobalProductRetirementManualReconciliationRequired = 48`. Successful terminal approval reuses the existing
+`GlobalProductIdentityRetired = 19`; no duplicate approved-retirement operation is introduced.
+
+Test allow-list: new `GlobalProductRetirementRequestUnitTests.cs`,
+`GlobalProductRetirementRequestOperationMongoTests.cs`,
+`GlobalProductRetirementRequestWorkflowProcessorTests.cs`,
+`GlobalProductRetirementRequestRecoveryWorkerMongoTests.cs` and
+`GlobalProductRetirementRequestRecoveryRunnerTests.cs`; shared
+`GlobalProductLifecycleOperationAdmissionMongoTests.cs`; narrow existing `GlobalProductLifecycleUnitTests.cs`,
+`GlobalProductLifecycleMongoTests.cs`, `GlobalProductApiMongoTests.cs`,
+`GlobalProductChildAdmissionMongoTests.cs`,
+`GlobalProductLifecycleAuthorizationTests.cs`, `ModuleRegistration/ProductItemSkuMasterManifestProviderTests.cs`,
+`PlatformProductIdentityWorkflowClientTests.cs`, `ProductIdentityWorkflowDependencyInjectionTests.cs` and
+`ProductIdentityWorkflowNoCredentialPersistenceTests.cs`, plus `GlobalProductAvailableActionsTests.cs`.
+`ProductIdentityLifecycleScopeEnforcementTests.cs` is added to the writable test allow-list only if the shared final
+primitive changes the handler call-shape that its existing source-contract assertion measures; otherwise it remains
+read-only regression evidence.
+Acceptance includes child/admission fence drift after submission, approve-versus-withdraw race, reject preserving
+approved state, correction-versus-retirement atomic admission race, exact binding release fencing, crash/replay,
+exact one final retirement/audit result and a direct-retire caller census. The normal-UI no-direct-retire proof is
+explicitly deferred to L6 because frontend files are outside L4's allow-list: L4 backend/manifest closure proves the
+compatibility action is non-row/System and the request action is the sole normal manifest RowAction; L6 must remove
+the existing JavaScript/MVC normal action dispatch and prove the normal tenant UI never calls the compatibility
+endpoint before the combined lifecycle slice can be accepted.
+Newly accepted or exact in-progress retirement-request replay returns HTTP 202; terminal exact replay/read-back
+returns HTTP 200. Both envelopes contain operation ID, operation state and product version. The detail handler adds
+`REQUEST_RETIREMENT` only for IdentityApproved + canonical request-retirement permission + no active operation.
+
+**L5 — Auth permission onboarding amendment**
+
+Code-truth ownership is split across the existing packs without minting a new FU: `MOD-0018-FU23` owns the twelve-key
+Product Identity lifecycle subset and exact `16 / 7 / 10` grant plans; `MOD-0018-FU25` owns complete exact 34-key
+`product-item-sku-master` descriptor validation beside the unchanged four Workflow/WorkCenter dependencies.
+
+Exact Auth runtime allow-list:
+
+- `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/DefaultRolePermissionTemplate.cs`;
+- `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/ProductIdentityLifecycleEntitlementGrantProfile.cs`.
+
+Exact Auth test allow-list:
+
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/DefaultRolePermissionTemplateTests.cs`;
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductIdentityLifecycleEntitlementGrantProfileTests.cs`;
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/EntitlementPermissionSyncServiceTests.cs`;
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductIdentityLifecyclePermissionOnboardingMongoTests.cs`.
+
+The existing sync engine already composes the special profiles, removes stale source-owned grants before inserting
+desired grants and validates convergence. `EntitlementPermissionSyncService.cs` is therefore protected from runtime
+modification in L5. The MDM manifest regression is a read-only prerequisite during Auth verification; L5 does not
+modify MDM. Acceptance must prove exact 34 owned keys, exact four dependencies, exact `16 / 7 / 10` roles, zero
+Admin/Viewer lifecycle leakage, source-safe direct-retire replacement, replay/revoke/restore, no automatic membership
+and Tenant A/B isolation on real Mongo. Operational reconciliation remains L7.
+
+**L6 — Existing Global Product tenant UI completion**
+
+Runtime allow-list:
+
+- `frontend/Diten.Web/Controllers/GlobalProductsController.cs`
+- existing `frontend/Diten.Web/Views/MasterDataManagement/GlobalProducts/Index.cshtml`,
+  `_CreateEditOffcanvas.cshtml`, `_DetailsQuickView.cshtml` and `_IndexL10n.cshtml`
+- `frontend/Diten.Web/wwwroot/assets/js/MasterDataManagement/GlobalProducts/index.js`
+- the seven existing `GlobalProductsIndex.{en,fr,es,zh,ar,ru,tr}.resx` files
+
+Exact test allow-list:
+
+- `frontend/Diten.Web/tests/global-products-register.test.js`
+- `frontend/Diten.Web/tests/global-confirm-input-type.test.js` only for the exact new Premium input-dialog census and
+  explicit `inputType` assertion.
+
+`_DataTable.cshtml`, `_Filter.cshtml`, `index.l10n.js`, Global Product frontend view models, shared CSS/JavaScript,
+shared `_GlobalConfirmation.cshtml`, DataTable defaults, WorkCenter/Platform runtime and every backend/Gateway file are
+protected in L6. A discovered need in one of those paths is a blocker and requires an owner-approved allow-list
+amendment; it must not be added by assumption.
+
+The browser action contract is actor-scoped and fail-closed. The action-free list DTO never supplies lifecycle
+commands, but every read-authorized row retains a visible kebab. Opening the kebab first refetches current detail and
+then renders the returned ordered `AvailableActions` codes exactly; JavaScript does not derive from list/detail status,
+claims, requester identity or active-operation fields. Unknown/duplicate codes fail closed and are not rendered:
+
+| Fresh detail state | Permitted tenant UI action |
+|---|---|
+| every visible record | `DETAILS` |
+| `DRAFT` | `DETAILS`; then `EDIT` with update permission; then `SUBMIT` with submit permission |
+| `PENDING_IDENTITY_APPROVAL`, canonical submitter | `DETAILS`; then `WITHDRAW_APPROVAL` with withdraw permission |
+| `PENDING_IDENTITY_APPROVAL`, non-submitter | `DETAILS` |
+| `IDENTITY_APPROVED`, no active operation | `DETAILS`; then `REQUEST_CORRECTION` and/or `REQUEST_RETIREMENT` according to their permissions |
+| `IDENTITY_APPROVED`, active operation; `RETIRED`; unrecognized/stale state | `DETAILS` only |
+
+Direct `Retire` is not exposed in the normal tenant action surface after request-based retirement is enabled; its
+existing compatibility proxy is not removed by L6. The one-field Golden Slim offcanvas retains the current-main
+`diten-field` / `diten-field-icon` structure. Create and Draft edit share it, but use explicit mode-specific title,
+primary-button label and submit path; edit always uses a freshly read `expectedVersion`. Correction is a Premium text
+input dialog for the bounded proposed name, retirement is a Premium textarea/reason dialog, and withdrawal is a
+Premium confirmation with no user-entered reason. Correction and retirement are never hidden edit-offcanvas modes.
+
+The MVC proxy surface is same-origin only and mirrors the frozen upstream contract: update maps to
+`PUT /api/global-products/{id}`, withdrawal to `POST /api/global-products/{id}/withdraw`, correction request to
+`POST /api/global-products/{id}/correction-requests`, and retirement request to
+`POST /api/global-products/{id}/retirement-requests`. Every browser mutation is anti-forgery protected and accepts an
+exact field allow-list only; tenant, human actor, operation identity and idempotency key are never accepted from the
+browser. The controller resolves canonical tenant/human subject and sends one deterministic header-only idempotency
+GUID derived from tenant + actor + action + aggregate id + fresh expected version + normalized semantic input (name
+for update/correction, reason for retirement, no free text for withdrawal). Replays produce the same key, while the
+client busy guard prevents double-clicks. Each MVC mutation action also enforces its exact update, withdraw,
+request-correction or request-retirement permission; this is defense in depth and is not used to invent UI actions.
+Update and verified withdrawal (including their exact replays) accept only
+HTTP 200. Newly accepted or exact in-progress correction/retirement request replay accepts only HTTP 202; terminal
+exact replay/read-back accepts only HTTP 200. Every successful envelope contains operation ID, operation state and
+version, after which the UI performs a fresh detail read before rebuilding the kebab or quick view.
+
+WorkCenter remains the approval execution surface. The current generic Workflow projection may expose the new work
+item there, but its provider-owned `source.deepLink` is currently `null`; L6 therefore neither fabricates a
+`/WorkCenterNext/Details/{id}` link from an MDM operation response nor moves approve/reject actions into Global
+Products. Friendly projection/deep-link support for new correction/retirement object types is a separately owned
+Platform/WorkCenter enhancement, not an L6 blocker and not silently added to this frontend slice.
+
+The former L6 action-projection and success-envelope blockers are resolved by the control-tower decision above. L6
+code-start still requires the L1-L5 server projection, mutation and permission prerequisites to be implemented and
+green; it does not independently recreate their authorization decisions in MVC or JavaScript.
+
+Acceptance requires focused tests for the full ordered action-code matrix; visible kebab on every listed row; exactly
+one fresh detail read when it opens; no status/claim/requester inference; fail-closed unknown, duplicate and stale
+actions; mode-specific Golden Slim create/edit; explicit Premium dialog input types; anti-forgery;
+exact form fields; canonical actor/tenant derivation; deterministic header-only idempotency; Unicode-scalar input
+bounds; busy/double-click guard; strict success-envelope handling and read-back; no direct service port; no fabricated
+WorkCenter deep link; seven-locale key parity; and unchanged filter, Save View and real export behavior. Authenticated
+browser smoke must show no console error and only same-origin frontend calls.
+
+**L7 — Local Development acceptance**
+
+Source allow-list: none. Separately authorized operational work provisions the approved Workflow templates/candidates,
+reconciles the exact Auth grants and uses supported service credentials without persisting secrets. Two fresh human
+accounts prove maker/approver separation for edit -> submit -> withdraw -> resubmit -> approve -> correction request ->
+reject -> correction request -> approve -> retirement request -> reject -> retirement request -> approve. Every step
+is verified through UI, Gateway/API, WorkCenter, MDM read-back and read-only Mongo cardinality/audit evidence. Timeout,
+service-down, stale version, replay and cross-tenant non-disclosure are included. Production/Staging and push remain
+separate gates.
+
+#### Explicit code-start gates and unresolved owner approvals
+
+- [ ] Product Data owner approves the state/action matrix, especially approved-name replacement semantics and one
+      active correction/retirement request per Global Product.
+- [x] Workflow owner Phase 1.5 freezes the trusted requester-owned cancellation contract in `MOD-0023-FU02`; generic
+      task cancel remains prohibited. Platform runtime plus real-Mongo completion is still a prerequisite for L2.
+- [ ] Product Data and Workflow owners approve distinct native object/template identities for identity approval,
+      correction and retirement without introducing a duplicate MDM WorkCenter provider.
+- [ ] Auth owner approves the four new permission keys, role deltas and bounded direct-retire compatibility policy.
+- [ ] Audit owner approves the new edit/withdraw/correction-request/correction-applied/retirement-request terminal audit
+      operations and confirms reuse of the existing append-only delivery pipeline.
+- [ ] Each L1-L6 exact allow-list is revalidated against current code truth and receives separate explicit runtime
+      code-start. Approval of this planning subsection alone authorizes no code.
+- [ ] L7 receives exact Local Development operational values and a separate mutation/smoke approval.
+
+Protected throughout: hard delete, generic disable/reactivate, direct approved-name overwrite, automatic user-role
+assignment, new remote WorkCenter provider/dispatcher, Platform bridge class, browser service-port calls, direct Mongo
+business writes, committed secrets/config, other Product Identity aggregates, Production/Staging and push.
+
 ### Orphaned lifecycle operation recovery — Phase 1.5 plan (planning only, runtime unauthorized)
 
 #### Identity and ownership decision
@@ -4269,6 +4802,369 @@ selection, lifecycle controller/UI behavior and all files outside the exact acti
 Maker rebind, operation deletion/soft-delete, direct Mongo, cleanup scripts, whole-document replacement, Workflow
 cancel/start/decision mutation, automatic startup execution, bulk recovery, Production/Staging, commit and push are
 excluded. No runtime work begins until the user separately authorizes the exact A step.
+
+### Global Product Local Development lifecycle and WorkCenter acceptance — 2026-09-04
+
+- The retained acceptance record `GP-000000000007` completed draft edit, submit, withdraw, resubmit, distinct-subject
+  identity approval, correction rejection, correction approval, retirement rejection and retirement approval through
+  the supported Gateway/MDM and WorkCenter paths. Its final state is `Retired`, final Version is `15`, and the approved
+  correction changed the name through the audited lifecycle path rather than direct data mutation.
+- Correction and retirement use the published `GLOBAL-PRODUCT-CORRECTION` and `GLOBAL-PRODUCT-RETIREMENT` templates.
+  Every retained correction/retirement operation is terminal `Completed`; the rejected paths left the product approved,
+  released the active-operation fence and permitted an exact subsequent request. The approved retirement produced a
+  terminal completed Workflow instance and the final retired product read-back.
+- A live-only recovery defect was found and fixed: both extension repositories resolved `ITenantContext.TenantId` in
+  their constructors, so tenant-partition discovery failed before it could discover a tenant. Tenant resolution is now
+  lazy for tenant-owned methods while partition discovery remains tenant-neutral. The same correction was applied to
+  correction and retirement repositories and locked with real-Mongo unresolved-context discovery regressions.
+- The test maker received `ProductIdentityRetirementSteward` only through the supported Auth API for the retirement
+  acceptance and the assignment was removed afterward. Final role read-back shows only `ProductDataSteward`; the
+  lifecycle permission matrix was not broadened. No direct Mongo write, cleanup, config/secret persistence, commit,
+  push or Production/Staging action occurred.
+- Focused correction/retirement runner and real-Mongo regression group passed `17/17`, skipped `0`. The full MDM
+  Release suite passed `1328/1328`, skipped `0`; MDM API Release build passed with `0` warnings and `0` errors.
+  `git diff --check` is clean. Gateway Global Product base/catch-all routes now carry the already-supported `PUT`
+  method and its exact Ocelot regression group passed `21/21` with a `0/0` Gateway Release build. Frontend focused
+  Global Product evidence remains `56/56`; the wider frontend failures are the previously recorded unrelated modules.
+
+### 19.17 GSKU Lifecycle UX Completion — Phase 1.5 Amendment (standing-approved / ready-for-dev)
+
+**Authorization record (2026-09-05):** The user gave standing authorization to finish GSKU, LSKU, ABB, and Product Legal Entity Scope without another pause, prohibited push, and required work to stop before navigation. This amendment is therefore `ready-for-dev` for the exact phases and allow-lists below. It does not authorize a wildcard expansion.
+
+#### 19.17.1 Code-truth baseline and non-goals
+
+- The existing first-pair aggregate remains one `ProductDefinitionRevision` plus exactly one `Gsku`. `UpdateGskuDraftCommand` / `UpdateGskuDraftHandler` and repository CAS are the only draft-update precedent.
+- The existing native first-GSKU workflow remains the submit/approve/reject authority. WorkCenter projects work and dispatches actions; MDM owns and persists every business lifecycle decision.
+- The existing pair-retirement processor remains the sole final retirement writer. Retirement from the normal tenant UI becomes a WorkCenter request; the direct retire API remains a hidden compatibility/system surface and is not a normal business action.
+- No Active/Passive toggle, reactivation, hard delete, cascade retirement, second GSKU for one Revision, or additional-GSKU-per-revision model is authorized.
+- Canonical code, Global Product parent, Revision identifier, GSKU identifier, and applicability constant are immutable after allocation.
+
+#### 19.17.2 Exact action matrix
+
+| Pair state | Exact visible row actions | Fence |
+|---|---|---|
+| `Draft` | Details; Edit when `mdm.gskus.update`; Submit when `mdm.gskus.submit` | Edit uses expected-version CAS; submit keeps the existing one-active-operation fence. |
+| `IdentityApprovalPending`, canonical maker | Details; Withdraw approval when `mdm.gskus.withdraw` | The same native Workflow instance is cancelled; no replacement workflow is started. |
+| `IdentityApprovalPending`, other subject | Details only | Maker identity cannot be spoofed or delegated by browser input. |
+| `IdentityApproved`, no active lifecycle operation | Details; Request correction when `mdm.gskus.request-correction`; Request retirement when `mdm.gskus.request-retirement` | At most one correction or retirement operation may be active. |
+| `IdentityApproved`, active correction/retirement operation | Details only | Double-click, replay, and competing operation admission are fail-closed/idempotent. |
+| `Retired`, unknown, inconsistent | Details only | No reactivation or client-side inferred action. |
+
+Admin/Viewer defaults do not gain lifecycle mutation permissions. `ProductDataSteward` receives the exact GSKU update/withdraw/request-correction keys; `ProductIdentityRetirementSteward` receives request-retirement. `ProductIdentityApprover` continues to use the existing tenant-scoped native Workflow approve/reject permissions. There is no new MDM approve/reject permission.
+
+#### 19.17.3 Lifecycle contracts
+
+**Draft pair edit**
+
+- `PUT /api/gskus/{id}` accepts only `PackQuantity`, `PackUomCode`, and `ExpectedVersion`; the tenant and actor come from trusted server context.
+- The handler reuses the existing atomic `UpdateGskuDraft` path, validates the latest verified GSKU reference assignment, and returns exact replay for the same command/payload. Changed payload with the same command ID or stale version returns conflict before mutation.
+- Pack quantity/UOM are the only mutable pair fields. The Revision is not silently rewritten.
+
+**Pending withdrawal**
+
+- `POST /api/gskus/{id}/identity-approval/withdraw` is allowed only to the persisted canonical maker while the pair and its exact operation are pending.
+- It cancels the same native Workflow instance and atomically returns both Revision and GSKU to Draft, records the paired audit intents, releases the operation admission fence, and provides stable replay. Missing/terminal/drifted workflow state fails closed; it never starts a new workflow.
+
+**Approved correction request**
+
+- `POST /api/gskus/{id}/correction-requests` proposes only `PackQuantity` and `PackUomCode`. The approved pair remains unchanged and approved while WorkCenter approval is pending.
+- Because these are identity-significant attributes, correction admission is rejected when a non-retired LSKU or Finished Good child exists, or a child-admission operation is active. That case requires a new identity design; this amendment does not relax the one-GSKU-per-Revision rule.
+- Approval revalidates the latest provider facts, applies the proposal once with expected-version fencing, appends audit evidence, and closes the durable operation. Rejection preserves the pair. Exact replay is stable; competing correction/retirement requests conflict.
+
+**Retirement request**
+
+- `POST /api/gskus/{id}/retirement-requests` starts the dedicated native Workflow request. WorkCenter approve/reject dispatch returns to the MDM-owned operation.
+- Approval invokes the existing pair-retirement primitive, including child, sibling, admission, version, GSKU-first/Revision-second, audit-delivery, and recovery fences. It never cascades. Rejection preserves the approved pair and releases the fence.
+- The browser never invokes the direct final-retire endpoint. `RETIRE` remains a hidden system action for compatibility/recovery and is not rendered in the tenant action menu.
+
+#### 19.17.4 Cross-pack audit mapping prerequisite (MOD-0021-FU01)
+
+Before any GSKU lifecycle live acceptance, the trusted audit consumer must accept only these exact ordinal pairs:
+
+| Aggregate type | Operation | Audit action |
+|---|---|---|
+| `ProductDefinitionRevision` | `ProductDefinitionRevisionIdentitySubmitted` | `LifecycleTransition` |
+| `Gsku` | `GskuIdentitySubmitted` | `LifecycleTransition` |
+| `ProductDefinitionRevision` | `ProductDefinitionRevisionIdentityApproved` | `LifecycleTransition` |
+| `Gsku` | `GskuIdentityApproved` | `LifecycleTransition` |
+| `ProductDefinitionRevision` | `ProductDefinitionRevisionIdentityRejected` | `LifecycleTransition` |
+| `Gsku` | `GskuIdentityRejected` | `LifecycleTransition` |
+| `ProductDefinitionRevision` | `ProductDefinitionRevisionIdentityApprovalWithdrawn` | `LifecycleTransition` |
+| `Gsku` | `GskuIdentityApprovalWithdrawn` | `LifecycleTransition` |
+| `Gsku` | `GskuCorrectionRequested` | `LifecycleTransition` |
+| `Gsku` | `GskuCorrectionApplied` | `LifecycleTransition` |
+| `Gsku` | `GskuCorrectionRejected` | `LifecycleTransition` |
+| `Gsku` | `GskuCorrectionManualReconciliationRequired` | `LifecycleTransition` |
+| `Gsku` | `GskuRetirementRequested` | `LifecycleTransition` |
+| `Gsku` | `GskuRetirementRejected` | `LifecycleTransition` |
+| `Gsku` | `GskuRetirementManualReconciliationRequired` | `LifecycleTransition` |
+| `ProductDefinitionRevision` | `ProductDefinitionRevisionIdentityRetired` | `Deactivate` |
+| `Gsku` | `GskuIdentityRetired` | `Deactivate` |
+
+No wildcard, numeric enum alias, case-insensitive alias, aggregate substitution, or unknown-operation fallback is allowed. The owner-side amendment is restricted to:
+
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/Audit/TrustedSourceAuditIntentOperationMap.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/TrustedSourceAuditIntentContractTests.cs`
+- the existing `MOD-0021-FU01` Module Pack evidence only
+
+This prerequisite does not authorize any other Platform runtime path from this MDM pack.
+
+#### 19.17.5 Exact runtime/test allow-lists
+
+Each phase is independently fail-closed. A file not listed for that phase remains protected.
+
+**B — Draft edit and pending withdrawal**
+
+- Existing MDM runtime: `ProductItemSkuMasterModels.cs`; `UpdateGskuDraftCommand.cs`; `UpdateGskuDraftHandler.cs`; `UpdateGskuDraftValidator.cs`; `ProductDefinitionRevision.cs`; `Gsku.cs`; `ProductAuditOperation.cs`; `IProductDefinitionRevisionRepository.cs`; `IGskuRepository.cs`; `ProductDefinitionRevisionRepository.cs`; `GskuRepository.cs`; `FirstGskuIdentityWorkflowOperation.cs`; `FirstGskuIdentityWorkflowCheckpoint.cs`; `IFirstGskuIdentityWorkflowOperationRepository.cs`; `FirstGskuIdentityWorkflowOperationResults.cs`; `FirstGskuIdentityWorkflowOperationRepository.cs`; `FirstGskuIdentityWorkflowProcessor.cs`.
+- New MDM runtime, under the existing Product Identity lifecycle folders only: `WithdrawFirstGskuIdentityApprovalCommand.cs`; `WithdrawFirstGskuIdentityApprovalHandler.cs`; `WithdrawFirstGskuIdentityApprovalValidator.cs`; `FirstGskuIdentityLifecycleModels.cs`.
+- Tests only: `GskuDraftEditLifecycleTests.cs`; `FirstGskuIdentityWithdrawalUnitTests.cs`; existing `FirstGskuIdentityLifecycleMongoTests.cs`; existing `FirstGskuIdentityWorkflowOperationMongoTests.cs`; existing `FirstGskuIdentityWorkflowProcessorTests.cs`; existing `GskuRegisterFacadeTests.cs`.
+
+**C — Approved correction operation**
+
+- Existing MDM runtime: `Gsku.cs`; `ProductAuditOperation.cs`; `IGskuRepository.cs`; `GskuRepository.cs`; current child-admission query/repository contracts; current trusted audit intent factory precedent; MDM API DI registration and `Program.cs` only for narrow runner registration.
+- New MDM runtime, under existing Product Identity lifecycle/workflow folders only: `GskuActiveLifecycleOperationBinding.cs`; `GskuCorrectionWorkflowOperation.cs`; `GskuCorrectionWorkflowCheckpoint.cs`; `IGskuCorrectionWorkflowOperationRepository.cs`; `GskuCorrectionWorkflowOperationResults.cs`; `GskuCorrectionWorkflowOperationRepository.cs`; `IGskuCorrectionWorkflowTenantDiscoveryRepository.cs`; `GskuCorrectionWorkflowTenantDiscoveryRepository.cs`; `GskuCorrectionModels.cs`; `GskuCorrectionAuditIntentFactory.cs`; `GskuCorrectionWorkflowStartRequestFactory.cs`; `GskuCorrectionWorkflowProcessor.cs`; correction command, handler, validator, options, worker, explicit runner, and explicit CLI files with the same `GskuCorrection` prefix.
+- Tests only: new files with the exact `GskuCorrection` prefix in the existing MDM test project, plus current GSKU child-admission and trusted-audit contract tests when their assertions require extension.
+
+**D — Approved retirement-request operation**
+
+- Existing MDM runtime: `Gsku.cs`; `ProductDefinitionRevision.cs`; `ProductAuditOperation.cs`; current GSKU/Revision repositories; current child-admission contracts; `FirstGskuIdentityRetirementProcessor.cs`; MDM API DI registration and `Program.cs` only for narrow runner registration.
+- New MDM runtime, under existing Product Identity lifecycle/workflow folders only: `GskuRetirementRequestOperation.cs`; `GskuRetirementRequestCheckpoint.cs`; its exact repository/results/tenant-discovery files; `GskuRetirementRequestModels.cs`; `GskuRetirementRequestAuditIntentFactory.cs`; `GskuRetirementRequestWorkflowStartRequestFactory.cs`; `GskuRetirementRequestWorkflowProcessor.cs`; retirement-request command, handler, validator, options, worker, explicit runner, and explicit CLI files with the same `GskuRetirementRequest` prefix.
+- Tests only: new files with the exact `GskuRetirementRequest` prefix, plus existing pair-retirement, child-admission, workflow, and trusted-audit contract tests when their assertions require extension.
+
+**E — API, manifest, and permission onboarding boundary**
+
+- MDM API/contract runtime only: `ProductItemSkuMasterModels.cs`; `GetGskuByIdHandler.cs`; `GetGskusQuery.cs`; `GetGskusValidator.cs`; `GetGskusHandler.cs`; `IGskuRepository.cs`; `GskuRepository.cs`; `GskusController.cs`; `ProductItemSkuMasterManifestProvider.cs`. The query/repository files are admitted only for the exact optional lifecycle filter below; they may not change search, scope, paging, ordering or referenceability semantics.
+- Exact MDM tests: existing `GskuApiContractTests.cs`; `GskuAuthorizationTests.cs`; `ProductItemSkuMasterManifestProviderTests.cs`; `GskuRegisterFacadeTests.cs`; current GSKU query/repository real-Mongo tests whose constructor/signature assertions require the lifecycle-filter parameter; and one `GskuAvailableActionsTests.cs` contract file. No new test harness/database/schema profile is authorized.
+- Exact manifest keys: `mdm.gskus.update`, `mdm.gskus.withdraw`, `mdm.gskus.request-correction`, `mdm.gskus.request-retirement`. Existing `mdm.gskus.retire` becomes a hidden System action; it is not deleted or broadened.
+- Auth owner-side amendment is limited to the existing Product Identity lifecycle grant profile, default-role template/sync paths, and their current focused/real-Mongo tests recorded in the applicable MOD-0018 follow-up pack. It may add only the role/key assignments stated in 19.17.2, creates no automatic user assignment, and changes no Global Product/LSKU/Finished Good/ABB grant.
+
+**E code-truth supersession (2026-09-05):** This amendment supersedes the earlier controller/manifest-only E allow-list because the safe frontend cannot implement the server-owned matrix or a real server-side lifecycle filter from the current contracts. It does not authorize a second business model or client inference.
+
+- `GskuDetailDto` must expose exact `RevisionVersion`, `GskuVersion`, and ordered `AvailableActions`. The ambiguous singular `Version` is not a mutation precondition and must not be accepted as a substitute for either pair version. `AvailableActions` is computed by `GetGskuByIdHandler` from persisted GSKU/Revision state, canonical human subject, exact permission claims, and the B/C/D durable-operation facts; list-row state and browser permission flags are never action authority.
+- `GetGskusQuery` admits one optional typed `LifecycleStatus`; `GetGskusValidator` rejects undefined enum/numeric values; `GetGskusHandler` passes the value through both Preparation and Enforced scope paths; and both affected `IGskuRepository`/`GskuRepository` page methods apply it inside the tenant/soft-delete/scope Mongo predicate before count and paging. An unknown query value returns bounded `400`; it is never silently ignored. No client-side filtering of a server-side page is allowed.
+- `PUT /api/gskus/{id}` binds route `id` into B's `UpdateGskuDraftRequest.GskuId`, accepts JSON only for `ExpectedVersion`, `PackQuantity`, and `PackUomCode`, and binds one non-empty canonical D-format `Idempotency-Key` to `UpdateGskuDraftCommand.OperationId`. The operation ID is never accepted in JSON. Success is the existing `Response<FirstGskuDraftDto>` contract with `200`; unchanged exact replay is stable and stale/changed replay is `409`.
+- `POST /api/gskus/{id}/identity-approval/withdraw` binds route `id` and one canonical D-format `Idempotency-Key`; JSON accepts only `ExpectedGskuVersion`, required trimmed/control-free `ReasonCode` (`1..128`), and optional trimmed/control-free `Comment` (maximum `2000`), then dispatches B's `WithdrawFirstGskuIdentityApprovalRequest`. The response is `FirstGskuIdentityLifecycleResult`, including both `RevisionVersion` and `GskuVersion`; only a completed withdrawal is `200`, an explicitly non-terminal accepted checkpoint may be `202`, and no transport error is reported as accepted.
+- `POST /api/gskus/{id}/correction-requests` accepts only the C command's exact `ExpectedGskuVersion`, `PackQuantity`, and `PackUomCode` proposal plus the canonical D-format idempotency header. `POST /api/gskus/{id}/retirement-requests` accepts only the D command's exact `ExpectedGskuVersion` and bounded `RequestReason` plus the canonical D-format idempotency header. The retirement processor resolves and freezes the paired revision under its one-active-operation/admission fence; the caller does not provide a second independently stale revision precondition. E binds the C/D command types rather than creating controller-local business DTO aliases.
+- Every body type uses extension-data rejection or an equivalently tested exact-property parser. Route/body ID mismatch, missing/duplicate/malformed idempotency header, unknown property, missing pair precondition, malformed enum, non-human/conflicting subject, tenant mismatch, stale version, permission mismatch and active-operation conflict fail closed with the existing bounded `400/401/403/404/409/503/504` envelope rules.
+- Exact action order remains `DETAILS`, `EDIT`, `SUBMIT`, `WITHDRAW_APPROVAL`, `REQUEST_CORRECTION`, `REQUEST_RETIREMENT`. Unknown/inconsistent operation state reduces to `DETAILS`; it never promotes an action. Direct `RETIRE` is excluded from `AvailableActions` for all normal tenant users.
+
+**E green-B implementation evidence (2026-09-05):** The API now exposes separate `RevisionVersion` / `GskuVersion` and ordered server-owned `AvailableActions`; Draft edit and canonical-maker pending withdrawal are the only newly projected mutation actions. The list lifecycle filter is applied inside both Preparation and Enforced repository paths before count/paging. `PUT /api/gskus/{id}` and `POST /api/gskus/{id}/identity-approval/withdraw` bind route identity plus an exact non-empty D-format `Idempotency-Key`, reject unknown/client-owned fields, and dispatch the existing B commands. The manifest declares `EDIT` and `WITHDRAW_APPROVAL`; direct `RETIRE` is retained only as a hidden `System` action. Correction and retirement-request routes/actions remain deliberately absent until C/D contracts are green. Focused API/authorization/action/manifest plus real-Mongo query tests pass `44/44`; isolated MDM API and test builds pass with zero errors. No runtime process, data, configuration, Gateway, frontend, navigation, commit or push mutation occurred in this E slice.
+
+**F — Gateway**
+
+- No route delta is expected because the existing `/api/gskus/{everything}` catch-all supports the authorized verbs. If measurement disproves this, only the integration-agent may amend `gateway/Diten.ApiGateway/ocelot.json` under a separately recorded route delta; this pack does not pre-authorize it.
+
+**G — Golden Slim frontend**
+
+- Exact frontend runtime: existing GSKU MVC controller and view model; `Views/MasterDataManagement/Gskus/Index.cshtml`; `_CreateEditOffcanvas.cshtml`; `_Filter.cshtml`; `_DataTable.cshtml`; `_DetailsQuickView.cshtml`; `_IndexL10n.cshtml`; `wwwroot/assets/js/MasterDataManagement/Gskus/index.js`; `index.l10n.js`; the seven existing SharedResource RESX files, limited to genuinely used GSKU keys.
+- Exact tests: existing `tests/gsku-register.test.js`, JS syntax, seven-locale parse/parity, focused Golden Slim verifier, frontend Release build, and browser same-origin/console/action-matrix smoke.
+- The create/edit offcanvas follows the current WorkCenter task-create Golden Slim composition for icon-bearing field controls while retaining `_LayoutTenantShell`. Selected filters must have visible selected state and removable chips. Save View, reset, detail quick view, and same-origin MVC proxy behavior remain real.
+- No Import, bulk/delete/select-all, fake actions, direct service-port call, browser tenant/bearer fabrication, Active/Passive control, or second-GSKU surface may be added.
+
+**G source implementation evidence (2026-09-05):** The Golden Slim register consumes only ordered server-owned
+`AvailableActions` and now exposes the authorized draft edit, pending-maker withdrawal, approved correction request and
+approved retirement request flows through same-origin MVC proxies. The retirement UI uses a Premium bounded reason,
+fetches fresh GSKU/revision detail and sends the exact GSKU precondition before admission, accepts only the exact
+`200/202` envelope contract, and requires a fresh
+detail read-back proving that the action fence closed; it never calls the hidden direct-retire endpoint. The lifecycle
+filter, selected-state tint/chip/reset/Save View, WorkCenter-style icon-bearing controls and seven-locale payload remain
+intact. Focused GSKU Vitest passes `20/20`; both GSKU JavaScript files pass syntax validation; all seven RESX files parse
+with exact `75/75` key parity; and the isolated-output Frontend Release build passes with zero errors and 14 pre-existing
+out-of-scope warnings. The generic verifier remains at the previously accepted `72 pass / 19 controlled fail` variance
+(forbidden bulk/delete/import/direct-gateway/Active-Passive/inert-L10n expectations, shared personalization variance,
+and the deliberately removed hardcoded `Default` fallback). `git diff --check`, BOM/final-LF and added-line whitespace
+checks pass. Authenticated two-user Local Development browser/WorkCenter acceptance remains open and is not implied by
+this source evidence.
+
+**H — Local Development acceptance (source allow-list: none)**
+
+- Two fresh users are assigned through supported Auth flows: maker with ProductDataSteward responsibility and distinct approver with the existing ProductIdentityApprover responsibility. Credentials remain ephemeral and unreported.
+- The browser proves: draft pair edit/replay; submit; maker-only withdrawal; resubmit; WorkCenter approval; approved correction request/approve or reject; retirement request/reject and a separate approved retirement case; permissions, tenant isolation, audit acknowledgement, recovery replay, action matrix, Save View, filter selected state, quick detail, console zero, and no direct 5057/5059 traffic.
+- Business cardinality and reservation/binding invariants are read back through API and Mongo read-only proof. Cleanup uses supported APIs only. Navigation remains unchanged and is the explicit stop boundary.
+
+**H preflight blocked evidence (2026-09-05):** Current Auth, Platform and MDM sources build successfully into
+isolated runtime outputs with zero errors; the focused Auth lifecycle profile/default-role tests pass `53/53`, the
+Platform exact trusted-audit map passes `72/72`, and GSKU frontend remains `20/20`. Full frontend regression is
+`2196/2223`; all `27` failures are outside GSKU, while both Global Product and GSKU focused files are green. The live
+business sequence did not start because the local MongoDB Windows service was stopped and the current process cannot
+open that administrator-owned service or the existing `Program Files` data directory. Both supported service start
+and the approved replica-set helper failed at the OS boundary (`Cannot open MongoDB service` / WiredTiger lock access
+denied). The existing data directory was not copied, repaired or mutated, and no account, role, catalog, workflow or
+business record was changed. Authenticated H acceptance therefore remains open until MongoDB is started by an OS
+administrator; this is an environment blocker, not completion evidence.
+
+#### 19.17.6 Acceptance gates
+
+1. Focused unit/API/authorization tests cover every matrix cell and every malformed/mismatch/replay path.
+2. Real `localhost:27017` Mongo tests prove atomic pair state, expected-version conflict, one-active-operation fencing, maker-only withdrawal, crash recovery, stable replay, correction child fence, retirement child/sibling/admission fence, and no duplicate operation/audit intent.
+3. Native Workflow tests prove the exact object type/id, candidate principal, tenant, permission, expected version, idempotency key, and approve/reject dispatch ownership; no mock WorkCenter branch is accepted.
+4. MOD-0021-FU01 exact operation-map tests pass before live acceptance; every unknown spelling remains rejected.
+5. Full MDM, affected Auth/Platform focused suites, frontend focused suite, Release builds, `git diff --check`, conflict-marker, whitespace, UTF-8/LF/final-newline, and secret scans pass.
+6. Runtime/code evidence may move this amendment to implemented/review only after the exact tests exist and pass. No push or navigation change is authorized.
+
+### 19.18 LSKU Lifecycle UX Completion — Phase 1.5 Amendment (standing-approved / ready-for-dev)
+
+**Authorization record (2026-09-05):** The user's standing non-push authorization covers completing LSKU before the navigation stop boundary. This amendment authorizes only the exact phases and allow-lists below. LSKU remains navigation-hidden.
+
+#### 19.18.1 Identity decision and non-goals
+
+- `TenantId + GskuId + MarketCode` is the immutable, non-reusable LSKU identity tuple. `GskuId`, `MarketCode`, `MarketSelection`, canonical code, reservation and binding cannot be edited or corrected.
+- `MarketTradeName` is a separate LSKU-owned aggregate/timeline and is not a mutable field on LSKU identity. It must not be smuggled into this completion step.
+- Therefore LSKU has no edit, correction, Active/Passive, rebind, market-change, hard-delete or reactivation action. A changed GSKU/market identity requires a separately governed new identity and never releases the old tuple.
+- Existing submit/approve/reject lifecycle and durable Workflow operation remain authoritative. The normal tenant direct-retire UX is replaced by a WorkCenter retirement request; the existing direct retire endpoint remains hidden System compatibility/recovery only.
+
+#### 19.18.2 Server-owned exact action matrix
+
+`LskuDetailDto.AvailableActions` is computed by MDM from persisted state, exact permission claims, canonical subject and active-operation facts. Frontend state/permission inference is forbidden.
+
+| LSKU state | Exact `AvailableActions` |
+|---|---|
+| `Draft` | `DETAILS`; `SUBMIT` when `mdm.lskus.submit` is present |
+| `PendingIdentityApproval`, persisted canonical maker | `DETAILS`; `WITHDRAW_APPROVAL` when `mdm.lskus.withdraw` is present |
+| `PendingIdentityApproval`, any other subject | `DETAILS` only |
+| `IdentityApproved`, no active lifecycle operation | `DETAILS`; `REQUEST_RETIREMENT` when `mdm.lskus.request-retirement` is present |
+| `IdentityApproved`, active retirement request | `DETAILS` only |
+| `Retired`, unknown or inconsistent | `DETAILS` only |
+
+List rows may carry only the same server-owned action projection needed to render the menu; the browser re-fetches detail immediately before every mutation and requires that the exact action is still present. Unknown action strings are ignored, never promoted.
+
+#### 19.18.3 Pending withdrawal and retirement request
+
+**Pending withdrawal**
+
+- `POST /api/lskus/{id}/identity-approval/withdraw` accepts only the expected version in a strict body and a header-only D-GUID idempotency key. Tenant, actor and maker come from trusted context/persistence.
+- Only the persisted canonical maker may cancel the same native Workflow instance. Successful cancellation atomically returns the LSKU to Draft, appends `LskuIdentityApprovalWithdrawn`, closes/releases the same durable operation fence and is exact-replay stable. It never creates a replacement Workflow.
+- Terminal, missing, drifted or ambiguous Workflow evidence fails closed. A different subject, stale version, payload drift or concurrent action cannot mutate the LSKU.
+
+**Retirement request**
+
+- `POST /api/lskus/{id}/retirement-requests` starts one dedicated native Workflow operation for an approved LSKU. The normal browser never calls the direct final-retire endpoint.
+- WorkCenter approval invokes the existing atomic LSKU retirement primitive once after tenant/state/version/object/evidence revalidation and records `LskuIdentityRetired`. Rejection preserves the approved LSKU and records `LskuRetirementRejected`. Request admission records `LskuRetirementRequested`.
+- One active retirement request per LSKU is allowed. Exact replay is stable; competing request, double click, fact drift and stale decision conflict. No provider or parent lookup is required to reject or to execute the already-approved identity's final retirement; no cascade occurs.
+
+#### 19.18.4 Exact central audit mapping prerequisite (MOD-0021-FU01)
+
+The trusted audit map must accept only these exact ordinal pairs before LSKU live acceptance:
+
+| Aggregate type | Operation | Audit action |
+|---|---|---|
+| `Lsku` | `LskuDraftCreated` | `Create` |
+| `Lsku` | `LskuIdentitySubmitted` | `LifecycleTransition` |
+| `Lsku` | `LskuIdentityApproved` | `LifecycleTransition` |
+| `Lsku` | `LskuIdentityRejected` | `LifecycleTransition` |
+| `Lsku` | `LskuIdentityApprovalWithdrawn` | `LifecycleTransition` |
+| `Lsku` | `LskuRetirementRequested` | `LifecycleTransition` |
+| `Lsku` | `LskuRetirementRejected` | `LifecycleTransition` |
+| `Lsku` | `LskuIdentityRetired` | `Deactivate` |
+
+No wildcard, numeric enum alias, case-insensitive alias, aggregate substitution or unknown fallback is authorized. Owner-side changes are restricted to `TrustedSourceAuditIntentOperationMap.cs`, `TrustedSourceAuditIntentContractTests.cs` and the existing MOD-0021-FU01 pack evidence. This MDM pack grants no other Platform runtime authority.
+
+#### 19.18.5 Exact MDM/Auth/API allow-list
+
+**B — maker-only withdrawal:** existing `Lsku.cs`, `ProductAuditOperation.cs`, `ILskuRepository.cs`, `LskuRepository.cs`, `LskuIdentityWorkflowOperation.cs`, `LskuIdentityWorkflowCheckpoint.cs`, `ILskuIdentityWorkflowOperationRepository.cs`, `LskuIdentityWorkflowOperationResults.cs`, `LskuIdentityWorkflowOperationRepository.cs`, `IProductIdentityWorkflowClient.cs`, `ProductIdentityWorkflowTransportModels.cs`, `PlatformProductIdentityWorkflowClient.cs`, `LskuIdentityLifecycleModels.cs`, `LskuIdentityLifecycleAuditIntentFactory.cs` and `LskuIdentityWorkflowProcessor.cs`; new `WithdrawLskuIdentityApprovalCommand.cs`, handler, validator and `LskuIdentityApprovalWithdrawalProcessor.cs` under the existing LSKU lifecycle/workflow folders. Tests are limited to new withdrawal unit tests and narrow extensions of existing LSKU lifecycle, operation-Mongo, processor, Workflow-client, API and authorization tests.
+
+**C — WorkCenter retirement request:** existing `Lsku.cs`, `ProductAuditOperation.cs`, `ILskuRepository.cs`, `LskuRepository.cs`, current direct-retirement handler/validator/atomic primitive, shared Workflow client contracts and API DI/`Program.cs` only for narrow runner registration. New files are limited to `LskuRetirementRequestOperation.cs`, checkpoint, repository/results/discovery and persistence files; `LskuRetirementRequestModels.cs`, audit factory, start-request factory, processor, command/handler/validator, default-disabled options/worker, explicit runner and explicit CLI using the exact `LskuRetirementRequest` prefix. Tests use the same prefix plus narrow existing direct-retirement and GSKU-child-blocker regressions.
+
+**D — API/detail/manifest:** `ProductItemSkuMasterModels.cs`, `GetLskuByIdHandler.cs`, `GetLskusHandler.cs`, `GetLskusQuery.cs`, `ILskuRepository.cs`, `LskuRepository.cs`, `LskusController.cs`, `ProductItemSkuMasterManifestProvider.cs`, existing LSKU query/API/authorization/manifest tests. Add only `mdm.lskus.withdraw` and `mdm.lskus.request-retirement`; keep `mdm.lskus.retire` as an invisible System action. Routes add only withdrawal and retirement request. There is no update/correction/approve/reject route.
+
+**E — Auth owner amendment:** existing `ProductIdentityLifecycleEntitlementGrantProfile.cs`, `DefaultRolePermissionTemplate.cs`, `EntitlementPermissionSyncService.cs` and their existing focused/real-Mongo tests under the applicable MOD-0018 follow-up evidence. `ProductDataSteward` gains only `mdm.lskus.withdraw`; `ProductIdentityRetirementSteward` gains only `mdm.lskus.request-retirement`. Admin/Viewer receive neither; no user is automatically assigned; GSKU/Global Product/Finished Good/ABB matrices remain unchanged.
+
+#### 19.18.6 Golden Slim frontend and lifecycle filter
+
+- Exact frontend runtime: existing `Controllers/LskusController.cs`, `Models/Lskus/LskuViewModels.cs`, `Views/MasterDataManagement/Lskus/Index.cshtml`, `_CreateEditOffcanvas.cshtml`, `_DataTable.cshtml`, `_DetailsQuickView.cshtml`, `_Filter.cshtml`, `_IndexL10n.cshtml`, `LskusIndex.cs`, `wwwroot/assets/js/MasterDataManagement/Lskus/index.js`, `index.l10n.js`, and the seven existing `LskusIndex.{en,fr,es,zh,ar,ru,tr}.resx` files. Tests: existing `lsku-register.test.js`, JS syntax, locale parse/parity, Golden Slim verifier, frontend Release build and browser smoke.
+- The action menu renders only MDM `AvailableActions`. Submit, withdraw and retirement request use same-origin MVC proxies, antiforgery, fresh detail, server-owned header idempotency and exact postcondition read-back. Direct retire is not rendered.
+- The inline Golden Slim filter adds a real lifecycle selector. Search + lifecycle are sent to the bounded server query, saved/reset together in Save View, display a visibly selected state and removable active-filter chip, and reset to no lifecycle constraint. Client-only filtering of one page is forbidden.
+- Every visible string comes from the JSON localization payload. Hardcoded display/error fallbacks such as `Default`, `Save View`, `Request failed` or browser literals are removed; missing/malformed localization fails visibly and safely rather than silently inventing English text.
+- Create remains the exact two-field `GskuId + MarketCode` offcanvas. No edit/correction form, Import, bulk/delete/select-all, Active/Passive control, fake action, direct service-port request, browser tenant header or bearer fabrication is permitted.
+
+#### 19.18.7 Acceptance and stop boundary
+
+1. Unit/API/authorization tests cover every action-matrix cell, canonical-maker separation, strict DTO/header parsing, stale state/version, exact replay/drift and absence of edit/correction/direct-retire UI.
+2. Real `localhost:27017` tests prove atomic withdrawal, same-operation cancellation recovery, one-active-retirement fence, WorkCenter approve/reject, crash recovery, stable replay, audit intent/receipt delivery, tenant isolation and unchanged immutable tuple/reservation/market proof.
+3. Central audit exact-map tests pass for all eight LSKU rows and reject every alias/unknown spelling.
+4. Frontend tests prove server-owned actions, server-side lifecycle filtering, selected state/chip/reset/Save View, localization without hardcoded fallback, Golden Slim parity, console zero and no direct 5057/5059 traffic.
+5. Full affected MDM/Auth/Platform/frontend suites, Release builds and repository quality scans pass before evidence is marked implemented.
+6. Local Development acceptance uses distinct maker/approver through supported Auth and native WorkCenter flows, performs no direct Mongo write, and proves API/UI/Mongo read-back. LSKU navigation remains hidden; navigation is the explicit stop point. No commit or push is authorized by this amendment.
+
+#### 19.18.8 Phase B implementation evidence (2026-09-05)
+
+The maker-only withdrawal domain/application/persistence slice is implemented. It persists the exact withdrawal request, preflight and cancellation evidence on the existing LSKU Workflow operation, cancels only the bound Workflow instance, and atomically moves the immutable LSKU identity back to Draft with one `LskuIdentityApprovalWithdrawn` audit intent while advancing the same operation to `WithdrawalApplied`. The real-Mongo regression proves stable replay and unchanged `GskuId + MarketCode`; the existing recovery runner now recognizes every withdrawal checkpoint. The exact trusted audit operation map accepts only `Lsku + LskuIdentityApprovalWithdrawn -> LifecycleTransition`.
+
+Evidence: MDM Release build passed with zero errors and five pre-existing warnings; focused LSKU lifecycle/processor/real-Mongo tests passed `33/33`, zero skipped; Platform trusted audit contract passed `66/66`, zero skipped. Phase D API/detail/action projection, Phase E Auth grants, Phase C retirement, frontend and live acceptance remain open and are not implied by this Phase B evidence.
+
+#### 19.18.9 Phase C implementation evidence (2026-09-05)
+
+The purpose-built LSKU retirement-request backend is implemented without adding edit, correction, rebind or a second
+LSKU identity path. Admission freezes one exact `LskuRetirementRequest` operation and atomically binds it to an
+`IdentityApproved` LSKU. Native Workflow approval invokes the same repository retirement CAS used by the hidden
+direct-retire compatibility path; rejection clears the exact binding while preserving `IdentityApproved`. Both paths
+preserve `GskuId + MarketCode`, use distinct maker/decision subjects, persist exact audit intent and are replay-stable.
+The default-disabled recovery worker and explicit CLI discover tenant partitions and bounded recoverable operations;
+terminal operations are fenced out and a rejected operation releases the one-active-operation uniqueness fence.
+
+Evidence: isolated MDM Release build passed with zero errors and five pre-existing warnings; focused LSKU
+retirement unit, recovery-contract and real `localhost:27017` Mongo tests passed `11/11`, zero skipped. Tests prove one-active-operation,
+tenant isolation, unresolved-tenant partition discovery, checkpoint persistence, approve/reject outcomes, stable
+replay, exact audit cardinality and unchanged immutable identity. Platform exact trusted-audit contract passed
+`72/72`, zero skipped. Phase D API/detail/action projection, Phase E Auth, frontend and Local Development acceptance
+remain open; no configuration, data, process, navigation, commit or push operation is implied by this evidence.
+
+#### 19.18.10 Phase E Auth implementation evidence (2026-09-05)
+
+The exact entitlement profile now catalogs `mdm.lskus.withdraw` and `mdm.lskus.request-retirement` without granting
+either key to Admin or Viewer. `ProductDataSteward` gains only withdrawal; `ProductIdentityRetirementSteward` replaces
+its module-sourced direct `mdm.lskus.retire` grant with request-retirement. Direct-retire remains catalogued and in the
+default-role exclusion set for hidden System compatibility, while manual/system/other-module grants and generic sync
+semantics remain unchanged. No user is automatically assigned.
+
+Evidence: focused profile/default-role/sync and real `localhost:27017` replay/revoke/restore tests passed `126/126`,
+zero skipped. The Auth API Release build passed with zero errors and one pre-existing warning; `git diff --check`
+passed. Phase D API/detail/action projection, frontend and Local Development acceptance remain open; no MDM, Gateway,
+navigation, configuration, data, commit or push operation is implied by this evidence.
+
+#### 19.18.11 Phase D/G implementation and independent review evidence (2026-09-05)
+
+The LSKU list/detail contract now exposes only the ordered server-owned `AvailableActions` matrix. The API activates
+strict maker withdrawal and retirement-request routes with canonical `Idempotency-Key` handling, exact request DTOs
+and fail-closed actor/version checks. Lifecycle filtering is applied by Mongo before count and paging in both normal
+and enforced-scope queries. The manifest exposes withdrawal and retirement request as row actions while direct retire
+remains a hidden `System` compatibility action. The tenant frontend uses same-origin antiforgery-protected proxies,
+fresh detail/version reads and postcondition read-back; it never renders direct retire, edit or correction and preserves
+the immutable `GskuId + MarketCode` tuple. Filter selection, visible tint/chip, reset and Save View state are wired to the
+server lifecycle query, and all visible additions are present in the seven locale resources.
+
+Evidence: focused MDM API/query/action/manifest and real-Mongo coverage passed `62/62`, zero skipped; focused frontend
+coverage passed `9/9`; JavaScript syntax and seven-locale parity (`60` exact keys per locale) passed. Isolated MDM and
+frontend Release builds passed with zero errors and respectively five and fourteen pre-existing warnings;
+`git diff --check` passed. The bundled-Python Golden Slim verifier independently reproduced **72 pass / 19 controlled
+generic variances**. Those variances request intentionally inapplicable bulk/delete/select-all, edit, Active/Passive,
+direct-Gateway and browser-auth/tenant-header behavior, or a hardcoded English default explicitly forbidden by this
+amendment; no LSKU acceptance behavior is missing from that set. A subsequent all-`Lsku` FQN review compiled the full
+test assembly but could not re-run its real-Mongo cases because `localhost:27017` was not listening; no runtime process
+was started by the read-only review. The earlier `62/62` real-Mongo evidence therefore remains authoritative pending the
+coordinated Local Development restart and live maker/approver acceptance. No configuration, business data, navigation,
+commit or push operation is implied by this evidence.
+
+### 19.19 Navigation item 7 activation gate (user-approved; source implemented, acceptance pending)
+
+The user's 2026-09-06 navigation approval supersedes the earlier stop-before-navigation restriction only for the
+already implemented Product / Item / SKU tenant pages. It does not waive live acceptance or permission/catalog
+preconditions. `GSKUS` and `GLOBAL_PRODUCTS` were already visible. The source-owned `LSKUS` visibility flip and its
+seven normalized navigation labels are now implemented under this gate. This does not claim operational menu
+acceptance. Finished Good navigation is not added by this amendment.
+
+The exact runtime allow-list is `ProductItemSkuMasterManifestProvider.cs`, limited to the `LSKUS`
+`IsNavigationVisible` value, and its existing manifest-provider test. The frontend allow-list is the seven existing
+`SharedResource.*.resx` files, limited to the derived `Nav.Page.LSKUS` key. No controller, route, layout, handwritten
+menu, static search registry, permission, role, grant, Gateway, business data or lifecycle file may change.
+`NavManifestL10nGuardTests` must be run but need not be edited because it derives required keys from the manifest.
+
+Activation acceptance requires authoritative self-registration/reconciliation, one catalog page with exact route
+`/MasterDataManagement/Lskus` and exact required permission `mdm.lskus.read`, all seven non-empty localized labels,
+fresh-token menu presence for an entitled reader, absence for a user lacking the entitlement or read permission,
+route `200/403` proof, Ctrl+K data-driven discovery, zero duplicate/static menu entry and browser console/network
+cleanliness. Until the lifecycle live acceptance and these checks pass, the source change is not delivery-accepted or
+eligible for the user's final merge approval.
 
 ## 20. Follow-up Items
 

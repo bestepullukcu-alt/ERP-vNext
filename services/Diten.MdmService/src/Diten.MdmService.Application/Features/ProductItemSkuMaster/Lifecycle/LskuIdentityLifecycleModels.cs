@@ -5,6 +5,7 @@ namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
 public static class LskuIdentityLifecyclePermissions
 {
     public const string Submit = "mdm.lskus.submit";
+    public const string Withdraw = "mdm.lskus.withdraw";
     public const string Retire = "mdm.lskus.retire";
 }
 
@@ -14,6 +15,13 @@ public sealed record StartLskuIdentityWorkflowRequest(
     Guid OperationId);
 
 public sealed record RetireLskuIdentityRequest(
+    Guid LskuId,
+    int ExpectedVersion,
+    Guid OperationId,
+    string ReasonCode,
+    string? Comment);
+
+public sealed record WithdrawLskuIdentityApprovalRequest(
     Guid LskuId,
     int ExpectedVersion,
     Guid OperationId,

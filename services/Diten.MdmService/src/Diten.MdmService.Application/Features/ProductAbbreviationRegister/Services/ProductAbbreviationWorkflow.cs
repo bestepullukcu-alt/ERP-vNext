@@ -665,7 +665,7 @@ public sealed class ProductAbbreviationWorkflow
                 "ABBREVIATION_EVIDENCE_RECONCILIATION_REQUIRED",
                 202);
 
-    private Task<bool> AppendHistoryAsync(
+    private async Task<bool> AppendHistoryAsync(
         ProductAbbreviationRegisterEntry entry,
         ProductAbbreviationHistoryEventType eventType,
         ProductAbbreviationLifecycleStatus? before,
@@ -677,10 +677,10 @@ public sealed class ProductAbbreviationWorkflow
         var timestamp = DateTimeOffset.UtcNow;
         var evidence = Hash(
             $"{_actor.TenantId:N}|{entry.Id:N}|{entry.GlobalProductId:N}|{entry.NormalizedAbbreviation}|{eventType}|{before}|{after}|{_actor.CanonicalHumanSubjectId}|{idempotencyKey}|{reason}");
-        return _history.AppendIfAbsentAsync(
-            new ProductAbbreviationHistoryEntry
-            {
+        var history = new ProductAbbreviationHistoryEntry
+        {
                 Id = DeterministicGuid($"{_actor.TenantId:N}|history|{entry.Id:N}|{eventType}|{idempotencyKey}"),
+                TenantId = _actor.TenantId,
                 RegisterEntryId = entry.Id,
                 GlobalProductId = entry.GlobalProductId,
                 NormalizedAbbreviation = entry.NormalizedAbbreviation,
@@ -696,8 +696,14 @@ public sealed class ProductAbbreviationWorkflow
                 Reason = reason,
                 EvidenceHash = evidence,
                 OccurredAtUtc = timestamp
-            },
-            cancellationToken);
+        };
+        if (!await _history.AppendIfAbsentAsync(history, cancellationToken))
+        {
+            return false;
+        }
+
+        var intent = ProductAbbreviationAuditIntentFactory.Create(entry, history);
+        return await _register.AppendAuditIntentIfAbsentAsync(entry.Id, intent, cancellationToken);
     }
 
     private Response<T>? Demand<T>(string permission)

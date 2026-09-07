@@ -47,7 +47,30 @@ public sealed record FirstGskuIdentityWorkflowCheckpointMutation(
     ReferenceCatalogSelection? ApprovalPackUomSelection = null,
     long? ReferencesValidatedAtUtcTicksV1 = null,
     string? ApprovalReferenceProofFingerprint = null,
+    Guid? WithdrawalCommandId = null,
+    string? WithdrawalFingerprint = null,
+    Guid? WithdrawalRequesterSubjectId = null,
+    int? WithdrawalExpectedGskuVersion = null,
+    string? WithdrawalReasonCode = null,
+    string? WithdrawalComment = null,
+    int? WithdrawalExpectedWorkflowInstanceVersion = null,
+    int? WithdrawalExpectedApprovalTaskVersion = null,
+    Guid? WithdrawalTransitionLogId = null,
+    long? WithdrawalObservedAtUtcTicksV1 = null,
+    long? WithdrawalTransitionSequence = null,
+    int? WithdrawalResultWorkflowInstanceVersion = null,
+    int? WithdrawalResultApprovalTaskVersion = null,
+    string? WithdrawalTaskStatus = null,
+    string? WithdrawalInstanceStatus = null,
+    string? WithdrawalObjectRef = null,
     bool ReleaseLease = false);
+
+public sealed record FirstGskuIdentityWithdrawalWriteResult(
+    bool Succeeded,
+    bool IsReplay,
+    ProductDefinitionRevision? Revision,
+    Gsku? Gsku,
+    string? ErrorCode);
 
 public sealed record FirstGskuIdentityWorkflowRecoveryCursor(long? NextAttemptAtUtcTicksV1, Guid OperationId);
 public sealed record FirstGskuIdentityWorkflowRecoverablePage(

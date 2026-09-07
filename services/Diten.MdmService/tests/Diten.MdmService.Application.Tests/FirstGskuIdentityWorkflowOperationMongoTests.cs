@@ -17,6 +17,8 @@ public sealed class FirstGskuIdentityWorkflowOperationMongoTests : IAsyncLifetim
     private readonly Guid _tenantBId = Guid.NewGuid();
     private IMongoDatabase _database = null!;
     private IMongoCollection<FirstGskuIdentityWorkflowOperation> _collection = null!;
+    private IMongoCollection<ProductDefinitionRevision> _revisions = null!;
+    private IMongoCollection<Gsku> _gskus = null!;
 
     public async Task InitializeAsync()
     {
@@ -32,6 +34,8 @@ public sealed class FirstGskuIdentityWorkflowOperationMongoTests : IAsyncLifetim
         await _database.RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
         _collection = _database.GetCollection<FirstGskuIdentityWorkflowOperation>(
             FirstGskuIdentityWorkflowOperationRepository.CollectionName);
+        _revisions = _database.GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions");
+        _gskus = _database.GetCollection<Gsku>("mdm_gskus");
         _ = Repository(_tenantId);
     }
 
@@ -296,6 +300,128 @@ public sealed class FirstGskuIdentityWorkflowOperationMongoTests : IAsyncLifetim
     }
 
     [Fact]
+    public async Task Withdrawal_transaction_updates_both_pair_members_and_operation_or_none()
+    {
+        var repository = Repository(_tenantId);
+        var now = DateTimeOffset.UtcNow;
+        var commandId = Guid.NewGuid();
+        var workflowId = Guid.NewGuid();
+        var taskId = Guid.NewGuid();
+        var makerId = Guid.NewGuid();
+        var operation = Operation("withdraw-pair", "withdraw-fingerprint");
+        operation.WorkflowInstanceId = workflowId;
+        operation.ApprovalTaskId = taskId;
+        operation.WorkflowTemplateVersionId = Guid.NewGuid();
+        operation.MakerSubjectId = makerId;
+        operation.Checkpoint = FirstGskuIdentityWorkflowCheckpoint.WithdrawalObserved;
+        operation.WithdrawalCommandId = commandId;
+        operation.WithdrawalFingerprint = "withdrawal-fingerprint";
+        operation.WithdrawalRequesterSubjectId = makerId;
+        operation.WithdrawalExpectedGskuVersion = 1;
+        operation.WithdrawalReasonCode = "REQUESTER_WITHDRAWAL";
+        operation.WithdrawalExpectedWorkflowInstanceVersion = 3;
+        operation.WithdrawalExpectedApprovalTaskVersion = 5;
+        operation.WithdrawalTransitionLogId = Guid.NewGuid();
+        operation.WithdrawalObservedAtUtcTicksV1 = now.UtcTicks;
+        operation.WithdrawalTransitionSequence = 3;
+        operation.WithdrawalResultWorkflowInstanceVersion = 4;
+        operation.WithdrawalResultApprovalTaskVersion = 6;
+        operation.WithdrawalTaskStatus = "Cancelled";
+        operation.WithdrawalInstanceStatus = "Cancelled";
+        operation.WithdrawalObjectRef = operation.ObjectRef;
+        operation.LeaseOwner = "withdraw-worker";
+        operation.LeaseGeneration = 1;
+        operation.LeaseUntilUtcTicksV1 = now.AddMinutes(1).UtcTicks;
+        operation.Id = Guid.NewGuid();
+        operation.CreatedAt = now;
+        operation.UpdatedAt = now;
+        operation.UpdatedAtUtcTicksV1 = now.UtcTicks;
+        operation.IsDeleted = false;
+
+        var binding = new FirstGskuIdentityWorkflowBinding
+        {
+            WorkflowInstanceId = workflowId,
+            WorkflowTemplateId = operation.WorkflowTemplateId!.Value,
+            WorkflowTemplateVersionId = operation.WorkflowTemplateVersionId.Value,
+            ApprovalTaskId = taskId,
+            AssignmentSnapshotId = Guid.NewGuid(),
+            StartTransitionLogId = Guid.NewGuid(),
+            ObjectType = "gsku",
+            GskuId = operation.GskuId,
+            ProductDefinitionRevisionId = operation.ProductDefinitionRevisionId,
+            ObjectRef = operation.ObjectRef,
+            SubmitterSubjectId = makerId,
+            StartIdempotencyKey = operation.StartIdempotencyKey,
+            StartRequestFingerprint = operation.OperationFingerprint,
+            SubmittedAtUtc = now
+        };
+        var revision = new ProductDefinitionRevision
+        {
+            Id = operation.ProductDefinitionRevisionId, TenantId = _tenantId,
+            GlobalProductId = operation.GlobalProductId, RevisionIdentifier = "REV-001",
+            CreationCommandId = operation.CreationCommandId, Version = 1,
+            LifecycleStatus = ProductIdentityLifecycleStatus.PendingIdentityApproval,
+            IdentityWorkflowBinding = binding, CreatedAt = now, UpdatedAt = now
+        };
+        var gsku = new Gsku
+        {
+            Id = operation.GskuId, TenantId = _tenantId,
+            ProductDefinitionRevisionId = operation.ProductDefinitionRevisionId,
+            CanonicalCode = "GS-WITHDRAW", CreationCommandId = operation.CreationCommandId,
+            PackApplicabilityCode = "PACK", PackQuantity = 1, PackUomCode = "EA",
+            PackApplicabilitySelection = operation.PackApplicabilitySelection,
+            PackUomSelection = operation.PackUomSelection, Version = 1,
+            LifecycleStatus = ProductIdentityLifecycleStatus.PendingIdentityApproval,
+            IdentityWorkflowBinding = binding, CreatedAt = now, UpdatedAt = now
+        };
+        await _collection.InsertOneAsync(operation);
+        await _revisions.InsertOneAsync(revision);
+        await _gskus.InsertOneAsync(gsku);
+
+        var evidence = new ProductIdentityWorkflowCancellationEvidence
+        {
+            WorkflowInstanceId = workflowId, ApprovalTaskId = taskId,
+            WorkflowTemplateId = operation.WorkflowTemplateId.Value,
+            WorkflowTemplateVersionId = operation.WorkflowTemplateVersionId.Value,
+            ObjectType = "gsku", ObjectId = operation.GskuId, ObjectRef = operation.ObjectRef,
+            RequesterSubjectId = makerId, ReasonCode = "REQUESTER_WITHDRAWAL",
+            CancelledAtUtc = now, TransitionSequence = 3,
+            TransitionLogId = operation.WithdrawalTransitionLogId.Value,
+            TaskStatus = "Cancelled", InstanceStatus = "Cancelled",
+            WorkflowInstanceVersion = 4, ApprovalTaskVersion = 6,
+            IdempotencyKey = commandId.ToString("D")
+        };
+        var revisionAudit = WithdrawalAudit(
+            operation.ProductDefinitionRevisionId, AuditAggregateType.ProductDefinitionRevision,
+            ProductAuditOperation.ProductDefinitionRevisionIdentityApprovalWithdrawn, 1, commandId, makerId, now);
+        var gskuAudit = WithdrawalAudit(
+            operation.GskuId, AuditAggregateType.Gsku,
+            ProductAuditOperation.GskuIdentityApprovalWithdrawn, 1, commandId, makerId, now);
+        var claim = new FirstGskuIdentityWorkflowClaim(
+            _tenantId, operation.OperationId, operation.OperationFingerprint, "withdraw-worker", 1,
+            FirstGskuIdentityWorkflowCheckpoint.WithdrawalObserved, operation.LeaseUntilUtcTicksV1.Value);
+
+        var first = await repository.ApplyWithdrawalAsync(
+            claim, operation, evidence, revisionAudit, gskuAudit, now.AddSeconds(1).UtcTicks);
+        var replay = await repository.ApplyWithdrawalAsync(
+            claim, operation, evidence, revisionAudit, gskuAudit, now.AddSeconds(2).UtcTicks);
+
+        Assert.True(first.Succeeded);
+        Assert.True(replay.Succeeded);
+        Assert.True(replay.IsReplay);
+        Assert.Equal(ProductIdentityLifecycleStatus.Draft, first.Revision!.LifecycleStatus);
+        Assert.Equal(ProductIdentityLifecycleStatus.Draft, first.Gsku!.LifecycleStatus);
+        Assert.Equal(2, first.Revision.Version);
+        Assert.Equal(2, first.Gsku.Version);
+        Assert.Single(first.Revision.AuditIntents,
+            x => x.IdempotencyKey == commandId.ToString("D"));
+        Assert.Single(first.Gsku.AuditIntents,
+            x => x.IdempotencyKey == commandId.ToString("D"));
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.WithdrawalApplied,
+            (await repository.GetByOperationIdAsync(operation.OperationId))!.Checkpoint);
+    }
+
+    [Fact]
     public async Task Repository_owns_exact_four_tenant_safe_indexes_and_no_secret_fields()
     {
         var operation = Operation("shape", "shape-fingerprint");
@@ -313,8 +439,12 @@ public sealed class FirstGskuIdentityWorkflowOperationMongoTests : IAsyncLifetim
             || n.Contains("Authorization", StringComparison.OrdinalIgnoreCase));
     }
 
-    public async Task DisposeAsync() => await _collection.DeleteManyAsync(
-        x => x.TenantId == _tenantId || x.TenantId == _tenantBId);
+    public async Task DisposeAsync()
+    {
+        await _collection.DeleteManyAsync(x => x.TenantId == _tenantId || x.TenantId == _tenantBId);
+        await _revisions.DeleteManyAsync(x => x.TenantId == _tenantId || x.TenantId == _tenantBId);
+        await _gskus.DeleteManyAsync(x => x.TenantId == _tenantId || x.TenantId == _tenantBId);
+    }
 
     private FirstGskuIdentityWorkflowOperationRepository Repository(Guid tenantId) =>
         new(_database, new Tenant(tenantId));
@@ -344,6 +474,26 @@ public sealed class FirstGskuIdentityWorkflowOperationMongoTests : IAsyncLifetim
         SetCode = set, ValueCode = code, CatalogVersionId = Guid.NewGuid(), CatalogVersionNumber = 1,
         ResolutionMode = ReferenceCatalogResolutionMode.Pinned,
         ResolvedAtUtc = DateTimeOffset.UtcNow
+    };
+
+    private LocalAuditIntent WithdrawalAudit(
+        Guid aggregateId,
+        AuditAggregateType aggregateType,
+        ProductAuditOperation operation,
+        int preVersion,
+        Guid commandId,
+        Guid makerId,
+        DateTimeOffset timestamp) => new()
+    {
+        IntentId = Guid.NewGuid(), TenantId = _tenantId,
+        AggregateType = aggregateType, AggregateId = aggregateId,
+        PreVersion = preVersion, PostVersion = preVersion + 1,
+        Operation = operation, ActorId = makerId.ToString("D"),
+        CorrelationId = commandId.ToString("D"), CausationId = commandId.ToString("D"),
+        CommandId = commandId.ToString("D"), Sequence = preVersion + 2,
+        TimestampUtc = timestamp, TimestampUtcTicksV1 = timestamp.UtcTicks,
+        EvidenceHash = $"EVIDENCE-{aggregateType}",
+        IdempotencyKey = commandId.ToString("D"), DeliveryState = AuditIntentDeliveryState.Pending
     };
 
     private sealed class Tenant(Guid tenantId) : ITenantContext

@@ -28,6 +28,41 @@ consumer_modules: MOD-0290
 > runtime/test allow-list on 2026-08-30. Local commit and the already-scoped Local Development acceptance are allowed;
 > push and Production/Staging remain prohibited.
 
+## 0B. Global Product Lifecycle Descriptor Supersession — 2026-09-04
+
+This amendment is the current authority for the complete `product-item-sku-master` descriptor after the MOD-0290
+Global Product lifecycle completion. It supersedes the earlier exact-30 descriptor and `13 / 7 / 8` role-cardinality
+statements, while preserving the existing four-key Workflow/WorkCenter dependency contract and dedicated
+Brand/Product manifest ownership.
+
+The complete module-owned descriptor grows from 30 to exactly 34 active, non-deleted, Tenant-scoped keys by adding:
+
+- `mdm.global-products.update` with exact `product-item-sku-master/global-products/update/Tenant` tuple;
+- `mdm.global-products.withdraw` with exact `product-item-sku-master/global-products/withdraw/Tenant` tuple;
+- `mdm.global-products.request-correction` with exact
+  `product-item-sku-master/global-products/request-correction/Tenant` tuple;
+- `mdm.global-products.request-retirement` with exact
+  `product-item-sku-master/global-products/request-retirement/Tenant` tuple.
+
+The accepted cross-module dependency set remains exactly four: inbox view, Workflow instance start and Workflow task
+approve/reject. No Brand/Product, additional Workflow or arbitrary globally known key is accepted. FU23 owns the
+resulting exact lifecycle grant plans `16 / 7 / 10`; FU25 proves that the complete 34-key descriptor and the four
+dependencies are neither confused nor used to reconstruct missing owned permissions.
+
+The exact runtime allow-list is limited to
+`ProductIdentityLifecycleEntitlementGrantProfile.cs`. Current code truth proves that
+`EntitlementPermissionSyncService.cs` already compares the declared keys with the complete active module catalog,
+removes stale source-owned grants before insertion and converges exact role plans; it is protected from modification.
+The exact test allow-list is `ProductIdentityLifecycleEntitlementGrantProfileTests.cs`,
+`EntitlementPermissionSyncServiceTests.cs` and `ProductIdentityLifecyclePermissionOnboardingMongoTests.cs`.
+
+Acceptance requires exact descriptor cardinality 34, exact tuple validation for all four additions, rejection before
+mutation for 33/35 keys or any duplicate/deleted/divergent/foreign key, exact four shared dependencies, exact
+`16 / 7 / 10` role plans, source-safe removal of the Retirement Steward's stale module-sourced
+`mdm.global-products.retire`, stable replay/revoke/restore and real-Mongo tenant isolation. Manual/system/other-module
+retire grants are preserved. Runtime/test work, operational reconciliation, config/data, Production/Staging and push
+remain separately gated.
+
 ## 0A. Workflow Start Shared-Dependency Amendment — 2026-08-31
 
 This amendment is the current authority for Product Identity lifecycle-role grants. Earlier `12 / 7 / 8` grant

@@ -34,6 +34,105 @@ public sealed class GlobalProductLifecycleMongoTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Draft_update_enforces_cas_replay_duplicate_state_and_tenant_fences_atomically()
+    {
+        var repository = Repository();
+        var product = await SeedAsync(ProductIdentityLifecycleStatus.Draft, "Original Product");
+        var duplicate = await SeedAsync(ProductIdentityLifecycleStatus.Draft, "Taken Product");
+        var pending = await SeedAsync(ProductIdentityLifecycleStatus.PendingIdentityApproval, "Pending Product");
+        var approved = await SeedAsync(ProductIdentityLifecycleStatus.IdentityApproved, "Approved Product");
+        var retired = await SeedAsync(ProductIdentityLifecycleStatus.Retired, "Retired Product");
+        var operationKey = Guid.NewGuid().ToString("D");
+        var intent = Intent(
+            product.Id,
+            0,
+            ProductAuditOperation.GlobalProductDraftUpdated,
+            operationKey,
+            "rename-original-to-updated");
+
+        var first = await repository.UpdateDraftAsync(
+            product.Id, "Updated Product", "UPDATED PRODUCT", 0, intent);
+        var replay = await repository.UpdateDraftAsync(
+            product.Id, "Updated Product", "UPDATED PRODUCT", 0, intent);
+        var drift = await repository.UpdateDraftAsync(
+            product.Id,
+            "Drifted Product",
+            "DRIFTED PRODUCT",
+            0,
+            Intent(product.Id, 0, ProductAuditOperation.GlobalProductDraftUpdated, operationKey, "drift"));
+        var stale = await repository.UpdateDraftAsync(
+            product.Id,
+            "Stale Product",
+            "STALE PRODUCT",
+            0,
+            Intent(product.Id, 0, ProductAuditOperation.GlobalProductDraftUpdated, Guid.NewGuid().ToString("D"), "stale"));
+        var duplicateName = await repository.UpdateDraftAsync(
+            duplicate.Id,
+            "Updated Product",
+            "UPDATED PRODUCT",
+            0,
+            Intent(duplicate.Id, 0, ProductAuditOperation.GlobalProductDraftUpdated, Guid.NewGuid().ToString("D"), "duplicate"));
+        var wrongState = await repository.UpdateDraftAsync(
+            pending.Id,
+            "Pending Renamed",
+            "PENDING RENAMED",
+            0,
+            Intent(pending.Id, 0, ProductAuditOperation.GlobalProductDraftUpdated, Guid.NewGuid().ToString("D"), "pending"));
+        var approvedState = await repository.UpdateDraftAsync(
+            approved.Id,
+            "Approved Renamed",
+            "APPROVED RENAMED",
+            0,
+            Intent(approved.Id, 0, ProductAuditOperation.GlobalProductDraftUpdated, Guid.NewGuid().ToString("D"), "approved"));
+        var retiredState = await repository.UpdateDraftAsync(
+            retired.Id,
+            "Retired Renamed",
+            "RETIRED RENAMED",
+            0,
+            Intent(retired.Id, 0, ProductAuditOperation.GlobalProductDraftUpdated, Guid.NewGuid().ToString("D"), "retired"));
+        var tenantBId = Guid.NewGuid();
+        var crossTenant = await new GlobalProductRepository(_database, new Tenant(tenantBId)).UpdateDraftAsync(
+            product.Id,
+            "Cross Tenant",
+            "CROSS TENANT",
+            0,
+            Intent(product.Id, 0, ProductAuditOperation.GlobalProductDraftUpdated, Guid.NewGuid().ToString("D"), "cross", tenantBId));
+
+        Assert.True(first.Succeeded);
+        Assert.False(first.IsReplay);
+        Assert.True(replay.Succeeded);
+        Assert.True(replay.IsReplay);
+        Assert.False(drift.Succeeded);
+        Assert.Equal("PRODUCT_IDENTITY_IDEMPOTENCY_CONFLICT", drift.ErrorCode);
+        Assert.False(stale.Succeeded);
+        Assert.Equal("GLOBAL_PRODUCT_CONCURRENCY_CONFLICT", stale.ErrorCode);
+        Assert.False(duplicateName.Succeeded);
+        Assert.Equal("GLOBAL_PRODUCT_NAME_DUPLICATE", duplicateName.ErrorCode);
+        Assert.False(wrongState.Succeeded);
+        Assert.Equal("GLOBAL_PRODUCT_STATE_CONFLICT", wrongState.ErrorCode);
+        Assert.False(approvedState.Succeeded);
+        Assert.Equal("GLOBAL_PRODUCT_STATE_CONFLICT", approvedState.ErrorCode);
+        Assert.False(retiredState.Succeeded);
+        Assert.Equal("GLOBAL_PRODUCT_STATE_CONFLICT", retiredState.ErrorCode);
+        Assert.False(crossTenant.Succeeded);
+        Assert.Equal("GLOBAL_PRODUCT_NOT_FOUND", crossTenant.ErrorCode);
+
+        var stored = await _products.Find(item => item.TenantId == _tenantId && item.Id == product.Id).SingleAsync();
+        Assert.Equal("Updated Product", stored.GlobalProductName);
+        Assert.Equal("UPDATED PRODUCT", stored.GlobalProductNameNormalized);
+        Assert.Equal(product.CanonicalCode, stored.CanonicalCode);
+        Assert.Equal(product.CodeReservationId, stored.CodeReservationId);
+        Assert.Equal(ProductIdentityLifecycleStatus.Draft, stored.LifecycleStatus);
+        Assert.Null(stored.WorkflowBinding);
+        Assert.Equal(1, stored.Version);
+        var audit = Assert.Single(stored.AuditIntents);
+        Assert.Equal(ProductAuditOperation.GlobalProductDraftUpdated, audit.Operation);
+        Assert.Equal("Pending Product", (await repository.GetByIdAsync(pending.Id))!.GlobalProductName);
+        Assert.Equal("Approved Product", (await repository.GetByIdAsync(approved.Id))!.GlobalProductName);
+        Assert.Equal("Retired Product", (await repository.GetByIdAsync(retired.Id))!.GlobalProductName);
+    }
+
+    [Fact]
     public async Task Submit_replay_and_fingerprint_drift_are_atomic_and_deterministic()
     {
         var product = await SeedAsync(ProductIdentityLifecycleStatus.Draft);
@@ -64,6 +163,58 @@ public sealed class GlobalProductLifecycleMongoTests : IAsyncLifetime
         Assert.Equal(1, stored.Version);
         Assert.Equal(binding.WorkflowInstanceId, stored.WorkflowBinding!.WorkflowInstanceId);
         Assert.Single(stored.AuditIntents);
+    }
+
+    [Fact]
+    public async Task Withdrawal_is_atomic_tenant_fenced_and_post_success_exact_replay_is_stable()
+    {
+        var product = await SeedAsync(ProductIdentityLifecycleStatus.Draft);
+        var repository = Repository();
+        var binding = Binding(product.Id, "submit-withdraw", "submit-withdraw-fingerprint");
+        Assert.True((await repository.SubmitIdentityAsync(product.Id, 0, binding,
+            Intent(product.Id, 0, ProductAuditOperation.GlobalProductIdentitySubmitted,
+                "submit-withdraw", "submit-withdraw-fingerprint"))).Succeeded);
+        var cancellation = new ProductIdentityWorkflowCancellationEvidence
+        {
+            WorkflowInstanceId = binding.WorkflowInstanceId,
+            ApprovalTaskId = binding.ApprovalTaskId,
+            WorkflowTemplateId = binding.WorkflowTemplateId,
+            WorkflowTemplateVersionId = binding.WorkflowTemplateVersionId,
+            ObjectType = binding.ObjectType,
+            ObjectId = product.Id,
+            ObjectRef = binding.ObjectRef,
+            RequesterSubjectId = binding.SubmitterSubjectId,
+            ReasonCode = "REQUESTER_WITHDRAWAL",
+            CancelledAtUtc = Now,
+            TransitionSequence = 3,
+            TransitionLogId = Guid.NewGuid(),
+            TaskStatus = "Cancelled",
+            InstanceStatus = "Cancelled",
+            WorkflowInstanceVersion = 4,
+            ApprovalTaskVersion = 6,
+            IdempotencyKey = Guid.NewGuid().ToString("D")
+        };
+        var audit = ProductIdentityLifecycleAuditIntentFactory.CreateWithdrawal(product, 1, cancellation);
+
+        var first = await repository.WithdrawIdentityApprovalAsync(product.Id, 1, cancellation, audit);
+        var replay = await repository.WithdrawIdentityApprovalAsync(product.Id, 1, cancellation, audit);
+        var crossTenant = await new GlobalProductRepository(_database, new Tenant(Guid.NewGuid()))
+            .WithdrawIdentityApprovalAsync(product.Id, 1, cancellation, audit);
+
+        Assert.True(first.Succeeded);
+        Assert.False(first.IsReplay);
+        Assert.True(replay.Succeeded);
+        Assert.True(replay.IsReplay);
+        Assert.False(crossTenant.Succeeded);
+        Assert.Equal("PRODUCT_IDENTITY_NOT_FOUND", crossTenant.ErrorCode);
+        var stored = await _products.Find(x => x.TenantId == _tenantId && x.Id == product.Id).SingleAsync();
+        Assert.Equal(ProductIdentityLifecycleStatus.Draft, stored.LifecycleStatus);
+        Assert.Equal(2, stored.Version);
+        Assert.Equal(cancellation.TransitionLogId,
+            stored.WorkflowBinding!.CancellationEvidence!.TransitionLogId);
+        Assert.Equal(2, stored.AuditIntents.Count);
+        Assert.Single(stored.AuditIntents,
+            x => x.Operation == ProductAuditOperation.GlobalProductIdentityApprovalWithdrawn);
     }
 
     [Fact]
@@ -179,6 +330,105 @@ public sealed class GlobalProductLifecycleMongoTests : IAsyncLifetime
         Assert.Single(stored.AuditIntents);
     }
 
+    [Fact]
+    public async Task Retirement_workflow_final_primitive_approves_rejects_and_retains_binding_on_manual_conflict()
+    {
+        var repository = Repository();
+        var actor = Guid.NewGuid();
+        var reason = "The identity is no longer commercially supplied.";
+
+        async Task<(GlobalProduct Product, GlobalProductActiveLifecycleOperationBinding Binding)> AdmitAsync()
+        {
+            var product = await SeedAsync(ProductIdentityLifecycleStatus.IdentityApproved);
+            var operationId = Guid.NewGuid();
+            var binding = new GlobalProductActiveLifecycleOperationBinding(
+                GlobalProductLifecycleOperationKind.Retirement, operationId, product.Version);
+            var requested = GlobalProductRetirementRequestAuditIntentFactory.Create(product, product.Version,
+                operationId, actor, ProductAuditOperation.GlobalProductRetirementRequested, reason, Now);
+            var admission = await repository.AcquireLifecycleOperationAsync(
+                product.Id, product.Version, binding, requested);
+            Assert.True(admission.Succeeded);
+            return (product, binding);
+        }
+
+        var approved = await AdmitAsync();
+        var approvedAudit = GlobalProductRetirementRequestAuditIntentFactory.Create(approved.Product, 1,
+            approved.Binding.OperationId, actor, ProductAuditOperation.GlobalProductIdentityRetired, reason,
+            Now.AddMinutes(1));
+        var approval = await repository.ApplyRetirementDecisionAsync(
+            approved.Product.Id, 1, approved.Binding, true, approvedAudit);
+        var approvalReplay = await repository.ApplyRetirementDecisionAsync(
+            approved.Product.Id, 1, approved.Binding, true, approvedAudit);
+
+        Assert.True(approval.Succeeded);
+        Assert.True(approvalReplay.Succeeded);
+        Assert.True(approvalReplay.IsReplay);
+        var approvedStored = await repository.GetByIdAsync(approved.Product.Id);
+        Assert.Equal(ProductIdentityLifecycleStatus.Retired, approvedStored!.LifecycleStatus);
+        Assert.Null(approvedStored.ActiveLifecycleOperation);
+        Assert.Equal(2, approvedStored.Version);
+        Assert.Equal(2, approvedStored.AuditIntents.Count);
+
+        var rejected = await AdmitAsync();
+        var rejectedAudit = GlobalProductRetirementRequestAuditIntentFactory.Create(rejected.Product, 1,
+            rejected.Binding.OperationId, Guid.NewGuid(), ProductAuditOperation.GlobalProductRetirementRejected,
+            reason, Now.AddMinutes(1));
+        var rejection = await repository.ApplyRetirementDecisionAsync(
+            rejected.Product.Id, 1, rejected.Binding, false, rejectedAudit);
+        Assert.True(rejection.Succeeded);
+        var rejectedStored = await repository.GetByIdAsync(rejected.Product.Id);
+        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, rejectedStored!.LifecycleStatus);
+        Assert.Null(rejectedStored.ActiveLifecycleOperation);
+        Assert.Equal(2, rejectedStored.Version);
+
+        var conflicted = await AdmitAsync();
+        var conflictAudit = GlobalProductRetirementRequestAuditIntentFactory.Create(conflicted.Product, 1,
+            conflicted.Binding.OperationId, actor,
+            ProductAuditOperation.GlobalProductRetirementManualReconciliationRequired, reason,
+            Now.AddMinutes(1));
+        var conflict = await repository.RecordRetirementConflictAsync(
+            conflicted.Product.Id, 1, conflicted.Binding, conflictAudit);
+        var conflictReplay = await repository.RecordRetirementConflictAsync(
+            conflicted.Product.Id, 1, conflicted.Binding, conflictAudit);
+        Assert.True(conflict.Succeeded);
+        Assert.True(conflictReplay.Succeeded);
+        Assert.True(conflictReplay.IsReplay);
+        var conflictedStored = await repository.GetByIdAsync(conflicted.Product.Id);
+        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, conflictedStored!.LifecycleStatus);
+        Assert.Equal(conflicted.Binding, conflictedStored.ActiveLifecycleOperation);
+        Assert.Equal(2, conflictedStored.Version);
+        Assert.Equal(2, conflictedStored.AuditIntents.Count);
+    }
+
+    [Fact]
+    public async Task Correction_cancel_terminal_is_rejected_and_cannot_release_active_binding()
+    {
+        var repository = Repository();
+        var product = await SeedAsync(ProductIdentityLifecycleStatus.IdentityApproved);
+        var operationId = Guid.NewGuid();
+        var actor = Guid.NewGuid();
+        var binding = new GlobalProductActiveLifecycleOperationBinding(
+            GlobalProductLifecycleOperationKind.Correction, operationId, product.Version);
+        var requested = GlobalProductCorrectionAuditIntentFactory.Create(product, product.Version,
+            operationId, actor, ProductAuditOperation.GlobalProductCorrectionRequested,
+            "Proposed Name", Now);
+        Assert.True((await repository.AcquireLifecycleOperationAsync(
+            product.Id, product.Version, binding, requested)).Succeeded);
+        var cancelledAudit = Intent(product.Id, 1, ProductAuditOperation.GlobalProductCorrectionCancelled,
+            $"global-product-correction:{operationId:D}:cancelled", "cancelled");
+
+        var result = await repository.ApplyCorrectionDecisionAsync(
+            product.Id, 1, binding, null, null, cancelledAudit);
+        var stored = await repository.GetByIdAsync(product.Id);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal("AUDIT_INTENT_CONTRACT_INVALID", result.ErrorCode);
+        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, stored!.LifecycleStatus);
+        Assert.Equal(binding, stored.ActiveLifecycleOperation);
+        Assert.Equal(1, stored.Version);
+        Assert.Single(stored.AuditIntents);
+    }
+
     public async Task DisposeAsync()
     {
         await Task.WhenAll(
@@ -190,12 +440,16 @@ public sealed class GlobalProductLifecycleMongoTests : IAsyncLifetime
 
     private GlobalProductRepository Repository() => new(_database, new Tenant(_tenantId));
 
-    private async Task<GlobalProduct> SeedAsync(ProductIdentityLifecycleStatus status)
+    private async Task<GlobalProduct> SeedAsync(
+        ProductIdentityLifecycleStatus status,
+        string? name = null)
     {
+        var visibleName = name ?? "Lifecycle product " + Guid.NewGuid().ToString("N");
         var product = new GlobalProduct
         {
             Id = Guid.NewGuid(), TenantId = _tenantId, CanonicalCode = $"GP-{Guid.NewGuid():N}",
-            GlobalProductName = "Lifecycle product", GlobalProductNameNormalized = $"PRODUCT-{Guid.NewGuid():N}",
+            GlobalProductName = visibleName,
+            GlobalProductNameNormalized = GlobalProductNameRules.NormalizeDuplicateKey(visibleName),
             CodeReservationId = Guid.NewGuid(), LifecycleStatus = status, CreatedAt = Now, UpdatedAt = Now
         };
         await _products.InsertOneAsync(product);

@@ -88,6 +88,34 @@ public static class ProductIdentityLifecycleAuditIntentFactory
             evidence);
     }
 
+    public static LocalAuditIntent CreateWithdrawal(
+        GlobalProduct product,
+        int expectedVersion,
+        ProductIdentityWorkflowCancellationEvidence evidence)
+    {
+        var operationKey = evidence.IdempotencyKey;
+        var facts = EncodeFacts(
+            product.TenantId.ToString("D"), product.Id.ToString("D"),
+            evidence.WorkflowInstanceId.ToString("D"), evidence.ApprovalTaskId.ToString("D"),
+            evidence.WorkflowTemplateId.ToString("D"), evidence.WorkflowTemplateVersionId.ToString("D"),
+            evidence.ObjectType, evidence.ObjectId.ToString("D"), evidence.ObjectRef,
+            evidence.RequesterSubjectId.ToString("D"), evidence.ReasonCode, evidence.Comment,
+            evidence.CancelledAtUtc.ToString("O"),
+            evidence.TransitionSequence.ToString(CultureInfo.InvariantCulture),
+            evidence.TransitionLogId.ToString("D"), evidence.TaskStatus, evidence.InstanceStatus,
+            evidence.WorkflowInstanceVersion.ToString(CultureInfo.InvariantCulture),
+            evidence.ApprovalTaskVersion.ToString(CultureInfo.InvariantCulture));
+        return Create(
+            product,
+            ProductAuditOperation.GlobalProductIdentityApprovalWithdrawn,
+            expectedVersion,
+            evidence.RequesterSubjectId,
+            operationKey,
+            evidence.WorkflowInstanceId.ToString("D"),
+            evidence.CancelledAtUtc,
+            facts);
+    }
+
     private static LocalAuditIntent Create(
         GlobalProduct product,
         ProductAuditOperation operation,

@@ -14,7 +14,7 @@ namespace Diten.MdmService.Application.Tests;
 public sealed class LskuApiContractTests
 {
     [Fact]
-    public void Controller_exposes_the_four_foundation_and_two_lifecycle_routes()
+    public void Controller_exposes_the_four_foundation_and_four_lifecycle_routes()
     {
         var type = typeof(LskusController);
         Assert.True(type.IsSubclassOf(typeof(CustomBaseController)));
@@ -24,12 +24,14 @@ public sealed class LskuApiContractTests
             .Select(method => (method.Name, Http: Assert.Single(method.GetCustomAttributes<HttpMethodAttribute>())))
             .ToArray();
 
-        Assert.Equal(6, routes.Length);
+        Assert.Equal(8, routes.Length);
         Assert.Contains(routes, x => x.Name == nameof(LskusController.GetAll) && x.Http.Template is null && x.Http.HttpMethods.Single() == "GET");
         Assert.Contains(routes, x => x.Name == nameof(LskusController.GetById) && x.Http.Template == "{id:guid}" && x.Http.HttpMethods.Single() == "GET");
         Assert.Contains(routes, x => x.Name == nameof(LskusController.GetCreateOptions) && x.Http.Template == "create-options" && x.Http.HttpMethods.Single() == "GET");
         Assert.Contains(routes, x => x.Name == nameof(LskusController.CreateDraft) && x.Http.Template == "drafts" && x.Http.HttpMethods.Single() == "POST");
         Assert.Contains(routes, x => x.Name == nameof(LskusController.SubmitIdentity) && x.Http.Template == "{id:guid}/submit" && x.Http.HttpMethods.Single() == "POST");
+        Assert.Contains(routes, x => x.Name == nameof(LskusController.WithdrawIdentityApproval) && x.Http.Template == "{id:guid}/identity-approval/withdraw" && x.Http.HttpMethods.Single() == "POST");
+        Assert.Contains(routes, x => x.Name == nameof(LskusController.RequestRetirement) && x.Http.Template == "{id:guid}/retirement-requests" && x.Http.HttpMethods.Single() == "POST");
         Assert.Contains(routes, x => x.Name == nameof(LskusController.RetireIdentity) && x.Http.Template == "{id:guid}/retire" && x.Http.HttpMethods.Single() == "POST");
         Assert.DoesNotContain(routes, x => x.Http.HttpMethods.Any(verb => verb is "PUT" or "PATCH" or "DELETE"));
         Assert.DoesNotContain(routes, x => (x.Http.Template ?? string.Empty).Contains("reservation", StringComparison.OrdinalIgnoreCase));
@@ -115,6 +117,38 @@ public sealed class LskuApiContractTests
                 Assert.Equal(operationId, command.Request.OperationId);
             });
         await CaptureAsync(
+            () => controller.WithdrawIdentityApproval(id, new()
+            {
+                ExpectedVersion = 4,
+                ReasonCode = "REQUESTER_WITHDRAWAL",
+                Comment = "changed"
+            }, operationId.ToString("D"), default),
+            capture,
+            request =>
+            {
+                var command = Assert.IsType<WithdrawLskuIdentityApprovalCommand>(request);
+                Assert.Equal(id, command.Request.LskuId);
+                Assert.Equal(4, command.Request.ExpectedVersion);
+                Assert.Equal(operationId, command.Request.OperationId);
+                Assert.Equal("REQUESTER_WITHDRAWAL", command.Request.ReasonCode);
+                Assert.Equal("changed", command.Request.Comment);
+            });
+        await CaptureAsync(
+            () => controller.RequestRetirement(id, new()
+            {
+                ExpectedVersion = 5,
+                RequestReason = "NO_LONGER_MARKETED"
+            }, operationId.ToString("D"), default),
+            capture,
+            request =>
+            {
+                var command = Assert.IsType<StartLskuRetirementRequestWorkflowCommand>(request);
+                Assert.Equal(id, command.Request.LskuId);
+                Assert.Equal(5, command.Request.ExpectedVersion);
+                Assert.Equal(operationId, command.Request.OperationId);
+                Assert.Equal("NO_LONGER_MARKETED", command.Request.RequestReason);
+            });
+        await CaptureAsync(
             () => controller.RetireIdentity(id, new()
             {
                 ExpectedVersion = 5,
@@ -154,9 +188,15 @@ public sealed class LskuApiContractTests
             ExpectedVersion = 0,
             ReasonCode = "IDENTITY_RETIRED"
         }, key, default);
+        var withdraw = await controller.WithdrawIdentityApproval(Guid.NewGuid(), new()
+        {
+            ExpectedVersion = 1,
+            ReasonCode = "REQUESTER_WITHDRAWAL"
+        }, key, default);
 
         Assert.Equal(400, Assert.IsAssignableFrom<ObjectResult>(submit).StatusCode);
         Assert.Equal(400, Assert.IsAssignableFrom<ObjectResult>(retire).StatusCode);
+        Assert.Equal(400, Assert.IsAssignableFrom<ObjectResult>(withdraw).StatusCode);
         Assert.False(recorder.Called);
     }
 
@@ -201,12 +241,20 @@ public sealed class LskuApiContractTests
                 ReasonCode = "IDENTITY_RETIRED",
                 Comment = "obsolete"
             }, options);
+        var withdraw = JsonSerializer.SerializeToElement(
+            new LskusController.WithdrawLskuIdentityApprovalApiRequest
+            {
+                ExpectedVersion = 3,
+                ReasonCode = "REQUESTER_WITHDRAWAL",
+                Comment = "changed"
+            }, options);
         var forbidden = JsonSerializer.Deserialize<LskusController.SubmitLskuIdentityApiRequest>(
             "{\"expectedVersion\":2,\"actorId\":\"forbidden\"}",
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
 
         Assert.Equal(["expectedVersion"], submit.EnumerateObject().Select(x => x.Name));
         Assert.Equal(["expectedVersion", "reasonCode", "comment"], retire.EnumerateObject().Select(x => x.Name));
+        Assert.Equal(["expectedVersion", "reasonCode", "comment"], withdraw.EnumerateObject().Select(x => x.Name));
         Assert.Equal(["actorId"], forbidden.UnmappedFields!.Keys);
         Assert.DoesNotContain("tenant", retire.ToString(), StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("operation", retire.ToString(), StringComparison.OrdinalIgnoreCase);

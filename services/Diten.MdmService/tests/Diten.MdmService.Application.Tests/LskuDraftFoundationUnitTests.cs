@@ -111,9 +111,17 @@ public sealed class LskuDraftFoundationUnitTests
             method.Name == nameof(ILskuRepository.ReconcileIdentityDecisionAsync));
         Assert.Contains(typeof(ILskuRepository).GetMethods(), method =>
             method.Name == nameof(ILskuRepository.RetireIdentityAsync));
-        Assert.DoesNotContain(typeof(ILskuRepository).GetMethods(), method =>
-            method.Name.Contains("Retire", StringComparison.OrdinalIgnoreCase)
-            && method.Name != nameof(ILskuRepository.RetireIdentityAsync));
+        Assert.Contains(typeof(ILskuRepository).GetMethods(), method =>
+            method.Name == nameof(ILskuRepository.AcquireLifecycleOperationAsync));
+        Assert.Contains(typeof(ILskuRepository).GetMethods(), method =>
+            method.Name == nameof(ILskuRepository.ApplyRetirementDecisionAsync));
+        Assert.Equal(
+            [nameof(ILskuRepository.ApplyRetirementDecisionAsync), nameof(ILskuRepository.RetireIdentityAsync)],
+            typeof(ILskuRepository).GetMethods()
+                .Where(method => method.Name.Contains("Retire", StringComparison.OrdinalIgnoreCase)
+                                 || method.Name.Contains("Retirement", StringComparison.OrdinalIgnoreCase))
+                .Select(method => method.Name)
+                .OrderBy(name => name, StringComparer.Ordinal));
     }
 
     [Fact]

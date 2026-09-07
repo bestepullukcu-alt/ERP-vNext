@@ -140,6 +140,14 @@ public sealed class DefaultRolePermissionTemplateTests
                 moduleOverride: "product-item-sku-master"),
             new("mdm", "global-products", "retire", "Retire Global Products", null,
                 moduleOverride: "product-item-sku-master"),
+            new("mdm", "global-products", "update", "Update Global Products", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "global-products", "withdraw", "Withdraw Global Products", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "global-products", "request-correction", "Request Global Product Correction", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "global-products", "request-retirement", "Request Global Product Retirement", null,
+                moduleOverride: "product-item-sku-master"),
             new("mdm", "finished-goods", "submit", "Submit Finished Goods", null,
                 moduleOverride: "product-item-sku-master"),
             new("mdm", "finished-goods", "retire", "Retire Finished Goods", null,
@@ -148,9 +156,21 @@ public sealed class DefaultRolePermissionTemplateTests
                 moduleOverride: "product-item-sku-master"),
             new("mdm", "gskus", "retire", "Retire GSKUs", null,
                 moduleOverride: "product-item-sku-master"),
+            new("mdm", "gskus", "update", "Update GSKUs", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "gskus", "withdraw", "Withdraw GSKUs", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "gskus", "request-correction", "Request GSKU Correction", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "gskus", "request-retirement", "Request GSKU Retirement", null,
+                moduleOverride: "product-item-sku-master"),
             new("mdm", "lskus", "submit", "Submit LSKUs", null,
                 moduleOverride: "product-item-sku-master"),
             new("mdm", "lskus", "retire", "Retire LSKUs", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "lskus", "withdraw", "Withdraw LSKU Approval", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "lskus", "request-retirement", "Request LSKU Retirement", null,
                 moduleOverride: "product-item-sku-master"),
             new("mdm", "product-abbreviations", "read", "Read Product Abbreviations", null,
                 moduleOverride: "product-item-sku-master"),
@@ -192,10 +212,20 @@ public sealed class DefaultRolePermissionTemplateTests
         Assert.DoesNotContain("mdm.gskus.read", viewerKeys);
         Assert.DoesNotContain("mdm.gskus.create", viewerKeys);
         Assert.DoesNotContain("mdm.gskus.create", adminKeys);
+        Assert.DoesNotContain("mdm.gskus.update", adminKeys);
+        Assert.DoesNotContain("mdm.gskus.withdraw", viewerKeys);
+        Assert.DoesNotContain("mdm.gskus.request-correction", adminKeys);
+        Assert.DoesNotContain("mdm.gskus.request-retirement", viewerKeys);
         Assert.DoesNotContain("mdm.lskus.read", viewerKeys);
         Assert.DoesNotContain("mdm.lskus.create", viewerKeys);
         Assert.DoesNotContain("mdm.lskus.create", adminKeys);
+        Assert.DoesNotContain("mdm.lskus.withdraw", adminKeys);
+        Assert.DoesNotContain("mdm.lskus.request-retirement", viewerKeys);
         Assert.DoesNotContain("mdm.global-products.submit", adminKeys);
+        Assert.DoesNotContain("mdm.global-products.update", adminKeys);
+        Assert.DoesNotContain("mdm.global-products.withdraw", viewerKeys);
+        Assert.DoesNotContain("mdm.global-products.request-correction", adminKeys);
+        Assert.DoesNotContain("mdm.global-products.request-retirement", viewerKeys);
         Assert.DoesNotContain("mdm.finished-goods.retire", viewerKeys);
         Assert.DoesNotContain("mdm.product-abbreviations.read", viewerKeys);
         Assert.DoesNotContain("mdm.product-abbreviations.read", adminKeys);
@@ -209,16 +239,26 @@ public sealed class DefaultRolePermissionTemplateTests
                 "mdm.finished-goods.submit",
                 "mdm.global-products.create",
                 "mdm.global-products.read",
+                "mdm.global-products.request-correction",
+                "mdm.global-products.request-retirement",
                 "mdm.global-products.retire",
                 "mdm.global-products.submit",
+                "mdm.global-products.update",
+                "mdm.global-products.withdraw",
                 "mdm.gskus.create",
                 "mdm.gskus.read",
+                "mdm.gskus.request-correction",
+                "mdm.gskus.request-retirement",
                 "mdm.gskus.retire",
                 "mdm.gskus.submit",
+                "mdm.gskus.update",
+                "mdm.gskus.withdraw",
                 "mdm.lskus.create",
                 "mdm.lskus.read",
+                "mdm.lskus.request-retirement",
                 "mdm.lskus.retire",
                 "mdm.lskus.submit",
+                "mdm.lskus.withdraw",
                 "mdm.product-abbreviations.approve",
                 "mdm.product-abbreviations.audit",
                 "mdm.product-abbreviations.cancel",

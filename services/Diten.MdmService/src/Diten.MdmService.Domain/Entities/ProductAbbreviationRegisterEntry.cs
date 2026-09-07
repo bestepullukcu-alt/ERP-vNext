@@ -2,7 +2,7 @@ using Diten.MdmService.Domain.Enums;
 
 namespace Diten.MdmService.Domain.Entities;
 
-public sealed class ProductAbbreviationRegisterEntry : EntityBase
+public sealed class ProductAbbreviationRegisterEntry : EntityBase, IAuditIntentAggregate
 {
     public string NormalizedAbbreviation { get; set; } = string.Empty;
     public Guid GlobalProductId { get; set; }
@@ -20,4 +20,6 @@ public sealed class ProductAbbreviationRegisterEntry : EntityBase
     public string? LastDecisionIdempotencyKey { get; set; }
     public string? LastDecisionReason { get; set; }
     public DateTimeOffset? LastDecisionAtUtc { get; set; }
+    public List<LocalAuditIntent> AuditIntents { get; set; } = [];
+    public List<LocalAuditIntentReceipt> AuditIntentReceipts { get; set; } = [];
 }

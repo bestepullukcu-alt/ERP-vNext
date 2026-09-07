@@ -50,6 +50,18 @@ public interface IWorkflowInstanceRepository
         CancellationToken ct = default);
     Task<IReadOnlyList<WorkflowInstance>> GetAllForTenantAsync(CancellationToken ct = default);
     Task<bool> UpdateAsync(WorkflowInstance instance, int expectedVersion, CancellationToken ct = default);
+    Task<WorkflowInstance?> GetByIdAsync(
+        IPlatformTransactionSession session,
+        Guid id,
+        CancellationToken ct = default) =>
+        throw new NotSupportedException("Transactional workflow instance reads are not implemented by this repository.");
+    Task<bool> CancelTrustedAsync(
+        IPlatformTransactionSession session,
+        Guid instanceId,
+        int expectedVersion,
+        DateTimeOffset decisionAt,
+        CancellationToken ct = default) =>
+        throw new NotSupportedException("Trusted workflow cancellation is not implemented by this repository.");
     async Task<(WorkflowInstance Instance, bool Created)> ReserveTrustedStartAsync(
         WorkflowInstance instance,
         CancellationToken ct = default) =>
@@ -79,6 +91,20 @@ public interface IApprovalTaskRepository
         CancellationToken ct = default) =>
         GetAllForTenantAsync(ct);
     Task<bool> UpdateAsync(ApprovalTask task, int expectedVersion, CancellationToken ct = default);
+    Task<ApprovalTask?> GetByIdAsync(
+        IPlatformTransactionSession session,
+        Guid id,
+        CancellationToken ct = default) =>
+        throw new NotSupportedException("Transactional approval task reads are not implemented by this repository.");
+    Task<bool> CancelTrustedAsync(
+        IPlatformTransactionSession session,
+        Guid taskId,
+        int expectedVersion,
+        Guid actorUserId,
+        string reasonCode,
+        DateTimeOffset decisionAt,
+        CancellationToken ct = default) =>
+        throw new NotSupportedException("Trusted approval task cancellation is not implemented by this repository.");
     Task<ApprovalTask> EnsureTrustedStartTaskAsync(ApprovalTask task, CancellationToken ct = default) =>
         CreateAsync(task, ct);
     Task<bool> UpdateEscalationAsync(ApprovalTask task, int expectedVersion, CancellationToken ct = default) =>
@@ -115,6 +141,16 @@ public interface IWorkflowTransitionLogRepository
         CancellationToken ct = default);
     Task<long> GetLatestSequenceNoAsync(Guid workflowInstanceId, CancellationToken ct = default);
     Task<IReadOnlyList<WorkflowTransitionLog>> ListByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default);
+    Task<long> GetLatestSequenceNoAsync(
+        IPlatformTransactionSession session,
+        Guid workflowInstanceId,
+        CancellationToken ct = default) =>
+        throw new NotSupportedException("Transactional transition sequence reads are not implemented by this repository.");
+    Task<WorkflowTransitionLog> AppendAsync(
+        IPlatformTransactionSession session,
+        WorkflowTransitionLog log,
+        CancellationToken ct = default) =>
+        throw new NotSupportedException("Transactional transition append is not implemented by this repository.");
     Task<WorkflowTransitionLog> EnsureTrustedStartLogAsync(
         WorkflowTransitionLog log,
         CancellationToken ct = default) =>

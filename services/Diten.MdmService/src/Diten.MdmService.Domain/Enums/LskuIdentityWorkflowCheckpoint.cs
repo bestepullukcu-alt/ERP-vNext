@@ -14,5 +14,10 @@ public enum LskuIdentityWorkflowCheckpoint
     AwaitingMakerReplay = 10,
     ManualReconciliationRequired = 11,
     AbandonedBeforeWorkflowStart = 12,
-    Superseded = 13
+    Superseded = 13,
+    WithdrawalRequested = 14,
+    WithdrawalPreflightObserved = 15,
+    WithdrawalOutcomeUnknown = 16,
+    WithdrawalObserved = 17,
+    WithdrawalApplied = 18
 }

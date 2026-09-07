@@ -618,6 +618,15 @@
   <data name="Nav.Page.GSKUS" xml:space="preserve">
     <value>GSKU</value>
   </data>
+  <data name="Nav.Page.LSKUS" xml:space="preserve">
+    <value>Локальные SKU</value>
+  </data>
+  <data name="Nav.Page.PRODUCTABBREVIATIONS" xml:space="preserve">
+    <value>Сокращения продуктов</value>
+  </data>
+  <data name="Nav.Page.PRODUCTLEGALENTITYSCOPES" xml:space="preserve">
+    <value>Области юридических лиц продуктов</value>
+  </data>
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>Типы задач</value>
   </data>

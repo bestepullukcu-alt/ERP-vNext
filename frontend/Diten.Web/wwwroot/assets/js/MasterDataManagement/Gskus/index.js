@@ -1,5 +1,5 @@
 /**
- * MOD-0290 GSKU Register — tenant-shell Golden Slim read/create-only surface.
+ * MOD-0290 GSKU Register — tenant-shell Golden Slim lifecycle surface.
  * Browser traffic is restricted to the same-origin MVC proxy.
  */
 'use strict';
@@ -9,6 +9,12 @@ const GskusList = (function () {
     let defaultViewRecord = null;
     let defaultViewState = null;
     let saveFilterArmed = false;
+    let appliedFilters = { lifecycleStatus: '' };
+    let editorId = '';
+    let editorGskuVersion = null;
+    let editorRevisionVersion = null;
+    let editorMode = 'create';
+    const lifecycleRequests = new Set();
     const endpoint = '/MasterDataManagement/Gskus/api';
     const tableEl = document.querySelector('.datatables-gskus');
     const personalizationClient = window.personalizationClient;
@@ -19,15 +25,18 @@ const GskusList = (function () {
     const L = window.L10n || {};
     const permissionHost = document.querySelector('[data-can-create]');
     const canCreate = permissionHost?.getAttribute('data-can-create') === 'true';
-    const canSubmit = permissionHost?.getAttribute('data-can-submit') === 'true';
-    const canRetire = permissionHost?.getAttribute('data-can-retire') === 'true';
-    const lifecycleRequests = new Set();
+    const actionOrder = ['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT'];
+    const supportedActions = new Set(['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT']);
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
-    const emptyFilters = () => ({ search: '' });
+    const emptyFilters = () => ({ lifecycleStatus: '' });
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[character]));
     const normalizeSearch = (value) => typeof value === 'string' ? value.trim().slice(0, 200) : '';
+    const normalizeFilters = (filters) => ({
+        lifecycleStatus: ['Draft', 'PendingIdentityApproval', 'IdentityApproved', 'Retired']
+            .includes(filters?.lifecycleStatus) ? filters.lifecycleStatus : ''
+    });
     const unwrapData = (payload) => payload?.data || payload?.Data || {};
     const valueOf = (source, camel, pascal) => source?.[camel] ?? source?.[pascal];
 
@@ -53,7 +62,7 @@ const GskusList = (function () {
         return state;
     }, {});
     const normalizeView = (view) => ({
-        filters: { search: normalizeSearch(view?.filters?.search) },
+        filters: normalizeFilters(view?.filters),
         search: normalizeSearch(view?.search),
         colVis: normalizeColVis(view?.colVis) || defaultColVis(),
         columnOrder: normalizeColOrder(view?.columnOrder)
@@ -73,7 +82,7 @@ const GskusList = (function () {
     const getCurrentView = (api) => {
         const search = getSearchValue(api);
         return normalizeView({
-            filters: { search },
+            filters: normalizeFilters(appliedFilters),
             search,
             colVis: captureColVis(api),
             columnOrder: captureColOrder(api),
@@ -110,7 +119,7 @@ const GskusList = (function () {
         const payload = {
             moduleKey: personalizationContext.moduleKey,
             pageKey: personalizationContext.pageKey,
-            viewName: (defaultViewRecord?.viewName || defaultViewRecord?.ViewName || L.SaveView || 'Default').trim(),
+            viewName: (defaultViewRecord?.viewName || defaultViewRecord?.ViewName || L.SaveView).trim(),
             viewDefinition: normalized,
             isDefault: true,
             visibility: 'private'
@@ -142,8 +151,10 @@ const GskusList = (function () {
         saveViewColumnIndexes.forEach((index) => api.column(index).visible(normalized.colVis[index], false));
         api.search(normalized.search);
         api.order(normalized.order);
-        const input = document.getElementById('filterGskuSearch');
-        if (input) input.value = normalized.search;
+        appliedFilters = normalizeFilters(normalized.filters);
+        const lifecycle = document.getElementById('filterLifecycleStatus');
+        if (lifecycle) $(lifecycle).val(appliedFilters.lifecycleStatus || null).trigger('change');
+        syncSingleFilterState(lifecycle);
     };
 
     const lifecycleMap = () => ({
@@ -183,8 +194,8 @@ const GskusList = (function () {
             403: L.ErrorForbidden,
             404: L.ErrorNotFound,
             409: L.ErrorConflict,
-            503: L.ErrorServiceUnavailable || L.ErrorProviderUnavailable,
-            504: L.ErrorTimeout || L.ErrorProviderTimeout
+            503: L.ErrorServiceUnavailable,
+            504: L.ErrorTimeout
         })[response.status] || L.ErrorGateway;
     };
     const buildQuery = (data) => {
@@ -195,6 +206,9 @@ const GskusList = (function () {
         const query = new URLSearchParams({ pageNumber: String(pageNumber), pageSize: String(pageSize) });
         const search = normalizeSearch(data.search?.value);
         if (search) query.set('search', search);
+        if (appliedFilters.lifecycleStatus) {
+            query.set('lifecycleStatus', appliedFilters.lifecycleStatus);
+        }
         return query.toString();
     };
 
@@ -211,10 +225,32 @@ const GskusList = (function () {
         const collapse = document.getElementById('inlineFilterCollapse');
         if (collapse) bootstrap.Collapse.getOrCreateInstance(collapse, { toggle: false }).toggle();
     };
+    const syncSingleFilterState = (select) => {
+        if (!select) return;
+        const selected = !!select.value;
+        const container = $(select).next('.select2-container');
+        container.toggleClass('filter-selected', selected);
+        container.find('.select2-selection').toggleClass('border-primary text-primary', selected);
+    };
+    const getAppliedFilterCount = () => appliedFilters.lifecycleStatus ? 1 : 0;
     const bindFilter = () => {
         const collapse = document.getElementById('inlineFilterCollapse');
-        document.getElementById('btnFilterApply')?.addEventListener('click', () => {
-            dt?.search(normalizeSearch(document.getElementById('filterGskuSearch')?.value)).draw();
+        const lifecycle = document.getElementById('filterLifecycleStatus');
+        const applyButton = document.getElementById('btnFilterApply');
+        if (lifecycle && !$(lifecycle).hasClass('select2-hidden-accessible')) {
+            $(lifecycle).select2({
+                dropdownParent: $(document.body),
+                dropdownCssClass: 'dt-inline-filter-dropdown',
+                width: 'element',
+                allowClear: true,
+                minimumResultsForSearch: Infinity
+            });
+        }
+        $(lifecycle).on('change', () => syncSingleFilterState(lifecycle));
+        applyButton?.addEventListener('click', () => {
+            appliedFilters = normalizeFilters({ lifecycleStatus: lifecycle?.value || '' });
+            syncSingleFilterState(lifecycle);
+            dt?.draw();
             if (saveFilterArmed && dt) setSaveFilterVisible(isDirtyComparedToDefault(dt));
             if (collapse) bootstrap.Collapse.getOrCreateInstance(collapse, { toggle: false }).hide();
         });
@@ -225,6 +261,7 @@ const GskusList = (function () {
             dt.draw();
             setSaveFilterVisible(isDirtyComparedToDefault(dt));
         });
+        syncSingleFilterState(lifecycle);
     };
 
     const setText = (elementId, fieldValue) => {
@@ -249,11 +286,14 @@ const GskusList = (function () {
     };
     const renderDetail = (detail, expectedId) => {
         const detailId = valueOf(detail, 'id', 'Id');
-        const detailVersion = Number(valueOf(detail, 'version', 'Version'));
+        const detailVersion = Number(valueOf(detail, 'gskuVersion', 'GskuVersion'));
+        const revisionVersion = Number(valueOf(detail, 'revisionVersion', 'RevisionVersion'));
         const detailState = lifecycleCode(valueOf(detail, 'lifecycleStatus', 'LifecycleStatus'));
         const offcanvas = document.getElementById('offcanvasDetailsPreview');
         if (!detailId || String(detailId).toLowerCase() !== String(expectedId).toLowerCase()
-            || !Number.isInteger(detailVersion) || detailVersion < 0 || detailState === 0 || !offcanvas) {
+            || !Number.isInteger(detailVersion) || detailVersion < 0
+            || !Number.isInteger(revisionVersion) || revisionVersion < 0
+            || detailState === 0 || !offcanvas) {
             throw new Error(L.ErrorGateway);
         }
         const code = valueOf(detail, 'canonicalCode', 'CanonicalCode');
@@ -268,7 +308,7 @@ const GskusList = (function () {
         setText('oc-global-product', `${productCode || ''}${productCode && productName ? ' — ' : ''}${productName || ''}`);
         setText('oc-revision', valueOf(detail, 'revisionIdentifier', 'RevisionIdentifier'));
         setText('oc-pack', `${quantity ?? ''}${quantity !== null && quantity !== undefined && uom ? ' ' : ''}${uom || ''}`);
-        setText('oc-version', valueOf(detail, 'version', 'Version'));
+        setText('oc-version', detailVersion);
         setText('oc-created-at', formatDate(valueOf(detail, 'createdAt', 'CreatedAt')));
         setText('oc-updated-at', formatDate(valueOf(detail, 'updatedAt', 'UpdatedAt')));
         const statusElement = document.getElementById('oc-status');
@@ -287,102 +327,53 @@ const GskusList = (function () {
         }
     };
 
-    const lifecycleToken = () => document.querySelector(
-        '#gskuLifecycleToken input[name="__RequestVerificationToken"]')?.value || '';
-    const setLifecycleBusy = (button, busy) => {
-        button?.classList.toggle('disabled', busy);
-        button?.setAttribute('aria-disabled', busy ? 'true' : 'false');
+    const readAvailableActions = (detail) => {
+        const raw = detail?.availableActions ?? detail?.AvailableActions;
+        if (!Array.isArray(raw) || !raw.length) throw new Error(L.ErrorGateway);
+        const actions = raw.map((value) => typeof value === 'string' ? value.trim().toUpperCase() : '');
+        if (actions.some((value) => !actionOrder.includes(value))
+            || new Set(actions).size !== actions.length
+            || actions[0] !== 'DETAILS'
+            || actions.some((value, index) => index > 0
+                && actionOrder.indexOf(value) <= actionOrder.indexOf(actions[index - 1]))) {
+            throw new Error(L.ErrorGateway);
+        }
+        return actions;
     };
-    const postLifecycle = async (id, action, reasonCode, button) => {
-        const requestKey = `${id}:${action}`;
-        if (lifecycleRequests.has(requestKey)) return;
-        lifecycleRequests.add(requestKey);
-        setLifecycleBusy(button, true);
+    const renderActions = (row) => {
+        const id = valueOf(row, 'id', 'Id');
+        return `<div class="dropdown"><button type="button" class="btn btn-icon dropdown-toggle hide-arrow js-gsku-actions-toggle" data-id="${escapeHtml(id)}" aria-expanded="false" title="${escapeHtml(L.Actions)}" aria-label="${escapeHtml(L.Actions)}"><i class="bx bx-dots-vertical-rounded icon-md"></i></button><div class="dropdown-menu dropdown-menu-end m-0 js-gsku-actions-menu"></div></div>`;
+    };
+    const actionPresentation = {
+        DETAILS: ['js-quick-view', 'bx bx-show', () => L.ViewDetails],
+        EDIT: ['js-edit-draft', 'bx bx-edit', () => L.EditDraft],
+        SUBMIT: ['js-lifecycle-action', 'bx bx-send', () => L.SubmitIdentity],
+        WITHDRAW_APPROVAL: ['js-lifecycle-action', 'bx bx-undo', () => L.WithdrawApproval],
+        REQUEST_CORRECTION: ['js-request-correction', 'bx bx-revision', () => L.RequestCorrection],
+        REQUEST_RETIREMENT: ['js-request-retirement', 'bx bx-archive', () => L.RequestRetirement]
+    };
+    const renderFreshActionMenu = (menu, id, actions) => {
+        menu.innerHTML = actions.filter((action) => supportedActions.has(action)).map((action) => {
+            const [className, icon, label] = actionPresentation[action];
+            return `<a href="javascript:void(0);" class="dropdown-item dt-action-item ${className}" data-id="${escapeHtml(id)}" data-action="${action}"><i class="${icon} dt-action-icon"></i>${escapeHtml(label())}</a>`;
+        }).join('');
+    };
+    const loadActionMenu = async (toggle) => {
+        const id = toggle?.dataset.id;
+        const menu = toggle?.parentElement?.querySelector('.js-gsku-actions-menu');
+        if (!id || !menu || toggle.classList.contains('disabled')) return;
+        toggle.classList.add('disabled');
         try {
-            const detail = await fetchDetail(id);
-            const state = lifecycleCode(valueOf(detail, 'lifecycleStatus', 'LifecycleStatus'));
-            const expectedState = action === 'submit' ? 1 : 3;
-            if (state !== expectedState) {
-                dt?.ajax.reload(null, false);
-                throw new Error(L.LifecycleStateChanged);
-            }
-            const expectedVersion = Number(valueOf(detail, 'version', 'Version'));
-            if (!Number.isInteger(expectedVersion) || expectedVersion < 0) throw new Error(L.ErrorConflict);
-
-            const body = new FormData();
-            body.set('ExpectedVersion', String(expectedVersion));
-            if (action === 'retire') body.set('ReasonCode', reasonCode);
-            const token = lifecycleToken();
-            body.set('__RequestVerificationToken', token);
-            const response = await fetch(`${endpoint}/${encodeURIComponent(id)}/${action}`, {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'XMLHttpRequest' },
-                body
-            });
-            if (response.status === 401) handleUnauthorized();
-            if (!response.ok) throw new Error(await getErrorMessage(response));
-
-            dt?.ajax.reload(null, false);
-            const refreshedDetail = await fetchDetail(id);
-            const refreshedState = renderDetail(refreshedDetail, id);
-            if (refreshedState !== (action === 'submit' ? 2 : 4)) throw new Error(L.LifecycleStateChanged);
-            window.showToast?.(action === 'submit' ? L.SubmitPendingSuccess : L.RetireSuccess, 'success');
+            const actions = readAvailableActions(await fetchDetail(id));
+            renderFreshActionMenu(menu, id, actions);
+            if (!menu.children.length) throw new Error(L.ErrorGateway);
+            bootstrap.Dropdown.getOrCreateInstance(toggle).show();
         } catch (error) {
+            menu.replaceChildren();
             if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error');
         } finally {
-            lifecycleRequests.delete(requestKey);
-            setLifecycleBusy(button, false);
+            toggle.classList.remove('disabled');
         }
-    };
-    const requestLifecycle = (id, action, button) => {
-        if (!id || (action === 'submit' && !canSubmit) || (action === 'retire' && !canRetire)) return;
-        if (action === 'submit') {
-            window.showConfirm?.(L.SubmitConfirmation, () => postLifecycle(id, action, '', button), {
-                type: 'warning', confirmButtonText: L.SubmitIdentity
-            });
-            return;
-        }
-        window.showConfirm?.(L.RetireConfirmation, (input) => {
-            const reason = normalizeSearch(input);
-            if (!reason) {
-                window.showToast?.(L.RetirementReasonRequired, 'error');
-                return;
-            }
-            if (reason.length > 128) {
-                window.showToast?.(L.RetirementReasonTooLong, 'error');
-                return;
-            }
-            return postLifecycle(id, action, reason, button);
-        }, {
-            type: 'warning',
-            showInput: true,
-            inputRequired: true,
-            inputLabel: L.RetirementReasonLabel,
-            inputAttributes: { maxlength: 128 },
-            confirmButtonText: L.RetireIdentity
-        });
-    };
-
-    const renderActions = (row) => {
-        const id = row.id || row.Id;
-        const actions = [{
-            key: 'details',
-            className: 'js-quick-view',
-            text: L.QuickView,
-            icon: 'bx bx-show',
-            attrs: { 'data-id': id, title: L.ViewDetails }
-        }];
-        const state = lifecycleCode(row.lifecycleStatus ?? row.LifecycleStatus);
-        if (state === 1 && canSubmit) actions.push({
-            key: 'submit', className: 'js-submit-identity', text: L.SubmitIdentity, icon: 'bx bx-send',
-            attrs: { 'data-id': id, title: L.SubmitIdentity }
-        });
-        if (state === 3 && canRetire) actions.push({
-            key: 'retire', className: 'js-retire-identity', text: L.RetireIdentity, icon: 'bx bx-archive',
-            attrs: { 'data-id': id, title: L.RetireIdentity }
-        });
-        return window.DitenDataTable.renderActions(actions);
     };
 
     const initializeCreateSelects = () => {
@@ -445,23 +436,97 @@ const GskusList = (function () {
     const openCreate = async () => {
         const form = document.getElementById('formGsku');
         if (!form) return;
+        editorId = '';
+        editorGskuVersion = null;
+        editorRevisionVersion = null;
+        editorMode = 'create';
         form.reset();
         form.classList.remove('was-validated');
+        document.getElementById('offcanvasCreateEditLabel').textContent = L.FormTitleCreate;
+        document.getElementById('btnSaveGskuText').textContent = L.Save;
         initializeCreateSelects();
+        document.getElementById('globalProductId').disabled = false;
         $('#globalProductId, #packUomCode').val(null).trigger('change');
         bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasCreateEdit')).show();
         await loadCreateOptions();
     };
+    const setBusy = (button, busy) => {
+        if (button) button.disabled = busy;
+        button?.classList.toggle('disabled', busy);
+        button?.setAttribute('aria-disabled', busy ? 'true' : 'false');
+    };
+    const openExistingEditor = async (id, actionButton, mode) => {
+        setBusy(actionButton, true);
+        try {
+            const detail = await fetchDetail(id);
+            const requiredAction = mode === 'correction' ? 'REQUEST_CORRECTION' : 'EDIT';
+            if (!readAvailableActions(detail).includes(requiredAction)) throw new Error(L.LifecycleStateChanged);
+            const detailId = valueOf(detail, 'id', 'Id');
+            const gskuVersion = Number(valueOf(detail, 'gskuVersion', 'GskuVersion'));
+            const revisionVersion = Number(valueOf(detail, 'revisionVersion', 'RevisionVersion'));
+            if (!detailId || String(detailId).toLowerCase() !== String(id).toLowerCase()
+                || !Number.isInteger(gskuVersion) || gskuVersion < 0
+                || !Number.isInteger(revisionVersion) || revisionVersion < 0) {
+                throw new Error(L.ErrorConflict);
+            }
+
+            editorId = String(id);
+            editorGskuVersion = gskuVersion;
+            editorRevisionVersion = revisionVersion;
+            editorMode = mode;
+            const form = document.getElementById('formGsku');
+            form?.classList.remove('was-validated');
+            initializeCreateSelects();
+            const globalProduct = document.getElementById('globalProductId');
+            const uom = document.getElementById('packUomCode');
+            if (!form || !globalProduct || !uom) throw new Error(L.ErrorGateway);
+            const productId = valueOf(detail, 'globalProductId', 'GlobalProductId');
+            const productCode = valueOf(detail, 'globalProductCanonicalCode', 'GlobalProductCanonicalCode');
+            const productName = valueOf(detail, 'globalProductName', 'GlobalProductName');
+            const uomCode = valueOf(detail, 'packUomCode', 'PackUomCode');
+            document.getElementById('packQuantity').value = String(valueOf(detail, 'packQuantity', 'PackQuantity'));
+            document.getElementById('offcanvasCreateEditLabel').textContent = mode === 'correction'
+                ? L.FormTitleCorrection : L.FormTitleEdit;
+            document.getElementById('btnSaveGskuText').textContent = mode === 'correction'
+                ? L.RequestCorrection : L.UpdateDraft;
+            bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasCreateEdit')).show();
+            if (!await loadCreateOptions()) {
+                editorId = '';
+                editorGskuVersion = null;
+                editorRevisionVersion = null;
+                editorMode = 'create';
+                bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasCreateEdit')).hide();
+                return;
+            }
+            if (![...globalProduct.options].some((option) => option.value === String(productId))) {
+                globalProduct.add(new Option(
+                    `${productCode || ''}${productCode && productName ? ' — ' : ''}${productName || ''}`,
+                    productId));
+            }
+            if (![...uom.options].some((option) => option.value === String(uomCode))) {
+                throw new Error(L.ErrorConflict);
+            }
+            $(globalProduct).val(String(productId)).trigger('change');
+            globalProduct.disabled = true;
+            $(uom).val(String(uomCode)).trigger('change');
+        } catch (error) {
+            if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error');
+        } finally {
+            setBusy(actionButton, false);
+        }
+    };
+    const openEdit = (id, actionButton) => openExistingEditor(id, actionButton, 'edit');
+    const openCorrection = (id, actionButton) => openExistingEditor(id, actionButton, 'correction');
     const validateQuantity = (quantity, selectedUom) => {
         const match = String(quantity).match(/^\d+(?:\.(\d+))?$/);
         if (!match || Number(quantity) <= 0) return L.PackQuantityRequired;
         const precision = Number(selectedUom?.dataset.maximumDecimalPrecision);
         if (!Number.isInteger(precision) || (match[1]?.length || 0) > precision) {
-            return (L.PackQuantityPrecision || '').replace('{0}', String(Number.isInteger(precision) ? precision : 0));
+            return L.PackQuantityPrecision.replace('{0}', String(Number.isInteger(precision) ? precision : 0));
         }
         return '';
     };
-    const submitCreate = () => {
+    const submitEditor = () => {
         const form = document.getElementById('formGsku');
         const globalProductId = $('#globalProductId').val();
         const packUomCode = $('#packUomCode').val();
@@ -471,37 +536,102 @@ const GskusList = (function () {
             window.showToast?.(!globalProductId ? L.GlobalProductRequired : (!packUomCode ? L.PackUomRequired : L.PackQuantityRequired), 'error');
             return;
         }
-        const quantityError = validateQuantity(quantity, document.querySelector('#packUomCode option:checked'));
+        const quantityError = editorId
+            ? (!/^\d+(?:\.\d+)?$/.test(quantity) || Number(quantity) <= 0 ? L.PackQuantityRequired : '')
+            : validateQuantity(quantity, document.querySelector('#packUomCode option:checked'));
         if (quantityError) {
             window.showToast?.(quantityError, 'error');
             return;
         }
 
         const entityName = $('#globalProductId option:selected').text() || String(globalProductId);
-        window.showConfirm?.(L.CreateConfirmation, async () => {
+        const confirmation = editorMode === 'correction' ? L.CorrectionConfirmation
+            : editorId ? L.UpdateConfirmation : L.CreateConfirmation;
+        const confirmButtonText = editorMode === 'correction' ? L.RequestCorrection
+            : editorId ? L.UpdateDraft : L.Save;
+        window.showConfirm?.(confirmation, async () => {
             const button = document.getElementById('btnSaveGsku');
             if (button) button.disabled = true;
             try {
+                if (editorMode === 'correction') {
+                    const fresh = await fetchDetail(editorId);
+                    const freshGskuVersion = Number(valueOf(fresh, 'gskuVersion', 'GskuVersion'));
+                    const freshRevisionVersion = Number(valueOf(fresh, 'revisionVersion', 'RevisionVersion'));
+                    if (!readAvailableActions(fresh).includes('REQUEST_CORRECTION')
+                        || freshGskuVersion !== editorGskuVersion
+                        || freshRevisionVersion !== editorRevisionVersion) {
+                        throw new Error(L.LifecycleStateChanged);
+                    }
+                }
                 const body = new FormData();
-                body.set('GlobalProductId', String(globalProductId));
                 body.set('PackQuantity', quantity);
                 body.set('PackUomCode', String(packUomCode));
-                body.set('FormAttemptToken', document.getElementById('formAttemptToken')?.value || '');
+                if (editorMode === 'correction') body.set('ExpectedGskuVersion', String(editorGskuVersion));
+                else if (editorId) body.set('ExpectedVersion', String(editorGskuVersion));
+                else {
+                    body.set('GlobalProductId', String(globalProductId));
+                    body.set('FormAttemptToken', document.getElementById('formAttemptToken')?.value || '');
+                }
                 const antiForgeryToken = form.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
                 body.set('__RequestVerificationToken', antiForgeryToken);
-                const response = await fetch(endpoint, {
-                    method: 'POST',
+                const target = editorMode === 'correction'
+                    ? `${endpoint}/${encodeURIComponent(editorId)}/correction-requests`
+                    : editorId ? `${endpoint}/${encodeURIComponent(editorId)}` : endpoint;
+                const response = await fetch(target, {
+                    method: editorMode === 'edit' ? 'PUT' : 'POST',
                     credentials: 'same-origin',
                     headers: { 'RequestVerificationToken': antiForgeryToken, 'X-Requested-With': 'XMLHttpRequest' },
                     body
                 });
                 if (response.status === 401) handleUnauthorized();
-                if (response.status !== 201 && response.status !== 202) throw new Error(await getErrorMessage(response));
+                if (editorMode === 'correction' && response.status !== 200 && response.status !== 202
+                    || editorMode === 'edit' && response.status !== 200
+                    || !editorId && response.status !== 201 && response.status !== 202) {
+                    throw new Error(await getErrorMessage(response));
+                }
                 const payload = await response.json();
                 const draft = unwrapData(payload);
-                if (response.status === 202 || payload?.success === false) {
+                if (!editorId && (response.status === 202 || payload?.success === false)) {
                     window.showToast?.(L.CreateReconciliationPending, 'warning');
                     return;
+                }
+                if (editorMode === 'correction') {
+                    const successful = payload?.isSuccessful ?? payload?.IsSuccessful;
+                    const responseGskuId = valueOf(draft, 'gskuId', 'GskuId');
+                    const checkpoint = valueOf(draft, 'checkpoint', 'Checkpoint');
+                    const responseVersion = Number(valueOf(draft, 'gskuVersion', 'GskuVersion'));
+                    const operationId = valueOf(draft, 'operationId', 'OperationId');
+                    if (successful !== true
+                        || String(responseGskuId).toLowerCase() !== editorId.toLowerCase()
+                        || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(operationId))
+                        || !Number.isInteger(responseVersion) || responseVersion < editorGskuVersion
+                        || response.status === 202 && checkpoint !== 'AwaitingDecision'
+                        || response.status === 200 && checkpoint !== 'Completed') {
+                        throw new Error(L.ErrorGateway);
+                    }
+                    const refreshed = await fetchDetail(editorId);
+                    const refreshedVersion = Number(valueOf(refreshed, 'gskuVersion', 'GskuVersion'));
+                    const refreshedRevisionVersion = Number(valueOf(refreshed, 'revisionVersion', 'RevisionVersion'));
+                    const refreshedActions = readAvailableActions(refreshed);
+                    if (!Number.isInteger(refreshedRevisionVersion)
+                        || response.status === 202 && (refreshedVersion !== editorGskuVersion
+                            || refreshedRevisionVersion !== editorRevisionVersion
+                            || refreshedActions.includes('REQUEST_CORRECTION'))
+                        || response.status === 200 && (refreshedVersion <= editorGskuVersion
+                            || String(valueOf(refreshed, 'packUomCode', 'PackUomCode')) !== String(packUomCode)
+                            || Number(valueOf(refreshed, 'packQuantity', 'PackQuantity')) !== Number(quantity))) {
+                        throw new Error(L.LifecycleStateChanged);
+                    }
+                } else if (editorId) {
+                    const successful = payload?.isSuccessful ?? payload?.IsSuccessful;
+                    const responseGskuId = valueOf(draft, 'gskuId', 'GskuId');
+                    const responseVersion = Number(valueOf(draft, 'version', 'Version'));
+                    if (successful !== true
+                        || String(responseGskuId).toLowerCase() !== editorId.toLowerCase()
+                        || !Number.isInteger(responseVersion)
+                        || responseVersion <= editorGskuVersion) {
+                        throw new Error(L.ErrorGateway);
+                    }
                 }
 
                 const nextToken = payload?.formAttemptToken || payload?.FormAttemptToken;
@@ -513,15 +643,170 @@ const GskusList = (function () {
                 form.reset();
                 $('#globalProductId, #packUomCode').val(null).trigger('change');
                 dt?.ajax.reload(null, false);
-                window.showToast?.((L.CreateSuccessWithIdentifiers || '')
+                window.showToast?.(editorMode === 'correction'
+                    ? response.status === 202 ? L.CorrectionPending : L.CorrectionCompleted
+                    : editorId ? L.UpdateSuccess : L.CreateSuccessWithIdentifiers
                     .replace('{0}', code)
-                    .replace('{1}', revision), 'success');
+                    .replace('{1}', revision),
+                    editorMode === 'correction' && response.status === 202 ? 'warning' : 'success');
+                editorId = '';
+                editorGskuVersion = null;
+                editorRevisionVersion = null;
+                editorMode = 'create';
             } catch (error) {
                 if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error');
             } finally {
                 if (button) button.disabled = false;
             }
-        }, { entityName, type: 'primary', confirmButtonText: L.Save });
+        }, { entityName, type: 'primary', confirmButtonText });
+    };
+
+    const requestLifecycle = (id, action, actionButton) => {
+        if (!id || !['SUBMIT', 'WITHDRAW_APPROVAL'].includes(action)) return;
+        const confirmation = action === 'SUBMIT' ? L.SubmitConfirmation : L.WithdrawConfirmation;
+        const confirmButtonText = action === 'SUBMIT' ? L.SubmitIdentity : L.WithdrawApproval;
+        window.showConfirm?.(confirmation, async () => {
+            const requestKey = `${id}:${action}`;
+            if (lifecycleRequests.has(requestKey)) return;
+            lifecycleRequests.add(requestKey);
+            setBusy(actionButton, true);
+            try {
+                const detail = await fetchDetail(id);
+                if (!readAvailableActions(detail).includes(action)) throw new Error(L.LifecycleStateChanged);
+                const gskuVersion = Number(valueOf(detail, 'gskuVersion', 'GskuVersion'));
+                if (!Number.isInteger(gskuVersion) || gskuVersion < 0) throw new Error(L.ErrorConflict);
+                const body = new FormData();
+                const suffix = action === 'SUBMIT' ? 'submit' : 'identity-approval/withdraw';
+                if (action === 'SUBMIT') body.set('ExpectedVersion', String(gskuVersion));
+                else {
+                    body.set('ExpectedGskuVersion', String(gskuVersion));
+                    body.set('ReasonCode', 'REQUESTER_WITHDRAWAL');
+                    body.set('Comment', '');
+                }
+                const token = document.querySelector('#gskuLifecycleToken input[name="__RequestVerificationToken"]')?.value || '';
+                body.set('__RequestVerificationToken', token);
+                const response = await fetch(`${endpoint}/${encodeURIComponent(id)}/${suffix}`, {
+                    method: 'POST', credentials: 'same-origin',
+                    headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'XMLHttpRequest' }, body
+                });
+                if (response.status === 401) handleUnauthorized();
+                if (!response.ok) throw new Error(await getErrorMessage(response));
+                const payload = await response.json();
+                const successful = payload?.isSuccessful ?? payload?.IsSuccessful ?? payload?.success;
+                const statusCode = Number(payload?.statusCode ?? payload?.StatusCode ?? response.status);
+                if (successful !== true || statusCode !== response.status) throw new Error(L.ErrorGateway);
+                const refreshed = await fetchDetail(id);
+                const refreshedState = lifecycleCode(valueOf(refreshed, 'lifecycleStatus', 'LifecycleStatus'));
+                const refreshedActions = readAvailableActions(refreshed);
+                if (action === 'SUBMIT' && (refreshedState !== 2 || refreshedActions.includes('SUBMIT'))
+                    || action === 'WITHDRAW_APPROVAL' && response.status === 200
+                        && (refreshedState !== 1 || refreshedActions.includes('WITHDRAW_APPROVAL'))) {
+                    throw new Error(L.LifecycleStateChanged);
+                }
+                dt?.ajax.reload(null, false);
+                window.showToast?.(
+                    action === 'SUBMIT' ? L.SubmitPendingSuccess
+                        : response.status === 202 ? L.WithdrawPending : L.WithdrawSuccess,
+                    response.status === 202 && action === 'WITHDRAW_APPROVAL' ? 'warning' : 'success');
+            } catch (error) {
+                if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error');
+            } finally {
+                lifecycleRequests.delete(requestKey);
+                setBusy(actionButton, false);
+            }
+        }, { type: 'warning', confirmButtonText });
+    };
+
+    const requestRetirement = (id, actionButton) => {
+        if (!id) return;
+        window.showConfirm?.(L.RetirementRequestConfirmation, async (input) => {
+            const requestReason = String(input ?? '').trim();
+            if (!requestReason || Array.from(requestReason).length > 128) {
+                window.showToast?.(L.RetirementRequestReasonRequired, 'error');
+                return;
+            }
+            if (/[\u0000-\u001F\u007F-\u009F]/u.test(requestReason)) {
+                window.showToast?.(L.RetirementRequestReasonInvalid, 'error');
+                return;
+            }
+            const requestKey = `${id}:REQUEST_RETIREMENT`;
+            if (lifecycleRequests.has(requestKey)) return;
+            lifecycleRequests.add(requestKey);
+            setBusy(actionButton, true);
+            try {
+                const detail = await fetchDetail(id);
+                if (!readAvailableActions(detail).includes('REQUEST_RETIREMENT')) {
+                    throw new Error(L.LifecycleStateChanged);
+                }
+                const gskuVersion = Number(valueOf(detail, 'gskuVersion', 'GskuVersion'));
+                const revisionVersion = Number(valueOf(detail, 'revisionVersion', 'RevisionVersion'));
+                if (!Number.isInteger(gskuVersion) || gskuVersion < 0
+                    || !Number.isInteger(revisionVersion) || revisionVersion < 0) {
+                    throw new Error(L.ErrorConflict);
+                }
+                const token = document.querySelector(
+                    '#gskuLifecycleToken input[name="__RequestVerificationToken"]')?.value || '';
+                const body = new FormData();
+                body.set('ExpectedGskuVersion', String(gskuVersion));
+                body.set('RequestReason', requestReason);
+                body.set('__RequestVerificationToken', token);
+                const response = await fetch(
+                    `${endpoint}/${encodeURIComponent(id)}/retirement-requests`, {
+                        method: 'POST', credentials: 'same-origin',
+                        headers: {
+                            'RequestVerificationToken': token,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body
+                    });
+                if (response.status === 401) handleUnauthorized();
+                if (response.status !== 200 && response.status !== 202) {
+                    throw new Error(await getErrorMessage(response));
+                }
+                const payload = await response.json();
+                const data = unwrapData(payload);
+                const successful = payload?.isSuccessful ?? payload?.IsSuccessful;
+                const statusCode = Number(payload?.statusCode ?? payload?.StatusCode);
+                const responseId = valueOf(data, 'gskuId', 'GskuId');
+                const responseVersion = Number(valueOf(data, 'gskuVersion', 'GskuVersion'));
+                const operationId = valueOf(data, 'operationId', 'OperationId');
+                const checkpoint = valueOf(data, 'checkpoint', 'Checkpoint');
+                if (successful !== true || statusCode !== response.status
+                    || String(responseId).toLowerCase() !== String(id).toLowerCase()
+                    || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(operationId))
+                    || !Number.isInteger(responseVersion) || responseVersion <= gskuVersion
+                    || response.status === 202 && checkpoint !== 'AwaitingDecision'
+                    || response.status === 200 && checkpoint !== 'Completed') {
+                    throw new Error(L.ErrorGateway);
+                }
+                const refreshed = await fetchDetail(id);
+                const refreshedState = lifecycleCode(valueOf(refreshed, 'lifecycleStatus', 'LifecycleStatus'));
+                const refreshedGskuVersion = Number(valueOf(refreshed, 'gskuVersion', 'GskuVersion'));
+                const refreshedRevisionVersion = Number(valueOf(refreshed, 'revisionVersion', 'RevisionVersion'));
+                const refreshedActions = readAvailableActions(refreshed);
+                if (refreshedGskuVersion !== responseVersion
+                    || response.status === 202 && (refreshedState !== 3
+                        || refreshedRevisionVersion !== revisionVersion
+                        || refreshedActions.includes('REQUEST_CORRECTION')
+                        || refreshedActions.includes('REQUEST_RETIREMENT'))
+                    || response.status === 200 && (refreshedState !== 4
+                        || refreshedRevisionVersion <= revisionVersion)) {
+                    throw new Error(L.LifecycleStateChanged);
+                }
+                dt?.ajax.reload(null, false);
+                window.showToast?.(L.RetirementRequestedSuccess,
+                    response.status === 202 ? 'warning' : 'success');
+            } catch (error) {
+                if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error');
+            } finally {
+                lifecycleRequests.delete(requestKey);
+                setBusy(actionButton, false);
+            }
+        }, {
+            type: 'warning', showInput: true, inputType: 'text', inputRequired: true,
+            inputLabel: L.RetirementRequestReasonLabel,
+            inputAttributes: { maxlength: 128 }, confirmButtonText: L.RequestRetirement
+        });
     };
 
     const initDataTable = async () => {
@@ -622,7 +907,7 @@ const GskusList = (function () {
                 });
                 setTimeout(() => { saveFilterArmed = true; }, 0);
             },
-            drawCallback: function () { window.DtDefaults.updateVisualState(this.api(), 0); }
+            drawCallback: function () { window.DtDefaults.updateVisualState(this.api(), getAppliedFilterCount()); }
         });
         dt = new DataTable(tableEl, config);
         $(tableEl).on('column-reorder.dt columns-reordered.dt search.dt order.dt column-visibility.dt', () => {
@@ -632,16 +917,25 @@ const GskusList = (function () {
 
     const bindEvents = () => {
         bindFilter();
-        document.getElementById('btnSaveGsku')?.addEventListener('click', submitCreate);
+        document.getElementById('btnSaveGsku')?.addEventListener('click', submitEditor);
         document.addEventListener('click', (event) => {
+            const menuToggle = event.target.closest('.js-gsku-actions-toggle');
+            if (menuToggle && menuToggle.closest('.datatables-gskus')) {
+                event.preventDefault();
+                loadActionMenu(menuToggle);
+                return;
+            }
             const quickViewAction = event.target.closest('.js-quick-view');
-            const lifecycleAction = event.target.closest('.js-submit-identity, .js-retire-identity');
-            const action = quickViewAction || lifecycleAction;
+            const action = quickViewAction || event.target.closest('.js-edit-draft, .js-request-correction, .js-request-retirement, .js-lifecycle-action');
             if (!action || !action.closest('.datatables-gskus') || action.classList.contains('disabled')) return;
             event.preventDefault();
-            if (action.classList.contains('js-submit-identity')) requestLifecycle(action.dataset.id, 'submit', action);
-            else if (action.classList.contains('js-retire-identity')) requestLifecycle(action.dataset.id, 'retire', action);
-            else populateDetails(action.dataset.id);
+            const id = action.dataset.id;
+            const code = action.dataset.action;
+            if (code === 'EDIT') openEdit(id, action);
+            else if (code === 'REQUEST_CORRECTION') openCorrection(id, action);
+            else if (code === 'REQUEST_RETIREMENT') requestRetirement(id, action);
+            else if (code === 'SUBMIT' || code === 'WITHDRAW_APPROVAL') requestLifecycle(id, code, action);
+            else populateDetails(id);
         });
     };
 

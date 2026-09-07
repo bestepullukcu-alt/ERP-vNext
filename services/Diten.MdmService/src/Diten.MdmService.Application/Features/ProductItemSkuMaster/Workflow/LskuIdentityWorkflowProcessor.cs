@@ -39,7 +39,12 @@ public sealed class LskuIdentityWorkflowProcessor(
         LskuIdentityWorkflowCheckpoint.AwaitingDecision,
         LskuIdentityWorkflowCheckpoint.DecisionObserved,
         LskuIdentityWorkflowCheckpoint.ApprovalValidated,
-        LskuIdentityWorkflowCheckpoint.DecisionApplied
+        LskuIdentityWorkflowCheckpoint.DecisionApplied,
+        LskuIdentityWorkflowCheckpoint.WithdrawalRequested,
+        LskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved,
+        LskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown,
+        LskuIdentityWorkflowCheckpoint.WithdrawalObserved,
+        LskuIdentityWorkflowCheckpoint.WithdrawalApplied
     ];
 
     public async Task<LskuIdentityWorkflowProcessingResult> StartInteractiveAsync(
@@ -127,8 +132,166 @@ public sealed class LskuIdentityWorkflowProcessor(
         TimeSpan leaseDuration,
         TimeSpan retryDelay,
         CancellationToken cancellationToken = default) =>
-        ProcessAsync(operation, null, leaseOwner, leaseDuration, retryDelay,
-            stopWhenAwaitingDecision: false, cancellationToken);
+        operation.WithdrawalCommandId.HasValue && operation.Checkpoint is
+            LskuIdentityWorkflowCheckpoint.WithdrawalRequested
+            or LskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved
+            or LskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown
+            or LskuIdentityWorkflowCheckpoint.WithdrawalObserved
+            or LskuIdentityWorkflowCheckpoint.WithdrawalApplied
+            or LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay
+            ? ProcessWithdrawalAsync(operation, null, leaseOwner, leaseDuration, retryDelay, cancellationToken)
+            : ProcessAsync(operation, null, leaseOwner, leaseDuration, retryDelay,
+                stopWhenAwaitingDecision: false, cancellationToken);
+
+    public async Task<LskuIdentityWorkflowProcessingResult> WithdrawInteractiveAsync(
+        Guid tenantId, Guid lskuId, int expectedVersion, Guid commandId, Guid requesterSubjectId,
+        string reasonCode, string? comment, string delegatedUserToken, TimeSpan leaseDuration,
+        TimeSpan retryDelay, CancellationToken cancellationToken = default)
+    {
+        if (tenantId == Guid.Empty || lskuId == Guid.Empty || commandId == Guid.Empty
+            || requesterSubjectId == Guid.Empty || expectedVersion < 1
+            || !ExactText(reasonCode, 128) || !OptionalExactText(comment, 2000)
+            || string.IsNullOrWhiteSpace(delegatedUserToken))
+            return Fail("LSKU_IDENTITY_WITHDRAWAL_INVALID", 400);
+        var lsku = await lskus.GetByIdAsync(lskuId, cancellationToken);
+        if (lsku?.IdentityWorkflowBinding is not { } binding)
+            return Fail(lsku is null ? "LSKU_IDENTITY_NOT_FOUND" : "LSKU_IDENTITY_STATE_CONFLICT", lsku is null ? 404 : 409);
+        if (binding.SubmitterSubjectId != requesterSubjectId)
+            return Fail("LSKU_IDENTITY_WITHDRAWAL_NOT_REQUESTER", 403);
+        var operation = await operations.GetByStartIdempotencyKeyAsync(binding.StartIdempotencyKey, cancellationToken);
+        if (operation is null || operation.TenantId != tenantId || operation.LskuId != lskuId
+            || operation.MakerSubjectId != requesterSubjectId || operation.WorkflowInstanceId != binding.WorkflowInstanceId
+            || operation.ApprovalTaskId != binding.ApprovalTaskId)
+            return Fail("LSKU_IDENTITY_WORKFLOW_BINDING_CONFLICT", 409);
+        var fingerprint = WithdrawalFingerprint(tenantId, lskuId, expectedVersion, commandId,
+            requesterSubjectId, reasonCode, comment, binding);
+        if (operation.WithdrawalCommandId.HasValue && !ExactWithdrawalFacts(operation, commandId,
+                fingerprint, requesterSubjectId, expectedVersion, reasonCode, comment))
+            return Fail("LSKU_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT", 409);
+        if (!operation.WithdrawalCommandId.HasValue && (lsku.Version != expectedVersion
+            || lsku.LifecycleStatus != ProductIdentityLifecycleStatus.PendingIdentityApproval
+            || operation.Checkpoint != LskuIdentityWorkflowCheckpoint.AwaitingDecision))
+            return Fail("LSKU_IDENTITY_STATE_CONFLICT", 409);
+        var result = await ProcessWithdrawalAsync(operation, delegatedUserToken,
+            $"withdraw-{requesterSubjectId:N}", leaseDuration, retryDelay, cancellationToken,
+            commandId, fingerprint, requesterSubjectId, expectedVersion, reasonCode, comment);
+        return result with { IsReplay = operation.WithdrawalCommandId.HasValue || result.IsReplay };
+    }
+
+    private async Task<LskuIdentityWorkflowProcessingResult> ProcessWithdrawalAsync(
+        LskuIdentityWorkflowOperation initial, string? token, string leaseOwner, TimeSpan leaseDuration,
+        TimeSpan retryDelay, CancellationToken cancellationToken, Guid? commandId = null,
+        string? fingerprint = null, Guid? requester = null, int? expectedVersion = null,
+        string? reasonCode = null, string? comment = null)
+    {
+        var operation = initial;
+        for (var step = 0; step < 10; step++)
+        {
+            if (operation.Checkpoint == LskuIdentityWorkflowCheckpoint.Completed)
+                return operation.WithdrawalCommandId.HasValue ? Success(operation, true)
+                    : Fail(operation, "LSKU_IDENTITY_WORKFLOW_STATE_CONFLICT", 409);
+            var now = timeProvider.GetUtcNow();
+            var claim = await operations.TryClaimAsync(new(operation.OperationId, operation.OperationFingerprint,
+                [operation.Checkpoint], leaseOwner, now.UtcTicks, now.Add(leaseDuration).UtcTicks), cancellationToken);
+            if (claim is null) return Fail(operation, "LSKU_IDENTITY_WORKFLOW_BUSY", 409);
+            bool advanced;
+            switch (operation.Checkpoint)
+            {
+                case LskuIdentityWorkflowCheckpoint.AwaitingDecision:
+                    if (!commandId.HasValue || fingerprint is null || !requester.HasValue || !expectedVersion.HasValue || reasonCode is null)
+                        return Fail(operation, "LSKU_IDENTITY_WORKFLOW_DECISION_PENDING", 409);
+                    advanced = await operations.AdvanceAsync(claim, new(
+                        LskuIdentityWorkflowCheckpoint.WithdrawalRequested,
+                        ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
+                        WithdrawalCommandId: commandId, WithdrawalFingerprint: fingerprint,
+                        WithdrawalRequesterSubjectId: requester, WithdrawalExpectedLskuVersion: expectedVersion,
+                        WithdrawalReasonCode: reasonCode, WithdrawalComment: comment, ReleaseLease: true), cancellationToken);
+                    break;
+                case LskuIdentityWorkflowCheckpoint.WithdrawalRequested:
+                {
+                    var preflight = await workflowClient.GetCancellationPreflightAsync(operation.TenantId,
+                        new(operation.WorkflowInstanceId!.Value, operation.ApprovalTaskId!.Value,
+                            operation.ObjectType, operation.ObjectId, operation.MakerSubjectId), cancellationToken);
+                    if (preflight.Outcome != ProductIdentityWorkflowTransportOutcome.Success || preflight.Value is not { } p)
+                    {
+                        advanced = Retryable(preflight.Outcome)
+                            ? await ScheduleRetryAsync(claim, operation.Checkpoint, preflight.ErrorCode, now, retryDelay, cancellationToken)
+                            : await QuarantineAsync(claim, preflight.ErrorCode, now, cancellationToken);
+                        break;
+                    }
+                    advanced = await operations.AdvanceAsync(claim, new(
+                        LskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved,
+                        ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
+                        WithdrawalExpectedWorkflowInstanceVersion: p.WorkflowInstanceVersion,
+                        WithdrawalExpectedApprovalTaskVersion: p.ApprovalTaskVersion,
+                        WithdrawalObjectRef: p.ObjectRef, ReleaseLease: true), cancellationToken);
+                    break;
+                }
+                case LskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved:
+                case LskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown:
+                case LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay:
+                {
+                    if (string.IsNullOrWhiteSpace(token))
+                    {
+                        advanced = await AdvanceAsync(claim, LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
+                            ProductIdentityWorkflowRecoveryDisposition.AwaitingMakerReplay, now,
+                            "LSKU_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED", true, cancellationToken);
+                        break;
+                    }
+                    var cancelled = await workflowClient.CancelAsync(operation.TenantId, new(
+                        operation.WorkflowInstanceId!.Value, operation.ApprovalTaskId!.Value,
+                        operation.ObjectType, operation.ObjectId, operation.MakerSubjectId,
+                        operation.WithdrawalExpectedWorkflowInstanceVersion!.Value,
+                        operation.WithdrawalExpectedApprovalTaskVersion!.Value,
+                        operation.WithdrawalReasonCode!, operation.WithdrawalComment,
+                        operation.WithdrawalCommandId!.Value.ToString("D")), token, cancellationToken);
+                    if (cancelled.Outcome != ProductIdentityWorkflowTransportOutcome.Success || cancelled.Value is not { } e)
+                    {
+                        advanced = Retryable(cancelled.Outcome)
+                            ? await ScheduleRetryAsync(claim, LskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown,
+                                cancelled.ErrorCode, now, retryDelay, cancellationToken)
+                            : await QuarantineAsync(claim, cancelled.ErrorCode, now, cancellationToken);
+                        break;
+                    }
+                    advanced = await operations.AdvanceAsync(claim, new(
+                        LskuIdentityWorkflowCheckpoint.WithdrawalObserved,
+                        ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
+                        WithdrawalTransitionLogId: e.TransitionLogId,
+                        WithdrawalObservedAtUtcTicksV1: e.DecisionAt.UtcTicks,
+                        WithdrawalTransitionSequence: e.TransitionSequence,
+                        WithdrawalResultWorkflowInstanceVersion: e.WorkflowInstanceVersion,
+                        WithdrawalResultApprovalTaskVersion: e.ApprovalTaskVersion,
+                        WithdrawalTaskStatus: e.TaskStatus, WithdrawalInstanceStatus: e.InstanceStatus,
+                        WithdrawalObjectRef: e.ObjectRef, ReleaseLease: true), cancellationToken);
+                    break;
+                }
+                case LskuIdentityWorkflowCheckpoint.WithdrawalObserved:
+                {
+                    if (!TryCancellationEvidence(operation, out var evidence))
+                    { advanced = await QuarantineAsync(claim, "LSKU_IDENTITY_WITHDRAWAL_EVIDENCE_INVALID", now, cancellationToken); break; }
+                    var lsku = await lskus.GetByIdAsync(operation.LskuId, cancellationToken);
+                    if (lsku is null) { advanced = await QuarantineAsync(claim, "LSKU_IDENTITY_NOT_FOUND", now, cancellationToken); break; }
+                    var audit = LskuIdentityLifecycleAuditIntentFactory.CreateWithdrawal(lsku,
+                        operation.WithdrawalExpectedLskuVersion!.Value, evidence);
+                    var written = await operations.ApplyWithdrawalAsync(claim, operation, evidence, audit, now.UtcTicks, cancellationToken);
+                    advanced = written.Succeeded;
+                    break;
+                }
+                case LskuIdentityWorkflowCheckpoint.WithdrawalApplied:
+                    advanced = await AdvanceAsync(claim, LskuIdentityWorkflowCheckpoint.Completed,
+                        ProductIdentityWorkflowRecoveryDisposition.None, now, releaseLease: true,
+                        cancellationToken: cancellationToken);
+                    break;
+                default: return Fail(operation, "LSKU_IDENTITY_WORKFLOW_STATE_CONFLICT", 409);
+            }
+            if (!advanced) return Fail(operation, "LSKU_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT", 409);
+            operation = await operations.GetByOperationIdAsync(operation.OperationId, cancellationToken)
+                ?? throw new InvalidOperationException("LSKU_IDENTITY_WORKFLOW_OPERATION_LOST");
+            if (operation.NextAttemptAtUtcTicksV1 > timeProvider.GetUtcNow().UtcTicks)
+                return Fail(operation, operation.LastFailureCode ?? "LSKU_IDENTITY_WORKFLOW_RETRY_SCHEDULED", 503);
+        }
+        return Fail(operation, "LSKU_IDENTITY_WORKFLOW_STEP_BUDGET_EXCEEDED", 503);
+    }
 
     private async Task<LskuIdentityWorkflowProcessingResult> ProcessAsync(
         LskuIdentityWorkflowOperation initial,
@@ -1019,6 +1182,58 @@ public sealed class LskuIdentityWorkflowProcessor(
         !string.IsNullOrWhiteSpace(code) && code.Length <= 128 && code.All(character => !char.IsControl(character))
             ? code
             : fallback;
+
+    private static bool ExactText(string? value, int max) => value is { Length: > 0 }
+        && value.Length <= max && value == value.Trim() && !value.Any(char.IsControl);
+
+    private static bool OptionalExactText(string? value, int max) => value is null
+        || value.Length <= max && value == value.Trim() && !value.Any(char.IsControl);
+
+    private static string WithdrawalFingerprint(Guid tenantId, Guid lskuId, int expectedVersion,
+        Guid commandId, Guid requester, string reason, string? comment, ProductIdentityWorkflowBinding binding)
+    {
+        var facts = string.Join('|', "lsku-withdrawal-v1", tenantId.ToString("D"), lskuId.ToString("D"),
+            expectedVersion.ToString(CultureInfo.InvariantCulture), commandId.ToString("D"), requester.ToString("D"),
+            reason, comment ?? string.Empty, binding.WorkflowInstanceId.ToString("D"),
+            binding.ApprovalTaskId.ToString("D"), binding.StartIdempotencyKey);
+        return Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+            System.Text.Encoding.UTF8.GetBytes(facts))).ToLowerInvariant();
+    }
+
+    private static bool ExactWithdrawalFacts(LskuIdentityWorkflowOperation operation, Guid commandId,
+        string fingerprint, Guid requester, int expectedVersion, string reason, string? comment) =>
+        operation.WithdrawalCommandId == commandId && operation.WithdrawalFingerprint == fingerprint
+        && operation.WithdrawalRequesterSubjectId == requester
+        && operation.WithdrawalExpectedLskuVersion == expectedVersion
+        && operation.WithdrawalReasonCode == reason && operation.WithdrawalComment == comment;
+
+    private static bool TryCancellationEvidence(LskuIdentityWorkflowOperation operation,
+        out Diten.MdmService.Domain.ValueObjects.ProductIdentityWorkflowCancellationEvidence evidence)
+    {
+        evidence = null!;
+        if (operation.WorkflowInstanceId is not { } workflowId || operation.ApprovalTaskId is not { } taskId
+            || operation.WorkflowTemplateId is not { } templateId || operation.WorkflowTemplateVersionId is not { } templateVersionId
+            || operation.WithdrawalRequesterSubjectId is not { } requester
+            || operation.WithdrawalTransitionLogId is not { } logId || operation.WithdrawalObservedAtUtcTicksV1 is not > 0
+            || operation.WithdrawalTransitionSequence is not > 0 || operation.WithdrawalResultWorkflowInstanceVersion is not > 0
+            || operation.WithdrawalResultApprovalTaskVersion is not > 0 || operation.WithdrawalCommandId is not { } commandId)
+            return false;
+        evidence = new()
+        {
+            WorkflowInstanceId = workflowId, ApprovalTaskId = taskId, WorkflowTemplateId = templateId,
+            WorkflowTemplateVersionId = templateVersionId, ObjectType = operation.ObjectType,
+            ObjectId = operation.LskuId, ObjectRef = operation.WithdrawalObjectRef ?? operation.ObjectRef,
+            RequesterSubjectId = requester, ReasonCode = operation.WithdrawalReasonCode!,
+            Comment = operation.WithdrawalComment,
+            CancelledAtUtc = new DateTimeOffset(operation.WithdrawalObservedAtUtcTicksV1.Value, TimeSpan.Zero),
+            TransitionSequence = operation.WithdrawalTransitionSequence.Value, TransitionLogId = logId,
+            TaskStatus = operation.WithdrawalTaskStatus!, InstanceStatus = operation.WithdrawalInstanceStatus!,
+            WorkflowInstanceVersion = operation.WithdrawalResultWorkflowInstanceVersion.Value,
+            ApprovalTaskVersion = operation.WithdrawalResultApprovalTaskVersion.Value,
+            IdempotencyKey = commandId.ToString("D")
+        };
+        return evidence.TaskStatus == "Cancelled" && evidence.InstanceStatus == "Cancelled";
+    }
 
     private static LskuIdentityWorkflowProcessingResult Success(
         LskuIdentityWorkflowOperation operation,

@@ -315,6 +315,66 @@ public sealed class TrustedWorkflowConsumerSecurityTests
     }
 
     [Fact]
+    public async Task Cancellation_dual_auth_binds_service_and_delegated_requester_without_generic_permission()
+    {
+        var authentication = new RecordingAuthenticationService(new Dictionary<string, AuthenticateResult>
+        {
+            [TrustedServiceTokenValidationExtensions.WorkflowAuthenticationScheme] = Success(ServicePrincipal()),
+            [TrustedServiceTokenValidationExtensions.WorkflowDelegatedUserAuthenticationScheme] = Success(
+                UserPrincipal(includeStartPermission: false))
+        });
+        var context = ValidCancellationContext(authentication);
+        var tenantContext = new TenantContext();
+        var executor = new TrustedWorkflowConsumerRequestExecutor(new(), tenantContext);
+
+        var result = await executor.ExecuteCancellationAsync(
+            context,
+            CancellationToken.None,
+            (request, key, service, delegated, _) =>
+            {
+                Assert.Equal("cancel-operation-1", key);
+                Assert.Equal(ClientId, service.ClientId);
+                Assert.Equal(UserId, delegated.UserId);
+                Assert.Equal(TenantId, tenantContext.TenantId);
+                Assert.Equal("GlobalProduct", request.ExpectedObjectType);
+                return Task.FromResult<IActionResult>(new OkResult());
+            },
+            Failure);
+
+        Assert.IsType<OkResult>(result);
+        Assert.False(tenantContext.IsResolved);
+    }
+
+    [Fact]
+    public async Task Cancellation_preflight_is_service_only_and_rejects_delegated_or_tenant_headers()
+    {
+        var authentication = new RecordingAuthenticationService(new Dictionary<string, AuthenticateResult>
+        {
+            [TrustedServiceTokenValidationExtensions.WorkflowAuthenticationScheme] = Success(ServicePrincipal())
+        });
+        var executor = new TrustedWorkflowConsumerRequestExecutor(new(), new TenantContext());
+        var delegated = ValidCancellationPreflightContext(authentication);
+        delegated.Request.Headers[TrustedServiceTokenValidationExtensions.DelegatedAuthorizationHeader] =
+            "Bearer delegated-token";
+        var tenantHeader = ValidCancellationPreflightContext(authentication);
+        tenantHeader.Request.Headers["X-Tenant-Id"] = TenantId.ToString("D");
+
+        var delegatedResult = await executor.ExecuteCancellationPreflightAsync(
+            delegated,
+            CancellationToken.None,
+            (_, _, _) => Task.FromResult<IActionResult>(new OkResult()),
+            Failure);
+        var tenantResult = await executor.ExecuteCancellationPreflightAsync(
+            tenantHeader,
+            CancellationToken.None,
+            (_, _, _) => Task.FromResult<IActionResult>(new OkResult()),
+            Failure);
+
+        Assert.Equal(403, Assert.IsType<ObjectResult>(delegatedResult).StatusCode);
+        Assert.Equal(403, Assert.IsType<ObjectResult>(tenantResult).StatusCode);
+    }
+
+    [Fact]
     public async Task Caller_cancellation_propagates_without_timeout_mapping()
     {
         var executor = new TrustedWorkflowConsumerRequestExecutor(new(), new TenantContext());
@@ -359,6 +419,34 @@ public sealed class TrustedWorkflowConsumerSecurityTests
         SetBody(context,
             "{\"expectedObjectType\":\"GlobalProduct\"," +
             "\"expectedObjectId\":\"GP-0001\"," +
+            $"\"expectedMakerSubjectId\":\"{UserId:D}\"}}");
+        return context;
+    }
+
+    private static DefaultHttpContext ValidCancellationContext(IAuthenticationService authentication)
+    {
+        var context = ValidCancellationPreflightContext(authentication);
+        context.Request.Headers[TrustedServiceTokenValidationExtensions.DelegatedAuthorizationHeader] =
+            "Bearer delegated-token";
+        context.Request.Headers["Idempotency-Key"] = "cancel-operation-1";
+        SetBody(context,
+            "{\"workflowInstanceId\":\"24000000-0000-0000-0000-000000000024\"," +
+            "\"approvalTaskId\":\"25000000-0000-0000-0000-000000000025\"," +
+            "\"expectedObjectType\":\"GlobalProduct\",\"expectedObjectId\":\"GP-0001\"," +
+            $"\"expectedMakerSubjectId\":\"{UserId:D}\"," +
+            "\"expectedWorkflowInstanceVersion\":1,\"expectedApprovalTaskVersion\":1," +
+            "\"reasonCode\":\"WITHDRAW\"}");
+        return context;
+    }
+
+    private static DefaultHttpContext ValidCancellationPreflightContext(IAuthenticationService authentication)
+    {
+        var context = Context(authentication);
+        context.Request.Headers.Authorization = "Bearer service-token";
+        SetBody(context,
+            "{\"workflowInstanceId\":\"24000000-0000-0000-0000-000000000024\"," +
+            "\"approvalTaskId\":\"25000000-0000-0000-0000-000000000025\"," +
+            "\"expectedObjectType\":\"GlobalProduct\",\"expectedObjectId\":\"GP-0001\"," +
             $"\"expectedMakerSubjectId\":\"{UserId:D}\"}}");
         return context;
     }

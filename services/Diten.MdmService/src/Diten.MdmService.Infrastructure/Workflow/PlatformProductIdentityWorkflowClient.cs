@@ -15,6 +15,8 @@ public sealed class PlatformProductIdentityWorkflowClient : IProductIdentityWork
     private const string StartPath = "/api/internal/v1/workflow/trusted-consumer/start";
     private const string StartResultPath = "/api/internal/v1/workflow/trusted-consumer/start-result";
     private const string EvidencePath = "/api/internal/v1/workflow/trusted-consumer/terminal-decision-evidence";
+    private const string CancellationPreflightPath = "/api/internal/v1/workflow/trusted-consumer/cancel-preflight";
+    private const string CancellationPath = "/api/internal/v1/workflow/trusted-consumer/cancel";
     private const int MaximumResponseBytes = 64 * 1024;
     private static readonly TimeSpan Budget = TimeSpan.FromSeconds(2);
     private readonly IHttpClientFactory _clients;
@@ -74,12 +76,84 @@ public sealed class PlatformProductIdentityWorkflowClient : IProductIdentityWork
             allowCreated: false, callerToken: cancellationToken);
     }
 
+    public Task<ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowCancellationPreflight>>
+        GetCancellationPreflightAsync(
+            Guid tenantId,
+            ProductIdentityWorkflowCancellationPreflightRequest request,
+            CancellationToken cancellationToken = default)
+    {
+        if (!ValidCancellationGraph(
+                request.WorkflowInstanceId,
+                request.ApprovalTaskId,
+                request.ExpectedObjectType,
+                request.ExpectedObjectId,
+                request.ExpectedMakerSubjectId))
+        {
+            return InvalidRequest<ProductIdentityWorkflowCancellationPreflight>();
+        }
+
+        return SendAsync<ProductIdentityWorkflowCancellationPreflight>(
+            tenantId,
+            CancellationPreflightPath,
+            request,
+            null,
+            null,
+            value => ValidCancellationPreflight(value, request),
+            allowCreated: false,
+            callerToken: cancellationToken);
+    }
+
+    public Task<ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowCancellationEvidence>> CancelAsync(
+        Guid tenantId,
+        ProductIdentityWorkflowCancellationRequest request,
+        string delegatedUserToken,
+        CancellationToken cancellationToken = default)
+    {
+        if (!ValidCancellationGraph(
+                request.WorkflowInstanceId,
+                request.ApprovalTaskId,
+                request.ExpectedObjectType,
+                request.ExpectedObjectId,
+                request.ExpectedMakerSubjectId)
+            || request.ExpectedWorkflowInstanceVersion <= 0
+            || request.ExpectedApprovalTaskVersion <= 0
+            || !ValidText(request.ReasonCode, 128)
+            || !ValidOptionalText(request.Comment, 2000))
+        {
+            return InvalidRequest<ProductIdentityWorkflowCancellationEvidence>();
+        }
+
+        return SendAsync<ProductIdentityWorkflowCancellationEvidence>(
+            tenantId,
+            CancellationPath,
+            new
+            {
+                request.WorkflowInstanceId,
+                request.ApprovalTaskId,
+                request.ExpectedObjectType,
+                request.ExpectedObjectId,
+                request.ExpectedMakerSubjectId,
+                request.ExpectedWorkflowInstanceVersion,
+                request.ExpectedApprovalTaskVersion,
+                request.ReasonCode,
+                request.Comment
+            },
+            request.IdempotencyKey,
+            delegatedUserToken,
+            value => ValidCancellationEvidence(value, request),
+            allowCreated: false,
+            callerToken: cancellationToken);
+    }
+
     private async Task<ProductIdentityWorkflowTransportResult<T>> SendAsync<T>(
         Guid tenantId, string path, object body, string? idempotencyKey, string? delegatedToken,
         Func<T, bool> validateSuccess, bool allowCreated, CancellationToken callerToken)
     {
-        if (tenantId == Guid.Empty || !ValidConfiguration() || !ValidHeader(idempotencyKey, 256, allowNull: path == EvidencePath)
-            || !ValidHeader(delegatedToken, 16 * 1024, allowNull: path != StartPath))
+        var requiresIdempotency = path is StartPath or StartResultPath or CancellationPath;
+        var requiresDelegatedToken = path is StartPath or CancellationPath;
+        if (tenantId == Guid.Empty || !ValidConfiguration()
+            || !ValidHeader(idempotencyKey, 256, allowNull: !requiresIdempotency)
+            || !ValidHeader(delegatedToken, 16 * 1024, allowNull: !requiresDelegatedToken))
             return ProductIdentityWorkflowTransportResult<T>.Fail(ProductIdentityWorkflowTransportOutcome.Invalid, "PRODUCT_WORKFLOW_REQUEST_INVALID");
 
         using var budget = CancellationTokenSource.CreateLinkedTokenSource(callerToken);
@@ -200,7 +274,8 @@ public sealed class PlatformProductIdentityWorkflowClient : IProductIdentityWork
         && value.CandidatePrincipalIds.Distinct(StringComparer.Ordinal).Count() == value.CandidatePrincipalIds.Count
         && ValidOptionalText(value.ReasonCode, 128) && ValidUtc(value.DueAt);
     private static bool ValidObject(string objectType, string objectId) =>
-        objectType is "GlobalProduct" or "gsku" or "lsku" or "finished-good"
+        objectType is "GlobalProduct" or "GlobalProductCorrection" or "GlobalProductRetirement"
+            or "gsku" or "lsku" or "finished-good"
         && Guid.TryParseExact(objectId, "D", out var id) && id != Guid.Empty;
     private static bool ValidStartResult(
         ProductIdentityWorkflowStartResult value,
@@ -225,6 +300,51 @@ public sealed class PlatformProductIdentityWorkflowClient : IProductIdentityWork
         && ValidOptionalText(value.ReasonCode, 256) && value.DecisionAt != default && value.DecisionAt.Offset == TimeSpan.Zero
         && value.TransitionSequence > 0 && ValidTerminalStatuses(
             value.TerminalAction, value.TaskStatus, value.InstanceStatus)
+        && ValidOptionalText(value.CorrelationId, 256);
+    private static bool ValidCancellationGraph(
+        Guid workflowInstanceId,
+        Guid approvalTaskId,
+        string objectType,
+        string objectId,
+        Guid makerSubjectId) =>
+        workflowInstanceId != Guid.Empty
+        && approvalTaskId != Guid.Empty
+        && makerSubjectId != Guid.Empty
+        && ValidObject(objectType, objectId);
+    private static bool ValidCancellationPreflight(
+        ProductIdentityWorkflowCancellationPreflight value,
+        ProductIdentityWorkflowCancellationPreflightRequest request) =>
+        value.WorkflowInstanceId == request.WorkflowInstanceId
+        && value.ApprovalTaskId == request.ApprovalTaskId
+        && string.Equals(value.ObjectType, request.ExpectedObjectType, StringComparison.Ordinal)
+        && string.Equals(value.ObjectId, request.ExpectedObjectId, StringComparison.Ordinal)
+        && ValidText(value.ObjectRef, 256)
+        && value.WorkflowInstanceVersion > 0
+        && value.ApprovalTaskVersion > 0
+        && string.Equals(value.WorkflowInstanceStatus, "Active", StringComparison.Ordinal)
+        && value.ApprovalTaskStatus is "WaitingApproval" or "WaitingEvidence";
+    private static bool ValidCancellationEvidence(
+        ProductIdentityWorkflowCancellationEvidence value,
+        ProductIdentityWorkflowCancellationRequest request) =>
+        value.WorkflowInstanceId == request.WorkflowInstanceId
+        && value.ApprovalTaskId == request.ApprovalTaskId
+        && value.TemplateId != Guid.Empty
+        && value.TemplateVersionId != Guid.Empty
+        && string.Equals(value.ObjectType, request.ExpectedObjectType, StringComparison.Ordinal)
+        && string.Equals(value.ObjectId, request.ExpectedObjectId, StringComparison.Ordinal)
+        && ValidText(value.ObjectRef, 256)
+        && string.Equals(value.TerminalAction, "Cancel", StringComparison.Ordinal)
+        && value.ActorUserId == request.ExpectedMakerSubjectId
+        && string.Equals(value.ReasonCode, request.ReasonCode, StringComparison.Ordinal)
+        && string.Equals(value.Comment, request.Comment, StringComparison.Ordinal)
+        && value.DecisionAt != default
+        && value.DecisionAt.Offset == TimeSpan.Zero
+        && value.TransitionSequence > 0
+        && value.TransitionLogId != Guid.Empty
+        && string.Equals(value.TaskStatus, "Cancelled", StringComparison.Ordinal)
+        && string.Equals(value.InstanceStatus, "Cancelled", StringComparison.Ordinal)
+        && value.WorkflowInstanceVersion > request.ExpectedWorkflowInstanceVersion
+        && value.ApprovalTaskVersion > request.ExpectedApprovalTaskVersion
         && ValidOptionalText(value.CorrelationId, 256);
     private static bool ValidText(string? value, int max) => value is { Length: > 0 } && value.Length <= max
         && string.Equals(value, value.Trim(), StringComparison.Ordinal) && !value.Any(char.IsControl);

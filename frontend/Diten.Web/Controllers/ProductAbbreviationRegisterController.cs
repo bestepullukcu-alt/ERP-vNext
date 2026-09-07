@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Diten.Web.Models.ProductAbbreviationRegister;
+using Diten.Web.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -12,6 +13,7 @@ namespace Diten.Web.Controllers;
 public sealed class ProductAbbreviationRegisterController : Controller
 {
     private const string ServicePath = "/api/product-abbreviations";
+    private const string ReadPermission = "mdm.product-abbreviations.read";
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
@@ -31,7 +33,9 @@ public sealed class ProductAbbreviationRegisterController : Controller
     }
 
     [HttpGet("")]
-    public IActionResult Index() => View("~/Views/MDM/ProductAbbreviationRegister/Index.cshtml");
+    public IActionResult Index() => PermissionClaims.HasPermission(User, ReadPermission)
+        ? View("~/Views/MDM/ProductAbbreviationRegister/Index.cshtml")
+        : Forbid();
 
     [HttpGet("api/global-products/selector")]
     public Task<IActionResult> GlobalProductSelector(CancellationToken cancellationToken)

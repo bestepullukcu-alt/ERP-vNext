@@ -150,6 +150,39 @@ public sealed class ProductAbbreviationWorkItemMongoTests
             () => repository.GetInitialPendingWorkItemsAsync(102));
     }
 
+    [Fact]
+    public async Task Work_item_query_is_tenant_safe_and_includes_initial_correction_and_retirement_pending()
+    {
+        await using var scope = await MongoScope.CreateAsync();
+        var repository = scope.Repository(scope.TenantA);
+        var initial = await InsertAsync(repository, Guid.NewGuid(), DateTimeOffset.UtcNow, "INITIAL");
+        var former = await InsertAsync(repository, Guid.NewGuid(), DateTimeOffset.UtcNow, "FORMER");
+        Assert.True((await repository.TransitionAsync(
+            former.Id, 0, ProductAbbreviationLifecycleStatus.REQUESTED,
+            ProductAbbreviationLifecycleStatus.ACTIVE, "checker", "former-active", null,
+            DateTimeOffset.UtcNow)).Succeeded);
+        var correction = await InsertAsync(
+            repository, Guid.NewGuid(), DateTimeOffset.UtcNow, "CORRECTION-PENDING", former.Id);
+        var retiring = await InsertAsync(repository, Guid.NewGuid(), DateTimeOffset.UtcNow, "RETIRING");
+        var activeRetiring = await repository.TransitionAsync(
+            retiring.Id, 0, ProductAbbreviationLifecycleStatus.REQUESTED,
+            ProductAbbreviationLifecycleStatus.ACTIVE, "checker", "retiring-active", null,
+            DateTimeOffset.UtcNow);
+        Assert.True(activeRetiring.Succeeded);
+        Assert.True((await repository.RequestRetirementAsync(
+            retiring.Id, 1, "retirement-request", "retirement-maker", "retirement-request", null,
+            DateTimeOffset.UtcNow)).Succeeded);
+        await InsertAsync(scope.Repository(scope.TenantB), Guid.NewGuid(), DateTimeOffset.UtcNow, "TENANT-B-PENDING");
+
+        var results = await repository.GetPendingWorkItemsAsync(101);
+
+        Assert.Equal(3, results.Count);
+        Assert.Contains(results, x => x.Id == initial.Id && x.ReplacesEntryId is null);
+        Assert.Contains(results, x => x.Id == correction.Id && x.ReplacesEntryId == former.Id);
+        Assert.Contains(results, x => x.Id == retiring.Id && x.RetirementRequestId == "retirement-request");
+        Assert.All(results, x => Assert.Equal(scope.TenantA, x.TenantId));
+    }
+
     private static async Task<ProductAbbreviationRegisterEntry> InsertAsync(
         ProductAbbreviationRegisterRepository repository,
         Guid id,

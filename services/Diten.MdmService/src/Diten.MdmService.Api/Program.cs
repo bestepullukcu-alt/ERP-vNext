@@ -28,12 +28,24 @@ var runLskuIdentityWorkflowRecovery =
     LskuIdentityWorkflowRecoveryCommandLine.IsRequested(args);
 var runFinishedGoodIdentityWorkflowRecovery =
     FinishedGoodIdentityWorkflowRecoveryCommandLine.IsRequested(args);
+var runGlobalProductCorrectionRecovery =
+    GlobalProductCorrectionRecoveryCommandLine.IsRequested(args);
+var runGlobalProductRetirementRecovery =
+    GlobalProductRetirementRequestRecoveryCommandLine.IsRequested(args);
+var runGskuCorrectionRecovery = GskuCorrectionRecoveryCommandLine.IsRequested(args);
+var runGskuRetirementRequestRecovery = GskuRetirementRequestRecoveryCommandLine.IsRequested(args);
+var runLskuRetirementRequestRecovery = LskuRetirementRequestRecoveryCommandLine.IsRequested(args);
 if ((runProductLegalEntityScopeOperational ? 1 : 0)
     + (runAuditIntentTemporalMigration ? 1 : 0)
     + (runProductIdentityWorkflowRecovery ? 1 : 0)
     + (runFirstGskuIdentityWorkflowRecovery ? 1 : 0)
     + (runLskuIdentityWorkflowRecovery ? 1 : 0)
-    + (runFinishedGoodIdentityWorkflowRecovery ? 1 : 0) > 1)
+    + (runFinishedGoodIdentityWorkflowRecovery ? 1 : 0)
+    + (runGlobalProductCorrectionRecovery ? 1 : 0)
+    + (runGlobalProductRetirementRecovery ? 1 : 0)
+    + (runGskuCorrectionRecovery ? 1 : 0)
+    + (runGskuRetirementRequestRecovery ? 1 : 0)
+    + (runLskuRetirementRequestRecovery ? 1 : 0) > 1)
 {
     throw new InvalidOperationException("MDM_OPERATIONAL_COMMAND_AMBIGUOUS");
 }
@@ -85,6 +97,140 @@ builder.Services.AddScoped(sp =>
 builder.Services.AddScoped<GlobalProductIdentityWorkflowProcessor>();
 builder.Services.AddSingleton<ProductIdentityWorkflowRecoveryRunner>();
 builder.Services.AddHostedService<ProductIdentityWorkflowRecoveryWorker>();
+builder.Services.AddOptions<GlobalProductCorrectionWorkflowOptions>()
+    .Bind(builder.Configuration.GetSection(GlobalProductCorrectionWorkflowOptions.SectionName))
+    .Validate(options => !options.Enabled || IsValidGlobalProductCorrectionOptions(
+        options,
+        builder.Configuration.GetSection(ProductIdentityWorkflowOptions.SectionName)
+            .Get<ProductIdentityWorkflowOptions>() ?? new()),
+        "GLOBAL_PRODUCT_CORRECTION_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddOptions<GlobalProductCorrectionWorkflowWorkerOptions>()
+    .Bind(builder.Configuration.GetSection(GlobalProductCorrectionWorkflowWorkerOptions.SectionName))
+    .Validate(options => options.IsValid(), "GLOBAL_PRODUCT_CORRECTION_WORKER_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<GlobalProductCorrectionWorkflowOptions>>().Value;
+    var identity = sp.GetRequiredService<IOptions<ProductIdentityWorkflowOptions>>().Value;
+    var configuration = options.Enabled
+        ? options.ToConfiguration(identity.GlobalProductTemplateId, identity.GlobalProductTemplateCode)
+        : new GlobalProductCorrectionStartConfiguration(null, null, [], string.Empty, false, false,
+            null, identity.GlobalProductTemplateId, identity.GlobalProductTemplateCode);
+    return new GlobalProductCorrectionWorkflowStartRequestFactory(configuration,
+        sp.GetRequiredService<TimeProvider>());
+});
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<GlobalProductCorrectionWorkflowWorkerOptions>>().Value;
+    return new GlobalProductCorrectionExecutionConfiguration(
+        TimeSpan.FromSeconds(options.LeaseSeconds), TimeSpan.FromSeconds(options.RetryDelaySeconds));
+});
+builder.Services.AddScoped<GlobalProductCorrectionWorkflowProcessor>();
+builder.Services.AddSingleton<GlobalProductCorrectionRecoveryRunner>();
+builder.Services.AddHostedService<GlobalProductCorrectionRecoveryWorker>();
+builder.Services.AddOptions<GskuCorrectionWorkflowOptions>()
+    .Bind(builder.Configuration.GetSection(GskuCorrectionWorkflowOptions.SectionName))
+    .Validate(options => !options.Enabled || IsValidGskuCorrectionOptions(options,
+        builder.Configuration.GetSection(FirstGskuIdentityWorkflowOptions.SectionName)
+            .Get<FirstGskuIdentityWorkflowOptions>() ?? new()),
+        "GSKU_CORRECTION_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddOptions<GskuCorrectionWorkflowWorkerOptions>()
+    .Bind(builder.Configuration.GetSection(GskuCorrectionWorkflowWorkerOptions.SectionName))
+    .Validate(options => options.IsValid(), "GSKU_CORRECTION_WORKER_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<GskuCorrectionWorkflowOptions>>().Value;
+    var identity = sp.GetRequiredService<IOptions<FirstGskuIdentityWorkflowOptions>>().Value;
+    var configuration = options.Enabled
+        ? options.ToConfiguration(identity.TemplateId, identity.TemplateCode)
+        : new GskuCorrectionStartConfiguration(null, null, [], string.Empty, false, false,
+            null, identity.TemplateId, identity.TemplateCode);
+    return new GskuCorrectionWorkflowStartRequestFactory(configuration, sp.GetRequiredService<TimeProvider>());
+});
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<GskuCorrectionWorkflowWorkerOptions>>().Value;
+    return new GskuCorrectionExecutionConfiguration(TimeSpan.FromSeconds(options.LeaseSeconds),
+        TimeSpan.FromSeconds(options.RetryDelaySeconds));
+});
+builder.Services.AddScoped<GskuCorrectionWorkflowProcessor>();
+builder.Services.AddSingleton<GskuCorrectionRecoveryRunner>();
+builder.Services.AddHostedService<GskuCorrectionRecoveryWorker>();
+builder.Services.AddOptions<GskuRetirementRequestWorkflowOptions>()
+    .Bind(builder.Configuration.GetSection(GskuRetirementRequestWorkflowOptions.SectionName))
+    .Validate(options => !options.Enabled || IsValidGskuRetirementRequestOptions(options,
+        builder.Configuration.GetSection(FirstGskuIdentityWorkflowOptions.SectionName)
+            .Get<FirstGskuIdentityWorkflowOptions>() ?? new(),
+        builder.Configuration.GetSection(GskuCorrectionWorkflowOptions.SectionName)
+            .Get<GskuCorrectionWorkflowOptions>() ?? new()),
+        "GSKU_RETIREMENT_REQUEST_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddOptions<GskuRetirementRequestWorkflowWorkerOptions>()
+    .Bind(builder.Configuration.GetSection(GskuRetirementRequestWorkflowWorkerOptions.SectionName))
+    .Validate(options => options.IsValid(), "GSKU_RETIREMENT_REQUEST_WORKER_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<GskuRetirementRequestWorkflowOptions>>().Value;
+    var identity = sp.GetRequiredService<IOptions<FirstGskuIdentityWorkflowOptions>>().Value;
+    var correction = sp.GetRequiredService<IOptions<GskuCorrectionWorkflowOptions>>().Value;
+    var configuration = options.Enabled
+        ? options.ToConfiguration(identity.TemplateId, identity.TemplateCode,
+            correction.TemplateId, correction.TemplateCode)
+        : new GskuRetirementRequestStartConfiguration(null, null, [], string.Empty, false, false,
+            null, identity.TemplateId, identity.TemplateCode, correction.TemplateId, correction.TemplateCode);
+    return new GskuRetirementRequestWorkflowStartRequestFactory(configuration,
+        sp.GetRequiredService<TimeProvider>());
+});
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<GskuRetirementRequestWorkflowWorkerOptions>>().Value;
+    return new GskuRetirementRequestExecutionConfiguration(TimeSpan.FromSeconds(options.LeaseSeconds),
+        TimeSpan.FromSeconds(options.RetryDelaySeconds));
+});
+builder.Services.AddScoped<GskuRetirementRequestWorkflowProcessor>();
+builder.Services.AddSingleton<GskuRetirementRequestRecoveryRunner>();
+builder.Services.AddHostedService<GskuRetirementRequestRecoveryWorker>();
+builder.Services.AddOptions<GlobalProductRetirementRequestWorkflowOptions>()
+    .Bind(builder.Configuration.GetSection(GlobalProductRetirementRequestWorkflowOptions.SectionName))
+    .Validate(options => !options.Enabled || IsValidGlobalProductRetirementOptions(
+        options,
+        builder.Configuration.GetSection(ProductIdentityWorkflowOptions.SectionName)
+            .Get<ProductIdentityWorkflowOptions>() ?? new(),
+        builder.Configuration.GetSection(GlobalProductCorrectionWorkflowOptions.SectionName)
+            .Get<GlobalProductCorrectionWorkflowOptions>() ?? new()),
+        "GLOBAL_PRODUCT_RETIREMENT_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddOptions<GlobalProductRetirementRequestWorkflowWorkerOptions>()
+    .Bind(builder.Configuration.GetSection(GlobalProductRetirementRequestWorkflowWorkerOptions.SectionName))
+    .Validate(options => options.IsValid(), "GLOBAL_PRODUCT_RETIREMENT_WORKER_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<GlobalProductRetirementRequestWorkflowOptions>>().Value;
+    var identity = sp.GetRequiredService<IOptions<ProductIdentityWorkflowOptions>>().Value;
+    var correction = sp.GetRequiredService<IOptions<GlobalProductCorrectionWorkflowOptions>>().Value;
+    var configuration = options.Enabled
+        ? options.ToConfiguration(identity.GlobalProductTemplateId, identity.GlobalProductTemplateCode,
+            correction.TemplateId, correction.TemplateCode)
+        : new GlobalProductRetirementRequestStartConfiguration(null, null, [], string.Empty, false, false,
+            null, identity.GlobalProductTemplateId, identity.GlobalProductTemplateCode,
+            correction.TemplateId, correction.TemplateCode);
+    return new GlobalProductRetirementRequestWorkflowStartRequestFactory(configuration,
+        sp.GetRequiredService<TimeProvider>());
+});
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<GlobalProductRetirementRequestWorkflowWorkerOptions>>().Value;
+    return new GlobalProductRetirementRequestExecutionConfiguration(
+        TimeSpan.FromSeconds(options.LeaseSeconds), TimeSpan.FromSeconds(options.RetryDelaySeconds));
+});
+builder.Services.AddScoped<GlobalProductRetirementRequestWorkflowProcessor>();
+builder.Services.AddSingleton<GlobalProductRetirementRequestRecoveryRunner>();
+builder.Services.AddHostedService<GlobalProductRetirementRequestRecoveryWorker>();
 builder.Services.AddOptions<FirstGskuIdentityWorkflowOptions>()
     .Bind(builder.Configuration.GetSection(FirstGskuIdentityWorkflowOptions.SectionName))
     .Validate(options => !options.Enabled || IsValidFirstGskuIdentityWorkflowOptions(options),
@@ -143,6 +289,36 @@ builder.Services.AddScoped(sp =>
 builder.Services.AddScoped<LskuIdentityWorkflowProcessor>();
 builder.Services.AddSingleton<LskuIdentityWorkflowRecoveryRunner>();
 builder.Services.AddHostedService<LskuIdentityWorkflowRecoveryWorker>();
+builder.Services.AddOptions<LskuRetirementRequestWorkflowOptions>()
+    .Bind(builder.Configuration.GetSection(LskuRetirementRequestWorkflowOptions.SectionName))
+    .Validate(options => !options.Enabled || IsValidLskuRetirementRequestOptions(options,
+        builder.Configuration.GetSection(LskuIdentityWorkflowOptions.SectionName)
+            .Get<LskuIdentityWorkflowOptions>() ?? new()),
+        "LSKU_RETIREMENT_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddOptions<LskuRetirementRequestWorkflowWorkerOptions>()
+    .Bind(builder.Configuration.GetSection(LskuRetirementRequestWorkflowWorkerOptions.SectionName))
+    .Validate(options => options.IsValid(), "LSKU_RETIREMENT_WORKER_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<LskuRetirementRequestWorkflowOptions>>().Value;
+    var identity = sp.GetRequiredService<IOptions<LskuIdentityWorkflowOptions>>().Value;
+    var configuration = options.Enabled
+        ? options.ToConfiguration(identity.TemplateId, identity.TemplateCode)
+        : new LskuRetirementRequestStartConfiguration(null, null, [], string.Empty, false, false, null);
+    return new LskuRetirementRequestWorkflowStartRequestFactory(configuration,
+        sp.GetRequiredService<TimeProvider>());
+});
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<LskuRetirementRequestWorkflowWorkerOptions>>().Value;
+    return new LskuRetirementRequestExecutionConfiguration(TimeSpan.FromSeconds(options.LeaseSeconds),
+        TimeSpan.FromSeconds(options.RetryDelaySeconds));
+});
+builder.Services.AddScoped<LskuRetirementRequestWorkflowProcessor>();
+builder.Services.AddSingleton<LskuRetirementRequestRecoveryRunner>();
+builder.Services.AddHostedService<LskuRetirementRequestRecoveryWorker>();
 builder.Services.AddOptions<FinishedGoodIdentityWorkflowOptions>()
     .Bind(builder.Configuration.GetSection(FinishedGoodIdentityWorkflowOptions.SectionName))
     .Validate(options => options.IsValid(), "FINISHED_GOOD_IDENTITY_WORKFLOW_CONFIGURATION_INVALID")
@@ -340,6 +516,69 @@ if (runFinishedGoodIdentityWorkflowRecovery)
     return;
 }
 
+if (runGlobalProductCorrectionRecovery)
+{
+    var runner = app.Services.GetRequiredService<GlobalProductCorrectionRecoveryRunner>();
+    var result = await GlobalProductCorrectionRecoveryCommandLine.RunAsync(
+        runner, app.Lifetime.ApplicationStopping);
+    app.Logger.LogInformation(
+        "Global Product correction recovery completed; tenants {TenantCount}, operations {OperationCount}, completed {CompletedCount}, deferred {DeferredCount}, failed {FailedCount}.",
+        result.TenantCount, result.OperationCount, result.CompletedCount, result.DeferredCount, result.FailedCount);
+    if (result.FailedCount > 0)
+        throw new InvalidOperationException("GLOBAL_PRODUCT_CORRECTION_RECOVERY_FAILED");
+    return;
+}
+
+if (runGlobalProductRetirementRecovery)
+{
+    var runner = app.Services.GetRequiredService<GlobalProductRetirementRequestRecoveryRunner>();
+    var result = await GlobalProductRetirementRequestRecoveryCommandLine.RunAsync(
+        runner, app.Lifetime.ApplicationStopping);
+    app.Logger.LogInformation(
+        "Global Product retirement recovery completed; tenants {TenantCount}, operations {OperationCount}, completed {CompletedCount}, deferred {DeferredCount}, failed {FailedCount}.",
+        result.TenantCount, result.OperationCount, result.CompletedCount, result.DeferredCount, result.FailedCount);
+    if (result.FailedCount > 0)
+        throw new InvalidOperationException("GLOBAL_PRODUCT_RETIREMENT_RECOVERY_FAILED");
+    return;
+}
+
+if (runGskuCorrectionRecovery)
+{
+    var runner = app.Services.GetRequiredService<GskuCorrectionRecoveryRunner>();
+    var result = await GskuCorrectionRecoveryCommandLine.RunAsync(runner, app.Lifetime.ApplicationStopping);
+    app.Logger.LogInformation(
+        "GSKU correction recovery completed; tenants {TenantCount}, operations {OperationCount}, completed {CompletedCount}, deferred {DeferredCount}, failed {FailedCount}.",
+        result.TenantCount, result.OperationCount, result.CompletedCount, result.DeferredCount, result.FailedCount);
+    if (result.FailedCount > 0) throw new InvalidOperationException("GSKU_CORRECTION_RECOVERY_FAILED");
+    return;
+}
+
+if (runGskuRetirementRequestRecovery)
+{
+    var runner = app.Services.GetRequiredService<GskuRetirementRequestRecoveryRunner>();
+    var result = await GskuRetirementRequestRecoveryCommandLine.RunAsync(
+        runner, app.Lifetime.ApplicationStopping);
+    app.Logger.LogInformation(
+        "GSKU retirement-request recovery completed; tenants {TenantCount}, operations {OperationCount}, completed {CompletedCount}, deferred {DeferredCount}, failed {FailedCount}.",
+        result.TenantCount, result.OperationCount, result.CompletedCount, result.DeferredCount, result.FailedCount);
+    if (result.FailedCount > 0)
+        throw new InvalidOperationException("GSKU_RETIREMENT_REQUEST_RECOVERY_FAILED");
+    return;
+}
+
+if (runLskuRetirementRequestRecovery)
+{
+    var runner = app.Services.GetRequiredService<LskuRetirementRequestRecoveryRunner>();
+    var result = await LskuRetirementRequestRecoveryCommandLine.RunAsync(
+        runner, app.Lifetime.ApplicationStopping);
+    app.Logger.LogInformation(
+        "LSKU retirement-request recovery completed; tenants {TenantCount}, operations {OperationCount}, completed {CompletedCount}, deferred {DeferredCount}, failed {FailedCount}.",
+        result.TenantCount, result.OperationCount, result.CompletedCount, result.DeferredCount, result.FailedCount);
+    if (result.FailedCount > 0)
+        throw new InvalidOperationException("LSKU_RETIREMENT_REQUEST_RECOVERY_FAILED");
+    return;
+}
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -399,6 +638,73 @@ static bool IsValidProductIdentityWorkflowWorkerOptions(ProductIdentityWorkflowW
     try
     {
         options.EnsureValidWhenEnabled();
+        return true;
+    }
+    catch (InvalidOperationException)
+    {
+        return false;
+    }
+}
+
+static bool IsValidGlobalProductCorrectionOptions(
+    GlobalProductCorrectionWorkflowOptions options,
+    ProductIdentityWorkflowOptions identity)
+{
+    try
+    {
+        _ = options.ToConfiguration(identity.GlobalProductTemplateId, identity.GlobalProductTemplateCode);
+        return true;
+    }
+    catch (InvalidOperationException)
+    {
+        return false;
+    }
+}
+
+static bool IsValidGskuCorrectionOptions(GskuCorrectionWorkflowOptions options,
+    FirstGskuIdentityWorkflowOptions identity)
+{
+    try
+    {
+        var configuration = options.ToConfiguration(identity.TemplateId, identity.TemplateCode);
+        _ = new GskuCorrectionWorkflowStartRequestFactory(configuration, TimeProvider.System);
+        return true;
+    }
+    catch (InvalidOperationException) { return false; }
+}
+
+static bool IsValidGskuRetirementRequestOptions(GskuRetirementRequestWorkflowOptions options,
+    FirstGskuIdentityWorkflowOptions identity, GskuCorrectionWorkflowOptions correction)
+{
+    try
+    {
+        _ = options.ToConfiguration(identity.TemplateId, identity.TemplateCode,
+            correction.TemplateId, correction.TemplateCode);
+        return true;
+    }
+    catch (InvalidOperationException) { return false; }
+}
+
+static bool IsValidLskuRetirementRequestOptions(LskuRetirementRequestWorkflowOptions options,
+    LskuIdentityWorkflowOptions identity)
+{
+    try
+    {
+        _ = options.ToConfiguration(identity.TemplateId, identity.TemplateCode);
+        return true;
+    }
+    catch (InvalidOperationException) { return false; }
+}
+
+static bool IsValidGlobalProductRetirementOptions(
+    GlobalProductRetirementRequestWorkflowOptions options,
+    ProductIdentityWorkflowOptions identity,
+    GlobalProductCorrectionWorkflowOptions correction)
+{
+    try
+    {
+        _ = options.ToConfiguration(identity.GlobalProductTemplateId, identity.GlobalProductTemplateCode,
+            correction.TemplateId, correction.TemplateCode);
         return true;
     }
     catch (InvalidOperationException)

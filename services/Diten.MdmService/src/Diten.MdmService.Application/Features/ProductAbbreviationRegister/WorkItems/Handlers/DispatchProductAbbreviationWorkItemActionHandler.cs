@@ -69,7 +69,14 @@ public sealed class DispatchProductAbbreviationWorkItemActionHandler
         {
             return Fail(404, "ABBREVIATION_NOT_FOUND");
         }
-        if (entry.ReplacesEntryId is not null)
+        if (TryRecognizeTerminalReplay(entry, request, reason))
+        {
+            return ProductAbbreviationWorkItemOperationResult<ProductAbbreviationWorkItemActionResponse>.Success(
+                new(request.ItemId.ToString("D"), ProductAbbreviationWorkItemContract.ProviderCode, request.ActionCode));
+        }
+
+        var workKind = ResolveWorkKind(entry);
+        if (workKind is null || request.ActionCode == "cancel" && workKind == WorkKind.Retirement)
         {
             return Fail(409, "CONCURRENCY_CONFLICT");
         }
@@ -90,34 +97,67 @@ public sealed class DispatchProductAbbreviationWorkItemActionHandler
             return Fail(404, "ABBREVIATION_NOT_FOUND");
         }
 
+        var requestIdentity = workKind == WorkKind.Retirement
+            ? entry.RetirementRequestId!
+            : entry.Id.ToString("D");
         var operationKey = BuildOperationKey(
             request.ItemId,
+            WorkKindCode(workKind.Value),
+            requestIdentity,
             request.ActionCode,
             request.ExpectedVersion.Value,
             reason);
-        Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto> response = request.ActionCode switch
+        var former = workKind == WorkKind.Correction
+            ? await _register.GetByIdAsync(entry.ReplacesEntryId!.Value, cancellationToken)
+            : null;
+        if (workKind == WorkKind.Correction
+            && (former is null
+                || former.GlobalProductId != entry.GlobalProductId
+                || former.LifecycleStatus != ProductAbbreviationLifecycleStatus.ACTIVE))
         {
-            "approve" => await _mediator.Send(
+            return Fail(409, "CONCURRENCY_CONFLICT");
+        }
+
+        Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto> response =
+            (workKind.Value, request.ActionCode) switch
+        {
+            (WorkKind.Initial or WorkKind.Correction, "approve") => await _mediator.Send(
                 new ApproveProductAbbreviationAllocationCommand(
                     request.ItemId,
                     request.ExpectedVersion.Value,
                     operationKey,
-                    ExpectedFormerVersion: null,
+                    ExpectedFormerVersion: former?.Version,
                     reason),
                 cancellationToken),
-            "reject" => await _mediator.Send(
+            (WorkKind.Initial or WorkKind.Correction, "reject") => await _mediator.Send(
                 new RejectProductAbbreviationAllocationCommand(
                     request.ItemId,
                     request.ExpectedVersion.Value,
                     operationKey,
                     reason!),
                 cancellationToken),
-            "cancel" => await _mediator.Send(
+            (WorkKind.Initial or WorkKind.Correction, "cancel") => await _mediator.Send(
                 new CancelProductAbbreviationAllocationCommand(
                     request.ItemId,
                     request.ExpectedVersion.Value,
                     operationKey,
                     reason),
+                cancellationToken),
+            (WorkKind.Retirement, "approve") => await _mediator.Send(
+                new ApproveProductAbbreviationRetirementCommand(
+                    request.ItemId,
+                    request.ExpectedVersion.Value,
+                    entry.RetirementRequestId!,
+                    operationKey,
+                    reason),
+                cancellationToken),
+            (WorkKind.Retirement, "reject") => await _mediator.Send(
+                new RejectProductAbbreviationRetirementCommand(
+                    request.ItemId,
+                    request.ExpectedVersion.Value,
+                    entry.RetirementRequestId!,
+                    operationKey,
+                    reason!),
                 cancellationToken),
             _ => throw new InvalidOperationException("Validated action code was not dispatchable.")
         };
@@ -138,6 +178,8 @@ public sealed class DispatchProductAbbreviationWorkItemActionHandler
 
     public static string BuildOperationKey(
         Guid itemId,
+        string workKind,
+        string requestIdentity,
         string actionCode,
         int expectedVersion,
         string? reason)
@@ -148,13 +190,26 @@ public sealed class DispatchProductAbbreviationWorkItemActionHandler
             : $"value:{Encoding.UTF8.GetByteCount(reason).ToString(CultureInfo.InvariantCulture)}:{reason}";
         var canonicalPayload = string.Join(
             '\n',
+            $"provider={ProductAbbreviationWorkItemContract.ProviderCode}",
+            $"itemId={itemId:D}",
+            $"workKind={workKind}",
+            $"requestIdentity={Encoding.UTF8.GetByteCount(requestIdentity).ToString(CultureInfo.InvariantCulture)}:{requestIdentity}",
             $"actionCode={actionCode}",
             $"expectedVersion={expectedVersion.ToString(CultureInfo.InvariantCulture)}",
             $"reason={canonicalReason}",
             string.Empty);
         var payloadHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonicalPayload)));
-        return $"abb-wc:{itemId:N}:{actionCode}:v{expectedVersion.ToString(CultureInfo.InvariantCulture)}:{payloadHash}";
+        return $"abb-wc:{itemId:N}:{workKind}:{actionCode}:v{expectedVersion.ToString(CultureInfo.InvariantCulture)}:{payloadHash}";
     }
+
+    public static string BuildOperationKey(Guid itemId, string actionCode, int expectedVersion, string? reason)
+        => BuildOperationKey(
+            itemId,
+            WorkKindCode(WorkKind.Initial),
+            itemId.ToString("D"),
+            actionCode,
+            expectedVersion,
+            reason);
 
     private static string? NormalizeReason(string? reason)
         => reason?.Replace("\r\n", "\n", StringComparison.Ordinal)
@@ -168,6 +223,80 @@ public sealed class DispatchProductAbbreviationWorkItemActionHandler
         "cancel" => ProductAbbreviationPermissions.Cancel,
         _ => throw new InvalidOperationException("Validated action code has no permission mapping.")
     };
+
+    private static WorkKind? ResolveWorkKind(Diten.MdmService.Domain.Entities.ProductAbbreviationRegisterEntry entry)
+        => entry.LifecycleStatus switch
+        {
+            ProductAbbreviationLifecycleStatus.REQUESTED when entry.ReplacesEntryId.HasValue => WorkKind.Correction,
+            ProductAbbreviationLifecycleStatus.REQUESTED => WorkKind.Initial,
+            ProductAbbreviationLifecycleStatus.ACTIVE when !string.IsNullOrWhiteSpace(entry.RetirementRequestId)
+                => WorkKind.Retirement,
+            ProductAbbreviationLifecycleStatus.ACTIVE or ProductAbbreviationLifecycleStatus.REJECTED
+                or ProductAbbreviationLifecycleStatus.CANCELLED when entry.ReplacesEntryId.HasValue
+                => WorkKind.Correction,
+            ProductAbbreviationLifecycleStatus.ACTIVE or ProductAbbreviationLifecycleStatus.REJECTED
+                or ProductAbbreviationLifecycleStatus.CANCELLED => WorkKind.Initial,
+            _ => null
+        };
+
+    private static bool TryRecognizeTerminalReplay(
+        Diten.MdmService.Domain.Entities.ProductAbbreviationRegisterEntry entry,
+        DispatchProductAbbreviationWorkItemActionCommand request,
+        string? reason)
+    {
+        if (entry.Version != request.ExpectedVersion + 1
+            || !string.Equals(NormalizeReason(entry.LastDecisionReason), reason, StringComparison.Ordinal)
+            || string.IsNullOrWhiteSpace(entry.LastDecisionIdempotencyKey))
+        {
+            return false;
+        }
+
+        var key = entry.LastDecisionIdempotencyKey;
+        var retirementMarker = $"abb-wc:{entry.Id:N}:retirement:";
+        var kind = key.StartsWith(retirementMarker, StringComparison.Ordinal)
+            ? WorkKind.Retirement
+            : entry.ReplacesEntryId.HasValue
+                ? WorkKind.Correction
+                : WorkKind.Initial;
+
+        var stateMatches = (kind, request.ActionCode, entry.LifecycleStatus) switch
+        {
+            (WorkKind.Initial or WorkKind.Correction, "approve", ProductAbbreviationLifecycleStatus.ACTIVE) => true,
+            (WorkKind.Initial or WorkKind.Correction, "reject", ProductAbbreviationLifecycleStatus.REJECTED) => true,
+            (WorkKind.Initial or WorkKind.Correction, "cancel", ProductAbbreviationLifecycleStatus.CANCELLED) => true,
+            (WorkKind.Retirement, "approve", ProductAbbreviationLifecycleStatus.RETIRED) => true,
+            (WorkKind.Retirement, "reject", ProductAbbreviationLifecycleStatus.ACTIVE) => true,
+            _ => false
+        };
+        if (!stateMatches)
+        {
+            return false;
+        }
+
+        var prefix = $"abb-wc:{entry.Id:N}:{WorkKindCode(kind)}:{request.ActionCode}:v{request.ExpectedVersion.GetValueOrDefault().ToString(CultureInfo.InvariantCulture)}:";
+        var suffixLength = kind == WorkKind.Correction && request.ActionCode == "approve"
+            ? ":replacement".Length
+            : 0;
+        return key.StartsWith(prefix, StringComparison.Ordinal)
+               && key.Length == prefix.Length + 64 + suffixLength
+               && key.AsSpan(prefix.Length, 64).ToString().All(Uri.IsHexDigit)
+               && (suffixLength == 0 || key.EndsWith(":replacement", StringComparison.Ordinal));
+    }
+
+    private static string WorkKindCode(WorkKind kind) => kind switch
+    {
+        WorkKind.Initial => "allocation",
+        WorkKind.Correction => "correction",
+        WorkKind.Retirement => "retirement",
+        _ => throw new ArgumentOutOfRangeException(nameof(kind))
+    };
+
+    private enum WorkKind
+    {
+        Initial,
+        Correction,
+        Retirement
+    }
 
     private static ProductAbbreviationWorkItemOperationResult<ProductAbbreviationWorkItemActionResponse> Fail(
         int statusCode,

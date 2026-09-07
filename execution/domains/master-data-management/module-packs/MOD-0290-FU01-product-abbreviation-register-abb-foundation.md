@@ -542,6 +542,181 @@ Section 20.
   rejects transactions. This infrastructure boundary is reported explicitly: the integration does not claim a green
   full suite or Production readiness from that run.
 
+### ABB WorkCenter completion — Phase 1.5 amendment (standing-approved / ready-for-dev)
+
+**Authorization record (2026-09-05):** the user's standing non-push authorization covers finishing ABB before the
+navigation stop boundary. This amendment authorizes only the exact changes below. ABB remains navigation-hidden.
+
+#### Code-truth decision
+
+- ABB does **not** use a native Workflow instance or Workflow template. Its lifecycle authority is the existing
+  `ProductAbbreviationWorkflow` plus its ABB repositories and immutable history. WorkCenter is the remote projection
+  and action-dispatch surface described by DCP-004 section 7; it does not own or duplicate ABB lifecycle state.
+- The existing remote provider currently projects only initial allocation requests and dispatches `approve`, `reject`
+  and owner `cancel`. It deliberately rejects correction replacement rows and does not project pending retirement.
+  Therefore its current scope is not complete for the already-approved ABB lifecycle.
+- No new lifecycle state, permission key, native Workflow operation, Platform bridge class, module-specific Platform
+  endpoint or direct Mongo mutation is authorized. Existing exact eight permissions and FU20 role matrix remain
+  authoritative.
+
+#### Exact user and WorkCenter action matrix
+
+| ABB fact | ABB Register actions | WorkCenter item/actions |
+|---|---|---|
+| No request for selected Global Product | Request allocation when `request` is granted | None |
+| Initial `REQUESTED` | Details/evidence only | Maker: `cancel`; distinct authorized checker: `approve`, `reject` |
+| Correction replacement `REQUESTED` | Former active ABB and replacement are read-only/pending | Maker: `cancel`; distinct authorized checker: `approve`, `reject` |
+| `ACTIVE`, no correction/retirement pending | Details/evidence; initiate correction; request retirement by exact permissions | None |
+| `ACTIVE`, retirement pending | Details/evidence only | Distinct authorized checker: `approve`, `reject`; requester has no invented retirement-cancel action |
+| `REJECTED`, `CANCELLED`, `RETIRED` or inconsistent | Details/evidence only | None; inconsistent source fails closed and is reported unavailable |
+
+All approval/rejection and pending-request cancellation buttons are WorkCenter-only after this amendment. The ABB
+Register remains the maker surface for allocation, correction and retirement requests and the read/audit surface.
+Existing API decision endpoints remain the MDM-owned command boundary used by the remote dispatcher, but the tenant
+page does not call or render them. Maker-checker, exact-owner cancel, expected-version CAS and no-reuse remain in the
+existing application handlers and cannot be inferred in JavaScript.
+
+#### Remote provider and dispatch contract
+
+- Provider remains exact `mdm-product-abbreviations`, contract `1.0`; the operator configuration continues to declare
+  only `approve`, `reject`, `cancel` with the existing permission keys. No host/address is written to a manifest.
+- Projection includes initial requests, correction replacement requests and active entries with a pending retirement
+  request, together capped by the existing maximum plus one overflow sentinel and ordered by stable ID. It performs
+  one bounded Global Product join and FU03 scope evaluation; optional fields are omitted rather than serialized null.
+- Initial/correction item identity is the requested register-entry GUID. Retirement item identity remains the active
+  register-entry GUID and its immutable retirement-request ID is server-read from that entry; the browser cannot send
+  or replace it. Object type truthfully distinguishes `productAbbreviationAllocationRequest`,
+  `productAbbreviationCorrectionRequest` and `productAbbreviationRetirementRequest`.
+- The dispatcher re-reads the tenant-scoped entry, determines the exact persisted work kind, validates action legality,
+  permission, canonical maker/checker separation, reason and expected version, then invokes only the existing command.
+  A route/action/body kind mismatch is `409`; cross-tenant/absent stays indistinguishable `404`; malformed tenant
+  header/JWT disagreement stays `400`; unauthorized action is `403`.
+- The length-prefixed deterministic operation key includes provider, item ID, persisted work kind/request ID, action,
+  expected version and normalized reason. Exact retry reaches the existing replay path; changed reason/version/kind or
+  timeout retry cannot become a second decision.
+
+#### Exact MDM runtime/test allow-list
+
+Runtime edits are limited to:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IProductAbbreviationRegisterRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductAbbreviationRegisterRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/ProductAbbreviationRegisterModels.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/ProductAbbreviationWorkItemModels.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Queries/GetProductAbbreviationWorkItemsQuery.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Commands/DispatchProductAbbreviationWorkItemActionCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Validators/GetProductAbbreviationWorkItemsValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Validators/DispatchProductAbbreviationWorkItemActionValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Handlers/GetProductAbbreviationWorkItemsHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Handlers/DispatchProductAbbreviationWorkItemActionHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Contracts/ProductAbbreviationWorkItems/ProductAbbreviationWorkItemRequests.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/ProductAbbreviationWorkItemsController.cs`
+
+Test edits are limited to existing `ProductAbbreviationWorkItemProjectionTests.cs`,
+`ProductAbbreviationWorkItemActionTests.cs`, `ProductAbbreviationWorkItemContractTests.cs`,
+`ProductAbbreviationWorkItemMongoTests.cs`, `ProductAbbreviationWorkItemScopeIntegrationTests.cs`, and narrow
+existing ABB unit/authorization/real-Mongo tests only where the same lifecycle replay assertion is extended. No new
+collection, per-run test database or Platform schema profile is permitted.
+
+#### ABB Register Golden Slim allow-list
+
+Frontend edits are limited to the existing `ProductAbbreviationRegisterController.cs`, its existing view model,
+`Views/MDM/ProductAbbreviationRegister/Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml`, `_IndexL10n.cshtml`,
+`_CreateEditOffcanvas.cshtml`, `_DetailsQuickView.cshtml`, `ProductAbbreviationRegisterIndex.cs`, the two existing ABB
+scripts, the seven existing ABB RESX files and existing focused ABB frontend tests. The page removes direct
+approve/reject/cancel/retirement-decision controls, renders the exact matrix above, uses authoritative reload, Premium
+request/correction/retirement confirmations, real filters/Save View and no hardcoded localization fallback. It adds no
+edit, delete, bulk mutation, Active/Passive, direct service-port, browser bearer/tenant fabrication or navigation.
+
+#### Exact central audit prerequisite
+
+ABB's existing immutable history remains the domain evidence. Before live completion, each successfully appended
+business history event below must also produce one replay-stable local durable audit intent and the MOD-0021-FU01 map
+must accept only the exact ordinal aggregate `ProductAbbreviation` plus operation pairs:
+
+| Operation | Central action |
+|---|---|
+| `ProductAbbreviationAllocationRequested` | `Create` |
+| `ProductAbbreviationAllocationApproved` | `LifecycleTransition` |
+| `ProductAbbreviationAllocationRejected` | `LifecycleTransition` |
+| `ProductAbbreviationAllocationCancelled` | `LifecycleTransition` |
+| `ProductAbbreviationCorrectionRequested` | `Create` |
+| `ProductAbbreviationCorrectionApproved` | `LifecycleTransition` |
+| `ProductAbbreviationCorrectionRejected` | `LifecycleTransition` |
+| `ProductAbbreviationCorrectionCancelled` | `LifecycleTransition` |
+| `ProductAbbreviationRetirementRequested` | `LifecycleTransition` |
+| `ProductAbbreviationRetirementApproved` | `Deactivate` |
+| `ProductAbbreviationRetirementRejected` | `LifecycleTransition` |
+
+MDM producer changes are restricted to append-only members in `AuditAggregateType.cs` and `ProductAuditOperation.cs`,
+`ProductAbbreviationRegisterEntry.cs`, `ProductAbbreviationWorkflow.cs`, new
+`ProductAbbreviationAuditIntentFactory.cs`, `IAuditIntentDeliveryRepository.cs`, `AuditIntentDeliveryRepository.cs`,
+existing `ProductAbbreviationRegisterUnitTests.cs`, `ProductAbbreviationRegisterMongoTests.cs`,
+`ProductAbbreviationRegisterAuthorizationTests.cs` and `AuditIntentDeliveryMongoTests.cs`. Central consumer changes
+are restricted to `TrustedSourceAuditIntentOperationMap.cs`,
+`TrustedSourceAuditIntentContractTests.cs` and MOD-0021-FU01 evidence. No wildcard, numeric enum alias,
+case-insensitive alias, aggregate substitution or reconciliation-only event is accepted. Domain history is appended
+before success and central delivery is replay/recovery-safe; transport bookkeeping never increments ABB business
+version.
+
+#### Acceptance and stop boundary
+
+1. Projection/dispatch tests cover all three work kinds, maker/checker views, permissions, reason requirements,
+   malformed envelope, action-kind mismatch, version/reason drift, exact retry, overflow, source inconsistency,
+   `400/403/404/409/503/504` and remote-provider outage behavior.
+2. Real `localhost:27017` tests prove initial/correction/retirement decisions, no-reuse, one active ABB per product,
+   one pending decision, immutable history, audit intent/receipt replay and no duplicate decision after timeout retry.
+3. Frontend tests prove the ABB Register contains maker request surfaces but no checker/cancel decision controls;
+   WorkCenter proves initial/correction/retirement item display and exact action dispatch with console zero.
+4. FU20 exact role/grant matrix, FU03 scope filtering, tenant isolation and disabled/expired entitlement regressions
+   remain green. No automatic responsibility assignment occurs.
+5. Full affected MDM/Auth/Platform/frontend suites, Release builds and repository quality scans pass. Local Development
+   live acceptance uses supported Auth role assignment and supported APIs only, then cleans temporary memberships.
+6. Navigation remains hidden and is the explicit stop boundary. Production/Staging, committed provider config/secret,
+   direct Mongo write, commit and push are not authorized by this amendment.
+
+#### 2026-09-05 implementation evidence and remaining audit gate
+
+- The bounded tenant repository projection now returns initial allocation, correction replacement and active
+  retirement-pending entries in stable scalar-ID order with the existing `100 + 1` overflow contract. The provider
+  validates correction/former and retirement-request consistency, performs one bounded Global Product join, applies
+  FU03 scope filtering and emits the three exact object types. A retirement requester receives no invented cancel
+  action.
+- Dispatch now server-classifies the persisted work kind, re-reads the correction predecessor/version or immutable
+  retirement request ID, binds kind/request/action/version/reason into the deterministic operation identity and calls
+  only the existing approve/reject/cancel or retirement approve/reject commands. Terminal exact replay is recognized
+  without creating a second decision; kind, action, version or reason drift remains a conflict.
+- Focused MDM WorkItem tests, including real `localhost:27017`, pass `28/28`; the combined WorkItem plus ABB
+  register real-Mongo matrix passes `40/40`. Isolated MDM API Release build succeeds with zero errors and five existing
+  unrelated persistence warnings. ABB Register focused frontend tests pass `9/9`.
+  The page contains maker request/correction/retirement surfaces and no direct approve/reject/cancel decision control.
+- MOD-0021-FU01 now accepts the eleven exact ordinal ABB aggregate/operation pairs; the current combined focused
+  contract suite passes `59/59` and rejects lowercase, numeric and whitespace aliases. MDM now appends an exact replay-stable embedded audit
+  intent only after immutable ABB history succeeds, without incrementing business version. The delivery repository
+  discovers, claims, acknowledges and compacts the `ProductAbbreviation` intent in the existing register collection;
+  tenant-mismatched append is rejected and exact append replay remains single. Exact factory mapping and real-Mongo
+  producer/delivery tests are green. Live authenticated WorkCenter browser acceptance remains open; this code evidence
+  does not claim that operational smoke was run.
+
+#### 2026-09-05 independent ABB closure review
+
+- Independent code review re-verified all three remote work kinds: initial allocation, correction replacement and
+  retirement request. Projection remains bounded and tenant/FU03-scope filtered; dispatch re-reads persisted kind,
+  immutable request identity and expected version. Maker-checker and own-cancel remain domain-enforced, and retirement
+  deliberately exposes no cancel action.
+- Deterministic dispatch identity continues to bind provider, item, persisted work kind/request ID, action, expected
+  version and normalized reason. Exact terminal replay is accepted; action, kind, reason or version drift fails closed.
+  The eleven embedded ABB audit intents remain exact and replay-stable, and the existing delivery repository retains
+  tenant-bound claim/acknowledgement plus compact-receipt fencing without changing ABB business version.
+- Fresh isolated non-Mongo verification passed MDM ABB unit/contract/projection/action/scope `47/47`, Platform exact
+  audit-map contracts `72/72`, and ABB frontend `9/9`, all with zero failures or skips. The isolated MDM dependency/build
+  graph compiled successfully with five pre-existing persistence warnings. Auth non-Mongo ABB/default-role coverage
+  passed `28/28`; its one real-Mongo test could not rerun because the local MongoDB OS service is currently stopped.
+- The previously captured real-`localhost:27017` ABB matrix remains `65/65` and is not replaced by a fake, skip or
+  in-memory result. This review did not start MongoDB or mutate process/config/data. A fresh real-Mongo rerun and live
+  authenticated WorkCenter browser acceptance remain operational evidence gates. `PRODUCT_ABBREVIATIONS` remains
+  navigation-hidden; no navigation source was changed.
+
 | Deferred item | Owner | Boundary | Closure gate |
 |---|---|---|---|
 | Production permission/catalog/role enablement | Platform permission catalog owner + Diten.AuthService owner + MOD-0018 policy owner | Local Development onboarding is complete; Production/Staging was not touched. | Separate Production approval, runbook and production evidence. |
@@ -814,3 +989,21 @@ Protected/out-of-scope even after named-step code-start:
 Material, FPF, FPP and artwork controlled-code namespace scopes remain governed outside this follow-up. No follow-up may
 use this approved design/scope pack to authorize their issuance or to place those codes in `CanonicalCode` or
 `RevisionIdentifier`.
+
+### Navigation item 7 activation gate (user-approved; source implemented, acceptance pending)
+
+The user's 2026-09-06 navigation approval authorizes the code-owned visibility flip while preserving the outstanding
+authenticated ABB WorkCenter acceptance for initial, correction and retirement projection/action behavior as a
+delivery gate. The source-owned visibility flip and its seven normalized navigation labels are now implemented. The
+exact MDM allow-list is `ProductItemSkuMasterManifestProvider.cs`, limited to the existing
+`PRODUCT_ABBREVIATIONS` page's `IsNavigationVisible` value, plus its existing manifest test. The exact frontend
+allow-list is the seven existing `SharedResource.*.resx` files, limited to `Nav.Page.PRODUCT_ABBREVIATIONS`,
+`ProductAbbreviationRegisterController.cs`, limited to the exact `mdm.product-abbreviations.read` guard on `Index`,
+and the existing/new focused ABB and navigation localization tests. Mutation proxy behavior remains unchanged.
+
+The route remains exact `/MDM/ProductAbbreviationRegister` and the menu remains gated by
+`mdm.product-abbreviations.read`. No page, permission, role/grant, controller, Gateway route, layout, handwritten menu,
+static search entry or business record is added. Self-registration must reconcile one page; fresh-token acceptance
+must prove visible-for-entitled-reader, absent-without-read/entitlement, route `200/403`, all seven localized labels,
+automatic tenant Ctrl+K discovery, no duplicate menu node and console/network cleanliness. Until the WorkCenter live
+gate and these menu checks close, the source change is not delivery-accepted or eligible for final merge approval.

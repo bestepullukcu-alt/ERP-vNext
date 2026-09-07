@@ -23,7 +23,11 @@ public sealed class GskusController : Controller
 {
     private const string ReadPermission = "mdm.gskus.read";
     private const string CreatePermission = "mdm.gskus.create";
+    private const string UpdatePermission = "mdm.gskus.update";
     private const string SubmitPermission = "mdm.gskus.submit";
+    private const string WithdrawPermission = "mdm.gskus.withdraw";
+    private const string RequestCorrectionPermission = "mdm.gskus.request-correction";
+    private const string RequestRetirementPermission = "mdm.gskus.request-retirement";
     private const string RetirePermission = "mdm.gskus.retire";
     private static readonly TimeSpan FormAttemptLifetime = TimeSpan.FromMinutes(30);
 
@@ -65,12 +69,206 @@ public sealed class GskusController : Controller
 
         var canCreate = HasPermission(CreatePermission);
         ViewData["CanCreateGsku"] = canCreate;
-        ViewData["CanSubmitGsku"] = HasPermission(SubmitPermission);
-        ViewData["CanRetireGsku"] = HasPermission(RetirePermission);
+        ViewData["CanUseGskuEditor"] = canCreate
+            || HasPermission(UpdatePermission)
+            || HasPermission(RequestCorrectionPermission);
         if (canCreate)
             ViewData["GskuFormAttemptToken"] = CreateFormAttemptToken();
 
         return View("~/Views/MasterDataManagement/Gskus/Index.cshtml");
+    }
+
+    [HttpPut("api/{id:guid}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateDraft(
+        Guid id,
+        [FromForm] int? expectedVersion,
+        [FromForm] string? packQuantity,
+        [FromForm] string? packUomCode,
+        CancellationToken cancellationToken)
+    {
+        packUomCode = packUomCode?.Trim().ToUpperInvariant();
+        if (!HasPermission(UpdatePermission))
+            return ForbiddenResult();
+        if (id == Guid.Empty
+            || expectedVersion is null or < 0
+            || string.IsNullOrWhiteSpace(packUomCode)
+            || packUomCode.Length > 16
+            || packUomCode.Any(char.IsControl)
+            || !decimal.TryParse(
+                packQuantity,
+                NumberStyles.AllowDecimalPoint,
+                CultureInfo.InvariantCulture,
+                out var parsedPackQuantity)
+            || parsedPackQuantity <= 0
+            || !await HasOnlyFormFieldsAsync("ExpectedVersion", "PackQuantity", "PackUomCode"))
+        {
+            return SafeFailure(HttpStatusCode.BadRequest);
+        }
+        if (!TryResolveLifecycleIdentity(out var tenantId, out var actor))
+            return UnauthorizedResult();
+
+        var operationId = CreateLifecycleOperationId(
+            tenantId,
+            actor,
+            "gsku",
+            "update-draft",
+            id,
+            expectedVersion.Value,
+            $"{parsedPackQuantity.ToString(CultureInfo.InvariantCulture)}\t{packUomCode}");
+        return await ProxyLifecycleRequestAsync(
+            HttpMethod.Put,
+            $"{_gatewayUrl}/api/gskus/{id:D}",
+            JsonContent.Create(new
+            {
+                expectedVersion = expectedVersion.Value,
+                packQuantity = parsedPackQuantity,
+                packUomCode
+            }, options: _jsonOptions),
+            operationId,
+            new HashSet<int> { StatusCodes.Status200OK },
+            "update-draft",
+            cancellationToken);
+    }
+
+    [HttpPost("api/{id:guid}/identity-approval/withdraw")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> WithdrawIdentityApproval(
+        Guid id,
+        [FromForm] int? expectedGskuVersion,
+        [FromForm] string? reasonCode,
+        [FromForm] string? comment,
+        CancellationToken cancellationToken)
+    {
+        reasonCode = reasonCode?.Trim();
+        comment = comment?.Trim() ?? string.Empty;
+        if (!HasPermission(WithdrawPermission))
+            return ForbiddenResult();
+        if (id == Guid.Empty
+            || expectedGskuVersion is null or < 0
+            || string.IsNullOrWhiteSpace(reasonCode)
+            || reasonCode.Length > 128
+            || reasonCode.Any(char.IsControl)
+            || comment.Length > 2000
+            || comment.Any(char.IsControl)
+            || !await HasOnlyFormFieldsAsync("ExpectedGskuVersion", "ReasonCode", "Comment"))
+        {
+            return SafeFailure(HttpStatusCode.BadRequest);
+        }
+        if (!TryResolveLifecycleIdentity(out var tenantId, out var actor))
+            return UnauthorizedResult();
+
+        var operationId = CreateLifecycleOperationId(
+            tenantId,
+            actor,
+            "gsku",
+            "withdraw-identity-approval",
+            id,
+            expectedGskuVersion.Value,
+            $"{reasonCode}\t{comment}");
+        return await ProxyLifecycleRequestAsync(
+            HttpMethod.Post,
+            $"{_gatewayUrl}/api/gskus/{id:D}/identity-approval/withdraw",
+            JsonContent.Create(new
+            {
+                expectedGskuVersion = expectedGskuVersion.Value,
+                reasonCode,
+                comment
+            }, options: _jsonOptions),
+            operationId,
+            new HashSet<int> { StatusCodes.Status200OK, StatusCodes.Status202Accepted },
+            "withdraw-identity-approval",
+            cancellationToken);
+    }
+
+    [HttpPost("api/{id:guid}/correction-requests")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RequestCorrection(
+        Guid id,
+        [FromForm] int? expectedGskuVersion,
+        [FromForm] string? packQuantity,
+        [FromForm] string? packUomCode,
+        CancellationToken cancellationToken)
+    {
+        packUomCode = packUomCode?.Trim().ToUpperInvariant();
+        if (!HasPermission(RequestCorrectionPermission))
+            return ForbiddenResult();
+        if (id == Guid.Empty
+            || expectedGskuVersion is null or < 0
+            || string.IsNullOrWhiteSpace(packUomCode)
+            || packUomCode.Length > 16
+            || packUomCode.Any(char.IsControl)
+            || !decimal.TryParse(packQuantity, NumberStyles.AllowDecimalPoint,
+                CultureInfo.InvariantCulture, out var parsedPackQuantity)
+            || parsedPackQuantity <= 0
+            || !await HasOnlyFormFieldsAsync("ExpectedGskuVersion", "PackQuantity", "PackUomCode"))
+        {
+            return SafeFailure(HttpStatusCode.BadRequest);
+        }
+        if (!TryResolveLifecycleIdentity(out var tenantId, out var actor))
+            return UnauthorizedResult();
+
+        var operationId = CreateLifecycleOperationId(
+            tenantId,
+            actor,
+            "gsku",
+            "request-correction",
+            id,
+            expectedGskuVersion.Value,
+            $"{parsedPackQuantity.ToString(CultureInfo.InvariantCulture)}\t{packUomCode}");
+        return await ProxyLifecycleRequestAsync(
+            HttpMethod.Post,
+            $"{_gatewayUrl}/api/gskus/{id:D}/correction-requests",
+            JsonContent.Create(new
+            {
+                expectedGskuVersion = expectedGskuVersion.Value,
+                packQuantity = parsedPackQuantity,
+                packUomCode
+            }, options: _jsonOptions),
+            operationId,
+            new HashSet<int> { StatusCodes.Status200OK, StatusCodes.Status202Accepted },
+            "request-correction",
+            cancellationToken);
+    }
+
+    [HttpPost("api/{id:guid}/retirement-requests")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RequestRetirement(
+        Guid id,
+        [FromForm] int? expectedGskuVersion,
+        [FromForm] string? requestReason,
+        CancellationToken cancellationToken)
+    {
+        requestReason = requestReason?.Trim();
+        if (!HasPermission(RequestRetirementPermission))
+            return ForbiddenResult();
+        if (id == Guid.Empty
+            || expectedGskuVersion is null or < 0
+            || string.IsNullOrWhiteSpace(requestReason)
+            || requestReason.EnumerateRunes().Count() > 128
+            || requestReason.Any(char.IsControl)
+            || !await HasOnlyFormFieldsAsync("ExpectedGskuVersion", "RequestReason"))
+        {
+            return SafeFailure(HttpStatusCode.BadRequest);
+        }
+        if (!TryResolveLifecycleIdentity(out var tenantId, out var actor))
+            return UnauthorizedResult();
+
+        var operationId = CreateLifecycleOperationId(
+            tenantId, actor, "gsku", "request-retirement", id,
+            expectedGskuVersion.Value, requestReason);
+        return await ProxyLifecycleRequestAsync(
+            HttpMethod.Post,
+            $"{_gatewayUrl}/api/gskus/{id:D}/retirement-requests",
+            JsonContent.Create(new
+            {
+                expectedGskuVersion = expectedGskuVersion.Value,
+                requestReason
+            }, options: _jsonOptions),
+            operationId,
+            new HashSet<int> { StatusCodes.Status200OK, StatusCodes.Status202Accepted },
+            "request-retirement",
+            cancellationToken);
     }
 
     [HttpGet("api")]
@@ -243,12 +441,28 @@ public sealed class GskusController : Controller
         IReadOnlySet<int> allowedSuccessStatusCodes = isRetire
             ? new HashSet<int> { StatusCodes.Status200OK }
             : new HashSet<int> { StatusCodes.Status200OK, StatusCodes.Status202Accepted };
-        if (!TryCreateGatewayRequest(
-                HttpMethod.Post,
-                $"{_gatewayUrl}/api/gskus/{id:D}/{action}",
-                payload,
-                out var request))
+        return await ProxyLifecycleRequestAsync(
+            HttpMethod.Post,
+            $"{_gatewayUrl}/api/gskus/{id:D}/{action}",
+            payload,
+            operationId,
+            allowedSuccessStatusCodes,
+            action,
+            cancellationToken);
+    }
+
+    private async Task<IActionResult> ProxyLifecycleRequestAsync(
+        HttpMethod method,
+        string targetUrl,
+        HttpContent payload,
+        Guid operationId,
+        IReadOnlySet<int> allowedSuccessStatusCodes,
+        string action,
+        CancellationToken cancellationToken)
+    {
+        if (!TryCreateGatewayRequest(method, targetUrl, payload, out var request))
         {
+            payload.Dispose();
             return UnauthorizedResult();
         }
         request.Headers.TryAddWithoutValidation("Idempotency-Key", operationId.ToString("D"));

@@ -30,6 +30,22 @@ public sealed class LskuIdentityWorkflowOperation : EntityBase
     public ReferenceCatalogSelection? ApprovalMarketSelection { get; set; }
     public long? MarketValidatedAtUtcTicksV1 { get; set; }
     public string? ApprovalMarketProofFingerprint { get; set; }
+    public Guid? WithdrawalCommandId { get; set; }
+    public string? WithdrawalFingerprint { get; set; }
+    public Guid? WithdrawalRequesterSubjectId { get; set; }
+    public int? WithdrawalExpectedLskuVersion { get; set; }
+    public string? WithdrawalReasonCode { get; set; }
+    public string? WithdrawalComment { get; set; }
+    public int? WithdrawalExpectedWorkflowInstanceVersion { get; set; }
+    public int? WithdrawalExpectedApprovalTaskVersion { get; set; }
+    public Guid? WithdrawalTransitionLogId { get; set; }
+    public long? WithdrawalObservedAtUtcTicksV1 { get; set; }
+    public long? WithdrawalTransitionSequence { get; set; }
+    public int? WithdrawalResultWorkflowInstanceVersion { get; set; }
+    public int? WithdrawalResultApprovalTaskVersion { get; set; }
+    public string? WithdrawalTaskStatus { get; set; }
+    public string? WithdrawalInstanceStatus { get; set; }
+    public string? WithdrawalObjectRef { get; set; }
     public LskuIdentityWorkflowCheckpoint Checkpoint { get; set; }
     public ProductIdentityWorkflowRecoveryDisposition RecoveryDisposition { get; set; }
     public Guid? WorkflowInstanceId { get; set; }

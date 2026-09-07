@@ -1,4 +1,5 @@
 using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.ValueObjects;
 
 namespace Diten.MdmService.Domain.Repositories;
@@ -24,12 +25,32 @@ public interface IGskuRepository
         DateTimeOffset serverNowUtc,
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("GSKU_LEGAL_ENTITY_SCOPE_READ_CONTRACT_NOT_IMPLEMENTED");
+    Task<GskuPage> GetEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string? canonicalCodeSearch,
+        bool referenceableOnly,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default) => lifecycleStatus is null
+            ? GetEnforcedLegalEntityScopePageAsync(pageNumber, pageSize, canonicalCodeSearch, referenceableOnly,
+                effectiveCandidateLegalEntityIds, serverNowUtc, cancellationToken)
+            : throw new NotSupportedException("GSKU_LIFECYCLE_FILTER_NOT_IMPLEMENTED");
     Task<GskuPage> GetPageAsync(
         int pageNumber,
         int pageSize,
         string? canonicalCodeSearch,
         CancellationToken cancellationToken = default) =>
         GetReferenceablePageAsync(pageNumber, pageSize, canonicalCodeSearch, cancellationToken);
+    Task<GskuPage> GetPageAsync(
+        int pageNumber,
+        int pageSize,
+        string? canonicalCodeSearch,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        CancellationToken cancellationToken = default) => lifecycleStatus is null
+            ? GetPageAsync(pageNumber, pageSize, canonicalCodeSearch, cancellationToken)
+            : throw new NotSupportedException("GSKU_LIFECYCLE_FILTER_NOT_IMPLEMENTED");
     Task<IReadOnlyList<Guid>> FindIdsByCanonicalCodeAsync(
         string canonicalCodeSearch,
         CancellationToken cancellationToken = default);
@@ -72,6 +93,29 @@ public interface IGskuRepository
         Guid id, int expectedVersion, Guid operationId, string operationFingerprint,
         LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("FIRST_GSKU_RETIREMENT_NOT_IMPLEMENTED");
+    Task<GskuCorrectionWriteResult> AcquireCorrectionAsync(
+        Guid id, int expectedVersion, GskuActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("GSKU_CORRECTION_NOT_IMPLEMENTED");
+    Task<GskuCorrectionWriteResult> ApplyCorrectionDecisionAsync(
+        Guid id, int expectedVersion, GskuActiveLifecycleOperationBinding binding,
+        decimal? approvedPackQuantity, string? approvedPackUomCode,
+        ReferenceCatalogSelection? approvedPackApplicabilitySelection,
+        ReferenceCatalogSelection? approvedPackUomSelection,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("GSKU_CORRECTION_NOT_IMPLEMENTED");
+    Task<GskuRetirementRequestWriteResult> AcquireRetirementRequestAsync(
+        Guid id, int expectedVersion, GskuActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("GSKU_RETIREMENT_REQUEST_NOT_IMPLEMENTED");
+    Task<GskuRetirementRequestWriteResult> RejectRetirementRequestAsync(
+        Guid id, int expectedVersion, GskuActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("GSKU_RETIREMENT_REQUEST_NOT_IMPLEMENTED");
+    Task<GskuRetirementRequestWriteResult> RecordRetirementRequestConflictAsync(
+        Guid id, int expectedVersion, GskuActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("GSKU_RETIREMENT_REQUEST_NOT_IMPLEMENTED");
 }
 
 public sealed record GskuCreateResult(bool Succeeded, Gsku? Gsku, string? ErrorCode = null);

@@ -45,6 +45,23 @@ public static class ProductItemSkuMasterModels
         CodeReservationBindingState CodeBindingState,
         bool BindingReconciliationRequired);
 
+    public sealed class UpdateGlobalProductDraftRequest
+    {
+        public string? GlobalProductName { get; init; }
+        public int? ExpectedVersion { get; init; }
+
+        [JsonExtensionData]
+        public IDictionary<string, JsonElement>? UnmappedFields { get; init; }
+    }
+
+    public sealed record GlobalProductDraftUpdateDto(
+        Guid Id,
+        string CanonicalCode,
+        string GlobalProductName,
+        ProductIdentityLifecycleStatus LifecycleStatus,
+        int Version,
+        bool IsReplay);
+
     public sealed record GlobalProductListItemDto(
         Guid Id,
         string CanonicalCode,
@@ -58,7 +75,8 @@ public static class ProductItemSkuMasterModels
         ProductIdentityLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt,
+        IReadOnlyList<string> AvailableActions);
 
     public sealed record GlobalProductSelectorDto(
         Guid Id,
@@ -165,9 +183,11 @@ public static class ProductItemSkuMasterModels
         decimal PackQuantity,
         string PackUomCode,
         ProductIdentityLifecycleStatus LifecycleStatus,
-        int Version,
+        int RevisionVersion,
+        int GskuVersion,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt,
+        IReadOnlyList<string> AvailableActions);
 
     public sealed record GskuCreateGlobalProductOptionDto(
         Guid Id,
@@ -264,7 +284,8 @@ public static class ProductItemSkuMasterModels
         ProductIdentityLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt,
+        IReadOnlyList<string> AvailableActions);
 
     public sealed record LskuDetailDto(
         Guid Id,
@@ -275,7 +296,8 @@ public static class ProductItemSkuMasterModels
         ProductIdentityLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt,
+        IReadOnlyList<string> AvailableActions);
 
     public sealed record LskuCreateGskuOptionDto(
         Guid Id,

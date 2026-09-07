@@ -24,6 +24,8 @@ public sealed class LskusController : Controller
     private const string ReadPermission = "mdm.lskus.read";
     private const string CreatePermission = "mdm.lskus.create";
     private const string SubmitPermission = "mdm.lskus.submit";
+    private const string WithdrawPermission = "mdm.lskus.withdraw";
+    private const string RequestRetirementPermission = "mdm.lskus.request-retirement";
     private const string RetirePermission = "mdm.lskus.retire";
     private readonly HttpClient _http;
     private readonly string _gateway;
@@ -59,7 +61,8 @@ public sealed class LskusController : Controller
         var canCreate = Has(CreatePermission);
         ViewData["CanCreateLsku"] = canCreate;
         ViewData["CanSubmitLsku"] = Has(SubmitPermission);
-        ViewData["CanRetireLsku"] = Has(RetirePermission);
+        ViewData["CanWithdrawLsku"] = Has(WithdrawPermission);
+        ViewData["CanRequestRetirementLsku"] = Has(RequestRetirementPermission);
         if (canCreate) ViewData["LskuFormAttemptToken"] = NewToken();
         return View("~/Views/MasterDataManagement/Lskus/Index.cshtml");
     }
@@ -128,6 +131,76 @@ public sealed class LskusController : Controller
         CancellationToken cancellationToken) =>
         ExecuteLifecycleAsync(id, expectedVersion, null, "submit", SubmitPermission, cancellationToken);
 
+    [HttpPost("api/{id:guid}/identity-approval/withdraw")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> WithdrawIdentityApproval(
+        Guid id,
+        [FromForm] int? expectedVersion,
+        [FromForm] string? reasonCode,
+        [FromForm] string? comment,
+        CancellationToken cancellationToken)
+    {
+        if (!Has(WithdrawPermission)) return Failure(HttpStatusCode.Forbidden);
+        if (id == Guid.Empty || expectedVersion is null or < 1
+            || !HasExactText(reasonCode, 128)
+            || comment is not null && !HasOptionalExactText(comment, 2000)
+            || !await HasOnlyFormFieldsAsync("ExpectedVersion", "ReasonCode", "Comment"))
+        {
+            return Failure(HttpStatusCode.BadRequest);
+        }
+        if (!TryResolveLifecycleIdentity(out var tenantId, out var actor))
+            return Failure(HttpStatusCode.Unauthorized);
+
+        var operationId = CreateLifecycleOperationId(
+            tenantId, actor, "lsku", "withdraw", id, expectedVersion.Value, $"{reasonCode}\n{comment}");
+        if (!RequestMessage(
+                HttpMethod.Post,
+                $"{_gateway}/api/lskus/{id:D}/identity-approval/withdraw",
+                JsonContent.Create(new { expectedVersion = expectedVersion.Value, reasonCode, comment }, options: _json),
+                out var request))
+        {
+            return Failure(HttpStatusCode.Unauthorized);
+        }
+
+        request.Headers.TryAddWithoutValidation("Idempotency-Key", operationId.ToString("D"));
+        return await SendLifecycleRequestAsync(request, "withdraw",
+            new HashSet<int> { StatusCodes.Status200OK, StatusCodes.Status202Accepted }, cancellationToken);
+    }
+
+    [HttpPost("api/{id:guid}/retirement-requests")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RequestRetirement(
+        Guid id,
+        [FromForm] int? expectedVersion,
+        [FromForm] string? requestReason,
+        CancellationToken cancellationToken)
+    {
+        if (!Has(RequestRetirementPermission)) return Failure(HttpStatusCode.Forbidden);
+        if (id == Guid.Empty || expectedVersion is null or < 1
+            || !HasExactText(requestReason, 128)
+            || !await HasOnlyFormFieldsAsync("ExpectedVersion", "RequestReason"))
+        {
+            return Failure(HttpStatusCode.BadRequest);
+        }
+        if (!TryResolveLifecycleIdentity(out var tenantId, out var actor))
+            return Failure(HttpStatusCode.Unauthorized);
+
+        var operationId = CreateLifecycleOperationId(
+            tenantId, actor, "lsku", "request-retirement", id, expectedVersion.Value, requestReason!);
+        if (!RequestMessage(
+                HttpMethod.Post,
+                $"{_gateway}/api/lskus/{id:D}/retirement-requests",
+                JsonContent.Create(new { expectedVersion = expectedVersion.Value, requestReason }, options: _json),
+                out var request))
+        {
+            return Failure(HttpStatusCode.Unauthorized);
+        }
+
+        request.Headers.TryAddWithoutValidation("Idempotency-Key", operationId.ToString("D"));
+        return await SendLifecycleRequestAsync(request, "request-retirement",
+            new HashSet<int> { StatusCodes.Status200OK, StatusCodes.Status202Accepted }, cancellationToken);
+    }
+
     [HttpPost("api/{id:guid}/retire")]
     [ValidateAntiForgeryToken]
     public Task<IActionResult> RetireLifecycle(
@@ -170,6 +243,15 @@ public sealed class LskusController : Controller
             return Failure(HttpStatusCode.Unauthorized);
 
         request.Headers.TryAddWithoutValidation("Idempotency-Key", operationId.ToString("D"));
+        return await SendLifecycleRequestAsync(request, action, allowedSuccessStatusCodes, cancellationToken);
+    }
+
+    private async Task<IActionResult> SendLifecycleRequestAsync(
+        HttpRequestMessage request,
+        string action,
+        IReadOnlySet<int> allowedSuccessStatusCodes,
+        CancellationToken cancellationToken)
+    {
         try
         {
             using (request)
@@ -284,6 +366,14 @@ public sealed class LskusController : Controller
     private static bool IsJsonMediaType(string? mediaType) =>
         string.Equals(mediaType, "application/json", StringComparison.OrdinalIgnoreCase)
         || mediaType?.EndsWith("+json", StringComparison.OrdinalIgnoreCase) == true;
+
+    private static bool HasExactText(string? value, int maximumLength) =>
+        !string.IsNullOrEmpty(value) && HasOptionalExactText(value, maximumLength);
+
+    private static bool HasOptionalExactText(string value, int maximumLength) =>
+        value.Length <= maximumLength
+        && string.Equals(value, value.Trim(), StringComparison.Ordinal)
+        && !value.Any(char.IsControl);
 
     private bool TryResolveLifecycleIdentity(out Guid tenantId, out string actor)
     {

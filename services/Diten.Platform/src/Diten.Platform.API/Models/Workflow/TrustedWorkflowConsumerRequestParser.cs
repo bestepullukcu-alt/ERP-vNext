@@ -32,6 +32,28 @@ public sealed class TrustedWorkflowConsumerRequestParser
         "expectedMakerSubjectId"
     };
 
+    private static readonly HashSet<string> CancellationPreflightProperties = new(StringComparer.Ordinal)
+    {
+        "workflowInstanceId",
+        "approvalTaskId",
+        "expectedObjectType",
+        "expectedObjectId",
+        "expectedMakerSubjectId"
+    };
+
+    private static readonly HashSet<string> CancellationProperties = new(StringComparer.Ordinal)
+    {
+        "workflowInstanceId",
+        "approvalTaskId",
+        "expectedObjectType",
+        "expectedObjectId",
+        "expectedMakerSubjectId",
+        "expectedWorkflowInstanceVersion",
+        "expectedApprovalTaskVersion",
+        "reasonCode",
+        "comment"
+    };
+
     public bool TryParseStart(
         ReadOnlyMemory<byte> utf8Json,
         out TrustedWorkflowStartTransportRequest? request)
@@ -100,6 +122,64 @@ public sealed class TrustedWorkflowConsumerRequestParser
         }
 
         request = new(expectedObjectType!, expectedObjectId!, expectedMakerSubjectId);
+        return true;
+    }
+
+    public bool TryParseCancellationPreflight(
+        ReadOnlyMemory<byte> utf8Json,
+        out TrustedWorkflowCancellationPreflightTransportRequest? request)
+    {
+        request = null;
+        if (!TryReadObject(utf8Json, CancellationPreflightProperties, out var values)
+            || values.Count != 5
+            || !TryRequiredGuid(values, "workflowInstanceId", out var workflowInstanceId)
+            || !TryRequiredGuid(values, "approvalTaskId", out var approvalTaskId)
+            || !TryRequiredBoundedString(values, "expectedObjectType", 128, out var expectedObjectType)
+            || !TryRequiredBoundedString(values, "expectedObjectId", 256, out var expectedObjectId)
+            || !TryRequiredGuid(values, "expectedMakerSubjectId", out var expectedMakerSubjectId))
+        {
+            return false;
+        }
+
+        request = new(
+            workflowInstanceId,
+            approvalTaskId,
+            expectedObjectType!,
+            expectedObjectId!,
+            expectedMakerSubjectId);
+        return true;
+    }
+
+    public bool TryParseCancellation(
+        ReadOnlyMemory<byte> utf8Json,
+        out TrustedWorkflowCancellationTransportRequest? request)
+    {
+        request = null;
+        if (!TryReadObject(utf8Json, CancellationProperties, out var values)
+            || values.Count is < 8 or > 9
+            || !TryRequiredGuid(values, "workflowInstanceId", out var workflowInstanceId)
+            || !TryRequiredGuid(values, "approvalTaskId", out var approvalTaskId)
+            || !TryRequiredBoundedString(values, "expectedObjectType", 128, out var expectedObjectType)
+            || !TryRequiredBoundedString(values, "expectedObjectId", 256, out var expectedObjectId)
+            || !TryRequiredGuid(values, "expectedMakerSubjectId", out var expectedMakerSubjectId)
+            || !TryPositiveInt32(values, "expectedWorkflowInstanceVersion", out var expectedWorkflowInstanceVersion)
+            || !TryPositiveInt32(values, "expectedApprovalTaskVersion", out var expectedApprovalTaskVersion)
+            || !TryRequiredBoundedString(values, "reasonCode", 128, out var reasonCode)
+            || !TryNullableBoundedString(values, "comment", 1000, out var comment))
+        {
+            return false;
+        }
+
+        request = new(
+            workflowInstanceId,
+            approvalTaskId,
+            expectedObjectType!,
+            expectedObjectId!,
+            expectedMakerSubjectId,
+            expectedWorkflowInstanceVersion,
+            expectedApprovalTaskVersion,
+            reasonCode!,
+            comment);
         return true;
     }
 
@@ -257,6 +337,18 @@ public sealed class TrustedWorkflowConsumerRequestParser
             && element.ValueKind == JsonValueKind.String
             && Guid.TryParseExact(element.GetString(), "D", out value)
             && value != Guid.Empty;
+    }
+
+    private static bool TryPositiveInt32(
+        IReadOnlyDictionary<string, JsonElement> values,
+        string name,
+        out int value)
+    {
+        value = 0;
+        return values.TryGetValue(name, out var element)
+            && element.ValueKind == JsonValueKind.Number
+            && element.TryGetInt32(out value)
+            && value > 0;
     }
 
     private static bool TryBoolean(

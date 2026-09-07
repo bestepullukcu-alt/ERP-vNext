@@ -120,6 +120,57 @@ public sealed class LskusController : CustomBaseController
             cancellationToken));
     }
 
+    [HttpPost("{id:guid}/identity-approval/withdraw")]
+    [HasPermission(LskuIdentityLifecyclePermissions.Withdraw)]
+    public async Task<IActionResult> WithdrawIdentityApproval(
+        Guid id,
+        [FromBody] WithdrawLskuIdentityApprovalApiRequest request,
+        [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
+        CancellationToken cancellationToken)
+    {
+        if (request is null || request.ExpectedVersion is null
+            || !HasRequiredExactText(request.ReasonCode, 128)
+            || request.Comment is not null && !HasOptionalExactText(request.Comment, 2000)
+            || HasUnknownFields(request.UnmappedFields))
+        {
+            return InvalidLifecycleRequest();
+        }
+        if (!TryParseOperationId(idempotencyKey, out var operationId))
+        {
+            return InvalidIdempotencyKey();
+        }
+
+        return CreateActionResultInstance(await _mediator.Send(
+            new WithdrawLskuIdentityApprovalCommand(
+                new(id, request.ExpectedVersion.Value, operationId, request.ReasonCode, request.Comment)),
+            cancellationToken));
+    }
+
+    [HttpPost("{id:guid}/retirement-requests")]
+    [HasPermission(LskuRetirementRequestPermissions.Request)]
+    public async Task<IActionResult> RequestRetirement(
+        Guid id,
+        [FromBody] RequestLskuRetirementApiRequest request,
+        [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
+        CancellationToken cancellationToken)
+    {
+        if (request is null || request.ExpectedVersion is null
+            || !HasRequiredExactText(request.RequestReason, 128)
+            || HasUnknownFields(request.UnmappedFields))
+        {
+            return InvalidLifecycleRequest();
+        }
+        if (!TryParseOperationId(idempotencyKey, out var operationId))
+        {
+            return InvalidIdempotencyKey();
+        }
+
+        return CreateActionResultInstance(await _mediator.Send(
+            new StartLskuRetirementRequestWorkflowCommand(new(
+                id, request.ExpectedVersion.Value, operationId, request.RequestReason)),
+            cancellationToken));
+    }
+
     [HttpPost("{id:guid}/retire")]
     [HasPermission(LskuIdentityLifecyclePermissions.Retire)]
     public async Task<IActionResult> RetireIdentity(
@@ -153,6 +204,14 @@ public sealed class LskusController : CustomBaseController
     }
 
     private static bool HasUnknownFields(IDictionary<string, JsonElement>? fields) => fields is { Count: > 0 };
+
+    private static bool HasRequiredExactText(string? value, int maximumLength) =>
+        !string.IsNullOrEmpty(value) && HasOptionalExactText(value, maximumLength);
+
+    private static bool HasOptionalExactText(string value, int maximumLength) =>
+        value.Length <= maximumLength
+        && string.Equals(value, value.Trim(), StringComparison.Ordinal)
+        && !value.Any(char.IsControl);
 
     private IActionResult InvalidLifecycleRequest() =>
         CreateActionResultInstance(Response<NoContent>.Fail("LSKU_IDENTITY_LIFECYCLE_REQUEST_INVALID", 400));
@@ -191,6 +250,25 @@ public sealed class LskusController : CustomBaseController
         public int? ExpectedVersion { get; init; }
         public string ReasonCode { get; init; } = string.Empty;
         public string? Comment { get; init; }
+
+        [JsonExtensionData]
+        public IDictionary<string, JsonElement>? UnmappedFields { get; init; }
+    }
+
+    public sealed class WithdrawLskuIdentityApprovalApiRequest
+    {
+        public int? ExpectedVersion { get; init; }
+        public string ReasonCode { get; init; } = string.Empty;
+        public string? Comment { get; init; }
+
+        [JsonExtensionData]
+        public IDictionary<string, JsonElement>? UnmappedFields { get; init; }
+    }
+
+    public sealed class RequestLskuRetirementApiRequest
+    {
+        public int? ExpectedVersion { get; init; }
+        public string RequestReason { get; init; } = string.Empty;
 
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? UnmappedFields { get; init; }

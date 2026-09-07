@@ -10,6 +10,7 @@ const GlobalProductsList = (function () {
     let defaultViewState = null;
     let saveFilterArmed = false;
     let appliedFilters = { lifecycleStatus: '' };
+    let initialPagePrefetch = null;
 
     const endpoint = '/MasterDataManagement/GlobalProducts/api';
     const tableEl = document.querySelector('.datatables-globalproducts');
@@ -18,12 +19,16 @@ const GlobalProductsList = (function () {
     const saveViewColumnIndexes = [1, 2, 3];
     const totalColumnCount = 5;
     const baseOrder = [[1, 'asc']];
+    const initialPageSize = 10;
     const L = window.L10n || {};
     const permissionHost = document.querySelector('[data-can-create]');
     const canCreate = permissionHost?.getAttribute('data-can-create') === 'true';
-    const canSubmit = permissionHost?.getAttribute('data-can-submit') === 'true';
-    const canRetire = permissionHost?.getAttribute('data-can-retire') === 'true';
     const lifecycleRequests = new Set();
+    const detailById = new Map();
+    const actionOrder = ['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT'];
+    let editorMode = 'create';
+    let editorId = '';
+    let editorVersion = null;
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
     const emptyFilters = () => ({ lifecycleStatus: '' });
 
@@ -32,6 +37,12 @@ const GlobalProductsList = (function () {
     }[character]));
     const normalizeString = (value) => typeof value === 'string' ? value.trim() : '';
     const normalizeFilters = (filters) => ({ lifecycleStatus: normalizeString(filters?.lifecycleStatus) });
+    const syncSingleFilterState = ($filter) => {
+        const hasValue = Boolean(normalizeString($filter.val()));
+        $filter.next('.select2-container').find('.select2-selection__rendered')
+            .toggleClass('text-body fw-semibold', hasValue)
+            .toggleClass('text-secondary', !hasValue);
+    };
     const normalizeColOrder = (order) => {
         if (!Array.isArray(order) || order.length !== totalColumnCount) return null;
         const result = order.map(Number).filter((index) => Number.isInteger(index) && index >= 0 && index < totalColumnCount);
@@ -96,7 +107,6 @@ const GlobalProductsList = (function () {
             defaultViewState = defaultViewRecord ? normalizeView(getSavedViewDefinition(defaultViewRecord)) : null;
             return defaultViewState;
         } catch (error) {
-            if (!error?.authHandled) console.error('[GlobalProducts SaveView] Load failed.', error);
             return null;
         }
     };
@@ -138,7 +148,9 @@ const GlobalProductsList = (function () {
     const applySavedTableState = (api, state) => {
         const normalized = normalizeView(state || {});
         appliedFilters = normalized.filters;
-        $('#filterLifecycleStatus').val(appliedFilters.lifecycleStatus).trigger('change.select2');
+        const $filter = $('#filterLifecycleStatus');
+        $filter.val(appliedFilters.lifecycleStatus).trigger('change.select2');
+        syncSingleFilterState($filter);
         applyColumnState(api, normalized);
         api.search(normalized.search);
         api.order(normalized.order);
@@ -161,14 +173,47 @@ const GlobalProductsList = (function () {
         }
     };
     const initFilter = () => {
+        if (!window.jQuery || !$.fn.select2) return;
         const $filter = $('#filterLifecycleStatus');
-        if ($filter.length && !$filter.hasClass('select2-hidden-accessible')) {
+        if ($filter.length) {
+            if ($filter.hasClass('select2-hidden-accessible')) $filter.select2('destroy');
+
+            const clampDropdown = () => {
+                requestAnimationFrame(() => {
+                    const dropdown = document.querySelector('.select2-dropdown.dt-inline-filter-dropdown');
+                    if (!dropdown) return;
+                    const rect = dropdown.getBoundingClientRect();
+                    const padding = 8;
+                    let deltaX = 0;
+                    let deltaY = 0;
+                    if (rect.right > window.innerWidth - padding) deltaX -= rect.right - (window.innerWidth - padding);
+                    if (rect.left < padding) deltaX += padding - rect.left;
+                    if (rect.bottom > window.innerHeight - padding) deltaY -= rect.bottom - (window.innerHeight - padding);
+                    if (rect.top < padding) deltaY += padding - rect.top;
+                    if (!deltaX && !deltaY) return;
+                    const computedStyle = window.getComputedStyle(dropdown);
+                    const baseLeft = parseFloat(computedStyle.left) || rect.left + window.scrollX;
+                    const baseTop = parseFloat(computedStyle.top) || rect.top + window.scrollY;
+                    if (deltaX) dropdown.style.left = `${baseLeft + deltaX}px`;
+                    if (deltaY) dropdown.style.top = `${baseTop + deltaY}px`;
+                    dropdown.style.transform = 'none';
+                });
+            };
+
             $filter.select2({
                 dropdownParent: $(document.body),
                 dropdownCssClass: 'dt-inline-filter-dropdown',
-                minimumResultsForSearch: 8,
-                width: 'element'
+                containerCssClass: 'dt-inline-filter-single',
+                selectionCssClass: 'form-select form-select-sm',
+                placeholder: $filter.data('placeholder') || '',
+                minimumResultsForSearch: Infinity,
+                width: 'element',
+                allowClear: true
             });
+            $filter.on('select2:open', clampDropdown);
+            $filter.off('change.globalProductsFilterState')
+                .on('change.globalProductsFilterState', () => syncSingleFilterState($filter));
+            requestAnimationFrame(() => syncSingleFilterState($filter));
         }
     };
     const getAppliedFilterCount = () => appliedFilters.lifecycleStatus ? 1 : 0;
@@ -254,6 +299,48 @@ const GlobalProductsList = (function () {
         return query.toString();
     };
 
+    const fetchPage = async (query, signal) => {
+        const response = await fetch(`${endpoint}?${query}`, {
+            credentials: 'same-origin',
+            headers: getAuthHeaders(),
+            signal
+        });
+        if (response.status === 401) handleUnauthorized();
+        if (!response.ok) throw new Error(await getErrorMessage(response));
+        return unwrapData(await response.json());
+    };
+    const settlePageRequest = (request) => request.then(
+        (page) => ({ page, error: null }),
+        (error) => ({ page: null, error })
+    );
+    const startInitialPagePrefetch = () => {
+        const query = new URLSearchParams({
+            pageNumber: '1',
+            pageSize: String(initialPageSize)
+        }).toString();
+        const controller = new AbortController();
+        return {
+            query,
+            controller,
+            result: settlePageRequest(fetchPage(query, controller.signal))
+        };
+    };
+    const consumePage = async (query) => {
+        const prefetched = initialPagePrefetch;
+        initialPagePrefetch = null;
+
+        let result;
+        if (prefetched?.query === query) {
+            result = await prefetched.result;
+        } else {
+            prefetched?.controller.abort();
+            result = await settlePageRequest(fetchPage(query));
+        }
+
+        if (result.error) throw result.error;
+        return result.page;
+    };
+
     const fetchDetail = async (id) => {
         const response = await fetch(`${endpoint}/${encodeURIComponent(id)}`, {
             credentials: 'same-origin', headers: getAuthHeaders()
@@ -261,6 +348,17 @@ const GlobalProductsList = (function () {
         if (response.status === 401) handleUnauthorized();
         if (!response.ok) throw new Error(await getErrorMessage(response));
         return unwrapData(await response.json());
+    };
+    const readAvailableActions = (detail) => {
+        const raw = detail?.availableActions ?? detail?.AvailableActions;
+        if (!Array.isArray(raw) || !raw.length) throw new Error(L.ErrorGateway);
+        const actions = raw.map((value) => typeof value === 'string' ? value.trim().toUpperCase() : '');
+        if (actions.some((value) => !actionOrder.includes(value)) || new Set(actions).size !== actions.length
+            || actions[0] !== 'DETAILS'
+            || actions.some((value, index) => index > 0 && actionOrder.indexOf(value) <= actionOrder.indexOf(actions[index - 1]))) {
+            throw new Error(L.ErrorGateway);
+        }
+        return actions;
     };
     const renderDetail = (detail, expectedId) => {
         const detailId = detail?.id || detail?.Id;
@@ -292,127 +390,279 @@ const GlobalProductsList = (function () {
         bootstrap.Offcanvas.getOrCreateInstance(offcanvas).show();
         return detailState;
     };
-    const populateDetails = async (id) => {
-        try {
-            const detail = await fetchDetail(id);
-            renderDetail(detail, id);
-        } catch (error) {
-            if (!error?.authHandled) window.showToast?.(error.message || L.ErrorOccurred, 'error');
-        }
-    };
-
     const lifecycleToken = () => document.querySelector(
         '#globalProductLifecycleToken input[name="__RequestVerificationToken"]')?.value || '';
     const setLifecycleBusy = (button, busy) => {
         button?.classList.toggle('disabled', busy);
         button?.setAttribute('aria-disabled', busy ? 'true' : 'false');
     };
-    const postLifecycle = async (id, action, reasonCode, button) => {
+    const scalarLength = (value) => Array.from(value).length;
+    const hasControlCharacter = (value) => /[\u0000-\u001F\u007F-\u009F]/u.test(value);
+    const mutationDefinition = (action) => ({
+        SUBMIT: { path: 'submit', method: 'POST', success: L.SubmitPendingSuccess },
+        WITHDRAW_APPROVAL: { path: 'withdraw', method: 'POST', success: L.WithdrawSuccess },
+        REQUEST_CORRECTION: { path: 'correction-requests', method: 'POST', success: L.CorrectionRequestedSuccess },
+        REQUEST_RETIREMENT: { path: 'retirement-requests', method: 'POST', success: L.RetirementRequestedSuccess },
+        EDIT: { path: '', method: 'PUT', success: L.UpdateSuccess }
+    }[action]);
+    const validMutationEnvelope = (payload, responseStatus, action, expectedId) => {
+        const successful = payload?.isSuccessful ?? payload?.IsSuccessful;
+        const status = Number(payload?.statusCode ?? payload?.StatusCode);
+        const data = payload?.data ?? payload?.Data;
+        if (successful !== true || status !== responseStatus || !data) return false;
+
+        const id = data?.globalProductId ?? data?.GlobalProductId ?? data?.id ?? data?.Id;
+        const operationId = data?.operationId ?? data?.OperationId;
+        const checkpoint = data?.checkpoint ?? data?.Checkpoint;
+        const lifecycleStatus = data?.lifecycleStatus ?? data?.LifecycleStatus;
+        const version = Number(data?.version ?? data?.Version);
+        const productVersion = Number(data?.productVersion ?? data?.ProductVersion);
+        const idMatches = typeof id === 'string'
+            && id.toLowerCase() === String(expectedId).toLowerCase();
+        const hasOperation = typeof operationId === 'string' && operationId.length > 0;
+        const hasCheckpoint = typeof checkpoint === 'string' && checkpoint.length > 0;
+        const hasLifecycle = typeof lifecycleStatus === 'string' && lifecycleStatus.length > 0
+            || Number.isInteger(Number(lifecycleStatus)) && Number(lifecycleStatus) > 0;
+
+        if (action === 'SUBMIT') return idMatches && hasOperation && hasCheckpoint;
+        if (action === 'EDIT') return idMatches && hasLifecycle && Number.isInteger(version) && version >= 0;
+        if (action === 'WITHDRAW_APPROVAL') return idMatches && hasLifecycle && Number.isInteger(version) && version >= 0;
+        if (action === 'REQUEST_CORRECTION' || action === 'REQUEST_RETIREMENT') {
+            return idMatches && hasOperation && hasCheckpoint
+                && Number.isInteger(productVersion) && productVersion >= 0
+                && (responseStatus === 200 && checkpoint === 'Completed'
+                    || responseStatus === 202 && checkpoint === 'AwaitingDecision');
+        }
+        return false;
+    };
+    const mutationReadbackIsCoherent = (beforeVersion, detail, action, fields, responseStatus, payload) => {
+        const version = Number(detail?.version ?? detail?.Version);
+        const state = lifecycleCode(detail?.lifecycleStatus ?? detail?.LifecycleStatus);
+        const actions = readAvailableActions(detail);
+        if (!Number.isInteger(version) || version <= beforeVersion) return false;
+        if (action === 'EDIT') {
+            return state === 1
+                && normalizeString(detail?.globalProductName ?? detail?.GlobalProductName)
+                    === normalizeString(fields?.GlobalProductName);
+        }
+        if (action === 'SUBMIT') return state === 2 && !actions.includes('SUBMIT');
+        if (action === 'WITHDRAW_APPROVAL') return state === 1 && !actions.includes('WITHDRAW_APPROVAL');
+        if (action !== 'REQUEST_CORRECTION' && action !== 'REQUEST_RETIREMENT') return false;
+
+        const data = payload?.data ?? payload?.Data;
+        const productVersion = Number(data?.productVersion ?? data?.ProductVersion);
+        if (!Number.isInteger(productVersion) || version !== productVersion) return false;
+        if (responseStatus === 202) {
+            return state === 3 && !actions.includes('REQUEST_CORRECTION')
+                && !actions.includes('REQUEST_RETIREMENT');
+        }
+        if (action === 'REQUEST_CORRECTION') {
+            return state === 3 && actions.includes('REQUEST_CORRECTION');
+        }
+        return state === 4 || state === 3 && actions.includes('REQUEST_RETIREMENT');
+    };
+    const mutationReadbackProvesCommitted = (beforeVersion, detail, action, fields) => {
+        if (action === 'REQUEST_CORRECTION' || action === 'REQUEST_RETIREMENT') return false;
+        return mutationReadbackIsCoherent(beforeVersion, detail, action, fields, 0, null);
+    };
+    const postLifecycle = async (id, action, fields, button, expectedVersionOverride = null) => {
+        const definition = mutationDefinition(action);
         const requestKey = `${id}:${action}`;
+        if (!definition) return;
         if (lifecycleRequests.has(requestKey)) return;
         lifecycleRequests.add(requestKey);
         setLifecycleBusy(button, true);
         try {
             const detail = await fetchDetail(id);
-            const state = lifecycleCode(detail.lifecycleStatus ?? detail.LifecycleStatus);
-            const expectedState = action === 'submit' ? 1 : 3;
-            if (state !== expectedState) {
+            if (!readAvailableActions(detail).includes(action)) {
                 dt?.ajax.reload(null, false);
                 throw new Error(L.LifecycleStateChanged);
             }
             const expectedVersion = Number(detail.version ?? detail.Version);
             if (!Number.isInteger(expectedVersion) || expectedVersion < 0) throw new Error(L.ErrorConflict);
+            if (Number.isInteger(expectedVersionOverride) && expectedVersion !== expectedVersionOverride)
+                throw new Error(L.LifecycleStateChanged);
 
             const body = new FormData();
             body.set('ExpectedVersion', String(expectedVersion));
-            if (action === 'retire') body.set('ReasonCode', reasonCode);
+            Object.entries(fields || {}).forEach(([key, value]) => body.set(key, value));
             const token = lifecycleToken();
             body.set('__RequestVerificationToken', token);
-            const response = await fetch(`${endpoint}/${encodeURIComponent(id)}/${action}`, {
-                method: 'POST',
+            const suffix = definition.path ? `/${definition.path}` : '';
+            const response = await fetch(`${endpoint}/${encodeURIComponent(id)}${suffix}`, {
+                method: definition.method,
                 credentials: 'same-origin',
                 headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'XMLHttpRequest' },
                 body
             });
             if (response.status === 401) handleUnauthorized();
-            if (!response.ok) throw new Error(await getErrorMessage(response));
+            let payload = null;
+            let responseError = null;
+            if (!response.ok) responseError = new Error(await getErrorMessage(response));
+            else {
+                try { payload = await response.json(); }
+                catch (error) { responseError = new Error(L.ErrorGateway); }
+            }
 
+            // A proxy/upstream contract error can follow an already-committed mutation. Always
+            // reconcile the visible row and fresh server-owned actions before reporting it.
             dt?.ajax.reload(null, false);
             const refreshedDetail = await fetchDetail(id);
-            const refreshedState = renderDetail(refreshedDetail, id);
-            if (refreshedState !== (action === 'submit' ? 2 : 4)) throw new Error(L.LifecycleStateChanged);
-            window.showToast?.(action === 'submit' ? L.SubmitPendingSuccess : L.RetireSuccess, 'success');
+            detailById.set(String(id).toLowerCase(), refreshedDetail);
+            const envelopeValid = !responseError
+                && validMutationEnvelope(payload, response.status, action, id);
+            const coherent = envelopeValid
+                && mutationReadbackIsCoherent(
+                    expectedVersion, refreshedDetail, action, fields, response.status, payload);
+            const reconciledCommit = !envelopeValid
+                && (response.ok || [502, 503, 504].includes(response.status))
+                && mutationReadbackProvesCommitted(expectedVersion, refreshedDetail, action, fields);
+            if (reconciledCommit) {
+                window.showToast?.(definition.success, 'success');
+                return true;
+            }
+            if (responseError) throw responseError;
+            if (!envelopeValid || !coherent) throw new Error(L.ErrorGateway);
+            window.showToast?.(definition.success, 'success');
+            return true;
         } catch (error) {
             if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error');
+            return false;
         } finally {
             lifecycleRequests.delete(requestKey);
             setLifecycleBusy(button, false);
         }
     };
     const requestLifecycle = (id, action, button) => {
-        if (!id || (action === 'submit' && !canSubmit) || (action === 'retire' && !canRetire)) return;
-        if (action === 'submit') {
-            window.showConfirm?.(L.SubmitConfirmation, () => postLifecycle(id, action, '', button), {
+        if (!id) return;
+        if (action === 'SUBMIT') {
+            window.showConfirm?.(L.SubmitConfirmation, () => postLifecycle(id, action, {}, button), {
                 type: 'warning', confirmButtonText: L.SubmitIdentity
             });
             return;
         }
-        window.showConfirm?.(L.RetireConfirmation, (input) => {
+        if (action === 'WITHDRAW_APPROVAL') {
+            window.showConfirm?.(L.WithdrawConfirmation, () => postLifecycle(id, action, {}, button), {
+                type: 'warning', confirmButtonText: L.WithdrawApproval
+            });
+            return;
+        }
+        if (action === 'REQUEST_CORRECTION') {
+            window.showConfirm?.(L.CorrectionConfirmation, (input) => {
+                const name = normalizeString(input);
+                if (!name || scalarLength(name) > 200) return;
+                return postLifecycle(id, action, { GlobalProductName: name }, button);
+            }, {
+                type: 'primary', showInput: true, inputType: 'text', inputRequired: true,
+                inputLabel: L.CorrectionNameLabel, inputAttributes: { maxlength: 400 },
+                confirmButtonText: L.RequestCorrection
+            });
+            return;
+        }
+        window.showConfirm?.(L.RetirementRequestConfirmation, (input) => {
             const reason = normalizeString(input);
-            if (!reason) {
-                window.showToast?.(L.RetirementReasonRequired, 'error');
+            if (!reason || scalarLength(reason) > 2000) {
+                window.showToast?.(L.RetirementRequestReasonRequired, 'error');
                 return;
             }
-            if (reason.length > 128) {
-                window.showToast?.(L.RetirementReasonTooLong, 'error');
+            if (hasControlCharacter(reason)) {
+                window.showToast?.(L.RetirementRequestReasonInvalid, 'error');
                 return;
             }
-            return postLifecycle(id, action, reason, button);
+            return postLifecycle(id, action, { Reason: reason }, button);
         }, {
-            type: 'warning',
-            showInput: true,
-            inputRequired: true,
-            inputLabel: L.RetirementReasonLabel,
-            inputAttributes: { maxlength: 128 },
-            confirmButtonText: L.RetireIdentity
+            type: 'warning', showInput: true, inputRequired: true,
+            inputLabel: L.RetirementRequestReasonLabel,
+            inputAttributes: { maxlength: 4000 }, confirmButtonText: L.RequestRetirement
         });
     };
 
     const renderActions = (row) => {
         const id = row.id || row.Id;
-        const actions = [{
-            key: 'details', className: 'js-quick-view', text: L.ViewDetails, icon: 'bx bx-show',
-            attrs: { 'data-id': id, title: L.ViewDetails }
-        }];
-        const state = lifecycleCode(row.lifecycleStatus ?? row.LifecycleStatus);
-        if (state === 1 && canSubmit) actions.push({
-            key: 'submit', className: 'js-submit-identity', text: L.SubmitIdentity, icon: 'bx bx-send',
-            attrs: { 'data-id': id, title: L.SubmitIdentity }
-        });
-        if (state === 3 && canRetire) actions.push({
-            key: 'retire', className: 'js-retire-identity', text: L.RetireIdentity, icon: 'bx bx-archive',
-            attrs: { 'data-id': id, title: L.RetireIdentity }
-        });
-        return window.DitenDataTable.renderActions(actions);
+        return `<div class="dropdown"><button type="button" class="btn btn-icon dropdown-toggle hide-arrow js-global-product-actions-toggle" data-id="${escapeHtml(id)}" aria-expanded="false" title="${escapeHtml(L.Actions)}" aria-label="${escapeHtml(L.Actions)}"><i class="bx bx-dots-vertical-rounded icon-md"></i></button><div class="dropdown-menu dropdown-menu-end m-0 js-global-product-actions-menu"></div></div>`;
+    };
+
+    const actionPresentation = {
+        DETAILS: ['js-quick-view', 'bx bx-show', () => L.ViewDetails],
+        EDIT: ['js-edit-draft', 'bx bx-edit', () => L.EditDraft],
+        SUBMIT: ['js-lifecycle-action', 'bx bx-send', () => L.SubmitIdentity],
+        WITHDRAW_APPROVAL: ['js-lifecycle-action', 'bx bx-undo', () => L.WithdrawApproval],
+        REQUEST_CORRECTION: ['js-lifecycle-action', 'bx bx-edit-alt', () => L.RequestCorrection],
+        REQUEST_RETIREMENT: ['js-lifecycle-action', 'bx bx-archive', () => L.RequestRetirement]
+    };
+    const renderFreshActionMenu = (menu, id, actions) => {
+        menu.innerHTML = actions.map((code) => {
+            const [className, icon, label] = actionPresentation[code];
+            return `<a href="javascript:void(0);" class="dropdown-item dt-action-item ${className}" data-id="${escapeHtml(id)}" data-action="${code}"><i class="${icon} dt-action-icon"></i>${escapeHtml(label())}</a>`;
+        }).join('');
+    };
+    const loadActionMenu = async (toggle) => {
+        const id = toggle?.dataset.id;
+        const menu = toggle?.parentElement?.querySelector('.js-global-product-actions-menu');
+        if (!id || !menu || toggle.classList.contains('disabled')) return;
+        toggle.classList.add('disabled');
+        try {
+            const detail = await fetchDetail(id);
+            const actions = readAvailableActions(detail);
+            detailById.set(String(id).toLowerCase(), detail);
+            renderFreshActionMenu(menu, id, actions);
+            bootstrap.Dropdown.getOrCreateInstance(toggle).show();
+        } catch (error) {
+            if (!error?.authHandled) window.showToast?.(error.message || L.ErrorOccurred, 'error');
+        } finally {
+            toggle.classList.remove('disabled');
+        }
     };
 
     const openCreate = () => {
+        editorMode = 'create'; editorId = ''; editorVersion = null;
         const form = document.getElementById('formGlobalProduct');
         form?.reset();
         form?.classList.remove('was-validated');
         document.getElementById('formGlobalProductAlert')?.classList.add('d-none');
+        document.getElementById('offcanvasCreateEditLabel').textContent = L.FormTitleCreate;
+        document.getElementById('btnSaveGlobalProduct').textContent = L.Save;
         bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasCreateEdit')).show();
         setTimeout(() => document.getElementById('globalProductName')?.focus(), 150);
     };
-    const submitCreate = () => {
+    const openEdit = async (id, button) => {
+        setLifecycleBusy(button, true);
+        try {
+            const detail = await fetchDetail(id);
+            if (!readAvailableActions(detail).includes('EDIT')) throw new Error(L.LifecycleStateChanged);
+            editorMode = 'edit'; editorId = id;
+            editorVersion = Number(detail.version ?? detail.Version);
+            if (!Number.isInteger(editorVersion) || editorVersion < 0) throw new Error(L.ErrorConflict);
+            const form = document.getElementById('formGlobalProduct');
+            form?.classList.remove('was-validated');
+            document.getElementById('globalProductName').value = detail.globalProductName ?? detail.GlobalProductName ?? '';
+            document.getElementById('offcanvasCreateEditLabel').textContent = L.FormTitleEdit;
+            document.getElementById('btnSaveGlobalProduct').textContent = L.UpdateDraft;
+            bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasCreateEdit')).show();
+        } catch (error) {
+            if (!error?.authHandled) window.showToast?.(error.message || L.ErrorOccurred, 'error');
+        } finally { setLifecycleBusy(button, false); }
+    };
+    const submitEditor = () => {
         const form = document.getElementById('formGlobalProduct');
         const name = normalizeString(document.getElementById('globalProductName')?.value);
-        if (!form || !name || !form.checkValidity()) {
+        if (!form || !name || scalarLength(name) > 200 || !form.checkValidity()) {
             form?.classList.add('was-validated');
             window.showToast?.(L.GlobalProductNameRequired, 'error');
             return;
         }
 
+        if (editorMode === 'edit') {
+            window.showConfirm?.(L.UpdateConfirmation, async () => {
+                const button = document.getElementById('btnSaveGlobalProduct');
+                if (button) button.disabled = true;
+                try {
+                    const saved = await postLifecycle(editorId, 'EDIT', { GlobalProductName: name }, button, editorVersion);
+                    if (saved) bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasCreateEdit')).hide();
+                } finally { if (button) button.disabled = false; }
+            }, { entityName: name, type: 'primary', confirmButtonText: L.UpdateDraft });
+            return;
+        }
         window.showConfirm?.(L.CreateConfirmation, async () => {
             const button = document.getElementById('btnSaveGlobalProduct');
             if (button) button.disabled = true;
@@ -443,11 +693,14 @@ const GlobalProductsList = (function () {
 
     const initDataTable = async () => {
         if (!tableEl || !window.DtDefaults) return;
+        // Keep saved-view restoration authoritative, but overlap its Gateway trip with the
+        // first default page. The prefetched payload is consumed only when the final query
+        // is identical; a saved search/filter always performs its own exact request.
+        initialPagePrefetch = startInitialPagePrefetch();
         const savedState = await loadDefaultView();
         if (savedState) appliedFilters = savedState.filters;
 
         const extraButtons = {
-            importBtn: { text: '<i class="icon-base bx bx-import icon-sm"></i>', className: 'btn btn-icon btn-label-secondary', attr: { title: L.Import, 'aria-label': L.Import, 'data-bs-toggle': 'tooltip' }, action: () => window.showToast?.(L.ComingSoon, 'warning') },
             filterBtn: { text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>', className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative', attr: { title: L.Filter, 'aria-label': L.Filter, 'aria-controls': 'inlineFilterCollapse', 'aria-expanded': 'false', 'data-bs-toggle': 'tooltip' }, action: toggleInlineFilter },
             saveFilterBtn: {
                 text: `<i class="icon-base bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">${escapeHtml(L.SaveView)}</span>`,
@@ -465,22 +718,30 @@ const GlobalProductsList = (function () {
             }
         };
 
+        const buttons = window.DtDefaults.exportButtons(
+            canCreate ? L.AddNew : null,
+            {},
+            extraButtons,
+            { exportColumns: saveViewColumnIndexes, colvisColumns: saveViewColumnIndexes });
+        const exportCollection = buttons.find((button) => button?.extend === 'collection');
+        exportCollection?.buttons?.forEach((button) => {
+            if (!['print', 'csv', 'excel', 'pdf', 'copy'].includes(button?.extend)) return;
+            button.text = `${button.text}<small class="d-block text-muted">${escapeHtml(L.CurrentPageOnly)}</small>`;
+            button.titleAttr = L.CurrentPageOnly;
+        });
+
         const config = window.DtDefaults.create({
             processing: true,
             serverSide: true,
+            deferRender: true,
             stateSave: false,
+            pageLength: initialPageSize,
             order: savedState?.order || baseOrder,
             search: { search: savedState?.search || '' },
             colReorder: { columns: ':gt(0):not(:last-child)' },
             ajax: (data, callback) => {
-                fetch(`${endpoint}?${buildQuery(data)}`, { credentials: 'same-origin', headers: getAuthHeaders() })
-                    .then((response) => {
-                        if (response.status === 401) handleUnauthorized();
-                        if (!response.ok) return getErrorMessage(response).then((message) => Promise.reject(new Error(message)));
-                        return response.json();
-                    })
-                    .then((payload) => {
-                        const page = unwrapData(payload);
+                consumePage(buildQuery(data))
+                    .then((page) => {
                         callback({ data: page.items || page.Items || [], recordsTotal: page.totalCount || page.TotalCount || 0, recordsFiltered: page.totalCount || page.TotalCount || 0 });
                     })
                     .catch((error) => {
@@ -505,7 +766,7 @@ const GlobalProductsList = (function () {
                     render: (data, type, row) => renderActions(row)
                 }
             ],
-            buttons: window.DtDefaults.exportButtons(canCreate ? L.AddNew : null, {}, extraButtons, { exportColumns: saveViewColumnIndexes, colvisColumns: saveViewColumnIndexes }),
+            buttons,
             initComplete: function () {
                 const api = this.api();
                 mountInlineFilter();
@@ -538,16 +799,26 @@ const GlobalProductsList = (function () {
 
     const bindEvents = () => {
         bindFilterEvents();
-        document.getElementById('btnSaveGlobalProduct')?.addEventListener('click', submitCreate);
+        document.getElementById('btnSaveGlobalProduct')?.addEventListener('click', submitEditor);
         document.addEventListener('click', (event) => {
+            const toggle = event.target.closest('.js-global-product-actions-toggle');
+            if (toggle?.closest('.datatables-globalproducts')) {
+                event.preventDefault(); event.stopPropagation();
+                loadActionMenu(toggle);
+                return;
+            }
             const quickViewAction = event.target.closest('.js-quick-view');
-            const lifecycleAction = event.target.closest('.js-submit-identity, .js-retire-identity');
-            const action = quickViewAction || lifecycleAction;
+            const action = quickViewAction || event.target.closest('.js-edit-draft, .js-lifecycle-action');
             if (!action || !action.closest('.datatables-globalproducts') || action.classList.contains('disabled')) return;
             event.preventDefault();
-            if (action.classList.contains('js-submit-identity')) requestLifecycle(action.dataset.id, 'submit', action);
-            else if (action.classList.contains('js-retire-identity')) requestLifecycle(action.dataset.id, 'retire', action);
-            else populateDetails(action.dataset.id);
+            const id = action.dataset.id;
+            const code = action.dataset.action;
+            if (code === 'DETAILS') {
+                const detail = detailById.get(String(id).toLowerCase());
+                if (detail) renderDetail(detail, id);
+                else window.showToast?.(L.LifecycleStateChanged, 'warning');
+            } else if (code === 'EDIT') openEdit(id, action);
+            else requestLifecycle(id, code, action);
         });
     };
 

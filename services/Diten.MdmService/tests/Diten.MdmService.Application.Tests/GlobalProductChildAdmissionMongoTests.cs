@@ -1,4 +1,5 @@
 using Diten.MdmService.Application.Common;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.ValueObjects;
@@ -123,6 +124,74 @@ public sealed class GlobalProductChildAdmissionMongoTests : IAsyncLifetime
             Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, stored!.LifecycleStatus);
             Assert.Single(stored.ChildCreationAdmissions);
         }
+    }
+
+    [Fact]
+    public async Task Lifecycle_operation_and_child_admission_atomic_race_cannot_both_succeed()
+    {
+        var product = await SeedProductAsync();
+        var repository = Repository();
+        var operationId = Guid.NewGuid();
+        var actor = Guid.NewGuid();
+        var binding = new GlobalProductActiveLifecycleOperationBinding(
+            GlobalProductLifecycleOperationKind.Retirement, operationId, 0);
+        var audit = GlobalProductRetirementRequestAuditIntentFactory.Create(product, 0, operationId, actor,
+            ProductAuditOperation.GlobalProductRetirementRequested, "Business reason", Now);
+
+        var lifecycle = repository.AcquireLifecycleOperationAsync(product.Id, 0, binding, audit);
+        var child = repository.AcquireChildCreationAdmissionAsync(
+            product.Id, "GSKU:LIFECYCLE-RACE", "child-lifecycle-race", Now);
+        await Task.WhenAll(lifecycle, child);
+        var lifecycleResult = await lifecycle;
+        var childResult = await child;
+
+        Assert.NotEqual(lifecycleResult.Succeeded, childResult.Succeeded);
+        var stored = await repository.GetByIdAsync(product.Id);
+        Assert.NotNull(stored);
+        if (lifecycleResult.Succeeded)
+        {
+            Assert.Equal(binding, stored!.ActiveLifecycleOperation);
+            Assert.Empty(stored.ChildCreationAdmissions);
+            Assert.Equal("GLOBAL_PRODUCT_LIFECYCLE_OPERATION_ACTIVE", childResult.ErrorCode);
+        }
+        else
+        {
+            Assert.Null(stored!.ActiveLifecycleOperation);
+            Assert.Single(stored.ChildCreationAdmissions);
+            Assert.Equal("PRODUCT_CHILD_CREATION_IN_PROGRESS", lifecycleResult.ErrorCode);
+        }
+    }
+
+    [Fact]
+    public async Task Rejected_retirement_releases_binding_even_if_legacy_child_admission_drift_exists()
+    {
+        var product = await SeedProductAsync();
+        var repository = Repository();
+        var operationId = Guid.NewGuid();
+        var maker = Guid.NewGuid();
+        var binding = new GlobalProductActiveLifecycleOperationBinding(
+            GlobalProductLifecycleOperationKind.Retirement, operationId, 0);
+        var requested = GlobalProductRetirementRequestAuditIntentFactory.Create(product, 0, operationId, maker,
+            ProductAuditOperation.GlobalProductRetirementRequested, "Business reason", Now);
+        Assert.True((await repository.AcquireLifecycleOperationAsync(product.Id, 0, binding, requested)).Succeeded);
+        await _products.UpdateOneAsync(item => item.TenantId == _tenantId && item.Id == product.Id,
+            Builders<GlobalProduct>.Update.Push(item => item.ChildCreationAdmissions,
+                new ProductChildCreationAdmission
+                {
+                    CreationCommandId = "LEGACY:DRIFT", RequestFingerprint = "legacy-drift",
+                    AcquiredAtUtc = Now
+                }));
+        var rejected = GlobalProductRetirementRequestAuditIntentFactory.Create(product, 1, operationId,
+            Guid.NewGuid(), ProductAuditOperation.GlobalProductRetirementRejected, "Business reason",
+            Now.AddMinutes(1));
+
+        var result = await repository.ApplyRetirementDecisionAsync(product.Id, 1, binding, false, rejected);
+
+        Assert.True(result.Succeeded);
+        var stored = await repository.GetByIdAsync(product.Id);
+        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, stored!.LifecycleStatus);
+        Assert.Null(stored.ActiveLifecycleOperation);
+        Assert.Single(stored.ChildCreationAdmissions);
     }
 
     [Fact]

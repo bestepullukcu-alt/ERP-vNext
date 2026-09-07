@@ -31,7 +31,7 @@ public sealed class ProductAbbreviationWorkItemActionTests
         Assert.Equal(first, replay);
         Assert.NotEqual(first, changedReason);
         Assert.NotEqual(emptyReason, nullReason);
-        Assert.StartsWith("abb-wc:2ef72e8778d94856bd03b854103a4ba4:reject:v0:", first, StringComparison.Ordinal);
+        Assert.StartsWith("abb-wc:2ef72e8778d94856bd03b854103a4ba4:allocation:reject:v0:", first, StringComparison.Ordinal);
         Assert.True(first.Length <= 128);
     }
 
@@ -86,7 +86,7 @@ public sealed class ProductAbbreviationWorkItemActionTests
         Assert.True(result.IsSuccessful);
         Assert.IsType(expectedCommandType, dispatched);
         var key = (string)expectedCommandType.GetProperty("IdempotencyKey")!.GetValue(dispatched)!;
-        Assert.StartsWith($"abb-wc:{itemId:N}:{actionCode}:v0:", key, StringComparison.Ordinal);
+        Assert.StartsWith($"abb-wc:{itemId:N}:allocation:{actionCode}:v0:", key, StringComparison.Ordinal);
         Assert.True(key.Length <= 128);
         if (dispatched is ApproveProductAbbreviationAllocationCommand approve)
         {
@@ -95,29 +95,80 @@ public sealed class ProductAbbreviationWorkItemActionTests
     }
 
     [Fact]
-    public async Task Adapter_rejects_correction_source_before_dispatch()
+    public async Task Adapter_dispatches_correction_approval_with_server_read_former_version()
     {
         var tenantId = Guid.NewGuid();
         var itemId = Guid.NewGuid();
+        var formerId = Guid.NewGuid();
+        var former = new ProductAbbreviationRegisterEntry
+        {
+            Id = formerId,
+            GlobalProductId = Guid.NewGuid(),
+            NormalizedAbbreviation = "OLD",
+            RequestedByCanonicalSubjectId = "former-maker",
+            LifecycleStatus = ProductAbbreviationLifecycleStatus.ACTIVE,
+            Version = 7
+        };
         var entry = new ProductAbbreviationRegisterEntry
         {
             Id = itemId,
-            GlobalProductId = Guid.NewGuid(),
+            GlobalProductId = former.GlobalProductId,
             NormalizedAbbreviation = "ABC",
             RequestedByCanonicalSubjectId = Guid.NewGuid().ToString("D"),
             LifecycleStatus = ProductAbbreviationLifecycleStatus.REQUESTED,
-            ReplacesEntryId = Guid.NewGuid(),
+            ReplacesEntryId = formerId,
             Version = 0
         };
-        var mediator = Stub<IMediator>((method, _) => throw new InvalidOperationException(method.Name));
+        object? dispatched = null;
+        var mediator = Stub<IMediator>((method, args) =>
+        {
+            dispatched = args![0];
+            return Task.FromResult(Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>.Success(
+                new(itemId, entry.GlobalProductId, "ABC", ProductAbbreviationLifecycleStatus.ACTIVE, 1, formerId, false)));
+        });
 
-        var result = await Handler(mediator, tenantId, entry).Handle(
+        var result = await Handler(mediator, tenantId, entry, former).Handle(
             new(itemId, "approve", "mdm-product-abbreviations", 0, null, null, false),
             CancellationToken.None);
 
-        Assert.False(result.IsSuccessful);
-        Assert.Equal(409, result.StatusCode);
-        Assert.Equal("CONCURRENCY_CONFLICT", result.ReasonCode);
+        Assert.True(result.IsSuccessful);
+        var command = Assert.IsType<ApproveProductAbbreviationAllocationCommand>(dispatched);
+        Assert.Equal(7, command.ExpectedFormerVersion);
+        Assert.Contains(":correction:approve:v0:", command.IdempotencyKey, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("approve", typeof(ApproveProductAbbreviationRetirementCommand))]
+    [InlineData("reject", typeof(RejectProductAbbreviationRetirementCommand))]
+    public async Task Adapter_dispatches_retirement_decision_with_server_owned_request_id(
+        string action,
+        Type expectedType)
+    {
+        var tenantId = Guid.NewGuid();
+        var entry = new ProductAbbreviationRegisterEntry
+        {
+            Id = Guid.NewGuid(), GlobalProductId = Guid.NewGuid(), NormalizedAbbreviation = "ABC",
+            RequestedByCanonicalSubjectId = "original-maker", LifecycleStatus = ProductAbbreviationLifecycleStatus.ACTIVE,
+            RetirementRequestId = "retirement-request-1", RetirementRequestedByCanonicalSubjectId = "retirement-maker",
+            RetirementRequestedAtUtc = DateTimeOffset.UtcNow, Version = 4
+        };
+        object? dispatched = null;
+        var mediator = Stub<IMediator>((method, args) =>
+        {
+            dispatched = args![0];
+            return Task.FromResult(Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>.Success(
+                new(entry.Id, entry.GlobalProductId, "ABC", ProductAbbreviationLifecycleStatus.ACTIVE, 5, null, false)));
+        });
+
+        var result = await Handler(mediator, tenantId, entry).Handle(
+            new(entry.Id, action, "mdm-product-abbreviations", 4, action == "reject" ? "required" : null, null, false),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.IsType(expectedType, dispatched);
+        var key = (string)expectedType.GetProperty("IdempotencyKey")!.GetValue(dispatched)!;
+        Assert.Contains($":retirement:{action}:v4:", key, StringComparison.Ordinal);
+        Assert.Equal("retirement-request-1", expectedType.GetProperty("RetirementRequestId")!.GetValue(dispatched));
     }
 
     [Theory]
@@ -198,7 +249,7 @@ public sealed class ProductAbbreviationWorkItemActionTests
     private static DispatchProductAbbreviationWorkItemActionHandler Handler(
         IMediator mediator,
         Guid tenantId,
-        ProductAbbreviationRegisterEntry entry)
+        params ProductAbbreviationRegisterEntry[] entries)
     {
         var tenant = new TenantContext();
         tenant.SetTenant(tenantId);
@@ -219,7 +270,7 @@ public sealed class ProductAbbreviationWorkItemActionTests
             {
                 nameof(IProductAbbreviationRegisterRepository.GetByIdAsync)
                     => Task.FromResult<ProductAbbreviationRegisterEntry?>(
-                        (Guid)args![0]! == entry.Id ? entry : null),
+                        entries.SingleOrDefault(entry => (Guid)args![0]! == entry.Id)),
                 _ => throw new InvalidOperationException(method.Name)
             }),
             Stub<IGlobalProductRepository>((method, _) => throw new InvalidOperationException(method.Name)),

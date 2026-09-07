@@ -35,15 +35,15 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         var lskus = Assert.Single(Manifest.Pages, page => page.PageCode == "LSKUS");
         Assert.Equal("/MasterDataManagement/Lskus", lskus.RoutePath);
         Assert.Equal("mdm.lskus.read", lskus.RequiredPermission);
-        Assert.False(lskus.IsNavigationVisible);
+        Assert.True(lskus.IsNavigationVisible);
         var productAbbreviations = Assert.Single(Manifest.Pages, page => page.PageCode == "PRODUCT_ABBREVIATIONS");
         Assert.Equal("/MDM/ProductAbbreviationRegister", productAbbreviations.RoutePath);
         Assert.Equal("mdm.product-abbreviations.read", productAbbreviations.RequiredPermission);
-        Assert.False(productAbbreviations.IsNavigationVisible);
+        Assert.True(productAbbreviations.IsNavigationVisible);
         var productScopes = Assert.Single(Manifest.Pages, page => page.PageCode == "PRODUCT_LEGAL_ENTITY_SCOPES");
         Assert.Equal("/MasterDataManagement/ProductLegalEntityScopes", productScopes.RoutePath);
         Assert.Equal("mdm.product-legal-entity-scopes.read", productScopes.RequiredPermission);
-        Assert.False(productScopes.IsNavigationVisible);
+        Assert.True(productScopes.IsNavigationVisible);
     }
 
     [Fact]
@@ -73,16 +73,26 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.finished-goods.submit",
                 "mdm.global-products.create",
                 "mdm.global-products.read",
+                "mdm.global-products.request-correction",
+                "mdm.global-products.request-retirement",
                 "mdm.global-products.retire",
                 "mdm.global-products.submit",
+                "mdm.global-products.update",
+                "mdm.global-products.withdraw",
                 "mdm.gskus.create",
                 "mdm.gskus.read",
+                "mdm.gskus.request-correction",
+                "mdm.gskus.request-retirement",
                 "mdm.gskus.retire",
                 "mdm.gskus.submit",
+                "mdm.gskus.update",
+                "mdm.gskus.withdraw",
                 "mdm.lskus.create",
                 "mdm.lskus.read",
+                "mdm.lskus.request-retirement",
                 "mdm.lskus.retire",
                 "mdm.lskus.submit",
+                "mdm.lskus.withdraw",
                 "mdm.product-abbreviations.approve",
                 "mdm.product-abbreviations.audit",
                 "mdm.product-abbreviations.cancel",
@@ -100,7 +110,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.product-legal-entity-scopes.replace"
             },
             declared.OrderBy(value => value, StringComparer.Ordinal));
-        Assert.Equal(31, declared.Count);
+        Assert.Equal(41, declared.Count);
         var nonControllerPermissions = new HashSet<string>(StringComparer.Ordinal)
         {
             "mdm.product-legal-entity-scope-rollout.activate",
@@ -119,8 +129,12 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         foreach (var page in productPages)
         {
             var expectedActions = page.PageCode == "GLOBAL_PRODUCTS"
-                ? new[] { "ADD_NEW", "RECOVER_ORPHANED_LIFECYCLE_OPERATION", "RETIRE", "SUBMIT", "VIEW_DETAILS" }
-                : new[] { "ADD_NEW", "RETIRE", "SUBMIT", "VIEW_DETAILS" };
+                ? new[] { "ADD_NEW", "EDIT", "RECOVER_ORPHANED_LIFECYCLE_OPERATION", "REQUEST_CORRECTION", "REQUEST_RETIREMENT", "RETIRE", "SUBMIT", "VIEW_DETAILS", "WITHDRAW_APPROVAL" }
+                : page.PageCode == "GSKUS"
+                    ? new[] { "ADD_NEW", "EDIT", "REQUEST_CORRECTION", "REQUEST_RETIREMENT", "RETIRE", "SUBMIT", "VIEW_DETAILS", "WITHDRAW_APPROVAL" }
+                    : page.PageCode == "LSKUS"
+                        ? new[] { "ADD_NEW", "REQUEST_RETIREMENT", "RETIRE", "SUBMIT", "VIEW_DETAILS", "WITHDRAW_APPROVAL" }
+                        : new[] { "ADD_NEW", "RETIRE", "SUBMIT", "VIEW_DETAILS" };
             Assert.Equal(expectedActions.Length, page.Actions.Count);
             Assert.Equal(
                 expectedActions,
@@ -147,20 +161,32 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     }
 
     [Fact]
-    public void Global_product_declares_submit_and_direct_retire_without_approve_or_reject()
+    public void Global_product_declares_request_retirement_and_system_only_direct_retire_without_approve_or_reject()
     {
         var page = Assert.Single(Manifest.Pages, item => item.PageCode == "GLOBAL_PRODUCTS");
         var submit = Assert.Single(page.Actions, action => action.ActionCode == "SUBMIT");
         var retire = Assert.Single(page.Actions, action => action.ActionCode == "RETIRE");
+        var requestRetirement = Assert.Single(page.Actions,
+            action => action.ActionCode == "REQUEST_RETIREMENT");
+        var edit = Assert.Single(page.Actions, action => action.ActionCode == "EDIT");
 
         Assert.Equal("mdm.global-products.submit", submit.PermissionKey);
         Assert.True(submit.IsRowAction);
         Assert.False(submit.IsToolbarAction);
         Assert.False(submit.IsDangerous);
         Assert.Equal("mdm.global-products.retire", retire.PermissionKey);
-        Assert.True(retire.IsRowAction);
+        Assert.False(retire.IsRowAction);
         Assert.False(retire.IsToolbarAction);
         Assert.True(retire.IsDangerous);
+        Assert.Equal("System", retire.ActionType);
+        Assert.Equal("mdm.global-products.request-retirement", requestRetirement.PermissionKey);
+        Assert.True(requestRetirement.IsRowAction);
+        Assert.False(requestRetirement.IsToolbarAction);
+        Assert.True(requestRetirement.IsDangerous);
+        Assert.Equal("mdm.global-products.update", edit.PermissionKey);
+        Assert.True(edit.IsRowAction);
+        Assert.False(edit.IsToolbarAction);
+        Assert.False(edit.IsDangerous);
         Assert.DoesNotContain(page.Actions, action => action.ActionCode is "APPROVE" or "REJECT");
         Assert.True(page.IsNavigationVisible);
     }
@@ -187,26 +213,33 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     }
 
     [Fact]
-    public void Gsku_declares_submit_and_direct_retire_without_approve_reject_or_navigation_change()
+    public void Gsku_declares_edit_withdraw_and_system_direct_retire_without_approve_reject_or_navigation_change()
     {
         var page = Assert.Single(Manifest.Pages, item => item.PageCode == "GSKUS");
         var submit = Assert.Single(page.Actions, action => action.ActionCode == "SUBMIT");
         var retire = Assert.Single(page.Actions, action => action.ActionCode == "RETIRE");
+        var edit = Assert.Single(page.Actions, action => action.ActionCode == "EDIT");
+        var withdraw = Assert.Single(page.Actions, action => action.ActionCode == "WITHDRAW_APPROVAL");
 
         Assert.Equal("mdm.gskus.submit", submit.PermissionKey);
         Assert.True(submit.IsRowAction);
         Assert.False(submit.IsToolbarAction);
         Assert.False(submit.IsDangerous);
         Assert.Equal("mdm.gskus.retire", retire.PermissionKey);
-        Assert.True(retire.IsRowAction);
+        Assert.False(retire.IsRowAction);
         Assert.False(retire.IsToolbarAction);
         Assert.True(retire.IsDangerous);
+        Assert.Equal("System", retire.ActionType);
+        Assert.Equal("mdm.gskus.update", edit.PermissionKey);
+        Assert.True(edit.IsRowAction);
+        Assert.Equal("mdm.gskus.withdraw", withdraw.PermissionKey);
+        Assert.True(withdraw.IsRowAction);
         Assert.DoesNotContain(page.Actions, action => action.ActionCode is "APPROVE" or "REJECT");
         Assert.True(page.IsNavigationVisible);
     }
 
     [Theory]
-    [InlineData("LSKUS", "mdm.lskus", false)]
+    [InlineData("LSKUS", "mdm.lskus", true)]
     [InlineData("FINISHED_GOODS", "mdm.finished-goods", false)]
     public void Lsku_and_finished_good_activate_lifecycle_together_without_navigation_change(
         string pageCode,
@@ -222,18 +255,27 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.False(submit.IsToolbarAction);
         Assert.False(submit.IsDangerous);
         Assert.Equal(permissionPrefix + ".retire", retire.PermissionKey);
-        Assert.True(retire.IsRowAction);
+        Assert.Equal(pageCode != "LSKUS", retire.IsRowAction);
         Assert.False(retire.IsToolbarAction);
         Assert.True(retire.IsDangerous);
+        if (pageCode == "LSKUS")
+        {
+            var requestRetirement = Assert.Single(page.Actions,
+                action => action.ActionCode == "REQUEST_RETIREMENT");
+            Assert.Equal("mdm.lskus.request-retirement", requestRetirement.PermissionKey);
+            Assert.True(requestRetirement.IsRowAction);
+            Assert.True(requestRetirement.IsDangerous);
+            Assert.Equal("System", retire.ActionType);
+        }
         Assert.DoesNotContain(page.Actions, action => action.ActionCode is "APPROVE" or "REJECT");
         Assert.Equal(expectedNavigationVisible, page.IsNavigationVisible);
     }
 
     [Fact]
-    public void Product_scope_page_is_navigation_hidden_and_declares_exact_six_permissions()
+    public void Product_scope_page_is_navigation_visible_and_declares_exact_six_permissions()
     {
         var page = Assert.Single(Manifest.Pages, item => item.PageCode == "PRODUCT_LEGAL_ENTITY_SCOPES");
-        Assert.False(page.IsNavigationVisible);
+        Assert.True(page.IsNavigationVisible);
         Assert.Equal(6, page.Actions.Count);
         Assert.Equal(
             [
@@ -253,6 +295,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     public void Product_abbreviations_page_declares_exact_eight_permission_actions_and_no_forbidden_alias()
     {
         var page = Assert.Single(Manifest.Pages, item => item.PageCode == "PRODUCT_ABBREVIATIONS");
+        Assert.True(page.IsNavigationVisible);
         Assert.Equal(8, page.Actions.Count);
         Assert.Equal(
             ["APPROVE", "CANCEL", "CORRECT", "REJECT", "REQUEST", "RETIRE", "VIEW_AUDIT", "VIEW_DETAILS"],

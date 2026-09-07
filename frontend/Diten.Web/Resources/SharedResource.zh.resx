@@ -618,6 +618,15 @@
   <data name="Nav.Page.GSKUS" xml:space="preserve">
     <value>GSKU</value>
   </data>
+  <data name="Nav.Page.LSKUS" xml:space="preserve">
+    <value>本地 SKU</value>
+  </data>
+  <data name="Nav.Page.PRODUCTABBREVIATIONS" xml:space="preserve">
+    <value>产品缩写</value>
+  </data>
+  <data name="Nav.Page.PRODUCTLEGALENTITYSCOPES" xml:space="preserve">
+    <value>产品法人实体范围</value>
+  </data>
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>任务类型</value>
   </data>

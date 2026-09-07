@@ -619,6 +619,15 @@
   <data name="Nav.Page.GSKUS" xml:space="preserve">
     <value>GSKU</value>
   </data>
+  <data name="Nav.Page.LSKUS" xml:space="preserve">
+    <value>SKU locales</value>
+  </data>
+  <data name="Nav.Page.PRODUCTABBREVIATIONS" xml:space="preserve">
+    <value>Abreviaturas de productos</value>
+  </data>
+  <data name="Nav.Page.PRODUCTLEGALENTITYSCOPES" xml:space="preserve">
+    <value>Ámbitos de entidades jurídicas de productos</value>
+  </data>
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>Tipos de tarea</value>
   </data>

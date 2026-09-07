@@ -14,6 +14,8 @@ public sealed class LskuAuthorizationTests
     [InlineData(nameof(LskusController.GetCreateOptions), "mdm.lskus.create")]
     [InlineData(nameof(LskusController.CreateDraft), "mdm.lskus.create")]
     [InlineData(nameof(LskusController.SubmitIdentity), "mdm.lskus.submit")]
+    [InlineData(nameof(LskusController.WithdrawIdentityApproval), "mdm.lskus.withdraw")]
+    [InlineData(nameof(LskusController.RequestRetirement), "mdm.lskus.request-retirement")]
     [InlineData(nameof(LskusController.RetireIdentity), "mdm.lskus.retire")]
     public void Every_endpoint_demands_the_exact_permission(string methodName, string permission)
     {
@@ -36,8 +38,10 @@ public sealed class LskuAuthorizationTests
         Assert.Equal([
                 "Permission:mdm.lskus.create",
                 "Permission:mdm.lskus.read",
+                "Permission:mdm.lskus.request-retirement",
                 "Permission:mdm.lskus.retire",
-                "Permission:mdm.lskus.submit"
+                "Permission:mdm.lskus.submit",
+                "Permission:mdm.lskus.withdraw"
             ],
             policies.OrderBy(policy => policy, StringComparer.Ordinal));
     }

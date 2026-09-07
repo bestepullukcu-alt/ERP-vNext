@@ -58,6 +58,22 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
         operation.DecisionInstanceStatus = null;
         operation.DecisionTransitionSequence = null;
         operation.DecisionAtUtcTicksV1 = null;
+        operation.WithdrawalCommandId = null;
+        operation.WithdrawalFingerprint = null;
+        operation.WithdrawalRequesterSubjectId = null;
+        operation.WithdrawalExpectedProductVersion = null;
+        operation.WithdrawalReasonCode = null;
+        operation.WithdrawalComment = null;
+        operation.WithdrawalExpectedWorkflowInstanceVersion = null;
+        operation.WithdrawalExpectedApprovalTaskVersion = null;
+        operation.WithdrawalTransitionLogId = null;
+        operation.WithdrawalObservedAtUtcTicksV1 = null;
+        operation.WithdrawalTransitionSequence = null;
+        operation.WithdrawalResultWorkflowInstanceVersion = null;
+        operation.WithdrawalResultApprovalTaskVersion = null;
+        operation.WithdrawalTaskStatus = null;
+        operation.WithdrawalInstanceStatus = null;
+        operation.WithdrawalObjectRef = null;
         operation.NextAttemptAtUtcTicksV1 = null;
         operation.LastFailureCode = null;
         operation.LeaseOwner = null;
@@ -294,6 +310,22 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
         if (mutation.DecisionInstanceStatus is not null) update = update.Set(item => item.DecisionInstanceStatus, mutation.DecisionInstanceStatus);
         if (mutation.DecisionTransitionSequence.HasValue) update = update.Set(item => item.DecisionTransitionSequence, mutation.DecisionTransitionSequence);
         if (mutation.DecisionAtUtcTicksV1.HasValue) update = update.Set(item => item.DecisionAtUtcTicksV1, mutation.DecisionAtUtcTicksV1);
+        if (mutation.WithdrawalCommandId.HasValue) update = update.Set(item => item.WithdrawalCommandId, mutation.WithdrawalCommandId);
+        if (mutation.WithdrawalFingerprint is not null) update = update.Set(item => item.WithdrawalFingerprint, mutation.WithdrawalFingerprint);
+        if (mutation.WithdrawalRequesterSubjectId.HasValue) update = update.Set(item => item.WithdrawalRequesterSubjectId, mutation.WithdrawalRequesterSubjectId);
+        if (mutation.WithdrawalExpectedProductVersion.HasValue) update = update.Set(item => item.WithdrawalExpectedProductVersion, mutation.WithdrawalExpectedProductVersion);
+        if (mutation.WithdrawalReasonCode is not null) update = update.Set(item => item.WithdrawalReasonCode, mutation.WithdrawalReasonCode);
+        if (mutation.WithdrawalComment is not null) update = update.Set(item => item.WithdrawalComment, mutation.WithdrawalComment);
+        if (mutation.WithdrawalExpectedWorkflowInstanceVersion.HasValue) update = update.Set(item => item.WithdrawalExpectedWorkflowInstanceVersion, mutation.WithdrawalExpectedWorkflowInstanceVersion);
+        if (mutation.WithdrawalExpectedApprovalTaskVersion.HasValue) update = update.Set(item => item.WithdrawalExpectedApprovalTaskVersion, mutation.WithdrawalExpectedApprovalTaskVersion);
+        if (mutation.WithdrawalTransitionLogId.HasValue) update = update.Set(item => item.WithdrawalTransitionLogId, mutation.WithdrawalTransitionLogId);
+        if (mutation.WithdrawalObservedAtUtcTicksV1.HasValue) update = update.Set(item => item.WithdrawalObservedAtUtcTicksV1, mutation.WithdrawalObservedAtUtcTicksV1);
+        if (mutation.WithdrawalTransitionSequence.HasValue) update = update.Set(item => item.WithdrawalTransitionSequence, mutation.WithdrawalTransitionSequence);
+        if (mutation.WithdrawalResultWorkflowInstanceVersion.HasValue) update = update.Set(item => item.WithdrawalResultWorkflowInstanceVersion, mutation.WithdrawalResultWorkflowInstanceVersion);
+        if (mutation.WithdrawalResultApprovalTaskVersion.HasValue) update = update.Set(item => item.WithdrawalResultApprovalTaskVersion, mutation.WithdrawalResultApprovalTaskVersion);
+        if (mutation.WithdrawalTaskStatus is not null) update = update.Set(item => item.WithdrawalTaskStatus, mutation.WithdrawalTaskStatus);
+        if (mutation.WithdrawalInstanceStatus is not null) update = update.Set(item => item.WithdrawalInstanceStatus, mutation.WithdrawalInstanceStatus);
+        if (mutation.WithdrawalObjectRef is not null) update = update.Set(item => item.WithdrawalObjectRef, mutation.WithdrawalObjectRef);
         if (mutation.ReleaseLease)
         {
             update = update.Set(item => item.LeaseOwner, null).Set(item => item.LeaseUntilUtcTicksV1, null);
@@ -361,6 +393,34 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
                 GlobalProductIdentityWorkflowCheckpoint.DecisionApplied
                 or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
             (GlobalProductIdentityWorkflowCheckpoint.DecisionApplied,
+                GlobalProductIdentityWorkflowCheckpoint.Completed
+                or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+            (GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision,
+                GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested) => true,
+            (GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested,
+                GlobalProductIdentityWorkflowCheckpoint.WithdrawalPreflightObserved
+                or GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision
+                or GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay
+                or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+            (GlobalProductIdentityWorkflowCheckpoint.WithdrawalPreflightObserved,
+                GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown
+                or GlobalProductIdentityWorkflowCheckpoint.WithdrawalObserved
+                or GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision
+                or GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay
+                or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+            (GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown,
+                GlobalProductIdentityWorkflowCheckpoint.WithdrawalObserved
+                or GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision
+                or GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay
+                or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+            (GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
+                GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested
+                or GlobalProductIdentityWorkflowCheckpoint.WithdrawalPreflightObserved
+                or GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown) => true,
+            (GlobalProductIdentityWorkflowCheckpoint.WithdrawalObserved,
+                GlobalProductIdentityWorkflowCheckpoint.WithdrawalApplied
+                or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+            (GlobalProductIdentityWorkflowCheckpoint.WithdrawalApplied,
                 GlobalProductIdentityWorkflowCheckpoint.Completed
                 or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
             _ => false

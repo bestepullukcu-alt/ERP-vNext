@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Diten.MdmService.Application.Common;
+using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Contracts.ReferenceData;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
@@ -8,6 +9,9 @@ using Diten.MdmService.Application.Features.ProductItemSkuMaster.Validators;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
+using Diten.MdmService.Domain.ValueObjects;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
+using System.Reflection;
 using Xunit;
 
 namespace Diten.MdmService.Application.Tests;
@@ -21,7 +25,8 @@ public sealed class LskuRegisterQueryTests
         {
             PageNumber = 0,
             PageSize = 101,
-            Search = new string('X', 101)
+            Search = new string('X', 101),
+            LifecycleStatus = (ProductIdentityLifecycleStatus)999
         });
         var options = new GetLskuCreateOptionsValidator().Validate(new GetLskuCreateOptionsQuery
         {
@@ -30,7 +35,7 @@ public sealed class LskuRegisterQueryTests
             Search = new string('X', 101)
         });
 
-        Assert.Equal(3, list.Errors.Count);
+        Assert.Equal(4, list.Errors.Count);
         Assert.Equal(3, options.Errors.Count);
     }
 
@@ -79,18 +84,63 @@ public sealed class LskuRegisterQueryTests
         {
             PageNumber = 2,
             PageSize = 20,
-            Search = " ls- "
+            Search = " ls- ",
+            LifecycleStatus = ProductIdentityLifecycleStatus.Draft
         }, CancellationToken.None);
 
         Assert.True(response.IsSuccessful);
         Assert.Equal(1, lskus.PageCalls);
-        Assert.Equal((2, 20, "LS-"), lskus.LastPageRequest);
+        Assert.Equal((2, 20, "LS-", (ProductIdentityLifecycleStatus?)ProductIdentityLifecycleStatus.Draft), lskus.LastPageRequest);
         Assert.Equal(1, gskus.BatchCalls);
         Assert.Equal(2, response.Data!.Items.Count);
         Assert.All(response.Data.Items, x => Assert.Equal("GS-001", x.GskuCanonicalCode));
         Assert.Equal(
-            ["Id", "CanonicalCode", "GskuId", "GskuCanonicalCode", "MarketCode", "LifecycleStatus", "Version", "CreatedAt", "UpdatedAt"],
+            ["Id", "CanonicalCode", "GskuId", "GskuCanonicalCode", "MarketCode", "LifecycleStatus", "Version", "CreatedAt", "UpdatedAt", "AvailableActions"],
             typeof(ProductItemSkuMasterModels.LskuListItemDto).GetProperties().Select(x => x.Name));
+    }
+
+    [Fact]
+    public void Detail_actions_are_server_owned_ordered_and_maker_only()
+    {
+        var maker = Guid.NewGuid();
+        var lsku = new Lsku { LifecycleStatus = ProductIdentityLifecycleStatus.Draft };
+        Assert.Equal(["DETAILS", "SUBMIT"], Actions(lsku,
+            new Actor(maker, LskuIdentityLifecyclePermissions.Submit)));
+        Assert.Equal(["DETAILS"], Actions(lsku, new Actor(maker)));
+
+        lsku.LifecycleStatus = ProductIdentityLifecycleStatus.PendingIdentityApproval;
+        lsku.IdentityWorkflowBinding = new ProductIdentityWorkflowBinding { SubmitterSubjectId = maker };
+        Assert.Equal(["DETAILS", "WITHDRAW_APPROVAL"], Actions(lsku,
+            new Actor(maker, LskuIdentityLifecyclePermissions.Withdraw)));
+        Assert.Equal(["DETAILS"], Actions(lsku,
+            new Actor(Guid.NewGuid(), LskuIdentityLifecyclePermissions.Withdraw)));
+        Assert.Equal(["DETAILS"], Actions(lsku,
+            new Actor(null, LskuIdentityLifecyclePermissions.Withdraw)));
+
+        lsku.LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved;
+        Assert.Equal(["DETAILS", "REQUEST_RETIREMENT"], Actions(lsku, new Actor(maker,
+            LskuRetirementRequestPermissions.Request)));
+        lsku.ActiveLifecycleOperation = new(LskuLifecycleOperationKind.Retirement, Guid.NewGuid(), 0);
+        Assert.Equal(["DETAILS"], Actions(lsku, new Actor(maker,
+            LskuRetirementRequestPermissions.Request)));
+    }
+
+    private static IReadOnlyList<string> Actions(Lsku lsku, IProductIdentityLifecycleActorContext actor) =>
+        Assert.IsAssignableFrom<IReadOnlyList<string>>(
+            typeof(GetLskuByIdHandler)
+                .GetMethod("BuildAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
+                .Invoke(null, [lsku, actor]));
+
+    private sealed class Actor(Guid? subjectId, params string[] permissions)
+        : IProductIdentityLifecycleActorContext
+    {
+        public bool TryResolveCanonicalHumanSubject(out Guid resolved)
+        {
+            resolved = subjectId ?? Guid.Empty;
+            return subjectId.HasValue;
+        }
+
+        public bool HasPermission(string permission) => permissions.Contains(permission, StringComparer.Ordinal);
     }
 
     [Fact]
@@ -237,15 +287,15 @@ public sealed class LskuRegisterQueryTests
     private sealed class LskuRepositoryStub(params Lsku[] items) : ILskuRepository
     {
         public int PageCalls { get; private set; }
-        public (int Page, int Size, string? Search) LastPageRequest { get; private set; }
+        public (int Page, int Size, string? Search, ProductIdentityLifecycleStatus? LifecycleStatus) LastPageRequest { get; private set; }
 
         public Task<Lsku?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
             Task.FromResult(items.SingleOrDefault(x => x.Id == id));
 
-        public Task<LskuPage> GetPageAsync(int page, int size, string? search, CancellationToken ct = default)
+        public Task<LskuPage> GetPageAsync(int page, int size, string? search, ProductIdentityLifecycleStatus? lifecycleStatus, CancellationToken ct = default)
         {
             PageCalls++;
-            LastPageRequest = (page, size, search);
+            LastPageRequest = (page, size, search, lifecycleStatus);
             return Task.FromResult(new LskuPage(items, items.Length));
         }
 

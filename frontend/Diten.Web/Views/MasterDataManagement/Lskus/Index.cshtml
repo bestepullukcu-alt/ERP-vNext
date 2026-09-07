@@ -6,18 +6,17 @@
     Layout = "_LayoutTenantShell";
     var canCreate = ViewData["CanCreateLsku"] as bool? == true;
     var canSubmit = ViewData["CanSubmitLsku"] as bool? == true;
-    var canRetire = ViewData["CanRetireLsku"] as bool? == true;
+    var canWithdraw = ViewData["CanWithdrawLsku"] as bool? == true;
+    var canRequestRetirement = ViewData["CanRequestRetirementLsku"] as bool? == true;
 }
 @* <partial name="_Filter" /> *@
 <partial name="~/Views/MasterDataManagement/Lskus/_Filter.cshtml" />
 <div class="mb-3"
-     data-can-create="@canCreate.ToString().ToLowerInvariant()"
-     data-can-submit="@canSubmit.ToString().ToLowerInvariant()"
-     data-can-retire="@canRetire.ToString().ToLowerInvariant()">
+     data-can-create="@canCreate.ToString().ToLowerInvariant()">
     <h5>@Localizer["Title"]</h5>
     <p class="text-muted">@Localizer["PageDescription"]</p>
 </div>
-@if (canSubmit || canRetire)
+@if (canSubmit || canWithdraw || canRequestRetirement)
 {
     <form id="lskuLifecycleToken" class="d-none" data-no-tracker>
         @Html.AntiForgeryToken()

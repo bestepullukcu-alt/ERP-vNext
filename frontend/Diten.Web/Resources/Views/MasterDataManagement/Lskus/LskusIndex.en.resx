@@ -52,4 +52,12 @@
   <data name="ErrorUnauthorized" xml:space="preserve"><value>Your session has expired. Please sign in again.</value></data>
   <data name="ErrorServiceUnavailable" xml:space="preserve"><value>The lifecycle service is unavailable. Try again later.</value></data>
   <data name="ErrorTimeout" xml:space="preserve"><value>The lifecycle request timed out. Try again.</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>Withdraw Approval</value></data>
+  <data name="WithdrawConfirmation" xml:space="preserve"><value>Withdraw the approval request?</value></data>
+  <data name="WithdrawPending" xml:space="preserve"><value>Withdrawal is still being processed.</value></data>
+  <data name="WithdrawSuccess" xml:space="preserve"><value>Approval request withdrawn.</value></data>
+  <data name="RequestRetirement" xml:space="preserve"><value>Request Retirement</value></data>
+  <data name="RetirementRequestConfirmation" xml:space="preserve"><value>Submit a retirement request?</value></data>
+  <data name="RetirementRequestPending" xml:space="preserve"><value>Retirement request is awaiting a decision.</value></data>
+  <data name="RetirementRequestSuccess" xml:space="preserve"><value>Retirement request submitted.</value></data>
 </root>

@@ -1,4 +1,5 @@
 using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.ValueObjects;
 
 namespace Diten.MdmService.Domain.Repositories;
 
@@ -30,4 +31,14 @@ public interface ILskuIdentityWorkflowOperationRepository
         LskuIdentityWorkflowClaim claim,
         LskuIdentityWorkflowCheckpointMutation mutation,
         CancellationToken cancellationToken = default);
+
+    Task<LskuIdentityWithdrawalWriteResult> ApplyWithdrawalAsync(
+        LskuIdentityWorkflowClaim claim,
+        LskuIdentityWorkflowOperation operation,
+        ProductIdentityWorkflowCancellationEvidence cancellationEvidence,
+        LocalAuditIntent auditIntent,
+        long updatedAtUtcTicks,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult(new LskuIdentityWithdrawalWriteResult(
+            false, false, null, "LSKU_IDENTITY_WITHDRAWAL_NOT_IMPLEMENTED"));
 }

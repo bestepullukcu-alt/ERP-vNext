@@ -20,7 +20,10 @@ namespace Diten.Web.Controllers;
 public sealed class GlobalProductsController : Controller
 {
     private const string SubmitPermission = "mdm.global-products.submit";
-    private const string RetirePermission = "mdm.global-products.retire";
+    private const string UpdatePermission = "mdm.global-products.update";
+    private const string WithdrawPermission = "mdm.global-products.withdraw";
+    private const string RequestCorrectionPermission = "mdm.global-products.request-correction";
+    private const string RequestRetirementPermission = "mdm.global-products.request-retirement";
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
@@ -68,7 +71,9 @@ public sealed class GlobalProductsController : Controller
         CancellationToken cancellationToken)
     {
         model.GlobalProductName = model.GlobalProductName?.Trim() ?? string.Empty;
-        if (!ModelState.IsValid || string.IsNullOrWhiteSpace(model.GlobalProductName))
+        if (!await HasOnlyFormFieldsAsync("GlobalProductName")
+            || string.IsNullOrWhiteSpace(model.GlobalProductName)
+            || model.GlobalProductName.EnumerateRunes().Count() > 200)
         {
             return BadRequest(new
             {
@@ -126,67 +131,202 @@ public sealed class GlobalProductsController : Controller
         var operationId = CreateLifecycleOperationId(
             tenantId, actor, "GlobalProduct", "submit", id, expectedVersion.Value, string.Empty);
         return await ProxyLifecycleAsync(
+            HttpMethod.Post,
             $"{_gatewayUrl}/api/global-products/{id:D}/submit",
             JsonContent.Create(new { expectedVersion = expectedVersion.Value }, options: _jsonOptions),
             operationId,
             new HashSet<int> { StatusCodes.Status200OK, StatusCodes.Status202Accepted },
+            LifecycleMutationKind.Submit,
+            id,
             cancellationToken);
     }
 
-    [HttpPost("api/{id:guid}/retire")]
+    [HttpPut("api/{id:guid}")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> RetireLifecycle(
+    public async Task<IActionResult> UpdateDraft(
         Guid id,
         [FromForm] int? expectedVersion,
-        [FromForm] string? reasonCode,
+        [FromForm] string? globalProductName,
         CancellationToken cancellationToken)
     {
-        if (!PermissionClaims.HasPermission(User, RetirePermission))
+        globalProductName = globalProductName?.Trim();
+        if (!PermissionClaims.HasPermission(User, UpdatePermission))
             return LifecycleFailure(StatusCodes.Status403Forbidden);
-
-        reasonCode = reasonCode?.Trim();
-        if (id == Guid.Empty || expectedVersion is null or < 0 || string.IsNullOrWhiteSpace(reasonCode)
-            || reasonCode.Length > 128 || !await HasOnlyFormFieldsAsync("ExpectedVersion", "ReasonCode"))
-        {
+        if (id == Guid.Empty || expectedVersion is null or < 0
+            || string.IsNullOrWhiteSpace(globalProductName)
+            || globalProductName.EnumerateRunes().Count() > 200
+            || !await HasOnlyFormFieldsAsync("ExpectedVersion", "GlobalProductName"))
             return LifecycleFailure(StatusCodes.Status400BadRequest);
-        }
         if (!TryResolveLifecycleIdentity(out var tenantId, out var actor))
             return LifecycleFailure(StatusCodes.Status401Unauthorized);
 
         var operationId = CreateLifecycleOperationId(
-            tenantId, actor, "GlobalProduct", "retire", id, expectedVersion.Value, reasonCode);
+            tenantId, actor, "GlobalProduct", "update", id, expectedVersion.Value, globalProductName);
         return await ProxyLifecycleAsync(
-            $"{_gatewayUrl}/api/global-products/{id:D}/retire",
-            JsonContent.Create(new { expectedVersion = expectedVersion.Value, reasonCode }, options: _jsonOptions),
+            HttpMethod.Put,
+            $"{_gatewayUrl}/api/global-products/{id:D}",
+            JsonContent.Create(new { expectedVersion = expectedVersion.Value, globalProductName }, options: _jsonOptions),
             operationId,
             new HashSet<int> { StatusCodes.Status200OK },
+            LifecycleMutationKind.Update,
+            id,
+            cancellationToken);
+    }
+
+    [HttpPost("api/{id:guid}/withdraw")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> WithdrawApproval(
+        Guid id,
+        [FromForm] int? expectedVersion,
+        CancellationToken cancellationToken)
+    {
+        if (!PermissionClaims.HasPermission(User, WithdrawPermission))
+            return LifecycleFailure(StatusCodes.Status403Forbidden);
+        if (id == Guid.Empty || expectedVersion is null or < 0
+            || !await HasOnlyFormFieldsAsync("ExpectedVersion"))
+            return LifecycleFailure(StatusCodes.Status400BadRequest);
+        if (!TryResolveLifecycleIdentity(out var tenantId, out var actor))
+            return LifecycleFailure(StatusCodes.Status401Unauthorized);
+
+        var operationId = CreateLifecycleOperationId(
+            tenantId, actor, "GlobalProduct", "withdraw-approval", id, expectedVersion.Value, string.Empty);
+        return await ProxyLifecycleAsync(
+            HttpMethod.Post,
+            $"{_gatewayUrl}/api/global-products/{id:D}/withdraw",
+            JsonContent.Create(new { expectedVersion = expectedVersion.Value }, options: _jsonOptions),
+            operationId,
+            new HashSet<int> { StatusCodes.Status200OK },
+            LifecycleMutationKind.Withdraw,
+            id,
+            cancellationToken);
+    }
+
+    [HttpPost("api/{id:guid}/correction-requests")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RequestCorrection(
+        Guid id,
+        [FromForm] int? expectedVersion,
+        [FromForm] string? globalProductName,
+        CancellationToken cancellationToken)
+    {
+        globalProductName = globalProductName?.Trim();
+        if (!PermissionClaims.HasPermission(User, RequestCorrectionPermission))
+            return LifecycleFailure(StatusCodes.Status403Forbidden);
+        if (id == Guid.Empty || expectedVersion is null or < 0
+            || string.IsNullOrWhiteSpace(globalProductName)
+            || globalProductName.EnumerateRunes().Count() > 200
+            || !await HasOnlyFormFieldsAsync("ExpectedVersion", "GlobalProductName"))
+            return LifecycleFailure(StatusCodes.Status400BadRequest);
+        if (!TryResolveLifecycleIdentity(out var tenantId, out var actor))
+            return LifecycleFailure(StatusCodes.Status401Unauthorized);
+
+        var operationId = CreateLifecycleOperationId(
+            tenantId, actor, "GlobalProduct", "request-correction", id, expectedVersion.Value, globalProductName);
+        return await ProxyLifecycleAsync(
+            HttpMethod.Post,
+            $"{_gatewayUrl}/api/global-products/{id:D}/correction-requests",
+            JsonContent.Create(new { expectedVersion = expectedVersion.Value, globalProductName }, options: _jsonOptions),
+            operationId,
+            new HashSet<int> { StatusCodes.Status200OK, StatusCodes.Status202Accepted },
+            LifecycleMutationKind.Correction,
+            id,
+            cancellationToken);
+    }
+
+    [HttpPost("api/{id:guid}/retirement-requests")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RequestRetirement(
+        Guid id,
+        [FromForm] int? expectedVersion,
+        [FromForm] string? reason,
+        CancellationToken cancellationToken)
+    {
+        reason = reason?.Trim();
+        if (!PermissionClaims.HasPermission(User, RequestRetirementPermission))
+            return LifecycleFailure(StatusCodes.Status403Forbidden);
+        if (id == Guid.Empty || expectedVersion is null or < 0
+            || string.IsNullOrWhiteSpace(reason)
+            || reason.EnumerateRunes().Count() > 2000
+            || reason.Any(char.IsControl)
+            || !await HasOnlyFormFieldsAsync("ExpectedVersion", "Reason"))
+            return LifecycleFailure(StatusCodes.Status400BadRequest);
+        if (!TryResolveLifecycleIdentity(out var tenantId, out var actor))
+            return LifecycleFailure(StatusCodes.Status401Unauthorized);
+
+        var operationId = CreateLifecycleOperationId(
+            tenantId, actor, "GlobalProduct", "request-retirement", id, expectedVersion.Value, reason);
+        return await ProxyLifecycleAsync(
+            HttpMethod.Post,
+            $"{_gatewayUrl}/api/global-products/{id:D}/retirement-requests",
+            JsonContent.Create(new { expectedVersion = expectedVersion.Value, reason }, options: _jsonOptions),
+            operationId,
+            new HashSet<int> { StatusCodes.Status200OK, StatusCodes.Status202Accepted },
+            LifecycleMutationKind.Retirement,
+            id,
             cancellationToken);
     }
 
     private async Task<IActionResult> ProxyLifecycleAsync(
+        HttpMethod method,
         string targetUrl,
         HttpContent content,
         Guid operationId,
         IReadOnlySet<int> allowedSuccessStatusCodes,
+        LifecycleMutationKind mutationKind,
+        Guid aggregateId,
         CancellationToken cancellationToken)
     {
-        if (!TryCreateRequest(HttpMethod.Post, targetUrl, content, out var request))
-            return LifecycleFailure(StatusCodes.Status401Unauthorized);
-
-        request.Headers.TryAddWithoutValidation("Idempotency-Key", operationId.ToString("D"));
+        var serializedContent = await content.ReadAsStringAsync(cancellationToken);
+        content.Dispose();
         try
         {
-            using (request)
-            using (var response = await _httpClient.SendAsync(request, cancellationToken))
+            for (var attempt = 0; attempt < 2; attempt++)
             {
+                using var replayableContent = new StringContent(
+                    serializedContent, Encoding.UTF8, "application/json");
+                if (!TryCreateRequest(method, targetUrl, replayableContent, out var request))
+                    return LifecycleFailure(StatusCodes.Status401Unauthorized);
+                request.Headers.TryAddWithoutValidation("Idempotency-Key", operationId.ToString("D"));
+                HttpResponseMessage response;
+                try
+                {
+                    response = await _httpClient.SendAsync(request, cancellationToken);
+                }
+                catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
+                {
+                    request.Dispose();
+                    _logger.LogWarning(exception, "Global Product lifecycle proxy timed out.");
+                    if (attempt == 0)
+                        continue;
+                    return LifecycleFailure(StatusCodes.Status504GatewayTimeout);
+                }
+                catch (HttpRequestException exception)
+                {
+                    request.Dispose();
+                    _logger.LogError(exception, "Global Product lifecycle proxy failed.");
+                    if (attempt == 0)
+                        continue;
+                    return LifecycleFailure(StatusCodes.Status503ServiceUnavailable);
+                }
+                using (request)
+                using (response)
+                {
                 var responseStatus = (int)response.StatusCode;
                 if (!response.IsSuccessStatusCode)
+                {
+                    // A 502 can be emitted after the downstream mutation committed but its response
+                    // was lost. One exact idempotent replay is the only authoritative reconciliation.
+                    if (responseStatus == StatusCodes.Status502BadGateway && attempt == 0)
+                        continue;
                     return LifecycleFailure((int)response.StatusCode);
+                }
 
                 var mediaType = response.Content.Headers.ContentType?.MediaType;
                 if (!allowedSuccessStatusCodes.Contains(responseStatus)
                     || !IsJsonMediaType(mediaType))
                 {
+                    if (attempt == 0)
+                        continue;
                     return LifecycleFailure(StatusCodes.Status502BadGateway);
                 }
 
@@ -199,11 +339,17 @@ public sealed class GlobalProductsController : Controller
                 catch (JsonException exception)
                 {
                     _logger.LogWarning(exception, "Global Product lifecycle proxy received malformed JSON.");
+                    if (attempt == 0)
+                        continue;
                     return LifecycleFailure(StatusCodes.Status502BadGateway);
                 }
 
-                if (envelope?.IsSuccessful != true || envelope.StatusCode != responseStatus)
+                if (!IsValidLifecycleEnvelope(envelope, responseStatus, mutationKind, aggregateId))
+                {
+                    if (attempt == 0)
+                        continue;
                     return LifecycleFailure(StatusCodes.Status502BadGateway);
+                }
 
                 return new ContentResult
                 {
@@ -211,7 +357,9 @@ public sealed class GlobalProductsController : Controller
                     ContentType = "application/json",
                     Content = body
                 };
+                }
             }
+            return LifecycleFailure(StatusCodes.Status502BadGateway);
         }
         catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
         {
@@ -293,11 +441,8 @@ public sealed class GlobalProductsController : Controller
         if (subjectId == Guid.Empty)
             return false;
 
-        var tenantValue = User.Claims.FirstOrDefault(claim =>
-            claim.Type == "tenantId" || claim.Type == "tenant_id"
-            || claim.Type.EndsWith("/tenantId", StringComparison.OrdinalIgnoreCase))?.Value;
         actor = subjectId.ToString("D");
-        return Guid.TryParse(tenantValue, out tenantId) && tenantId != Guid.Empty;
+        return TryResolveCanonicalTenant(User, out tenantId);
     }
 
     private static string? SingleClaim(ClaimsPrincipal principal, string type)
@@ -314,6 +459,19 @@ public sealed class GlobalProductsController : Controller
             .Where(claim => string.Equals(claim.Type, type, StringComparison.Ordinal))
             .Select(claim => claim.Value)
             .ToArray();
+
+    private static bool TryResolveCanonicalTenant(ClaimsPrincipal principal, out Guid tenantId)
+    {
+        tenantId = Guid.Empty;
+        var values = principal.Claims
+            .Where(claim => claim.Type == "tenantId" || claim.Type == "tenant_id"
+                || claim.Type.EndsWith("/tenantId", StringComparison.OrdinalIgnoreCase))
+            .Select(claim => claim.Value)
+            .ToArray();
+        return values.Length == 1
+            && Guid.TryParseExact(values[0], "D", out tenantId)
+            && tenantId != Guid.Empty;
+    }
 
     private static bool TryCanonicalGuid(IReadOnlyList<string> values, out Guid? result)
     {
@@ -365,7 +523,102 @@ public sealed class GlobalProductsController : Controller
     {
         public bool IsSuccessful { get; init; }
         public int StatusCode { get; init; }
+        public JsonElement Data { get; init; }
     }
+
+    private enum LifecycleMutationKind
+    {
+        Submit,
+        Update,
+        Withdraw,
+        Correction,
+        Retirement
+    }
+
+    private static bool IsValidLifecycleEnvelope(
+        LifecycleGatewayEnvelope? envelope,
+        int responseStatus,
+        LifecycleMutationKind mutationKind,
+        Guid aggregateId)
+    {
+        if (envelope?.IsSuccessful != true || envelope.StatusCode != responseStatus
+            || envelope.Data.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        var data = envelope.Data;
+        return mutationKind switch
+        {
+            LifecycleMutationKind.Submit =>
+                HasGuid(data, "operationId") && HasMatchingGuid(data, "globalProductId", aggregateId)
+                && HasNonEmptyString(data, "checkpoint"),
+            LifecycleMutationKind.Update =>
+                HasMatchingGuid(data, "id", aggregateId) && HasLifecycleState(data, "lifecycleStatus")
+                && HasNonNegativeInt(data, "version"),
+            LifecycleMutationKind.Withdraw =>
+                HasMatchingGuid(data, "globalProductId", aggregateId) && HasLifecycleState(data, "lifecycleStatus")
+                && HasNonNegativeInt(data, "version"),
+            LifecycleMutationKind.Correction or LifecycleMutationKind.Retirement =>
+                HasGuid(data, "operationId") && HasMatchingGuid(data, "globalProductId", aggregateId)
+                && HasCheckpointForStatus(data, responseStatus) && HasNonNegativeInt(data, "productVersion"),
+            _ => false
+        };
+    }
+
+    private static bool TryGetProperty(JsonElement element, string camelName, out JsonElement value)
+    {
+        if (element.TryGetProperty(camelName, out value))
+            return true;
+
+        var pascalName = char.ToUpperInvariant(camelName[0]) + camelName[1..];
+        return element.TryGetProperty(pascalName, out value);
+    }
+
+    private static bool HasGuid(JsonElement element, string name) =>
+        TryGetProperty(element, name, out var value)
+        && value.ValueKind == JsonValueKind.String
+        && Guid.TryParseExact(value.GetString(), "D", out var parsed)
+        && parsed != Guid.Empty;
+
+    private static bool HasMatchingGuid(JsonElement element, string name, Guid expected) =>
+        TryGetProperty(element, name, out var value)
+        && value.ValueKind == JsonValueKind.String
+        && Guid.TryParseExact(value.GetString(), "D", out var parsed)
+        && parsed == expected;
+
+    private static bool HasNonEmptyString(JsonElement element, string name) =>
+        TryGetProperty(element, name, out var value)
+        && value.ValueKind == JsonValueKind.String
+        && !string.IsNullOrWhiteSpace(value.GetString());
+
+    private static bool HasCheckpointForStatus(JsonElement element, int responseStatus)
+    {
+        if (!TryGetProperty(element, "checkpoint", out var value)
+            || value.ValueKind != JsonValueKind.String)
+            return false;
+
+        var checkpoint = value.GetString();
+        return responseStatus switch
+        {
+            StatusCodes.Status200OK => string.Equals(
+                checkpoint, "Completed", StringComparison.Ordinal),
+            StatusCodes.Status202Accepted => string.Equals(
+                checkpoint, "AwaitingDecision", StringComparison.Ordinal),
+            _ => false
+        };
+    }
+
+    private static bool HasNonNegativeInt(JsonElement element, string name) =>
+        TryGetProperty(element, name, out var value)
+        && value.ValueKind == JsonValueKind.Number
+        && value.TryGetInt32(out var number)
+        && number >= 0;
+
+    private static bool HasLifecycleState(JsonElement element, string name) =>
+        TryGetProperty(element, name, out var value)
+        && (value.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(value.GetString())
+            || value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var number) && number > 0);
 
     private async Task<GatewayCallResult<CodeReservationViewModel>> ReserveCodeAsync(
         string globalProductName,
@@ -490,12 +743,7 @@ public sealed class GlobalProductsController : Controller
         if (!string.IsNullOrWhiteSpace(token))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        var tenantValue = User.Claims.FirstOrDefault(claim =>
-            claim.Type == "tenantId" ||
-            claim.Type == "tenant_id" ||
-            claim.Type.EndsWith("/tenantId", StringComparison.OrdinalIgnoreCase))?.Value;
-
-        if (!Guid.TryParse(tenantValue, out var tenantId))
+        if (!TryResolveCanonicalTenant(User, out var tenantId))
         {
             request.Dispose();
             request = null!;

@@ -7,6 +7,8 @@ using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Domain.ValueObjects;
 using Xunit;
+using PersistedCancellationEvidence = Diten.MdmService.Domain.ValueObjects.ProductIdentityWorkflowCancellationEvidence;
+using TransportCancellationEvidence = Diten.MdmService.Application.Contracts.Workflow.ProductIdentityWorkflowCancellationEvidence;
 
 namespace Diten.MdmService.Application.Tests;
 
@@ -324,6 +326,79 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
         Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, harness.Gsku.LifecycleStatus);
     }
 
+    [Fact]
+    public async Task WithdrawInteractive_VerifiedCancellation_RestoresPairToDraftAndReplaysExactly()
+    {
+        var harness = new Harness();
+        var submitted = await harness.Processor.StartInteractiveAsync(
+            TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        Assert.True(submitted.Succeeded);
+
+        var withdrawalId = Guid.NewGuid();
+        var first = await harness.Processor.WithdrawInteractiveAsync(
+            TenantId, GskuId, 1, withdrawalId, MakerId, "REQUESTER_WITHDRAWAL", "Changed my mind",
+            "maker-token", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        var replay = await harness.Processor.WithdrawInteractiveAsync(
+            TenantId, GskuId, 1, withdrawalId, MakerId, "REQUESTER_WITHDRAWAL", "Changed my mind",
+            "maker-token", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.True(first.Succeeded);
+        Assert.True(replay.Succeeded);
+        Assert.True(replay.IsReplay);
+        Assert.Equal(ProductIdentityLifecycleStatus.Draft, harness.Revision.LifecycleStatus);
+        Assert.Equal(ProductIdentityLifecycleStatus.Draft, harness.Gsku.LifecycleStatus);
+        Assert.Equal(2, harness.Revision.Version);
+        Assert.Equal(2, harness.Gsku.Version);
+        Assert.Equal(1, harness.Operations.WithdrawalApplyCount);
+        Assert.Single(harness.Revision.AuditIntents,
+            x => x.Operation == ProductAuditOperation.ProductDefinitionRevisionIdentityApprovalWithdrawn);
+        Assert.Single(harness.Gsku.AuditIntents,
+            x => x.Operation == ProductAuditOperation.GskuIdentityApprovalWithdrawn);
+    }
+
+    [Fact]
+    public async Task WithdrawInteractive_NonMaker_IsDeniedWithoutRemoteOrLocalMutation()
+    {
+        var harness = new Harness();
+        await harness.Processor.StartInteractiveAsync(
+            TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        var result = await harness.Processor.WithdrawInteractiveAsync(
+            TenantId, GskuId, 1, Guid.NewGuid(), ApproverId, "REQUESTER_WITHDRAWAL", null,
+            "approver-token", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(403, result.StatusCode);
+        Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, harness.Revision.LifecycleStatus);
+        Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, harness.Gsku.LifecycleStatus);
+        Assert.Equal(0, harness.Client.CancellationCalls);
+        Assert.Equal(0, harness.Operations.WithdrawalApplyCount);
+    }
+
+    [Fact]
+    public async Task WithdrawInteractive_Timeout_LeavesAtomicPairPendingAndRecoverable()
+    {
+        var harness = new Harness();
+        await harness.Processor.StartInteractiveAsync(
+            TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        harness.Client.CancellationOutcome = ProductIdentityWorkflowTransportOutcome.Timeout;
+
+        var result = await harness.Processor.WithdrawInteractiveAsync(
+            TenantId, GskuId, 1, Guid.NewGuid(), MakerId, "REQUESTER_WITHDRAWAL", null,
+            "maker-token", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(503, result.StatusCode);
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown,
+            harness.Operations.Current!.Checkpoint);
+        Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, harness.Revision.LifecycleStatus);
+        Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, harness.Gsku.LifecycleStatus);
+        Assert.Equal(0, harness.Operations.WithdrawalApplyCount);
+    }
+
     private sealed class Harness
     {
         public Harness()
@@ -341,6 +416,8 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
                 PackApplicabilitySelection = Selection("pack-applicability", "SCALAR_QUANTITY_APPLIES"),
                 PackUomSelection = Selection("uom", "EA")
             };
+            Operations.Revision = Revision;
+            Operations.Gsku = Gsku;
             Revisions = new PairRevisionRepository(Revision);
             Gskus = new PairGskuRepository(Gsku);
             Parent = new GlobalProduct
@@ -379,6 +456,9 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
         public ProductIdentityWorkflowTransportOutcome StartOutcome { get; set; } = ProductIdentityWorkflowTransportOutcome.Success;
         public int StartCalls { get; private set; }
         public int StartResultCalls { get; private set; }
+        public int CancellationCalls { get; private set; }
+        public ProductIdentityWorkflowTransportOutcome CancellationOutcome { get; set; } =
+            ProductIdentityWorkflowTransportOutcome.Success;
 
         public Task<ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>> StartAsync(
             Guid tenantId, ProductIdentityWorkflowStartRequest request, string delegatedUserToken,
@@ -408,6 +488,28 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
                 WorkflowId, TaskId, TemplateId, TemplateVersionId, "gsku", GskuId.ToString("D"), "GS-0001",
                 "Approve", harness.TerminalActorId.ToString("D"), "APPROVED", DateTimeOffset.UtcNow,
                 2, "Approved", "Completed", "corr")));
+
+        public Task<ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowCancellationPreflight>> GetCancellationPreflightAsync(
+            Guid tenantId, ProductIdentityWorkflowCancellationPreflightRequest request,
+            CancellationToken cancellationToken = default) => Task.FromResult(
+            ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowCancellationPreflight>.Success(new(
+                request.WorkflowInstanceId, request.ApprovalTaskId, request.ExpectedObjectType,
+                request.ExpectedObjectId, "GS-0001", 3, 5, "Active", "WaitingApproval")));
+
+        public Task<ProductIdentityWorkflowTransportResult<TransportCancellationEvidence>> CancelAsync(
+            Guid tenantId, ProductIdentityWorkflowCancellationRequest request, string delegatedUserToken,
+            CancellationToken cancellationToken = default)
+        {
+            CancellationCalls++;
+            if (CancellationOutcome != ProductIdentityWorkflowTransportOutcome.Success)
+                return Task.FromResult(ProductIdentityWorkflowTransportResult<TransportCancellationEvidence>.Fail(
+                    CancellationOutcome, "WORKFLOW_TIMEOUT"));
+            return Task.FromResult(ProductIdentityWorkflowTransportResult<TransportCancellationEvidence>.Success(new(
+                request.WorkflowInstanceId, request.ApprovalTaskId, TemplateId, TemplateVersionId,
+                request.ExpectedObjectType, request.ExpectedObjectId, "GS-0001", "Cancel", MakerId,
+                request.ReasonCode, request.Comment, DateTimeOffset.UtcNow, 3, Guid.NewGuid(), "Cancelled",
+                "Cancelled", 4, 6, false, "corr")));
+        }
 
         private static ProductIdentityWorkflowStartResult StartResult() => new(
             WorkflowId, TemplateId, TemplateVersionId, TaskId, SnapshotId, StartLogId,
@@ -478,6 +580,9 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
     {
         public FirstGskuIdentityWorkflowOperation? Current { get; set; }
         public FirstGskuIdentityWorkflowCheckpoint? FailNextAdvanceTo { get; set; }
+        public int WithdrawalApplyCount { get; private set; }
+        public ProductDefinitionRevision? Revision { get; set; }
+        public Gsku? Gsku { get; set; }
         public Task<FirstGskuIdentityWorkflowReserveResult> ReserveAsync(FirstGskuIdentityWorkflowOperation operation, CancellationToken ct = default)
         {
             Current ??= operation;
@@ -527,7 +632,59 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
             Current.ApprovalPackUomSelection = mutation.ApprovalPackUomSelection ?? Current.ApprovalPackUomSelection;
             Current.ReferencesValidatedAtUtcTicksV1 = mutation.ReferencesValidatedAtUtcTicksV1 ?? Current.ReferencesValidatedAtUtcTicksV1;
             Current.ApprovalReferenceProofFingerprint = mutation.ApprovalReferenceProofFingerprint ?? Current.ApprovalReferenceProofFingerprint;
+            Current.WithdrawalCommandId = mutation.WithdrawalCommandId ?? Current.WithdrawalCommandId;
+            Current.WithdrawalFingerprint = mutation.WithdrawalFingerprint ?? Current.WithdrawalFingerprint;
+            Current.WithdrawalRequesterSubjectId = mutation.WithdrawalRequesterSubjectId ?? Current.WithdrawalRequesterSubjectId;
+            Current.WithdrawalExpectedGskuVersion = mutation.WithdrawalExpectedGskuVersion ?? Current.WithdrawalExpectedGskuVersion;
+            Current.WithdrawalReasonCode = mutation.WithdrawalReasonCode ?? Current.WithdrawalReasonCode;
+            Current.WithdrawalComment = mutation.WithdrawalComment ?? Current.WithdrawalComment;
+            Current.WithdrawalExpectedWorkflowInstanceVersion = mutation.WithdrawalExpectedWorkflowInstanceVersion ?? Current.WithdrawalExpectedWorkflowInstanceVersion;
+            Current.WithdrawalExpectedApprovalTaskVersion = mutation.WithdrawalExpectedApprovalTaskVersion ?? Current.WithdrawalExpectedApprovalTaskVersion;
+            Current.WithdrawalTransitionLogId = mutation.WithdrawalTransitionLogId ?? Current.WithdrawalTransitionLogId;
+            Current.WithdrawalObservedAtUtcTicksV1 = mutation.WithdrawalObservedAtUtcTicksV1 ?? Current.WithdrawalObservedAtUtcTicksV1;
+            Current.WithdrawalTransitionSequence = mutation.WithdrawalTransitionSequence ?? Current.WithdrawalTransitionSequence;
+            Current.WithdrawalResultWorkflowInstanceVersion = mutation.WithdrawalResultWorkflowInstanceVersion ?? Current.WithdrawalResultWorkflowInstanceVersion;
+            Current.WithdrawalResultApprovalTaskVersion = mutation.WithdrawalResultApprovalTaskVersion ?? Current.WithdrawalResultApprovalTaskVersion;
+            Current.WithdrawalTaskStatus = mutation.WithdrawalTaskStatus ?? Current.WithdrawalTaskStatus;
+            Current.WithdrawalInstanceStatus = mutation.WithdrawalInstanceStatus ?? Current.WithdrawalInstanceStatus;
+            Current.WithdrawalObjectRef = mutation.WithdrawalObjectRef ?? Current.WithdrawalObjectRef;
             return Task.FromResult(true);
+        }
+
+        public Task<FirstGskuIdentityWithdrawalWriteResult> ApplyWithdrawalAsync(
+            FirstGskuIdentityWorkflowClaim claim,
+            FirstGskuIdentityWorkflowOperation operation,
+            PersistedCancellationEvidence cancellationEvidence,
+            LocalAuditIntent revisionAuditIntent,
+            LocalAuditIntent gskuAuditIntent,
+            long updatedAtUtcTicks,
+            CancellationToken cancellationToken = default)
+        {
+            if (Current?.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.WithdrawalApplied)
+                return Task.FromResult(new FirstGskuIdentityWithdrawalWriteResult(
+                    true, true, null, null, null));
+            if (Current is null || Current.Checkpoint != FirstGskuIdentityWorkflowCheckpoint.WithdrawalObserved)
+                return Task.FromResult(new FirstGskuIdentityWithdrawalWriteResult(
+                    false, false, null, null, "FIRST_GSKU_IDENTITY_WITHDRAWAL_STATE_CONFLICT"));
+            if (Revision is null || Gsku is null
+                || Revision.LifecycleStatus != ProductIdentityLifecycleStatus.PendingIdentityApproval
+                || Gsku.LifecycleStatus != ProductIdentityLifecycleStatus.PendingIdentityApproval
+                || Revision.Version != operation.ExpectedRevisionVersion + 1
+                || Gsku.Version != operation.WithdrawalExpectedGskuVersion)
+                return Task.FromResult(new FirstGskuIdentityWithdrawalWriteResult(
+                    false, false, Revision, Gsku, "FIRST_GSKU_IDENTITY_WITHDRAWAL_STATE_CONFLICT"));
+
+            WithdrawalApplyCount++;
+            Revision.LifecycleStatus = ProductIdentityLifecycleStatus.Draft;
+            Gsku.LifecycleStatus = ProductIdentityLifecycleStatus.Draft;
+            Revision.Version++;
+            Gsku.Version++;
+            Revision.AuditIntents.Add(revisionAuditIntent);
+            Gsku.AuditIntents.Add(gskuAuditIntent);
+            Current.Checkpoint = FirstGskuIdentityWorkflowCheckpoint.WithdrawalApplied;
+            Current.UpdatedAtUtcTicksV1 = updatedAtUtcTicks;
+            return Task.FromResult(new FirstGskuIdentityWithdrawalWriteResult(
+                true, false, Revision, Gsku, null));
         }
     }
 

@@ -452,8 +452,12 @@ public sealed class GlobalProductApiMongoTests
     [InlineData(nameof(GlobalProductsController.GetById), "mdm.global-products.read")]
     [InlineData(nameof(GlobalProductsController.ReserveCode), "mdm.global-products.create")]
     [InlineData(nameof(GlobalProductsController.CreateDraft), "mdm.global-products.create")]
+    [InlineData(nameof(GlobalProductsController.UpdateDraft), "mdm.global-products.update")]
     [InlineData(nameof(GlobalProductsController.SubmitIdentity), "mdm.global-products.submit")]
+    [InlineData(nameof(GlobalProductsController.WithdrawIdentityApproval), "mdm.global-products.withdraw")]
     [InlineData(nameof(GlobalProductsController.RetireIdentity), "mdm.global-products.retire")]
+    [InlineData(nameof(GlobalProductsController.RequestCorrection), "mdm.global-products.request-correction")]
+    [InlineData(nameof(GlobalProductsController.RequestRetirement), "mdm.global-products.request-retirement")]
     public void Endpoints_fail_closed_on_named_permissions(string methodName, string permission)
     {
         var attribute = typeof(GlobalProductsController).GetMethod(methodName)!.GetCustomAttribute<HasPermissionAttribute>();
@@ -461,8 +465,12 @@ public sealed class GlobalProductApiMongoTests
     }
 
     [Fact]
-    public void Lifecycle_surface_exposes_only_submit_and_direct_retire_routes()
+    public void Lifecycle_surface_exposes_draft_update_submit_and_direct_retire_routes()
     {
+        var update = typeof(GlobalProductsController).GetMethod(nameof(GlobalProductsController.UpdateDraft))!;
+        var updateRoute = Assert.IsType<HttpPutAttribute>(update.GetCustomAttribute<HttpPutAttribute>());
+        Assert.Equal("{id:guid}", updateRoute.Template);
+
         var lifecycleRoutes = typeof(GlobalProductsController)
             .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .Select(method => new
@@ -474,7 +482,7 @@ public sealed class GlobalProductApiMongoTests
                 .Contains("{id:guid}/", StringComparison.Ordinal))
             .ToArray();
 
-        Assert.Equal(2, lifecycleRoutes.Length);
+        Assert.Equal(5, lifecycleRoutes.Length);
         Assert.Contains(lifecycleRoutes, item =>
             item.Name == nameof(GlobalProductsController.SubmitIdentity)
             && item.Http.HttpMethods.SequenceEqual(["POST"])
@@ -483,6 +491,18 @@ public sealed class GlobalProductApiMongoTests
             item.Name == nameof(GlobalProductsController.RetireIdentity)
             && item.Http.HttpMethods.SequenceEqual(["POST"])
             && item.Http.Template == "{id:guid}/retire");
+        Assert.Contains(lifecycleRoutes, item =>
+            item.Name == nameof(GlobalProductsController.WithdrawIdentityApproval)
+            && item.Http.HttpMethods.SequenceEqual(["POST"])
+            && item.Http.Template == "{id:guid}/withdraw");
+        Assert.Contains(lifecycleRoutes, item =>
+            item.Name == nameof(GlobalProductsController.RequestCorrection)
+            && item.Http.HttpMethods.SequenceEqual(["POST"])
+            && item.Http.Template == "{id:guid}/correction-requests");
+        Assert.Contains(lifecycleRoutes, item =>
+            item.Name == nameof(GlobalProductsController.RequestRetirement)
+            && item.Http.HttpMethods.SequenceEqual(["POST"])
+            && item.Http.Template == "{id:guid}/retirement-requests");
         Assert.DoesNotContain(lifecycleRoutes, item =>
             (item.Http.Template ?? string.Empty).Contains("approve", StringComparison.OrdinalIgnoreCase)
             || (item.Http.Template ?? string.Empty).Contains("reject", StringComparison.OrdinalIgnoreCase));
@@ -496,6 +516,22 @@ public sealed class GlobalProductApiMongoTests
         var controller = new GlobalProductsController(mediator);
         var productId = Guid.NewGuid();
         var operationId = Guid.NewGuid();
+
+        await CaptureAsync(
+            () => controller.UpdateDraft(
+                productId,
+                new() { GlobalProductName = "Updated Product", ExpectedVersion = 2 },
+                operationId.ToString("D"),
+                CancellationToken.None),
+            capture,
+            request =>
+            {
+                var command = Assert.IsType<UpdateGlobalProductDraftCommand>(request);
+                Assert.Equal(productId, command.GlobalProductId);
+                Assert.Equal("Updated Product", command.Request.GlobalProductName);
+                Assert.Equal(2, command.Request.ExpectedVersion);
+                Assert.Equal(operationId, command.OperationId);
+            });
 
         await CaptureAsync(
             () => controller.SubmitIdentity(
@@ -527,6 +563,86 @@ public sealed class GlobalProductApiMongoTests
                 Assert.Equal("PRODUCT_WITHDRAWN", command.Request.ReasonCode);
                 Assert.Equal("Confirmed.", command.Request.Comment);
             });
+        await CaptureAsync(
+            () => controller.WithdrawIdentityApproval(
+                productId,
+                new() { ExpectedVersion = 5 },
+                operationId.ToString("D"),
+                CancellationToken.None),
+            capture,
+            request =>
+            {
+                var command = Assert.IsType<WithdrawGlobalProductIdentityApprovalCommand>(request);
+                Assert.Equal(productId, command.Request.GlobalProductId);
+                Assert.Equal(5, command.Request.ExpectedVersion);
+                Assert.Equal(operationId, command.Request.OperationId);
+                Assert.Equal("REQUESTER_WITHDRAWAL", command.Request.ReasonCode);
+                Assert.Null(command.Request.Comment);
+            });
+        await CaptureAsync(
+            () => controller.RequestCorrection(
+                productId,
+                new() { ExpectedVersion = 8, GlobalProductName = "Corrected Product" },
+                operationId.ToString("D"),
+                CancellationToken.None),
+            capture,
+            request =>
+            {
+                var command = Assert.IsType<StartGlobalProductCorrectionWorkflowCommand>(request);
+                Assert.Equal(productId, command.Request.GlobalProductId);
+                Assert.Equal(8, command.Request.ExpectedVersion);
+                Assert.Equal(operationId, command.Request.OperationId);
+                Assert.Equal("Corrected Product", command.Request.GlobalProductName);
+            });
+        await CaptureAsync(
+            () => controller.RequestRetirement(
+                productId,
+                new() { ExpectedVersion = 9, Reason = "Product is no longer supplied." },
+                operationId.ToString("D"),
+                CancellationToken.None),
+            capture,
+            request =>
+            {
+                var command = Assert.IsType<StartGlobalProductRetirementRequestWorkflowCommand>(request);
+                Assert.Equal(productId, command.Request.GlobalProductId);
+                Assert.Equal(9, command.Request.ExpectedVersion);
+                Assert.Equal(operationId, command.Request.OperationId);
+                Assert.Equal("Product is no longer supplied.", command.Request.Reason);
+            });
+    }
+
+    [Theory]
+    [InlineData(true, null)]
+    [InlineData(false, null)]
+    [InlineData(false, "not-a-guid")]
+    public async Task Update_unknown_fields_or_invalid_idempotency_key_fail_before_dispatch(
+        bool hasUnknownField,
+        string? idempotencyKey)
+    {
+        var mediator = DispatchProxy.Create<IMediator, CapturingMediatorProxy>();
+        var capture = (CapturingMediatorProxy)(object)mediator;
+        var controller = new GlobalProductsController(mediator);
+        var request = new ProductItemSkuMasterModels.UpdateGlobalProductDraftRequest
+        {
+            GlobalProductName = "Updated",
+            ExpectedVersion = 0,
+            UnmappedFields = hasUnknownField
+                ? new Dictionary<string, JsonElement>
+                {
+                    ["canonicalCode"] = JsonSerializer.SerializeToElement("forbidden")
+                }
+                : null
+        };
+
+        var result = await controller.UpdateDraft(
+            Guid.NewGuid(),
+            request,
+            hasUnknownField ? Guid.NewGuid().ToString("D") : idempotencyKey,
+            CancellationToken.None);
+
+        var objectResult = Assert.IsAssignableFrom<ObjectResult>(result);
+        Assert.Equal(400, objectResult.StatusCode);
+        Assert.Null(capture.Request);
     }
 
     [Theory]
@@ -591,6 +707,62 @@ public sealed class GlobalProductApiMongoTests
     }
 
     [Theory]
+    [InlineData(true, null)]
+    [InlineData(false, null)]
+    [InlineData(false, "not-a-guid")]
+    public async Task Correction_unknown_fields_or_invalid_idempotency_key_fail_before_dispatch(
+        bool hasUnknownField,
+        string? idempotencyKey)
+    {
+        var mediator = DispatchProxy.Create<IMediator, CapturingMediatorProxy>();
+        var capture = (CapturingMediatorProxy)(object)mediator;
+        var request = new GlobalProductsController.RequestGlobalProductCorrectionApiRequest
+        {
+            ExpectedVersion = 1,
+            GlobalProductName = "Corrected",
+            UnmappedFields = hasUnknownField
+                ? new Dictionary<string, JsonElement> { ["tenantId"] = JsonSerializer.SerializeToElement("forbidden") }
+                : null
+        };
+
+        var result = await new GlobalProductsController(mediator).RequestCorrection(
+            Guid.NewGuid(), request,
+            hasUnknownField ? Guid.NewGuid().ToString("D") : idempotencyKey,
+            CancellationToken.None);
+
+        Assert.Equal(400, Assert.IsAssignableFrom<ObjectResult>(result).StatusCode);
+        Assert.Null(capture.Request);
+    }
+
+    [Theory]
+    [InlineData(true, "Business retirement reason.")]
+    [InlineData(false, null)]
+    [InlineData(false, "")]
+    [InlineData(false, " leading or trailing whitespace ")]
+    [InlineData(false, "contains\u0001control")]
+    public async Task Retirement_request_unknown_fields_or_invalid_reason_fail_before_dispatch(
+        bool hasUnknownField,
+        string? reason)
+    {
+        var mediator = DispatchProxy.Create<IMediator, CapturingMediatorProxy>();
+        var capture = (CapturingMediatorProxy)(object)mediator;
+        var request = new GlobalProductsController.RequestGlobalProductRetirementApiRequest
+        {
+            ExpectedVersion = 1,
+            Reason = reason,
+            UnmappedFields = hasUnknownField
+                ? new Dictionary<string, JsonElement> { ["tenantId"] = JsonSerializer.SerializeToElement("forbidden") }
+                : null
+        };
+
+        var result = await new GlobalProductsController(mediator).RequestRetirement(
+            Guid.NewGuid(), request, Guid.NewGuid().ToString("D"), CancellationToken.None);
+
+        Assert.Equal(400, Assert.IsAssignableFrom<ObjectResult>(result).StatusCode);
+        Assert.Null(capture.Request);
+    }
+
+    [Theory]
     [InlineData("{}")]
     [InlineData("{\"expectedVersion\":null}")]
     public async Task Lifecycle_missing_or_null_expected_version_fails_before_dispatch(string json)
@@ -637,6 +809,13 @@ public sealed class GlobalProductApiMongoTests
         var submit = JsonSerializer.SerializeToElement(
             new GlobalProductsController.SubmitGlobalProductIdentityApiRequest { ExpectedVersion = 3 },
             options);
+        var update = JsonSerializer.SerializeToElement(
+            new ProductItemSkuMasterModels.UpdateGlobalProductDraftRequest
+            {
+                GlobalProductName = "Updated Product",
+                ExpectedVersion = 2
+            },
+            options);
         var retire = JsonSerializer.SerializeToElement(
             new GlobalProductsController.RetireGlobalProductIdentityApiRequest
             {
@@ -651,12 +830,17 @@ public sealed class GlobalProductApiMongoTests
 
         Assert.Equal(["expectedVersion"], submit.EnumerateObject().Select(property => property.Name));
         Assert.Equal(
+            ["expectedVersion", "globalProductName"],
+            update.EnumerateObject().Select(property => property.Name).OrderBy(name => name, StringComparer.Ordinal));
+        Assert.Equal(
             ["comment", "expectedVersion", "reasonCode"],
             retire.EnumerateObject().Select(property => property.Name).OrderBy(name => name, StringComparer.Ordinal));
         Assert.Equal(["actorId"], withForbidden.UnmappedFields!.Keys);
         Assert.DoesNotContain("tenant", retire.ToString(), StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("workflow", retire.ToString(), StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("operation", retire.ToString(), StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("canonicalCode", update.ToString(), StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("tenant", update.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

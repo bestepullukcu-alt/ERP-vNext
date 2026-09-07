@@ -50,7 +50,7 @@ public sealed class GetProductAbbreviationWorkItemsHandler
                 authorization.ErrorCode!);
         }
 
-        var pending = await _register.GetInitialPendingWorkItemsAsync(
+        var pending = await _register.GetPendingWorkItemsAsync(
             ProductAbbreviationWorkItemContract.OverflowSentinelLimit,
             cancellationToken);
         if (pending.Count > ProductAbbreviationWorkItemContract.MaximumItems)
@@ -60,17 +60,24 @@ public sealed class GetProductAbbreviationWorkItemsHandler
                 "ABBREVIATION_WORK_ITEM_BOUND_EXCEEDED");
         }
 
-        if (pending.Any(x => x.Id == Guid.Empty
-                             || x.GlobalProductId == Guid.Empty
-                             || x.Version < 0
-                             || string.IsNullOrWhiteSpace(x.NormalizedAbbreviation)
-                             || string.IsNullOrWhiteSpace(x.RequestedByCanonicalSubjectId)
-                             || x.LifecycleStatus != ProductAbbreviationLifecycleStatus.REQUESTED
-                             || x.ReplacesEntryId is not null))
+        if (pending.Any(IsInconsistent))
         {
             return ProductAbbreviationWorkItemOperationResult<ProductAbbreviationWorkItemProjectionResponse>.Fail(
                 503,
                 "ABBREVIATION_WORK_ITEM_SOURCE_INCONSISTENT");
+        }
+
+        foreach (var correction in pending.Where(x => x.ReplacesEntryId.HasValue))
+        {
+            var former = await _register.GetByIdAsync(correction.ReplacesEntryId!.Value, cancellationToken);
+            if (former is null
+                || former.GlobalProductId != correction.GlobalProductId
+                || former.LifecycleStatus != ProductAbbreviationLifecycleStatus.ACTIVE)
+            {
+                return ProductAbbreviationWorkItemOperationResult<ProductAbbreviationWorkItemProjectionResponse>.Fail(
+                    503,
+                    "ABBREVIATION_WORK_ITEM_SOURCE_INCONSISTENT");
+            }
         }
 
         var productIds = pending.Select(x => x.GlobalProductId).Distinct().ToArray();
@@ -116,17 +123,29 @@ public sealed class GetProductAbbreviationWorkItemsHandler
         ProductAbbreviationRegisterEntry entry,
         GlobalProduct product)
     {
+        var isRetirement = entry.LifecycleStatus == ProductAbbreviationLifecycleStatus.ACTIVE;
+        var isCorrection = entry.ReplacesEntryId.HasValue;
+        var requester = isRetirement
+            ? entry.RetirementRequestedByCanonicalSubjectId!
+            : entry.RequestedByCanonicalSubjectId;
         var requesterIsActor = string.Equals(
-            entry.RequestedByCanonicalSubjectId,
+            requester,
             _actor.CanonicalHumanSubjectId,
             StringComparison.Ordinal);
         IReadOnlyList<ProductAbbreviationWorkItemAction> actions = requesterIsActor
-            ? [Action("cancel", "WorkAggregation_Action_Cancel", requiresReason: false)]
+            ? isRetirement
+                ? []
+                : [Action("cancel", "WorkAggregation_Action_Cancel", requiresReason: false)]
             :
             [
                 Action("approve", "WorkAggregation_Action_Approve", requiresReason: false),
                 Action("reject", "WorkAggregation_Action_Reject", requiresReason: true)
             ];
+        var objectType = isRetirement
+            ? ProductAbbreviationWorkItemContract.RetirementObjectType
+            : isCorrection
+                ? ProductAbbreviationWorkItemContract.CorrectionObjectType
+                : ProductAbbreviationWorkItemContract.AllocationObjectType;
 
         return new(
             FixtureKind: "workItem",
@@ -149,16 +168,41 @@ public sealed class GetProductAbbreviationWorkItemsHandler
             Source: new(
                 ProductAbbreviationWorkItemContract.ProviderCode,
                 ProductAbbreviationWorkItemContract.ContractVersion,
-                ProductAbbreviationWorkItemContract.ObjectType,
+                objectType,
                 entry.Id.ToString("D"),
                 $"/MDM/ProductAbbreviationRegister?globalProductId={entry.GlobalProductId:D}"),
             LifecycleOwner: ProductAbbreviationWorkItemContract.ProviderCode,
             WorkItemCapabilities: [],
             Actions: actions,
             Concurrency: new("version", entry.Version.ToString(CultureInfo.InvariantCulture)),
-            PrimaryActionCode: requesterIsActor ? "cancel" : "approve",
+            PrimaryActionCode: requesterIsActor ? (isRetirement ? null : "cancel") : "approve",
             OverflowActionCodes: requesterIsActor ? null : ["reject"],
-            Requester: new(entry.RequestedByCanonicalSubjectId, IsCurrentUser: requesterIsActor));
+            Requester: new(requester, IsCurrentUser: requesterIsActor));
+    }
+
+    private static bool IsInconsistent(ProductAbbreviationRegisterEntry entry)
+    {
+        if (entry.Id == Guid.Empty
+            || entry.GlobalProductId == Guid.Empty
+            || entry.Version < 0
+            || string.IsNullOrWhiteSpace(entry.NormalizedAbbreviation))
+        {
+            return true;
+        }
+
+        if (entry.LifecycleStatus == ProductAbbreviationLifecycleStatus.REQUESTED)
+        {
+            return string.IsNullOrWhiteSpace(entry.RequestedByCanonicalSubjectId)
+                   || entry.RetirementRequestId is not null
+                   || entry.RetirementRequestedByCanonicalSubjectId is not null
+                   || entry.RetirementRequestedAtUtc is not null;
+        }
+
+        return entry.LifecycleStatus != ProductAbbreviationLifecycleStatus.ACTIVE
+               || string.IsNullOrWhiteSpace(entry.RetirementRequestId)
+               || string.IsNullOrWhiteSpace(entry.RetirementRequestedByCanonicalSubjectId)
+               || entry.RetirementRequestedAtUtc is null
+               || entry.ReplacesEntryId is not null;
     }
 
     private static ProductAbbreviationWorkItemAction Action(

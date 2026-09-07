@@ -8,7 +8,7 @@ golden_reference: slim
 entity_base: EntityBase
 status: in-progress
 owner: product-data-owner / master-data-owner
-branch: feature/mdm/mod-0290-product-item-sku-master
+branch: feature/mdm/mod-0290-product-identity-final-integration
 started: 2026-08-26
 target: 2026-09-30
 form_field_count: 3
@@ -1303,10 +1303,102 @@ Code truth reconciled on 2026-08-26:
   FU21 with the exact `mdm.product-legal-entity-scopes.replace` pair while create continues to use `configure`.
   Focused command/consumer tests pass `21/21`; the full `ProductLegalEntityScope` group passes `142/142`, zero skipped;
   the isolated MDM API Release build succeeds with zero errors and five existing persistence warnings.
+- **Independent A-H1b code/security/UI review (2026-09-05):** no P0/P1/P2 implementation defect was found. Review
+  reconfirmed strict unknown-field and exact D-format idempotency rejection; same-origin antiforgery-protected UI
+  transport; tenant/canonical-subject binding; bounded FU21 candidates and FU22 least-privilege role separation;
+  atomic policy CAS/replay/audit contracts; descendant Global Product/GSKU/LSKU/Finished Good enforcement before
+  paging, reservation or mutation; and default-disabled lease/fence based Enforced/suspension recovery. Current
+  non-Mongo focused runs pass Auth `6/6`, Platform `41/41`, MDM `113/114` and frontend `31/31`. The sole MDM failure is
+  the DI test's startup migration attempting `127.0.0.1:27017`; all-FQN attempts in Auth, Platform and MDM independently
+  report only connection-refused failures because the OS-level Mongo service is stopped. No code assertion failed.
+  Previously recorded real-Mongo evidence above remains authoritative until the coordinated H2 runtime restart.
+  Test compilation rebuilt the affected Auth, Platform and MDM API graphs successfully; the isolated frontend Release
+  build passes with zero errors and fourteen unrelated existing warnings. Bundled-Python Golden Slim verification
+  reproduces `74` pass / `17` controlled pack variances, exactly matching the recorded same-origin/no-bulk design.
+  Repository diff/conflict/whitespace checks remain clean. This review performed no process, configuration, business
+  data, navigation, commit or push mutation.
 
 Therefore this document remains `in-progress`: Sections 5 A-G, H1a and the default-disabled H1b runtime foundation
 are implemented; H1b Enforced activation/FailClosed suspension execution, live reconciliation and user acceptance
 are not complete.
+
+### User-visible completion — H2 Local Development operational acceptance amendment
+
+The 2026-09-05 code-truth audit found no additional runtime feature gap for the approved Legal-Entity-only MVP.
+The MDM management API, nav-hidden six-permission manifest, same-origin MVC proxy, Golden Slim management surface,
+FU21 trusted bounded Legal Entity candidate resolver, FU22 least-privilege role profile, descendant consumer
+enforcement and default-disabled H1b runner are present. WorkCenter is not required for this management foundation;
+Organization Unit targeting remains deliberately deferred. The remaining work is one bounded Local Development
+operational acceptance, not another implementation slice.
+
+H2 is standing-approved under the user's instruction to finish this capability without pausing. It grants no source,
+module-pack-other-than-evidence, registry, navigation, commit or push write authority. Its exact source/test allow-list
+is `none`: it must use only existing supported UI/API/reconciliation surfaces and the existing
+`--run-product-legal-entity-scope-operational` CLI. Secrets may exist only in process memory/environment for the run
+and must not be persisted or reported. Production/Staging remains prohibited.
+
+H2 must execute and evidence this exact sequence:
+
+1. Re-read the target tenant's active, non-deleted Legal Entity inventory through the supported Legal Entity API.
+   The historical zero-entity snapshot above is evidence of that earlier run, not a current assumption. FU03 must
+   neither create a synthetic Legal Entity nor infer Organization Unit targets.
+2. Provision/rotate the dedicated FU21 `DITENMDMSERVICE` credential, exact audience and only the six approved
+   `(product-item-sku-master, mdm.product-legal-entity-scopes.*)` pairs through the supported Local Development
+   operational mechanism. Prove wrong/revoked/expired credential, wrong audience and undeclared pair fail before
+   candidate reads; remove temporary secret material after acceptance.
+3. Reconcile the nav-hidden manifest/catalog and active entitlement through supported Platform/Auth flows. Prove
+   the exact FU22 matrix: Tenant Admin `read`; Tenant Viewer none; `ProductLegalEntityScopeSteward`
+   `read/configure/replace/end`; `ProductLegalEntityScopeAuditor` `read`; and
+   `ProductLegalEntityScopeRolloutOperator` `read/activate/rollback`. No role receives an automatic user assignment.
+   Assign only named temporary acceptance subjects through the supported Auth API and remove those memberships at
+   cleanup.
+4. While the persisted rollout is `Preparation`, classify every non-deleted, non-`Retired` Global Product explicitly
+   as `GroupWide` or `Scoped`. A Scoped decision must select only real, active, same-tenant Legal Entities returned by
+   FU21. No product may be auto-classified and an empty candidate set must not be converted to GroupWide. Exercise
+   configure, replace, end and history/read-back with exact expected-version and idempotent replay behavior.
+5. Deliver and compact all prior type-7 policy intents through the existing G4 consumer into MOD-0021-FU01. Prove
+   the mutually bound central acknowledgement/compact receipt for each local intent; final `audit_events` presence
+   alone is not sufficient.
+6. Run exact `Inspect`, record the bounded inventory snapshot, verify zero missing products, zero descendant-chain
+   orphan, zero inventory delta and clean type-7/type-8 audit facts, then invoke exact `ActivateEnforced` with the
+   persisted rollout ID/version, a new command ID, trusted actor and bounded reason. A same-command replay must return
+   the same operation-14 identity and may become complete only after the genuine compact receipt is read back.
+7. With fresh logins/tokens, prove the live permission and row-scope matrix through Frontend `5001` -> Gateway `5000`:
+   Steward management allow; Auditor read/history allow and all mutation deny; Admin read-only; Viewer deny. Prove the
+   create-options conjunction `configure + global-products.read + legal-entities.read`, tenant A/B non-disclosure,
+   Scoped membership visibility across Global Product/GSKU/LSKU/Finished Good/ABB, and Enforced GroupWide plus an
+   empty trusted/local candidate intersection denies. Browser console errors and direct `5057/5059` browser calls
+   must both be zero.
+8. Prove fail-closed suspension on a disposable Local Development tenant or an owner-approved restoration path; do
+   not leave the pilot tenant in `FailClosedSuspended`. Exact `SuspendFailClosed` replay must preserve one operation-15
+   identity and remain deny-by-default until its genuine compact receipt is read back. If no supported safe restoration
+   path exists, suspension evidence remains a separate open acceptance item and must not be simulated by direct Mongo.
+9. Cleanup temporary user-role memberships and process-only credentials, then re-read entitlement, roles, grants,
+   rollout, policies, audit receipts and business cardinalities. Direct Mongo writes, fabricated acknowledgement,
+   implicit GroupWide assignment, new Product creation after Enforced and navigation enablement are forbidden.
+
+FU03 may be reported user-visible complete for the Legal-Entity-only MVP only when steps 1-7 and 9 are evidenced and
+step 8 is either safely completed or explicitly retained as the sole operational rollback drill. Navigation remains
+hidden for item 7 of the user's delivery sequence and is not a blocker to this H2 acceptance. Until then, the truthful
+state is runtime-complete but operational-acceptance-open.
+
+### Navigation item 7 activation gate (user-approved; source implemented, acceptance pending)
+
+The user's 2026-09-06 navigation approval supersedes H2's earlier source-level navigation exclusion but does not waive
+H2 operational acceptance. The source-owned visibility flip and its seven normalized navigation labels are now
+implemented; they are not evidence that a real scope policy has been operationally accepted. The exact MDM allow-list is
+`ProductItemSkuMasterManifestProvider.cs`, limited to the existing `PRODUCT_LEGAL_ENTITY_SCOPES` page's
+`IsNavigationVisible` value, plus its existing manifest test. The exact frontend allow-list is the seven existing
+`SharedResource.*.resx` files, limited to `Nav.Page.PRODUCT_LEGAL_ENTITY_SCOPES`.
+
+The route remains exact `/MasterDataManagement/ProductLegalEntityScopes` and the menu remains gated by
+`mdm.product-legal-entity-scopes.read`. No Legal Entity, policy, rollout, permission, grant, controller, Gateway route,
+layout, handwritten menu or static search entry is created by navigation activation. H2 steps 1-7 and 9 must first be
+green, including real active Legal Entity inventory, explicit product classification, genuine audit receipts,
+Enforced rollout and fresh-token row-scope acceptance. Then self-registration/menu acceptance must prove one catalog
+page, seven localized labels, entitled-reader visibility, absence without read/entitlement, route `200/403`, automatic
+tenant Ctrl+K discovery, no duplicate menu node and console/network cleanliness. Until those gates close, the source
+change is not delivery-accepted or eligible for final merge approval.
 
 ## 20. Follow-up Items
 

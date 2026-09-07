@@ -9,5 +9,6 @@ public enum AuditAggregateType
     FinishedGood = 5,
     Lsku = 6,
     ProductLegalEntityScopePolicy = 7,
-    ProductLegalEntityScopeRolloutState = 8
+    ProductLegalEntityScopeRolloutState = 8,
+    ProductAbbreviation = 9
 }

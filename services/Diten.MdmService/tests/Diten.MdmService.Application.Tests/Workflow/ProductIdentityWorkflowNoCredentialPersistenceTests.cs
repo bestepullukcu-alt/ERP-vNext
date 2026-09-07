@@ -18,6 +18,7 @@ public sealed class ProductIdentityWorkflowNoCredentialPersistenceTests
             typeof(ProductIdentityWorkflowTerminalEvidence),
             typeof(GlobalProduct),
             typeof(GlobalProductIdentityWorkflowOperation),
+            typeof(GlobalProductCorrectionOperation),
             typeof(FirstGskuIdentityWorkflowOperation),
             typeof(Domain.ValueObjects.FirstGskuIdentityWorkflowBinding)
         };

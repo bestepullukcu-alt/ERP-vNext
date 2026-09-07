@@ -52,4 +52,12 @@
   <data name="ErrorUnauthorized" xml:space="preserve"><value>会话已过期，请重新登录。</value></data>
   <data name="ErrorServiceUnavailable" xml:space="preserve"><value>生命周期服务不可用，请稍后重试。</value></data>
   <data name="ErrorTimeout" xml:space="preserve"><value>生命周期请求超时，请重试。</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>撤回审批</value></data>
+  <data name="WithdrawConfirmation" xml:space="preserve"><value>撤回审批请求？</value></data>
+  <data name="WithdrawPending" xml:space="preserve"><value>撤回仍在处理中。</value></data>
+  <data name="WithdrawSuccess" xml:space="preserve"><value>审批请求已撤回。</value></data>
+  <data name="RequestRetirement" xml:space="preserve"><value>申请退役</value></data>
+  <data name="RetirementRequestConfirmation" xml:space="preserve"><value>提交退役申请？</value></data>
+  <data name="RetirementRequestPending" xml:space="preserve"><value>退役申请正在等待决定。</value></data>
+  <data name="RetirementRequestSuccess" xml:space="preserve"><value>退役申请已提交。</value></data>
 </root>

@@ -10,19 +10,29 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
 {
     private const string Read = "mdm.global-products.read";
     private const string Create = "mdm.global-products.create";
+    private const string Update = "mdm.global-products.update";
     private const string Submit = "mdm.global-products.submit";
+    private const string Withdraw = "mdm.global-products.withdraw";
     private const string Retire = "mdm.global-products.retire";
+    private const string RequestCorrection = "mdm.global-products.request-correction";
+    private const string RequestRetirement = "mdm.global-products.request-retirement";
     private const string FinishedGoodsRead = "mdm.finished-goods.read";
     private const string FinishedGoodsCreate = "mdm.finished-goods.create";
     private const string FinishedGoodsSubmit = "mdm.finished-goods.submit";
     private const string FinishedGoodsRetire = "mdm.finished-goods.retire";
     private const string GskusRead = "mdm.gskus.read";
     private const string GskusCreate = "mdm.gskus.create";
+    private const string GskusUpdate = "mdm.gskus.update";
     private const string GskusSubmit = "mdm.gskus.submit";
+    private const string GskusWithdraw = "mdm.gskus.withdraw";
+    private const string GskusRequestCorrection = "mdm.gskus.request-correction";
+    private const string GskusRequestRetirement = "mdm.gskus.request-retirement";
     private const string GskusRetire = "mdm.gskus.retire";
     private const string LskusRead = "mdm.lskus.read";
     private const string LskusCreate = "mdm.lskus.create";
     private const string LskusSubmit = "mdm.lskus.submit";
+    private const string LskusWithdraw = "mdm.lskus.withdraw";
+    private const string LskusRequestRetirement = "mdm.lskus.request-retirement";
     private const string LskusRetire = "mdm.lskus.retire";
     private const string ProductAbbreviationsRead = "mdm.product-abbreviations.read";
     private const string ProductAbbreviationsRequest = "mdm.product-abbreviations.request";
@@ -66,8 +76,12 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                     [
                         new ModuleManifestAction("ADD_NEW", "Add New", Create, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
                         new ModuleManifestAction("VIEW_DETAILS", "View Details", Read, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("EDIT", "Edit", Update, "RowAction", 25, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("SUBMIT", "Submit", Submit, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
-                        new ModuleManifestAction("RETIRE", "Retire", Retire, "RowAction", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("WITHDRAW_APPROVAL", "Withdraw Approval", Withdraw, "RowAction", 35, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("REQUEST_CORRECTION", "Request Correction", RequestCorrection, "RowAction", 37, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("REQUEST_RETIREMENT", "Request Retirement", RequestRetirement, "RowAction", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("RETIRE", "Retire", Retire, "System", 41, IsDangerous: true, IsToolbarAction: false, IsRowAction: false),
                         new ModuleManifestAction(
                             "RECOVER_ORPHANED_LIFECYCLE_OPERATION",
                             "Recover Orphaned Lifecycle Operation",
@@ -107,8 +121,12 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                     [
                         new ModuleManifestAction("ADD_NEW", "Add New", GskusCreate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
                         new ModuleManifestAction("VIEW_DETAILS", "View Details", GskusRead, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("EDIT", "Edit", GskusUpdate, "RowAction", 25, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("SUBMIT", "Submit", GskusSubmit, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
-                        new ModuleManifestAction("RETIRE", "Retire", GskusRetire, "RowAction", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
+                        new ModuleManifestAction("WITHDRAW_APPROVAL", "Withdraw Approval", GskusWithdraw, "RowAction", 35, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("REQUEST_CORRECTION", "Request Correction", GskusRequestCorrection, "RowAction", 37, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("REQUEST_RETIREMENT", "Request Retirement", GskusRequestRetirement, "RowAction", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("RETIRE", "Retire", GskusRetire, "System", 41, IsDangerous: true, IsToolbarAction: false, IsRowAction: false)
                     ]),
                 new ModuleManifestPage(
                     PageCode: "LSKUS",
@@ -116,7 +134,7 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                     RoutePath: "/MasterDataManagement/Lskus",
                     RequiredPermission: LskusRead,
                     ParentPageCode: null,
-                    IsNavigationVisible: false,
+                    IsNavigationVisible: true,
                     PageType: "List",
                     SortOrder: 40,
                     Actions:
@@ -124,7 +142,9 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                         new ModuleManifestAction("ADD_NEW", "Add New", LskusCreate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
                         new ModuleManifestAction("VIEW_DETAILS", "View Details", LskusRead, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("SUBMIT", "Submit", LskusSubmit, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
-                        new ModuleManifestAction("RETIRE", "Retire", LskusRetire, "RowAction", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
+                        new ModuleManifestAction("WITHDRAW_APPROVAL", "Withdraw Approval", LskusWithdraw, "RowAction", 35, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("REQUEST_RETIREMENT", "Request Retirement", LskusRequestRetirement, "RowAction", 37, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("RETIRE", "Retire", LskusRetire, "System", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: false)
                     ]),
                 new ModuleManifestPage(
                     PageCode: "PRODUCT_ABBREVIATIONS",
@@ -132,7 +152,7 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                     RoutePath: "/MDM/ProductAbbreviationRegister",
                     RequiredPermission: ProductAbbreviationsRead,
                     ParentPageCode: null,
-                    IsNavigationVisible: false,
+                    IsNavigationVisible: true,
                     PageType: "List",
                     SortOrder: 50,
                     Actions:
@@ -152,7 +172,7 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                     RoutePath: "/MasterDataManagement/ProductLegalEntityScopes",
                     RequiredPermission: ProductScopesRead,
                     ParentPageCode: null,
-                    IsNavigationVisible: false,
+                    IsNavigationVisible: true,
                     PageType: "List",
                     SortOrder: 60,
                     Actions:

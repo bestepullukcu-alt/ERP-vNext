@@ -52,4 +52,12 @@
   <data name="ErrorUnauthorized" xml:space="preserve"><value>Oturumunuzun süresi doldu. Lütfen yeniden giriş yapın.</value></data>
   <data name="ErrorServiceUnavailable" xml:space="preserve"><value>Yaşam döngüsü hizmeti kullanılamıyor. Daha sonra yeniden deneyin.</value></data>
   <data name="ErrorTimeout" xml:space="preserve"><value>Yaşam döngüsü isteği zaman aşımına uğradı. Yeniden deneyin.</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>Onayı Geri Çek</value></data>
+  <data name="WithdrawConfirmation" xml:space="preserve"><value>Onay talebi geri çekilsin mi?</value></data>
+  <data name="WithdrawPending" xml:space="preserve"><value>Geri çekme işlemi devam ediyor.</value></data>
+  <data name="WithdrawSuccess" xml:space="preserve"><value>Onay talebi geri çekildi.</value></data>
+  <data name="RequestRetirement" xml:space="preserve"><value>Emeklilik Talep Et</value></data>
+  <data name="RetirementRequestConfirmation" xml:space="preserve"><value>Emeklilik talebi gönderilsin mi?</value></data>
+  <data name="RetirementRequestPending" xml:space="preserve"><value>Emeklilik talebi karar bekliyor.</value></data>
+  <data name="RetirementRequestSuccess" xml:space="preserve"><value>Emeklilik talebi gönderildi.</value></data>
 </root>

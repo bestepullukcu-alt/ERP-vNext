@@ -6,7 +6,10 @@ public static class ProductAbbreviationWorkItemContract
 {
     public const string ProviderCode = "mdm-product-abbreviations";
     public const string ContractVersion = "1.0";
-    public const string ObjectType = "productAbbreviationAllocationRequest";
+    public const string AllocationObjectType = "productAbbreviationAllocationRequest";
+    public const string CorrectionObjectType = "productAbbreviationCorrectionRequest";
+    public const string RetirementObjectType = "productAbbreviationRetirementRequest";
+    public const string ObjectType = AllocationObjectType;
     public const int MaximumItems = 100;
     public const int OverflowSentinelLimit = MaximumItems + 1;
 

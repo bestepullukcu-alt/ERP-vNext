@@ -52,4 +52,12 @@
   <data name="ErrorUnauthorized" xml:space="preserve"><value>انتهت جلستك. يرجى تسجيل الدخول مجدداً.</value></data>
   <data name="ErrorServiceUnavailable" xml:space="preserve"><value>خدمة دورة الحياة غير متاحة. حاول لاحقاً.</value></data>
   <data name="ErrorTimeout" xml:space="preserve"><value>انتهت مهلة طلب دورة الحياة. حاول مرة أخرى.</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>سحب الموافقة</value></data>
+  <data name="WithdrawConfirmation" xml:space="preserve"><value>هل تريد سحب طلب الموافقة؟</value></data>
+  <data name="WithdrawPending" xml:space="preserve"><value>لا تزال عملية السحب قيد المعالجة.</value></data>
+  <data name="WithdrawSuccess" xml:space="preserve"><value>تم سحب طلب الموافقة.</value></data>
+  <data name="RequestRetirement" xml:space="preserve"><value>طلب الإحالة للتقاعد</value></data>
+  <data name="RetirementRequestConfirmation" xml:space="preserve"><value>هل تريد إرسال طلب الإحالة للتقاعد؟</value></data>
+  <data name="RetirementRequestPending" xml:space="preserve"><value>طلب الإحالة للتقاعد بانتظار القرار.</value></data>
+  <data name="RetirementRequestSuccess" xml:space="preserve"><value>تم إرسال طلب الإحالة للتقاعد.</value></data>
 </root>

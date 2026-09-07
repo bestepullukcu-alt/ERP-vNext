@@ -70,12 +70,15 @@ public sealed class ProductIdentityWorkflowDependencyInjectionTests
         Assert.Contains("AddHostedService<FirstGskuIdentityWorkflowRecoveryWorker>()", source, StringComparison.Ordinal);
         Assert.Contains("FirstGskuIdentityWorkflowRecoveryCommandLine.IsRequested(args)", source, StringComparison.Ordinal);
         Assert.Contains("AddScoped<FirstGskuIdentityRetirementProcessor>()", source, StringComparison.Ordinal);
+        Assert.Contains("AddHostedService<GlobalProductCorrectionRecoveryWorker>()", source, StringComparison.Ordinal);
         Assert.Contains("ValidateOnStart()", source, StringComparison.Ordinal);
         Assert.DoesNotContain("TRUSTED_WORKFLOW_CONSUMER", source, StringComparison.Ordinal);
         Assert.False(new Diten.MdmService.Api.Configuration.ProductIdentityWorkflowWorkerOptions().Enabled);
         Assert.False(new Diten.MdmService.Api.Configuration.ProductIdentityWorkflowOptions().Enabled);
         Assert.False(new Diten.MdmService.Api.Configuration.FirstGskuIdentityWorkflowWorkerOptions().Enabled);
         Assert.False(new Diten.MdmService.Api.Configuration.FirstGskuIdentityWorkflowOptions().Enabled);
+        Assert.False(new Diten.MdmService.Api.Configuration.GlobalProductCorrectionWorkflowOptions().Enabled);
+        Assert.False(new Diten.MdmService.Api.Configuration.GlobalProductCorrectionWorkflowWorkerOptions().Enabled);
     }
 
     private static string FindRepositoryRoot()

@@ -52,6 +52,35 @@ public sealed class GskusController : CustomBaseController
             new CreateFirstGskuDraftFacadeCommand(request, operationId),
             cancellationToken));
 
+    [HttpPut("{id:guid}")]
+    [HasPermission(FirstGskuIdentityLifecyclePermissions.Update)]
+    public async Task<IActionResult> UpdateDraft(
+        Guid id,
+        [FromBody] UpdateGskuDraftApiRequest request,
+        [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
+        CancellationToken cancellationToken)
+    {
+        if (request is null || request.ExpectedVersion is null || request.PackQuantity is null
+            || string.IsNullOrWhiteSpace(request.PackUomCode) || HasUnknownFields(request.UnmappedFields))
+        {
+            return InvalidLifecycleRequest();
+        }
+        if (!TryParseOperationId(idempotencyKey, out var operationId))
+        {
+            return InvalidIdempotencyKey();
+        }
+
+        return CreateActionResultInstance(await _mediator.Send(
+            new UpdateGskuDraftCommand(new()
+            {
+                GskuId = id,
+                ExpectedVersion = request.ExpectedVersion.Value,
+                PackQuantity = request.PackQuantity.Value,
+                PackUomCode = request.PackUomCode
+            }, operationId),
+            cancellationToken));
+    }
+
     [HttpPost("{id:guid}/submit")]
     [HasPermission(FirstGskuIdentityLifecyclePermissions.Submit)]
     public async Task<IActionResult> SubmitIdentity(
@@ -72,6 +101,92 @@ public sealed class GskusController : CustomBaseController
         return CreateActionResultInstance(await _mediator.Send(
             new StartFirstGskuIdentityWorkflowCommand(
                 new(id, request.ExpectedVersion.Value, operationId)),
+            cancellationToken));
+    }
+
+    [HttpPost("{id:guid}/identity-approval/withdraw")]
+    [HasPermission(FirstGskuIdentityLifecyclePermissions.Withdraw)]
+    public async Task<IActionResult> WithdrawIdentityApproval(
+        Guid id,
+        [FromBody] WithdrawGskuIdentityApprovalApiRequest request,
+        [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
+        CancellationToken cancellationToken)
+    {
+        if (request is null || request.ExpectedGskuVersion is null
+            || !HasRequiredExactText(request.ReasonCode, 128)
+            || request.Comment is not null && !HasOptionalExactText(request.Comment, 2000)
+            || HasUnknownFields(request.UnmappedFields))
+        {
+            return InvalidLifecycleRequest();
+        }
+        if (!TryParseOperationId(idempotencyKey, out var operationId))
+        {
+            return InvalidIdempotencyKey();
+        }
+
+        return CreateActionResultInstance(await _mediator.Send(
+            new WithdrawFirstGskuIdentityApprovalCommand(new(
+                id,
+                request.ExpectedGskuVersion.Value,
+                operationId,
+                request.ReasonCode,
+                request.Comment)),
+            cancellationToken));
+    }
+
+    [HttpPost("{id:guid}/correction-requests")]
+    [HasPermission(GskuCorrectionPermissions.Request)]
+    public async Task<IActionResult> RequestCorrection(
+        Guid id,
+        [FromBody] RequestGskuCorrectionApiRequest request,
+        [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
+        CancellationToken cancellationToken)
+    {
+        if (request is null || request.ExpectedGskuVersion is null || request.PackQuantity is null
+            || string.IsNullOrWhiteSpace(request.PackUomCode)
+            || request.PackUomCode.Length > 16
+            || request.PackUomCode.Any(char.IsControl)
+            || HasUnknownFields(request.UnmappedFields))
+        {
+            return InvalidLifecycleRequest();
+        }
+        if (!TryParseOperationId(idempotencyKey, out var operationId))
+        {
+            return InvalidIdempotencyKey();
+        }
+
+        return CreateActionResultInstance(await _mediator.Send(
+            new StartGskuCorrectionWorkflowCommand(new(
+                id,
+                request.ExpectedGskuVersion.Value,
+                operationId,
+                request.PackQuantity.Value,
+                request.PackUomCode)),
+            cancellationToken));
+    }
+
+    [HttpPost("{id:guid}/retirement-requests")]
+    [HasPermission(GskuRetirementRequestPermissions.Request)]
+    public async Task<IActionResult> RequestRetirement(
+        Guid id,
+        [FromBody] RequestGskuRetirementApiRequest request,
+        [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
+        CancellationToken cancellationToken)
+    {
+        if (request is null || request.ExpectedGskuVersion is null
+            || !HasRequiredExactText(request.RequestReason, 128)
+            || HasUnknownFields(request.UnmappedFields))
+        {
+            return InvalidLifecycleRequest();
+        }
+        if (!TryParseOperationId(idempotencyKey, out var operationId))
+        {
+            return InvalidIdempotencyKey();
+        }
+
+        return CreateActionResultInstance(await _mediator.Send(
+            new StartGskuRetirementRequestWorkflowCommand(new(
+                id, request.ExpectedGskuVersion.Value, operationId, request.RequestReason)),
             cancellationToken));
     }
 
@@ -103,6 +218,15 @@ public sealed class GskusController : CustomBaseController
 
     private static bool HasUnknownFields(IDictionary<string, JsonElement>? fields) => fields is { Count: > 0 };
 
+    private static bool HasRequiredExactText(string? value, int maximumLength) =>
+        !string.IsNullOrEmpty(value)
+        && HasOptionalExactText(value, maximumLength);
+
+    private static bool HasOptionalExactText(string value, int maximumLength) =>
+        value.Length <= maximumLength
+        && string.Equals(value, value.Trim(), StringComparison.Ordinal)
+        && !value.Any(char.IsControl);
+
     private IActionResult InvalidLifecycleRequest() =>
         CreateActionResultInstance(Response<NoContent>.Fail("GSKU_IDENTITY_LIFECYCLE_REQUEST_INVALID", 400));
 
@@ -112,6 +236,45 @@ public sealed class GskusController : CustomBaseController
     public sealed class SubmitGskuIdentityApiRequest
     {
         public int? ExpectedVersion { get; init; }
+
+        [JsonExtensionData]
+        public IDictionary<string, JsonElement>? UnmappedFields { get; init; }
+    }
+
+    public sealed class UpdateGskuDraftApiRequest
+    {
+        public int? ExpectedVersion { get; init; }
+        public decimal? PackQuantity { get; init; }
+        public string? PackUomCode { get; init; }
+
+        [JsonExtensionData]
+        public IDictionary<string, JsonElement>? UnmappedFields { get; init; }
+    }
+
+    public sealed class WithdrawGskuIdentityApprovalApiRequest
+    {
+        public int? ExpectedGskuVersion { get; init; }
+        public string ReasonCode { get; init; } = string.Empty;
+        public string? Comment { get; init; }
+
+        [JsonExtensionData]
+        public IDictionary<string, JsonElement>? UnmappedFields { get; init; }
+    }
+
+    public sealed class RequestGskuCorrectionApiRequest
+    {
+        public int? ExpectedGskuVersion { get; init; }
+        public decimal? PackQuantity { get; init; }
+        public string? PackUomCode { get; init; }
+
+        [JsonExtensionData]
+        public IDictionary<string, JsonElement>? UnmappedFields { get; init; }
+    }
+
+    public sealed class RequestGskuRetirementApiRequest
+    {
+        public int? ExpectedGskuVersion { get; init; }
+        public string RequestReason { get; init; } = string.Empty;
 
         [JsonExtensionData]
         public IDictionary<string, JsonElement>? UnmappedFields { get; init; }

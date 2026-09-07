@@ -40,6 +40,7 @@ public sealed class LskuRepository : ILskuRepository
         int pageNumber,
         int pageSize,
         string? search,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
         CancellationToken cancellationToken = default)
     {
         var filter = ActiveFilter;
@@ -53,6 +54,10 @@ public sealed class LskuRepository : ILskuRepository
                 Builders<Lsku>.Filter.Regex(
                     x => x.MarketCode,
                     new BsonRegularExpression("^" + escaped)));
+        }
+        if (lifecycleStatus.HasValue)
+        {
+            filter &= Builders<Lsku>.Filter.Eq(x => x.LifecycleStatus, lifecycleStatus.Value);
         }
 
         var totalCount = await _lskus.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
@@ -70,6 +75,7 @@ public sealed class LskuRepository : ILskuRepository
         int pageNumber,
         int pageSize,
         string? search,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
         IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
         DateTimeOffset serverNowUtc,
         CancellationToken cancellationToken = default)
@@ -79,6 +85,10 @@ public sealed class LskuRepository : ILskuRepository
             { nameof(Lsku.TenantId), ProductLegalEntityScopeAggregation.GuidBson(_tenantId) },
             { nameof(Lsku.IsDeleted), false }
         };
+        if (lifecycleStatus.HasValue)
+        {
+            match[nameof(Lsku.LifecycleStatus)] = (int)lifecycleStatus.Value;
+        }
         if (!string.IsNullOrWhiteSpace(search))
         {
             var escaped = System.Text.RegularExpressions.Regex.Escape(search);
@@ -331,16 +341,96 @@ public sealed class LskuRepository : ILskuRepository
         int expectedVersion,
         LocalAuditIntent auditIntent,
         CancellationToken cancellationToken = default) =>
-        ApplyLifecycleAsync(
-            id,
-            expectedVersion,
-            ProductIdentityLifecycleStatus.IdentityApproved,
-            ProductIdentityLifecycleStatus.Retired,
-            ProductAuditOperation.LskuIdentityRetired,
-            auditIntent,
-            null,
-            null,
-            cancellationToken);
+        RetireIdentityCoreAsync(id, expectedVersion, null, auditIntent, cancellationToken);
+
+    public async Task<LskuLifecycleWriteResult> AcquireLifecycleOperationAsync(
+        Guid id, int expectedVersion, LskuActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default)
+    {
+        if (id == Guid.Empty || binding.OperationId == Guid.Empty || binding.BaseLskuVersion != expectedVersion
+            || binding.Kind != LskuLifecycleOperationKind.Retirement
+            || !ValidAudit(id, expectedVersion, ProductAuditOperation.LskuRetirementRequested, auditIntent))
+            return new(false, null, "LSKU_LIFECYCLE_OPERATION_CONTRACT_INVALID");
+        var replay = await FindLifecycleReplayAsync(id, auditIntent, cancellationToken);
+        if (replay is not null)
+            return replay.Succeeded && replay.Lsku?.ActiveLifecycleOperation != binding
+                ? new(false, replay.Lsku, "LSKU_LIFECYCLE_OPERATION_IDEMPOTENCY_CONFLICT")
+                : replay;
+        var updated = await _lskus.FindOneAndUpdateAsync(
+            ActiveFilter & Builders<Lsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Lsku>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<Lsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved)
+            & Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
+            & Builders<Lsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate)
+            & new BsonDocumentFilterDefinition<Lsku>(new BsonDocument("$expr", new BsonDocument("$lt",
+                new BsonArray { new BsonDocument("$bsonSize", "$$ROOT"), 1024 * 1024 - 4096 }))),
+            Builders<Lsku>.Update.Set(x => x.ActiveLifecycleOperation, binding)
+                .Set(x => x.UpdatedAt, auditIntent.TimestampUtc).Inc(x => x.Version, 1)
+                .Push(x => x.AuditIntents, auditIntent),
+            new FindOneAndUpdateOptions<Lsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        return updated is null ? new(false, await GetByIdAsync(id, cancellationToken),
+            "LSKU_LIFECYCLE_OPERATION_CONFLICT") : new(true, updated);
+    }
+
+    public async Task<LskuLifecycleWriteResult> ApplyRetirementDecisionAsync(
+        Guid id, int expectedVersion, LskuActiveLifecycleOperationBinding binding, bool approved,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default)
+    {
+        var operation = approved ? ProductAuditOperation.LskuIdentityRetired : ProductAuditOperation.LskuRetirementRejected;
+        if (id == Guid.Empty || binding.OperationId == Guid.Empty
+            || !ValidAudit(id, expectedVersion, operation, auditIntent))
+            return new(false, null, "LSKU_RETIREMENT_DECISION_CONTRACT_INVALID");
+        if (approved)
+            return await RetireIdentityCoreAsync(id, expectedVersion, binding, auditIntent, cancellationToken);
+        var replay = await FindLifecycleReplayAsync(id, auditIntent, cancellationToken);
+        if (replay is not null) return replay;
+        var updated = await _lskus.FindOneAndUpdateAsync(
+            ActiveFilter & Builders<Lsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Lsku>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<Lsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved)
+            & Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation, binding)
+            & Builders<Lsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate)
+            & new BsonDocumentFilterDefinition<Lsku>(new BsonDocument("$expr", new BsonDocument("$lt",
+                new BsonArray { new BsonDocument("$bsonSize", "$$ROOT"), 1024 * 1024 - 4096 }))),
+            Builders<Lsku>.Update
+                .Set(x => x.LifecycleStatus, approved ? ProductIdentityLifecycleStatus.Retired
+                    : ProductIdentityLifecycleStatus.IdentityApproved)
+                .Set(x => x.ActiveLifecycleOperation, null)
+                .Set(x => x.UpdatedAt, auditIntent.TimestampUtc).Inc(x => x.Version, 1)
+                .Push(x => x.AuditIntents, auditIntent),
+            new FindOneAndUpdateOptions<Lsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        return updated is null ? new(false, await GetByIdAsync(id, cancellationToken),
+            "LSKU_RETIREMENT_DECISION_CONFLICT") : new(true, updated);
+    }
+
+    private async Task<LskuLifecycleWriteResult> RetireIdentityCoreAsync(Guid id, int expectedVersion,
+        LskuActiveLifecycleOperationBinding? requiredBinding, LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken)
+    {
+        if (id == Guid.Empty || expectedVersion < 0
+            || requiredBinding is not null && (requiredBinding.OperationId == Guid.Empty
+                || requiredBinding.Kind != LskuLifecycleOperationKind.Retirement)
+            || !ValidAudit(id, expectedVersion, ProductAuditOperation.LskuIdentityRetired, auditIntent))
+            return new(false, null, "LSKU_IDENTITY_LIFECYCLE_CONTRACT_INVALID");
+        var replay = await FindLifecycleReplayAsync(id, auditIntent, cancellationToken);
+        if (replay is not null) return replay;
+        var filter = ActiveFilter & Builders<Lsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Lsku>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<Lsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved)
+            & (requiredBinding is null
+                ? Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
+                : Builders<Lsku>.Filter.Eq(x => x.ActiveLifecycleOperation, requiredBinding))
+            & Builders<Lsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate)
+            & new BsonDocumentFilterDefinition<Lsku>(new BsonDocument("$expr", new BsonDocument("$lt",
+                new BsonArray { new BsonDocument("$bsonSize", "$$ROOT"), 1024 * 1024 - 4096 })));
+        var update = Builders<Lsku>.Update.Set(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Retired)
+            .Set(x => x.ActiveLifecycleOperation, null).Set(x => x.UpdatedAt, auditIntent.TimestampUtc)
+            .Inc(x => x.Version, 1).Push(x => x.AuditIntents, auditIntent);
+        var updated = await _lskus.FindOneAndUpdateAsync(filter, update,
+            new FindOneAndUpdateOptions<Lsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        return updated is null ? new(false, await GetByIdAsync(id, cancellationToken),
+            "LSKU_IDENTITY_LIFECYCLE_CONFLICT") : new(true, updated);
+    }
 
     private async Task<LskuLifecycleWriteResult> ApplyLifecycleAsync(
         Guid id,
@@ -509,6 +599,10 @@ public sealed class LskuRepository : ILskuRepository
                 ProductIdentityLifecycleStatus.Draft,
             ProductAuditOperation.LskuIdentityRetired =>
                 ProductIdentityLifecycleStatus.Retired,
+            ProductAuditOperation.LskuRetirementRequested =>
+                ProductIdentityLifecycleStatus.IdentityApproved,
+            ProductAuditOperation.LskuRetirementRejected =>
+                ProductIdentityLifecycleStatus.IdentityApproved,
             _ => (ProductIdentityLifecycleStatus)(-1)
         };
 

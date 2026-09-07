@@ -1,4 +1,5 @@
 using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.ValueObjects;
 
 namespace Diten.MdmService.Domain.Repositories;
 
@@ -18,4 +19,14 @@ public interface IFirstGskuIdentityWorkflowOperationRepository
     Task<bool> AdvanceAsync(
         FirstGskuIdentityWorkflowClaim claim, FirstGskuIdentityWorkflowCheckpointMutation mutation,
         CancellationToken cancellationToken = default);
+    Task<FirstGskuIdentityWithdrawalWriteResult> ApplyWithdrawalAsync(
+        FirstGskuIdentityWorkflowClaim claim,
+        FirstGskuIdentityWorkflowOperation operation,
+        ProductIdentityWorkflowCancellationEvidence cancellationEvidence,
+        LocalAuditIntent revisionAuditIntent,
+        LocalAuditIntent gskuAuditIntent,
+        long updatedAtUtcTicks,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult(new FirstGskuIdentityWithdrawalWriteResult(
+            false, false, null, null, "FIRST_GSKU_IDENTITY_WITHDRAWAL_NOT_IMPLEMENTED"));
 }

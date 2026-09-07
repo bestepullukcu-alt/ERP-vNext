@@ -3,6 +3,7 @@ using Diten.MdmService.Application.Common;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
+using Diten.MdmService.Domain.ValueObjects;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -13,13 +14,17 @@ public sealed class LskuIdentityWorkflowOperationRepository
 {
     public const string CollectionName = "mdm_lsku_identity_workflow_operations";
     private readonly IMongoCollection<LskuIdentityWorkflowOperation> _operations;
+    private readonly IMongoCollection<Lsku> _lskus;
+    private readonly IMongoDatabase _database;
     private readonly Guid _tenantId;
 
     public LskuIdentityWorkflowOperationRepository(
         IMongoDatabase database,
         ITenantContext tenantContext)
     {
+        _database = database;
         _operations = database.GetCollection<LskuIdentityWorkflowOperation>(CollectionName);
+        _lskus = database.GetCollection<Lsku>("mdm_lskus");
         _tenantId = tenantContext.TenantId;
         EnsureIndexes();
     }
@@ -63,6 +68,22 @@ public sealed class LskuIdentityWorkflowOperationRepository
         operation.ApprovalMarketSelection = null;
         operation.MarketValidatedAtUtcTicksV1 = null;
         operation.ApprovalMarketProofFingerprint = null;
+        operation.WithdrawalCommandId = null;
+        operation.WithdrawalFingerprint = null;
+        operation.WithdrawalRequesterSubjectId = null;
+        operation.WithdrawalExpectedLskuVersion = null;
+        operation.WithdrawalReasonCode = null;
+        operation.WithdrawalComment = null;
+        operation.WithdrawalExpectedWorkflowInstanceVersion = null;
+        operation.WithdrawalExpectedApprovalTaskVersion = null;
+        operation.WithdrawalTransitionLogId = null;
+        operation.WithdrawalObservedAtUtcTicksV1 = null;
+        operation.WithdrawalTransitionSequence = null;
+        operation.WithdrawalResultWorkflowInstanceVersion = null;
+        operation.WithdrawalResultApprovalTaskVersion = null;
+        operation.WithdrawalTaskStatus = null;
+        operation.WithdrawalInstanceStatus = null;
+        operation.WithdrawalObjectRef = null;
         operation.NextAttemptAtUtcTicksV1 = null;
         operation.LastFailureCode = null;
         operation.LeaseOwner = null;
@@ -368,6 +389,22 @@ public sealed class LskuIdentityWorkflowOperationRepository
             update = update.Set(item => item.MarketValidatedAtUtcTicksV1, mutation.MarketValidatedAtUtcTicksV1);
         if (mutation.ApprovalMarketProofFingerprint is not null)
             update = update.Set(item => item.ApprovalMarketProofFingerprint, mutation.ApprovalMarketProofFingerprint);
+        if (mutation.WithdrawalCommandId.HasValue) update = update.Set(item => item.WithdrawalCommandId, mutation.WithdrawalCommandId);
+        if (mutation.WithdrawalFingerprint is not null) update = update.Set(item => item.WithdrawalFingerprint, mutation.WithdrawalFingerprint);
+        if (mutation.WithdrawalRequesterSubjectId.HasValue) update = update.Set(item => item.WithdrawalRequesterSubjectId, mutation.WithdrawalRequesterSubjectId);
+        if (mutation.WithdrawalExpectedLskuVersion.HasValue) update = update.Set(item => item.WithdrawalExpectedLskuVersion, mutation.WithdrawalExpectedLskuVersion);
+        if (mutation.WithdrawalReasonCode is not null) update = update.Set(item => item.WithdrawalReasonCode, mutation.WithdrawalReasonCode);
+        if (mutation.WithdrawalComment is not null) update = update.Set(item => item.WithdrawalComment, mutation.WithdrawalComment);
+        if (mutation.WithdrawalExpectedWorkflowInstanceVersion.HasValue) update = update.Set(item => item.WithdrawalExpectedWorkflowInstanceVersion, mutation.WithdrawalExpectedWorkflowInstanceVersion);
+        if (mutation.WithdrawalExpectedApprovalTaskVersion.HasValue) update = update.Set(item => item.WithdrawalExpectedApprovalTaskVersion, mutation.WithdrawalExpectedApprovalTaskVersion);
+        if (mutation.WithdrawalTransitionLogId.HasValue) update = update.Set(item => item.WithdrawalTransitionLogId, mutation.WithdrawalTransitionLogId);
+        if (mutation.WithdrawalObservedAtUtcTicksV1.HasValue) update = update.Set(item => item.WithdrawalObservedAtUtcTicksV1, mutation.WithdrawalObservedAtUtcTicksV1);
+        if (mutation.WithdrawalTransitionSequence.HasValue) update = update.Set(item => item.WithdrawalTransitionSequence, mutation.WithdrawalTransitionSequence);
+        if (mutation.WithdrawalResultWorkflowInstanceVersion.HasValue) update = update.Set(item => item.WithdrawalResultWorkflowInstanceVersion, mutation.WithdrawalResultWorkflowInstanceVersion);
+        if (mutation.WithdrawalResultApprovalTaskVersion.HasValue) update = update.Set(item => item.WithdrawalResultApprovalTaskVersion, mutation.WithdrawalResultApprovalTaskVersion);
+        if (mutation.WithdrawalTaskStatus is not null) update = update.Set(item => item.WithdrawalTaskStatus, mutation.WithdrawalTaskStatus);
+        if (mutation.WithdrawalInstanceStatus is not null) update = update.Set(item => item.WithdrawalInstanceStatus, mutation.WithdrawalInstanceStatus);
+        if (mutation.WithdrawalObjectRef is not null) update = update.Set(item => item.WithdrawalObjectRef, mutation.WithdrawalObjectRef);
         if (mutation.ReleaseLease)
         {
             update = update.Set(item => item.LeaseOwner, null).Set(item => item.LeaseUntilUtcTicksV1, null);
@@ -376,6 +413,109 @@ public sealed class LskuIdentityWorkflowOperationRepository
         var result = await _operations.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
         return result.ModifiedCount == 1;
     }
+
+    public async Task<LskuIdentityWithdrawalWriteResult> ApplyWithdrawalAsync(
+        LskuIdentityWorkflowClaim claim,
+        LskuIdentityWorkflowOperation operation,
+        ProductIdentityWorkflowCancellationEvidence cancellationEvidence,
+        LocalAuditIntent auditIntent,
+        long updatedAtUtcTicks,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        ArgumentNullException.ThrowIfNull(cancellationEvidence);
+        ArgumentNullException.ThrowIfNull(auditIntent);
+        if (claim.TenantId != _tenantId || claim.OperationId != operation.OperationId
+            || claim.OperationFingerprint != operation.OperationFingerprint
+            || claim.Checkpoint != LskuIdentityWorkflowCheckpoint.WithdrawalObserved
+            || updatedAtUtcTicks <= 0 || operation.WithdrawalExpectedLskuVersion is not > 0
+            || operation.WithdrawalCommandId is not { } commandId || commandId == Guid.Empty
+            || cancellationEvidence.RequesterSubjectId != operation.MakerSubjectId
+            || cancellationEvidence.WorkflowInstanceId != operation.WorkflowInstanceId
+            || cancellationEvidence.ApprovalTaskId != operation.ApprovalTaskId
+            || cancellationEvidence.IdempotencyKey != commandId.ToString("D")
+            || auditIntent.Operation != ProductAuditOperation.LskuIdentityApprovalWithdrawn
+            || auditIntent.TenantId != _tenantId || auditIntent.AggregateType != AuditAggregateType.Lsku
+            || auditIntent.AggregateId != operation.LskuId
+            || auditIntent.PreVersion != operation.WithdrawalExpectedLskuVersion
+            || auditIntent.PostVersion != operation.WithdrawalExpectedLskuVersion + 1
+            || auditIntent.ActorId != operation.MakerSubjectId.ToString("D")
+            || auditIntent.IdempotencyKey != commandId.ToString("D"))
+            return new(false, false, null, "LSKU_IDENTITY_WITHDRAWAL_CONTRACT_INVALID");
+
+        var active = Builders<Lsku>.Filter.Eq(x => x.TenantId, _tenantId)
+                     & Builders<Lsku>.Filter.Eq(x => x.IsDeleted, false)
+                     & Builders<Lsku>.Filter.Eq(x => x.Id, operation.LskuId);
+        var current = await _lskus.Find(active).FirstOrDefaultAsync(cancellationToken);
+        if (ExactWithdrawalReplay(current, operation, commandId, auditIntent))
+            return new(true, true, current, null);
+
+        using var session = await _database.Client.StartSessionAsync(cancellationToken: cancellationToken);
+        session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
+        try
+        {
+            var result = await _lskus.UpdateOneAsync(session,
+                active
+                & Builders<Lsku>.Filter.Eq(x => x.Version, operation.WithdrawalExpectedLskuVersion.Value)
+                & Builders<Lsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.PendingIdentityApproval)
+                & Builders<Lsku>.Filter.Eq(x => x.IdentityWorkflowBinding!.WorkflowInstanceId, operation.WorkflowInstanceId)
+                & Builders<Lsku>.Filter.Eq(x => x.IdentityWorkflowBinding!.ApprovalTaskId, operation.ApprovalTaskId)
+                & Builders<Lsku>.Filter.Eq(x => x.IdentityWorkflowBinding!.SubmitterSubjectId, operation.MakerSubjectId)
+                & Builders<Lsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate),
+                Builders<Lsku>.Update
+                    .Set(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.Draft)
+                    .Set(x => x.IdentityWorkflowBinding!.CancellationEvidence, cancellationEvidence)
+                    .Set(x => x.UpdatedAt, new DateTimeOffset(updatedAtUtcTicks, TimeSpan.Zero))
+                    .Inc(x => x.Version, 1)
+                    .Push(x => x.AuditIntents, auditIntent), cancellationToken: cancellationToken);
+            if (result.ModifiedCount != 1)
+            {
+                await session.AbortTransactionAsync(cancellationToken);
+                return new(false, false, current, "LSKU_IDENTITY_WITHDRAWAL_STATE_CONFLICT");
+            }
+            var operationFilter = ActiveTenantFilter
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.OperationId, claim.OperationId)
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.OperationFingerprint, claim.OperationFingerprint)
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.Checkpoint, claim.Checkpoint)
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.LeaseOwner, claim.LeaseOwner)
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(x => x.LeaseGeneration, claim.LeaseGeneration)
+                & Builders<LskuIdentityWorkflowOperation>.Filter.Gt(x => x.LeaseUntilUtcTicksV1, updatedAtUtcTicks);
+            var operationResult = await _operations.UpdateOneAsync(session, operationFilter,
+                Builders<LskuIdentityWorkflowOperation>.Update
+                    .Set(x => x.Checkpoint, LskuIdentityWorkflowCheckpoint.WithdrawalApplied)
+                    .Set(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.None)
+                    .Set(x => x.NextAttemptAtUtcTicksV1, null).Set(x => x.LastFailureCode, null)
+                    .Set(x => x.LeaseOwner, null).Set(x => x.LeaseUntilUtcTicksV1, null)
+                    .Set(x => x.UpdatedAtUtcTicksV1, updatedAtUtcTicks)
+                    .Set(x => x.UpdatedAt, new DateTimeOffset(updatedAtUtcTicks, TimeSpan.Zero))
+                    .Inc(x => x.Version, 1), cancellationToken: cancellationToken);
+            if (operationResult.ModifiedCount != 1)
+            {
+                await session.AbortTransactionAsync(cancellationToken);
+                return new(false, false, current, "LSKU_IDENTITY_WITHDRAWAL_CONCURRENCY_CONFLICT");
+            }
+            await session.CommitTransactionAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) { if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None); throw; }
+        catch (MongoException)
+        {
+            if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
+            return new(false, false, current, "LSKU_IDENTITY_WITHDRAWAL_PERSISTENCE_UNAVAILABLE");
+        }
+        current = await _lskus.Find(active).FirstOrDefaultAsync(cancellationToken);
+        return ExactWithdrawalReplay(current, operation, commandId, auditIntent)
+            ? new(true, false, current, null)
+            : new(false, false, current, "LSKU_IDENTITY_WITHDRAWAL_LOCAL_STATE_INCONSISTENT");
+    }
+
+    private bool ExactWithdrawalReplay(Lsku? lsku, LskuIdentityWorkflowOperation operation,
+        Guid commandId, LocalAuditIntent audit) =>
+        lsku is not null && lsku.TenantId == _tenantId
+        && lsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft
+        && lsku.Version == operation.WithdrawalExpectedLskuVersion + 1
+        && lsku.IdentityWorkflowBinding?.CancellationEvidence?.IdempotencyKey == commandId.ToString("D")
+        && lsku.AuditIntents.Count(x => x.Operation == ProductAuditOperation.LskuIdentityApprovalWithdrawn
+            && x.IdempotencyKey == commandId.ToString("D") && x.EvidenceHash == audit.EvidenceHash) == 1;
 
     private FilterDefinition<LskuIdentityWorkflowOperation> ActiveTenantFilter =>
         Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.TenantId, _tenantId)
@@ -454,6 +594,34 @@ public sealed class LskuIdentityWorkflowOperationRepository
                 or LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
             (LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
                 LskuIdentityWorkflowCheckpoint.DecisionObserved) => true,
+            (LskuIdentityWorkflowCheckpoint.AwaitingDecision,
+                LskuIdentityWorkflowCheckpoint.WithdrawalRequested) => true,
+            (LskuIdentityWorkflowCheckpoint.WithdrawalRequested,
+                LskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved
+                or LskuIdentityWorkflowCheckpoint.AwaitingDecision
+                or LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay
+                or LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+            (LskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved,
+                LskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown
+                or LskuIdentityWorkflowCheckpoint.WithdrawalObserved
+                or LskuIdentityWorkflowCheckpoint.AwaitingDecision
+                or LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay
+                or LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+            (LskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown,
+                LskuIdentityWorkflowCheckpoint.WithdrawalObserved
+                or LskuIdentityWorkflowCheckpoint.AwaitingDecision
+                or LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay
+                or LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+            (LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
+                LskuIdentityWorkflowCheckpoint.WithdrawalRequested
+                or LskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved
+                or LskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown) => true,
+            (LskuIdentityWorkflowCheckpoint.WithdrawalObserved,
+                LskuIdentityWorkflowCheckpoint.WithdrawalApplied
+                or LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+            (LskuIdentityWorkflowCheckpoint.WithdrawalApplied,
+                LskuIdentityWorkflowCheckpoint.Completed
+                or LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
             _ => false
         };
 
@@ -537,10 +705,53 @@ public sealed class LskuIdentityWorkflowOperationRepository
         var hasAnyApprovalProof = mutation.ApprovalMarketSelection is not null
             || mutation.MarketValidatedAtUtcTicksV1.HasValue
             || mutation.ApprovalMarketProofFingerprint is not null;
+        var hasWithdrawalRequest = mutation.WithdrawalCommandId.HasValue
+            || mutation.WithdrawalFingerprint is not null || mutation.WithdrawalRequesterSubjectId.HasValue
+            || mutation.WithdrawalExpectedLskuVersion.HasValue || mutation.WithdrawalReasonCode is not null
+            || mutation.WithdrawalComment is not null;
+        var completeWithdrawalRequest = mutation.WithdrawalCommandId is { } withdrawalCommandId
+            && withdrawalCommandId != Guid.Empty
+            && mutation.WithdrawalRequesterSubjectId is { } withdrawalRequester && withdrawalRequester != Guid.Empty
+            && mutation.WithdrawalExpectedLskuVersion is > 0
+            && IsLowerHex(mutation.WithdrawalFingerprint, 64)
+            && IsExactBounded(mutation.WithdrawalReasonCode, 128)
+            && IsOptionalExactBounded(mutation.WithdrawalComment, 2000);
+        var hasWithdrawalPreflight = mutation.WithdrawalExpectedWorkflowInstanceVersion.HasValue
+            || mutation.WithdrawalExpectedApprovalTaskVersion.HasValue || mutation.WithdrawalObjectRef is not null;
+        var completeWithdrawalPreflight = mutation.WithdrawalExpectedWorkflowInstanceVersion is > 0
+            && mutation.WithdrawalExpectedApprovalTaskVersion is > 0
+            && IsExactBounded(mutation.WithdrawalObjectRef, 256);
+        var hasWithdrawalEvidence = mutation.WithdrawalTransitionLogId.HasValue
+            || mutation.WithdrawalObservedAtUtcTicksV1.HasValue || mutation.WithdrawalTransitionSequence.HasValue
+            || mutation.WithdrawalResultWorkflowInstanceVersion.HasValue
+            || mutation.WithdrawalResultApprovalTaskVersion.HasValue
+            || mutation.WithdrawalTaskStatus is not null || mutation.WithdrawalInstanceStatus is not null;
+        var completeWithdrawalEvidence = mutation.WithdrawalTransitionLogId is { } withdrawalLogId
+            && withdrawalLogId != Guid.Empty && mutation.WithdrawalObservedAtUtcTicksV1 is > 0
+            && mutation.WithdrawalTransitionSequence is > 0
+            && mutation.WithdrawalResultWorkflowInstanceVersion is > 0
+            && mutation.WithdrawalResultApprovalTaskVersion is > 0
+            && mutation.WithdrawalTaskStatus == "Cancelled" && mutation.WithdrawalInstanceStatus == "Cancelled";
+
+        if (mutation.NextCheckpoint == LskuIdentityWorkflowCheckpoint.WithdrawalRequested)
+            return completeWithdrawalRequest && !hasWithdrawalPreflight && !hasWithdrawalEvidence
+                && !hasAnyStartProof && !hasAnyDecisionProof && !hasAnyApprovalProof;
+        if (mutation.NextCheckpoint == LskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved)
+            return completeWithdrawalPreflight && !hasWithdrawalRequest && !hasWithdrawalEvidence
+                && !hasAnyStartProof && !hasAnyDecisionProof && !hasAnyApprovalProof;
+        if (mutation.NextCheckpoint == LskuIdentityWorkflowCheckpoint.WithdrawalObserved)
+            return completeWithdrawalEvidence && !hasWithdrawalRequest && !hasWithdrawalPreflight
+                && !hasAnyStartProof && !hasAnyDecisionProof && !hasAnyApprovalProof;
+        if (mutation.NextCheckpoint == LskuIdentityWorkflowCheckpoint.AwaitingMakerReplay
+            && mutation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.AwaitingMakerReplay)
+            return !hasWithdrawalRequest && !hasWithdrawalPreflight && !hasWithdrawalEvidence
+                && !hasAnyStartProof && !hasAnyDecisionProof && !hasAnyApprovalProof
+                && IsExactBounded(mutation.LastFailureCode, 128) && mutation.ReleaseLease;
 
         if (mutation.NextCheckpoint == LskuIdentityWorkflowCheckpoint.WorkflowStarted)
         {
-            return hasCompleteStartProof && !hasAnyDecisionProof && !hasAnyApprovalProof;
+            return hasCompleteStartProof && !hasAnyDecisionProof && !hasAnyApprovalProof
+                && !hasWithdrawalRequest && !hasWithdrawalPreflight && !hasWithdrawalEvidence;
         }
         if (current == LskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
             && mutation.NextCheckpoint == LskuIdentityWorkflowCheckpoint.DecisionObserved)
@@ -559,13 +770,15 @@ public sealed class LskuIdentityWorkflowOperationRepository
         {
             if (mutation.NextCheckpoint == current)
             {
-                return !hasAnyStartProof && !hasAnyDecisionProof && !hasAnyApprovalProof
-                    && mutation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable
+            return !hasAnyStartProof && !hasAnyDecisionProof && !hasAnyApprovalProof
+                && !hasWithdrawalRequest && !hasWithdrawalPreflight && !hasWithdrawalEvidence
+                && mutation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable
                     && mutation.NextAttemptAtUtcTicksV1 > mutation.UpdatedAtUtcTicks
                     && IsExactBounded(mutation.LastFailureCode, 128)
                     && mutation.ReleaseLease;
             }
             return !hasAnyStartProof && !hasAnyDecisionProof && !hasAnyApprovalProof
+                && !hasWithdrawalRequest && !hasWithdrawalPreflight && !hasWithdrawalEvidence
                 && IsOptionalExactBounded(mutation.LastFailureCode, 128)
                 && !mutation.NextAttemptAtUtcTicksV1.HasValue;
         }

@@ -44,6 +44,22 @@ public sealed class GlobalProductIdentityWorkflowOperation : EntityBase
     public string? DecisionInstanceStatus { get; set; }
     public long? DecisionTransitionSequence { get; set; }
     public long? DecisionAtUtcTicksV1 { get; set; }
+    public Guid? WithdrawalCommandId { get; set; }
+    public string? WithdrawalFingerprint { get; set; }
+    public Guid? WithdrawalRequesterSubjectId { get; set; }
+    public int? WithdrawalExpectedProductVersion { get; set; }
+    public string? WithdrawalReasonCode { get; set; }
+    public string? WithdrawalComment { get; set; }
+    public int? WithdrawalExpectedWorkflowInstanceVersion { get; set; }
+    public int? WithdrawalExpectedApprovalTaskVersion { get; set; }
+    public Guid? WithdrawalTransitionLogId { get; set; }
+    public long? WithdrawalObservedAtUtcTicksV1 { get; set; }
+    public long? WithdrawalTransitionSequence { get; set; }
+    public int? WithdrawalResultWorkflowInstanceVersion { get; set; }
+    public int? WithdrawalResultApprovalTaskVersion { get; set; }
+    public string? WithdrawalTaskStatus { get; set; }
+    public string? WithdrawalInstanceStatus { get; set; }
+    public string? WithdrawalObjectRef { get; set; }
     public long? NextAttemptAtUtcTicksV1 { get; set; }
     public string? LastFailureCode { get; set; }
     public string? LeaseOwner { get; set; }

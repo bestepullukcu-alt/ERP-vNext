@@ -954,12 +954,12 @@ public sealed class EntitlementPermissionSyncServiceTests
     }
 
     [Fact]
-    public async Task Product_identity_lifecycle_profile_composes_exact_thirteen_seven_eight_roles_with_ABB_and_scope()
+    public async Task Product_identity_lifecycle_profile_composes_exact_twenty_seven_ten_roles_with_ABB_and_scope()
     {
         var catalog = ProductIdentityLifecycleCompositeCatalog();
         var (svc, roles, rolePerms) = BuildWith(catalog);
         var declaredKeys = ProductIdentityDeclaredKeys(catalog);
-        Assert.Equal(30, declaredKeys.Length);
+        Assert.Equal(40, declaredKeys.Length);
 
         await svc.GrantModuleWithKeysAsync(
             TenantA,
@@ -967,9 +967,23 @@ public sealed class EntitlementPermissionSyncServiceTests
             declaredKeys,
             Actor);
 
-        Assert.Equal(13, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole).Count);
+        var steward = ProductRoleKeys(roles, rolePerms, catalog,
+            ProductIdentityLifecycleEntitlementGrantProfile.StewardRole);
+        Assert.Equal(20, steward.Count);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GskusUpdate, steward);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GskusWithdraw, steward);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GskusRequestCorrection, steward);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.LskusWithdraw, steward);
         Assert.Equal(7, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole).Count);
-        Assert.Equal(8, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole).Count);
+        var retirement = ProductRoleKeys(roles, rolePerms, catalog,
+            ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole);
+        Assert.Equal(10, retirement.Count);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsRequestRetirement, retirement);
+        Assert.DoesNotContain(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsRetire, retirement);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GskusRequestRetirement, retirement);
+        Assert.DoesNotContain(ProductIdentityLifecycleEntitlementGrantProfile.GskusRetire, retirement);
+        Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.LskusRequestRetirement, retirement);
+        Assert.DoesNotContain(ProductIdentityLifecycleEntitlementGrantProfile.LskusRetire, retirement);
 
         var admin = ProductRoleKeys(roles, rolePerms, catalog, DefaultRolePermissionTemplate.AdminRole);
         var viewer = ProductRoleKeys(roles, rolePerms, catalog, DefaultRolePermissionTemplate.ViewerRole);
@@ -1144,6 +1158,65 @@ public sealed class EntitlementPermissionSyncServiceTests
             grant.PermissionId == brandRead.Id
             && grant.GrantSource == GrantSource.Module
             && grant.SourceModuleCode == "brand-product-master");
+    }
+
+    [Fact]
+    public async Task Product_identity_reconcile_replaces_only_stale_product_sourced_global_product_retire_grant()
+    {
+        var catalog = ProductIdentityLifecycleCompositeCatalog();
+        var (service, roles, grants) = BuildWith(catalog);
+        var retirementRole = await roles.UpsertSystemRoleAsync(
+            ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole,
+            "Product Identity Retirement Steward",
+            null,
+            TenantA,
+            CancellationToken.None);
+        var directRetire = catalog.Single(permission =>
+            permission.Key == ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsRetire);
+        grants.Seed(RolePermission.ModuleGrant(
+            retirementRole.Id,
+            directRetire.Id,
+            TenantA,
+            Actor,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode));
+        grants.Seed(RolePermission.ManualGrant(retirementRole.Id, directRetire.Id, TenantA, "operator"));
+        grants.Seed(RolePermission.SystemGrant(retirementRole.Id, directRetire.Id, TenantA, "system"));
+        grants.Seed(RolePermission.ModuleGrant(
+            retirementRole.Id,
+            directRetire.Id,
+            TenantA,
+            Actor,
+            "another-module"));
+
+        await service.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            ProductIdentityDeclaredKeys(catalog),
+            Actor);
+
+        Assert.DoesNotContain(grants.Rows, grant =>
+            grant.RoleId == retirementRole.Id
+            && grant.PermissionId == directRetire.Id
+            && grant.GrantSource == GrantSource.Module
+            && grant.SourceModuleCode == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode);
+        Assert.Contains(grants.Rows, grant =>
+            grant.RoleId == retirementRole.Id
+            && grant.PermissionId == directRetire.Id
+            && grant.GrantSource == GrantSource.Manual);
+        Assert.Contains(grants.Rows, grant =>
+            grant.RoleId == retirementRole.Id
+            && grant.PermissionId == directRetire.Id
+            && grant.GrantSource == GrantSource.System);
+        Assert.Contains(grants.Rows, grant =>
+            grant.RoleId == retirementRole.Id
+            && grant.PermissionId == directRetire.Id
+            && grant.SourceModuleCode == "another-module");
+        Assert.Contains(grants.Rows, grant =>
+            grant.RoleId == retirementRole.Id
+            && catalog.Single(permission => permission.Id == grant.PermissionId).Key
+                == ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsRequestRetirement
+            && grant.GrantSource == GrantSource.Module
+            && grant.SourceModuleCode == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode);
     }
 
     [Theory]

@@ -157,11 +157,11 @@ describe('MOD-0290-FU03 Product Legal Entity Scope Golden Slim contract', () => 
     });
   });
 
-  it('declares a navigation-hidden manifest page with exact six keys', () => {
+  it('declares a navigation-visible manifest page with exact six keys', () => {
     const manifest = read('../../services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs');
     expect(manifest).toContain('PageCode: "PRODUCT_LEGAL_ENTITY_SCOPES"');
     expect(manifest).toContain('RoutePath: "/MasterDataManagement/ProductLegalEntityScopes"');
-    expect(manifest).toMatch(/PageCode: "PRODUCT_LEGAL_ENTITY_SCOPES"[\s\S]*?IsNavigationVisible: false/);
+    expect(manifest).toMatch(/PageCode: "PRODUCT_LEGAL_ENTITY_SCOPES"[\s\S]*?IsNavigationVisible: true/);
     [
       'mdm.product-legal-entity-scopes.read', 'mdm.product-legal-entity-scopes.configure',
       'mdm.product-legal-entity-scopes.replace', 'mdm.product-legal-entity-scopes.end',

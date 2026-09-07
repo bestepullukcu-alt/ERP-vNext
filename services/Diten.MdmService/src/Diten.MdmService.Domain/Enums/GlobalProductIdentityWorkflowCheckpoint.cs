@@ -13,5 +13,10 @@ public enum GlobalProductIdentityWorkflowCheckpoint
     AwaitingMakerReplay = 9,
     ManualReconciliationRequired = 10,
     AbandonedBeforeWorkflowStart = 11,
-    Superseded = 12
+    Superseded = 12,
+    WithdrawalRequested = 13,
+    WithdrawalPreflightObserved = 14,
+    WithdrawalOutcomeUnknown = 15,
+    WithdrawalObserved = 16,
+    WithdrawalApplied = 17
 }

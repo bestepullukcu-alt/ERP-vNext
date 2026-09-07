@@ -44,6 +44,39 @@ public sealed class GskuRegisterMongoTests
     }
 
     [Fact]
+    public async Task Lifecycle_filter_is_applied_server_side_before_count_and_paging()
+    {
+        await using var scope = await MongoScope.CreateAsync();
+        var draft = await scope.SeedPairAsync(scope.TenantA, "GS-0100", "Draft", false,
+            ProductIdentityLifecycleStatus.Draft);
+        await scope.SeedPairAsync(scope.TenantA, "GS-0101", "Approved", false,
+            ProductIdentityLifecycleStatus.IdentityApproved);
+        await scope.SeedPairAsync(scope.TenantB, "GS-0102", "Other tenant", false,
+            ProductIdentityLifecycleStatus.Draft);
+        var tenantContext = scope.Context(scope.TenantA);
+        var access = ProductLegalEntityScopeTestFixture.Preparation(tenantContext);
+        var handler = new GetGskusHandler(
+            new GskuRepository(scope.Database, tenantContext),
+            new ProductDefinitionRevisionRepository(scope.Database, tenantContext),
+            new GlobalProductRepository(scope.Database, tenantContext),
+            access.Rollouts,
+            access.Policies,
+            access.Candidates,
+            tenantContext);
+
+        var response = await handler.Handle(new GetGskusQuery
+        {
+            PageNumber = 1,
+            PageSize = 1,
+            LifecycleStatus = ProductIdentityLifecycleStatus.Draft
+        }, default);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(1, response.Data!.TotalCount);
+        Assert.Equal(draft.Gsku.Id, Assert.Single(response.Data.Items).Id);
+    }
+
+    [Fact]
     public async Task Detail_returns_the_same_non_disclosing_404_for_cross_tenant_and_soft_deleted_ids()
     {
         await using var scope = await MongoScope.CreateAsync();
@@ -80,7 +113,10 @@ public sealed class GskuRegisterMongoTests
                 scope.TenantA,
                 $"GS-{index:D4}",
                 $"Product {index:D4}",
-                deleted: false);
+                deleted: false,
+                lifecycleStatus: index == 24
+                    ? ProductIdentityLifecycleStatus.IdentityApproved
+                    : ProductIdentityLifecycleStatus.Draft);
             policies.Add(ProductLegalEntityScopePolicy.Create(
                 scope.TenantA,
                 pair.Product.Id,
@@ -110,11 +146,16 @@ public sealed class GskuRegisterMongoTests
             tenantContext);
 
         var response = await handler.Handle(
-            new GetGskusQuery { PageNumber = 2, PageSize = 10 },
+            new GetGskusQuery
+            {
+                PageNumber = 2,
+                PageSize = 10,
+                LifecycleStatus = ProductIdentityLifecycleStatus.Draft
+            },
             default);
 
         Assert.True(response.IsSuccessful);
-        Assert.Equal(25, response.Data!.TotalCount);
+        Assert.Equal(24, response.Data!.TotalCount);
         Assert.Equal(10, response.Data.Items.Count);
         Assert.Equal("GS-0010", response.Data.Items[0].CanonicalCode);
         Assert.Equal("GS-0019", response.Data.Items[^1].CanonicalCode);
@@ -293,7 +334,8 @@ public sealed class GskuRegisterMongoTests
             Guid tenantId,
             string gskuCode,
             string productName,
-            bool deleted)
+            bool deleted,
+            ProductIdentityLifecycleStatus lifecycleStatus = ProductIdentityLifecycleStatus.Draft)
         {
             var now = DateTimeOffset.UtcNow;
             var product = new GlobalProduct
@@ -314,7 +356,7 @@ public sealed class GskuRegisterMongoTests
                 Id = Guid.NewGuid(), TenantId = tenantId, ProductDefinitionRevisionId = revision.Id,
                 CanonicalCode = gskuCode, CodeReservationId = Guid.NewGuid(), CreationCommandId = Guid.NewGuid().ToString("N").ToUpperInvariant(),
                 PackApplicabilityCode = "SCALAR_QUANTITY_APPLIES", PackQuantity = 1, PackUomCode = "C62",
-                LifecycleStatus = ProductIdentityLifecycleStatus.Draft, CreatedAt = now, UpdatedAt = now,
+                LifecycleStatus = lifecycleStatus, CreatedAt = now, UpdatedAt = now,
                 IsDeleted = deleted, DeletedAt = deleted ? now : null
             };
             await Database.GetCollection<GlobalProduct>("mdm_global_products").InsertOneAsync(product);

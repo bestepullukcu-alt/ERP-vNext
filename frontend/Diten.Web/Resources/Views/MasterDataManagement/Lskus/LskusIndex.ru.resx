@@ -52,4 +52,12 @@
   <data name="ErrorUnauthorized" xml:space="preserve"><value>Срок сеанса истёк. Войдите снова.</value></data>
   <data name="ErrorServiceUnavailable" xml:space="preserve"><value>Служба жизненного цикла недоступна. Повторите позже.</value></data>
   <data name="ErrorTimeout" xml:space="preserve"><value>Время ожидания запроса жизненного цикла истекло. Повторите попытку.</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>Отозвать согласование</value></data>
+  <data name="WithdrawConfirmation" xml:space="preserve"><value>Отозвать запрос на согласование?</value></data>
+  <data name="WithdrawPending" xml:space="preserve"><value>Отзыв ещё обрабатывается.</value></data>
+  <data name="WithdrawSuccess" xml:space="preserve"><value>Запрос на согласование отозван.</value></data>
+  <data name="RequestRetirement" xml:space="preserve"><value>Запросить вывод из обращения</value></data>
+  <data name="RetirementRequestConfirmation" xml:space="preserve"><value>Отправить запрос на вывод из обращения?</value></data>
+  <data name="RetirementRequestPending" xml:space="preserve"><value>Запрос на вывод ожидает решения.</value></data>
+  <data name="RetirementRequestSuccess" xml:space="preserve"><value>Запрос на вывод отправлен.</value></data>
 </root>

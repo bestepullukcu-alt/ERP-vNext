@@ -76,12 +76,12 @@ describe("the callers that were already using the input box", () => {
     const callers = files.filter((f) => /showInput\s*:/.test(fs.readFileSync(f, "utf8")));
     const occurrences = callers.reduce((n, f) =>
       n + (fs.readFileSync(f, "utf8").match(/showInput\s*:/g) || []).length, 0);
-    expect(occurrences).toBe(13);
+    expect(occurrences).toBe(14);
 
     // The one file that DOES pass a type is the WorkCenterNext seam, and it passes whatever its own caller said —
     // `undefined` for every prose dialog, which is what keeps them on the default.
     const namingAType = callers.filter((f) => /inputType\s*:/.test(fs.readFileSync(f, "utf8")));
-    expect(namingAType.map((f) => path.basename(f))).toEqual(["app.js"]);
+    expect(namingAType.map((f) => path.basename(f)).sort()).toEqual(["app.js", "index.js"]);
   });
 
   it("still gets a textarea when it asks for an input without naming a type", () => {

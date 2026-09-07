@@ -679,6 +679,15 @@
   <data name="Nav.Page.GSKUS" xml:space="preserve">
     <value>GSKU’lar</value>
   </data>
+  <data name="Nav.Page.LSKUS" xml:space="preserve">
+    <value>Yerel SKU’lar</value>
+  </data>
+  <data name="Nav.Page.PRODUCTABBREVIATIONS" xml:space="preserve">
+    <value>Ürün Kısaltmaları</value>
+  </data>
+  <data name="Nav.Page.PRODUCTLEGALENTITYSCOPES" xml:space="preserve">
+    <value>Ürün Tüzel Kişilik Kapsamları</value>
+  </data>
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>Görev Türleri</value>
   </data>

@@ -15,6 +15,80 @@ namespace Diten.MdmService.Application.Tests;
 public sealed class GlobalProductLifecycleUnitTests
 {
     [Fact]
+    public async Task Update_draft_trims_name_and_persists_one_versioned_audit_intent()
+    {
+        var product = LifecycleTestData.Product(ProductIdentityLifecycleStatus.Draft, version: 0);
+        var updated = LifecycleTestData.Product(ProductIdentityLifecycleStatus.Draft, version: 1);
+        updated.GlobalProductName = "Updated Product";
+        updated.GlobalProductNameNormalized = "UPDATED PRODUCT";
+        var repository = new LifecycleTestGlobalProductRepository(product)
+        {
+            UpdateResult = new(true, updated)
+        };
+        var actor = new LifecycleTestActor(
+            LifecycleTestData.Maker,
+            UpdateGlobalProductDraftHandler.Permission);
+        var handler = new UpdateGlobalProductDraftHandler(
+            repository,
+            actor,
+            TimeProvider.System,
+            new ScopeRolloutRepository(null),
+            new ScopePolicyRepository(),
+            null!,
+            new LifecycleScopeTenantContext(LifecycleTestData.TenantId));
+
+        var response = await handler.Handle(new(
+            product.Id,
+            new() { GlobalProductName = "  Updated Product  ", ExpectedVersion = 0 },
+            Guid.Parse("81000000-0000-0000-0000-000000000081")), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal("Updated Product", repository.LastGlobalProductName);
+        Assert.Equal("UPDATED PRODUCT", repository.LastNormalizedName);
+        Assert.Equal(0, repository.LastExpectedVersion);
+        Assert.Equal(ProductAuditOperation.GlobalProductDraftUpdated, repository.LastAuditIntent!.Operation);
+        Assert.Equal(LifecycleTestData.Maker.ToString("D"), repository.LastAuditIntent.ActorId);
+        Assert.Equal(0, repository.LastAuditIntent.PreVersion);
+        Assert.Equal(1, repository.LastAuditIntent.PostVersion);
+        Assert.Equal(1, repository.LastAuditIntent.Sequence);
+        Assert.Equal(1, response.Data!.Version);
+        Assert.False(response.Data.IsReplay);
+    }
+
+    [Fact]
+    public void Update_validator_counts_unicode_scalars_and_rejects_unknown_write_fields()
+    {
+        var validator = new UpdateGlobalProductDraftValidator();
+        var operationId = Guid.NewGuid();
+        var valid = validator.Validate(new UpdateGlobalProductDraftCommand(
+            LifecycleTestData.ProductId,
+            new() { GlobalProductName = string.Concat(Enumerable.Repeat("😀", 200)), ExpectedVersion = 0 },
+            operationId));
+        var tooLong = validator.Validate(new UpdateGlobalProductDraftCommand(
+            LifecycleTestData.ProductId,
+            new() { GlobalProductName = string.Concat(Enumerable.Repeat("😀", 201)), ExpectedVersion = 0 },
+            operationId));
+        var unknown = validator.Validate(new UpdateGlobalProductDraftCommand(
+            LifecycleTestData.ProductId,
+            new()
+            {
+                GlobalProductName = "Valid",
+                ExpectedVersion = 0,
+                UnmappedFields = new Dictionary<string, System.Text.Json.JsonElement>
+                {
+                    ["canonicalCode"] = System.Text.Json.JsonSerializer.SerializeToElement("forbidden")
+                }
+            },
+            operationId));
+
+        Assert.True(valid.IsValid);
+        Assert.False(tooLong.IsValid);
+        Assert.Contains(tooLong.Errors, error => error.ErrorMessage == "GLOBAL_PRODUCT_NAME_LENGTH_INVALID");
+        Assert.False(unknown.IsValid);
+        Assert.Contains(unknown.Errors, error => error.ErrorMessage == "UNKNOWN_WRITE_FIELD_FORBIDDEN");
+    }
+
+    [Fact]
     public async Task Submit_exact_human_binding_persists_pending_state_and_audit()
     {
         var product = LifecycleTestData.Product(ProductIdentityLifecycleStatus.Draft, version: 0);
@@ -272,6 +346,7 @@ internal sealed class LifecycleTestActor(Guid actorId, params string[] permissio
 
 internal sealed class LifecycleTestGlobalProductRepository(GlobalProduct? product) : IGlobalProductRepository
 {
+    public GlobalProductLifecycleWriteResult? UpdateResult { get; init; }
     public GlobalProductLifecycleWriteResult? SubmitResult { get; init; }
     public GlobalProductLifecycleWriteResult? ReconcileResult { get; init; }
     public GlobalProductLifecycleWriteResult? RetireResult { get; init; }
@@ -279,6 +354,10 @@ internal sealed class LifecycleTestGlobalProductRepository(GlobalProduct? produc
     public int SubmitCalls { get; private set; }
     public int ReconcileCalls { get; private set; }
     public int RetireCalls { get; private set; }
+    public int UpdateCalls { get; private set; }
+    public string? LastGlobalProductName { get; private set; }
+    public string? LastNormalizedName { get; private set; }
+    public int? LastExpectedVersion { get; private set; }
 
     public Task<GlobalProduct?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         Task.FromResult(product?.Id == id ? product : null);
@@ -296,6 +375,22 @@ internal sealed class LifecycleTestGlobalProductRepository(GlobalProduct? produc
     public Task<GlobalProductCreateResult> CreateDraftAsync(GlobalProduct globalProduct,
         CancellationToken cancellationToken = default) =>
         Task.FromResult(new GlobalProductCreateResult(false, null, "NOT_USED"));
+
+    public Task<GlobalProductLifecycleWriteResult> UpdateDraftAsync(
+        Guid id,
+        string globalProductName,
+        string normalizedName,
+        int expectedVersion,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default)
+    {
+        UpdateCalls++;
+        LastGlobalProductName = globalProductName;
+        LastNormalizedName = normalizedName;
+        LastExpectedVersion = expectedVersion;
+        LastAuditIntent = auditIntent;
+        return Task.FromResult(UpdateResult ?? new(false, product, "GLOBAL_PRODUCT_STATE_CONFLICT"));
+    }
 
     public Task<GlobalProductLifecycleWriteResult> SubmitIdentityAsync(Guid id, int expectedVersion,
         ProductIdentityWorkflowBinding workflowBinding, LocalAuditIntent auditIntent,

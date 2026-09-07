@@ -4,6 +4,9 @@ using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Domain.ValueObjects;
+using System.Security.Cryptography;
+using System.Text;
+using PersistedCancellationEvidence = Diten.MdmService.Domain.ValueObjects.ProductIdentityWorkflowCancellationEvidence;
 
 namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 
@@ -113,8 +116,323 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         TimeSpan leaseDuration,
         TimeSpan retryDelay,
         CancellationToken cancellationToken = default) =>
-        ProcessAsync(operation, null, leaseOwner, leaseDuration, retryDelay,
-            stopWhenAwaitingDecision: false, cancellationToken);
+        operation.WithdrawalCommandId.HasValue && operation.Checkpoint is
+            GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested
+            or GlobalProductIdentityWorkflowCheckpoint.WithdrawalPreflightObserved
+            or GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown
+            or GlobalProductIdentityWorkflowCheckpoint.WithdrawalObserved
+            or GlobalProductIdentityWorkflowCheckpoint.WithdrawalApplied
+            or GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay
+            ? ProcessWithdrawalAsync(operation, null, leaseOwner, leaseDuration, retryDelay, cancellationToken)
+            : ProcessAsync(operation, null, leaseOwner, leaseDuration, retryDelay,
+                stopWhenAwaitingDecision: false, cancellationToken);
+
+    public async Task<GlobalProductIdentityWorkflowProcessingResult> WithdrawInteractiveAsync(
+        Guid tenantId,
+        Guid globalProductId,
+        int expectedVersion,
+        Guid commandId,
+        Guid requesterSubjectId,
+        string reasonCode,
+        string? comment,
+        string delegatedUserToken,
+        TimeSpan leaseDuration,
+        TimeSpan retryDelay,
+        CancellationToken cancellationToken = default)
+    {
+        if (tenantId == Guid.Empty || globalProductId == Guid.Empty || commandId == Guid.Empty
+            || requesterSubjectId == Guid.Empty || expectedVersion < 1
+            || !ExactText(reasonCode, 128) || !OptionalExactText(comment, 2000)
+            || string.IsNullOrWhiteSpace(delegatedUserToken))
+        {
+            return Fail("PRODUCT_IDENTITY_WITHDRAWAL_INVALID", 400);
+        }
+
+        var product = await products.GetByIdAsync(globalProductId, cancellationToken);
+        if (product is null) return Fail("PRODUCT_IDENTITY_NOT_FOUND", 404);
+        if (product.WorkflowBinding is not { } binding)
+        {
+            return Fail("PRODUCT_IDENTITY_STATE_CONFLICT", 409);
+        }
+        if (binding.SubmitterSubjectId != requesterSubjectId)
+        {
+            return Fail("PRODUCT_IDENTITY_WITHDRAWAL_NOT_REQUESTER", 403);
+        }
+
+        var operation = await operations.GetByStartIdempotencyKeyAsync(
+            binding.StartIdempotencyKey, cancellationToken);
+        if (operation is null || operation.TenantId != tenantId
+            || operation.GlobalProductId != globalProductId || operation.MakerSubjectId != requesterSubjectId
+            || operation.WorkflowInstanceId != binding.WorkflowInstanceId
+            || operation.ApprovalTaskId != binding.ApprovalTaskId
+            || operation.WorkflowTemplateId != binding.WorkflowTemplateId
+            || operation.WorkflowTemplateVersionId != binding.WorkflowTemplateVersionId)
+        {
+            return Fail("PRODUCT_IDENTITY_WORKFLOW_BINDING_CONFLICT", 409);
+        }
+
+        var fingerprint = WithdrawalFingerprint(tenantId, globalProductId, expectedVersion, commandId,
+            requesterSubjectId, reasonCode, comment, binding);
+        if (operation.WithdrawalCommandId.HasValue
+            && !ExactWithdrawalFacts(operation, commandId, fingerprint, requesterSubjectId,
+                expectedVersion, reasonCode, comment))
+        {
+            return Fail("PRODUCT_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT", 409);
+        }
+        if (operation.WithdrawalCommandId.HasValue
+            && operation.Checkpoint == GlobalProductIdentityWorkflowCheckpoint.Completed)
+        {
+            if (product.Version == expectedVersion + 1
+                && product.LifecycleStatus == ProductIdentityLifecycleStatus.Draft
+                && product.WorkflowBinding.CancellationEvidence is { } persisted
+                && string.Equals(persisted.IdempotencyKey, commandId.ToString("D"), StringComparison.Ordinal)
+                && product.AuditIntents.Count(x =>
+                    x.Operation == ProductAuditOperation.GlobalProductIdentityApprovalWithdrawn
+                    && x.IdempotencyKey == persisted.IdempotencyKey) == 1)
+                return Success(operation, true);
+            return Fail("PRODUCT_IDENTITY_WITHDRAWAL_REPLAY_DRIFT", 409);
+        }
+        if (product.Version != expectedVersion
+            || product.LifecycleStatus != ProductIdentityLifecycleStatus.PendingIdentityApproval)
+        {
+            return Fail("PRODUCT_IDENTITY_STATE_CONFLICT", 409);
+        }
+        if (!operation.WithdrawalCommandId.HasValue
+            && operation.Checkpoint != GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision)
+        {
+            return Fail("PRODUCT_IDENTITY_WORKFLOW_STATE_CONFLICT", 409);
+        }
+
+        var result = await ProcessWithdrawalAsync(operation, delegatedUserToken,
+            $"withdraw-{requesterSubjectId:N}", leaseDuration, retryDelay, cancellationToken,
+            commandId, fingerprint, requesterSubjectId, expectedVersion, reasonCode, comment);
+        return result with { IsReplay = operation.WithdrawalCommandId.HasValue || result.IsReplay };
+    }
+
+    private async Task<GlobalProductIdentityWorkflowProcessingResult> ProcessWithdrawalAsync(
+        GlobalProductIdentityWorkflowOperation initial,
+        string? delegatedUserToken,
+        string leaseOwner,
+        TimeSpan leaseDuration,
+        TimeSpan retryDelay,
+        CancellationToken cancellationToken,
+        Guid? commandId = null,
+        string? fingerprint = null,
+        Guid? requesterSubjectId = null,
+        int? expectedVersion = null,
+        string? reasonCode = null,
+        string? comment = null)
+    {
+        var operation = initial;
+        for (var step = 0; step < 10; step++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (operation.Checkpoint == GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision
+                && operation.WithdrawalCommandId.HasValue
+                && (!commandId.HasValue || operation.LastFailureCode is not null))
+                return Fail(operation, operation.LastFailureCode ??
+                    "PRODUCT_IDENTITY_WORKFLOW_DECISION_PENDING", 409);
+            if (operation.Checkpoint == GlobalProductIdentityWorkflowCheckpoint.Completed)
+            {
+                return operation.WithdrawalCommandId.HasValue
+                    ? Success(operation, true)
+                    : Fail(operation, "PRODUCT_IDENTITY_WORKFLOW_STATE_CONFLICT", 409);
+            }
+            if (operation.Checkpoint == GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired)
+                return Fail(operation, "PRODUCT_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED", 409);
+
+            var now = timeProvider.GetUtcNow();
+            var claim = await operations.TryClaimAsync(new(operation.OperationId, operation.OperationFingerprint,
+                [operation.Checkpoint], leaseOwner, now.UtcTicks, now.Add(leaseDuration).UtcTicks), cancellationToken);
+            if (claim is null) return Fail(operation, "PRODUCT_IDENTITY_WORKFLOW_BUSY", 409);
+
+            bool advanced;
+            switch (operation.Checkpoint)
+            {
+                case GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision:
+                    if (!commandId.HasValue || fingerprint is null || !requesterSubjectId.HasValue
+                        || !expectedVersion.HasValue || reasonCode is null)
+                    {
+                        advanced = await AdvanceAsync(claim, operation.Checkpoint,
+                            ProductIdentityWorkflowRecoveryDisposition.None, now,
+                            "PRODUCT_IDENTITY_WORKFLOW_DECISION_PENDING", true, cancellationToken);
+                        break;
+                    }
+                    advanced = await operations.AdvanceAsync(claim, new(
+                        GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested,
+                        ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
+                        WithdrawalCommandId: commandId,
+                        WithdrawalFingerprint: fingerprint,
+                        WithdrawalRequesterSubjectId: requesterSubjectId,
+                        WithdrawalExpectedProductVersion: expectedVersion,
+                        WithdrawalReasonCode: reasonCode,
+                        WithdrawalComment: comment,
+                        ReleaseLease: true), cancellationToken);
+                    break;
+                case GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested:
+                    advanced = await ObserveWithdrawalPreflightAsync(operation, claim, now, retryDelay,
+                        cancellationToken);
+                    break;
+                case GlobalProductIdentityWorkflowCheckpoint.WithdrawalPreflightObserved:
+                case GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown:
+                case GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay:
+                    advanced = await ObserveWithdrawalAsync(operation, claim, delegatedUserToken, now,
+                        retryDelay, cancellationToken);
+                    break;
+                case GlobalProductIdentityWorkflowCheckpoint.WithdrawalObserved:
+                    advanced = await ApplyWithdrawalAsync(operation, claim, now, cancellationToken);
+                    break;
+                case GlobalProductIdentityWorkflowCheckpoint.WithdrawalApplied:
+                    advanced = await VerifyWithdrawalAndCompleteAsync(operation, claim, now, cancellationToken);
+                    break;
+                default:
+                    return Fail(operation, "PRODUCT_IDENTITY_WORKFLOW_STATE_CONFLICT", 409);
+            }
+            if (!advanced) return Fail(operation, "PRODUCT_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT", 409);
+            operation = await operations.GetByOperationIdAsync(operation.OperationId, cancellationToken)
+                ?? throw new InvalidOperationException("PRODUCT_IDENTITY_WORKFLOW_OPERATION_LOST");
+            if (operation.NextAttemptAtUtcTicksV1 > timeProvider.GetUtcNow().UtcTicks)
+                return Fail(operation, operation.LastFailureCode ?? "PRODUCT_IDENTITY_WORKFLOW_RETRY_SCHEDULED", 503);
+            if (operation.Checkpoint == GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay
+                && string.IsNullOrWhiteSpace(delegatedUserToken))
+                return Fail(operation, "PRODUCT_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED", 409);
+        }
+        return Fail(operation, "PRODUCT_IDENTITY_WORKFLOW_STEP_BUDGET_EXCEEDED", 503);
+    }
+
+    private async Task<bool> ObserveWithdrawalPreflightAsync(
+        GlobalProductIdentityWorkflowOperation operation,
+        GlobalProductIdentityWorkflowClaim claim,
+        DateTimeOffset now,
+        TimeSpan retryDelay,
+        CancellationToken cancellationToken)
+    {
+        if (!CompleteWithdrawalRequest(operation) || !CompleteStartProof(operation))
+            return await QuarantineAsync(claim, "PRODUCT_IDENTITY_WITHDRAWAL_CONTRACT_INVALID", now, cancellationToken);
+        var result = await workflowClient.GetCancellationPreflightAsync(operation.TenantId,
+            new(operation.WorkflowInstanceId!.Value, operation.ApprovalTaskId!.Value, operation.ObjectType,
+                operation.ObjectId, operation.MakerSubjectId), cancellationToken);
+        if (result.Outcome == ProductIdentityWorkflowTransportOutcome.Success && result.Value is { } value)
+        {
+            if (value.WorkflowInstanceId != operation.WorkflowInstanceId
+                || value.ApprovalTaskId != operation.ApprovalTaskId
+                || !string.Equals(value.ObjectType, operation.ObjectType, StringComparison.Ordinal)
+                || !string.Equals(value.ObjectId, operation.ObjectId, StringComparison.Ordinal)
+                || value.WorkflowInstanceVersion <= 0 || value.ApprovalTaskVersion <= 0)
+                return await QuarantineAsync(claim, "PRODUCT_IDENTITY_WITHDRAWAL_PREFLIGHT_INVALID", now,
+                    cancellationToken);
+            return await operations.AdvanceAsync(claim, new(
+                GlobalProductIdentityWorkflowCheckpoint.WithdrawalPreflightObserved,
+                ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
+                WithdrawalExpectedWorkflowInstanceVersion: value.WorkflowInstanceVersion,
+                WithdrawalExpectedApprovalTaskVersion: value.ApprovalTaskVersion,
+                WithdrawalObjectRef: value.ObjectRef,
+                ReleaseLease: true), cancellationToken);
+        }
+        if (result.Outcome is ProductIdentityWorkflowTransportOutcome.Conflict
+            or ProductIdentityWorkflowTransportOutcome.NotFound)
+            return await AdvanceAsync(claim, GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision,
+                ProductIdentityWorkflowRecoveryDisposition.None, now, result.ErrorCode, true, cancellationToken);
+        if (Retryable(result.Outcome))
+            return await ScheduleRetryAsync(claim, operation.Checkpoint, result.ErrorCode, now, retryDelay,
+                cancellationToken);
+        return await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
+    }
+
+    private async Task<bool> ObserveWithdrawalAsync(
+        GlobalProductIdentityWorkflowOperation operation,
+        GlobalProductIdentityWorkflowClaim claim,
+        string? delegatedUserToken,
+        DateTimeOffset now,
+        TimeSpan retryDelay,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(delegatedUserToken))
+            return await AdvanceAsync(claim, GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
+                ProductIdentityWorkflowRecoveryDisposition.AwaitingMakerReplay, now,
+                "PRODUCT_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED", true, cancellationToken);
+        if (!CompleteWithdrawalPreflight(operation))
+            return await QuarantineAsync(claim, "PRODUCT_IDENTITY_WITHDRAWAL_PREFLIGHT_INVALID", now,
+                cancellationToken);
+        var request = new ProductIdentityWorkflowCancellationRequest(
+            operation.WorkflowInstanceId!.Value, operation.ApprovalTaskId!.Value, operation.ObjectType,
+            operation.ObjectId, operation.MakerSubjectId,
+            operation.WithdrawalExpectedWorkflowInstanceVersion!.Value,
+            operation.WithdrawalExpectedApprovalTaskVersion!.Value,
+            operation.WithdrawalReasonCode!, operation.WithdrawalComment,
+            operation.WithdrawalCommandId!.Value.ToString("D"));
+        var result = await workflowClient.CancelAsync(operation.TenantId, request, delegatedUserToken,
+            cancellationToken);
+        if (result.Outcome == ProductIdentityWorkflowTransportOutcome.Success && result.Value is { } evidence)
+        {
+            return await operations.AdvanceAsync(claim, new(
+                GlobalProductIdentityWorkflowCheckpoint.WithdrawalObserved,
+                ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
+                WithdrawalTransitionLogId: evidence.TransitionLogId,
+                WithdrawalObservedAtUtcTicksV1: evidence.DecisionAt.UtcTicks,
+                WithdrawalTransitionSequence: evidence.TransitionSequence,
+                WithdrawalResultWorkflowInstanceVersion: evidence.WorkflowInstanceVersion,
+                WithdrawalResultApprovalTaskVersion: evidence.ApprovalTaskVersion,
+                WithdrawalTaskStatus: evidence.TaskStatus,
+                WithdrawalInstanceStatus: evidence.InstanceStatus,
+                WithdrawalObjectRef: evidence.ObjectRef,
+                ReleaseLease: true), cancellationToken);
+        }
+        if (Retryable(result.Outcome))
+            return await ScheduleRetryAsync(claim, GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown,
+                result.ErrorCode, now, retryDelay, cancellationToken);
+        if (result.Outcome is ProductIdentityWorkflowTransportOutcome.Conflict
+            or ProductIdentityWorkflowTransportOutcome.NotFound)
+            return await AdvanceAsync(claim, GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision,
+                ProductIdentityWorkflowRecoveryDisposition.None, now, result.ErrorCode, true, cancellationToken);
+        return await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
+    }
+
+    private async Task<bool> ApplyWithdrawalAsync(
+        GlobalProductIdentityWorkflowOperation operation,
+        GlobalProductIdentityWorkflowClaim claim,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        if (!TryRehydrateCancellationEvidence(operation, out var evidence))
+            return await QuarantineAsync(claim, "PRODUCT_IDENTITY_WITHDRAWAL_EVIDENCE_INVALID", now,
+                cancellationToken);
+        var product = await products.GetByIdAsync(operation.GlobalProductId, cancellationToken);
+        if (product is null) return await QuarantineAsync(claim, "PRODUCT_IDENTITY_NOT_FOUND", now,
+            cancellationToken);
+        var audit = ProductIdentityLifecycleAuditIntentFactory.CreateWithdrawal(product,
+            operation.WithdrawalExpectedProductVersion!.Value, evidence);
+        var result = await products.WithdrawIdentityApprovalAsync(operation.GlobalProductId,
+            operation.WithdrawalExpectedProductVersion.Value, evidence, audit, cancellationToken);
+        if (!result.Succeeded)
+            return await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
+        return await AdvanceAsync(claim, GlobalProductIdentityWorkflowCheckpoint.WithdrawalApplied,
+            ProductIdentityWorkflowRecoveryDisposition.None, now, releaseLease: true,
+            cancellationToken: cancellationToken);
+    }
+
+    private async Task<bool> VerifyWithdrawalAndCompleteAsync(
+        GlobalProductIdentityWorkflowOperation operation,
+        GlobalProductIdentityWorkflowClaim claim,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        if (!TryRehydrateCancellationEvidence(operation, out var evidence))
+            return await QuarantineAsync(claim, "PRODUCT_IDENTITY_WITHDRAWAL_EVIDENCE_INVALID", now,
+                cancellationToken);
+        var product = await products.GetByIdAsync(operation.GlobalProductId, cancellationToken);
+        if (product is null || product.Version != operation.WithdrawalExpectedProductVersion + 1
+            || product.LifecycleStatus != ProductIdentityLifecycleStatus.Draft
+            || product.WorkflowBinding?.CancellationEvidence is not { } persisted
+            || !SameCancellation(persisted, evidence)
+            || product.AuditIntents.Count(x => x.Operation == ProductAuditOperation.GlobalProductIdentityApprovalWithdrawn
+                && x.IdempotencyKey == evidence.IdempotencyKey) != 1)
+            return await QuarantineAsync(claim, "PRODUCT_IDENTITY_WITHDRAWAL_LOCAL_STATE_INCONSISTENT", now,
+                cancellationToken);
+        return await AdvanceAsync(claim, GlobalProductIdentityWorkflowCheckpoint.Completed,
+            ProductIdentityWorkflowRecoveryDisposition.None, now, releaseLease: true,
+            cancellationToken: cancellationToken);
+    }
 
     private async Task<GlobalProductIdentityWorkflowProcessingResult> ProcessAsync(
         GlobalProductIdentityWorkflowOperation initial,
@@ -696,6 +1014,111 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         && string.Equals(operation.ObjectType, ProductIdentityWorkflowStartRequestFactory.GlobalProductObjectType,
             StringComparison.Ordinal)
         && string.Equals(operation.ObjectId, productId.ToString("D"), StringComparison.Ordinal);
+
+    private static bool CompleteWithdrawalRequest(GlobalProductIdentityWorkflowOperation operation) =>
+        operation.WithdrawalCommandId is { } commandId && commandId != Guid.Empty
+        && operation.WithdrawalRequesterSubjectId == operation.MakerSubjectId
+        && operation.WithdrawalExpectedProductVersion is > 0
+        && ExactText(operation.WithdrawalReasonCode, 128)
+        && OptionalExactText(operation.WithdrawalComment, 2000)
+        && ExactText(operation.WithdrawalFingerprint, 256);
+
+    private static bool CompleteWithdrawalPreflight(GlobalProductIdentityWorkflowOperation operation) =>
+        CompleteWithdrawalRequest(operation)
+        && operation.WithdrawalExpectedWorkflowInstanceVersion is > 0
+        && operation.WithdrawalExpectedApprovalTaskVersion is > 0;
+
+    private static bool ExactWithdrawalFacts(
+        GlobalProductIdentityWorkflowOperation operation,
+        Guid commandId,
+        string fingerprint,
+        Guid requesterSubjectId,
+        int expectedVersion,
+        string reasonCode,
+        string? comment) =>
+        operation.WithdrawalCommandId == commandId
+        && operation.WithdrawalRequesterSubjectId == requesterSubjectId
+        && operation.WithdrawalExpectedProductVersion == expectedVersion
+        && string.Equals(operation.WithdrawalFingerprint, fingerprint, StringComparison.Ordinal)
+        && string.Equals(operation.WithdrawalReasonCode, reasonCode, StringComparison.Ordinal)
+        && string.Equals(operation.WithdrawalComment, comment, StringComparison.Ordinal);
+
+    private static string WithdrawalFingerprint(
+        Guid tenantId,
+        Guid productId,
+        int expectedVersion,
+        Guid commandId,
+        Guid requesterSubjectId,
+        string reasonCode,
+        string? comment,
+        ProductIdentityWorkflowBinding binding)
+    {
+        var canonical = string.Join('|', tenantId.ToString("D"), productId.ToString("D"), expectedVersion,
+            commandId.ToString("D"), requesterSubjectId.ToString("D"), reasonCode, comment ?? string.Empty,
+            binding.WorkflowInstanceId.ToString("D"), binding.ApprovalTaskId.ToString("D"));
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical))).ToLowerInvariant();
+    }
+
+    private static bool TryRehydrateCancellationEvidence(
+        GlobalProductIdentityWorkflowOperation operation,
+        out PersistedCancellationEvidence evidence)
+    {
+        evidence = null!;
+        if (!CompleteWithdrawalPreflight(operation)
+            || operation.WithdrawalTransitionLogId is not { } logId || logId == Guid.Empty
+            || operation.WithdrawalObservedAtUtcTicksV1 is not > 0
+            || operation.WithdrawalTransitionSequence is not > 0
+            || operation.WithdrawalResultWorkflowInstanceVersion is not > 0
+            || operation.WithdrawalResultApprovalTaskVersion is not > 0
+            || operation.WorkflowInstanceId is not { } instanceId
+            || operation.ApprovalTaskId is not { } taskId
+            || operation.WorkflowTemplateId is not { } templateId
+            || operation.WorkflowTemplateVersionId is not { } templateVersionId
+            || !Guid.TryParse(operation.ObjectId, out var objectId))
+            return false;
+        evidence = new()
+        {
+            WorkflowInstanceId = instanceId,
+            ApprovalTaskId = taskId,
+            WorkflowTemplateId = templateId,
+            WorkflowTemplateVersionId = templateVersionId,
+            ObjectType = operation.ObjectType,
+            ObjectId = objectId,
+            ObjectRef = operation.WithdrawalObjectRef ?? operation.ObjectRef,
+            RequesterSubjectId = operation.MakerSubjectId,
+            ReasonCode = operation.WithdrawalReasonCode!,
+            Comment = operation.WithdrawalComment,
+            CancelledAtUtc = new DateTimeOffset(operation.WithdrawalObservedAtUtcTicksV1.Value, TimeSpan.Zero),
+            TransitionSequence = operation.WithdrawalTransitionSequence.Value,
+            TransitionLogId = logId,
+            TaskStatus = operation.WithdrawalTaskStatus ?? string.Empty,
+            InstanceStatus = operation.WithdrawalInstanceStatus ?? string.Empty,
+            WorkflowInstanceVersion = operation.WithdrawalResultWorkflowInstanceVersion.Value,
+            ApprovalTaskVersion = operation.WithdrawalResultApprovalTaskVersion.Value,
+            IdempotencyKey = operation.WithdrawalCommandId!.Value.ToString("D")
+        };
+        return string.Equals(evidence.TaskStatus, "Cancelled", StringComparison.Ordinal)
+               && string.Equals(evidence.InstanceStatus, "Cancelled", StringComparison.Ordinal);
+    }
+
+    private static bool SameCancellation(
+        PersistedCancellationEvidence left,
+        PersistedCancellationEvidence right) =>
+        left.WorkflowInstanceId == right.WorkflowInstanceId
+        && left.ApprovalTaskId == right.ApprovalTaskId
+        && left.TransitionLogId == right.TransitionLogId
+        && left.TransitionSequence == right.TransitionSequence
+        && left.RequesterSubjectId == right.RequesterSubjectId
+        && left.CancelledAtUtc.EqualsExact(right.CancelledAtUtc)
+        && string.Equals(left.IdempotencyKey, right.IdempotencyKey, StringComparison.Ordinal);
+
+    private static bool ExactText(string? value, int maximum) =>
+        value is { Length: > 0 } && value.Length <= maximum
+        && string.Equals(value, value.Trim(), StringComparison.Ordinal)
+        && !value.Any(char.IsControl);
+
+    private static bool OptionalExactText(string? value, int maximum) =>
+        value is null || ExactText(value, maximum);
 
     private static bool Retryable(ProductIdentityWorkflowTransportOutcome outcome) =>
         outcome is ProductIdentityWorkflowTransportOutcome.Retryable

@@ -9,6 +9,31 @@ namespace Diten.MdmService.Application.Tests;
 public sealed class GlobalProductLifecycleAuthorizationTests
 {
     [Fact]
+    public async Task Update_without_exact_permission_is_forbidden_before_repository_access()
+    {
+        var repository = new LifecycleTestGlobalProductRepository(
+            LifecycleTestData.Product(ProductIdentityLifecycleStatus.Draft, 0));
+        var handler = new UpdateGlobalProductDraftHandler(
+            repository,
+            new LifecycleTestActor(LifecycleTestData.Maker),
+            TimeProvider.System,
+            new ScopeRolloutRepository(null),
+            new ScopePolicyRepository(),
+            null!,
+            new LifecycleScopeTenantContext(LifecycleTestData.TenantId));
+
+        var response = await handler.Handle(new(
+            LifecycleTestData.ProductId,
+            new() { GlobalProductName = "Updated", ExpectedVersion = 0 },
+            Guid.NewGuid()), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(403, response.StatusCode);
+        Assert.Contains("GLOBAL_PRODUCT_UPDATE_FORBIDDEN", response.Errors);
+        Assert.Equal(0, repository.UpdateCalls);
+    }
+
+    [Fact]
     public async Task Submit_without_exact_permission_is_forbidden_before_repository_access()
     {
         var repository = new LifecycleTestGlobalProductRepository(

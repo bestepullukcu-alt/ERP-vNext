@@ -65,6 +65,19 @@ public sealed class NavManifestL10nGuardTests
     }
 
     [Fact]
+    public void Product_identity_navigation_activation_has_exact_page_keys_in_all_seven_languages()
+    {
+        string[] expectedKeys =
+        [
+            "Nav.Page.LSKUS",
+            "Nav.Page.PRODUCTABBREVIATIONS",
+            "Nav.Page.PRODUCTLEGALENTITYSCOPES"
+        ];
+
+        AssertKeysUsableInEveryLanguage(expectedKeys, expectedKeys.Length);
+    }
+
+    [Fact]
     public void Every_manifest_domain_has_a_Nav_Domain_key_in_all_seven_languages()
     {
         var manifests = ReadManifests();

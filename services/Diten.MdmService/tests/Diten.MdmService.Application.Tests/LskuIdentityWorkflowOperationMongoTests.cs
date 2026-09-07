@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using Diten.MdmService.Application.Common;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
@@ -36,6 +37,71 @@ public sealed class LskuIdentityWorkflowOperationMongoTests : IAsyncLifetime
         _collection = _database.GetCollection<LskuIdentityWorkflowOperation>(
             LskuIdentityWorkflowOperationRepository.CollectionName);
         _ = Repository(_tenantId);
+    }
+
+    [Fact]
+    public async Task Withdrawal_is_atomic_replayable_and_preserves_identity_tuple()
+    {
+        var repository = Repository(_tenantId);
+        var operation = Operation("withdraw", new string('6', 64));
+        Assert.True((await repository.ReserveAsync(operation)).Succeeded);
+        var now = DateTimeOffset.UtcNow;
+        var workflowId = Guid.NewGuid();
+        var taskId = Guid.NewGuid();
+        var templateVersionId = Guid.NewGuid();
+        var commandId = Guid.NewGuid();
+        var binding = new ProductIdentityWorkflowBinding
+        {
+            WorkflowInstanceId = workflowId, WorkflowTemplateId = operation.WorkflowTemplateId!.Value,
+            WorkflowTemplateVersionId = templateVersionId, ApprovalTaskId = taskId,
+            AssignmentSnapshotId = Guid.NewGuid(), StartTransitionLogId = Guid.NewGuid(),
+            ObjectType = "lsku", ObjectId = operation.LskuId, ObjectRef = operation.ObjectRef,
+            SubmitterSubjectId = operation.MakerSubjectId, SubmittedAtUtc = now,
+            StartIdempotencyKey = operation.StartIdempotencyKey,
+            StartRequestFingerprint = operation.OperationFingerprint
+        };
+        var lsku = new Lsku
+        {
+            Id = operation.LskuId, TenantId = _tenantId, GskuId = operation.GskuId,
+            MarketCode = "TR", MarketSelection = operation.MarketSelection,
+            CanonicalCode = "LS-WITHDRAW", CreationCommandId = Guid.NewGuid().ToString("D"),
+            LifecycleStatus = ProductIdentityLifecycleStatus.PendingIdentityApproval,
+            IdentityWorkflowBinding = binding, Version = 1, CreatedAt = now, UpdatedAt = now
+        };
+        await _database.GetCollection<Lsku>("mdm_lskus").InsertOneAsync(lsku);
+        await _collection.UpdateOneAsync(x => x.TenantId == _tenantId && x.OperationId == operation.OperationId,
+            Builders<LskuIdentityWorkflowOperation>.Update
+                .Set(x => x.Checkpoint, LskuIdentityWorkflowCheckpoint.WithdrawalObserved)
+                .Set(x => x.WorkflowInstanceId, workflowId).Set(x => x.ApprovalTaskId, taskId)
+                .Set(x => x.WorkflowTemplateVersionId, templateVersionId)
+                .Set(x => x.WithdrawalCommandId, commandId)
+                .Set(x => x.WithdrawalExpectedLskuVersion, 1));
+        operation = (await repository.GetByOperationIdAsync(operation.OperationId))!;
+        var claim = await repository.TryClaimAsync(new(operation.OperationId, operation.OperationFingerprint,
+            [LskuIdentityWorkflowCheckpoint.WithdrawalObserved], "withdrawer", now.UtcTicks,
+            now.AddMinutes(1).UtcTicks));
+        var cancellation = new ProductIdentityWorkflowCancellationEvidence
+        {
+            WorkflowInstanceId = workflowId, ApprovalTaskId = taskId,
+            WorkflowTemplateId = operation.WorkflowTemplateId!.Value,
+            WorkflowTemplateVersionId = templateVersionId, ObjectType = "lsku", ObjectId = operation.LskuId,
+            ObjectRef = operation.ObjectRef, RequesterSubjectId = operation.MakerSubjectId,
+            ReasonCode = "REQUESTER_WITHDRAWAL", CancelledAtUtc = now, TransitionSequence = 2,
+            TransitionLogId = Guid.NewGuid(), TaskStatus = "Cancelled", InstanceStatus = "Cancelled",
+            WorkflowInstanceVersion = 2, ApprovalTaskVersion = 2, IdempotencyKey = commandId.ToString("D")
+        };
+        var audit = LskuIdentityLifecycleAuditIntentFactory.CreateWithdrawal(lsku, 1, cancellation);
+        var first = await repository.ApplyWithdrawalAsync(claim!, operation, cancellation, audit, now.AddTicks(1).UtcTicks);
+        var replay = await repository.ApplyWithdrawalAsync(claim!, operation, cancellation, audit, now.AddTicks(2).UtcTicks);
+        Assert.True(first.Succeeded);
+        Assert.True(replay.Succeeded);
+        Assert.True(replay.IsReplay);
+        Assert.Equal(ProductIdentityLifecycleStatus.Draft, replay.Lsku!.LifecycleStatus);
+        Assert.Equal(operation.GskuId, replay.Lsku.GskuId);
+        Assert.Equal("TR", replay.Lsku.MarketCode);
+        Assert.Single(replay.Lsku.AuditIntents, x => x.Operation == ProductAuditOperation.LskuIdentityApprovalWithdrawn);
+        Assert.Equal(LskuIdentityWorkflowCheckpoint.WithdrawalApplied,
+            (await repository.GetByOperationIdAsync(operation.OperationId))!.Checkpoint);
     }
 
     [Fact]
@@ -256,8 +322,12 @@ public sealed class LskuIdentityWorkflowOperationMongoTests : IAsyncLifetime
             ReleaseLease: true)));
     }
 
-    public async Task DisposeAsync() => await _collection.DeleteManyAsync(
-        x => x.TenantId == _tenantId || x.TenantId == _otherTenantId);
+    public async Task DisposeAsync()
+    {
+        await _collection.DeleteManyAsync(x => x.TenantId == _tenantId || x.TenantId == _otherTenantId);
+        await _database.GetCollection<Lsku>("mdm_lskus").DeleteManyAsync(
+            x => x.TenantId == _tenantId || x.TenantId == _otherTenantId);
+    }
 
     private LskuIdentityWorkflowOperationRepository Repository(Guid tenantId) =>
         new(_database, new Tenant(tenantId));

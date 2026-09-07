@@ -14,6 +14,21 @@ namespace Diten.MdmService.Application.Tests;
 
 public sealed class ProductAbbreviationRegisterUnitTests
 {
+    public static TheoryData<ProductAbbreviationHistoryEventType, ProductAuditOperation> AuditOperationCases => new()
+    {
+        { ProductAbbreviationHistoryEventType.ALLOCATION_REQUESTED, ProductAuditOperation.ProductAbbreviationAllocationRequested },
+        { ProductAbbreviationHistoryEventType.ALLOCATION_APPROVED, ProductAuditOperation.ProductAbbreviationAllocationApproved },
+        { ProductAbbreviationHistoryEventType.ALLOCATION_REJECTED, ProductAuditOperation.ProductAbbreviationAllocationRejected },
+        { ProductAbbreviationHistoryEventType.ALLOCATION_CANCELLED, ProductAuditOperation.ProductAbbreviationAllocationCancelled },
+        { ProductAbbreviationHistoryEventType.CORRECTION_REQUESTED, ProductAuditOperation.ProductAbbreviationCorrectionRequested },
+        { ProductAbbreviationHistoryEventType.CORRECTION_APPROVED, ProductAuditOperation.ProductAbbreviationCorrectionApproved },
+        { ProductAbbreviationHistoryEventType.CORRECTION_REJECTED, ProductAuditOperation.ProductAbbreviationCorrectionRejected },
+        { ProductAbbreviationHistoryEventType.CORRECTION_CANCELLED, ProductAuditOperation.ProductAbbreviationCorrectionCancelled },
+        { ProductAbbreviationHistoryEventType.RETIREMENT_REQUESTED, ProductAuditOperation.ProductAbbreviationRetirementRequested },
+        { ProductAbbreviationHistoryEventType.RETIREMENT_APPROVED, ProductAuditOperation.ProductAbbreviationRetirementApproved },
+        { ProductAbbreviationHistoryEventType.RETIREMENT_REJECTED, ProductAuditOperation.ProductAbbreviationRetirementRejected }
+    };
+
     [Theory]
     [InlineData(" abc ", "ABC")]
     [InlineData("XYZ", "XYZ")]
@@ -42,6 +57,47 @@ public sealed class ProductAbbreviationRegisterUnitTests
             ["REQUESTED", "ACTIVE", "REJECTED", "CANCELLED", "RETIRED"],
             Enum.GetNames<ProductAbbreviationLifecycleStatus>());
         Assert.DoesNotContain("CORRECTED", Enum.GetNames<ProductAbbreviationLifecycleStatus>());
+    }
+
+    [Theory]
+    [MemberData(nameof(AuditOperationCases))]
+    public void Audit_intent_factory_maps_only_exact_ABB_history_events_replay_stably(
+        ProductAbbreviationHistoryEventType eventType,
+        ProductAuditOperation expectedOperation)
+    {
+        var tenantId = Guid.NewGuid();
+        var entry = new ProductAbbreviationRegisterEntry
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            GlobalProductId = Guid.NewGuid(),
+            NormalizedAbbreviation = "ABC",
+            Version = 3
+        };
+        var history = new ProductAbbreviationHistoryEntry
+        {
+            TenantId = tenantId,
+            RegisterEntryId = entry.Id,
+            GlobalProductId = entry.GlobalProductId,
+            NormalizedAbbreviation = entry.NormalizedAbbreviation,
+            EventType = eventType,
+            CanonicalHumanSubjectId = Guid.NewGuid().ToString("D"),
+            ActorType = "tenant_user",
+            IdempotencyKey = "abb-audit-operation",
+            CorrelationId = "abb-audit-correlation",
+            EvidenceHash = "DOMAIN-EVIDENCE",
+            OccurredAtUtc = DateTimeOffset.UtcNow
+        };
+
+        var first = ProductAbbreviationAuditIntentFactory.Create(entry, history);
+        var replay = ProductAbbreviationAuditIntentFactory.Create(entry, history);
+
+        Assert.Equal(AuditAggregateType.ProductAbbreviation, first.AggregateType);
+        Assert.Equal(expectedOperation, first.Operation);
+        Assert.Equal(2, first.PreVersion);
+        Assert.Equal(3, first.PostVersion);
+        Assert.Equal(first.IntentId, replay.IntentId);
+        Assert.Equal(first.EvidenceHash, replay.EvidenceHash);
     }
 
     [Fact]
@@ -306,6 +362,8 @@ public sealed class ProductAbbreviationRegisterUnitTests
             => Task.FromResult<ProductAbbreviationRegisterEntry?>(null);
         public Task<ProductAbbreviationRegisterWriteResult> InsertRequestedAsync(ProductAbbreviationRegisterEntry entry, CancellationToken cancellationToken = default)
             => throw new NotSupportedException();
+        public Task<bool> AppendAuditIntentIfAbsentAsync(Guid id, LocalAuditIntent intent, CancellationToken cancellationToken = default)
+            => Task.FromResult(true);
         public Task<ProductAbbreviationRegisterWriteResult> TransitionAsync(Guid id, int expectedVersion, ProductAbbreviationLifecycleStatus expectedStatus, ProductAbbreviationLifecycleStatus targetStatus, string decisionActor, string idempotencyKey, string? reason, DateTimeOffset decidedAtUtc, CancellationToken cancellationToken = default)
         {
             TransitionCalls++;

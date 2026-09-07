@@ -28,11 +28,13 @@ form_field_count: 0
 ## 1. Module Summary
 
 This follow-up closes the trusted cross-service workflow seam required by MDM and later business modules.
-It provides two Platform-owned internal capabilities:
+It provides three Platform-owned internal capabilities:
 
 1. start a workflow from a trusted consumer with independently validated service identity and delegated
    human maker identity; and
-2. read tenant-bound terminal approve/reject evidence after the workflow reaches a coherent terminal state.
+2. read tenant-bound terminal approve/reject evidence after the workflow reaches a coherent terminal state; and
+3. cancel an active trusted-started workflow only for its canonical delegated requester, with authoritative
+   preflight versions, atomic persisted cancellation evidence, and exact lost-response replay.
 
 The slice hardens the existing MOD-0023 runtime rather than replacing it. It makes workflow start replayable
 and repairable across the already separate instance, task, assignment-snapshot, and transition-log writes;
@@ -71,7 +73,9 @@ provider in this pack.
 - Auth token issuance entities, credentials, tenant grants, role grants, or permission onboarding.
 - Gateway, frontend, WorkCenter provider/action-dispatch code, navigation, appsettings, secrets, or data.
 - A new Mongo collection, new logical index, schema-budget change, or direct Mongo write.
-- Delegate/request-info/cancel actor-transport redesign; only public approve/reject is in this slice.
+- Generic public delegate/request-info/cancel actor-transport redesign. Requester-owned cancellation is exposed
+  only through the dedicated trusted-consumer contract defined by the named amendment below; the broad public
+  `platform.workflow.tasks.cancel` route is not reused.
 - BPMN, visual workflow design, generic callback/webhook delivery, Production/Staging, commit, and push.
 
 ## 3. Owned Objects
@@ -92,6 +96,8 @@ provider in this pack.
 | `TrustedWorkflowConsumerServiceIdentity` | new API security fact | Exact Auth-issued MDM client, audience, token ID, and tenant grant; never returned or logged. |
 | `TrustedWorkflowDelegatedUserIdentity` | new API security fact | Exact delegated human subject and tenant; never client-overridable. |
 | `InternalTrustedWorkflowConsumerController` | new internal controller | Exposes trusted start and terminal-evidence routes only. |
+| `TrustedWorkflowCancellationCoordinator` | additive application service | Owns requester/client/object binding, version-fenced atomic cancellation, evidence read-back, and exact replay. |
+| Trusted cancellation transport | additive internal API contract | Strict preflight and cancellation requests; no client-authored tenant or actor authority. |
 
 ### API endpoints
 
@@ -99,6 +105,8 @@ provider in this pack.
 |---|---|---|---|
 | `POST` | `/api/internal/v1/workflow/trusted-consumer/start` | trusted service token + delegated user JWT | `201` first completion; `200` exact replay/recovery |
 | `POST` | `/api/internal/v1/workflow/trusted-consumer/terminal-decision-evidence` | trusted service token with exact tenant grant | `200` coherent terminal evidence bound to expected object type/id |
+| `POST` | `/api/internal/v1/workflow/trusted-consumer/cancel-preflight` | trusted service token with exact tenant grant | `200` current active task/instance versions bound to client, object and maker |
+| `POST` | `/api/internal/v1/workflow/trusted-consumer/cancel` | trusted service token + delegated canonical requester JWT | `200` first completion or exact replay with authoritative cancellation evidence |
 
 The existing public endpoints remain in place:
 
@@ -133,6 +141,37 @@ Missing/mismatched tenant, client, object or maker is the same non-leaking `404`
 `409 WORKFLOW_START_NOT_COMPLETED`; contradictory persisted facts remain fail-closed `409`. No new collection or
 index is required because the existing tenant-bound unique idempotency lookup is reused.
 
+### Requester-owned trusted cancellation amendment (Phase 1.5, 2026-09-04)
+
+Code truth was measured against `origin/main` at `dcb6509ff69adaad3e135f5d6cfb88151f3075c3` and the Product Identity
+integration worktree at `ed5188dc16247fee49728c87c185e87a7ae79e40`. Neither contains a trusted cancellation
+route. The existing public `POST /api/v1/workflow/tasks/{taskId}/cancel` is not a safe substitute: it accepts
+`ActorId` from the body, has no expected task/instance version, does not bind the caller to
+`DelegatedMakerUserId`, `TrustedConsumerClientId` or the source object, and updates task then instance through
+separate CAS writes. A failure between those writes can leave task and instance terminal states inconsistent.
+
+The approved architecture is therefore a dedicated trusted-consumer pair:
+
+1. `cancel-preflight` is service-authenticated and read-only. Its strict body is
+   `{ workflowInstanceId, approvalTaskId, expectedObjectType, expectedObjectId, expectedMakerSubjectId }`.
+   It returns only the current positive `workflowInstanceVersion`, positive `approvalTaskVersion`, exact active
+   statuses and the supplied opaque IDs after tenant, service-client, source-object and maker proof succeeds.
+2. `cancel` requires both the service token and an independently authenticated delegated human JWT plus one exact
+   header-only `Idempotency-Key`. Its strict body repeats the five preflight facts, adds both expected versions,
+   bounded `reasonCode` and optional bounded `comment`. The delegated JWT subject must exactly equal the persisted
+   `DelegatedMakerUserId`; no body actor is accepted and no `platform.workflow.tasks.cancel` grant is required.
+3. Cancellation of the active task, workflow instance and monotonic transition log is one atomic transaction or
+   one durable checkpointed operation that cannot report success while any member is missing. A response lost after
+   commit is recovered with the same key and exact facts; drift returns conflict without mutation.
+4. The sanitized result contains workflow instance/task/template IDs, object type/id/ref, terminal action `Cancel`,
+   actor user ID, reason, UTC decision time, transition sequence/log ID, exact `Cancelled` task/instance statuses,
+   resulting versions, `isReplay` and correlation ID. It contains no tenant grant, token, client secret,
+   fingerprint or recovery checkpoint.
+
+This seam cancels the native Workflow item. It does not add a WorkCenter provider, remote action, browser route,
+callback, or product mutation. The MDM source module remains responsible for applying its own lifecycle result only
+after it validates this authoritative evidence.
+
 ## 4. Entity Fields
 
 No new aggregate or collection is introduced. `WorkflowInstance` continues to inherit the live Platform
@@ -154,6 +193,10 @@ single trim at the transport boundary. The canonical fingerprint includes client
 delegated maker, resolved template/version, object type/id/ref, ordered unique candidates, reason code,
 comment/evidence requirements, and normalized UTC due date. It never includes secrets, raw tokens, or
 correlation ID.
+
+Trusted cancellation evidence is likewise a DTO, not a new aggregate. Cancellation durability reuses the existing
+workflow task, instance and transition-log records. A new collection or index is forbidden unless a failing
+real-Mongo query-plan/uniqueness test is reviewed through a separate schema-budget amendment.
 
 Terminal evidence is a DTO, not a persisted entity. It contains only workflow/instance/task identifiers,
 source object facts, terminal action (`Approve` or `Reject`), actor user ID, reason code, decision timestamp,
@@ -273,6 +316,44 @@ user authorization grants this exact named-step code-start on 2026-08-29.
 
 Governance maintenance while implementing is limited to this pack and its single canonical registry row.
 
+### Requester-owned trusted cancellation exact allow-list (planning amendment, runtime not started)
+
+Existing runtime files that may change only for this amendment:
+
+- `services/Diten.Platform/src/Diten.Platform.Domain/Repositories/IWorkflowRepositories.cs`
+- `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/WorkflowRepositories.cs`
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/WorkflowModels.cs`
+- `services/Diten.Platform/src/Diten.Platform.API/Models/Workflow/TrustedWorkflowConsumerRequestModels.cs`
+- `services/Diten.Platform/src/Diten.Platform.API/Models/Workflow/TrustedWorkflowConsumerRequestParser.cs`
+- `services/Diten.Platform/src/Diten.Platform.API/Security/ITrustedWorkflowConsumerRequestExecutor.cs`
+- `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedWorkflowConsumerRequestExecutor.cs`
+- `services/Diten.Platform/src/Diten.Platform.API/Controllers/Internal/InternalTrustedWorkflowConsumerController.cs`
+- `services/Diten.Platform/src/Diten.Platform.Application/DependencyInjection.cs`
+
+New runtime files allowed:
+
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Services/ITrustedWorkflowCancellationCoordinator.cs`
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Services/TrustedWorkflowCancellationCoordinator.cs`
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Commands/CancelTrustedWorkflowInstanceCommand.cs`
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Handlers/CommandHandlers/CancelTrustedWorkflowInstanceHandler.cs`
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Queries/GetTrustedWorkflowCancellationPreflightQuery.cs`
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Handlers/QueryHandlers/GetTrustedWorkflowCancellationPreflightHandler.cs`
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Validators/CancelTrustedWorkflowInstanceValidator.cs`
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Validators/GetTrustedWorkflowCancellationPreflightValidator.cs`
+
+Exact test allow-list:
+
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Security/TrustedWorkflowConsumerSecurityTests.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowTaskTransitionTests.cs`
+- new `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/TrustedWorkflowCancellationContractTests.cs`
+- new `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/TrustedWorkflowCancellationMongoTests.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/DependencyInjectionSmokeTests.cs`
+
+The public Workflow controller, generic `CancelWorkflowTaskCommand`, WorkCenter provider/dispatcher, manifest,
+Gateway, frontend, configuration, credentials and operational data remain protected. If the existing Platform
+transaction executor cannot atomically cover task, instance and transition-log writes through these repository
+seams, implementation stops for a code-truth amendment rather than widening the allow-list silently.
+
 ## 6. Protected Paths
 
 - `.antigravity/**`.
@@ -354,6 +435,23 @@ grant access to any other tenant. A credential alone is not tenant authority.
   task, instance, and append-only transition log facts. Incomplete/contradictory state fails closed.
 - Workflow decision does not mutate MDM product state and no callback/webhook is emitted.
 
+### Requester-owned trusted cancellation
+
+- Preflight is read-only and service-authenticated. Cancel additionally requires the delegated human requester;
+  tenant always comes from the exact service token grant.
+- The service client, workflow instance, active approval task, source object and persisted maker form one exact
+  tenant-scoped graph. Record/client/object drift is non-disclosing `404`; a different authenticated delegated
+  requester is `403 WORKFLOW_TRUSTED_CANCEL_REQUESTER_FORBIDDEN`.
+- Both positive versions returned by preflight are mandatory on cancel. Any approve/reject/request-info/escalation
+  or concurrent cancel that changes either version wins the race and the stale request receives
+  `409 WORKFLOW_TRUSTED_CANCEL_CONFLICT`.
+- Task cancellation, instance cancellation and the monotonic cancellation log are atomic or durably checkpointed.
+  Success is impossible until all three facts are re-read as coherent.
+- Exact key/facts replay returns the original evidence. Key reuse with client, actor, object, IDs, versions, reason
+  or comment drift returns `409` and never mutates the existing graph.
+- The native WorkCenter item disappears through its existing status projection. No WorkCenter provider/action or
+  source business state is written by this contract.
+
 ## 9. Layout & Shell Contract
 
 - `shell: none`; backend-only.
@@ -402,6 +500,11 @@ there is no MDM-specific WorkCenter card, bridge, action dispatcher, JavaScript,
 | `WorkflowInstanceId` | yes, evidence | Non-empty GUID. | Tenant-bound repository read; cross-tenant is non-leaking 404. |
 | `ExpectedObjectType` | yes, evidence | Trimmed, 1..128, exact ordinal business type. | Must equal the persisted workflow object type or return the same non-leaking 404. |
 | `ExpectedObjectId` | yes, evidence | Trimmed, 1..256, opaque identifier. | Must equal the persisted workflow object ID or return the same non-leaking 404. |
+| `WorkflowInstanceId` / `ApprovalTaskId` | yes, cancellation | Non-empty canonical GUIDs. | Must identify the exact trusted-start graph in the token tenant. |
+| `ExpectedMakerSubjectId` | yes, cancellation | Non-empty canonical GUID. | Must equal persisted delegated maker; cancel additionally requires delegated JWT `sub` equality. |
+| `WorkflowInstanceVersion` / `ApprovalTaskVersion` | yes, cancel | Positive integers returned by preflight. | Exact CAS; any drift is `409` before terminal evidence is reported. |
+| `ReasonCode` | yes, cancel | Exact trimmed printable value, 1..128. | Persisted in the cancellation transition log. |
+| `Comment` | no, cancel | Null or exact trimmed printable value, maximum 2000. | Audit text only; never identity or authorization. |
 | Approve/reject idempotency | yes | 1..128; exact ordinal. | Existing transition-log unique identity. |
 | Public actor | server-only | Non-empty authenticated JWT user ID; body actor forbidden/unknown. | Controller authentication principal. |
 
@@ -428,6 +531,12 @@ case-fold, alias, or fuzzy matching changes a business identity after parsing.
 | Cross-tenant or expected-object-mismatched evidence query | Same `404`; existence, actor, status, and timestamps are not leaked. |
 | Non-terminal or internally inconsistent evidence | `409` or `503` with stable reason; no fabricated decision evidence. |
 | Two-second internal budget exceeded | `504`; caller cancellation propagates and is not misreported. |
+| Cancellation request uses generic public task-cancel permission/route | Rejected by architecture/contract tests; trusted cancellation never delegates to that transport. |
+| Wrong service client, object, task-instance pair or cross-tenant identity | Same non-leaking `404`; no state/version/timestamp disclosure. |
+| Authenticated delegated subject is not persisted maker | `403 WORKFLOW_TRUSTED_CANCEL_REQUESTER_FORBIDDEN`; no mutation. |
+| Preflight version is stale because approve/reject/escalation won | `409 WORKFLOW_TRUSTED_CANCEL_CONFLICT`; no partial cancellation. |
+| Crash between task/instance/log writes | No externally visible partial success; same-key replay completes or reads back one coherent cancellation. |
+| Cancellation response lost after commit | Same exact key/facts return the original evidence with `isReplay=true`; no second transition log. |
 
 All error envelopes use stable reason codes and correlation IDs and expose no stack trace, token, service
 claim, internal fingerprint, checkpoint, or credential detail.
@@ -447,6 +556,9 @@ claim, internal fingerprint, checkpoint, or credential detail.
 - No new permission key, role, default grant, entitlement, service identity, or tenant grant is created here.
 - Service credentials grant client authenticity only; the exact token tenant grant limits the tenant. They
   do not grant human approval permission.
+- Trusted cancellation authority is the intersection of exact service client ownership and the delegated JWT
+  subject matching the persisted maker. The broad `platform.workflow.tasks.cancel` permission is neither required
+  nor accepted as a substitute for requester ownership.
 
 ## 15. Gateway / API Routing Decision
 
@@ -484,6 +596,12 @@ pack consumes a pinned workflow template/version through existing MOD-0023 repos
 - [ ] Cross-tenant, expected-object-mismatched, and inconsistent-state evidence paths fail without leakage.
 - [ ] Existing public workflow start, transition gate, escalation, native WorkCenter workflow provider/action
   dispatch, MOD-0021 audit, and MOD-0033 token-validation regressions remain green.
+- [ ] Trusted cancellation preflight returns versions only for the exact tenant/client/object/maker/task graph.
+- [ ] Cancel verifies the same graph, delegated requester and both expected versions before mutation.
+- [ ] Task, instance and cancellation log become coherent atomically or through a replayable durable checkpoint;
+  injected failures never produce a successful or fabricated evidence response.
+- [ ] Approve-versus-cancel and reject-versus-cancel races have one winner; loser receives stable `409`.
+- [ ] Exact same-key replay returns one immutable cancellation evidence record and creates no duplicate log.
 - [ ] No new Mongo collection/index/schema budget, MDM/Auth/Gateway/frontend/config/data change exists.
 - [ ] Platform API Release build, focused tests, all Workflow tests, full Platform suite, and architecture
   guards pass with zero skipped tests; any current-main failure is proven byte-identical and not overclaimed.
@@ -498,6 +616,8 @@ pack consumes a pinned workflow template/version through existing MOD-0023 repos
 - Canonical fingerprint: order normalization only where explicitly allowed; payload/identity drift conflict.
 - Public actor binding: `ActorId` unknown-field `400`, JWT subject used in command/log, missing subject `401`.
 - Decision evidence: approve/reject only, exact task/instance/log coherence, sanitized DTO.
+- Cancellation: strict preflight/cancel parsers, service/client/object/maker binding, delegated requester,
+  expected-version fencing, immutable sanitized evidence and public-cancel non-reuse guard.
 
 ### Real Mongo
 
@@ -510,6 +630,8 @@ pack consumes a pinned workflow template/version through existing MOD-0023 repos
   success/conflict outcomes.
 - Assert decision-log sequence monotonicity, exact replay, cross-tenant non-disclosure, and no residual test
   facts outside each fresh tenant.
+- Inject cancellation failure at every task/instance/log boundary; prove no partial success, one exact replay,
+  approve/reject race fencing, and final `Cancelled/Cancelled` read-back under the same tenant.
 
 ### Regression and quality gates
 
@@ -641,6 +763,18 @@ pack consumes a pinned workflow template/version through existing MOD-0023 repos
   re-review found no residual P0/P1/P2 issue. `git diff --check` remained clean; no operational config/data mutation
   or push was performed.
 
+### Requester-owned trusted cancellation Phase 1.5 evidence — 2026-09-04
+
+- `origin/main` and the Product Identity integration worktree were inspected independently. Neither exposes a
+  trusted cancellation/preflight route; the current trusted controller has only start, start-result and terminal
+  approve/reject evidence.
+- The generic public cancel path was rejected as a dependency: client-authored actor, missing task/instance expected
+  versions, missing trusted-client/object/maker binding and separate task/instance writes make it broader and less
+  durable than the requested contract.
+- The exact endpoint/request/result/error contract, exhaustive runtime/test allow-list, requester authority,
+  transaction/checkpoint fence and real-Mongo race/replay matrix are now frozen above. Runtime implementation has
+  not started and no operational configuration, credential or data mutation was authorized by this amendment.
+
 ## 20. Follow-up Items
 
 1. **MOD-0290 MDM lifecycle consumer:** separate approved pack/step for product submit validation,
@@ -657,3 +791,5 @@ pack consumes a pinned workflow template/version through existing MOD-0023 repos
    a separate contract and cannot become workflow state authority.
 6. **Other trusted consumers:** no wildcard audience/service grant. Each consumer requires an explicit
    identity, tenant grant, and owner-approved contract.
+7. **Requester-owned trusted cancellation runtime:** implement only after this Phase 1.5 amendment receives its
+   exact code-start. Its completion is a prerequisite for MOD-0290 Global Product pending-approval withdrawal.

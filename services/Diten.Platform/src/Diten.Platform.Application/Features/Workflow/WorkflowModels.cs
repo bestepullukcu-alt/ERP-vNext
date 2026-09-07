@@ -218,6 +218,51 @@ public sealed record TrustedWorkflowTerminalDecisionEvidence(
     string InstanceStatus,
     string? CorrelationId);
 
+public sealed record TrustedWorkflowCancellationPreflight(
+    Guid WorkflowInstanceId,
+    Guid ApprovalTaskId,
+    string ObjectType,
+    string ObjectId,
+    string ObjectRef,
+    int WorkflowInstanceVersion,
+    int ApprovalTaskVersion,
+    string WorkflowInstanceStatus,
+    string ApprovalTaskStatus);
+
+public sealed record TrustedWorkflowCancellationRequest(
+    Guid WorkflowInstanceId,
+    Guid ApprovalTaskId,
+    string ExpectedObjectType,
+    string ExpectedObjectId,
+    Guid ExpectedMakerSubjectId,
+    int ExpectedWorkflowInstanceVersion,
+    int ExpectedApprovalTaskVersion,
+    string ReasonCode,
+    string? Comment,
+    string IdempotencyKey);
+
+public sealed record TrustedWorkflowCancellationEvidence(
+    Guid WorkflowInstanceId,
+    Guid ApprovalTaskId,
+    Guid TemplateId,
+    Guid TemplateVersionId,
+    string ObjectType,
+    string ObjectId,
+    string ObjectRef,
+    string TerminalAction,
+    Guid ActorUserId,
+    string ReasonCode,
+    string? Comment,
+    DateTimeOffset DecisionAt,
+    long TransitionSequence,
+    Guid TransitionLogId,
+    string TaskStatus,
+    string InstanceStatus,
+    int WorkflowInstanceVersion,
+    int ApprovalTaskVersion,
+    bool IsReplay,
+    string? CorrelationId);
+
 public sealed record WorkflowInstanceDto(
     Guid Id,
     Guid TemplateId,

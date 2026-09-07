@@ -295,6 +295,8 @@ public static class DependencyInjection
         services.AddScoped<Contracts.IWorkflowTransitionGate, Services.WorkflowTransitionGate>();
         services.AddScoped<Features.Workflow.Services.IWorkflowInstanceStartCoordinator,
             Features.Workflow.Services.WorkflowInstanceStartCoordinator>();
+        services.AddScoped<Features.Workflow.Services.ITrustedWorkflowCancellationCoordinator,
+            Features.Workflow.Services.TrustedWorkflowCancellationCoordinator>();
 
         // WC-1 (DCP-004) — read-only work-item projection + provider abstraction. The
         // projection service is pure; providers are registered as an IEnumerable so WC-5 adds more without

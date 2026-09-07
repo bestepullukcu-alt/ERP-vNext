@@ -50,6 +50,25 @@ public sealed record ProductIdentityWorkflowTerminalEvidenceRequest(
     string ExpectedObjectType,
     string ExpectedObjectId);
 
+public sealed record ProductIdentityWorkflowCancellationPreflightRequest(
+    Guid WorkflowInstanceId,
+    Guid ApprovalTaskId,
+    string ExpectedObjectType,
+    string ExpectedObjectId,
+    Guid ExpectedMakerSubjectId);
+
+public sealed record ProductIdentityWorkflowCancellationRequest(
+    Guid WorkflowInstanceId,
+    Guid ApprovalTaskId,
+    string ExpectedObjectType,
+    string ExpectedObjectId,
+    Guid ExpectedMakerSubjectId,
+    int ExpectedWorkflowInstanceVersion,
+    int ExpectedApprovalTaskVersion,
+    string ReasonCode,
+    string? Comment,
+    string IdempotencyKey);
+
 public sealed record ProductIdentityWorkflowStartResult(
     Guid WorkflowInstanceId,
     Guid TemplateId,
@@ -81,4 +100,37 @@ public sealed record ProductIdentityWorkflowTerminalEvidence(
     long TransitionSequence,
     string TaskStatus,
     string InstanceStatus,
+    string? CorrelationId);
+
+public sealed record ProductIdentityWorkflowCancellationPreflight(
+    Guid WorkflowInstanceId,
+    Guid ApprovalTaskId,
+    string ObjectType,
+    string ObjectId,
+    string ObjectRef,
+    int WorkflowInstanceVersion,
+    int ApprovalTaskVersion,
+    string WorkflowInstanceStatus,
+    string ApprovalTaskStatus);
+
+public sealed record ProductIdentityWorkflowCancellationEvidence(
+    Guid WorkflowInstanceId,
+    Guid ApprovalTaskId,
+    Guid TemplateId,
+    Guid TemplateVersionId,
+    string ObjectType,
+    string ObjectId,
+    string ObjectRef,
+    string TerminalAction,
+    Guid ActorUserId,
+    string ReasonCode,
+    string? Comment,
+    DateTimeOffset DecisionAt,
+    long TransitionSequence,
+    Guid TransitionLogId,
+    string TaskStatus,
+    string InstanceStatus,
+    int WorkflowInstanceVersion,
+    int ApprovalTaskVersion,
+    bool IsReplay,
     string? CorrelationId);

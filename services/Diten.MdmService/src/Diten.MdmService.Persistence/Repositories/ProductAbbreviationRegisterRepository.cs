@@ -41,6 +41,31 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<ProductAbbreviationRegisterEntry>> GetPendingWorkItemsAsync(
+        int limit,
+        CancellationToken cancellationToken = default)
+    {
+        if (limit is < 1 or > 101)
+        {
+            throw new ArgumentOutOfRangeException(nameof(limit));
+        }
+
+        var requested = Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
+            x => x.LifecycleStatus,
+            ProductAbbreviationLifecycleStatus.REQUESTED);
+        var retirement = Builders<ProductAbbreviationRegisterEntry>.Filter.And(
+            Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
+                x => x.LifecycleStatus,
+                ProductAbbreviationLifecycleStatus.ACTIVE),
+            Builders<ProductAbbreviationRegisterEntry>.Filter.Ne(x => x.RetirementRequestId, null));
+
+        return await _collection
+            .Find(TenantFilter & Builders<ProductAbbreviationRegisterEntry>.Filter.Or(requested, retirement))
+            .SortBy(x => x.Id)
+            .Limit(limit)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<ProductAbbreviationRegisterEntry?> GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken = default)
@@ -129,6 +154,44 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
 
             return new(false, replay, "ABBREVIATION_REGISTER_CONFLICT");
         }
+    }
+
+    public async Task<bool> AppendAuditIntentIfAbsentAsync(
+        Guid id,
+        LocalAuditIntent intent,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(intent);
+        if (id == Guid.Empty || intent.IntentId == Guid.Empty || intent.TenantId != _tenantId
+            || intent.AggregateType != AuditAggregateType.ProductAbbreviation || intent.AggregateId != id)
+        {
+            return false;
+        }
+
+        var filter = Builders<ProductAbbreviationRegisterEntry>.Filter.And(
+            TenantFilter,
+            Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(item => item.Id, id),
+            Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(item => item.Version, intent.PostVersion),
+            Builders<ProductAbbreviationRegisterEntry>.Filter.Not(
+                Builders<ProductAbbreviationRegisterEntry>.Filter.ElemMatch(
+                    item => item.AuditIntents,
+                    embedded => embedded.IntentId == intent.IntentId)));
+        var result = await _collection.UpdateOneAsync(
+            filter,
+            Builders<ProductAbbreviationRegisterEntry>.Update.Push(item => item.AuditIntents, intent),
+            cancellationToken: cancellationToken);
+        if (result.ModifiedCount == 1)
+        {
+            return true;
+        }
+
+        return await _collection.Find(Builders<ProductAbbreviationRegisterEntry>.Filter.And(
+                TenantFilter,
+                Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(item => item.Id, id),
+                Builders<ProductAbbreviationRegisterEntry>.Filter.ElemMatch(
+                    item => item.AuditIntents,
+                    embedded => embedded.IntentId == intent.IntentId)))
+            .AnyAsync(cancellationToken);
     }
 
     public async Task<ProductAbbreviationRegisterWriteResult> TransitionAsync(

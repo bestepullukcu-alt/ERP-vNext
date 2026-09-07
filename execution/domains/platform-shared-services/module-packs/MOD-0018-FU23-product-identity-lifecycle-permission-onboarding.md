@@ -32,6 +32,61 @@ consumer_module: MOD-0290
 > **Golden Reference decision.** This is backend-only Auth catalog/grant onboarding. It has no CRUD page, Razor shell,
 > DataTable or user form; therefore `shell: none`, `golden_reference: none` and `form_field_count: 0` are intentional.
 
+## 0. Global Product Lifecycle Completion Amendment — 2026-09-04
+
+This amendment is the current authority for the Product Identity lifecycle permission/grant profile. It supersedes
+only the earlier exact-eight-owned-key and `13 / 7 / 8` role-matrix statements after MOD-0290 adds Draft edit,
+requester withdrawal, approved correction request and WorkCenter-mediated retirement request. It introduces no new
+FU, role, entitlement or automatic membership. FU25 remains the separate authority for complete descriptor and
+cross-module dependency validation.
+
+The Product Identity-owned lifecycle subset grows from eight to exactly twelve keys. The original eight
+`submit`/`retire` keys remain catalogued, and the exact additive Global Product set is:
+
+- `mdm.global-products.update`;
+- `mdm.global-products.withdraw`;
+- `mdm.global-products.request-correction`;
+- `mdm.global-products.request-retirement`.
+
+The eight read/create base keys and four shared Workflow/WorkCenter dependencies remain unchanged. The desired role
+plans after one authoritative reconciliation are exact `16 / 7 / 10`:
+
+- `ProductDataSteward`: the existing thirteen-key plan plus Global Product `update`, `withdraw` and
+  `request-correction`;
+- `ProductIdentityApprover`: unchanged four product reads plus inbox-view and Workflow approve/reject;
+- `ProductIdentityRetirementSteward`: the three non-Global-Product `read + retire` pairs, Global Product read,
+  `request-retirement`, `withdraw` and `platform.workflow.instances.start`.
+
+`mdm.global-products.retire` remains in the catalog as a bounded compatibility permission but is removed from the
+Retirement Steward's desired module-sourced grant set. Reconciliation removes that stale canonical module grant
+before inserting the request-retirement grant; manual, system and other-module grants remain source-preserved.
+Tenant Admin and Viewer receive none of the twelve lifecycle keys or four shared dependencies through this profile.
+
+### Exact Auth runtime/test allow-list for this amendment
+
+Runtime:
+
+- `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/DefaultRolePermissionTemplate.cs`;
+- `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/ProductIdentityLifecycleEntitlementGrantProfile.cs`.
+
+The measured `EntitlementPermissionSyncService` already removes stale source-owned grants before inserting desired
+grants, composes all special profiles and validates convergence. It is therefore protected from runtime modification
+for this amendment; no generic reconciliation change is justified.
+
+Tests:
+
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/DefaultRolePermissionTemplateTests.cs`;
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductIdentityLifecycleEntitlementGrantProfileTests.cs`;
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/EntitlementPermissionSyncServiceTests.cs`;
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductIdentityLifecyclePermissionOnboardingMongoTests.cs`.
+
+Acceptance requires exact twelve-owned/eight-base/four-dependency set validation, exact `16 / 7 / 10` matrices,
+Admin/Viewer zero lifecycle leakage, direct-retire module-grant replacement without dual desired authority, stable
+replay, disable/expiry revoke, restore, no user-role assignment, source preservation and Tenant A/B isolation on real
+`localhost:27017`. The MDM manifest test is a read-only prerequisite and must prove the four exact additions; this
+Auth pack may not modify MDM. Config, data, credentials, Production/Staging, commit and push remain outside this
+planning amendment.
+
 ## 1. Module Summary
 
 This follow-up onboards exactly eight Product Identity lifecycle permission keys for the existing MOD-0290 Product /

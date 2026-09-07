@@ -15,6 +15,14 @@ describe('MOD-0290-FU01 Product Abbreviation Register', () => {
         expect(source).not.toMatch(/crypto\.randomUUID|Idempotency-Key|X-Tenant-Id/);
     });
 
+    it('fails closed at the MVC page boundary without ABB read permission', () => {
+        const source = controller();
+
+        expect(source).toContain('private const string ReadPermission = "mdm.product-abbreviations.read"');
+        expect(source).toContain('PermissionClaims.HasPermission(User, ReadPermission)');
+        expect(source).toContain(': Forbid();');
+    });
+
     it('keeps the request form to the two approved user fields', () => {
         const view = read('Views/MDM/ProductAbbreviationRegister/_CreateEditOffcanvas.cshtml');
 
@@ -42,6 +50,14 @@ describe('MOD-0290-FU01 Product Abbreviation Register', () => {
         expect(source).toContain('item.idempotencyKey ?? item.IdempotencyKey');
         expect(source).toContain('item.evidenceHash ?? item.EvidenceHash');
         expect(source).not.toMatch(/\/bulk|delete-record|js-edit-item|aliases|reactivat/i);
+    });
+
+    it('keeps lifecycle decisions in WorkCenter and only maker requests on the register', () => {
+        const source = script();
+
+        expect(source).toContain('js-request-retirement');
+        expect(source).toContain('/retirement-requests`');
+        expect(source).not.toMatch(/js-(?:approve|reject|cancel)|\/(?:approve|reject|cancel)[`'"/]/);
     });
 
     it('uses Golden Slim and tenant-shell contracts', () => {

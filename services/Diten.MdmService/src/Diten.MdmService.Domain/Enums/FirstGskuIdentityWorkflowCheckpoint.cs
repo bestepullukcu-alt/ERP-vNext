@@ -18,5 +18,10 @@ public enum FirstGskuIdentityWorkflowCheckpoint
     ManualReconciliationRequired = 14,
     ApprovalValidated = 15,
     AbandonedBeforeWorkflowStart = 16,
-    Superseded = 17
+    Superseded = 17,
+    WithdrawalRequested = 18,
+    WithdrawalPreflightObserved = 19,
+    WithdrawalOutcomeUnknown = 20,
+    WithdrawalObserved = 21,
+    WithdrawalApplied = 22
 }

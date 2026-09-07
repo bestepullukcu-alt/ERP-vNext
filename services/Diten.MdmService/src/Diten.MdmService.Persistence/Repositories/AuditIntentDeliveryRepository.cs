@@ -19,6 +19,7 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
     private const string LskuCollectionName = "mdm_lskus";
     private const string ProductLegalEntityScopePolicyCollectionName = "mdm_product_legal_entity_scope_policies";
     private const string ProductLegalEntityScopeRolloutStateCollectionName = "mdm_product_legal_entity_scope_rollout_states";
+    private const string ProductAbbreviationCollectionName = "mdm_product_abbreviation_register";
     private readonly IMongoCollection<CodeReservation> _codeReservations;
     private readonly IMongoCollection<GlobalProduct> _globalProducts;
     private readonly IMongoCollection<ProductDefinitionRevision> _productDefinitionRevisions;
@@ -27,6 +28,7 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
     private readonly IMongoCollection<Lsku> _lskus;
     private readonly IMongoCollection<ProductLegalEntityScopePolicy> _productLegalEntityScopePolicies;
     private readonly IMongoCollection<ProductLegalEntityScopeRolloutState> _productLegalEntityScopeRolloutStates;
+    private readonly IMongoCollection<ProductAbbreviationRegisterEntry> _productAbbreviations;
     private readonly IAuditIntentTemporalMigrationRepository _temporalMigrationRepository;
     private readonly Guid _tenantId;
     private readonly TimeProvider _timeProvider;
@@ -59,6 +61,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
             ProductLegalEntityScopePolicyCollectionName);
         _productLegalEntityScopeRolloutStates = database.GetCollection<ProductLegalEntityScopeRolloutState>(
             ProductLegalEntityScopeRolloutStateCollectionName);
+        _productAbbreviations = database.GetCollection<ProductAbbreviationRegisterEntry>(
+            ProductAbbreviationCollectionName);
         _temporalMigrationRepository = temporalMigrationRepository
             ?? throw new ArgumentNullException(nameof(temporalMigrationRepository));
         _tenantId = tenantContext.TenantId;
@@ -87,7 +91,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
                 FindEligibleScalarWorkItemsAsync(_finishedGoods, AuditAggregateType.FinishedGood, now, limit, cancellationToken),
                 FindEligibleScalarWorkItemsAsync(_lskus, AuditAggregateType.Lsku, now, limit, cancellationToken),
                 FindEligibleScalarWorkItemsAsync(_productLegalEntityScopePolicies, AuditAggregateType.ProductLegalEntityScopePolicy, now, limit, cancellationToken),
-                FindEligibleScalarWorkItemsAsync(_productLegalEntityScopeRolloutStates, AuditAggregateType.ProductLegalEntityScopeRolloutState, now, limit, cancellationToken));
+                FindEligibleScalarWorkItemsAsync(_productLegalEntityScopeRolloutStates, AuditAggregateType.ProductLegalEntityScopeRolloutState, now, limit, cancellationToken),
+                FindEligibleScalarWorkItemsAsync(_productAbbreviations, AuditAggregateType.ProductAbbreviation, now, limit, cancellationToken));
             return scalarItems.SelectMany(items => items)
                 .OrderBy(item => item.TimestampUtc.UtcTicks)
                 .ThenBy(item => item.Locator.IntentId.ToString("N"), StringComparer.Ordinal)
@@ -151,6 +156,13 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
             limit,
             false,
             cancellationToken);
+        var productAbbreviations = await FindEligibleAggregatesAsync(
+            _productAbbreviations,
+            AuditAggregateType.ProductAbbreviation,
+            now,
+            limit,
+            false,
+            cancellationToken);
 
         return codeReservations
             .SelectMany(aggregate => ToWorkItems(aggregate, AuditAggregateType.CodeReservation, now))
@@ -166,6 +178,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
                 ToWorkItems(aggregate, AuditAggregateType.ProductLegalEntityScopePolicy, now)))
             .Concat(productLegalEntityScopeRolloutStates.SelectMany(aggregate =>
                 ToWorkItems(aggregate, AuditAggregateType.ProductLegalEntityScopeRolloutState, now)))
+            .Concat(productAbbreviations.SelectMany(aggregate =>
+                ToWorkItems(aggregate, AuditAggregateType.ProductAbbreviation, now)))
             .OrderBy(item => item.TimestampUtc.UtcTicks)
             .ThenBy(item => item.Locator.IntentId.ToString("N"), StringComparer.Ordinal)
             .Take(limit)
@@ -242,6 +256,9 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
                 now,
                 scalarCutover,
                 cancellationToken),
+            AuditAggregateType.ProductAbbreviation => TryClaimInCollectionAsync(
+                _productAbbreviations, locator, expectedClaimGeneration, leaseOwner, leaseDuration, now,
+                scalarCutover, cancellationToken),
             _ => Task.FromResult<AuditIntentClaim?>(null)
         });
     }
@@ -275,6 +292,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
                 _productLegalEntityScopePolicies, claim, now, cancellationToken),
             AuditAggregateType.ProductLegalEntityScopeRolloutState => ReadClaimedPayloadFromCollectionAsync(
                 _productLegalEntityScopeRolloutStates, claim, now, cancellationToken),
+            AuditAggregateType.ProductAbbreviation => ReadClaimedPayloadFromCollectionAsync(
+                _productAbbreviations, claim, now, cancellationToken),
             _ => Task.FromResult<AuditIntentClaimedPayload?>(null)
         });
     }
@@ -401,6 +420,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
                 compactReceiptReference,
                 now,
                 cancellationToken),
+            AuditAggregateType.ProductAbbreviation => AcknowledgeAndCompactInCollectionAsync(
+                _productAbbreviations, claim, acknowledgement, compactReceiptReference, now, cancellationToken),
             _ => Task.FromResult(false)
         };
     }
@@ -450,6 +471,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
                 compactReceiptReference,
                 now,
                 cancellationToken),
+            AuditAggregateType.ProductAbbreviation => CompactInCollectionAsync(
+                _productAbbreviations, claim, compactReceiptReference, now, cancellationToken),
             _ => Task.FromResult(false)
         };
     }
@@ -675,6 +698,13 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
                 now,
                 ConvertUpdate<CodeReservation, ProductLegalEntityScopeRolloutState>(legacyUpdate),
                 ConvertUpdate<CodeReservation, ProductLegalEntityScopeRolloutState>(currentUpdate),
+                cancellationToken),
+            AuditAggregateType.ProductAbbreviation => UpdateClaimedInCollectionAsync(
+                _productAbbreviations,
+                claim,
+                now,
+                ConvertUpdate<CodeReservation, ProductAbbreviationRegisterEntry>(legacyUpdate),
+                ConvertUpdate<CodeReservation, ProductAbbreviationRegisterEntry>(currentUpdate),
                 cancellationToken),
             _ => Task.FromResult(false)
         };
@@ -1364,6 +1394,7 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
         EnsureIndexes(_lskus, "lskus");
         EnsureIndexes(_productLegalEntityScopePolicies, "product_legal_entity_scope_policies");
         EnsureIndexes(_productLegalEntityScopeRolloutStates, "product_legal_entity_scope_rollout_states");
+        EnsureIndexes(_productAbbreviations, "product_abbreviations");
     }
 
     private static void EnsureIndexes<TEntity>(IMongoCollection<TEntity> collection, string suffix)

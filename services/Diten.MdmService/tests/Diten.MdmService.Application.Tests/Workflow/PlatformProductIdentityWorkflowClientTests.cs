@@ -68,6 +68,33 @@ public sealed class PlatformProductIdentityWorkflowClientTests
     }
 
     [Theory]
+    [InlineData("GlobalProductCorrection")]
+    [InlineData("GlobalProductRetirement")]
+    public async Task Exact_global_product_lifecycle_profiles_are_allowed_for_start_and_machine_reads(
+        string objectType)
+    {
+        var objectId = Guid.NewGuid().ToString("D");
+        var request = StartRequest() with { ObjectType = objectType, ObjectId = objectId };
+        var handler = new CaptureHandler(message =>
+            message.RequestUri!.AbsolutePath.EndsWith("start", StringComparison.Ordinal)
+                ? Success(StartResult())
+                : message.RequestUri.AbsolutePath.EndsWith("start-result", StringComparison.Ordinal)
+                    ? Failure(HttpStatusCode.Conflict, "WORKFLOW_START_NOT_COMPLETED")
+                    : Failure(HttpStatusCode.Conflict, "WORKFLOW_DECISION_NOT_TERMINAL"));
+        var client = Client(handler, new IdentityProvider());
+
+        var start = await client.StartAsync(Guid.NewGuid(), request, "human.jwt");
+        var lookup = await client.GetStartResultAsync(Guid.NewGuid(), new(
+            objectType, objectId, Guid.NewGuid(), request.IdempotencyKey));
+        var evidence = await client.GetTerminalEvidenceAsync(Guid.NewGuid(), new(
+            Guid.NewGuid(), objectType, objectId));
+
+        Assert.Equal(ProductIdentityWorkflowTransportOutcome.Success, start.Outcome);
+        Assert.Equal(ProductIdentityWorkflowTransportOutcome.Incomplete, lookup.Outcome);
+        Assert.Equal(ProductIdentityWorkflowTransportOutcome.NonTerminal, evidence.Outcome);
+    }
+
+    [Theory]
     [InlineData("Gsku")]
     [InlineData("GSKU")]
     [InlineData("global-product")]
@@ -170,6 +197,48 @@ public sealed class PlatformProductIdentityWorkflowClientTests
         Assert.Equal(ProductIdentityWorkflowTransportOutcome.Invalid, result.Outcome);
     }
 
+    [Fact]
+    public async Task Retirement_cancel_terminal_evidence_is_rejected_by_the_shared_transport_contract()
+    {
+        var request = new ProductIdentityWorkflowTerminalEvidenceRequest(
+            Guid.NewGuid(), "GlobalProductRetirement", Guid.NewGuid().ToString("D"));
+        var evidence = new ProductIdentityWorkflowTerminalEvidence(
+            request.WorkflowInstanceId, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
+            request.ExpectedObjectType, request.ExpectedObjectId, "GP-1", "Cancel",
+            Guid.NewGuid().ToString("D"), "CANCELLED", DateTimeOffset.UtcNow, 2,
+            "Cancelled", "Cancelled", "corr");
+        var client = Client(new CaptureHandler(_ => EvidenceSuccess(evidence)), new IdentityProvider());
+
+        var result = await client.GetTerminalEvidenceAsync(Guid.NewGuid(), request);
+
+        Assert.Equal(ProductIdentityWorkflowTransportOutcome.Invalid, result.Outcome);
+    }
+
+    [Fact]
+    public async Task Cancellation_uses_delegated_header_and_strict_versioned_evidence()
+    {
+        var instanceId = Guid.NewGuid();
+        var taskId = Guid.NewGuid();
+        var objectId = Guid.NewGuid().ToString("D");
+        var maker = Guid.NewGuid();
+        var request = new ProductIdentityWorkflowCancellationRequest(instanceId, taskId, "GlobalProduct",
+            objectId, maker, 3, 5, "REQUESTER_WITHDRAWAL", new string('x', 2000), "cancel-key");
+        var evidence = new ProductIdentityWorkflowCancellationEvidence(instanceId, taskId, Guid.NewGuid(),
+            Guid.NewGuid(), "GlobalProduct", objectId, "GP-1", "Cancel", maker,
+            request.ReasonCode, request.Comment, DateTimeOffset.UtcNow, 3, Guid.NewGuid(),
+            "Cancelled", "Cancelled", 4, 6, false, "corr");
+        var handler = new CaptureHandler(_ => EnvelopeSuccess(evidence));
+
+        var result = await Client(handler, new IdentityProvider()).CancelAsync(
+            Guid.NewGuid(), request, "human.jwt");
+
+        Assert.Equal(ProductIdentityWorkflowTransportOutcome.Success, result.Outcome);
+        var sent = Assert.Single(handler.Requests);
+        Assert.Equal("/api/internal/v1/workflow/trusted-consumer/cancel", sent.Path);
+        Assert.Equal("Bearer human.jwt", sent.Delegated);
+        Assert.Equal("cancel-key", sent.IdempotencyKey);
+    }
+
     [Theory]
     [InlineData(HttpStatusCode.BadRequest, "INVALID", ProductIdentityWorkflowTransportOutcome.Invalid)]
     [InlineData(HttpStatusCode.Forbidden, "FORBIDDEN", ProductIdentityWorkflowTransportOutcome.Forbidden)]
@@ -211,6 +280,19 @@ public sealed class PlatformProductIdentityWorkflowClientTests
         return Json(HttpStatusCode.Created, root.ToJsonString());
     }
     private static HttpResponseMessage EvidenceSuccess(ProductIdentityWorkflowTerminalEvidence result)
+    {
+        var root = new System.Text.Json.Nodes.JsonObject
+        {
+            ["data"] = JsonSerializer.SerializeToNode(result, new JsonSerializerOptions(JsonSerializerDefaults.Web)),
+            ["statusCode"] = 200,
+            ["isSuccessful"] = true,
+            ["errors"] = new System.Text.Json.Nodes.JsonArray(),
+            ["reason_code"] = null,
+            ["correlation_id"] = "corr"
+        };
+        return Json(HttpStatusCode.OK, root.ToJsonString());
+    }
+    private static HttpResponseMessage EnvelopeSuccess<T>(T result)
     {
         var root = new System.Text.Json.Nodes.JsonObject
         {
