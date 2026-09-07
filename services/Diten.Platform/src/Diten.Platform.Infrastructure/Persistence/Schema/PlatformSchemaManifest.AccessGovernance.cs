@@ -125,8 +125,22 @@ public static partial class PlatformSchemaManifest
                         Builders<AuditOutboxMessage>.IndexKeys
                             .Ascending(x => x.TenantId)
                             .Descending(x => x.CreatedAtUtc),
-                        new CreateIndexOptions { Name = "ix_audit_outbox_tenant_created" })
+                        new CreateIndexOptions { Name = "ix_audit_outbox_tenant_created" }),
+                    new CreateIndexModel<AuditOutboxMessage>(
+                        Builders<AuditOutboxMessage>.IndexKeys
+                            .Ascending(x => x.Status)
+                            .Ascending(x => x.NextAttemptAtUtcTicksV1)
+                            .Ascending(x => x.CreatedAtUtcTicksV1)
+                            .Ascending(x => x.Id),
+                        new CreateIndexOptions
+                        {
+                            Name = "ix_audit_outbox_status_next_attempt_ticks_v1_created_ticks_v1_id"
+                        })
 
             }),
+        Collection<AuditOutboxTemporalMigrationState>(
+            SchemaProfile.AccessGovernance,
+            AuditCollectionNames.AuditOutboxTemporalMigrations,
+            () => Array.Empty<CreateIndexModel<AuditOutboxTemporalMigrationState>>()),
     };
 }

@@ -146,6 +146,8 @@ builder.Services.Configure<VerifiedGskuOperationalProvisioningOptions>(
     builder.Configuration.GetSection(VerifiedGskuOperationalProvisioningOptions.SectionName));
 builder.Services.Configure<VerifiedMarketOperationalProvisioningOptions>(
     builder.Configuration.GetSection(VerifiedMarketOperationalProvisioningOptions.SectionName));
+builder.Services.Configure<AuditOutboxTemporalStorageMigrationOptions>(
+    builder.Configuration.GetSection(AuditOutboxTemporalStorageMigrationOptions.SectionName));
 builder.Services.AddScoped<
     Diten.Platform.Application.Features.BusinessReferenceData.Services.IBusinessReferenceDataVerifiedGskuOperationalEligibility,
     DevelopmentBusinessReferenceDataVerifiedGskuOperationalEligibility>();
@@ -239,6 +241,31 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+if (args.Any(argument => string.Equals(
+        argument,
+        "--run-audit-outbox-temporal-storage-migration",
+        StringComparison.Ordinal)))
+{
+    var options = builder.Configuration
+        .GetSection(AuditOutboxTemporalStorageMigrationOptions.SectionName)
+        .Get<AuditOutboxTemporalStorageMigrationOptions>()
+        ?? new AuditOutboxTemporalStorageMigrationOptions();
+    options.Validate(builder.Environment.EnvironmentName);
+
+    await using var migrationScope = app.Services.CreateAsyncScope();
+    await migrationScope.ServiceProvider
+        .GetRequiredService<Diten.Platform.Infrastructure.Persistence.Migrations.AuditOutboxTemporalStorageMigrationRunner>()
+        .RunAsync(
+            options.MigrationId,
+            options.TargetVersion,
+            options.BatchSize,
+            TimeSpan.FromSeconds(options.LeaseDurationSeconds),
+            options.LeaseOwner,
+            options.ActivateScalarClaims,
+            options.SelectedIndexName);
+    return;
+}
 
 if (VerifiedMarketOperationalCommandLine.IsRequested(args))
 {

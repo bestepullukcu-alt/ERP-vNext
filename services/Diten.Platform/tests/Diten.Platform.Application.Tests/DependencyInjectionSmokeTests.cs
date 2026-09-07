@@ -7,6 +7,9 @@ using Diten.Platform.Application.Features.BusinessReferenceData.Models;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Diten.Platform.API.Services.BusinessReferenceData;
+using Diten.Platform.Infrastructure.Persistence;
+using Diten.Platform.Infrastructure.Persistence.Migrations;
+using Diten.Platform.Infrastructure.Persistence.Repositories;
 using Microsoft.Extensions.Hosting;
 using Diten.Platform.API.Security;
 using Diten.Platform.Application.Authorization;
@@ -81,6 +84,45 @@ public sealed class DependencyInjectionSmokeTests
         services.AddApplication();
         var descriptor = Assert.Single(services.Where(x => x.ServiceType == typeof(IOrgDataScopeCandidateResolver)));
         Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
+    }
+
+    [Fact]
+    public void Program_RegistersAuditTemporalMigrationAsExplicitCommandLineScopedServiceOnly()
+    {
+        var root = FindRepositoryRoot();
+        var program = File.ReadAllText(Path.Combine(
+            root,
+            "services", "Diten.Platform", "src", "Diten.Platform.API", "Program.cs"));
+        var dependencyInjection = File.ReadAllText(Path.Combine(
+            root,
+            "services", "Diten.Platform", "src", "Diten.Platform.Infrastructure", "DependencyInjection.cs"));
+
+        Assert.Contains("--run-audit-outbox-temporal-storage-migration", program, StringComparison.Ordinal);
+        Assert.Contains("AuditOutboxTemporalStorageMigrationOptions", program, StringComparison.Ordinal);
+        Assert.Contains("AddScoped<AuditOutboxTemporalStorageMigrationRunner>()", dependencyInjection, StringComparison.Ordinal);
+        Assert.DoesNotContain("AddHostedService<AuditOutboxTemporalStorageMigrationRunner", program, StringComparison.Ordinal);
+        Assert.DoesNotContain("AddHostedService<AuditOutboxTemporalStorageMigrationRunner", dependencyInjection, StringComparison.Ordinal);
+        Assert.False(typeof(IHostedService).IsAssignableFrom(typeof(AuditOutboxTemporalStorageMigrationRunner)));
+    }
+
+    [Fact]
+    public void AuditOutboxRepository_RequiresTemporalStateRepositoryAndDiRegistersBoth()
+    {
+        var constructor = Assert.Single(typeof(AuditOutboxRepository).GetConstructors(), candidate =>
+            candidate.GetParameters().Any(parameter =>
+                parameter.ParameterType == typeof(AuditOutboxTemporalMigrationRepository))
+            && candidate.GetParameters().Any(parameter =>
+                parameter.ParameterType == typeof(IPlatformDbContext)));
+        var temporalParameter = Assert.Single(constructor.GetParameters(), parameter =>
+            parameter.ParameterType == typeof(AuditOutboxTemporalMigrationRepository));
+        var root = FindRepositoryRoot();
+        var dependencyInjection = File.ReadAllText(Path.Combine(
+            root,
+            "services", "Diten.Platform", "src", "Diten.Platform.Infrastructure", "DependencyInjection.cs"));
+
+        Assert.False(temporalParameter.HasDefaultValue);
+        Assert.Contains("AddScoped<AuditOutboxTemporalMigrationRepository>()", dependencyInjection, StringComparison.Ordinal);
+        Assert.Contains("AddScoped<AuditOutboxRepository>()", dependencyInjection, StringComparison.Ordinal);
     }
 
     private static string FindRepositoryRoot()

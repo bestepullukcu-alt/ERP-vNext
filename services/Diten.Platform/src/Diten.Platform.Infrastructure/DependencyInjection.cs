@@ -21,6 +21,7 @@ using Diten.Platform.Infrastructure.BackgroundJobs;
 using Diten.Platform.Infrastructure.Persistence;
 using Diten.Platform.Infrastructure.Persistence.Configurations;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
+using Diten.Platform.Infrastructure.Persistence.Migrations;
 using Diten.Platform.Infrastructure.Persistence.Repositories.BusinessReferenceData;
 using Diten.Platform.Infrastructure.Persistence.Settings;
 using Diten.Platform.Infrastructure.Services;
@@ -491,6 +492,8 @@ public static class DependencyInjection
         services.AddSingleton<ISmtpClientFactory, MailKitSmtpClientFactory>();
         services.AddScoped<SecretReferenceResolver>();
         services.AddScoped<IMessagingProviderResolver, MessagingProviderResolver>();
+        services.AddScoped<AuditOutboxTemporalMigrationRepository>();
+        services.AddScoped<AuditOutboxTemporalStorageMigrationRunner>();
         services.AddScoped<AuditOutboxRepository>();
         services.AddScoped<IAuditOutboxWriter>(provider => provider.GetRequiredService<AuditOutboxRepository>());
         services.AddScoped<ITransactionalAuditOutboxWriter>(provider => provider.GetRequiredService<AuditOutboxRepository>());
