@@ -181,6 +181,22 @@ public sealed class OcelotConfigurationTests
         Assert.ThrowsAny<Exception>(() => AssertPpmRoute(ppmRoutes, "/api/v1/ppm"));
     }
 
+    [Fact]
+    public void GlobalProductsCatchAll_CarriesFu03NestedPolicyRoutesWithoutARouteEdit()
+    {
+        var config = LoadConfiguration();
+        var route = Assert.Single(config.Routes, candidate =>
+            string.Equals(candidate.UpstreamPathTemplate, "/api/global-products/{everything}", StringComparison.Ordinal));
+
+        Assert.Equal("/api/global-products/{everything}", route.DownstreamPathTemplate);
+        Assert.Single(route.DownstreamHostAndPorts);
+        Assert.Equal("localhost", route.DownstreamHostAndPorts[0].Host);
+        Assert.Equal(5059, route.DownstreamHostAndPorts[0].Port);
+        Assert.True(
+            new HashSet<string>(StringComparer.Ordinal) { "GET", "POST", "OPTIONS" }.SetEquals(route.UpstreamHttpMethod),
+            $"Unexpected Global Product catch-all methods: {string.Join(",", route.UpstreamHttpMethod)}");
+    }
+
     private static void AssertPpmRoute(IReadOnlyCollection<FileRoute> ppmRoutes, string template)
     {
         var route = Assert.Single(ppmRoutes, candidate =>

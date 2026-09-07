@@ -18,11 +18,13 @@ canonical_blueprint: "docs/System Capability & Implementation Blueprint - master
 
 # MOD-0290-FU03 — Product Legal Entity Scope Assignment
 
-> **Current-branch bounded integration (2026-09-07).** This branch carries only the FU03 backend aggregate,
+> **Current-branch bounded integration (2026-09-07).** This branch carries the FU03 backend aggregate,
 > Mongo persistence, local scope evaluation and candidate revalidation, nested API, manifest declaration,
-> dependency injection, local audit-intent creation, and their focused tests. It does **not** carry frontend,
-> Gateway, lifecycle workflow, Audit FU01 central transport, operational activation/migration, credentials,
-> data, or a live-acceptance claim. Historical implementation statements in the detailed sections remain
+> dependency injection, local audit-intent creation, and the tenant-shell Golden Slim MVC surface with seven
+> locale resources. Browser requests remain same-origin; MVC forwards them to Gateway. The existing Global Product
+> catch-all route is verified for the nested GET/POST/OPTIONS contract and is not modified. This branch does **not**
+> carry a Gateway route edit, lifecycle workflow, Audit FU01 central transport, operational activation/migration,
+> credentials, data, or a live-acceptance claim. Historical implementation statements in the detailed sections remain
 > source evidence and must not be treated as verification of those excluded surfaces on this branch.
 
 ## 1. Module Summary
