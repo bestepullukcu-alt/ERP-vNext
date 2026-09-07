@@ -44,6 +44,18 @@ Her yeni sürüm, modül veya kritik hata düzeltmesi (hotfix) yayına alınmada
 - [ ] **Kullanıcı Kılavuzu:** `docs/guides/<modül>/index.html` — resimli, tek dosya HTML olarak var mı?
 - [ ] **Yol kontrolü:** Yukarıdaki maddeler **dosya yolu yazılmadan** işaretlenemez
       (bkz. `.antigravity/rules/docs-organization.md` §3.1).
+
+## 🚦 7. Canlıya Çıkış Sonrası Operatör Adımları
+
+- [ ] `docs/guides/operations/post-deploy-steps.md` **okundu** ve bu sürümü ilgilendiren
+      satırlar belirlendi.
+- [ ] Bu modül canlıda **elle** bir adım gerektiriyor mu — yetki satırı, tanım girişi,
+      ayar değişikliği? Gerektiriyorsa o dosyaya **satırı yazıldı**.
+- [ ] Deploy sonrası adımlar uygulandı ve "Tamamlananlar" bölümüne taşındı.
+
+⚠ Kodun deploy edilmiş olması özelliğin çalıştığı anlamına gelmez. Açılmamış bir yetki
+satırı, kullanıcıya "menüde yok" diye görünür ve geliştirici koda bakar — kod yerindedir.
+Bu bölüm o kaybı önlemek içindir.
 - [ ] **CHANGELOG:** Breaking change varsa `CHANGELOG.md`'ye kaydedilmiş mi?
 
 ---
