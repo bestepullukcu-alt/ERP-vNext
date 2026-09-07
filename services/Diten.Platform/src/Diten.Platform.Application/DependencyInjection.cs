@@ -61,6 +61,7 @@ public static class DependencyInjection
         // See IWorkReportScopeSource for why a second copy in the items handler would be the dangerous shape.
         services.AddScoped<Features.Tasks.Services.IWorkReportScopeSource,
             Features.Tasks.Services.WorkReportScopeSource>();
+        services.AddScoped<IOrgDataScopeCandidateResolver, OrgDataScopeCandidateResolver>();
         /*
          * The ONE surface MOD-0024 asks "who sits in which seat" through. Nine files used to inject the
          * assignment repository directly and each re-wrote the active-window rule; BL-071 moves that fact to

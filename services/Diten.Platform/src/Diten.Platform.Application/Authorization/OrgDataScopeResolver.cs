@@ -30,17 +30,20 @@ public sealed class OrgDataScopeResolver : IDataScopeResolver
     private readonly IPositionRepository positions;
     private readonly IPositionAssignmentRepository positionAssignments;
     private readonly ILegalEntityReferenceValidator legalEntityValidator;
+    private readonly IOrgDataScopeCandidateResolver candidateResolver;
 
     public OrgDataScopeResolver(
         IOrganizationUnitRepository organizationUnits,
         IPositionRepository positions,
         IPositionAssignmentRepository positionAssignments,
-        ILegalEntityReferenceValidator legalEntityValidator)
+        ILegalEntityReferenceValidator legalEntityValidator,
+        IOrgDataScopeCandidateResolver candidateResolver)
     {
         this.organizationUnits = organizationUnits ?? throw new ArgumentNullException(nameof(organizationUnits));
         this.positions = positions ?? throw new ArgumentNullException(nameof(positions));
         this.positionAssignments = positionAssignments ?? throw new ArgumentNullException(nameof(positionAssignments));
         this.legalEntityValidator = legalEntityValidator ?? throw new ArgumentNullException(nameof(legalEntityValidator));
+        this.candidateResolver = candidateResolver ?? throw new ArgumentNullException(nameof(candidateResolver));
     }
 
     public async Task<IReadOnlyList<EntitlementDataScope>> ResolveAsync(
@@ -106,7 +109,7 @@ public sealed class OrgDataScopeResolver : IDataScopeResolver
         AddOrgUnitScopes(activePositions, orgUnitById, childrenByParent, scopes);
         AddPositionScopes(activePositions, scopes);
         await AddManagerChainScopesAsync(activePositions, cancellationToken, scopes);
-        await AddLegalEntityScopesAsync(activePositions, orgUnitById, cancellationToken, scopes);
+        await AddLegalEntityScopesAsync(tenantId, userId, cancellationToken, scopes);
 
         return scopes;
     }
@@ -236,26 +239,25 @@ public sealed class OrgDataScopeResolver : IDataScopeResolver
     // Entity lookup failure never produces a scope and never discards the already-computed OrgUnit/Position/
     // ManagerChain scopes. Cancellation still propagates.
     private async Task AddLegalEntityScopesAsync(
-        IReadOnlyList<Position> activePositions,
-        IReadOnlyDictionary<Guid, OrganizationUnit> orgUnitById,
+        Guid tenantId,
+        Guid userId,
         CancellationToken cancellationToken,
         List<EntitlementDataScope> scopes)
     {
-        var seen = new HashSet<Guid>();
-
-        foreach (var position in activePositions)
+        OrgDataScopeCandidateSet candidates;
+        try
         {
-            if (!orgUnitById.TryGetValue(position.OrganizationUnitId, out var unit)
-                || unit.LegalEntityId == Guid.Empty
-                || !seen.Add(unit.LegalEntityId))
-            {
-                continue;
-            }
+            candidates = await candidateResolver.ResolveAsync(tenantId, userId, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
+        catch { return; }
 
+        foreach (var legalEntityId in candidates.LegalEntityIds)
+        {
             Response<LegalEntityReferenceDto> validation;
             try
             {
-                validation = await legalEntityValidator.ValidateAsync(unit.LegalEntityId, cancellationToken);
+                validation = await legalEntityValidator.ValidateAsync(legalEntityId, cancellationToken);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -269,7 +271,7 @@ public sealed class OrgDataScopeResolver : IDataScopeResolver
 
             if (validation.IsSuccessful && validation.Data?.Referenceable == true)
             {
-                scopes.Add(new EntitlementDataScope(EntitlementDataScopeKind.LegalEntity, unit.LegalEntityId, null));
+                scopes.Add(new EntitlementDataScope(EntitlementDataScopeKind.LegalEntity, legalEntityId, null));
             }
         }
     }

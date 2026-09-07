@@ -27,6 +27,17 @@ public sealed class DataScopeResolverRegistrationTests
     }
 
     [Fact]
+    public void AddApplication_registers_candidate_resolver_as_scoped()
+    {
+        var services = new ServiceCollection();
+        services.AddApplication();
+
+        var descriptor = Assert.Single(services.Where(x => x.ServiceType == typeof(IOrgDataScopeCandidateResolver)));
+        Assert.Equal(typeof(OrgDataScopeCandidateResolver), descriptor.ImplementationType);
+        Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
+    }
+
+    [Fact]
     public void AddApplication_does_not_register_noop_resolver_as_production_default()
     {
         var services = new ServiceCollection();
@@ -90,7 +101,10 @@ public sealed class DataScopeResolverRegistrationTests
         services.AddScoped<IOrganizationUnitRepository>(_ => new InMemoryOrganizationUnitRepository(TenantId));
         services.AddScoped<IPositionRepository>(_ => new InMemoryPositionRepository(TenantId));
         services.AddScoped<IPositionAssignmentRepository>(_ => new InMemoryPositionAssignmentRepository(TenantId));
+        services.AddScoped<IOrgDataScopeCandidateFactReader, StubCandidateFactReader>();
         services.AddScoped<ILegalEntityReferenceValidator, StubLegalEntityReferenceValidator>();
+        services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<IOrgDataScopeCandidateAvailabilityClassifier, NeverUnavailableClassifier>();
         return services.BuildServiceProvider();
     }
 
@@ -98,5 +112,21 @@ public sealed class DataScopeResolverRegistrationTests
     {
         public Task<Response<LegalEntityReferenceDto>> ValidateAsync(Guid legalEntityId, CancellationToken ct = default) =>
             Task.FromResult(Response<LegalEntityReferenceDto>.Fail("not referenceable", 404));
+    }
+
+    private sealed class NeverUnavailableClassifier : IOrgDataScopeCandidateAvailabilityClassifier
+    {
+        public bool IsUnavailable(Exception exception) => false;
+    }
+
+    private sealed class StubCandidateFactReader : IOrgDataScopeCandidateFactReader
+    {
+        public Task<IReadOnlyList<Guid>> ResolveLegalEntityIdsAsync(
+            Guid tenantId,
+            Guid userId,
+            DateTimeOffset effectiveAtUtc,
+            int maxCandidates,
+            CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyList<Guid>>(Array.Empty<Guid>());
     }
 }
