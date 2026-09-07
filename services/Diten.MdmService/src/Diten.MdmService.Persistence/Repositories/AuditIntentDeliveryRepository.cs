@@ -246,6 +246,27 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
         });
     }
 
+    public async Task<AuditIntentClaimedPayload?> ReadClaimedPayloadAsync(
+        AuditIntentClaim claim,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(claim);
+        if (!IsCurrentTenant(claim.Locator) || !await IsScalarCutoverActiveAsync(cancellationToken)) return null;
+        var now = _timeProvider.GetUtcNow();
+        return await (claim.Locator.AggregateType switch
+        {
+            AuditAggregateType.CodeReservation => ReadClaimedPayloadFromCollectionAsync(_codeReservations, claim, now, cancellationToken),
+            AuditAggregateType.GlobalProduct => ReadClaimedPayloadFromCollectionAsync(_globalProducts, claim, now, cancellationToken),
+            AuditAggregateType.ProductDefinitionRevision => ReadClaimedPayloadFromCollectionAsync(_productDefinitionRevisions, claim, now, cancellationToken),
+            AuditAggregateType.Gsku => ReadClaimedPayloadFromCollectionAsync(_gskus, claim, now, cancellationToken),
+            AuditAggregateType.FinishedGood => ReadClaimedPayloadFromCollectionAsync(_finishedGoods, claim, now, cancellationToken),
+            AuditAggregateType.Lsku => ReadClaimedPayloadFromCollectionAsync(_lskus, claim, now, cancellationToken),
+            AuditAggregateType.ProductLegalEntityScopePolicy => ReadClaimedPayloadFromCollectionAsync(_productLegalEntityScopePolicies, claim, now, cancellationToken),
+            AuditAggregateType.ProductLegalEntityScopeRolloutState => ReadClaimedPayloadFromCollectionAsync(_productLegalEntityScopeRolloutStates, claim, now, cancellationToken),
+            _ => Task.FromResult<AuditIntentClaimedPayload?>(null)
+        });
+    }
+
     public Task<bool> MarkRetryableFailureAsync(
         AuditIntentClaim claim,
         TimeSpan retryDelay,
@@ -510,6 +531,30 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
                 now,
                 leaseUntil,
                 intent.AttemptCount);
+    }
+
+    private async Task<AuditIntentClaimedPayload?> ReadClaimedPayloadFromCollectionAsync<TEntity>(
+        IMongoCollection<TEntity> collection, AuditIntentClaim claim, DateTimeOffset now, CancellationToken cancellationToken)
+        where TEntity : EntityBase, IAuditIntentAggregate
+    {
+        var aggregate = await collection.Find(TenantAggregateFilter<TEntity>(claim.Locator)).FirstOrDefaultAsync(cancellationToken);
+        var matches = aggregate?.AuditIntents.Where(intent =>
+            IsIntentBoundToParent(intent, claim.Locator.AggregateType, claim.Locator.AggregateId, claim.Locator.TenantId)
+            && intent.IntentId == claim.Locator.IntentId && intent.DeliveryState == AuditIntentDeliveryState.Processing
+            && string.Equals(intent.ClaimToken, claim.ClaimToken, StringComparison.Ordinal)
+            && intent.ClaimGeneration == claim.ClaimGeneration && intent.LeaseUntil > now).Take(2).ToArray() ?? [];
+        if (matches.Length != 1) return null;
+        var intent = matches[0];
+        if (AuditIntentTemporalStorage.Validate(intent) != AuditIntentTemporalStorageKind.Current
+            || await ReadRawStorageKindAsync(collection, claim.Locator, cancellationToken) != AuditIntentTemporalStorageKind.Current)
+            throw new InvalidOperationException("AUDIT_INTENT_TEMPORAL_CUTOVER_PAYLOAD_INVALID");
+        if (!Guid.TryParseExact(intent.CorrelationId, "D", out var correlationId) || correlationId == Guid.Empty
+            || string.IsNullOrWhiteSpace(intent.ContractVersion))
+            throw new InvalidOperationException("AUDIT_INTENT_CLAIMED_PAYLOAD_INVALID");
+        return new AuditIntentClaimedPayload(intent.SourceService, intent.ContractVersion, intent.IntentId, intent.TenantId,
+            intent.AggregateType, intent.AggregateId, intent.PreVersion, intent.PostVersion, intent.Operation, intent.ActorId,
+            correlationId, intent.CausationId, intent.CommandId, intent.Sequence, intent.TimestampUtc, intent.EvidenceHash,
+            intent.SnapshotReference, intent.IdempotencyKey);
     }
 
     private Task<bool> UpdateClaimedIntentAsync(

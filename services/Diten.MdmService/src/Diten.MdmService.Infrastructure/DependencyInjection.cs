@@ -1,8 +1,11 @@
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
+using Diten.MdmService.Application.Contracts.Audit;
 using Diten.MdmService.Application.Contracts.Authorization;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Audit;
 using Diten.MdmService.Infrastructure.Authorization;
+using Diten.MdmService.Infrastructure.Audit;
 using Diten.MdmService.Infrastructure.Middleware;
 using Diten.MdmService.Infrastructure.Security;
 using Diten.MdmService.Application.Contracts.ReferenceData;
@@ -48,6 +51,13 @@ public static class DependencyInjection
                 PlatformTrustedLegalEntityScopeProviderClient.AudienceHeader
             ]);
         services.AddScoped<ProductLegalEntityScopeCandidateFacade>();
+        services.Configure<AuthTrustedSourceAuditServiceIdentityProviderOptions>(configuration.GetSection(AuthTrustedSourceAuditServiceIdentityProviderOptions.SectionName));
+        services.Configure<TrustedSourceAuditIntentClientOptions>(configuration.GetSection(TrustedSourceAuditIntentClientOptions.SectionName));
+        services.AddHttpClient(nameof(AuthTrustedSourceAuditServiceIdentityProvider), client => client.Timeout = Timeout.InfiniteTimeSpan).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false }).RedactLoggedHeaders([AuthTrustedSourceAuditServiceIdentityProvider.ClientIdHeader, AuthTrustedSourceAuditServiceIdentityProvider.ClientSecretHeader]);
+        services.AddHttpClient(nameof(PlatformTrustedSourceAuditIntentClient), client => client.Timeout = Timeout.InfiniteTimeSpan).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false }).RedactLoggedHeaders(["Authorization"]);
+        services.AddSingleton<ITrustedSourceAuditServiceIdentityProvider, AuthTrustedSourceAuditServiceIdentityProvider>();
+        services.AddScoped<ITrustedSourceAuditIntentClient, PlatformTrustedSourceAuditIntentClient>();
+        services.AddScoped<AuditIntentDeliveryProcessor>();
 
         return services;
     }

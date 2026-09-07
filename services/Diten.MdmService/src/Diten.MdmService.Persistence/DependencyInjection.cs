@@ -56,6 +56,7 @@ public static class DependencyInjection
         services.AddScoped<IProductAbbreviationHistoryRepository, ProductAbbreviationHistoryRepository>();
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<IAuditIntentDeliveryRepository, AuditIntentDeliveryRepository>();
+        services.AddScoped<IAuditIntentTenantPartitionDiscovery, AuditIntentTenantPartitionDiscoveryRepository>();
         services.AddScoped<IAuditIntentTemporalMigrationRepository, AuditIntentTemporalMigrationRepository>();
         services.AddScoped<AuditIntentTemporalMigrationRunner>();
         services.AddScoped<IProductLegalEntityScopePolicyRepository, ProductLegalEntityScopePolicyRepository>();

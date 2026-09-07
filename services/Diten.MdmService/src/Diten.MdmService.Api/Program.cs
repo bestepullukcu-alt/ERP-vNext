@@ -2,6 +2,7 @@ using System.Text;
 using Diten.BuildingBlocks.Security.Secrets;
 using Diten.MdmService.Api.Configuration;
 using Diten.MdmService.Api.ModuleRegistration;
+using Diten.MdmService.Api.Services.Audit;
 using Diten.MdmService.Application;
 using Diten.MdmService.Infrastructure;
 using Diten.MdmService.Persistence;
@@ -34,6 +35,9 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddPersistence(builder.Configuration);
 builder.Services.Configure<AuditIntentTemporalMigrationOptions>(
     builder.Configuration.GetSection(AuditIntentTemporalMigrationOptions.SectionName));
+builder.Services.Configure<AuditIntentDeliveryWorkerOptions>(
+    builder.Configuration.GetSection(AuditIntentDeliveryWorkerOptions.SectionName));
+builder.Services.AddHostedService<AuditIntentDeliveryWorker>();
 
 if (!runAuditIntentTemporalMigration)
 {
