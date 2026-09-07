@@ -57,14 +57,40 @@
     };
 
     /**
-     * One outcome's words.
+     * The words the SERVER sent for a closure-outcome code, code → label, refreshed from every response.
      *
-     * ⚠ FALLS BACK TO THE CODE, and that is the right answer twice over: a TENANT's own outcome has only the
-     * words its administrator typed — in one language, with nothing to translate — and a SYSTEM outcome missing
-     * from the map is a gap somebody needs to see rather than a blank slice in a chart.
+     * ⚠ IT IS NOT A SECOND VOCABULARY — it holds only what the API published, and it is emptied and refilled
+     * with each report so a label can never outlive the response it came from.
+     */
+    var API_OUTCOMES = {};
+
+    var rememberOutcomeLabels = function (report) {
+        API_OUTCOMES = {};
+        var take = function (rows) {
+            (rows || []).forEach(function (row) {
+                if (row && row.code && row.label) { API_OUTCOMES[row.code] = row.label; }
+            });
+        };
+        if (!report) { return; }
+        take(report.totals && report.totals.outcomes);
+        (report.groups || []).forEach(function (group) { take(group.outcomes); });
+    };
+
+    /**
+     * One outcome's words, in the order of who actually KNOWS them — Dilim 1g.
+     *
+     * 1. THE API's own `label`. A TENANT's outcome is named by the administrator who typed it, and this screen
+     *    has no way to know those words; before 1g it did not receive them either, so a tenant axis read
+     *    `OUT_OF_SCOPE · CORRECTED · CAPA_RAISED` — the engine's identities, printed at a reader.
+     * 2. THE RESX MAP, keyed by code. A SYSTEM outcome names itself with a resource key, and Platform has no
+     *    localizer to resolve one — so the server sends NO label for it and the reader's own translation, in
+     *    the reader's language, answers here instead. This is a fallback in position only; for the five system
+     *    outcomes it is the sole correct source.
+     * 3. THE CODE. Nothing is invented: an outcome neither side can name shows the identity it was stored
+     *    under, which is a gap somebody can see and fix rather than a plausible-looking wrong word.
      */
     var outcomeLabel = function (code) {
-        return (code && OUTCOMES[code]) || code || '';
+        return (code && (API_OUTCOMES[code] || OUTCOMES[code])) || code || '';
     };
 
     /**
@@ -751,6 +777,9 @@
         // The report a click's list is opened against — see `openItems`. Kept even for an empty period so a
         // reader who already has the panel open sees it close rather than keep showing a stale list.
         lastReport = report;
+        // ⚠ BEFORE ANYTHING DRAWS. The outcomes axis and the drill-down panel's title both ask
+        // `outcomeLabel(...)`, and both would read the PREVIOUS report's words if this ran after them.
+        rememberOutcomeLabels(report);
 
         renderScope(report);
 
@@ -1482,7 +1511,8 @@
         itemsUrl: function (bucket, argument, groupKey, skip) { return itemsUrl(bucket, argument, groupKey, skip); },
         cellTitle: cellTitle,
         setLastQuery: function (q) { lastQuery = q; },
-        setLastReport: function (r) { lastReport = r; },
+        // The same pair `render` sets, so a test that skips the draw still names outcomes the way the screen does.
+        setLastReport: function (r) { lastReport = r; rememberOutcomeLabels(r); },
         // Dilim 1f — the real scope-preference state, not a copy of it. `render(...)` is what the test harness
         // calls to exercise `renderScope`'s chip/badge toggling, exactly as 1a/1b/1c/1d already do for the rest
         // of the screen; these two hooks let a test set or read the state a real chip click sets and reads.

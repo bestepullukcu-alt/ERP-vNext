@@ -238,7 +238,25 @@ public sealed record WorkReportTimeliness(int OnTime, int Late, int WithoutDueDa
 public sealed record WorkReportEffort(decimal EstimatedHours, decimal SpentHours, int TaskCount);
 
 /// <summary>How the work ended, by the code the type's closure dictionary supplied (Faz 3).</summary>
-public sealed record WorkReportOutcomeCount(string Code, int Count);
+/// <param name="Code">
+/// The IDENTITY the engine stored on the task. Every drill-down and every filter travels on this, never on
+/// <paramref name="Label"/> — renaming an outcome's words must not orphan the closed tasks that quote its code.
+/// </param>
+/// <param name="Count">How many of the period's tasks ended this way.</param>
+/// <param name="Label">
+/// THE WORDS, when this server owns them — the same contract <see cref="WorkReportBucket.Label"/> already
+/// keeps for the breakdown axis, applied to the axis that was still shipping raw codes.
+///
+/// <para><b>⚠ NULL IS A REAL ANSWER, AND IT IS NOT A GAP TO FILL.</b> A SYSTEM outcome names its words with a
+/// <c>LabelResourceKey</c>, and Platform has NO localizer (measured 2026-09-04: no <c>IStringLocalizer</c> in
+/// this service at all) — so the only honest thing it can send for one is nothing, and the reader's own resx
+/// resolves it by code, in their language. Emitting the key itself would put <c>WorkAggregation_ClosureOutcome_*</c>
+/// on screen, which is the same defect as the raw code wearing a longer name.</para>
+///
+/// <para>Filled for a TENANT outcome, whose <c>LabelText</c> is the administrator's own words in the one
+/// language they typed them in — there is nothing to translate and nobody else who can supply them.</para>
+/// </param>
+public sealed record WorkReportOutcomeCount(string Code, int Count, string? Label = null);
 
 /// <summary>
 /// HOW MUCH WORK CAME BACK — the raw material of the rework rate, as counts (Faz 4).

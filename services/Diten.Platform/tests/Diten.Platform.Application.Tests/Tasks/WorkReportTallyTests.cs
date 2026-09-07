@@ -329,6 +329,76 @@ public sealed class WorkReportTallyTests
     }
 
     [Fact]
+    public void An_outcome_carries_the_WORDS_for_its_code_when_this_server_owns_them()
+    {
+        /*
+         * DILIM 1g. Until this slice the outcomes axis published a bare code, so the screen had nothing to draw
+         * but `RESOLVED` — the identity the engine stored, printed at a reader. The breakdown axis has carried
+         * a `Label` beside its `Key` since 1a for exactly this reason; this is the same contract, on the axis
+         * that was still missing it.
+         *
+         * ⚠ THE CODE IS UNTOUCHED. It is what every drill-down and filter travels on, and the label is display
+         * only — a rename of the words must not orphan the closed tasks that quote the code.
+         */
+        var report = WorkReportTally.Build(
+            Criteria(),
+            WorkReportSets.Of(Rows(), returns: Returns),
+            outcomeLabels: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["RESOLVED"] = "Çözüldü"
+            });
+
+        var resolved = report.Totals.Outcomes.Single(outcome => outcome.Code == "RESOLVED");
+        Assert.Equal("Çözüldü", resolved.Label);
+        Assert.Equal(3, resolved.Count);
+        Assert.Equal("RESOLVED", resolved.Code);
+    }
+
+    [Fact]
+    public void An_outcome_nobody_can_name_keeps_a_NULL_label_rather_than_an_invented_one()
+    {
+        /*
+         * A SYSTEM outcome names itself with a resource key, and this service has no localizer to resolve one
+         * (measured 2026-09-04: no IStringLocalizer anywhere in Platform) — so it sends NOTHING and the reader's
+         * own resx answers, in the reader's language. Sending the key would put `WorkAggregation_ClosureOutcome_*`
+         * on a chart axis, which is the defect this slice fixes wearing a longer name.
+         */
+        var report = WorkReportTally.Build(
+            Criteria(),
+            WorkReportSets.Of(Rows(), returns: Returns),
+            outcomeLabels: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["RESOLVED"] = "Çözüldü"
+            });
+
+        Assert.Null(report.Totals.Outcomes.Single(outcome => outcome.Code == "SUPERSEDED").Label);
+
+        // And with no map at all, every label is null — never the code wearing a label's name.
+        Assert.All(
+            WorkReportTally.Build(Criteria(), WorkReportSets.Of(Rows(), returns: Returns)).Totals.Outcomes,
+            outcome => Assert.Null(outcome.Label));
+    }
+
+    [Fact]
+    public void Naming_an_outcome_moves_no_number_and_no_order()
+    {
+        // The label is words for a figure, not a figure. Adding one may not reorder the axis or change a count.
+        var plain = WorkReportTally.Build(Criteria(), WorkReportSets.Of(Rows(), returns: Returns)).Totals.Outcomes;
+        var named = WorkReportTally.Build(
+            Criteria(),
+            WorkReportSets.Of(Rows(), returns: Returns),
+            outcomeLabels: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["RESOLVED"] = "Çözüldü",
+                ["SUPERSEDED"] = "Yerine başkası geçti"
+            }).Totals.Outcomes;
+
+        Assert.Equal(
+            plain.Select(outcome => (outcome.Code, outcome.Count)),
+            named.Select(outcome => (outcome.Code, outcome.Count)));
+    }
+
+    [Fact]
     public void Rework_reports_HOW_MANY_TASKS_and_HOW_MANY_RETURNS_separately()
     {
         /*

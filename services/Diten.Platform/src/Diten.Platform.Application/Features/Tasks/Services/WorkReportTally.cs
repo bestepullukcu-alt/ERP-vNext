@@ -169,10 +169,17 @@ public static class WorkReportTally
     /// <see cref="WorkReportBucket"/> for why nothing is invented to fill the gap. The ASSIGNEE axis is always
     /// absent here: Platform has no user entity to ask.
     /// </param>
+    /// <param name="outcomeLabels">
+    /// Closure-outcome code → the words for it, supplied by the repository from the types the rows name. Same
+    /// contract as <paramref name="labels"/>: a code absent from the map keeps a NULL label, and the screen
+    /// resolves it by code from its own resx (a SYSTEM outcome) or prints the identity (anything else). See
+    /// <see cref="WorkReportOutcomeCount.Label"/> for why nothing is invented to fill the gap.
+    /// </param>
     public static WorkReportDto Build(
         WorkReportCriteria criteria,
         WorkReportRowSet set,
-        IReadOnlyDictionary<string, string>? labels = null)
+        IReadOnlyDictionary<string, string>? labels = null,
+        IReadOnlyDictionary<string, string>? outcomeLabels = null)
     {
         ArgumentNullException.ThrowIfNull(criteria);
         ArgumentNullException.ThrowIfNull(set);
@@ -182,7 +189,7 @@ public static class WorkReportTally
         string? LabelFor(string? key) =>
             key is not null && labels is not null && labels.TryGetValue(key, out var found) ? found : null;
 
-        var totals = Measure(null, null, set, criteria);
+        var totals = Measure(null, null, set, criteria, outcomeLabels);
 
         var groups = new List<WorkReportBucket>();
         var truncated = 0;
@@ -193,7 +200,7 @@ public static class WorkReportTally
 
             groups.AddRange(ordered
                 .Take(WorkReportDto.MaxGroups)
-                .Select(key => Measure(key, LabelFor(key), GroupSet(criteria, set, key), criteria)));
+                .Select(key => Measure(key, LabelFor(key), GroupSet(criteria, set, key), criteria, outcomeLabels)));
 
             /*
              * ⚠ FOLDED, NOT DROPPED — and the count is reported. A silent cut would leave a reader comparing
@@ -210,7 +217,8 @@ public static class WorkReportTally
                     WorkReportDto.OtherKey,
                     null,
                     GroupSet(criteria, set, WorkReportDto.OtherKey),
-                    criteria));
+                    criteria,
+                    outcomeLabels));
             }
         }
 
@@ -324,7 +332,8 @@ public static class WorkReportTally
         string? key,
         string? label,
         WorkReportRowSet set,
-        WorkReportCriteria criteria)
+        WorkReportCriteria criteria,
+        IReadOnlyDictionary<string, string>? outcomeLabels = null)
     {
         IReadOnlyList<WorkReportRow> Cell(WorkReportBucketKind kind, string? argument = null) =>
             Select(criteria, set, kind, argument);
@@ -356,7 +365,17 @@ public static class WorkReportTally
             .Where(row => !string.IsNullOrWhiteSpace(row.ClosureReasonCode))
             .Select(row => row.ClosureReasonCode!)
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Select(code => new WorkReportOutcomeCount(code, Cell(WorkReportBucketKind.Outcome, code).Count))
+            .Select(code => new WorkReportOutcomeCount(
+                code,
+                Cell(WorkReportBucketKind.Outcome, code).Count,
+                /*
+                 * ⚠ THE LABEL IS CARRIED, NEVER MANUFACTURED — and it is carried for the same reason the group
+                 * axis already carries one. Before this, the screen received a bare code and had no choice but
+                 * to guess at words for it, so a tenant's own outcome rendered as `OUT_OF_SCOPE` on a chart
+                 * axis. A code with no entry in the map keeps a null label; the screen then resolves it from
+                 * its own resx by code, and failing that shows the identity. Nothing here invents a name.
+                 */
+                outcomeLabels is not null && outcomeLabels.TryGetValue(code, out var words) ? words : null))
             .OrderByDescending(outcome => outcome.Count)
             .ThenBy(outcome => outcome.Code, StringComparer.Ordinal)
             .ToList();

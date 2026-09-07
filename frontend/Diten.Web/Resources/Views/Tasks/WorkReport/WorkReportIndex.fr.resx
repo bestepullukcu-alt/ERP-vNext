@@ -101,7 +101,6 @@
   <data name="ItemsAging30plus" xml:space="preserve"><value>Ouverte depuis plus de 30 jours</value></data>
   <data name="ItemsColDue" xml:space="preserve"><value>échéance {0}</value></data>
   <data name="FiltersToggle" xml:space="preserve"><value>Filtres</value></data>
-  <data name="Action" xml:space="preserve"><value>Action</value></data>
   <data name="OutcomesOther" xml:space="preserve"><value>Autres résultats</value></data>
   <data name="ItemsColClosed" xml:space="preserve"><value>clôturée {0}</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>Basse</value></data>

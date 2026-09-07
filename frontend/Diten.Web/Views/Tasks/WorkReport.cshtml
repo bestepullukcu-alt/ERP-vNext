@@ -110,23 +110,19 @@
                 <label class="form-label fw-medium d-none d-xl-block">&nbsp;</label>
                 <div class="d-flex align-items-center gap-2">
                     @*
-                        ⚠ VISUAL SHELL ONLY — no drill-down, no export, no data behaviour wired to it. The user asked
-                        for this specific shape (the DataTable "Action" collection button from `dt-defaults.js:724`:
-                        gear icon + label + the chevron `dropdown-toggle` itself draws) placed here so the page's
-                        silhouette matches its DataTable siblings, WITHOUT deciding yet what belongs inside — this
-                        screen has no rows to bulk-act on the way a DataTable does, so the menu stays empty rather
-                        than guessing at a behaviour nobody asked for.
+                        ⚠ THERE IS NO "ACTION" BUTTON HERE, AND ITS ABSENCE IS THE DECISION.
+
+                        One stood here until Dilim 1g: the DataTable collection button's exact shape, put up so the
+                        page's silhouette would match its DataTable siblings, with an EMPTY menu because this screen
+                        has no rows to bulk-act on. Measured live: the dropdown opened onto `children.length === 0`.
+                        Declining to guess at its contents was right; leaving the button was not — a control that
+                        does nothing when pressed teaches a reader that this page's controls may be decoration, and
+                        that doubt spreads to the ones that work. `.antigravity/rules/frontend-standards.md` UI-027
+                        now says so in as many words.
+
+                        It comes back WITH the thing it does. Export is the one real entry anybody has named for it,
+                        and export is Dilim 1e — button and behaviour arrive together or not at all.
                     *@
-                    <div class="dropdown">
-                        <button class="btn btn-label-secondary dropdown-toggle" type="button"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="d-flex align-items-center gap-2">
-                                <i class="icon-base bx bx-cog icon-sm"></i>
-                                <span class="d-none d-sm-inline-block">@Localizer["Action"]</span>
-                            </span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end"></ul>
-                    </div>
                     @*
                         ⚠ THE ACTIVE-FILTER COUNT IS NOT COSMETIC — it is what keeps a narrowed report from being
                         mistaken for the whole. The badge is the SAME shape WorkCenterNext's own filter toggle uses

@@ -129,7 +129,77 @@ public sealed class WorkReportRepository : IWorkReportRepository
         return WorkReportTally.Build(
             criteria,
             readout.Set,
-            await LabelsAsync(criteria, readout.Set.Touched, readout.Units, readout.Types, ct));
+            await LabelsAsync(criteria, readout.Set.Touched, readout.Units, readout.Types, ct),
+            await OutcomeLabelsAsync(readout.Set.Touched, readout.Types, ct));
+    }
+
+    /// <summary>
+    /// The WORDS for each closure-outcome code the period actually produced.
+    ///
+    /// <para><b>⚠ ONLY WHAT THIS SERVICE OWNS.</b> A TENANT outcome carries <c>LabelText</c> — the words its
+    /// administrator typed — and nobody else can supply them, so they travel. A SYSTEM outcome carries a
+    /// <c>LabelResourceKey</c> instead, and Platform has no localizer to turn a key into a sentence; it is left
+    /// out of this map so the reader's own resx resolves it, in the reader's language. Sending the key would
+    /// put <c>WorkAggregation_ClosureOutcome_*</c> on a chart axis, which is the defect this fixes wearing a
+    /// longer name.</para>
+    ///
+    /// <para><b>⚠ AMBIGUITY IS LEFT UNNAMED.</b> The code is unique within its TYPE, not across them, so two
+    /// types may spell the same code differently. One of the two would be a coin toss on a chart that says
+    /// nothing about which type it came from — the code is then the only honest label, and the entry is
+    /// dropped rather than guessed.</para>
+    ///
+    /// <para>Reads the type catalogue only when the period produced a closure code at all — a report with no
+    /// closures asks nothing of the database for names nobody will read.</para>
+    /// </summary>
+    private async Task<IReadOnlyDictionary<string, string>> OutcomeLabelsAsync(
+        IReadOnlyList<WorkReportRow> rows,
+        IReadOnlyDictionary<Guid, Domain.Entities.Tasks.TaskType> types,
+        CancellationToken ct)
+    {
+        var codes = rows
+            .Select(row => row.ClosureReasonCode)
+            .Where(code => !string.IsNullOrWhiteSpace(code))
+            .Select(code => code!)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if (codes.Count == 0)
+        {
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var allTypes = types.Count > 0 ? types : (await _taskTypes.ListAllAsync(ct)).ToDictionary(type => type.Id);
+
+        var labels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var ambiguous = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var outcome in allTypes.Values.SelectMany(type => type.ClosureOutcomes))
+        {
+            if (outcome.Code is not { Length: > 0 } code
+                || !codes.Contains(code)
+                || ambiguous.Contains(code)
+                // A resource key is not a label. See this method's summary.
+                || !string.IsNullOrWhiteSpace(outcome.LabelResourceKey)
+                || string.IsNullOrWhiteSpace(outcome.LabelText))
+            {
+                continue;
+            }
+
+            var words = outcome.LabelText!.Trim();
+            if (labels.TryGetValue(code, out var already))
+            {
+                if (!string.Equals(already, words, StringComparison.Ordinal))
+                {
+                    labels.Remove(code);
+                    ambiguous.Add(code);
+                }
+
+                continue;
+            }
+
+            labels[code] = words;
+        }
+
+        return labels;
     }
 
     /// <summary>
