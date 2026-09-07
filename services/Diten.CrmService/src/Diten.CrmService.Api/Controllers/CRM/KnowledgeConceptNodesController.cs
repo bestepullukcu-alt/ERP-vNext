@@ -17,7 +17,7 @@ public sealed class KnowledgeConceptNodesController : CustomBaseController
     public KnowledgeConceptNodesController(IMediator mediator) => _mediator = mediator;
 
     [HttpGet("api/crm/knowledge/concept-nodes")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> List(
         [FromQuery] Guid? subjectId,
         [FromQuery] Guid? conceptTypeId,
@@ -33,12 +33,12 @@ public sealed class KnowledgeConceptNodesController : CustomBaseController
             cancellationToken));
 
     [HttpGet("api/crm/knowledge/concept-nodes/{conceptNodeId:guid}")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> Get(Guid conceptNodeId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new GetConceptNodeQuery(conceptNodeId), cancellationToken));
 
     [HttpPost("api/crm/knowledge/concept-nodes")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> Create(
         [FromBody] CreateConceptNodeRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
@@ -49,7 +49,7 @@ public sealed class KnowledgeConceptNodesController : CustomBaseController
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/concept-nodes/{conceptNodeId:guid}")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> Update(
         Guid conceptNodeId, [FromBody] UpdateConceptNodeRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
@@ -59,7 +59,7 @@ public sealed class KnowledgeConceptNodesController : CustomBaseController
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/concept-nodes/{conceptNodeId:guid}/archive")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> Archive(Guid conceptNodeId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new ArchiveConceptNodeCommand(conceptNodeId), cancellationToken));

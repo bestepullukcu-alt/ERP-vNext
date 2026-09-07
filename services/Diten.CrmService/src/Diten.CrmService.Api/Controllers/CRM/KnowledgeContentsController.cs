@@ -26,7 +26,7 @@ public sealed class KnowledgeContentsController : CustomBaseController
     }
 
     [HttpGet("api/crm/knowledge/contents")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> List(
         [FromQuery] string? contentType,
         [FromQuery] string? contentStatus,
@@ -48,12 +48,12 @@ public sealed class KnowledgeContentsController : CustomBaseController
             cancellationToken));
 
     [HttpGet("api/crm/knowledge/contents/{contentId:guid}")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> Get(Guid contentId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new GetKnowledgeContentQuery(contentId), cancellationToken));
 
     [HttpPost("api/crm/knowledge/contents")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> Create(
         [FromBody] CreateKnowledgeContentRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
@@ -67,7 +67,7 @@ public sealed class KnowledgeContentsController : CustomBaseController
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/contents/{contentId:guid}")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> Update(
         Guid contentId, [FromBody] UpdateKnowledgeContentRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
@@ -81,7 +81,7 @@ public sealed class KnowledgeContentsController : CustomBaseController
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/contents/{contentId:guid}/archive")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> Archive(Guid contentId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new ArchiveKnowledgeContentCommand(contentId), cancellationToken));

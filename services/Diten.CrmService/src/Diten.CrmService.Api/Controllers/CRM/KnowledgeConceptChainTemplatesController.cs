@@ -18,7 +18,7 @@ public sealed class KnowledgeConceptChainTemplatesController : CustomBaseControl
     public KnowledgeConceptChainTemplatesController(IMediator mediator) => _mediator = mediator;
 
     [HttpGet("api/crm/knowledge/concept-chain-templates")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> List(
         [FromQuery] Guid? subjectId,
         [FromQuery] string? status,
@@ -31,13 +31,13 @@ public sealed class KnowledgeConceptChainTemplatesController : CustomBaseControl
             cancellationToken));
 
     [HttpGet("api/crm/knowledge/concept-chain-templates/{templateId:guid}")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> Get(Guid templateId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new GetConceptChainTemplateQuery(templateId), cancellationToken));
 
     [HttpPost("api/crm/knowledge/concept-chain-templates")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.TemplateManage)]
     public async Task<IActionResult> Create(
         [FromBody] CreateConceptChainTemplateRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
@@ -47,7 +47,7 @@ public sealed class KnowledgeConceptChainTemplatesController : CustomBaseControl
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/concept-chain-templates/{templateId:guid}")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.TemplateManage)]
     public async Task<IActionResult> Update(
         Guid templateId, [FromBody] UpdateConceptChainTemplateRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
@@ -57,7 +57,7 @@ public sealed class KnowledgeConceptChainTemplatesController : CustomBaseControl
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/concept-chain-templates/{templateId:guid}/archive")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.TemplateManage)]
     public async Task<IActionResult> Archive(Guid templateId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new ArchiveConceptChainTemplateCommand(templateId), cancellationToken));

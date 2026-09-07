@@ -27,7 +27,7 @@ public sealed class KnowledgePathsController : CustomBaseController
     // ---------------- paths ----------------
 
     [HttpGet("api/crm/knowledge/paths")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> List(
         [FromQuery] Guid? subjectId,
         [FromQuery] Guid? topicId,
@@ -46,14 +46,14 @@ public sealed class KnowledgePathsController : CustomBaseController
             cancellationToken));
 
     [HttpGet("api/crm/knowledge/paths/{pathId:guid}")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> Get(
         Guid pathId, [FromQuery] DateTimeOffset? effectiveAt, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new GetKnowledgePathQuery(pathId, effectiveAt), cancellationToken));
 
     [HttpPost("api/crm/knowledge/paths")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> Create(
         [FromBody] CreateKnowledgePathRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
@@ -64,7 +64,7 @@ public sealed class KnowledgePathsController : CustomBaseController
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/paths/{pathId:guid}")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> Update(
         Guid pathId, [FromBody] UpdateKnowledgePathRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
@@ -76,21 +76,21 @@ public sealed class KnowledgePathsController : CustomBaseController
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/paths/{pathId:guid}/publish")]
-    [HasPermission(Perms.ManageFallback)] // canonical crm.knowledge.path.publish (F-RBAC); fallback collapses to manage
+    [HasPermission(Perms.Publish)] // canonical crm.knowledge.path.publish (WP-SCMM-05-S1)
     public async Task<IActionResult> Publish(
         Guid pathId, [FromQuery] int? expectedVersion, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new PublishKnowledgePathCommand(pathId, expectedVersion), cancellationToken));
 
     [HttpPost("api/crm/knowledge/paths/{pathId:guid}/new-version")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> NewVersion(
         Guid pathId, [FromBody] CreateKnowledgePathVersionRequest? request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new CreateKnowledgePathVersionCommand(pathId, request?.NewPathVersion), cancellationToken));
 
     [HttpPost("api/crm/knowledge/paths/{pathId:guid}/archive")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> Archive(
         Guid pathId, [FromQuery] int? expectedVersion, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
@@ -99,7 +99,7 @@ public sealed class KnowledgePathsController : CustomBaseController
     // ---------------- embedded steps (sub-resource of a path) ----------------
 
     [HttpGet("api/crm/knowledge/paths/{pathId:guid}/steps")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> ListSteps(
         Guid pathId,
         [FromQuery] bool includeArchived = false,
@@ -109,7 +109,7 @@ public sealed class KnowledgePathsController : CustomBaseController
             new GetKnowledgePathStepsQuery(pathId, includeArchived, effectiveAt), cancellationToken));
 
     [HttpPost("api/crm/knowledge/paths/{pathId:guid}/steps")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> AddStep(
         Guid pathId, [FromBody] AddKnowledgePathStepRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
@@ -121,7 +121,7 @@ public sealed class KnowledgePathsController : CustomBaseController
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/paths/{pathId:guid}/steps/{stepId:guid}")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> UpdateStep(
         Guid pathId, Guid stepId, [FromBody] UpdateKnowledgePathStepRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
@@ -133,7 +133,7 @@ public sealed class KnowledgePathsController : CustomBaseController
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/paths/{pathId:guid}/steps/{stepId:guid}/archive")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> ArchiveStep(
         Guid pathId, Guid stepId, [FromQuery] int? expectedVersion, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(

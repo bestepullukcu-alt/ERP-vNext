@@ -25,7 +25,7 @@ public sealed class KnowledgeAudienceProfilesController : CustomBaseController
     }
 
     [HttpGet("api/crm/knowledge/audience-profiles")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.SubjectRead)]
     public async Task<IActionResult> List(
         [FromQuery] string? status,
         [FromQuery] string? profileType,
@@ -36,13 +36,13 @@ public sealed class KnowledgeAudienceProfilesController : CustomBaseController
             new ListAudienceProfilesQuery(status, profileType, search, includeArchived), cancellationToken));
 
     [HttpGet("api/crm/knowledge/audience-profiles/{audienceProfileId:guid}")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.SubjectRead)]
     public async Task<IActionResult> Get(Guid audienceProfileId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new GetAudienceProfileQuery(audienceProfileId), cancellationToken));
 
     [HttpPost("api/crm/knowledge/audience-profiles")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.SubjectManage)]
     public async Task<IActionResult> Create(
         [FromBody] CreateAudienceProfileRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
@@ -53,7 +53,7 @@ public sealed class KnowledgeAudienceProfilesController : CustomBaseController
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/audience-profiles/{audienceProfileId:guid}")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.SubjectManage)]
     public async Task<IActionResult> Update(
         Guid audienceProfileId,
         [FromBody] UpdateAudienceProfileRequest request,
@@ -66,13 +66,13 @@ public sealed class KnowledgeAudienceProfilesController : CustomBaseController
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/audience-profiles/{audienceProfileId:guid}/archive")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.SubjectManage)]
     public async Task<IActionResult> Archive(Guid audienceProfileId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new ArchiveAudienceProfileCommand(audienceProfileId), cancellationToken));
 
     [HttpPost("api/crm/knowledge/audience-profiles/{audienceProfileId:guid}/unarchive")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.SubjectManage)]
     public async Task<IActionResult> Unarchive(Guid audienceProfileId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new UnarchiveAudienceProfileCommand(audienceProfileId), cancellationToken));
