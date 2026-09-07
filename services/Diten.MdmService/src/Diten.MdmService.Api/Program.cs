@@ -1,5 +1,6 @@
 using System.Text;
 using Diten.BuildingBlocks.Security.Secrets;
+using Diten.MdmService.Api.Configuration;
 using Diten.MdmService.Api.ModuleRegistration;
 using Diten.MdmService.Application;
 using Diten.MdmService.Infrastructure;
@@ -9,6 +10,11 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+var runAuditIntentTemporalMigration =
+    AuditIntentTemporalMigrationCommandLine.IsRequested(args);
+var auditIntentTemporalMigrationRequest = runAuditIntentTemporalMigration
+    ? AuditIntentTemporalMigrationCommandLine.ValidateAndCreateRequest(builder.Environment, builder.Configuration)
+    : null;
 
 /*
  * ⚠ HEADER BUDGET RAISED FROM KESTREL'S 32 KB DEFAULT (2026-09-04). The access token carries
@@ -26,7 +32,11 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddPersistence(builder.Configuration);
+builder.Services.Configure<AuditIntentTemporalMigrationOptions>(
+    builder.Configuration.GetSection(AuditIntentTemporalMigrationOptions.SectionName));
 
+if (!runAuditIntentTemporalMigration)
+{
 var jwtSecret = builder.Configuration["JwtSettings:Secret"];
 var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
 var jwtAudience = builder.Configuration["JwtSettings:Audience"];
@@ -82,6 +92,7 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Tenant GUID."
     });
 });
+}
 
 // MC-3b-expand (Part B) — self-register the legal-entity module with the Platform catalog at startup (HTTP push,
 // cross-service). Best-effort with retry; never blocks MDM startup if Platform is down.
@@ -97,6 +108,23 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<Diten.MdmService.Application.Contracts.Audit.IPlatformAuditForwarder, Diten.MdmService.Api.Audit.PlatformAuditForwarder>();
 
 var app = builder.Build();
+
+if (runAuditIntentTemporalMigration)
+{
+    await using var migrationScope = app.Services.CreateAsyncScope();
+    var runner = migrationScope.ServiceProvider
+        .GetRequiredService<Diten.MdmService.Persistence.Repositories.AuditIntentTemporalMigrationRunner>();
+    var result = await runner.RunAsync(
+        auditIntentTemporalMigrationRequest!,
+        app.Lifetime.ApplicationStopping);
+    app.Logger.LogInformation(
+        "Audit intent temporal migration completed at phase {Phase}; scanned {ScannedCount}, migrated {MigratedCount}, current {AlreadyCurrentCount}.",
+        result.Phase,
+        result.ScannedCount,
+        result.MigratedCount,
+        result.AlreadyCurrentCount);
+    return;
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();

@@ -33,6 +33,12 @@ public interface IAuditIntentDeliveryRepository
         AuditIntentAcknowledgement acknowledgement,
         CancellationToken cancellationToken = default);
 
+    Task<bool> AcknowledgeAndCompactAsync(
+        AuditIntentClaim claim,
+        AuditIntentAcknowledgement acknowledgement,
+        string compactReceiptReference,
+        CancellationToken cancellationToken = default);
+
     Task<bool> CompactDeliveredAsync(
         AuditIntentClaim claim,
         string compactReceiptReference,
