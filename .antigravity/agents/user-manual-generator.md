@@ -57,8 +57,34 @@ Ajan, kullanıcının module pack'teki golden karara göre iki farklı detay/gir
 
 ## 🚨 Yazım Prensipleri
 - **Sıfır Teknik Jargon:** "API, Endpoint, MongoDB, GUID" gibi kelimeleri kullanma. Bunun yerine "Veri kaynağı, Benzersiz kimlik, Kayıt noktası" gibi terimler kullan.
-- **Görsel Odaklılık:** Anlatım sırasında "[İmaj: Ekleme Butonu]" gibi yer tutucular kullanarak görsel destek noktalarını belirt.
+- **Gerçek Ekran Görüntüsü Zorunlu:** `[İmaj: ...]` yer tutucusu YASAK. Her adımın altında o adımın gerçek ekran görüntüsü olacak. Görüntü yoksa o adım yazılmaz — önce görüntü alınır.
 - **Hata Mesajları:** Kullanıcının karşılaşabileceği yaygın hataları (Örn: "Bu kayıt zaten mevcut") anlaşılır şekilde açıkla.
+
+---
+
+## 📸 Çıktı Formatı — Markdown DEĞİL
+
+Kılavuz **tek dosya HTML** olarak üretilir (`docs/guides/<modul>/index.html`).
+Markdown kılavuz üretilmez; mevcut `.md` kılavuzlar bu formata taşınacaktır.
+
+Sebep ölçüldü: `docs/` altında bugün 2 kılavuz var ve **sıfır ekran görüntüsü**.
+Markdown, görseli dosya yoluna bağlar; kılavuz taşınınca resimler kopar ve
+elde yalnız metin kalır. Tek dosya HTML'de görüntü gömülüdür, kopmaz.
+
+**Kurallar:**
+- Ekran görüntüleri `data:` URI olarak HTML'in içine gömülür — yanında klasör taşınmaz.
+- Her işlem adımı: numara → kısa cümle → ekran görüntüsü → (varsa) uyarı kutusu.
+- Ekran görüntüsünde ilgili alan/buton çerçeve ile işaretlenir; ok ve metin eklenmez.
+- Kılavuz tarayıcıda açılır ve olduğu gibi yazdırılabilir (PDF çıktısı alınabilir).
+
+## 🔒 Ekran Görüntüsü Nereden Alınır
+
+⚠ **Ekran görüntüleri CANLI sistemden ALINMAZ.** Canlı ortamda gerçek şirket,
+gerçek çalışan adı ve gerçek e-posta vardır; bunlar kılavuza girdiği anda kılavuz
+paylaşılamaz bir belgeye dönüşür.
+
+Görüntüler **yerel geliştirme ortamından**, uydurma ama tutarlı test verisiyle alınır.
+Kılavuzdaki her isim, şirket ve numara test verisidir.
 
 ---
 
@@ -67,5 +93,8 @@ Ajan, kullanıcının module pack'teki golden karara göre iki farklı detay/gir
 - [ ] Terimler `GoldenReferenceSlim` veya `GoldenReferenceCompact` terminolojisiyle uyumlu mu?
 - [ ] Çoklu dil desteği (Platform: 2 dil, Tenant: 7 dil) için terminoloji tutarlı mı?
 - [ ] Adımlar mantıksal bir sıra izliyor mu?
+- [ ] Her adımın gerçek ekran görüntüsü var mı? (yer tutucu kalmış mı?)
+- [ ] Görüntülerde gerçek kişi/şirket/e-posta sızmış mı?
+- [ ] Kılavuz tek dosya olarak açılıyor, resimler görünüyor mu?
 
 > "Diten ERP vNext Kullanıcı Kılavuzu Standardı -- Teknoloji ile kullanıcıyı birleştiren köprü."
