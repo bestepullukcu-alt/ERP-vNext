@@ -1,7 +1,7 @@
 # MOD-0151 Territory Management — Pack Prep / Blueprint-Aligned Architecture Design
 
 > **Tarih:** 2026-07-23 · **Tür:** Module pack hazırlık + mimari tasarım (preflight) · **Runtime kod:** ÜRETİLMEDİ
-> **Otorite sırası:** Blueprint Excel (`docs/System Capability & Implementation Blueprint - master 7.xlsx`, `Blueprint_Data`) >
+> **Otorite sırası:** Blueprint Excel (`docs/blueprint/System Capability & Implementation Blueprint - master 7.xlsx`, `Blueprint_Data`) >
 > Domain Config (`execution/domains/commercial-suite/domain-config.md`) > AGENTS.md > `.antigravity/rules/`
 > **Durum:** `NEEDS_USER_DECISION` (Q1–Q7)
 
@@ -13,7 +13,7 @@
 
 | Kaynak | Ne için |
 |---|---|
-| `docs/System Capability & Implementation Blueprint - master 7.xlsx` — `Blueprint_Data`, `Module Pages`, `Dependencies`, `Dependencies_Normalized`, `SoR_Map`, `Contract Bundle Dictionary` | MOD-0151 canonical satırı (ana otorite) |
+| `docs/blueprint/System Capability & Implementation Blueprint - master 7.xlsx` — `Blueprint_Data`, `Module Pages`, `Dependencies`, `Dependencies_Normalized`, `SoR_Map`, `Contract Bundle Dictionary` | MOD-0151 canonical satırı (ana otorite) |
 | `execution/domains/commercial-suite/README.md` · `domain-config.md` · `crm-sor-boundary.md` · `crm-build-lanes.md` · `crm-rbac-integration-plan.md` · `legacy-value-preservation.md` | CRM domain sınırları, SoR matrisi, RBAC planı, legacy değer aktarımı |
 | `module-packs/MOD-0149-customer-360-account-hierarchy.md` (özellikle §3.1 Zone/MicroZone ownership) | Account master sınırı + Coverage projection kontratı |
 | `module-packs/MOD-0150-contact-relationship-management.md` | Contact SoR, Contact↔Account link, pack formatı |

@@ -3,7 +3,7 @@
 **Repo:** `C:\Users\user\Desktop\ERP-vNext`
 **Branch:** `feature/crm-integration-v2`
 **Date:** 2026-08-30
-**Method:** Read-only. Pages enumerated from `frontend/Diten.Web/Controllers/CRM/*.cs` (route attributes) + `frontend/Diten.Web/Views/CRM/<Area>/`; each backed by a controller under `services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/`. Domain/MOD resolved by cross-referencing the XML-doc `MOD-0xxx FUyy` citations already present in every CRM controller against **Blueprint 8.1** (`docs/System Capability & Implementation Blueprint - master 8.1.xlsx`, sheet `Blueprint_Data`) and the module packs under `execution/domains/*/module-packs/`.
+**Method:** Read-only. Pages enumerated from `frontend/Diten.Web/Controllers/CRM/*.cs` (route attributes) + `frontend/Diten.Web/Views/CRM/<Area>/`; each backed by a controller under `services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/`. Domain/MOD resolved by cross-referencing the XML-doc `MOD-0xxx FUyy` citations already present in every CRM controller against **Blueprint 8.1** (`docs/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx`, sheet `Blueprint_Data`) and the module packs under `execution/domains/*/module-packs/`.
 
 Every one of the 16 CRM controllers self-declares its MOD in its summary comment, and all 16 resolve to a blueprint 8.1 row. **No page came back `tanımlanamadı (undefined)`.** Two nuances (RBAC dev-fallback, nav gaps) are flagged in the notes column, not as undefined mappings.
 

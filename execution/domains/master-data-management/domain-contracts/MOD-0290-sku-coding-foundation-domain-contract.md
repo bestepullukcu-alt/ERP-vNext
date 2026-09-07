@@ -6,7 +6,7 @@ status: draft
 owner_domain: master-data-management
 owners: product-data-owner / enterprise-architect
 parent_dcp: execution/portfolio/delivery-capability-packs/DCP-004-mod-0290-sku-coding-foundation-readiness.md
-canonical_blueprint: docs/System Capability & Implementation Blueprint - master 8.1.xlsx
+canonical_blueprint: docs/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx
 code_authority: none
 module_pack_authority: none
 ---
@@ -33,7 +33,7 @@ This contract defines the first-phase Product/SKU identity boundary, aggregates,
 invariants that a later MOD-0290 Module Pack must respect.
 
 For MOD-0290 business, architecture, domain, field-model and Module Pack decisions, the sole Blueprint authority is
-`docs/System Capability & Implementation Blueprint - master 8.1.xlsx`:
+`docs/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx`:
 
 - `Blueprint_Data!A291:AG291` defines MOD-0290 Product / Item / SKU Master;
 - `SoR_Map!A256:E256` assigns product master records, item master records, SKUs and UoM mappings to MOD-0290;
@@ -572,7 +572,7 @@ The later MOD-0290 Module Pack must convert this checklist into testable accepta
 
 ## 20. References
 
-- `docs/System Capability & Implementation Blueprint - master 8.1.xlsx`
+- `docs/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx`
   - `Blueprint_Data!A291:AG291`
   - `Dependencies!A1281:D1285`
   - `SoR_Map!A256:E256`

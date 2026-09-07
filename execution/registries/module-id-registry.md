@@ -44,7 +44,7 @@ Fully migrated from the legacy location.
 
 ### Canonicalization Gate (DCP-002)
 
-- The Blueprint (`docs/System Capability & Implementation Blueprint - master 8.1.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Its externally recorded SHA-256 provenance is `f37120b0b0edfefe97a8baf6232da6a6bb47629ca7d285097d26993f1ee2c98c`; Master 7 is retained only as the historical predecessor. The repository runs a **single** active `MOD-xxxx` namespace.
+- The Blueprint (`docs/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Its externally recorded SHA-256 provenance is `f37120b0b0edfefe97a8baf6232da6a6bb47629ca7d285097d26993f1ee2c98c`; Master 7 is retained only as the historical predecessor. The repository runs a **single** active `MOD-xxxx` namespace.
 - Before reserving or creating any `MOD-xxxx` (new module, FU/child, or repo-only), run the fail-closed preflight: `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-XXXX --name "Canonical Name" [--parent MOD-YYYY] [--repo-only]`. A non-zero exit BLOCKS the reservation.
 - Legacy (`PSS-*`, `NEW-*`) and repo-only IDs remain valid only as **deprecated aliases pending explicit Enterprise Architect reservation**; no placeholder or next-free ID may be invented. Unresolved items are tracked in [blueprint-master-plan-reconciliation.md](../portfolio/blueprint-master-plan-reconciliation.md).
 - A superseded ID is never deleted: keep its row with `status: deprecated`, `Deprecated Alias = self`, `Replacement ID = canonical`. See [DCP-002](../portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md).

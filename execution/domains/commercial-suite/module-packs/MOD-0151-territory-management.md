@@ -102,7 +102,7 @@ dependencies:
 > `AccountTerritoryAssignment` aggregate'inde kalıcılaştırır; Account ve
 > Contact SoR kayıtlarını hiçbir zaman mutate etmez.
 > Permission seed/grant, reference set publish ve registry kaydı **hâlâ bu pack'in yetkisi dışındadır**.
-> Otorite sırası: **Blueprint Excel** (`docs/System Capability & Implementation Blueprint - master 7.xlsx`,
+> Otorite sırası: **Blueprint Excel** (`docs/blueprint/System Capability & Implementation Blueprint - master 7.xlsx`,
 > `Blueprint_Data`) > Module Pack > [Domain Config](../domain-config.md) > `AGENTS.md` > `.antigravity/rules/`.
 > Preflight/tasarım analizi: [mod-0151-territory-management-pack-prep-2026-07-23.md](../../../../docs/audits/2026-07/mod-0151-territory-management-pack-prep-2026-07-23.md).
 >

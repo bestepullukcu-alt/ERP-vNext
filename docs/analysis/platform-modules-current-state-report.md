@@ -3,7 +3,7 @@
 > **Kapsam:** MOD-0004, MOD-0018, MOD-0019, MOD-0021, MOD-0023, MOD-0028, MOD-0031, MOD-0040, MOD-0063
 > **Tür:** Salt-okunur analiz. Kod değişikliği / seed / migration / commit yapılmadı.
 > **Tarih:** 2026-08-03
-> **Kanıt kaynağı:** repository kodu, `execution/registries/module-id-registry.md`, module pack'ler, `docs/audits/*`, gateway `ocelot.json`, testler, `docs/System Capability & Implementation Blueprint - master 7.xlsx :: Blueprint_Data`.
+> **Kanıt kaynağı:** repository kodu, `execution/registries/module-id-registry.md`, module pack'ler, `docs/audits/*`, gateway `ocelot.json`, testler, `docs/blueprint/System Capability & Implementation Blueprint - master 7.xlsx :: Blueprint_Data`.
 
 ---
 

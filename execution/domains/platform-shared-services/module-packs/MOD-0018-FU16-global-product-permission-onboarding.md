@@ -256,7 +256,7 @@ internal-key components and any additional configuration/authentication file rem
 
 - `.antigravity/**`
 - `AGENTS.md`
-- `docs/System Capability & Implementation Blueprint - master 8.1.xlsx`
+- `docs/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx`
 - `docs/product-backlog.md`
 - `execution/portfolio/delivery-capability-packs/**`
 - `execution/domains/master-data-management/module-packs/MOD-0290-product-item-sku-master.md`

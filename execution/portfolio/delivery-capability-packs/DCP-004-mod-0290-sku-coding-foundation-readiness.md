@@ -9,7 +9,7 @@ owner_domain: master-data-management
 owner: enterprise-architect / product-data-owner
 branch: feature/mdm/mod-0290-dcp-backlog
 created: 2026-07-31
-canonical_source: "docs/System Capability & Implementation Blueprint - master 8.1.xlsx"
+canonical_source: "docs/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx"
 status_note: "Approved governance scope, ownership, delivery order and gates. This status authorizes only the governed Module Pack authoring sequence; it does not authorize a Module Pack ready-for-dev promotion or production code."
 ---
 
@@ -17,7 +17,7 @@ status_note: "Approved governance scope, ownership, delivery order and gates. Th
 
 > **Artifact type:** This is a Delivery Capability Pack governed by CAP-001. It is not a runtime entity, a Module Pack, a follow-up Module Pack, a product module or a MOD-0014 runtime Capability Group.
 >
-> **Authority rule:** By explicit user decision, `docs/System Capability & Implementation Blueprint - master 8.1.xlsx` is the sole Blueprint authority for MOD-0290 business, architecture, domain, field-model and Module Pack decisions. Master 7 is only a legacy verifier/tool-compatibility input and cannot determine MOD-0290 domain decisions or prove Master 8.1 alignment. Remaining Master 7 authority wording in AGENTS.md, approved DCP-002, the registry or verifier is visible governance cleanup, but it does not block DCP-004 approval or MOD-0290 Module Pack draft authoring. MOD-0040 canonical ID/correlation reconciliation remains a separate gate and is not waived by this authority decision.
+> **Authority rule:** By explicit user decision, `docs/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx` is the sole Blueprint authority for MOD-0290 business, architecture, domain, field-model and Module Pack decisions. Master 7 is only a legacy verifier/tool-compatibility input and cannot determine MOD-0290 domain decisions or prove Master 8.1 alignment. Remaining Master 7 authority wording in AGENTS.md, approved DCP-002, the registry or verifier is visible governance cleanup, but it does not block DCP-004 approval or MOD-0290 Module Pack draft authoring. MOD-0040 canonical ID/correlation reconciliation remains a separate gate and is not waived by this authority decision.
 >
 > **Premature-coding guard:** DCP approval approves scope, ownership, sequence and gate closure paths; it is not
 > technical-proof completion. Authorized implementation may begin only after the relevant Module Pack is `approved`

@@ -259,7 +259,7 @@ no entity class may be created by this slice. WC-1 **reads** existing MOD-0023 a
   context) consumed, never modified.
 - MOD-0023 / MOD-0024 owned files and their module packs — consumed via contract only; the charter did not
   modify them.
-- `docs/System Capability & Implementation Blueprint - master 7.xlsx` — never touched.
+- `docs/blueprint/System Capability & Implementation Blueprint - master 7.xlsx` — never touched.
 - `execution/registries/module-id-registry.md`, `execution/portfolio/blueprint-master-plan-reconciliation.md`
   — `CAND-CAP-0006` reservation already recorded by DCP-004; not re-touched here.
 
