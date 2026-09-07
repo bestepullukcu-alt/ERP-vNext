@@ -3,6 +3,7 @@ using Diten.BuildingBlocks.Security.Secrets;
 using Diten.MdmService.Api.Configuration;
 using Diten.MdmService.Api.ModuleRegistration;
 using Diten.MdmService.Api.Services.Audit;
+using Diten.MdmService.Api.Services.ProductLegalEntityScopes;
 using Diten.MdmService.Application;
 using Diten.MdmService.Infrastructure;
 using Diten.MdmService.Persistence;
@@ -11,11 +12,22 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+var runProductLegalEntityScopeOperational =
+    ProductLegalEntityScopeOperationalCommandLine.IsRequested(args);
 var runAuditIntentTemporalMigration =
     AuditIntentTemporalMigrationCommandLine.IsRequested(args);
+if (runProductLegalEntityScopeOperational && runAuditIntentTemporalMigration)
+{
+    throw new InvalidOperationException("MDM_OPERATIONAL_COMMAND_AMBIGUOUS");
+}
 var auditIntentTemporalMigrationRequest = runAuditIntentTemporalMigration
     ? AuditIntentTemporalMigrationCommandLine.ValidateAndCreateRequest(builder.Environment, builder.Configuration)
     : null;
+if (runProductLegalEntityScopeOperational)
+{
+    ProductLegalEntityScopeOperationalRunner.EnsureDevelopment(builder.Environment);
+    ProductLegalEntityScopeOperationalConfiguration.EnsureValid(builder.Configuration);
+}
 
 /*
  * ⚠ HEADER BUDGET RAISED FROM KESTREL'S 32 KB DEFAULT (2026-09-04). The access token carries
@@ -33,13 +45,14 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddPersistence(builder.Configuration);
+builder.Services.AddProductLegalEntityScopeOperational(builder.Configuration);
 builder.Services.Configure<AuditIntentTemporalMigrationOptions>(
     builder.Configuration.GetSection(AuditIntentTemporalMigrationOptions.SectionName));
 builder.Services.Configure<AuditIntentDeliveryWorkerOptions>(
     builder.Configuration.GetSection(AuditIntentDeliveryWorkerOptions.SectionName));
 builder.Services.AddHostedService<AuditIntentDeliveryWorker>();
 
-if (!runAuditIntentTemporalMigration)
+if (!runProductLegalEntityScopeOperational && !runAuditIntentTemporalMigration)
 {
 var jwtSecret = builder.Configuration["JwtSettings:Secret"];
 var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
@@ -127,6 +140,23 @@ if (runAuditIntentTemporalMigration)
         result.ScannedCount,
         result.MigratedCount,
         result.AlreadyCurrentCount);
+    return;
+}
+
+if (runProductLegalEntityScopeOperational)
+{
+    await using var operationalScope = app.Services.CreateAsyncScope();
+    var runner = operationalScope.ServiceProvider
+        .GetRequiredService<ProductLegalEntityScopeOperationalRunner>();
+    var result = await ProductLegalEntityScopeOperationalCommandLine.RunAsync(
+        runner,
+        app.Lifetime.ApplicationStopping);
+    app.Logger.LogInformation(
+        "Product Legal Entity scope operational action {Action} completed with rollout mode {Mode}, eligible {EligibleCount}, configured {ConfiguredCount}.",
+        result.Action,
+        result.Rollout.Mode,
+        result.Completeness.EligibleGlobalProductCount,
+        result.Completeness.ConfiguredGlobalProductCount);
     return;
 }
 
