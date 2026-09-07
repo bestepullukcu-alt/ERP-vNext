@@ -14,7 +14,7 @@ target: "2026-08-04"
 form_field_count: 2
 parent_module: MOD-0290
 parent_dcp: execution/portfolio/delivery-capability-packs/DCP-005-material-product-master-data-coding-alignment.md
-canonical_blueprint: docs/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx
+canonical_blueprint: docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx
 ---
 
 # MOD-0290-FU01 - Product Abbreviation Register (ABB) Foundation

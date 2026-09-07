@@ -331,7 +331,7 @@ Yalnız aşağıdaki yollarda değişiklik yapılabilir:
 
 **Governance**
 - `execution/domains/master-data-management/module-packs/MOD-0290-FU02-brand-product-runtime-ui.md`
-- `docs/audits/mod-0290-fu02-brand-product-runtime-ui-*.md` (implementation evidence)
+- `docs/records/audits/mod-0290-fu02-brand-product-runtime-ui-*.md` (implementation evidence)
 
 **Backend**
 - `services/Diten.MdmService/src/Diten.MdmService.Domain/**` — yalnız `Brand`, `Product` ve value object'leri

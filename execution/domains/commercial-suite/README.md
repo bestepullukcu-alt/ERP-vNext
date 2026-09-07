@@ -1,7 +1,7 @@
 # Commercial Suite (CRM + O2C)
 
 **Short code (öneri):** `crm` — AGENTS.md §9 branch listesine eklenmesi EA onayına tabi (bkz. Required Follow-up).
-**Blueprint suite:** `Commercial Suite (CRM + O2C)` (Blueprint_Data, `docs/blueprint/System Capability & Implementation Blueprint - master 7.xlsx`).
+**Blueprint suite:** `Commercial Suite (CRM + O2C)` (Blueprint_Data, `docs/reference/blueprint/System Capability & Implementation Blueprint - master 7.xlsx`).
 **Module ID policy:** yeni ERP product module pack'leri registry-controlled `MOD-NNNN-{slug}` ID kullanır; her ID DCP-002 canonicalization gate'inden geçer.
 **Production service:** `services/Diten.CrmService/` **henüz yok**. Bu scaffold hiçbir runtime servis oluşturmaz.
 

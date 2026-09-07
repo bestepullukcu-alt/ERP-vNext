@@ -162,7 +162,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
 6. **Phase 6: Dokümantasyon ve Denetim (documentation-writer & user-manual-generator)**
    - `documentation-writer` → Yeni modülün API dokümanlarını (Swagger/README) güncelle.
    - `user-manual-generator` → Son kullanıcı kılavuzunu hazırla (modülün ekranları, alanları, adım adım rehber).
-   - **Mimari Denetim (Audit Report):** Geliştirilen modülün standartlara uygunluğunu belgeleyen bir denetim raporu oluştur ve `docs/audits/{yyyy-mm}/{module-name}-audit-{yyyy-mm-dd}.md` adresine kaydet (ay klasoru; bkz. `.antigravity/rules/docs-organization.md` K4).
+   - **Mimari Denetim (Audit Report):** Geliştirilen modülün standartlara uygunluğunu belgeleyen bir denetim raporu oluştur ve `docs/records/audits/{yyyy-mm}/{module-name}-audit-{yyyy-mm-dd}.md` adresine kaydet (ay klasoru; bkz. `.antigravity/rules/docs-organization.md` K4).
    - ⛔ **BLOCKER:** Bu faz atlanamaz. Orchestration Report'ta "Dokümantasyon ve Denetim tamamlandı" işaretlenmeden modül **kapanmaz**. `documentation-writer`, `user-manual-generator` ve Audit Report tamamlanmadan "teslim edildi" denilmez.
 
 ## ⚖️ Altın Kurallar
@@ -177,7 +177,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
 
 ## Module ID Canonicalization Gate (DCP-002)
 
-The Blueprint (`docs/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Master 7 is historical predecessor evidence only. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
+The Blueprint (`docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Master 7 is historical predecessor evidence only. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
 
 1. **Blueprint lookup** — the ID + canonical name must exist in `Blueprint_Data`, or the ID must be an FU/child of an existing Blueprint MOD parent.
 2. **Registry collision** — it must not already map to a different capability in `execution/registries/module-id-registry.md`.

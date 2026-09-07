@@ -54,7 +54,7 @@ Authority decision:
 - Current active spec: `docs/specs/MOD-0251-Core-HR-Employee-Master-Spec-v1.5-BLUEPRINT-ALIGNED.md`.
 - Active internal spec version: `v1.10 P2 runtime smoke closure status`, including the v1.9 registry read-only scope contract for later `MOD0251-P4-REGISTRY-READ-M1`.
 - Standalone v1.4 spec status: not present as a separate governing file in the current repository; v1.4 is superseded lineage recorded in the active spec changelog.
-- Current implementation evidence: `docs/qa/acceptance-reports/MOD-0251-scope-containment-rework-2026-06-21.md`.
+- Current implementation evidence: `docs/records/acceptance-reports/MOD-0251-scope-containment-rework-2026-06-21.md`.
 
 Current approved runtime scope remains the contained P2 draft/reference-validation baseline:
 

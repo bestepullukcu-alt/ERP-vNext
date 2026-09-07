@@ -156,7 +156,7 @@ form_field_count: 0
 - `services/Diten.Platform.Common/**` only for compatibility or migration from existing shared event/outbox code.
 - `services/Diten.Platform/**`
 - `services/Diten.AuthService/**` only if an approved implementation task requires producer/consumer integration.
-- `docs/platform/master-plan.md` only after explicit user approval for decision/status updates.
+- `docs/reference/modules/platform/master-plan.md` only after explicit user approval for decision/status updates.
 
 ## 6. Protected Paths
 - `.antigravity/**`
@@ -426,7 +426,7 @@ This is a backend/infrastructure module, not a CRUD DataTable module. `golden_re
   local outcome.  This is required to satisfy at-least-once delivery without claiming distributed
   exactly-once behavior.
 - [ ] Update `execution/domains/platform-shared-services/domain-config.md` Event Bus runtime decision after user approval.
-- [ ] Update `docs/platform/master-plan.md` MOD-0035 status after implementation begins.
+- [ ] Update `docs/reference/modules/platform/master-plan.md` MOD-0035 status after implementation begins.
 - [ ] Prepare/update MOD-0009 Tenant Registry Lifecycle Events pack to emit events through `IEventBus`.
 - [ ] Optional technical spike: evaluate MassTransit native outbox/inbox against the custom MongoDB outbox after MVP.
 - [ ] Prepare MOD-0038 Event Taxonomy/Naming pack for machine-readable event catalog.

@@ -391,7 +391,7 @@ Kriterler implementasyon sırasına göre gruplanmıştır (A → B → C → D)
 
 ## 20. Follow-up Items
 
-> **Delivery status:** FU02 implementasyonu tamam ve **canlı smoke PASS (2026-07-08)** — bkz. [smoke audit](../../../../docs/audits/2026-07/pss-mod-0027-fu02-notification-template-ui-smoke-2026-07-08.md). Aşağıdaki ilk üç madde smoke sırasında N/A kalan, **düşük riskli ve opsiyonel** (bloke etmeyen) doğrulama adımlarıdır; compensating evidence mevcuttur.
+> **Delivery status:** FU02 implementasyonu tamam ve **canlı smoke PASS (2026-07-08)** — bkz. [smoke audit](../../../../docs/records/audits/2026-07/pss-mod-0027-fu02-notification-template-ui-smoke-2026-07-08.md). Aşağıdaki ilk üç madde smoke sırasında N/A kalan, **düşük riskli ve opsiyonel** (bloke etmeyen) doğrulama adımlarıdır; compensating evidence mevcuttur.
 
 - [ ] OPSİYONEL (smoke N/A) — **Visual browser confirmation:** bağlı bir tarayıcı ile üç ekranda DataTable doldurma, preview iframe boyama, SweetAlert onayları, DevTools Network (yalnızca `:5001`) ve Console (0 error) görsel teyidi.
 - [ ] OPSİYONEL (smoke N/A) — **Restricted actor 403 live seed test:** `platform.notifications.*` içermeyen bir platform kullanıcısı seed edilip menü gizleme + direct-URL 403 canlı doğrulaması (backend `[HasPermission]` fail-closed zaten alias map + policy ile doğrulandı).

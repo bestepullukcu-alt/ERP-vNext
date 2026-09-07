@@ -15,7 +15,7 @@ golden_reference: secrets-configuration-vault-golden-flow
 
 ## Module Summary
 
-`NEW-001 Secrets Management` in `docs/platform/master-plan.md` is not a separate domain or standalone module. It is the blocker execution scope for this existing Platform & Shared Services module pack: `MOD-0012 Secrets & Configuration Vault`.
+`NEW-001 Secrets Management` in `docs/reference/modules/platform/master-plan.md` is not a separate domain or standalone module. It is the blocker execution scope for this existing Platform & Shared Services module pack: `MOD-0012 Secrets & Configuration Vault`.
 
 This module provides the platform-wide foundation for reading sensitive runtime configuration through one provider-agnostic seam. The first implementation must remove hardcoded runtime secrets from production `appsettings.json` files and standardize how AuthService, Platform, DevEnablement, Gateway, and any affected frontend configuration paths handle JWT secrets, MongoDB connection strings, internal API keys, SMTP passwords, MFA hash secrets, and future provider credentials.
 
@@ -90,7 +90,7 @@ Allowed implementation scope:
 - `gateway/Diten.ApiGateway/**`
 - `frontend/Diten.Web/**` only if existing JWT/config usage requires runtime secret-read alignment or frontend secret exposure prevention.
 - `execution/domains/platform-shared-services/module-packs/MOD-0012-secrets-configuration-vault.md`
-- `docs/audits/**` for completion/audit evidence.
+- `docs/records/audits/**` for completion/audit evidence.
 
 ## Protected Paths
 
@@ -341,7 +341,7 @@ Controlled exception policy:
 ### Quality Gate / Support
 
 - Static secret scan script or test.
-- Audit evidence report under `docs/audits/**`.
+- Audit evidence report under `docs/records/audits/**`.
 
 ## Entity Fields
 

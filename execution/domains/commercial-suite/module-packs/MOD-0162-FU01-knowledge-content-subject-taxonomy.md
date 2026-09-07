@@ -30,7 +30,7 @@ dependencies:
 # MOD-0162-FU01 — Knowledge Content & Subject Taxonomy Foundation
 
 > **✅ BOUNDARY APPROVAL (2026-08-09) — `status: draft → approved`.** Governance review
-> [mod-0162-boundary-approval-review-fu01-fu01a-fu01b-fu01c-2026-08-09.md](../../../../docs/audits/2026-08/mod-0162-boundary-approval-review-fu01-fu01a-fu01b-fu01c-2026-08-09.md)
+> [mod-0162-boundary-approval-review-fu01-fu01a-fu01b-fu01c-2026-08-09.md](../../../../docs/records/audits/2026-08/mod-0162-boundary-approval-review-fu01-fu01a-fu01b-fu01c-2026-08-09.md)
 > ile onaylandı. Bu, MOD-0162-FU02'nin **F-BND** blocker'ını karşılayan SoT sözleşmesidir. `runtime_code_allowed`
 > **`false` kalır** — runtime/UI yetkisi yalnız MOD-0162-FU02'ye aittir. EA kimlik kararı (§18/F1) **non-blocking
 > follow-up**tur; pack gövdesini değiştirmez. Bu onay, FU02'nin `KnowledgeContent`/`Subject`/`Topic`/

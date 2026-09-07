@@ -1,93 +1,127 @@
 # Doküman Klasör Yapısı (`docs/`)
 
-> Bu kural 2026-09-07'de yazıldı çünkü `docs/` çöplüğe dönmüştü ve **onu
-> engelleyecek hiçbir kural yoktu.** Ölçüm o gün alındı:
->
->     docs/ kökünde dosya          29   (15 md · 6 csv · 5 xlsx · 1 docx · 1 txt)
->     docs/audits/ tek düzeyde    172   dosya, hiç alt klasör yok
->     toplam                      293   dosya, 8.0 MB
->
-> Kural olmayan yere herkes kök dizine atar. Bu dosya nereye ne konacağını söyler.
+> Bu kural 2026-09-07'de yazıldı çünkü `docs/` çöplüğe dönmüştü ve onu
+> engelleyecek hiçbir kural yoktu. O günkü ölçüm: kökte 29 dosya,
+> `audits/` tek düzeyde 172 dosya, toplam 293 dosya / 8.0 MB.
 
 ---
 
-## 1. Yapı
+## 1. Mantık — tek soru
+
+Bir belgeyi nereye koyacağını **belgenin zamanla nasıl davrandığı** söyler.
+Konusu değil, yazarı değil, kime ait olduğu değil. Sırayla sor, ilk "evet"te dur:
+
+| # | soru | klasör |
+| :-- | :--- | :--- |
+| 1 | Biz mi yazdık? **Hayır**, dışarıdan geldi | `vendor/` |
+| 2 | Belirli bir tarihte olan bir şeyi mi kaydediyor, bir daha değişmeyecek mi? | `records/` |
+| 3 | Henüz olmamış bir şeyi mi anlatıyor? | `roadmap/` |
+| 4 | Birine bir işi nasıl yapacağını mı öğretiyor? | `guides/` |
+| 5 | Bugünün gerçeğini mi anlatıyor, değişince güncellenecek mi? | `reference/` |
+
+Beş sorunun dışında kalan belge yoktur. Yeni bir klasör açmadan önce bu tabloyu
+oku: yeni bir üst klasör, bu beş sorudan birinin cevabının değiştiği anlamına
+gelir ve Control Tower kararıdır.
+
+## 2. Yapı
 
     docs/
-      README.md              ← TEK giriş noktası; nereye ne konduğunu anlatır
-      architecture/          ← mimari kararlar, servis sınırları, entegrasyon
-      modules/               ← modül belgeleri; dosya adı MOD-xxxx ile BAŞLAR
-                             (bir modülün 3+ belgesi varsa alt klasör açılır)
-      guides/<modül>/        ← KULLANIM KILAVUZLARI — resimli, tek dosya HTML
-      audits/<yyyy-mm>/      ← denetim ve inceleme çıktıları, ay klasörlerinde
-      plans/                 ← ileriye dönük planlar
-      operations/            ← SOP, runbook, dev ortam kurulumu, control-tower
-      backlog/               ← product-backlog ve kapanmış maddeler
-      vendor/                ← DIŞARIDAN gelen belgeler (müşteri/yönetici Excel'leri)
+      README.md                       ← kökteki TEK dosya
 
-## 2. Kurallar
+      reference/                      ← bugünün gerçeği; değişince güncellenir
+        architecture/                 mimari kararlar, port sözleşmeleri, spec'ler
+        modules/platform/<yetenek>/   platform tarafı modül belgeleri
+        modules/tenant/<modül>/       kiracı tarafı modül belgeleri
+        blueprint/                    MOD-xxxx kimliklerinin kanonik kaynağı
+        integrations/<karşı-taraf>/   dış sistem entegrasyon sözleşmeleri
+        reference-data/               referans veri içe aktarım tanımları
 
-**K1 · Kökte dosya olmaz.** `docs/` kökünde yalnız `README.md` durur. Başka her
-dosya bir klasöre aittir. Uygun klasör yoksa önce klasör ve `README.md` satırı
-eklenir, sonra dosya konur.
+      guides/                         ← nasıl yapılır; okuyan bir işi yapar
+        <modül>/                      son kullanıcı kılavuzu (resimli, tek dosya HTML)
+        operations/                   dev ortam, modül ekleme, ajan kullanımı
+        control-tower/                Control Tower SOP ve işletim kartı
+        sop-upstream/                 üst kaynaktan gelen SOP kuralları
 
-**K2 · Dışarıdan gelen belge `vendor/` altındadır ve DÜZENLENMEZ.** Müşterinin
-veya yöneticinin gönderdiği Excel/Word olduğu gibi durur; sürüm bilgisi dosya
-adında taşınır. Bizim ondan türettiğimiz çalışma dosyası `vendor/` içine değil,
-ilgili klasöre konur.
+      records/                        ← o gün ne olduğu; ARTIK DEĞİŞMEZ
+        audits/<yyyy-mm>/             denetim ve inceleme çıktıları
+        analysis/<konu>/              karşılaştırma ve durum analizleri
+        acceptance-reports/           kabul raporları
+        releases/                     sürüm notları
 
-**K3 · Kullanım kılavuzu `guides/` altındadır ve resimlidir.** Markdown kılavuz
-üretilmez — biçim ve gerekçe `.antigravity/agents/user-manual-generator.md`
-içindedir.
+      roadmap/                        ← henüz olmamış
+        plans/                        ileriye dönük planlar
+        backlog/                      product-backlog ve kapanmış maddeler
 
-**K4 · Denetim çıktısı ay klasörüne girer.** `audits/2026-09/…`. Tek düzeyde
-biriken denetim dosyası 172'ye ulaştığında kimse aradığını bulamaz; ölçüldü.
+      vendor/                         ← biz yazmadık; OLDUĞU GİBİ durur
+        <paket>/                      bir teslimat = bir klasör
 
-**K5 · Taşıma referans kırar — protokolü uygulanmadan taşınmaz.** Bkz. §3.
+## 3. Kurallar
 
-**K6 · 1 MB üzeri ikili dosya tartışılır.** Depoya girmeden önce gerçekten
-sürüm takibi gerekiyor mu sorulur. Git ikili dosyayı sıkıştırmaz; her sürüm
+**K1 · Kökte dosya olmaz.** Yalnız `README.md`.
+
+**K2 · Üst klasör beş taneden biridir.** Altıncısı Control Tower kararı ister.
+Sebep: her yeni üst klasör, "belgem nereye gider" sorusunu bir dal daha
+karmaşıklaştırır ve karmaşıklaşan kural delinir.
+
+**K3 · Her klasörün bir kırılım ekseni olmalı.** Eksen klasöre göre değişir:
+`audits/` **tarih** (`yyyy-mm`), `analysis/` **konu**, `modules/`
+**platform/tenant → modül**, `vendor/` **teslimat paketi**.
+
+Ekseni OLMAYAN bir klasörde 20'yi aşan dosya birikmişse kırılım gecikmiştir.
+Ekseni olan klasörde sayı ölçüt değildir: `audits/2026-08` 84 dosya taşır ve
+bu bir kusur değil — o ay 84 denetim yazılmıştır, ve denetim tarihle aranır.
+Yoğun bir ayı ikinci bir eksene bölmek (modül, konu) aramayı kolaylaştırmaz;
+bir modülün denetimlerini iki aya dağıtarak zorlaştırır.
+
+**K4 · `records/` yazıldıktan sonra düzeltilmez.** Bir denetim yanlışsa yenisi
+yazılır, eskisi durur. Kaydın değeri o gün ne bilindiğini göstermesidir.
+
+**K5 · `vendor/` içeriği düzenlenmez.** Dışarıdan gelen belge geldiği adla durur;
+sürüm bilgisi ad içindedir. Ondan türettiğimiz çalışma dosyası `vendor/` içine
+değil, beş sorunun gösterdiği yere gider.
+
+**K6 · Kullanım kılavuzu `guides/<modül>/` altındadır ve resimlidir.** Markdown
+kılavuz üretilmez; biçim `.antigravity/agents/user-manual-generator.md`.
+
+**K7 · 1 MB üzeri ikili dosya tartışılır.** Git ikiliyi sıkıştırmaz; her sürüm
 tam boy saklanır.
 
-## 3. Taşıma protokolü
+**K8 · Taşıma referans kırar — protokolsüz taşınmaz.** Bkz. §4.
 
-Bir belge yer değiştirdiğinde ona işaret eden her şey kırılır. Ölçüldü:
-`docs/` içinde 241 md-içi bağlantı, `execution/` altında 79 dosya `docs/`
-yoluna referans veriyor, `.antigravity/` workflow'ları belirli yollara bağlı
-(`docs/product-backlog.md`, Blueprint xlsx, `docs/sop/upstream/`).
+## 4. Taşıma protokolü
 
-Bu yüzden taşıma şu sırayla yapılır:
+Bir belge yer değiştirdiğinde ona işaret eden her şey kırılır. 2026-09-07
+temizliğinde 780'den fazla referans güncellendi; ikisi neredeyse kaçıyordu ve
+ikisi de **kod içindeydi** — bir Python kapısı ve bir CSS yorumu.
 
-1. **Ölç** — dosyaya kaç yerden referans var:
+1. **Ölç** — kaç yerden referans var:
 
-       grep -rlF "<dosya-adı>" .antigravity execution docs services frontend
+       grep -rl "docs/<eski-yol>" .antigravity execution docs services frontend gateway
 
 2. **`git mv` kullan.** Kopyala-sil değil; geçmiş korunur.
-3. **Referansları aynı commit'te güncelle.** Taşıma ve link düzeltmesi ayrı
-   commit'lere bölünmez — arada kalan commit'te belgeler kırıktır.
-4. **Doğrula** — taşımadan sonra ölü bağlantı kalmadığını göster (§4).
-5. **Referansı çok olan dosya en sona bırakılır.** `product-backlog.md` ve
-   Blueprint xlsx gibi dosyalar birden çok workflow'un kanonik kaynağıdır.
+3. **Referansları AYNI commit'te güncelle.** Ayrı commit'e bölme; arada kalan
+   commit'te belgeler kırıktır.
+4. **Kod uzantılarını da tara.** `.md` yetmez: `.py .sh .cs .cshtml .js .css
+   .html .json .yaml .xml .resx`. Bu adım atlanırsa kırılan şey belge değil,
+   çalışan bir kapı olur.
+5. **Doğrula** — ölü bağ kalmadığını göster (§5), iddia etme.
+6. **Referansı çok olan en sona.** Blueprint xlsx ve `product-backlog.md`
+   birden çok workflow'un kanonik kaynağıdır.
 
-## 4. Denetim — kural yazılı değil, ölçülür
+## 5. Denetim — kural yazılı değil, ölçülür
 
-Bu kuralın tutup tutmadığı komutla görülür, göz kararıyla değil:
-
-    # K1 — kökte README.md disinda dosya var mi? (0 olmali)
+    # K1 — kökte README disinda dosya (0 olmali)
     find docs -maxdepth 1 -type f ! -name 'README.md' ! -name '.DS_Store' | wc -l
 
-    # K4 — audits/ kokunde dagilmis dosya var mi? (README disinda 0 olmali)
-    find docs/audits -maxdepth 1 -type f ! -name 'README.md' | wc -l
+    # K2 — ust klasor sayisi (5 olmali: guides records reference roadmap vendor)
+    find docs -maxdepth 1 -type d -mindepth 1 | wc -l
 
-    # K6 — 1 MB ustu ikili
+    # K3 — ekseni OLMAYAN klasorde 20'yi asan dosya (tarih klasorleri haric)
+    find docs -type d ! -path '*/audits/2*' -exec sh -c \
+      'n=$(ls -p "$1" | grep -vc /); [ "$n" -gt 20 ] && echo "$n $1"' _ {} \;
+
+    # K7 — 1 MB ustu ikili
     find docs -type f -size +1M
 
-    # §3 — olu md bagi kaldi mi
+    # §4 — olu md bagi
     grep -rho '](\S*\.md)' docs --include='*.md' | sed 's/](//;s/)//' | sort -u
-
-## 5. Bu kural yeni dosya içindir, geçmiş temizliği ayrı iştir
-
-Bugünkü 293 dosya bu kuralla kendiliğinden düzelmez. Temizlik fazlıdır ve
-sırası referans maliyetine göredir: önce `audits/` (dış referansı az), sonra
-kök (referansı çok), en sonda `docs/platform/` altındaki tenant modülleri —
-o taşıma 21 dosyanın bağını kırar ve Control Tower kararı bekler.

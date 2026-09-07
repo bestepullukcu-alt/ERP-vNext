@@ -150,4 +150,4 @@ işi yok" diye okunur — "sistem konuşamıyor" diye değil.
 ## 🔗 İlgili
 - `execution/portfolio/delivery-capability-packs/DCP-004-provider-onboarding-note.md` — sözleşme
 - `.antigravity/workflows/connect-module-to-workcenter.md` — bağlamadan önce **ölçülecekler**
-- `docs/product-backlog.md` — **günün** açık maddeleri (bu dosya tarihsizdir)
+- `docs/roadmap/backlog/product-backlog.md` — **günün** açık maddeleri (bu dosya tarihsizdir)

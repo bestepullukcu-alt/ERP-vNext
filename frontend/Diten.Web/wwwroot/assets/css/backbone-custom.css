@@ -5437,7 +5437,7 @@ tags.diten-tags .tagify__input {
 }
 
 /* ==========================================================================
-   WorkCenterNext — cross-module personal work inbox (docs/workcenter-rebuild-spec.md)
+   WorkCenterNext — cross-module personal work inbox (docs/reference/modules/tenant/workcenter/workcenter-rebuild-spec.md)
    Sneat FOUNDATION (tokens/card/badge/button) + bespoke work-management
    components (list-row, split-detail, table board). Fully namespaced .wcn-*
    so it never collides with the legacy /WorkCenter. Logical properties + tokens

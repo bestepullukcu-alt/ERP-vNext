@@ -26,7 +26,7 @@ Developer Enablement domain'i, urun modullerinden bagimsiz olarak gelistirme sur
 
 ## Domain-Level Repo Scope
 - `execution/domains/developer-enablement/**`
-- Gerekirse gelecekte `docs/audits/**` altinda reference audit ciktilari
+- Gerekirse gelecekte `docs/records/audits/**` altinda reference audit ciktilari
 - Frontend icindeki `_reference` tabanli istisna yapilarin ownership notlari
 
 ## Protected Paths

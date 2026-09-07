@@ -1,7 +1,7 @@
 # Prompt Guide
 
 > ⚠️ **Bu dosya prompt kataloğudur — kullanım rehberi değildir.**
-> Yeni başlayanlar için akış anlatımı ve "hangi agent ne zaman" rehberi `docs/agent-usage-guide.md`'dedir. Bu dosya yalnız kopyalanabilir prompt örnekleri ve anti-pattern'leri tutar.
+> Yeni başlayanlar için akış anlatımı ve "hangi agent ne zaman" rehberi `docs/guides/operations/agent-usage-guide.md`'dedir. Bu dosya yalnız kopyalanabilir prompt örnekleri ve anti-pattern'leri tutar.
 
 Bu dosya, ERP-vNext icin guncel prompt katalogudur. Amac, agent secimini, module pack akisini, Slim/Compact kararini ve dogrulama beklentilerini tek bir yerde netlestirmektir.
 
@@ -752,7 +752,7 @@ Sonuclari kisa raporla.
 
 ## Module ID Canonicalization Gate (DCP-002)
 
-The Blueprint (`docs/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Master 7 is historical predecessor evidence only. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
+The Blueprint (`docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Master 7 is historical predecessor evidence only. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
 
 1. **Blueprint lookup** — the ID + canonical name must exist in `Blueprint_Data`, or the ID must be an FU/child of an existing Blueprint MOD parent.
 2. **Registry collision** — it must not already map to a different capability in `execution/registries/module-id-registry.md`.

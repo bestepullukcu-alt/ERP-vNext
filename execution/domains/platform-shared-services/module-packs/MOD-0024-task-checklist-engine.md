@@ -461,8 +461,8 @@ is applied after the command result.
 - `frontend/Diten.Web/wwwroot/assets/css/backbone-custom.css`
   - Only selectors scoped to `.wcn-*`, `.wcn-app`, or `.wcn-full-detail-*`.
 - Focused WorkCenterNext frontend tests under the existing test convention discovered at implementation time.
-- `docs/audits/2026-07/mod-0024-workcenter-task-detail-audit.md`
-- `docs/workcenter-rebuild-spec.md`
+- `docs/records/audits/2026-07/mod-0024-workcenter-task-detail-audit.md`
+- `docs/reference/modules/tenant/workcenter/workcenter-rebuild-spec.md`
   - Documentation reconciliation only; implementation scope must not silently expand from this file.
 
 ### Existing user-change preservation
@@ -512,7 +512,7 @@ must not use MOD-0028's frontmatter alone as proof that production integration i
 
 ### WorkCenter backend seams
 
-WC-1 through WC-5 in `docs/product-backlog.md` remain backend prerequisites and are not implemented here:
+WC-1 through WC-5 in `docs/roadmap/backlog/product-backlog.md` remain backend prerequisites and are not implemented here:
 
 - WC-1 unified work-item provider contract.
 - WC-2 working-time/calendar seam.
@@ -585,7 +585,7 @@ not runtime lookup/master data. No hardcoded business lookup fallback may be int
   page script.
 - **DEC-WC-DETAIL-01 — Proposed:** on explicit approval of this draft, the standalone detail route becomes
   canonical for this slice and split detail is deferred by BL-015. Until approval, the existing
-  `docs/workcenter-rebuild-spec.md` decision remains the operative reference and is not superseded.
+  `docs/reference/modules/tenant/workcenter/workcenter-rebuild-spec.md` decision remains the operative reference and is not superseded.
 - Existing tenant shell and frozen `_Layout.cshtml` must not be modified.
 
 Acceptance of this contract requires both Index and Details views to state `_LayoutTenantShell` explicitly.

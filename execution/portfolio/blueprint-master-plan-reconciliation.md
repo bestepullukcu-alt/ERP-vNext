@@ -8,10 +8,10 @@ Maintains mapping records, coverage status, and reconciliation governance rules 
 
 ## Not the source for
 - Writing code or module packages (use Module Packs).
-- Individual module specifications or schemas (use docs/modules/ or Module Packs).
+- Individual module specifications or schemas (use docs/reference/modules/ or Module Packs).
 
 ## Current status
-Active. The Blueprint↔Repo canonicalization ledger and the unresolved EA reservation ledger (below) are established per **DCP-002 — Module Identity Canonicalization**. Blueprint (`docs/blueprint/System Capability & Implementation Blueprint - master 7.xlsx`, `Blueprint_Data`) is the canonical MOD-ID + name authority. Canonical IDs not yet allocated by the Enterprise Architect remain **unresolved** (no placeholder IDs are assigned).
+Active. The Blueprint↔Repo canonicalization ledger and the unresolved EA reservation ledger (below) are established per **DCP-002 — Module Identity Canonicalization**. Blueprint (`docs/reference/blueprint/System Capability & Implementation Blueprint - master 7.xlsx`, `Blueprint_Data`) is the canonical MOD-ID + name authority. Canonical IDs not yet allocated by the Enterprise Architect remain **unresolved** (no placeholder IDs are assigned).
 
 ## Blueprint ↔ Repo Canonicalization Ledger (DCP-002, applied)
 
@@ -94,7 +94,7 @@ Identity gate: `verify_module_id.py --candidate CAND-CAP-0006 --name "Work Aggre
 ## Source / migration note
 New target file designed for governance alignment between the business capability matrix (Excel blueprint) and technical implementation modules.
 
-**Workbook supersession (user decision).** The prior planning workbook `execution/modules_pages_planning_v3.xlsx` is intentionally retired and removed from the repository by explicit user decision; `docs/blueprint/System Capability & Implementation Blueprint - master 7.xlsx` is the authoritative canonical enterprise module-ID source going forward. No claim is made that every historical sheet was migrated one-to-one.
+**Workbook supersession (user decision).** The prior planning workbook `execution/modules_pages_planning_v3.xlsx` is intentionally retired and removed from the repository by explicit user decision; `docs/reference/blueprint/System Capability & Implementation Blueprint - master 7.xlsx` is the authoritative canonical enterprise module-ID source going forward. No claim is made that every historical sheet was migrated one-to-one.
 
 ## Owner / update rule
 - Owner: Enterprise Architect / PMO

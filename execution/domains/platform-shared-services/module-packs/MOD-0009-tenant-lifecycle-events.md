@@ -49,12 +49,12 @@ Batch 1 kodu yazılmadan önce implementer repo üzerinde aşağıdaki mevcut ge
 ## 1. Module Summary
 
 - **Purpose:** Tenant registry lifecycle değişikliklerini (created, activated, suspended, reactivated, cancelled, provisioning-completed, provisioning-failed) merkezi event bus (MOD-0035) üzerinden yayınlamak; downstream consumer'lar (notification mapper'ları, audit, entitlement refresh, subscription lifecycle) bu event'lere abone olarak reaktif çalışsın.
-- **Wave / Priority:** W1-A / Blocker. FAZ A foundation kapanışının bir parçası ([docs/platform/execution-roadmap.md](../../../../docs/platform/execution-roadmap.md) Dev1 sırası 5).
+- **Wave / Priority:** W1-A / Blocker. FAZ A foundation kapanışının bir parçası ([docs/reference/modules/platform/execution-roadmap.md](../../../../docs/reference/modules/platform/execution-roadmap.md) Dev1 sırası 5).
 - **Scope shape:** Backend / infrastructure-only modül. UI yok, public REST yok, gateway route yok.
 - **Producer side (Batch 1):** Mevcut tenant lifecycle command handler'larına MOD-0035 public `IEventBus.PublishAsync(...)` (outbox-backed) çağrıları ekler. Doğrudan RabbitMQ/MassTransit API çağrısı yasaktır.
 - **Consumer side (Batch 2):** MOD-0027'nin `INotificationEventMapper<TEvent>` seam'i için 3 concrete mapper (`TenantCreatedV1` → `tenant.invite.email`, `TenantSuspendedV1` → `tenant.suspended.email`, `TenantReactivatedV1` → `tenant.reactivated.email`) + MOD-0021 `IAuditService.AppendAsync(...)` çağıran 1 audit consumer. Tenant lifecycle handler'ları içinde `QueueEmailNotificationCommand` send'i veya `IAuditService` çağrısı yapılmaz; tetikleyici yol yalnızca event consume yoluyladır.
 - **Existing seed:** `TenantActivatedV1` zaten `services/Diten.Platform.Contracts/Events/TenantActivatedV1.cs`'de tanımlı + `TenantActivatedV1Consumer` referans pattern. Bu pack onları **yeniden yazmaz**, kalan 6 event contract'ı aynı şablonla ekler.
-- **Production prerequisite:** Mainline'a broker-backed emission alınması Batch 3'te live external/local RabbitMQ doğrulamasına bağlıdır ([docs/platform/master-plan.md](../../../../docs/platform/master-plan.md) satır 924).
+- **Production prerequisite:** Mainline'a broker-backed emission alınması Batch 3'te live external/local RabbitMQ doğrulamasına bağlıdır ([docs/reference/modules/platform/master-plan.md](../../../../docs/reference/modules/platform/master-plan.md) satır 924).
 
 ## 2. Ownership and Boundaries
 
@@ -230,7 +230,7 @@ Bu pack yeni persistence entity tanımlamaz. Outbox/inbox kayıt yapısı MOD-00
 - `services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/` — live external/local RabbitMQ test'leri (yalnızca `Eventing__RabbitMq__IntegrationTestsEnabled=true` ile çalışır)
 
 ### Batch 4 (reconciliation/documentation, kod değişikliği yok)
-- `docs/platform/master-plan.md` §9.4 MOD-0009 satır güncellemesi
+- `docs/reference/modules/platform/master-plan.md` §9.4 MOD-0009 satır güncellemesi
 - `execution/domains/platform-shared-services/module-packs/MOD-0009-tenant-lifecycle-events.md` `status: done` + Implementation Report eklenmesi
 
 ## 6. Protected Paths
@@ -441,7 +441,7 @@ Event payload doğrulaması Bölüm 4 tabloları + MOD-0035 §12 standardıyla b
 
 ### Batch 4 — Reconciliation/Documentation (Kod Yok)
 
-- [ ] `docs/platform/master-plan.md` §9.4 MOD-0009 satırı `50` → `≥85` veya `done` güncellendi; reconciliation notu eklendi.
+- [ ] `docs/reference/modules/platform/master-plan.md` §9.4 MOD-0009 satırı `50` → `≥85` veya `done` güncellendi; reconciliation notu eklendi.
 - [ ] Pack `status: draft` → `ready-for-dev` → `in-progress` → `review` → `done` lifecycle'ı tamamlandı.
 - [ ] Pack'in Implementation Notes bölümüne final implementation report eklendi (hangi provisioning handler bulundu, hangi follow-up'lar açıldı).
 

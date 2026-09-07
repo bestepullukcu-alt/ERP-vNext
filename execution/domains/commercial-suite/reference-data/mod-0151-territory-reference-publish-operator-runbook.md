@@ -22,7 +22,7 @@ date: 2026-07-23
 > Açıklamalar: [authoring template MD](./mod-0151-territory-required-reference-authoring-template.md) ·
 > Kısa checklist: [operator checklist](./mod-0151-territory-reference-operator-checklist.md) ·
 > Pack: [MOD-0151](../module-packs/MOD-0151-territory-management.md) ·
-> Gate: [FU00 closeout](../../../../docs/audits/2026-07/mod-0151-fu00-pack-approval-closeout-2026-07-23.md)
+> Gate: [FU00 closeout](../../../../docs/records/audits/2026-07/mod-0151-fu00-pack-approval-closeout-2026-07-23.md)
 
 **Hedef tenant:** `97c59330-dbc4-4665-b29c-0c26dbb5cc93`
 **Hedef scope:** `tenant` (tüm set'ler — §2 gerekçe)
@@ -34,7 +34,7 @@ date: 2026-07-23
 
 > ⚠️ Tenant `97c59330-…` daha önce **62 required value** ile publish edildi (73 toplam). FU02B canlı smoke'u,
 > lifecycle sözlüğünde **iki değerin eksik** olduğunu ortaya çıkardı; `deactivate` ve `archive` fail-closed 400
-> dönüyor. Kanıt: [`mod-0151-fu02b-authenticated-gateway-live-smoke-closeout-retry-2026-07-25.md`](../../../../docs/audits/2026-07/mod-0151-fu02b-authenticated-gateway-live-smoke-closeout-retry-2026-07-25.md)
+> dönüyor. Kanıt: [`mod-0151-fu02b-authenticated-gateway-live-smoke-closeout-retry-2026-07-25.md`](../../../../docs/records/audits/2026-07/mod-0151-fu02b-authenticated-gateway-live-smoke-closeout-retry-2026-07-25.md)
 
 **Yalnız iki set için re-publish gerekir:**
 

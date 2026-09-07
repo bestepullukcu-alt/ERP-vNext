@@ -242,8 +242,8 @@ draft and must consume the verified FU06 contract before it can be approved. FU3
 - [x] Company compatibility offline tests remain green.
 - [x] MOD-0029-FU37 remains draft; FU06 is eligible for FU37 approval review.
 
-Evidence: `docs/audits/2026-07/mod-0028-fu06-runtime-smoke-reconciliation-2026-07-25.md`.
-Compatibility-fix evidence: `docs/audits/2026-07/mod-0028-fu06-mongo-index-compatibility-fix-2026-07-25.md`.
+Evidence: `docs/records/audits/2026-07/mod-0028-fu06-runtime-smoke-reconciliation-2026-07-25.md`.
+Compatibility-fix evidence: `docs/records/audits/2026-07/mod-0028-fu06-mongo-index-compatibility-fix-2026-07-25.md`.
 
 ## 21. DCP-007 Approved Amendment — Import Completion Visibility and Consumer Guardrails
 

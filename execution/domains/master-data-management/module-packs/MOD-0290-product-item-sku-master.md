@@ -14,7 +14,7 @@ target: "Local Development code-truth: Global Product end-to-end; Product Defini
 form_field_count: 2
 parent_dcp: execution/portfolio/delivery-capability-packs/DCP-004-mod-0290-sku-coding-foundation-readiness.md
 domain_contract: execution/domains/master-data-management/domain-contracts/MOD-0290-sku-coding-foundation-domain-contract.md
-canonical_blueprint: docs/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx
+canonical_blueprint: docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx
 ---
 
 # MOD-0290 - Product / Item / SKU Master
@@ -414,8 +414,8 @@ frontend and gateway paths are not in this named-step allow-list.
 
 - `.antigravity/**`
 - `AGENTS.md`
-- `docs/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx`
-- `docs/product-backlog.md`
+- `docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx`
+- `docs/roadmap/backlog/product-backlog.md`
 - `execution/registries/**`
 - `execution/portfolio/delivery-capability-packs/**`
 - `execution/domains/master-data-management/domain-contracts/**`

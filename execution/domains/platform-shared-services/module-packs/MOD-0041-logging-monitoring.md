@@ -192,7 +192,7 @@ No CRUD entity is owned by MOD-0041. The following are telemetry contracts, not 
 ### Always out of scope unless separately approved
 - `frontend/Diten.Web/**`
 - ERP/tenant service folders.
-- `docs/platform/master-plan.md`
+- `docs/reference/modules/platform/master-plan.md`
 - MOD-0026 internals.
 - MOD-0035 internals.
 

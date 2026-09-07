@@ -500,7 +500,7 @@ frontend/Diten.Web/wwwroot/assets/js/CRM/Knowledge/form.js                      
 frontend/Diten.Web/Resources/**                                                            (7 dil RESX)
 frontend/Diten.Web/Views/Shared/_LayoutTenantShell.cshtml                                  (tek <li>, dar istisna)
 scripts/smoke-mod0162-fu03-concept-graph-authenticated.ps1                                 (yeni)
-docs/audits/mod-0162-fu03-concept-graph-runtime-ui-*.md                                    (evidence)
+docs/records/audits/mod-0162-fu03-concept-graph-runtime-ui-*.md                                    (evidence)
 ```
 
 ## 12. Protected Paths

@@ -12,9 +12,9 @@ owner: enterprise-architect / platform-team
 created: 2026-07-24
 approved: 2026-07-24
 approved_by: enterprise-architect
-canonical_source: "docs/blueprint/System Capability & Implementation Blueprint - master 7.xlsx#Blueprint_Data (NO matching MOD row — verified)"
+canonical_source: "docs/reference/blueprint/System Capability & Implementation Blueprint - master 7.xlsx#Blueprint_Data (NO matching MOD row — verified)"
 executable_authority: "frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/fixture-contract.js"
-intent_reference: "docs/workcenter-rebuild-spec.md (v2) — intent only, NOT authority"
+intent_reference: "docs/reference/modules/tenant/workcenter/workcenter-rebuild-spec.md (v2) — intent only, NOT authority"
 identity_gate: "python3 .antigravity/scripts/verify_module_id.py . --candidate CAND-CAP-0006 --name \"Work Aggregation / Task Center (Görev Merkezi)\" → exit 0 (2026-07-24)"
 ---
 
@@ -53,7 +53,7 @@ identity_gate: "python3 .antigravity/scripts/verify_module_id.py . --candidate C
 | Status | `approved` (EA, 2026-07-24) — CAP-001 two-condition gate, condition 1 met; still requires each member slice's own module pack `ready-for-dev` before code |
 | Owner domain | platform-shared-services |
 | Executable authority | `frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/fixture-contract.js` |
-| Intent reference (non-authority) | `docs/workcenter-rebuild-spec.md` (v2) |
+| Intent reference (non-authority) | `docs/reference/modules/tenant/workcenter/workcenter-rebuild-spec.md` (v2) |
 
 ### Identity decision (DCP-002 — fail-closed)
 
@@ -118,7 +118,7 @@ This charter fixes the boundary and the integration law on paper **before** any 
 - **`fixture-contract.js` is the single executable authority.** Its enums, invariants, and validators
   (`validateWorkItem`, `validateTrigger`, `validateCatalog`, `WorkCenterNextContract`) are the contract of
   record for what a work item / trigger is and what is valid.
-- **`docs/workcenter-rebuild-spec.md` (v2) is intent/rationale only.** Where the spec's prose and the contract
+- **`docs/reference/modules/tenant/workcenter/workcenter-rebuild-spec.md` (v2) is intent/rationale only.** Where the spec's prose and the contract
   disagree, **the contract wins.**
 - **Alignment obligation (documentation reconciliation, not code):** the spec's older `capabilities[]` prose
   must be read as the contract's `workItemCapabilities[]`
@@ -139,7 +139,7 @@ This charter fixes the boundary and the integration law on paper **before** any 
 
 **Delivery seams (backend prerequisites, sequenced as DCP slices — see §8):** WC-1 unified work-item provider
 contract · WC-2 working-time/calendar seam · WC-3 assignee resolver · WC-4 notification seam · WC-5 provider
-registry. Source: [`docs/product-backlog.md`](../../../docs/product-backlog.md) "WorkCenter ön-koşulları".
+registry. Source: [`docs/roadmap/backlog/product-backlog.md`](../../../docs/roadmap/backlog/product-backlog.md) "WorkCenter ön-koşulları".
 
 ## 6. Ownership map
 
@@ -188,7 +188,7 @@ This charter authorizes **none** of them to code.
 | Order | Slice | Scope headline | Gate before start |
 |---|---|---|---|
 | 1 | **WC-1** unified work-item provider contract + projection | Canonical work-item projection over provider raw DTOs; first proof = MOD-0023 `WorkflowTaskDto` → canonical item (title/actions[]/source/deep-link/normalized status/concurrency) | This charter `approved` + WC-1 module pack `ready-for-dev` |
-| 1b | **WC-1b** frontend wiring + **tenant module manifest / catalog self-registration** | Wire `/WorkCenterNext` from mock → real WC-1 API; add a `WorkAggregation` **manifest provider** (parallels the 6 existing `*ManifestProvider`s) declaring the tenant page + nav (tenant shell) + the `platform.work-aggregation.inbox.view` permission + 7-lang l10n. **Newly recorded seam ([BL-022](../../../docs/product-backlog.md))** — without it WorkCenter is invisible in tenant nav and returns 403. **CORRECTION (2026-07-25, code-verified):** the earlier claim that this permission is "auto-seeded via catalog→auth sync" is **wrong** — the sync creates the KEY automatically, but the GRANT to a tenant user is not automatic (tenant-Admin baseline is a curated allow-list). Access is delivered by **entitlement** (EA 2026-07-25: `IsTenantAssignable: true`, non-baseline), so no protected `Diten.AuthService` edit is needed; the module stays invisible until an operator entitles it. **⚠ Hazard B2:** the A1 auto-registration worker syncs `moduleCode/scope = null`, and scope can never be downgraded from `PlatformAdmin` to `Tenant` (`InternalPermissionsController.cs:146-151`) — since WC-1 already shipped the attribute, WC-1b must verify/repair the stored `Module`/`Scope`. Additive otherwise; safe **after** WC-1 because the stable identifiers (ModuleCode/permission/shell) are already locked. | WC-1 shipped |
+| 1b | **WC-1b** frontend wiring + **tenant module manifest / catalog self-registration** | Wire `/WorkCenterNext` from mock → real WC-1 API; add a `WorkAggregation` **manifest provider** (parallels the 6 existing `*ManifestProvider`s) declaring the tenant page + nav (tenant shell) + the `platform.work-aggregation.inbox.view` permission + 7-lang l10n. **Newly recorded seam ([BL-022](../../../docs/roadmap/backlog/product-backlog.md))** — without it WorkCenter is invisible in tenant nav and returns 403. **CORRECTION (2026-07-25, code-verified):** the earlier claim that this permission is "auto-seeded via catalog→auth sync" is **wrong** — the sync creates the KEY automatically, but the GRANT to a tenant user is not automatic (tenant-Admin baseline is a curated allow-list). Access is delivered by **entitlement** (EA 2026-07-25: `IsTenantAssignable: true`, non-baseline), so no protected `Diten.AuthService` edit is needed; the module stays invisible until an operator entitles it. **⚠ Hazard B2:** the A1 auto-registration worker syncs `moduleCode/scope = null`, and scope can never be downgraded from `PlatformAdmin` to `Tenant` (`InternalPermissionsController.cs:146-151`) — since WC-1 already shipped the attribute, WC-1b must verify/repair the stored `Module`/`Scope`. Additive otherwise; safe **after** WC-1 because the stable identifiers (ModuleCode/permission/shell) are already locked. | WC-1 shipped |
 | 2 | **WC-5** provider registry | How a non-workflow module declares itself a Task Center provider (parallels `WorkflowManifestProvider`) | WC-1 shipped |
 | 3 | **WC-3** assignee resolver seam | `assignee resolver` indirection so position-based assignment (BL-008) drops in without rewrite | WC-1 shipped |
 | 4 | **WC-2** working-time/calendar seam | SLA/deadline behind a working-time interface (naive 24/7 now) | WC-1 shipped |
@@ -322,11 +322,11 @@ status could be **Binding B**. This is a design directive for the WC-1 slice, no
 4. Should Enterprise Strategy approvals move onto MOD-0023 (Binding A) as the first real provider, or stay
    representational until a later wave? (§18 OD-WC-02)
    — **Answered (EA 2026-07-24): deferred to the wave after WC-1**; WC-1's first provider is MOD-0023, not ES
-   ([BL-018](../../../docs/product-backlog.md)).
+   ([BL-018](../../../docs/roadmap/backlog/product-backlog.md)).
 5. Does the EA intend to mint a canonical Blueprint `MOD-xxxx` now, or keep `CAND-CAP-0006` through the WC-1
    slice? (§19)
    — **Answered (EA 2026-07-24): keep `CAND-CAP-0006` through WC-1**; Blueprint `MOD-xxxx` afterward
-   ([BL-019](../../../docs/product-backlog.md)).
+   ([BL-019](../../../docs/roadmap/backlog/product-backlog.md)).
 
 ## 15. Gate criteria (re-used, not re-written — links)
 
@@ -370,10 +370,10 @@ charter.
   active state. Applied to the §10.1 normalize map.
 - **OD-WC-02 — Enterprise Strategy provider timing. RESOLVED (EA 2026-07-24).** ES is deferred to the wave
   **after** WC-1; WC-1's first provider is MOD-0023 (its own approvals), not ES. Backlog:
-  [BL-018](../../../docs/product-backlog.md).
+  [BL-018](../../../docs/roadmap/backlog/product-backlog.md).
 - **OD-WC-03 — First canonical Blueprint `MOD-xxxx`. RESOLVED (EA 2026-07-24).** `CAND-CAP-0006` stays through
   the WC-1 slice; the Blueprint `MOD-xxxx` allocation comes afterward. Backlog:
-  [BL-019](../../../docs/product-backlog.md).
+  [BL-019](../../../docs/roadmap/backlog/product-backlog.md).
 - **OD-WC-04 — WC-1 provider-contract versioning. OPEN.** How `providerContractVersion` is governed across
   providers (certification). Owner: **platform-team at WC-1 pack authoring** — resolved inside the WC-1 module
   pack, not a backlog item.
@@ -382,18 +382,18 @@ charter.
 
 1. **EA follow-up (identity):** allocate a canonical Blueprint `MOD-xxxx` row for Work Aggregation / Task
    Center and record the `CAND-CAP-0006 → MOD-xxxx` deprecated-alias chain (DCP-002). **Not done here.**
-   Backlog: [BL-019](../../../docs/product-backlog.md) (triggers after WC-1; OD-WC-03).
+   Backlog: [BL-019](../../../docs/roadmap/backlog/product-backlog.md) (triggers after WC-1; OD-WC-03).
 2. **WC-1 module pack** (unified work-item provider contract + projection) — first executable slice.
 3. **WC-5 provider registry**, **WC-3 assignee resolver**, **WC-2 working-time seam**, **WC-4 notification
    seam** — each its own approved slice (§8).
 4. **MOD-0023 pack reconciliation** — update its "no code produced / Batch 01 unchecked" framing to match
    shipped runtime (§20 F1). Separate governance edit; **not** performed by this charter. Backlog:
-   [BL-020](../../../docs/product-backlog.md).
+   [BL-020](../../../docs/roadmap/backlog/product-backlog.md).
 5. **Enterprise Strategy fixture-truth cleanup** — reconcile representational workflow deep-links with reality
    (§20 F4); QA item, does not change the executable contract. Backlog:
-   [BL-021](../../../docs/product-backlog.md).
+   [BL-021](../../../docs/roadmap/backlog/product-backlog.md).
 6. **Enterprise Strategy as a real WC provider (Binding A / MOD-0023)** — convert the free-text `ApprovalStatus`
-   into a real queue (§10.4, §17, OD-WC-02). Backlog: [BL-018](../../../docs/product-backlog.md) (after WC-1).
+   into a real queue (§10.4, §17, OD-WC-02). Backlog: [BL-018](../../../docs/roadmap/backlog/product-backlog.md) (after WC-1).
 7. **BL-015 / BL-016 / BL-017** remain backlog-owned (views / outbox / segment-chip visuals).
 
 ## 20. Audit and reconciliation notes — Reconcile Step 0 (verified current state)

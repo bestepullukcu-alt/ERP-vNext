@@ -15,7 +15,7 @@ owner: module-pack-author
 branch: feature/crm/mod-0151-territory-management
 started: 2026-07-23
 target: TBD (FU01 start gated only by developer availability; live create smoke gated by F10 operator publish)
-fu00_closeout: PASS 2026-07-23 — pack approval / source reconciliation gate executed; D1–D7 closed; F1 authoring template completed (publish still pending, F10). See docs/audits/2026-07/mod-0151-fu00-pack-approval-closeout-2026-07-23.md
+fu00_closeout: PASS 2026-07-23 — pack approval / source reconciliation gate executed; D1–D7 closed; F1 authoring template completed (publish still pending, F10). See docs/records/audits/2026-07/mod-0151-fu00-pack-approval-closeout-2026-07-23.md
 ready_for_dev_by: FU00 Pack Approval / Source Reconciliation Closeout (2026-07-23)
 wave: W-4
 capability_group: CRM Core
@@ -102,9 +102,9 @@ dependencies:
 > `AccountTerritoryAssignment` aggregate'inde kalıcılaştırır; Account ve
 > Contact SoR kayıtlarını hiçbir zaman mutate etmez.
 > Permission seed/grant, reference set publish ve registry kaydı **hâlâ bu pack'in yetkisi dışındadır**.
-> Otorite sırası: **Blueprint Excel** (`docs/blueprint/System Capability & Implementation Blueprint - master 7.xlsx`,
+> Otorite sırası: **Blueprint Excel** (`docs/reference/blueprint/System Capability & Implementation Blueprint - master 7.xlsx`,
 > `Blueprint_Data`) > Module Pack > [Domain Config](../domain-config.md) > `AGENTS.md` > `.antigravity/rules/`.
-> Preflight/tasarım analizi: [mod-0151-territory-management-pack-prep-2026-07-23.md](../../../../docs/audits/2026-07/mod-0151-territory-management-pack-prep-2026-07-23.md).
+> Preflight/tasarım analizi: [mod-0151-territory-management-pack-prep-2026-07-23.md](../../../../docs/records/audits/2026-07/mod-0151-territory-management-pack-prep-2026-07-23.md).
 >
 > **Frontmatter notu:** `id` / `name` alanları MOD-0149 & MOD-0150 pack konvansiyonu (DCP-002 canonical-name gate bu
 > alanları okur) ile birebir korunmuştur; `module_id` / `module_name` bunların açık takma adlarıdır.
@@ -1133,7 +1133,7 @@ endpoint/flag'leri açmaz ve `supportsWorkflowActivation=false` değerini korur.
 ### 22.2a FU05A — CoverageSummary Model Lifecycle Guard
 
 FU05 live smoke closeout (90/90 PASS,
-[kanıt](../../../../docs/audits/2026-07/mod-0151-fu05-account-assignment-apply-history-live-smoke-closeout-2026-07-31.md))
+[kanıt](../../../../docs/records/audits/2026-07/mod-0151-fu05-account-assignment-apply-history-live-smoke-closeout-2026-07-31.md))
 current coverage'ın **doğru** çalıştığını doğruladı; ancak CoverageSummary'nin bağlı **territory model'in lifecycle
 status'unu** current projeksiyonda uygulamadığı bir boşluk kaydedildi. FU05A bu boşluğu additive, **yalnız-okuma**
 bir guard ile kapatır: deactivated / inactive / archived / superseded bir modele bağlı `AccountTerritoryAssignment`
@@ -2090,7 +2090,7 @@ yetkilendirilmedikçe); MOD-0048 publish (ayrıca yetkilendirilmedikçe); `crm.t
 ## 24. Acceptance Criteria for Pack Approval
 
 > **GATE EXECUTED — FU00 Pack Approval / Source Reconciliation Closeout, 2026-07-23: PASS.**
-> Kanıt: [mod-0151-fu00-pack-approval-closeout-2026-07-23.md](../../../../docs/audits/2026-07/mod-0151-fu00-pack-approval-closeout-2026-07-23.md)
+> Kanıt: [mod-0151-fu00-pack-approval-closeout-2026-07-23.md](../../../../docs/records/audits/2026-07/mod-0151-fu00-pack-approval-closeout-2026-07-23.md)
 
 - [x] §4 kararları (D1–D7) reviewer tarafından **onaylandı** (pack prep'te alınmıştı; pack'te kayıt altına alındı).
 - [x] Blueprint alignment doğrulandı: MOD-0151 / Territory Management / CRM Core / W-4 / CRM-TERRITORY-BUNDLE /
