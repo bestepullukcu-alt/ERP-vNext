@@ -67,7 +67,7 @@
 | SCMM-01 | BL-316 çöz + capability ownership | Architecture+sponsor | MOD-0162 + CAND-CAP-0011 | — | ✅ **DECIDED (H, 2026-09-07, DEC-SCMM-01)** — CAND-CAP-0011 rezerve, MOD-0167'den UCLN kaldırıldı, BL-316 RESOLVED. **G0 owner-kimlik kapısı AÇIK.** |
 | SCMM-02 | Kod+runtime baseline doğrula | Tech lead | tüm shared deps | — | ✅ **ACCEPTED (E1, 2026-09-07)** — WP-SCMM-02. `regulated`=greenfield, AudienceProfile blocker teyitli, reuse/build haritası kanıtlı. Açık: MOD-0031 riski + E3 (fleet cold). |
 | SCMM-03 | Model+policy kararlarını dondur | Domain arch+content owner | MOD-0162 + CAND-CAP-0011 | 01,02 | ✅ **DECIDED (2026-09-07)** — DEC-SCMM-03, 11/11 karar kilitli (regulated greenfield-decouple, AudienceProfile multi-axis, rename adopt). **G2 önkoşulu sağlandı.** |
-| SCMM-04 | Integration+delivery spec onayı | API+security+QA | MOD-0032 + domain | 03 | eksik contract = blocker, uydurma yok |
+| SCMM-04 | Integration+delivery spec onayı | API+security+QA | MOD-0032 + domain | 03 | ✅ **APPROVED (2026-09-07)** — DEC-SCMM-04; 6 contract framework kilitli, blocker'lar (C1-evidence/MOD-0031, C3/MOD-0023, C2/MOD-0025, C1-position/MOD-0288) G1'e. **→ G0 ✅ KAPALI. R1 (SCMM-05→08) açık.** |
 
 ### R1 — Shared foundation (Gate G1: runtime proof + remediation)
 | WP | İş | Owner | Modül | Dep | CT notu |
