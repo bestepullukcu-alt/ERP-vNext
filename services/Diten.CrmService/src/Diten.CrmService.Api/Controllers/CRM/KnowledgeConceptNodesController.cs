@@ -48,6 +48,21 @@ public sealed class KnowledgeConceptNodesController : CustomBaseController
                 request.ExternalRefType, request.ExternalRefId, request.MetadataJson),
             cancellationToken));
 
+    // SCMM-09 (②) — combined node+edge write ("New UCLN List"): new node + relationship to an existing node, atomically.
+    [HttpPost("api/crm/knowledge/concept-nodes/with-relationship")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> CreateWithRelationship(
+        [FromBody] CreateConceptNodeWithRelationshipRequest request, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new CreateConceptNodeWithRelationshipCommand(
+                request.SubjectId, request.ConceptTypeId, request.ConceptNodeCode, request.ConceptNodeName,
+                request.NodeEffectiveFrom, request.CounterpartConceptNodeId, request.RelationshipType,
+                request.RelationshipCode, request.RelationshipName, request.RelationshipEffectiveFrom,
+                request.NewNodeIsSource, request.NodeDescription, request.NodeStatus, request.NodeEffectiveTo,
+                request.ExternalRefType, request.ExternalRefId, request.MetadataJson, request.Direction,
+                request.Priority, request.RelationshipStatus, request.RelationshipEffectiveTo),
+            cancellationToken));
+
     [HttpPut("api/crm/knowledge/concept-nodes/{conceptNodeId:guid}")]
     [HasPermission(Perms.Manage)]
     public async Task<IActionResult> Update(

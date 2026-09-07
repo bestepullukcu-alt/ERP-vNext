@@ -129,6 +129,8 @@ public static class DependencyInjection
         services.AddScoped<IConceptRelationshipRepository, ConceptRelationshipRepository>();
         services.AddScoped<IConceptChainTemplateRepository, ConceptChainTemplateRepository>();
         services.AddScoped<IKnowledgeContentConceptLinkRepository, KnowledgeContentConceptLinkRepository>();
+        // SCMM-09 (②) — atomic node+edge combined-write (transaction when supported, else compensation).
+        services.AddScoped<IConceptNodeWithRelationshipUnitOfWork, ConceptNodeWithRelationshipUnitOfWork>();
 
         // MOD-0162 FU04 — KnowledgePath master (steps embedded, D2 → one collection, one repository). No delete method
         // (soft archive). The read-only consumption seam a future MOD-0155/MOD-0309 consumer reads makes no decision.

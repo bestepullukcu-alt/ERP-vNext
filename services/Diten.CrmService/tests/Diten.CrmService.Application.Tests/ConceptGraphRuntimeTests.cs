@@ -59,6 +59,12 @@ public sealed class ConceptGraphRuntimeTests
 
         public CreateConceptRelationshipHandler CreateRel()
             => new(Tenant(TenantId), new NullActorContext(), Relationships, Nodes, Templates);
+        public FakeCombinedUow Uow { get; private set; } = null!;
+        public CreateConceptNodeWithRelationshipHandler CreateNodeWithRel()
+        {
+            Uow = new FakeCombinedUow(Nodes, Relationships);
+            return new(Tenant(TenantId), new NullActorContext(), Nodes, Types, Relationships, Templates, Uow);
+        }
         public UpdateConceptRelationshipHandler UpdateRel()
             => new(Tenant(TenantId), new NullActorContext(), Relationships, Nodes, Templates);
         public ListConceptRelationshipsHandler ListRels() => new(Tenant(TenantId), Relationships);
@@ -739,7 +745,125 @@ public sealed class ConceptGraphRuntimeTests
         Assert.Equal(400, r.StatusCode);
     }
 
+    // ---------------- SCMM-09 (②) combined node+edge write ----------------
+
+    [Fact] // 44  combined-write happy path: node + edge persisted atomically, edge newNode -> counterpart
+    public async Task Combined_write_creates_node_and_edge()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var typeId = await fx.SeedType(subjectId);
+        var counterpart = await fx.SeedNode(subjectId, typeId, "N1");
+
+        var handler = fx.CreateNodeWithRel();
+        var r = await handler.Handle(new CreateConceptNodeWithRelationshipCommand(
+            subjectId, typeId, "n-new", "New value", Jan1,
+            counterpart, ConceptRelationshipTypes.LeadsTo, "R1", "R1", Jan1,
+            NodeStatus: ConceptStatuses.Active, RelationshipStatus: ConceptStatuses.Active), default);
+
+        Assert.Equal(201, r.StatusCode);
+        Assert.True(fx.Uow.Called);
+        Assert.Contains(fx.Nodes.Items, n => n.Id == r.Data!.ConceptNodeId);
+        var edge = Assert.Single(fx.Relationships.Items, e => e.Id == r.Data!.ConceptRelationshipId);
+        Assert.Equal(r.Data!.ConceptNodeId, edge.FromConceptNodeId); // NewNodeIsSource=true default
+        Assert.Equal(counterpart, edge.ToConceptNodeId);
+    }
+
+    [Fact] // 45  combined-write reuses relationship validation: archived counterpart rejected, nothing written
+    public async Task Combined_write_archived_counterpart_returns_400_no_write()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var typeId = await fx.SeedType(subjectId);
+        var counterpart = await fx.SeedNode(subjectId, typeId, "N1");
+        await fx.ArchiveNode().Handle(new ArchiveConceptNodeCommand(counterpart), default);
+
+        var handler = fx.CreateNodeWithRel();
+        var r = await handler.Handle(new CreateConceptNodeWithRelationshipCommand(
+            subjectId, typeId, "n-new", "New value", Jan1,
+            counterpart, ConceptRelationshipTypes.LeadsTo, "R1", "R1", Jan1), default);
+
+        Assert.Equal(400, r.StatusCode);
+        Assert.False(fx.Uow.Called); // no partial write on rejection
+    }
+
+    [Fact] // 46  combined-write cross-subject counterpart rejected
+    public async Task Combined_write_cross_subject_counterpart_returns_400()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectA = fx.SeedSubject();
+        var subjectB = fx.SeedSubject();
+        var typeA = await fx.SeedType(subjectA, "A");
+        var typeB = await fx.SeedType(subjectB, "B");
+        var counterpartInB = await fx.SeedNode(subjectB, typeB, "NB");
+
+        var handler = fx.CreateNodeWithRel();
+        var r = await handler.Handle(new CreateConceptNodeWithRelationshipCommand(
+            subjectA, typeA, "n-new", "New value", Jan1,
+            counterpartInB, ConceptRelationshipTypes.LeadsTo, "R1", "R1", Jan1), default);
+
+        Assert.Equal(400, r.StatusCode);
+        Assert.False(fx.Uow.Called);
+    }
+
+    [Fact] // 47  combined-write reuses relationship-type validation
+    public async Task Combined_write_invalid_relationship_type_returns_400()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var typeId = await fx.SeedType(subjectId);
+        var counterpart = await fx.SeedNode(subjectId, typeId, "N1");
+
+        var handler = fx.CreateNodeWithRel();
+        var r = await handler.Handle(new CreateConceptNodeWithRelationshipCommand(
+            subjectId, typeId, "n-new", "New value", Jan1,
+            counterpart, "not-a-real-type", "R1", "R1", Jan1), default);
+
+        Assert.Equal(400, r.StatusCode);
+        Assert.False(fx.Uow.Called);
+    }
+
+    [Fact] // 48  NewNodeIsSource=false flips the edge direction (counterpart -> newNode)
+    public async Task Combined_write_new_node_as_target()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var typeId = await fx.SeedType(subjectId);
+        var counterpart = await fx.SeedNode(subjectId, typeId, "N1");
+
+        var handler = fx.CreateNodeWithRel();
+        var r = await handler.Handle(new CreateConceptNodeWithRelationshipCommand(
+            subjectId, typeId, "n-new", "New value", Jan1,
+            counterpart, ConceptRelationshipTypes.LeadsTo, "R1", "R1", Jan1, NewNodeIsSource: false), default);
+
+        Assert.Equal(201, r.StatusCode);
+        var edge = Assert.Single(fx.Relationships.Items);
+        Assert.Equal(counterpart, edge.FromConceptNodeId);
+        Assert.Equal(r.Data!.ConceptNodeId, edge.ToConceptNodeId);
+    }
+
     // ============================================================ in-memory fakes
+
+    private sealed class FakeCombinedUow : IConceptNodeWithRelationshipUnitOfWork
+    {
+        private readonly FakeNodeRepo _nodes;
+        private readonly FakeRelationshipRepo _relationships;
+        public bool Called { get; private set; }
+
+        public FakeCombinedUow(FakeNodeRepo nodes, FakeRelationshipRepo relationships)
+        {
+            _nodes = nodes;
+            _relationships = relationships;
+        }
+
+        public Task CommitAsync(ConceptNode node, ConceptRelationship relationship, CancellationToken cancellationToken)
+        {
+            Called = true;
+            _nodes.Items.Add(node);
+            _relationships.Items.Add(relationship);
+            return Task.CompletedTask;
+        }
+    }
 
     private sealed class FakeSubjectRepo : ISubjectRepository
     {

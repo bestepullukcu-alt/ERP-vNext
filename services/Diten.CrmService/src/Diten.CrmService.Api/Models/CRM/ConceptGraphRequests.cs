@@ -95,3 +95,28 @@ public sealed record CreateContentConceptLinkRequest(
     Guid? ConceptRelationshipId = null,
     string? LinkRole = null,
     int SortOrder = 0);
+
+// SCMM-09 (②) — combined node+edge write ("New UCLN List" ergonomics). Creates a new node AND its relationship to an
+// existing counterpart node atomically.
+public sealed record CreateConceptNodeWithRelationshipRequest(
+    Guid SubjectId,
+    Guid ConceptTypeId,
+    string ConceptNodeCode,
+    string ConceptNodeName,
+    DateTimeOffset NodeEffectiveFrom,
+    Guid CounterpartConceptNodeId,
+    string RelationshipType,
+    string RelationshipCode,
+    string RelationshipName,
+    DateTimeOffset RelationshipEffectiveFrom,
+    bool NewNodeIsSource = true,
+    string? NodeDescription = null,
+    string? NodeStatus = null,
+    DateTimeOffset? NodeEffectiveTo = null,
+    string? ExternalRefType = null,
+    string? ExternalRefId = null,
+    string? MetadataJson = null,
+    string? Direction = null,
+    int Priority = 0,
+    string? RelationshipStatus = null,
+    DateTimeOffset? RelationshipEffectiveTo = null);
