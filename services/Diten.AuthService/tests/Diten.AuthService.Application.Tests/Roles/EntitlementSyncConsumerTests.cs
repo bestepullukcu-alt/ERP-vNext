@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Infrastructure.Eventing;
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Contracts.Events;
@@ -189,7 +190,7 @@ public sealed class EntitlementSyncConsumerTests
         await consumer.ConsumeAsync(message);
 
         Assert.Equal(1, sync.SyncCount);
-        Assert.Equal(2, inbox.Attempts);
+        Assert.Equal(1, inbox.Attempts);
     }
 
     [Fact]
@@ -255,16 +256,164 @@ public sealed class EntitlementSyncConsumerTests
         Assert.Null(sync.Granted);
     }
 
+    [Fact]
+    public async Task Failed_authoritative_mutation_is_not_marked_complete_and_same_event_can_retry()
+    {
+        var sync = new FakeSync { FailNextGrant = true };
+        var inbox = new FakeInbox(firstDelivery: true);
+        var consumer = Build(sync, inbox, new FakeEntitlementClient(["product-item-sku-master"]));
+        var message = Message(TenantEntitlementAddedV1.Name, TenantA, "product-item-sku-master");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => consumer.ConsumeAsync(message));
+
+        Assert.Equal(0, inbox.Attempts);
+        Assert.Null(sync.Granted);
+
+        await consumer.ConsumeAsync(message);
+
+        Assert.Equal((TenantA, "product-item-sku-master"), sync.Granted);
+        Assert.Equal(1, inbox.Attempts);
+    }
+
+    [Fact]
+    public async Task Completed_event_id_replayed_for_another_tenant_fails_before_mutation()
+    {
+        var tenantB = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var eventId = Guid.NewGuid();
+        var sync = new FakeSync();
+        var inbox = new FakeInbox(firstDelivery: true);
+        var consumer = Build(sync, inbox, new FakeEntitlementClient(["product-item-sku-master"]));
+
+        await consumer.ConsumeAsync(Message(
+            TenantEntitlementAddedV1.Name,
+            TenantA,
+            "product-item-sku-master",
+            eventId));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => consumer.ConsumeAsync(Message(
+            TenantEntitlementAddedV1.Name,
+            tenantB,
+            "product-item-sku-master",
+            eventId)));
+
+        Assert.Equal((TenantA, "product-item-sku-master"), sync.Granted);
+        Assert.Equal(1, inbox.Attempts);
+    }
+
+    [Fact]
+    public async Task Concurrent_first_deliveries_with_same_event_id_bind_before_mutation()
+    {
+        var tenantB = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var eventId = Guid.NewGuid();
+        var mutationEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var continueMutation = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var sync = new FakeSync
+        {
+            GrantEntered = mutationEntered,
+            GrantContinue = continueMutation
+        };
+        var inbox = new FakeInbox(firstDelivery: true);
+        var consumer = Build(sync, inbox, new FakeEntitlementClient(["product-item-sku-master"]));
+
+        var first = consumer.ConsumeAsync(Message(
+            TenantEntitlementAddedV1.Name,
+            TenantA,
+            "product-item-sku-master",
+            eventId));
+        await mutationEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => consumer.ConsumeAsync(Message(
+            TenantEntitlementAddedV1.Name,
+            tenantB,
+            "product-item-sku-master",
+            eventId)));
+
+        continueMutation.SetResult();
+        await first;
+
+        Assert.Equal((TenantA, "product-item-sku-master"), sync.Granted);
+        Assert.Equal(1, inbox.Attempts);
+    }
+
+    [Fact]
+    public async Task Completed_event_id_reused_for_another_event_name_fails_before_mutation()
+    {
+        var eventId = Guid.NewGuid();
+        var sync = new FakeSync();
+        var consumer = Build(
+            sync,
+            new FakeInbox(firstDelivery: true),
+            new FakeEntitlementClient(["product-item-sku-master"]));
+
+        await consumer.ConsumeAsync(Message(
+            TenantEntitlementAddedV1.Name,
+            TenantA,
+            "product-item-sku-master",
+            eventId));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => consumer.ConsumeAsync(Message(
+            TenantEntitlementDisabledV1.Name,
+            TenantA,
+            "product-item-sku-master",
+            eventId)));
+
+        Assert.Equal((TenantA, "product-item-sku-master"), sync.Granted);
+        Assert.Null(sync.Revoked);
+    }
+
+    [Fact]
+    public async Task Payload_and_envelope_tenant_mismatch_fails_before_read_claim_or_mutation()
+    {
+        var tenantB = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var sync = new FakeSync();
+        var inbox = new FakeInbox(firstDelivery: true);
+        var client = new FakeEntitlementClient(["product-item-sku-master"]);
+        var consumer = Build(sync, inbox, client);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => consumer.ConsumeAsync(Message(
+            TenantEntitlementAddedV1.Name,
+            tenantB,
+            "product-item-sku-master",
+            envelopeTenantId: TenantA)));
+
+        Assert.Equal(0, client.ReadAttempts);
+        Assert.Equal(0, inbox.ClaimAttempts);
+        Assert.Null(sync.Granted);
+        Assert.Null(sync.Revoked);
+    }
+
+    [Fact]
+    public async Task Claimed_result_without_fencing_token_fails_before_mutation()
+    {
+        var sync = new FakeSync();
+        var inbox = new FakeInbox(firstDelivery: true) { ReturnClaimWithoutToken = true };
+        var consumer = Build(sync, inbox, new FakeEntitlementClient(["product-item-sku-master"]));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => consumer.ConsumeAsync(Message(
+            TenantEntitlementAddedV1.Name,
+            TenantA,
+            "product-item-sku-master")));
+
+        Assert.Null(sync.Granted);
+        Assert.Null(sync.Revoked);
+        Assert.Equal(0, inbox.Attempts);
+    }
+
     // ── harness ──
 
     private static EntitlementSyncConsumer Build(FakeSync sync, FakeInbox inbox, FakeEntitlementClient? client = null)
         => new(sync, client ?? new FakeEntitlementClient(["MDM"]), inbox, NullLogger<EntitlementSyncConsumer>.Instance);
 
-    private static EventTransportMessage Message(string eventName, Guid tenantId, string moduleCode)
+    private static EventTransportMessage Message(
+        string eventName,
+        Guid tenantId,
+        string moduleCode,
+        Guid? eventId = null,
+        Guid? envelopeTenantId = null)
     {
         var payloadJson = JsonSerializer.Serialize(new { tenantId, moduleCode });
         return new EventTransportMessage(
-            Guid.NewGuid(), eventName, 1, Guid.NewGuid(), null, tenantId, "platform", DateTimeOffset.UtcNow, payloadJson);
+            eventId ?? Guid.NewGuid(), eventName, 1, Guid.NewGuid(), null, envelopeTenantId ?? tenantId, "platform", DateTimeOffset.UtcNow, payloadJson);
     }
 
     private sealed class FakeSync : IEntitlementPermissionSyncService
@@ -273,6 +422,9 @@ public sealed class EntitlementSyncConsumerTests
         public (Guid tenantId, string moduleCode)? Revoked { get; private set; }
         public (Guid tenantId, string[] codes)? Synced { get; private set; }
         public int SyncCount { get; private set; }
+        public bool FailNextGrant { get; set; }
+        public TaskCompletionSource? GrantEntered { get; init; }
+        public TaskCompletionSource? GrantContinue { get; init; }
 
         public Task GrantModuleAsync(Guid tenantId, string moduleCode, string actor, CancellationToken ct = default)
         {
@@ -293,10 +445,21 @@ public sealed class EntitlementSyncConsumerTests
             return Task.CompletedTask;
         }
 
-        public Task GrantModuleWithKeysAsync(Guid tenantId, string moduleCode, IReadOnlyCollection<string> permissionKeys, string actor, CancellationToken ct = default)
+        public async Task GrantModuleWithKeysAsync(Guid tenantId, string moduleCode, IReadOnlyCollection<string> permissionKeys, string actor, CancellationToken ct = default)
         {
+            if (FailNextGrant)
+            {
+                FailNextGrant = false;
+                throw new InvalidOperationException("Injected authoritative grant failure.");
+            }
+
+            GrantEntered?.SetResult();
+            if (GrantContinue is not null)
+            {
+                await GrantContinue.Task.WaitAsync(ct);
+            }
+
             Granted = (tenantId, moduleCode);
-            return Task.CompletedTask;
         }
 
         public Task SyncTenantModulesWithKeysAsync(Guid tenantId, IReadOnlyCollection<EntitledModulePermissionKeys> modules, string actor, CancellationToken ct = default)
@@ -309,6 +472,8 @@ public sealed class EntitlementSyncConsumerTests
 
     private sealed class FakeEntitlementClient(IReadOnlyList<string> codes, bool isAuthoritative = true) : ITenantEntitlementClient
     {
+        public int ReadAttempts { get; private set; }
+
         public Task<IReadOnlyList<string>> GetEntitledModuleCodesAsync(Guid tenantId, CancellationToken ct)
             => Task.FromResult(codes);
 
@@ -317,24 +482,111 @@ public sealed class EntitlementSyncConsumerTests
                 codes.Select(c => new EntitledModulePermissionKeys(c, Array.Empty<string>())).ToList());
 
         public Task<TenantEntitlementReadResult> ReadEntitledModulesWithPermissionKeysAsync(Guid tenantId, CancellationToken ct)
-            => Task.FromResult(isAuthoritative
+        {
+            ReadAttempts++;
+            return Task.FromResult(isAuthoritative
                 ? TenantEntitlementReadResult.Confirmed(
                     codes.Select(c => new EntitledModulePermissionKeys(c, Array.Empty<string>())).ToList())
                 : TenantEntitlementReadResult.Unavailable());
+        }
     }
 
     private sealed class FakeInbox(bool firstDelivery) : IIntegrationEventInboxRepository
     {
-        private bool _firstDelivery = firstDelivery;
+        private readonly object _gate = new();
+        private Guid? _tenantId = firstDelivery ? null : TenantA;
+        private string? _eventName;
+        private Guid? _claimId;
+        private IntegrationEventInboxState _state = IntegrationEventInboxState.Completed;
 
         public int Attempts { get; private set; }
+        public int ClaimAttempts { get; private set; }
+        public bool ReturnClaimWithoutToken { get; init; }
+
+        public Task<IntegrationEventClaim> TryClaimAsync(
+            Guid eventId,
+            string eventName,
+            Guid tenantId,
+            TimeSpan leaseDuration,
+            CancellationToken ct = default)
+        {
+            lock (_gate)
+            {
+                ClaimAttempts++;
+                if (ReturnClaimWithoutToken)
+                {
+                    return Task.FromResult(new IntegrationEventClaim(IntegrationEventClaimResult.Claimed));
+                }
+                if (!_tenantId.HasValue)
+                {
+                    _tenantId = tenantId;
+                    _eventName = eventName;
+                    _state = IntegrationEventInboxState.Processing;
+                    _claimId = Guid.NewGuid();
+                    return Task.FromResult(new IntegrationEventClaim(
+                        IntegrationEventClaimResult.Claimed,
+                        _claimId));
+                }
+
+                if (_tenantId.Value != tenantId)
+                {
+                    return Task.FromResult(new IntegrationEventClaim(IntegrationEventClaimResult.TenantMismatch));
+                }
+
+                if (_eventName is not null && !string.Equals(_eventName, eventName, StringComparison.Ordinal))
+                {
+                    return Task.FromResult(new IntegrationEventClaim(IntegrationEventClaimResult.IdentityMismatch));
+                }
+
+                return Task.FromResult(new IntegrationEventClaim(
+                    _state == IntegrationEventInboxState.Completed
+                        ? IntegrationEventClaimResult.Completed
+                        : IntegrationEventClaimResult.Busy));
+            }
+        }
+
+        public Task CompleteClaimAsync(Guid eventId, Guid tenantId, Guid claimId, CancellationToken ct = default)
+        {
+            lock (_gate)
+            {
+                if (_tenantId != tenantId || _claimId != claimId || _state != IntegrationEventInboxState.Processing)
+                {
+                    throw new InvalidOperationException("Claim cannot be completed.");
+                }
+
+                _state = IntegrationEventInboxState.Completed;
+                _claimId = null;
+                Attempts++;
+                return Task.CompletedTask;
+            }
+        }
+
+        public Task ReleaseClaimAsync(Guid eventId, Guid tenantId, Guid claimId, CancellationToken ct = default)
+        {
+            lock (_gate)
+            {
+                if (_tenantId == tenantId && _claimId == claimId && _state == IntegrationEventInboxState.Processing)
+                {
+                    _tenantId = null;
+                    _eventName = null;
+                    _claimId = null;
+                }
+
+                return Task.CompletedTask;
+            }
+        }
 
         public Task<bool> TryInsertAsync(Guid eventId, string eventName, Guid tenantId, CancellationToken ct = default)
         {
-            Attempts++;
-            var result = _firstDelivery;
-            _firstDelivery = false;
-            return Task.FromResult(result);
+            lock (_gate)
+            {
+                Attempts++;
+                var result = !_tenantId.HasValue;
+                _tenantId ??= tenantId;
+                _eventName ??= eventName;
+                _state = IntegrationEventInboxState.Completed;
+                return Task.FromResult(result);
+            }
         }
     }
 }

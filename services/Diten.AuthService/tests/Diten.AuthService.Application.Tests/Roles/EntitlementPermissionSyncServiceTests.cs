@@ -680,11 +680,310 @@ public sealed class EntitlementPermissionSyncServiceTests
         Assert.False(roles.Exists(TenantA, ProductAbbreviationEntitlementGrantProfile.RequesterRole));
     }
 
-    private static (EntitlementPermissionSyncService svc, FakeRoleRepository roles, FakeRolePermissionRepository rolePerms) BuildWith(List<Permission> catalog)
+    [Fact]
+    public async Task Product_legal_entity_scope_composite_profile_reconciles_exact_nine_role_matrix_idempotently()
+    {
+        var catalog = ProductItemSkuMasterCompositeCatalog();
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        var keys = catalog.Select(permission => permission.Key).ToArray();
+
+        await svc.GrantModuleWithKeysAsync(TenantA, ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode, keys, Actor);
+        var firstCount = rolePerms.Rows.Count;
+        await svc.GrantModuleWithKeysAsync(TenantA, ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode, keys, Actor);
+
+        Assert.Equal(firstCount, rolePerms.Rows.Count);
+        Assert.Equal(
+            [
+                "mdm.global-products.create",
+                "mdm.global-products.read",
+                ProductAbbreviationEntitlementGrantProfile.Read,
+                ProductLegalEntityScopeEntitlementGrantProfile.Read
+            ],
+            rolePerms.KeysFor(roles.IdOf(TenantA, "Admin"), catalog).OrderBy(key => key, StringComparer.Ordinal));
+        Assert.Equal(
+            ["mdm.global-products.read", ProductAbbreviationEntitlementGrantProfile.Read],
+            rolePerms.KeysFor(roles.IdOf(TenantA, "Viewer"), catalog).OrderBy(key => key, StringComparer.Ordinal));
+
+        foreach (var template in ProductAbbreviationEntitlementGrantProfile.DedicatedRoles)
+        {
+            Assert.Equal(
+                template.PermissionKeys.OrderBy(key => key, StringComparer.Ordinal),
+                rolePerms.KeysFor(roles.IdOf(TenantA, template.RoleName), catalog)
+                    .OrderBy(key => key, StringComparer.Ordinal));
+        }
+        foreach (var template in ProductLegalEntityScopeEntitlementGrantProfile.DedicatedRoles)
+        {
+            Assert.Equal(
+                template.PermissionKeys.OrderBy(key => key, StringComparer.Ordinal),
+                rolePerms.KeysFor(roles.IdOf(TenantA, template.RoleName), catalog)
+                    .OrderBy(key => key, StringComparer.Ordinal));
+        }
+
+        Assert.DoesNotContain(rolePerms.Rows, grant => grant.TenantId == TenantB);
+        Assert.All(rolePerms.Rows, grant => Assert.Equal("product-item-sku-master", grant.SourceModuleCode));
+    }
+
+    [Theory]
+    [MemberData(nameof(AllCompositeDedicatedRoleNames))]
+    public async Task Product_legal_entity_scope_collision_preflights_all_ABB_and_scope_roles_before_mutation(
+        string collisionRoleName)
+    {
+        var catalog = ProductItemSkuMasterCompositeCatalog();
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        roles.SeedNonSystem(TenantA, collisionRoleName);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => svc.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
+            catalog.Select(permission => permission.Key).ToArray(),
+            Actor));
+
+        Assert.Empty(rolePerms.Rows);
+        Assert.True(roles.Exists(TenantA, collisionRoleName));
+        foreach (var roleName in AllCompositeDedicatedRoleNames().Select(row => (string)row[0]))
+        {
+            if (!string.Equals(roleName, collisionRoleName, StringComparison.Ordinal))
+            {
+                Assert.False(roles.Exists(TenantA, roleName));
+            }
+        }
+    }
+
+    public static IEnumerable<object[]> AllCompositeDedicatedRoleNames() =>
+        ProductAbbreviationEntitlementGrantProfile.DedicatedRoles
+            .Select(template => new object[] { template.RoleName })
+            .Concat(ProductLegalEntityScopeEntitlementGrantProfile.DedicatedRoles
+                .Select(template => new object[] { template.RoleName }));
+
+    [Fact]
+    public async Task Product_legal_entity_scope_catalog_missing_and_partial_descriptor_fail_before_mutation()
+    {
+        var complete = ProductItemSkuMasterCompositeCatalog();
+        var missingCatalog = complete
+            .Where(permission => permission.Key != ProductLegalEntityScopeEntitlementGrantProfile.Rollback)
+            .ToList();
+        var (missingService, missingRoles, missingGrants) = BuildWith(missingCatalog);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => missingService.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
+            complete.Select(permission => permission.Key).ToArray(),
+            Actor));
+        Assert.Empty(missingGrants.Rows);
+        Assert.False(missingRoles.Exists(TenantA, ProductLegalEntityScopeEntitlementGrantProfile.StewardRole));
+
+        var (partialService, partialRoles, partialGrants) = BuildWith(complete);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => partialService.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
+            complete.Select(permission => permission.Key)
+                .Where(key => key != ProductLegalEntityScopeEntitlementGrantProfile.Rollback)
+                .ToArray(),
+            Actor));
+        Assert.Empty(partialGrants.Rows);
+        Assert.False(partialRoles.Exists(TenantA, ProductLegalEntityScopeEntitlementGrantProfile.StewardRole));
+    }
+
+    [Theory]
+    [InlineData("scope-only")]
+    [InlineData("generic-only")]
+    [InlineData("empty")]
+    public async Task Product_legal_entity_scope_rejects_non_authoritative_module_subsets_before_mutation(string variant)
+    {
+        var catalog = ProductItemSkuMasterCompositeCatalog();
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        var keys = variant switch
+        {
+            "scope-only" => ProductLegalEntityScopeEntitlementGrantProfile.PermissionKeys.ToArray(),
+            "generic-only" => catalog
+                .Where(permission => !ProductAbbreviationEntitlementGrantProfile.IsProductAbbreviationKey(permission.Key)
+                                     && !ProductLegalEntityScopeEntitlementGrantProfile.IsProductLegalEntityScopeKey(permission.Key))
+                .Select(permission => permission.Key)
+                .ToArray(),
+            "empty" => [],
+            _ => throw new InvalidOperationException("Unknown test variant.")
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => svc.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
+            keys,
+            Actor));
+
+        Assert.Empty(rolePerms.Rows);
+        Assert.False(roles.Exists(TenantA, ProductLegalEntityScopeEntitlementGrantProfile.StewardRole));
+        Assert.False(roles.Exists(TenantA, ProductAbbreviationEntitlementGrantProfile.RequesterRole));
+    }
+
+    [Fact]
+    public async Task Product_legal_entity_scope_authoritative_sync_does_not_swallow_incomplete_snapshot()
+    {
+        var catalog = ProductItemSkuMasterCompositeCatalog();
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => svc.SyncTenantModulesWithKeysAsync(
+            TenantA,
+            [new EntitledModulePermissionKeys(
+                ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
+                ProductLegalEntityScopeEntitlementGrantProfile.PermissionKeys.ToArray())],
+            Actor));
+
+        Assert.Empty(rolePerms.Rows);
+        Assert.False(roles.Exists(TenantA, ProductLegalEntityScopeEntitlementGrantProfile.StewardRole));
+    }
+
+    [Fact]
+    public async Task Product_legal_entity_scope_reconcile_removes_only_stale_matching_module_source_grants()
+    {
+        var catalog = ProductItemSkuMasterCompositeCatalog();
+        var orphan = PermissionFor("mdm.product-legal-entity-scopes.orphaned");
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        var adminId = roles.IdOf(TenantA, "Admin");
+        var configure = catalog.Single(permission => permission.Key == ProductLegalEntityScopeEntitlementGrantProfile.Configure);
+        rolePerms.Seed(RolePermission.ModuleGrant(adminId, configure.Id, TenantA, Actor, "product-item-sku-master"));
+        rolePerms.Seed(RolePermission.SystemGrant(adminId, configure.Id, TenantA, "system"));
+        rolePerms.Seed(RolePermission.ManualGrant(adminId, configure.Id, TenantA, "operator"));
+        rolePerms.Seed(RolePermission.ModuleGrant(adminId, configure.Id, TenantA, Actor, "another-module"));
+        rolePerms.Seed(RolePermission.ModuleGrant(adminId, orphan.Id, TenantA, Actor, "product-item-sku-master"));
+
+        await svc.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
+            catalog.Where(permission => permission.Id != orphan.Id).Select(permission => permission.Key).ToArray(),
+            Actor);
+
+        Assert.DoesNotContain(rolePerms.Rows, grant => grant.RoleId == adminId
+            && grant.PermissionId == configure.Id
+            && grant.GrantSource == GrantSource.Module
+            && grant.SourceModuleCode == ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode);
+        Assert.Contains(rolePerms.Rows, grant => grant.RoleId == adminId && grant.PermissionId == configure.Id && grant.GrantSource == GrantSource.System);
+        Assert.Contains(rolePerms.Rows, grant => grant.RoleId == adminId && grant.PermissionId == configure.Id && grant.GrantSource == GrantSource.Manual);
+        Assert.Contains(rolePerms.Rows, grant => grant.RoleId == adminId && grant.PermissionId == configure.Id && grant.SourceModuleCode == "another-module");
+        Assert.DoesNotContain(rolePerms.Rows, grant => grant.PermissionId == orphan.Id);
+    }
+
+    [Theory]
+    [InlineData("duplicate")]
+    [InlineData("blank")]
+    [InlineData("case-alias")]
+    public async Task Product_legal_entity_scope_rejects_non_canonical_descriptor_sets_before_mutation(string variant)
+    {
+        var catalog = ProductItemSkuMasterCompositeCatalog();
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        var keys = catalog.Select(permission => permission.Key).ToList();
+        switch (variant)
+        {
+            case "duplicate": keys.Add(ProductLegalEntityScopeEntitlementGrantProfile.Read); break;
+            case "blank": keys.Add(" "); break;
+            case "case-alias":
+                keys[keys.IndexOf(ProductLegalEntityScopeEntitlementGrantProfile.Read)] =
+                    ProductLegalEntityScopeEntitlementGrantProfile.Read.ToUpperInvariant();
+                break;
+        }
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => svc.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
+            keys,
+            Actor));
+
+        Assert.Empty(rolePerms.Rows);
+        Assert.False(roles.Exists(TenantA, ProductLegalEntityScopeEntitlementGrantProfile.StewardRole));
+    }
+
+    [Theory]
+    [InlineData("missing")]
+    [InlineData("disabled")]
+    [InlineData("expired")]
+    public async Task Product_legal_entity_scope_non_active_entitlement_revokes_all_matching_profile_grants(string state)
+    {
+        Assert.Contains(state, new[] { "missing", "disabled", "expired" });
+        var catalog = ProductItemSkuMasterCompositeCatalog();
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        await svc.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
+            catalog.Select(permission => permission.Key).ToArray(),
+            Actor);
+
+        await svc.SyncTenantModulesWithKeysAsync(TenantA, [], Actor);
+
+        Assert.DoesNotContain(rolePerms.Rows, grant => grant.TenantId == TenantA
+            && grant.GrantSource == GrantSource.Module
+            && grant.SourceModuleCode == ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode);
+        Assert.All(ProductLegalEntityScopeEntitlementGrantProfile.DedicatedRoles,
+            template => Assert.True(roles.Exists(TenantA, template.RoleName)));
+    }
+
+    [Fact]
+    public async Task Product_legal_entity_scope_cancellation_propagates_before_mutation()
+    {
+        var catalog = ProductItemSkuMasterCompositeCatalog();
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => svc.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
+            catalog.Select(permission => permission.Key).ToArray(),
+            Actor,
+            cancellation.Token));
+
+        Assert.Empty(rolePerms.Rows);
+        Assert.False(roles.Exists(TenantA, ProductLegalEntityScopeEntitlementGrantProfile.StewardRole));
+    }
+
+    [Fact]
+    public async Task Repository_cancellation_propagates_even_when_caller_token_is_not_marked_cancelled()
+    {
+        var catalog = ProductItemSkuMasterCompositeCatalog();
+        var (svc, roles, rolePerms) = BuildWith(catalog, throwRepositoryCancellation: true);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => svc.SyncTenantModulesWithKeysAsync(
+            TenantA,
+            [new EntitledModulePermissionKeys(
+                ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode,
+                catalog.Select(permission => permission.Key).ToArray())],
+            Actor,
+            CancellationToken.None));
+
+        Assert.Empty(rolePerms.Rows);
+        Assert.False(roles.Exists(TenantA, ProductLegalEntityScopeEntitlementGrantProfile.StewardRole));
+    }
+
+    private static List<Permission> ProductItemSkuMasterCompositeCatalog() =>
+    [
+        new("mdm", "global-products", "read", "Read Global Products", null, moduleOverride: "product-item-sku-master"),
+        new("mdm", "global-products", "create", "Create Global Products", null, moduleOverride: "product-item-sku-master"),
+        .. ProductAbbreviationEntitlementGrantProfile.PermissionKeys.Select(key => PermissionFor(key)),
+        .. ProductLegalEntityScopeEntitlementGrantProfile.PermissionKeys.Select(key => PermissionFor(key))
+    ];
+
+    private static Permission PermissionFor(string key)
+    {
+        var separator = key.LastIndexOf('.');
+        return new Permission(
+            "mdm",
+            key["mdm.".Length..separator],
+            key[(separator + 1)..],
+            key,
+            null,
+            moduleOverride: ProductLegalEntityScopeEntitlementGrantProfile.ModuleCode);
+    }
+
+    private static (EntitlementPermissionSyncService svc, FakeRoleRepository roles, FakeRolePermissionRepository rolePerms) BuildWith(
+        List<Permission> catalog,
+        bool throwRepositoryCancellation = false)
     {
         var roles = new FakeRoleRepository(TenantA, TenantB);
         var rolePerms = new FakeRolePermissionRepository();
-        var svc = new EntitlementPermissionSyncService(new FakePermissionRepository(catalog), roles, rolePerms, new PpmEntitlementPermissionPolicy(), NullLogger<EntitlementPermissionSyncService>.Instance);
+        var svc = new EntitlementPermissionSyncService(
+            new FakePermissionRepository(catalog, throwRepositoryCancellation),
+            roles,
+            rolePerms,
+            new PpmEntitlementPermissionPolicy(),
+            NullLogger<EntitlementPermissionSyncService>.Instance);
         return (svc, roles, rolePerms);
     }
 
@@ -747,10 +1046,14 @@ public sealed class EntitlementPermissionSyncServiceTests
         public Task DeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
     }
 
-    private sealed class FakePermissionRepository(List<Permission> catalog) : IPermissionRepository
+    private sealed class FakePermissionRepository(List<Permission> catalog, bool throwCancellation = false) : IPermissionRepository
     {
         public Task<IEnumerable<Permission>> GetAllAsync(CancellationToken ct)
         {
+            if (throwCancellation)
+            {
+                throw new OperationCanceledException();
+            }
             ct.ThrowIfCancellationRequested();
             return Task.FromResult<IEnumerable<Permission>>(catalog);
         }
