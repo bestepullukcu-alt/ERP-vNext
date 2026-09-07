@@ -80,7 +80,7 @@
 ### R1 — Model & eligibility (Gate G2)
 | WP | İş | Owner | Modül | Dep |
 |---|---|---|---|---|
-| SCMM-09 | Concept catalog+relationships extend (①②) | CRM/domain | MOD-0162 | 03,04,05 |
+| SCMM-09 | Concept catalog+relationships extend (①②) | CRM/domain | MOD-0162 | 03,04,05 ✅ | ✅ **ACCEPTED E2 (2026-09-07)** — c25a641e+0bcbcd5a+6a600830; color/isGroup/isList/parent+cycle-guard, combined-write atomic, audit MOD-0162; full suite 1619/0. UI=SCMM-09-UI, E4=fleet |
 | SCMM-10 | Versioned composition templates (③) | Domain+frontend | MOD-0162 (composition owner G0) | 09 |
 | SCMM-11 | Context & eligibility evaluation | Domain | Marketing owner + MOD-0025 | 03,08,10 · **AudienceProfile çok-eksen önkoşul** |
 
