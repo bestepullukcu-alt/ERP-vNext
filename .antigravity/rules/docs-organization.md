@@ -16,7 +16,8 @@
     docs/
       README.md              ← TEK giriş noktası; nereye ne konduğunu anlatır
       architecture/          ← mimari kararlar, servis sınırları, entegrasyon
-      modules/<MOD-xxxx>/    ← modül başına belge (spec, karar, notlar)
+      modules/               ← modül belgeleri; dosya adı MOD-xxxx ile BAŞLAR
+                             (bir modülün 3+ belgesi varsa alt klasör açılır)
       guides/<modül>/        ← KULLANIM KILAVUZLARI — resimli, tek dosya HTML
       audits/<yyyy-mm>/      ← denetim ve inceleme çıktıları, ay klasörlerinde
       plans/                 ← ileriye dönük planlar
