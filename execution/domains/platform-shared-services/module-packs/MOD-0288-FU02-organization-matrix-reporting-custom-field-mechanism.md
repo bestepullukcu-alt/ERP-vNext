@@ -109,7 +109,7 @@ The existing `ParentOrganizationUnitId` is the **functional** reporting line. Th
 | `Id`, `TenantId`, audit/soft-delete/version | Yes | Existing `BaseEntity` tenant semantics. `TenantId` never enters request DTOs. |
 | `Code` | Yes | Normalized immutable key; unique per tenant among non-deleted definitions. |
 | `Name` | Yes | Display name; localized presentation strategy is an owner decision before any UI follow-up. |
-| `DataType` | Yes | Closed, versioned set derived from the TaskFieldDefinition mechanism; no executable/script type. |
+| `DataType` | Yes | Closed set, exhaustive at v1: `Text`, `MultilineText`, `Integer`, `Decimal`, `Boolean`, `Date`, `SingleSelect` (options declared on the definition), `Reference` (to an Organization Unit or a Position, same tenant). **Nothing else** — no free-form JSON, no expression, no executable/script type, no arbitrary reference target. Adding a ninth type is a follow-up pack, because each type carries validation, query and index consequences. |
 | `IsRequired` | Yes | Controls validation of active Organization Units without inventing retroactive values. |
 | `IsActive` | Yes | Inactive definitions accept no new values; historical stored values remain readable under policy. |
 | `IsQueryable` | Yes | Explicit opt-in for supported equality/filter reporting; does not imply arbitrary indexing. |
@@ -169,12 +169,23 @@ Any allowlist built on the old string would have failed on the first edit.
 | `.../Domain/Entities/Organization/OrganizationFieldValue.cs` | value entity |
 | `.../Domain/Repositories/IOrganizationFieldDefinitionRepository.cs` | definition repository contract |
 | `.../Domain/Repositories/IOrganizationFieldValueRepository.cs` | value repository contract |
-| `.../Application/Features/TenantOrganization/Commands/` — `CreateOrganizationFieldDefinitionCommand.cs`, `UpdateOrganizationFieldDefinitionCommand.cs`, `DeactivateOrganizationFieldDefinitionCommand.cs`, `SetOrganizationFieldValueCommand.cs` | definition lifecycle + value write |
-| corresponding handlers under `.../Handlers/CommandHandlers/` | one per command, sealed |
-| `.../Application/Features/TenantOrganization/Queries/` — `GetOrganizationFieldDefinitionsQuery.cs`, `GetOrganizationFieldValuesQuery.cs` | reads |
-| corresponding handlers under `.../Handlers/QueryHandlers/` | one per query |
-| corresponding validators under `.../Validators/` | one per command, no `Command` suffix |
-| `.../Application/Features/TenantOrganization/Services/OrganizationFieldDefinitionRules.cs` | rules adapted from `TaskFieldDefinitionRules` — a separate file, not a shared one |
+| `.../Application/Features/TenantOrganization/Commands/CreateOrganizationFieldDefinitionCommand.cs` | definition create |
+| `.../Application/Features/TenantOrganization/Commands/UpdateOrganizationFieldDefinitionCommand.cs` | definition update |
+| `.../Application/Features/TenantOrganization/Commands/DeactivateOrganizationFieldDefinitionCommand.cs` | definition deactivate |
+| `.../Application/Features/TenantOrganization/Commands/SetOrganizationFieldValueCommand.cs` | value write |
+| `.../Application/Features/TenantOrganization/Handlers/CommandHandlers/CreateOrganizationFieldDefinitionCommandHandler.cs` | sealed handler |
+| `.../Application/Features/TenantOrganization/Handlers/CommandHandlers/UpdateOrganizationFieldDefinitionCommandHandler.cs` | sealed handler |
+| `.../Application/Features/TenantOrganization/Handlers/CommandHandlers/DeactivateOrganizationFieldDefinitionCommandHandler.cs` | sealed handler |
+| `.../Application/Features/TenantOrganization/Handlers/CommandHandlers/SetOrganizationFieldValueCommandHandler.cs` | sealed handler |
+| `.../Application/Features/TenantOrganization/Queries/GetOrganizationFieldDefinitionsQuery.cs` | definition read |
+| `.../Application/Features/TenantOrganization/Queries/GetOrganizationFieldValuesQuery.cs` | value read |
+| `.../Application/Features/TenantOrganization/Handlers/QueryHandlers/GetOrganizationFieldDefinitionsQueryHandler.cs` | sealed handler |
+| `.../Application/Features/TenantOrganization/Handlers/QueryHandlers/GetOrganizationFieldValuesQueryHandler.cs` | sealed handler |
+| `.../Application/Features/TenantOrganization/Validators/CreateOrganizationFieldDefinitionValidator.cs` | no `Command` suffix, per §10 |
+| `.../Application/Features/TenantOrganization/Validators/UpdateOrganizationFieldDefinitionValidator.cs` | — |
+| `.../Application/Features/TenantOrganization/Validators/DeactivateOrganizationFieldDefinitionValidator.cs` | — |
+| `.../Application/Features/TenantOrganization/Validators/SetOrganizationFieldValueValidator.cs` | — |
+| `.../Application/Features/TenantOrganization/Services/OrganizationFieldDefinitionRules.cs` | rules adapted from `TaskFieldDefinitionRules` — a separate file, never shared with Tasks |
 | `.../Infrastructure/Persistence/Repositories/OrganizationFieldRepositories.cs` | both repository implementations |
 
 **Tests**
@@ -184,12 +195,27 @@ Any allowlist built on the old string would have failed on the first edit.
 | `services/Diten.Platform/tests/Diten.Platform.Application.Tests/TenantOrganization/OrganizationMatrixReportingTests.cs` | second line: optional, self rejected, deliberate equal-parent accepted, per-line and cross-line cycles, depth 32, concurrent-parent race |
 | `.../TenantOrganization/OrganizationFieldDefinitionTests.cs` | code normalization, closed type set, immutability, deactivation, count limit, classification |
 | `.../TenantOrganization/OrganizationFieldValueTests.cs` | typing, one active value per unit/definition, tenant isolation, CAS, soft delete |
-| `.../TenantOrganization/OrganizationFieldQueryTests.cs` | `$elemMatch` equality/contains, refusal of range on mixed `ValueType`, paging bounds |
+| `.../TenantOrganization/OrganizationFieldQueryTests.cs` | equality / `in` / prefix-contains on the value collection, `400` for a filter naming a non-queryable definition, refusal of range on mixed `ValueType`, paging bound 200 |
 | `.../TenantOrganization/InMemoryTenantOrganizationRepositories.cs` | *(existing)* extend fakes for the two new repositories |
-| an architecture test asserting no FU02 code writes to `SafeDisplayMetadata` (§21.2) | exact path agreed at implementation handoff |
+| `services/Diten.Platform/tests/Diten.Platform.Application.Tests/TenantOrganization/OrganizationFu02BoundaryArchitectureTests.cs` | **two mandatory architecture assertions**: no FU02 file writes to `SafeDisplayMetadata` (§21.2), and no FU02 file references `TaskAssignmentScopeResolver`, `TaskApprovalService` or workflow candidate resolution (§16 criterion 4) |
 
-Schema/index changes are explicit: second-line index on `OrganizationUnit`, and one multikey index on the value
-collection over `DefinitionCode` + `Value` (§8 decision 5). No other index is authorized.
+**This pack file itself is in scope for the implementation turn** — §19 Implementation Notes is updated as the work
+lands. No other pack, registry or `.antigravity` file is touched.
+
+Schema/index changes are explicit and exhaustive:
+
+- one index on `OrganizationUnit` over `(TenantId, AdministrativeParentOrganizationUnitId)`, tenant-first;
+- one compound index on the value collection over `(TenantId, DefinitionId, Value)`, tenant-first, serving filters;
+- one unique index on the definition collection over `(TenantId, Code)` filtered to non-deleted rows, mirroring
+  `ux_organization_units_tenant_code_active`;
+- one unique index on the value collection over `(TenantId, OrganizationUnitId, DefinitionId)` filtered to
+  non-deleted rows — this is what enforces "one active value per unit per definition", in the database rather than
+  in a handler that a second writer can race;
+- one index on the value collection over `(TenantId, OrganizationUnitId)` for per-unit reads.
+
+Every key is tenant-first, matching `multi-tenancy.md`. Uniqueness is partial on non-deleted rows so a soft-deleted
+definition does not block reuse of its code. **No other index is authorized**, and no index is created outside
+`PlatformSchemaManifest.Organization.cs`.
 
 ## 6. Protected Paths
 
@@ -238,13 +264,37 @@ precedent left a gap, this pack closes it instead of inheriting it.
 |---:|---|---|---|
 | 1 | Which line drives approval escalation? | **CLOSED 2026-09-07 — none. FU02 does not change approval behaviour at all.** An earlier closure said "the functional line" and it was withdrawn the same day against code evidence: `TaskApprovalService` passes `ApprovalManagerUserId` to MOD-0023 as a **candidate hint only** — its own comment reads *"MOD-0024 never decides authority"* — and MOD-0023 resolves the actual approver through `RuntimeAssignmentSnapshot`. Task **scope** resolution (`TaskAssignmentScopeResolver`, walking `Position.ReportsToPositionId`) and **approver** determination are separate mechanisms, and the withdrawn closure described them as one. Beyond that, PPM shows the general rule would be false: its transitions require a record's **Sponsor** and **Portfolio owner**, who are not derivable from anyone's position manager. FU02 therefore adds the second line as a **reporting relationship** and asserts nothing about escalation. It equally does not forbid a future, explicit approval policy from consuming these relationships — see §21.4. | Closed by HCM owner answer, PPM review and user approval. |
 | 2 | Is the second line required? | **CLOSED 2026-09-07 — no.** `AdministrativeParentOrganizationUnitId` is nullable and the functional parent is never duplicated into it as a synthetic value; duplication would make "genuinely two lines" indistinguishable from "defaulted". **Addition on closure:** when the administrative parent is null the administrative manager is *undefined* — there is **no fallback to the functional line**. A fallback collapses two lines into one and destroys the distinction the feature exists for. Surfaces show nothing, not a substitute. | Closed by user approval. |
-| 3 | Cycle and depth | **CLOSED 2026-09-07 — depth 32 per line, self/cycle rejected per line, and a cross-line cycle in the combined typed graph also rejected** (A-functional-B / B-administrative-A is invalid). Depth 32 matches the existing single line. **Rationale correction on closure:** the reason is **ambiguity, not traversal safety.** Approval traverses only the functional line, so a cross-line cycle would not overflow anything; it would instead produce a structure whose meaning nobody can state. Recording the wrong reason invites the wrong relaxation later. Fail-closed is deliberate: tightening after data exists is impossible, loosening is cheap. | Closed by user approval. |
-| 4 | Who defines custom fields? | **CLOSED 2026-09-07 — authorized tenant organization administrators**, tenant-scoped; Platform supplies mechanism and policy, never tenant field content. **Three additions on closure, each closing a gap the precedent left open:** (a) **permission keys** follow `permission-key-standard`, named `organization.field-definition.*` (`read` / `manage`), not invented at implementation time; (b) a **definition-count limit per tenant is mandatory** — `TaskFieldDefinition` caps sections (`MaxSections = 6`) but leaves field count unbounded, and that omission is not to be copied: an unbounded count breaks both the screen and the query; (c) each value carries **`Classification` / access state**, exactly as `TaskFieldValue` already does. The governance fields this mechanism exists for — Regulatory role, Accountable executive, Evidence reference — are precisely the sensitive ones, and classification added later means retro-classifying every stored value. | Closed by user approval. |
-| 5 | Are values queryable? | **CLOSED 2026-09-07 — reframed.** The precedent stores values as an array of `{DefinitionCode, ValueType, Value, Classification, AccessState, Redacted}`, so a **single multikey index** on `DefinitionCode` + `Value` makes every field queryable through `$elemMatch`. Fifty fields cost **one** index, not fifty; measured index counts are `organization_units` 3 and `task_items` 6 against Mongo's 64-per-collection ceiling, so the ceiling is not in play. `IsQueryable` is therefore **not a technical restriction** and must not be written as one — it is a product flag meaning *"offer this field in the filter UI"*. Written as a technical limit, it leaves a future reader asking "why can't I filter this — is an index missing?" with nobody able to answer. **The real technical caveat is different:** `Value` holds mixed kinds (text, number, date) in one field, so equality and contains are safe while range operators (`<`, `>`, sorting) must be handled per `ValueType` or refused. | Closed by user approval. |
+| 3 | Cycle and depth | **CLOSED 2026-09-07 — depth 32 per line, self/cycle rejected per line, and a cross-line cycle in the combined typed graph also rejected** (A-functional-B / B-administrative-A is invalid). Depth 32 matches the existing single line. **Rationale correction on closure:** the reason is **ambiguity, not traversal safety.** Approval traverses *neither* line — it walks `Position.ReportsToPositionId` (§8 decision 1) — so a cross-line cycle would overflow nothing; it would instead produce a structure whose meaning nobody can state. Recording the wrong reason invites the wrong relaxation later. Fail-closed is deliberate: tightening after data exists is impossible, loosening is cheap. | Closed by user approval. |
+| 4 | Who defines custom fields? | **CLOSED 2026-09-07 — authorized tenant organization administrators**, tenant-scoped; Platform supplies mechanism and policy, never tenant field content. **Three additions on closure, each closing a gap the precedent left open:** (a) **permission keys are defined in §14 and nowhere else** — the earlier `organization.field-definition.*` set named here is withdrawn; it lacked the `platform.` prefix and did not match the catalog family measured in the tree; (b) a **definition-count limit per tenant is mandatory — 50 active definitions**, with `409` beyond it — `TaskFieldDefinition` caps sections (`MaxSections = 6`) but leaves field count unbounded, and that omission is not to be copied: an unbounded count breaks both the screen and the query; (c) each value carries **`Classification` / access state**, exactly as `TaskFieldValue` already does. The governance fields this mechanism exists for — Regulatory role, Accountable executive, Evidence reference — are precisely the sensitive ones, and classification added later means retro-classifying every stored value. | Closed by user approval. |
+| 5 | Are values queryable? | **CLOSED 2026-09-07 — reframed, and the storage shape settled with it.** Values live in **their own collection**, one document per unit+definition, as §4 defines them — not embedded in the unit. This differs from the `TaskFieldValue` precedent, which embeds an array inside `task_items`, and the difference is deliberate: a separate document gives each value its own version for CAS and its own soft-delete, and keeps the unit document from growing with every governance field. The consequence for querying is that there is **no `$elemMatch`** — an earlier draft said there was, carried over from the embedded precedent. A plain compound index on `(TenantId, DefinitionId, Value)` serves the filters. Fifty definitions still cost **one** index, not fifty; measured index counts are `organization_units` 3 and `task_items` 6 against Mongo's 64-per-collection ceiling, so the ceiling is not in play. `IsQueryable` is therefore **not a performance gate** — nothing is technically unfilterable. It is a **governed choice** about which fields the tenant has decided are filter-worthy, and it is **enforced server-side**: a filter naming a non-queryable definition returns `400`, never a silently narrowed result. Silent omission is the dangerous option, because a wrong result set looks exactly like a correct one. §16 criterion 9 states the same behaviour; §14 states the permissions. **The real technical caveat is different:** `Value` holds mixed kinds (text, number, date) in one field, so equality and prefix/contains are safe while range operators (`<`, `>`, sorting) must be resolved per `ValueType` or refused — a range query across mixed types compares BSON type order, not values. **Supported at v1:** equality, `in`, and case-insensitive prefix-anchored contains on string types only; range and sort on a single explicitly-typed definition; nothing else. Paging is bounded at 200 rows per page. | Closed by user approval. |
 
 General constraints: single Mongo database with tenant isolation; cross-tenant references return non-disclosing
 `404`; soft delete and CAS/version are mandatory; no dynamic code/expression execution; schema/value limits and
 query complexity are fail-closed; no production seeds or automatic conversion of existing fields.
+
+### Considered and rejected — a site dimension on the uniqueness key
+
+`GMG-ITG-MTX-0001` §1A records that six ERP departments (MFG, PACK, WH, LOG, ENG, FAC) appear once in the vendor
+catalogue but twice in the register, and warns that loading them as supplied *"would merge two sites' manufacturing
+into one directory object each"*. Read alone, that reads like a schema gap here: `OrganizationUnit` is unique on
+`(TenantId, Code)` via `ux_organization_units_tenant_code_active`, with `LocationCode` outside the key — so the same
+code genuinely cannot exist at two sites.
+
+Measured against the register itself (`GMG-CGV-LOG-0005` v0.18, 50 units), **no schema change is needed**. The
+register carries zero duplicate abbreviations; it separates sites in the code and in the legal entity:
+
+    OU-0028 MTO-MYG  LE-003 Miquel y Garriga     OU-0032 MTO-PL  LE-004 Grand Medical Poland
+    OU-0029 WD-MYG   LE-003                      OU-0033 WD-PL   LE-004
+    OU-0031 EMF-MYG  LE-003                      OU-0035 EMF-PL  LE-004
+    OU-0037 QC-MYG   LE-003                      OU-0038 QC-PL   LE-004
+
+The cardinality finding is about the **vendor catalogue** — the spreadsheet prepared for loading — not about the
+register and not about this schema. `LocationCode` already carries the register's `Site` column. Adding
+`LocationCode` or `LegalEntityId` to the uniqueness key would therefore solve a problem the data does not have,
+while making every existing code ambiguous about which axis disambiguates it.
+
+Recorded so the question is not reopened from the audit text alone. If a future register does introduce a repeated
+code across sites, this is the decision to revisit — with that data in hand, not before.
 
 ## 9. Layout & Shell Contract
 
@@ -272,7 +322,7 @@ this pack. No hardcoded seven-field UI, JSON editor or browser-side validation i
 |---|---|
 | Second parent | Optional GUID; same tenant/Legal Entity as child; exists, active/non-deleted; **not self**. **May equal the primary parent when an administrator sets it deliberately** — one unit genuinely holding both responsibilities for another is a real structure, and rejecting it would refuse valid data. What is forbidden is the *system* writing that value: no code path copies the functional parent into the administrative slot, and no default, migration or import produces the pair. The rule bans manufactured duplication, not a human's deliberate choice. |
 | Matrix graph | Depth ≤32 per line and combined graph; cycles rejected fail-closed. Depth 32 mirrors the existing guards (`OrganizationUnitCycleGuard`, `TaskAssignmentScopeResolver`, `OrgDataScopeResolver`, `GetManagerChainQueryHandler`, `PositionReferenceGuard`, `SensitiveFieldRedactor`). The **combined-graph** rejection is a separate business rule, not a consequence of the per-line one: approval traverses neither line, so a cross-line cycle would overflow nothing — it would produce a structure whose meaning nobody can state. Recorded as *ambiguity prevention*, so a future relaxation is argued on that ground and not on a performance ground that was never true. |
-| Graph concurrency | Per-document CAS does **not** protect the graph. Two concurrent parent updates can each be acyclic in isolation and cyclic together, because `OrganizationUnitCycleGuard` reads the chain and then writes. Implementation must close this — either by serializing parent mutations per tenant, or by re-validating the full chain inside the write's optimistic-concurrency boundary and returning `409` on loss. Note also the read cost: the guard issues one `GetByIdAsync` per hop, so 32 depth is 32 round trips and two lines double it; batch the hop reads or cache within one validation pass. |
+| Graph concurrency | Per-document CAS does **not** protect the graph. Two concurrent parent updates can each be acyclic in isolation and cyclic together, because `OrganizationUnitCycleGuard` reads the chain and then writes. ⚠ **The service runs as more than one process**, so a `lock`, a semaphore or any in-memory serialization is *not* a solution — it protects one instance while the other writes the other half of the cycle. Re-reading the chain before the write is not sufficient evidence either; that is the same read-then-write window, only narrower. The guarantee must live where all processes meet: a database-level guard — a single-document compare-and-set on a per-tenant structure token that every parent mutation must win, or an equivalent conditional write — with `409` for the loser. Whatever is chosen, a test must demonstrate it with two genuinely concurrent writers, not two sequential calls. Note also the read cost: the guard issues one `GetByIdAsync` per hop, so depth 32 is 32 round trips and two lines double it; batch the hop reads or cache within one validation pass. |
 | Definition code | Required, normalized, immutable, tenant-unique among non-deleted definitions. |
 | Definition type | Member of closed supported data-type set; cannot change incompatibly after values exist. |
 | Required/active | Requiredness and deactivation transitions preserve stored data and prevent invalid new writes. |
@@ -283,7 +333,10 @@ this pack. No hardcoded seven-field UI, JSON editor or browser-side validation i
 ## 13. Failure Path to Verify
 
 - Missing/cross-tenant/soft-deleted parent, definition or unit → non-disclosing `404`.
-- Self-reference, same primary/secondary target, per-line cycle, combined cross-line cycle or depth overflow → `400`.
+- Self-reference, per-line cycle, combined cross-line cycle or depth overflow → `400`.
+- **A deliberately equal second parent is NOT a failure path** — it returns success. §12 allows an administrator to
+  set both lines to the same unit; only system-manufactured duplication is forbidden. An earlier draft listed
+  "same primary/secondary target" as a `400` here, which contradicted §12 and is removed.
 - Duplicate normalized definition code/value cardinality → `409`.
 - Invalid type, incompatible value, blank required value or unsupported query operator → `400`.
 - Stale definition/value/unit version → `409`; no partial write.
@@ -292,11 +345,39 @@ this pack. No hardcoded seven-field UI, JSON editor or browser-side validation i
 
 ## 14. Authorization Convention
 
-Actor is an authenticated tenant administrator with explicit Platform permissions. Recommended keys for owner
-review are `platform.organization-units.matrix.read/update` and
-`platform.organization-units.custom-fields.read/manage`; these are proposals, not catalog authority. Existing
-organization read/update permission does not automatically grant custom-field definition management. No role
-name bypass, client-supplied TenantId or HCM permission is authorized.
+Actor is an authenticated tenant administrator with explicit Platform permissions. Keys follow the family already
+in the catalog — measured, not invented: `platform.organization-units.{read,create,update,delete,archive}` and
+`platform.organization.read-manager-chain` exist today, so FU02 extends that family rather than opening a new one.
+
+**This table is the single source for permission keys in this pack.** §8 and §18 defer to it; an earlier draft
+carried a second, differently-shaped set (`organization.field-definition.*`) and that set is withdrawn — it
+lacked the `platform.` prefix and did not match the catalog shape.
+
+| Capability | Key | New? |
+|---|---|---|
+| Read a unit, including **both** reporting lines | `platform.organization-units.read` | existing |
+| Update a unit's ordinary attributes (name, description, cost centre…) | `platform.organization-units.update` | existing |
+| **Change a reporting line** (functional or administrative) | `platform.organization-units.reporting-line.update` | **new** |
+| Read custom field **definitions** | `platform.organization-units.custom-fields.read` | **new** |
+| Create / update / deactivate **definitions** | `platform.organization-units.custom-fields.manage` | **new** |
+| Write a custom field **value** on a unit | `platform.organization-units.custom-fields.write-value` | **new** |
+
+Four separations are deliberate:
+
+- **Reporting line is not an ordinary attribute.** Moving a unit under a different parent is a structural
+  decision; the manager's own control matrix (`GMG-CGV-MTX-0002` sheet 02) gives "transfer to another parent" its
+  own approval route, distinct from "rename". A permission that lets someone rename a unit must not silently let
+  them re-parent it.
+- **Defining a field ≠ filling it in.** `…custom-fields.manage` changes the shape of the tenant's data model;
+  `…custom-fields.write-value` records one datum. Most users need only the second.
+- **Reading a definition ≠ managing it**, so that a screen can render the field list without granting authorship.
+- **Existing organization update does not imply any of the three new keys.** Whoever can update a unit today gains
+  nothing new by default.
+
+Values whose definition carries a restricted `Classification` require the same read permission **plus** the
+classification's own read grant; storing a classification without enforcing it on read is decoration, not control.
+
+No role-name bypass, no client-supplied TenantId, no HCM permission is authorized.
 
 ## 15. Gateway / API Routing Decision
 
@@ -309,17 +390,25 @@ Gateway/approved internal contracts and never access another service database.
 1. A unit can retain only its primary parent; the second parent remains null without duplication.
 2. A valid same-tenant second reporting line can be created, updated, read and cleared with CAS protection.
 3. Per-line and combined cycles—including A functional→B and B administrative→A—are rejected; depth 32 is enforced.
-4. Approval-chain consumption resolves the **functional** line by default through the MOD-0023 policy selector;
-   the default comes from policy/configuration (no code literal), an explicit `administrative` selection is
-   honoured, and a malformed or unknown selector fails closed.
+4. **Approval behaviour is unchanged and this is verified, not assumed.** A regression test proves that adding,
+   changing or clearing either reporting line leaves task assignment and approval routing byte-identical: the same
+   candidate is passed to MOD-0023, the same approver resolves, the same scope is computed. No FU02 code reads a
+   reporting line for an approval decision, and an architecture test asserts that no FU02 file references
+   `TaskAssignmentScopeResolver`, `TaskApprovalService` or the workflow candidate resolution path. *(This criterion
+   replaces an earlier one that required approval to follow the functional line — see §8 decision 1.)*
 5. Authorized tenant administrators can define, update, deactivate and read typed Organization Unit fields;
    unauthorized actors cannot.
 6. Definitions and values are tenant-isolated, audited, soft-deleted and concurrency-safe.
 7. The seven supplied governance fields can be represented as configured definitions/values without seven
    hardcoded OrganizationUnit properties or production seeds.
 8. Requiredness, typing, constraints, immutable code and incompatible type-change behavior are enforced.
-9. Querying is available only for approved types/operators when `IsQueryable=true`, with bounded paging;
-   non-queryable fields cannot be filtered.
+9. `IsQueryable` is **enforced server-side**, and the pack settles what it means. A filter naming a definition with
+   `IsQueryable=false` is rejected with `400`, not silently ignored — silent omission would return a wrong result
+   set that looks correct. The flag is *not* a performance gate: one multikey index already covers every field, so
+   nothing is technically unfilterable. It is a governed choice — which fields the tenant has decided are
+   filter-worthy — and the API refuses the rest so that screens and integrations cannot drift apart.
+   *(An earlier draft called it a UI-only flag in §8 while §12/§16 enforced it server-side; the server-side
+   behaviour is the single definition.)* Paging is bounded; unbounded result sets are refused.
 10. Existing Organization Unit, Position, PositionAssignment and HCM identity/reference-validation contracts
     remain backward compatible.
 11. No Position gains a second OrganizationUnit membership; no historical schema versioning is introduced.
@@ -327,11 +416,22 @@ Gateway/approved internal contracts and never access another service database.
 
 ## 17. Test Expectations
 
-- `dotnet build services/Diten.Platform/src/Diten.Platform.Api/Diten.Platform.Api.csproj -c Debug`.
+- `dotnet build services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj -c Debug`
+  *(the project folder is `Diten.Platform.API`, upper case — an earlier draft wrote `.Api` and the command
+  would not have resolved.)*
 - `dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests` plus exact focused tests.
 - Unit tests for field rules, typed values, definition lifecycle, authorization and CAS.
-- Dynamic/disposable Mongo tests for tenant isolation, uniqueness, indexes and query bounds once exact index
-  authority is approved; no fixed shared test database.
+- ⚠ **Mongo tests follow DB-010** (`mongo-indexing.md`), which an earlier draft of this pack contradicted by
+  asking for "dynamic/disposable" databases. The rule is the opposite and the reason is mechanical: a database per
+  test class multiplied by the full schema exhausts the process file limit, `mongod` dies by `fassert`,
+  `DisposeAsync` never runs, and the next run starts on the wreckage — **while the tests are still green**, which
+  is what makes the diagnosis expensive. Required pattern instead:
+  - one **shared** database, a fresh `TenantId` per test — isolation the same way production does it;
+  - request only the needed profile, e.g.
+    `await PlatformSchemaManifest.ApplyAsync(database, new[] { SchemaProfile.Organization });`
+    — never `MongoDbIndexConfigurations.EnsureIndexesAsync`, which is the production startup path;
+  - a test whose subject is genuinely not tenant-scoped (a database-wide rule, an idempotent seed) takes its own
+    database with a **fixed suffix**, never a GUID.
 - Exhaustive two-line graph tests for self, per-line, combined-line cycles and depth boundary 31/32/33.
 - Backward compatibility tests for existing MOD-0288 APIs and HCM identity/referenceability response shape.
 - Architecture tests proving no HCM/database coupling, no executable dynamic expression and no protected-path drift.
@@ -355,26 +455,31 @@ decisions were then closed on their merits, and the promotion happened afterward
 - [x] Parent MOD-0288 and FU01 are `done`.
 - [x] HCM owner approves the extension (2026-09-07).
 - [x] All three HCM questions in §7 have written answers, independent measurement and compatibility disposition.
-- [x] Decision 1 (approval line = functional) is closed with rationale (§8).
+- [x] Decision 1 is closed with rationale (§8): **FU02 changes approval behaviour not at all.** It was briefly
+      closed the other way — "approval follows the functional line" — and withdrawn against code evidence and the
+      PPM review the same day.
 - [x] Decisions 2–5 in §8 are explicitly accepted or replaced (2026-09-07, user approval after Control Tower
       review; each closure carries an addition or correction, not a bare acceptance).
-- [x] Exact permission keys and actor model are approved — `organization.field-definition.read` /
-      `organization.field-definition.manage` per `permission-key-standard`, actor = authorized tenant organization
-      administrator, with a mandatory per-tenant definition-count limit (§8 decision 4).
-- [x] Query operators, bounds and index plan are approved (§8 decision 5): one multikey index on
-      `DefinitionCode` + `Value` served through `$elemMatch`; equality and contains supported; range and sort
-      handled per `ValueType` or refused. Derived from the measured precedent shape, not from projected workload —
-      measured index counts (`organization_units` 3, `task_items` 6) leave Mongo's 64-per-collection ceiling far off.
+- [x] Exact permission keys and actor model are approved — **§14 is the single source**; six keys, three of them
+      new, in the `platform.organization-units.*` family already present in the catalog. Actor is an authorized
+      tenant organization administrator. A per-tenant limit of 50 active definitions is mandatory (§8 decision 4).
+- [x] Query operators, bounds and index plan are approved (§8 decision 5): values live in their own collection, so
+      a plain compound index on `(TenantId, DefinitionId, Value)` serves filters — no `$elemMatch`, no index per
+      field. Supported: equality, `in`, prefix-anchored contains on string types; range and sort only on a single
+      explicitly-typed definition; everything else refused. Paging bound 200. `IsQueryable=false` returns `400`,
+      never a silently narrowed result. Measured index counts (`organization_units` 3, `task_items` 6) leave
+      Mongo's 64-per-collection ceiling far off.
 - [x] Exact implementation file allowlist replaces §5 planning roots (2026-09-07). Built from the current tree:
       18 existing files, the new definition/value files, and four test files, with no wildcards. The correction it
       forced is recorded in §5 — the previously named controller path does not exist in the tree.
 - [ ] Separate explicit implementation and production authority are recorded; this pack alone grants neither.
 
-**Reclassified — not a gate on FU02.** The MOD-0023 approval-line selector contract (default `functional`,
-configuration-sourced) is owned by MOD-0023, not by this pack. FU02 establishes the two lines in the organization
-model; MOD-0023 consumes them. FU02 code can be written and merged before that contract is recorded, provided it
-hardcodes neither line (§8 decision 1). Holding FU02 for another module's contract would block the producer on its
-consumer.
+**Withdrawn, not merely reclassified.** An earlier revision listed "MOD-0023 records an approval-line selector
+contract, default `functional`" as an item here. There is no such selector and none is required: FU02 changes no
+approval behaviour (§8 decision 1), so nothing downstream needs to choose a line. A measurement confirms it —
+`reportingLine` / `lineSelector` / `functional` return **zero matches** across MOD-0023. Should an approval policy
+ever want to consume a reporting line, that is a MOD-0023 decision with its own pack, and FU02 neither performs it
+nor blocks it.
 
 ## 19. Implementation Notes
 
@@ -405,8 +510,11 @@ enumerates HCM source reads/usages; neither result is asserted by this draft.
 - UI authoring for matrix/custom fields requires a separate pack after actor and shell decisions.
 - ~~Record the three HCM owner answers~~ — done 2026-09-07 (§7). No additive read projection is required for the
   first phase; a later HCM reporting-line need is §21.3, a separate endpoint/DTO/decision.
-- Record MOD-0023 approval-line selector ownership and contract before any approval consumer work; the line
-  itself is decided (functional, §8 decision 1), only the selector contract shape remains.
+- ~~Record MOD-0023 approval-line selector ownership and contract~~ — **withdrawn 2026-09-07.** No selector exists
+  and none is needed: FU02 changes no approval behaviour (§8 decision 1, §21.4). If a future approval policy wants
+  to read a reporting line, that is a MOD-0023 pack of its own.
+- PPM's record-scoped responsibility, delegation and multi-approver needs (§21.4) — four separate gaps, none of
+  them FU02's, sequenced there.
 - Screen-level line/label registry (§21.1) must be extended by every future pack that surfaces a manager or
   parent derived from either reporting line.
 - Obtain separately approved exact file/index/migration allowlists and implementation authority.
@@ -418,9 +526,11 @@ constraints, not implementation notes.
 
 ### 21.1 Known consequence — two lines, two managers
 
-The two reporting lines produce **two different managers for the same employee**. The Task Center (MOD-0024 via
-MOD-0023 approval) follows the functional line; if HCM later looks at the administrative line, the manager names
-will differ. **This is not a defect; it is the design.** The first reader who sees two names without this
+The two reporting lines produce **two different managers for the same employee**. Neither of them is the approver:
+task approval resolves through `Position.ReportsToPositionId` and MOD-0023, untouched by this pack (§8 decision 1).
+The divergence appears wherever the two lines are *displayed* — an org chart, a unit detail page, an export — and
+if HCM later adopts the administrative line, its manager name will differ from the functional one shown elsewhere.
+**This is not a defect; it is the design.** The first reader who sees two names without this
 explanation will open it as a bug, so every surface must declare which line it shows and under which label.
 
 | Surface | Line shown | User-facing label (EN / TR) | Notes |
@@ -496,9 +606,19 @@ PPM's answer.
    responsibility record exists.
 2. **The SoD guard is narrower than PPM's rule.** It compares `instance.StartedBy` — whoever *started the
    workflow*. PPM's preparer is whoever *prepared the record*. If A prepares and B starts, A can still approve.
-3. **Delegation is stored but never consumed.** `TaskItem.DelegationAllowed` is documented as
-   *"Policy flag only. Delegation ELIGIBILITY remains MOD-0018's decision"*, and MOD-0018 (RBAC/ABAC
-   Authorization) is still `ready-for-dev` — unwritten.
+3. **Delegation of an approval task works; what is missing is narrower than an earlier draft claimed.**
+   That draft said delegation was "stored but never consumed" and that MOD-0018 was "unwritten". Both were wrong
+   and the PPM review caught them. Re-measured:
+   - `DelegateWorkflowTaskCommand` / `Validator` / `DelegateWorkflowTaskHandler` all exist, and
+     `WorkflowTaskTransitionSupport.DelegateAsync` is a real implementation — it rejects delegating to oneself
+     (`WorkflowDelegateSameActorInvalid`, 409), enforces idempotency by key, and writes a transition log.
+   - MOD-0018 permission **claims are live and consumed across services**; what is reserved is the ABAC slice
+     (`MOD-0018-FU15`, row-level scoping), not authorization as a whole.
+
+   The real gap is the join, not the parts: `AssignmentType.Acting` / `Delegated` on a **position assignment**
+   — organizational, dated, with a derived status — is not what approver resolution consults, and an
+   organization-side deputy therefore does not become an approval-side delegate. Whether it should is a decision
+   for MOD-0023 and MOD-0288 together, and it is not FU02's to make.
 4. **Multiple and sequential approvers** — unverified here. `snapshot.ResolvedPrincipalId` reads as a single
    resolved principal; whether MOD-0023 supports the "Sponsor + Portfolio owner, some sequential" shape is an
    open measurement owned by the MOD-0023/PPM side, not closed by this pack.
