@@ -205,6 +205,7 @@ public sealed class OcelotConfigurationTests
         yield return new object[] { "/api/tenant-auth/{everything}", "POST" }; // covers tenant-auth login
         yield return new object[] { "/api/roles/{everything}", "GET" };
         yield return new object[] { "/api/permissions/{everything}", "GET" }; // internal permission sync surface
+        yield return new object[] { "/api/gskus/{everything}", "PUT" }; // draft edit; exact controller authorization remains downstream
         yield return new object[] { "/api/pv-case-intake-triage", "GET" };
         yield return new object[] { "/api/pv-case-intake-triage", "POST" };
         yield return new object[] { "/api/pv-case-intake-triage/{intakeDraftId}", "GET" };
@@ -222,6 +223,23 @@ public sealed class OcelotConfigurationTests
         var route = config.Routes.FirstOrDefault(r => r.UpstreamPathTemplate == upstreamTemplate);
         Assert.True(route is not null, $"Expected route '{upstreamTemplate}' not found in ocelot.json.");
         Assert.Contains(requiredMethod, route!.UpstreamHttpMethod);
+    }
+
+    [Fact]
+    public void ProductDraftUpdateRoutes_AllowPutOnlyOnItemTemplates()
+    {
+        var config = LoadConfiguration();
+
+        var globalProducts = Assert.Single(config.Routes, route =>
+            route.UpstreamPathTemplate == "/api/global-products");
+        var globalProductItems = Assert.Single(config.Routes, route =>
+            route.UpstreamPathTemplate == "/api/global-products/{everything}");
+        var gskuItems = Assert.Single(config.Routes, route =>
+            route.UpstreamPathTemplate == "/api/gskus/{everything}");
+
+        Assert.DoesNotContain("PUT", globalProducts.UpstreamHttpMethod);
+        Assert.Contains("PUT", globalProductItems.UpstreamHttpMethod);
+        Assert.Contains("PUT", gskuItems.UpstreamHttpMethod);
     }
 
     [Fact]
