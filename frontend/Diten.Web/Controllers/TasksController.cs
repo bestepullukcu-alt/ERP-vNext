@@ -81,6 +81,20 @@ public sealed class TasksController : Controller
         return View("~/Views/Tasks/Create.cshtml");
     }
 
+    /// <summary>
+    /// The work report screen.
+    ///
+    /// <para>⚠ DECLARED BEFORE <c>{id:guid}</c> — "WorkReport" is not a Guid, but a route that only fails at
+    /// match time is a route nobody notices until the page 404s. The field-definition routes above are ordered
+    /// for the same reason.</para>
+    /// </summary>
+    [HttpGet("WorkReport")]
+    public IActionResult WorkReport()
+    {
+        ViewBag.ActiveMenu = "tasks";
+        return View("~/Views/Tasks/WorkReport.cshtml");
+    }
+
     [HttpGet("{id:guid}")]
     public IActionResult Details(Guid id)
     {
@@ -133,6 +147,41 @@ public sealed class TasksController : Controller
     [HttpPost("api/{id:guid}/{transition:regex(^(accept|claim|release|plan|start|inquire|submitReview|return|reassign|complete|cancel)$)}")]
     public Task<IActionResult> ApiTransition(Guid id, string transition)
         => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/{id}/{transition}", readBody: true);
+
+    /// <summary>
+    /// The WORK REPORT (Faz 5b) — one period's flow, for the work this caller may see.
+    ///
+    /// <para><b>The query string is forwarded WHOLE.</b> <c>from</c>, <c>to</c> and <c>groupBy</c> are
+    /// Platform's contract, not this tier's, and re-listing them here is how a parameter gets dropped silently
+    /// — the same reasoning the field-definition records proxy above states.</para>
+    ///
+    /// <para>⚠ THIS TIER DECIDES NOTHING ABOUT SCOPE. Whose rows are counted comes from the data-scope resolver
+    /// inside Platform, and widening to the whole tenant is a permission it checks there. A proxy that tried to
+    /// help — by adding a flag, or by filtering the response — would be a second authority over the same
+    /// question.</para>
+    /// </summary>
+    [HttpGet("api/work-report")]
+    public Task<IActionResult> ApiWorkReport()
+        => ProxyAsync(
+            HttpMethod.Get,
+            $"{_gatewayUrl}/api/v1/tasks/work-report" + Request.QueryString.Value,
+            readBody: false);
+
+    /// <summary>
+    /// The work behind ONE of the report's numbers (Dilim 1c). Declared BEFORE nothing and AFTER the report on
+    /// purpose — the two are one screen and belong side by side, so a route added to Platform and forgotten
+    /// here is visible at a glance. That omission is exactly how `inquire` once shipped unreachable.
+    ///
+    /// <para>The query string is forwarded WHOLE: the bucket, the group key, the page offset and the five
+    /// filters are Platform's contract, and re-listing them in this tier is how a parameter gets dropped
+    /// silently — the list would then answer about a wider set than the number that opened it.</para>
+    /// </summary>
+    [HttpGet("api/work-report/items")]
+    public Task<IActionResult> ApiWorkReportItems()
+        => ProxyAsync(
+            HttpMethod.Get,
+            $"{_gatewayUrl}/api/v1/tasks/work-report/items" + Request.QueryString.Value,
+            readBody: false);
 
     // ── Configurable field definitions (Phase 5) ─────────────────────────────
     //

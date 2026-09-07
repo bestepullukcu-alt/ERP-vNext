@@ -87,6 +87,36 @@ public static class TaskPermissions
     public const string TemplatesManage = "platform.tasks.templates.manage";
 
     /// <summary>
+    /// Who may read the WORK REPORT — how work is flowing, for the people whose work they may already see.
+    ///
+    /// <para><b>Its own key rather than <see cref="Read"/>, and the manifest guard is why.</b> <c>Read</c> is in
+    /// <see cref="PersonalWorkSurfaceScoped"/>, so a nav-visible page behind it becomes a second answer to
+    /// "where is my work" and <c>TaskManifestProviderTests</c> refuses it. The report is not personal work: it
+    /// says how the ORGANISATION's work is flowing, and a person reading it is not doing their tasks. Same
+    /// reasoning that gave <see cref="DocumentListRead"/> its own key.</para>
+    ///
+    /// <para><b>It does NOT decide whose rows are counted.</b> That comes from
+    /// <c>IDataScopeResolver</c> (MOD-0018-FU15) — the caller sees the report for the work they could already
+    /// see. The permission opens the door; the scope furnishes the room.</para>
+    /// </summary>
+    public const string WorkReportRead = "platform.tasks.work-report.read";
+
+    /// <summary>
+    /// Who may read the work report across the WHOLE TENANT, ignoring their own data scope.
+    ///
+    /// <para><b>A SECOND key, deliberately, and never implied by the first.</b> The default report answers "how
+    /// is the work I can see flowing" — which is Oracle's own framing for worklist reports: the scope is the
+    /// user's groups or their reportees' groups, not the company. Widening that to every row in the tenant is a
+    /// different authority, held by far fewer people, and a flag on the request would let anyone who can call
+    /// the endpoint set it.</para>
+    ///
+    /// <para>The name says what it does rather than what it is called: holding it makes the report tenant-wide.
+    /// Without it the request is silently narrowed to the caller's scope — never refused, because a person with
+    /// <see cref="WorkReportRead"/> is entitled to their own report.</para>
+    /// </summary>
+    public const string WorkReportReadTenantWide = "platform.tasks.work-report.read-tenant-wide";
+
+    /// <summary>
     /// The permissions that gate a <b>personal work surface</b> — a page that shows or acts on the viewer's own
     /// task INSTANCES.
     ///

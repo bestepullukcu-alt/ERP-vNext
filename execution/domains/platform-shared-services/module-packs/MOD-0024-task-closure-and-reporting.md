@@ -497,7 +497,24 @@ exist before the field is worth showing: Faz 3 comes first, and Faz 1's remainin
 | **Faz 1 (remainder)** | Distinguish the closing date from the cancellation date on screen — see the `closedAt` note below; measured as SAFE, so this is presentation, not correctness | None | Optional |
 | **Faz 2** | Closure envelope proper: `note`, `deliverables[]`, `followUps[]`, and `TaskFieldDefinition.Stage` | Yes, additive | Next |
 | **Faz 4 → done, and smaller than written** | The RETURN SIGNAL: `Returned { at, reason, count }` on the projection, declared in the contract, a row chip and a detail sentence. **No lifecycle member, and `Blocked` dropped entirely** — see §10 for why both were mis-specified | **None** | **Delivered 2026-09-03** |
-| **Faz 5** | Work report: Cycle Time · Unattended · Productivity **as a count** · waiting distribution | Read-only | After Faz 4 |
+| **Faz 5a → now** | The work report QUERY and its AUTHORITY. `GET /api/v1/tasks/work-report`, scoped through MOD-0018-FU15's `IDataScopeResolver`, aggregated in the database. **No screen, no string** | Read-only | **Delivered 2026-09-03** |
+| **Faz 5b → now** | The report SCREEN at `/Tasks/WorkReport`: proxy, page, four tiles, four charts, 50 labels × 7 languages, manifest page made nav-visible | None | **Delivered 2026-09-04** |
+| **Dilim 1a → now** | Five optional filters, the company axis via an org-unit join, readable group labels, a 50-group cap with an "all other groups" bucket. **The filter INTERSECTS the resolved scope and can never widen it** | Read-only | **Delivered 2026-09-04** |
+| **Dilim 1b → now** | Median beside every average, a same-length previous period, ageing at the PERIOD'S END, and two repairs: cancellations split out of cycle time (K-1) and the denominator corrected to the spans actually measured (K-2). Plus a dev-only seed for closure outcomes | Read-only | **Delivered 2026-09-04** |
+
+### Why Faz 5 split in two
+
+One prompt would have shipped an aggregation, a permission model, a screen and seven languages together, and
+"the tests are green but the live page is wrong" has happened three times in this module's sessions. Split, the
+two halves are verified against different questions:
+
+- **5a — are the NUMBERS right, and does the right person see them?** Deterministic: hand-computed expectations
+  against the real tally, and scope tests that prove out-of-scope work is excluded *while in-scope work is
+  counted*. No browser needed.
+- **5b — is the SCREEN right?** Live verification, with the numbers already trusted.
+
+The seam is the endpoint: 5a ends with an address and a JSON shape, so 5b has something real to draw before a
+single pixel is designed.
 
 Faz 4 carried the plan's biggest regression risk, and re-measurement removed it rather than managing it: the
 signal needs no schema change at all. The paragraph below stands as the reason a lifecycle member is still the
@@ -608,6 +625,136 @@ imprecise are corrected here rather than repeated.
   its capability enter the contract together") governs render BLOCKS; `closure` is a caption fact beside
   `closedAt`, which is not capability-gated either. It is declared in `fixture-contract.js` all the same, per
   BL-032.
+
+**Measured 2026-09-03, building the report query (Faz 5a)**
+
+16. **The scope engine already existed, and a second one was NOT written.** `IDataScopeResolver`
+    (MOD-0018-FU15) is registered as `OrgDataScopeResolver` — verified at
+    `Diten.Platform.Application/DependencyInjection.cs:59`. It emits `OrgUnit` (own + subtree, pre-expanded),
+    `Position`, `ManagerChain` and `LegalEntity`, and fails closed in three separate places (no user id, no
+    active position assignment, no live position). The report translates those scopes; it computes none.
+17. **The DATA scope is the right direction, and the assignment scope is the wrong one.**
+    `TaskAssignmentScopeResolver`'s own comment says `ManagerChain` holds the positions ABOVE the caller
+    "because data scoping asks 'whose rows may I see through my superiors'". A report asks exactly that, so it
+    uses the resolver as it comes rather than the downward walk assignment had to derive.
+18. **`TaskItem` cannot carry a LegalEntity/Company/Country/Region scope.** Its scopable fields are
+    `OrganizationUnitId`, `PoolPositionId`, `AssigneeUserId` and `CreatedByUserId` — nothing else. Scopes with
+    nowhere to land are dropped, which NARROWS the answer; widening by guessing a unit→entity join would be the
+    second engine again. Pinned by `WorkReportScopeTests`.
+19. **The repository had no period read at all.** `ITaskItemRepository` exposes `GetAllForTenantAsync` and
+    nothing filtered — fine at 115 tasks, a full-collection scan at a hundred thousand. The report therefore
+    got its own port (`IWorkReportRepository`) whose criteria REQUIRE a period, and the counting happens in the
+    database via `Aggregate().Match().Group()` — the pattern `ModuleCatalogRepository.GetStatsAsync:204` and
+    `TenantRegistryRepository:143` already use.
+20. **Two permissions, not one, and neither is `Read`.** `platform.tasks.read` is in
+    `PersonalWorkSurfaceScoped`, so a nav-visible page behind it would be a second answer to "where is my work"
+    and `TaskManifestProviderTests` refuses it. The report is not personal work, so it gets
+    `platform.tasks.work-report.read`; widening to the whole tenant gets its own key,
+    `platform.tasks.work-report.read-tenant-wide`, checked in the handler and never taken from the request.
+
+**Deferred from 5a, and worth naming**
+
+- **Median cycle time.** Reported as an AVERAGE with its denominator beside it. A median needs a second pass or
+  a `$percentile` whose availability varies by server version; the count is what lets a reader tell an average
+  of three tasks from one of three hundred.
+- **Waiting distribution (Oracle's Time Distribution).** The raw material exists — `waitingContext` and the
+  transition log — but "how long did it sit in each waiting state" needs interval reconstruction from the log,
+  which is its own slice. Flow, cycle time, timeliness, effort, outcomes and rework ship now.
+- **The final tally runs in memory**, over rows already narrowed to one period and one scope by the database.
+  Seven conditional accumulations as one `$group` would be a pipeline nobody can verify; the bound that keeps
+  the set small is the REQUIRED period, and `WorkReportTally`'s header says so in case that ever changes.
+
+**Measured 2026-09-04, building the report screen (Faz 5b)**
+
+21. **There was no proxy, and the screen would have 404'd inside the web tier.** `Diten.Web`'s
+    `TasksController` had ZERO matches for `work-report`. Added following the file's own pattern, forwarding
+    `Request.QueryString.Value` WHOLE — `from`/`to`/`groupBy` are Platform's contract, and re-listing them is
+    how a parameter gets dropped silently. Pinned by `WorkReportRouteTests`, which exists because a route
+    Platform exposes and this tier does not is exactly how `inquire` shipped unreachable.
+22. **ApexCharts is vendored but the tenant shell does not load it.** `_LayoutTenantShell` has 0 matches for
+    apex; `_Layout` loads it at lines 91/502/542. So the library is loaded in the PAGE's own
+    `@section Scripts` — adding it to the shell would put a charting library on every tenant page to serve one.
+    No CDN, no npm, no new dependency.
+23. **The flow chart is a COMPARISON, not a time series — a limit of the endpoint.** 5a returns ONE period's
+    totals and does no sub-period bucketing, so there is no series to plot; a line drawn from four totals would
+    be a picture of nothing. If a series is ever wanted, the bucketing belongs to the query.
+24. **Making the manifest page nav-visible needed a `Nav.Page` label, and the guard caught its absence.**
+    Flipping `IsNavigationVisible` took `NavManifestL10nGuardTests` from 42 problems to 49 — seven languages ×
+    one page — meaning the sidebar would have printed `Nav.Page.TASKWORKREPORT` raw. Added to
+    `SharedResource.*.resx`; the count is back at its baseline 42.
+25. **The closure outcome labels were NOT copied.** The screen injects the WorkCenterNext localizer and reads
+    `WorkAggregation_ClosureOutcome_*` — already present in seven languages and held by the l10n guard as a
+    prefix domain. A second copy would let the Task Center and this report disagree about what an outcome is
+    called the day one is corrected. A code with no entry falls back to itself, which is the honest answer for a
+    TENANT outcome (one language, nothing to translate) and a visible gap for a system one.
+
+26. **K-1 was real, and the live database says how much it cost.** On the dev tenant for
+    2026-08-05 → 2026-09-04, ten tasks completed averaging **6.39 days** and six were cancelled averaging
+    **0.01 days**. Folded into one figure — what the card did before this slice — the answer was **3.99 days**.
+    So the published cycle time was understating the real one by 37%, and it was doing so in the flattering
+    direction, because abandoning work fast looks identical to finishing work fast once the two are averaged.
+    The number was never wrong arithmetic; it was arithmetic over the wrong set.
+
+27. **K-2 was the quieter of the two, and it hid inside a true sentence.** The footnote read "over {n} closed"
+    with `n` = every closure — 16 — while the average was taken over the 10 spans that existed. Both numbers
+    were individually correct, which is exactly why it survived review. `WorkReportDuration.Count` is now the
+    count of spans the average was actually computed from, and the screen reads that field rather than adding
+    up the flow.
+
+28. **Ageing needed its OWN database query, and this was not obvious.** The report's rows are the work TOUCHED
+    in the period — created, completed or cancelled inside it. A task raised last year and still untouched
+    appears in no clause of that filter, which is precisely the backlog ageing exists to surface. Deriving
+    ageing from the report's own rows would have shown the cleanest backlog to the tenant with the worst one.
+
+29. **Ageing is anchored to the PERIOD'S END, never to the clock — and the live data proves the difference.**
+    Measured against 2026-09-04 the buckets are 12 / 56 / 26 (94 open, reconciled by hand straight from
+    `task_items`). The same code asked about the previous period's end, 2026-08-05, answers 8 / 19 / 0 — a
+    different, smaller backlog with nothing yet past thirty days. A clock-anchored implementation would have
+    given both periods today's answer, and a report reopened in a review months later would silently stop
+    matching the copy that was printed beside the decision.
+
+30. **The previous period is defined in ONE place, and the screen only asks for it.**
+    `WorkReportRepository.PreviousPeriod` returns `[From − length, From)` — for 2026-08-05 → 2026-09-04 that is
+    2026-07-06 → 2026-08-05: same thirty days, sharing no day, scope and filter carried across unchanged. It
+    also switches its own `ComparePrevious` off and its `GroupBy` to `None`, or a comparison would ask for a
+    comparison a period at a time until the epoch, and fifty groups would be measured twice to buy one arrow.
+    The browser sends `comparePrevious=true` and computes no dates: two implementations of "previous" drift the
+    first time somebody reasons about month lengths, and then two figures on one page disagree with no way to
+    tell which is right.
+
+31. **"Better" is not "bigger", so direction is a per-caller argument rather than the sign of a subtraction.**
+    Cycle time rising is bad; closures rising is good; late work rising is bad. One helper, three callers, each
+    naming which way it wants — verified live: `+5.19 days` renders `text-danger`, `+7 closed` renders
+    `text-success`, `+7 late` renders `text-danger`.
+
+32. **A missing comparison is null, never a bucket of zeroes.** Zeroes are a claim about the previous period,
+    and they would have painted a triumphant green arrow onto every report whose comparison failed to load.
+
+33. **The outcome chart had nothing to draw, and that is why a dev seed exists.** MEASURED 2026-09-04: of 178
+    tasks, 23 completed and 18 cancelled, and exactly ZERO carried a `ClosureReasonCode` — neither task type had
+    a dictionary at all. Faz 3 and 3b were correct and invisible, which is the hardest kind of thing to review.
+    `scripts/seed-closure-outcomes-dev.sh` refuses any database whose name does not end `_dev`, names its target
+    before touching anything, is idempotent (a task's outcome is derived from its own id, so two screenshots of
+    "the same" data agree), and undoes only the codes it wrote. It is registered nowhere and runs only when a
+    person types its name.
+
+34. **A pre-existing guard collided with a legitimate number, and the fixture moved rather than the guard.**
+    `work-report-screen.test.js` forbade `1.3` anywhere in the document, because 52 h spent over 40 h estimated
+    is the ratio §8 excludes. Dilim 1b put a cycle-time average of `11.33 days` on the same card. The guard is
+    right and its reach — the whole document — is the point, so the fixture's hours became 40/60 and the
+    forbidden strings became `1.5` / `0.67`. Narrowing the guard to the effort card would have been the easier
+    fix and the wrong one.
+
+**Deferred from 5b, and worth naming**
+
+- **Group keys are raw ids.** `groups[].key` is a task-type id, unit id or user id, and the screen prints it as
+  it comes. Resolving them to names needs a lookup the report does not carry; the empty key gets a word
+  (`GroupUnnamed`) because a nameless axis label reads as a rendering bug, but a Guid on an axis is honest and
+  ugly. A name resolver is its own slice.
+- **No tenant-wide TOGGLE.** The endpoint decides scope from the permission, not the request, so there is
+  nothing for a control to switch. The manifest's `VIEW_TENANT_WIDE` action declares the authority; the screen
+  REPORTS what came back via `scopeApplied` and offers no way to ask for something else. A toggle would be a
+  second answer to a question the server already settled.
 
 **Measured but deliberately left out of the pack**
 

@@ -4,6 +4,8 @@ using Diten.Platform.API.Security;
 using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Application.Features.Tasks.Queries;
+using Diten.Platform.Application.Features.Tasks.Handlers.QueryHandlers;
+using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Domain.Enums.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -515,6 +517,115 @@ public sealed class TasksController : CustomBaseController
     {
         var response = await _mediator.Send(
             new GetTaskTypeGoverningDocumentsQuery(id, organizationCode, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    // ── Faz 5a: the work report ──────────────────────────────────────────
+
+    /// <summary>
+    /// HOW WORK IS FLOWING over a period — for the work this caller may see.
+    ///
+    /// <para><b>The permission opens the door; the SCOPE furnishes the room.</b>
+    /// <c>WorkReportRead</c> is required to call at all. Whose rows are counted comes from MOD-0018-FU15's
+    /// <c>IDataScopeResolver</c> inside the handler, so a caller sees the flow of exactly the work they could
+    /// already open one at a time. <c>WorkReportReadTenantWide</c> widens that to every row in the tenant and is
+    /// checked in the handler, never taken from the request — a flag would let anyone who can reach this route
+    /// set it.</para>
+    ///
+    /// <para><b>The period is REQUIRED</b>, and <c>to</c> is EXCLUSIVE. An unbounded report is a full-collection
+    /// scan wearing a date picker; the criteria refuse one.</para>
+    ///
+    /// <para>A caller whose scope resolves to nothing gets an EMPTY report and a 200 — "you may see no work" is
+    /// a true answer, not an error, and a 403 would make the screen build a second rendering path for it.</para>
+    /// </summary>
+    [HttpGet("work-report")]
+    [HasPermission(TaskPermissions.WorkReportRead)]
+    public async Task<IActionResult> GetWorkReport(
+        [FromQuery] DateTimeOffset from,
+        [FromQuery] DateTimeOffset to,
+        [FromQuery] WorkReportGroupBy groupBy = WorkReportGroupBy.None,
+        [FromQuery] Guid? legalEntityId = null,
+        [FromQuery] Guid? organizationUnitId = null,
+        [FromQuery] Guid? assigneeUserId = null,
+        [FromQuery] string? taskTypeCode = null,
+        [FromQuery] TaskPriority? priority = null,
+        /// <summary>Also measure the preceding period of the same length. The SERVER decides which days those
+        /// are — see WorkReportDto.Previous for why that definition may not be duplicated in a client.</summary>
+        [FromQuery] bool comparePrevious = false,
+        /// <summary>
+        /// Dilim 1f — a DISPLAY preference ("tenant" or "own"), never a permission. Omitted, it changes nothing:
+        /// the caller gets exactly what they got before this parameter existed. See
+        /// <see cref="WorkReportScopePreference"/> for the one rule it obeys.
+        /// </summary>
+        [FromQuery] WorkReportScopePreference? scope = null,
+        CancellationToken ct = default)
+    {
+        /*
+         * ⚠ EVERY FILTER IS OPTIONAL AND NONE IS A PERMISSION. They narrow the caller's already-resolved scope
+         * and can never widen it — naming another person's id here returns an EMPTY report, not their work.
+         * The handler applies the scope first; see WorkReportFilter for why that order is the whole rule.
+         */
+        var filter = new WorkReportFilter(
+            legalEntityId, organizationUnitId, assigneeUserId, taskTypeCode, priority);
+
+        var response = await _mediator.Send(
+            new WorkReportQuery(from, to, groupBy, CorrelationId, filter, comparePrevious, scope), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// THE WORK BEHIND ONE OF THE REPORT'S NUMBERS — Dilim 1c.
+    ///
+    /// <para><b>Why this exists.</b> The report could say "10 late" and had no way to say WHICH ten, so a
+    /// manager could read a figure and act on nothing. A number nobody can walk into is a dead end.</para>
+    ///
+    /// <para><b>⚠ IT IS THE SAME QUERY, NOT A SIMILAR ONE.</b> The period, the five filters and the scope are
+    /// the report's own; the repository selects from the row set the numbers were computed from, through the
+    /// same <c>WorkReportTally.Select</c> the counts come from. So the list's length IS the cell's number —
+    /// asserted cell by cell rather than hoped for.</para>
+    ///
+    /// <para><b>Guarded by <c>WorkReportRead</c>, the same key as the report.</b> No new authority: a click
+    /// opens work the caller could already count, and could already open one at a time in the Task Center.
+    /// Whose rows those are comes from the scope, exactly as it does for the numbers — there is no argument to
+    /// this route that widens anything.</para>
+    ///
+    /// <para>At most <c>WorkReportItemsDto.PageSize</c> rows per call, with <c>hasMore</c> stated. A silent cut
+    /// would leave a reader counting fifty rows under a number that said eighty-three.</para>
+    /// </summary>
+    [HttpGet("work-report/items")]
+    [HasPermission(TaskPermissions.WorkReportRead)]
+    public async Task<IActionResult> GetWorkReportItems(
+        [FromQuery] DateTimeOffset from,
+        [FromQuery] DateTimeOffset to,
+        [FromQuery] WorkReportBucketKind bucket,
+        [FromQuery] WorkReportGroupBy groupBy = WorkReportGroupBy.None,
+        /// <summary>The outcome code, for the Outcome bucket only.</summary>
+        [FromQuery] string? argument = null,
+        /// <summary>Which row of the breakdown; absent means the totals row.</summary>
+        [FromQuery] string? groupKey = null,
+        [FromQuery] int skip = 0,
+        [FromQuery] Guid? legalEntityId = null,
+        [FromQuery] Guid? organizationUnitId = null,
+        [FromQuery] Guid? assigneeUserId = null,
+        [FromQuery] string? taskTypeCode = null,
+        [FromQuery] TaskPriority? priority = null,
+        /// <summary>
+        /// ⚠ THE SAME PREFERENCE THE LOADED REPORT USED — the caller sends back whatever `scopeApplied` (or the
+        /// preference they picked) it saw, so a click opens a list scoped exactly like the tile it came from.
+        /// </summary>
+        [FromQuery] WorkReportScopePreference? scope = null,
+        CancellationToken ct = default)
+    {
+        // ⚠ THE SAME FILTER SHAPE AS THE REPORT, deliberately — a list asked for under a filter the numbers
+        // never ran would answer about a different set than the number the reader clicked.
+        var filter = new WorkReportFilter(
+            legalEntityId, organizationUnitId, assigneeUserId, taskTypeCode, priority);
+
+        var response = await _mediator.Send(
+            new WorkReportItemsQuery(
+                from, to, bucket, CorrelationId, groupBy, argument, groupKey, skip, filter, scope),
+            ct);
+
         return CreateActionResultInstance(response);
     }
 

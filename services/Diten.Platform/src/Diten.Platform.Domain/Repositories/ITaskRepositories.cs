@@ -10,6 +10,10 @@ public interface ITaskItemRepository
 {
     Task<TaskItem> CreateAsync(TaskItem task, CancellationToken ct = default);
     Task<TaskItem?> GetByIdAsync(Guid id, CancellationToken ct = default);
+    /// <summary>
+    /// ⚠ EVERY task in the tenant, unfiltered. Fine at 115 tasks (measured), ruinous at a hundred thousand —
+    /// see <c>IWorkReportRepository</c> for why the report does NOT use it.
+    /// </summary>
     Task<IReadOnlyList<TaskItem>> GetAllForTenantAsync(CancellationToken ct = default);
 
     /// <summary>Tasks the user holds (assignee), regardless of lifecycle.</summary>

@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Features.Tasks;
 using System.Text;
 using Diten.BuildingBlocks.BackgroundJobs;
 using Diten.BuildingBlocks.Security.Secrets;
@@ -349,6 +350,9 @@ public static class DependencyInjection
         // goes through TaskItemRepository, and TaskItemRepository is what records the history (WC-1).
         services.AddScoped<ITaskTransitionRepository, TaskTransitionRepository>();
         services.AddScoped<ITaskItemRepository, TaskItemRepository>();
+        // Faz 5a — the work report's own read. Separate from ITaskItemRepository on purpose: it returns
+        // AGGREGATES rather than tasks, and mixing the two would invite a caller to reach for GetAllForTenantAsync.
+        services.AddScoped<IWorkReportRepository, WorkReportRepository>();
         services.AddScoped<ITaskAssignmentRepository, TaskAssignmentRepository>();
         services.AddScoped<ITaskDependencyRepository, TaskDependencyRepository>();
         services.AddScoped<ITaskWatcherRepository, TaskWatcherRepository>();

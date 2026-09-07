@@ -201,7 +201,16 @@ describe("citing a controlled document", () => {
         // Sliced from the COMMENT'S OPENING, not from the marker inside it — slicing mid-comment leaves an
         // orphaned body with no `/*` for the stripper to find, which is how this test first read its own prose
         // as a defect.
-        const block = CSS.slice(CSS.indexOf("/* ── DCP-005 slice 3 — citing a controlled document"))
+        /*
+         * ⚠ THE SLICE ENDS AT THE NEXT BANNER, AND IT DID NOT USED TO (2026-09-04). It ran to the END OF THE
+         * FILE, so this guard silently owned every rule anyone appended after it — a work-report legend added
+         * a muted column at the bottom of backbone-custom.css and failed a document-citation contrast test it
+         * has nothing to do with. The rule this test protects is "the DCP-005 block", which is what its own
+         * comments say; reading to EOF made the next writer's unrelated CSS this test's problem.
+         */
+        const from = CSS.indexOf("/* ── DCP-005 slice 3 — citing a controlled document");
+        const next = CSS.indexOf("\n/* ── ", from + 1);
+        const block = CSS.slice(from, next === -1 ? undefined : next)
             .replace(/\/\*[\s\S]*?\*\//g, "");
         expect(block).not.toContain("--bs-secondary-color");
         expect(block).toContain("--bs-body-color");

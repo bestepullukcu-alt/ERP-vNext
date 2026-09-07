@@ -14,6 +14,33 @@ using Serilog.Formatting.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
+/*
+ * ⚠ HEADER BUDGET RAISED FROM KESTREL'S 32 KB DEFAULT (2026-09-04).
+ *
+ * MEASURED CAUSE, not a guess: the access token carries one claim per permission
+ * (TokenService.cs:50-52), the tenant admin holds 408 of them, and the resulting JWT is
+ * ~21.5 KB -- delivered as six chunked cookies (access_tokenC1..C6). A browser calling the
+ * gateway DIRECTLY (the `direct-gateway-profile` pages: Golden Reference, Governance, parts
+ * of CRM) sends those cookies plus the CORS headers, and the total crossed 32 KB. Kestrel
+ * then answered 431 BEFORE the request reached any service, so the failure looked like a
+ * dead backend while the service was answering 401 perfectly well one port over.
+ *
+ * ⚠ THIS IS A SYMPTOM FIX AND IT BUYS TIME, NOTHING MORE. The token grows with every module
+ * that registers permissions -- it is now 407 and rising -- so a larger ceiling only moves
+ * the day this breaks again. The real repair is to stop shipping permissions as claims and
+ * resolve them server-side; recorded in the backlog. Do not treat this number as headroom
+ * to spend.
+ *
+ * Pages on the `proxy-profile` were never affected: their MVC controller reads the HttpOnly
+ * cookie server-side and forwards a clean `Authorization: Bearer`, so the browser's cookies
+ * never travel to the gateway at all. That asymmetry is why only half the screens broke.
+ */
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestHeadersTotalSize = 64 * 1024;
+});
+
+
 builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
 var observabilityOptions = builder.Configuration
