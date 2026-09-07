@@ -50,7 +50,7 @@
 | MOD-0023 Workflow | review routing (SCMM-06) | 60–72%, **HARDEN** (golden-flow smoke + designer UI) | G1 |
 | MOD-0028 Doc | doc/evidence (SCMM-07) | 68–78%, **HARDEN** (FU06 Mongo partial-index startup blocker) | G1 |
 | **MOD-0031 Evidence Linking** | evidence (SCMM-07) | **SPEC_ONLY 8–12%, %0 prod, CONTRACT_ONLY** | 🔴 **COMPLETE_FOUNDATION** — neredeyse yok |
-| MOD-0262 external repo | binary (SCMM-07) | planned/missing %0 | pinned version / R2 |
+| MOD-0262 Internal Document Repository | binary (SCMM-07) | planned/missing %0 | pinned version / **R1** (Blueprint 8.1: internal platform service, W-1, R1-PPM MVP, RC=Y — external repo DEĞİL) |
 | MOD-0040 | identifier (SCMM-08) | 25–35%, **WRONG_BOUNDARY/REBUILD** (CONF-01) | G0 boundary kararı |
 | MOD-0032 Gateway | consumption (SCMM-04/08) | review/partial, "integrate" | G1 |
 | MOD-0290 Product | ref (SCMM-08) | canonical ✓ | hazır |
@@ -72,7 +72,7 @@
 ### R1 — Shared foundation (Gate G1: runtime proof + remediation)
 | WP | İş | Owner | Modül | Dep | CT notu |
 |---|---|---|---|---|---|
-| SCMM-05 | Authz+audit harden | Platform+security | MOD-0018+0021 | 04 | PVG HARDEN |
+| SCMM-05 | Authz+audit harden | Platform+security | MOD-0018+0021 | 04 | 🟠 **GATE NOT PASSED (2026-09-07, WP-SCMM-05)** — MOD-0018/0021 HARDEN; release yolu 🔴 BLOCKED (audit fail-soft). Remediation: **R1** MOD-0021 durable-audit (owning-team) · **R2** MOD-0018 ABAC (owning-team) · **S1** canonical key seed / **S2** Knowledge audit-wiring / **S3** SoD (bizim). **S1 → SCMM-09 authz'ını açar (owning-team'e bağlı değil).** |
 | SCMM-06 | Review routing+delegation kanıtla | Workflow lead | MOD-0023(+0288?) | 04 | 🔴 MOD-0288 kimlik netleştir |
 | SCMM-07 | Doc+evidence servisleri kanıtla | Doc/evidence lead | MOD-0028+0031+0262 | 04 | 🔴 MOD-0031 spec-only → foundation tamamla |
 | SCMM-08 | Ref+integration servisleri qualify | Integration lead | MOD-0290+0288+0032 | 04 | MOD-0040 boundary |
