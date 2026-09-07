@@ -26,7 +26,10 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         ProductAbbreviationEntitlementGrantProfile.RequesterRole,
         ProductAbbreviationEntitlementGrantProfile.StewardRole,
         ProductAbbreviationEntitlementGrantProfile.ApproverRole,
-        ProductAbbreviationEntitlementGrantProfile.AuditorRole
+        ProductAbbreviationEntitlementGrantProfile.AuditorRole,
+        ProductLegalEntityScopeEntitlementGrantProfile.StewardRole,
+        ProductLegalEntityScopeEntitlementGrantProfile.AuditorRole,
+        ProductLegalEntityScopeEntitlementGrantProfile.RolloutOperatorRole
     ];
 
     private readonly IPermissionRepository _permissions;
@@ -73,16 +76,31 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             return; // fail-safe: blank module code is a no-op
         }
 
-        var keySet = (permissionKeys ?? Array.Empty<string>())
+        var suppliedKeys = permissionKeys ?? Array.Empty<string>();
+        var normalizedKeys = suppliedKeys
             .Where(k => !string.IsNullOrWhiteSpace(k))
             .Select(k => k.Trim())
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            .ToList();
+        var keySet = normalizedKeys.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var isProductAbbreviationProfile =
             ProductAbbreviationEntitlementGrantProfile.AppliesTo(code, keySet);
+        var isProductLegalEntityScopeProfile =
+            ProductLegalEntityScopeEntitlementGrantProfile.AppliesTo(code, keySet);
+        if ((isProductAbbreviationProfile || isProductLegalEntityScopeProfile)
+            && (normalizedKeys.Count != suppliedKeys.Count || keySet.Count != normalizedKeys.Count))
+        {
+            throw new InvalidOperationException(
+                "Special entitlement reconciliation rejects blank or duplicate permission descriptors.");
+        }
         if (isProductAbbreviationProfile)
         {
             ProductAbbreviationEntitlementGrantProfile.ValidateExactPermissionSet(keySet);
+            ValidateExactProductAbbreviationDescriptorKeys(keySet);
+        }
+        if (isProductLegalEntityScopeProfile)
+        {
+            ProductLegalEntityScopeEntitlementGrantProfile.ValidateExactPermissionSet(keySet);
         }
 
         // No declared keys (module ships no descriptors yet, or the catalog pull failed) → fall back to the
@@ -106,6 +124,10 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             ProductAbbreviationEntitlementGrantProfile.ValidateExactPermissionSet(
                 modulePermissions.Select(permission => permission.Key));
         }
+        if (isProductLegalEntityScopeProfile)
+        {
+            ProductLegalEntityScopeEntitlementGrantProfile.ValidateExactPermissionDefinitions(modulePermissions);
+        }
 
         await GrantPermissionsToRolesAsync(tenantId, code, modulePermissions, actor, ct);
     }
@@ -124,16 +146,28 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             return;
         }
 
-        if (ProductAbbreviationEntitlementGrantProfile.AppliesTo(
-                code,
-                modulePermissions.Select(permission => permission.Key)))
+        var permissionKeys = modulePermissions.Select(permission => permission.Key).ToArray();
+        var hasProductAbbreviationProfile =
+            ProductAbbreviationEntitlementGrantProfile.AppliesTo(code, permissionKeys);
+        var hasProductLegalEntityScopeProfile =
+            ProductLegalEntityScopeEntitlementGrantProfile.AppliesTo(code, permissionKeys);
+        if (hasProductAbbreviationProfile || hasProductLegalEntityScopeProfile)
         {
-            ProductAbbreviationEntitlementGrantProfile.ValidateExactPermissionSet(
-                modulePermissions.Select(permission => permission.Key));
-            await ReconcileProductAbbreviationProfileAsync(
+            if (hasProductAbbreviationProfile)
+            {
+                ProductAbbreviationEntitlementGrantProfile.ValidateExactPermissionSet(permissionKeys);
+            }
+            if (hasProductLegalEntityScopeProfile)
+            {
+                ProductLegalEntityScopeEntitlementGrantProfile.ValidateExactPermissionSet(permissionKeys);
+            }
+
+            await ReconcileSpecialProfilesAsync(
                 tenantId,
                 code,
                 modulePermissions,
+                hasProductAbbreviationProfile,
+                hasProductLegalEntityScopeProfile,
                 actor,
                 ct);
             return;
@@ -182,14 +216,16 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             return;
         }
 
-        IReadOnlyList<Role> productAbbreviationRoles = Array.Empty<Role>();
+        IReadOnlyList<Role> dedicatedRoles = Array.Empty<Role>();
         if (string.Equals(
                 code,
                 ProductAbbreviationEntitlementGrantProfile.ModuleCode,
                 StringComparison.OrdinalIgnoreCase))
         {
-            productAbbreviationRoles = await ResolveProductAbbreviationRolesAsync(
+            dedicatedRoles = await ResolveDedicatedRolesAsync(
                 tenantId,
+                includeProductAbbreviation: true,
+                includeProductLegalEntityScope: true,
                 createMissing: false,
                 ct);
         }
@@ -203,7 +239,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
                 roles.Add(role);
             }
         }
-        roles.AddRange(productAbbreviationRoles);
+        roles.AddRange(dedicatedRoles);
 
         foreach (var role in roles.DistinctBy(item => item.Id))
         {
@@ -245,7 +281,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             {
                 await GrantModuleAsync(tenantId, code, actor, ct);
             }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            catch (OperationCanceledException)
             {
                 throw;
             }
@@ -285,7 +321,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             {
                 await GrantModuleWithKeysAsync(tenantId, module.ModuleCode, module.PermissionKeys, actor, ct);
             }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            catch (OperationCanceledException)
             {
                 throw;
             }
@@ -331,7 +367,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
                 {
                     await RevokeModuleAsync(tenantId, stale, actor, ct);
                 }
-                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                catch (OperationCanceledException)
                 {
                     throw;
                 }
@@ -354,21 +390,44 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             _ => Array.Empty<Permission>()
         };
 
-    private async Task ReconcileProductAbbreviationProfileAsync(
+    private async Task ReconcileSpecialProfilesAsync(
         Guid tenantId,
         string code,
         IReadOnlyList<Permission> modulePermissions,
+        bool includeProductAbbreviation,
+        bool includeProductLegalEntityScope,
         string actor,
         CancellationToken ct)
     {
         var abbreviationPermissions = modulePermissions
             .Where(permission => ProductAbbreviationEntitlementGrantProfile.IsProductAbbreviationKey(permission.Key))
             .ToDictionary(permission => permission.Key, StringComparer.OrdinalIgnoreCase);
-        var nonAbbreviationPermissions = modulePermissions
-            .Where(permission => !ProductAbbreviationEntitlementGrantProfile.IsProductAbbreviationKey(permission.Key))
+        var legalEntityScopePermissions = modulePermissions
+            .Where(permission => ProductLegalEntityScopeEntitlementGrantProfile.IsProductLegalEntityScopeKey(permission.Key))
+            .ToDictionary(permission => permission.Key, StringComparer.OrdinalIgnoreCase);
+        var genericPermissions = modulePermissions
+            .Where(permission => !ProductAbbreviationEntitlementGrantProfile.IsProductAbbreviationKey(permission.Key)
+                                 && !ProductLegalEntityScopeEntitlementGrantProfile.IsProductLegalEntityScopeKey(permission.Key))
             .ToList();
 
-        var dedicatedRoles = await ResolveProductAbbreviationRolesAsync(tenantId, createMissing: true, ct);
+        if (includeProductAbbreviation)
+        {
+            ValidateProductAbbreviationPermissionDefinitions(abbreviationPermissions.Values);
+        }
+        if (includeProductLegalEntityScope)
+        {
+            ProductLegalEntityScopeEntitlementGrantProfile.ValidateExactPermissionDefinitions(
+                legalEntityScopePermissions.Values);
+        }
+
+        // All applicable dedicated role names are preflighted before the first role or grant mutation. A collision in
+        // either special profile therefore cannot leave the other profile partially provisioned.
+        var dedicatedRoles = await ResolveDedicatedRolesAsync(
+            tenantId,
+            includeProductAbbreviation,
+            includeProductLegalEntityScope,
+            createMissing: true,
+            ct);
         var plans = new List<(Role Role, IReadOnlyList<Permission> Permissions)>();
 
         foreach (var roleName in TargetRoleNames)
@@ -381,15 +440,22 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
 
             IReadOnlyList<Permission> permissions = roleName switch
             {
-                DefaultRolePermissionTemplate.AdminRole => nonAbbreviationPermissions
-                    .Append(abbreviationPermissions[ProductAbbreviationEntitlementGrantProfile.Read])
+                DefaultRolePermissionTemplate.AdminRole => genericPermissions
+                    .Concat(includeProductAbbreviation
+                        ? [abbreviationPermissions[ProductAbbreviationEntitlementGrantProfile.Read]]
+                        : Array.Empty<Permission>())
+                    .Concat(includeProductLegalEntityScope
+                        ? [legalEntityScopePermissions[ProductLegalEntityScopeEntitlementGrantProfile.Read]]
+                        : Array.Empty<Permission>())
                     .ToList(),
-                DefaultRolePermissionTemplate.ViewerRole => nonAbbreviationPermissions
+                DefaultRolePermissionTemplate.ViewerRole => genericPermissions
                     .Where(permission => string.Equals(
                         permission.Action,
                         DefaultRolePermissionTemplate.ReadAction,
                         StringComparison.OrdinalIgnoreCase))
-                    .Append(abbreviationPermissions[ProductAbbreviationEntitlementGrantProfile.Read])
+                    .Concat(includeProductAbbreviation
+                        ? [abbreviationPermissions[ProductAbbreviationEntitlementGrantProfile.Read]]
+                        : Array.Empty<Permission>())
                     .ToList(),
                 _ => Array.Empty<Permission>()
             };
@@ -398,33 +464,38 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
 
         foreach (var role in dedicatedRoles)
         {
-            var template = ProductAbbreviationEntitlementGrantProfile.DedicatedRoles
+            var abbreviationTemplate = ProductAbbreviationEntitlementGrantProfile.DedicatedRoles
+                .SingleOrDefault(item => string.Equals(item.RoleName, role.Name, StringComparison.Ordinal));
+            if (abbreviationTemplate is not null)
+            {
+                plans.Add((
+                    role,
+                    abbreviationTemplate.PermissionKeys.Select(key => abbreviationPermissions[key]).ToList()));
+                continue;
+            }
+
+            var scopeTemplate = ProductLegalEntityScopeEntitlementGrantProfile.DedicatedRoles
                 .Single(item => string.Equals(item.RoleName, role.Name, StringComparison.Ordinal));
             plans.Add((
                 role,
-                template.PermissionKeys.Select(key => abbreviationPermissions[key]).ToList()));
+                scopeTemplate.PermissionKeys.Select(key => legalEntityScopePermissions[key]).ToList()));
         }
-
-        var abbreviationPermissionIds = abbreviationPermissions.Values
-            .Select(permission => permission.Id)
-            .ToHashSet();
 
         foreach (var (role, desiredPermissions) in plans)
         {
             var existing = await _rolePermissions.GetByRoleAsync(role.Id, tenantId, ct);
             var desiredIds = desiredPermissions.Select(permission => permission.Id).ToHashSet();
 
-            var staleAbbreviationGrants = existing
+            var staleModuleGrants = existing
                 .Where(grant => grant.GrantSource == GrantSource.Module
                                 && string.Equals(
                                     grant.SourceModuleCode,
                                     code,
                                     StringComparison.OrdinalIgnoreCase)
-                                && abbreviationPermissionIds.Contains(grant.PermissionId)
                                 && !desiredIds.Contains(grant.PermissionId))
                 .ToList();
 
-            foreach (var stale in staleAbbreviationGrants)
+            foreach (var stale in staleModuleGrants)
             {
                 await _rolePermissions.RemoveByIdAsync(stale.Id, tenantId, ct);
             }
@@ -443,19 +514,33 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         }
     }
 
-    private async Task<IReadOnlyList<Role>> ResolveProductAbbreviationRolesAsync(
+    private async Task<IReadOnlyList<Role>> ResolveDedicatedRolesAsync(
         Guid tenantId,
+        bool includeProductAbbreviation,
+        bool includeProductLegalEntityScope,
         bool createMissing,
         CancellationToken ct)
     {
+        var templates = new List<DedicatedRoleTemplate>();
+        if (includeProductAbbreviation)
+        {
+            templates.AddRange(ProductAbbreviationEntitlementGrantProfile.DedicatedRoles.Select(template =>
+                new DedicatedRoleTemplate(template.RoleName, template.DisplayName, template.Description)));
+        }
+        if (includeProductLegalEntityScope)
+        {
+            templates.AddRange(ProductLegalEntityScopeEntitlementGrantProfile.DedicatedRoles.Select(template =>
+                new DedicatedRoleTemplate(template.RoleName, template.DisplayName, template.Description)));
+        }
+
         var existing = new Dictionary<string, Role?>(StringComparer.Ordinal);
-        foreach (var template in ProductAbbreviationEntitlementGrantProfile.DedicatedRoles)
+        foreach (var template in templates)
         {
             var role = await _roles.GetByNameAndTenantAsync(template.RoleName, tenantId, ct);
             if (role is not null && !role.IsSystem)
             {
                 throw new InvalidOperationException(
-                    $"Product Abbreviation system role name collision: '{template.RoleName}'.");
+                    $"Entitlement profile system role name collision: '{template.RoleName}'.");
             }
 
             existing[template.RoleName] = role;
@@ -467,7 +552,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         }
 
         var resolved = new List<Role>();
-        foreach (var template in ProductAbbreviationEntitlementGrantProfile.DedicatedRoles)
+        foreach (var template in templates)
         {
             var role = existing[template.RoleName]
                        ?? await _roles.UpsertSystemRoleAsync(
@@ -479,7 +564,7 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             if (!role.IsSystem)
             {
                 throw new InvalidOperationException(
-                    $"Product Abbreviation system role name collision: '{template.RoleName}'.");
+                    $"Entitlement profile system role name collision: '{template.RoleName}'.");
             }
 
             resolved.Add(role);
@@ -487,4 +572,53 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
 
         return resolved;
     }
+
+    private static void ValidateProductAbbreviationPermissionDefinitions(IEnumerable<Permission> permissions)
+    {
+        var supplied = permissions.ToList();
+        ProductAbbreviationEntitlementGrantProfile.ValidateExactPermissionSet(
+            supplied.Select(permission => permission.Key));
+        ValidateExactProductAbbreviationDescriptorKeys(supplied.Select(permission => permission.Key));
+        foreach (var permission in supplied)
+        {
+            var expectedAction = permission.Key[(permission.Key.LastIndexOf('.') + 1)..];
+            if (permission.IsDeleted
+                || permission.Scope != PermissionScope.Tenant
+                || !string.Equals(
+                    permission.Module,
+                    ProductAbbreviationEntitlementGrantProfile.ModuleCode,
+                    StringComparison.Ordinal)
+                || !string.Equals(permission.Resource, "product-abbreviations", StringComparison.Ordinal)
+                || !string.Equals(permission.Action, expectedAction, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    "Product Abbreviation permission catalog definitions do not match the exact approved contract.");
+            }
+        }
+    }
+
+    private static void ValidateExactProductAbbreviationDescriptorKeys(IEnumerable<string> permissionKeys)
+    {
+        var supplied = permissionKeys
+            .Where(ProductAbbreviationEntitlementGrantProfile.IsProductAbbreviationKey)
+            .ToHashSet(StringComparer.Ordinal);
+        var expected = new HashSet<string>(StringComparer.Ordinal)
+        {
+            ProductAbbreviationEntitlementGrantProfile.Read,
+            ProductAbbreviationEntitlementGrantProfile.Request,
+            ProductAbbreviationEntitlementGrantProfile.Cancel,
+            ProductAbbreviationEntitlementGrantProfile.Approve,
+            ProductAbbreviationEntitlementGrantProfile.Reject,
+            ProductAbbreviationEntitlementGrantProfile.Correct,
+            ProductAbbreviationEntitlementGrantProfile.Retire,
+            ProductAbbreviationEntitlementGrantProfile.Audit
+        };
+        if (!supplied.SetEquals(expected))
+        {
+            throw new InvalidOperationException(
+                "Product Abbreviation entitlement reconciliation requires exact canonical permission keys.");
+        }
+    }
+
+    private sealed record DedicatedRoleTemplate(string RoleName, string DisplayName, string Description);
 }

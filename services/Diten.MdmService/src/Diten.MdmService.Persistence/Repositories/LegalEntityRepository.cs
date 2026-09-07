@@ -8,6 +8,8 @@ namespace Diten.MdmService.Persistence.Repositories;
 
 public sealed class LegalEntityRepository : RepositoryBase<LegalEntity>, ILegalEntityRepository
 {
+    private const int MaximumReferenceableBatchSize = 200;
+
     public LegalEntityRepository(IMongoDatabase database, ITenantContext tenantContext)
         : base(database, tenantContext, "mdm_legal_entities")
     {
@@ -34,6 +36,42 @@ public sealed class LegalEntityRepository : RepositoryBase<LegalEntity>, ILegalE
             Builders<LegalEntity>.Filter.Eq(x => x.OperationalStatus, LegalEntityOperationalStatus.Active));
 
         return await Collection.Find(filter).SortBy(x => x.LegalName).ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<LegalEntity>> GetReferenceableByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(ids);
+        if (ids.Count > MaximumReferenceableBatchSize)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(ids),
+                "LEGAL_ENTITY_SCOPE_ID_LIMIT_EXCEEDED");
+        }
+        if (ids.Any(id => id == Guid.Empty) || ids.Distinct().Count() != ids.Count)
+        {
+            throw new ArgumentException(
+                "LEGAL_ENTITY_SCOPE_IDS_MUST_BE_NONEMPTY_UNIQUE",
+                nameof(ids));
+        }
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<LegalEntity>.Filter.And(
+            TenantFilter,
+            Builders<LegalEntity>.Filter.Eq(
+                entity => entity.OperationalStatus,
+                LegalEntityOperationalStatus.Active),
+            Builders<LegalEntity>.Filter.In(entity => entity.Id, ids));
+
+        var entities = await Collection.Find(filter).ToListAsync(cancellationToken);
+        return entities
+            .OrderBy(entity => entity.Id.ToString("D"), StringComparer.Ordinal)
+            .ToArray();
     }
 
     public async Task<IReadOnlyList<LegalEntity>> GetAllAsync(CancellationToken cancellationToken = default)

@@ -1,6 +1,8 @@
 using System.Reflection;
+using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Contracts.ReferenceData;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Commands;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.CommandHandlers;
@@ -75,17 +77,119 @@ public sealed class GskuRegisterFacadeTests
         Assert.Equal(0, reservations.ReserveCalls);
     }
 
+    [Fact]
+    public async Task Enforced_provider_failure_precedes_missing_parent_and_reservation()
+    {
+        var parent = Parent();
+        var reservations = new ReservationRepository(Reservation());
+        var mediator = DispatchProxy.Create<IMediator, MediatorProxy>();
+        var tenantContext = new TenantContext();
+        tenantContext.SetTenant(Guid.NewGuid());
+        var access = ProductLegalEntityScopeTestFixture.EnforcedProviderFailure(
+            tenantContext,
+            503,
+            "PRODUCT_LEGAL_ENTITY_SCOPE_PROVIDER_UNAVAILABLE");
+        var handler = new CreateFirstGskuDraftFacadeHandler(
+            new ProductRepository(parent),
+            reservations,
+            new RevisionRepository(),
+            new GskuRepository(),
+            new Resolver(),
+            new Actor(),
+            mediator,
+            access.Rollouts,
+            access.Policies,
+            access.Candidates,
+            tenantContext);
+
+        var response = await handler.Handle(
+            Command(Guid.NewGuid(), 1m, "C62", "provider-down"),
+            default);
+
+        Assert.Equal(503, response.StatusCode);
+        Assert.Contains("LEGAL_ENTITY_SCOPE_PROVIDER_UNAVAILABLE", response.Errors);
+        Assert.Equal(0, reservations.ReserveCalls);
+        Assert.Empty(((MediatorProxy)(object)mediator).Requests);
+    }
+
+    [Fact]
+    public async Task Inaccessible_existing_command_parent_is_denied_before_reservation()
+    {
+        var requestedParent = Parent();
+        var actualParent = Parent();
+        var legalEntityId = Guid.NewGuid();
+        var tenantContext = new TenantContext();
+        tenantContext.SetTenant(Guid.NewGuid());
+        var policy = ProductLegalEntityScopePolicy.Create(
+            tenantContext.TenantId,
+            requestedParent.Id,
+            Guid.NewGuid(),
+            ProductLegalEntityScopeMode.Scoped,
+            [legalEntityId],
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow);
+        var access = ProductLegalEntityScopeTestFixture.Enforced(
+            tenantContext,
+            [legalEntityId],
+            new PolicyRepository(policy));
+        var revision = new ProductDefinitionRevision
+        {
+            Id = Guid.NewGuid(),
+            GlobalProductId = actualParent.Id,
+            CreationCommandId = "GSKU:HIDDEN-REPLAY"
+        };
+        var gsku = new Gsku
+        {
+            Id = Guid.NewGuid(),
+            ProductDefinitionRevisionId = revision.Id,
+            CreationCommandId = revision.CreationCommandId
+        };
+        var reservations = new ReservationRepository(Reservation());
+        var mediator = DispatchProxy.Create<IMediator, MediatorProxy>();
+        var handler = new CreateFirstGskuDraftFacadeHandler(
+            new ProductRepository(requestedParent, actualParent),
+            reservations,
+            new RevisionRepository(revision),
+            new GskuRepository(gsku),
+            new Resolver(),
+            new Actor(),
+            mediator,
+            access.Rollouts,
+            access.Policies,
+            access.Candidates,
+            tenantContext);
+
+        var response = await handler.Handle(
+            Command(requestedParent.Id, 1m, "C62", "hidden-replay"),
+            CancellationToken.None);
+
+        Assert.Equal(404, response.StatusCode);
+        Assert.Contains("PARENT_NOT_FOUND", response.Errors);
+        Assert.Equal(0, reservations.ReserveCalls);
+        Assert.Empty(((MediatorProxy)(object)mediator).Requests);
+    }
+
     private static CreateFirstGskuDraftFacadeHandler Handler(
         GlobalProduct parent,
         ReservationRepository reservations,
-        IMediator mediator) => new(
-        new ProductRepository(parent),
-        reservations,
-        new RevisionRepository(),
-        new GskuRepository(),
-        new Resolver(),
-        new Actor(),
-        mediator);
+        IMediator mediator)
+    {
+        var tenantContext = new TenantContext();
+        tenantContext.SetTenant(Guid.NewGuid());
+        var access = ProductLegalEntityScopeTestFixture.Preparation(tenantContext);
+        return new(
+            new ProductRepository(parent),
+            reservations,
+            new RevisionRepository(),
+            new GskuRepository(),
+            new Resolver(),
+            new Actor(),
+            mediator,
+            access.Rollouts,
+            access.Policies,
+            access.Candidates,
+            tenantContext);
+    }
 
     private static CreateFirstGskuDraftFacadeCommand Command(Guid parentId, decimal quantity, string uom, string operation) =>
         new(new() { GlobalProductId = parentId, PackQuantity = quantity, PackUomCode = uom }, operation);
@@ -125,12 +229,13 @@ public sealed class GskuRegisterFacadeTests
                 new("MLT", "Millilitre", 40, 3), new("LTR", "Litre", 50, 3)]));
     }
 
-    private sealed class ProductRepository(GlobalProduct parent) : IGlobalProductRepository
+    private sealed class ProductRepository(params GlobalProduct[] parents) : IGlobalProductRepository
     {
-        public Task<GlobalProduct?> GetByIdAsync(Guid id, CancellationToken ct = default) => Task.FromResult(id == parent.Id ? parent : null);
+        public Task<GlobalProduct?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
+            Task.FromResult<GlobalProduct?>(parents.SingleOrDefault(parent => id == parent.Id));
         public Task<GlobalProduct?> GetByReservationIdAsync(Guid id, CancellationToken ct = default) => Task.FromResult<GlobalProduct?>(null);
         public Task<bool> NameExistsAsync(string name, CancellationToken ct = default) => Task.FromResult(false);
-        public Task<GlobalProductPage> GetPageAsync(int page, int size, string? search, ProductIdentityLifecycleStatus? status, CancellationToken ct = default) => Task.FromResult(new GlobalProductPage([parent], 1));
+        public Task<GlobalProductPage> GetPageAsync(int page, int size, string? search, ProductIdentityLifecycleStatus? status, CancellationToken ct = default) => Task.FromResult(new GlobalProductPage(parents, parents.Length));
         public Task<GlobalProductCreateResult> CreateDraftAsync(GlobalProduct value, CancellationToken ct = default) => throw new NotSupportedException();
     }
 
@@ -150,24 +255,39 @@ public sealed class GskuRegisterFacadeTests
         public Task<ReservationOperationResult> ConfirmIdentityBindingAsync(Guid id, Guid identity, int version, string key, string actor, string correlation, CancellationToken ct = default) => Task.FromResult(new ReservationOperationResult(false, Reservation, "PENDING"));
     }
 
-    private sealed class RevisionRepository : IProductDefinitionRevisionRepository
+    private sealed class RevisionRepository(ProductDefinitionRevision? revision = null) : IProductDefinitionRevisionRepository
     {
-        public Task<ProductDefinitionRevision?> GetByIdAsync(Guid id, CancellationToken ct = default) => Task.FromResult<ProductDefinitionRevision?>(null);
-        public Task<ProductDefinitionRevision?> GetByCreationCommandIdAsync(string id, CancellationToken ct = default) => Task.FromResult<ProductDefinitionRevision?>(null);
+        public Task<ProductDefinitionRevision?> GetByIdAsync(Guid id, CancellationToken ct = default) => Task.FromResult(revision?.Id == id ? revision : null);
+        public Task<ProductDefinitionRevision?> GetByCreationCommandIdAsync(string id, CancellationToken ct = default) => Task.FromResult(revision?.CreationCommandId == id ? revision : null);
         public Task<FirstGskuPairAllocationResult> AllocateForFirstGskuAsync(Guid id, string command, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<ProductDefinitionRevisionCreateResult> CreateForFirstGskuAsync(ProductDefinitionRevision value, CancellationToken ct = default) => throw new NotSupportedException();
     }
 
-    private sealed class GskuRepository : IGskuRepository
+    private sealed class GskuRepository(Gsku? gsku = null) : IGskuRepository
     {
-        public Task<Gsku?> GetByIdAsync(Guid id, CancellationToken ct = default) => Task.FromResult<Gsku?>(null);
+        public Task<Gsku?> GetByIdAsync(Guid id, CancellationToken ct = default) => Task.FromResult(gsku?.Id == id ? gsku : null);
         public Task<Gsku?> GetReferenceableByIdAsync(Guid id, CancellationToken ct = default) => Task.FromResult<Gsku?>(null);
         public Task<IReadOnlyList<Gsku>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<Gsku>>([]);
         public Task<GskuPage> GetReferenceablePageAsync(int page, int size, string? search, CancellationToken ct = default) => Task.FromResult(new GskuPage([], 0));
         public Task<IReadOnlyList<Guid>> FindIdsByCanonicalCodeAsync(string search, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<Guid>>([]);
-        public Task<Gsku?> GetByCreationCommandIdAsync(string id, CancellationToken ct = default) => Task.FromResult<Gsku?>(null);
+        public Task<Gsku?> GetByCreationCommandIdAsync(string id, CancellationToken ct = default) => Task.FromResult(gsku?.CreationCommandId == id ? gsku : null);
         public Task<GskuCreateResult> CreateDraftAsync(Gsku value, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<GskuUpdateResult> UpdateDraftAsync(Gsku value, int version, CancellationToken ct = default) => throw new NotSupportedException();
+    }
+
+    private sealed class PolicyRepository(ProductLegalEntityScopePolicy policy)
+        : IProductLegalEntityScopePolicyRepository
+    {
+        public Task<ProductLegalEntityScopePolicy?> GetByGlobalProductIdAsync(Guid globalProductId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<ProductLegalEntityScopePolicy?>(policy.GlobalProductId == globalProductId ? policy : null);
+        public Task<ProductLegalEntityScopePolicy?> GetByCreationCommandIdAsync(Guid creationCommandId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<ProductLegalEntityScopePolicy?>(null);
+        public Task<ProductLegalEntityScopePolicyWriteResult> CreateAsync(ProductLegalEntityScopePolicy value, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+        public Task<ProductLegalEntityScopePolicyWriteResult> UpdateAsync(ProductLegalEntityScopePolicy value, int expectedVersion, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+        public Task<IReadOnlyList<Guid>> GetConfiguredGlobalProductIdsAsync(IReadOnlyCollection<Guid> globalProductIds, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<Guid>>(globalProductIds.Contains(policy.GlobalProductId) ? [policy.GlobalProductId] : []);
     }
 
     private class MediatorProxy : DispatchProxy

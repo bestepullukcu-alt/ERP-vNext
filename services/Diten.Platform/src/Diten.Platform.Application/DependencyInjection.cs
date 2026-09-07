@@ -55,6 +55,7 @@ public static class DependencyInjection
         services.AddScoped<IPlatformCatalogContract, PlatformCatalogContract>();
         services.AddSingleton<ITemporaryAccessProvider, NoOpTemporaryAccessProvider>();
         services.AddScoped<IDataScopeResolver, OrgDataScopeResolver>();
+        services.AddScoped<IOrgDataScopeCandidateResolver, OrgDataScopeCandidateResolver>();
         services.AddScoped<ITenantModuleAccessService, TenantModuleAccessService>();
         services.AddScoped<IActorSafetyGuard, ActorSafetyGuard>();
         services.AddScoped<IQuotaService, QuotaService>();

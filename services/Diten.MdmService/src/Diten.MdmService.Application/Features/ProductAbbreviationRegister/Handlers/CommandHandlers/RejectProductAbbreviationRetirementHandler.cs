@@ -1,5 +1,9 @@
+using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Features.ProductAbbreviationRegister.Commands;
+using Diten.MdmService.Application.Features.ProductAbbreviationRegister.Handlers.QueryHandlers;
 using Diten.MdmService.Application.Features.ProductAbbreviationRegister.Services;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
+using Diten.MdmService.Domain.Repositories;
 using Diten.Shared.Core;
 using MediatR;
 
@@ -9,8 +13,30 @@ public sealed class RejectProductAbbreviationRetirementHandler
     : IRequestHandler<RejectProductAbbreviationRetirementCommand, Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>>
 {
     private readonly ProductAbbreviationWorkflow _workflow;
-    public RejectProductAbbreviationRetirementHandler(ProductAbbreviationWorkflow workflow) => _workflow = workflow;
-    public Task<Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>> Handle(
+    private readonly ProductAbbreviationScopeGuard _scopeGuard;
+
+    public RejectProductAbbreviationRetirementHandler(
+        ProductAbbreviationWorkflow workflow,
+        IProductAbbreviationRegisterRepository register,
+        IGlobalProductRepository globalProducts,
+        IProductLegalEntityScopeRolloutStateRepository rolloutStates,
+        IProductLegalEntityScopePolicyRepository policies,
+        ProductLegalEntityScopeCandidateFacade candidates,
+        ITenantContext tenantContext)
+    {
+        _workflow = workflow;
+        _scopeGuard = new(register, globalProducts, rolloutStates, policies, candidates, tenantContext);
+    }
+
+    public async Task<Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>> Handle(
         RejectProductAbbreviationRetirementCommand request,
-        CancellationToken cancellationToken) => _workflow.RejectRetirementAsync(request, cancellationToken);
+        CancellationToken cancellationToken)
+    {
+        var scope = await _scopeGuard.EvaluateRegisterEntryAsync(
+            request.RegisterEntryId, "mdm.product-abbreviations.reject", cancellationToken);
+        return scope.IsSuccessful
+            ? await _workflow.RejectRetirementAsync(request, cancellationToken)
+            : Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>.Fail(
+                scope.FailureCode!, scope.StatusCode);
+    }
 }

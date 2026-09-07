@@ -107,14 +107,25 @@ public sealed class ProductAbbreviationRegisterAuthorizationTests
         Assert.Equal("ABBREVIATION_ACTOR_NOT_DIRECT_TENANT_HUMAN", result.ErrorCode);
         Assert.Equal(string.Empty, context.CanonicalHumanSubjectId);
 
+        var register = Proxy<IProductAbbreviationRegisterRepository>();
         var workflow = new ProductAbbreviationWorkflow(
-            Proxy<IProductAbbreviationRegisterRepository>(),
+            register,
             Proxy<IProductAbbreviationAllocationLedgerRepository>(),
             Proxy<IProductAbbreviationHistoryRepository>(),
             Proxy<IGlobalProductRepository>(),
             context,
             new ProductAbbreviationAuthorization(context));
-        var response = await new RequestProductAbbreviationAllocationHandler(workflow).Handle(
+        var tenantContext = new TenantContext();
+        tenantContext.SetTenant(context.TenantId);
+        var access = ProductLegalEntityScopeTestFixture.Preparation(tenantContext);
+        var response = await new RequestProductAbbreviationAllocationHandler(
+            workflow,
+            register,
+            Proxy<IGlobalProductRepository>(),
+            access.Rollouts,
+            access.Policies,
+            access.Candidates,
+            tenantContext).Handle(
             new RequestProductAbbreviationAllocationCommand(Guid.NewGuid(), "ABC", "invalid-subject"),
             default);
 

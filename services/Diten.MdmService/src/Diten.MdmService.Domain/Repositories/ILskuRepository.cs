@@ -16,6 +16,15 @@ public interface ILskuRepository
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("LSKU_READ_CONTRACT_NOT_IMPLEMENTED");
 
+    Task<LskuPage> GetEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string? search,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("LSKU_LEGAL_ENTITY_SCOPE_READ_CONTRACT_NOT_IMPLEMENTED");
+
     Task<Lsku?> GetByCreationCommandIdAsync(
         string creationCommandId,
         CancellationToken cancellationToken = default);

@@ -1,4 +1,5 @@
 using Diten.Platform.Application;
+using Diten.Platform.Application.Authorization;
 using Diten.Platform.API.Services.BusinessReferenceData;
 using Diten.Platform.Infrastructure;
 using Diten.Platform.Infrastructure.BackgroundJobs;
@@ -95,6 +96,8 @@ builder.Services.Configure<ModuleRegistrationCredentialOptions>(
     builder.Configuration.GetSection(ModuleRegistrationCredentialOptions.SectionName));
 builder.Services.Configure<VerifiedGskuResolverCredentialOptions>(
     builder.Configuration.GetSection(VerifiedGskuResolverCredentialOptions.SectionName));
+builder.Services.Configure<TrustedLegalEntityScopeCredentialOptions>(
+    builder.Configuration.GetSection(TrustedLegalEntityScopeCredentialOptions.SectionName));
 builder.Services.Configure<VerifiedGskuOperationalProvisioningOptions>(
     builder.Configuration.GetSection(VerifiedGskuOperationalProvisioningOptions.SectionName));
 builder.Services.Configure<VerifiedMarketOperationalProvisioningOptions>(
@@ -109,6 +112,10 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<IModuleRegistrationCredentialAuthenticator, ModuleRegistrationCredentialAuthenticator>();
 builder.Services.AddSingleton<IVerifiedGskuResolverCredentialAuthenticator, VerifiedGskuResolverCredentialAuthenticator>();
 builder.Services.AddScoped<IVerifiedGskuResolverJwtTenantContext, VerifiedGskuResolverJwtTenantContext>();
+builder.Services.AddSingleton<ITrustedLegalEntityScopeCredentialAuthenticator, TrustedLegalEntityScopeCredentialAuthenticator>();
+builder.Services.AddScoped<ITrustedLegalEntityScopeJwtContext, TrustedLegalEntityScopeJwtContext>();
+builder.Services.AddScoped<ITrustedLegalEntityScopeRequestExecutor, TrustedLegalEntityScopeRequestExecutor>();
+builder.Services.AddSingleton<IOrgDataScopeCandidateAvailabilityClassifier, MongoOrgDataScopeCandidateAvailabilityClassifier>();
 
 // AG-STEP-011 / MOD-0018-FU14 Group B — self-explain observer (API-layer; reuses the API-layer PermissionClaimEvaluator).
 builder.Services.AddScoped<Diten.Platform.API.Observability.ICorrelationContext, Diten.Platform.API.Observability.CorrelationContext>();

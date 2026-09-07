@@ -1,5 +1,6 @@
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -178,4 +179,666 @@ public sealed class ProductDefinitionRevisionRepository : IProductDefinitionRevi
         Builders<ProductDefinitionRevision>.Filter.Eq(x => x.TenantId, _tenantId);
     private FilterDefinition<ProductDefinitionRevision> ActiveFilter =>
         TenantFilter & Builders<ProductDefinitionRevision>.Filter.Eq(x => x.IsDeleted, false);
+}
+
+internal static class ProductLegalEntityScopeAggregation
+{
+    internal const string ResolvedGlobalProductIdField = "ScopeGlobalProductId";
+
+    internal static IReadOnlyList<BsonDocument> CreateAccessStages(
+        Guid tenantId,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc) => CreatePolicyAccessStages(
+            tenantId,
+            effectiveCandidateLegalEntityIds,
+            serverNowUtc,
+            "$" + ResolvedGlobalProductIdField,
+            requireGlobalProductLookup: true);
+
+    internal static IReadOnlyList<BsonDocument> CreatePolicyAccessStages(
+        Guid tenantId,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        string globalProductIdExpression,
+        bool requireGlobalProductLookup)
+    {
+        if (serverNowUtc.Offset != TimeSpan.Zero)
+        {
+            throw new ArgumentException("Server time must be UTC.", nameof(serverNowUtc));
+        }
+        if (effectiveCandidateLegalEntityIds.Count is 0)
+        {
+            return [new BsonDocument("$match", new BsonDocument("_id", BsonNull.Value))];
+        }
+        if (effectiveCandidateLegalEntityIds.Count > ProductLegalEntityScopePolicy.MaximumLegalEntityIdsPerSnapshot
+            || effectiveCandidateLegalEntityIds.Any(id => id == Guid.Empty)
+            || effectiveCandidateLegalEntityIds.Distinct().Count() != effectiveCandidateLegalEntityIds.Count)
+        {
+            throw new ArgumentException(
+                "Effective Legal Entity candidates must be bounded, non-empty and unique.",
+                nameof(effectiveCandidateLegalEntityIds));
+        }
+
+        var tenant = GuidBson(tenantId);
+        var candidates = new BsonArray(effectiveCandidateLegalEntityIds.Select(GuidBson));
+        var rawPeriodIds = "$$period." + nameof(ProductLegalEntityScopePeriod.LegalEntityIds);
+        var periodIds = ArrayOrEmpty(rawPeriodIds);
+        var isCurrent = CreateCurrentPeriodExpression(serverNowUtc, "$$period");
+        var accessiblePeriod = new BsonDocument("$or", new BsonArray
+        {
+            new BsonDocument("$and", new BsonArray
+            {
+                new BsonDocument("$eq", new BsonArray
+                {
+                    "$$period." + nameof(ProductLegalEntityScopePeriod.Mode),
+                    (int)ProductLegalEntityScopeMode.GroupWide
+                }),
+                new BsonDocument("$eq", new BsonArray
+                {
+                    new BsonDocument("$size", periodIds),
+                    0
+                })
+            }),
+            new BsonDocument("$and", new BsonArray
+            {
+                new BsonDocument("$eq", new BsonArray
+                {
+                    "$$period." + nameof(ProductLegalEntityScopePeriod.Mode),
+                    (int)ProductLegalEntityScopeMode.Scoped
+                }),
+                new BsonDocument("$gte", new BsonArray { new BsonDocument("$size", periodIds), 1 }),
+                new BsonDocument("$lte", new BsonArray
+                {
+                    new BsonDocument("$size", periodIds),
+                    ProductLegalEntityScopePolicy.MaximumLegalEntityIdsPerSnapshot
+                }),
+                new BsonDocument("$eq", new BsonArray
+                {
+                    new BsonDocument("$size", periodIds),
+                    new BsonDocument("$size", new BsonDocument("$setUnion", new BsonArray
+                    {
+                        periodIds,
+                        new BsonArray()
+                    }))
+                }),
+                new BsonDocument("$not", new BsonArray
+                {
+                    new BsonDocument("$in", new BsonArray { GuidBson(Guid.Empty), periodIds })
+                }),
+                new BsonDocument("$gt", new BsonArray
+                {
+                    new BsonDocument("$size", new BsonDocument("$setIntersection", new BsonArray
+                    {
+                        periodIds,
+                        candidates
+                    })),
+                    0
+                })
+            })
+        });
+
+        var stages = new List<BsonDocument>();
+        if (requireGlobalProductLookup)
+        {
+            stages.Add(LookupSingle(
+                "mdm_global_products",
+                "ScopeGlobalProducts",
+                new BsonArray
+                {
+                    new BsonDocument("$eq", new BsonArray { "$TenantId", tenant }),
+                    new BsonDocument("$eq", new BsonArray { "$IsDeleted", false }),
+                    new BsonDocument("$eq", new BsonArray { "$_id", "$$globalProductId" })
+                },
+                globalProductIdExpression));
+        }
+
+        stages.Add(LookupSingle(
+                ProductLegalEntityScopePolicyRepository.CollectionName,
+                "ScopePolicies",
+                new BsonArray
+                {
+                    new BsonDocument("$eq", new BsonArray { "$TenantId", tenant }),
+                    new BsonDocument("$eq", new BsonArray { "$IsDeleted", false }),
+                    new BsonDocument("$eq", new BsonArray { "$GlobalProductId", "$$globalProductId" })
+                },
+                globalProductIdExpression));
+        stages.Add(new BsonDocument("$set", new BsonDocument("CurrentScopePeriods",
+                new BsonDocument("$cond", new BsonArray
+                {
+                    new BsonDocument("$eq", new BsonArray
+                    {
+                        new BsonDocument("$size", "$ScopePolicies"),
+                        1
+                    }),
+                    new BsonDocument("$filter", new BsonDocument
+                    {
+                        { "input", ArrayOrEmpty(new BsonDocument("$getField", new BsonDocument
+                            {
+                                { "field", nameof(ProductLegalEntityScopePolicy.ScopePeriods) },
+                                { "input", new BsonDocument("$arrayElemAt", new BsonArray { "$ScopePolicies", 0 }) }
+                            })) },
+                        { "as", "period" },
+                        { "cond", isCurrent }
+                    }),
+                    new BsonArray()
+                }))));
+        var validityChecks = new BsonArray
+            {
+                new BsonDocument("$eq", new BsonArray
+                {
+                    new BsonDocument("$size", "$ScopePolicies"), 1
+                })
+            };
+        if (requireGlobalProductLookup)
+        {
+            validityChecks.Add(new BsonDocument("$eq", new BsonArray
+            {
+                new BsonDocument("$size", "$ScopeGlobalProducts"), 1
+            }));
+        }
+        validityChecks.Add(new BsonDocument("$let", new BsonDocument
+        {
+            { "vars", new BsonDocument("policy",
+                new BsonDocument("$arrayElemAt", new BsonArray { "$ScopePolicies", 0 })) },
+            { "in", CreatePolicyValidityExpression(serverNowUtc) }
+        }));
+        validityChecks.Add(new BsonDocument("$eq", new BsonArray
+        {
+            new BsonDocument("$size", "$CurrentScopePeriods"), 1
+        }));
+        validityChecks.Add(new BsonDocument("$let", new BsonDocument
+        {
+            { "vars", new BsonDocument("period",
+                new BsonDocument("$arrayElemAt", new BsonArray { "$CurrentScopePeriods", 0 })) },
+            { "in", accessiblePeriod }
+        }));
+
+        stages.Add(new BsonDocument("$match", new BsonDocument(
+            "$expr", new BsonDocument("$and", validityChecks))));
+        return stages;
+    }
+
+    internal static BsonDocument CreatePolicyValidityExpression(DateTimeOffset serverNowUtc)
+    {
+        var nowTicks = serverNowUtc.Ticks;
+        var emptyGuid = GuidBson(Guid.Empty);
+        var rawPeriods = "$$policy." + nameof(ProductLegalEntityScopePolicy.ScopePeriods);
+        var periods = ArrayOrEmpty(rawPeriods);
+        var periodIds = Map(periods, "period", "$$period." + nameof(ProductLegalEntityScopePeriod.PeriodId));
+        var commandIds = Map(periods, "period", "$$period." + nameof(ProductLegalEntityScopePeriod.CommandId));
+        var endCommandIds = new BsonDocument("$map", new BsonDocument
+        {
+            { "input", new BsonDocument("$filter", new BsonDocument
+                {
+                    { "input", periods },
+                    { "as", "period" },
+                    { "cond", IsPresent("$$period." + nameof(ProductLegalEntityScopePeriod.EndCommandId)) }
+                }) },
+            { "as", "period" },
+            { "in", "$$period." + nameof(ProductLegalEntityScopePeriod.EndCommandId) }
+        });
+        var rawLegalEntityIds = "$$period." + nameof(ProductLegalEntityScopePeriod.LegalEntityIds);
+        var legalEntityIds = ArrayOrEmpty(rawLegalEntityIds);
+        var hasEffectiveTo = IsPresent("$$period." + nameof(ProductLegalEntityScopePeriod.EffectiveToUtc));
+        var hasEndCommand = IsPresent("$$period." + nameof(ProductLegalEntityScopePeriod.EndCommandId));
+        var hasEndedBy = IsPresent("$$period." + nameof(ProductLegalEntityScopePeriod.EndedByActorId));
+        var hasEndedAt = IsPresent("$$period." + nameof(ProductLegalEntityScopePeriod.EndedAtUtc));
+        var hasAnyEndFact = new BsonDocument("$or", new BsonArray
+        {
+            hasEndCommand, hasEndedBy, hasEndedAt
+        });
+        var hasCompleteEndFacts = new BsonDocument("$and", new BsonArray
+        {
+            hasEndCommand, hasEndedBy, hasEndedAt
+        });
+        var validLegalEntities = new BsonDocument("$and", new BsonArray
+        {
+            TypeIs(rawLegalEntityIds, "array"),
+            AllElementsAreGuid(legalEntityIds),
+            new BsonDocument("$lte", new BsonArray
+            {
+                new BsonDocument("$size", legalEntityIds),
+                ProductLegalEntityScopePolicy.MaximumLegalEntityIdsPerSnapshot
+            }),
+            new BsonDocument("$eq", new BsonArray
+            {
+                new BsonDocument("$size", legalEntityIds),
+                new BsonDocument("$size", new BsonDocument("$setUnion", new BsonArray
+                {
+                    legalEntityIds,
+                    new BsonArray()
+                }))
+            }),
+            new BsonDocument("$not", new BsonArray
+            {
+                new BsonDocument("$in", new BsonArray { emptyGuid, legalEntityIds })
+            }),
+            new BsonDocument("$eq", new BsonArray
+            {
+                legalEntityIds,
+                new BsonDocument("$sortArray", new BsonDocument
+                {
+                    { "input", legalEntityIds },
+                    { "sortBy", 1 }
+                })
+            }),
+            new BsonDocument("$or", new BsonArray
+            {
+                new BsonDocument("$and", new BsonArray
+                {
+                    new BsonDocument("$eq", new BsonArray
+                    {
+                        "$$period." + nameof(ProductLegalEntityScopePeriod.Mode),
+                        (int)ProductLegalEntityScopeMode.GroupWide
+                    }),
+                    new BsonDocument("$eq", new BsonArray
+                    {
+                        new BsonDocument("$size", legalEntityIds), 0
+                    })
+                }),
+                new BsonDocument("$and", new BsonArray
+                {
+                    new BsonDocument("$eq", new BsonArray
+                    {
+                        "$$period." + nameof(ProductLegalEntityScopePeriod.Mode),
+                        (int)ProductLegalEntityScopeMode.Scoped
+                    }),
+                    new BsonDocument("$gte", new BsonArray
+                    {
+                        new BsonDocument("$size", legalEntityIds), 1
+                    })
+                })
+            })
+        });
+        var validPeriod = new BsonDocument("$and", new BsonArray
+        {
+            ExactGuid("$$period." + nameof(ProductLegalEntityScopePeriod.PeriodId)),
+            ExactGuid("$$period." + nameof(ProductLegalEntityScopePeriod.CommandId)),
+            ExactGuid("$$period." + nameof(ProductLegalEntityScopePeriod.ActorId)),
+            TypeIs("$$period." + nameof(ProductLegalEntityScopePeriod.Mode), "int"),
+            IsCanonicalUtcDateTimeOffset(
+                "$$period." + nameof(ProductLegalEntityScopePeriod.EffectiveFromUtc)),
+            IsCanonicalUtcDateTimeOffset(
+                "$$period." + nameof(ProductLegalEntityScopePeriod.CreatedAtUtc)),
+            new BsonDocument("$lte", new BsonArray
+            {
+                DateTimeOffsetTicks("$$period." + nameof(ProductLegalEntityScopePeriod.EffectiveFromUtc)),
+                nowTicks
+            }),
+            new BsonDocument("$lte", new BsonArray
+            {
+                DateTimeOffsetTicks("$$period." + nameof(ProductLegalEntityScopePeriod.CreatedAtUtc)),
+                nowTicks
+            }),
+            new BsonDocument("$eq", new BsonArray { hasAnyEndFact, hasCompleteEndFacts }),
+            new BsonDocument("$eq", new BsonArray { hasEffectiveTo, hasCompleteEndFacts }),
+            new BsonDocument("$or", new BsonArray
+            {
+                new BsonDocument("$not", new BsonArray { hasCompleteEndFacts }),
+                new BsonDocument("$and", new BsonArray
+                {
+                    ExactGuid("$$period." + nameof(ProductLegalEntityScopePeriod.EndCommandId)),
+                    ExactGuid("$$period." + nameof(ProductLegalEntityScopePeriod.EndedByActorId)),
+                    IsCanonicalUtcDateTimeOffset(
+                        "$$period." + nameof(ProductLegalEntityScopePeriod.EffectiveToUtc)),
+                    IsCanonicalUtcDateTimeOffset(
+                        "$$period." + nameof(ProductLegalEntityScopePeriod.EndedAtUtc)),
+                    new BsonDocument("$gt", new BsonArray
+                    {
+                        DateTimeOffsetTicks("$$period." + nameof(ProductLegalEntityScopePeriod.EffectiveToUtc)),
+                        DateTimeOffsetTicks("$$period." + nameof(ProductLegalEntityScopePeriod.EffectiveFromUtc))
+                    }),
+                    new BsonDocument("$lte", new BsonArray
+                    {
+                        DateTimeOffsetTicks("$$period." + nameof(ProductLegalEntityScopePeriod.EffectiveToUtc)),
+                        nowTicks
+                    }),
+                    new BsonDocument("$eq", new BsonArray
+                    {
+                        DateTimeOffsetTicks("$$period." + nameof(ProductLegalEntityScopePeriod.EndedAtUtc)),
+                        DateTimeOffsetTicks("$$period." + nameof(ProductLegalEntityScopePeriod.EffectiveToUtc))
+                    })
+                })
+            }),
+            validLegalEntities
+        });
+        var historyValid = new BsonDocument("$allElementsTrue", new BsonArray
+        {
+            new BsonDocument("$map", new BsonDocument
+            {
+                { "input", new BsonDocument("$range", new BsonArray
+                    {
+                        0, new BsonDocument("$size", periods)
+                    }) },
+                { "as", "index" },
+                { "in", new BsonDocument("$let", new BsonDocument
+                    {
+                        { "vars", new BsonDocument
+                            {
+                                { "period", new BsonDocument("$arrayElemAt", new BsonArray { periods, "$$index" }) },
+                                { "previous", new BsonDocument("$arrayElemAt", new BsonArray
+                                    {
+                                        periods,
+                                        new BsonDocument("$subtract", new BsonArray { "$$index", 1 })
+                                    }) },
+                                { "next", new BsonDocument("$arrayElemAt", new BsonArray
+                                    {
+                                        periods,
+                                        new BsonDocument("$add", new BsonArray { "$$index", 1 })
+                                    }) }
+                            }
+                        },
+                        { "in", new BsonDocument("$and", new BsonArray
+                            {
+                                new BsonDocument("$or", new BsonArray
+                                {
+                                    new BsonDocument("$eq", new BsonArray { "$$index", 0 }),
+                                    new BsonDocument("$and", new BsonArray
+                                    {
+                                        IsPresent("$$previous." + nameof(ProductLegalEntityScopePeriod.EffectiveToUtc)),
+                                        new BsonDocument("$lte", new BsonArray
+                                        {
+                                            DateTimeOffsetTicks(
+                                                "$$previous." + nameof(ProductLegalEntityScopePeriod.EffectiveToUtc)),
+                                            DateTimeOffsetTicks(
+                                                "$$period." + nameof(ProductLegalEntityScopePeriod.EffectiveFromUtc))
+                                        })
+                                    })
+                                }),
+                                new BsonDocument("$or", new BsonArray
+                                {
+                                    new BsonDocument("$not", new BsonArray
+                                    {
+                                        new BsonDocument("$in", new BsonArray
+                                        {
+                                            "$$period." + nameof(ProductLegalEntityScopePeriod.EndCommandId), commandIds
+                                        })
+                                    }),
+                                    new BsonDocument("$and", new BsonArray
+                                    {
+                                        new BsonDocument("$lt", new BsonArray
+                                        {
+                                            new BsonDocument("$add", new BsonArray { "$$index", 1 }),
+                                            new BsonDocument("$size", periods)
+                                        }),
+                                        new BsonDocument("$eq", new BsonArray
+                                        {
+                                            "$$next." + nameof(ProductLegalEntityScopePeriod.CommandId),
+                                            "$$period." + nameof(ProductLegalEntityScopePeriod.EndCommandId)
+                                        }),
+                                        new BsonDocument("$eq", new BsonArray
+                                        {
+                                            DateTimeOffsetTicks(
+                                                "$$next." + nameof(ProductLegalEntityScopePeriod.EffectiveFromUtc)),
+                                            DateTimeOffsetTicks(
+                                                "$$period." + nameof(ProductLegalEntityScopePeriod.EffectiveToUtc))
+                                        })
+                                    })
+                                })
+                            })
+                        }
+                    })
+                }
+            })
+        });
+
+        return new BsonDocument("$and", new BsonArray
+        {
+            ExactGuid("$$policy._id"),
+            ExactGuid("$$policy." + nameof(ProductLegalEntityScopePolicy.TenantId)),
+            ExactGuid("$$policy." + nameof(ProductLegalEntityScopePolicy.GlobalProductId)),
+            ExactGuid("$$policy." + nameof(ProductLegalEntityScopePolicy.CreationCommandId)),
+            TypeIs("$$policy." + nameof(ProductLegalEntityScopePolicy.Version), "int"),
+            TypeIs(rawPeriods, "array"),
+            new BsonDocument("$gte", new BsonArray
+            {
+                "$$policy." + nameof(ProductLegalEntityScopePolicy.Version), 0
+            }),
+            new BsonDocument("$lte", new BsonArray
+            {
+                new BsonDocument("$size", periods), ProductLegalEntityScopePolicy.MaximumPeriodsPerPolicy
+            }),
+            SetIsUnique(periodIds),
+            SetIsUnique(commandIds),
+            SetIsUnique(endCommandIds),
+            new BsonDocument("$eq", new BsonArray
+            {
+                periods,
+                new BsonDocument("$sortArray", new BsonDocument
+                {
+                    { "input", periods },
+                    { "sortBy", new BsonDocument
+                        {
+                            { nameof(ProductLegalEntityScopePeriod.EffectiveFromUtc), 1 },
+                            { nameof(ProductLegalEntityScopePeriod.PeriodId), 1 }
+                        }
+                    }
+                })
+            }),
+            new BsonDocument("$allElementsTrue", new BsonArray
+            {
+                new BsonDocument("$map", new BsonDocument
+                {
+                    { "input", periods },
+                    { "as", "period" },
+                    { "in", validPeriod }
+                })
+            }),
+            historyValid
+        });
+    }
+
+    private static BsonDocument Map(BsonValue input, string alias, BsonValue expression) =>
+        new("$map", new BsonDocument
+        {
+            { "input", input },
+            { "as", alias },
+            { "in", expression }
+        });
+
+    private static BsonDocument SetIsUnique(BsonValue input) => new("$eq", new BsonArray
+    {
+        new BsonDocument("$size", input),
+        new BsonDocument("$size", new BsonDocument("$setUnion", new BsonArray
+        {
+            input,
+            new BsonArray()
+        }))
+    });
+
+    private static BsonDocument ExactGuid(string expression) => new("$and", new BsonArray
+    {
+        TypeIs(expression, "binData"),
+        new BsonDocument("$eq", new BsonArray
+        {
+            new BsonDocument("$cond", new BsonArray
+            {
+                TypeIs(expression, "binData"),
+                new BsonDocument("$binarySize", expression),
+                -1
+            }),
+            16
+        }),
+        new BsonDocument("$ne", new BsonArray { expression, GuidBson(Guid.Empty) })
+    });
+
+    private static BsonDocument AllElementsAreGuid(BsonValue input) => new("$allElementsTrue", new BsonArray
+    {
+        new BsonDocument("$map", new BsonDocument
+        {
+            { "input", input },
+            { "as", "candidateGuid" },
+            { "in", ExactGuid("$$candidateGuid") }
+        })
+    });
+
+    internal static BsonDocument ArrayOrEmpty(BsonValue input) => new("$cond", new BsonArray
+    {
+        TypeIs(input, "array"),
+        input,
+        new BsonArray()
+    });
+
+    private static BsonDocument TypeIs(BsonValue expression, string bsonType) => new("$eq", new BsonArray
+    {
+        new BsonDocument("$type", expression), bsonType
+    });
+
+    private static BsonDocument IsCanonicalUtcDateTimeOffset(BsonValue expression)
+    {
+        var value = ArrayOrEmpty(expression);
+        return new BsonDocument("$and", new BsonArray
+        {
+            TypeIs(expression, "array"),
+            new BsonDocument("$eq", new BsonArray { new BsonDocument("$size", value), 2 }),
+            TypeIs(new BsonDocument("$arrayElemAt", new BsonArray { value, 0 }), "long"),
+            TypeIs(new BsonDocument("$arrayElemAt", new BsonArray { value, 1 }), "int"),
+            new BsonDocument("$eq", new BsonArray
+            {
+                new BsonDocument("$arrayElemAt", new BsonArray { value, 1 }), 0
+            })
+        });
+    }
+
+    private static BsonDocument DateTimeOffsetTicks(BsonValue expression) => new(
+        "$arrayElemAt",
+        new BsonArray { ArrayOrEmpty(expression), 0 });
+
+    internal static BsonDocument CreateCurrentPeriodExpression(
+        DateTimeOffset serverNowUtc,
+        string periodExpression)
+    {
+        if (serverNowUtc.Offset != TimeSpan.Zero)
+        {
+            throw new ArgumentException("Server time must be UTC.", nameof(serverNowUtc));
+        }
+
+        var effectiveFrom = periodExpression + "." + nameof(ProductLegalEntityScopePeriod.EffectiveFromUtc);
+        var effectiveTo = periodExpression + "." + nameof(ProductLegalEntityScopePeriod.EffectiveToUtc);
+        return new BsonDocument("$and", new BsonArray
+        {
+            IsCanonicalUtcDateTimeOffset(effectiveFrom),
+            new BsonDocument("$lte", new BsonArray
+            {
+                DateTimeOffsetTicks(effectiveFrom), serverNowUtc.Ticks
+            }),
+            new BsonDocument("$or", new BsonArray
+            {
+                new BsonDocument("$eq", new BsonArray
+                {
+                    new BsonDocument("$type", effectiveTo), "missing"
+                }),
+                new BsonDocument("$eq", new BsonArray { effectiveTo, BsonNull.Value }),
+                new BsonDocument("$and", new BsonArray
+                {
+                    IsCanonicalUtcDateTimeOffset(effectiveTo),
+                    new BsonDocument("$gt", new BsonArray
+                    {
+                        DateTimeOffsetTicks(effectiveTo), serverNowUtc.Ticks
+                    })
+                })
+            })
+        });
+    }
+
+    private static BsonDocument IsPresent(string expression) => new("$and", new BsonArray
+    {
+        new BsonDocument("$ne", new BsonArray
+        {
+            new BsonDocument("$type", expression), "missing"
+        }),
+        new BsonDocument("$ne", new BsonArray { expression, BsonNull.Value })
+    });
+
+    internal static IReadOnlyList<BsonDocument> CreateGskuRevisionResolutionStages(
+        Guid tenantId,
+        string gskuIdExpression)
+    {
+        var tenant = GuidBson(tenantId);
+        return
+        [
+            new BsonDocument("$lookup", new BsonDocument
+            {
+                { "from", "mdm_gskus" },
+                { "let", new BsonDocument("gskuId", gskuIdExpression) },
+                { "pipeline", new BsonArray
+                    {
+                        new BsonDocument("$match", new BsonDocument("$expr", new BsonDocument("$and", new BsonArray
+                        {
+                            new BsonDocument("$eq", new BsonArray { "$TenantId", tenant }),
+                            new BsonDocument("$eq", new BsonArray { "$IsDeleted", false }),
+                            new BsonDocument("$eq", new BsonArray { "$_id", "$$gskuId" })
+                        })))
+                    }
+                },
+                { "as", "ScopeGskus" }
+            }),
+            new BsonDocument("$match", new BsonDocument("$expr", new BsonDocument("$eq", new BsonArray
+            {
+                new BsonDocument("$size", "$ScopeGskus"),
+                1
+            }))),
+            new BsonDocument("$lookup", new BsonDocument
+            {
+                { "from", "mdm_product_definition_revisions" },
+                { "let", new BsonDocument("revisionId", new BsonDocument("$getField", new BsonDocument
+                    {
+                        { "field", nameof(Gsku.ProductDefinitionRevisionId) },
+                        { "input", new BsonDocument("$arrayElemAt", new BsonArray { "$ScopeGskus", 0 }) }
+                    }))
+                },
+                { "pipeline", new BsonArray
+                    {
+                        new BsonDocument("$match", new BsonDocument("$expr", new BsonDocument("$and", new BsonArray
+                        {
+                            new BsonDocument("$eq", new BsonArray { "$TenantId", tenant }),
+                            new BsonDocument("$eq", new BsonArray { "$IsDeleted", false }),
+                            new BsonDocument("$eq", new BsonArray { "$_id", "$$revisionId" })
+                        })))
+                    }
+                },
+                { "as", "ScopeRevisions" }
+            }),
+            new BsonDocument("$match", new BsonDocument("$expr", new BsonDocument("$eq", new BsonArray
+            {
+                new BsonDocument("$size", "$ScopeRevisions"),
+                1
+            }))),
+            new BsonDocument("$set", new BsonDocument(
+                ResolvedGlobalProductIdField,
+                new BsonDocument("$getField", new BsonDocument
+                {
+                    { "field", nameof(ProductDefinitionRevision.GlobalProductId) },
+                    { "input", new BsonDocument("$arrayElemAt", new BsonArray { "$ScopeRevisions", 0 }) }
+                })))
+        ];
+    }
+
+    internal static BsonDocument LookupSingle(
+        string collection,
+        string outputField,
+        BsonArray expressions,
+        string globalProductIdExpression) => new("$lookup", new BsonDocument
+    {
+        { "from", collection },
+        { "let", new BsonDocument("globalProductId", globalProductIdExpression) },
+        { "pipeline", new BsonArray
+            {
+                new BsonDocument("$match", new BsonDocument("$expr", new BsonDocument("$and", expressions)))
+            }
+        },
+        { "as", outputField }
+    });
+
+    internal static BsonBinaryData GuidBson(Guid value) =>
+        new(value, GuidRepresentation.Standard);
+
+    internal static BsonDocument CleanupStage(params string[] additionalFields) =>
+        new("$unset", new BsonArray(new[]
+        {
+            "ScopeGlobalProducts",
+            "ScopePolicies",
+            "CurrentScopePeriods",
+            ResolvedGlobalProductIdField
+        }.Concat(additionalFields)));
 }
