@@ -146,7 +146,8 @@ public sealed class FinishedGoodDraftFoundationUnitTests
     [Fact]
     public async Task Programming_contract_violation_propagates_instead_of_becoming_reconciliation_pending()
     {
-        var handler = new CreateFinishedGoodDraftHandler(null!, null!, null!, null!, null!);
+        var handler = new CreateFinishedGoodDraftHandler(
+            null!, null!, null!, null!, null!, null!, null!, null!, null!, null!);
 
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             handler.Handle(null!, CancellationToken.None));
@@ -238,21 +239,46 @@ public sealed class FinishedGoodDraftFoundationUnitTests
             bool returnCapturedOnReread = false)
         {
             var tenantId = Guid.NewGuid();
+            var product = new GlobalProduct
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+                CanonicalCode = "GP-UNIT-0001",
+                GlobalProductName = "Unit Product",
+                GlobalProductNameNormalized = "UNIT PRODUCT",
+                LifecycleStatus = ProductIdentityLifecycleStatus.Draft
+            };
+            var revision = new ProductDefinitionRevision
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+                GlobalProductId = product.Id,
+                RevisionIdentifier = "REV-001",
+                LifecycleStatus = ProductIdentityLifecycleStatus.Draft
+            };
             var gsku = new Gsku
             {
                 Id = Guid.NewGuid(),
                 TenantId = tenantId,
+                ProductDefinitionRevisionId = revision.Id,
                 CanonicalCode = "GS-UNIT-0001",
                 LifecycleStatus = ProductIdentityLifecycleStatus.Draft
             };
             var finishedGoods = new TestFinishedGoodRepository(create, returnCapturedOnReread);
             var reservations = new TestReservationRepository(tenantId);
+            var tenantContext = new TestTenantContext(tenantId);
+            var access = ProductLegalEntityScopeTestFixture.Preparation(tenantContext);
             var handler = new CreateFinishedGoodDraftHandler(
                 reservations,
                 finishedGoods,
                 new TestGskuRepository(gsku),
-                new TestTenantContext(tenantId),
-                new TestActorContext());
+                new TestRevisionRepository(revision),
+                new TestProductRepository(product),
+                tenantContext,
+                new TestActorContext(),
+                access.Rollouts,
+                access.Policies,
+                access.Candidates);
             return new(handler, gsku.Id, finishedGoods, reservations);
         }
 
@@ -397,6 +423,55 @@ public sealed class FinishedGoodDraftFoundationUnitTests
             int expectedVersion,
             CancellationToken cancellationToken = default)
             => throw new NotSupportedException();
+    }
+
+    private sealed class TestRevisionRepository(ProductDefinitionRevision revision)
+        : IProductDefinitionRevisionRepository
+    {
+        public Task<ProductDefinitionRevision?> GetByIdAsync(
+            Guid id,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<ProductDefinitionRevision?>(id == revision.Id ? revision : null);
+
+        public Task<ProductDefinitionRevision?> GetByCreationCommandIdAsync(
+            string creationCommandId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<ProductDefinitionRevision?>(null);
+
+        public Task<FirstGskuPairAllocationResult> AllocateForFirstGskuAsync(
+            Guid globalProductId,
+            string creationCommandId,
+            CancellationToken cancellationToken = default) => throw new NotSupportedException();
+
+        public Task<ProductDefinitionRevisionCreateResult> CreateForFirstGskuAsync(
+            ProductDefinitionRevision value,
+            CancellationToken cancellationToken = default) => throw new NotSupportedException();
+    }
+
+    private sealed class TestProductRepository(GlobalProduct product) : IGlobalProductRepository
+    {
+        public Task<GlobalProduct?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+            Task.FromResult<GlobalProduct?>(id == product.Id ? product : null);
+
+        public Task<GlobalProduct?> GetByReservationIdAsync(
+            Guid reservationId,
+            CancellationToken cancellationToken = default) => Task.FromResult<GlobalProduct?>(null);
+
+        public Task<bool> NameExistsAsync(
+            string normalizedName,
+            CancellationToken cancellationToken = default) => Task.FromResult(false);
+
+        public Task<GlobalProductPage> GetPageAsync(
+            int pageNumber,
+            int pageSize,
+            string? normalizedSearch,
+            ProductIdentityLifecycleStatus? lifecycleStatus,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new GlobalProductPage([product], 1));
+
+        public Task<GlobalProductCreateResult> CreateDraftAsync(
+            GlobalProduct value,
+            CancellationToken cancellationToken = default) => throw new NotSupportedException();
     }
 
     private sealed class TestTenantContext(Guid tenantId) : ITenantContext

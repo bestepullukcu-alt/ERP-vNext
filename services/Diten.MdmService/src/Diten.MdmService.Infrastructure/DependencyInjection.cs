@@ -1,5 +1,7 @@
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
+using Diten.MdmService.Application.Contracts.Authorization;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Infrastructure.Authorization;
 using Diten.MdmService.Infrastructure.Middleware;
 using Diten.MdmService.Infrastructure.Security;
@@ -29,6 +31,23 @@ public static class DependencyInjection
         services.Configure<VerifiedMarketResolverOptions>(
             configuration.GetSection(VerifiedMarketResolverOptions.SectionName));
         services.AddHttpClient<IVerifiedMarketReferenceResolver, PlatformVerifiedMarketResolverClient>();
+        services.Configure<TrustedLegalEntityScopeProviderOptions>(
+            configuration.GetSection(TrustedLegalEntityScopeProviderOptions.SectionName));
+        services.AddHttpClient<ITrustedLegalEntityScopeProvider, PlatformTrustedLegalEntityScopeProviderClient>(client =>
+            {
+                client.Timeout = Timeout.InfiniteTimeSpan;
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                AllowAutoRedirect = false
+            })
+            .RedactLoggedHeaders([
+                "Authorization",
+                PlatformTrustedLegalEntityScopeProviderClient.CredentialIdHeader,
+                PlatformTrustedLegalEntityScopeProviderClient.CredentialSecretHeader,
+                PlatformTrustedLegalEntityScopeProviderClient.AudienceHeader
+            ]);
+        services.AddScoped<ProductLegalEntityScopeCandidateFacade>();
 
         return services;
     }

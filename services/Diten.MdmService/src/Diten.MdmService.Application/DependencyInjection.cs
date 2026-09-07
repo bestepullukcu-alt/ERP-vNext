@@ -1,7 +1,9 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Features.ProductAbbreviationRegister.Services;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 
 namespace Diten.MdmService.Application;
 
@@ -22,6 +24,7 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(assembly);
         services.AddScoped<ProductAbbreviationAuthorization>();
         services.AddScoped<ProductAbbreviationWorkflow>();
+        services.AddScoped<IProductLegalEntityScopeEvaluator, ProductLegalEntityScopeEvaluator>();
 
         return services;
     }

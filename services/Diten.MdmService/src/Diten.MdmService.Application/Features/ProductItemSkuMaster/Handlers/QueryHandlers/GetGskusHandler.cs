@@ -1,4 +1,7 @@
+using Diten.MdmService.Application.Common;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Queries;
+using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.Shared.Core;
 using MediatR;
@@ -12,23 +15,46 @@ public sealed class GetGskusHandler
     private readonly IGskuRepository _gskus;
     private readonly IProductDefinitionRevisionRepository _revisions;
     private readonly IGlobalProductRepository _globalProducts;
+    private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
 
     public GetGskusHandler(
         IGskuRepository gskus,
         IProductDefinitionRevisionRepository revisions,
-        IGlobalProductRepository globalProducts)
+        IGlobalProductRepository globalProducts,
+        IProductLegalEntityScopeRolloutStateRepository rolloutStates,
+        IProductLegalEntityScopePolicyRepository policies,
+        ProductLegalEntityScopeCandidateFacade candidates,
+        ITenantContext tenantContext)
     {
         _gskus = gskus;
         _revisions = revisions;
         _globalProducts = globalProducts;
+        _scopeGuard = new(rolloutStates, policies, candidates, tenantContext);
     }
 
     public async Task<Response<ProductItemSkuMasterModels.PagedResult<ProductItemSkuMasterModels.GskuListItemDto>>> Handle(
         GetGskusQuery request,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(request);
         var search = string.IsNullOrWhiteSpace(request.Search) ? null : request.Search.Trim().ToUpperInvariant();
-        var page = await _gskus.GetPageAsync(request.PageNumber, request.PageSize, search, cancellationToken);
+        var scope = await _scopeGuard.ResolveContextAsync("mdm.gskus.read", cancellationToken);
+        if (!scope.IsSuccessful)
+        {
+            return Response<ProductItemSkuMasterModels.PagedResult<ProductItemSkuMasterModels.GskuListItemDto>>
+                .Fail(scope.FailureCode!, scope.StatusCode);
+        }
+
+        var page = scope.Context!.RolloutMode == ProductLegalEntityScopeRolloutMode.Preparation
+            ? await _gskus.GetPageAsync(request.PageNumber, request.PageSize, search, cancellationToken)
+            : await _gskus.GetEnforcedLegalEntityScopePageAsync(
+                request.PageNumber,
+                request.PageSize,
+                search,
+                referenceableOnly: false,
+                scope.Context.EffectiveCandidateLegalEntityIds,
+                scope.Context.ServerNowUtc,
+                cancellationToken);
         var revisions = await _revisions.GetByIdsAsync(
             page.Items.Select(x => x.ProductDefinitionRevisionId).Distinct().ToArray(),
             cancellationToken);

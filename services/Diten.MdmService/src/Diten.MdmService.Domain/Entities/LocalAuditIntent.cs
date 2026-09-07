@@ -20,12 +20,14 @@ public sealed class LocalAuditIntent
     public string CommandId { get; set; } = string.Empty;
     public long Sequence { get; set; }
     public DateTimeOffset TimestampUtc { get; set; }
+    public long? TimestampUtcTicksV1 { get; set; }
     public string EvidenceHash { get; set; } = string.Empty;
     public string? SnapshotReference { get; set; }
     public AuditIntentDeliveryState DeliveryState { get; set; } = AuditIntentDeliveryState.Pending;
     public int AttemptCount { get; set; }
     public DateTimeOffset? LastAttemptAt { get; set; }
     public DateTimeOffset? NextRetryAt { get; set; }
+    public long? NextRetryAtUtcTicksV1 { get; set; }
     public string IdempotencyKey { get; set; } = string.Empty;
     public string? CentralAcknowledgement { get; set; }
     public string? CentralIdempotencyKey { get; set; }
@@ -37,6 +39,8 @@ public sealed class LocalAuditIntent
     public long ClaimGeneration { get; set; }
     public DateTimeOffset? ClaimedAt { get; set; }
     public DateTimeOffset? LeaseUntil { get; set; }
+    public long? LeaseUntilUtcTicksV1 { get; set; }
+    public int? TemporalStorageVersion { get; set; }
     public DateTimeOffset? DeliveredAt { get; set; }
     public DateTimeOffset? DeadLetteredAt { get; set; }
     public DateTimeOffset? CompactedAt { get; set; }

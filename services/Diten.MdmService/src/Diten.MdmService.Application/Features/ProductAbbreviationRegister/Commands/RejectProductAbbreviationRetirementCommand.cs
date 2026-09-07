@@ -9,4 +9,4 @@ public sealed record RejectProductAbbreviationRetirementCommand(
     string RetirementRequestId,
     string IdempotencyKey,
     string Reason)
-    : IRequest<Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>>;
+    : IRequest<Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>>, global::Diten.MdmService.Application.Features.ProductLegalEntityScopes.IProductLegalEntityScopeInventoryMutation;

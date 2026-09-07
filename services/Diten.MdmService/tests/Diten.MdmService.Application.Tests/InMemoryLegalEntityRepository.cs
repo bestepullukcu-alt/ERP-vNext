@@ -4,7 +4,7 @@ using Diten.MdmService.Domain.Repositories;
 
 namespace Diten.MdmService.Application.Tests;
 
-internal sealed class InMemoryLegalEntityRepository : ILegalEntityRepository
+internal class InMemoryLegalEntityRepository : ILegalEntityRepository
 {
     private readonly Guid _tenantId;
     private readonly List<LegalEntity> _entities;
@@ -101,6 +101,29 @@ internal sealed class InMemoryLegalEntityRepository : ILegalEntityRepository
         IReadOnlyList<LegalEntity> items = _entities
             .Where(x => x.TenantId == _tenantId && !x.IsDeleted && x.OperationalStatus == LegalEntityOperationalStatus.Active)
             .OrderBy(x => x.LegalName)
+            .ToList();
+        return Task.FromResult(items);
+    }
+
+    public virtual Task<IReadOnlyList<LegalEntity>> GetReferenceableByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (ids.Count > ProductLegalEntityScopePolicy.MaximumLegalEntityIdsPerSnapshot
+            || ids.Any(id => id == Guid.Empty)
+            || ids.Distinct().Count() != ids.Count)
+        {
+            throw new ArgumentException("Legal Entity candidate set is not canonical.", nameof(ids));
+        }
+
+        var requested = ids.ToHashSet();
+        IReadOnlyList<LegalEntity> items = _entities
+            .Where(x => requested.Contains(x.Id)
+                && x.TenantId == _tenantId
+                && !x.IsDeleted
+                && x.OperationalStatus == LegalEntityOperationalStatus.Active)
+            .OrderBy(x => x.Id.ToString("D"), StringComparer.Ordinal)
             .ToList();
         return Task.FromResult(items);
     }

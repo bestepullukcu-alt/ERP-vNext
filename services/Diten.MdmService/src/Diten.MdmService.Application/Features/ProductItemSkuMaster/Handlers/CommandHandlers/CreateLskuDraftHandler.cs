@@ -3,7 +3,9 @@ using System.Text;
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Contracts.ReferenceData;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Commands;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
@@ -19,24 +21,35 @@ public sealed class CreateLskuDraftHandler
     private readonly ICodeReservationRepository _reservations;
     private readonly ILskuRepository _lskus;
     private readonly IGskuRepository _gskus;
+    private readonly IProductDefinitionRevisionRepository _revisions;
+    private readonly IGlobalProductRepository _globalProducts;
     private readonly IVerifiedMarketReferenceResolver _markets;
     private readonly ITenantContext _tenantContext;
     private readonly IProductIdentityActorContext _actorContext;
+    private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
 
     public CreateLskuDraftHandler(
         ICodeReservationRepository reservations,
         ILskuRepository lskus,
         IGskuRepository gskus,
+        IProductDefinitionRevisionRepository revisions,
+        IGlobalProductRepository globalProducts,
         IVerifiedMarketReferenceResolver markets,
         ITenantContext tenantContext,
-        IProductIdentityActorContext actorContext)
+        IProductIdentityActorContext actorContext,
+        IProductLegalEntityScopeRolloutStateRepository rolloutStates,
+        IProductLegalEntityScopePolicyRepository policies,
+        ProductLegalEntityScopeCandidateFacade candidates)
     {
         _reservations = reservations;
         _lskus = lskus;
         _gskus = gskus;
+        _revisions = revisions;
+        _globalProducts = globalProducts;
         _markets = markets;
         _tenantContext = tenantContext;
         _actorContext = actorContext;
+        _scopeGuard = new(rolloutStates, policies, candidates, tenantContext);
     }
 
     public async Task<Response<ProductItemSkuMasterModels.LskuDraftDto>> Handle(
@@ -47,9 +60,24 @@ public sealed class CreateLskuDraftHandler
         ArgumentNullException.ThrowIfNull(request.Request);
         var command = request.Request;
         var commandId = command.IdempotencyKey.Trim().ToUpperInvariant();
+        var scope = await _scopeGuard.ResolveContextAsync("mdm.lskus.create", cancellationToken);
+        if (!scope.IsSuccessful)
+        {
+            return Fail(scope.FailureCode!, scope.StatusCode);
+        }
+
         var replay = await _lskus.GetByCreationCommandIdAsync(commandId, cancellationToken);
         if (replay is not null)
         {
+            var replayScopeFailure = await EvaluateGskuScopeAsync(
+                replay.GskuId,
+                scope.Context!,
+                cancellationToken);
+            if (replayScopeFailure is not null)
+            {
+                return replayScopeFailure;
+            }
+
             if (replay.IsDeleted)
             {
                 return Fail("CREATION_COMMAND_TOMBSTONED", 409);
@@ -62,6 +90,12 @@ public sealed class CreateLskuDraftHandler
             }
 
             return await CompleteReplayAsync(replay, commandId, cancellationToken);
+        }
+
+        var scopeFailure = await EvaluateGskuScopeAsync(command.GskuId, scope.Context!, cancellationToken);
+        if (scopeFailure is not null)
+        {
+            return scopeFailure;
         }
 
         var gsku = await _gskus.GetReferenceableByIdAsync(command.GskuId, cancellationToken);
@@ -143,11 +177,48 @@ public sealed class CreateLskuDraftHandler
         return await ConfirmAndMapAsync(createResult.Lsku, reservation, commandId, cancellationToken);
     }
 
+    private async Task<Response<ProductItemSkuMasterModels.LskuDraftDto>?> EvaluateGskuScopeAsync(
+        Guid gskuId,
+        ProductLegalEntityScopeConsumerContext scopeContext,
+        CancellationToken cancellationToken)
+    {
+        var gsku = await _gskus.GetByIdAsync(gskuId, cancellationToken);
+        var revision = gsku is null
+            ? null
+            : await _revisions.GetByIdAsync(gsku.ProductDefinitionRevisionId, cancellationToken);
+        var product = revision is null
+            ? null
+            : await _globalProducts.GetByIdAsync(revision.GlobalProductId, cancellationToken);
+        if (gsku is null || revision is null || product is null)
+        {
+            return Fail("GSKU_NOT_REFERENCEABLE", 404);
+        }
+
+        var decision = await _scopeGuard.EvaluateAsync(scopeContext, product.Id, cancellationToken);
+        return decision.Allowed ? null : Fail("GSKU_NOT_REFERENCEABLE", 404);
+    }
+
+    private async Task<Response<ProductItemSkuMasterModels.LskuDraftDto>?> EvaluateGskuScopeAsync(
+        Guid gskuId,
+        CancellationToken cancellationToken)
+    {
+        var scope = await _scopeGuard.ResolveContextAsync("mdm.lskus.create", cancellationToken);
+        return scope.IsSuccessful
+            ? await EvaluateGskuScopeAsync(gskuId, scope.Context!, cancellationToken)
+            : Fail(scope.FailureCode!, scope.StatusCode);
+    }
+
     private async Task<Response<ProductItemSkuMasterModels.LskuDraftDto>> CompleteReplayAsync(
         Lsku replay,
         string commandId,
         CancellationToken cancellationToken)
     {
+        var scopeFailure = await EvaluateGskuScopeAsync(replay.GskuId, cancellationToken);
+        if (scopeFailure is not null)
+        {
+            return scopeFailure;
+        }
+
         var reservation = await _reservations.GetByIdAsync(replay.CodeReservationId, cancellationToken);
         if (!MatchesBinding(reservation, replay))
         {
@@ -173,6 +244,12 @@ public sealed class CreateLskuDraftHandler
         string commandId,
         CancellationToken cancellationToken)
     {
+        var scopeFailure = await EvaluateGskuScopeAsync(lsku.GskuId, cancellationToken);
+        if (scopeFailure is not null)
+        {
+            return scopeFailure;
+        }
+
         var confirmation = await _reservations.ConfirmIdentityBindingAsync(
             reservation.Id,
             lsku.Id,
@@ -225,6 +302,8 @@ public sealed class CreateLskuDraftHandler
             CommandId = commandId,
             Sequence = 1,
             TimestampUtc = timestamp,
+            TimestampUtcTicksV1 = timestamp.UtcTicks,
+            TemporalStorageVersion = AuditIntentTemporalStorage.CurrentVersion,
             EvidenceHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(evidence))),
             SnapshotReference = $"Lsku/{identityId:N}/0",
             DeliveryState = AuditIntentDeliveryState.Pending,
