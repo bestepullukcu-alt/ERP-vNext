@@ -2,14 +2,16 @@
 
 Bu dosya, Claude Code, Codex ve diğer AI ajanlarının repo genelinde uyması gereken yürütme kontratıdır.
 
-⚠ **`CLAUDE.md` bu dosyaya sembolik bağdır** (`ln -s AGENTS.md CLAUDE.md`), çünkü Claude Code
-`AGENTS.md`'yi değil `CLAUDE.md`'yi otomatik yükler. 2026-09-08'de ölçüldü: o bağ yokken bu
-dosya hiçbir Claude Code oturumuna yüklenmiyordu — yani "otomatik yüklenir" cümlesi doğru
-değildi. Tek dosya, iki isim: kopya yok, bayatlayacak ikinci nüsha yok.
+⚠ **Claude Code bu dosyayı otomatik yüklemez** — yalnız `CLAUDE.md`'yi yükler. 2026-09-08'de
+canlı oturumda ölçüldü: bağlamdaki tek proje dosyası `MEMORY.md`'ydi; bu dosya da,
+`.antigravity/` altındaki 39 kural / 20 ajan / 18 akış da yoktu.
 
-⚠ **Windows'ta `core.symlinks=false` ise** bu bağ düz metin dosyasına dönüşür ve içeriği
-"AGENTS.md" kelimesinden ibaret olur. Ekipte Windows kullanan varsa bunun yerine `CLAUDE.md`
-gerçek bir dosya yapılıp AGENTS.md'ye yönlendirmelidir.
+Bu yüzden repo kökünde **kısa bir `CLAUDE.md`** durur ve tek işi okuyucuyu buraya
+göndermektir. Sembolik bağ denendi ve **geri alındı**: ekipte Windows kullanan var, ve
+`core.symlinks=false` altında bağ "AGENTS.md" yazan düz bir metin dosyasına dönüşerek
+sessizce işlevsiz kalıyor — dosya var görünür, içerik yoktur.
+
+`CLAUDE.md` bir kopya değildir ve olmamalıdır; çakışmada **bu dosya kazanır**.
 
 > **Otorite:** Bu dosya, `.antigravity/` içindeki global standartlardan üstündür. Domain veya module seviyesinde yazılmış bir kural bu dosyadan üstündür.
 
