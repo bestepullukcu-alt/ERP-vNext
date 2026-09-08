@@ -1,0 +1,28 @@
+@using Diten.Web.Views.DataKnowledge.EtlEltPipelines
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EtlEltPipelinesIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["EtlEltPipelinesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = Perms.Has("dki.etl-elt-pipelines.manage");
+    var canEvaluate = Perms.Has("dki.etl-elt-pipelines.evaluate");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["EtlEltPipelinesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="etl-elt-pipelines-shell"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()">
+    @* Contract markers rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-etl-elt-pipelines" data-dt-standard="v2"> *@
+    <partial name="~/Views/DataKnowledge/EtlEltPipelines/_DataTable.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/DataKnowledge/EtlEltPipelines/_IndexL10n.cshtml" />
+    <script src="~/assets/js/DataKnowledge/EtlEltPipelines/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DataKnowledge/EtlEltPipelines/index.js" asp-append-version="true"></script>
+}

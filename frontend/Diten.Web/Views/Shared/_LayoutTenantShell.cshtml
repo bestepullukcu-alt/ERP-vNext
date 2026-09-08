@@ -78,6 +78,7 @@
     var canReadCandidateCareerPassport = Perms.Has("tep.candidate-career-passport.read");
     var canReadMetricSemanticRegistry = Perms.Has("dki.metric-semantic-registry.read");
     var canReadDataWarehouseLakehouse = Perms.Has("dki.data-warehouse-lakehouse.read");
+    var canReadEtlEltPipelines = Perms.Has("dki.etl-elt-pipelines.read");
 }
 <!DOCTYPE html>
 
@@ -679,7 +680,7 @@
                         }
                     }
 
-                    @if (canReadMetricSemanticRegistry || canReadDataWarehouseLakehouse)
+                    @if (canReadMetricSemanticRegistry || canReadDataWarehouseLakehouse || canReadEtlEltPipelines)
                     {
                         <li class="menu-header small text-uppercase">
                             <span class="menu-header-text">@SharedLocalizer["DataKnowledge"]</span>
@@ -699,6 +700,15 @@
                                 <a href="/DataKnowledge/DataWarehouseLakehouse" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-data"></i>
                                     <div>@SharedLocalizer["DataWarehouseLakehouseMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadEtlEltPipelines)
+                        {
+                            <li class="menu-item @(activeController == "EtlEltPipelines" ? "active" : "")">
+                                <a href="/DataKnowledge/EtlEltPipelines" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-transfer"></i>
+                                    <div>@SharedLocalizer["EtlEltPipelinesMenu"]</div>
                                 </a>
                             </li>
                         }

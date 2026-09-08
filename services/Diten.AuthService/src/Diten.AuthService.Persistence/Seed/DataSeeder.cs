@@ -237,7 +237,12 @@ public static class DataSeeder
             new("dki", "data-warehouse-lakehouse", "audit.read", "Data Warehouse Lakehouse Audit Read", null),
             new("dki", "data-warehouse-lakehouse", "evaluate", "Data Warehouse Lakehouse Evaluate", null),
             new("dki", "data-warehouse-lakehouse", "manage", "Data Warehouse Lakehouse Manage", null),
-            new("dki", "data-warehouse-lakehouse", "read", "Data Warehouse Lakehouse Read", null)
+            new("dki", "data-warehouse-lakehouse", "read", "Data Warehouse Lakehouse Read", null),
+
+            new("dki", "etl-elt-pipelines", "audit.read", "ETL ELT Pipelines Audit Read", null),
+            new("dki", "etl-elt-pipelines", "evaluate", "ETL ELT Pipelines Evaluate", null),
+            new("dki", "etl-elt-pipelines", "manage", "ETL ELT Pipelines Manage", null),
+            new("dki", "etl-elt-pipelines", "read", "ETL ELT Pipelines Read", null)
         };
 
         foreach (var p in permissions)
