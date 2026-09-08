@@ -19,10 +19,13 @@
                     <label for="globalProductId" class="form-label fw-medium">
                         @Localizer["GlobalProduct"] <span class="text-danger">*</span>
                     </label>
-                    <select id="globalProductId" name="GlobalProductId" class="form-select select2" required
-                            data-placeholder="@Localizer["GlobalProductPlaceholder"]">
-                        <option value=""></option>
-                    </select>
+                    <div class="diten-field">
+                        <i class="bx bx-package diten-field-icon" aria-hidden="true"></i>
+                        <select id="globalProductId" name="GlobalProductId" class="form-select select2" required
+                                data-placeholder="@Localizer["GlobalProductPlaceholder"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
                     <div class="invalid-feedback">@Localizer["GlobalProductRequired"]</div>
                 </div>
 
@@ -30,8 +33,11 @@
                     <label for="packQuantity" class="form-label fw-medium">
                         @Localizer["PackQuantity"] <span class="text-danger">*</span>
                     </label>
-                    <input type="number" id="packQuantity" name="PackQuantity" class="form-control"
-                           min="0" step="any" inputmode="decimal" placeholder="@Localizer["PackQuantityPlaceholder"]" required />
+                    <div class="diten-field">
+                        <i class="bx bx-calculator diten-field-icon" aria-hidden="true"></i>
+                        <input type="number" id="packQuantity" name="PackQuantity" class="form-control"
+                               min="0" step="any" inputmode="decimal" placeholder="@Localizer["PackQuantityPlaceholder"]" required />
+                    </div>
                     <div class="invalid-feedback">@Localizer["PackQuantityRequired"]</div>
                     <div class="form-text">@Localizer["PackQuantityHelp"]</div>
                 </div>
@@ -40,17 +46,20 @@
                     <label for="packUomCode" class="form-label fw-medium">
                         @Localizer["PackUom"] <span class="text-danger">*</span>
                     </label>
-                    <select id="packUomCode" name="PackUomCode" class="form-select select2" required
-                            data-placeholder="@Localizer["PackUomPlaceholder"]">
-                        <option value=""></option>
-                    </select>
+                    <div class="diten-field">
+                        <i class="bx bx-ruler diten-field-icon" aria-hidden="true"></i>
+                        <select id="packUomCode" name="PackUomCode" class="form-select select2" required
+                                data-placeholder="@Localizer["PackUomPlaceholder"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
                     <div class="invalid-feedback">@Localizer["PackUomRequired"]</div>
                 </div>
             </div>
         </form>
     </div>
     <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
-        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
-        <button type="button" id="btnSaveGsku" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas"><i class="bx bx-x me-1"></i>@SharedLocalizer["Cancel"]</button>
+        <button type="button" id="btnSaveGsku" class="btn btn-primary"><i class="bx bx-save me-1"></i><span id="btnSaveGskuText">@SharedLocalizer["Save"]</span></button>
     </div>
 </div>

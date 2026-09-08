@@ -3084,3 +3084,82 @@ not real-Mongo or live acceptance evidence. The two exact route methods select t
 operation server-side; the handler uses the real scope guard and candidate facade.
 The existing first-GSKU concurrent ordinal allocation flakiness remains open; these
 option tests do not diagnose or close it.
+## GSKU frontend/L10n/Gateway integration — approved 2026-09-08
+
+Bounded adaptation of retained `ffdd280a` GSKU UI to current backend and the operation-bound
+options amendment. No other product UI/runtime or shared layout/theme is included.
+Exact runtime/test paths (existing GSKU A/G locale ownership is retained):
+
+- `frontend/Diten.Web/Controllers/GskusController.cs`
+- `frontend/Diten.Web/Models/Gskus/GskuViewModels.cs`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/Gskus/GskusIndex.ar.resx`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/Gskus/GskusIndex.en.resx`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/Gskus/GskusIndex.es.resx`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/Gskus/GskusIndex.fr.resx`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/Gskus/GskusIndex.ru.resx`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/Gskus/GskusIndex.tr.resx`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/Gskus/GskusIndex.zh.resx`
+- `frontend/Diten.Web/Views/MasterDataManagement/Gskus/Index.cshtml`
+- `frontend/Diten.Web/Views/MasterDataManagement/Gskus/_CreateEditOffcanvas.cshtml`
+- `frontend/Diten.Web/Views/MasterDataManagement/Gskus/_Filter.cshtml`
+- `frontend/Diten.Web/Views/MasterDataManagement/Gskus/_IndexL10n.cshtml`
+- `frontend/Diten.Web/tests/gsku-register.test.js`
+- `frontend/Diten.Web/wwwroot/assets/js/MasterDataManagement/Gskus/index.js`
+- `gateway/Diten.ApiGateway/ocelot.json`
+- `gateway/Diten.ApiGateway.Tests/OcelotConfigurationTests.cs`
+
+Create keeps its Data Protection form-attempt contract and create-only options. Edit/correction
+fetch only target-bound verified UoMs; the immutable parent comes from detail, never a create
+selector. Option target/GSKU/revision versions must match the editor snapshot. Exact action keys
+come from fresh server detail; unknown, duplicate, case-drift or malformed actions fail closed.
+The direct-retire MVC surface and its unused locale keys are not carried. Retirement is a request.
+Canonical operation GUID checks do not impose an unsupported UUID version/variant restriction.
+Correction admission increments GSKU version; read-back verifies the returned increment and
+closed action fence while keeping revision unchanged. Draft edit validates post-save detail;
+submit/withdraw/retirement require source read-back before reporting the bounded outcome.
+WorkCenter's current `diten-field` icon composition replaces the retained input-group styling.
+Gateway adds only PUT on `/api/gskus/{everything}`; root PUT, ports, auth and other routes stay unchanged.
+
+Validation 2026-09-08 (non-live):
+
+- MDM amendment suite: 66 passed / 0 failed / 0 skipped; recorded separately above.
+- GSKU frontend: 49 passed / 0 failed / 0 skipped (20 source contracts and 29 executed
+  JS/DOM contracts using synthetic HTTP responses; not authenticated browser acceptance).
+- Combined GSKU/Global Product/personalization: 75/0/0. This includes the 49, not an additive total.
+- Gateway Ocelot configuration/route tests: 30/0/0, including eight GSKU nested method/path cases.
+- Frontend and Gateway Release builds succeeded; final incremental runs: 0 errors / 0 warnings.
+  Initial frontend rebuild emitted existing out-of-scope warnings; they were not fixed here.
+- Both GSKU JS syntax checks passed. Seven locale XML files: 69 keys each, exact parity,
+  nonempty localized bridge values; all 54 literal JS-used keys have bridge entries.
+- Packaged Python Golden Reference verifier: **72 pass / 19 fail**, exit 1. It is not a green
+  verifier run and focused tests do not substitute for it. No verifier/shared client was modified.
+
+Each verifier failure is reconciled against the approved GSKU G constraints:
+
+| # | Verifier failure | Existing approved constraint / variance |
+|---|---|---|
+| 1 | Save View hardcoded Default fallback | G disallows the hardcoded fallback; localized SaveView is present in seven locales. Executed persistence test verifies nonempty context/payload. |
+| 2 | Browser personalization tenant header | Actual same-origin `/api/personalization/views` goes through `PersonalizationProxyController.TryApplySecurityHeaders`; it adds tenant header for tenant_user and omits it for platform actors. Browser-header expectation is a verifier/proxy-profile mismatch, not missing header transport. Six shared client tests pass; no live request is claimed. |
+| 3 | Active bridge key | G forbids Active/Passive toggle; uses lifecycle states. |
+| 4 | Passive bridge key | Same explicit lifecycle-only constraint; unused key not injected. |
+| 5 | Edit bridge key | Actual action uses localized EditDraft/UpdateDraft, not generic Edit. |
+| 6 | BulkDelete bridge key | G forbids bulk/delete. |
+| 7 | BulkDeleteConfirm bridge key | G forbids bulk/delete; no inert confirmation added. |
+| 8 | AreYouSure bridge key | Actual bounded lifecycle confirmations use their specific localized messages; shared confirmation owns generic title. |
+| 9 | Import bridge key | Import is forbidden and no import button is supplied to exportButtons. |
+| 10 | ShowAll bridge key | Used directly by SharedLocalizer in the filter Razor; JS does not consume it. |
+| 11 | Status bridge key | Explicit LifecycleStatus field and lifecycle label keys replace generic Active/Passive status. |
+| 12 | Direct Gateway window.API base | Approved same-origin MVC proxy profile; browser must not construct service/Gateway authority. |
+| 13 | Select-all checkbox | G explicitly forbids select-all. |
+| 14 | Bulk action configuration | G explicitly forbids bulk operations. |
+| 15 | Bulk selection wiring | No row selection/bulk action surface is authorized. |
+| 16 | Bulk endpoint | Backend has no authorized bulk endpoint. |
+| 17 | Bulk delete trigger | G explicitly forbids delete; no fake trigger. |
+| 18 | Delete reloadWithToast helper | No single/bulk delete lifecycle exists. Typed lifecycle actions validate API result and source detail, then reload the table and report the actual bounded result. Executed JS tests cover this sequencing. |
+| 19 | Bulk clear-selection | No bulk selection exists; lifecycle filter clear/reset is real and remains separate. |
+
+Open risk preserved: `ProductItemSkuMasterMongoTests.Concurrent_first_gsku_commands_allocate_unique_parent_ordinals_and_soft_delete_never_reuses`
+failed in an earlier concurrency run and later passed; cause remains undiagnosed. No result here
+closes that flakiness. No Mongo migration, provisioning, credential/config/grant or real tenant
+data mutation was performed. Live two-user browser/WorkCenter approval/rejection, service configuration,
+durable audit/recovery acceptance and operational readiness remain outside this evidence.

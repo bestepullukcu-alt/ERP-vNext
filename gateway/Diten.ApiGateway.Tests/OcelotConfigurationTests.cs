@@ -200,6 +200,31 @@ public sealed class OcelotConfigurationTests
         Assert.DoesNotContain("PUT", rootRoute.UpstreamHttpMethod);
     }
 
+    [Theory]
+    [InlineData("GET", "00000000-0000-0000-0000-000000000001")]
+    [InlineData("GET", "00000000-0000-0000-0000-000000000001/edit-options")]
+    [InlineData("GET", "00000000-0000-0000-0000-000000000001/correction-options")]
+    [InlineData("PUT", "00000000-0000-0000-0000-000000000001")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/submit")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/identity-approval/withdraw")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/correction-requests")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/retirement-requests")]
+    public void Gsku_nested_contract_preserves_path_methods_and_destination(string method, string suffix)
+    {
+        var config = LoadConfiguration();
+        var root = Assert.Single(config.Routes, r => r.UpstreamPathTemplate == "/api/gskus");
+        var nested = Assert.Single(config.Routes, r => r.UpstreamPathTemplate == "/api/gskus/{everything}");
+        Assert.DoesNotContain("PUT", root.UpstreamHttpMethod);
+        Assert.True(new HashSet<string>(["GET", "POST", "PUT", "OPTIONS"], StringComparer.Ordinal)
+            .SetEquals(nested.UpstreamHttpMethod));
+        Assert.Contains(method, nested.UpstreamHttpMethod);
+        Assert.Equal("/api/gskus/" + suffix, nested.DownstreamPathTemplate.Replace("{everything}", suffix));
+        var host = Assert.Single(nested.DownstreamHostAndPorts);
+        Assert.Equal("localhost", host.Host);
+        Assert.Equal(5059, host.Port);
+        Assert.Equal("http", nested.DownstreamScheme);
+    }
+
     private static void AssertPpmRoute(IReadOnlyCollection<FileRoute> ppmRoutes, string template)
     {
         var route = Assert.Single(ppmRoutes, candidate =>

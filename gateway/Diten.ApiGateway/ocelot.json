@@ -406,6 +406,7 @@
       "UpstreamHttpMethod": [
         "GET",
         "POST",
+        "PUT",
         "OPTIONS"
       ],
       "UpstreamScheme": "http"
