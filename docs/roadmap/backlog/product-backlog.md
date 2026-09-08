@@ -4304,3 +4304,57 @@ alınıp koşulduklarında **yine kırmızı**. Sebep başka.
 takım "testler geçiyor mu" sorusunu cevaplanamaz hale getirir — her tur bu 13'ü
 elle ayıklamak zorunda kalır ve bir gün biri fazladan bir kırmızıyı da eski
 sanar. Bu maddenin asıl maliyeti budur.
+
+---
+
+### BL-344
+
+**İzin aksiyonları tek yazımda değil — dört farklı yazım, dokuz çakışma**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-08
+
+Aynı fiil kataloğa dört ayrı yazımla giriyor: kebab (`bulk-delete`), PascalCase
+(`Read`, `PublishOverride` — BRD tohumu kurucuya böyle geçiyor; `Key` küçülüyor
+ama `Action` alanı büyük harfli kalıyor), snake (`view_sensitive`,
+`change_status` — MOD-0251), ve düz küçük harf.
+
+Sonucu: aynı fiil iki ayrı kod gibi davranıyor. Çeviri köprüsünü ıskalıyor
+(bir satırda "Görüntüle", yanındakinde "Read"), aile eşlemesini ıskalıyor
+(renksiz kalıyor), ve aksiyon dağılımı panelinde iki ayrı çubuk üretiyor.
+
+Ölçüm komutu (sayı yazmıyorum — kayar):
+
+    mongosh "mongodb://localhost:27017/diten_auth_v3" --quiet --eval '
+      const a={}; db.permissions.find({},{Action:1,_id:0}).toArray()
+        .forEach(x=>a[x.Action]=(a[x.Action]||0)+1);
+      const n=s=>s.toLowerCase().replace(/_/g,"-"); const m={};
+      Object.keys(a).forEach(k=>{(m[n(k)]=m[n(k)]||[]).push(k+"("+a[k]+")")});
+      print(JSON.stringify(Object.entries(m).filter(([,v])=>v.length>1)));'
+
+2026-09-08 ölçümünde dokuz çakışma vardı: sekizi büyük/küçük harf
+(`read/Read`, `create/Create`, `update/Update`, `approve/Approve`,
+`publish/Publish`, `submit/Submit`, `preview/Preview`, `validate/Validate`),
+biri kebab/snake (`lookup-validation` **ve** `lookup_validation` — bunlar iki
+ayrı izin, iki ayrı modülde).
+
+⚠ **Bugün yapılan yalnız görüntü yamasıdır.** `PermLabel.normalizeAction`
+ekrana basmadan önce küçültüp `_` → `-` çeviriyor, böylece kullanıcı tek bir
+fiil görüyor. `Permission.Key`, `Action` alanı, filtre ve atama çağrısı
+**dokunulmadan** duruyor — ADR-001 §1 anahtarı dondurdu. Kusur yerinde duruyor,
+yalnız görünmüyor.
+
+⚠ Şu an bir birleşme sorunu YOK: aynı satırda aynı normalize-aksiyondan iki izin
+taşıyan hiçbir kaynak yok (ölçüldü: sıfır). Ama bu bir garanti değil, bir
+rastlantı — iki modül aynı kaynak altında `Read` ve `read` tanımlarsa kullanıcı
+aynı yetkiyi iki kez görür ve hangisini verdiğini bilemez.
+
+**Ne yapılır:** tohum/manifest düzeyinde aksiyonu tek yazıma (küçük harf kebab)
+normalize et, ve `Permission` kurucusunda `Action`'ı `Key` ile aynı kurala sokan
+bir guard test yaz — bugün `Key` küçülüyor, `Action` küçülmüyor; ayrışmanın
+kaynağı tam olarak bu.
+
+**Ne zaman yapılır:** `Action` alanını değiştirmek veri migration'ı gerektirir.
+`ModulePermissionResolver` / `SelectFor` bu alanı okumaz, ama `SelectFor`'un
+Viewer dalı `p.Action == "read"` karşılaştırması yapar (`StringComparison.
+OrdinalIgnoreCase`) ve `GetPermissionsByModule` gibi yollar ayrıca sınanmalıdır.
+Ayrı bir turda, kendi Scope-korunumu ölçümüyle.

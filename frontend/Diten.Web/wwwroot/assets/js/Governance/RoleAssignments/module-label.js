@@ -47,12 +47,27 @@
      *   1. nav server default name   — the catalog's own English name
      *   2. resx Nav.Module.{CODE}    — the user's language (synchronous: shipped in the page's L10n bridge)
      *   3. tenant override           — free text, rendered AS-TYPED, never localized
-     * so the Role Permissions label reads identically to the sidebar and Ctrl+K.
+     *   4. resx Perm.Module.{CODE}   — SCREEN-SPECIFIC name, see below
+     * so the Role Permissions label reads identically to the sidebar and Ctrl+K — unless layer 4 says otherwise.
      *
-     * navModules is the /TenantNavigation/api/menu payload (may be empty/absent — see the caller: the screen
-     * renders before it arrives and simply upgrades afterwards).
+     * ADR-001 §2 — layer 4 exists because one module name has to answer two different questions. The `tasks`
+     * module publishes ten pages: six settings screens that appear in the sidebar, and four work surfaces
+     * (/Tasks, /Tasks/Create, …) that are deliberately nav-invisible because Görev Merkezi is the single answer to
+     * "where is my work". So "Görev Tanımları" is the RIGHT sidebar name — everything the menu shows really is a
+     * settings screen — and the WRONG name here, where the group holds every one of the module's permissions,
+     * `create`/`update`/`delete` included. The ADR rejected both renaming the module (it re-breaks the menu) and
+     * splitting it (the cost outruns the gain); a second, screen-specific name is the cheap answer.
+     *
+     * ⚠ Layer 4 sits BELOW the tenant override, and that placement is ADR-002.
+     *
+     * ADR-001 §2 introduced this layer without saying where it goes relative to a tenant's own override, so the
+     * first implementation put it on top. That inverted the precedence this very file already establishes and
+     * tests ("tenant override > resx > nav default"): an operator who renames the module in the catalogue would
+     * have seen the sidebar change and this screen refuse to. A tenant override is the operator's deliberate
+     * word for their own module; Perm.Module.* is OUR default for one surface. A default never outranks a
+     * deliberate act -- so the screen-specific name beats our menu name and loses to their name.
      */
-    const buildMap = (resxNames, navModules) => {
+    const buildMap = (resxNames, navModules, permScreenNames) => {
         const map = {};
         const put = (code, label) => {
             const key = normalize(code);
@@ -64,6 +79,7 @@
             if (m && !m.moduleDisplayNameIsOverride) put(m.moduleCode, m.moduleDisplayName);
         });
         Object.keys(resxNames || {}).forEach((code) => put(code, resxNames[code]));
+        Object.keys(permScreenNames || {}).forEach((code) => put(code, permScreenNames[code]));
         (Array.isArray(navModules) ? navModules : []).forEach((m) => {
             if (m && m.moduleDisplayNameIsOverride) put(m.moduleCode, m.moduleDisplayName);
         });

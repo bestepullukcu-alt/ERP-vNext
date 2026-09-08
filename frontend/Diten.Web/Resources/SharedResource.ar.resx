@@ -539,6 +539,10 @@
   <data name="Nav.Module.PERSON" xml:space="preserve"><value>دليل الأشخاص</value></data>
   <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>قوائم المراجع</value></data>
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>إعدادات المهام</value></data>
+  <!-- ADR-001 §2 — the permission-screen name for the tasks module. The sidebar keeps
+       Nav.Module.TASKS ("Görev Tanımları"): everything the menu shows from this module really is a
+       settings screen. The permission group holds all sixteen keys, create/update/delete included. -->
+  <data name="Perm.Module.TASKS" xml:space="preserve"><value>المهام</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>سير العمل</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>المنتجات</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>الحساب</value></data>

@@ -45,6 +45,15 @@
   <data name="CountBadge" xml:space="preserve"><value>{0}/{1}</value></data>
   <!-- FEAT-ROLEPERMS-LABEL-DERIVE — action verbs (imperative) used to derive Role Permissions row labels from the permission KEY (verb · entity). Bridged to JS as window.L10n.ActionVerbs. -->
   <data name="ScopeLabel_TenantWide" xml:space="preserve"><value>Tenant-wide</value></data>
+  <data name="ActionVerb_Claim" xml:space="preserve"><value>Claim</value></data>
+  <data name="ActionVerb_Complete" xml:space="preserve"><value>Complete</value></data>
+  <data name="ActionVerb_Review" xml:space="preserve"><value>Review</value></data>
+  <data name="ActionVerb_Reconcile" xml:space="preserve"><value>Reconcile</value></data>
+  <data name="ActionVerb_Record" xml:space="preserve"><value>Record</value></data>
+  <data name="ActionVerb_Search" xml:space="preserve"><value>Search</value></data>
+  <data name="ActionVerb_Verify" xml:space="preserve"><value>Verify</value></data>
+  <data name="ActionVerb_Request" xml:space="preserve"><value>Request</value></data>
+  <data name="ActionVerb_ChangeLifecycle" xml:space="preserve"><value>Change Lifecycle</value></data>
   <data name="ActionVerb_Read" xml:space="preserve"><value>View</value></data>
   <data name="ActionVerb_View" xml:space="preserve"><value>View</value></data>
   <data name="ActionVerb_Create" xml:space="preserve"><value>Create</value></data>

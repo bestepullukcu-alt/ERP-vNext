@@ -4687,19 +4687,27 @@ div.dt-container div.dt-search input {
     outline-offset: 2px;
 }
 
-/* Tone follows the action (read/create/update/delete/...), the same mapping the role panel's bars use. */
+/* FIX-ROLEPERMS-ACTION-FAMILIES — tone follows the action's FAMILY (reading / creating / changing / destructive /
+   lifecycle / reversing / ownership), the same resolver the role panel's bars use. Seven tones, not seven hundred
+   verbs. `success` and `dark` join the five that were already here. */
 .ra-chip--info { color: var(--bs-info); }
 .ra-chip--primary { color: var(--bs-primary); }
 .ra-chip--warning { color: var(--bs-warning); }
 .ra-chip--danger { color: var(--bs-danger); }
+.ra-chip--success { color: var(--bs-success); }
 .ra-chip--secondary { color: var(--bs-secondary); }
+/* `dark` is the ownership family (assign / claim / delegate). Bootstrap's --bs-dark is near-black in light mode
+   and near-white in dark, so the token is read through the emphasis colour, which flips with the theme. */
+.ra-chip--dark { color: var(--bs-emphasis-color); }
 
 .ra-chip--on { border-color: transparent; }
 .ra-chip--on.ra-chip--info { background-color: rgba(var(--bs-info-rgb), .16); }
 .ra-chip--on.ra-chip--primary { background-color: rgba(var(--bs-primary-rgb), .16); }
 .ra-chip--on.ra-chip--warning { background-color: rgba(var(--bs-warning-rgb), .16); }
 .ra-chip--on.ra-chip--danger { background-color: rgba(var(--bs-danger-rgb), .16); }
+.ra-chip--on.ra-chip--success { background-color: rgba(var(--bs-success-rgb), .16); }
 .ra-chip--on.ra-chip--secondary { background-color: rgba(var(--bs-secondary-rgb), .16); }
+.ra-chip--on.ra-chip--dark { background-color: rgba(var(--bs-emphasis-color-rgb), .12); }
 
 /* The reach pill sits INSIDE the chip but reads as its own token — "read" and "read across the whole tenant"
    must never look like the same grant with a longer word. */

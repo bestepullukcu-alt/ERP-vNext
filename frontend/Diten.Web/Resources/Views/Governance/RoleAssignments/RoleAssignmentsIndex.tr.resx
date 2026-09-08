@@ -45,6 +45,15 @@
   <data name="CountBadge" xml:space="preserve"><value>{0}/{1}</value></data>
   <!-- FEAT-ROLEPERMS-LABEL-DERIVE — action verbs (imperative) used to derive Role Permissions row labels from the permission KEY (verb · entity). Bridged to JS as window.L10n.ActionVerbs. -->
   <data name="ScopeLabel_TenantWide" xml:space="preserve"><value>Tüm kiracı</value></data>
+  <data name="ActionVerb_Claim" xml:space="preserve"><value>Üstlen</value></data>
+  <data name="ActionVerb_Complete" xml:space="preserve"><value>Tamamla</value></data>
+  <data name="ActionVerb_Review" xml:space="preserve"><value>İncele</value></data>
+  <data name="ActionVerb_Reconcile" xml:space="preserve"><value>Mutabakat Yap</value></data>
+  <data name="ActionVerb_Record" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="ActionVerb_Search" xml:space="preserve"><value>Ara</value></data>
+  <data name="ActionVerb_Verify" xml:space="preserve"><value>Doğrula</value></data>
+  <data name="ActionVerb_Request" xml:space="preserve"><value>Talep Et</value></data>
+  <data name="ActionVerb_ChangeLifecycle" xml:space="preserve"><value>Yaşam Döngüsünü Değiştir</value></data>
   <data name="ActionVerb_Read" xml:space="preserve"><value>Görüntüle</value></data>
   <data name="ActionVerb_View" xml:space="preserve"><value>Görüntüle</value></data>
   <data name="ActionVerb_Create" xml:space="preserve"><value>Oluştur</value></data>

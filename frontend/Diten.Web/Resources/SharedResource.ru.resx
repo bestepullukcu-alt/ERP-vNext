@@ -539,6 +539,10 @@
   <data name="Nav.Module.PERSON" xml:space="preserve"><value>Справочник персон</value></data>
   <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>Справочники</value></data>
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>Настройки задач</value></data>
+  <!-- ADR-001 §2 — the permission-screen name for the tasks module. The sidebar keeps
+       Nav.Module.TASKS ("Görev Tanımları"): everything the menu shows from this module really is a
+       settings screen. The permission group holds all sixteen keys, create/update/delete included. -->
+  <data name="Perm.Module.TASKS" xml:space="preserve"><value>Задачи</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>Рабочий процесс</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Продукты</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Клиент</value></data>

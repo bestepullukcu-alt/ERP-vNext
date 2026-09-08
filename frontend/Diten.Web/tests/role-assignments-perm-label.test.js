@@ -98,9 +98,140 @@ describe("PermLabel.split (Role Permissions row labels)", () => {
             .toBe("knowledge.concept");
     });
 
+    // FIX-ROLEPERMS-ACTION-FAMILIES — tone/icon by family, matched on the action's WORDS.
+    //
+    // The exact-match table this replaces knew 13 of the catalog's 97 verbs, so 84 of them — 135 permissions —
+    // rendered as the same grey cog. These tests pin the part that makes the family approach work at all: the
+    // match is per WORD, so a qualified verb still lands in its family.
+    describe("action families (tone + icon)", () => {
+        it.each([
+            ["read", "info"],
+            ["create", "primary"],
+            ["manage", "warning"],
+            ["delete", "danger"],
+            ["approve", "success"],
+            ["cancel", "secondary"],
+            ["assign", "dark"]
+        ])("puts a plain %s in the %s family", (action, tone) => {
+            expect(load().split({ module: "m", resource: "r", action }, L10N).action.tone).toBe(tone);
+        });
+
+        it.each([
+            ["assign-role", "dark"],        // the case an exact-match list missed: assign + a qualifier
+            ["assign-roles", "dark"],
+            ["assign-permission", "dark"],
+            ["bulk-delete", "danger"],      // qualifier FIRST — the verb still classifies
+            ["view_status_history", "info"],
+            ["audit.view", "info"],
+            ["redact-actor", "danger"],
+            ["approve-extension", "success"]
+        ])("classifies the qualified verb %s as %s", (action, tone) => {
+            expect(load().split({ module: "m", resource: "r", action }, L10N).action.tone).toBe(tone);
+        });
+
+        it("gives an unfamiliar verb a neutral tone AND the cog — never a missing icon", () => {
+            const out = load().split({ module: "m", resource: "r", action: "temporary-issue" }, L10N);
+
+            expect(out.action.tone).toBe("secondary");
+            expect(out.action.icon).toBe("bx-cog");
+            // Neutral is acceptable; unreadable is not — the label still comes out as words.
+            expect(out.action.label).toBe("Temporary Issue");
+        });
+
+        it("keeps the glyphs export/import already had — a refactor may not take something away", () => {
+            const PL = load();
+            const ex = PL.split({ module: "m", resource: "r", action: "export" }, L10N);
+
+            // No family fits "move data across the boundary", so the TONE is correctly neutral...
+            expect(ex.action.tone).toBe("secondary");
+            // ...but the glyph it carried before this change is not collateral damage.
+            expect(ex.action.icon).toBe("bx-export");
+            expect(PL.split({ module: "m", resource: "r", action: "import" }, L10N).action.icon).toBe("bx-import");
+        });
+
+        it("gives every family its own icon, so a coloured chip is never ambiguous", () => {
+            const PL = load();
+            const icons = PL.ACTION_FAMILIES.map((f) => f.icon).concat(PL.UNFAMILIAR.icon);
+
+            expect(new Set(icons).size).toBe(icons.length);
+        });
+    });
+
+    // İŞ 4 — display normalization. The catalog stores the same verb in four spellings.
+    describe("action normalization (display only)", () => {
+        it.each([
+            ["Read", "read"],
+            ["Create", "create"],
+            ["Approve", "approve"],
+            ["view_sensitive", "view-sensitive"],
+            ["lookup_validation", "lookup-validation"]
+        ])("folds %s to %s", (raw, expected) => {
+            expect(load().split({ module: "m", resource: "r", action: raw }, L10N).action.code).toBe(expected);
+        });
+
+        it("makes the PascalCase seed read and colour like its kebab-case sibling", () => {
+            const PL = load();
+            const upper = PL.split({ module: "reference-data", resource: "businessreferencedata", action: "Read" }, L10N);
+            const lower = PL.split({ module: "tasks", resource: "tasks", action: "read" }, L10N);
+
+            // Same verb, same word, same colour — the BRD seed no longer prints "Read" beside a sibling's "Görüntüle".
+            expect(upper.action.code).toBe(lower.action.code);
+            expect(upper.action.label).toBe(lower.action.label);
+            expect(upper.action.tone).toBe(lower.action.tone);
+        });
+
+        it("does NOT touch the permission key — ADR-001 §1 froze it", () => {
+            const PL = load();
+            const perm = { module: "reference-data", resource: "businessreferencedata", action: "Read", key: "platform.businessreferencedata.read" };
+
+            // split() reads the key and never rewrites it; the caller posts perm.key, not action.code.
+            expect(PL.split(perm, L10N).action.code).toBe("read");
+            expect(perm.action).toBe("Read");
+            expect(perm.key).toBe("platform.businessreferencedata.read");
+        });
+    });
+
     it("is DOM-free", () => {
         const PL = load();
         expect(() => PL.split(perm("tasks", "read"), null)).not.toThrow();
         expect(PL.split(perm("tasks", "read"), null).action.label).toBe("Read");
+    });
+});
+
+/*
+ * The two lists that must not drift apart.
+ *
+ * _IndexL10n.cshtml curates the verbs worth translating in seven languages; ACTION_FAMILIES decides the tone and
+ * glyph of a chip. The first delivery grew one without the other: six of the nine newly translated verbs still
+ * resolved to no family, so they read as proper words and were drawn as the generic cog -- half-finished in a way
+ * no single test caught, because each list was individually correct.
+ *
+ * This reads the PRODUCTION view, not a copy of its list. Adding a verb to the bridge without giving it a family
+ * fails here, naming the verb.
+ */
+describe("curated verbs and action families stay in step", () => {
+    const fs = require("fs");
+    const path = require("path");
+
+    it("every verb in the l10n bridge resolves to a family", () => {
+        delete window.PermLabel;
+        loadScript("wwwroot/assets/js/Governance/RoleAssignments/perm-label.js");
+        const P = window.PermLabel;
+
+        const view = fs.readFileSync(
+            path.join(__dirname, "..", "Views/Governance/RoleAssignments/_IndexL10n.cshtml"),
+            "utf8"
+        );
+        // The ActionVerbs block only: ["verb"] = Localizer["ActionVerb_X"] entries.
+        const verbs = [...view.matchAll(/\["([a-z][a-z0-9-]*)"\]\s*=\s*Localizer\["ActionVerb_/g)].map((m) => m[1]);
+
+        expect(verbs.length).toBeGreaterThan(20);   // the bridge is really being read
+
+        const orphans = verbs.filter((v) => {
+            const family = P.resolveFamily(P.normalizeAction(v));
+            return !family || family === P.UNFAMILIAR;
+        });
+
+        expect(orphans).toEqual([]);
     });
 });

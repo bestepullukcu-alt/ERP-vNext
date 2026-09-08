@@ -539,6 +539,10 @@
   <data name="Nav.Module.PERSON" xml:space="preserve"><value>人员目录</value></data>
   <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>参照列表</value></data>
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>任务设置</value></data>
+  <!-- ADR-001 §2 — the permission-screen name for the tasks module. The sidebar keeps
+       Nav.Module.TASKS ("Görev Tanımları"): everything the menu shows from this module really is a
+       settings screen. The permission group holds all sixteen keys, create/update/delete included. -->
+  <data name="Perm.Module.TASKS" xml:space="preserve"><value>任务</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>工作流</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>产品</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>客户</value></data>

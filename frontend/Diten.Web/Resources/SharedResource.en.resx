@@ -600,6 +600,10 @@
   <data name="Nav.Module.PERSON" xml:space="preserve"><value>Person Directory</value></data>
   <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>Lookups</value></data>
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>Task Settings</value></data>
+  <!-- ADR-001 §2 — the permission-screen name for the tasks module. The sidebar keeps
+       Nav.Module.TASKS ("Görev Tanımları"): everything the menu shows from this module really is a
+       settings screen. The permission group holds all sixteen keys, create/update/delete included. -->
+  <data name="Perm.Module.TASKS" xml:space="preserve"><value>Tasks</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>Workflow</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Products</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Account</value></data>

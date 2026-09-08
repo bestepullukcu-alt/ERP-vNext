@@ -15,8 +15,14 @@
     // ("field-definitions" → "Alan Tanımları"). Nav.Page.* already localizes exactly these nouns for the sidebar,
     // so the row, the menu and Ctrl+K say the same word without a second dictionary.
     const string NavPagePrefix = "Nav.Page.";
+    // ADR-001 §2 — SCREEN-SPECIFIC module names. Same prefix bridge, different question: Nav.Module.* names the
+    // sidebar entry, Perm.Module.* names the permission GROUP. They differ only where a module's menu presence and
+    // its permission set describe different things (today: tasks → "Görev Tanımları" vs "Görevler"). A module with
+    // no Perm.Module key simply falls through to its menu name, so this map stays as short as the problem is.
+    const string PermModulePrefix = "Perm.Module.";
     var moduleNames = new Dictionary<string, string>(StringComparer.Ordinal);
     var entityNames = new Dictionary<string, string>(StringComparer.Ordinal);
+    var permModuleNames = new Dictionary<string, string>(StringComparer.Ordinal);
     try
     {
         foreach (var entry in SharedLocalizer.GetAllStrings(includeParentCultures: true))
@@ -34,6 +40,11 @@
                 var code = entry.Name.Substring(NavPagePrefix.Length);
                 if (code.Length > 0 && !entityNames.ContainsKey(code)) entityNames[code] = entry.Value;
             }
+            else if (entry.Name.StartsWith(PermModulePrefix, StringComparison.Ordinal))
+            {
+                var code = entry.Name.Substring(PermModulePrefix.Length);
+                if (code.Length > 0 && !permModuleNames.ContainsKey(code)) permModuleNames[code] = entry.Value;
+            }
         }
     }
     catch (Exception)
@@ -42,6 +53,7 @@
         // the nav names and then to the humanized code — never to a raw slug.
         moduleNames.Clear();
         entityNames.Clear();
+        permModuleNames.Clear();
     }
 }
 
@@ -60,6 +72,9 @@
         // FIX-ROLEPERMS-MODULE-LABEL — { NORMALIZEDMODULECODE: localized name } for the group headers + module
         // filter. → window.L10n.ModuleNames, consumed by ModuleLabel.buildMap. See the @{ } block above.
         ModuleNames = moduleNames,
+        // ADR-001 §2 — { NORMALIZEDMODULECODE: localized name } for the permission GROUP header + module filter,
+        // layered ABOVE the sidebar name in ModuleLabel.buildMap. → window.L10n.PermModuleNames.
+        PermModuleNames = permModuleNames,
         // FIX-RBAC-PERM-MODULE-ATTRIBUTION — { NORMALIZEDPAGECODE: localized name } for the SOURCE name on each
         // permission row. → window.L10n.EntityNames, consumed by PermLabel.split. Discovered by prefix like
         // ModuleNames, so a source this screen has never seen still reads as words (humanized) and never as a slug.
@@ -150,6 +165,19 @@
             ["compare"] = Localizer["ActionVerb_Compare"].Value,
             ["move"] = Localizer["ActionVerb_Move"].Value,
             ["start"] = Localizer["ActionVerb_Start"].Value,
+            // FIX-ROLEPERMS-ACTION-FAMILIES — the verbs the live catalog carries more than once, plus the two the
+            // Görev Merkezi surface needs (claim/complete). Measured: 97 distinct actions; translating all of them
+            // would be 679 strings that go stale on the next self-registered module. This bridge covers the ones
+            // that repeat; the rest humanize client-side and still read as words, never as a raw slug.
+            ["claim"] = Localizer["ActionVerb_Claim"].Value,
+            ["complete"] = Localizer["ActionVerb_Complete"].Value,
+            ["review"] = Localizer["ActionVerb_Review"].Value,
+            ["reconcile"] = Localizer["ActionVerb_Reconcile"].Value,
+            ["record"] = Localizer["ActionVerb_Record"].Value,
+            ["search"] = Localizer["ActionVerb_Search"].Value,
+            ["verify"] = Localizer["ActionVerb_Verify"].Value,
+            ["request"] = Localizer["ActionVerb_Request"].Value,
+            ["change-lifecycle"] = Localizer["ActionVerb_ChangeLifecycle"].Value,
             ["read-manager-chain"] = Localizer["ActionVerb_ReadManagerChain"].Value
         }
     })

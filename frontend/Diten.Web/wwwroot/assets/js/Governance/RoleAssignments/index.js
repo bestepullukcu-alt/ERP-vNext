@@ -38,18 +38,16 @@ const RoleAssignments = (function () {
         return role.displayName || role.name || '';
     };
 
-    // Action → glyph/tone for the row-card icon AND the action-distribution bars (single source, shared by both).
-    // Unknown actions fall back to a neutral icon/tone.
-    const ACTION_ICON = {
-        read: 'bx-show', create: 'bx-plus', update: 'bx-edit', delete: 'bx-trash',
-        archive: 'bx-archive-in', export: 'bx-export'
-    };
-    const ACTION_TONE = {
-        read: 'info', create: 'primary', update: 'warning', delete: 'danger',
-        archive: 'secondary', export: 'secondary'
-    };
-    const actionIcon = (action) => ACTION_ICON[(action || '').toLowerCase()] || 'bx-cog';
-    const actionTone = (action) => ACTION_TONE[(action || '').toLowerCase()] || 'secondary';
+    // Action → glyph/tone for the chip AND the action-distribution bars (single source, shared by both).
+    //
+    // FIX-ROLEPERMS-ACTION-FAMILIES — both now come from window.PermLabel's family resolver rather than a local
+    // exact-match table. The table here knew six verbs while the catalog carries 97, so the panel's bars and the
+    // chips could also disagree about the same verb. One resolver, one answer, and a verb the resolver has never
+    // seen is neutral rather than absent.
+    const actionFamily = (action) =>
+        window.PermLabel.resolveFamily(window.PermLabel.normalizeAction(action)) || window.PermLabel.UNFAMILIAR;
+    const actionIcon = (action) => actionFamily(action).icon;
+    const actionTone = (action) => actionFamily(action).tone;
 
     // FEAT-ROLEPERMS-LABEL-DERIVE — labels are DERIVED from the permission KEY, not the drifted stored DisplayName
     // (which mixed languages and mislabelled shared keys, e.g. "Menu Settings"/"Archive").
@@ -191,7 +189,7 @@ const RoleAssignments = (function () {
 
         chip.classList.add('ra-chip--' + parts.action.tone);
         chip.classList.toggle('ra-chip--on', state.assigned);
-        chip.querySelector('.ra-chip-icon').classList.add(actionIcon(parts.action.code));
+        chip.querySelector('.ra-chip-icon').classList.add(parts.action.icon);
         chip.querySelector('.ra-chip-label').textContent = parts.action.label;
 
         // The scope pill is deliberately its own element: "read" and "read across the whole tenant" must not look
@@ -540,7 +538,7 @@ const RoleAssignments = (function () {
             .then((json) => {
                 const nav = (json && (json.data !== undefined ? json.data : json.Data)) ?? json;
                 if (!Array.isArray(nav) || nav.length === 0) return;
-                moduleLabelMap = window.ModuleLabel.buildMap(L.ModuleNames || {}, nav);
+                moduleLabelMap = window.ModuleLabel.buildMap(L.ModuleNames || {}, nav, L.PermModuleNames || {});
                 refreshModuleLabels();
             })
             .catch(() => { /* label upgrade is optional — the resx/humanize labels already on screen stand. */ });
@@ -740,7 +738,7 @@ const RoleAssignments = (function () {
         // FIX-ROLEPERMS-MODULE-LABEL — the synchronous half of the label map (resx Nav.Module.* via the page's
         // L10n bridge). Built BEFORE the first render so the very first paint already shows friendly names; the
         // nav call below only adds tenant overrides / non-resx modules on top.
-        moduleLabelMap = window.ModuleLabel.buildMap(L.ModuleNames || {}, []);
+        moduleLabelMap = window.ModuleLabel.buildMap(L.ModuleNames || {}, [], L.PermModuleNames || {});
         upgradeModuleLabelsFromNav();
 
         // select2 emits selection via jQuery's .trigger('change'), which does NOT reach vanilla

@@ -4,17 +4,17 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
-  <data name="Title" xml:space="preserve"><value>Role Permissions</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Assign or remove permissions for a role.</value></data>
-  <data name="SelectRole" xml:space="preserve"><value>Role</value></data>
-  <data name="SearchPermissions" xml:space="preserve"><value>Search permissions…</value></data>
-  <data name="SelectRolePrompt" xml:space="preserve"><value>Select a role to manage its permissions.</value></data>
-  <data name="NoPermissions" xml:space="preserve"><value>No permissions are available.</value></data>
-  <data name="Assign" xml:space="preserve"><value>Assign</value></data>
-  <data name="BadgeBaseline" xml:space="preserve"><value>Baseline</value></data>
-  <data name="BadgeModule" xml:space="preserve"><value>Module</value></data>
-  <data name="BadgeManual" xml:space="preserve"><value>Manual</value></data>
-  <data name="LockedHint" xml:space="preserve"><value>Baseline and module-granted permissions cannot be changed here.</value></data>
+  <data name="Title" xml:space="preserve"><value>Разрешения роли</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Назначьте или снимите разрешения для роли.</value></data>
+  <data name="SelectRole" xml:space="preserve"><value>Роль</value></data>
+  <data name="SearchPermissions" xml:space="preserve"><value>Поиск разрешений…</value></data>
+  <data name="SelectRolePrompt" xml:space="preserve"><value>Выберите роль, чтобы управлять её разрешениями.</value></data>
+  <data name="NoPermissions" xml:space="preserve"><value>Нет доступных разрешений.</value></data>
+  <data name="Assign" xml:space="preserve"><value>Назначить</value></data>
+  <data name="BadgeBaseline" xml:space="preserve"><value>Базовое</value></data>
+  <data name="BadgeModule" xml:space="preserve"><value>Модуль</value></data>
+  <data name="BadgeManual" xml:space="preserve"><value>Вручную</value></data>
+  <data name="LockedHint" xml:space="preserve"><value>Базовые и выданные модулем разрешения здесь не изменяются.</value></data>
   <data name="LockedHintSystem" xml:space="preserve"><value>Это разрешение является частью базового набора системы и не может быть изменено здесь.</value></data>
   <data name="LockedHintModule" xml:space="preserve"><value>Это разрешение было автоматически предоставлено модулем {0} и не может быть изменено здесь.</value></data>
   <data name="FilterModuleLabel" xml:space="preserve"><value>Модуль</value></data>
@@ -45,6 +45,15 @@
   <data name="CountBadge" xml:space="preserve"><value>{0}/{1}</value></data>
   <!-- FEAT-ROLEPERMS-LABEL-DERIVE — action verbs (imperative) used to derive Role Permissions row labels from the permission KEY (verb · entity). Bridged to JS as window.L10n.ActionVerbs. -->
   <data name="ScopeLabel_TenantWide" xml:space="preserve"><value>По всему арендатору</value></data>
+  <data name="ActionVerb_Claim" xml:space="preserve"><value>Взять в работу</value></data>
+  <data name="ActionVerb_Complete" xml:space="preserve"><value>Завершить</value></data>
+  <data name="ActionVerb_Review" xml:space="preserve"><value>Проверить</value></data>
+  <data name="ActionVerb_Reconcile" xml:space="preserve"><value>Сверить</value></data>
+  <data name="ActionVerb_Record" xml:space="preserve"><value>Записать</value></data>
+  <data name="ActionVerb_Search" xml:space="preserve"><value>Искать</value></data>
+  <data name="ActionVerb_Verify" xml:space="preserve"><value>Верифицировать</value></data>
+  <data name="ActionVerb_Request" xml:space="preserve"><value>Запросить</value></data>
+  <data name="ActionVerb_ChangeLifecycle" xml:space="preserve"><value>Изменить жизненный цикл</value></data>
   <data name="ActionVerb_Read" xml:space="preserve"><value>Просмотр</value></data>
   <data name="ActionVerb_View" xml:space="preserve"><value>Просмотр</value></data>
   <data name="ActionVerb_Create" xml:space="preserve"><value>Создание</value></data>
