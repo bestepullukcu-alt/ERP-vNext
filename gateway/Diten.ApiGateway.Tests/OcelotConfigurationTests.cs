@@ -182,19 +182,22 @@ public sealed class OcelotConfigurationTests
     }
 
     [Fact]
-    public void GlobalProductsCatchAll_CarriesFu03NestedPolicyRoutesWithoutARouteEdit()
+    public void GlobalProducts_routes_allow_put_only_on_nested_template()
     {
         var config = LoadConfiguration();
-        var route = Assert.Single(config.Routes, candidate =>
+        var rootRoute = Assert.Single(config.Routes, candidate =>
+            string.Equals(candidate.UpstreamPathTemplate, "/api/global-products", StringComparison.Ordinal));
+        var nestedRoute = Assert.Single(config.Routes, candidate =>
             string.Equals(candidate.UpstreamPathTemplate, "/api/global-products/{everything}", StringComparison.Ordinal));
 
-        Assert.Equal("/api/global-products/{everything}", route.DownstreamPathTemplate);
-        Assert.Single(route.DownstreamHostAndPorts);
-        Assert.Equal("localhost", route.DownstreamHostAndPorts[0].Host);
-        Assert.Equal(5059, route.DownstreamHostAndPorts[0].Port);
+        Assert.Equal("/api/global-products/{everything}", nestedRoute.DownstreamPathTemplate);
+        Assert.Single(nestedRoute.DownstreamHostAndPorts);
+        Assert.Equal("localhost", nestedRoute.DownstreamHostAndPorts[0].Host);
+        Assert.Equal(5059, nestedRoute.DownstreamHostAndPorts[0].Port);
         Assert.True(
-            new HashSet<string>(StringComparer.Ordinal) { "GET", "POST", "OPTIONS" }.SetEquals(route.UpstreamHttpMethod),
-            $"Unexpected Global Product catch-all methods: {string.Join(",", route.UpstreamHttpMethod)}");
+            new HashSet<string>(StringComparer.Ordinal) { "GET", "POST", "PUT", "OPTIONS" }.SetEquals(nestedRoute.UpstreamHttpMethod),
+            $"Unexpected Global Product catch-all methods: {string.Join(",", nestedRoute.UpstreamHttpMethod)}");
+        Assert.DoesNotContain("PUT", rootRoute.UpstreamHttpMethod);
     }
 
     private static void AssertPpmRoute(IReadOnlyCollection<FileRoute> ppmRoutes, string template)

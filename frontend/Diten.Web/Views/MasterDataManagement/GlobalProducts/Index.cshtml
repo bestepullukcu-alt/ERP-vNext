@@ -17,6 +17,10 @@
     <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
 </div>
 
+<form id="globalProductLifecycleToken" class="d-none" data-no-tracker>
+    @Html.AntiForgeryToken()
+</form>
+
 <partial name="~/Views/MasterDataManagement/GlobalProducts/_DataTable.cshtml" />
 @* Contract marker rendered by the partial: id="offcanvasDetailsPreview" *@
 <partial name="~/Views/MasterDataManagement/GlobalProducts/_DetailsQuickView.cshtml" />

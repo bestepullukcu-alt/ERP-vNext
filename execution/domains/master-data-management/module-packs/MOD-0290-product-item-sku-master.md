@@ -2635,7 +2635,7 @@ default-fail-closed when its operator-owned options are absent; this amendment c
 The follow-on Global Product backend/UI/Gateway slices remain constrained to their separately approved exact paths.
 Gateway may add only `PUT` to `/api/global-products/{everything}`; the root route remains `GET, POST, OPTIONS`.
 
-+### Global Product lifecycle backend amendment — approved code-start (2026-09-08)
+### Global Product lifecycle backend amendment — approved code-start (2026-09-08)
 
 This amendment authorizes only the Global Product backend lifecycle slice already separately approved by the user:
 draft update; submit, withdraw, correction request and retirement request; terminal decision reconciliation and
@@ -2759,6 +2759,43 @@ Required boundaries: existing Auth 16/7/10 grants and Platform trusted cancellat
 workflow/audit common layer rewrite; each recovery runner is explicit-command only, default-disabled and fails closed
 on failed processing; server-side tenant/scope/idempotency/concurrency/audit receipt controls remain authoritative.
 
+
+### Global Product lifecycle frontend and Gateway amendment — approved code-start (2026-09-08)
+
+This amendment authorizes the Global Product tenant-shell frontend slice and the one required Gateway method delta.
+The browser calls only same-origin MVC routes; MVC performs the authenticated Gateway proxy. Lifecycle actions keep
+anti-forgery, Data Protection-derived idempotency, expected-version and permission boundaries server-side. A success
+notice is emitted only after response-shape validation and a fresh source-product detail read-back.
+
+Frontend runtime exact allow-list:
+
+- `frontend/Diten.Web/Controllers/GlobalProductsController.cs`
+- `frontend/Diten.Web/Views/MasterDataManagement/GlobalProducts/Index.cshtml`
+- `frontend/Diten.Web/Views/MasterDataManagement/GlobalProducts/_CreateEditOffcanvas.cshtml`
+- `frontend/Diten.Web/Views/MasterDataManagement/GlobalProducts/_DetailsQuickView.cshtml`
+- `frontend/Diten.Web/Views/MasterDataManagement/GlobalProducts/_IndexL10n.cshtml`
+- `frontend/Diten.Web/wwwroot/assets/js/MasterDataManagement/GlobalProducts/index.js`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/GlobalProducts/GlobalProductsIndex.ar.resx`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/GlobalProducts/GlobalProductsIndex.en.resx`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/GlobalProducts/GlobalProductsIndex.es.resx`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/GlobalProducts/GlobalProductsIndex.fr.resx`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/GlobalProducts/GlobalProductsIndex.ru.resx`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/GlobalProducts/GlobalProductsIndex.tr.resx`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/GlobalProducts/GlobalProductsIndex.zh.resx`
+
+Frontend test exact allow-list:
+
+- `frontend/Diten.Web/tests/global-products-register.test.js`
+
+Gateway exact allow-list, owned under the integration-agent contract:
+
+- `gateway/Diten.ApiGateway/ocelot.json`, only add `PUT` to `/api/global-products/{everything}`.
+- `gateway/Diten.ApiGateway.Tests/OcelotConfigurationTests.cs`, assert nested `PUT` and root `PUT` absence.
+
+Protected paths: all shared layout/theme and WorkCenter paths, all SharedResource files, other product register
+screens, Auth/Platform/MDM runtime, every Gateway route except the named nested Global Product template, and all
+configuration/provisioning paths. Root `/api/global-products` remains `GET, POST, OPTIONS`; GSKU and all other
+route method sets remain untouched.
 
 ## 20. Follow-up Items
 
