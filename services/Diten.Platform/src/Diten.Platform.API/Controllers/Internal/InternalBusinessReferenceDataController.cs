@@ -22,16 +22,21 @@ public sealed class InternalBusinessReferenceDataController : CustomBaseControll
     public const string AudienceHeader = "X-Verified-Gsku-Audience";
 
     private readonly IMediator _mediator;
-    private readonly IVerifiedReferenceDataRequestExecutor _requestExecutor;
+    private readonly VerifiedReferenceDataRequestExecutor _requestExecutor;
 
     public InternalBusinessReferenceDataController(
         IMediator mediator,
         IVerifiedGskuResolverCredentialAuthenticator credentialAuthenticator,
         IVerifiedGskuResolverJwtTenantContext jwtTenantContext,
+        IVerifiedReferenceDataServiceTenantContext serviceTenantContext,
         ITenantContext tenantContext)
     {
         _mediator = mediator;
-        _requestExecutor = new VerifiedReferenceDataRequestExecutor(credentialAuthenticator, jwtTenantContext, tenantContext);
+        _requestExecutor = new VerifiedReferenceDataRequestExecutor(
+            credentialAuthenticator,
+            jwtTenantContext,
+            serviceTenantContext,
+            tenantContext);
     }
 
     [HttpPost("resolve")]
@@ -58,7 +63,7 @@ public sealed class InternalBusinessReferenceDataController : CustomBaseControll
     [HttpPost("enumerate-uom")]
     public async Task<IActionResult> EnumerateUom(CancellationToken cancellationToken)
     {
-        return await _requestExecutor.ExecuteAsync(HttpContext, cancellationToken, async (_, token) =>
+        return await _requestExecutor.ExecuteInteractiveOnlyAsync(HttpContext, cancellationToken, async (_, token) =>
         {
             if (Request.Query.Count > 0 || Request.ContentLength is > 0 || Request.Headers.ContainsKey("Transfer-Encoding"))
             {

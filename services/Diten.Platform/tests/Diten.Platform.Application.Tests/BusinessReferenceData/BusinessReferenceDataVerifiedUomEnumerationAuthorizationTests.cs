@@ -98,16 +98,36 @@ public sealed class BusinessReferenceDataVerifiedUomEnumerationAuthorizationTest
         Mock<IMediator> mediator,
         Mock<IVerifiedGskuResolverCredentialAuthenticator> credential,
         Mock<IVerifiedGskuResolverJwtTenantContext> jwt,
-        TenantContext context)
+        TenantContext context,
+        VerifiedGskuResolverJwtTenantResult? serviceResult = null)
     {
+        var service = new Mock<IVerifiedReferenceDataServiceTenantContext>(MockBehavior.Strict);
+        service.Setup(x => x.ResolveAsync(It.IsAny<HttpContext>()))
+            .ReturnsAsync(serviceResult ?? VerifiedGskuResolverJwtTenantResult.Unauthenticated);
         var controller = new InternalBusinessReferenceDataController(
-            mediator.Object, credential.Object, jwt.Object, context);
+            mediator.Object, credential.Object, jwt.Object, service.Object, context);
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Headers[InternalBusinessReferenceDataController.CredentialIdHeader] = "resolver-id";
         httpContext.Request.Headers[InternalBusinessReferenceDataController.CredentialSecretHeader] = "resolver-secret";
         httpContext.Request.Headers[InternalBusinessReferenceDataController.AudienceHeader] = "VERIFIED_GSKU_RESOLVE";
         controller.ControllerContext = new ControllerContext { HttpContext = httpContext };
         return controller;
+    }
+
+    [Fact]
+    public async Task ServiceIdentityCannotEnumerateInteractiveUomOptions()
+    {
+        var mediator = new Mock<IMediator>(MockBehavior.Strict);
+        var jwt = new Mock<IVerifiedGskuResolverJwtTenantContext>(MockBehavior.Strict);
+        jwt.Setup(x => x.ResolveAsync(It.IsAny<HttpContext>()))
+            .ReturnsAsync(VerifiedGskuResolverJwtTenantResult.Unauthenticated);
+        var controller = CreateController(mediator, AuthenticatedCredential(), jwt, new TenantContext(),
+            new VerifiedGskuResolverJwtTenantResult(true, true, Guid.NewGuid()));
+
+        var result = await controller.EnumerateUom(CancellationToken.None);
+
+        Assert.Equal(403, Assert.IsAssignableFrom<ObjectResult>(result).StatusCode);
+        mediator.VerifyNoOtherCalls();
     }
 
     private static Mock<IVerifiedGskuResolverCredentialAuthenticator> AuthenticatedCredential()

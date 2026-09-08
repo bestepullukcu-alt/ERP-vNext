@@ -37,6 +37,32 @@ public static class DependencyInjection
         services.Configure<VerifiedMarketResolverOptions>(
             configuration.GetSection(VerifiedMarketResolverOptions.SectionName));
         services.AddHttpClient<IVerifiedMarketReferenceResolver, PlatformVerifiedMarketResolverClient>();
+        services.Configure<AuthWorkflowVerifiedMarketServiceIdentityProviderOptions>(
+            configuration.GetSection(AuthWorkflowVerifiedMarketServiceIdentityProviderOptions.SectionName));
+        services.AddHttpClient(nameof(AuthWorkflowVerifiedMarketServiceIdentityProvider), client =>
+            {
+                client.Timeout = Timeout.InfiniteTimeSpan;
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false })
+            .RedactLoggedHeaders([
+                AuthWorkflowVerifiedMarketServiceIdentityProvider.ClientIdHeader,
+                AuthWorkflowVerifiedMarketServiceIdentityProvider.ClientSecretHeader
+            ]);
+        services.AddHttpClient(nameof(PlatformWorkflowVerifiedGskuResolverClient), client =>
+            {
+                client.Timeout = Timeout.InfiniteTimeSpan;
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false })
+            .RedactLoggedHeaders([
+                "Authorization",
+                PlatformWorkflowVerifiedGskuResolverClient.CredentialIdHeader,
+                PlatformWorkflowVerifiedGskuResolverClient.CredentialSecretHeader,
+                PlatformWorkflowVerifiedGskuResolverClient.AudienceHeader
+            ]);
+        services.AddSingleton<IWorkflowVerifiedMarketServiceIdentityProvider,
+            AuthWorkflowVerifiedMarketServiceIdentityProvider>();
+        services.AddScoped<IWorkflowVerifiedGskuReferenceResolver,
+            PlatformWorkflowVerifiedGskuResolverClient>();
         services.Configure<TrustedLegalEntityScopeProviderOptions>(
             configuration.GetSection(TrustedLegalEntityScopeProviderOptions.SectionName));
         services.AddHttpClient<ITrustedLegalEntityScopeProvider, PlatformTrustedLegalEntityScopeProviderClient>(client =>

@@ -5,10 +5,12 @@ public static class ServiceIdentityTokenAudiencePolicy
     public const string MdmServiceName = "Diten.MDM";
     public const string TrustedAuditSourceIngest = "TRUSTED_AUDIT_SOURCE_INGEST";
     public const string TrustedWorkflowConsumer = "TRUSTED_WORKFLOW_CONSUMER";
+    public const string TrustedReferenceDataConsumer = "TRUSTED_REFERENCE_DATA_CONSUMER";
 
     public static bool IsAllowedAudience(string audience) =>
         string.Equals(audience, TrustedAuditSourceIngest, StringComparison.Ordinal)
-        || string.Equals(audience, TrustedWorkflowConsumer, StringComparison.Ordinal);
+        || string.Equals(audience, TrustedWorkflowConsumer, StringComparison.Ordinal)
+        || string.Equals(audience, TrustedReferenceDataConsumer, StringComparison.Ordinal);
 
     public static bool IsAllowedPair(string serviceName, string audience) =>
         string.Equals(serviceName, MdmServiceName, StringComparison.Ordinal)

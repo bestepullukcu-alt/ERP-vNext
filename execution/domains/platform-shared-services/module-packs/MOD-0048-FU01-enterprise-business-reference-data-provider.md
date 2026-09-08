@@ -2460,3 +2460,41 @@ Production/Staging enablement remains prohibited and separately gated.
   remain exclusively in MOD-0290 step A and later steps; none is absorbed by this provider named step.
 - Production enablement, monitoring and operational handoff occur only after G2/G3 evidence and release gates close.
 - MOD-0290 C adapter/semantic-validation implementation remains in its own Module Pack and cannot be absorbed here.
+
+
+### GSKU trusted reference-data prerequisite integration (2026-09-08)
+
+The user authorized the existing workflow-safe reference-data purpose for GSKU recovery. The Market-named
+MDM identity provider issues only the exact Section D audience; it neither selects MarketCode nor authorizes a
+resource. The GSKU client is separately fixed to verified-gsku/resolve and the exact pack-applicability/uom pair.
+The resolver retains the existing static second factor, independently validated service tenant, duplicate-header
+rejection and interactive/service ambiguity rejection. Tenant-user resolve remains unchanged; enumerate-uom stays
+interactive-only. The protected final's broader service enumeration behavior is deliberately not integrated.
+No workflow-market client or LSKU lifecycle is part of this bounded GSKU prerequisite.
+
+Exact integrated runtime/test paths (not directory wildcards):
+
+- `services/Diten.Platform/src/Diten.Platform.API/Security/VerifiedReferenceDataRequestExecutor.cs`
+- `services/Diten.Platform/src/Diten.Platform.API/Controllers/Internal/InternalBusinessReferenceDataController.cs`
+- `services/Diten.Platform/src/Diten.Platform.API/Security/VerifiedReferenceDataServiceTenantContext.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/ReferenceData/IWorkflowVerifiedMarketServiceIdentityProvider.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/ReferenceData/AuthWorkflowVerifiedMarketServiceIdentityProvider.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/ReferenceData/AuthWorkflowVerifiedMarketServiceIdentityProviderOptions.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/VerifiedReferenceDataServiceTenantContextTests.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataVerifiedResolverAuthorizationTests.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/VerifiedReferenceDataRequestExecutorTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ReferenceData/AuthWorkflowVerifiedMarketServiceIdentityProviderTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ReferenceData/PlatformWorkflowVerifiedGskuResolverClientTests.cs`
+- `services/Diten.Platform/src/Diten.Platform.API/Program.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/DependencyInjection.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/ReferenceData/IWorkflowVerifiedGskuReferenceResolver.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/ReferenceData/PlatformWorkflowVerifiedGskuResolverClient.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataVerifiedUomEnumerationAuthorizationTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ReferenceData/WorkflowVerifiedMarketDependencyInjectionTests.cs`
+
+Evidence: Platform focused scheme/context/executor/resolver/UoM authorization 65 passed / 0 failed / 0 skipped;
+MDM provider/client/DI tests 11/0/0. The earlier MDM 9/0/0 run is a subset, not additive evidence.
+Auth real-Mongo grant evidence belongs to Section D. The universal GSKU resolver itself has no Mongo dependency;
+a test file named VerifiedResolveMongo is not counted as real-Mongo execution.
+Platform/Auth Release builds and MDM Release build passed. No credentials, configuration, grants, live requests,
+application data or services were changed. GSKU lifecycle integration and live acceptance remain separate gates.

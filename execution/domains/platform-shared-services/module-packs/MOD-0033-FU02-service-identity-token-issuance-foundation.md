@@ -217,3 +217,26 @@ worktree, based on remote-main commit `c2cc8e10dcfc54b08f21cd258bc63e4a33449824`
 3. Revise MOD-0021-FU01 to consume this Platform public-key validator and run live audit ingestion smoke.
 4. Implement the MOD-0290 MDM token client/cache and H1b durable audit delivery under its own exact allow-list.
 5. Production/Staging signing keys, public-key distribution, credential rotation, monitoring and incident runbook remain separate gates.
+
+
+### Section D — Trusted Reference Data Consumer integration (2026-09-08)
+
+User-authorized integration of the protected final Section D into the delivery branch.
+The exact pair is `Diten.MDM/TRUSTED_REFERENCE_DATA_CONSUMER`; identity AllowedAudience remains singular.
+Audit and Workflow identities cannot substitute for this identity, even when a wrong-purpose grant exists.
+RS256, exact service/tenant claims, 300-second lifetime, rotation and revocation contracts are unchanged.
+
+Exact runtime paths:
+
+- `services/Diten.AuthService/src/Diten.AuthService.Application/Features/ServiceIdentityTokens/ServiceIdentityTokenAudiencePolicy.cs`
+- `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedServiceTokenValidationExtensions.cs`
+
+Exact Auth test paths under `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/`:
+`ServiceIdentityTokenHandlerTests.cs`, `ServiceIdentityTokenIssueTests.cs`,
+`ServiceIdentityTokenSecurityContractTests.cs`, `ServiceIdentityTokenMongoTests.cs`.
+Platform uses `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Security/TrustedServiceTokenValidationTests.cs`.
+
+Evidence: Auth focused service-token tests 73 passed / 0 failed / 0 skipped. The fixed, test-owned
+`diten_auth_service_identity_itest` Mongo grant/identity test independently passed 1/0/0; it overlaps the 73,
+not an additional success. Auth and Platform Release builds passed. No operational identity, grant, key or config
+was provisioned. This records code integration, not live resolver acceptance or independent review completion.
