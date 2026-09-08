@@ -4037,3 +4037,60 @@ ve backend'den okunmalıdır — tahmin edilen bir anahtar, yetkisi OLAN kullan�
 dışarıda bırakır. Yanlış yönde bir hata, kusurun kendisinden pahalıdır.
 
 **İlişkili:** [[BL-335]] · `.antigravity/rules/unauthorized-surface-standard.md`
+
+### BL-337
+
+**Sneat tema özelleştiricisi üç kabuktan da kaldırılacak**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-08
+
+Sahip, Kullanıcı Ekle offcanvas'ında sağda mavi bir dişli gördü ve alan ikonu sandı.
+Değil: Sneat şablonunun **tema özelleştirici** paneli — tıklayınca Theme · Skin ·
+Layout · Primary Color · RTL ayarlarını açar. Şablon satıcısının kendi tanıtım
+sayfası için koyduğu demo aracı.
+
+    template-customizer.js            91 KB
+    yüklendiği kabuk                  _Layout · _LayoutTenantShell · _LayoutPlatformAdmin
+    koşul                             YOK — dev/prod ayrımı yapılmıyor
+    backbone-custom.css'te kural      YOK — konum/z-index vendor varsayılanında
+
+Üç ayrı sorun: (a) sağ kenara sabit, offcanvas'ın üstüne biniyor ve alan ikonu
+sanılıyor; (b) tema değiştirme zaten üst çubukta var, bu ikinci bir yol;
+(c) "Primary Color" ve "RTL" son kullanıcının değiştireceği şeyler değil —
+RTL dil seçiminden gelmeli, marka rengi ürünün kararı.
+
+**Kapanma ölçütü:** üç kabukta da `template-customizer` referansı 0, ve panelin
+açtığı ayarların (tema) üst çubuktaki karşılığı çalışmaya devam ediyor.
+
+⚠ "Yalnız geliştirmede göster" çözümü ÖNERİLMİYOR: bir `IsDevelopment()` kontrolü
+gerektirir ve bu depoda tam o kontrolün unutulduğu bir örnek aynı gün düzeltildi
+(`PositionSeed` üretimde çalışıyordu). Hiç yüklememek daha sağlam; 91 KB da her
+sayfadan düşer.
+
+### BL-338
+
+**97 sayfa hangi kabukta olacağına karar verilmeden varsayılan `_Layout`'a düşüyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-08
+
+    370 sayfa view (partial hariç)
+    266 kendi kabuğunu açıkça seçiyor (_LayoutTenantShell / _LayoutPlatformAdmin)
+      7 Layout = null
+    ~97 hiç Layout satırı taşımıyor → Views/_ViewStart.cshtml varsayılanı: "_Layout"
+
+Bunlar ölü sayfalar değil: `DemandIdeas/*`, `EnterpriseStrategyBusinessPerformance/*`
+ve diğerleri. Ve `AGENTS.md` `_Layout.cshtml`'i **FROZEN** ilan ediyor — yani
+doksan yedi sayfa, dokunulmaması gereken bir kabuğu, öyle olduğunu bilmeden
+kullanıyor.
+
+Asıl mesele dosyanın kendisi değil, **kararın hiç verilmemiş olması**: bu sayfalar
+kiracı tarafına mı platform tarafına mı ait? Varsayılana düşmek bu soruyu
+cevaplamıyor, sadece erteliyor — ve `views-organization.md` shell seçimini zorunlu
+kılıyor.
+
+**Kapanma ölçütü:** her sayfa view'ı kabuğunu açıkça seçer; `_ViewStart` varsayılanı
+ya kaldırılır ya da bilinçli bir seçim olarak gerekçesiyle yazılır. Bir muhafız test
+"Layout satırı olmayan sayfa view" sayısını ölçer ve sayı yalnız küçülür.
+
+⚠ Sahip bu turda "_Layout artık kullanılmıyor sanırım" dedi; ölçüm bunun tersini
+gösterdi. Madde, o varsayımın neden yanlış olduğunu kaydetmek için de duruyor.

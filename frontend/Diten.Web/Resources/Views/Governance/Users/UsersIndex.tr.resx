@@ -34,6 +34,8 @@
   <data name="FormTitleEdit" xml:space="preserve"><value>Kullanıcıyı Düzenle</value></data>
   <data name="GeneralInformation" xml:space="preserve"><value>Genel Bilgiler</value></data>
   <data name="EmailPlaceholder" xml:space="preserve"><value>örn. kullanici@ornek.com</value></data>
+  <data name="FirstNamePlaceholder" xml:space="preserve"><value>örn. Ayşe</value></data>
+  <data name="LastNamePlaceholder" xml:space="preserve"><value>örn. Yılmaz</value></data>
   <data name="EmailImmutableHint" xml:space="preserve"><value>E-posta oluşturulduktan sonra değiştirilemez.</value></data>
   <data name="KpiTotalUsers" xml:space="preserve"><value>Toplam Kullanıcı</value></data>
   <data name="KpiActiveUsers" xml:space="preserve"><value>Aktif</value></data>

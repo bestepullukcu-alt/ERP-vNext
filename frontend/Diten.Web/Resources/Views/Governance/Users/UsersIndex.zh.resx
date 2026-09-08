@@ -34,6 +34,8 @@
   <data name="FormTitleEdit" xml:space="preserve"><value>编辑用户</value></data>
   <data name="GeneralInformation" xml:space="preserve"><value>基本信息</value></data>
   <data name="EmailPlaceholder" xml:space="preserve"><value>例如 user@example.com</value></data>
+  <data name="FirstNamePlaceholder" xml:space="preserve"><value>例如：小明</value></data>
+  <data name="LastNamePlaceholder" xml:space="preserve"><value>例如：王</value></data>
   <data name="EmailImmutableHint" xml:space="preserve"><value>创建后无法更改电子邮件。</value></data>
   <data name="KpiTotalUsers" xml:space="preserve"><value>用户总数</value></data>
   <data name="KpiActiveUsers" xml:space="preserve"><value>活跃</value></data>
