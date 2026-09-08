@@ -4262,6 +4262,53 @@ kalmadan. `mod0251` için sahibi HCM ekibidir.
 Ara çare: `Perm.Module.*` köprüsüne okunur ad yazmak. Grup adını düzeltir, atfı
 düzeltmez — bu yüzden çare, çözüm değil.
 
+---
+
+#### ÖLÇÜM GÜNCELLEMESİ — 2026-09-08 (tohum hijyeni turu)
+
+Üçünün sahibi arandı. **Hiçbirine atıf verilmedi**; sebepleri aşağıda. Sahip
+kararı: üçü de olduğu gibi kalsın, sorular burada beklesin.
+
+**`lookups` (1 izin) — "reference-data'dır" varsayımı ÖLÇÜMLE ÇÜRÜDÜ.**
+`LookupsController` (`/api/lookups`) şunları sunuyor: countries · currencies ·
+locales · languages · timezones · tenant-tiers · feature-categories ·
+subscription-cycles · audit/{categories,operations,outcomes} ·
+module-catalog/{domains,services,permission-modules}. Bunlar **PSS sistem
+lookup'ları**. `reference-data` modülü ise BusinessReferenceData'dır ve rotaları
+`/Platform/ReferenceData/*`. [PSS-LOOKUPS-001](../../../.antigravity/rules/platform-lookups-reference-data.md)
+ikisini açıkça ayırır ve PSS lookup'ın kendi pack adresini verir:
+`execution/domains/platform-shared-services/module-packs/PSS-011-lookups-reference-data.md`.
+Canlı katalogda (32 kayıt) PSS lookup diye bir modül yok.
+→ **Soru:** PSS lookup yüzeyinin modül kodu nedir, ve bir manifest onu
+yayınlayacak mı? Yoksa `platform.lookups.read` kalıcı olarak sahipsizdir.
+
+**`person` (3 izin) — kanıt iki yöne çekiyor.**
+Lehine: MOD-0288'in kanonik adı *"Organization, Person & Position Directory"*, ve
+`platform.person.lookup_validation` tohumda organization-units bloğunun hemen
+üstünde duruyor. Aleyhine: `OrganizationManifestProvider` **hiçbir person sayfası
+beyan etmiyor** (yalnız OrganizationUnits / Positions / PositionAssignments), yani
+hiçbir manifest bu izinleri sahiplenmiyor. Ayrıca üçü de `Scope=PlatformAdmin` ve
+`organization` **PlatformAdminModules'te değil** — atıf verilseydi Scope'un elle
+`PlatformAdmin`'e sabitlenmesi gerekirdi, yoksa Tenant'a düşerdi (ADR-001 §1).
+Elle sabitleme gereği, işaretin zayıf olduğunun kendisidir.
+→ **Soru:** person referans yüzeyi MOD-0288'e mi ait? Öyleyse kalıcı çözüm
+`OrganizationManifestProvider`'ın person sayfalarını beyan etmesidir — `moduleOverride`
+değil. `platform.person.search` ve `.view` zaten tohumda yok (worker üretiyor,
+`IsSystem=false`), yani yalnız tohumu düzeltmek üç anahtarı iki gruba bölerdi.
+
+**`mod0251` (14 izin) — HCM ekibine sorulacak soru.**
+→ *"`mod0251.*` anahtarlarının sahibi modül kodu nedir, ve self-registration
+manifestinizde bu kod yayınlanıyor mu?"* Sahibi `services/Diten.HcmService`
+(çalışan ana verisi). Katalogda HCM modülü yok; kod uydurmak, HCM kendi
+manifestini gönderdiğinde ikinci bir yanlış atıf yaratır.
+⚠ **Modül kodu bu turda dokunulmadı.** Aksiyonlardaki snake_case
+(`view_sensitive`, `change_status`, `edit_legal`, `edit_employment`,
+`create_draft`, `attach_evidence`, `view_status_history`, `data_quality`) ise
+düzeldi — ama bir HCM kararı olarak değil, `Permission` kurucusundaki tek
+yazım kuralının (`PermissionSegmentNormalizer`) kaçınılmaz sonucu olarak.
+Anahtarlar değişmedi. Kurala istisna listesi açmak, bu depoda tekrar tekrar
+cezalandırılan desendir; onun yerine kural tek ve istisnasız tutuldu.
+
 ### BL-343
 
 **Ana dalda kırmızı duran muhafızlar: bir gizlilik sözleşmesi ve on üç ön yüz dosyası**

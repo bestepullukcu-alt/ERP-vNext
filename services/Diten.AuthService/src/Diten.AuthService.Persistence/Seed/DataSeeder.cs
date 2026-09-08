@@ -179,9 +179,134 @@ public static class DataSeeder
         }
 
         await ReconcilePermissionModulesAsync(col, permissions);
+        await ReconcilePermissionSegmentsFromSeedAsync(col, permissions);
         await ReconcilePermissionScopesAsync(col, permissions);
         await ReconcilePermissionModuleCasingAsync(col);
         await ReconcileServiceNamespaceModuleAttributionAsync(col);
+        await ReconcilePermissionSegmentSpellingAsync(col);
+    }
+
+    /// <summary>
+    /// FIX-PERM-ACTION-SPELLING — the one-time (idempotent) spelling migration for rows already in the database.
+    ///
+    /// <para>
+    /// The constructor now normalizes <c>Resource</c>/<c>Action</c>, but a row inserted before that keeps whatever
+    /// it was created with, and the catalog-sync UPDATE path deliberately refreshes display metadata only. Measured
+    /// in the live catalog: the BRD seed stored fourteen PascalCase actions (<c>Read</c>, <c>PublishOverride</c>, …)
+    /// and MOD-0251 eight snake_case ones, so the same verb rendered as two verbs — two labels, two colours, two
+    /// bars in the action-distribution panel.
+    /// </para>
+    ///
+    /// <para>
+    /// ⚠ SEGMENTS ONLY. <c>Key</c> is absent from the update because ADR-001 §1 froze it — the key is the identity
+    /// every grant row and every <c>[HasPermission]</c> attribute resolves through. <c>Scope</c> is absent because
+    /// it is the tenant/platform escalation boundary and this migration has no business moving it. Adding either
+    /// field to this update is the dangerous edit in this method; PermissionScopePreservationTests guards the second.
+    /// </para>
+    /// </summary>
+    /// <summary>
+    /// FIX-PERM-ACTION-SPELLING — for a key the SEED declares, the seed owns the segment spelling.
+    ///
+    /// <para>
+    /// The whole-collection normalizer below can only clean up what is still separable. Once a boundary is gone
+    /// from the stored data it is gone for good: <c>platform.businessreferencedata.fixture.manage</c> reached the
+    /// catalog through the A1 reflection worker, which parses the lowercased KEY, so its Resource was stored as
+    /// <c>businessreferencedata.fixture</c> — one unreadable word that no rule can split back apart, sitting next
+    /// to fourteen siblings reading <c>business-reference-data.*</c>. The seed literal still knows where the words
+    /// are, so for seeded keys it is the authority — the same key-exact, Module-and-Scope pattern already used
+    /// above, extended to the two segments.
+    /// </para>
+    ///
+    /// <para>
+    /// ⚠ Segments only, and only for keys the seed declares. <c>Key</c> and <c>Scope</c> are absent for the reasons
+    /// given on the migration below; a synced-only permission is not the seed's to rewrite.
+    /// </para>
+    /// </summary>
+    private static async Task ReconcilePermissionSegmentsFromSeedAsync(IMongoCollection<Permission> col, List<Permission> permissions)
+    {
+        var writes = new List<WriteModel<Permission>>();
+        foreach (var p in permissions)
+        {
+            writes.Add(new UpdateOneModel<Permission>(
+                Builders<Permission>.Filter.And(
+                    Builders<Permission>.Filter.Eq(x => x.Key, p.Key),
+                    Builders<Permission>.Filter.Or(
+                        Builders<Permission>.Filter.Ne(x => x.Resource, p.Resource),
+                        Builders<Permission>.Filter.Ne(x => x.Action, p.Action))),
+                Builders<Permission>.Update
+                    .Set(x => x.Resource, p.Resource)
+                    .Set(x => x.Action, p.Action)));
+        }
+
+        if (writes.Count == 0) return;
+
+        var result = await col.BulkWriteAsync(writes, new BulkWriteOptions { IsOrdered = false });
+        if (result.ModifiedCount > 0)
+        {
+            Console.WriteLine($"Aligned Resource/Action to the seed literal for {result.ModifiedCount} existing permission(s).");
+        }
+    }
+
+    /// <summary>
+    /// One row's spelling correction. The type carries the Id and the two SEGMENTS and nothing else — no
+    /// <c>Key</c>, no <c>Scope</c>, no <c>Module</c> — so the migration is incapable of writing them. That is the
+    /// point: a field this record does not have cannot be added to the update by accident, and
+    /// <c>PermissionSegmentNormalizerTests</c> asserts the shape so it cannot be added on purpose either without
+    /// a test going red. (Precedent: <c>TaskModuleDisplayNameRenameMigration.Plan</c>.)
+    /// </summary>
+    public sealed record SegmentSpellingRewrite(Guid Id, string? Resource, string? Action);
+
+    /// <summary>
+    /// Pure, unit-testable core of <see cref="ReconcilePermissionSegmentSpellingAsync"/>: decides which rows need
+    /// a spelling correction. No IO, so a test can drive it with a hand-built catalog.
+    /// </summary>
+    public static IReadOnlyList<SegmentSpellingRewrite> PlanSegmentSpellingRewrites(IEnumerable<Permission> permissions)
+    {
+        var plan = new List<SegmentSpellingRewrite>();
+
+        foreach (var p in permissions ?? Enumerable.Empty<Permission>())
+        {
+            var resource = PermissionSegmentNormalizer.Normalize(p.Resource);
+            var action = PermissionSegmentNormalizer.Normalize(p.Action);
+
+            // A normalization that empties a segment is refused rather than written: an empty Action would make the
+            // row unreadable on every screen, and the row is better left ugly than left broken.
+            var newResource = resource.Length > 0 && !string.Equals(resource, p.Resource, StringComparison.Ordinal) ? resource : null;
+            var newAction = action.Length > 0 && !string.Equals(action, p.Action, StringComparison.Ordinal) ? action : null;
+
+            if (newResource is null && newAction is null)
+            {
+                continue; // already canonical
+            }
+
+            plan.Add(new SegmentSpellingRewrite(p.Id, newResource, newAction));
+        }
+
+        return plan;
+    }
+
+    private static async Task ReconcilePermissionSegmentSpellingAsync(IMongoCollection<Permission> col)
+    {
+        var all = await col.Find(_ => true).ToListAsync();
+        var plan = PlanSegmentSpellingRewrites(all);
+        if (plan.Count == 0) return;
+
+        var writes = plan.Select(rewrite =>
+        {
+            var sets = new List<UpdateDefinition<Permission>>(2);
+            if (rewrite.Resource is not null) sets.Add(Builders<Permission>.Update.Set(x => x.Resource, rewrite.Resource));
+            if (rewrite.Action is not null) sets.Add(Builders<Permission>.Update.Set(x => x.Action, rewrite.Action));
+
+            return (WriteModel<Permission>)new UpdateOneModel<Permission>(
+                Builders<Permission>.Filter.Eq(x => x.Id, rewrite.Id),
+                Builders<Permission>.Update.Combine(sets));
+        }).ToList();
+
+        var result = await col.BulkWriteAsync(writes, new BulkWriteOptions { IsOrdered = false });
+        if (result.ModifiedCount > 0)
+        {
+            Console.WriteLine($"Normalized Resource/Action spelling for {result.ModifiedCount} existing permission(s).");
+        }
     }
 
     /// <summary>

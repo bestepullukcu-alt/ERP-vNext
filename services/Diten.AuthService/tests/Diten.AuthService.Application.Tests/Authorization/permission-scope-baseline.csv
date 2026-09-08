@@ -248,3 +248,11 @@ platform.workflow.tasks.delegate,1
 platform.workflow.tasks.reject,1
 platform.workflow.tasks.request-info,1
 platform.workflow.transitions.evaluate,1
+# --- MOD-0288-FU02 (merge d1735755, seed commit 04e212de) — organization unit custom fields + reporting line.
+# Added to the baseline AFTER this guard caught them missing. Scope is STATED, not inferred: all four are tenant
+# organization-directory capabilities on /OrganizationUnits routes, they carry moduleOverride "organization"
+# (not in PlatformAdminModules), and the live catalog holds them at Tenant. Verified against diten_auth_v3.
+platform.organization-units.custom-fields.manage,0
+platform.organization-units.custom-fields.read,0
+platform.organization-units.custom-fields.write-value,0
+platform.organization-units.reporting-line.update,0

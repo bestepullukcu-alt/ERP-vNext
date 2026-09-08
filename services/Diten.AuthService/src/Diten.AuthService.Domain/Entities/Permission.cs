@@ -43,10 +43,20 @@ public sealed class Permission : GlobalEntityBase
         // every platform.* key to Tenant scope. PermissionScopePreservationTests fails if that happens.
         var legacyAttribution = moduleOverride ?? module;
 
-        Module = moduleOverride ?? PermissionModuleAttribution.Derive(module, resource);
-        Resource = resource;
-        Action = action;
+        // FIX-PERM-ACTION-SPELLING — the Key is computed FIRST and from the RAW arguments, because ADR-001 §1
+        // froze it: "Platform.BusinessReferenceData.Version.PublishOverride" must keep resolving to
+        // platform.businessreferencedata.version.publishoverride, whatever the stored segments end up spelling.
+        // Only the stored Resource/Action are normalized, so the catalog stops carrying the same verb four ways
+        // (PascalCase from the BRD seed, snake_case from MOD-0251, kebab everywhere else) while every
+        // [HasPermission] attribute in the repository stays untouched.
         Key = $"{module}.{resource}.{action}".ToLowerInvariant();
+
+        // Module derivation reads the RAW resource on purpose — it is the pre-existing behaviour, and feeding it
+        // the normalized form would change the derived head for a PascalCase resource
+        // ("businessreferencedata" → "business-reference-data") and silently re-group permissions.
+        Module = moduleOverride ?? PermissionModuleAttribution.Derive(module, resource);
+        Resource = PermissionSegmentNormalizer.Normalize(resource);
+        Action = PermissionSegmentNormalizer.Normalize(action);
         DisplayName = displayName;
         Description = description;
         IsSystem = true;
