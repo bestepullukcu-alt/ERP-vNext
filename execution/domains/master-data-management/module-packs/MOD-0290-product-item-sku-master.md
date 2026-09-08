@@ -2635,6 +2635,131 @@ default-fail-closed when its operator-owned options are absent; this amendment c
 The follow-on Global Product backend/UI/Gateway slices remain constrained to their separately approved exact paths.
 Gateway may add only `PUT` to `/api/global-products/{everything}`; the root route remains `GET, POST, OPTIONS`.
 
++### Global Product lifecycle backend amendment — approved code-start (2026-09-08)
+
+This amendment authorizes only the Global Product backend lifecycle slice already separately approved by the user:
+draft update; submit, withdraw, correction request and retirement request; terminal decision reconciliation and
+read-back; repository persistence; explicit, default-disabled recovery; manifest projection; and the focused tests
+listed below. It does not authorize frontend, localization, Gateway, other product lifecycle flows, provisioning,
+configuration values, real tenant data, service startup or operational recovery execution.
+
+Runtime exact allow-list:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/GlobalProductsController.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Program.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/QueryHandlers/GetGlobalProductByIdHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/ProductItemSkuMasterModels.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/GlobalProduct.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductAuditOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGlobalProductRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/DependencyInjection.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GlobalProductRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/GlobalProductCorrectionWorkflowOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/GlobalProductCorrectionWorkflowWorkerOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/GlobalProductRetirementRequestWorkflowOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/GlobalProductRetirementRequestWorkflowWorkerOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/ProductIdentityWorkflowOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/ProductIdentityWorkflowWorkerOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/GlobalProductCorrectionRecoveryCommandLine.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/GlobalProductCorrectionRecoveryRunner.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/GlobalProductCorrectionRecoveryWorker.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/GlobalProductRetirementRequestRecoveryCommandLine.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/GlobalProductRetirementRequestRecoveryRunner.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/GlobalProductRetirementRequestRecoveryWorker.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/ProductIdentityWorkflowRecoveryCommandLine.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/ProductIdentityWorkflowRecoveryRunner.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/ProductIdentityWorkflowRecoveryWorker.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Commands/ReconcileGlobalProductIdentityDecisionCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Commands/RetireGlobalProductIdentityCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Commands/SubmitGlobalProductIdentityCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Commands/UpdateGlobalProductDraftCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Commands/WithdrawGlobalProductIdentityApprovalCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/GlobalProductCorrectionAuditIntentFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/GlobalProductRetirementRequestAuditIntentFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/ReconcileGlobalProductIdentityDecisionHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/RetireGlobalProductIdentityHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/SubmitGlobalProductIdentityHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/UpdateGlobalProductDraftHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/WithdrawGlobalProductIdentityApprovalHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/ProductIdentityLifecycleAuditIntentFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/ProductIdentityLifecycleModels.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Validators/ReconcileGlobalProductIdentityDecisionValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Validators/RetireGlobalProductIdentityValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Validators/SubmitGlobalProductIdentityValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Validators/UpdateGlobalProductDraftValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Validators/WithdrawGlobalProductIdentityApprovalValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Commands/StartGlobalProductCorrectionWorkflowCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Commands/StartGlobalProductIdentityWorkflowCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Commands/StartGlobalProductRetirementRequestWorkflowCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/GlobalProductCorrectionWorkflowProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/GlobalProductCorrectionWorkflowStartRequestFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/GlobalProductIdentityWorkflowProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/GlobalProductRetirementRequestWorkflowProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/GlobalProductRetirementRequestWorkflowStartRequestFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/StartGlobalProductCorrectionWorkflowHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/StartGlobalProductIdentityWorkflowHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/StartGlobalProductRetirementRequestWorkflowHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/ProductIdentityWorkflowStartRequestFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Validators/StartGlobalProductCorrectionWorkflowValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Validators/StartGlobalProductIdentityWorkflowValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Validators/StartGlobalProductRetirementRequestWorkflowValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/GlobalProductCorrectionOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/GlobalProductIdentityWorkflowOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/GlobalProductRetirementRequestOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/GlobalProductCorrectionCheckpoint.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/GlobalProductIdentityWorkflowCheckpoint.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/GlobalProductLifecycleOperationKind.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/GlobalProductRetirementRequestCheckpoint.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductIdentityDecisionKind.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductIdentityWorkflowRecoveryDisposition.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/GlobalProductCorrectionOperationResults.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/GlobalProductIdentityWorkflowOperationResults.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/GlobalProductRetirementRequestOperationResults.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGlobalProductCorrectionOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGlobalProductIdentityWorkflowOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGlobalProductIdentityWorkflowTenantPartitionDiscovery.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGlobalProductRetirementRequestOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/GlobalProductActiveLifecycleOperationBinding.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/ProductChildCreationAdmission.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/ProductIdentityWorkflowBinding.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GlobalProductCorrectionOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GlobalProductIdentityWorkflowOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GlobalProductIdentityWorkflowTenantPartitionDiscoveryRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GlobalProductRetirementRequestOperationRepository.cs`
+
+Test exact allow-list:
+
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductApiMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ModuleRegistration/ProductItemSkuMasterManifestProviderTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductAvailableActionsTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductChildAdmissionMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductCorrectionOperationMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductCorrectionRecoveryRunnerTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductCorrectionRecoveryWorkerMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductCorrectionUnitTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductCorrectionWorkflowOptionsTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductCorrectionWorkflowProcessorTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductCorrectionWorkflowStartRequestFactoryTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductIdentityWorkflowOperationMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductIdentityWorkflowProcessorTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductIdentityWorkflowRecoveryRunnerTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductIdentityWorkflowRecoveryWorkerMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductLifecycleAuthorizationTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductLifecycleMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductLifecycleOperationAdmissionMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductLifecycleUnitTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductRetirementRequestOperationMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductRetirementRequestRecoveryRunnerTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductRetirementRequestRecoveryWorkerMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductRetirementRequestUnitTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductRetirementRequestWorkflowProcessorTests.cs`
+
+Required boundaries: existing Auth 16/7/10 grants and Platform trusted cancellation are consumed unchanged; no
+workflow/audit common layer rewrite; each recovery runner is explicit-command only, default-disabled and fails closed
+on failed processing; server-side tenant/scope/idempotency/concurrency/audit receipt controls remain authoritative.
+
+
 ## 20. Follow-up Items
 
 These are references to existing backlog or owner decisions; this pack creates no new identity or provider pack.

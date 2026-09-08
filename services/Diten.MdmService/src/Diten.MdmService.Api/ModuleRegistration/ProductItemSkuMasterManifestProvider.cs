@@ -10,6 +10,12 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
 {
     private const string Read = "mdm.global-products.read";
     private const string Create = "mdm.global-products.create";
+    private const string Update = "mdm.global-products.update";
+    private const string Submit = "mdm.global-products.submit";
+    private const string Withdraw = "mdm.global-products.withdraw";
+    private const string Retire = "mdm.global-products.retire";
+    private const string RequestCorrection = "mdm.global-products.request-correction";
+    private const string RequestRetirement = "mdm.global-products.request-retirement";
     private const string FinishedGoodsRead = "mdm.finished-goods.read";
     private const string FinishedGoodsCreate = "mdm.finished-goods.create";
     private const string GskusRead = "mdm.gskus.read";
@@ -55,7 +61,13 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                     Actions:
                     [
                         new ModuleManifestAction("ADD_NEW", "Add New", Create, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
-                        new ModuleManifestAction("VIEW_DETAILS", "View Details", Read, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
+                        new ModuleManifestAction("VIEW_DETAILS", "View Details", Read, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("EDIT", "Edit", Update, "RowAction", 25, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("SUBMIT", "Submit", Submit, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("WITHDRAW_APPROVAL", "Withdraw Approval", Withdraw, "RowAction", 35, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("REQUEST_CORRECTION", "Request Correction", RequestCorrection, "RowAction", 37, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("REQUEST_RETIREMENT", "Request Retirement", RequestRetirement, "RowAction", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("RETIRE", "Retire", Retire, "System", 41, IsDangerous: true, IsToolbarAction: false, IsRowAction: false)
                     ]),
                 new ModuleManifestPage(
                     PageCode: "FINISHED_GOODS",

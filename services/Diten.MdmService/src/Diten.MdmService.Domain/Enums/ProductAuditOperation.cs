@@ -16,5 +16,20 @@ public enum ProductAuditOperation
     ProductLegalEntityScopePolicyReplaced = 12,
     ProductLegalEntityScopePolicyEnded = 13,
     ProductLegalEntityScopeEnforcementActivated = 14,
-    ProductLegalEntityScopeEnforcementSuspended = 15
+    ProductLegalEntityScopeEnforcementSuspended = 15,
+    GlobalProductIdentitySubmitted = 16,
+    GlobalProductIdentityApproved = 17,
+    GlobalProductIdentityRejected = 18,
+    GlobalProductIdentityRetired = 19,
+    GlobalProductDraftUpdated = 38,
+    GlobalProductIdentityApprovalWithdrawn = 39,
+    GlobalProductCorrectionRequested = 40,
+    GlobalProductCorrectionApplied = 41,
+    GlobalProductCorrectionRejected = 42,
+    GlobalProductCorrectionCancelled = 43,
+    GlobalProductCorrectionManualReconciliationRequired = 44,
+    GlobalProductRetirementRequested = 45,
+    GlobalProductRetirementRejected = 46,
+    GlobalProductRetirementCancelled = 47,
+    GlobalProductRetirementManualReconciliationRequired = 48
 }

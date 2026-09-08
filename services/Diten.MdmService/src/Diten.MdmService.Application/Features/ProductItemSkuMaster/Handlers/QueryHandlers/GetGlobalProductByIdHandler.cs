@@ -1,4 +1,7 @@
 using Diten.MdmService.Application.Common;
+using Diten.MdmService.Application.Contracts;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
+using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Queries;
 using Diten.MdmService.Domain.Repositories;
@@ -11,13 +14,15 @@ public sealed class GetGlobalProductByIdHandler : IRequestHandler<GetGlobalProdu
 {
     private readonly IGlobalProductRepository _repository;
     private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
+    private readonly IProductIdentityLifecycleActorContext _actorContext;
 
     public GetGlobalProductByIdHandler(
         IGlobalProductRepository repository,
         IProductLegalEntityScopeRolloutStateRepository rolloutStates,
         IProductLegalEntityScopePolicyRepository policies,
         ProductLegalEntityScopeCandidateFacade candidates,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        IProductIdentityLifecycleActorContext? actorContext = null)
     {
         _repository = repository;
         _scopeGuard = new ProductLegalEntityScopeConsumerGuard(
@@ -25,6 +30,7 @@ public sealed class GetGlobalProductByIdHandler : IRequestHandler<GetGlobalProdu
             policies,
             candidates,
             tenantContext);
+        _actorContext = actorContext ?? NoActorContext.Instance;
     }
 
     public async Task<Response<ProductItemSkuMasterModels.GlobalProductDetailDto>> Handle(
@@ -59,6 +65,8 @@ public sealed class GetGlobalProductByIdHandler : IRequestHandler<GetGlobalProdu
                 404);
         }
 
+        var actions = BuildAvailableActions(product, _actorContext);
+
         return Response<ProductItemSkuMasterModels.GlobalProductDetailDto>.Success(new(
             product.Id,
             product.CanonicalCode,
@@ -66,6 +74,42 @@ public sealed class GetGlobalProductByIdHandler : IRequestHandler<GetGlobalProdu
             product.LifecycleStatus,
             product.Version,
             product.CreatedAt,
-            product.UpdatedAt));
+            product.UpdatedAt,
+            actions));
+    }
+
+    internal static IReadOnlyList<string> BuildAvailableActions(
+        Diten.MdmService.Domain.Entities.GlobalProduct product,
+        IProductIdentityLifecycleActorContext actorContext)
+    {
+        var actions = new List<string> { "DETAILS" };
+        if (product.LifecycleStatus == ProductIdentityLifecycleStatus.Draft)
+        {
+            if (actorContext.HasPermission("mdm.global-products.update")) actions.Add("EDIT");
+            if (actorContext.HasPermission(ProductIdentityLifecyclePermissions.GlobalProductSubmit))
+                actions.Add("SUBMIT");
+        }
+        if (product.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval
+            && product.WorkflowBinding is { } binding
+            && actorContext.TryResolveCanonicalHumanSubject(out var subjectId)
+            && subjectId == binding.SubmitterSubjectId
+            && actorContext.HasPermission(ProductIdentityLifecyclePermissions.GlobalProductWithdraw))
+            actions.Add("WITHDRAW_APPROVAL");
+        if (product.LifecycleStatus == ProductIdentityLifecycleStatus.IdentityApproved
+            && product.ActiveLifecycleOperation is null
+            && actorContext.HasPermission(ProductIdentityLifecyclePermissions.GlobalProductRequestCorrection))
+            actions.Add("REQUEST_CORRECTION");
+        if (product.LifecycleStatus == ProductIdentityLifecycleStatus.IdentityApproved
+            && product.ActiveLifecycleOperation is null
+            && actorContext.HasPermission(ProductIdentityLifecyclePermissions.GlobalProductRequestRetirement))
+            actions.Add("REQUEST_RETIREMENT");
+        return actions;
+    }
+
+    private sealed class NoActorContext : IProductIdentityLifecycleActorContext
+    {
+        public static readonly NoActorContext Instance = new();
+        public bool TryResolveCanonicalHumanSubject(out Guid subjectId) { subjectId = Guid.Empty; return false; }
+        public bool HasPermission(string permission) => false;
     }
 }

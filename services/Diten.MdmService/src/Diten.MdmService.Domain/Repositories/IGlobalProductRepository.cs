@@ -1,5 +1,6 @@
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
+using Diten.MdmService.Domain.ValueObjects;
 
 namespace Diten.MdmService.Domain.Repositories;
 
@@ -24,6 +25,11 @@ public interface IGlobalProductRepository
     }
     Task<GlobalProduct?> GetByReservationIdAsync(Guid reservationId, CancellationToken cancellationToken = default);
     Task<bool> NameExistsAsync(string normalizedName, CancellationToken cancellationToken = default);
+    Task<bool> NameExistsOtherThanAsync(
+        string normalizedName,
+        Guid excludedProductId,
+        CancellationToken cancellationToken = default) =>
+        NameExistsAsync(normalizedName, cancellationToken);
     Task<GlobalProductPage> GetPageAsync(
         int pageNumber,
         int pageSize,
@@ -47,6 +53,92 @@ public interface IGlobalProductRepository
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("Enforced product Legal Entity scope paging is not implemented by this repository.");
     Task<GlobalProductCreateResult> CreateDraftAsync(GlobalProduct globalProduct, CancellationToken cancellationToken = default);
+    Task<GlobalProductLifecycleWriteResult> UpdateDraftAsync(
+        Guid id,
+        string globalProductName,
+        string normalizedName,
+        int expectedVersion,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Global Product draft update is not implemented by this repository.");
+    Task<GlobalProductLifecycleWriteResult> SubmitIdentityAsync(
+        Guid id,
+        int expectedVersion,
+        ProductIdentityWorkflowBinding workflowBinding,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Global Product lifecycle submit is not implemented by this repository.");
+    Task<GlobalProductLifecycleWriteResult> ReconcileIdentityDecisionAsync(
+        Guid id,
+        int expectedVersion,
+        ProductIdentityWorkflowDecisionEvidence decisionEvidence,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Global Product lifecycle decision reconciliation is not implemented by this repository.");
+    Task<GlobalProductLifecycleWriteResult> WithdrawIdentityApprovalAsync(
+        Guid id,
+        int expectedVersion,
+        ProductIdentityWorkflowCancellationEvidence cancellationEvidence,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Global Product identity approval withdrawal is not implemented by this repository.");
+    Task<GlobalProductLifecycleWriteResult> RetireIdentityAsync(
+        Guid id,
+        int expectedVersion,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Global Product retirement is not implemented by this repository.");
+    Task<GlobalProductLifecycleWriteResult> ApplyRetirementDecisionAsync(
+        Guid id,
+        int expectedVersion,
+        GlobalProductActiveLifecycleOperationBinding binding,
+        bool approved,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Global Product retirement workflow application is not implemented.");
+    Task<GlobalProductLifecycleWriteResult> RecordRetirementConflictAsync(
+        Guid id,
+        int expectedVersion,
+        GlobalProductActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Global Product retirement conflict recording is not implemented.");
+    Task<GlobalProductLifecycleWriteResult> AcquireLifecycleOperationAsync(
+        Guid id,
+        int expectedVersion,
+        GlobalProductActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Global Product lifecycle operation admission is not implemented.");
+    Task<GlobalProductLifecycleWriteResult> ApplyCorrectionDecisionAsync(
+        Guid id,
+        int expectedVersion,
+        GlobalProductActiveLifecycleOperationBinding binding,
+        string? approvedName,
+        string? approvedNormalizedName,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Global Product correction application is not implemented.");
+    Task<GlobalProductLifecycleWriteResult> RecordCorrectionConflictAsync(
+        Guid id,
+        int expectedVersion,
+        GlobalProductActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Global Product correction conflict recording is not implemented.");
+    Task<ProductChildCreationAdmissionResult> AcquireChildCreationAdmissionAsync(
+        Guid id,
+        string creationCommandId,
+        string requestFingerprint,
+        DateTimeOffset acquiredAtUtc,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Global Product child admission is not implemented by this repository.");
+    Task<ProductChildCreationAdmissionResult> CompleteChildCreationAdmissionAsync(
+        Guid id,
+        string creationCommandId,
+        string requestFingerprint,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Global Product child admission completion is not implemented by this repository.");
     Task<GlobalProductScopeCompletenessInventory> GetProductLegalEntityScopeCompletenessInventoryAsync(
         DateTimeOffset serverNowUtc,
         int maximumMissingItems,
@@ -59,3 +151,15 @@ public sealed record GlobalProductScopeCompletenessInventory(
     long EligibleGlobalProductCount,
     long ConfiguredGlobalProductCount,
     IReadOnlyList<Guid> MissingGlobalProductIds);
+
+public sealed record GlobalProductLifecycleWriteResult(
+    bool Succeeded,
+    GlobalProduct? GlobalProduct,
+    string? ErrorCode = null,
+    bool IsReplay = false);
+
+public sealed record ProductChildCreationAdmissionResult(
+    bool Succeeded,
+    GlobalProduct? GlobalProduct,
+    string? ErrorCode = null,
+    bool IsReplay = false);

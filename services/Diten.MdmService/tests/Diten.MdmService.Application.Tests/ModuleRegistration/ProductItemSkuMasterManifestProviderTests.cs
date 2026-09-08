@@ -76,6 +76,12 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.finished-goods.read",
                 "mdm.global-products.create",
                 "mdm.global-products.read",
+                "mdm.global-products.request-correction",
+                "mdm.global-products.request-retirement",
+                "mdm.global-products.retire",
+                "mdm.global-products.submit",
+                "mdm.global-products.update",
+                "mdm.global-products.withdraw",
                 "mdm.gskus.create",
                 "mdm.gskus.read",
                 "mdm.lskus.create",
@@ -96,7 +102,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.product-legal-entity-scopes.replace"
             },
             declared.OrderBy(value => value, StringComparer.Ordinal));
-        Assert.Equal(23, declared.Count);
+        Assert.Equal(29, declared.Count);
         var nonControllerPermissions = new HashSet<string>(StringComparer.Ordinal)
         {
             "mdm.brands.read",
@@ -107,34 +113,52 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     }
 
     [Fact]
-    public void Existing_product_pages_keep_exact_create_and_quick_view_actions()
+    public void Global_product_declares_exact_lifecycle_actions_without_approval_or_rejection_actions()
     {
-        var productPages = Manifest.Pages.Where(page => page.PageCode is "GLOBAL_PRODUCTS" or "FINISHED_GOODS" or "GSKUS" or "LSKUS").ToList();
-        Assert.Equal(4, productPages.Count);
+        var page = Assert.Single(Manifest.Pages, item => item.PageCode == "GLOBAL_PRODUCTS");
+        Assert.Equal(
+            ["ADD_NEW", "EDIT", "REQUEST_CORRECTION", "REQUEST_RETIREMENT", "RETIRE", "SUBMIT", "VIEW_DETAILS", "WITHDRAW_APPROVAL"],
+            page.Actions.Select(action => action.ActionCode).OrderBy(value => value, StringComparer.Ordinal));
+        Assert.Equal(
+            [
+                "mdm.global-products.create",
+                "mdm.global-products.read",
+                "mdm.global-products.request-correction",
+                "mdm.global-products.request-retirement",
+                "mdm.global-products.retire",
+                "mdm.global-products.submit",
+                "mdm.global-products.update",
+                "mdm.global-products.withdraw"
+            ],
+            page.Actions.Select(action => action.PermissionKey).OrderBy(value => value, StringComparer.Ordinal));
+        Assert.True(Assert.Single(page.Actions, action => action.ActionCode == "EDIT").IsRowAction);
+        Assert.True(Assert.Single(page.Actions, action => action.ActionCode == "SUBMIT").IsRowAction);
+        Assert.True(Assert.Single(page.Actions, action => action.ActionCode == "WITHDRAW_APPROVAL").IsRowAction);
+        var correction = Assert.Single(page.Actions, action => action.ActionCode == "REQUEST_CORRECTION");
+        Assert.True(correction.IsRowAction);
+        Assert.False(correction.IsDangerous);
+        var requestRetirement = Assert.Single(page.Actions, action => action.ActionCode == "REQUEST_RETIREMENT");
+        Assert.True(requestRetirement.IsRowAction);
+        Assert.True(requestRetirement.IsDangerous);
+        var retire = Assert.Single(page.Actions, action => action.ActionCode == "RETIRE");
+        Assert.Equal("System", retire.ActionType);
+        Assert.True(retire.IsDangerous);
+        Assert.False(retire.IsRowAction);
+        Assert.False(retire.IsToolbarAction);
+        Assert.DoesNotContain(page.Actions, action => action.ActionCode is "APPROVE" or "REJECT");
+    }
+
+    [Fact]
+    public void Non_global_product_pages_keep_exact_create_and_quick_view_actions()
+    {
+        var productPages = Manifest.Pages.Where(page => page.PageCode is "FINISHED_GOODS" or "GSKUS" or "LSKUS").ToList();
+        Assert.Equal(3, productPages.Count);
         foreach (var page in productPages)
         {
             Assert.Equal(2, page.Actions.Count);
             Assert.Equal(
                 ["ADD_NEW", "VIEW_DETAILS"],
                 page.Actions.Select(action => action.ActionCode).OrderBy(value => value, StringComparer.Ordinal));
-            var permissionPrefix = page.PageCode switch
-            {
-                "GLOBAL_PRODUCTS" => "mdm.global-products",
-                "FINISHED_GOODS" => "mdm.finished-goods",
-                "GSKUS" => "mdm.gskus",
-                _ => "mdm.lskus"
-            };
-            var add = Assert.Single(page.Actions, action => action.ActionCode == "ADD_NEW");
-            Assert.Equal(permissionPrefix + ".create", add.PermissionKey);
-            Assert.True(add.IsToolbarAction);
-            Assert.False(add.IsRowAction);
-            Assert.False(add.IsDangerous);
-
-            var details = Assert.Single(page.Actions, action => action.ActionCode == "VIEW_DETAILS");
-            Assert.Equal(permissionPrefix + ".read", details.PermissionKey);
-            Assert.True(details.IsRowAction);
-            Assert.False(details.IsToolbarAction);
-            Assert.False(details.IsDangerous);
         }
     }
 

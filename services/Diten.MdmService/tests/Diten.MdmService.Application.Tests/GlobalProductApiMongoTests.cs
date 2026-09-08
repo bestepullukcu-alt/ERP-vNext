@@ -16,6 +16,8 @@ using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Infrastructure.Authorization;
 using Diten.MdmService.Persistence.Repositories;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
@@ -447,10 +449,55 @@ public sealed class GlobalProductApiMongoTests
     [InlineData(nameof(GlobalProductsController.GetById), "mdm.global-products.read")]
     [InlineData(nameof(GlobalProductsController.ReserveCode), "mdm.global-products.create")]
     [InlineData(nameof(GlobalProductsController.CreateDraft), "mdm.global-products.create")]
+    [InlineData(nameof(GlobalProductsController.UpdateDraft), "mdm.global-products.update")]
+    [InlineData(nameof(GlobalProductsController.SubmitIdentity), "mdm.global-products.submit")]
+    [InlineData(nameof(GlobalProductsController.WithdrawIdentityApproval), "mdm.global-products.withdraw")]
+    [InlineData(nameof(GlobalProductsController.RetireIdentity), "mdm.global-products.retire")]
+    [InlineData(nameof(GlobalProductsController.RequestCorrection), "mdm.global-products.request-correction")]
+    [InlineData(nameof(GlobalProductsController.RequestRetirement), "mdm.global-products.request-retirement")]
     public void Endpoints_fail_closed_on_named_permissions(string methodName, string permission)
     {
         var attribute = typeof(GlobalProductsController).GetMethod(methodName)!.GetCustomAttribute<HasPermissionAttribute>();
         Assert.Equal($"Permission:{permission}", attribute!.Policy);
+    }
+
+    [Fact]
+    public void Lifecycle_surface_exposes_only_server_bound_global_product_routes()
+    {
+        var update = typeof(GlobalProductsController).GetMethod(nameof(GlobalProductsController.UpdateDraft))!;
+        var updateRoute = Assert.IsType<HttpPutAttribute>(update.GetCustomAttribute<HttpPutAttribute>());
+        Assert.Equal("{id:guid}", updateRoute.Template);
+
+        var lifecycleRoutes = typeof(GlobalProductsController)
+            .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Select(method => new
+            {
+                method.Name,
+                Http = method.GetCustomAttributes<HttpMethodAttribute>().SingleOrDefault()
+            })
+            .Where(item => (item.Http?.Template ?? string.Empty)
+                .Contains("{id:guid}/", StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.Equal(5, lifecycleRoutes.Length);
+        Assert.Contains(lifecycleRoutes, item => item.Name == nameof(GlobalProductsController.SubmitIdentity)
+            && item.Http!.HttpMethods.SequenceEqual(["POST"])
+            && item.Http.Template == "{id:guid}/submit");
+        Assert.Contains(lifecycleRoutes, item => item.Name == nameof(GlobalProductsController.WithdrawIdentityApproval)
+            && item.Http!.HttpMethods.SequenceEqual(["POST"])
+            && item.Http.Template == "{id:guid}/withdraw");
+        Assert.Contains(lifecycleRoutes, item => item.Name == nameof(GlobalProductsController.RetireIdentity)
+            && item.Http!.HttpMethods.SequenceEqual(["POST"])
+            && item.Http.Template == "{id:guid}/retire");
+        Assert.Contains(lifecycleRoutes, item => item.Name == nameof(GlobalProductsController.RequestCorrection)
+            && item.Http!.HttpMethods.SequenceEqual(["POST"])
+            && item.Http.Template == "{id:guid}/correction-requests");
+        Assert.Contains(lifecycleRoutes, item => item.Name == nameof(GlobalProductsController.RequestRetirement)
+            && item.Http!.HttpMethods.SequenceEqual(["POST"])
+            && item.Http.Template == "{id:guid}/retirement-requests");
+        Assert.DoesNotContain(lifecycleRoutes, item =>
+            (item.Http!.Template ?? string.Empty).Contains("approve", StringComparison.OrdinalIgnoreCase)
+            || (item.Http.Template ?? string.Empty).Contains("reject", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

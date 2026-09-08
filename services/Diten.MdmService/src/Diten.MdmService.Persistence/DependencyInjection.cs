@@ -61,6 +61,14 @@ public static class DependencyInjection
         services.AddScoped<AuditIntentTemporalMigrationRunner>();
         services.AddScoped<IProductLegalEntityScopePolicyRepository, ProductLegalEntityScopePolicyRepository>();
         services.AddScoped<IProductLegalEntityScopeRolloutStateRepository, ProductLegalEntityScopeRolloutStateRepository>();
+        services.AddScoped<IGlobalProductIdentityWorkflowOperationRepository,
+            GlobalProductIdentityWorkflowOperationRepository>();
+        services.AddScoped<IGlobalProductCorrectionOperationRepository,
+            GlobalProductCorrectionOperationRepository>();
+        services.AddScoped<IGlobalProductRetirementRequestOperationRepository,
+            GlobalProductRetirementRequestOperationRepository>();
+        services.AddScoped<IGlobalProductIdentityWorkflowTenantPartitionDiscovery,
+            GlobalProductIdentityWorkflowTenantPartitionDiscoveryRepository>();
 
         // MOD-0290-FU02 — Brand/Product master repositories (tenant-scoped, soft archive, no hard delete).
         services.AddScoped<IBrandRepository, BrandRepository>();

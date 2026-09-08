@@ -4,19 +4,33 @@ using Diten.MdmService.Api.Configuration;
 using Diten.MdmService.Api.ModuleRegistration;
 using Diten.MdmService.Api.Services.Audit;
 using Diten.MdmService.Api.Services.ProductLegalEntityScopes;
+using Diten.MdmService.Api.Services.ProductItemSkuMaster;
 using Diten.MdmService.Application;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 using Diten.MdmService.Infrastructure;
 using Diten.MdmService.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 var runProductLegalEntityScopeOperational =
     ProductLegalEntityScopeOperationalCommandLine.IsRequested(args);
 var runAuditIntentTemporalMigration =
     AuditIntentTemporalMigrationCommandLine.IsRequested(args);
-if (runProductLegalEntityScopeOperational && runAuditIntentTemporalMigration)
+var runProductIdentityWorkflowRecovery =
+    ProductIdentityWorkflowRecoveryCommandLine.IsRequested(args);
+var runGlobalProductCorrectionRecovery =
+    GlobalProductCorrectionRecoveryCommandLine.IsRequested(args);
+var runGlobalProductRetirementRecovery =
+    GlobalProductRetirementRequestRecoveryCommandLine.IsRequested(args);
+if ((runProductLegalEntityScopeOperational ? 1 : 0)
+    + (runAuditIntentTemporalMigration ? 1 : 0)
+    + (runProductIdentityWorkflowRecovery ? 1 : 0)
+    + (runGlobalProductCorrectionRecovery ? 1 : 0)
+    + (runGlobalProductRetirementRecovery ? 1 : 0) > 1)
 {
     throw new InvalidOperationException("MDM_OPERATIONAL_COMMAND_AMBIGUOUS");
 }
@@ -51,8 +65,64 @@ builder.Services.Configure<AuditIntentTemporalMigrationOptions>(
 builder.Services.Configure<AuditIntentDeliveryWorkerOptions>(
     builder.Configuration.GetSection(AuditIntentDeliveryWorkerOptions.SectionName));
 builder.Services.AddHostedService<AuditIntentDeliveryWorker>();
+builder.Services.Configure<ProductIdentityWorkflowOptions>(
+    builder.Configuration.GetSection(ProductIdentityWorkflowOptions.SectionName));
+builder.Services.Configure<ProductIdentityWorkflowWorkerOptions>(
+    builder.Configuration.GetSection(ProductIdentityWorkflowWorkerOptions.SectionName));
+builder.Services.Configure<GlobalProductCorrectionWorkflowOptions>(
+    builder.Configuration.GetSection(GlobalProductCorrectionWorkflowOptions.SectionName));
+builder.Services.Configure<GlobalProductCorrectionWorkflowWorkerOptions>(
+    builder.Configuration.GetSection(GlobalProductCorrectionWorkflowWorkerOptions.SectionName));
+builder.Services.Configure<GlobalProductRetirementRequestWorkflowOptions>(
+    builder.Configuration.GetSection(GlobalProductRetirementRequestWorkflowOptions.SectionName));
+builder.Services.Configure<GlobalProductRetirementRequestWorkflowWorkerOptions>(
+    builder.Configuration.GetSection(GlobalProductRetirementRequestWorkflowWorkerOptions.SectionName));
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<ProductIdentityWorkflowOptions>>().Value;
+    var configuration = options.Enabled
+        ? options.ToStartConfiguration()
+        : new ProductIdentityWorkflowStartConfiguration(null, null, [], string.Empty, false, false, null);
+    return new ProductIdentityWorkflowStartRequestFactory(configuration, sp.GetRequiredService<TimeProvider>());
+});
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<GlobalProductCorrectionWorkflowOptions>>().Value;
+    var identity = sp.GetRequiredService<IOptions<ProductIdentityWorkflowOptions>>().Value;
+    var configuration = options.Enabled
+        ? options.ToConfiguration(identity.GlobalProductTemplateId, identity.GlobalProductTemplateCode)
+        : new GlobalProductCorrectionStartConfiguration(null, null, [], string.Empty, false, false, null,
+            identity.GlobalProductTemplateId, identity.GlobalProductTemplateCode);
+    return new GlobalProductCorrectionWorkflowStartRequestFactory(configuration, sp.GetRequiredService<TimeProvider>());
+});
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<GlobalProductRetirementRequestWorkflowOptions>>().Value;
+    var identity = sp.GetRequiredService<IOptions<ProductIdentityWorkflowOptions>>().Value;
+    var correction = sp.GetRequiredService<IOptions<GlobalProductCorrectionWorkflowOptions>>().Value;
+    var configuration = options.Enabled
+        ? options.ToConfiguration(identity.GlobalProductTemplateId, identity.GlobalProductTemplateCode,
+            correction.TemplateId, correction.TemplateCode)
+        : new GlobalProductRetirementRequestStartConfiguration(null, null, [], string.Empty, false, false, null,
+            identity.GlobalProductTemplateId, identity.GlobalProductTemplateCode, correction.TemplateId, correction.TemplateCode);
+    return new GlobalProductRetirementRequestWorkflowStartRequestFactory(configuration,
+        sp.GetRequiredService<TimeProvider>());
+});
+builder.Services.AddScoped<GlobalProductIdentityWorkflowProcessor>();
+builder.Services.AddScoped<GlobalProductCorrectionWorkflowProcessor>();
+builder.Services.AddScoped<GlobalProductRetirementRequestWorkflowProcessor>();
+builder.Services.AddSingleton<ProductIdentityWorkflowRecoveryRunner>();
+builder.Services.AddSingleton<GlobalProductCorrectionRecoveryRunner>();
+builder.Services.AddSingleton<GlobalProductRetirementRequestRecoveryRunner>();
+builder.Services.AddHostedService<ProductIdentityWorkflowRecoveryWorker>();
+builder.Services.AddHostedService<GlobalProductCorrectionRecoveryWorker>();
+builder.Services.AddHostedService<GlobalProductRetirementRequestRecoveryWorker>();
 
-if (!runProductLegalEntityScopeOperational && !runAuditIntentTemporalMigration)
+if (!runProductLegalEntityScopeOperational
+    && !runAuditIntentTemporalMigration
+    && !runProductIdentityWorkflowRecovery
+    && !runGlobalProductCorrectionRecovery
+    && !runGlobalProductRetirementRecovery)
 {
 var jwtSecret = builder.Configuration["JwtSettings:Secret"];
 var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
@@ -157,6 +227,60 @@ if (runProductLegalEntityScopeOperational)
         result.Rollout.Mode,
         result.Completeness.EligibleGlobalProductCount,
         result.Completeness.ConfiguredGlobalProductCount);
+    return;
+}
+
+if (runProductIdentityWorkflowRecovery)
+{
+    var runner = app.Services.GetRequiredService<ProductIdentityWorkflowRecoveryRunner>();
+    var result = await ProductIdentityWorkflowRecoveryCommandLine.RunAsync(
+        runner,
+        app.Lifetime.ApplicationStopping);
+    app.Logger.LogInformation(
+        "Product identity workflow recovery completed; tenants {TenantCount}, operations {OperationCount}, completed {CompletedCount}, deferred {DeferredCount}, failed {FailedCount}.",
+        result.TenantCount,
+        result.OperationCount,
+        result.CompletedCount,
+        result.DeferredCount,
+        result.FailedCount);
+    if (result.FailedCount > 0)
+        throw new InvalidOperationException("PRODUCT_IDENTITY_WORKFLOW_RECOVERY_FAILED");
+    return;
+}
+
+if (runGlobalProductCorrectionRecovery)
+{
+    var runner = app.Services.GetRequiredService<GlobalProductCorrectionRecoveryRunner>();
+    var result = await GlobalProductCorrectionRecoveryCommandLine.RunAsync(
+        runner,
+        app.Lifetime.ApplicationStopping);
+    app.Logger.LogInformation(
+        "Global Product correction recovery completed; tenants {TenantCount}, operations {OperationCount}, completed {CompletedCount}, deferred {DeferredCount}, failed {FailedCount}.",
+        result.TenantCount,
+        result.OperationCount,
+        result.CompletedCount,
+        result.DeferredCount,
+        result.FailedCount);
+    if (result.FailedCount > 0)
+        throw new InvalidOperationException("GLOBAL_PRODUCT_CORRECTION_RECOVERY_FAILED");
+    return;
+}
+
+if (runGlobalProductRetirementRecovery)
+{
+    var runner = app.Services.GetRequiredService<GlobalProductRetirementRequestRecoveryRunner>();
+    var result = await GlobalProductRetirementRequestRecoveryCommandLine.RunAsync(
+        runner,
+        app.Lifetime.ApplicationStopping);
+    app.Logger.LogInformation(
+        "Global Product retirement recovery completed; tenants {TenantCount}, operations {OperationCount}, completed {CompletedCount}, deferred {DeferredCount}, failed {FailedCount}.",
+        result.TenantCount,
+        result.OperationCount,
+        result.CompletedCount,
+        result.DeferredCount,
+        result.FailedCount);
+    if (result.FailedCount > 0)
+        throw new InvalidOperationException("GLOBAL_PRODUCT_RETIREMENT_RECOVERY_FAILED");
     return;
 }
 
