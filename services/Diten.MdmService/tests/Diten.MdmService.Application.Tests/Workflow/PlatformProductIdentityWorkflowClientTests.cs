@@ -273,6 +273,7 @@ public sealed class PlatformProductIdentityWorkflowClientTests
     [Theory]
     [InlineData("GskuCorrection")]
     [InlineData("GskuRetirementRequest")]
+    [InlineData("LskuRetirementRequest")]
     public async Task Gsku_profiles_cross_real_Platform_named_validation_parser_and_exact_authorization(string profile)
     {
         using var owner = new WorkflowOwnerTransport();
@@ -306,6 +307,14 @@ public sealed class PlatformProductIdentityWorkflowClientTests
     [InlineData("GskuRetirement", "unknown")]
     [InlineData("GskuCorrection.extra", "unknown")]
     [InlineData("GskuRetirementRequest*", "unknown")]
+    [InlineData("LskuRetirementRequest", "tenant")]
+    [InlineData("LskuRetirementRequest", "audience")]
+    [InlineData("LskuRetirementRequest", "mixed-template")]
+    [InlineData("LskuRetirementRequest", "wrong-client")]
+    [InlineData("LskuRetirementRequest", "missing-grant")]
+    [InlineData("lskuretirementrequest", "unknown")]
+    [InlineData("LskuRetirementRequest.extra", "unknown")]
+    [InlineData("LskuRetirementRequest*", "unknown")]
     public async Task Gsku_transport_rejects_invalid_authority_or_cross_profile_payload(string profile, string drift)
     {
         using var owner = new WorkflowOwnerTransport(drift);
@@ -342,8 +351,13 @@ public sealed class PlatformProductIdentityWorkflowClientTests
         public string? LastProfile { get; private set; }
         public string? LastObjectId { get; private set; }
         public string? LastKey { get; private set; }
-        public static string Template(string profile) => profile == "GskuCorrection"
-            ? "TEST-GSKU-CORRECTION" : "TEST-GSKU-RETIREMENT";
+        public static string Template(string profile) => profile switch
+        {
+            "GskuCorrection" => "TEST-GSKU-CORRECTION",
+            "GskuRetirementRequest" => "TEST-GSKU-RETIREMENT",
+            "LskuRetirementRequest" => "TEST-LSKU-RETIREMENT",
+            _ => "TEST-UNKNOWN"
+        };
 
         public WorkflowOwnerTransport(string drift = "")
         {
@@ -381,7 +395,7 @@ public sealed class PlatformProductIdentityWorkflowClientTests
             var optionsType = api.GetType("Diten.Platform.API.Configuration.TrustedWorkflowStartAuthorizationOptions", true)!;
             var options = Activator.CreateInstance(optionsType)!;
             var entries = (System.Collections.IList)optionsType.GetProperty("Entries")!.GetValue(options)!;
-            foreach (var profile in new[] { "GskuCorrection", "GskuRetirementRequest" })
+            foreach (var profile in new[] { "GskuCorrection", "GskuRetirementRequest", "LskuRetirementRequest" })
             {
                 if (drift == "missing-grant") continue;
                 var entry = Activator.CreateInstance(entries.GetType().GetGenericArguments()[0])!;

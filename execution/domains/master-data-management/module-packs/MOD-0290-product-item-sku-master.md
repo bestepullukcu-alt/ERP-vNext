@@ -3163,3 +3163,28 @@ failed in an earlier concurrency run and later passed; cause remains undiagnosed
 closes that flakiness. No Mongo migration, provisioning, credential/config/grant or real tenant
 data mutation was performed. Live two-user browser/WorkCenter approval/rejection, service configuration,
 durable audit/recovery acceptance and operational readiness remain outside this evidence.
+
+### LSKU shared transport extraction — approved 19.18 B/C integration, 2026-09-09
+
+Exact paths for this independent prerequisite:
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Workflow/PlatformProductIdentityWorkflowClient.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Workflow/PlatformProductIdentityWorkflowClientTests.cs`
+
+Add only ordinal `LskuRetirementRequest` to the client object-profile set. Source
+`ffdd280a` binds retirement to the retirement operation ID (not the LSKU ID); identity workflow retains
+`lsku` with the source LSKU ID. Template/object/client/audience authorization remains the current
+Platform exact configured policy, not a wildcard or a second workflow bridge.
+
+Client tests: 45 passed / 0 failed / 0 skipped. The added positive and negative cases execute actual
+Platform Release named-token validation, delegated-human validation, parser and exact authorization.
+They reject cross-tenant, audit-audience substitution, mixed templates, wrong client, missing grant,
+case/prefix/wildcard profiles. The terminal dispatch deliberately returns a missing test-owned workflow;
+this is transport/security evidence, not a successful live workflow or terminal LSKU read-back claim.
+
+Backend integration scope gate: the protected retirement implementation additionally requires
+`services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/LskuActiveLifecycleOperationBinding.cs`.
+The new value-object path is absent from the approved E2A / 19.18 exact new-file lists. It is used by
+`Lsku.ActiveLifecycleOperation`, `ILskuRepository.AcquireLifecycleOperationAsync`,
+`ApplyRetirementDecisionAsync`, the persistence CAS and retirement processor. No substitute, inlining
+workaround or bypass is introduced. This exact path needs explicit allow-list authorization before
+the complete backend retirement slice can be integrated. No backend/UI completion is claimed.
