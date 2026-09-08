@@ -1,6 +1,15 @@
 # AGENTS.md — Diten ERP vNext Execution Contract
 
-Bu dosya, Claude Code, Codex ve diğer AI ajanlarının repo genelinde uyması gereken yürütme kontratıdır. Repo root'tan çalışıldığında otomatik yüklenir.
+Bu dosya, Claude Code, Codex ve diğer AI ajanlarının repo genelinde uyması gereken yürütme kontratıdır.
+
+⚠ **`CLAUDE.md` bu dosyaya sembolik bağdır** (`ln -s AGENTS.md CLAUDE.md`), çünkü Claude Code
+`AGENTS.md`'yi değil `CLAUDE.md`'yi otomatik yükler. 2026-09-08'de ölçüldü: o bağ yokken bu
+dosya hiçbir Claude Code oturumuna yüklenmiyordu — yani "otomatik yüklenir" cümlesi doğru
+değildi. Tek dosya, iki isim: kopya yok, bayatlayacak ikinci nüsha yok.
+
+⚠ **Windows'ta `core.symlinks=false` ise** bu bağ düz metin dosyasına dönüşür ve içeriği
+"AGENTS.md" kelimesinden ibaret olur. Ekipte Windows kullanan varsa bunun yerine `CLAUDE.md`
+gerçek bir dosya yapılıp AGENTS.md'ye yönlendirmelidir.
 
 > **Otorite:** Bu dosya, `.antigravity/` içindeki global standartlardan üstündür. Domain veya module seviyesinde yazılmış bir kural bu dosyadan üstündür.
 
@@ -164,6 +173,57 @@ DataTable tabanlı yeni modüllerde resmi referans iki canlı DevEnablement mod�
 | `8'den fazla` | `GoldenReferenceCompact` | Ayrı `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`, `_Form.cshtml` |
 
 Alan sayımı yalnızca create/edit formunda kullanıcının doldurduğu modül alanlarıdır. `Id`, `TenantId`, `IsDeleted`, `CreatedAt`, `UpdatedAt`, audit alanları ve DataTable checkbox/action kolonları sayılmaz.
+
+---
+
+## 6.1 Kural Haritası — hangi işte hangi kural
+
+`.antigravity/rules/` altında 39 kural var ve bu dosya dışında hiçbiri
+`always_on` değil. Kural, ona atıf verildiği kadar görünür; bu harita atfın
+tek merkezi. **İşe başlamadan önce satırını bul ve o kuralları oku.**
+
+### Daima — istisnasız
+`multi-tenancy` kiracı izolasyonu · `security-jwt` token ve yetki ·
+`git-safety` dal ve commit güvenliği · `code-style` kod stili ·
+`docs-organization` belge nereye yazılır
+
+### Backend / handler yazıyorsan
+`handler-design` · `repository-standard` · `response-envelope` ·
+`pipeline-behaviors` · `entity-base-template` · `entity-versioning` ·
+`mongo-indexing` · `api-conventions` · `routes` · `ports`
+
+### Ekran / sayfa yazıyorsan
+`frontend-standards` genel · `views-organization` dosya yerleşimi ·
+`unauthorized-surface-standard` yetkisiz kullanıcı ne görür (UAS-001) ·
+`frontend-js-standard` · `premium-modal-standard` uyarı ve modal ·
+liste → `frontend-datatable-template` · detay → `frontend-details-template` ·
+create/edit → `frontend-form-template`
+
+### Kullanıcıya görünen metin varsa
+`localization-standard` (Platform 2 dil · Tenant 7 dil) ·
+`dynamic-localization-standard` çalışma zamanı çeviri
+
+### Yetki, izin, lookup dokunuyorsan
+`permission-key-standard` izin anahtarı · `business-module-enforcement-standard`
+modül yetki zorlaması · `platform-lookups-reference-data` referans veri ·
+`platform-global-search-registry` Ctrl+K kaydı
+
+### Yeni modül / pack açıyorsan
+`module-pack-standard` · `capability-pack-standard` ·
+`module-self-registration-standard` manifest
+
+### Ortam, çalıştırma, kayıt
+`dev-runbook` yerel ortam · `configuration-safety` ayar ve bağımlılık ·
+`logging-observability` log · `git-backup-policy` yedek ve isimlendirme
+
+### Mimari kararlar
+`erp-architecture` · `diten_standards`
+
+### Görev Merkezi'ne bağlanıyorsan
+`workcenter-bridge-standard` — köprü yasakları (WC-D1)
+
+⚠ Bu harita eksikse kural görünmez olur. Yeni bir kural dosyası eklendiğinde
+**aynı commit'te** buraya satırı yazılır; yazılmayan kural yetimdir.
 
 ---
 
