@@ -81,6 +81,8 @@ Yeni bir servis eklendiğinde veya çalıştırıldığında portlar sabittir:
 - **5056**: Auth Service
 - **5057**: Platform Service
 - **5058**: DevEnablement Service (canlı golden referans modülleri burada)
+- **5059**: MDM Service
+- **5060**: HCM Service — ⚠ mikroservis bandının (5011–5060) **son portu**; sonraki servis bandı genişletmeyi gerektirir
 
 > AGENTS.md (`§ Port Şeması`) tek doğru kaynaktır; çakışma halinde AGENTS.md geçerlidir. Eski 5050 (MDM) port atamalı kalmamıştır.
 
