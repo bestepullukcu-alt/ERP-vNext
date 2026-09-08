@@ -2590,6 +2590,51 @@ passed; the Release frontend build completed with zero errors and 13 pre-existin
 discovered 152 tests: 143 passed and nine unrelated Enterprise Strategy/Planning tests failed; no MOD-0290 or
 personalization test failed. Existing pilot records remained unchanged.
 
+### Global Product lifecycle common Workflow amendment — approved code-start (2026-09-08)
+
+This narrowly authorizes the missing MDM common layer required before the separately approved Global Product
+draft-edit, submit/withdraw, correction-request and retirement-request implementations. It does not authorize a new
+module identity, GSKU/LSKU/ABB/Finished Good lifecycle behavior, operational provisioning, appsettings values,
+credential material, browser acceptance or a WorkCenter provider change.
+
+The audit delivery identity and the Product Identity Workflow identity remain distinct audiences and contracts. The
+common Workflow client accepts only a canonical gateway tenant header matching the single JWT `tenant_id`; malformed,
+duplicate or mismatched tenant/subject/actor/bearer evidence fails closed. Human delegated authorization is used only
+for delegated start/cancel calls; the Auth-issued service identity remains the service-to-service authority.
+
+Runtime exact allow-list:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/IProductIdentityLifecycleActorContext.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Workflow/IProductIdentityDelegatedTokenAccessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Workflow/IProductIdentityWorkflowServiceIdentityProvider.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Workflow/IProductIdentityWorkflowClient.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Workflow/ProductIdentityWorkflowTransportModels.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Security/ProductIdentityLifecycleActorContext.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Workflow/AuthProductIdentityWorkflowServiceIdentityProviderOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Workflow/AuthProductIdentityWorkflowServiceIdentityProvider.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Workflow/ProductIdentityWorkflowClientOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Workflow/HttpContextProductIdentityDelegatedTokenAccessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Workflow/PlatformProductIdentityWorkflowClient.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/DependencyInjection.cs`, limited to the above
+  service registrations, options binding, named HTTP clients and redacted headers.
+
+Test exact allow-list:
+
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductIdentityLifecycleActorContextTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Workflow/ProductIdentityDelegatedTokenAccessorTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Workflow/AuthProductIdentityWorkflowServiceIdentityProviderTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Workflow/PlatformProductIdentityWorkflowClientTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Workflow/ProductIdentityWorkflowDependencyInjectionTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Workflow/ProductIdentityWorkflowNoCredentialPersistenceTests.cs`
+
+Required evidence: audience separation from G4 audit, strict actor/tenant/header/bearer rejection, service-token
+expiry/rotation failure handling, delegated-token forwarding only where required, timeout/cancellation classification,
+idempotency and terminal-evidence validation, and no credential/token persistence or logging. The common layer is
+default-fail-closed when its operator-owned options are absent; this amendment creates no configuration values.
+
+The follow-on Global Product backend/UI/Gateway slices remain constrained to their separately approved exact paths.
+Gateway may add only `PUT` to `/api/global-products/{everything}`; the root route remains `GET, POST, OPTIONS`.
+
 ## 20. Follow-up Items
 
 These are references to existing backlog or owner decisions; this pack creates no new identity or provider pack.
