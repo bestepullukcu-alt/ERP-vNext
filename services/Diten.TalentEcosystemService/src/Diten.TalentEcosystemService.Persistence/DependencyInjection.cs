@@ -56,6 +56,7 @@ public static class DependencyInjection
         services.AddScoped<IIndustrySuccessionPoolReadinessMetadataRepository, MongoIndustrySuccessionPoolReadinessMetadataRepository>();
         services.AddScoped<IVerifiedCertificationRegistryReadinessMetadataRepository, MongoVerifiedCertificationRegistryReadinessMetadataRepository>();
         services.AddScoped<IMentorshipRecommendationNetworkReadinessMetadataRepository, MongoMentorshipRecommendationNetworkReadinessMetadataRepository>();
+        services.AddScoped<IPayBenchmarkingReadinessMetadataRepository, MongoPayBenchmarkingReadinessMetadataRepository>();
 
         return services;
     }

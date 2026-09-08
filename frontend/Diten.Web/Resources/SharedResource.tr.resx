@@ -550,6 +550,7 @@
   <data name="IndustrySuccessionPoolMenu" xml:space="preserve"><value>Sektörel Yedekleme Havuzu</value></data>
   <data name="VerifiedCertificationRegistryMenu" xml:space="preserve"><value>Doğrulanmış Sertifikasyon Sicili</value></data>
   <data name="MentorshipRecommendationNetworkMenu" xml:space="preserve"><value>Mentorluk ve Tavsiye Ağı</value></data>
+  <data name="PayBenchmarkingMenu" xml:space="preserve"><value>Ortak Maaş Kıyaslama</value></data>
   <data name="ExitReferenceRecordsMenu" xml:space="preserve"><value>Exit Reference Records</value></data>
   <data name="ReferenceExchangeMenu" xml:space="preserve"><value>Reference Exchange</value></data>
   <data name="RehireRecommendationsMenu" xml:space="preserve"><value>Rehire Recommendations</value></data>

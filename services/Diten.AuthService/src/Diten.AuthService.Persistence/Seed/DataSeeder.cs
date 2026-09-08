@@ -306,6 +306,11 @@ public static class DataSeeder
             new("tep", "mentorship-recommendation-network", "manage", "Mentorship Recommendation Network Manage", null),
             new("tep", "mentorship-recommendation-network", "read", "Mentorship Recommendation Network Read", null),
 
+            new("tep", "salary-benchmarking", "audit.read", "Shared Salary Benchmarking Audit Read", null),
+            new("tep", "salary-benchmarking", "evaluate", "Shared Salary Benchmarking Evaluate", null),
+            new("tep", "salary-benchmarking", "manage", "Shared Salary Benchmarking Manage", null),
+            new("tep", "salary-benchmarking", "read", "Shared Salary Benchmarking Read", null),
+
             new("dki", "metric-semantic-registry", "audit.read", "Metric Semantic Registry Audit Read", null),
             new("dki", "metric-semantic-registry", "evaluate", "Metric Semantic Registry Evaluate", null),
             new("dki", "metric-semantic-registry", "manage", "Metric Semantic Registry Manage", null),

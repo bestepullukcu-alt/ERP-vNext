@@ -1841,6 +1841,46 @@
       "UpstreamScheme": "http"
     },
     {
+      "DownstreamPathTemplate": "/api/salary-benchmarking",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5060
+        }
+      ],
+      "UpstreamPathTemplate": "/api/salary-benchmarking",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/salary-benchmarking/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5060
+        }
+      ],
+      "UpstreamPathTemplate": "/api/salary-benchmarking/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
       "DownstreamPathTemplate": "/api/metric-semantic-registry",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
