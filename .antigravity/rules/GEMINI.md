@@ -137,7 +137,7 @@ Kullanıcı "son kontrolleri yap" veya "testleri çalıştır" dediğinde kod ya
 
 ## 🗺️ KURAL HARİTASI — hangi işte hangi kural
 
-`.antigravity/rules/` altında 38 kural var ve bu dosya dışında hiçbiri
+`.antigravity/rules/` altında 39 kural var ve bu dosya dışında hiçbiri
 `always_on` değil. Kural, ona atıf verildiği kadar görünür; bu harita atfın
 tek merkezi. **İşe başlamadan önce satırını bul ve o kuralları oku.**
 
@@ -153,6 +153,7 @@ tek merkezi. **İşe başlamadan önce satırını bul ve o kuralları oku.**
 
 ### Ekran / sayfa yazıyorsan
 `frontend-standards` genel · `views-organization` dosya yerleşimi ·
+`unauthorized-surface-standard` yetkisiz kullanıcı ne görür (UAS-001) ·
 `frontend-js-standard` · `premium-modal-standard` uyarı ve modal ·
 liste → `frontend-datatable-template` · detay → `frontend-details-template` ·
 create/edit → `frontend-form-template`

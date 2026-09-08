@@ -111,7 +111,8 @@ Her satır yalnız şu kararlardan birini alır:
 - `ADD`: onaylı modelde var, kodda yok
 - `DEFER`: açık determination veya owner modülü bekliyor
 - `EXCLUDE`: legacy/mock/ikinci SoR olduğu için taşınmayacak
-- `CONFLICT`: repository kuralı ile iş kararı çelişiyor; yönetim kararı gerekir
+- `CONFLICT`: uzlaştırılacak fark; önce teknik eşleme, son iş cevabının önceki metni açıklaması veya gerçek
+  yeni sahip kararı olarak ayrılır. Her fark otomatik olarak yöneticiye yeniden sorulmaz.
 
 Bu aşamada kod, enum, veri veya module pack değiştirilmez.
 
@@ -166,16 +167,21 @@ verildiğinde başlar.
 
 Küçük dosya PR'ları yerine anlamlı ve test edilebilir dilimler kullanılır:
 
-1. Portfolio
-2. Initiative
-3. Program
-4. Project/Workspace
-5. Investment Case
-6. Benefit Commitment
-7. PPM-owned ortak lifecycle/gate/identity davranışları
-8. İzin verilmiş typed external integrations
-9. Navigation/frontend/localization
-10. Integrated golden flow ve regression closure
+1. Altı sınıfın exact eşlemesini kapat; sonraki dilimin ihtiyaç duyduğu PPM-owned ortak lifecycle/gate ve
+   kayıt bazlı sorumluluk ve MOD-0023 onay sözleşmelerini belirle. Kayıt sorumluluğunun sahibi henüz kesin
+   MOD-0288 veya yeni pack olarak atanmış değildir. Tüm Platform'u yeniden geliştirme.
+2. Portfolio — backend, frontend, navigation/localization, ilgili entegrasyon ve kabul aynı teslimatın parçasıdır.
+3. Initiative — mevcut Core v2 korunarak onaylı model farkları ve browser/UI eksikleri tamamlanır.
+4. Program — aynı uçtan uca kabul düzeni.
+5. Project/Workspace — aynı uçtan uca kabul düzeni.
+6. Investment Case — yalnız onaylı finans kapsamı; gereken MOD-0136/0138 sözleşmeleri ilgili davranıştan önce.
+7. Benefit Commitment — planned/realized sınırı; gereken MOD-0072 sözleşmesi ilgili davranıştan önce.
+8. Integrated golden flow ve regression closure.
+
+MOD-0288-FU02 Organization matris/custom-field işi ayrı sahipliktedir; PPM'nin kayıt bazlı sorumluluk
+çözümlemesini tamamlamaz ve bütünüyle PPM'nin önkoşulu değildir. Kaynak veya sözleşme kesişimi ölçülmeden
+paralel yazım güvenli kabul edilmez. MOD-0354 DWS ve MOD-0355 BPM ayrı kapsamlarıyla sonraki planlama
+dilimleridir; PPM paketi bu modüllerin tam gereksinim listesini sağlamaz.
 
 Bir dilim bağımsız olarak güvenli değilse yapay biçimde bölünmez. Her PR güncel `main` tabanında hazırlanır;
 eski branch doğrudan merge edilmez.
@@ -196,8 +202,8 @@ Her tamamlanan kullanıcı yüzeyinde:
 
 | Kapı | Durum | Etki |
 |---|---|---|
-| Eski kod → onaylı model eşlemesi | Açık | Enum/alan/migration değişikliği yapılamaz |
-| Bağımsız teknik inceleme | Açık | Governance pack coding baseline değildir |
+| Eski kod → onaylı model eşlemesi | db2e2ef2 tabanında rapor ve correction alındı; açık sahiplik/kararlar §10'da | Rapor uygulama veya migration yetkisi değildir |
+| Bağımsız teknik inceleme | Kısmi: envanter ve Portfolio sözleşme incelemesi alındı | Nihai tasarım/runtime kabulü ve coding baseline tamamlanmadı |
 | Yetkili belge imzası | Açık | Formal belge onayı yoktur |
 | Repository implementation authority | Açık | Yeni governance farkları kodlanamaz |
 | OD-01 ve OD-02 | Açık | Governance pack'e göre genel teknik/configuration başlangıç kapısı kapanmamıştır |
@@ -221,6 +227,187 @@ Yüzde ancak eşleme matrisi tamamlandıktan ve payda sabitlendikten sonra ayrı
 
 ## 8. İlk sıradaki iş
 
-İlk yürütülecek çalışma Aşama 0 ve Aşama 1'dir: güncel `main` üzerinde altı PPM sınıfının salt-okunur exact
-envanteri ve eski → onaylı model eşleme matrisi. Bu tamamlanmadan DCP-006, MOD-0117 kodu, enumlar veya veri
-modeli değiştirilmez.
+Altı sınıfın sabit-main envanteri ve dar correction alındı. Sıradaki iş §10'daki Portfolio iş kararlarını
+tek turda kapatmak ve teknik sözleşmelerin exact kapsamını hazırlamaktır. Envanter sıfırdan tekrarlanmaz;
+uygulama hazırlığında yeni main farkları ayrıca ölçülür. Henüz runtime implementation yetkisi verilmedi.
+
+## 9. 2026-09-07 koordinasyon ve teslimat güncellemesi
+
+### 9.1 FU02 uygulama promptu incelemesi
+
+İncelenen Organization worktree: `/private/tmp/ERP-vNext-mod0288-fu02-pack`.
+Checkpoint: `162bd959b38fbc0c88404e8d1b06a6c6420338db`; çalışma ağacı temiz.
+`db2e2ef2..162bd959` farkı yalnız bir module pack dosyasıdır; bu branch'teki yeni FU02 runtime
+teslimatı sıfırdır. Bu, mevcut MOD-0288'in yapılmamış olduğu anlamına gelmez.
+
+Karar: PPM sınırı §21.4'te doğru ayrılmıştır; fakat uygulama öncesi pack iç tutarlılığı kapatılmalıdır.
+Bu inceleme yeni uygulama yetkisi vermez ve Organization pack'ini değiştirmez.
+
+Toplu correction girdileri:
+
+- §8 karar 1 / §21.4 onayı değiştirmiyor; §16 AC4, §18, §20 ve §21.1 girişinde eski işlevsel-hat
+  onayı ifadeleri kalmış. Aynı geçerli karar bütün normatif bölümlere uygulanmalı.
+- §12 bilinçli aynı-ebeveyn seçimini kabul ediyor; §13 aynı primary/secondary hedefi 400 olarak listeliyor.
+- §8/18 kesin `organization.field-definition.read/manage` anahtarlarını ayrı değerler olarak tanımlarken
+  §14 eski `platform.organization-units.*` önerilerini taşıyor. Değer yazma ve matris yetkileri de açık olmalı.
+- §5 yeni handler/validator dosyalarını “corresponding” diye bırakıyor; mimari test yolunu sonraya erteliyor.
+  Exact path iddiası bu haliyle tamamlanmış değil. §17 build yolunda `Api` / `API` çelişkisi sürüyor.
+- Alan başına ayrı value entity/collection anlatımı ile gömülü array + `$elemMatch` anlatımı uzlaştırılmalı.
+  Tenant-first indeksler, uniqueness, soft-delete, Classification okuma/filtre yetkisi ve gerçek sorgu şekli
+  birlikte tanımlanmalı. İndeks sayısının azlığı query performans kanıtı değildir.
+- `IsQueryable` §8'de UI bayrağı; §12/16'da server-side filtre kapısı. Tek davranış seçilip testlenmeli.
+- Tanım sayısı sınırının değeri veya belirleme mekanizması, supported types/operators ve paging sınırları
+  somutlaştırılmalı. Grafik eşzamanlılık çözümü süreçler arası güvenliği göstermeli; yalnız process-local
+  kilit veya bağımsız belgeleri tekrar okumak tek başına kanıt sayılmaz.
+- §21.4'te MOD-0018'in hiç yazılmadığı / delegation'ın hiç tüketilmediği çıkarımı pack statüsünden
+  yapılmamalı. Mevcut authorization kodu ve `DelegateWorkflowTaskHandler` vardır; PPM'ye uygunluk ayrı ölçümdür.
+- Mutasyon testi istenirse paylaşılan çalışan servis kaynağı sabote edilmemeli. İzinli disposable test
+  kopyası veya test aracının geçici çıktısı kullanılmalı; bu yeni kalıcı geliştirme worktree'si değildir.
+
+### 9.2 İş sırası ve sahiplik
+
+1. Organization sahibi yukarıdaki FU02 correction'larını tek turda toparlar; PPM incelemesi FU02'nin
+   bütün uygulamasını beklemek zorunda değildir. Ortak Platform dosyaları için single-writer korunur.
+2. Altı sınıfın db2e2ef2 tabanındaki eşleme raporu ve correction teslim alındı; §10 bu aşamanın güncel durumudur.
+3. Kayıt → rol → kişi, vekâlet/geçerlilik, preparer/approver ayrımı ve çoklu/sıralı onay ihtiyaçları mevcut
+   MOD-0288/MOD-0023/MOD-0018 koduna karşı incelenir. Kullanılabilir parçalar yeniden yazılmaz.
+4. Toplu governance mutabakatından sonra ilk kullanıcı modülü Portfolio, sonra Initiative, Program,
+   Project/Workspace, Investment Case ve Benefit Commitment'tır (§5 Aşama 5).
+5. DWS ve BPM kendi existing-code/legacy/owner incelemeleriyle devam eder; kapsam netleşmeden tam teslimat
+   yüzdesi veya kesin prompt sayısı verilmez.
+
+### 9.3 Tek çalışma alanı ve Git teslimat düzeni
+
+- Codex geliştirmesi için tek aktif, önceden belirlenmiş worktree kullanılır; her prompt yeni worktree açmaz.
+- Büyük geliştirmeler kullanıcıya verilen promptlarla başka sohbette yürütülür; aynı worktree'ye tek yazıcı
+  atanır ve sohbetler sırayla çalışır. Control Tower bu sırada salt-okunur inceler.
+- Claude kendi çalışma alanında kalır; onun branch'i veya runtime'ı devralınmaz.
+- Yerel checkpoint commitleri anlamlı geri dönüş noktalarıdır. Push aynı feature branch'i günceller;
+  push başına PR açılmaz. Yedek push küçük commitler içerebilir, yöneticinin merge etmesini gerektirmez.
+- PR sınırı dosya sayısı değil test edilmiş iş bütünüdür. Governance correction'ları ve uygulama düzeltmeleri,
+  ilgili yetki hiyerarşisi elverdiğinde aynı teslimatta toplanır. Zorunlu önce-merge kapısı varsa saklanmaz.
+- Kullanıcı ve Claude incelemesindeki düzeltmeler aynı feature branch / PR üzerinde biriktirilir.
+- Merge yöneticidedir. Merge sonrası dirty iş korunarak güncel main doğrulanır; aynı worktree'de sonraki
+  feature branch'e geçilir. Merge beklerken sonraki dilimin salt-okunur analizi yapılabilir.
+- Bu plan güncellemesi stage, commit, push, PR veya merge yetkisi vermez.
+
+### 9.4 Oranlar ve prompt tahminlerinin anlamı
+
+Modülün tamamlanma yüzdesi yalnız ortaklaşa kabul edilmiş gereksinim satırlarının kanıtlı kabulüyle
+hesaplanır. Entity/view varlığı veya geçen test sayısı tek başına modül yüzdesi değildir. 25 ortak ve
+62 özel alan, tüm alanların tüm sınıflara uygulanacağı anlamına gelmez; applicability eşlemesi gerekir.
+
+FU02 için yalnız incelenen branch'in yeni runtime teslimatı 0'dır; ana Organization modülünün oranı değildir.
+Altı PPM sınıfının entity ve liste/form dosyaları ağaçta vardır; yeni governance hedeflerine göre kabul
+oranları henüz ölçülmemiştir. Bu hücreler 0 olarak raporlanmaz.
+
+Prompt tahmini bir ana görevin analiz/uygulama/inceleme-correction turlarıdır; mesaj sayısı, süre garantisi
+veya PR sayısı değildir. İlk hazırlık (eşleme + toplu mutabakat) yaklaşık 2–3 tur; FU02 correction + backend
+uygulama + inceleme için 3–5 tur bir ön planlama aralığıdır. Kalan modül tahminleri exact eşleme sonrası
+yeniden kalibre edilir; açık owner kararları ve yeni scope bu aralıklara otomatik dahil değildir.
+
+## 10. Portfolio mutabakatı — envanter sonrası güncel karar kaydı
+
+Bu bölüm önceki geçici form sayısı, sahiplik ve sıradaki iş ifadelerini günceller. Yalnız koordinasyon
+kaydıdır; module pack, kaynak kod, servis veya Git teslimat yetkisi değildir.
+
+### 10.1 Kanıt ve kapanan değerlendirmeler
+
+- Denetim tabanı: `db2e2ef2781d94ca5bbc56ee419f1ac88125c6d9`. Bu tarihsel sabit taban güncel uzak main
+  olarak sürekli varsayılmaz; uygulama preflight'ında yeni farklar ayrıca doğrulanır.
+- Altı sınıfın entity, application/CQRS, persistence, API ve frontend zinciri mevcut. Yeniden yazım yok.
+- Envanter raporu: `/Users/alitufanoglu/.codex/attachments/099c8cb7-9f59-4a23-bb6b-ca6dd8537898/pasted-text.txt`.
+- Dar correction: `/Users/alitufanoglu/.codex/attachments/4f9ea35d-6412-4189-ab14-212c70edd164/pasted-text.txt`.
+- Claude teknik kapanışı bu konuşmada teslim alındı; kaynak raporun varsayımları aşağıdaki sınırlarla
+  kabul edildi. İletilen raporlar yeni test yürütüldüğü anlamına gelmez.
+- DWS yapısal hiyerarşi/dependency/baseline sahibidir; schedule baseline, milestone tarihi/gerçekleşmesi
+  ve deliverable kabulü DWS'ye yüklenmez. Bu davranışların executable owner sözleşmesi açık; Portfolio
+  sırasını engellemez ve ES retrofit'ini iş emrine dönüştürmez.
+- Portfolio mevcut formu 3 girdidir: Code, Name, Description. Hedef 13/15 sayısı geri çekildi.
+  Kullanıcı seçimi, sistemden türeyen veri, owner'dan okunan bilgi ve ayrı aksiyon girdisi ayrılınca
+  gerçek alan sayısı belirlenir; ardından <=8 Slim, >8 Compact uygulanır. Tasarım seçimi iş kararı değildir.
+- GUID/display reference ve teknik CAS/onaylı iş sürümü ayrı tutulur; yöneticiye yeniden oylatılmaz.
+- 15/55 yalnız başlangıç/hedef durum adlarının eşleşmesidir; PPM tamamlanma oranı değildir.
+- Mevcut öneri listesi exact implementation allowlist değildir; karar sonrası yollar tek tek belirlenecek.
+
+### 10.2 Onay ve kimlik sözleşmesinin zorunlu sınırları
+
+1. PPM lifecycle sahibidir; MOD-0023 onayı yürütür; WorkCenter yalnız gerçek approval işini gösterir.
+2. Authoritative preparer ve StartedBy ayrı anlamlardır. Preparer zorunluluğu istemcinin alan gönderip
+   göndermemesinden değil güvenilir PPM işlem/politika sözleşmesinden belirlenir. Eksik preparer için
+   StartedBy fallback'i yoktur. Tarayıcıdan serbest kimlik beyanı kabul edilmez.
+3. Diğer tüketicilerin mevcut SoD davranışı sessizce değişmez. PPM ve legacy sözleşme ayrımı, istemcinin
+   daha zayıf profili seçerek PPM denetimini atlamasına izin vermez. Devir/onayda kontroller sürdürülür.
+4. Hatalı istek, durum çakışması ve authoritative bağımlılık kesintisi ayrı HTTP sonuçlarıdır;
+   400/409/503 exact sözleşmede belirlenir. Her eksik/belirsiz kimlik otomatik 400/409 sayılmaz.
+5. WorkflowInstanceId kesin workflow'u seçer ama tek başına karar bağı değildir. Tenant, kayıt, talep
+   edilen işlem ve ilgili PPM sürümüyle eşleşme gerekir. Latest-by-object ve TemplateVersionId bu
+   kayıt sürümü bağının yerine geçmez.
+6. Workflow tarafı idempotency, PPM mutation idempotency'sinin yerine geçmez. PPM'de onay tüketim/uygulama
+   tekilliği, lifecycle değişikliği, CAS ve gerekli audit aynı atomik sınırda korunmalıdır.
+7. Polling seçilmedi; sonuç teslim yöntemi ve instance-ID ile sorgulamanın executable API'si açık.
+   Mevcut EvaluateWorkflowTransitionGate bu yeni sözleşmeyle eşdeğer ilan edilmez.
+8. Sıralı çok adımlı motor kodda mevcut; yayınlama ve uçtan uca kabulü doğrulanmadı. Yeni motor yok;
+   paralel AND yalnız açık gereksinim varsa ele alınır. Beş dev kaydı geçmişte hiç kullanılmadığını kanıtlamaz.
+9. PersonReference ve auth hesabı ayrı kavramlardır. Tipli bağ, cardinality/uniqueness, authoritative
+   tenant doğrulaması ve iki yaşam döngüsünün kontrolü birlikte gerekir; tek alan bunları sağlamaz.
+10. Kayıt-kapsamlı sorumluluk ile sıralı/paralel onay bağımsızdır. PPM-owned rol ile ortak atama mekanizması
+    ayrılmadan yeni module/pack sahipliği veya PositionAssignment'ın birebir kopyası kararlaştırılmaz.
+
+### 10.3 Tek toplu iş kararı listesi — öneriler, henüz onay değil
+
+| Konu | Control Tower önerisi | Karar sahibi / engellediği iş |
+|---|---|---|
+| Funding Ceiling ve aktivasyon | OD-04/07 kapanana kadar schema'ya alan ekleme; finans şartını atlama. Draft kayıt yönetimi ayrı kısmi kabul olabilir, tam Portfolio kapanışı değildir. Aktif kullanım hedefleniyorsa owner sözleşmesini önceliklendir. | CFO/Group Finance; istisna istenirse yetkili governance sahibi. Draft → Active engeli. |
+| Confidentiality OD-05 | Yeni seviye adları uydurma; onaylı seviyeler ile her seviyenin kimlere hangi erişimi verdiği birlikte tanımlansın. Yetki yalnız UI gizleme ile uygulanmasın. | Atanmış OD-05 sahibi; erişim ve nihai kabul. |
+| Performance Status | Otomatik hesaplama kaynağı yoksa, açık owner onayıyla tarih/gerekçe/audit taşıyan manuel review değerlendirmesi öner. Otomatik hesaplanmış gibi gösterme. | PPM süreç sahibi / Portfolio Owner; değerlendirme davranışı. |
+| Portfolio Risk | İlk dilimde onaylı SOP-0004 ölçeği üzerinden manuel, auditli review öner; otomatik aggregate risk iddiası üretme. Ölçek henüz doğrulanmadıysa değer uydurma. | PPM süreç sahibi / Portfolio Owner; rating kaynağı ve güncelleme yetkisi. |
+| Capacity Allocation | İlk dilimde allocation motoru değil, kaynak modelinin yerini tutmadığı belirtilen serbest açıklama öner. Kaynak rezervasyonu veya kapasite hesabı üretme. | PPM business owner; ilk dilim kapsamı. |
+
+Form/aksiyon yerleşimi, DTO, API, hata eşlemesi ve Golden seçimi repo kurallarıyla önerilecek teknik
+tasarımdır; yöneticiye gereksiz mühendislik sorusu olarak gönderilmez. Strategic Objective ve Organization
+seçimlerinin gerçek provider/kimlik/erişim sözleşmeleri ayrıca teknik kapıdır; mock seçenekle kapatılamaz.
+
+### 10.4 Sonraki teslimat ve sahiplik
+
+- Önce §10.3 tek karar turu; bu sırada yalnız izinli salt-okunur teknik kapsam hazırlığı yapılabilir.
+- Claude: Organization/FU02 kendi alanında kalır; MOD-0023/kimlik ve gereken Platform deltaları onunla
+  koordine edilir. Bu liste kendisine implementation veya commit emri değildir.
+- Codex: PPM bağları, Portfolio davranışı ve ekran tasarımı. Büyük uygulama için kullanıcıya başka
+  sohbette çalıştırılacak prompt verilir; tek aktif Codex worktree ve single-writer korunur.
+- Sahiplik/karar sonrası toplu governance amendment ve exact allowlist hazırlanır; açık uygulama
+  yetkisi olmadan kod başlamaz. Her küçük correction için ayrı PR hedeflenmez.
+- Teslim: teknik kabul → kullanıcı ekran kontrolü → Claude uygunluk incelemesi → aynı feature teslimatında
+  correction → yönetici merge'i. Yalnız plan değişikliği için şimdi push/PR açılmaz.
+
+### 10.5 Bağlantı backlog'u — Portfolio ↔ MOD-0136 Bütçe
+
+**Durum: AÇIK — iş kararı ve executable owner sözleşmesi bekliyor.**
+Kullanıcı bu bağlantının ayrı takip edilmesini onayladı; bu kayıt uygulama veya finansal sahiplik kararı
+değildir. Bütçe modülünün tek başına tamamlanması bu entegrasyonu kapatmaz.
+
+| Takip alanı | Tanım |
+|---|---|
+| İş | Portfolio'nun bütçe tavanını onaylanmış authoritative bütçe kaynağına bağlama ve PPM koşullarında kullanma |
+| Tek takip kaynağı | Bu bölüm; aynı iş için kopuk ve mükerrer backlog açılmaz |
+| İş kararı önkoşulu | Dış PPM paketi OD-04/07, finansal custody ve tutar/para birimi/sürüm anlamı netleşmeli; bu OD'ler repo DCP-006 OD numaralarıyla karıştırılmaz |
+| Teknik önkoşul | MOD-0136 sahibi ile kullanılabilir typed-reference/read/validation sözleşmesi, izinler ve hata davranışı doğrulanmalı; hazır API veya olmayan veri varsayılmaz |
+| Sağlayıcı sorumluluğu | Bütçe sahibi authoritative veriyi ve doğrulama sözleşmesini sağlar; exact kapsam ve görev sahibi koordinasyonda atanacak |
+| Tüketici sorumluluğu | MOD-0117 Portfolio bağlantıyı tüketir, mutation sırasında gerekli iş koşullarını yeniden kontrol eder; ikinci bütçe veri sahibi oluşturmaz |
+| Açılma tetikleyicisi | İlgili finans kararları veya MOD-0136 sözleşmesi hazır olduğunda bu kayıt yeniden ele alınır; bu ifade zamanlanmış otomatik izleme değildir |
+| Kapanış kanıtı | Onaylı sözleşme + implementation referansı + hedef entegrasyon/regresyon testleri + kullanıcı kabulü; yalnız Budget/Portfolio build'i veya ekran varlığı yeterli değildir |
+| Portfolio etkisi | Bütçe tavanı zorunlu kaldığı sürece Draft → Active kapısı bu iş tamamlanmadan açılmaz. Kısmi Draft teslimatı bu bağlantıyı veya tam Portfolio kabulünü kapatmaz |
+
+Asgari kabul kapsamı:
+
+- Doğru tenant, Portfolio, bütçe kimliği ve onaylı sürüm eşlemesi.
+- Tutar/para birimi ve güncellik kurallarının finans sahibiyle belirlenmiş sözleşmeye uygunluğu.
+- Yetkisiz ve cross-tenant erişimin reddi; eksik/silinmiş/geçersiz referansın güvenli ele alınması.
+- Kaynak kullanılamadığında tahmini/sentetik bütçe veya koşulsuz aktivasyon yok; sözleşmeye uygun fail-closed davranış.
+- Aktivasyon sırasında yetki ve bütçe koşulları yeniden doğrulanır; değişen sürüm ve eşzamanlılık senaryoları testlenir.
+- Bütçe ana verisi PPM'ye kopyalanmaz; izinli referans/kanıt kapsamı exact amendment'ta belirlenir.
+
+İlgili MOD-0117 ve MOD-0136 pack/teslimat planlarına bu bölümün bağlantısı, sahiplerinin izinli toplu
+amendment turunda eklenmelidir. **Bu turda o belgeler değiştirilmedi; karşılıklı referans işi açık.**
+Her Portfolio kullanıcı kabulü ve ilgili Budget teslimatı kapanışında bu kayıt kontrol edilir. Başka bir
+iş tamamlandığı için otomatik kapanmaz; iptal/defer kararı verilirse gerekçe ve Portfolio etkisi kaydedilir.

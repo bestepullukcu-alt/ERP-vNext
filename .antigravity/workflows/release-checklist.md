@@ -45,6 +45,12 @@ Her yeni sürüm, modül veya kritik hata düzeltmesi (hotfix) yayına alınmada
 - [ ] **Yol kontrolü:** Yukarıdaki maddeler **dosya yolu yazılmadan** işaretlenemez
       (bkz. `.antigravity/rules/docs-organization.md` §3.1).
 
+- [ ] **Yetkisiz kullanıcı (UAS-001):** Sayfa, iznine sahip olmayan kullanıcıya iskelet
+      çizmiyor mu — başlık, kart, boş tablo, eylem butonu yok mu? Tek bir açıklama ve
+      ne yapılacağı var mı? **Canlı denendi mi** — test kullanıcısı genellikle her
+      yetkiye sahiptir, bu kusuru testler göstermez.
+      (`.antigravity/rules/unauthorized-surface-standard.md`)
+
 ## 🚦 7. Canlıya Çıkış Sonrası Operatör Adımları
 
 - [ ] `docs/guides/operations/post-deploy-steps.md` **okundu** ve bu sürümü ilgilendiren
