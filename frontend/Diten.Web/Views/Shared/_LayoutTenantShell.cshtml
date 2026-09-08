@@ -82,6 +82,7 @@
     var canReadKpiCatalog = Perms.Has("dki.kpi-catalog.read");
     var canReadMetricDefinitionsOwnership = Perms.Has("dki.metric-definitions-ownership.read");
     var canReadScorecardsDashboards = Perms.Has("dki.scorecards-dashboards.read");
+    var canReadBaselineExperimentMeasurement = Perms.Has("dki.baseline-experiment-measurement.read");
 }
 <!DOCTYPE html>
 
@@ -683,7 +684,7 @@
                         }
                     }
 
-                    @if (canReadMetricSemanticRegistry || canReadDataWarehouseLakehouse || canReadEtlEltPipelines || canReadKpiCatalog || canReadMetricDefinitionsOwnership || canReadScorecardsDashboards)
+                    @if (canReadMetricSemanticRegistry || canReadDataWarehouseLakehouse || canReadEtlEltPipelines || canReadKpiCatalog || canReadMetricDefinitionsOwnership || canReadScorecardsDashboards || canReadBaselineExperimentMeasurement)
                     {
                         <li class="menu-header small text-uppercase">
                             <span class="menu-header-text">@SharedLocalizer["DataKnowledge"]</span>
@@ -739,6 +740,15 @@
                                 <a href="/DataKnowledge/ScorecardsDashboards" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-grid-alt"></i>
                                     <div>@SharedLocalizer["ScorecardsDashboardsMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadBaselineExperimentMeasurement)
+                        {
+                            <li class="menu-item @(activeController == "BaselineExperimentMeasurement" ? "active" : "")">
+                                <a href="/DataKnowledge/BaselineExperimentMeasurement" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-test-tube"></i>
+                                    <div>@SharedLocalizer["BaselineExperimentMeasurementMenu"]</div>
                                 </a>
                             </li>
                         }

@@ -39,6 +39,7 @@ public static class DependencyInjection
         services.AddScoped<IKpiCatalogReadinessMetadataRepository, MongoKpiCatalogReadinessMetadataRepository>();
         services.AddScoped<IMetricDefinitionsOwnershipReadinessMetadataRepository, MongoMetricDefinitionsOwnershipReadinessMetadataRepository>();
         services.AddScoped<IScorecardsDashboardsReadinessMetadataRepository, MongoScorecardsDashboardsReadinessMetadataRepository>();
+        services.AddScoped<IBaselineExperimentMeasurementReadinessMetadataRepository, MongoBaselineExperimentMeasurementReadinessMetadataRepository>();
 
         return services;
     }

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="BaselineExperimentMeasurementTitle" xml:space="preserve"><value>Temel Çizgi ve Deney Ölçümü</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>İş akışı veya entegrasyon yüzeyi açmadan hazırlık metadatasını inceleyin.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Temel Çizgi ve Deney Ölçümü Detayı</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Görünen Ad</value></data>
+  <data name="BaselineExperimentMeasurementReadinessState" xml:space="preserve"><value>Hazırlık Durumu</value></data>
+  <data name="BaselineCatalogBoundaryState" xml:space="preserve"><value>Temel Çizgi Kataloğu Sınır Durumu</value></data>
+  <data name="ExperimentDesignIntakeBoundaryState" xml:space="preserve"><value>Deney Tasarımı Girişi Sınır Durumu</value></data>
+  <data name="MeasurementBindingScopeBoundaryState" xml:space="preserve"><value>Ölçüm Bağlama Kapsamı Sınır Durumu</value></data>
+  <data name="ResultPublicationControlBoundaryState" xml:space="preserve"><value>Sonuç Yayımlama Kontrolü Sınır Durumu</value></data>
+  <data name="ExperimentReviewBoundaryState" xml:space="preserve"><value>Deney İncelemesi Sınır Durumu</value></data>
+  <data name="AutomatedDecisionBoundaryState" xml:space="preserve"><value>Otomatik Karar Sınır Durumu</value></data>
+  <data name="MetricSemanticRegistrySourceDependencyState" xml:space="preserve"><value>Metrik ve Anlamsal Kayıt Defteri Kaynağı Bağımlılık Durumu</value></data>
+  <data name="ScorecardSourceDependencyState" xml:space="preserve"><value>Karne Kartı Kaynağı Bağımlılık Durumu</value></data>
+  <data name="DataContractRegistryDependencyState" xml:space="preserve"><value>Veri Kontratı Sicili Bağımlılık Durumu</value></data>
+  <data name="NotificationDependencyState" xml:space="preserve"><value>Bildirim Bağımlılık Durumu</value></data>
+  <data name="StewardshipPreconditionState" xml:space="preserve"><value>Veri Sorumluluğu Ön Koşul Durumu</value></data>
+  <data name="DataMinimizationState" xml:space="preserve"><value>Veri Minimizasyon Durumu</value></data>
+  <data name="RetentionPolicyState" xml:space="preserve"><value>Saklama Politikası Durumu</value></data>
+  <data name="MeasurementPolicyState" xml:space="preserve"><value>Ölçüm Politikası Durumu</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Kaynak Kontrat Versiyonu</value></data>
+  <data name="BaselineExperimentMeasurementReadinessVersion" xml:space="preserve"><value>Hazırlık Versiyonu</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Son Değerlendirme Zamanı</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Erteleme Nedeni</value></data>
+  <data name="Actions" xml:space="preserve"><value>Aksiyonlar</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Yeni Ekle</value></data>
+  <data name="Back" xml:space="preserve"><value>Geri</value></data>
+  <data name="Unauthorized" xml:space="preserve"><value>Bu işlemi yapmaya yetkiniz yok.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni Temel Çizgi ve Deney Ölçümü Hazırlığı</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik ve Kontrat</value></data>
+  <data name="WorkflowSection" xml:space="preserve"><value>Hazırlık ve Ölçüm Sınırı</value></data>
+  <data name="DependencySection" xml:space="preserve"><value>Bağımlılıklar</value></data>
+  <data name="GovernanceSection" xml:space="preserve"><value>Yönetişim ve Politika</value></data>
+  <data name="DeferralSection" xml:space="preserve"><value>Erteleme</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>orn. BEM-CORE-001</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>Hazırlık kaydı görünen adı</value></data>
+  <data name="Evaluate" xml:space="preserve"><value>Değerlendir</value></data>
+  <data name="EvaluateConfirm" xml:space="preserve"><value>Bu hazırlık kaydı yeniden değerlendirilsin mi?</value></data>
+  <data name="RecordEvaluated" xml:space="preserve"><value>Hazırlık yeniden değerlendirildi.</value></data>
+  <data name="StateDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StateReady" xml:space="preserve"><value>Hazır</value></data>
+  <data name="StateDeferred" xml:space="preserve"><value>Ertelendi</value></data>
+  <data name="StateBlocked" xml:space="preserve"><value>Bloklu</value></data>
+  <data name="StateNotRequired" xml:space="preserve"><value>Gerekli Değil</value></data>
+  <data name="StateArchived" xml:space="preserve"><value>Arşivlendi</value></data>
+</root>

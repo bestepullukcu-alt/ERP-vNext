@@ -257,7 +257,12 @@ public static class DataSeeder
             new("dki", "scorecards-dashboards", "audit.read", "Scorecards Dashboards Audit Read", null),
             new("dki", "scorecards-dashboards", "evaluate", "Scorecards Dashboards Evaluate", null),
             new("dki", "scorecards-dashboards", "manage", "Scorecards Dashboards Manage", null),
-            new("dki", "scorecards-dashboards", "read", "Scorecards Dashboards Read", null)
+            new("dki", "scorecards-dashboards", "read", "Scorecards Dashboards Read", null),
+
+            new("dki", "baseline-experiment-measurement", "audit.read", "Baseline Experiment Measurement Audit Read", null),
+            new("dki", "baseline-experiment-measurement", "evaluate", "Baseline Experiment Measurement Evaluate", null),
+            new("dki", "baseline-experiment-measurement", "manage", "Baseline Experiment Measurement Manage", null),
+            new("dki", "baseline-experiment-measurement", "read", "Baseline Experiment Measurement Read", null)
         };
 
         foreach (var p in permissions)
