@@ -22,6 +22,10 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
     public const string GskusCreate = "mdm.gskus.create";
     public const string GskusSubmit = "mdm.gskus.submit";
     public const string GskusRetire = "mdm.gskus.retire";
+    public const string GskusUpdate = "mdm.gskus.update";
+    public const string GskusWithdraw = "mdm.gskus.withdraw";
+    public const string GskusRequestCorrection = "mdm.gskus.request-correction";
+    public const string GskusRequestRetirement = "mdm.gskus.request-retirement";
     public const string LskusRead = "mdm.lskus.read";
     public const string LskusCreate = "mdm.lskus.create";
     public const string LskusSubmit = "mdm.lskus.submit";
@@ -64,6 +68,10 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
             GlobalProductsRequestRetirement,
             GskusSubmit,
             GskusRetire,
+            GskusUpdate,
+            GskusWithdraw,
+            GskusRequestCorrection,
+            GskusRequestRetirement,
             LskusSubmit,
             LskusRetire,
             FinishedGoodsSubmit,
@@ -92,6 +100,9 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
                         GlobalProductsWithdraw,
                         GlobalProductsRequestCorrection,
                         GskusSubmit,
+                        GskusUpdate,
+                        GskusWithdraw,
+                        GskusRequestCorrection,
                         LskusSubmit,
                         FinishedGoodsSubmit,
                         WorkflowInstancesStart
@@ -123,6 +134,7 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
                 WorkflowInstancesStart,
                 GskusRead,
                 GskusRetire,
+                GskusRequestRetirement,
                 LskusRead,
                 LskusRetire,
                 FinishedGoodsRead,
@@ -153,7 +165,7 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
             || supplied.Any(key => key.StartsWith("mdm.product-definition-revisions.", StringComparison.OrdinalIgnoreCase)))
         {
             throw new InvalidOperationException(
-                "Product Identity lifecycle reconciliation requires the exact eight base and twelve lifecycle keys, with no Revision or product approve/reject key.");
+                "Product Identity lifecycle reconciliation requires the exact eight base and sixteen lifecycle keys, with no Revision or product approve/reject key.");
         }
     }
 

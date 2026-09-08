@@ -331,3 +331,35 @@ No live seed, grant/revoke, entitlement, token or production smoke is part of pl
 - Any GSKU update, submit, approve, retire, delete or other permission requires a separate approved authorization scope.
 - Exact legacy verifier command completed successfully on 2026-08-07 using the bundled workspace Python runtime;
   its mechanical result does not replace Master 8.1 authority.
+
+## GSKU action onboarding amendment — approved 2026-09-08
+
+Explicit user approval extends the historical read/create boundary only for these exact keys:
+- ProductDataSteward: `mdm.gskus.update`, `mdm.gskus.withdraw`, `mdm.gskus.request-correction`.
+- ProductIdentityRetirementSteward: `mdm.gskus.request-retirement`.
+- ProductIdentityApprover, Admin and Viewer: no new mutation grants.
+
+The MOD-0290 B/C/D/E responsibility matrix is authoritative for this delta. Existing grants for
+other products and existing GSKU submit/retire remain unchanged. The lifecycle key set is 16;
+base keys remain 8 and shared dependencies remain 4. Role totals are 19/7/11, not key counts.
+No automatic user assignment, wildcard, config/provisioning or live acceptance is authorized.
+
+Exact runtime/test allow-list for this amendment:
+- `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/ProductIdentityLifecycleEntitlementGrantProfile.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/DefaultRolePermissionTemplate.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductIdentityLifecycleEntitlementGrantProfileTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductIdentityLifecyclePermissionOnboardingMongoTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/DefaultRolePermissionTemplateTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/EntitlementPermissionSyncServiceTests.cs` — existing composite-matrix assertions only.
+
+Tests must cover exact role responsibility, replay/revoke/restore, manual/other-source retention,
+tenant isolation and no user assignment. The owned Mongo test may select an explicit test URI;
+it must retain test-database and tenant-owned cleanup boundaries. No application data is touched.
+Test execution evidence is recorded after validation, separately from historical live observations.
+
+Validation 2026-09-08: Auth Release build succeeded; focused role/entitlement/human-login/scope
+regressions 132 passed / 0 failed / 0 skipped. This includes one actual Mongo reconciliation test
+on the isolated test-owned single-node replica set (1/0/0, not additive). It verifies exact matrices,
+replay, revoke/restore, four-key manual/other-module grant preservation, tenant collision isolation
+and zero user assignments. Existing stale Global Product catalog assertions were reconciled in the
+approved template test; no Global Product runtime grants changed. No live provisioning was performed.

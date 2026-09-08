@@ -6,9 +6,9 @@ namespace Diten.AuthService.Application.Tests.Roles;
 public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
 {
     [Fact]
-    public void Profile_owns_exact_twelve_lifecycle_keys_and_zero_revision_or_decision_keys()
+    public void Profile_owns_exact_sixteen_lifecycle_keys_and_zero_revision_or_decision_keys()
     {
-        Assert.Equal(12, ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys.Count);
+        Assert.Equal(16, ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys.Count);
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsUpdate,
             ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys);
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsWithdraw,
@@ -28,14 +28,14 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
     }
 
     [Fact]
-    public void Dedicated_roles_have_exact_sixteen_seven_ten_matrices()
+    public void Dedicated_roles_have_exact_nineteen_seven_eleven_matrices()
     {
         var roles = ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles
             .ToDictionary(role => role.RoleName, StringComparer.Ordinal);
 
-        Assert.Equal(16, roles[ProductIdentityLifecycleEntitlementGrantProfile.StewardRole].PermissionKeys.Count);
+        Assert.Equal(19, roles[ProductIdentityLifecycleEntitlementGrantProfile.StewardRole].PermissionKeys.Count);
         Assert.Equal(7, roles[ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole].PermissionKeys.Count);
-        Assert.Equal(10, roles[ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole].PermissionKeys.Count);
+        Assert.Equal(11, roles[ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole].PermissionKeys.Count);
 
         var approver = roles[ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole].PermissionKeys;
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.WorkflowInstancesStart,
@@ -235,6 +235,39 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
 
         Assert.Throws<InvalidOperationException>(() =>
             ProductIdentityLifecycleEntitlementGrantProfile.ValidateAndResolveDefinitions(declared, declared.Concat(dependencies)));
+    }
+
+    [Theory]
+    [InlineData("mdm.gskus.update", "ProductDataSteward")]
+    [InlineData("mdm.gskus.withdraw", "ProductDataSteward")]
+    [InlineData("mdm.gskus.request-correction", "ProductDataSteward")]
+    [InlineData("mdm.gskus.request-retirement", "ProductIdentityRetirementSteward")]
+    public void Gsku_amendment_has_one_exact_responsible_role_and_rejects_catalog_drift(string key, string role)
+    {
+        Assert.Contains(key, ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys);
+        Assert.Equal(role, Assert.Single(ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles,
+            template => template.PermissionKeys.Contains(key)).RoleName);
+        var keys = ProductIdentityLifecycleEntitlementGrantProfile.BasePermissionKeys
+            .Concat(ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys).ToList();
+        keys.Remove(key);
+        Assert.Throws<InvalidOperationException>(() =>
+            ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet(keys));
+        keys.Add(key.ToUpperInvariant());
+        Assert.Throws<InvalidOperationException>(() =>
+            ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet(keys));
+        foreach (var drift in new[] { "module", "resource", "action", "scope", "deleted" })
+        {
+            var catalog = ProductCatalog();
+            catalog.RemoveAll(permission => permission.Key == key);
+            catalog.Add(new Permission("mdm", drift == "resource" ? "gsku" : "gskus",
+                drift == "action" ? "read" : key["mdm.gskus.".Length..], key, null,
+                moduleOverride: drift == "module" ? "another-module" : ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+                scope: drift == "scope" ? PermissionScope.PlatformAdmin : PermissionScope.Tenant)
+                { IsDeleted = drift == "deleted" });
+            Assert.Throws<InvalidOperationException>(() =>
+                ProductIdentityLifecycleEntitlementGrantProfile.ValidateAndResolveDefinitions(catalog,
+                    catalog.Concat(SharedDependencies())));
+        }
     }
 
     private static List<Permission> ProductCatalog()

@@ -24,7 +24,9 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
     [Fact]
     public async Task Real_mongo_reconciles_exact_composite_lifecycle_profile_with_replay_revoke_and_isolation()
     {
-        var settings = MongoClientSettings.FromConnectionString("mongodb://localhost:27017");
+        var settings = MongoClientSettings.FromConnectionString(
+            Environment.GetEnvironmentVariable("MONGO_TEST_URI")
+            ?? throw new InvalidOperationException("An explicit owned-test Mongo URI is required."));
         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
         settings.ConnectTimeout = TimeSpan.FromSeconds(5);
         var client = new MongoClient(settings);
@@ -120,7 +122,7 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
                 .Where(permission => permission.Module == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode)
                 .Select(permission => permission.Key)
                 .ToArray();
-            Assert.Equal(34, declaredKeys.Length);
+            Assert.Equal(38, declaredKeys.Length);
             await service.GrantModuleWithKeysAsync(
                 tenantA,
                 ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
@@ -128,7 +130,7 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
                 "fu23-mongo-test");
             await AssertExactMatricesAsync(roles, rolePermissions, catalog, tenantA);
 
-            // Live-upgrade shape: the amended Steward has fifteen grants after its workflow-start dependency is
+            // Live-upgrade shape: the amended Steward has eighteen grants after its workflow-start dependency is
             // removed, while the authoritative descriptor/global catalog still includes that dependency. Full-set
             // sync must add exactly that missing dependency without revoke/recreate or duplicate role/grant rows.
             var stewardBeforeUpgrade = await roles.GetByNameAndTenantAsync(
@@ -140,7 +142,7 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
             var startGrant = (await rolePermissions.GetByRoleAsync(stewardBeforeUpgrade.Id, tenantA, CancellationToken.None))
                 .Single(grant => grant.PermissionId == workflowStart.Id);
             await rolePermissions.RemoveByIdAsync(startGrant.Id, tenantA, CancellationToken.None);
-            Assert.Equal(15, (await rolePermissions.GetByRoleAsync(stewardBeforeUpgrade.Id, tenantA, CancellationToken.None)).Count);
+            Assert.Equal(18, (await rolePermissions.GetByRoleAsync(stewardBeforeUpgrade.Id, tenantA, CancellationToken.None)).Count);
 
             await service.SyncTenantModulesWithKeysAsync(
                 tenantA,
@@ -158,8 +160,8 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
             var firstRoleCount = await roleCollection.CountDocumentsAsync(role => role.TenantId == tenantA);
             var firstGrantCount = await grantCollection.CountDocumentsAsync(grant => grant.TenantId == tenantA);
             Assert.Equal(12, firstRoleCount);
-            Assert.Equal(76, firstGrantCount);
-            Assert.Equal(69, await grantCollection.CountDocumentsAsync(grant =>
+            Assert.Equal(80, firstGrantCount);
+            Assert.Equal(73, await grantCollection.CountDocumentsAsync(grant =>
                 grant.TenantId == tenantA
                 && grant.GrantSource == GrantSource.Module
                 && grant.SourceModuleCode == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode));
@@ -248,6 +250,34 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
             Assert.Equal(tenantAGrants, await grantCollection.CountDocumentsAsync(grant => grant.TenantId == tenantA));
             Assert.Equal(0, await database.GetCollection<UserRole>("userRoles").CountDocumentsAsync(role =>
                 role.TenantId == tenantA || role.TenantId == tenantB));
+
+            // The four new keys are owned only as module grants. Explicit manual/other-module grants
+            // for those same keys survive revoke and restore; no user receives a role automatically.
+            tenantContext.SetTenant(tenantA);
+            var preservationRole = await roles.UpsertSystemRoleAsync(
+                "TestSourcePreservation", "Test source preservation", null, tenantA, CancellationToken.None);
+            var additions = new[] { "mdm.gskus.update", "mdm.gskus.withdraw",
+                "mdm.gskus.request-correction", "mdm.gskus.request-retirement" };
+            var retainedIds = new List<Guid>();
+            for (var i = 0; i < additions.Length; i++)
+            {
+                var permission = catalog.Single(p => p.Key == additions[i]);
+                var grant = i % 2 == 0
+                    ? RolePermission.ManualGrant(preservationRole.Id, permission.Id, tenantA, "test-operator")
+                    : RolePermission.ModuleGrant(preservationRole.Id, permission.Id, tenantA, "test-other", "another-module");
+                await rolePermissions.AssignAsync(grant, CancellationToken.None);
+                retainedIds.Add(grant.Id);
+            }
+            await service.RevokeModuleAsync(tenantA, ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode, "test");
+            Assert.Equal(4, await grantCollection.CountDocumentsAsync(g => retainedIds.Contains(g.Id)));
+            await service.GrantModuleWithKeysAsync(tenantA,
+                ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode, declaredKeys, "test");
+            await service.GrantModuleWithKeysAsync(tenantA,
+                ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode, declaredKeys, "test");
+            Assert.Equal(4, await grantCollection.CountDocumentsAsync(g => retainedIds.Contains(g.Id)));
+            Assert.Equal(0, await grantCollection.CountDocumentsAsync(g => g.TenantId == tenantB));
+            Assert.Equal(0, await database.GetCollection<UserRole>("userRoles")
+                .CountDocumentsAsync(r => r.TenantId == tenantA || r.TenantId == tenantB));
         }
         finally
         {

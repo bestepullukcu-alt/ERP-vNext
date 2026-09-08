@@ -17,6 +17,20 @@ public sealed class DefaultRolePermissionTemplateTests
         new("platform", "tenants", "read", "Read Tenant", null)
     ];
 
+    [Theory]
+    [InlineData("update")]
+    [InlineData("withdraw")]
+    [InlineData("request-correction")]
+    [InlineData("request-retirement")]
+    public void Gsku_action_additions_are_not_default_Admin_or_Viewer_grants(string action)
+    {
+        var permission = new Permission("mdm", "gskus", action, action, null,
+            moduleOverride: "product-item-sku-master", scope: PermissionScope.Tenant);
+        Assert.True(DefaultRolePermissionTemplate.IsTenantAssignable(permission));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor("Admin", [permission]));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor("Viewer", [permission]));
+    }
+
     [Fact]
     public void SuperAdmin_gets_the_full_catalog()
     {
@@ -125,6 +139,22 @@ public sealed class DefaultRolePermissionTemplateTests
                 moduleOverride: "product-item-sku-master"),
             new("mdm", "gskus", "retire", "Retire GSKUs", null,
                 moduleOverride: "product-item-sku-master"),
+            new("mdm", "gskus", "update", "Update GSKU", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "gskus", "withdraw", "Withdraw GSKU", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "gskus", "request-correction", "Request GSKU Correction", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "gskus", "request-retirement", "Request GSKU Retirement", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "global-products", "update", "Update Global Product", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "global-products", "withdraw", "Withdraw Global Product", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "global-products", "request-correction", "Request Global Product Correction", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "global-products", "request-retirement", "Request Global Product Retirement", null,
+                moduleOverride: "product-item-sku-master"),
             new("mdm", "lskus", "submit", "Submit LSKUs", null,
                 moduleOverride: "product-item-sku-master"),
             new("mdm", "lskus", "retire", "Retire LSKUs", null,
@@ -186,12 +216,20 @@ public sealed class DefaultRolePermissionTemplateTests
                 "mdm.finished-goods.submit",
                 "mdm.global-products.create",
                 "mdm.global-products.read",
+                "mdm.global-products.request-correction",
+                "mdm.global-products.request-retirement",
                 "mdm.global-products.retire",
                 "mdm.global-products.submit",
+                "mdm.global-products.update",
+                "mdm.global-products.withdraw",
                 "mdm.gskus.create",
                 "mdm.gskus.read",
+                "mdm.gskus.request-correction",
+                "mdm.gskus.request-retirement",
                 "mdm.gskus.retire",
                 "mdm.gskus.submit",
+                "mdm.gskus.update",
+                "mdm.gskus.withdraw",
                 "mdm.lskus.create",
                 "mdm.lskus.read",
                 "mdm.lskus.retire",
