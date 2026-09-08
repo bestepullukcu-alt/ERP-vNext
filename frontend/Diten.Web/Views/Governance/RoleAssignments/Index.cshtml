@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<RoleAssignmentsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
 @{
     ViewData["Title"] = Localizer["Title"].Value;
     Layout = "_LayoutTenantShell";
@@ -14,6 +15,25 @@
     var statAssigned = new StatCardModel("bx-check-circle", Localizer["StatAssigned"].Value, "success", "0", "raStatAssigned");
     var statLocked = new StatCardModel("bx-lock-alt", Localizer["StatBaselineLocked"].Value, "secondary", "0", "raStatLocked");
     var statUnassigned = new StatCardModel("bx-minus-circle", Localizer["StatUnassigned"].Value, "warning", "0", "raStatUnassigned");
+}
+
+@*
+    UAS-001 — nothing below this block is drawn for a user who may not assign permissions: not the heading, not the
+    four stat cards, not the coverage bar, not the role picker, and not the permission grid that would otherwise
+    load, take a 403 from the gateway and leave a half-drawn page behind an English toast.
+
+    This screen is the one where that mattered most: it is where an administrator hands out authority, so a user who
+    lands here without the right must be told so plainly rather than shown the machinery and denied at the last step.
+
+    Returning here also stops @@section Scripts from registering, which is the point rather than a side effect —
+    index.js is the caller. The layout renders the section with required:false, so its absence is a no-op.
+
+    ⚠ Display only. AuthService's [HasPermission("auth.roles.assign-permission")] remains the authority (UAS-001 §4).
+*@
+@if (!Perms.Has("auth.roles.assign-permission"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Title"].Value" />
+    return;
 }
 
 <div class="mb-3">

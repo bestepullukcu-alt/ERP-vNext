@@ -36,7 +36,10 @@ const PARTIAL_BODY = () => PARTIAL()
 /** The screens ported in this round, with the canonical PKS-001 key each one's data actually needs. */
 const GATED = {
   "Governance/Roles/Index.cshtml": "auth.roles.read",
-  "Governance/Users/Index.cshtml": "auth.users.read"
+  "Governance/Users/Index.cshtml": "auth.users.read",
+  // Added when the Role Permissions screen was gated. The map is the guard: a screen absent from it is
+  // simply not checked, which is why removing the gate from this very view broke nothing until this line existed.
+  "Governance/RoleAssignments/Index.cshtml": "auth.roles.assign-permission"
 };
 
 describe("the gate stands in front of the page, not beside it", () => {
@@ -123,7 +126,7 @@ describe("the refusal itself", () => {
       .toMatch(/SharedLocalizer\["AccessDeniedTitle",\s*Model\]/);
     Object.keys(GATED).forEach((file) => {
       expect(read("Views", file), `${file} does not pass its own screen name to the refusal`)
-        .toMatch(/<partial name="_AccessDenied" model="@Localizer\["\w+Title"\]\.Value" \/>/);
+        .toMatch(/<partial name="_AccessDenied" model="@Localizer\["\w*Title"\]\.Value" \/>/);
     });
   });
 

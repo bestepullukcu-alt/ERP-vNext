@@ -4642,9 +4642,12 @@ div.dt-container div.dt-search input {
 /* FIX-RBAC-PERM-MODULE-ATTRIBUTION — a permission row is now a SOURCE plus its action chips. The source column
    holds a fixed share of the row so the chips of neighbouring rows line up into readable columns; below the
    layout's comfortable width the row stacks and the chips wrap under the source name. */
+/* Chips sit on ONE line while the source cell carries two (name + key), so flex-start left the chips hugging the
+   top of a taller row. Centring is what makes the row read as one thing; when chips wrap it still centres the
+   block against the source. The column layout below (narrow screens) sets its own direction and is unaffected. */
 .ra-row {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 1rem;
 }
 .ra-row-source {
@@ -4757,6 +4760,27 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 .select2-selection--multiple.ra-filter-multi .select2-selection__choice,
 .select2-selection--multiple.ra-filter-multi .select2-search--inline,
 .select2-selection--multiple.ra-filter-multi .select2-search__field { display: none !important; }
+
+/* ...but only while the dropdown is CLOSED.
+   The summary pattern above is borrowed from the DataTable inline filters, where a status list has three options
+   and typing is pointless. This control has 34 modules, and index.js turns select2's search on with a matcher that
+   also reads the module code and every permission key in it — a matcher with nowhere to type, because the rule
+   above hid the field unconditionally. So: closed shows the summary, open shows the field. */
+.select2-container--open .select2-selection--multiple.ra-filter-multi .select2-search--inline,
+.select2-container--open .select2-selection--multiple.ra-filter-multi .select2-search__field {
+    display: block !important;
+}
+.select2-container--open .select2-selection--multiple.ra-filter-multi .select2-search__field {
+    min-inline-size: 8rem;
+    inline-size: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: inherit;
+}
+.select2-container--open .select2-selection--multiple.ra-filter-multi .dt-inline-filter-multi__summary {
+    display: none !important;
+}
 .select2-selection--multiple.ra-filter-multi .dt-inline-filter-multi__summary {
   display: block;
   position: absolute;

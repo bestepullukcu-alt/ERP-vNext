@@ -515,9 +515,16 @@ const RoleAssignments = (function () {
             if (key) el.textContent = groupLabel(key);
         });
         if (!els.moduleFilter) return;
-        Array.from(els.moduleFilter.options).forEach((opt) => {
-            if (opt.value) opt.textContent = groupLabel(opt.value);
-        });
+        const opts = Array.from(els.moduleFilter.options).filter((o) => o.value);
+        opts.forEach((opt) => { opt.textContent = groupLabel(opt.value); });
+        /*
+         * ...and re-sort, which the first version forgot. The options were built and ordered from the RESX map, then
+         * this pass renamed them in place: a module whose Turkish name arrived only now kept the slot its English
+         * name had won, so the list read "Brand Product Master, Crm Account, … , Çalışma Takvimi" with Abonelik and
+         * Bildirimler further down. Renaming without reordering is not a relabel, it is a shuffle.
+         */
+        opts.sort((a, b) => a.textContent.localeCompare(b.textContent, undefined, { sensitivity: 'base' }))
+            .forEach((opt) => els.moduleFilter.appendChild(opt));
         if (window.jQuery && window.jQuery(els.moduleFilter).hasClass('select2-hidden-accessible')) {
             window.jQuery(els.moduleFilter).trigger('change.select2');
         }
