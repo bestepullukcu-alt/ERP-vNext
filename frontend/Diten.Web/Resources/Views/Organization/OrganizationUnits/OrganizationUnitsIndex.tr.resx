@@ -93,4 +93,8 @@
   <data name="CustomFieldsSectionTitle" xml:space="preserve"><value>Özel alanlar</value></data>
   <data name="CustomFieldRequiredError" xml:space="preserve"><value>Bu alan zorunludur</value></data>
   <data name="CustomFieldTypeError" xml:space="preserve"><value>Değer alan tipine uymuyor</value></data>
+  <data name="CustomFieldSelectPlaceholder" xml:space="preserve"><value>Seçiniz…</value></data>
+  <data name="CustomFieldTextPlaceholder" xml:space="preserve"><value>Bir değer girin</value></data>
+  <data name="CustomFieldNumberPlaceholder" xml:space="preserve"><value>Bir sayı girin</value></data>
+  <data name="CustomFieldDatePlaceholder" xml:space="preserve"><value>Tarih seçin</value></data>
 </root>

@@ -93,4 +93,8 @@
   <data name="CustomFieldsSectionTitle" xml:space="preserve"><value>Пользовательские поля</value></data>
   <data name="CustomFieldRequiredError" xml:space="preserve"><value>Это поле обязательно</value></data>
   <data name="CustomFieldTypeError" xml:space="preserve"><value>Значение не соответствует типу поля</value></data>
+  <data name="CustomFieldSelectPlaceholder" xml:space="preserve"><value>Выберите…</value></data>
+  <data name="CustomFieldTextPlaceholder" xml:space="preserve"><value>Введите значение</value></data>
+  <data name="CustomFieldNumberPlaceholder" xml:space="preserve"><value>Введите число</value></data>
+  <data name="CustomFieldDatePlaceholder" xml:space="preserve"><value>Выберите дату</value></data>
 </root>

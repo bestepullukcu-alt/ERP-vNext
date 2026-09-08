@@ -90,6 +90,36 @@
                 || String(a.name || a.code || '').localeCompare(String(b.name || b.code || '')));
 
     // ─── Control construction ────────────────────────────────────────────────────────────────────────────
+
+    /*
+     * The empty first option of a select.
+     *
+     * ⚠ IT MUST CARRY TEXT, AND NOT ONLY SO THE BOX READS WELL UNSTYLED. `form.js:initSelect2` takes each
+     * select's own empty-option text AS THE SELECT2 PLACEHOLDER — that is the pattern this screen already
+     * uses for Legal Entity, both parents and Manager Position. An empty string there produces an empty
+     * placeholder, so the control looks blank whether or not select2 is bound. Found by the owner using the
+     * screen: the custom-field selects were the only ones on the form with nothing in them.
+     */
+    const blankOption = (options) => {
+        const blank = doc.createElement('option');
+        blank.value = '';
+        blank.textContent = options.selectPlaceholder || '';
+        return blank;
+    };
+
+    /*
+     * The hint a free-text control shows while empty.
+     *
+     * ⚠ DERIVED FROM THE TYPE, NEVER FROM THE DEFINITION. FU02 gives a definition no placeholder field and
+     * adding one is out of scope, so this says what KIND of answer the box wants. Inventing a per-field hint
+     * from the field's name would put words in the author's mouth that the author never wrote.
+     */
+    const placeholderFor = (kind, options) => {
+        if (kind === 'integer' || kind === 'decimal') return options.numberPlaceholder || '';
+        if (kind === 'date') return options.datePlaceholder || '';
+        return options.textPlaceholder || '';
+    };
+
     const buildControl = (definition, kind, options) => {
         const rules = definition.validationRules || {};
         let control;
@@ -98,11 +128,13 @@
             control = doc.createElement('textarea');
             control.className = 'form-control';
             control.rows = 3;
+            control.placeholder = placeholderFor(kind, options);
             if (rules.maxLength) control.maxLength = rules.maxLength;
         } else if (kind === 'boolean') {
             control = doc.createElement('select');
             control.className = 'form-select';
-            [['', ''], ['true', options.booleanYes || 'Yes'], ['false', options.booleanNo || 'No']]
+            control.appendChild(blankOption(options));
+            [['true', options.booleanYes || 'Yes'], ['false', options.booleanNo || 'No']]
                 .forEach(([value, text]) => {
                     const opt = doc.createElement('option');
                     opt.value = value;
@@ -112,10 +144,7 @@
         } else if (kind === 'select') {
             control = doc.createElement('select');
             control.className = 'form-select';
-            const blank = doc.createElement('option');
-            blank.value = '';
-            blank.textContent = '';
-            control.appendChild(blank);
+            control.appendChild(blankOption(options));
             (rules.options || []).forEach((value) => {
                 const opt = doc.createElement('option');
                 opt.value = value;
@@ -125,10 +154,7 @@
         } else if (kind === 'reference') {
             control = doc.createElement('select');
             control.className = 'form-select';
-            const blank = doc.createElement('option');
-            blank.value = '';
-            blank.textContent = '';
-            control.appendChild(blank);
+            control.appendChild(blankOption(options));
             const target = trim(rules.referenceTarget);
             const rows = (options.references && options.references[target]) || [];
             rows.forEach((row) => {
@@ -141,6 +167,7 @@
             control = doc.createElement('input');
             control.className = 'form-control';
             control.autocomplete = 'off';
+            control.placeholder = placeholderFor(kind, options);
             if (kind === 'date') {
                 control.type = 'date';
             } else if (kind === 'integer' || kind === 'decimal') {
@@ -202,7 +229,49 @@
             rendered.push(definition);
         });
 
+        enhanceSelects(container);
         return rendered;
+    };
+
+    /*
+     * Bind select2 to the selects this module just created.
+     *
+     * ⚠ IT HAS TO HAPPEN HERE, NOT IN `form.js`. That file's `initSelect2` walks a FIXED ID LIST
+     * (#ouLegalEntityId, #ouParentId, #ouAdministrativeParentId, #ouManagerPositionId) and runs while the page
+     * is loading — custom fields have dynamic ids and do not exist in the DOM until the definitions have been
+     * fetched. Widening that list would not help; it would still run before these controls are born.
+     *
+     * ⚠ AND IT IS THE SAME BINDING, NOT A SECOND STYLE: width '100%', and the select's own empty-option text
+     * as the placeholder — copied from `form.js:initSelect2` so the custom fields sit in a form that looks
+     * like one form.
+     */
+    const enhanceSelects = (container) => {
+        const jq = window.jQuery;
+        if (!jq?.fn?.select2 || !container) return;
+        jq(container).find('select[data-ou-custom-field]').each(function () {
+            const $select = jq(this);
+            // select2's own marker for "already bound" — re-rendering the section must not stack instances.
+            if ($select.hasClass('select2-hidden-accessible')) $select.select2('destroy');
+            const placeholder = $select.find('option[value=""]').first().text() || '';
+            $select.select2({ width: '100%', placeholder });
+        });
+    };
+
+    /*
+     * Write a value into a control that MAY be select2-bound.
+     *
+     * ⚠ A BARE `control.value = x` IS INVISIBLE ONCE SELECT2 OWNS THE SELECT. select2 renders its own element
+     * and only redraws on a jQuery `change`; without it, binding select2 (which this module now does) would
+     * have made every stored custom value vanish from the edit form while still sitting in the underlying
+     * select. That is the same class of silent wrong-state the reporting-line fallback was — the screen shows
+     * empty and the next save writes empty.
+     */
+    const setControlValue = (control, value) => {
+        control.value = value;
+        const jq = window.jQuery;
+        if (jq?.fn?.select2 && control.tagName === 'SELECT' && control.classList.contains('select2-hidden-accessible')) {
+            jq(control).val(value).trigger('change');
+        }
     };
 
     const controlFor = (container, code) =>
@@ -233,7 +302,7 @@
             let value = String(raw);
             if (trim(definition.dataType) === 'Date' && value.length >= 10) value = value.slice(0, 10);
             if (trim(definition.dataType) === 'Boolean') value = String(value).toLowerCase();
-            control.value = value;
+            setControlValue(control, value);
         });
     };
 

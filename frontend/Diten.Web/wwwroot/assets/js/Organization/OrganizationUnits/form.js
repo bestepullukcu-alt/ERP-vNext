@@ -454,7 +454,11 @@
             readOnly: !may(PERM_FIELDS_WRITE),
             references: customFieldReferences,
             booleanYes: L.Yes || 'Yes',
-            booleanNo: L.No || 'No'
+            booleanNo: L.No || 'No',
+            selectPlaceholder: L.CustomFieldSelectPlaceholder || '',
+            textPlaceholder: L.CustomFieldTextPlaceholder || '',
+            numberPlaceholder: L.CustomFieldNumberPlaceholder || '',
+            datePlaceholder: L.CustomFieldDatePlaceholder || ''
         });
 
         if (!customFieldDefinitions.length) return;

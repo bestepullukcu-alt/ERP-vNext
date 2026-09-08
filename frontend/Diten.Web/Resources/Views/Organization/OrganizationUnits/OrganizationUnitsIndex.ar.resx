@@ -93,4 +93,8 @@
   <data name="CustomFieldsSectionTitle" xml:space="preserve"><value>حقول مخصصة</value></data>
   <data name="CustomFieldRequiredError" xml:space="preserve"><value>هذا الحقل مطلوب</value></data>
   <data name="CustomFieldTypeError" xml:space="preserve"><value>القيمة لا تطابق نوع الحقل</value></data>
+  <data name="CustomFieldSelectPlaceholder" xml:space="preserve"><value>اختر…</value></data>
+  <data name="CustomFieldTextPlaceholder" xml:space="preserve"><value>أدخل قيمة</value></data>
+  <data name="CustomFieldNumberPlaceholder" xml:space="preserve"><value>أدخل رقمًا</value></data>
+  <data name="CustomFieldDatePlaceholder" xml:space="preserve"><value>اختر تاريخًا</value></data>
 </root>

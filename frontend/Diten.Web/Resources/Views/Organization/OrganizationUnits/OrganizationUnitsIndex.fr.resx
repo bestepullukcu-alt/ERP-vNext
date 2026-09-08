@@ -93,4 +93,8 @@
   <data name="CustomFieldsSectionTitle" xml:space="preserve"><value>Champs personnalisés</value></data>
   <data name="CustomFieldRequiredError" xml:space="preserve"><value>Ce champ est obligatoire</value></data>
   <data name="CustomFieldTypeError" xml:space="preserve"><value>La valeur ne correspond pas au type du champ</value></data>
+  <data name="CustomFieldSelectPlaceholder" xml:space="preserve"><value>Sélectionner…</value></data>
+  <data name="CustomFieldTextPlaceholder" xml:space="preserve"><value>Saisissez une valeur</value></data>
+  <data name="CustomFieldNumberPlaceholder" xml:space="preserve"><value>Saisissez un nombre</value></data>
+  <data name="CustomFieldDatePlaceholder" xml:space="preserve"><value>Sélectionnez une date</value></data>
 </root>

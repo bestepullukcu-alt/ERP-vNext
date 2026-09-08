@@ -93,4 +93,8 @@
   <data name="CustomFieldsSectionTitle" xml:space="preserve"><value>自定义字段</value></data>
   <data name="CustomFieldRequiredError" xml:space="preserve"><value>此字段为必填项</value></data>
   <data name="CustomFieldTypeError" xml:space="preserve"><value>值与字段类型不匹配</value></data>
+  <data name="CustomFieldSelectPlaceholder" xml:space="preserve"><value>请选择…</value></data>
+  <data name="CustomFieldTextPlaceholder" xml:space="preserve"><value>请输入一个值</value></data>
+  <data name="CustomFieldNumberPlaceholder" xml:space="preserve"><value>请输入一个数字</value></data>
+  <data name="CustomFieldDatePlaceholder" xml:space="preserve"><value>请选择日期</value></data>
 </root>
