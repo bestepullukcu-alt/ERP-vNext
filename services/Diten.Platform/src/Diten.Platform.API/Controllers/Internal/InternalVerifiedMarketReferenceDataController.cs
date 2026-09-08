@@ -2,6 +2,7 @@ using Diten.Platform.API.Controllers.Common;
 using Diten.Platform.API.Models.BusinessReferenceData;
 using Diten.Platform.API.Security;
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.BusinessReferenceData.Models;
 using Diten.Platform.Application.Features.BusinessReferenceData.Queries;
 using Diten.Platform.Common.Tenancy;
@@ -17,15 +18,17 @@ namespace Diten.Platform.API.Controllers.Internal;
 public sealed class InternalVerifiedMarketReferenceDataController : CustomBaseController
 {
     private readonly IMediator _mediator;
-    private readonly IVerifiedReferenceDataRequestExecutor _requestExecutor;
+    private readonly VerifiedReferenceDataRequestExecutor _requestExecutor;
 
     public InternalVerifiedMarketReferenceDataController(IMediator mediator,
         IVerifiedGskuResolverCredentialAuthenticator credentialAuthenticator,
         IVerifiedGskuResolverJwtTenantContext jwtTenantContext,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        IVerifiedReferenceDataServiceTenantContext? serviceTenantContext = null)
     {
         _mediator = mediator;
-        _requestExecutor = new VerifiedReferenceDataRequestExecutor(credentialAuthenticator, jwtTenantContext, tenantContext);
+        _requestExecutor = new VerifiedReferenceDataRequestExecutor(
+            credentialAuthenticator, jwtTenantContext, serviceTenantContext, tenantContext);
     }
 
     [HttpPost("resolve")]
@@ -42,7 +45,7 @@ public sealed class InternalVerifiedMarketReferenceDataController : CustomBaseCo
 
     [HttpPost("enumerate-active")]
     public Task<IActionResult> EnumerateActive(CancellationToken cancellationToken) =>
-        _requestExecutor.ExecuteAsync(HttpContext, cancellationToken, async (_, token) =>
+        _requestExecutor.ExecuteInteractiveOnlyAsync(HttpContext, cancellationToken, async (_, token) =>
         {
             if (Request.Query.Count > 0 || Request.ContentLength is > 0 || Request.Headers.ContainsKey("Transfer-Encoding"))
             {

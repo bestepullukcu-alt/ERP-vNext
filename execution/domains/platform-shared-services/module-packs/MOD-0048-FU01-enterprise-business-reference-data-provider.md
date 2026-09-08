@@ -2462,6 +2462,29 @@ Production/Staging enablement remains prohibited and separately gated.
 - MOD-0290 C adapter/semantic-validation implementation remains in its own Module Pack and cannot be absorbed here.
 
 
+### LSKU workflow-safe Market prerequisite — approved integration 2026-09-09
+
+The protected approved workflow-safe Market amendment and current user approval authorize only the following
+additional paths for this slice (existing Auth purpose/provider/validator infrastructure is reused):
+
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/ReferenceData/IWorkflowVerifiedMarketReferenceResolver.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/ReferenceData/PlatformWorkflowVerifiedMarketResolverClient.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ReferenceData/PlatformWorkflowVerifiedMarketResolverClientTests.cs`
+- `services/Diten.Platform/src/Diten.Platform.API/Controllers/Internal/InternalVerifiedMarketReferenceDataController.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataVerifiedMarketAuthorizationTests.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/DependencyInjection.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ReferenceData/WorkflowVerifiedMarketDependencyInjectionTests.cs`
+
+Background resolve uses the named reference-data service identity and independent static resolver credential.
+Interactive tenant-user resolve remains unchanged. Enumeration stays interactive-only; no fallback to an
+interactive bearer or another audience is added. DI redacts credential/bearer headers and disables redirects.
+These are source/test integrations, never catalog/credential/grant provisioning or live acceptance.
+
+Validation: Platform authorization/executor/named-token focused run 49 passed, 0 failed, 0 skipped;
+MDM workflow/interactive Market client and DI run 36 passed, 0 failed, 0 skipped. These are contract/unit
+results, not a claim of live resolver acceptance or new Mongo coverage. The first Platform test compilation
+found ambiguous target-typed `Response.Success`; its test fixture now names the result type explicitly.
+
 ### GSKU trusted reference-data prerequisite integration (2026-09-08)
 
 The user authorized the existing workflow-safe reference-data purpose for GSKU recovery. The Market-named

@@ -31,6 +31,12 @@ public sealed class WorkflowVerifiedMarketDependencyInjectionTests
         using var scope = provider.CreateScope();
         Assert.IsType<PlatformWorkflowVerifiedGskuResolverClient>(
             scope.ServiceProvider.GetRequiredService<IWorkflowVerifiedGskuReferenceResolver>());
+        Assert.IsType<PlatformWorkflowVerifiedMarketResolverClient>(
+            scope.ServiceProvider.GetRequiredService<IWorkflowVerifiedMarketReferenceResolver>());
+        Assert.IsType<PlatformVerifiedMarketResolverClient>(
+            scope.ServiceProvider.GetRequiredService<IVerifiedMarketReferenceResolver>());
+        Assert.DoesNotContain(typeof(PlatformWorkflowVerifiedMarketResolverClient).GetConstructors().Single().GetParameters(),
+            parameter => parameter.ParameterType.FullName == "Microsoft.AspNetCore.Http.IHttpContextAccessor");
         Assert.IsType<PlatformVerifiedGskuResolverClient>(
             scope.ServiceProvider.GetRequiredService<IVerifiedGskuReferenceResolver>());
         Assert.Equal("TRUSTED_REFERENCE_DATA_CONSUMER", AuthWorkflowVerifiedMarketServiceIdentityProvider.Audience);

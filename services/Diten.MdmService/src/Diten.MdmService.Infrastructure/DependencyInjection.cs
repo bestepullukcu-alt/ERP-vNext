@@ -63,6 +63,18 @@ public static class DependencyInjection
             AuthWorkflowVerifiedMarketServiceIdentityProvider>();
         services.AddScoped<IWorkflowVerifiedGskuReferenceResolver,
             PlatformWorkflowVerifiedGskuResolverClient>();
+        services.AddHttpClient(nameof(PlatformWorkflowVerifiedMarketResolverClient), client =>
+            {
+                client.Timeout = Timeout.InfiniteTimeSpan;
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false })
+            .RedactLoggedHeaders([
+                "Authorization",
+                PlatformWorkflowVerifiedMarketResolverClient.CredentialIdHeader,
+                PlatformWorkflowVerifiedMarketResolverClient.CredentialSecretHeader,
+                PlatformWorkflowVerifiedMarketResolverClient.AudienceHeader
+            ]);
+        services.AddScoped<IWorkflowVerifiedMarketReferenceResolver, PlatformWorkflowVerifiedMarketResolverClient>();
         services.Configure<TrustedLegalEntityScopeProviderOptions>(
             configuration.GetSection(TrustedLegalEntityScopeProviderOptions.SectionName));
         services.AddHttpClient<ITrustedLegalEntityScopeProvider, PlatformTrustedLegalEntityScopeProviderClient>(client =>
