@@ -1,0 +1,219 @@
+@model Diten.Web.Models.OrganizationFieldDefinitions.OrganizationFieldDefinitionEditViewModel
+@using Diten.Web.Views.Organization.FieldDefinitions
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OrganizationFieldDefinitionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var action = isEdit ? "Edit" : "Create";
+}
+
+@* MOD-0288-FU04 — the field-definition authoring form. Imitates Views/Tasks/FieldDefinitions/_Form.cshtml
+   and shares nothing with it (§2): the two carry different fields, so a common partial would be widened by
+   both modules and owned by neither. *@
+<div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a asp-controller="OrganizationFieldDefinitions" asp-action="Index">@Localizer["FieldDefinitionsTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-controller="OrganizationFieldDefinitions" asp-action="Index" class="btn btn-label-secondary">
+            @SharedLocalizer["Cancel"]
+        </a>
+        <button type="submit" form="organizationFieldDefinitionForm" class="btn btn-primary">
+            @(isEdit ? SharedLocalizer["Update"] : SharedLocalizer["Save"])
+        </button>
+    </div>
+</div>
+
+<form id="organizationFieldDefinitionForm" asp-controller="OrganizationFieldDefinitions" asp-action="@action"
+      asp-route-id="@Model.Id" method="post" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="ExpectedVersion" />
+    <input type="hidden" asp-for="IsActive" />
+    @* The stored code travels so the model's immutability guard has something to compare a posted code
+       against — a disabled input posts nothing at all. *@
+    <input type="hidden" asp-for="OriginalCode" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Code" class="form-label fw-medium">@Localizer["Code"] <span class="text-danger">*</span></label>
+                            @if (isEdit)
+                            {
+                                @* ⚠ DISABLED, NOT merely un-submitted. Stored values join to their definition,
+                                   and the FU02 update request has no code member — so an edited code would be
+                                   discarded in silence while the screen reported a saved change. The hidden
+                                   OriginalCode above lets the model refuse a crafted post as well. *@
+                                <input asp-for="Code" class="form-control" disabled required data-code-immutable />
+                                <div class="form-text">@Localizer["CodeImmutableHelp"]</div>
+                            }
+                            else
+                            {
+                                <input asp-for="Code" class="form-control" maxlength="64" placeholder="@Localizer["CodePlaceholder"]" required />
+                                <div class="form-text">@Localizer["CodeImmutableHelp"]</div>
+                                <span asp-validation-for="Code" class="text-danger small mt-1"></span>
+                            }
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Name" class="form-label fw-medium">@Localizer["Name"] <span class="text-danger">*</span></label>
+                            <input asp-for="Name" class="form-control" maxlength="200" placeholder="@Localizer["NamePlaceholder"]" required />
+                            <span asp-validation-for="Name" class="text-danger small mt-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["TypeSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="DataType" class="form-label fw-medium">@Localizer["DataType"] <span class="text-danger">*</span></label>
+                            @* The eight FU02 types and no others. The stored value is matched to an option by
+                               form.js rather than reconstructed from the string — see optionValueFor there. *@
+                            <select asp-for="DataType" class="select2 form-select" data-field-data-type required>
+                                <option value="Text">@Localizer["FieldTypeText"]</option>
+                                <option value="MultilineText">@Localizer["FieldTypeMultilineText"]</option>
+                                <option value="Integer">@Localizer["FieldTypeInteger"]</option>
+                                <option value="Decimal">@Localizer["FieldTypeDecimal"]</option>
+                                <option value="Boolean">@Localizer["FieldTypeBoolean"]</option>
+                                <option value="Date">@Localizer["FieldTypeDate"]</option>
+                                <option value="SingleSelect">@Localizer["FieldTypeSingleSelect"]</option>
+                                <option value="Reference">@Localizer["FieldTypeReference"]</option>
+                            </select>
+                            <div class="form-text">@Localizer["TypeChangeHelp"]</div>
+                        </div>
+                        <div class="col-12 col-md-6" data-constraint-group="Reference">
+                            <label asp-for="ReferenceTarget" class="form-label fw-medium">@Localizer["ReferenceTarget"]</label>
+                            <select asp-for="ReferenceTarget" class="form-select" data-reference-target>
+                                <option value="OrganizationUnit">@Localizer["ReferenceTargetOrganizationUnit"]</option>
+                                <option value="Position">@Localizer["ReferenceTargetPosition"]</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ConstraintsSection"]</h6>
+                    @* Bounded and declarative. There is deliberately NO expression box: FU02 left a regex out
+                       because it is the one "declarative" constraint that is really a program. *@
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6" data-constraint-group="length">
+                            <label asp-for="MinLength" class="form-label fw-medium">@Localizer["MinLength"]</label>
+                            <input asp-for="MinLength" type="number" class="form-control" min="0" max="4000" />
+                        </div>
+                        <div class="col-12 col-md-6" data-constraint-group="length">
+                            <label asp-for="MaxLength" class="form-label fw-medium">@Localizer["MaxLength"]</label>
+                            <input asp-for="MaxLength" type="number" class="form-control" min="0" max="4000" />
+                        </div>
+                        <div class="col-12 col-md-6" data-constraint-group="range">
+                            <label asp-for="MinValue" class="form-label fw-medium">@Localizer["MinValue"]</label>
+                            <input asp-for="MinValue" type="number" step="any" class="form-control" />
+                        </div>
+                        <div class="col-12 col-md-6" data-constraint-group="range">
+                            <label asp-for="MaxValue" class="form-label fw-medium">@Localizer["MaxValue"]</label>
+                            <input asp-for="MaxValue" type="number" step="any" class="form-control" />
+                        </div>
+                        <div class="col-12" data-constraint-group="options">
+                            <label class="form-label fw-medium">@Localizer["OptionsLabel"]</label>
+                            <div id="fieldDefinitionOptions" data-options-editor>
+                                @for (var i = 0; i < Model.Options.Count; i++)
+                                {
+                                    <div class="input-group mb-2" data-option-row>
+                                        <input name="Options[@i]" value="@Model.Options[i]" class="form-control" maxlength="120" placeholder="@Localizer["OptionPlaceholder"]" />
+                                        <button type="button" class="btn btn-label-danger" data-option-remove>@Localizer["OptionRemove"]</button>
+                                    </div>
+                                }
+                            </div>
+                            <button type="button" class="btn btn-sm btn-label-primary" data-option-add>@Localizer["OptionAdd"]</button>
+                            <div class="form-text">@Localizer["OptionsHelp"]</div>
+                            <span asp-validation-for="Options" class="text-danger small mt-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["PresentationSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="DisplayOrder" class="form-label fw-medium">@Localizer["DisplayOrder"]</label>
+                            <input asp-for="DisplayOrder" type="number" class="form-control" min="0" max="999" />
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch mt-2">
+                                <input asp-for="IsRequired" class="form-check-input" role="switch" />
+                                <label asp-for="IsRequired" class="form-check-label ms-2">@Localizer["Required"]</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch mt-2">
+                                <input asp-for="IsQueryable" class="form-check-input" role="switch" />
+                                <label asp-for="IsQueryable" class="form-check-label ms-2">@Localizer["Queryable"]</label>
+                            </div>
+                            @* Server-enforced, and the wording says so. FU02 wrote this flag two ways before
+                               deciding; a help text calling it a display preference would put the contradiction
+                               back where the user reads it. *@
+                            <div class="form-text">@Localizer["QueryableHelp"]</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["GovernanceSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="Classification" class="form-label fw-medium">@Localizer["Classification"]</label>
+                            <select asp-for="Classification" class="select2 form-select">
+                                <option value="Normal">@Localizer["ClassificationNormal"]</option>
+                                <option value="Internal">@Localizer["ClassificationInternal"]</option>
+                                <option value="Confidential">@Localizer["ClassificationConfidential"]</option>
+                                <option value="Restricted">@Localizer["ClassificationRestricted"]</option>
+                            </select>
+                            <div class="form-text">@Localizer["ClassificationHelp"]</div>
+                        </div>
+                        @if (isEdit)
+                        {
+                            <div class="col-12">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge @(Model.IsActive ? "bg-label-success" : "bg-label-secondary")">
+                                        @(Model.IsActive ? SharedLocalizer["Active"] : SharedLocalizer["Passive"])
+                                    </span>
+                                </div>
+                                @* ⚠ A STATUS, NOT A SWITCH. FU02 has a deactivate route and no activate one, and
+                                   its update request cannot carry IsActive — so a switch here would be a control
+                                   the server ignores while the save reports success. Deactivation is offered as
+                                   its own action on the list and the details page. *@
+                                <div class="form-text">@Localizer["InactiveDefinitionHelp"]</div>
+                                <div class="form-text">@Localizer["NoReactivateHelp"]</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

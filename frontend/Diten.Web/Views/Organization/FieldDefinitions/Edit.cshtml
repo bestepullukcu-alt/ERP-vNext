@@ -1,0 +1,16 @@
+@model Diten.Web.Models.OrganizationFieldDefinitions.OrganizationFieldDefinitionEditViewModel
+@using Diten.Web.Views.Organization.FieldDefinitions
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OrganizationFieldDefinitionsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleEdit"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "edit";
+}
+
+<partial name="~/Views/Organization/FieldDefinitions/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/js/Organization/FieldDefinitions/form.js" asp-append-version="true"></script>
+}

@@ -195,6 +195,122 @@ grammatically sound, not verified by a speaker.
   is the tenant's own words and not a resource key. The FU02 backend carries an explicit split between
   `LabelResourceKey` and `LabelText` precisely because conflating them puts a raw key on screen.
 
+### 8.1 Results — implementation run, 2026-09-08
+
+Branch `feature/pss/mod-0288-fu04-organization-field-definition-authoring`, worktree
+`/private/tmp/ERP-vNext-mod0288-fu02-pack`.
+
+| Check | Result |
+|---|---|
+| `dotnet build …/Diten.Platform.API.csproj -c Debug` | **0 errors** |
+| `dotnet build frontend/Diten.Web/Diten.Web.csproj -c Debug` | **0 errors** |
+| `verify_datatable_page.py --area Organization --module FieldDefinitions --reference compact --api-profile proxy` | **94 pass / 1 fail** — the single failure is in the SHARED `wwwroot/assets/js/personalization-client.js`, outside §4 and failing for every module (the Task precedent scores 92/3 on the same run). Not touched. |
+| `Organization` suite | **188 / 188** (183 before, +5 from the new resx contract test) |
+| `TenantOrganization` suite | **154 / 154**, unchanged |
+| AuthService role suite | **192 / 192** |
+| vitest — the three rules | **16 / 16** in `tests/organization-field-definition-authoring.test.js` |
+| vitest — whole frontend suite | 2330 passed / 25 failed. Baseline measured on a stash of this branch: **25 failed** there too, in the same 13 files (`campaign-targeting`, `consent-preference`, `strategy-*`, `dialog-one-implementation`, …). This pack adds 16 passing tests and no failures. |
+| `Diten.Web.Tests` (nav l10n guard) | 130 pass / 3 fail — **identical to baseline**; the failures are PPM/PortfolioDelivery keys from another pack. `Nav.Page.ORGANIZATIONFIELDDEFINITIONS` is present in all seven languages and appears in no failure list. |
+| resx parity | 7 files × **63 keys**, identical key sets both directions, no empty value — asserted by `OrganizationFieldDefinitionL10nContractTests`. |
+
+### 8.2 The three rules are guarded by tests, and each guard was proved by sabotage
+
+Every rule was broken in the SHIPPING file, the suite was run, and the file was restored. §8's demand was that a
+rule not live in a comment — in FU03 the forbidden fallback was pasted in by hand and 183 tests stayed green.
+
+| # | Sabotage — the line that was broken | Test that went RED |
+|---|---|---|
+| 1 | `_Form.cshtml`: `disabled required data-code-immutable` → `data-code-immutable` (Code becomes typable on edit) | *rule 1 · the edit branch renders Code as a disabled control* |
+| 1b | View model: the whole `if (IsEdit … OriginalCode …)` guard block deleted | *rule 1 · the view model refuses a posted code that differs from the stored one* |
+| 1c | Controller: `ToUpdatePayload` gains `code = model.Code,` | *rule 1 · the view model refuses a posted code…* |
+| 2 | `index.js`: `remaining === 0` → `remaining < 0` (the limit stops closing the button) | *rule 2 · AT the limit the gate is closed and says why* |
+| 2b | `index.js`: `filter(isActiveRow).length` → `.length` (inactive definitions consume capacity) | *rule 2 · only ACTIVE definitions count toward the limit* |
+| 3 | `index.js`: `canManage: has(MANAGE)` → `has(MANAGE) \|\| has(READ)` | *rule 3 · three tests* |
+| 3b | `index.js`: `rowActionsFor` pushes `edit` for a reader | *rule 3 · a reader's only row action is the read one* |
+| 4 | `form.js`: case-insensitive option match → `o.value === value` (the FU03 bug, re-armed) | *form.js resolves the type select through its own options* |
+
+⚠ **Sabotage 1b passed GREEN on the first attempt and the guard was rewritten because of it.** The assertion had
+been `/IsEdit[\s\S]*OriginalCode[\s\S]*ValidationResult/` across the whole file, which the property
+declaration alone satisfied — so deleting the entire guard block changed nothing. It now reads inside the
+`Validate()` body. A guard that survives the deletion of the thing it guards is the defect it was written to
+prevent, and this one nearly shipped.
+
+### 8.3 Live verification (tenant shell, `localhost:5001`, two languages)
+
+Platform, Diten.Web **and AuthService** rebuilt and restarted from this worktree; `.cshtml` runtime compilation
+is off, so a restart is the only way views change.
+
+| Acceptance criterion | Evidence |
+|---|---|
+| 1 — create, edit, deactivate, read; code immutable | `fu04.tier` / "Yönetişim katmanı" authored through the form. On edit the Code input is **disabled**, shows the stored code and carries the immutability hint; `OriginalCode` travels hidden. |
+| 2 — the eight types, and `SingleSelect` reveals its option editor | Measured on the live form: choosing `SingleSelect` shows only `[data-constraint-group="options"]`; length, range and reference groups all hidden. Two-word types render as "Tek seçim" / "Single choice", never as a re-capitalised string. |
+| 3 — at 50 the create path is refused **before** submission | The tenant was actually filled to 50 active definitions. The page then read "The limit of 50 definitions has been reached", the Add button was **removed**, and `/Create` redirected away server-side. The 51st API create answered **409**. After deactivating the 46 fillers the line read "46 of 50 definitions remaining" and the button returned — proving inactive definitions do not consume capacity. |
+| 4 — type change with values is refused, legibly | FU02 answers 409; the form states the rule up front (`TypeChangeHelp`) rather than only after a failed save. |
+| 5 — `read` without `manage` is fully read-only | Verified on a **real second session** (`fu03editor@diten.com`, holding only `…custom-fields.read`): no Add button, no bulk bar, the only row action is quick-view, the notice "You can see which fields exist, but not change them." is shown — and the server refuses too: `/Create` → AccessDenied, `api/bulk` → **403**. |
+| 6 — seven resx asserted by a test | As above. |
+| 7 — a definition created here appears on the unit screen **without a restart** | Immediately after authoring, the FU03 unit form rendered `fu04.tier` as a select with "Tier 1"/"Tier 2", labelled **"Yönetişim katmanı"** — the tenant's own words, not a resource key. A value was written and read back through FU03. |
+| 8 — no `Views/Tasks/**` change, nothing shared | `git diff --name-only`; no Tasks file appears, and no file, base class or helper is common to the two screens. |
+
+**Two defects were found by using the screen and would not have been found by any test written here.**
+
+1. **The bulk bar never appeared and its action never fired.** The first version used DataTables' own `select`
+   API with `[data-bulk-bar]` / `[data-bulk-clear]`; the shared binder
+   (`DitenDataTable.bindBulkSelection`) reads checkbox inputs and the ids `#bulkActionBar`,
+   `#bulkSelectedCount`, `#btnClearSelection`. Nothing matched, and nothing said so. Now on the shared contract.
+2. **The remaining-capacity line never rendered.** `applyCreateGate()` looked for `#fieldDefinitionCapacity`,
+   which no view contained, so it returned early — the gate worked while the number it is supposed to publish
+   was invisible. The host is now in `Index.cshtml`.
+
+A third was found on the very first page load: a bare `<partial name="_Filter" />` throws, because Razor
+resolves a short partial name against `/Views/{Controller}/` — `/Views/OrganizationFieldDefinitions/` — while
+this view set lives under `/Views/Organization/FieldDefinitions/`. Absolute paths are used, with the same
+contract-marker comment the Task precedent carries so the static verifier still reads the contract.
+
+### 8.4 Allowlist corrections
+
+§4 was short by four files, all of them forced by contracts outside this pack. Reported, not slipped in:
+
+| File | Why it was unavoidable |
+|---|---|
+| `…/wwwroot/assets/js/Organization/FieldDefinitions/index.l10n.js` | `verify_datatable_page.py` requires it and **stops the run** without it; §4 lists two scripts, the DataTable contract needs three. The Task precedent has one too. |
+| `services/Diten.Platform/…/Organization/SelfRegistration/OrganizationManifestProvider.cs` | this **is** the "tenant navigation registration" §4 asks for — four pages, the list one nav-visible at SortOrder 15. |
+| `services/Diten.Platform/tests/…/Organization/OrganizationManifestProviderTests.cs` | that manifest is guarded in BOTH directions by a hard-coded route list and a nav-visible page count; adding a page without it is a red build. |
+| `frontend/Diten.Web/Resources/SharedResource.{7}.resx` | `NavManifestL10nGuardTests` requires `Nav.Page.ORGANIZATIONFIELDDEFINITIONS` in all seven languages; without it the sidebar prints raw English. Part of the same nav registration. |
+
+Also added: `services/Diten.Platform/tests/…/Organization/OrganizationFieldDefinitionL10nContractTests.cs` —
+§8 asks for the resx parity test and this is where its sibling for the unit screen already lives.
+
+### 8.5 Decisions taken where the pack and the backend disagreed
+
+- **`IsActive` is NOT a switch.** §3 lists it as one, but FU02's update request has no `IsActive` member and
+  there is no re-activate route: a switch would be a control the server ignores while the save reports success
+  — the exact failure FU03 shipped. It renders as a status badge plus an explicit **Deactivate** action, with
+  `NoReactivateHelp` saying the step cannot be undone here. Field count is unchanged, so `compact` stands.
+- **The bulk action deactivates, it does not delete.** The DataTable contract mandates a bulk surface; FU02 has
+  no delete for a definition. A "delete" button would have been the only thing about it that ever deleted.
+- **`Details` is gated by `read`, its buttons by `manage`.** Hiding the page from a reader would hide the field
+  list from someone allowed to see it.
+
+### 8.6 Environment note, and one correction to an earlier report
+
+The four FU02 permission keys **are** delegable after `04e212de` — but only once the AuthService that carries
+the fix is the one running. Measured mid-run: with the pre-fix AuthService still up, two of the four keys still
+read `Module = platform` and granting `…custom-fields.read` to a tenant role was refused **403**. After
+rebuilding and restarting AuthService from this worktree, all four read `Module = organization` and the same
+grant returned **204**. The fix is complete; a stale process made it look otherwise, and this was nearly filed
+as a second defect.
+
+⚠ Unrelated app-wide gap, seen while checking §5: a refused page redirects to `/Account/AccessDenied`, which
+does not exist and answers 404. The refusal is real; what the user is shown is a "page not found" rather than
+"not allowed". Every `Forbid()` in the application behaves this way, so it is not this pack's to fix.
+
+### 8.7 Dev-tenant residue from the live check
+
+Created in the local `DefaultTenant` to make §7 measurable, and left in place so the next reader can repeat it:
+`fu04.tier` (SingleSelect, two choices) plus **46 deactivated** `fu04.fill.NNN` definitions from the 50-limit
+proof. FU02 offers no delete for a definition, so deactivation is the only cleanup available. Nothing in the
+repository creates any of them.
+
 ## 9. Out of Scope
 
 - Value entry on units — FU03.

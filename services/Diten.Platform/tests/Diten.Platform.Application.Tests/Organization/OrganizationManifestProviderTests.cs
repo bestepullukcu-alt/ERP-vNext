@@ -30,6 +30,11 @@ public sealed class OrganizationManifestProviderTests
         "/OrganizationUnits/Create",
         "/OrganizationUnits/Edit/{id}",
         "/OrganizationUnits/Details/{id}",
+        // MOD-0288-FU04 — the field-definition authoring surface.
+        "/Organization/FieldDefinitions",
+        "/Organization/FieldDefinitions/Create",
+        "/Organization/FieldDefinitions/Edit/{id}",
+        "/Organization/FieldDefinitions/Details/{id}",
         "/Positions",
         // MOD-0288 Phase 3 — Position reshaped to full-page create/edit/details.
         "/Positions/Create",
@@ -89,25 +94,35 @@ public sealed class OrganizationManifestProviderTests
     [Fact]
     public void Nav_visible_pages_are_co_equal_top_level_and_subpages_are_parented()
     {
-        // The three LIST pages stay co-equal top-level nav entries.
+        // The LIST pages stay co-equal top-level nav entries. MOD-0288-FU04 adds a fourth: field definitions
+        // sit beside the units they describe, not under them — a sub-page would hide the authoring surface
+        // behind a unit nobody has opened yet.
         var navPages = Manifest.Pages.Where(p => p.IsNavigationVisible).ToList();
-        Assert.Equal(3, navPages.Count);
+        Assert.Equal(4, navPages.Count);
         Assert.All(navPages, p => Assert.Null(p.ParentPageCode));
         Assert.Equal(
-            new[] { "ORGANIZATION_UNITS", "POSITIONS", "POSITION_ASSIGNMENTS" }.OrderBy(x => x),
+            new[] { "ORGANIZATION_UNITS", "ORGANIZATION_FIELD_DEFINITIONS", "POSITIONS", "POSITION_ASSIGNMENTS" }.OrderBy(x => x),
             navPages.Select(p => p.PageCode).OrderBy(x => x));
+
+        // ⚠ And it sits DIRECTLY AFTER Organization Units (pack §10), which is a sort order, not an accident.
+        var navOrder = navPages.OrderBy(p => p.SortOrder).Select(p => p.PageCode).ToList();
+        Assert.Equal(
+            new[] { "ORGANIZATION_UNITS", "ORGANIZATION_FIELD_DEFINITIONS", "POSITIONS", "POSITION_ASSIGNMENTS" },
+            navOrder);
 
         // The Org Unit + Position + Assignment full-page create/edit/details are non-nav sub-pages parented to
         // their list.
         var subPages = Manifest.Pages.Where(p => !p.IsNavigationVisible).ToList();
         Assert.All(subPages, p => Assert.NotNull(p.ParentPageCode));
         Assert.All(subPages.Where(p => p.PageCode.StartsWith("ORG_UNIT_")), p => Assert.Equal("ORGANIZATION_UNITS", p.ParentPageCode));
+        Assert.All(subPages.Where(p => p.PageCode.StartsWith("ORG_FIELD_DEFINITION_")), p => Assert.Equal("ORGANIZATION_FIELD_DEFINITIONS", p.ParentPageCode));
         Assert.All(subPages.Where(p => p.PageCode.StartsWith("POSITION_")), p => Assert.Equal("POSITIONS", p.ParentPageCode));
         Assert.All(subPages.Where(p => p.PageCode.StartsWith("ASSIGNMENT_")), p => Assert.Equal("POSITION_ASSIGNMENTS", p.ParentPageCode));
         Assert.Equal(
             new[]
             {
                 "ORG_UNIT_CREATE", "ORG_UNIT_EDIT", "ORG_UNIT_DETAILS",
+                "ORG_FIELD_DEFINITION_CREATE", "ORG_FIELD_DEFINITION_EDIT", "ORG_FIELD_DEFINITION_DETAILS",
                 "POSITION_CREATE", "POSITION_EDIT", "POSITION_DETAILS",
                 "ASSIGNMENT_CREATE", "ASSIGNMENT_EDIT", "ASSIGNMENT_DETAILS"
             }.OrderBy(x => x),

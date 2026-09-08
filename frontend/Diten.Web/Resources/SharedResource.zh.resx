@@ -544,6 +544,7 @@
   <data name="Nav.Page.LEGALENTITIES" xml:space="preserve"><value>法律实体</value></data>
   <data name="Nav.Page.RDSETS" xml:space="preserve"><value>参考数据集</value></data>
   <data name="Nav.Page.ORGANIZATIONUNITS" xml:space="preserve"><value>组织单位</value></data>
+  <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>字段定义</value></data>
   <data name="Nav.Page.POSITIONS" xml:space="preserve"><value>职位</value></data>
   <data name="Nav.Page.POSITIONASSIGNMENTS" xml:space="preserve"><value>职位分配</value></data>
   <data name="Nav.Page.DEFINITIONS" xml:space="preserve"><value>工作流定义</value></data>
