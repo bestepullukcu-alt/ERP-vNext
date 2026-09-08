@@ -76,6 +76,7 @@
     var canReadIndustryTalentPool = Perms.Has("tep.industry-talent-pool.read");
     var canReadIndustrySkillPassport = Perms.Has("tep.industry-skill-passport.read");
     var canReadCandidateCareerPassport = Perms.Has("tep.candidate-career-passport.read");
+    var canReadTalentDevelopmentNetwork = Perms.Has("tep.talent-development-network.read");
     var canReadMetricSemanticRegistry = Perms.Has("dki.metric-semantic-registry.read");
     var canReadDataWarehouseLakehouse = Perms.Has("dki.data-warehouse-lakehouse.read");
     var canReadEtlEltPipelines = Perms.Has("dki.etl-elt-pipelines.read");
@@ -506,7 +507,7 @@
                             </li>
                         }
                     }
-                    @if (canReadTepShell || canReadConsentVisibilityPolicies || canReadAssociationMemberships || canReadVerifiedParticipants || canReadReviewBoard || canReadTrustLevels || canReadCandidateProfiles || canReadExitReferenceRecords || canReadReferenceExchange || canReadRehireRecommendations || canReadCandidateDisputes || canReadTalentDataFoundation || canReadHiringRiskIndicators || canReadEarlyWarningSignals || canReadRestrictedIntegrityRegistry || canReadProfessionalReputationLedger || canReadIndustryTalentPool || canReadIndustrySkillPassport || canReadCandidateCareerPassport)
+                    @if (canReadTepShell || canReadConsentVisibilityPolicies || canReadAssociationMemberships || canReadVerifiedParticipants || canReadReviewBoard || canReadTrustLevels || canReadCandidateProfiles || canReadExitReferenceRecords || canReadReferenceExchange || canReadRehireRecommendations || canReadCandidateDisputes || canReadTalentDataFoundation || canReadHiringRiskIndicators || canReadEarlyWarningSignals || canReadRestrictedIntegrityRegistry || canReadProfessionalReputationLedger || canReadIndustryTalentPool || canReadIndustrySkillPassport || canReadCandidateCareerPassport || canReadTalentDevelopmentNetwork)
                     {
                         <li class="menu-header small text-uppercase">
                             <span class="menu-header-text">@SharedLocalizer["TalentEcosystem"]</span>
@@ -679,6 +680,15 @@
                                 <a href="/TalentEcosystem/CandidateCareerPassport" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-been-here"></i>
                                     <div>@SharedLocalizer["CandidateCareerPassportMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadTalentDevelopmentNetwork)
+                        {
+                            <li class="menu-item @(activeController == "TalentDevelopmentNetwork" ? "active" : "")">
+                                <a href="/TalentEcosystem/TalentDevelopmentNetwork" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-network-chart"></i>
+                                    <div>@SharedLocalizer["TalentDevelopmentNetworkMenu"]</div>
                                 </a>
                             </li>
                         }

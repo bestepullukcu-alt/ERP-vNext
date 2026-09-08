@@ -286,6 +286,11 @@ public static class DataSeeder
             new("tep", "candidate-career-passport", "manage", "Candidate Career Passport Manage", null),
             new("tep", "candidate-career-passport", "read", "Candidate Career Passport Read", null),
 
+            new("tep", "talent-development-network", "audit.read", "Talent Development Network Audit Read", null),
+            new("tep", "talent-development-network", "evaluate", "Talent Development Network Evaluate", null),
+            new("tep", "talent-development-network", "manage", "Talent Development Network Manage", null),
+            new("tep", "talent-development-network", "read", "Talent Development Network Read", null),
+
             new("dki", "metric-semantic-registry", "audit.read", "Metric Semantic Registry Audit Read", null),
             new("dki", "metric-semantic-registry", "evaluate", "Metric Semantic Registry Evaluate", null),
             new("dki", "metric-semantic-registry", "manage", "Metric Semantic Registry Manage", null),
