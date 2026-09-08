@@ -178,9 +178,13 @@ Alan sayımı yalnızca create/edit formunda kullanıcının doldurduğu modül 
 
 ## 6.1 Kural Haritası — hangi işte hangi kural
 
-`.antigravity/rules/` altında 39 kural var ve bu dosya dışında hiçbiri
-`always_on` değil. Kural, ona atıf verildiği kadar görünür; bu harita atfın
-tek merkezi. **İşe başlamadan önce satırını bul ve o kuralları oku.**
+`.antigravity/rules/` altında 39 kural var ve **hiçbiri otomatik yüklenmez.**
+`.antigravity/rules/GEMINI.md` yalnız Antigravity'de `always_on`'dur; Claude Code
+ve Codex o klasörü hiç okumaz. Bu dosya (`AGENTS.md` = `CLAUDE.md`) her üç araçta
+da yüklenen tek dosyadır, bu yüzden harita burada durur.
+
+Kural, ona atıf verildiği kadar görünür. **İşe başlamadan önce satırını bul ve o
+kuralların dosyasını aç** — harita kuralın yerini söyler, içeriğini değil.
 
 ### Daima — istisnasız
 `multi-tenancy` kiracı izolasyonu · `security-jwt` token ve yetki ·
