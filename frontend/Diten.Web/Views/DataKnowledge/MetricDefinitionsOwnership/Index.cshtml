@@ -1,0 +1,28 @@
+@using Diten.Web.Views.DataKnowledge.MetricDefinitionsOwnership
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MetricDefinitionsOwnershipIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["MetricDefinitionsOwnershipTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = Perms.Has("dki.metric-definitions-ownership.manage");
+    var canEvaluate = Perms.Has("dki.metric-definitions-ownership.evaluate");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["MetricDefinitionsOwnershipTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="metric-definitions-ownership-shell"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()">
+    @* Contract markers rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-metric-definitions-ownership" data-dt-standard="v2"> *@
+    <partial name="~/Views/DataKnowledge/MetricDefinitionsOwnership/_DataTable.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/DataKnowledge/MetricDefinitionsOwnership/_IndexL10n.cshtml" />
+    <script src="~/assets/js/DataKnowledge/MetricDefinitionsOwnership/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DataKnowledge/MetricDefinitionsOwnership/index.js" asp-append-version="true"></script>
+}

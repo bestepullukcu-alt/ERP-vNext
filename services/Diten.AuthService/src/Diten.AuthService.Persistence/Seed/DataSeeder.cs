@@ -247,7 +247,12 @@ public static class DataSeeder
             new("dki", "kpi-catalog", "audit.read", "KPI Catalog Audit Read", null),
             new("dki", "kpi-catalog", "evaluate", "KPI Catalog Evaluate", null),
             new("dki", "kpi-catalog", "manage", "KPI Catalog Manage", null),
-            new("dki", "kpi-catalog", "read", "KPI Catalog Read", null)
+            new("dki", "kpi-catalog", "read", "KPI Catalog Read", null),
+
+            new("dki", "metric-definitions-ownership", "audit.read", "Metric Definitions Ownership Audit Read", null),
+            new("dki", "metric-definitions-ownership", "evaluate", "Metric Definitions Ownership Evaluate", null),
+            new("dki", "metric-definitions-ownership", "manage", "Metric Definitions Ownership Manage", null),
+            new("dki", "metric-definitions-ownership", "read", "Metric Definitions Ownership Read", null)
         };
 
         foreach (var p in permissions)

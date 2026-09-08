@@ -528,6 +528,7 @@
   <data name="DataWarehouseLakehouseMenu" xml:space="preserve"><value>Veri Ambarı / Göl Evi</value></data>
   <data name="EtlEltPipelinesMenu" xml:space="preserve"><value>ETL / ELT Veri Hatları</value></data>
   <data name="KpiCatalogMenu" xml:space="preserve"><value>KPI Kataloğu</value></data>
+  <data name="MetricDefinitionsOwnershipMenu" xml:space="preserve"><value>Metrik Tanımları ve Sahiplik</value></data>
   <data name="TepShellMetadataMenu" xml:space="preserve"><value>TEP Shell Metadata</value></data>
   <data name="ConsentVisibilityPoliciesMenu" xml:space="preserve"><value>Onay ve Görünürlük Politikaları</value></data>
   <data name="AssociationMembershipsMenu" xml:space="preserve"><value>Association Memberships</value></data>
