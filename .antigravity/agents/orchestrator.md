@@ -183,6 +183,11 @@ Canonical roster 20 agent file'dir: 1 `orchestrator` + aşağıdaki 19 specialis
 - [x] L10n standartları, Altın HTML Şablonu ve DtDefaults.create() uygulandı.
 - [x] Platform/Admin ise Ctrl+K registry + `en/tr` search localization tamamlandı veya N/A/blocker gerekçesi yazıldı.
 - [x] Quality Gate Datatable checklist işaretlendi (`verify_datatable_page.py --reference slim|compact` PASS).
+- [x] **Yetkisiz kullanıcı denendi (UAS-001):** Sayfa, iznine sahip olmayan bir kullanıcıyla
+      **canlı** açıldı; iskelet çizilmedi (başlık/kart/boş tablo/eylem butonu yok), tek bir
+      açıklama ve ne yapılacağı göründü, yönlendirme olmadı.
+      ⚠ Testler bu kusuru göstermez — test kullanıcısı genellikle her yetkiye sahiptir.
+      (`.antigravity/rules/unauthorized-surface-standard.md`)
 - [x] CRUD sayfaları tamamlandı: Create ✓ / Details ✓ / Edit ✓ (bkz. add-module.md Phase 4a)
 - [x] **Runtime Smoke Test (Phase 4.5):** Kanal A/B/C'den hangisi uygulandı + sonuç (ek: log/screenshot/kullanıcı onayı).
 - [x] Dokümantasyon yazıldı **ve doğru klasöre kondu** (bkz. `rules/docs-organization.md` §3.1):

@@ -150,6 +150,7 @@ Bu kararlar repo genelinde **zorunludur**. Bir modül bunlardan muaf olmak ister
 | UI Layout | Admin modülleri `_LayoutPlatformAdmin.cshtml`; tenant modülleri `_LayoutTenantShell.cshtml`; `_Layout.cshtml` FROZEN | [.antigravity/rules/views-organization.md](.antigravity/rules/views-organization.md) |
 | DataTable | v2 kontratı zorunlu (`data-dt-standard="v2"`) + Golden Slim/Compact seçimi | [.antigravity/rules/frontend-datatable-template.md](.antigravity/rules/frontend-datatable-template.md) |
 | Modaller & Uyarılar | Premium SweetAlert2 Standardı (MOD-0013) zorunlu | [.antigravity/rules/premium-modal-standard.md](.antigravity/rules/premium-modal-standard.md) |
+| Yetkisiz Ekran | İzni olmayan kullanıcıya sayfa iskeleti çizilmez — başlık, kart, boş tablo, eylem butonu yok; tek açıklama + ne yapılacağı. Yönlendirme YASAK (UAS-001) | [.antigravity/rules/unauthorized-surface-standard.md](.antigravity/rules/unauthorized-surface-standard.md) |
 
 ### Golden Reference DataTable Kararı
 
