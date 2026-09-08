@@ -341,6 +341,11 @@ public static class DataSeeder
             new("tep", "association-operations", "manage", "Association Operations Manage", null),
             new("tep", "association-operations", "read", "Association Operations Read", null),
 
+            new("tep", "industry-knowledge-network", "audit.read", "Industry Knowledge Network Audit Read", null),
+            new("tep", "industry-knowledge-network", "evaluate", "Industry Knowledge Network Evaluate", null),
+            new("tep", "industry-knowledge-network", "manage", "Industry Knowledge Network Manage", null),
+            new("tep", "industry-knowledge-network", "read", "Industry Knowledge Network Read", null),
+
             new("dki", "metric-semantic-registry", "audit.read", "Metric Semantic Registry Audit Read", null),
             new("dki", "metric-semantic-registry", "evaluate", "Metric Semantic Registry Evaluate", null),
             new("dki", "metric-semantic-registry", "manage", "Metric Semantic Registry Manage", null),
