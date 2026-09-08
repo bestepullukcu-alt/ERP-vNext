@@ -84,6 +84,12 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.global-products.withdraw",
                 "mdm.gskus.create",
                 "mdm.gskus.read",
+                "mdm.gskus.request-correction",
+                "mdm.gskus.request-retirement",
+                "mdm.gskus.retire",
+                "mdm.gskus.submit",
+                "mdm.gskus.update",
+                "mdm.gskus.withdraw",
                 "mdm.lskus.create",
                 "mdm.lskus.read",
                 "mdm.product-abbreviations.approve",
@@ -102,7 +108,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.product-legal-entity-scopes.replace"
             },
             declared.OrderBy(value => value, StringComparer.Ordinal));
-        Assert.Equal(29, declared.Count);
+        Assert.Equal(35, declared.Count);
         var nonControllerPermissions = new HashSet<string>(StringComparer.Ordinal)
         {
             "mdm.brands.read",
@@ -149,10 +155,22 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     }
 
     [Fact]
-    public void Non_global_product_pages_keep_exact_create_and_quick_view_actions()
+    public void Gsku_has_exact_lifecycle_actions_and_hidden_system_retire()
     {
-        var productPages = Manifest.Pages.Where(page => page.PageCode is "FINISHED_GOODS" or "GSKUS" or "LSKUS").ToList();
-        Assert.Equal(3, productPages.Count);
+        var page = Assert.Single(Manifest.Pages, p => p.PageCode == "GSKUS");
+        Assert.Equal(["ADD_NEW", "VIEW_DETAILS", "EDIT", "SUBMIT", "WITHDRAW_APPROVAL",
+            "REQUEST_CORRECTION", "REQUEST_RETIREMENT", "RETIRE"], page.Actions.Select(a => a.ActionCode));
+        var retire = Assert.Single(page.Actions, a => a.ActionCode == "RETIRE");
+        Assert.False(retire.IsRowAction);
+        Assert.False(retire.IsToolbarAction);
+        Assert.Equal("mdm.gskus.retire", retire.PermissionKey);
+    }
+
+    [Fact]
+    public void Other_product_pages_keep_exact_create_and_quick_view_actions()
+    {
+        var productPages = Manifest.Pages.Where(page => page.PageCode is "FINISHED_GOODS" or "LSKUS").ToList();
+        Assert.Equal(2, productPages.Count);
         foreach (var page in productPages)
         {
             Assert.Equal(2, page.Actions.Count);

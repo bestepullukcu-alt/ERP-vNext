@@ -2,6 +2,7 @@ using Diten.MdmService.Application.Common;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
+using Diten.MdmService.Domain.ValueObjects;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
@@ -14,6 +15,7 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
     private readonly IMongoCollection<FinishedGood> _finishedGoods;
     private readonly IMongoCollection<BsonDocument> _documents;
     private readonly IMongoCollection<Gsku> _gskus;
+    private readonly IMongoCollection<ProductDefinitionRevision> _revisions;
     private readonly IMongoCollection<CodeReservation> _reservations;
     private readonly Guid _tenantId;
 
@@ -22,6 +24,7 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
         _finishedGoods = database.GetCollection<FinishedGood>(CollectionName);
         _documents = database.GetCollection<BsonDocument>(CollectionName);
         _gskus = database.GetCollection<Gsku>("mdm_gskus");
+        _revisions = database.GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions");
         _reservations = database.GetCollection<CodeReservation>("mdm_code_reservations");
         _tenantId = tenantContext.TenantId;
         EnsureIndexes();
@@ -167,13 +170,25 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
             return new(false, null, "FINISHED_GOOD_CONTRACT_INVALID");
         }
 
+        var requiredAdmissionFingerprint = GskuChildCreationAdmission.ComputeRequestFingerprint(
+            finishedGood.GskuId, GskuChildIdentityKind.FinishedGood, finishedGood.CreationCommandId);
         var referenceableGskuFilter = Builders<Gsku>.Filter.Eq(x => x.TenantId, _tenantId)
             & Builders<Gsku>.Filter.Eq(x => x.IsDeleted, false)
             & Builders<Gsku>.Filter.Eq(x => x.Id, finishedGood.GskuId)
-            & Builders<Gsku>.Filter.In(
-                x => x.LifecycleStatus,
-                [ProductIdentityLifecycleStatus.Draft, ProductIdentityLifecycleStatus.IdentityApproved]);
-        if (!await _gskus.Find(referenceableGskuFilter).AnyAsync(cancellationToken))
+            & Builders<Gsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved)
+            & Builders<Gsku>.Filter.Eq(x => x.RetirementOperationId, null)
+            & Builders<Gsku>.Filter.ElemMatch(x => x.ChildCreationAdmissions,
+                x => x.ChildKind == GskuChildIdentityKind.FinishedGood
+                     && x.CreationCommandId == finishedGood.CreationCommandId
+                     && x.RequestFingerprint == requiredAdmissionFingerprint);
+        var parent = await _gskus.Find(referenceableGskuFilter).FirstOrDefaultAsync(cancellationToken);
+        if (parent is null || !await _revisions.Find(
+                Builders<ProductDefinitionRevision>.Filter.Eq(x => x.TenantId, _tenantId)
+                & Builders<ProductDefinitionRevision>.Filter.Eq(x => x.IsDeleted, false)
+                & Builders<ProductDefinitionRevision>.Filter.Eq(x => x.Id, parent.ProductDefinitionRevisionId)
+                & Builders<ProductDefinitionRevision>.Filter.Eq(
+                    x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved))
+            .AnyAsync(cancellationToken))
         {
             return new(false, null, "GSKU_NOT_REFERENCEABLE");
         }
@@ -245,6 +260,16 @@ public sealed class FinishedGoodRepository : IFinishedGoodRepository
            && left.CodeReservationId == right.CodeReservationId
            && string.Equals(left.CanonicalCode, right.CanonicalCode, StringComparison.Ordinal)
            && string.Equals(left.CreationCommandId, right.CreationCommandId, StringComparison.Ordinal);
+
+    public async Task<FinishedGoodCreateResult> CreateDraftWithAdmissionAsync(
+        FinishedGood finishedGood, string admissionFingerprint, CancellationToken cancellationToken = default)
+    {
+        var expected = GskuChildCreationAdmission.ComputeRequestFingerprint(
+            finishedGood.GskuId, GskuChildIdentityKind.FinishedGood, finishedGood.CreationCommandId);
+        if (!string.Equals(admissionFingerprint, expected, StringComparison.Ordinal))
+            return new(false, null, "GSKU_CHILD_ADMISSION_REQUIRED");
+        return await CreateDraftAsync(finishedGood, cancellationToken);
+    }
 
     private void EnsureIndexes()
     {

@@ -24,12 +24,18 @@ var runProductIdentityWorkflowRecovery =
     ProductIdentityWorkflowRecoveryCommandLine.IsRequested(args);
 var runGlobalProductCorrectionRecovery =
     GlobalProductCorrectionRecoveryCommandLine.IsRequested(args);
+var runFirstGskuIdentityWorkflowRecovery = FirstGskuIdentityWorkflowRecoveryCommandLine.IsRequested(args);
+var runGskuCorrectionRecovery = GskuCorrectionRecoveryCommandLine.IsRequested(args);
+var runGskuRetirementRequestRecovery = GskuRetirementRequestRecoveryCommandLine.IsRequested(args);
 var runGlobalProductRetirementRecovery =
     GlobalProductRetirementRequestRecoveryCommandLine.IsRequested(args);
 if ((runProductLegalEntityScopeOperational ? 1 : 0)
     + (runAuditIntentTemporalMigration ? 1 : 0)
     + (runProductIdentityWorkflowRecovery ? 1 : 0)
     + (runGlobalProductCorrectionRecovery ? 1 : 0)
+    + (runFirstGskuIdentityWorkflowRecovery ? 1 : 0)
+    + (runGskuCorrectionRecovery ? 1 : 0)
+    + (runGskuRetirementRequestRecovery ? 1 : 0)
     + (runGlobalProductRetirementRecovery ? 1 : 0) > 1)
 {
     throw new InvalidOperationException("MDM_OPERATIONAL_COMMAND_AMBIGUOUS");
@@ -117,11 +123,111 @@ builder.Services.AddSingleton<GlobalProductRetirementRequestRecoveryRunner>();
 builder.Services.AddHostedService<ProductIdentityWorkflowRecoveryWorker>();
 builder.Services.AddHostedService<GlobalProductCorrectionRecoveryWorker>();
 builder.Services.AddHostedService<GlobalProductRetirementRequestRecoveryWorker>();
+builder.Services.AddOptions<FirstGskuIdentityWorkflowOptions>()
+    .Bind(builder.Configuration.GetSection(FirstGskuIdentityWorkflowOptions.SectionName))
+    .Validate(options => !options.Enabled || IsValidFirstGskuIdentityWorkflowOptions(options),
+        "FIRST_GSKU_IDENTITY_WORKFLOW_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddOptions<FirstGskuIdentityWorkflowWorkerOptions>()
+    .Bind(builder.Configuration.GetSection(FirstGskuIdentityWorkflowWorkerOptions.SectionName))
+    .Validate(IsValidFirstGskuIdentityWorkflowWorkerOptions,
+        "FIRST_GSKU_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<FirstGskuIdentityWorkflowOptions>>().Value;
+    var configuration = options.Enabled
+        ? options.ToStartConfiguration()
+        : new FirstGskuIdentityWorkflowStartConfiguration(
+            null, null, [], string.Empty, false, false, null);
+    return new FirstGskuIdentityWorkflowStartRequestFactory(
+        configuration,
+        sp.GetRequiredService<TimeProvider>());
+});
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<FirstGskuIdentityWorkflowWorkerOptions>>().Value;
+    return new FirstGskuIdentityWorkflowExecutionConfiguration(
+        TimeSpan.FromSeconds(options.LeaseSeconds),
+        TimeSpan.FromSeconds(options.RetryDelaySeconds));
+});
+builder.Services.AddScoped<FirstGskuIdentityWorkflowProcessor>();
+builder.Services.AddScoped<FirstGskuIdentityRetirementProcessor>();
+builder.Services.AddSingleton<FirstGskuIdentityWorkflowRecoveryRunner>();
+builder.Services.AddHostedService<FirstGskuIdentityWorkflowRecoveryWorker>();
+builder.Services.AddOptions<GskuCorrectionWorkflowOptions>()
+    .Bind(builder.Configuration.GetSection(GskuCorrectionWorkflowOptions.SectionName))
+    .Validate(options => !options.Enabled || IsValidGskuCorrectionOptions(options,
+        builder.Configuration.GetSection(FirstGskuIdentityWorkflowOptions.SectionName)
+            .Get<FirstGskuIdentityWorkflowOptions>() ?? new()),
+        "GSKU_CORRECTION_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddOptions<GskuCorrectionWorkflowWorkerOptions>()
+    .Bind(builder.Configuration.GetSection(GskuCorrectionWorkflowWorkerOptions.SectionName))
+    .Validate(options => options.IsValid(), "GSKU_CORRECTION_WORKER_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<GskuCorrectionWorkflowOptions>>().Value;
+    var identity = sp.GetRequiredService<IOptions<FirstGskuIdentityWorkflowOptions>>().Value;
+    var configuration = options.Enabled
+        ? options.ToConfiguration(identity.TemplateId, identity.TemplateCode)
+        : new GskuCorrectionStartConfiguration(null, null, [], string.Empty, false, false,
+            null, identity.TemplateId, identity.TemplateCode);
+    return new GskuCorrectionWorkflowStartRequestFactory(configuration, sp.GetRequiredService<TimeProvider>());
+});
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<GskuCorrectionWorkflowWorkerOptions>>().Value;
+    return new GskuCorrectionExecutionConfiguration(TimeSpan.FromSeconds(options.LeaseSeconds),
+        TimeSpan.FromSeconds(options.RetryDelaySeconds));
+});
+builder.Services.AddScoped<GskuCorrectionWorkflowProcessor>();
+builder.Services.AddSingleton<GskuCorrectionRecoveryRunner>();
+builder.Services.AddHostedService<GskuCorrectionRecoveryWorker>();
+builder.Services.AddOptions<GskuRetirementRequestWorkflowOptions>()
+    .Bind(builder.Configuration.GetSection(GskuRetirementRequestWorkflowOptions.SectionName))
+    .Validate(options => !options.Enabled || IsValidGskuRetirementRequestOptions(options,
+        builder.Configuration.GetSection(FirstGskuIdentityWorkflowOptions.SectionName)
+            .Get<FirstGskuIdentityWorkflowOptions>() ?? new(),
+        builder.Configuration.GetSection(GskuCorrectionWorkflowOptions.SectionName)
+            .Get<GskuCorrectionWorkflowOptions>() ?? new()),
+        "GSKU_RETIREMENT_REQUEST_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddOptions<GskuRetirementRequestWorkflowWorkerOptions>()
+    .Bind(builder.Configuration.GetSection(GskuRetirementRequestWorkflowWorkerOptions.SectionName))
+    .Validate(options => options.IsValid(), "GSKU_RETIREMENT_REQUEST_WORKER_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<GskuRetirementRequestWorkflowOptions>>().Value;
+    var identity = sp.GetRequiredService<IOptions<FirstGskuIdentityWorkflowOptions>>().Value;
+    var correction = sp.GetRequiredService<IOptions<GskuCorrectionWorkflowOptions>>().Value;
+    var configuration = options.Enabled
+        ? options.ToConfiguration(identity.TemplateId, identity.TemplateCode,
+            correction.TemplateId, correction.TemplateCode)
+        : new GskuRetirementRequestStartConfiguration(null, null, [], string.Empty, false, false,
+            null, identity.TemplateId, identity.TemplateCode, correction.TemplateId, correction.TemplateCode);
+    return new GskuRetirementRequestWorkflowStartRequestFactory(configuration,
+        sp.GetRequiredService<TimeProvider>());
+});
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<GskuRetirementRequestWorkflowWorkerOptions>>().Value;
+    return new GskuRetirementRequestExecutionConfiguration(TimeSpan.FromSeconds(options.LeaseSeconds),
+        TimeSpan.FromSeconds(options.RetryDelaySeconds));
+});
+builder.Services.AddScoped<GskuRetirementRequestWorkflowProcessor>();
+builder.Services.AddSingleton<GskuRetirementRequestRecoveryRunner>();
+builder.Services.AddHostedService<GskuRetirementRequestRecoveryWorker>();
 
 if (!runProductLegalEntityScopeOperational
     && !runAuditIntentTemporalMigration
     && !runProductIdentityWorkflowRecovery
     && !runGlobalProductCorrectionRecovery
+    && !runFirstGskuIdentityWorkflowRecovery
+    && !runGskuCorrectionRecovery
+    && !runGskuRetirementRequestRecovery
     && !runGlobalProductRetirementRecovery)
 {
 var jwtSecret = builder.Configuration["JwtSettings:Secret"];
@@ -284,6 +390,49 @@ if (runGlobalProductRetirementRecovery)
     return;
 }
 
+if (runFirstGskuIdentityWorkflowRecovery)
+{
+    var runner = app.Services.GetRequiredService<FirstGskuIdentityWorkflowRecoveryRunner>();
+    var result = await FirstGskuIdentityWorkflowRecoveryCommandLine.RunAsync(
+        runner,
+        app.Lifetime.ApplicationStopping);
+    app.Logger.LogInformation(
+        "First GSKU identity workflow recovery completed; tenants {TenantCount}, operations {OperationCount}, completed {CompletedCount}, deferred {DeferredCount}, failed {FailedCount}.",
+        result.TenantCount,
+        result.OperationCount,
+        result.CompletedCount,
+        result.DeferredCount,
+        result.FailedCount);
+    if (result.FailedCount > 0)
+        throw new InvalidOperationException("FIRST_GSKU_IDENTITY_WORKFLOW_RECOVERY_FAILED");
+    return;
+}
+
+if (runGskuCorrectionRecovery)
+{
+    var runner = app.Services.GetRequiredService<GskuCorrectionRecoveryRunner>();
+    var result = await GskuCorrectionRecoveryCommandLine.RunAsync(runner, app.Lifetime.ApplicationStopping);
+    app.Logger.LogInformation(
+        "GSKU correction recovery completed; tenants {TenantCount}, operations {OperationCount}, completed {CompletedCount}, deferred {DeferredCount}, failed {FailedCount}.",
+        result.TenantCount, result.OperationCount, result.CompletedCount, result.DeferredCount, result.FailedCount);
+    if (result.FailedCount > 0) throw new InvalidOperationException("GSKU_CORRECTION_RECOVERY_FAILED");
+    return;
+}
+
+if (runGskuRetirementRequestRecovery)
+{
+    var runner = app.Services.GetRequiredService<GskuRetirementRequestRecoveryRunner>();
+    var result = await GskuRetirementRequestRecoveryCommandLine.RunAsync(
+        runner, app.Lifetime.ApplicationStopping);
+    app.Logger.LogInformation(
+        "GSKU retirement-request recovery completed; tenants {TenantCount}, operations {OperationCount}, completed {CompletedCount}, deferred {DeferredCount}, failed {FailedCount}.",
+        result.TenantCount, result.OperationCount, result.CompletedCount, result.DeferredCount, result.FailedCount);
+    if (result.FailedCount > 0)
+        throw new InvalidOperationException("GSKU_RETIREMENT_REQUEST_RECOVERY_FAILED");
+    return;
+}
+
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -305,6 +454,68 @@ app.MapGet("/health", () => Results.Ok(new { status = "Healthy" })).AllowAnonymo
 app.MapControllers();
 
 app.Run();
+
+static bool IsValidGskuCorrectionOptions(GskuCorrectionWorkflowOptions options,
+    FirstGskuIdentityWorkflowOptions identity)
+{
+    try
+    {
+        var configuration = options.ToConfiguration(identity.TemplateId, identity.TemplateCode);
+        _ = new GskuCorrectionWorkflowStartRequestFactory(configuration, TimeProvider.System);
+        return true;
+    }
+    catch (InvalidOperationException) { return false; }
+}
+
+static bool IsValidGskuRetirementRequestOptions(GskuRetirementRequestWorkflowOptions options,
+    FirstGskuIdentityWorkflowOptions identity, GskuCorrectionWorkflowOptions correction)
+{
+    try
+    {
+        _ = options.ToConfiguration(identity.TemplateId, identity.TemplateCode,
+            correction.TemplateId, correction.TemplateCode);
+        return true;
+    }
+    catch (InvalidOperationException) { return false; }
+}
+
+static bool IsValidFirstGskuIdentityWorkflowOptions(FirstGskuIdentityWorkflowOptions options)
+{
+    try
+    {
+        _ = options.ToStartConfiguration();
+        return true;
+    }
+    catch (InvalidOperationException)
+    {
+        return false;
+    }
+}
+
+static bool IsValidFirstGskuIdentityWorkflowWorkerOptions(
+    FirstGskuIdentityWorkflowWorkerOptions options)
+{
+    if (options.LeaseSeconds is < 10 or > 900
+        || options.RetryDelaySeconds is < 1 or > 3_600)
+    {
+        return false;
+    }
+
+    if (!options.Enabled)
+    {
+        return true;
+    }
+
+    try
+    {
+        options.EnsureValidWhenEnabled();
+        return true;
+    }
+    catch (InvalidOperationException)
+    {
+        return false;
+    }
+}
 
 static void ValidateRequiredJwtSetting(string? value, string key)
 {

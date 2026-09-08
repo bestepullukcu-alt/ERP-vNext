@@ -3,5 +3,7 @@ using MediatR;
 
 namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Commands;
 
-public sealed record UpdateGskuDraftCommand(ProductItemSkuMasterModels.UpdateGskuDraftRequest Request)
+public sealed record UpdateGskuDraftCommand(
+    ProductItemSkuMasterModels.UpdateGskuDraftRequest Request,
+    Guid OperationId = default)
     : IRequest<Response<ProductItemSkuMasterModels.FirstGskuDraftDto>>, global::Diten.MdmService.Application.Features.ProductLegalEntityScopes.IProductLegalEntityScopeInventoryMutation;

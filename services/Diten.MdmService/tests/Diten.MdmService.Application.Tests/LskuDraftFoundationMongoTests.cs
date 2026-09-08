@@ -18,7 +18,6 @@ namespace Diten.MdmService.Application.Tests;
 public sealed class LskuDraftFoundationMongoTests
 {
     [Theory]
-    [InlineData(ProductIdentityLifecycleStatus.Draft)]
     [InlineData(ProductIdentityLifecycleStatus.IdentityApproved)]
     public async Task Referenceable_parent_create_persists_identity_evidence_binding_and_replays(
         ProductIdentityLifecycleStatus lifecycle)
@@ -102,7 +101,7 @@ public sealed class LskuDraftFoundationMongoTests
     public async Task Payload_drift_conflicts_without_second_code_or_provider_resolution()
     {
         await using var scope = await MongoScope.CreateAsync();
-        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft);
+        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
         var market = new MarketResolver();
         var handler = scope.Handler(scope.TenantA, market: market);
         Assert.True((await handler.Handle(Command(gsku.Id, "TR", "drift"), CancellationToken.None)).IsSuccessful);
@@ -121,7 +120,7 @@ public sealed class LskuDraftFoundationMongoTests
     public async Task Enforced_scope_denial_precedes_replay_payload_drift_and_second_mutation()
     {
         await using var scope = await MongoScope.CreateAsync();
-        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft);
+        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
         var market = new MarketResolver();
         var preparation = scope.Handler(scope.TenantA, market: market);
         Assert.True((await preparation.Handle(Command(gsku.Id, "TR", "scope-drift"), default)).IsSuccessful);
@@ -164,7 +163,7 @@ public sealed class LskuDraftFoundationMongoTests
     public async Task Concurrent_different_commands_have_one_winner_and_replayable_pending_reconciliation_loser()
     {
         await using var scope = await MongoScope.CreateAsync();
-        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft);
+        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
         var first = scope.Handler(scope.TenantA);
         var second = scope.Handler(scope.TenantA);
 
@@ -223,7 +222,7 @@ public sealed class LskuDraftFoundationMongoTests
     public async Task Soft_delete_tombstone_never_releases_gsku_market_or_canonical_code()
     {
         await using var scope = await MongoScope.CreateAsync();
-        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft);
+        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
         var handler = scope.Handler(scope.TenantA);
         var created = await handler.Handle(Command(gsku.Id, "TR", "tombstone-a"), CancellationToken.None);
         Assert.True(created.IsSuccessful);
@@ -246,7 +245,7 @@ public sealed class LskuDraftFoundationMongoTests
     public async Task Explicit_ambiguous_write_recovers_from_real_mongo_or_remains_pending_for_reconciliation()
     {
         await using var scope = await MongoScope.CreateAsync();
-        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft);
+        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
         var inner = scope.LskuRepository(scope.TenantA);
         var recovered = await scope.Handler(
                 scope.TenantA,
@@ -275,7 +274,7 @@ public sealed class LskuDraftFoundationMongoTests
     public async Task Provider_failure_mapping_mutates_neither_reservation_nor_identity(int statusCode)
     {
         await using var scope = await MongoScope.CreateAsync();
-        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft);
+        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
         var response = await scope.Handler(scope.TenantA, market: new MarketResolver(statusCode))
             .Handle(Command(gsku.Id, "TR", "provider-" + statusCode), CancellationToken.None);
 
@@ -331,10 +330,24 @@ public sealed class LskuDraftFoundationMongoTests
             inner.GetByIdentityKeyAsync(gskuId, marketCode, cancellationToken);
 
         public async Task<LskuCreateResult> CreateDraftAsync(Lsku lsku, CancellationToken cancellationToken = default)
+            => await CreateAmbiguousAsync(lsku, null, cancellationToken);
+
+        public async Task<LskuCreateResult> CreateDraftWithAdmissionAsync(
+            Lsku lsku,
+            string admissionFingerprint,
+            CancellationToken cancellationToken = default)
+            => await CreateAmbiguousAsync(lsku, admissionFingerprint, cancellationToken);
+
+        private async Task<LskuCreateResult> CreateAmbiguousAsync(
+            Lsku lsku,
+            string? admissionFingerprint,
+            CancellationToken cancellationToken)
         {
             if (persistBeforeAmbiguous)
             {
-                var persisted = await inner.CreateDraftAsync(lsku, cancellationToken);
+                var persisted = admissionFingerprint is null
+                    ? await inner.CreateDraftAsync(lsku, cancellationToken)
+                    : await inner.CreateDraftWithAdmissionAsync(lsku, admissionFingerprint, cancellationToken);
                 Assert.True(persisted.Succeeded, persisted.ErrorCode);
             }
 
@@ -400,7 +413,7 @@ public sealed class LskuDraftFoundationMongoTests
                 GlobalProductName = "LSKU Parent",
                 GlobalProductNameNormalized = "LSKU PARENT " + Guid.NewGuid().ToString("N"),
                 CodeReservationId = Guid.NewGuid(),
-                LifecycleStatus = ProductIdentityLifecycleStatus.Draft,
+                LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved,
                 IsDeleted = false
             };
             var revision = new ProductDefinitionRevision
@@ -410,7 +423,7 @@ public sealed class LskuDraftFoundationMongoTests
                 GlobalProductId = product.Id,
                 RevisionIdentifier = "REV-001",
                 CreationCommandId = "REV:" + Guid.NewGuid().ToString("N"),
-                LifecycleStatus = ProductIdentityLifecycleStatus.Draft,
+                LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved,
                 IsDeleted = false
             };
             await Database.GetCollection<GlobalProduct>("mdm_global_products").InsertOneAsync(product);

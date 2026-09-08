@@ -1,6 +1,10 @@
 using Diten.MdmService.Application.Common;
+using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Queries;
+using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.Shared.Core;
 using MediatR;
@@ -14,6 +18,7 @@ public sealed class GetGskuByIdHandler
     private readonly IProductDefinitionRevisionRepository _revisions;
     private readonly IGlobalProductRepository _globalProducts;
     private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
+    private readonly IProductIdentityLifecycleActorContext _actorContext;
 
     public GetGskuByIdHandler(
         IGskuRepository gskus,
@@ -22,12 +27,14 @@ public sealed class GetGskuByIdHandler
         IProductLegalEntityScopeRolloutStateRepository rolloutStates,
         IProductLegalEntityScopePolicyRepository policies,
         ProductLegalEntityScopeCandidateFacade candidates,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        IProductIdentityLifecycleActorContext? actorContext = null)
     {
         _gskus = gskus;
         _revisions = revisions;
         _globalProducts = globalProducts;
         _scopeGuard = new(rolloutStates, policies, candidates, tenantContext);
+        _actorContext = actorContext ?? NoActorContext.Instance;
     }
 
     public async Task<Response<ProductItemSkuMasterModels.GskuDetailDto>> Handle(
@@ -75,8 +82,76 @@ public sealed class GetGskuByIdHandler
             gsku.PackQuantity,
             gsku.PackUomCode,
             gsku.LifecycleStatus,
+            revision.Version,
             gsku.Version,
             gsku.CreatedAt,
-            gsku.UpdatedAt));
+            gsku.UpdatedAt,
+            BuildPairAvailableActions(gsku, revision, _actorContext)));
+    }
+
+    internal static IReadOnlyList<string> BuildPairAvailableActions(
+        Gsku gsku, ProductDefinitionRevision revision, IProductIdentityLifecycleActorContext actorContext)
+    {
+        if (gsku.ProductDefinitionRevisionId != revision.Id || gsku.TenantId != revision.TenantId
+            || revision.IsDeleted || gsku.LifecycleStatus != revision.LifecycleStatus
+            || revision.RetirementOperationId.HasValue
+            || !string.Equals(System.Text.Json.JsonSerializer.Serialize(gsku.IdentityWorkflowBinding),
+                System.Text.Json.JsonSerializer.Serialize(revision.IdentityWorkflowBinding), StringComparison.Ordinal))
+            return ["DETAILS"];
+        return BuildAvailableActions(gsku, actorContext);
+    }
+
+    internal static IReadOnlyList<string> BuildAvailableActions(
+        Gsku gsku,
+        IProductIdentityLifecycleActorContext actorContext)
+    {
+        var actions = new List<string> { "DETAILS" };
+        if (gsku.IsDeleted || gsku.ActiveLifecycleOperation is not null || gsku.RetirementOperationId.HasValue
+            || !actorContext.TryResolveCanonicalHumanSubject(out _))
+            return actions;
+        if (gsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft)
+        {
+            if (actorContext.HasPermission(FirstGskuIdentityLifecyclePermissions.Update)) actions.Add("EDIT");
+            if (actorContext.HasPermission(FirstGskuIdentityLifecyclePermissions.Submit)) actions.Add("SUBMIT");
+        }
+
+        if (gsku.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval
+            && gsku.IdentityWorkflowBinding is { } binding
+            && actorContext.TryResolveCanonicalHumanSubject(out var subjectId)
+            && subjectId == binding.SubmitterSubjectId
+            && actorContext.HasPermission(FirstGskuIdentityLifecyclePermissions.Withdraw))
+        {
+            actions.Add("WITHDRAW_APPROVAL");
+        }
+
+        if (gsku.LifecycleStatus == ProductIdentityLifecycleStatus.IdentityApproved
+            && gsku.ActiveLifecycleOperation is null
+            && actorContext.TryResolveCanonicalHumanSubject(out _)
+            && actorContext.HasPermission(GskuCorrectionPermissions.Request))
+        {
+            actions.Add("REQUEST_CORRECTION");
+        }
+
+        if (gsku.LifecycleStatus == ProductIdentityLifecycleStatus.IdentityApproved
+            && gsku.ActiveLifecycleOperation is null
+            && actorContext.TryResolveCanonicalHumanSubject(out _)
+            && actorContext.HasPermission(GskuRetirementRequestPermissions.Request))
+        {
+            actions.Add("REQUEST_RETIREMENT");
+        }
+
+        return actions;
+    }
+
+    private sealed class NoActorContext : IProductIdentityLifecycleActorContext
+    {
+        public static readonly NoActorContext Instance = new();
+        public bool TryResolveCanonicalHumanSubject(out Guid subjectId)
+        {
+            subjectId = Guid.Empty;
+            return false;
+        }
+
+        public bool HasPermission(string permission) => false;
     }
 }

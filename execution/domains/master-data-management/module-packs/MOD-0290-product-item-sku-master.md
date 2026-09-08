@@ -2804,6 +2804,208 @@ negative strict-mapping tests. It must not add LSKU, ABB, wildcard or numeric fa
 provider acceptance prerequisite; it does not authorize Platform transport, service identity, configuration,
 provisioning or operational activation.
 
+### GSKU backend B/C/D/E and E1A/E1B integration evidence (2026-09-08)
+
+This is the user-authorized source reconciliation of the retained final checkpoint `ffdd280a`:
+Section 19.17 B/C/D/E and the E1A/E1B/E1C amendments are applied to the current integration branch,
+not a claim that the historical checkpoint is current main or that live acceptance has run.
+The following exact paths expand those approved backend boundaries; no frontend, Gateway, other-product
+lifecycle, shared authentication rewrite, configuration or provisioning is included.
+
+Prerequisites are the integrated strict 17-pair FU01 audit mapping, trusted reference-data identity
+`284a79374c832fa1666df1cfdaae2497f7975518`, and the separate FU21 exact-pair amendment
+`edf004f646a600574d372dbc7ada39658407dd91`. FU21 preserves its original 22 pairs and adds six GSKU
+pairs (28 total); correction and retirement requests resolve their own exact mutation permission,
+not the older Global Product read substitute. Direct pair retirement remains a hidden System action.
+
+Semantic reconciliation:
+- Preserve existing creation, Global Product, tenant/scope, G4 audit and temporal foundations.
+- Keep original Revision/GSKU audit ordinals; do not add LSKU/ABB mappings or numeric fallback.
+- Enforce the approved closed manual-resume set: only `FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED`
+  and `REFERENCE_UNAUTHENTICATED` can resume via exact same-maker replay without persisted approval proof.
+  The retained source's extra `REFERENCE_FORBIDDEN` case is not authorized and is rejected in both
+  processor and Mongo CAS regression tests; background/manual bypass is not introduced.
+- Wire the pair, correction and retirement repositories/processors and default-disabled recovery workers
+  additively. Explicit recovery commands report failures; no operational command was invoked.
+- Preserve pair versions, terminal evidence read-back, maker-checker, exact replay, verified reference
+  revalidation and admission/retirement fencing. Detail action projection additionally fails closed for
+  inconsistent pair state/binding and active retirement fences.
+- Correction factory and Mongo admission CAS both reject an existing pair-retirement fence, including a
+  caller that has read the newer fenced version. The real-Mongo regression verifies no correction audit
+  or active-operation write occurs in that state.
+- E1B changes to LSKU/Finished Good are child-admission contracts only, not their lifecycle implementation.
+  Existing draft-create fixtures now establish the required approved pair. The child-blocker test uses a
+  test-owned retired-child fact; it does not claim to test Finished Good retirement.
+- Replica-set ping uses typed BSON in the existing LSKU register test; no global serializer or test
+  harness change. Current schema and tenant-owned cleanup are retained.
+
+Verification evidence (overlapping runs are not additive):
+- Platform Release build: success; FU21 scope/authorization regression 77 passed, 0 failed, 0 skipped;
+  the separately selected real-Mongo scope subset was 6 passed, 0 failed, 0 skipped.
+- MDM full Release test run on the isolated single-node replica set: 1023 passed, 0 failed, 0 skipped.
+- Focused GSKU Mongo-class selection: 29 passed, 0 failed, 0 skipped (includes factory assertions;
+  it must not be reported as 29 distinct database-mutation tests).
+  Excluding the two factory assertions, the actual persistence selection is 27 passed, 0 failed, 0 skipped.
+- Six Enforced-scope tests exercise the actual MDM HTTP client/consumer guard and actual Platform
+  authenticator/JWT context/executor via an in-process HTTP adapter. They check exact permission,
+  rejected read substitution, rejected service actor, and tenant echo mismatch. Only candidate facts
+  are test-supplied; the permission decision is not mocked. This requires the Platform Release assembly.
+- This is isolated code/contract evidence, not live Auth provisioning, real WorkCenter decisions,
+  browser acceptance, operational recovery, or tenant activation. Frontend/Gateway remain a next slice.
+
+**Previously blocked transport and Auth gates closed by separately authorized amendments (2026-09-08):**
+`de099875236454313f4f4142ce95c268c3bdc089` adds only the exact transport profiles
+`GskuCorrection` and `GskuRetirementRequest` and real Platform owner-boundary contract tests.
+`7c3b71ebaede1d69e3ff03b8dc08d6c0c132ece8` adds the four exact GSKU Auth action keys;
+Steward/Approver/Retirement role totals are 19/7/11, while the lifecycle key count is 16.
+No alias, alternate audience, wildcard grant or operational provisioning was introduced.
+FU21 exact-pair authorization and FU01 strict GSKU audit mappings remain unchanged.
+
+Final bounded backend verification on the existing isolated test-owned replica set:
+- MDM and Auth Release builds: 0 errors; Platform Release build: 0 errors (existing warnings).
+- MDM full test project: 1037 passed / 0 failed / 0 skipped.
+- Within that run: GSKU Mongo-class selection 29/0/0, comprising 27 persistence/processor tests
+  and 2 factory-only assertions; six real client-to-Platform Enforced-scope contract tests also pass.
+- Separate overlapping transport selection 36/0/0; Auth role/entitlement/login/scope selection
+  132/0/0 including one real-Mongo reconciliation test; Platform security/FU01/FU21 selection 143/0/0.
+- Draft edit, submit, approval/rejection pair read-back, withdrawal, correction and retirement
+  request have focused unit/security/API and applicable Mongo replay/CAS/recovery evidence.
+  Transport/security dispatch boundaries and test-supplied terminal evidence are not live Workflow acceptance.
+
+One intermediate full test run was 1022 passed / 1 failed / 0 skipped at
+`ProductItemSkuMasterMongoTests.Concurrent_first_gsku_commands_allocate_unique_parent_ordinals_and_soft_delete_never_reuses`.
+Its immediate isolated repeat was 1/0/0 and the subsequent full run was 1023/0/0. This is retained as an
+intermittent regression observation, not classified as an environment issue without assertion evidence.
+The 2026-09-08 controlled sequence of five isolated repeats each passed 1/0/0, and the current full run
+passed 1037/0/0. The initial failure's cause remains unexplained: flakiness risk is open, not disproven.
+TRX evidence and initial staged paths/diff are preserved locally under
+`.testoutput/gsku-amendment-preflight-20260908/` outside source commits.
+Frontend/Gateway, live browser/WorkCenter acceptance and operator provisioning remain separate work.
+
+Exact backend runtime/test reconciliation paths:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/GskusController.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Program.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Commands/UpdateGskuDraftCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/CommandHandlers/CreateFinishedGoodDraftHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/CommandHandlers/CreateLskuDraftHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/CommandHandlers/UpdateGskuDraftHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/QueryHandlers/GetGskuByIdHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/QueryHandlers/GetGskusHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/ProductItemSkuMasterModels.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Queries/GetGskusQuery.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Validators/GetGskusValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/Gsku.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/ProductDefinitionRevision.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductAuditOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IFinishedGoodRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGskuRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/ILskuRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IProductDefinitionRevisionRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/DependencyInjection.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FinishedGoodRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GskuRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/LskuRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductDefinitionRevisionRepository.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodDraftFoundationMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodDraftFoundationUnitTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GskuApiContractTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GskuAuthorizationTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuDraftFoundationMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuRegisterMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ModuleRegistration/ProductItemSkuMasterManifestProviderTests.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/FirstGskuIdentityWorkflowOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/FirstGskuIdentityWorkflowWorkerOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/GskuCorrectionWorkflowOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/GskuCorrectionWorkflowWorkerOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/GskuRetirementRequestWorkflowOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/GskuRetirementRequestWorkflowWorkerOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/FirstGskuIdentityWorkflowRecoveryCommandLine.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/FirstGskuIdentityWorkflowRecoveryRunner.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/FirstGskuIdentityWorkflowRecoveryWorker.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/GskuCorrectionRecoveryCommandLine.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/GskuCorrectionRecoveryRunner.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/GskuCorrectionRecoveryWorker.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/GskuRetirementRequestRecoveryCommandLine.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/GskuRetirementRequestRecoveryRunner.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/GskuRetirementRequestRecoveryWorker.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Commands/RetireGskuIdentityPairCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Commands/WithdrawFirstGskuIdentityApprovalCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/FirstGskuIdentityLifecycleAuditIntentFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/FirstGskuIdentityLifecycleModels.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/FirstGskuIdentityRetirementAuditIntentFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/FirstGskuIdentityRetirementProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/FirstGskuIdentityRetirementRecoveryRunner.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/GskuCorrectionAuditIntentFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/GskuCorrectionModels.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/GskuPairRetirementModels.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/GskuRetirementRequestAuditIntentFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/GskuRetirementRequestModels.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/RetireGskuIdentityPairHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/WithdrawFirstGskuIdentityApprovalHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Validators/RetireGskuIdentityPairValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Validators/WithdrawFirstGskuIdentityApprovalValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Commands/StartFirstGskuIdentityWorkflowCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Commands/StartGskuCorrectionWorkflowCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Commands/StartGskuRetirementRequestWorkflowCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/FirstGskuIdentityWorkflowProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/FirstGskuIdentityWorkflowStartRequestFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/GskuCorrectionWorkflowProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/GskuCorrectionWorkflowStartRequestFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/GskuRetirementRequestWorkflowProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/GskuRetirementRequestWorkflowStartRequestFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/StartFirstGskuIdentityWorkflowHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/StartGskuCorrectionWorkflowHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/StartGskuRetirementRequestWorkflowHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Validators/StartFirstGskuIdentityWorkflowValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Validators/StartGskuCorrectionWorkflowValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Validators/StartGskuRetirementRequestWorkflowValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/FirstGskuIdentityRetirementOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/FirstGskuIdentityWorkflowOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/GskuCorrectionWorkflowOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/GskuRetirementRequestOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/FirstGskuIdentityRetirementCheckpoint.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/FirstGskuIdentityWorkflowCheckpoint.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/GskuCorrectionWorkflowCheckpoint.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/GskuRetirementRequestCheckpoint.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/FirstGskuIdentityRetirementResults.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/FirstGskuIdentityWorkflowOperationResults.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/GskuCorrectionWorkflowOperationResults.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/GskuRetirementRequestOperationResults.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IFirstGskuIdentityRetirementOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IFirstGskuIdentityWorkflowOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IFirstGskuIdentityWorkflowTenantPartitionDiscovery.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGskuCorrectionWorkflowOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGskuCorrectionWorkflowTenantDiscoveryRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGskuRetirementRequestOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGskuRetirementRequestTenantDiscoveryRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/FirstGskuIdentityWorkflowBinding.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/GskuActiveLifecycleOperationBinding.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/GskuChildCreationAdmission.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FirstGskuIdentityRetirementOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FirstGskuIdentityWorkflowOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FirstGskuIdentityWorkflowTenantPartitionDiscoveryRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GskuCorrectionWorkflowOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GskuCorrectionWorkflowTenantDiscoveryRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GskuRetirementRequestOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GskuRetirementRequestTenantDiscoveryRepository.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FirstGskuIdentityLifecycleAuthorizationTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FirstGskuIdentityLifecycleMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FirstGskuIdentityLifecycleUnitTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FirstGskuIdentityRetirementUnitTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FirstGskuIdentityWithdrawalUnitTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FirstGskuIdentityWorkflowOperationMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FirstGskuIdentityWorkflowProcessorTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FirstGskuIdentityWorkflowRecoveryRunnerTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GskuAvailableActionsTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GskuChildAdmissionRetirementMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GskuCorrectionMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GskuCorrectionUnitTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GskuDraftEditLifecycleTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GskuRetirementRequestMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GskuRetirementRequestUnitTests.cs`
+
 ## 20. Follow-up Items
 
 These are references to existing backlog or owner decisions; this pack creates no new identity or provider pack.

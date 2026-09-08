@@ -6,6 +6,7 @@ using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Persistence.Repositories;
 using MongoDB.Driver;
+using MongoDB.Bson;
 using Xunit;
 
 namespace Diten.MdmService.Application.Tests;
@@ -121,7 +122,7 @@ public sealed class LskuRegisterMongoTests
             scope.TenantA,
             "GS-002",
             draftRevision.Id,
-            ProductIdentityLifecycleStatus.Draft);
+            ProductIdentityLifecycleStatus.IdentityApproved);
         await scope.InsertGskuAsync(
             scope.TenantA,
             "GS-003",
@@ -208,7 +209,7 @@ public sealed class LskuRegisterMongoTests
             var client = new MongoClient(settings);
             var databaseName = "diten_lsku_register_" + Guid.NewGuid().ToString("N");
             var database = client.GetDatabase(databaseName);
-            await database.RunCommandAsync<object>("{ ping: 1 }");
+            await database.RunCommandAsync<BsonDocument>("{ ping: 1 }");
             return new(client, database, databaseName);
         }
 
@@ -224,7 +225,7 @@ public sealed class LskuRegisterMongoTests
                 CanonicalCode = canonicalCode,
                 GlobalProductName = name,
                 GlobalProductNameNormalized = name.ToUpperInvariant(),
-                LifecycleStatus = ProductIdentityLifecycleStatus.Draft,
+                LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved,
                 IsDeleted = false
             };
             await Database.GetCollection<GlobalProduct>("mdm_global_products").InsertOneAsync(product);
@@ -243,7 +244,7 @@ public sealed class LskuRegisterMongoTests
                 GlobalProductId = productId,
                 RevisionIdentifier = identifier,
                 CreationCommandId = "REV:" + Guid.NewGuid().ToString("N"),
-                LifecycleStatus = ProductIdentityLifecycleStatus.Draft,
+                LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved,
                 IsDeleted = false
             };
             await Database.GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions")

@@ -15,6 +15,7 @@ public sealed class LskuRepository : ILskuRepository
     private readonly IMongoCollection<Lsku> _lskus;
     private readonly IMongoCollection<BsonDocument> _documents;
     private readonly IMongoCollection<Gsku> _gskus;
+    private readonly IMongoCollection<ProductDefinitionRevision> _revisions;
     private readonly IMongoCollection<CodeReservation> _reservations;
     private readonly Guid _tenantId;
 
@@ -23,6 +24,7 @@ public sealed class LskuRepository : ILskuRepository
         _lskus = database.GetCollection<Lsku>(CollectionName);
         _documents = database.GetCollection<BsonDocument>(CollectionName);
         _gskus = database.GetCollection<Gsku>("mdm_gskus");
+        _revisions = database.GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions");
         _reservations = database.GetCollection<CodeReservation>("mdm_code_reservations");
         _tenantId = tenantContext.TenantId;
         EnsureIndexes();
@@ -162,13 +164,25 @@ public sealed class LskuRepository : ILskuRepository
             return new(false, null, "LSKU_CONTRACT_INVALID");
         }
 
+        var requiredAdmissionFingerprint = GskuChildCreationAdmission.ComputeRequestFingerprint(
+            lsku.GskuId, GskuChildIdentityKind.Lsku, lsku.CreationCommandId, lsku.MarketCode);
         var referenceableGskuFilter = Builders<Gsku>.Filter.Eq(x => x.TenantId, _tenantId)
             & Builders<Gsku>.Filter.Eq(x => x.IsDeleted, false)
             & Builders<Gsku>.Filter.Eq(x => x.Id, lsku.GskuId)
-            & Builders<Gsku>.Filter.In(
-                x => x.LifecycleStatus,
-                [ProductIdentityLifecycleStatus.Draft, ProductIdentityLifecycleStatus.IdentityApproved]);
-        if (!await _gskus.Find(referenceableGskuFilter).AnyAsync(cancellationToken))
+            & Builders<Gsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved)
+            & Builders<Gsku>.Filter.Eq(x => x.RetirementOperationId, null)
+            & Builders<Gsku>.Filter.ElemMatch(x => x.ChildCreationAdmissions,
+                x => x.ChildKind == GskuChildIdentityKind.Lsku
+                     && x.CreationCommandId == lsku.CreationCommandId
+                     && x.RequestFingerprint == requiredAdmissionFingerprint);
+        var parent = await _gskus.Find(referenceableGskuFilter).FirstOrDefaultAsync(cancellationToken);
+        if (parent is null || !await _revisions.Find(
+                Builders<ProductDefinitionRevision>.Filter.Eq(x => x.TenantId, _tenantId)
+                & Builders<ProductDefinitionRevision>.Filter.Eq(x => x.IsDeleted, false)
+                & Builders<ProductDefinitionRevision>.Filter.Eq(x => x.Id, parent.ProductDefinitionRevisionId)
+                & Builders<ProductDefinitionRevision>.Filter.Eq(
+                    x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved))
+            .AnyAsync(cancellationToken))
         {
             return new(false, null, "GSKU_NOT_REFERENCEABLE");
         }
@@ -306,6 +320,16 @@ public sealed class LskuRepository : ILskuRepository
         && left.CatalogVersionNumber == right.CatalogVersionNumber
         && left.ResolutionMode == right.ResolutionMode
         && left.ResolvedAtUtc == right.ResolvedAtUtc;
+
+    public async Task<LskuCreateResult> CreateDraftWithAdmissionAsync(
+        Lsku lsku, string admissionFingerprint, CancellationToken cancellationToken = default)
+    {
+        var expected = GskuChildCreationAdmission.ComputeRequestFingerprint(
+            lsku.GskuId, GskuChildIdentityKind.Lsku, lsku.CreationCommandId, lsku.MarketCode);
+        if (!string.Equals(admissionFingerprint, expected, StringComparison.Ordinal))
+            return new(false, null, "GSKU_CHILD_ADMISSION_REQUIRED");
+        return await CreateDraftAsync(lsku, cancellationToken);
+    }
 
     private void EnsureIndexes()
     {

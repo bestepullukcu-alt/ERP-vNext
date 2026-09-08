@@ -17,10 +17,10 @@ namespace Diten.MdmService.Application.Tests;
 public sealed class FinishedGoodDraftFoundationMongoTests
 {
     [Fact]
-    public async Task Draft_and_identity_approved_gskus_allow_many_finished_goods_with_idempotent_replay()
+    public async Task Identity_approved_gskus_allow_many_finished_goods_with_idempotent_replay()
     {
         await using var scope = await MongoScope.CreateAsync();
-        var draft = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft);
+        var draft = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
         var approved = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
 
         var first = await scope.Create(scope.TenantA, draft.Id, " first-command ");
@@ -62,8 +62,8 @@ public sealed class FinishedGoodDraftFoundationMongoTests
     public async Task Missing_cross_tenant_and_soft_deleted_gskus_are_indistinguishably_rejected_before_reservation()
     {
         await using var scope = await MongoScope.CreateAsync();
-        var foreign = await scope.InsertGskuAsync(scope.TenantB, ProductIdentityLifecycleStatus.Draft);
-        var deleted = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft, isDeleted: true);
+        var foreign = await scope.InsertGskuAsync(scope.TenantB, ProductIdentityLifecycleStatus.IdentityApproved);
+        var deleted = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved, isDeleted: true);
 
         var results = new[]
         {
@@ -85,8 +85,8 @@ public sealed class FinishedGoodDraftFoundationMongoTests
     public async Task Conflicting_replay_and_tombstoned_command_never_allocate_a_second_code()
     {
         await using var scope = await MongoScope.CreateAsync();
-        var firstGsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft);
-        var otherGsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft);
+        var firstGsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
+        var otherGsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
         var created = await scope.Create(scope.TenantA, firstGsku.Id, "stable-command");
         var drift = await scope.Create(scope.TenantA, otherGsku.Id, "stable-command");
         await scope.FinishedGoods.UpdateOneAsync(
@@ -115,7 +115,7 @@ public sealed class FinishedGoodDraftFoundationMongoTests
     public async Task Concurrent_same_command_has_one_identity_and_one_consumed_confirmed_reservation()
     {
         await using var scope = await MongoScope.CreateAsync();
-        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft);
+        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
 
         var results = await Task.WhenAll(Enumerable.Range(0, 8)
             .Select(_ => scope.Create(scope.TenantA, gsku.Id, "concurrent-command")));
@@ -133,7 +133,7 @@ public sealed class FinishedGoodDraftFoundationMongoTests
     public async Task Pre_cancelled_real_mongo_create_propagates_cancellation_without_reservation_or_identity_write()
     {
         await using var scope = await MongoScope.CreateAsync();
-        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft);
+        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
         var context = scope.Context(scope.TenantA);
         var access = ProductLegalEntityScopeTestFixture.Preparation(context);
         var handler = new CreateFinishedGoodDraftHandler(
@@ -167,7 +167,7 @@ public sealed class FinishedGoodDraftFoundationMongoTests
     public async Task Concurrent_distinct_commands_for_one_gsku_create_distinct_codes_without_a_cardinality_cap()
     {
         await using var scope = await MongoScope.CreateAsync();
-        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft);
+        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
 
         var results = await Task.WhenAll(Enumerable.Range(0, 8)
             .Select(index => scope.Create(scope.TenantA, gsku.Id, $"distinct-{index}")));
@@ -220,7 +220,7 @@ public sealed class FinishedGoodDraftFoundationMongoTests
     public async Task List_detail_and_selector_are_tenant_scoped_bounded_and_code_only()
     {
         await using var scope = await MongoScope.CreateAsync();
-        var draft = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft, "GS-000000000010");
+        var draft = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved, "GS-000000000010");
         var approved = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved, "GS-000000000020");
         _ = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.PendingIdentityApproval, "GS-000000000030");
         _ = await scope.InsertGskuAsync(scope.TenantB, ProductIdentityLifecycleStatus.Draft, "GS-000000000040");
@@ -258,7 +258,7 @@ public sealed class FinishedGoodDraftFoundationMongoTests
     public async Task Finished_good_audit_delivery_is_fenced_acknowledged_compacted_and_version_neutral()
     {
         await using var scope = await MongoScope.CreateAsync();
-        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.Draft);
+        var gsku = await scope.InsertGskuAsync(scope.TenantA, ProductIdentityLifecycleStatus.IdentityApproved);
         var created = await scope.Create(scope.TenantA, gsku.Id, "audit-command");
         var delivery = new AuditIntentDeliveryRepository(scope.Database, scope.Context(scope.TenantA), TimeProvider.System);
         var item = Assert.Single(
@@ -345,7 +345,7 @@ public sealed class FinishedGoodDraftFoundationMongoTests
                 GlobalProductName = "Finished Good Parent",
                 GlobalProductNameNormalized = "FINISHED GOOD PARENT " + Guid.NewGuid().ToString("N"),
                 CodeReservationId = Guid.NewGuid(),
-                LifecycleStatus = ProductIdentityLifecycleStatus.Draft,
+                LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved,
                 IsDeleted = false
             };
             var revision = new ProductDefinitionRevision
@@ -355,7 +355,7 @@ public sealed class FinishedGoodDraftFoundationMongoTests
                 GlobalProductId = product.Id,
                 RevisionIdentifier = "REV-001",
                 CreationCommandId = "REV:" + Guid.NewGuid().ToString("N"),
-                LifecycleStatus = ProductIdentityLifecycleStatus.Draft,
+                LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved,
                 IsDeleted = false
             };
             await Database.GetCollection<GlobalProduct>("mdm_global_products").InsertOneAsync(product);

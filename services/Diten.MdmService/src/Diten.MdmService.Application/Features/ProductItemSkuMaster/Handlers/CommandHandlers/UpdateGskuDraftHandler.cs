@@ -6,6 +6,7 @@ using Diten.MdmService.Application.Contracts.ReferenceData;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Commands;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
@@ -52,7 +53,9 @@ public sealed class UpdateGskuDraftHandler
         CancellationToken cancellationToken)
     {
         var input = request.Request;
-        var scope = await _scopeGuard.ResolveContextAsync("mdm.gskus.create", cancellationToken);
+        var scope = await _scopeGuard.ResolveContextAsync(
+            FirstGskuIdentityLifecyclePermissions.Update,
+            cancellationToken);
         if (!scope.IsSuccessful)
         {
             return Response<ProductItemSkuMasterModels.FirstGskuDraftDto>.Fail(
@@ -64,6 +67,37 @@ public sealed class UpdateGskuDraftHandler
         if (current is null)
         {
             return Response<ProductItemSkuMasterModels.FirstGskuDraftDto>.Fail("GSKU_NOT_FOUND", 404);
+        }
+
+        var operationKey = request.OperationId == Guid.Empty
+            ? $"{current.CreationCommandId}:UPDATE:{input.ExpectedVersion + 1}"
+            : request.OperationId.ToString("D");
+        var requestEvidenceHash = DraftEditEvidenceHash(
+            current.TenantId,
+            current.Id,
+            input.ExpectedVersion,
+            input.PackQuantity,
+            input.PackUomCode);
+        var priorIntent = current.AuditIntents.SingleOrDefault(intent =>
+            string.Equals(intent.IdempotencyKey, operationKey, StringComparison.Ordinal));
+        if (priorIntent is not null)
+        {
+            if (request.OperationId == Guid.Empty
+                || priorIntent.Operation != ProductAuditOperation.GskuDraftUpdated
+                || !string.Equals(priorIntent.EvidenceHash, requestEvidenceHash, StringComparison.Ordinal)
+                || current.Version != input.ExpectedVersion + 1
+                || current.LifecycleStatus != ProductIdentityLifecycleStatus.Draft
+                || current.PackQuantity != input.PackQuantity
+                || !string.Equals(current.PackUomCode, input.PackUomCode, StringComparison.Ordinal))
+            {
+                return Response<ProductItemSkuMasterModels.FirstGskuDraftDto>.Fail(
+                    request.OperationId == Guid.Empty
+                        ? "CONCURRENCY_CONFLICT"
+                        : "GSKU_DRAFT_UPDATE_IDEMPOTENCY_CONFLICT",
+                    409);
+            }
+
+            return await BuildVerifiedResultAsync(current, cancellationToken);
         }
 
         var revisionBeforeWrite = await _revisions.GetByIdAsync(
@@ -117,8 +151,7 @@ public sealed class UpdateGskuDraftHandler
         }
 
         var now = DateTimeOffset.UtcNow;
-        var commandId = $"{current.CreationCommandId}:UPDATE:{input.ExpectedVersion + 1}";
-        var evidence = $"{current.Id:N}|{input.PackQuantity}|{input.PackUomCode}|{input.ExpectedVersion + 1}";
+        var commandId = operationKey;
         current.PackQuantity = input.PackQuantity;
         current.PackUomCode = input.PackUomCode;
         current.PackApplicabilitySelection = applicability;
@@ -140,7 +173,7 @@ public sealed class UpdateGskuDraftHandler
             TimestampUtc = now,
             TimestampUtcTicksV1 = now.UtcTicks,
             TemporalStorageVersion = AuditIntentTemporalStorage.CurrentVersion,
-            EvidenceHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(evidence))),
+            EvidenceHash = requestEvidenceHash,
             SnapshotReference = $"Gsku/{current.Id:N}/{input.ExpectedVersion + 1}",
             DeliveryState = AuditIntentDeliveryState.Pending,
             IdempotencyKey = commandId
@@ -153,9 +186,16 @@ public sealed class UpdateGskuDraftHandler
                 update.ErrorCode ?? "CONCURRENCY_CONFLICT", 409);
         }
 
-        var revision = await _revisions.GetByIdAsync(update.Gsku.ProductDefinitionRevisionId, cancellationToken);
-        var reservation = await _reservations.GetByIdAsync(update.Gsku.CodeReservationId, cancellationToken);
-        if (revision is null || reservation is null || reservation.ConsumedEntityId != update.Gsku.Id)
+        return await BuildVerifiedResultAsync(update.Gsku, cancellationToken);
+    }
+
+    private async Task<Response<ProductItemSkuMasterModels.FirstGskuDraftDto>> BuildVerifiedResultAsync(
+        Gsku gsku,
+        CancellationToken cancellationToken)
+    {
+        var revision = await _revisions.GetByIdAsync(gsku.ProductDefinitionRevisionId, cancellationToken);
+        var reservation = await _reservations.GetByIdAsync(gsku.CodeReservationId, cancellationToken);
+        if (revision is null || reservation is null || reservation.ConsumedEntityId != gsku.Id)
         {
             return Response<ProductItemSkuMasterModels.FirstGskuDraftDto>.Fail(
                 "CREATION_COMMAND_PAIR_CONFLICT", 409);
@@ -168,14 +208,16 @@ public sealed class UpdateGskuDraftHandler
         }
 
         return Response<ProductItemSkuMasterModels.FirstGskuDraftDto>.Success(
-            CreateFirstGskuDraftHandler.BuildDto(revision, update.Gsku, reservation.BindingState, false));
+            CreateFirstGskuDraftHandler.BuildDto(revision, gsku, reservation.BindingState, false));
     }
 
     private async Task<Response<ProductItemSkuMasterModels.FirstGskuDraftDto>?> EvaluateParentScopeAsync(
         Guid globalProductId,
         CancellationToken cancellationToken)
     {
-        var scope = await _scopeGuard.ResolveContextAsync("mdm.gskus.create", cancellationToken);
+        var scope = await _scopeGuard.ResolveContextAsync(
+            FirstGskuIdentityLifecyclePermissions.Update,
+            cancellationToken);
         if (!scope.IsSuccessful)
         {
             return Response<ProductItemSkuMasterModels.FirstGskuDraftDto>.Fail(
@@ -186,6 +228,22 @@ public sealed class UpdateGskuDraftHandler
         return decision.Allowed
             ? null
             : Response<ProductItemSkuMasterModels.FirstGskuDraftDto>.Fail("GSKU_NOT_FOUND", 404);
+    }
+
+    private static string DraftEditEvidenceHash(
+        Guid tenantId,
+        Guid gskuId,
+        int expectedVersion,
+        decimal packQuantity,
+        string packUomCode)
+    {
+        var evidence = string.Join('|',
+            tenantId.ToString("D"),
+            gskuId.ToString("D"),
+            expectedVersion.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            packQuantity.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            packUomCode);
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(evidence)));
     }
 
     private static ReferenceCatalogSelection? Map(

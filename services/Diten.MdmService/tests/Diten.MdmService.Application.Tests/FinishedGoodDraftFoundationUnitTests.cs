@@ -9,6 +9,7 @@ using Diten.MdmService.Application.Features.ProductItemSkuMaster.Validators;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
+using Diten.MdmService.Domain.ValueObjects;
 using Xunit;
 
 namespace Diten.MdmService.Application.Tests;
@@ -324,6 +325,12 @@ public sealed class FinishedGoodDraftFoundationUnitTests
             Captured = finishedGood;
             return Task.FromResult(create(finishedGood));
         }
+
+        public Task<FinishedGoodCreateResult> CreateDraftWithAdmissionAsync(
+            FinishedGood finishedGood,
+            string admissionFingerprint,
+            CancellationToken cancellationToken = default) =>
+            CreateDraftAsync(finishedGood, cancellationToken);
     }
 
     private sealed class TestReservationRepository(Guid tenantId) : ICodeReservationRepository
@@ -423,6 +430,27 @@ public sealed class FinishedGoodDraftFoundationUnitTests
             int expectedVersion,
             CancellationToken cancellationToken = default)
             => throw new NotSupportedException();
+
+        public Task<GskuChildCreationAdmissionResult> AcquireChildCreationAdmissionAsync(
+            Guid id,
+            GskuChildIdentityKind childKind,
+            string creationCommandId,
+            string requestFingerprint,
+            DateTimeOffset acquiredAtUtc,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult(new GskuChildCreationAdmissionResult(
+                id == gsku.Id, false, id == gsku.Id ? gsku : null,
+                id == gsku.Id ? null : "GSKU_NOT_REFERENCEABLE"));
+
+        public Task<GskuChildCreationAdmissionResult> CompleteChildCreationAdmissionAsync(
+            Guid id,
+            GskuChildIdentityKind childKind,
+            string creationCommandId,
+            string requestFingerprint,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult(new GskuChildCreationAdmissionResult(
+                id == gsku.Id, true, id == gsku.Id ? gsku : null,
+                id == gsku.Id ? null : "GSKU_NOT_REFERENCEABLE"));
     }
 
     private sealed class TestRevisionRepository(ProductDefinitionRevision revision)

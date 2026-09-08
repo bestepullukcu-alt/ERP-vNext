@@ -15,6 +15,11 @@ public sealed class Gsku : EntityBase, IAuditIntentAggregate
     public ReferenceCatalogSelection PackApplicabilitySelection { get; set; } = new();
     public ReferenceCatalogSelection PackUomSelection { get; set; } = new();
     public ProductIdentityLifecycleStatus LifecycleStatus { get; set; } = ProductIdentityLifecycleStatus.Draft;
+    public FirstGskuIdentityWorkflowBinding? IdentityWorkflowBinding { get; set; }
+    public GskuActiveLifecycleOperationBinding? ActiveLifecycleOperation { get; set; }
+    public List<GskuChildCreationAdmission> ChildCreationAdmissions { get; set; } = [];
+    public Guid? RetirementOperationId { get; set; }
+    public string? RetirementOperationFingerprint { get; set; }
     public List<LocalAuditIntent> AuditIntents { get; set; } = [];
     public List<LocalAuditIntentReceipt> AuditIntentReceipts { get; set; } = [];
 }

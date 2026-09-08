@@ -183,9 +183,11 @@ public static class ProductItemSkuMasterModels
         decimal PackQuantity,
         string PackUomCode,
         ProductIdentityLifecycleStatus LifecycleStatus,
-        int Version,
+        int RevisionVersion,
+        int GskuVersion,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt,
+        IReadOnlyList<string> AvailableActions);
 
     public sealed record GskuCreateGlobalProductOptionDto(
         Guid Id,

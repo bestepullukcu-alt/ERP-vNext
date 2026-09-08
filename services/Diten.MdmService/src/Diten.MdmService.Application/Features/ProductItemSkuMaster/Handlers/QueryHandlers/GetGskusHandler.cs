@@ -46,12 +46,14 @@ public sealed class GetGskusHandler
         }
 
         var page = scope.Context!.RolloutMode == ProductLegalEntityScopeRolloutMode.Preparation
-            ? await _gskus.GetPageAsync(request.PageNumber, request.PageSize, search, cancellationToken)
+            ? await _gskus.GetPageAsync(
+                request.PageNumber, request.PageSize, search, request.LifecycleStatus, cancellationToken)
             : await _gskus.GetEnforcedLegalEntityScopePageAsync(
                 request.PageNumber,
                 request.PageSize,
                 search,
                 referenceableOnly: false,
+                request.LifecycleStatus,
                 scope.Context.EffectiveCandidateLegalEntityIds,
                 scope.Context.ServerNowUtc,
                 cancellationToken);
