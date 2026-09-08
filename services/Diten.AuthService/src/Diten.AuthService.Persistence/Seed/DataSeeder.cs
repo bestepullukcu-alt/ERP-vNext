@@ -311,6 +311,11 @@ public static class DataSeeder
             new("tep", "salary-benchmarking", "manage", "Shared Salary Benchmarking Manage", null),
             new("tep", "salary-benchmarking", "read", "Shared Salary Benchmarking Read", null),
 
+            new("tep", "workforce-analytics", "audit.read", "Workforce Analytics Audit Read", null),
+            new("tep", "workforce-analytics", "evaluate", "Workforce Analytics Evaluate", null),
+            new("tep", "workforce-analytics", "manage", "Workforce Analytics Manage", null),
+            new("tep", "workforce-analytics", "read", "Workforce Analytics Read", null),
+
             new("dki", "metric-semantic-registry", "audit.read", "Metric Semantic Registry Audit Read", null),
             new("dki", "metric-semantic-registry", "evaluate", "Metric Semantic Registry Evaluate", null),
             new("dki", "metric-semantic-registry", "manage", "Metric Semantic Registry Manage", null),
