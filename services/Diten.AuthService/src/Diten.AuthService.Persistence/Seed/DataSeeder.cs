@@ -297,6 +297,16 @@ public static class DataSeeder
             new("platform", "organization-units", "update", "Update Organization Unit", "Permission to edit organization units", moduleOverride: "organization"),
             new("platform", "organization-units", "archive", "Archive Organization Unit", "Permission to archive organization units", moduleOverride: "organization"),
             new("platform", "organization-units", "delete", "Delete Organization Unit", "Permission to delete organization units", moduleOverride: "organization"),
+            // MOD-0288-FU02 — the second reporting line and the custom field mechanism. These four MUST carry
+            // moduleOverride: "organization" for the same reason the five above do. Without it they reach the
+            // catalog with Module = "platform", DefaultRolePermissionTemplate refuses platform.* to tenant roles
+            // as a privilege-escalation boundary, and the keys become undelegable: the seeded Admin holds them,
+            // every tenant role is refused, and FU02's whole point — that renaming a unit must not silently
+            // permit re-parenting it — cannot be handed to anyone.
+            new("platform", "organization-units.reporting-line", "update", "Update Reporting Line", "Permission to change a unit's functional or administrative reporting line", moduleOverride: "organization"),
+            new("platform", "organization-units.custom-fields", "read", "Read Organization Custom Fields", "Permission to view organization unit custom field definitions", moduleOverride: "organization"),
+            new("platform", "organization-units.custom-fields", "manage", "Manage Organization Custom Fields", "Permission to create, update and deactivate organization unit custom field definitions", moduleOverride: "organization"),
+            new("platform", "organization-units.custom-fields", "write-value", "Write Organization Custom Field Value", "Permission to record a custom field value on an organization unit", moduleOverride: "organization"),
             // FIX-PERM-ATTRIBUTION-2 — positions.* and position-assignments.* are the same tenant-side
             // Organization/Position Directory as organization-units.* (all served by /OrganizationUnits,
             // /Positions, /PositionAssignments — none under /Platform/); Key stays platform.positions.* /
