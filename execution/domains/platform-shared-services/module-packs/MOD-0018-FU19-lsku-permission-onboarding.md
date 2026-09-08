@@ -218,6 +218,32 @@ fresh approval.
 
 ## 20. Follow-up Items
 
+### LSKU lifecycle owner amendment — approved 2026-09-09
+
+The current user approval and protected MOD-0290 19.18.5 E supersede the original two-key-only scope for this
+bounded lifecycle integration. Exact runtime/test paths are:
+
+- `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/ProductIdentityLifecycleEntitlementGrantProfile.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/DefaultRolePermissionTemplate.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductIdentityLifecycleEntitlementGrantProfileTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/DefaultRolePermissionTemplateTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/EntitlementPermissionSyncServiceTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductIdentityLifecyclePermissionOnboardingMongoTests.cs`
+
+Add only `mdm.lskus.withdraw` to ProductDataSteward and replace the module-sourced `mdm.lskus.retire`
+with `mdm.lskus.request-retirement` on ProductIdentityRetirementSteward. Retire remains catalogued/system-only;
+manual, system and other-module grants are preserved. No user assignment or operational grant is performed.
+Admin/Viewer gain neither action. Existing Global Product, GSKU, Finished Good and ABB grants are unchanged.
+The current branch's GSKU direct-retire grant is deliberately preserved; the protected final's unrelated removal
+is not copied. The actual resulting dedicated-role sizes are 20 / 7 / 11, distinct from 18 lifecycle keys.
+The existing source-aware generic sync is reused without importing the final branch's recovery-role feature.
+
+Verification: focused profile/default-role/sync/Mongo tests passed 121 / failed 0 / skipped 0.
+The separate overlapping real-Mongo replay/revoke/restore/source-preservation/isolation test passed 1/0/0
+in the fixed test-owned database. Earlier runs failed on stale expected catalog/grant cardinalities and
+the old four-key preservation assertion; expectations now explicitly account for the two LSKU keys.
+Auth Release build passed with 0 warnings and 0 errors. No live tenant reconciliation or user assignment ran.
+
 - Prepare a separate Production-enable runbook: Production catalog reconciliation, active entitlement verification,
   grant reconciliation, token refresh and allow/deny smoke for target tenants. Section 5 implementation and Local
   Development evidence are already recorded.

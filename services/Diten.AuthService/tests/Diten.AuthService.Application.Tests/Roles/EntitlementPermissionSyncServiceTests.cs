@@ -954,12 +954,12 @@ public sealed class EntitlementPermissionSyncServiceTests
     }
 
     [Fact]
-    public async Task Product_identity_lifecycle_profile_composes_exact_nineteen_seven_eleven_roles_with_ABB_and_scope()
+    public async Task Product_identity_lifecycle_profile_composes_exact_twenty_seven_eleven_roles_with_ABB_and_scope()
     {
         var catalog = ProductIdentityLifecycleCompositeCatalog();
         var (svc, roles, rolePerms) = BuildWith(catalog);
         var declaredKeys = ProductIdentityDeclaredKeys(catalog);
-        Assert.Equal(38, declaredKeys.Length);
+        Assert.Equal(40, declaredKeys.Length);
 
         await svc.GrantModuleWithKeysAsync(
             TenantA,
@@ -967,7 +967,7 @@ public sealed class EntitlementPermissionSyncServiceTests
             declaredKeys,
             Actor);
 
-        Assert.Equal(19, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole).Count);
+        Assert.Equal(20, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole).Count);
         Assert.Equal(7, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole).Count);
         Assert.Equal(11, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole).Count);
 

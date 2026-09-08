@@ -30,6 +30,8 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
     public const string LskusCreate = "mdm.lskus.create";
     public const string LskusSubmit = "mdm.lskus.submit";
     public const string LskusRetire = "mdm.lskus.retire";
+    public const string LskusWithdraw = "mdm.lskus.withdraw";
+    public const string LskusRequestRetirement = "mdm.lskus.request-retirement";
     public const string FinishedGoodsRead = "mdm.finished-goods.read";
     public const string FinishedGoodsCreate = "mdm.finished-goods.create";
     public const string FinishedGoodsSubmit = "mdm.finished-goods.submit";
@@ -74,6 +76,8 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
             GskusRequestRetirement,
             LskusSubmit,
             LskusRetire,
+            LskusWithdraw,
+            LskusRequestRetirement,
             FinishedGoodsSubmit,
             FinishedGoodsRetire
         };
@@ -104,6 +108,7 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
                         GskusWithdraw,
                         GskusRequestCorrection,
                         LskusSubmit,
+                        LskusWithdraw,
                         FinishedGoodsSubmit,
                         WorkflowInstancesStart
                     ])
@@ -136,7 +141,7 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
                 GskusRetire,
                 GskusRequestRetirement,
                 LskusRead,
-                LskusRetire,
+                LskusRequestRetirement,
                 FinishedGoodsRead,
                 FinishedGoodsRetire
             })
@@ -165,7 +170,7 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
             || supplied.Any(key => key.StartsWith("mdm.product-definition-revisions.", StringComparison.OrdinalIgnoreCase)))
         {
             throw new InvalidOperationException(
-                "Product Identity lifecycle reconciliation requires the exact eight base and sixteen lifecycle keys, with no Revision or product approve/reject key.");
+                "Product Identity lifecycle reconciliation requires the exact eight base and eighteen lifecycle keys, with no Revision or product approve/reject key.");
         }
     }
 

@@ -93,6 +93,8 @@ public static class DefaultRolePermissionTemplate
             "mdm.gskus.request-retirement",
             "mdm.lskus.submit",
             "mdm.lskus.retire",
+            "mdm.lskus.withdraw",
+            "mdm.lskus.request-retirement",
             "mdm.product-abbreviations.read",
             "mdm.product-abbreviations.request",
             "mdm.product-abbreviations.cancel",

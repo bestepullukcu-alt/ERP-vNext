@@ -6,9 +6,9 @@ namespace Diten.AuthService.Application.Tests.Roles;
 public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
 {
     [Fact]
-    public void Profile_owns_exact_sixteen_lifecycle_keys_and_zero_revision_or_decision_keys()
+    public void Profile_owns_exact_eighteen_lifecycle_keys_and_zero_revision_or_decision_keys()
     {
-        Assert.Equal(16, ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys.Count);
+        Assert.Equal(18, ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys.Count);
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsUpdate,
             ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys);
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsWithdraw,
@@ -28,12 +28,12 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
     }
 
     [Fact]
-    public void Dedicated_roles_have_exact_nineteen_seven_eleven_matrices()
+    public void Dedicated_roles_have_exact_twenty_seven_eleven_matrices()
     {
         var roles = ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles
             .ToDictionary(role => role.RoleName, StringComparer.Ordinal);
 
-        Assert.Equal(19, roles[ProductIdentityLifecycleEntitlementGrantProfile.StewardRole].PermissionKeys.Count);
+        Assert.Equal(20, roles[ProductIdentityLifecycleEntitlementGrantProfile.StewardRole].PermissionKeys.Count);
         Assert.Equal(7, roles[ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole].PermissionKeys.Count);
         Assert.Equal(11, roles[ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole].PermissionKeys.Count);
 
@@ -268,6 +268,25 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
                 ProductIdentityLifecycleEntitlementGrantProfile.ValidateAndResolveDefinitions(catalog,
                     catalog.Concat(SharedDependencies())));
         }
+    }
+
+    [Theory]
+    [InlineData("mdm.lskus.withdraw", "ProductDataSteward")]
+    [InlineData("mdm.lskus.request-retirement", "ProductIdentityRetirementSteward")]
+    public void Lsku_amendment_has_one_exact_owner_and_no_other_role_mutation(string key, string role)
+    {
+        Assert.Equal(role, Assert.Single(ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles,
+            template => template.PermissionKeys.Contains(key)).RoleName);
+        var retirement = ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles.Single(x =>
+            x.RoleName == ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole);
+        Assert.DoesNotContain("mdm.lskus.retire", retirement.PermissionKeys);
+        Assert.Contains("mdm.gskus.retire", retirement.PermissionKeys);
+        var keys = ProductIdentityLifecycleEntitlementGrantProfile.BasePermissionKeys
+            .Concat(ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys).ToList();
+        keys.Remove(key);
+        Assert.Throws<InvalidOperationException>(() => ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet(keys));
+        keys.Add(key.ToUpperInvariant());
+        Assert.Throws<InvalidOperationException>(() => ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet(keys));
     }
 
     private static List<Permission> ProductCatalog()

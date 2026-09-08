@@ -122,7 +122,7 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
                 .Where(permission => permission.Module == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode)
                 .Select(permission => permission.Key)
                 .ToArray();
-            Assert.Equal(38, declaredKeys.Length);
+            Assert.Equal(40, declaredKeys.Length);
             await service.GrantModuleWithKeysAsync(
                 tenantA,
                 ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
@@ -142,7 +142,7 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
             var startGrant = (await rolePermissions.GetByRoleAsync(stewardBeforeUpgrade.Id, tenantA, CancellationToken.None))
                 .Single(grant => grant.PermissionId == workflowStart.Id);
             await rolePermissions.RemoveByIdAsync(startGrant.Id, tenantA, CancellationToken.None);
-            Assert.Equal(18, (await rolePermissions.GetByRoleAsync(stewardBeforeUpgrade.Id, tenantA, CancellationToken.None)).Count);
+            Assert.Equal(19, (await rolePermissions.GetByRoleAsync(stewardBeforeUpgrade.Id, tenantA, CancellationToken.None)).Count);
 
             await service.SyncTenantModulesWithKeysAsync(
                 tenantA,
@@ -160,8 +160,8 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
             var firstRoleCount = await roleCollection.CountDocumentsAsync(role => role.TenantId == tenantA);
             var firstGrantCount = await grantCollection.CountDocumentsAsync(grant => grant.TenantId == tenantA);
             Assert.Equal(12, firstRoleCount);
-            Assert.Equal(80, firstGrantCount);
-            Assert.Equal(73, await grantCollection.CountDocumentsAsync(grant =>
+            Assert.Equal(81, firstGrantCount);
+            Assert.Equal(74, await grantCollection.CountDocumentsAsync(grant =>
                 grant.TenantId == tenantA
                 && grant.GrantSource == GrantSource.Module
                 && grant.SourceModuleCode == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode));
@@ -251,13 +251,14 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
             Assert.Equal(0, await database.GetCollection<UserRole>("userRoles").CountDocumentsAsync(role =>
                 role.TenantId == tenantA || role.TenantId == tenantB));
 
-            // The four new keys are owned only as module grants. Explicit manual/other-module grants
+            // New action keys are owned only as module grants. Explicit manual/other-module grants
             // for those same keys survive revoke and restore; no user receives a role automatically.
             tenantContext.SetTenant(tenantA);
             var preservationRole = await roles.UpsertSystemRoleAsync(
                 "TestSourcePreservation", "Test source preservation", null, tenantA, CancellationToken.None);
             var additions = new[] { "mdm.gskus.update", "mdm.gskus.withdraw",
-                "mdm.gskus.request-correction", "mdm.gskus.request-retirement" };
+                "mdm.gskus.request-correction", "mdm.gskus.request-retirement",
+                "mdm.lskus.withdraw", "mdm.lskus.request-retirement" };
             var retainedIds = new List<Guid>();
             for (var i = 0; i < additions.Length; i++)
             {
@@ -269,12 +270,12 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
                 retainedIds.Add(grant.Id);
             }
             await service.RevokeModuleAsync(tenantA, ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode, "test");
-            Assert.Equal(4, await grantCollection.CountDocumentsAsync(g => retainedIds.Contains(g.Id)));
+            Assert.Equal(6, await grantCollection.CountDocumentsAsync(g => retainedIds.Contains(g.Id)));
             await service.GrantModuleWithKeysAsync(tenantA,
                 ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode, declaredKeys, "test");
             await service.GrantModuleWithKeysAsync(tenantA,
                 ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode, declaredKeys, "test");
-            Assert.Equal(4, await grantCollection.CountDocumentsAsync(g => retainedIds.Contains(g.Id)));
+            Assert.Equal(6, await grantCollection.CountDocumentsAsync(g => retainedIds.Contains(g.Id)));
             Assert.Equal(0, await grantCollection.CountDocumentsAsync(g => g.TenantId == tenantB));
             Assert.Equal(0, await database.GetCollection<UserRole>("userRoles")
                 .CountDocumentsAsync(r => r.TenantId == tenantA || r.TenantId == tenantB));

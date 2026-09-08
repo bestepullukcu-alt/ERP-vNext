@@ -31,6 +31,18 @@ public sealed class DefaultRolePermissionTemplateTests
         Assert.Empty(DefaultRolePermissionTemplate.SelectFor("Viewer", [permission]));
     }
 
+    [Theory]
+    [InlineData("withdraw")]
+    [InlineData("request-retirement")]
+    public void Lsku_action_additions_are_not_default_Admin_or_Viewer_grants(string action)
+    {
+        var permission = new Permission("mdm", "lskus", action, action, null,
+            moduleOverride: "product-item-sku-master", scope: PermissionScope.Tenant);
+        Assert.True(DefaultRolePermissionTemplate.IsTenantAssignable(permission));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor("Admin", [permission]));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor("Viewer", [permission]));
+    }
+
     [Fact]
     public void SuperAdmin_gets_the_full_catalog()
     {
@@ -159,6 +171,10 @@ public sealed class DefaultRolePermissionTemplateTests
                 moduleOverride: "product-item-sku-master"),
             new("mdm", "lskus", "retire", "Retire LSKUs", null,
                 moduleOverride: "product-item-sku-master"),
+            new("mdm", "lskus", "withdraw", "Withdraw LSKUs", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "lskus", "request-retirement", "Request LSKU Retirement", null,
+                moduleOverride: "product-item-sku-master"),
             new("mdm", "product-abbreviations", "read", "Read Product Abbreviations", null,
                 moduleOverride: "product-item-sku-master"),
             new("mdm", "product-abbreviations", "request", "Request Product Abbreviations", null,
@@ -232,8 +248,10 @@ public sealed class DefaultRolePermissionTemplateTests
                 "mdm.gskus.withdraw",
                 "mdm.lskus.create",
                 "mdm.lskus.read",
+                "mdm.lskus.request-retirement",
                 "mdm.lskus.retire",
                 "mdm.lskus.submit",
+                "mdm.lskus.withdraw",
                 "mdm.product-abbreviations.approve",
                 "mdm.product-abbreviations.audit",
                 "mdm.product-abbreviations.cancel",
