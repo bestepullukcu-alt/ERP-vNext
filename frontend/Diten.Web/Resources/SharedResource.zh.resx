@@ -713,4 +713,28 @@
   </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>计划访问</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>计划访问</value></data>
+  <data name="Nav.Domain.PORTFOLIODELIVERY" xml:space="preserve">
+    <value>项目组合交付</value>
+  </data>
+  <data name="Nav.Module.PPM" xml:space="preserve">
+    <value>项目与项目组合管理</value>
+  </data>
+  <data name="Nav.Page.PORTFOLIOS" xml:space="preserve">
+    <value>项目组合</value>
+  </data>
+  <data name="Nav.Page.INITIATIVES" xml:space="preserve">
+    <value>举措</value>
+  </data>
+  <data name="Nav.Page.PROGRAMS" xml:space="preserve">
+    <value>项目群</value>
+  </data>
+  <data name="Nav.Page.PROJECTS" xml:space="preserve">
+    <value>项目</value>
+  </data>
+  <data name="Nav.Page.INVESTMENTCASES" xml:space="preserve">
+    <value>投资案例</value>
+  </data>
+  <data name="Nav.Page.BENEFITCOMMITMENTS" xml:space="preserve">
+    <value>收益承诺</value>
+  </data>
 </root>

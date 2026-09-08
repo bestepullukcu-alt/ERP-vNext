@@ -774,4 +774,28 @@
   </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>Planlanan Ziyaretler</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>Planlanan Ziyaretler</value></data>
+  <data name="Nav.Domain.PORTFOLIODELIVERY" xml:space="preserve">
+    <value>Portföy Teslimatı</value>
+  </data>
+  <data name="Nav.Module.PPM" xml:space="preserve">
+    <value>Proje ve Portföy Yönetimi</value>
+  </data>
+  <data name="Nav.Page.PORTFOLIOS" xml:space="preserve">
+    <value>Portföyler</value>
+  </data>
+  <data name="Nav.Page.INITIATIVES" xml:space="preserve">
+    <value>Girişimler</value>
+  </data>
+  <data name="Nav.Page.PROGRAMS" xml:space="preserve">
+    <value>Programlar</value>
+  </data>
+  <data name="Nav.Page.PROJECTS" xml:space="preserve">
+    <value>Projeler</value>
+  </data>
+  <data name="Nav.Page.INVESTMENTCASES" xml:space="preserve">
+    <value>Yatırım Vakaları</value>
+  </data>
+  <data name="Nav.Page.BENEFITCOMMITMENTS" xml:space="preserve">
+    <value>Fayda Taahhütleri</value>
+  </data>
 </root>

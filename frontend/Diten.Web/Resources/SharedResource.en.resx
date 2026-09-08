@@ -774,4 +774,28 @@
   </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>Planned Visits</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>Planned Visits</value></data>
+  <data name="Nav.Domain.PORTFOLIODELIVERY" xml:space="preserve">
+    <value>Portfolio Delivery</value>
+  </data>
+  <data name="Nav.Module.PPM" xml:space="preserve">
+    <value>Project &amp; Portfolio Management</value>
+  </data>
+  <data name="Nav.Page.PORTFOLIOS" xml:space="preserve">
+    <value>Portfolios</value>
+  </data>
+  <data name="Nav.Page.INITIATIVES" xml:space="preserve">
+    <value>Initiatives</value>
+  </data>
+  <data name="Nav.Page.PROGRAMS" xml:space="preserve">
+    <value>Programs</value>
+  </data>
+  <data name="Nav.Page.PROJECTS" xml:space="preserve">
+    <value>Projects</value>
+  </data>
+  <data name="Nav.Page.INVESTMENTCASES" xml:space="preserve">
+    <value>Investment Cases</value>
+  </data>
+  <data name="Nav.Page.BENEFITCOMMITMENTS" xml:space="preserve">
+    <value>Benefit Commitments</value>
+  </data>
 </root>
