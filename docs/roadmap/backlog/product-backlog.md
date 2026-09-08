@@ -4128,11 +4128,19 @@ Bugünün kanıtı ölçüldü:
     test-beta-mod.test.view      IsSystem=true  Scope=Tenant
     test-beta-mod.test.create    IsSystem=true  Scope=Tenant
 
-Bu iki anahtar **hiçbir yerde tanımlı değil** — ne `DataSeeder`'da, ne bir
-manifest sağlayıcıda, ne katalog veritabanında (`DitenERP_Dev`,
-`DitenEnterpriseDb`: 0 eşleşme). Yalnız iki test fixture'ında adı geçiyor, o da
-humanize davranışını ölçmek için. Yani modül gitmiş, izinleri kalmış; her kiracının
-Rol İzinleri ekranında "Test Beta Mod" diye bir grup olarak duruyorlardı.
+Bu iki anahtar kodda **hiçbir yerde tanımlı değil** — ne `DataSeeder`'da, ne bir
+manifest sağlayıcıda. Yalnız iki test fixture'ında adı geçiyor, o da humanize
+davranışını ölçmek için.
+
+⚠ **Düzeltme (2026-09-08, CONTROL TOWER ölçümü).** İlk yazımda "katalog
+veritabanında da yok" deniyordu; yanlış veritabanlarına bakılmıştı. Katalog
+`diten_personalization_dev.platform_module_catalog` içindedir ve kayıt **oradadır**:
+
+    ModuleCode="TEST-BETA-MOD"  DisplayName="Test Beta"  Status=4 (Beta)  IsDeleted=true
+
+Yani modül **kullanıcı arayüzünden silinmiş** (soft delete), izinleri kalmış. Bu
+maddeyi zayıflatmaz, güçlendirir: kayıt gizemli bir artık değil, DELETE-sync'in
+tetiklenmesi gereken tam senaryonun kanıtıdır.
 
 Kayıtlar 2026-09-08'de sahip talimatıyla elle silindi (2 izin + SuperAdmin'e
 bakan 2 `rolePermissions` satırı, birlikte — yalnız izinler silinseydi grant
@@ -4141,9 +4149,158 @@ satırları sarkan referansa dönerdi). **Silme mekanizmayı düzeltmez.**
 ⚠ Ölçek uyarısı: bugün 2 satır. Gerçek bir modül emekliye ayrıldığında aynı
 sızıntı o modülün tüm anahtarlarıyla olur (Doküman Yönetimi tek başına 123 izin
 taşıyor) ve hiçbiri elle fark edilmez — kimse silinmiş bir modülün izinlerini
-aramaz. Ayrıca `IsSystem=true` olan bir kaydı DELETE-sync zaten reddediyor (409),
-bu iki satırın hâlâ `IsSystem=true` olması da ayrıca açıklanmayı bekliyor.
+aramaz.
+
+**`IsSystem=true` sorusunun cevabı bulundu.** Mekanizma doğru kurulmuş:
+`InternalPermissionsController` katalogdan gelen bir izni yarattıktan hemen sonra
+`permission.MarkAsUserDefined()` çağırıyor, yani `IsSystem=false` yapıyor; tam da
+DELETE-sync silebilsin diye. Elle tohumlananlar (`auth.*`) `IsSystem=true` kalıp
+korunuyor. Silinen iki satır o çağrı eklenmeden **önce** yaratılmış eski
+kayıtlardı. Yani bu bir mekanizma hatası değil, geçmiş veri.
+
+⚠ Ama bu, maddenin son cümlesini doğruluyor: mekanizma bağlansa bile geçmişte
+`IsSystem=true` ile yaratılmış katalog izinleri **kendiliğinden silinmez**, çünkü
+DELETE-sync onları 409 ile reddeder. Faz 1.5 turunun reconcile adımı bunları da
+ayıklamalı:
+
+    mongosh "mongodb://localhost:27017/diten_auth_v3" --quiet --eval \
+      'db.permissions.aggregate([{$match:{Key:/^platform\./}},
+       {$group:{_id:"$IsSystem",n:{$sum:1}}}]).toArray()'
 
 **Ne zaman yapılır:** Faz 1.5 DELETE-sync bağlanırken. O turda ayrıca "hiçbir
 tanıma bakmayan izin" için bir reconcile/rapor gerekir — çünkü mekanizma
 bağlandıktan sonra bile **geçmişte** sızmış anahtarlar kendiliğinden gitmez.
+
+### BL-340
+
+**`tasks` modülü çalışma zamanı/ayar olarak ayrılsın mı — Meeting kapsamı netleşince**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · TETİKLEYİCİ: Meeting module pack
+
+`tasks` tek modül olarak **kalmasına** karar verildi (ADR-001 §2); ayrım yerine
+ekrana özel ad köprüsü seçildi. Karar bugünün maliyet dengesine dayanıyor, kalıcı
+bir mimari ilkeye değil — bu yüzden kapatılmadı, ertelendi.
+
+Bugünkü denge: rol düzeyinde ayrım zaten mümkün (izinler çip çip veriliyor).
+Ayırmanın tek kazancı **modül hakkı** düzeyinde ayrım olurdu: "bu kiracı görev
+kullanabilsin ama görev tipi tanımlayamasın". Maliyeti bir module pack, iki
+manifest, bir migration ve MOD-0024 kimlik kararına dokunmak.
+
+**Denge şu üç şeyden biri olursa değişir:**
+
+1. Bir kiracı çalışma yüzeyini isteyip ayar ekranlarını istemiyor (veya tersi) —
+   yani ayrım artık bir rol ayarı değil, bir satın alma sınırı.
+2. Meeting aynı şekli alıyor ve üçüncü, dördüncü modül de aynı çift-anlamlılığı
+   üretiyor — o zaman köprü bir desen değil, bir yama olmaya başlar.
+3. `tasks` altındaki izin sayısı, tek grup başlığı altında okunamayacak kadar
+   büyüyor.
+
+⚠ Yeniden değerlendiren tur ADR-001'i **okumadan** başlamasın: orada reddedilen
+iki alternatif ve gerekçeleri yazılı. Özellikle "adı geri al" seçeneği menüde iki
+kusur geri getirir ve bu ölçülmüştür.
+
+### BL-341
+
+**"Görevi Güncelle" tek çipi, görev yaşam döngüsünün tamamını veriyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-08
+
+`platform.tasks.update` Rol İzinleri ekranında tek bir "Güncelle" çipi olarak
+görünüyor. Arkasında **on dört uç** var:
+
+    grep -c "HasPermission(TaskPermissions.Update)" \
+      services/Diten.Platform/src/Diten.Platform.API/Controllers/TasksController.cs
+
+    PUT    /{id}                              accept · plan · start
+    POST   /{id}/submitReview                 inquire · return
+    POST   /{id}/checklist/items              PUT/DELETE .../items/{code}
+    POST   /{id}/checklist/items/state        PUT /{id}/checklist/order
+    POST   /{id}/dependencies                 DELETE /{id}/dependencies/{id}
+
+Yani "alanları düzenleyebilsin" diye verilen çip, aynı zamanda görevi kabul etme,
+planlama, başlatma, incelemeye gönderme, iade etme, kontrol listesini ve
+bağımlılıkları yönetme yetkisini de veriyor.
+
+**Bu bir güvenlik açığı değil** — hepsi aynı görev üzerinde ve hepsi yetkili bir
+kullanıcının yapabileceği işler. Bir **sürpriz**: rol kuran kişi verdiğini
+sandığından fazlasını veriyor ve ekran bunu göstermiyor.
+
+**Ne zaman yapılır:** Görev Merkezi rol modeli canlı kullanıma girdikten sonra,
+gerçek rollerle. Erken bölmek 14 ucu 5 izne dağıtır ve hiçbiri istenmemişken rol
+kurmayı zorlaştırır. Önce ölçülmeli: kiracılar "düzenleyebilsin ama başlatamasın"
+diye bir ayrım istiyor mu.
+
+⚠ Ara adım (ucuz): izin çipinin üstüne, o iznin kaç ucu kapsadığını gösteren bir
+ipucu. Bölmeden önce görünürlük.
+
+### BL-342
+
+**Üç grup başlığı modül adı değil: `mod0251`, `person`, `lookups`**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-08
+
+Modül atfı düzeltmesinden (ADR-001 §1) sonra Rol İzinleri ekranındaki gruplar
+gerçek modül kodlarını taşıyor. Üçü taşımıyor:
+
+| grup | izin | sorun |
+|---|---:|---|
+| `mod0251` | 14 | ham iş kalemi numarası; ekranda **"Mod0251"** diye çizilir. Anahtarlar `mod0251.employee.*` — gerçek adı HCM çalışan ana verisi. |
+| `person` | 3 | `platform.person.*` türetmesinden çıktı. Modül değil; muhtemelen HCM'e ya da paylaşılan bir arama servisine ait. |
+| `lookups` | 1 | `platform.lookups.read` — tek satırlık bir grup. |
+
+⚠ `mod0251` bu turun ürünü **değil**: ad alanı zaten `mod0251` idi ve servis adı
+olmadığı için türetme ona dokunmadı. Yani hata daha eski, yalnız artık görünür.
+
+`person` ve `lookups` ise türetmenin ürünü — ama düzeltilmeden önceki halleri
+`platform` kutusunun içinde kaybolmaktı, yani gerileme değil.
+
+**Ne yapılır:** anahtarları yeniden adlandırmak **değil** (anahtar sabittir, ADR-001
+§1). Doğru düzeltme, bu üç izin kümesinin gerçek sahibi modülü tespit edip
+`moduleOverride` / manifest `ModuleCode` ile açık atıf vermektir — türetmeye gerek
+kalmadan. `mod0251` için sahibi HCM ekibidir.
+
+Ara çare: `Perm.Module.*` köprüsüne okunur ad yazmak. Grup adını düzeltir, atfı
+düzeltmez — bu yüzden çare, çözüm değil.
+
+### BL-343
+
+**Ana dalda kırmızı duran muhafızlar: bir gizlilik sözleşmesi ve on üç ön yüz dosyası**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-08
+
+RBAC turunun bağımsız doğrulaması sırasında ölçüldü. **Hiçbiri o turun ürünü
+değil**; hepsi dal açılmadan önce kırmızıydı ve bu yüzden ayrı bir madde.
+
+**a) Gizlilik sözleşmesi kırmızı — iki test**
+
+    UserLookupValidationContractTests.ResponseDtoContainsOnlyUserIdAndReferenceable
+    UserLookupValidationContractTests.ResponseJsonDoesNotLeakTenantOrProfileAuthorizationOrStatusDetails
+
+    Beklenen: ["Referenceable", "UserId"]
+    Gerçek:   ["MaskedEmail", "MaskedName", "Referenceable", "UserId"]
+
+Kullanıcı arama doğrulama yanıtına `MaskedEmail` ve `MaskedName` eklenmiş; sözleşme
+testi o yanıtın **yalnız** kimlik ve doğrulanabilirlik taşımasını şart koşuyor.
+Ekleyen commit `0f71a237` ve **ana dalda**, yani bu muhafız main'de kırmızı duruyor.
+
+⚠ İkisinden biri yanlış: ya alanlar oraya ait değil (maskeli de olsa profil verisi
+sızdırıyor), ya sözleşme eskimiş ve gerekçesiyle güncellenmeli. Karar verilmeden
+kapatılamaz — bir gizlilik muhafızını sessizce yeşile çekmek, onu yazmamış olmakla
+aynı şeydir.
+
+**b) On üç ön yüz test dosyası kırmızı — 25 test**
+
+    campaign-targeting-admin-ui · consent-preference-admin-ui · dialog-one-implementation
+    diten-tags · global-confirm-input-type · objectives-edit-hydration
+    planning-cycles-owner-position · planning-cycles-register · pvg-case-intake-triage-ui
+    strategy-apis · strategy-periods-owner-position · strategy-periods-register
+    wcn-dialog-one-language
+
+İkisi (`diten-tags`, `wcn-dialog-one-language`) `backbone-custom.css` okuyor, yani
+RBAC turunun CSS değişikliğinden şüphelenildi. Ölçüldü: CSS değişikliği geri
+alınıp koşulduklarında **yine kırmızı**. Sebep başka.
+
+⚠ Ölçek: 154 dosyanın 13'ü, 2381 testin 25'i. Küçük bir oran, ama kırmızı bir
+takım "testler geçiyor mu" sorusunu cevaplanamaz hale getirir — her tur bu 13'ü
+elle ayıklamak zorunda kalır ve bir gün biri fazladan bir kırmızıyı da eski
+sanar. Bu maddenin asıl maliyeti budur.
