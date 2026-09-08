@@ -4069,46 +4069,42 @@ sayfadan düşer.
 
 ### BL-338
 
-**97 sayfa hangi kabukta olacağına karar verilmeden varsayılan `_Layout`'a düşüyor**
+**Varsayılan `_Layout`'a düşen 97 sayfa — hangisi hâlâ yaşıyor?**
 
 DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-08
 
-    370 sayfa view (partial hariç)
-    266 kendi kabuğunu açıkça seçiyor (_LayoutTenantShell / _LayoutPlatformAdmin)
-      7 Layout = null
-    ~97 hiç Layout satırı taşımıyor → Views/_ViewStart.cshtml varsayılanı: "_Layout"
+⚠ **Bu madde ilk yazıldığında yanlış kurulmuştu.** "97 sayfanın kabuk kararı
+verilmemiş" diye açılmıştı; sahip "bunların hepsi eski" deyince ölçüldü ve haklı
+çıktı. Sorun kabuk seçimi değil, bu sayfaların **hâlâ neden durduğu**.
 
-⚠ 97'nin hepsi bu maddenin kapsamında DEĞİL. Dağılım ölçüldü ve ikisi ayrılıyor:
+    370 sayfa view · 266 kendi kabuğunu seçiyor · 7 Layout = null
+    ~97 hiç Layout satırı taşımıyor → Views/_ViewStart.cshtml varsayılanı "_Layout"
 
-    52  EnterpriseStrategyBusinessPerformance  → yenisi Codex'te yazılıyor; bu madde beklemez
-    18  WorkCenter                             → eski mock yüzey, AYRI mesele (aşağıya bak)
-    ─────────────────────────────────────────────────────────────────────────
-    12  ManagementGovernance
-     7  DeliveryExecutionManagement
-     4  DemandIdeas
-     3  Shared
-     1  InventoryGovernance
-     1  DecompositionTreeBuilder
-    ─────────────────────────────────────────────────────────────────────────
-    28  BU MADDENİN GERÇEK KAPSAMI
+Dağılım ve her birinin gerçek durumu:
 
-`AGENTS.md` `_Layout.cshtml`'i **FROZEN** ilan ediyor — yani bu yirmi sekiz sayfa,
-dokunulmaması gereken bir kabuğu, öyle olduğunu bilmeden kullanıyor.
+| sayfa | modül | durum |
+|---:|---|---|
+| 52 | EnterpriseStrategyBusinessPerformance | eski yüzey; **yenisi Codex'te yazılıyor** |
+| 18 | WorkCenter | eski mock; gerçek yüzey `WorkCenterNext` (3 dosya). Eskisinin controller'ı canlı ve **navbar'da** |
+| 12 | ManagementGovernance | `feat(mg): add default-off process modeling local surface` — yeni ama **varsayılan kapalı** |
+| 7 | DeliveryExecutionManagement | son commit **2026-04-15** |
+| 4 | DemandIdeas | son commit **2026-04-15** |
+| 1 | InventoryGovernance | son commit **2026-04-15** |
+| 1 | DecompositionTreeBuilder | son commit **2026-04-15** |
+| 3 | Shared | ⚠ **yanlış sayım** — `Error` ve `NotAuthorized` zaten Layout satırı taşıyor, kapsam dışı |
 
-⚠ **WorkCenter'ın 18 sayfası bir kabuk sorunu değil.** `Views/WorkCenter/` 24 dosya
-taşıyor ve controller'ı hâlâ canlı; `Views/WorkCenterNext/` ise 3 dosya ve gerçek
-MOD-0024 yüzeyi orada. Yani iki Görev Merkezi yan yana duruyor. Bu sayfalara kabuk
-seçtirmek, ölü bir yüzeyi düzeltmek olur — önce hangisinin kalacağı kararı verilmeli.
-Ayrı madde olarak izlenmeli.
+Yani hiçbiri "kabuk kararı bekleyen canlı sayfa" değil. Dördü beş aydır donmuş,
+biri kapalı, ikisi yerine yenisi yazılıyor.
 
-Asıl mesele dosyanın kendisi değil, **kararın hiç verilmemiş olması**: bu sayfalar
-kiracı tarafına mı platform tarafına mı ait? Varsayılana düşmek bu soruyu
-cevaplamıyor, sadece erteliyor — ve `views-organization.md` shell seçimini zorunlu
-kılıyor.
+**Asıl soru:** bu 94 sayfa silinecek mi, dondurulacak mı, yoksa canlandırılacak mı?
+Karar verilmeden kabuk seçtirmek, silinecek bir yüzeyi cilalamak olur.
 
-**Kapanma ölçütü:** her sayfa view'ı kabuğunu açıkça seçer; `_ViewStart` varsayılanı
-ya kaldırılır ya da bilinçli bir seçim olarak gerekçesiyle yazılır. Bir muhafız test
-"Layout satırı olmayan sayfa view" sayısını ölçer ve sayı yalnız küçülür.
+**Kapanma ölçütü:** her modül için üç cevaptan biri yazılı — *silinecek* /
+*dondurulacak, dokunulmayacak* / *canlandırılacak (o zaman kabuğunu seçer)*.
+Silinenler gittikten sonra kalanlar için bir muhafız test "Layout satırı olmayan
+sayfa view" sayısını ölçer ve sayı yalnız küçülür.
 
-⚠ Sahip bu turda "_Layout artık kullanılmıyor sanırım" dedi; ölçüm bunun tersini
-gösterdi. Madde, o varsayımın neden yanlış olduğunu kaydetmek için de duruyor.
+⚠ Sıralama: WorkCenter kendi başına ele alınmalı — iki Görev Merkezi yüzeyi yan
+yana duruyor ve **giriş akışı eskisine yönlendiriyor**. Bu, ölü kod değil, canlı
+bir yanlış yönlendirme.
+
