@@ -529,6 +529,7 @@
   <data name="EtlEltPipelinesMenu" xml:space="preserve"><value>ETL / ELT Pipelines</value></data>
   <data name="KpiCatalogMenu" xml:space="preserve"><value>KPI Catalog</value></data>
   <data name="MetricDefinitionsOwnershipMenu" xml:space="preserve"><value>Metric Definitions &amp; Ownership</value></data>
+  <data name="ScorecardsDashboardsMenu" xml:space="preserve"><value>Scorecards / Dashboards</value></data>
   <data name="TepShellMetadataMenu" xml:space="preserve"><value>TEP Shell Metadata</value></data>
   <data name="ConsentVisibilityPoliciesMenu" xml:space="preserve"><value>Consent &amp; Visibility Policies</value></data>
   <data name="AssociationMembershipsMenu" xml:space="preserve"><value>Association Memberships</value></data>

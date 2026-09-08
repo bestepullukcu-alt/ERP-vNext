@@ -252,7 +252,12 @@ public static class DataSeeder
             new("dki", "metric-definitions-ownership", "audit.read", "Metric Definitions Ownership Audit Read", null),
             new("dki", "metric-definitions-ownership", "evaluate", "Metric Definitions Ownership Evaluate", null),
             new("dki", "metric-definitions-ownership", "manage", "Metric Definitions Ownership Manage", null),
-            new("dki", "metric-definitions-ownership", "read", "Metric Definitions Ownership Read", null)
+            new("dki", "metric-definitions-ownership", "read", "Metric Definitions Ownership Read", null),
+
+            new("dki", "scorecards-dashboards", "audit.read", "Scorecards Dashboards Audit Read", null),
+            new("dki", "scorecards-dashboards", "evaluate", "Scorecards Dashboards Evaluate", null),
+            new("dki", "scorecards-dashboards", "manage", "Scorecards Dashboards Manage", null),
+            new("dki", "scorecards-dashboards", "read", "Scorecards Dashboards Read", null)
         };
 
         foreach (var p in permissions)

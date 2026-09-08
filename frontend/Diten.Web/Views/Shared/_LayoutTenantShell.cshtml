@@ -81,6 +81,7 @@
     var canReadEtlEltPipelines = Perms.Has("dki.etl-elt-pipelines.read");
     var canReadKpiCatalog = Perms.Has("dki.kpi-catalog.read");
     var canReadMetricDefinitionsOwnership = Perms.Has("dki.metric-definitions-ownership.read");
+    var canReadScorecardsDashboards = Perms.Has("dki.scorecards-dashboards.read");
 }
 <!DOCTYPE html>
 
@@ -682,7 +683,7 @@
                         }
                     }
 
-                    @if (canReadMetricSemanticRegistry || canReadDataWarehouseLakehouse || canReadEtlEltPipelines || canReadKpiCatalog || canReadMetricDefinitionsOwnership)
+                    @if (canReadMetricSemanticRegistry || canReadDataWarehouseLakehouse || canReadEtlEltPipelines || canReadKpiCatalog || canReadMetricDefinitionsOwnership || canReadScorecardsDashboards)
                     {
                         <li class="menu-header small text-uppercase">
                             <span class="menu-header-text">@SharedLocalizer["DataKnowledge"]</span>
@@ -729,6 +730,15 @@
                                 <a href="/DataKnowledge/MetricDefinitionsOwnership" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-detail"></i>
                                     <div>@SharedLocalizer["MetricDefinitionsOwnershipMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadScorecardsDashboards)
+                        {
+                            <li class="menu-item @(activeController == "ScorecardsDashboards" ? "active" : "")">
+                                <a href="/DataKnowledge/ScorecardsDashboards" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-grid-alt"></i>
+                                    <div>@SharedLocalizer["ScorecardsDashboardsMenu"]</div>
                                 </a>
                             </li>
                         }
