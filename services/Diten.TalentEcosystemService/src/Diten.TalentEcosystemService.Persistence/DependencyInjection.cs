@@ -22,7 +22,13 @@ public static class DependencyInjection
             ?? configuration["MongoDbSettings:DatabaseName"]
             ?? "DitenTalentEcosystem";
 
-        var client = new MongoClient(MongoClientSettings.FromConnectionString(connectionString));
+        var mongoClientSettings = MongoClientSettings.FromConnectionString(connectionString);
+        // Force standard (subtype 4) GUID representation for Find-filter constants so read
+        // filters match the subtype-4 GUIDs written for _id/TenantId. Without this, reads
+        // (list/get/exists/evaluate/delete) silently fail to match written records.
+        // Mirrors Auth/Platform/HCM persistence configuration.
+        mongoClientSettings.GuidRepresentation = GuidRepresentation.Standard;
+        var client = new MongoClient(mongoClientSettings);
         var database = client.GetDatabase(databaseName);
 
         services.AddSingleton<IMongoClient>(client);
@@ -38,6 +44,8 @@ public static class DependencyInjection
         services.AddScoped<ITepReferenceExchangeMarketplaceReadinessMetadataRepository, MongoTepReferenceExchangeMarketplaceReadinessMetadataRepository>();
         services.AddScoped<ITepRehireRecommendationReadinessMetadataRepository, MongoTepRehireRecommendationReadinessMetadataRepository>();
         services.AddScoped<ITepCandidateDisputeReadinessMetadataRepository, MongoTepCandidateDisputeReadinessMetadataRepository>();
+        services.AddScoped<ITalentDataFoundationReadinessMetadataRepository, MongoTalentDataFoundationReadinessMetadataRepository>();
+        services.AddScoped<IHiringRiskIndicatorsReadinessMetadataRepository, MongoHiringRiskIndicatorsReadinessMetadataRepository>();
 
         return services;
     }

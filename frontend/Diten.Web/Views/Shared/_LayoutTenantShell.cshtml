@@ -40,6 +40,23 @@
     var canReadOffboardingCases = Perms.Has("hcm.offboarding.read");
     var canReadApplicantIntake = Perms.Has("hcm.applicant-intake.read");
     var canReadCandidatePipeline = Perms.Has("hcm.candidate-pipeline.read");
+    var canReadOfferManagement = Perms.Has("hcm.offer-management.read");
+    var canReadEmployeeOnboarding = Perms.Has("hcm.employee-onboarding.read");
+    var canReadEmploymentChanges = Perms.Has("hcm.employment-changes.read");
+    var canReadPerformanceReviews = Perms.Has("hcm.performance-reviews.read");
+    var canReadCompetencySkills = Perms.Has("hcm.competency-skills.read");
+    var canReadDevelopmentPlans = Perms.Has("hcm.development-plans.read");
+    var canReadLearningTraining = Perms.Has("hcm.learning-training.read");
+    var canReadSuccession = Perms.Has("hcm.succession.read");
+    var canReadWorkforcePlanning = Perms.Has("hcm.workforce-planning.read");
+    var canReadHeadcountBudget = Perms.Has("hcm.headcount-budget.read");
+    var canReadHrKpiAnalytics = Perms.Has("hcm.hr-kpi-analytics.read");
+    var canReadHrDocumentation = Perms.Has("hcm.hr-documentation.read");
+    var canReadTimeAttendanceLeave = Perms.Has("hcm.time-attendance-leave.read");
+    var canReadCompensationBenefits = Perms.Has("hcm.compensation-benefits.read");
+    var canReadSelfService = Perms.Has("hcm.self-service.read");
+    var canReadHrCaseManagement = Perms.Has("hcm.hr-case-management.read");
+    var canReadHrCompliance = Perms.Has("hcm.hr-compliance.read");
     var canReadTepShell = Perms.Has("tep.shell.read");
     var canReadConsentVisibilityPolicies = Perms.Has("tep.consent-visibility-policies.read");
     var canReadAssociationMemberships = Perms.Has("tep.association-memberships.read");
@@ -51,6 +68,8 @@
     var canReadReferenceExchange = Perms.Has("tep.reference-exchange.read");
     var canReadRehireRecommendations = Perms.Has("tep.rehire-recommendations.read");
     var canReadCandidateDisputes = Perms.Has("tep.candidate-disputes.read");
+    var canReadTalentDataFoundation = Perms.Has("tep.talent-data-foundation.read");
+    var canReadHiringRiskIndicators = Perms.Has("tep.hiring-risk-indicators.read");
 }
 <!DOCTYPE html>
 
@@ -107,7 +126,7 @@
     <script src="~/assets/vendor/libs/pickr/pickr.js"></script>
     <script src="~/assets/vendor/js/template-customizer.js"></script>
     <script>
-        window.ApiBaseUrl = window.location.protocol + "//" + window.location.hostname + ":5000";
+        window.ApiBaseUrl = window.location.protocol + "//" + window.location.hostname + ":5080"; // dev gateway port (5000 held by macOS ControlCenter/AirPlay)
         window.API = {
             mdm: window.ApiBaseUrl,
             deven: window.ApiBaseUrl,
@@ -261,7 +280,7 @@
                             </a>
                         </li>
                     }
-                    @if (canReadEmployeeProjections || canReadSensitiveAccess || canReadPositionAssignments || canReadOffboardingCases || canReadApplicantIntake || canReadCandidatePipeline)
+                    @if (canReadEmployeeProjections || canReadSensitiveAccess || canReadPositionAssignments || canReadOffboardingCases || canReadApplicantIntake || canReadCandidatePipeline || canReadOfferManagement || canReadEmployeeOnboarding || canReadEmploymentChanges || canReadPerformanceReviews || canReadCompetencySkills || canReadDevelopmentPlans || canReadLearningTraining || canReadSuccession || canReadWorkforcePlanning || canReadHeadcountBudget || canReadHrKpiAnalytics || canReadHrDocumentation || canReadTimeAttendanceLeave || canReadCompensationBenefits || canReadSelfService || canReadHrCaseManagement || canReadHrCompliance)
                     {
                         <li class="menu-header small text-uppercase">
                             <span class="menu-header-text">@SharedLocalizer["HumanCapital"]</span>
@@ -320,8 +339,161 @@
                                 </a>
                             </li>
                         }
+                        @if (canReadOfferManagement)
+                        {
+                            <li class="menu-item @(activeController == "OfferManagement" ? "active" : "")">
+                                <a href="/HumanCapital/OfferManagement" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-briefcase-alt-2"></i>
+                                    <div>@SharedLocalizer["OfferManagementMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadEmployeeOnboarding)
+                        {
+                            <li class="menu-item @(activeController == "EmployeeOnboarding" ? "active" : "")">
+                                <a href="/HumanCapital/EmployeeOnboarding" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-user-check"></i>
+                                    <div>@SharedLocalizer["EmployeeOnboardingMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadEmploymentChanges)
+                        {
+                            <li class="menu-item @(activeController == "EmploymentChanges" ? "active" : "")">
+                                <a href="/HumanCapital/EmploymentChanges" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-transfer-alt"></i>
+                                    <div>@SharedLocalizer["EmploymentChangesMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadPerformanceReviews)
+                        {
+                            <li class="menu-item @(activeController == "PerformanceReviews" ? "active" : "")">
+                                <a href="/HumanCapital/PerformanceReviews" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-bar-chart-alt-2"></i>
+                                    <div>@SharedLocalizer["PerformanceReviewsMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadCompetencySkills)
+                        {
+                            <li class="menu-item @(activeController == "CompetencySkills" ? "active" : "")">
+                                <a href="/HumanCapital/CompetencySkills" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-category"></i>
+                                    <div>@SharedLocalizer["CompetencySkillsMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadLearningTraining)
+                        {
+                            <li class="menu-item @(activeController == "LearningTraining" ? "active" : "")">
+                                <a href="/HumanCapital/LearningTraining" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-book-open"></i>
+                                    <div>@SharedLocalizer["LearningTrainingMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadSuccession)
+                        {
+                            <li class="menu-item @(activeController == "Succession" ? "active" : "")">
+                                <a href="/HumanCapital/Succession" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-trophy"></i>
+                                    <div>@SharedLocalizer["SuccessionMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadWorkforcePlanning)
+                        {
+                            <li class="menu-item @(activeController == "WorkforcePlanning" ? "active" : "")">
+                                <a href="/HumanCapital/WorkforcePlanning" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-been-here"></i>
+                                    <div>@SharedLocalizer["WorkforcePlanningMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadHeadcountBudget)
+                        {
+                            <li class="menu-item @(activeController == "HeadcountBudget" ? "active" : "")">
+                                <a href="/HumanCapital/HeadcountBudget" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-calculator"></i>
+                                    <div>@SharedLocalizer["HeadcountBudgetMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadHrKpiAnalytics)
+                        {
+                            <li class="menu-item @(activeController == "HrKpiAnalytics" ? "active" : "")">
+                                <a href="/HumanCapital/HrKpiAnalytics" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-bar-chart-alt-2"></i>
+                                    <div>@SharedLocalizer["HrKpiAnalyticsMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadHrDocumentation)
+                        {
+                            <li class="menu-item @(activeController == "HrDocumentation" ? "active" : "")">
+                                <a href="/HumanCapital/HrDocumentation" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-folder-open"></i>
+                                    <div>@SharedLocalizer["HrDocumentationMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadTimeAttendanceLeave)
+                        {
+                            <li class="menu-item @(activeController == "TimeAttendanceLeave" ? "active" : "")">
+                                <a href="/HumanCapital/TimeAttendanceLeave" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-time-five"></i>
+                                    <div>@SharedLocalizer["TimeAttendanceLeaveMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadCompensationBenefits)
+                        {
+                            <li class="menu-item @(activeController == "CompensationBenefits" ? "active" : "")">
+                                <a href="/HumanCapital/CompensationBenefits" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-wallet"></i>
+                                    <div>@SharedLocalizer["CompensationBenefitsMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadSelfService)
+                        {
+                            <li class="menu-item @(activeController == "SelfService" ? "active" : "")">
+                                <a href="/HumanCapital/SelfService" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-user-voice"></i>
+                                    <div>@SharedLocalizer["SelfServiceMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadHrCaseManagement)
+                        {
+                            <li class="menu-item @(activeController == "HrCaseManagement" ? "active" : "")">
+                                <a href="/HumanCapital/HrCaseManagement" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-briefcase-alt"></i>
+                                    <div>@SharedLocalizer["HrCaseManagementMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadHrCompliance)
+                        {
+                            <li class="menu-item @(activeController == "HrCompliance" ? "active" : "")">
+                                <a href="/HumanCapital/HrCompliance" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-check-shield"></i>
+                                    <div>@SharedLocalizer["HrComplianceMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadDevelopmentPlans)
+                        {
+                            <li class="menu-item @(activeController == "DevelopmentPlans" ? "active" : "")">
+                                <a href="/HumanCapital/DevelopmentPlans" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-map-alt"></i>
+                                    <div>@SharedLocalizer["DevelopmentPlansMenu"]</div>
+                                </a>
+                            </li>
+                        }
                     }
-                    @if (canReadTepShell || canReadConsentVisibilityPolicies || canReadAssociationMemberships || canReadVerifiedParticipants || canReadReviewBoard || canReadTrustLevels || canReadCandidateProfiles || canReadExitReferenceRecords || canReadReferenceExchange || canReadRehireRecommendations || canReadCandidateDisputes)
+                    @if (canReadTepShell || canReadConsentVisibilityPolicies || canReadAssociationMemberships || canReadVerifiedParticipants || canReadReviewBoard || canReadTrustLevels || canReadCandidateProfiles || canReadExitReferenceRecords || canReadReferenceExchange || canReadRehireRecommendations || canReadCandidateDisputes || canReadTalentDataFoundation || canReadHiringRiskIndicators)
                     {
                         <li class="menu-header small text-uppercase">
                             <span class="menu-header-text">@SharedLocalizer["TalentEcosystem"]</span>
@@ -422,6 +594,24 @@
                                 <a href="/TalentEcosystem/CandidateDisputes" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-message-square-detail"></i>
                                     <div>@SharedLocalizer["CandidateDisputesMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadTalentDataFoundation)
+                        {
+                            <li class="menu-item @(activeController == "TalentDataFoundation" ? "active" : "")">
+                                <a href="/TalentEcosystem/TalentDataFoundation" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-data"></i>
+                                    <div>@SharedLocalizer["TalentDataFoundationMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadHiringRiskIndicators)
+                        {
+                            <li class="menu-item @(activeController == "HiringRiskIndicators" ? "active" : "")">
+                                <a href="/TalentEcosystem/HiringRiskIndicators" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-shield-quarter"></i>
+                                    <div>@SharedLocalizer["HiringRiskIndicatorsMenu"]</div>
                                 </a>
                             </li>
                         }

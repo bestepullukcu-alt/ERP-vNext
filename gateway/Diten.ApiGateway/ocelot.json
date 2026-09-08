@@ -681,6 +681,646 @@
       "UpstreamScheme": "http"
     },
     {
+      "DownstreamPathTemplate": "/api/employee-onboarding",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/employee-onboarding",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/employee-onboarding/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/employee-onboarding/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/employment-changes",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/employment-changes",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/employment-changes/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/employment-changes/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/performance-reviews",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/performance-reviews",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/performance-reviews/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/performance-reviews/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/competency-skills",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/competency-skills",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/competency-skills/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/competency-skills/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/learning-training",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/learning-training",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/learning-training/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/learning-training/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/succession",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/succession",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/succession/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/succession/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/workforce-planning",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/workforce-planning",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/workforce-planning/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/workforce-planning/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/headcount-budget",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/headcount-budget",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/headcount-budget/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/headcount-budget/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/hr-kpi-analytics",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/hr-kpi-analytics",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/hr-kpi-analytics/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/hr-kpi-analytics/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/hr-documentation",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/hr-documentation",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/hr-documentation/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/hr-documentation/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/time-attendance-leave",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/time-attendance-leave",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/time-attendance-leave/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/time-attendance-leave/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/compensation-benefits",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/compensation-benefits",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/compensation-benefits/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/compensation-benefits/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/self-service",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/self-service",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/self-service/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/self-service/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/hr-case-management",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/hr-case-management",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/hr-case-management/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/hr-case-management/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/hr-compliance",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/hr-compliance",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/hr-compliance/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/hr-compliance/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/development-plans",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/development-plans",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/development-plans/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5059
+        }
+      ],
+      "UpstreamPathTemplate": "/api/development-plans/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
       "DownstreamPathTemplate": "/api/tep-shell-metadata",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -710,6 +1350,86 @@
         }
       ],
       "UpstreamPathTemplate": "/api/tep-shell-metadata/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/talent-data-foundation",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5060
+        }
+      ],
+      "UpstreamPathTemplate": "/api/talent-data-foundation",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/talent-data-foundation/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5060
+        }
+      ],
+      "UpstreamPathTemplate": "/api/talent-data-foundation/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/hiring-risk-indicators",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5060
+        }
+      ],
+      "UpstreamPathTemplate": "/api/hiring-risk-indicators",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/hiring-risk-indicators/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5060
+        }
+      ],
+      "UpstreamPathTemplate": "/api/hiring-risk-indicators/{everything}",
       "UpstreamHttpMethod": [
         "GET",
         "POST",

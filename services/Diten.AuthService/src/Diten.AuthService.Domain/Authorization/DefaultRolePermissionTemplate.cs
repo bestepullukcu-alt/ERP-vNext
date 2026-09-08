@@ -18,7 +18,7 @@ public static class DefaultRolePermissionTemplate
     public const string ReadAction = "read";
 
     /// <summary>Modules whose permissions the tenant Admin role receives in full.</summary>
-    public static readonly IReadOnlyList<string> AdminModules = new[] { "auth", "mdm" };
+    public static readonly IReadOnlyList<string> AdminModules = new[] { "auth", "mdm", "hcm" };
 
     /// <summary>
     /// Returns the catalog permissions that <paramref name="roleName"/> should be granted.

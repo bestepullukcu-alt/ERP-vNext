@@ -51,6 +51,9 @@ window.DitenDataTable = (function () {
     }
 
     function unwrapResponseData(json) {
+        // A successful ajax means auth is working; clear the 401 reload-loop guard so a
+        // genuine later token expiry can refresh once again.
+        window.DtDefaults?.clearAuthReloadGuard?.();
         if (json?.data?.data) return json.data.data;
         if (json?.data) return Array.isArray(json.data) ? json.data : [json.data];
         return Array.isArray(json) ? json : [];

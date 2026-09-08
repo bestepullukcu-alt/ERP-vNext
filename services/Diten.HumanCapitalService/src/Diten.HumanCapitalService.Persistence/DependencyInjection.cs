@@ -27,6 +27,11 @@ public static class DependencyInjection
         };
 
         var mongoClientSettings = MongoClientSettings.FromConnectionString(mongoSettings.ConnectionString);
+        // Force standard (subtype 4) GUID representation for Find-filter constants so read
+        // filters match the subtype-4 GUIDs written for _id/TenantId. Without this, reads
+        // (list/get/exists/evaluate/delete) silently fail to match written records.
+        // Mirrors Auth/Platform/DevEnablement persistence configuration.
+        mongoClientSettings.GuidRepresentation = GuidRepresentation.Standard;
         var mongoClient = new MongoClient(mongoClientSettings);
         var database = mongoClient.GetDatabase(mongoSettings.DatabaseName);
 
@@ -39,6 +44,22 @@ public static class DependencyInjection
         services.AddScoped<IApplicantIntakeReadinessMetadataRepository, MongoApplicantIntakeReadinessMetadataRepository>();
         services.AddScoped<ICandidatePipelineReadinessMetadataRepository, MongoCandidatePipelineReadinessMetadataRepository>();
         services.AddScoped<IOfferReadinessMetadataRepository, MongoOfferReadinessMetadataRepository>();
+        services.AddScoped<IEmployeeOnboardingReadinessMetadataRepository, MongoEmployeeOnboardingReadinessMetadataRepository>();
+        services.AddScoped<IEmploymentChangeReadinessMetadataRepository, MongoEmploymentChangeReadinessMetadataRepository>();
+        services.AddScoped<IPerformanceReviewReadinessMetadataRepository, MongoPerformanceReviewReadinessMetadataRepository>();
+        services.AddScoped<ICompetencySkillsReadinessMetadataRepository, MongoCompetencySkillsReadinessMetadataRepository>();
+        services.AddScoped<IDevelopmentPlanReadinessMetadataRepository, MongoDevelopmentPlanReadinessMetadataRepository>();
+        services.AddScoped<ILearningTrainingReadinessMetadataRepository, MongoLearningTrainingReadinessMetadataRepository>();
+        services.AddScoped<ISuccessionReadinessMetadataRepository, MongoSuccessionReadinessMetadataRepository>();
+        services.AddScoped<IWorkforcePlanningReadinessMetadataRepository, MongoWorkforcePlanningReadinessMetadataRepository>();
+        services.AddScoped<IHeadcountBudgetReadinessMetadataRepository, MongoHeadcountBudgetReadinessMetadataRepository>();
+        services.AddScoped<IHrKpiAnalyticsReadinessMetadataRepository, MongoHrKpiAnalyticsReadinessMetadataRepository>();
+        services.AddScoped<IHrDocumentationReadinessMetadataRepository, MongoHrDocumentationReadinessMetadataRepository>();
+        services.AddScoped<ITimeAttendanceLeaveReadinessMetadataRepository, MongoTimeAttendanceLeaveReadinessMetadataRepository>();
+        services.AddScoped<ICompensationBenefitsReadinessMetadataRepository, MongoCompensationBenefitsReadinessMetadataRepository>();
+        services.AddScoped<ISelfServiceReadinessMetadataRepository, MongoSelfServiceReadinessMetadataRepository>();
+        services.AddScoped<IHrCaseManagementReadinessMetadataRepository, MongoHrCaseManagementReadinessMetadataRepository>();
+        services.AddScoped<IHrComplianceReadinessMetadataRepository, MongoHrComplianceReadinessMetadataRepository>();
 
         return services;
     }

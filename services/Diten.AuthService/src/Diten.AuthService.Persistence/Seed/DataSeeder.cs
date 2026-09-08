@@ -69,7 +69,135 @@ public static class DataSeeder
             new("Platform", "BusinessReferenceData.Import", "Preview", "Preview Business Reference Data Import", "Permission to preview BusinessReferenceData imports"),
             new("Platform", "BusinessReferenceData.Import", "Commit", "Commit Business Reference Data Import", "Permission to commit BusinessReferenceData imports"),
             new("Platform", "BusinessReferenceData.Usage", "Register", "Register Business Reference Data Usage", "Permission to register BusinessReferenceData usage"),
-            new("Platform", "BusinessReferenceData.Consumer", "Read", "Read Published Business Reference Data", "Permission to consume published BusinessReferenceData values")
+            new("Platform", "BusinessReferenceData.Consumer", "Read", "Read Published Business Reference Data", "Permission to consume published BusinessReferenceData values"),
+
+            // HCM module permissions — registered so SuperAdmin (full catalog) and tenant Admin roles
+            // can see/use the HR modules. Keys mirror the *Guard permission constants used by the HCM API.
+            new("hcm", "applicant-intake", "audit.read", "Applicant Intake Audit Read", null),
+            new("hcm", "applicant-intake", "evaluate", "Applicant Intake Evaluate", null),
+            new("hcm", "applicant-intake", "manage", "Applicant Intake Manage", null),
+            new("hcm", "applicant-intake", "read", "Applicant Intake Read", null),
+
+            new("hcm", "candidate-pipeline", "audit.read", "Candidate Pipeline Audit Read", null),
+            new("hcm", "candidate-pipeline", "evaluate", "Candidate Pipeline Evaluate", null),
+            new("hcm", "candidate-pipeline", "manage", "Candidate Pipeline Manage", null),
+            new("hcm", "candidate-pipeline", "read", "Candidate Pipeline Read", null),
+
+            new("hcm", "competency-skills", "audit.read", "Competency Skills Audit Read", null),
+            new("hcm", "competency-skills", "evaluate", "Competency Skills Evaluate", null),
+            new("hcm", "competency-skills", "manage", "Competency Skills Manage", null),
+            new("hcm", "competency-skills", "read", "Competency Skills Read", null),
+
+            new("hcm", "development-plans", "audit.read", "Development Plans Audit Read", null),
+            new("hcm", "development-plans", "evaluate", "Development Plans Evaluate", null),
+            new("hcm", "development-plans", "manage", "Development Plans Manage", null),
+            new("hcm", "development-plans", "read", "Development Plans Read", null),
+
+            new("hcm", "employee-onboarding", "audit.read", "Employee Onboarding Audit Read", null),
+            new("hcm", "employee-onboarding", "evaluate", "Employee Onboarding Evaluate", null),
+            new("hcm", "employee-onboarding", "manage", "Employee Onboarding Manage", null),
+            new("hcm", "employee-onboarding", "read", "Employee Onboarding Read", null),
+
+            new("hcm", "employee-projections", "archive", "Employee Projections Archive", null),
+            new("hcm", "employee-projections", "manage", "Employee Projections Manage", null),
+            new("hcm", "employee-projections", "read", "Employee Projections Read", null),
+            new("hcm", "employee-projections", "source-link.manage", "Employee Projections Source Link Manage", null),
+
+            new("hcm", "employment-changes", "audit.read", "Employment Changes Audit Read", null),
+            new("hcm", "employment-changes", "evaluate", "Employment Changes Evaluate", null),
+            new("hcm", "employment-changes", "manage", "Employment Changes Manage", null),
+            new("hcm", "employment-changes", "read", "Employment Changes Read", null),
+
+            new("hcm", "learning-training", "audit.read", "Learning Training Audit Read", null),
+            new("hcm", "learning-training", "evaluate", "Learning Training Evaluate", null),
+            new("hcm", "learning-training", "manage", "Learning Training Manage", null),
+            new("hcm", "learning-training", "read", "Learning Training Read", null),
+
+            new("hcm", "offboarding", "archive", "Offboarding Archive", null),
+            new("hcm", "offboarding", "handoff.manage", "Offboarding Handoff Manage", null),
+            new("hcm", "offboarding", "manage", "Offboarding Manage", null),
+            new("hcm", "offboarding", "read", "Offboarding Read", null),
+            new("hcm", "offboarding", "review", "Offboarding Review", null),
+
+            new("hcm", "offer-management", "audit.read", "Offer Management Audit Read", null),
+            new("hcm", "offer-management", "evaluate", "Offer Management Evaluate", null),
+            new("hcm", "offer-management", "manage", "Offer Management Manage", null),
+            new("hcm", "offer-management", "read", "Offer Management Read", null),
+
+            new("hcm", "performance-reviews", "audit.read", "Performance Reviews Audit Read", null),
+            new("hcm", "performance-reviews", "evaluate", "Performance Reviews Evaluate", null),
+            new("hcm", "performance-reviews", "manage", "Performance Reviews Manage", null),
+            new("hcm", "performance-reviews", "read", "Performance Reviews Read", null),
+
+            new("hcm", "position-assignments", "archive", "Position Assignments Archive", null),
+            new("hcm", "position-assignments", "manage", "Position Assignments Manage", null),
+            new("hcm", "position-assignments", "read", "Position Assignments Read", null),
+            new("hcm", "position-assignments", "reference-link.manage", "Position Assignments Reference Link Manage", null),
+
+            new("hcm", "sensitive-access", "audit.read", "Sensitive Access Audit Read", null),
+            new("hcm", "sensitive-access", "manage", "Sensitive Access Manage", null),
+            new("hcm", "sensitive-access", "read", "Sensitive Access Read", null),
+            new("hcm", "sensitive-access", "review", "Sensitive Access Review", null),
+
+            new("hcm", "succession", "audit.read", "Succession Audit Read", null),
+            new("hcm", "succession", "evaluate", "Succession Evaluate", null),
+            new("hcm", "succession", "manage", "Succession Manage", null),
+            new("hcm", "succession", "read", "Succession Read", null),
+
+            new("hcm", "workforce-planning", "audit.read", "Workforce Planning Audit Read", null),
+            new("hcm", "workforce-planning", "evaluate", "Workforce Planning Evaluate", null),
+            new("hcm", "workforce-planning", "manage", "Workforce Planning Manage", null),
+            new("hcm", "workforce-planning", "read", "Workforce Planning Read", null),
+
+            new("hcm", "headcount-budget", "audit.read", "Headcount Budget Audit Read", null),
+            new("hcm", "headcount-budget", "evaluate", "Headcount Budget Evaluate", null),
+            new("hcm", "headcount-budget", "manage", "Headcount Budget Manage", null),
+            new("hcm", "headcount-budget", "read", "Headcount Budget Read", null),
+
+            new("hcm", "hr-kpi-analytics", "audit.read", "HR KPI Analytics Audit Read", null),
+            new("hcm", "hr-kpi-analytics", "evaluate", "HR KPI Analytics Evaluate", null),
+            new("hcm", "hr-kpi-analytics", "manage", "HR KPI Analytics Manage", null),
+            new("hcm", "hr-kpi-analytics", "read", "HR KPI Analytics Read", null),
+
+            new("hcm", "hr-documentation", "audit.read", "HR Documentation Audit Read", null),
+            new("hcm", "hr-documentation", "evaluate", "HR Documentation Evaluate", null),
+            new("hcm", "hr-documentation", "manage", "HR Documentation Manage", null),
+            new("hcm", "hr-documentation", "read", "HR Documentation Read", null),
+
+            new("hcm", "time-attendance-leave", "audit.read", "Time Attendance Leave Audit Read", null),
+            new("hcm", "time-attendance-leave", "evaluate", "Time Attendance Leave Evaluate", null),
+            new("hcm", "time-attendance-leave", "manage", "Time Attendance Leave Manage", null),
+            new("hcm", "time-attendance-leave", "read", "Time Attendance Leave Read", null),
+
+            new("hcm", "compensation-benefits", "audit.read", "Compensation Benefits Audit Read", null),
+            new("hcm", "compensation-benefits", "evaluate", "Compensation Benefits Evaluate", null),
+            new("hcm", "compensation-benefits", "manage", "Compensation Benefits Manage", null),
+            new("hcm", "compensation-benefits", "read", "Compensation Benefits Read", null),
+
+            new("hcm", "self-service", "audit.read", "Self Service Audit Read", null),
+            new("hcm", "self-service", "evaluate", "Self Service Evaluate", null),
+            new("hcm", "self-service", "manage", "Self Service Manage", null),
+            new("hcm", "self-service", "read", "Self Service Read", null),
+
+            new("hcm", "hr-case-management", "audit.read", "HR Case Management Audit Read", null),
+            new("hcm", "hr-case-management", "evaluate", "HR Case Management Evaluate", null),
+            new("hcm", "hr-case-management", "manage", "HR Case Management Manage", null),
+            new("hcm", "hr-case-management", "read", "HR Case Management Read", null),
+
+            new("hcm", "hr-compliance", "audit.read", "HR Compliance Audit Read", null),
+            new("hcm", "hr-compliance", "evaluate", "HR Compliance Evaluate", null),
+            new("hcm", "hr-compliance", "manage", "HR Compliance Manage", null),
+            new("hcm", "hr-compliance", "read", "HR Compliance Read", null),
+
+            new("tep", "talent-data-foundation", "audit.read", "Talent Data Foundation Audit Read", null),
+            new("tep", "talent-data-foundation", "evaluate", "Talent Data Foundation Evaluate", null),
+            new("tep", "talent-data-foundation", "manage", "Talent Data Foundation Manage", null),
+            new("tep", "talent-data-foundation", "read", "Talent Data Foundation Read", null),
+
+            new("tep", "hiring-risk-indicators", "audit.read", "Hiring Risk Indicators Audit Read", null),
+            new("tep", "hiring-risk-indicators", "evaluate", "Hiring Risk Indicators Evaluate", null),
+            new("tep", "hiring-risk-indicators", "manage", "Hiring Risk Indicators Manage", null),
+            new("tep", "hiring-risk-indicators", "read", "Hiring Risk Indicators Read", null)
         };
 
         foreach (var p in permissions)
@@ -117,7 +245,7 @@ public static class DataSeeder
             user = null;
         }
 
-        var passwordHash = "$2a$12$uD4d.4D6nCmLCghVNGQDpu8mahNJkloI17g.dgIRz3ye1bZ0cXuay";
+        var passwordHash = "$2a$12$kvAlA8eVqqZMPMwLAHTm4.BSPrCZ/mjE5eJ0GI8zpv8uw./BhUTLS"; // bcrypt("Admin123!")
 
         if (user == null)
         {

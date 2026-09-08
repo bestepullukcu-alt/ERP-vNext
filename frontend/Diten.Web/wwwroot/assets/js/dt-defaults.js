@@ -34,8 +34,35 @@ window.DtDefaults = (function () {
         window.location.href = loginPath + '?returnUrl=' + returnUrl;
     }
 
+    // Loop guard: a successful token refresh followed by another 401 means a fresh
+    // token is NOT what is missing (e.g. a downstream auth/config mismatch). Reloading
+    // again would spin forever, so after one refresh+reload cycle we go to login instead.
+    var AUTH_RELOAD_KEY = 'dt_auth_reload_ts';
+    var AUTH_RELOAD_WINDOW_MS = 20000;
+
+    function readAuthReloadTs() {
+        try { return parseInt(sessionStorage.getItem(AUTH_RELOAD_KEY) || '0', 10) || 0; }
+        catch (e) { return 0; }
+    }
+    function setAuthReloadTs(value) {
+        try {
+            if (value) sessionStorage.setItem(AUTH_RELOAD_KEY, String(value));
+            else sessionStorage.removeItem(AUTH_RELOAD_KEY);
+        } catch (e) { /* private mode / disabled storage: fall back to no-op */ }
+    }
+    // Called on any successful DataTable ajax so a genuine later expiry can refresh again.
+    function clearAuthReloadGuard() { setAuthReloadTs(0); }
+
     function refreshTokenAndReload() {
         if (_authRefreshInFlight) return _authRefreshInFlight;
+
+        // Already refreshed+reloaded once recently and still unauthorized → stop the loop.
+        var lastReloadTs = readAuthReloadTs();
+        if (lastReloadTs && (Date.now() - lastReloadTs) < AUTH_RELOAD_WINDOW_MS) {
+            setAuthReloadTs(0);
+            redirectToLogin();
+            return Promise.resolve();
+        }
 
         _authRefreshInFlight = fetch('/account/refresh', {
             method: 'POST',
@@ -52,9 +79,13 @@ window.DtDefaults = (function () {
                 if (data && data.user) {
                     window.CurrentUser = data.user;
                 }
+                // Mark that this reload was triggered by an auth refresh; if the very next
+                // load 401s again inside the window, we redirect to login instead of looping.
+                setAuthReloadTs(Date.now());
                 window.location.reload();
             })
             .catch(function () {
+                setAuthReloadTs(0);
                 redirectToLogin();
             })
             .finally(function () {
@@ -746,6 +777,7 @@ window.DtDefaults = (function () {
         responsiveRenderer: responsiveRenderer,
         updateVisualState: updateVisualState,
         refreshButtonGroupRadii: refreshButtonGroupRadii,
-        handleUnauthorized: refreshTokenAndReload
+        handleUnauthorized: refreshTokenAndReload,
+        clearAuthReloadGuard: clearAuthReloadGuard
     };
 })();
