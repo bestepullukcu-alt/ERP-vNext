@@ -200,6 +200,12 @@ public static class ProductItemSkuMasterModels
         int SortOrder,
         int MaximumDecimalPrecision);
 
+    public sealed record GskuMutationOptionsDto(
+        Guid GskuId,
+        int GskuVersion,
+        int RevisionVersion,
+        IReadOnlyList<GskuCreateUomOptionDto> Uoms);
+
     public sealed record GskuCreateOptionsDto(
         IReadOnlyList<GskuCreateGlobalProductOptionDto> GlobalProducts,
         IReadOnlyList<GskuCreateUomOptionDto> Uoms);

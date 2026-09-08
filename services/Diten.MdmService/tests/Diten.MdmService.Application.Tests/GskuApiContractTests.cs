@@ -19,6 +19,23 @@ namespace Diten.MdmService.Application.Tests;
 
 public sealed class GskuApiContractTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Options_routes_bind_target_and_operation_without_client_permission(bool correction)
+    {
+        var mediator = DispatchProxy.Create<IMediator, CapturingMediatorProxy>();
+        var capture = (CapturingMediatorProxy)(object)mediator;
+        var controller = new GskusController(mediator);
+        var id = Guid.NewGuid();
+        await Assert.ThrowsAsync<CapturedRequestException>(() => correction
+            ? controller.GetCorrectionOptions(id, default) : controller.GetEditOptions(id, default));
+        var query = Assert.IsType<GetGskuMutationOptionsQuery>(capture.Request);
+        Assert.Equal(id, query.GskuId);
+        Assert.Equal(correction ? GskuMutationOptionsOperation.Correction : GskuMutationOptionsOperation.Edit, query.Operation);
+        Assert.DoesNotContain(typeof(GetGskuMutationOptionsQuery).GetProperties(), x => x.Name.Contains("Permission"));
+    }
+
     [Fact]
     public void Lifecycle_filter_rejects_undefined_enum_values()
     {
@@ -38,7 +55,11 @@ public sealed class GskuApiContractTests
         var routes = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .Select(method => (method.Name, Http: Assert.Single(method.GetCustomAttributes<HttpMethodAttribute>())))
             .ToArray();
-        Assert.Equal(10, routes.Length);
+        Assert.Equal(12, routes.Length);
+        Assert.Contains(routes, x => x.Name == nameof(GskusController.GetEditOptions)
+            && x.Http.Template == "{id:guid}/edit-options" && x.Http.HttpMethods.Single() == "GET");
+        Assert.Contains(routes, x => x.Name == nameof(GskusController.GetCorrectionOptions)
+            && x.Http.Template == "{id:guid}/correction-options" && x.Http.HttpMethods.Single() == "GET");
         Assert.Contains(routes, x => x.Name == nameof(GskusController.GetAll) && x.Http.Template is null && x.Http.HttpMethods.Single() == "GET");
         Assert.Contains(routes, x => x.Name == nameof(GskusController.GetById) && x.Http.Template == "{id:guid}" && x.Http.HttpMethods.Single() == "GET");
         Assert.Contains(routes, x => x.Name == nameof(GskusController.GetCreateOptions) && x.Http.Template == "create-options" && x.Http.HttpMethods.Single() == "GET");

@@ -3053,3 +3053,34 @@ Validation 2026-09-08: workflow client contract suite 36 passed / 0 failed / 0 s
 Platform security/FU01/FU21 regressions 143/0/0; Platform Release build succeeded.
 Ten new cases exercise real owner RS256/tenant/delegated validation, strict parsing or exact policy;
 four new invalid-profile cases reject before HTTP. Existing client behavior remains covered.
+## GSKU operation-bound options amendment — approved 2026-09-08
+
+The user authorizes separate target-bound draft-edit and correction UoM options. Create
+retains its existing create-only selector and trusted scope contract. Immutable parent
+selection is not fetched for edit/correction. No client-supplied permission is accepted.
+GET `{id}/edit-options` requires `mdm.gskus.update`; GET `{id}/correction-options`
+requires `mdm.gskus.request-correction`. The server binds the target, resolves the exact
+operation permission, verifies tenant/product scope and persisted pair/action fences,
+then returns only target/version evidence and verified UoM choices. No grant, config,
+data mutation or operation execution is authorized by fetching choices.
+
+Exact backend runtime/test allow-list for this amendment:
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/GskusController.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/QueryHandlers/GetGskuCreateOptionsHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Queries/GetGskuCreateOptionsQuery.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Validators/GetGskuCreateOptionsValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/ProductItemSkuMasterModels.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GskuAuthorizationTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GskuApiContractTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GskuMutationOptionsTests.cs`
+
+The existing pack is the only governance path. Frontend/Gateway integration remains
+a separate approved commit.
+
+Validation 2026-09-08: MDM Release build succeeded (0 errors); focused mutation-options,
+API/authorization, existing create facade and scope consumer tests: 66 passed / 0 failed /
+0 skipped. These are isolated unit/contract tests with repository/provider doubles,
+not real-Mongo or live acceptance evidence. The two exact route methods select the
+operation server-side; the handler uses the real scope guard and candidate facade.
+The existing first-GSKU concurrent ordinal allocation flakiness remains open; these
+option tests do not diagnose or close it.

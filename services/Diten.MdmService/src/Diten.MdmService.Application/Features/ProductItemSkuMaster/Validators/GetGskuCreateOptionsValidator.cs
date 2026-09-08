@@ -3,6 +3,15 @@ using FluentValidation;
 
 namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Validators;
 
+public sealed class GetGskuMutationOptionsValidator : AbstractValidator<GetGskuMutationOptionsQuery>
+{
+    public GetGskuMutationOptionsValidator()
+    {
+        RuleFor(x => x.GskuId).NotEmpty();
+        RuleFor(x => x.Operation).IsInEnum();
+    }
+}
+
 public sealed class GetGskuCreateOptionsValidator : AbstractValidator<GetGskuCreateOptionsQuery>
 {
     public GetGskuCreateOptionsValidator()

@@ -12,6 +12,8 @@ public sealed class GskuAuthorizationTests
     [InlineData(nameof(GskusController.GetAll), "mdm.gskus.read")]
     [InlineData(nameof(GskusController.GetById), "mdm.gskus.read")]
     [InlineData(nameof(GskusController.GetCreateOptions), "mdm.gskus.create")]
+    [InlineData(nameof(GskusController.GetEditOptions), "mdm.gskus.update")]
+    [InlineData(nameof(GskusController.GetCorrectionOptions), "mdm.gskus.request-correction")]
     [InlineData(nameof(GskusController.CreateDraft), "mdm.gskus.create")]
     [InlineData(nameof(GskusController.UpdateDraft), "mdm.gskus.update")]
     [InlineData(nameof(GskusController.SubmitIdentity), "mdm.gskus.submit")]

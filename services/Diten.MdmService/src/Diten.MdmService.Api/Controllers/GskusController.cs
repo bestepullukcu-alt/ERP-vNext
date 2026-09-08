@@ -42,6 +42,18 @@ public sealed class GskusController : CustomBaseController
         CancellationToken cancellationToken) =>
         CreateActionResultInstance(await _mediator.Send(query, cancellationToken));
 
+    [HttpGet("{id:guid}/edit-options")]
+    [HasPermission(FirstGskuIdentityLifecyclePermissions.Update)]
+    public async Task<IActionResult> GetEditOptions(Guid id, CancellationToken cancellationToken) =>
+        CreateActionResultInstance(await _mediator.Send(
+            new GetGskuMutationOptionsQuery(id, GskuMutationOptionsOperation.Edit), cancellationToken));
+
+    [HttpGet("{id:guid}/correction-options")]
+    [HasPermission(GskuCorrectionPermissions.Request)]
+    public async Task<IActionResult> GetCorrectionOptions(Guid id, CancellationToken cancellationToken) =>
+        CreateActionResultInstance(await _mediator.Send(
+            new GetGskuMutationOptionsQuery(id, GskuMutationOptionsOperation.Correction), cancellationToken));
+
     [HttpPost("drafts")]
     [HasPermission("mdm.gskus.create")]
     public async Task<IActionResult> CreateDraft(
