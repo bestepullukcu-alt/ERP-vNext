@@ -480,6 +480,16 @@ Decision: Gateway change is unnecessary and forbidden.
   Real-Mongo tests used the existing isolated fixtures; no operational migration, configuration, credential, tenant
   grant, business data, commit or push action was performed.
 
+### MOD-0290 GSKU lifecycle audit-map amendment — approved code-start (2026-09-08)
+
+Only the strict `TrustedSourceAuditIntentOperationMap` and its contract test may add the 17 exact
+`ProductDefinitionRevision`/`Gsku` lifecycle pairs specified by MOD-0290 19.17: Revision submit/approve/reject/
+withdraw/retire; GSKU submit/approve/reject/withdraw; correction request/applied/rejected/manual-reconciliation;
+retirement request/rejected/manual-reconciliation; and final GSKU retire. The first fifteen map to
+`LifecycleTransition`; the two retire pairs map to `Deactivate`. Numeric, case-insensitive, wildcard, LSKU and ABB
+aliases remain rejected. This amendment creates no source client, credential, transport, configuration or runtime
+activation.
+
 ## 20. Follow-up Items
 
 - MOD-0290 Class C client/worker/operational activation remains in the approved DCP-004 sequence and its owning pack, not here.

@@ -18,8 +18,25 @@ public sealed class TrustedSourceAuditIntentContractTests
         yield return ["CodeReservation", "CodeBurned", "CodeReservation", AuditOperation.Deactivate];
         yield return ["GlobalProduct", "GlobalProductDraftCreated", "GlobalProduct", AuditOperation.Create];
         yield return ["ProductDefinitionRevision", "ProductDefinitionRevisionDraftCreated", "ProductDefinitionRevision", AuditOperation.Create];
+        yield return ["ProductDefinitionRevision", "ProductDefinitionRevisionIdentitySubmitted", "ProductDefinitionRevision", AuditOperation.LifecycleTransition];
+        yield return ["ProductDefinitionRevision", "ProductDefinitionRevisionIdentityApproved", "ProductDefinitionRevision", AuditOperation.LifecycleTransition];
+        yield return ["ProductDefinitionRevision", "ProductDefinitionRevisionIdentityRejected", "ProductDefinitionRevision", AuditOperation.LifecycleTransition];
+        yield return ["ProductDefinitionRevision", "ProductDefinitionRevisionIdentityApprovalWithdrawn", "ProductDefinitionRevision", AuditOperation.LifecycleTransition];
+        yield return ["ProductDefinitionRevision", "ProductDefinitionRevisionIdentityRetired", "ProductDefinitionRevision", AuditOperation.Deactivate];
         yield return ["Gsku", "GskuDraftCreated", "Gsku", AuditOperation.Create];
         yield return ["Gsku", "GskuDraftUpdated", "Gsku", AuditOperation.Update];
+        yield return ["Gsku", "GskuIdentitySubmitted", "Gsku", AuditOperation.LifecycleTransition];
+        yield return ["Gsku", "GskuIdentityApproved", "Gsku", AuditOperation.LifecycleTransition];
+        yield return ["Gsku", "GskuIdentityRejected", "Gsku", AuditOperation.LifecycleTransition];
+        yield return ["Gsku", "GskuIdentityApprovalWithdrawn", "Gsku", AuditOperation.LifecycleTransition];
+        yield return ["Gsku", "GskuCorrectionRequested", "Gsku", AuditOperation.LifecycleTransition];
+        yield return ["Gsku", "GskuCorrectionApplied", "Gsku", AuditOperation.LifecycleTransition];
+        yield return ["Gsku", "GskuCorrectionRejected", "Gsku", AuditOperation.LifecycleTransition];
+        yield return ["Gsku", "GskuCorrectionManualReconciliationRequired", "Gsku", AuditOperation.LifecycleTransition];
+        yield return ["Gsku", "GskuRetirementRequested", "Gsku", AuditOperation.LifecycleTransition];
+        yield return ["Gsku", "GskuRetirementRejected", "Gsku", AuditOperation.LifecycleTransition];
+        yield return ["Gsku", "GskuRetirementManualReconciliationRequired", "Gsku", AuditOperation.LifecycleTransition];
+        yield return ["Gsku", "GskuIdentityRetired", "Gsku", AuditOperation.Deactivate];
         yield return ["FinishedGood", "FinishedGoodDraftCreated", "FinishedGood", AuditOperation.Create];
         yield return ["Lsku", "LskuDraftCreated", "Lsku", AuditOperation.Create];
         yield return ["ProductLegalEntityScopePolicy", "ProductLegalEntityScopePolicyCreated", "ProductLegalEntityScopePolicy", AuditOperation.Create];
@@ -47,6 +64,13 @@ public sealed class TrustedSourceAuditIntentContractTests
     [InlineData("Gsku", "gskudraftcreated")]
     [InlineData("7", "8")]
     [InlineData("GlobalProduct", "CodeReserved")]
+    [InlineData("Gsku", "21")]
+    [InlineData("Gsku", "gskuidentitysubmitted")]
+    [InlineData("ProductDefinitionRevision", "GskuIdentitySubmitted")]
+    [InlineData("ProductDefinitionRevision", "GskuIdentityApprovalWithdrawn")]
+    [InlineData("Gsku", "ProductDefinitionRevisionIdentityApprovalWithdrawn")]
+    [InlineData("ProductDefinitionRevision", "GskuCorrectionApplied")]
+    [InlineData("Gsku ", "GskuIdentitySubmitted")]
     [InlineData("ProductLegalEntityScopeRolloutState ", "ProductLegalEntityScopeEnforcementActivated")]
     public void OperationMap_RejectsAliasCaseNumericAndInvalidPairs(string aggregateType, string operation)
     {

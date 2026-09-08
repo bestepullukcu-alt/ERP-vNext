@@ -2797,6 +2797,13 @@ screens, Auth/Platform/MDM runtime, every Gateway route except the named nested 
 configuration/provisioning paths. Root `/api/global-products` remains `GET, POST, OPTIONS`; GSKU and all other
 route method sets remain untouched.
 
+### GSKU lifecycle FU01 mapping prerequisite — approved code-start (2026-09-08)
+
+The GSKU lifecycle backend may depend only on the FU01 amendment's 17 exact Revision/GSKU audit-map pairs and its
+negative strict-mapping tests. It must not add LSKU, ABB, wildcard or numeric fallback mappings. This is a bounded
+provider acceptance prerequisite; it does not authorize Platform transport, service identity, configuration,
+provisioning or operational activation.
+
 ## 20. Follow-up Items
 
 These are references to existing backlog or owner decisions; this pack creates no new identity or provider pack.
