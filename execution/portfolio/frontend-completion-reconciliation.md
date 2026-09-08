@@ -557,3 +557,432 @@ Future follow-ups:
 - Notification/document integrations.
 - Export governance.
 - Real audit/evidence/retention integration.
+
+## 16. CAND-CAP-0024 End-to-End Completion
+
+- **Module:** CAND-CAP-0024 - Offer Management
+- **Recorded on:** 2026-09-02
+- **Reconciliation status:** PASS
+- **Open blockers:** none
+- **Implementation boundary:** this reconciliation note does not change runtime, backend, API, gateway, database, service, or frontend implementation files.
+
+Completed scope:
+
+- Governance pack: done.
+- Backend/API metadata-only slice: completed under `services/Diten.HumanCapitalService/**`.
+- Gateway exposure: completed for `/api/offer-management` and `/api/offer-management/{everything}`.
+- Frontend restricted read-only slice: completed under `Human Capital > Offer Management`.
+
+Runtime and permission boundary:
+
+- Runtime owner/key: `hcm.offer-management`.
+- Permission namespace:
+  - `hcm.offer-management.read`
+  - `hcm.offer-management.manage`
+  - `hcm.offer-management.evaluate`
+  - `hcm.offer-management.audit.read`
+- Backend `[HasPermission]` authorization remains authoritative.
+- Frontend permission checks remain UX-only visibility/disable guards.
+- GatewayUrl pattern is preserved; frontend does not call the HCM service port directly.
+- Gateway permission enforcement was not added.
+
+Backend/API evidence:
+
+- Build: PASS, 0 warning, 0 error.
+- OfferManagement targeted tests: PASS, 22/22.
+- Full HCM Application tests: PASS, 120/120.
+- Production in-memory repository scan: PASS.
+- Runtime literal scan: PASS, `CAND-CAP-0024|MOD-0302` returned no matches.
+
+Gateway evidence:
+
+- Route exposure: `/api/offer-management`.
+- Route exposure: `/api/offer-management/{everything}`.
+- Gateway JSON validation: PASS.
+- Gateway build: PASS.
+
+Frontend evidence:
+
+- Frontend build: PASS, 0 error, with 13 pre-existing Razor nullable warnings.
+- Read-only DataTable, detail/offcanvas, and summary cards are completed.
+- Used frontend endpoints are GET-only:
+  - `/api/offer-management`
+  - `/api/offer-management/{id}`
+  - `/api/offer-management/{id}/audit-metadata`
+- Frontend mutation scan: PASS.
+- Direct service URL scan: PASS.
+- OfferManagement scoped sensitive/raw marker scan: PASS.
+- Broad direct URL scan reports an existing demo JSON `sku: 75059` match; this is not a service URL.
+- Broad HumanCapital sensitive scan reports existing `credentials: include`
+  cookie-forwarding usage; these are not OfferManagement sensitive data exposure
+  findings.
+
+Data and workflow boundary:
+
+- Offer workflow execution was not started.
+- Approval workflow was not started.
+- Candidate-facing acceptance UX was not started.
+- Offer letter generation was not started.
+- Notification/document integration was not started.
+- Compensation/benefits/payroll payload persistence was not introduced.
+- Salary/compensation amount, benefits election, bank/payroll/tax details, and
+  offer letter body display or persistence were not introduced.
+- Raw provider payloads, credential/token/secret/password values, and PII-heavy
+  data exposure remain out of scope.
+
+Deferred and out-of-scope:
+
+- MOD-0027 Notification.
+- MOD-0263 Notification Provider / Delivery.
+- MOD-0029 Controlled Documents.
+- MOD-0262 External Docs Repository.
+
+Future follow-ups:
+
+- Real offer workflow.
+- Approval workflow.
+- Candidate-facing acceptance UX.
+- Offer letter generation.
+- Notification/document integrations.
+- Export governance.
+- Real audit/evidence/retention integration.
+
+## 17. CAND-CAP-0025 End-to-End Completion
+
+- **Module:** CAND-CAP-0025 - Employee Onboarding
+- **Recorded on:** 2026-09-02
+- **Reconciliation status:** PASS
+- **Open blockers:** none
+- **Implementation boundary:** this reconciliation note does not change runtime, backend, API, gateway, database, service, or frontend implementation files.
+
+Completed scope:
+
+- Governance pack: done.
+- Backend/API metadata-only slice: completed under `services/Diten.HumanCapitalService/**`.
+- Gateway exposure: completed for `/api/employee-onboarding` and `/api/employee-onboarding/{everything}`.
+- Frontend restricted read-only slice: completed under `Human Capital > Employee Onboarding`.
+
+Runtime and permission boundary:
+
+- Runtime owner/key: `hcm.employee-onboarding`.
+- Permission namespace:
+  - `hcm.employee-onboarding.read`
+  - `hcm.employee-onboarding.manage`
+  - `hcm.employee-onboarding.evaluate`
+  - `hcm.employee-onboarding.audit.read`
+- Backend `[HasPermission]` authorization remains authoritative.
+- Frontend permission checks remain UX-only visibility/disable guards.
+- GatewayUrl pattern is preserved; frontend does not call the HCM service port directly.
+- Gateway permission enforcement was not added.
+
+Backend/API evidence:
+
+- Build: PASS, 0 warning, 0 error.
+- EmployeeOnboarding targeted tests: PASS, 25/25.
+- Full HCM Application tests: PASS, 145/145.
+- Field-name drift closed: runtime contract uses `OnboardingReadinessVersion`; `EmployeeOnboardingReadinessVersion` is absent.
+- Production in-memory repository scan: PASS.
+- Runtime literal scan: PASS, `CAND-CAP-0025|MOD-0303` returned no matches.
+
+Gateway evidence:
+
+- Route exposure: `/api/employee-onboarding`.
+- Route exposure: `/api/employee-onboarding/{everything}`.
+- Gateway JSON validation: PASS.
+- Gateway build: PASS.
+
+Frontend evidence:
+
+- Frontend build: PASS, 0 error, with 13 pre-existing Razor nullable warnings.
+- JavaScript syntax check: PASS.
+- Read-only DataTable, detail/offcanvas, and summary cards are completed.
+- Used frontend endpoints are GET-only:
+  - `/api/employee-onboarding`
+  - `/api/employee-onboarding/{id}`
+  - `/api/employee-onboarding/{id}/audit-metadata`
+- Frontend mutation scan: PASS.
+- Direct service URL scan: PASS.
+- EmployeeOnboarding scoped sensitive/raw marker scan: PASS.
+- Broad direct URL scan reports an existing demo JSON `sku: 75059` match; this is not a service URL.
+- Broad HumanCapital sensitive scan reports existing `credentials: include` cookie-forwarding usage and Offboarding `checklist` metadata references; these are not EmployeeOnboarding exposure findings.
+
+Data and workflow boundary:
+
+- Real onboarding workflow was not started.
+- Checklist/task execution was not started.
+- Manager/employee action workflow was not started.
+- Candidate/employee-facing onboarding UX was not started.
+- Identity/account/access/device/equipment provisioning was not started.
+- Notification/document integration was not started.
+- Banking/payroll/tax payload display or persistence was not introduced.
+- Raw provider payload, attachment payload, free-text narrative, credential/token/secret/password values, and PII-heavy data exposure remain out of scope.
+
+Deferred and out-of-scope:
+
+- MOD-0027 Notification.
+- MOD-0263 Notification Provider / Delivery.
+- MOD-0029 Controlled Documents.
+- MOD-0262 External Docs Repository.
+
+Future follow-ups:
+
+- Real onboarding workflow.
+- Checklist/task execution.
+- Manager/employee action workflow.
+- Candidate/employee-facing onboarding UX.
+- Identity/account/access/device/equipment provisioning.
+- Notification/document integrations.
+- Export governance.
+- Real audit/evidence/retention integration.
+
+## 18. CAND-CAP-0026 End-to-End Completion
+
+- **Module:** CAND-CAP-0026 - Employment Change / Transfer / Promotion
+- **Recorded on:** 2026-09-03
+- **Reconciliation status:** PASS
+- **Open blockers:** none
+- **Implementation boundary:** this reconciliation note does not change runtime, backend, API, gateway, database, service, or frontend implementation files.
+
+Completed scope:
+
+- Governance pack: done.
+- Backend/API metadata-only slice: completed under `services/Diten.HumanCapitalService/**`.
+- Gateway exposure: completed for `/api/employment-changes` and `/api/employment-changes/{everything}`.
+- Frontend restricted read-only slice: completed under `Human Capital > Employment Changes`.
+
+Runtime and permission boundary:
+
+- Runtime owner/key: `hcm.employment-changes`.
+- Permission namespace:
+  - `hcm.employment-changes.read`
+  - `hcm.employment-changes.manage`
+  - `hcm.employment-changes.evaluate`
+  - `hcm.employment-changes.audit.read`
+- Backend `[HasPermission]` authorization remains authoritative.
+- Frontend permission checks remain UX-only visibility/disable guards.
+- GatewayUrl pattern is preserved; frontend does not call the HCM service port directly.
+- Gateway permission enforcement was not added.
+
+Backend/API evidence:
+
+- Build: PASS, 0 warning, 0 error.
+- EmploymentChange targeted tests: PASS, 29/29.
+- Full HCM Application tests: PASS, 174/174.
+- Production in-memory repository scan: PASS.
+- Runtime literal scan: PASS, `CAND-CAP-0026|MOD-0304` returned no matches.
+
+Gateway evidence:
+
+- Route exposure: `/api/employment-changes`.
+- Route exposure: `/api/employment-changes/{everything}`.
+- Gateway JSON validation: PASS.
+- Gateway build: PASS.
+
+Frontend evidence:
+
+- Frontend build: PASS, 0 warning, 0 error.
+- Read-only DataTable, detail/offcanvas, and summary cards are completed.
+- Used frontend endpoints are GET-only:
+  - `/api/employment-changes`
+  - `/api/employment-changes/{id}`
+  - `/api/employment-changes/{id}/audit-metadata`
+- Frontend mutation scan: PASS.
+- Direct service URL scan: PASS.
+- EmploymentChanges scoped sensitive/raw marker scan: PASS.
+- Broad direct URL scan reports an existing demo JSON `sku: 75059` match; this is not a service URL.
+- Broad HumanCapital sensitive scan reports existing `credentials: include` cookie-forwarding usage; these are not EmploymentChanges exposure findings.
+
+Data and workflow boundary:
+
+- Real employment change workflow was not started.
+- Transfer/promotion approval workflow was not started.
+- Position assignment mutation was not started.
+- Employee/manager action UX was not started.
+- Compensation/payroll/benefits payload display or persistence was not introduced.
+- Notification/document integration was not started.
+- Salary/compensation amount, payroll/tax data, benefits election, manager notes, free-text narrative, attachment payload, raw provider payload, credential/token/secret/password values, and PII-heavy data exposure remain out of scope.
+
+Deferred and out-of-scope:
+
+- MOD-0027 Notification.
+- MOD-0263 Notification Provider / Delivery.
+- MOD-0029 Controlled Documents.
+- MOD-0262 External Docs Repository.
+
+Future follow-ups:
+
+- Real employment change workflow.
+- Transfer/promotion approval workflow.
+- Position assignment integration.
+- Employee/manager action UX.
+- Compensation/payroll/benefits integrations.
+- Notification/document integrations.
+- Export governance.
+- Real audit/evidence/retention integration.
+
+## 19. CAND-CAP-0027 End-to-End Completion
+
+- **Module:** CAND-CAP-0027 - Performance Review Management
+- **Recorded on:** 2026-09-04
+- **Reconciliation status:** PASS
+- **Open blockers:** none
+- **Implementation boundary:** this reconciliation note does not change runtime, backend, API, gateway, database, service, or frontend implementation files.
+
+Completed scope:
+
+- Governance pack: done.
+- Backend/API metadata-only slice: completed under `services/Diten.HumanCapitalService/**`.
+- Gateway exposure: completed for `/api/performance-reviews` and `/api/performance-reviews/{everything}`.
+- Frontend restricted read-only slice: completed under `Human Capital > Performance Reviews`.
+
+Runtime and permission boundary:
+
+- Runtime owner/key: `hcm.performance-reviews`.
+- Permission namespace:
+  - `hcm.performance-reviews.read`
+  - `hcm.performance-reviews.manage`
+  - `hcm.performance-reviews.evaluate`
+  - `hcm.performance-reviews.audit.read`
+- Backend `[HasPermission]` authorization remains authoritative.
+- Frontend permission checks remain UX-only visibility/disable guards.
+- GatewayUrl pattern is preserved; frontend does not call the HCM service port directly.
+- Gateway permission enforcement was not added.
+
+Backend/API evidence:
+
+- Build: PASS, 0 warning, 0 error.
+- PerformanceReview targeted tests: PASS, 33/33.
+- Full HCM Application tests: PASS, 207/207.
+- Production in-memory repository scan: PASS.
+- Runtime literal scan: PASS, `CAND-CAP-0027|MOD-0306` returned no matches.
+
+Gateway evidence:
+
+- Route exposure: `/api/performance-reviews`.
+- Route exposure: `/api/performance-reviews/{everything}`.
+- Gateway JSON validation: PASS.
+- Gateway build: PASS.
+
+Frontend evidence:
+
+- Frontend build: PASS, 0 error, with 13 pre-existing unrelated Razor nullable warnings.
+- Read-only DataTable, detail/offcanvas, and summary cards are completed.
+- Used frontend endpoints are GET-only:
+  - `/api/performance-reviews`
+  - `/api/performance-reviews/{id}`
+  - `/api/performance-reviews/{id}/audit-metadata`
+- Frontend mutation scan: PASS.
+- Direct service URL scan: PASS.
+- PerformanceReviews scoped sensitive/raw marker scan: PASS.
+- Broad direct URL scan reports an existing demo JSON `sku: 75059` match; this is not a service URL.
+- Broad HumanCapital sensitive scan reports existing `credentials: include` cookie-forwarding usage and Offer Management boundary-state labels; these are not PerformanceReviews exposure findings.
+
+Data and workflow boundary:
+
+- Performance review cycle/runtime workflow was not started.
+- Goal scoring, rating, calibration, ranking, and automated decision behavior were not started.
+- Manager/employee review UX was not started.
+- Free-text review notes, appraisal narrative, and attachment payload display or persistence were not introduced.
+- Compensation/payroll/benefits payload display or persistence was not introduced.
+- Notification/document integration was not started.
+- Raw provider payload, credential/token/secret/password values, and PII-heavy data exposure remain out of scope.
+
+Deferred and out-of-scope:
+
+- MOD-0027 Notification.
+- MOD-0263 Notification Provider / Delivery.
+- MOD-0029 Controlled Documents.
+- MOD-0262 External Docs Repository.
+
+Future follow-ups:
+
+- Real performance review workflow.
+- Scoring/rating/calibration/ranking governance.
+- Manager/employee review UX.
+- Notification/document integrations.
+- Export governance.
+- Real audit/evidence/retention integration.
+
+## 20. CAND-CAP-0028 End-to-End Completion
+
+- **Module:** CAND-CAP-0028 - Competency & Skills Assessment
+- **Recorded on:** 2026-09-04
+- **Reconciliation status:** PASS
+- **Open blockers:** none
+- **Implementation boundary:** this reconciliation note does not change runtime, backend, API, gateway, database, service, or frontend implementation files.
+
+Completed scope:
+
+- Governance pack: done.
+- Backend/API metadata-only slice: completed under `services/Diten.HumanCapitalService/**`.
+- Gateway exposure: completed for `/api/competency-skills` and `/api/competency-skills/{everything}`.
+- Frontend restricted read-only slice: completed under `Human Capital > Competency Skills`.
+
+Runtime and permission boundary:
+
+- Runtime owner/key: `hcm.competency-skills`.
+- Permission namespace:
+  - `hcm.competency-skills.read`
+  - `hcm.competency-skills.manage`
+  - `hcm.competency-skills.evaluate`
+  - `hcm.competency-skills.audit.read`
+- Backend `[HasPermission]` authorization remains authoritative.
+- Frontend permission checks remain UX-only visibility/disable guards.
+- GatewayUrl pattern is preserved; frontend does not call the HCM service port directly.
+- Gateway permission enforcement was not added.
+
+Backend/API evidence:
+
+- Build: PASS, 0 warning, 0 error.
+- CompetencySkills targeted tests: PASS, 32/32.
+- Full HCM Application tests: PASS, 239/239.
+- Production in-memory repository scan: PASS.
+- Runtime literal scan: PASS, `CAND-CAP-0028|MOD-0307` returned no matches.
+
+Gateway evidence:
+
+- Route exposure: `/api/competency-skills`.
+- Route exposure: `/api/competency-skills/{everything}`.
+- Gateway JSON validation: PASS.
+- Gateway build: PASS.
+
+Frontend evidence:
+
+- Frontend build: PASS, 0 error, with 13 pre-existing unrelated Razor nullable warnings.
+- Read-only DataTable, detail/offcanvas, and summary cards are completed.
+- Used frontend endpoints are GET-only:
+  - `/api/competency-skills`
+  - `/api/competency-skills/{id}`
+  - `/api/competency-skills/{id}/audit-metadata`
+- Frontend mutation scan: PASS.
+- Direct service URL scan: PASS.
+- CompetencySkills scoped sensitive/raw marker scan: PASS.
+- Broad direct URL scan reports an existing demo JSON `sku: 75059` match; this is not a service URL.
+- Broad HumanCapital sensitive scan reports existing `credentials: include` cookie-forwarding usage; these are not CompetencySkills exposure findings.
+
+Data and workflow boundary:
+
+- Competency/skills workflow was not started.
+- Skill scoring, rating, ranking, calibration, and automated decision behavior were not started.
+- Manager/employee assessment UX was not started.
+- Free-text assessment notes, appraisal narrative, and attachment payload display or persistence were not introduced.
+- Skill score/rating/rank/calibration outcome/model output persistence was not introduced.
+- Notification/document integration was not started.
+- Raw provider payload, credential/token/secret/password values, and PII-heavy data exposure remain out of scope.
+
+Deferred and out-of-scope:
+
+- MOD-0027 Notification.
+- MOD-0263 Notification Provider / Delivery.
+- MOD-0029 Controlled Documents.
+- MOD-0262 External Docs Repository.
+
+Future follow-ups:
+
+- Real competency/skills assessment workflow.
+- Skill scoring/rating/ranking/calibration governance.
+- Automated decision approval.
+- Manager/employee assessment UX.
+- Notification/document integrations.
+- Export governance.
+- Real audit/evidence/retention integration.
