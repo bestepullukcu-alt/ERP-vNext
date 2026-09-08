@@ -168,4 +168,18 @@
   <data name="NewNodeDirection" xml:space="preserve"><value>方向</value></data>
   <data name="NewNodeAsSource" xml:space="preserve"><value>新节点 → 对应节点</value></data>
   <data name="NewNodeAsTarget" xml:space="preserve"><value>对应节点 → 新节点</value></data>
+  <data name="Branches" xml:space="preserve"><value>分支</value></data>
+  <data name="AddBranch" xml:space="preserve"><value>添加分支</value></data>
+  <data name="RemoveBranch" xml:space="preserve"><value>移除分支</value></data>
+  <data name="BranchNamePlaceholder" xml:space="preserve"><value>分支名称</value></data>
+  <data name="BranchesNote" xml:space="preserve"><value>每个分支是一个有序的概念类型序列。主干（至少两个不同类型）由所有分支推导得出。</value></data>
+  <data name="BranchesEmpty" xml:space="preserve"><value>尚无分支。添加一个分支以开始。</value></data>
+  <data name="BranchStepsEmpty" xml:space="preserve"><value>此分支尚无步骤。</value></data>
+  <data name="MinSelection" xml:space="preserve"><value>最小</value></data>
+  <data name="MaxSelection" xml:space="preserve"><value>最大</value></data>
+  <data name="Moderator" xml:space="preserve"><value>版主角色</value></data>
+  <data name="ForWhom" xml:space="preserve"><value>受众</value></data>
+  <data name="RefsCommaHint" xml:space="preserve"><value>以逗号分隔的引用</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>新版本</value></data>
+  <data name="BranchCountLabel" xml:space="preserve"><value>分支</value></data>
 </root>

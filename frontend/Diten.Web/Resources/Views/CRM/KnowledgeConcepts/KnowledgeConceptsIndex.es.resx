@@ -168,4 +168,18 @@
   <data name="NewNodeDirection" xml:space="preserve"><value>Dirección</value></data>
   <data name="NewNodeAsSource" xml:space="preserve"><value>Nodo nuevo → contraparte</value></data>
   <data name="NewNodeAsTarget" xml:space="preserve"><value>Contraparte → nodo nuevo</value></data>
+  <data name="Branches" xml:space="preserve"><value>Ramas</value></data>
+  <data name="AddBranch" xml:space="preserve"><value>Añadir rama</value></data>
+  <data name="RemoveBranch" xml:space="preserve"><value>Quitar rama</value></data>
+  <data name="BranchNamePlaceholder" xml:space="preserve"><value>Nombre de la rama</value></data>
+  <data name="BranchesNote" xml:space="preserve"><value>Cada rama es una secuencia ordenada de tipos de concepto. La columna (al menos dos tipos distintos) se deriva de todas las ramas.</value></data>
+  <data name="BranchesEmpty" xml:space="preserve"><value>Aún no hay ramas. Añade una rama para empezar.</value></data>
+  <data name="BranchStepsEmpty" xml:space="preserve"><value>Aún no hay pasos en esta rama.</value></data>
+  <data name="MinSelection" xml:space="preserve"><value>Mín</value></data>
+  <data name="MaxSelection" xml:space="preserve"><value>Máx</value></data>
+  <data name="Moderator" xml:space="preserve"><value>Roles de moderador</value></data>
+  <data name="ForWhom" xml:space="preserve"><value>Audiencia</value></data>
+  <data name="RefsCommaHint" xml:space="preserve"><value>Referencias separadas por comas</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Nueva versión</value></data>
+  <data name="BranchCountLabel" xml:space="preserve"><value>rama(s)</value></data>
 </root>

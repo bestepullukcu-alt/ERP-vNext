@@ -168,4 +168,18 @@
   <data name="NewNodeDirection" xml:space="preserve"><value>الاتجاه</value></data>
   <data name="NewNodeAsSource" xml:space="preserve"><value>العقدة الجديدة ← العقدة المقابلة</value></data>
   <data name="NewNodeAsTarget" xml:space="preserve"><value>العقدة المقابلة ← العقدة الجديدة</value></data>
+  <data name="Branches" xml:space="preserve"><value>الفروع</value></data>
+  <data name="AddBranch" xml:space="preserve"><value>إضافة فرع</value></data>
+  <data name="RemoveBranch" xml:space="preserve"><value>إزالة الفرع</value></data>
+  <data name="BranchNamePlaceholder" xml:space="preserve"><value>اسم الفرع</value></data>
+  <data name="BranchesNote" xml:space="preserve"><value>كل فرع هو تسلسل مرتب من أنواع المفاهيم. يُشتق العمود الفقري (نوعان مختلفان على الأقل) من جميع الفروع.</value></data>
+  <data name="BranchesEmpty" xml:space="preserve"><value>لا توجد فروع بعد. أضف فرعًا للبدء.</value></data>
+  <data name="BranchStepsEmpty" xml:space="preserve"><value>لا توجد خطوات في هذا الفرع بعد.</value></data>
+  <data name="MinSelection" xml:space="preserve"><value>الحد الأدنى</value></data>
+  <data name="MaxSelection" xml:space="preserve"><value>الحد الأقصى</value></data>
+  <data name="Moderator" xml:space="preserve"><value>أدوار المشرف</value></data>
+  <data name="ForWhom" xml:space="preserve"><value>الجمهور</value></data>
+  <data name="RefsCommaHint" xml:space="preserve"><value>مراجع مفصولة بفواصل</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>إصدار جديد</value></data>
+  <data name="BranchCountLabel" xml:space="preserve"><value>فرع</value></data>
 </root>

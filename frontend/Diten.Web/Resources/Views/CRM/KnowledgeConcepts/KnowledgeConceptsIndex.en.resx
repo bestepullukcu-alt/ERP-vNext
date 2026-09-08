@@ -168,4 +168,18 @@
   <data name="NewNodeDirection" xml:space="preserve"><value>Direction</value></data>
   <data name="NewNodeAsSource" xml:space="preserve"><value>New node → counterpart</value></data>
   <data name="NewNodeAsTarget" xml:space="preserve"><value>Counterpart → new node</value></data>
+  <data name="Branches" xml:space="preserve"><value>Branches</value></data>
+  <data name="AddBranch" xml:space="preserve"><value>Add branch</value></data>
+  <data name="RemoveBranch" xml:space="preserve"><value>Remove branch</value></data>
+  <data name="BranchNamePlaceholder" xml:space="preserve"><value>Branch name</value></data>
+  <data name="BranchesNote" xml:space="preserve"><value>Each branch is an ordered sequence of concept types. The spine (at least two distinct types) is derived from all branches.</value></data>
+  <data name="BranchesEmpty" xml:space="preserve"><value>No branches yet. Add a branch to start.</value></data>
+  <data name="BranchStepsEmpty" xml:space="preserve"><value>No steps in this branch yet.</value></data>
+  <data name="MinSelection" xml:space="preserve"><value>Min</value></data>
+  <data name="MaxSelection" xml:space="preserve"><value>Max</value></data>
+  <data name="Moderator" xml:space="preserve"><value>Moderator roles</value></data>
+  <data name="ForWhom" xml:space="preserve"><value>Audience</value></data>
+  <data name="RefsCommaHint" xml:space="preserve"><value>Comma-separated references</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>New version</value></data>
+  <data name="BranchCountLabel" xml:space="preserve"><value>branch(es)</value></data>
 </root>
