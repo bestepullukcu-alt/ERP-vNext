@@ -332,12 +332,14 @@ wildcards, prefixes and aliases are prohibited.
 This internal endpoint does not use a tenant UI role or add a new permission. It validates the exact business permission
 already requested by the consuming operation.
 
-The first consumer uses exactly `module_code = product-item-sku-master` and the following bounded 22-key permission
+The first consumer uses exactly `module_code = product-item-sku-master` and the following bounded 28-key permission
 set; configuration may enable a strict subset but cannot introduce another pair without a separately approved pack
 amendment:
 
 - `mdm.global-products.read`, `mdm.global-products.create`
 - `mdm.gskus.read`, `mdm.gskus.create`
+- `mdm.gskus.update`, `mdm.gskus.submit`, `mdm.gskus.withdraw`
+- `mdm.gskus.request-correction`, `mdm.gskus.request-retirement`, `mdm.gskus.retire`
 - `mdm.lskus.read`, `mdm.lskus.create`
 - `mdm.finished-goods.read`, `mdm.finished-goods.create`
 - `mdm.product-abbreviations.read`, `mdm.product-abbreviations.request`
@@ -512,6 +514,40 @@ Frontend, RESX and DataTable verification are N/A.
   last GUID-named unreachable-client database literal. `git diff --check` is clean and no protected-scope file is
   changed. Final independent review reports P0=0/P1=0; its two P2 evidence gaps are closed by the same-scope A-to-B,
   explicit tenant mismatch and architecture-guard regressions above.
+
+### 2026-09-08 approved GSKU exact-pair amendment
+
+The user authorizes only this pack and these exact runtime/test paths:
+
+- `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeCredentialAuthenticator.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Authorization/TrustedLegalEntityScopeCredentialAuthenticatorTests.cs`
+
+The original 22 pairs are preserved. Six GSKU pairs yield an exact 28-pair union, not the protected source's
+cross-product 30-pair set. Each uses `module_code = product-item-sku-master`:
+
+| GSKU operation | Exact scope permission |
+|---|---|
+| Draft edit | `mdm.gskus.update` |
+| First-pair submit | `mdm.gskus.submit` |
+| Pending maker withdrawal | `mdm.gskus.withdraw` |
+| Approved correction request | `mdm.gskus.request-correction` |
+| Approved retirement request | `mdm.gskus.request-retirement` |
+| Hidden system pair-retire compatibility path | `mdm.gskus.retire` |
+
+These keys are the existing MOD-0290 GSKU lifecycle permission contract, not new permission identities.
+Protected source correction/retirement request handlers use a separate mutation permission check but request
+`mdm.global-products.read` candidates. The current user prohibition on read/create substitution supersedes that
+transport choice: the separately committed MDM integration must send each operation's exact request permission.
+No other product lifecycle pair is admitted. Configured subsets, independent delegated human JWT, tenant/subject
+binding, credential client/audience/rotation/revocation and fail-closed matching remain unchanged.
+This source amendment provisions no credential, grant, tenant or allowed-pair configuration. Historical 22-pair
+test results above remain historical evidence, not results for the amended set.
+
+Amendment verification: focused trusted-scope/endpoint/OrgDataScope run passed 77, failed 0, skipped 0.
+The overlapping real-Mongo TrustedLegalEntityScopeResolutionMongoTests subset passed 6, failed 0, skipped 0.
+Platform API Release build passed with 0 warnings and 0 errors. These tests preserve tenant/subject/client binding;
+the separately required MDM Enforced-scope client-to-provider evidence belongs to the GSKU backend slice, not
+to this owner-side amendment result. No live acceptance was run.
 
 ## 20. Follow-up Items
 
