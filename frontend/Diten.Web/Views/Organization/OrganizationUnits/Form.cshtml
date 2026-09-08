@@ -61,9 +61,22 @@
                                 <label class="form-label fw-medium" for="ouLegalEntityId">@Localizer["LegalEntity"] <span class="text-danger">*</span></label>
                                 <select id="ouLegalEntityId" class="form-select" data-required required><option value="">@Localizer["SelectLegalEntity"]</option></select>
                             </div>
+                            @* MOD-0288-FU03 §7 — the two reporting lines, each named as a LINE. A bare "Parent"
+                               beside "Administrative parent" tells the reader the first one is not a line; that is the
+                               confusion FU02 §21.1 exists to prevent, so the existing label is line-qualified here. *@
                             <div class="col-md-6">
-                                <label class="form-label fw-medium" for="ouParentId">@Localizer["ParentOrgUnit"]</label>
+                                <label class="form-label fw-medium" for="ouParentId">@Localizer["FunctionalParentLabel"]</label>
                                 <select id="ouParentId" class="form-select"><option value="">@Localizer["NoParent"]</option></select>
+                            </div>
+                            @* ⚠ NO FALLBACK AND NO PRE-FILL. An empty administrative line is EMPTY — it never
+                               borrows the functional parent, in this form or anywhere else (FU02 §8 decision 2).
+                               The help text below says so to the user and must not be shortened. The two selects may
+                               legitimately hold the SAME unit when the administrator chooses it; nothing here copies
+                               one into the other. *@
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="ouAdministrativeParentId">@Localizer["AdministrativeParentLabel"]</label>
+                                <select id="ouAdministrativeParentId" class="form-select"><option value="">@Localizer["AdministrativeParentNone"]</option></select>
+                                <div class="form-text" id="ouAdministrativeParentHelp">@Localizer["AdministrativeParentHelp"]</div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-medium" for="ouOrgUnitType">@Localizer["OrgUnitType"]</label>
@@ -73,6 +86,7 @@
                                     <option value="Branch">@Localizer["OrgUnitTypeBranch"]</option>
                                     <option value="Team">@Localizer["OrgUnitTypeTeam"]</option>
                                     <option value="HQ">@Localizer["OrgUnitTypeHQ"]</option>
+                                    <option value="GroupFunction">@Localizer["OrgUnitTypeGroupFunction"]</option>
                                 </select>
                             </div>
                         </div>
@@ -83,6 +97,17 @@
                     <div class="card-body p-4">
                         <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["Description"]</h6>
                         <textarea id="ouDescription" class="form-control" rows="5" maxlength="1024" placeholder="@Localizer["DescriptionPlaceholder"]"></textarea>
+                    </div>
+                </section>
+
+                @* MOD-0288-FU03 §8 — custom field VALUES. The inputs are dynamic: their number is whatever the
+                   tenant authored (definitions are authored in FU04, never here), so they render into this
+                   container rather than being declared. The whole section stays `d-none` until at least one field
+                   renders — a tenant with no definitions must not see an empty heading. *@
+                <section class="card d-none" id="ou-custom-fields-section">
+                    <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["CustomFieldsSectionTitle"]</h6>
+                        <div class="row g-4" id="ou-custom-fields"></div>
                     </div>
                 </section>
             </div>
@@ -128,5 +153,6 @@
     <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
     <partial name="_FormL10n" />
     <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    <script src="~/assets/js/Organization/organization-unit-custom-fields.js" asp-append-version="true"></script>
     <script src="~/assets/js/Organization/OrganizationUnits/form.js" asp-append-version="true"></script>
 }

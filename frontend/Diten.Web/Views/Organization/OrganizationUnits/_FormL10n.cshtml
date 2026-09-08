@@ -18,7 +18,13 @@
         DateFormat = ToFlatpickr(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern),
         RecordCreated = SharedLocalizer["RecordCreated"].Value,
         RecordUpdated = SharedLocalizer["RecordUpdated"].Value,
-        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        // MOD-0288-FU03 — client-side custom-field messages. The server stays the authority: these produce a
+        // better message, they never decide whether a value is acceptable.
+        CustomFieldRequiredError = Localizer["CustomFieldRequiredError"].Value,
+        CustomFieldTypeError = Localizer["CustomFieldTypeError"].Value,
+        Yes = Localizer["Yes"].Value,
+        No = Localizer["No"].Value
     };
 }
 <script id="org-unit-form-l10n" type="application/json">

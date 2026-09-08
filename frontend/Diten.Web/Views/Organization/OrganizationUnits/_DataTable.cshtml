@@ -20,8 +20,14 @@
                     <th>@Localizer["Code"]</th>
                     <th class="all">@Localizer["Name"]</th>
                     <th>@Localizer["LegalEntity"]</th>
-                    <th>@Localizer["ParentOrgUnit"]</th>
+                    <th>@Localizer["FunctionalParentLabel"]</th>
                     <th>@Localizer["Archived"]</th>
+                    @* MOD-0288-FU03 §5 — the administrative line is an OPTIONAL column: present in the column
+                       chooser, hidden by default. ⚠ It is APPENDED after Archived rather than placed beside the
+                       functional parent, because a saved view stores column visibility BY INDEX — inserting a
+                       column at position 5 would silently re-point every saved view's flags onto the wrong
+                       columns. Same reasoning as the enum append in §4. *@
+                    <th>@Localizer["AdministrativeParentLabel"]</th>
                     <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
                 </tr>
             </thead>

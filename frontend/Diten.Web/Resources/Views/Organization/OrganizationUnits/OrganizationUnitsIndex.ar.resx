@@ -85,4 +85,12 @@
   <data name="MoveCycleBlocked" xml:space="preserve">
     <value>لا يمكن نقل الوحدة أسفل وحدتها الفرعية.</value>
   </data>
+  <data name="FunctionalParentLabel" xml:space="preserve"><value>الوحدة الأم الوظيفية</value></data>
+  <data name="AdministrativeParentLabel" xml:space="preserve"><value>الوحدة الأم الإدارية</value></data>
+  <data name="AdministrativeParentNone" xml:space="preserve"><value>(لا يوجد خط إداري)</value></data>
+  <data name="AdministrativeParentHelp" xml:space="preserve"><value>إذا تُرك فارغًا، فلا يوجد خط إداري. ولا يعود إلى الوحدة الأم الوظيفية.</value></data>
+  <data name="OrgUnitTypeGroupFunction" xml:space="preserve"><value>وظيفة المجموعة</value></data>
+  <data name="CustomFieldsSectionTitle" xml:space="preserve"><value>حقول مخصصة</value></data>
+  <data name="CustomFieldRequiredError" xml:space="preserve"><value>هذا الحقل مطلوب</value></data>
+  <data name="CustomFieldTypeError" xml:space="preserve"><value>القيمة لا تطابق نوع الحقل</value></data>
 </root>

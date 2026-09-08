@@ -57,13 +57,24 @@
                     <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-sitemap"></i><div><div class="backbone-preview-label">@Localizer["Name"]</div><div class="backbone-preview-value mt-1" id="ouDetailName">-</div></div></div></div>
                     <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-category"></i><div><div class="backbone-preview-label">@Localizer["OrgUnitType"]</div><div class="backbone-preview-value mt-1" id="ouDetailType">-</div></div></div></div>
                     <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-buildings"></i><div><div class="backbone-preview-label">@Localizer["LegalEntity"]</div><div class="backbone-preview-value mt-1" id="ouDetailLegalEntity">-</div></div></div></div>
-                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-network-chart"></i><div><div class="backbone-preview-label">@Localizer["ParentOrgUnit"]</div><div class="backbone-preview-value mt-1" id="ouDetailParent">-</div></div></div></div>
+                    @* MOD-0288-FU03 §7 — both lines, each line-qualified. ⚠ An empty administrative line renders
+                       EMPTY here; it never falls back to, or repeats, the functional parent (FU02 §8 decision 2). *@
+                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-network-chart"></i><div><div class="backbone-preview-label">@Localizer["FunctionalParentLabel"]</div><div class="backbone-preview-value mt-1" id="ouDetailParent">-</div></div></div></div>
+                    <div class="col-md-6"><div class="backbone-preview-field"><i class="bx bx-shield-quarter"></i><div><div class="backbone-preview-label">@Localizer["AdministrativeParentLabel"]</div><div class="backbone-preview-value mt-1" id="ouDetailAdministrativeParent">-</div></div></div></div>
                 </div>
             </section>
 
             <section class="card backbone-preview-section p-4">
                 <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["Description"]</h6>
                 <div class="backbone-preview-value" id="ouDetailDescription">-</div>
+            </section>
+
+            @* MOD-0288-FU03 §8 — custom field values, hidden entirely when the tenant has none, and hidden per
+               field when a restricted classification is not readable by this actor: a value the caller may not
+               read is OMITTED, never shown blank (a blank row still says the datum exists and is unset). *@
+            <section class="card backbone-preview-section p-4 d-none" id="ou-detail-custom-fields-section">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["CustomFieldsSectionTitle"]</h6>
+                <div class="row g-4" id="ou-detail-custom-fields"></div>
             </section>
         </div>
 
@@ -93,5 +104,6 @@
 @section Scripts {
     <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
     <partial name="_DetailsL10n" />
+    <script src="~/assets/js/Organization/organization-unit-custom-fields.js" asp-append-version="true"></script>
     <script src="~/assets/js/Organization/OrganizationUnits/details.js" asp-append-version="true"></script>
 }

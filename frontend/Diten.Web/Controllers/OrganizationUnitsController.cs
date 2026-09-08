@@ -90,6 +90,44 @@ public sealed class OrganizationUnitsController : Controller
         return await ProxyGatewayAsync(HttpMethod.Put, $"{_gatewayUrl}/api/platform/organization-units/{id}", body);
     }
 
+    /*
+     * ── MOD-0288-FU03 — the FU02 surfaces the screen needs ────────────────────────────────────────────────
+     *
+     * ⚠ REPORTING LINES ARE A SEPARATE PROXY ACTION BECAUSE THEY ARE A SEPARATE ENDPOINT. The backend PUT on
+     * the unit REFUSES a changed line with 403 (UpdateOrganizationUnitCommandHandler), by design: whoever may
+     * rename a unit must not thereby be able to re-hang it. Folding this into UpdateProxy would put both
+     * behind one door on this side of the gateway, which is exactly what FU02 §14 separated.
+     */
+    [HttpPut("api/{id:guid}/reporting-lines")]
+    public async Task<IActionResult> UpdateReportingLinesProxy(Guid id)
+    {
+        using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+        var body = await reader.ReadToEndAsync();
+        return await ProxyGatewayAsync(HttpMethod.Put, $"{_gatewayUrl}/api/platform/organization-units/{id}/reporting-lines", body);
+    }
+
+    // Custom field DEFINITIONS — read-only here. Authoring them is MOD-0288-FU04 and has no proxy in this pack.
+    [HttpGet("api/field-definitions")]
+    public Task<IActionResult> FieldDefinitionsProxy()
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/organization-units/field-definitions{Request.QueryString}");
+    }
+
+    [HttpGet("api/{id:guid}/field-values")]
+    public Task<IActionResult> FieldValuesProxy(Guid id)
+    {
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/organization-units/{id}/field-values");
+    }
+
+    // One datum per call — the backend contract is SetOrganizationFieldValueRequest, a single definition/value.
+    [HttpPut("api/{id:guid}/field-values")]
+    public async Task<IActionResult> SetFieldValueProxy(Guid id)
+    {
+        using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+        var body = await reader.ReadToEndAsync();
+        return await ProxyGatewayAsync(HttpMethod.Put, $"{_gatewayUrl}/api/platform/organization-units/{id}/field-values", body);
+    }
+
     [HttpPost("api/{id:guid}/archive")]
     public Task<IActionResult> ArchiveProxy(Guid id)
     {

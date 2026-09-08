@@ -85,4 +85,12 @@
   <data name="MoveCycleBlocked" xml:space="preserve">
     <value>Bir birim kendi alt biriminin altına taşınamaz.</value>
   </data>
+  <data name="FunctionalParentLabel" xml:space="preserve"><value>İşlevsel üst birim</value></data>
+  <data name="AdministrativeParentLabel" xml:space="preserve"><value>İdari üst birim</value></data>
+  <data name="AdministrativeParentNone" xml:space="preserve"><value>(İdari hat yok)</value></data>
+  <data name="AdministrativeParentHelp" xml:space="preserve"><value>Boş bırakılırsa idari hat tanımsızdır. İşlevsel üst birimin yerine geçmez.</value></data>
+  <data name="OrgUnitTypeGroupFunction" xml:space="preserve"><value>Grup fonksiyonu</value></data>
+  <data name="CustomFieldsSectionTitle" xml:space="preserve"><value>Özel alanlar</value></data>
+  <data name="CustomFieldRequiredError" xml:space="preserve"><value>Bu alan zorunludur</value></data>
+  <data name="CustomFieldTypeError" xml:space="preserve"><value>Değer alan tipine uymuyor</value></data>
 </root>

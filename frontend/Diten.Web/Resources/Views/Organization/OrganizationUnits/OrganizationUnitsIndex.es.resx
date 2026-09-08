@@ -85,4 +85,12 @@
   <data name="MoveCycleBlocked" xml:space="preserve">
     <value>Una unidad no puede moverse bajo su propia subunidad.</value>
   </data>
+  <data name="FunctionalParentLabel" xml:space="preserve"><value>Unidad superior funcional</value></data>
+  <data name="AdministrativeParentLabel" xml:space="preserve"><value>Unidad superior administrativa</value></data>
+  <data name="AdministrativeParentNone" xml:space="preserve"><value>(Sin línea administrativa)</value></data>
+  <data name="AdministrativeParentHelp" xml:space="preserve"><value>Si se deja vacío, no hay línea administrativa. No recurre a la unidad superior funcional.</value></data>
+  <data name="OrgUnitTypeGroupFunction" xml:space="preserve"><value>Función de grupo</value></data>
+  <data name="CustomFieldsSectionTitle" xml:space="preserve"><value>Campos personalizados</value></data>
+  <data name="CustomFieldRequiredError" xml:space="preserve"><value>Este campo es obligatorio</value></data>
+  <data name="CustomFieldTypeError" xml:space="preserve"><value>El valor no coincide con el tipo de campo</value></data>
 </root>

@@ -85,4 +85,12 @@
   <data name="MoveCycleBlocked" xml:space="preserve">
     <value>Подразделение нельзя переместить в собственное подразделение.</value>
   </data>
+  <data name="FunctionalParentLabel" xml:space="preserve"><value>Функциональное вышестоящее подразделение</value></data>
+  <data name="AdministrativeParentLabel" xml:space="preserve"><value>Административное вышестоящее подразделение</value></data>
+  <data name="AdministrativeParentNone" xml:space="preserve"><value>(Без административной линии)</value></data>
+  <data name="AdministrativeParentHelp" xml:space="preserve"><value>Если оставить пустым, административная линия отсутствует. Она не заменяется функциональной.</value></data>
+  <data name="OrgUnitTypeGroupFunction" xml:space="preserve"><value>Групповая функция</value></data>
+  <data name="CustomFieldsSectionTitle" xml:space="preserve"><value>Пользовательские поля</value></data>
+  <data name="CustomFieldRequiredError" xml:space="preserve"><value>Это поле обязательно</value></data>
+  <data name="CustomFieldTypeError" xml:space="preserve"><value>Значение не соответствует типу поля</value></data>
 </root>

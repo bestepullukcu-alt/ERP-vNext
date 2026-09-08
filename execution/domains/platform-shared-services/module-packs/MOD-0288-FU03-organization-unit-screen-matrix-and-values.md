@@ -224,6 +224,93 @@ form stays editable. Hiding the whole form, or showing an editable control that 
   clear the administrative one, switch language, and read the screen. This repository has shipped two bugs
   past 1500 green tests; a screen is proven by being used.
 
+### 11.1 Results — implementation run, 2026-09-07/08
+
+Branch `feature/pss/mod-0288-fu03-organization-unit-screen`, worktree `/private/tmp/ERP-vNext-mod0288-fu02-pack`.
+
+| Check | Result |
+|---|---|
+| `dotnet build …/Diten.Platform.API.csproj -c Debug` | **0 errors** (26 pre-existing warnings) |
+| `dotnet build …/Diten.Web.csproj -c Debug` | **0 errors** |
+| `TenantOrganization` suite | **154 / 154 green** — the FU02 number, unchanged |
+| `Organization` suite (incl. the l10n guard) | **183 / 183 green** |
+| Whole Platform.Application suite | 3982 / 4052 — **70 failures, all pre-existing**. Measured against a stash of this branch: the same suite fails **72 / 4051** without any FU03 change. The failures are `BusinessReferenceData*MongoTests`, `Document*` and `Mod0029*` — Mongo `dropDatabase` contention and a `Timestamp` serializer defect in other packs. Zero organization failures either way. |
+| resx parity | 7 files × **76 keys**, identical key sets **both directions**, no empty value — asserted by `OrganizationUnitL10nContractTests`, not by inspection |
+
+**Live verification** (tenant shell on `localhost:5001`, Platform API and Diten.Web rebuilt and restarted from
+this worktree; `.cshtml` runtime compilation is off, so a restart is the only way the views change):
+
+| Acceptance criterion | Evidence |
+|---|---|
+| 1 — created and edited with an administrative parent, and with none | `FU03-GF1` created with both lines; the administrative one later cleared |
+| 2 — a cleared line stays empty everywhere | API returns `administrativeParentOrganizationUnitId: null`; details shows `-`; the list column shows `-`; the form shows "(no administrative line)". **The functional parent's name appears on no surface in its place.** |
+| 3 — line-qualified labels on every surface | list headers "İşlevsel üst birim" / "İdari üst birim"; form, details and both filters likewise |
+| 4 — `Group function` selectable, persists, reads back | stored and read back as `GroupFunction`; rendered "Grup fonksiyonu" (tr) and "Group function" (en) |
+| 5 — custom values render, validate, submit, read back | three definitions authored through the API for the check; `reg.role` and `acc.exec` written, persisted and read back on form and details |
+| 6 — a tenant with no definitions sees no section | before the definitions existed, the section was `d-none` with **zero** children on both form and details |
+| 7 — permission split | verified on a **real second session**, not a patched snapshot: user `fu03editor@diten.com` holding only `…read` + `…update` sees **both lines disabled** while code, name, type and description stay editable, and sees **no custom-field section**. See §11.2 — the third key could not be isolated. |
+| 8 — restricted value hidden, not blank | `EVIDENCE_REF` (`Classification: Restricted`) renders on **no** surface for an actor without the derived grant; the other two render normally |
+| 9 — seven resx verified by a test | as above |
+| 10 — no approval / Position / PositionAssignment / FU02 backend change | `git diff --name-only`; the only backend file touched is the `OrgUnitType` enum §4 asks for |
+
+**One bug was found by using the screen and would not have been found by any test here.** The edit form
+resolved a stored enum with `titleCase()`, which lower-cases and re-capitalises: `GroupFunction` became
+`Groupfunction`, matched no option, left the select empty, and the next save wrote `Department`. Opening a
+`Group function` unit and pressing Save silently changed its type. (`HQ` had already needed a hard-coded
+exception for the same reason — the second exception was the signal.) The select is now asked what values it
+actually offers. §11's insistence on live verification is what caught it.
+
+### 11.2 Open items found during implementation
+
+1. **The four new FU02 permission keys are un-delegable.** They reach the catalog through self-registration,
+   but with `Module = platform` rather than `organization` — the five older `platform.organization-units.*`
+   keys carry `moduleOverride: "organization"` in `DataSeeder`, and the new ones have no such row. `platform`
+   sits on the platform-admin side of the tenant escalation boundary, so assigning
+   `…reporting-line.update`, `…custom-fields.read`, `…custom-fields.manage` or `…custom-fields.write-value`
+   to a tenant role is refused with **403**. The seeded tenant Admin holds them (it is granted wholesale), so
+   the screen works — but **no operator can delegate the split FU02 designed**, which is the whole point of
+   having separate keys. Fix is four `DataSeeder` rows with `moduleOverride: "organization"`; that file is
+   outside this pack's §5 allowlist and the change was **not** made here.
+2. **Consequence for criterion 7:** two of the three write keys were isolated on a live session; the
+   "`custom-fields.read` **without** `…write-value` → controls read-only" case could not be, because item 1
+   prevents granting `custom-fields.read` to a second role at all. That path is implemented and reviewed but
+   is **not** live-verified.
+3. **§5's allowlist was short by four frontend files** and they had to be added — see §11.3.
+4. **Dev-tenant residue from the live check:** three field definitions (`reg.role`, `acc.exec`,
+   `EVIDENCE_REF`/Restricted), the unit `FU03-GF1`, the role `fu03-editor` and the user
+   `fu03editor@diten.com` were created in the local `DefaultTenant` to make §10 measurable. They are local dev
+   data, not seeds, and nothing in the repository creates them.
+
+### 11.3 Allowlist correction
+
+§5 lists the four Razor views but not the page scripts that fill them, nor the proxy the browser actually
+calls. Those views are server-rendered shells: every value, column, filter and request lives in JavaScript,
+and `Diten.Web` reaches the gateway only through its own controller. The work is impossible inside §5 as
+written, so four files were added — all frontend, all inside this screen's own boundary, none of them FU02
+backend, Positions, PositionAssignments, `_Layout.cshtml`, the gateway or `.antigravity/**`:
+
+| File | Why it was unavoidable |
+|---|---|
+| `frontend/Diten.Web/Controllers/OrganizationUnitsController.cs` | no proxy existed for `reporting-lines`, `field-definitions` or `field-values`; the page cannot reach the gateway otherwise. ⚠ Deliberately **no POST/PUT proxy for definitions** — authoring is FU04. |
+| `…/wwwroot/assets/js/Organization/OrganizationUnits/form.js` | the form's payload, lookups, permission gating and save sequencing |
+| `…/wwwroot/assets/js/Organization/OrganizationUnits/details.js` | renders every value on `Details.cshtml` |
+| `…/wwwroot/assets/js/Organization/OrganizationUnits/index.js` | defines the DataTable columns and the filter behaviour |
+
+Also touched: `services/Diten.Platform/tests/…/Organization/OrganizationUnitL10nContractTests.cs` — §11 asks
+for the resx parity test and this is the file that already holds it.
+
+### 11.4 Two decisions the pack did not settle
+
+- **The edit save is two calls, in a fixed order.** `UpdateOrganizationUnitCommandHandler` answers **403** to a
+  changed line on the unit `PUT`, so a line change goes to `PUT {id}/reporting-lines` **first** and the unit
+  `PUT` follows carrying the now-current lines (which the handler therefore reads as unchanged). Line first
+  means its refusal — 403, a cycle, a stale-structure 409 — stops the save before anything is written.
+- **Both lines stay editable on CREATE.** The backend accepts them under `…create`; disabling them would
+  refuse in the UI what the server permits. `…reporting-line.update` gates the EDIT form only.
+- **The administrative column is appended at index 6, after `Archived`, not placed beside the functional
+  parent.** Saved views store column visibility and order by INDEX; inserting at position 5 would silently
+  re-point every existing saved view onto the wrong columns. Same rule as the enum in §4: append, never insert.
+
 ## 12. Out of Scope
 
 - Definition authoring — **MOD-0288-FU04** (`compact`).
