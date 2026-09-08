@@ -21,3 +21,21 @@ public sealed record TrustedWorkflowStartResultTransportRequest(
     string ExpectedObjectType,
     string ExpectedObjectId,
     Guid ExpectedMakerSubjectId);
+
+public sealed record TrustedWorkflowCancellationPreflightTransportRequest(
+    Guid WorkflowInstanceId,
+    Guid ApprovalTaskId,
+    string ExpectedObjectType,
+    string ExpectedObjectId,
+    Guid ExpectedMakerSubjectId);
+
+public sealed record TrustedWorkflowCancellationTransportRequest(
+    Guid WorkflowInstanceId,
+    Guid ApprovalTaskId,
+    string ExpectedObjectType,
+    string ExpectedObjectId,
+    Guid ExpectedMakerSubjectId,
+    int ExpectedWorkflowInstanceVersion,
+    int ExpectedApprovalTaskVersion,
+    string ReasonCode,
+    string? Comment);

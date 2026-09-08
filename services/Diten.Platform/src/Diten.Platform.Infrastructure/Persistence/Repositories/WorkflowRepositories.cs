@@ -140,9 +140,49 @@ public sealed class WorkflowTemplateVersionRepository
 
 public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstance>, IWorkflowInstanceRepository
 {
+    private readonly IPlatformDbContext _dbContext;
+
     public WorkflowInstanceRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
         : base(dbContext.Database, tenantContext, PlatformCollections.WorkflowInstances)
     {
+        _dbContext = dbContext;
+    }
+
+    public Task<WorkflowInstance?> GetByIdAsync(
+        IPlatformTransactionSession session,
+        Guid id,
+        CancellationToken ct = default) =>
+        Collection.Find(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            Builders<WorkflowInstance>.Filter.And(
+                ExecutionFilter,
+                Builders<WorkflowInstance>.Filter.Eq(x => x.Id, id)))
+            .FirstOrDefaultAsync(ct)!;
+
+    public async Task<bool> CancelTrustedAsync(
+        IPlatformTransactionSession session,
+        Guid instanceId,
+        int expectedVersion,
+        DateTimeOffset decisionAt,
+        CancellationToken ct = default)
+    {
+        var filter = Builders<WorkflowInstance>.Filter.And(
+            ExecutionFilter,
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Id, instanceId),
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Version, expectedVersion),
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Status, WorkflowInstanceStatus.Active));
+        var update = Builders<WorkflowInstance>.Update
+            .Set(x => x.Status, WorkflowInstanceStatus.Cancelled)
+            .Set(x => x.CompletedAt, decisionAt)
+            .Set(x => x.LastTransitionAt, decisionAt)
+            .Set(x => x.UpdatedAt, decisionAt)
+            .Inc(x => x.Version, 1);
+        var result = await Collection.UpdateOneAsync(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            filter,
+            update,
+            cancellationToken: ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
     }
 
     public Task<WorkflowInstance?> GetByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default)
@@ -263,9 +303,54 @@ public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstan
 
 public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IApprovalTaskRepository
 {
+    private readonly IPlatformDbContext _dbContext;
+
     public ApprovalTaskRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
         : base(dbContext.Database, tenantContext, PlatformCollections.ApprovalTasks)
     {
+        _dbContext = dbContext;
+    }
+
+    public Task<ApprovalTask?> GetByIdAsync(
+        IPlatformTransactionSession session,
+        Guid id,
+        CancellationToken ct = default) =>
+        Collection.Find(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            Builders<ApprovalTask>.Filter.And(
+                ExecutionFilter,
+                Builders<ApprovalTask>.Filter.Eq(x => x.Id, id)))
+            .FirstOrDefaultAsync(ct)!;
+
+    public async Task<bool> CancelTrustedAsync(
+        IPlatformTransactionSession session,
+        Guid taskId,
+        int expectedVersion,
+        Guid actorUserId,
+        string reasonCode,
+        DateTimeOffset decisionAt,
+        CancellationToken ct = default)
+    {
+        var filter = Builders<ApprovalTask>.Filter.And(
+            ExecutionFilter,
+            Builders<ApprovalTask>.Filter.Eq(x => x.Id, taskId),
+            Builders<ApprovalTask>.Filter.Eq(x => x.Version, expectedVersion),
+            Builders<ApprovalTask>.Filter.In(
+                x => x.Status,
+                [ApprovalTaskStatus.WaitingApproval, ApprovalTaskStatus.WaitingEvidence]));
+        var update = Builders<ApprovalTask>.Update
+            .Set(x => x.Status, ApprovalTaskStatus.Cancelled)
+            .Set(x => x.CompletedAt, decisionAt)
+            .Set(x => x.ActionedBy, actorUserId.ToString("D"))
+            .Set(x => x.ActionReasonCode, reasonCode)
+            .Set(x => x.UpdatedAt, decisionAt)
+            .Inc(x => x.Version, 1);
+        var result = await Collection.UpdateOneAsync(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            filter,
+            update,
+            cancellationToken: ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
     }
 
     public Task<ApprovalTask?> GetFirstByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default)
@@ -388,9 +473,12 @@ public sealed class RuntimeAssignmentSnapshotRepository
 
 public sealed class WorkflowTransitionLogRepository : TenantRepository<WorkflowTransitionLog>, IWorkflowTransitionLogRepository
 {
+    private readonly IPlatformDbContext _dbContext;
+
     public WorkflowTransitionLogRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
         : base(dbContext.Database, tenantContext, PlatformCollections.WorkflowTransitionLogs)
     {
+        _dbContext = dbContext;
     }
 
     public async Task<IReadOnlyList<WorkflowTransitionLog>> ListByInstanceIdAsync(
@@ -427,6 +515,18 @@ public sealed class WorkflowTransitionLogRepository : TenantRepository<WorkflowT
     public Task<WorkflowTransitionLog> AppendAsync(WorkflowTransitionLog log, CancellationToken ct = default) =>
         CreateAsync(log, ct);
 
+    public async Task<WorkflowTransitionLog> AppendAsync(
+        IPlatformTransactionSession session,
+        WorkflowTransitionLog log,
+        CancellationToken ct = default)
+    {
+        await Collection.InsertOneAsync(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            log,
+            cancellationToken: ct);
+        return log;
+    }
+
     public async Task<WorkflowTransitionLog> EnsureTrustedStartLogAsync(
         WorkflowTransitionLog log,
         CancellationToken ct = default)
@@ -448,6 +548,22 @@ public sealed class WorkflowTransitionLogRepository : TenantRepository<WorkflowT
             .Find(Builders<WorkflowTransitionLog>.Filter.And(
                 ExecutionFilter,
                 Builders<WorkflowTransitionLog>.Filter.Eq(x => x.WorkflowInstanceId, workflowInstanceId)))
+            .SortByDescending(x => x.SequenceNo)
+            .FirstOrDefaultAsync(ct);
+        return latest?.SequenceNo ?? 0;
+    }
+
+    public async Task<long> GetLatestSequenceNoAsync(
+        IPlatformTransactionSession session,
+        Guid workflowInstanceId,
+        CancellationToken ct = default)
+    {
+        var latest = await Collection
+            .Find(
+                PlatformMongoTransactionSession.Require(session, _dbContext),
+                Builders<WorkflowTransitionLog>.Filter.And(
+                    ExecutionFilter,
+                    Builders<WorkflowTransitionLog>.Filter.Eq(x => x.WorkflowInstanceId, workflowInstanceId)))
             .SortByDescending(x => x.SequenceNo)
             .FirstOrDefaultAsync(ct);
         return latest?.SequenceNo ?? 0;

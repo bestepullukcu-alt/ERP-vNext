@@ -51,6 +51,22 @@ public sealed class InternalTrustedWorkflowConsumerController : CustomBaseContro
             DispatchStartResultAsync,
             StartFailure);
 
+    [HttpPost("cancel-preflight")]
+    public Task<IActionResult> GetCancellationPreflight(CancellationToken cancellationToken) =>
+        _executor.ExecuteCancellationPreflightAsync(
+            HttpContext,
+            cancellationToken,
+            DispatchCancellationPreflightAsync,
+            CancellationPreflightFailure);
+
+    [HttpPost("cancel")]
+    public Task<IActionResult> Cancel(CancellationToken cancellationToken) =>
+        _executor.ExecuteCancellationAsync(
+            HttpContext,
+            cancellationToken,
+            DispatchCancellationAsync,
+            CancellationFailure);
+
     private async Task<IActionResult> DispatchStartAsync(
         TrustedWorkflowStartTransportRequest request,
         string idempotencyKey,
@@ -109,11 +125,66 @@ public sealed class InternalTrustedWorkflowConsumerController : CustomBaseContro
         return CreateActionResultInstance(response);
     }
 
+    private async Task<IActionResult> DispatchCancellationPreflightAsync(
+        TrustedWorkflowCancellationPreflightTransportRequest request,
+        TrustedWorkflowConsumerServiceIdentity serviceIdentity,
+        CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetTrustedWorkflowCancellationPreflightQuery(
+            serviceIdentity.ClientId,
+            request.WorkflowInstanceId,
+            request.ApprovalTaskId,
+            request.ExpectedObjectType,
+            request.ExpectedObjectId,
+            request.ExpectedMakerSubjectId,
+            HttpContext.TraceIdentifier), cancellationToken);
+        return CreateActionResultInstance(response);
+    }
+
+    private async Task<IActionResult> DispatchCancellationAsync(
+        TrustedWorkflowCancellationTransportRequest request,
+        string idempotencyKey,
+        TrustedWorkflowConsumerServiceIdentity serviceIdentity,
+        TrustedWorkflowDelegatedUserIdentity delegatedUser,
+        CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new CancelTrustedWorkflowInstanceCommand(
+            serviceIdentity.ClientId,
+            delegatedUser.UserId,
+            new TrustedWorkflowCancellationRequest(
+                request.WorkflowInstanceId,
+                request.ApprovalTaskId,
+                request.ExpectedObjectType,
+                request.ExpectedObjectId,
+                request.ExpectedMakerSubjectId,
+                request.ExpectedWorkflowInstanceVersion,
+                request.ExpectedApprovalTaskVersion,
+                request.ReasonCode,
+                request.Comment,
+                idempotencyKey),
+            HttpContext.TraceIdentifier), cancellationToken);
+        return CreateActionResultInstance(response);
+    }
+
     private IActionResult StartFailure(int statusCode, string code) => CreateActionResultInstance(
         Response<TrustedWorkflowStartResult>.Fail(code, statusCode, code, HttpContext.TraceIdentifier));
 
     private IActionResult EvidenceFailure(int statusCode, string code) => CreateActionResultInstance(
         Response<TrustedWorkflowTerminalDecisionEvidence>.Fail(
+            code,
+            statusCode,
+            code,
+            HttpContext.TraceIdentifier));
+
+    private IActionResult CancellationPreflightFailure(int statusCode, string code) => CreateActionResultInstance(
+        Response<TrustedWorkflowCancellationPreflight>.Fail(
+            code,
+            statusCode,
+            code,
+            HttpContext.TraceIdentifier));
+
+    private IActionResult CancellationFailure(int statusCode, string code) => CreateActionResultInstance(
+        Response<TrustedWorkflowCancellationEvidence>.Fail(
             code,
             statusCode,
             code,
