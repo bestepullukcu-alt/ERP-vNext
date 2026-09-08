@@ -551,6 +551,28 @@ to this owner-side amendment result. No live acceptance was run.
 
 ## 20. Follow-up Items
 
+### LSKU exact operation-pair amendment — approved 2026-09-09
+
+The user authorizes this pack and only the following runtime/test paths:
+
+- `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeCredentialAuthenticator.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Authorization/TrustedLegalEntityScopeCredentialAuthenticatorTests.cs`
+
+Preserve the existing 28-pair universe and add only
+`product-item-sku-master / mdm.lskus.withdraw` and
+`product-item-sku-master / mdm.lskus.request-retirement`.
+The resulting exact union and configured maximum are 30; this is not the historical cross-product 30-pair set.
+No wildcard, prefix, case alias or read-permission substitution is accepted.
+Tenant/delegated-human/client/audience and configured-subset checks remain unchanged.
+No configuration, credential or tenant grant is provisioned. LSKU submit/retire integration from the separate
+historical lifecycle amendment is not included in this two-pair checkpoint.
+The MDM integration must resolve scope with the exact withdrawal/request-retirement permission before mutation.
+
+Verification: Platform Release build passed (0 warnings, 0 errors). The initial parallel build collided with the
+test build on the same generated API DLL (CS2012); the sequential build passed without source changes.
+Focused trusted-scope/OrgDataScope tests passed 77 / failed 0 / skipped 0; the earlier 43-test subset overlaps.
+New exact-pair/subset/invalid-case tests are included. This is source verification, not live acceptance.
+
 - FU03 MDM typed client/adapter, local Legal Entity revalidation and Product policy intersection.
 - FU03 special permission/grant profile, management UI, migration, rollout activation and descendant enforcement.
 - Organization Unit targeting/hierarchy and precedence versus Legal Entity.

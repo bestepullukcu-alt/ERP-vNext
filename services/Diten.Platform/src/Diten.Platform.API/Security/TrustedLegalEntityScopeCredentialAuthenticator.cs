@@ -10,7 +10,7 @@ public sealed class TrustedLegalEntityScopeCredentialAuthenticator : ITrustedLeg
 {
     public const string ConsumerService = "DITENMDMSERVICE";
     public const string Audience = "TRUSTED_LEGAL_ENTITY_SCOPE_RESOLVE";
-    public const int MaxAllowedPairs = 28;
+    public const int MaxAllowedPairs = 30;
 
     private readonly TrustedLegalEntityScopeCredentialBinding _credential;
     private readonly TimeProvider _timeProvider;
@@ -36,6 +36,7 @@ public sealed class TrustedLegalEntityScopeCredentialAuthenticator : ITrustedLeg
         "mdm.gskus.update", "mdm.gskus.submit", "mdm.gskus.withdraw",
         "mdm.gskus.request-correction", "mdm.gskus.request-retirement", "mdm.gskus.retire",
         "mdm.lskus.read", "mdm.lskus.create", "mdm.finished-goods.read", "mdm.finished-goods.create",
+        "mdm.lskus.withdraw", "mdm.lskus.request-retirement",
         "mdm.product-abbreviations.read", "mdm.product-abbreviations.request",
         "mdm.product-abbreviations.approve", "mdm.product-abbreviations.reject",
         "mdm.product-abbreviations.correct", "mdm.product-abbreviations.cancel",
