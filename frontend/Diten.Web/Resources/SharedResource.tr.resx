@@ -548,6 +548,7 @@
   <data name="CandidateCareerPassportMenu" xml:space="preserve"><value>Aday Kariyer Pasaportu</value></data>
   <data name="TalentDevelopmentNetworkMenu" xml:space="preserve"><value>Yetenek Gelişim Ağı</value></data>
   <data name="IndustrySuccessionPoolMenu" xml:space="preserve"><value>Sektörel Yedekleme Havuzu</value></data>
+  <data name="VerifiedCertificationRegistryMenu" xml:space="preserve"><value>Doğrulanmış Sertifikasyon Sicili</value></data>
   <data name="ExitReferenceRecordsMenu" xml:space="preserve"><value>Exit Reference Records</value></data>
   <data name="ReferenceExchangeMenu" xml:space="preserve"><value>Reference Exchange</value></data>
   <data name="RehireRecommendationsMenu" xml:space="preserve"><value>Rehire Recommendations</value></data>

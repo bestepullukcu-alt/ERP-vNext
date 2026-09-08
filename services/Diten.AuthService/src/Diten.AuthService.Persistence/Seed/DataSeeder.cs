@@ -296,6 +296,11 @@ public static class DataSeeder
             new("tep", "industry-succession-pool", "manage", "Industry Succession Pool Manage", null),
             new("tep", "industry-succession-pool", "read", "Industry Succession Pool Read", null),
 
+            new("tep", "verified-certification-registry", "audit.read", "Verified Certification Registry Audit Read", null),
+            new("tep", "verified-certification-registry", "evaluate", "Verified Certification Registry Evaluate", null),
+            new("tep", "verified-certification-registry", "manage", "Verified Certification Registry Manage", null),
+            new("tep", "verified-certification-registry", "read", "Verified Certification Registry Read", null),
+
             new("dki", "metric-semantic-registry", "audit.read", "Metric Semantic Registry Audit Read", null),
             new("dki", "metric-semantic-registry", "evaluate", "Metric Semantic Registry Evaluate", null),
             new("dki", "metric-semantic-registry", "manage", "Metric Semantic Registry Manage", null),
