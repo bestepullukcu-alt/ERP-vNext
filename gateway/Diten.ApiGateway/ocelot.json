@@ -1961,6 +1961,46 @@
       "UpstreamScheme": "http"
     },
     {
+      "DownstreamPathTemplate": "/api/talent-supply-demand-forecasting",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5060
+        }
+      ],
+      "UpstreamPathTemplate": "/api/talent-supply-demand-forecasting",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/talent-supply-demand-forecasting/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5060
+        }
+      ],
+      "UpstreamPathTemplate": "/api/talent-supply-demand-forecasting/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
       "DownstreamPathTemplate": "/api/metric-semantic-registry",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
