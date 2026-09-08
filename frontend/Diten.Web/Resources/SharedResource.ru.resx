@@ -713,4 +713,28 @@
   </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>Запланированные визиты</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>Запланированные визиты</value></data>
+  <data name="Nav.Domain.PORTFOLIODELIVERY" xml:space="preserve">
+    <value>Реализация портфеля</value>
+  </data>
+  <data name="Nav.Module.PPM" xml:space="preserve">
+    <value>Управление проектами и портфелями</value>
+  </data>
+  <data name="Nav.Page.PORTFOLIOS" xml:space="preserve">
+    <value>Портфели</value>
+  </data>
+  <data name="Nav.Page.INITIATIVES" xml:space="preserve">
+    <value>Инициативы</value>
+  </data>
+  <data name="Nav.Page.PROGRAMS" xml:space="preserve">
+    <value>Программы</value>
+  </data>
+  <data name="Nav.Page.PROJECTS" xml:space="preserve">
+    <value>Проекты</value>
+  </data>
+  <data name="Nav.Page.INVESTMENTCASES" xml:space="preserve">
+    <value>Инвестиционные обоснования</value>
+  </data>
+  <data name="Nav.Page.BENEFITCOMMITMENTS" xml:space="preserve">
+    <value>Обязательства по выгодам</value>
+  </data>
 </root>

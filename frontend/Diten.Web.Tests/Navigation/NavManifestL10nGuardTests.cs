@@ -78,6 +78,34 @@ public sealed class NavManifestL10nGuardTests
         AssertKeysUsableInEveryLanguage(expected, DistinctDomainCountFromRawSources());
     }
 
+    [Fact]
+    public void Ppm_navigation_covers_the_domain_module_and_current_pages_with_runtime_keys()
+    {
+        var ppm = Single(ReadManifests(), "PpmManifestProvider.cs");
+        Assert.Equal("PPM", ppm.ModuleCode);
+        Assert.Equal("Portfolio Delivery", ppm.Domain);
+        Assert.Contains("INVESTMENT_CASES", ppm.NavVisiblePageCodes);
+        Assert.Contains("BENEFIT_COMMITMENTS", ppm.NavVisiblePageCodes);
+        Assert.DoesNotContain("PPM", ppm.NavVisiblePageCodes); // The legacy overview is not a catalog page.
+
+        var pageKeys = ppm.NavVisiblePageCodes
+            .Select(code => "Nav.Page." + NavNameLocalizer.Normalize(code))
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+        Assert.Contains("Nav.Page.INVESTMENTCASES", pageKeys);
+        Assert.Contains("Nav.Page.BENEFITCOMMITMENTS", pageKeys);
+
+        var expected = pageKeys.Concat(new[]
+        {
+            "Nav.Module." + NavNameLocalizer.Normalize(ppm.ModuleCode),
+            "Nav.Domain." + NavNameLocalizer.Normalize(ppm.Domain)
+        }).ToList();
+
+        // Count from the live provider; do not freeze the old ES page count or omit the domain heading.
+        AssertKeysUsableInEveryLanguage(expected,
+            ppm.NavVisiblePageCodes.Distinct(StringComparer.Ordinal).Count() + 2);
+    }
+
     // A key is only USABLE if it is present, non-empty, and not just an echo of its own name. Case 1 above is
     // exactly the echo: the localizer hands back the key name for a missing resource and the caller's
     // "is it non-empty?" check passes. A resx row whose value literally repeats the key is the same defect

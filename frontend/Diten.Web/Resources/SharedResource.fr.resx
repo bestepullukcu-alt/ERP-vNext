@@ -714,4 +714,28 @@
   </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>Visites planifiées</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>Visites planifiées</value></data>
+  <data name="Nav.Domain.PORTFOLIODELIVERY" xml:space="preserve">
+    <value>Exécution du portefeuille</value>
+  </data>
+  <data name="Nav.Module.PPM" xml:space="preserve">
+    <value>Gestion de projets et de portefeuilles</value>
+  </data>
+  <data name="Nav.Page.PORTFOLIOS" xml:space="preserve">
+    <value>Portefeuilles</value>
+  </data>
+  <data name="Nav.Page.INITIATIVES" xml:space="preserve">
+    <value>Gestion des initiatives</value>
+  </data>
+  <data name="Nav.Page.PROGRAMS" xml:space="preserve">
+    <value>Programmes</value>
+  </data>
+  <data name="Nav.Page.PROJECTS" xml:space="preserve">
+    <value>Projets</value>
+  </data>
+  <data name="Nav.Page.INVESTMENTCASES" xml:space="preserve">
+    <value>Dossiers d’investissement</value>
+  </data>
+  <data name="Nav.Page.BENEFITCOMMITMENTS" xml:space="preserve">
+    <value>Engagements de bénéfices</value>
+  </data>
 </root>

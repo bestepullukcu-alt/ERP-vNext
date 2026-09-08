@@ -713,4 +713,28 @@
   </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>الزيارات المخططة</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>الزيارات المخططة</value></data>
+  <data name="Nav.Domain.PORTFOLIODELIVERY" xml:space="preserve">
+    <value>تنفيذ المحافظ</value>
+  </data>
+  <data name="Nav.Module.PPM" xml:space="preserve">
+    <value>إدارة المشاريع والمحافظ</value>
+  </data>
+  <data name="Nav.Page.PORTFOLIOS" xml:space="preserve">
+    <value>المحافظ</value>
+  </data>
+  <data name="Nav.Page.INITIATIVES" xml:space="preserve">
+    <value>المبادرات</value>
+  </data>
+  <data name="Nav.Page.PROGRAMS" xml:space="preserve">
+    <value>البرامج</value>
+  </data>
+  <data name="Nav.Page.PROJECTS" xml:space="preserve">
+    <value>المشاريع</value>
+  </data>
+  <data name="Nav.Page.INVESTMENTCASES" xml:space="preserve">
+    <value>حالات الاستثمار</value>
+  </data>
+  <data name="Nav.Page.BENEFITCOMMITMENTS" xml:space="preserve">
+    <value>التزامات المنافع</value>
+  </data>
 </root>
