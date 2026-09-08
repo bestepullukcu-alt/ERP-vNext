@@ -326,6 +326,11 @@ public static class DataSeeder
             new("tep", "talent-supply-demand-forecasting", "manage", "Talent Supply Demand Forecasting Manage", null),
             new("tep", "talent-supply-demand-forecasting", "read", "Talent Supply Demand Forecasting Read", null),
 
+            new("tep", "skills-gap-heatmap", "audit.read", "Skills Gap Heatmap Audit Read", null),
+            new("tep", "skills-gap-heatmap", "evaluate", "Skills Gap Heatmap Evaluate", null),
+            new("tep", "skills-gap-heatmap", "manage", "Skills Gap Heatmap Manage", null),
+            new("tep", "skills-gap-heatmap", "read", "Skills Gap Heatmap Read", null),
+
             new("dki", "metric-semantic-registry", "audit.read", "Metric Semantic Registry Audit Read", null),
             new("dki", "metric-semantic-registry", "evaluate", "Metric Semantic Registry Evaluate", null),
             new("dki", "metric-semantic-registry", "manage", "Metric Semantic Registry Manage", null),

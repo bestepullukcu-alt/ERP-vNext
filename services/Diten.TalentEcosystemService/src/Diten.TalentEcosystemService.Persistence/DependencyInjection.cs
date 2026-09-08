@@ -60,6 +60,7 @@ public static class DependencyInjection
         services.AddScoped<IWorkforceAnalyticsReadinessMetadataRepository, MongoWorkforceAnalyticsReadinessMetadataRepository>();
         services.AddScoped<ISectorTalentTrendsReadinessMetadataRepository, MongoSectorTalentTrendsReadinessMetadataRepository>();
         services.AddScoped<ITalentSupplyDemandForecastingReadinessMetadataRepository, MongoTalentSupplyDemandForecastingReadinessMetadataRepository>();
+        services.AddScoped<ISkillsGapHeatmapReadinessMetadataRepository, MongoSkillsGapHeatmapReadinessMetadataRepository>();
 
         return services;
     }

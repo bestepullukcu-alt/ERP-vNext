@@ -554,6 +554,7 @@
   <data name="WorkforceAnalyticsMenu" xml:space="preserve"><value>İş Gücü Analitiği</value></data>
   <data name="SectorTalentTrendsMenu" xml:space="preserve"><value>Sektörel Yetenek Trendleri</value></data>
   <data name="TalentSupplyDemandForecastingMenu" xml:space="preserve"><value>Yetenek Arz ve Talep Tahmini</value></data>
+  <data name="SkillsGapHeatmapMenu" xml:space="preserve"><value>Beceri Açığı Isı Haritası</value></data>
   <data name="ExitReferenceRecordsMenu" xml:space="preserve"><value>Exit Reference Records</value></data>
   <data name="ReferenceExchangeMenu" xml:space="preserve"><value>Reference Exchange</value></data>
   <data name="RehireRecommendationsMenu" xml:space="preserve"><value>Rehire Recommendations</value></data>
