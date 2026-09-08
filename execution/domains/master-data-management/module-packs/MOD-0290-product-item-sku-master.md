@@ -2830,3 +2830,24 @@ These are references to existing backlog or owner decisions; this pack creates n
 | G8A / exposure | Global Product permission onboarding, Gateway route and tenant UI | Explicit named-step code-start permits A/D preparation; Auth/Platform acceptance and integration-agent route evidence close before endpoint/user enablement |
 
 No provider follow-up Module Pack or new MOD/FU/PSS/DCP identity is created by this reconciliation.
+
+## GSKU transport amendment — approved 2026-09-08
+
+User-authorized bounded integration; no operational authorization is implied.
+Exact additional runtime/test paths:
+- `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Workflow/PlatformProductIdentityWorkflowClient.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Workflow/PlatformProductIdentityWorkflowClientTests.cs`
+
+Only the ordinal profiles `GskuCorrection` and `GskuRetirementRequest` extend the existing client set.
+They use separate explicitly selected templates, existing trusted Workflow consumer endpoints and
+`TRUSTED_WORKFLOW_CONSUMER`; no audit-audience substitution. Platform's configured authorization
+remains exact client/service/audience/object/template matching; no fixed template name is invented.
+Test-only owner transport runs actual Platform named token validation, strict parser and configured
+start authorization. A fixture response is not proof of durable Workflow execution.
+Unknown/case-drift profiles, mismatched tenant/audience and cross-profile templates fail closed.
+No production template, grant or credential is provisioned. Validation results are recorded separately.
+
+Validation 2026-09-08: workflow client contract suite 36 passed / 0 failed / 0 skipped;
+Platform security/FU01/FU21 regressions 143/0/0; Platform Release build succeeded.
+Ten new cases exercise real owner RS256/tenant/delegated validation, strict parsing or exact policy;
+four new invalid-profile cases reject before HTTP. Existing client behavior remains covered.

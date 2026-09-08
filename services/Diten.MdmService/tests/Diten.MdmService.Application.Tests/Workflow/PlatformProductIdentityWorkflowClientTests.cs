@@ -1,4 +1,14 @@
 using System.Collections.Concurrent;
+using System.Reflection;
+using System.Runtime.Loader;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -257,6 +267,228 @@ public sealed class PlatformProductIdentityWorkflowClientTests
 
         Assert.Equal(expected, result.Outcome);
         Assert.Null(result.Value);
+    }
+
+
+    [Theory]
+    [InlineData("GskuCorrection")]
+    [InlineData("GskuRetirementRequest")]
+    public async Task Gsku_profiles_cross_real_Platform_named_validation_parser_and_exact_authorization(string profile)
+    {
+        using var owner = new WorkflowOwnerTransport();
+        var client = Client(owner, owner);
+        var request = StartRequest() with { ObjectType = profile, TemplateCode = WorkflowOwnerTransport.Template(profile) };
+        var start = await client.StartAsync(owner.TenantId, request, owner.DelegatedToken());
+        // The boundary deliberately returns a missing test-owned workflow, never a fabricated durable success.
+        Assert.Equal(ProductIdentityWorkflowTransportOutcome.NotFound, start.Outcome);
+        Assert.Equal("OWNER_CONTRACT_VALIDATED_NO_WORKFLOW", start.ErrorCode);
+        Assert.Equal(profile, owner.LastProfile);
+        Assert.Equal(request.ObjectId, owner.LastObjectId);
+        Assert.Equal(request.IdempotencyKey, owner.LastKey);
+        Assert.Equal(ProductIdentityWorkflowTransportOutcome.NotFound,
+            (await client.GetStartResultAsync(owner.TenantId,
+                new(profile, request.ObjectId, owner.SubjectId, request.IdempotencyKey))).Outcome);
+        Assert.Equal(ProductIdentityWorkflowTransportOutcome.NotFound,
+            (await client.GetTerminalEvidenceAsync(owner.TenantId, new(Guid.NewGuid(), profile, request.ObjectId))).Outcome);
+        Assert.Equal(3, owner.ValidatedCalls);
+    }
+
+    [Theory]
+    [InlineData("GskuCorrection", "tenant")]
+    [InlineData("GskuRetirementRequest", "tenant")]
+    [InlineData("GskuCorrection", "audience")]
+    [InlineData("GskuRetirementRequest", "audience")]
+    [InlineData("GskuCorrection", "mixed-template")]
+    [InlineData("GskuRetirementRequest", "mixed-template")]
+    [InlineData("GskuCorrection", "wrong-client")]
+    [InlineData("GskuRetirementRequest", "missing-grant")]
+    [InlineData("gskucorrection", "unknown")]
+    [InlineData("GskuRetirement", "unknown")]
+    [InlineData("GskuCorrection.extra", "unknown")]
+    [InlineData("GskuRetirementRequest*", "unknown")]
+    public async Task Gsku_transport_rejects_invalid_authority_or_cross_profile_payload(string profile, string drift)
+    {
+        using var owner = new WorkflowOwnerTransport(drift);
+        var request = StartRequest() with { ObjectType = profile,
+            TemplateCode = WorkflowOwnerTransport.Template(drift == "mixed-template"
+                ? profile == "GskuCorrection" ? "GskuRetirementRequest" : "GskuCorrection" : profile) };
+        var result = await Client(owner, owner).StartAsync(owner.TenantId, request, owner.DelegatedToken());
+        Assert.Equal(drift == "unknown" ? ProductIdentityWorkflowTransportOutcome.Invalid
+            : drift == "audience" ? ProductIdentityWorkflowTransportOutcome.AuthenticationRejected
+            : ProductIdentityWorkflowTransportOutcome.Forbidden, result.Outcome);
+        Assert.Null(result.Value);
+        Assert.Equal(0, owner.ValidatedCalls);
+        if (drift == "unknown") Assert.Equal(0, owner.HttpCalls);
+    }
+
+    // Actual owner binaries are loaded from the same worktree Release build, not copied or mocked.
+    // Test-only keys/config stay in memory. The final dispatch is an explicit no-workflow boundary,
+    // so these are transport/security contracts, not live start or durable-acceptance claims.
+    private sealed class WorkflowOwnerTransport : HttpMessageHandler, IProductIdentityWorkflowServiceIdentityProvider
+    {
+        private readonly Assembly api;
+        private readonly object executor;
+        private readonly object policy;
+        private readonly ServiceProvider services;
+        private readonly RSA rsa = RSA.Create(2048);
+        private readonly string humanSecret = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
+        private readonly string drift;
+        private readonly Func<AssemblyLoadContext, AssemblyName, Assembly?> resolver;
+        private readonly Guid clientId = Guid.NewGuid();
+        public Guid TenantId { get; } = Guid.NewGuid();
+        public Guid SubjectId { get; } = Guid.NewGuid();
+        public int ValidatedCalls { get; private set; }
+        public int HttpCalls { get; private set; }
+        public string? LastProfile { get; private set; }
+        public string? LastObjectId { get; private set; }
+        public string? LastKey { get; private set; }
+        public static string Template(string profile) => profile == "GskuCorrection"
+            ? "TEST-GSKU-CORRECTION" : "TEST-GSKU-RETIREMENT";
+
+        public WorkflowOwnerTransport(string drift = "")
+        {
+            this.drift = drift;
+            var root = new DirectoryInfo(AppContext.BaseDirectory);
+            while (root is not null && !File.Exists(Path.Combine(root.FullName, "AGENTS.md"))) root = root.Parent;
+            Assert.NotNull(root);
+            var bin = Path.Combine(root!.FullName, "services", "Diten.Platform", "src", "Diten.Platform.API",
+                "bin", "Release", "net8.0");
+            resolver = (context, name) => File.Exists(Path.Combine(bin, name.Name + ".dll"))
+                ? context.LoadFromAssemblyPath(Path.Combine(bin, name.Name + ".dll")) : null;
+            AssemblyLoadContext.Default.Resolving += resolver;
+            api = AssemblyLoadContext.Default.LoadFromAssemblyPath(Path.Combine(bin, "Diten.Platform.API.dll"));
+            var collection = new ServiceCollection();
+            collection.AddLogging();
+            collection.AddAuthentication();
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["TrustedServiceTokenValidation:Issuer"] = "test-auth",
+                ["TrustedServiceTokenValidation:CurrentKeyId"] = "test-only-key",
+                ["TrustedServiceTokenValidation:CurrentPublicKeyPem"] = rsa.ExportSubjectPublicKeyInfoPem(),
+                ["JwtSettings:Issuer"] = "test-human",
+                ["JwtSettings:Audience"] = "test-human",
+                ["JwtSettings:Secret"] = humanSecret
+            }).Build();
+            api.GetType("Diten.Platform.API.Security.TrustedServiceTokenValidationExtensions", true)!
+                .GetMethod("AddTrustedServiceTokenValidation")!.Invoke(null, [collection, config, TimeProvider.System]);
+            services = collection.BuildServiceProvider();
+            var type = api.GetType("Diten.Platform.API.Security.TrustedWorkflowConsumerRequestExecutor", true)!;
+            var tenantInterface = type.GetConstructors().Single().GetParameters()[1].ParameterType;
+            var tenantType = tenantInterface.Assembly.GetType("Diten.Platform.Common.Tenancy.TenantContext", true)!;
+            executor = Activator.CreateInstance(type,
+                Activator.CreateInstance(api.GetType("Diten.Platform.API.Models.Workflow.TrustedWorkflowConsumerRequestParser", true)!)!,
+                Activator.CreateInstance(tenantType)!)!;
+            var optionsType = api.GetType("Diten.Platform.API.Configuration.TrustedWorkflowStartAuthorizationOptions", true)!;
+            var options = Activator.CreateInstance(optionsType)!;
+            var entries = (System.Collections.IList)optionsType.GetProperty("Entries")!.GetValue(options)!;
+            foreach (var profile in new[] { "GskuCorrection", "GskuRetirementRequest" })
+            {
+                if (drift == "missing-grant") continue;
+                var entry = Activator.CreateInstance(entries.GetType().GetGenericArguments()[0])!;
+                Set(entry, "ClientId", drift == "wrong-client" ? Guid.NewGuid() : clientId);
+                Set(entry, "ServiceName", "Diten.MDM"); Set(entry, "Audience", "TRUSTED_WORKFLOW_CONSUMER");
+                Set(entry, "ObjectType", profile); Set(entry, "TemplateCode", Template(profile));
+                entries.Add(entry);
+            }
+            policy = Activator.CreateInstance(api.GetType("Diten.Platform.API.Security.ConfiguredTrustedWorkflowStartAuthorizationPolicy", true)!,
+                Activator.CreateInstance(typeof(OptionsWrapper<>).MakeGenericType(optionsType), options)!)!;
+        }
+
+        public Task<ProductIdentityWorkflowServiceIdentity> GetAsync(Guid tenantId, bool forceRefresh,
+            CancellationToken cancellationToken = default)
+        {
+            Assert.Equal(TenantId, tenantId);
+            var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            var token = new JwtSecurityToken("test-auth",
+                drift == "audience" ? "TRUSTED_AUDIT_SOURCE_INGEST" : "TRUSTED_WORKFLOW_CONSUMER",
+                [new("sub", clientId.ToString("D")), new("tenant_id", TenantId.ToString("D")),
+                 new("actor_type", "service"), new("service_name", "Diten.MDM"),
+                 new("jti", Guid.NewGuid().ToString("D")), new("iat", now.ToString(System.Globalization.CultureInfo.InvariantCulture), ClaimValueTypes.Integer64)],
+                DateTimeOffset.FromUnixTimeSeconds(now).UtcDateTime,
+                DateTimeOffset.FromUnixTimeSeconds(now + 300).UtcDateTime,
+                new SigningCredentials(new RsaSecurityKey(rsa) { KeyId = "test-only-key" }, SecurityAlgorithms.RsaSha256));
+            return Task.FromResult(new ProductIdentityWorkflowServiceIdentity(
+                new JwtSecurityTokenHandler().WriteToken(token), DateTimeOffset.FromUnixTimeSeconds(now + 300)));
+        }
+
+        public string DelegatedToken() => new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(
+            "test-human", "test-human",
+            [new("sub", SubjectId.ToString("D")),
+             new("tenant_id", (drift == "tenant" ? Guid.NewGuid() : TenantId).ToString("D")),
+             new("actor_type", "tenant_user"), new("permission", "platform.workflow.instances.start")],
+            DateTime.UtcNow.AddSeconds(-1), DateTime.UtcNow.AddMinutes(2),
+            new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(humanSecret)), SecurityAlgorithms.HmacSha256)));
+
+        private Task<IActionResult> Start<TRequest, TService, TUser>(TRequest request, string key,
+            TService service, TUser user, CancellationToken ct)
+        {
+            var method = policy.GetType().GetMethod("IsAuthorized")!;
+            var contract = method.GetParameters()[0].ParameterType;
+            var authorized = (bool)method.Invoke(policy, [Activator.CreateInstance(contract,
+                Get(service!, "ClientId"), Get(service!, "ServiceName"), Get(service!, "Audience"),
+                Get(request!, "ObjectType"), Get(request!, "TemplateId"), Get(request!, "TemplateCode"))!])!;
+            Assert.Equal(TenantId, Get(service!, "TenantId"));
+            Assert.Equal(SubjectId, Get(user!, "UserId"));
+            if (!authorized) return Task.FromResult(Fail(403, "WORKFLOW_TRUSTED_CONSUMER_FORBIDDEN"));
+            LastKey = key;
+            return Validated(request!, "ObjectType", "ObjectId");
+        }
+        private Task<IActionResult> Result<TRequest, TService>(TRequest request, string key, TService service, CancellationToken ct)
+        {
+            Assert.Equal(TenantId, Get(service!, "TenantId"));
+            Assert.Equal(SubjectId, Get(request!, "ExpectedMakerSubjectId"));
+            LastKey = key;
+            return Validated(request!, "ExpectedObjectType", "ExpectedObjectId");
+        }
+        private Task<IActionResult> Evidence<TRequest, TService>(TRequest request, TService service, CancellationToken ct)
+        {
+            Assert.Equal(TenantId, Get(service!, "TenantId"));
+            return Validated(request!, "ExpectedObjectType", "ExpectedObjectId");
+        }
+        private Task<IActionResult> Validated(object request, string profile, string id)
+        {
+            ValidatedCalls++;
+            LastProfile = (string)Get(request, profile)!; LastObjectId = (string)Get(request, id)!;
+            return Task.FromResult(Fail(404, "OWNER_CONTRACT_VALIDATED_NO_WORKFLOW"));
+        }
+        private static IActionResult Fail(int status, string code) => new ObjectResult(new
+        { data = (object?)null, statusCode = status, isSuccessful = false, errors = new[] { code },
+          reason_code = code, correlation_id = "owner-contract-test" }) { StatusCode = status };
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            HttpCalls++;
+            using var scope = services.CreateScope();
+            var context = new DefaultHttpContext { RequestServices = scope.ServiceProvider };
+            context.Request.Method = request.Method.Method;
+            foreach (var header in request.Headers) context.Request.Headers[header.Key] = header.Value.ToArray();
+            Assert.False(context.Request.Headers.ContainsKey("X-Tenant-Id"));
+            var bytes = await request.Content!.ReadAsByteArrayAsync(ct);
+            context.Request.ContentType = "application/json"; context.Request.ContentLength = bytes.Length;
+            context.Request.Body = new MemoryStream(bytes);
+            var path = request.RequestUri!.AbsolutePath;
+            var (methodName, callbackName, arity) = path.EndsWith("/start", StringComparison.Ordinal)
+                ? ("ExecuteStartAsync", nameof(Start), 3)
+                : path.EndsWith("/start-result", StringComparison.Ordinal)
+                    ? ("ExecuteStartResultAsync", nameof(Result), 2)
+                    : ("ExecuteEvidenceAsync", nameof(Evidence), 2);
+            var method = executor.GetType().GetMethod(methodName)!;
+            var delegateType = method.GetParameters()[2].ParameterType;
+            var types = delegateType.GenericTypeArguments.Where(t => t.Assembly.GetName().Name!.StartsWith("Diten.Platform", StringComparison.Ordinal))
+                .Take(arity).ToArray();
+            var callback = GetType().GetMethod(callbackName, BindingFlags.Instance | BindingFlags.NonPublic)!
+                .MakeGenericMethod(types).CreateDelegate(delegateType, this);
+            var response = Assert.IsType<ObjectResult>(await (Task<IActionResult>)method.Invoke(executor,
+                [context, ct, callback, (Func<int, string, IActionResult>)Fail])!);
+            return Json((HttpStatusCode)response.StatusCode!, JsonSerializer.Serialize(response.Value));
+        }
+        private static object? Get(object instance, string name) => instance.GetType().GetProperty(name)!.GetValue(instance);
+        private static void Set(object instance, string name, object value) => instance.GetType().GetProperty(name)!.SetValue(instance, value);
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) { services.Dispose(); rsa.Dispose(); AssemblyLoadContext.Default.Resolving -= resolver; }
+            base.Dispose(disposing);
+        }
     }
 
     private static PlatformProductIdentityWorkflowClient Client(HttpMessageHandler handler, IProductIdentityWorkflowServiceIdentityProvider identities) =>

@@ -275,7 +275,7 @@ public sealed class PlatformProductIdentityWorkflowClient : IProductIdentityWork
         && ValidOptionalText(value.ReasonCode, 128) && ValidUtc(value.DueAt);
     private static bool ValidObject(string objectType, string objectId) =>
         objectType is "GlobalProduct" or "GlobalProductCorrection" or "GlobalProductRetirement"
-            or "gsku" or "lsku" or "finished-good"
+            or "gsku" or "GskuCorrection" or "GskuRetirementRequest" or "lsku" or "finished-good"
         && Guid.TryParseExact(objectId, "D", out var id) && id != Guid.Empty;
     private static bool ValidStartResult(
         ProductIdentityWorkflowStartResult value,
