@@ -4,6 +4,7 @@ using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Features.Knowledge.AudienceProfile.Commands;
 using Diten.CrmService.Application.Features.Knowledge.AudienceProfile.Handlers;
 using Diten.CrmService.Application.Features.Knowledge.AudienceProfile.Queries;
+using Diten.CrmService.Application.Features.Knowledge.Concept;
 using Diten.CrmService.Application.Features.Knowledge.Content;
 using Diten.CrmService.Application.Features.Knowledge.Content.Commands;
 using Diten.CrmService.Application.Features.Knowledge.Content.Handlers;
@@ -782,6 +783,36 @@ public sealed class KnowledgeContentRuntimeTests
         var r = await fx.CreateProfile().Handle(new CreateAudienceProfileCommand(
             "AP-NS", "No subject", Jan1, SubjectId: Guid.NewGuid()), default);
         Assert.Equal(400, r.StatusCode);
+    }
+
+    [Fact]
+    public async Task AudienceProfile_create_emits_mod0162_audit_event()
+    {
+        var fx = new Fixture(TenantA);
+        var audit = new CapturingAudienceAudit();
+        var handler = new CreateAudienceProfileHandler(
+            Tenant(TenantA), new NullActorContext(), fx.Profiles, fx.Subjects, audit);
+
+        var r = await handler.Handle(new CreateAudienceProfileCommand(
+            "AP-AUD", "Audited", Jan1, Status: TaxonomyStatuses.Active), default);
+
+        Assert.Equal(201, r.StatusCode);
+        var evt = Assert.Single(audit.Events);
+        Assert.Equal(KnowledgeReasonCodes.AudienceProfileCreated, evt.Event);
+        Assert.Equal(KnowledgeConceptAuditEntities.AudienceProfile, evt.EntityType);
+        Assert.Equal(r.Data, evt.EntityId);
+    }
+
+    private sealed class CapturingAudienceAudit : IKnowledgeConceptAuditPublisher
+    {
+        public List<(string Event, string EntityType, Guid EntityId, int Version, string? Detail)> Events { get; } = new();
+
+        public Task PublishAsync(string eventName, Guid tenantId, string entityType, Guid entityId, int version,
+            string? detail, CancellationToken cancellationToken)
+        {
+            Events.Add((eventName, entityType, entityId, version, detail));
+            return Task.CompletedTask;
+        }
     }
 
     // ---------------- in-memory fakes (Update = no-op; handlers mutate the tracked reference in place) ----------------

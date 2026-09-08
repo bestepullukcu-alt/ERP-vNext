@@ -1,6 +1,7 @@
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Features.Knowledge.AudienceProfile.Commands;
+using Diten.CrmService.Application.Features.Knowledge.Concept;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
 using MediatR;
@@ -85,13 +86,17 @@ public sealed class CreateAudienceProfileHandler : IRequestHandler<CreateAudienc
     private readonly IAudienceProfileRepository _repository;
     private readonly ISubjectRepository _subjects;
 
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
+
     public CreateAudienceProfileHandler(
-        ITenantContext tenant, IActorContext actor, IAudienceProfileRepository repository, ISubjectRepository subjects)
+        ITenantContext tenant, IActorContext actor, IAudienceProfileRepository repository, ISubjectRepository subjects,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _repository = repository;
         _subjects = subjects;
+        _audit = audit;
     }
 
     public async Task<Response<Guid>> Handle(CreateAudienceProfileCommand request, CancellationToken cancellationToken)
@@ -157,6 +162,12 @@ public sealed class CreateAudienceProfileHandler : IRequestHandler<CreateAudienc
         };
 
         await _repository.InsertAsync(profile, cancellationToken);
+        if (_audit is not null)
+        {
+            await _audit.PublishAsync(KnowledgeReasonCodes.AudienceProfileCreated, tenantId,
+                KnowledgeConceptAuditEntities.AudienceProfile, profile.Id, profile.Version, profile.ProfileCode, cancellationToken);
+        }
+
         return Response<Guid>.Success(profile.Id, 201);
     }
 }
@@ -168,13 +179,17 @@ public sealed class UpdateAudienceProfileHandler : IRequestHandler<UpdateAudienc
     private readonly IAudienceProfileRepository _repository;
     private readonly ISubjectRepository _subjects;
 
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
+
     public UpdateAudienceProfileHandler(
-        ITenantContext tenant, IActorContext actor, IAudienceProfileRepository repository, ISubjectRepository subjects)
+        ITenantContext tenant, IActorContext actor, IAudienceProfileRepository repository, ISubjectRepository subjects,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _repository = repository;
         _subjects = subjects;
+        _audit = audit;
     }
 
     public async Task<Response<bool>> Handle(UpdateAudienceProfileCommand request, CancellationToken cancellationToken)
@@ -242,6 +257,12 @@ public sealed class UpdateAudienceProfileHandler : IRequestHandler<UpdateAudienc
         profile.UpdatedBy = _actor.ActorName;
 
         await _repository.UpdateAsync(profile, cancellationToken);
+        if (_audit is not null)
+        {
+            await _audit.PublishAsync(KnowledgeReasonCodes.AudienceProfileUpdated, tenantId,
+                KnowledgeConceptAuditEntities.AudienceProfile, profile.Id, profile.Version, profile.ProfileCode, cancellationToken);
+        }
+
         return Response<bool>.Success(true);
     }
 }
@@ -251,13 +272,16 @@ public sealed class ArchiveAudienceProfileHandler : IRequestHandler<ArchiveAudie
     private readonly ITenantContext _tenant;
     private readonly IActorContext _actor;
     private readonly IAudienceProfileRepository _repository;
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
 
     public ArchiveAudienceProfileHandler(
-        ITenantContext tenant, IActorContext actor, IAudienceProfileRepository repository)
+        ITenantContext tenant, IActorContext actor, IAudienceProfileRepository repository,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _repository = repository;
+        _audit = audit;
     }
 
     public async Task<Response<bool>> Handle(
@@ -287,6 +311,12 @@ public sealed class ArchiveAudienceProfileHandler : IRequestHandler<ArchiveAudie
         profile.UpdatedBy = _actor.ActorName;
 
         await _repository.UpdateAsync(profile, cancellationToken);
+        if (_audit is not null)
+        {
+            await _audit.PublishAsync(KnowledgeReasonCodes.AudienceProfileArchived, tenantId,
+                KnowledgeConceptAuditEntities.AudienceProfile, profile.Id, profile.Version, profile.ProfileCode, cancellationToken);
+        }
+
         return Response<bool>.Success(true);
     }
 }
@@ -297,13 +327,16 @@ public sealed class UnarchiveAudienceProfileHandler
     private readonly ITenantContext _tenant;
     private readonly IActorContext _actor;
     private readonly IAudienceProfileRepository _repository;
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
 
     public UnarchiveAudienceProfileHandler(
-        ITenantContext tenant, IActorContext actor, IAudienceProfileRepository repository)
+        ITenantContext tenant, IActorContext actor, IAudienceProfileRepository repository,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _repository = repository;
+        _audit = audit;
     }
 
     public async Task<Response<bool>> Handle(
@@ -342,6 +375,12 @@ public sealed class UnarchiveAudienceProfileHandler
         profile.UpdatedBy = _actor.ActorName;
 
         await _repository.UpdateAsync(profile, cancellationToken);
+        if (_audit is not null)
+        {
+            await _audit.PublishAsync(KnowledgeReasonCodes.AudienceProfileUpdated, tenantId,
+                KnowledgeConceptAuditEntities.AudienceProfile, profile.Id, profile.Version, profile.ProfileCode, cancellationToken);
+        }
+
         return Response<bool>.Success(true);
     }
 }
