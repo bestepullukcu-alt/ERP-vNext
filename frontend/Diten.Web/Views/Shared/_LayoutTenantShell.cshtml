@@ -79,6 +79,7 @@
     var canReadTalentDevelopmentNetwork = Perms.Has("tep.talent-development-network.read");
     var canReadIndustrySuccessionPool = Perms.Has("tep.industry-succession-pool.read");
     var canReadVerifiedCertificationRegistry = Perms.Has("tep.verified-certification-registry.read");
+    var canReadMentorshipRecommendationNetwork = Perms.Has("tep.mentorship-recommendation-network.read");
     var canReadMetricSemanticRegistry = Perms.Has("dki.metric-semantic-registry.read");
     var canReadDataWarehouseLakehouse = Perms.Has("dki.data-warehouse-lakehouse.read");
     var canReadEtlEltPipelines = Perms.Has("dki.etl-elt-pipelines.read");
@@ -509,7 +510,7 @@
                             </li>
                         }
                     }
-                    @if (canReadTepShell || canReadConsentVisibilityPolicies || canReadAssociationMemberships || canReadVerifiedParticipants || canReadReviewBoard || canReadTrustLevels || canReadCandidateProfiles || canReadExitReferenceRecords || canReadReferenceExchange || canReadRehireRecommendations || canReadCandidateDisputes || canReadTalentDataFoundation || canReadHiringRiskIndicators || canReadEarlyWarningSignals || canReadRestrictedIntegrityRegistry || canReadProfessionalReputationLedger || canReadIndustryTalentPool || canReadIndustrySkillPassport || canReadCandidateCareerPassport || canReadTalentDevelopmentNetwork || canReadIndustrySuccessionPool || canReadVerifiedCertificationRegistry)
+                    @if (canReadTepShell || canReadConsentVisibilityPolicies || canReadAssociationMemberships || canReadVerifiedParticipants || canReadReviewBoard || canReadTrustLevels || canReadCandidateProfiles || canReadExitReferenceRecords || canReadReferenceExchange || canReadRehireRecommendations || canReadCandidateDisputes || canReadTalentDataFoundation || canReadHiringRiskIndicators || canReadEarlyWarningSignals || canReadRestrictedIntegrityRegistry || canReadProfessionalReputationLedger || canReadIndustryTalentPool || canReadIndustrySkillPassport || canReadCandidateCareerPassport || canReadTalentDevelopmentNetwork || canReadIndustrySuccessionPool || canReadVerifiedCertificationRegistry || canReadMentorshipRecommendationNetwork)
                     {
                         <li class="menu-header small text-uppercase">
                             <span class="menu-header-text">@SharedLocalizer["TalentEcosystem"]</span>
@@ -709,6 +710,15 @@
                                 <a href="/TalentEcosystem/VerifiedCertificationRegistry" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-certification"></i>
                                     <div>@SharedLocalizer["VerifiedCertificationRegistryMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadMentorshipRecommendationNetwork)
+                        {
+                            <li class="menu-item @(activeController == "MentorshipRecommendationNetwork" ? "active" : "")">
+                                <a href="/TalentEcosystem/MentorshipRecommendationNetwork" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-user-voice"></i>
+                                    <div>@SharedLocalizer["MentorshipRecommendationNetworkMenu"]</div>
                                 </a>
                             </li>
                         }

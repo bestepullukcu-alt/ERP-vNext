@@ -301,6 +301,11 @@ public static class DataSeeder
             new("tep", "verified-certification-registry", "manage", "Verified Certification Registry Manage", null),
             new("tep", "verified-certification-registry", "read", "Verified Certification Registry Read", null),
 
+            new("tep", "mentorship-recommendation-network", "audit.read", "Mentorship Recommendation Network Audit Read", null),
+            new("tep", "mentorship-recommendation-network", "evaluate", "Mentorship Recommendation Network Evaluate", null),
+            new("tep", "mentorship-recommendation-network", "manage", "Mentorship Recommendation Network Manage", null),
+            new("tep", "mentorship-recommendation-network", "read", "Mentorship Recommendation Network Read", null),
+
             new("dki", "metric-semantic-registry", "audit.read", "Metric Semantic Registry Audit Read", null),
             new("dki", "metric-semantic-registry", "evaluate", "Metric Semantic Registry Evaluate", null),
             new("dki", "metric-semantic-registry", "manage", "Metric Semantic Registry Manage", null),
