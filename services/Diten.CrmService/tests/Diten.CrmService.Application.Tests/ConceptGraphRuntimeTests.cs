@@ -74,6 +74,7 @@ public sealed class ConceptGraphRuntimeTests
             => new(Tenant(TenantId), new NullActorContext(), Templates, Types);
         public UpdateConceptChainTemplateHandler UpdateTemplate()
             => new(Tenant(TenantId), new NullActorContext(), Templates, Types);
+        public GetConceptChainTemplateHandler GetTemplate() => new(Tenant(TenantId), Templates);
 
         public CreateKnowledgeContentConceptLinkHandler CreateLink()
             => new(Tenant(TenantId), new NullActorContext(), Links, Contents, Nodes, Relationships);
@@ -884,6 +885,103 @@ public sealed class ConceptGraphRuntimeTests
         Assert.Equal(KnowledgeConceptAuditEvents.NodeWithRelationshipCreated, evt.Event);
         Assert.Equal(KnowledgeConceptAuditEntities.ConceptNode, evt.EntityType);
         Assert.Equal(r.Data!.ConceptNodeId, evt.EntityId);
+    }
+
+    // ---------------- SCMM-10 (③) ConceptChainTemplate branched extend ----------------
+
+    [Fact] // 51  branched structure persists + reads back with cardinality + moderator/for-whom refs
+    public async Task Branched_template_round_trips()
+    {
+        var fx = new Fixture(TenantA);
+        var s = fx.SeedSubject();
+        var t1 = await fx.SeedType(s, "T1");
+        var t2 = await fx.SeedType(s, "T2");
+        var branches = new[]
+        {
+            new ConceptChainBranchInput("BR1", new[]
+            {
+                new ConceptChainStepInput(t1, 1, 2, new[] { "role:moderator" }, new[] { "aud:cardiology" }),
+                new ConceptChainStepInput(t2, 0, null)
+            }, "Primary", 0)
+        };
+        var created = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CHN-1", "Chain 1", new[] { t1, t2 }, Jan1, Branches: branches), default);
+        Assert.Equal(201, created.StatusCode);
+
+        var dto = (await fx.GetTemplate().Handle(new GetConceptChainTemplateQuery(created.Data), default)).Data!;
+        var br = Assert.Single(dto.Branches);
+        Assert.Equal("BR1", br.BranchCode);
+        Assert.Equal(2, br.Steps.Count);
+        Assert.Equal(1, br.Steps[0].MinSelection);
+        Assert.Equal(2, br.Steps[0].MaxSelection);
+        Assert.Contains("role:moderator", br.Steps[0].AllowedRoleRefs);       // moderator axis
+        Assert.Contains("aud:cardiology", br.Steps[0].AudienceDimensionRefs); // for-whom axis
+        Assert.Null(br.Steps[1].MaxSelection);                                // unbounded stays null (no engine fills it)
+    }
+
+    [Fact] // 52  a legacy flat template migrates read-time to a single branch (back-compat)
+    public async Task Legacy_flat_template_migrates_to_single_branch()
+    {
+        var fx = new Fixture(TenantA);
+        var s = fx.SeedSubject();
+        var t1 = await fx.SeedType(s, "T1");
+        var t2 = await fx.SeedType(s, "T2");
+        var created = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CHN-2", "Chain 2", new[] { t1, t2 }, Jan1), default); // NO branches — legacy
+        Assert.Equal(201, created.StatusCode);
+
+        var dto = (await fx.GetTemplate().Handle(new GetConceptChainTemplateQuery(created.Data), default)).Data!;
+        var br = Assert.Single(dto.Branches);                 // exactly one derived branch
+        Assert.Equal("B1", br.BranchCode);
+        Assert.Equal(new[] { t1, t2 }, br.Steps.Select(x => x.ConceptTypeId).ToArray());
+    }
+
+    [Fact] // 53  publish freezes the branch structure — changing it needs a new version (409)
+    public async Task Published_template_branch_change_returns_409()
+    {
+        var fx = new Fixture(TenantA);
+        var s = fx.SeedSubject();
+        var t1 = await fx.SeedType(s, "T1");
+        var t2 = await fx.SeedType(s, "T2");
+        var branches = new[] { new ConceptChainBranchInput("BR1", new[]
+            { new ConceptChainStepInput(t1), new ConceptChainStepInput(t2) }) };
+        var created = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CHN-3", "Chain 3", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published, Branches: branches), default);
+        Assert.Equal(201, created.StatusCode);
+
+        var changed = new[] { new ConceptChainBranchInput("BR1", new[] { new ConceptChainStepInput(t1, 2, 3) }) };
+        var upd = await fx.UpdateTemplate().Handle(new UpdateConceptChainTemplateCommand(
+            created.Data, "Chain 3", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published, Branches: changed), default);
+        Assert.Equal(409, upd.StatusCode);
+    }
+
+    [Fact] // 54  step cardinality: MaxSelection < MinSelection is rejected
+    public async Task Branch_step_max_below_min_returns_400()
+    {
+        var fx = new Fixture(TenantA);
+        var s = fx.SeedSubject();
+        var t1 = await fx.SeedType(s, "T1");
+        var t2 = await fx.SeedType(s, "T2");
+        var branches = new[] { new ConceptChainBranchInput("BR1", new[] { new ConceptChainStepInput(t1, 3, 2) }) };
+        var r = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CHN-4", "Chain 4", new[] { t1, t2 }, Jan1, Branches: branches), default);
+        Assert.Equal(400, r.StatusCode);
+    }
+
+    [Fact] // 55  a branch step type must belong to the template's subject
+    public async Task Branch_step_cross_subject_type_returns_400()
+    {
+        var fx = new Fixture(TenantA);
+        var s = fx.SeedSubject();
+        var other = fx.SeedSubject();
+        var t1 = await fx.SeedType(s, "T1");
+        var t2 = await fx.SeedType(s, "T2");
+        var foreign = await fx.SeedType(other, "TX");
+        var branches = new[] { new ConceptChainBranchInput("BR1", new[]
+            { new ConceptChainStepInput(t1), new ConceptChainStepInput(foreign) }) };
+        var r = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CHN-5", "Chain 5", new[] { t1, t2 }, Jan1, Branches: branches), default);
+        Assert.Equal(400, r.StatusCode);
     }
 
     // ============================================================ in-memory fakes

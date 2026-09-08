@@ -73,8 +73,24 @@ public sealed record ConceptRelationshipDto(
 
 public sealed record ConceptRelationshipListDto(IReadOnlyList<ConceptRelationshipDto> Items, int Total);
 
+/// <summary>SCMM-10 (③, RM2) read model for one branch step: the concept type plus cardinality + moderator/for-whom refs.</summary>
+public sealed record ConceptChainStepDto(
+    Guid ConceptTypeId,
+    int MinSelection,
+    int? MaxSelection,
+    IReadOnlyList<string> AllowedRoleRefs,
+    IReadOnlyList<string> AudienceDimensionRefs);
+
+/// <summary>SCMM-10 (③, RM2) read model for one parallel branch.</summary>
+public sealed record ConceptChainBranchDto(
+    string BranchCode,
+    string? BranchName,
+    int SortOrder,
+    IReadOnlyList<ConceptChainStepDto> Steps);
+
 /// <summary>MOD-0162 FU03 read model for a chain template. <c>OrderedConceptTypes</c> is the frozen (once published)
-/// sequence of ConceptType ids. <c>ChainVersion</c> is the business version (not the concurrency token).</summary>
+/// spine sequence of ConceptType ids. <c>Branches</c> is the SCMM-10 (③) rich structure — always present on read: a
+/// legacy flat template is migrated read-time to a single branch. <c>ChainVersion</c> is the business version.</summary>
 public sealed record ConceptChainTemplateDto(
     Guid ConceptChainTemplateId,
     Guid SubjectId,
@@ -82,6 +98,7 @@ public sealed record ConceptChainTemplateDto(
     string ChainName,
     string? Description,
     IReadOnlyList<Guid> OrderedConceptTypes,
+    IReadOnlyList<ConceptChainBranchDto> Branches,
     string Status,
     string ChainVersion,
     DateTimeOffset EffectiveFrom,

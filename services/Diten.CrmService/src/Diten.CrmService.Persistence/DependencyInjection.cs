@@ -563,6 +563,21 @@ public static class DependencyInjection
             map.GetMemberMap(x => x.OrderedConceptTypes)
                 .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
         });
+        // SCMM-10 (③) — the embedded branch/step value objects MUST register their own class map or the step's
+        // ConceptTypeId Guid falls through to the global Standard (binary sub-type 4) serializer and every branch-step
+        // type lookup silently returns nothing (the KnowledgePathStep lesson).
+        if (!BsonClassMap.IsClassMapRegistered(typeof(ConceptChainBranch)))
+        {
+            BsonClassMap.RegisterClassMap<ConceptChainBranch>(map => map.AutoMap());
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(ConceptChainStep)))
+        {
+            BsonClassMap.RegisterClassMap<ConceptChainStep>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(s => s.ConceptTypeId).SetSerializer(stringGuid);
+            });
+        }
         Map<KnowledgeContentConceptLink>(map =>
         {
             map.GetMemberMap(x => x.KnowledgeContentId).SetSerializer(stringGuid);

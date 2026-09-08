@@ -43,7 +43,8 @@ public sealed class KnowledgeConceptChainTemplatesController : CustomBaseControl
         => CreateActionResultInstance(await _mediator.Send(
             new CreateConceptChainTemplateCommand(
                 request.SubjectId, request.ChainCode, request.ChainName, request.OrderedConceptTypes,
-                request.EffectiveFrom, request.Description, request.Status, request.ChainVersion, request.EffectiveTo),
+                request.EffectiveFrom, request.Description, request.Status, request.ChainVersion, request.EffectiveTo,
+                ToBranchInputs(request.Branches)),
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/concept-chain-templates/{templateId:guid}")]
@@ -53,7 +54,7 @@ public sealed class KnowledgeConceptChainTemplatesController : CustomBaseControl
         => CreateActionResultInstance(await _mediator.Send(
             new UpdateConceptChainTemplateCommand(
                 templateId, request.ChainName, request.OrderedConceptTypes, request.EffectiveFrom, request.Description,
-                request.Status, request.ChainVersion, request.EffectiveTo),
+                request.Status, request.ChainVersion, request.EffectiveTo, ToBranchInputs(request.Branches)),
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/concept-chain-templates/{templateId:guid}/archive")]
@@ -61,4 +62,13 @@ public sealed class KnowledgeConceptChainTemplatesController : CustomBaseControl
     public async Task<IActionResult> Archive(Guid templateId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new ArchiveConceptChainTemplateCommand(templateId), cancellationToken));
+
+    // SCMM-10 (③) — maps the API branch request shape onto the application command input. Null stays null (legacy mode).
+    private static IReadOnlyList<ConceptChainBranchInput>? ToBranchInputs(IReadOnlyList<ConceptChainBranchRequest>? branches)
+        => branches?.Select(b => new ConceptChainBranchInput(
+            b.BranchCode,
+            (b.Steps ?? Array.Empty<ConceptChainStepRequest>()).Select(s => new ConceptChainStepInput(
+                s.ConceptTypeId, s.MinSelection, s.MaxSelection, s.AllowedRoleRefs, s.AudienceDimensionRefs)).ToList(),
+            b.BranchName,
+            b.SortOrder)).ToList();
 }
