@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="SuccessionTitle" xml:space="preserve"><value>Yedekleme / Yüksek Potansiyel</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Is akisi veya entegrasyon yuzeyi acmadan hazirlik metadatasini inceleyin.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Yedekleme / Yüksek Potansiyel Detayi</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Gorunen Ad</value></data>
+  <data name="SuccessionReadinessState" xml:space="preserve"><value>Hazirlik Durumu</value></data>
+  <data name="SuccessionPoolBoundaryState" xml:space="preserve"><value>Yedekleme Havuzu Sinir Durumu</value></data>
+  <data name="HighPotentialIdentificationBoundaryState" xml:space="preserve"><value>Yuksek Potansiyel Belirleme Sinir Durumu</value></data>
+  <data name="NominationWorkflowBoundaryState" xml:space="preserve"><value>Aday Gosterme Is Akisi Sinir Durumu</value></data>
+  <data name="ReadinessAssessmentBoundaryState" xml:space="preserve"><value>Hazirlik Degerlendirme Sinir Durumu</value></data>
+  <data name="TalentReviewBoundaryState" xml:space="preserve"><value>Yetenek Degerlendirme Sinir Durumu</value></data>
+  <data name="AutomatedDecisionBoundaryState" xml:space="preserve"><value>Otomatik Karar Sinir Durumu</value></data>
+  <data name="TalentProfileDependencyState" xml:space="preserve"><value>Yetenek Profili Bagimlilik Durumu</value></data>
+  <data name="PositionFrameworkDependencyState" xml:space="preserve"><value>Pozisyon Cercevesi Bagimlilik Durumu</value></data>
+  <data name="DocumentDependencyState" xml:space="preserve"><value>Belge Bagimlilik Durumu</value></data>
+  <data name="NotificationDependencyState" xml:space="preserve"><value>Bildirim Bagimlilik Durumu</value></data>
+  <data name="ConsentPreconditionState" xml:space="preserve"><value>Riza On Kosul Durumu</value></data>
+  <data name="DataMinimizationState" xml:space="preserve"><value>Veri Minimizasyon Durumu</value></data>
+  <data name="RetentionPolicyState" xml:space="preserve"><value>Saklama Politikasi Durumu</value></data>
+  <data name="EvidencePolicyState" xml:space="preserve"><value>Kanıt Politikasi Durumu</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Kaynak Kontrat Versiyonu</value></data>
+  <data name="SuccessionReadinessVersion" xml:space="preserve"><value>Hazirlik Versiyonu</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Son Degerlendirme Zamani</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Erteleme Nedeni</value></data>
+  <data name="Actions" xml:space="preserve"><value>Aksiyonlar</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Yeni Ekle</value></data>
+  <data name="Back" xml:space="preserve"><value>Geri</value></data>
+  <data name="Unauthorized" xml:space="preserve"><value>Bu islemi yapmaya yetkiniz yok.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni Yedekleme Hazırlığı</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik ve Kontrat</value></data>
+  <data name="WorkflowSection" xml:space="preserve"><value>Hazirlik ve Is Akisi</value></data>
+  <data name="DependencySection" xml:space="preserve"><value>Bagimliliklar</value></data>
+  <data name="GovernanceSection" xml:space="preserve"><value>Yonetisim ve Politika</value></data>
+  <data name="DeferralSection" xml:space="preserve"><value>Erteleme</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>orn. SUC-CORE-001</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>Hazirlik kaydi gorunen adi</value></data>
+  <data name="Evaluate" xml:space="preserve"><value>Degerlendir</value></data>
+  <data name="EvaluateConfirm" xml:space="preserve"><value>Bu hazirlik kaydi yeniden degerlendirilsin mi?</value></data>
+  <data name="RecordEvaluated" xml:space="preserve"><value>Hazirlik yeniden degerlendirildi.</value></data>
+  <data name="StateDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StateReady" xml:space="preserve"><value>Hazir</value></data>
+  <data name="StateDeferred" xml:space="preserve"><value>Ertelendi</value></data>
+  <data name="StateBlocked" xml:space="preserve"><value>Bloklu</value></data>
+  <data name="StateNotRequired" xml:space="preserve"><value>Gerekli Degil</value></data>
+  <data name="StateArchived" xml:space="preserve"><value>Arsivlendi</value></data>
+</root>

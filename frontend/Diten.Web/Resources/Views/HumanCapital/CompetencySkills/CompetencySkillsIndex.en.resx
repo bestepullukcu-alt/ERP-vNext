@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CompetencySkillsTitle" xml:space="preserve"><value>Competency Skills</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Inspect readiness metadata without opening workflow or integration surfaces.</value></data>
+  <data name="TotalRecords" xml:space="preserve"><value>Total Records</value></data>
+  <data name="TotalRecordsDescription" xml:space="preserve"><value>Tenant-scoped readiness metadata.</value></data>
+  <data name="ReadyRecords" xml:space="preserve"><value>Ready</value></data>
+  <data name="ReadyRecordsDescription" xml:space="preserve"><value>Records whose metadata gates are satisfied.</value></data>
+  <data name="DeferredRecords" xml:space="preserve"><value>Deferred</value></data>
+  <data name="DeferredRecordsDescription" xml:space="preserve"><value>Records waiting on preconditions.</value></data>
+  <data name="BlockedRecords" xml:space="preserve"><value>Blocked</value></data>
+  <data name="BlockedRecordsDescription" xml:space="preserve"><value>Records held by explicit readiness blockers.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Competency Skills Details</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Select a readiness record to inspect its metadata.</value></data>
+  <data name="AuditMetadata" xml:space="preserve"><value>Audit Metadata</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Display Name</value></data>
+  <data name="CompetencySkillsReadinessState" xml:space="preserve"><value>Readiness State</value></data>
+  <data name="AssessmentWorkflowBoundaryState" xml:space="preserve"><value>Readiness Boundary State</value></data>
+  <data name="CompetencyFrameworkDependencyState" xml:space="preserve"><value>Framework Dependency State</value></data>
+  <data name="SkillTaxonomyDependencyState" xml:space="preserve"><value>Catalog Dependency State</value></data>
+  <data name="ManagerAssessmentUxBoundaryState" xml:space="preserve"><value>Supervisor UX Boundary State</value></data>
+  <data name="EmployeeAssessmentUxBoundaryState" xml:space="preserve"><value>Employee UX Boundary State</value></data>
+  <data name="NotificationDependencyState" xml:space="preserve"><value>Message Dependency State</value></data>
+  <data name="DocumentDependencyState" xml:space="preserve"><value>Artifact Dependency State</value></data>
+  <data name="ConsentPreconditionState" xml:space="preserve"><value>Consent Precondition State</value></data>
+  <data name="DataMinimizationState" xml:space="preserve"><value>Data Minimization State</value></data>
+  <data name="RetentionPolicyState" xml:space="preserve"><value>Retention Policy State</value></data>
+  <data name="EvidencePolicyState" xml:space="preserve"><value>Evidence Policy State</value></data>
+  <data name="DependencyStates" xml:space="preserve"><value>Dependency States</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Source Contract Version</value></data>
+  <data name="CompetencySkillsReadinessVersion" xml:space="preserve"><value>Readiness Version</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Last Evaluated At</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Deferred Reason</value></data>
+  <data name="EvaluateDisabled" xml:space="preserve"><value>Evaluate disabled</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Manage disabled</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Add New</value></data>
+  <data name="Back" xml:space="preserve"><value>Back</value></data>
+  <data name="Unauthorized" xml:space="preserve"><value>You are not authorized to perform this action.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>New Competency Skills Readiness</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identity &amp; Contract</value></data>
+  <data name="WorkflowSection" xml:space="preserve"><value>Readiness &amp; Workflow</value></data>
+  <data name="DependencySection" xml:space="preserve"><value>Dependencies</value></data>
+  <data name="GovernanceSection" xml:space="preserve"><value>Governance &amp; Policy</value></data>
+  <data name="DeferralSection" xml:space="preserve"><value>Deferral</value></data>
+  <data name="SkillScoringBoundaryState" xml:space="preserve"><value>Skill Scoring Boundary State</value></data>
+  <data name="RatingBoundaryState" xml:space="preserve"><value>Rating Boundary State</value></data>
+  <data name="CalibrationBoundaryState" xml:space="preserve"><value>Calibration Boundary State</value></data>
+  <data name="RankingBoundaryState" xml:space="preserve"><value>Ranking Boundary State</value></data>
+  <data name="AutomatedDecisionBoundaryState" xml:space="preserve"><value>Automated Decision Boundary State</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>e.g. CS-CORE-001</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>Readiness record display name</value></data>
+  <data name="Evaluate" xml:space="preserve"><value>Evaluate</value></data>
+  <data name="EvaluateConfirm" xml:space="preserve"><value>Re-evaluate this readiness record?</value></data>
+  <data name="RecordEvaluated" xml:space="preserve"><value>Readiness re-evaluated.</value></data>
+  <data name="StateDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="StateReady" xml:space="preserve"><value>Ready</value></data>
+  <data name="StateDeferred" xml:space="preserve"><value>Deferred</value></data>
+  <data name="StateBlocked" xml:space="preserve"><value>Blocked</value></data>
+  <data name="StateNotRequired" xml:space="preserve"><value>Not Required</value></data>
+  <data name="StateArchived" xml:space="preserve"><value>Archived</value></data>
+</root>

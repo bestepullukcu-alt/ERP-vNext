@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="OfferManagementTitle" xml:space="preserve"><value>Offer Management</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Review offer readiness metadata without opening workflow, issuing, or payroll data surfaces.</value></data>
+  <data name="TotalRecords" xml:space="preserve"><value>Total Records</value></data>
+  <data name="TotalRecordsDescription" xml:space="preserve"><value>Tenant-scoped readiness metadata.</value></data>
+  <data name="ReadyRecords" xml:space="preserve"><value>Ready</value></data>
+  <data name="ReadyRecordsDescription" xml:space="preserve"><value>Records whose metadata gates are satisfied.</value></data>
+  <data name="DeferredRecords" xml:space="preserve"><value>Deferred</value></data>
+  <data name="DeferredRecordsDescription" xml:space="preserve"><value>Records waiting on preconditions.</value></data>
+  <data name="BlockedRecords" xml:space="preserve"><value>Blocked</value></data>
+  <data name="BlockedRecordsDescription" xml:space="preserve"><value>Records held by explicit readiness blockers.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Offer Management Details</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Select a readiness record to inspect its metadata.</value></data>
+  <data name="AuditMetadata" xml:space="preserve"><value>Audit Metadata</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Display Name</value></data>
+  <data name="OfferReadinessState" xml:space="preserve"><value>Offer Readiness State</value></data>
+  <data name="OfferWorkflowBoundaryState" xml:space="preserve"><value>Offer Flow Boundary State</value></data>
+  <data name="ApprovalWorkflowBoundaryState" xml:space="preserve"><value>Approval Boundary State</value></data>
+  <data name="CandidateAcceptanceBoundaryState" xml:space="preserve"><value>Candidate Response Boundary State</value></data>
+  <data name="OfferDocumentBoundaryState" xml:space="preserve"><value>Offer Artifact Boundary State</value></data>
+  <data name="CompensationDataBoundaryState" xml:space="preserve"><value>Comp Data Boundary State</value></data>
+  <data name="BenefitsDataBoundaryState" xml:space="preserve"><value>Benefit Data Boundary State</value></data>
+  <data name="PayrollDataBoundaryState" xml:space="preserve"><value>Pay Data Boundary State</value></data>
+  <data name="ConsentPreconditionState" xml:space="preserve"><value>Consent Precondition State</value></data>
+  <data name="DataMinimizationState" xml:space="preserve"><value>Data Minimization State</value></data>
+  <data name="RetentionPolicyState" xml:space="preserve"><value>Retention Policy State</value></data>
+  <data name="EvidencePolicyState" xml:space="preserve"><value>Evidence Policy State</value></data>
+  <data name="NotificationDependencyState" xml:space="preserve"><value>Notification Dependency State</value></data>
+  <data name="DocumentDependencyState" xml:space="preserve"><value>Artifact Dependency State</value></data>
+  <data name="DependencyStates" xml:space="preserve"><value>Dependency States</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Source Contract Version</value></data>
+  <data name="OfferReadinessVersion" xml:space="preserve"><value>Offer Readiness Version</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Last Evaluated At</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Deferred Reason</value></data>
+  <data name="EvaluateDisabled" xml:space="preserve"><value>Evaluate disabled</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Manage disabled</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Add New</value></data>
+  <data name="Back" xml:space="preserve"><value>Back</value></data>
+  <data name="Unauthorized" xml:space="preserve"><value>You are not authorized to perform this action.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>New Offer Readiness</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identity &amp; Contract</value></data>
+  <data name="WorkflowSection" xml:space="preserve"><value>Readiness &amp; Workflow</value></data>
+  <data name="DependencySection" xml:space="preserve"><value>Dependencies</value></data>
+  <data name="GovernanceSection" xml:space="preserve"><value>Governance &amp; Policy</value></data>
+  <data name="DeferralSection" xml:space="preserve"><value>Deferral</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>e.g. OFR-CORE-001</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>Readiness record display name</value></data>
+  <data name="Evaluate" xml:space="preserve"><value>Evaluate</value></data>
+  <data name="EvaluateConfirm" xml:space="preserve"><value>Re-evaluate this readiness record?</value></data>
+  <data name="RecordEvaluated" xml:space="preserve"><value>Readiness re-evaluated.</value></data>
+  <data name="StateDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="StateReady" xml:space="preserve"><value>Ready</value></data>
+  <data name="StateDeferred" xml:space="preserve"><value>Deferred</value></data>
+  <data name="StateBlocked" xml:space="preserve"><value>Blocked</value></data>
+  <data name="StateNotRequired" xml:space="preserve"><value>Not Required</value></data>
+  <data name="StateArchived" xml:space="preserve"><value>Archived</value></data>
+</root>

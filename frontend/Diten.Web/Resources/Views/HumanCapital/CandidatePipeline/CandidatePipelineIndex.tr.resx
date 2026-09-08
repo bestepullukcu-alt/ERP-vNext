@@ -41,4 +41,24 @@
   <data name="EvaluateDisabled" xml:space="preserve"><value>Değerlendirme kapalı</value></data>
   <data name="ManageDisabled" xml:space="preserve"><value>Yönetim kapalı</value></data>
   <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Yeni Ekle</value></data>
+  <data name="Back" xml:space="preserve"><value>Geri</value></data>
+  <data name="Unauthorized" xml:space="preserve"><value>Bu islemi yapmaya yetkiniz yok.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni Aday Süreci Hazırlığı</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik ve Kontrat</value></data>
+  <data name="WorkflowSection" xml:space="preserve"><value>Hazirlik ve Is Akisi</value></data>
+  <data name="DependencySection" xml:space="preserve"><value>Bagimliliklar</value></data>
+  <data name="GovernanceSection" xml:space="preserve"><value>Yonetisim ve Politika</value></data>
+  <data name="DeferralSection" xml:space="preserve"><value>Erteleme</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>orn. CP-001</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>Hazirlik kaydi gorunen adi</value></data>
+  <data name="Evaluate" xml:space="preserve"><value>Degerlendir</value></data>
+  <data name="EvaluateConfirm" xml:space="preserve"><value>Bu hazirlik kaydi yeniden degerlendirilsin mi?</value></data>
+  <data name="RecordEvaluated" xml:space="preserve"><value>Hazirlik yeniden degerlendirildi.</value></data>
+  <data name="StateDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StateReady" xml:space="preserve"><value>Hazir</value></data>
+  <data name="StateDeferred" xml:space="preserve"><value>Ertelendi</value></data>
+  <data name="StateBlocked" xml:space="preserve"><value>Bloklu</value></data>
+  <data name="StateNotRequired" xml:space="preserve"><value>Gerekli Degil</value></data>
+  <data name="StateArchived" xml:space="preserve"><value>Arsivlendi</value></data>
 </root>

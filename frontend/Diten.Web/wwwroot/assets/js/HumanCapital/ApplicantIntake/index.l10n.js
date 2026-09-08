@@ -4,12 +4,11 @@
     const doc = window['doc' + 'ument'];
     const source = doc.getElementById('applicant-intake-l10n');
     const requiredKeys = [
-        'Actions', 'AuditMetadata', 'ColumnVisibility', 'ErrorOccurred',
-        'EvaluateDisabled', 'Loading', 'ManageDisabled', 'NotAvailable',
-        'ViewDetails', 'Code', 'DisplayName', 'IntakeState',
-        'SourceChannelState', 'ConsentPreconditionState',
-        'DataMinimizationState', 'DuplicateHandlingState',
-        'SourceContractVersion', 'LastEvaluatedAt'
+        'Actions', 'AddNew', 'ColumnVisibility', 'ErrorOccurred', 'NotAvailable',
+        'ViewDetails', 'Details', 'Evaluate', 'RecordEvaluated', 'Delete',
+        'AreYouSure', 'RecordDeleted', 'Cancel', 'Search', 'Export',
+        'StateDraft', 'StateReady', 'StateDeferred', 'StateBlocked',
+        'StateNotRequired', 'StateArchived'
     ];
 
     const logMissingKeys = (dictionary) => {

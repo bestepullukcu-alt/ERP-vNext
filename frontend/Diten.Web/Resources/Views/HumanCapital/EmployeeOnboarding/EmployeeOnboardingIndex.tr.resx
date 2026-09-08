@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="EmployeeOnboardingTitle" xml:space="preserve"><value>Çalışan Onboarding</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Aksiyon, kurulum veya entegrasyon yüzeyleri açmadan çalışan onboarding hazırlık metadatasını inceleyin.</value></data>
+  <data name="TotalRecords" xml:space="preserve"><value>Toplam Kayıt</value></data>
+  <data name="TotalRecordsDescription" xml:space="preserve"><value>Tenant kapsamlı hazırlık metadatası.</value></data>
+  <data name="ReadyRecords" xml:space="preserve"><value>Hazır</value></data>
+  <data name="ReadyRecordsDescription" xml:space="preserve"><value>Metadata kapıları tamamlanan kayıtlar.</value></data>
+  <data name="DeferredRecords" xml:space="preserve"><value>Ertelenmiş</value></data>
+  <data name="DeferredRecordsDescription" xml:space="preserve"><value>Önkoşul bekleyen kayıtlar.</value></data>
+  <data name="BlockedRecords" xml:space="preserve"><value>Bloke</value></data>
+  <data name="BlockedRecordsDescription" xml:space="preserve"><value>Açık hazırlık engeli olan kayıtlar.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Çalışan Onboarding Detayları</value></data>
+  <data name="SelectRecord" xml:space="preserve"><value>Metadatasını incelemek için bir hazırlık kaydı seçin.</value></data>
+  <data name="AuditMetadata" xml:space="preserve"><value>Denetim Metadatası</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Görünen Ad</value></data>
+  <data name="OnboardingReadinessState" xml:space="preserve"><value>Onboarding Hazırlık Durumu</value></data>
+  <data name="LifecycleBoundaryState" xml:space="preserve"><value>Yaşam Döngüsü Sınırı Durumu</value></data>
+  <data name="ChecklistBoundaryState" xml:space="preserve"><value>Hazırlık Liste Sınırı Durumu</value></data>
+  <data name="ManagerActionBoundaryState" xml:space="preserve"><value>Yönetici Aksiyon Sınırı Durumu</value></data>
+  <data name="EmployeeActionBoundaryState" xml:space="preserve"><value>Çalışan Aksiyon Sınırı Durumu</value></data>
+  <data name="CandidateTransitionBoundaryState" xml:space="preserve"><value>Aday Geçiş Sınırı Durumu</value></data>
+  <data name="IdentityProvisioningBoundaryState" xml:space="preserve"><value>Kimlik Kurulum Sınırı Durumu</value></data>
+  <data name="AccessProvisioningBoundaryState" xml:space="preserve"><value>Erişim Kurulum Sınırı Durumu</value></data>
+  <data name="DeviceEquipmentProvisioningBoundaryState" xml:space="preserve"><value>Cihaz Ekipman Sınırı Durumu</value></data>
+  <data name="NotificationDependencyState" xml:space="preserve"><value>Bildirim Bağımlılık Durumu</value></data>
+  <data name="DocumentDependencyState" xml:space="preserve"><value>Artefakt Bağımlılık Durumu</value></data>
+  <data name="ConsentPreconditionState" xml:space="preserve"><value>Onay Önkoşul Durumu</value></data>
+  <data name="DataMinimizationState" xml:space="preserve"><value>Veri Minimizasyon Durumu</value></data>
+  <data name="RetentionPolicyState" xml:space="preserve"><value>Saklama Politikası Durumu</value></data>
+  <data name="EvidencePolicyState" xml:space="preserve"><value>Kanıt Politikası Durumu</value></data>
+  <data name="DependencyStates" xml:space="preserve"><value>Bağımlılık Durumları</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Kaynak Sözleşme Versiyonu</value></data>
+  <data name="OnboardingReadinessVersion" xml:space="preserve"><value>Onboarding Hazırlık Versiyonu</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Son Değerlendirme Zamanı</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Erteleme Nedeni</value></data>
+  <data name="EvaluateDisabled" xml:space="preserve"><value>Değerlendirme kapalı</value></data>
+  <data name="ManageDisabled" xml:space="preserve"><value>Yönetim kapalı</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Yeni Ekle</value></data>
+  <data name="Back" xml:space="preserve"><value>Geri</value></data>
+  <data name="Unauthorized" xml:space="preserve"><value>Bu islemi yapmaya yetkiniz yok.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni Çalışan Onboarding Hazırlığı</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik ve Kontrat</value></data>
+  <data name="WorkflowSection" xml:space="preserve"><value>Hazirlik ve Is Akisi</value></data>
+  <data name="DependencySection" xml:space="preserve"><value>Bagimliliklar</value></data>
+  <data name="GovernanceSection" xml:space="preserve"><value>Yonetisim ve Politika</value></data>
+  <data name="DeferralSection" xml:space="preserve"><value>Erteleme</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>orn. EO-001</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>Hazirlik kaydi gorunen adi</value></data>
+  <data name="Evaluate" xml:space="preserve"><value>Degerlendir</value></data>
+  <data name="EvaluateConfirm" xml:space="preserve"><value>Bu hazirlik kaydi yeniden degerlendirilsin mi?</value></data>
+  <data name="RecordEvaluated" xml:space="preserve"><value>Hazirlik yeniden degerlendirildi.</value></data>
+  <data name="StateDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StateReady" xml:space="preserve"><value>Hazir</value></data>
+  <data name="StateDeferred" xml:space="preserve"><value>Ertelendi</value></data>
+  <data name="StateBlocked" xml:space="preserve"><value>Bloklu</value></data>
+  <data name="StateNotRequired" xml:space="preserve"><value>Gerekli Degil</value></data>
+  <data name="StateArchived" xml:space="preserve"><value>Arsivlendi</value></data>
+</root>

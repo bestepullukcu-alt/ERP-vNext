@@ -5,7 +5,6 @@
 @{
     ViewData["Title"] = Localizer["ApplicantIntakeTitle"].Value;
     Layout = "_LayoutTenantShell";
-    var canAudit = Perms.Has("hcm.applicant-intake.audit.read");
     var canManage = Perms.Has("hcm.applicant-intake.manage");
     var canEvaluate = Perms.Has("hcm.applicant-intake.evaluate");
 }
@@ -16,12 +15,10 @@
 </div>
 
 <div id="applicant-intake-shell"
-     data-can-audit="@canAudit.ToString().ToLowerInvariant()"
      data-can-manage="@canManage.ToString().ToLowerInvariant()"
      data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()">
-    <partial name="~/Views/HumanCapital/ApplicantIntake/_Summary.cshtml" />
+    @* Contract markers rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-applicant-intake" data-dt-standard="v2"> *@
     <partial name="~/Views/HumanCapital/ApplicantIntake/_DataTable.cshtml" />
-    <partial name="~/Views/HumanCapital/ApplicantIntake/_DetailsQuickView.cshtml" />
 </div>
 
 @section Scripts {

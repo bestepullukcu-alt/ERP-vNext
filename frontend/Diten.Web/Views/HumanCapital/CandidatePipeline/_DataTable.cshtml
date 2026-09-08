@@ -1,9 +1,10 @@
 @using Diten.Web.Views.HumanCapital.CandidatePipeline
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<CandidatePipelineIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
 <div class="card">
-    <div id="candidate-pipeline-skeleton-loader" class="backbone-skeleton p-4">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
         <div class="shimmer skeleton-row skeleton-row-lg"></div>
         <div class="shimmer skeleton-row"></div>
         <div class="shimmer skeleton-row"></div>
@@ -17,7 +18,7 @@
                 <tr>
                     <th></th>
                     <th>@Localizer["Code"]</th>
-                    <th>@Localizer["DisplayName"]</th>
+                    <th class="all">@Localizer["DisplayName"]</th>
                     <th>@Localizer["PipelineReadinessState"]</th>
                     <th>@Localizer["PipelineStageGovernanceState"]</th>
                     <th>@Localizer["InterviewSchedulingReadinessState"]</th>

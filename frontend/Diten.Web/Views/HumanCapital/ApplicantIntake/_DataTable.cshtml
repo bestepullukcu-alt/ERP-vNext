@@ -1,6 +1,7 @@
 @using Diten.Web.Views.HumanCapital.ApplicantIntake
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<ApplicantIntakeIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
 <div class="card">
     <div id="skeleton-loader" class="backbone-skeleton p-4">
@@ -17,7 +18,7 @@
                 <tr>
                     <th></th>
                     <th>@Localizer["Code"]</th>
-                    <th>@Localizer["DisplayName"]</th>
+                    <th class="all">@Localizer["DisplayName"]</th>
                     <th>@Localizer["IntakeState"]</th>
                     <th>@Localizer["SourceChannelState"]</th>
                     <th>@Localizer["ConsentPreconditionState"]</th>
