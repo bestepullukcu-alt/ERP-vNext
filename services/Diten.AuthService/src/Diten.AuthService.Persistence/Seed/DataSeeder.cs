@@ -202,7 +202,12 @@ public static class DataSeeder
             new("tep", "early-warning-signals", "audit.read", "Early Warning Signals Audit Read", null),
             new("tep", "early-warning-signals", "evaluate", "Early Warning Signals Evaluate", null),
             new("tep", "early-warning-signals", "manage", "Early Warning Signals Manage", null),
-            new("tep", "early-warning-signals", "read", "Early Warning Signals Read", null)
+            new("tep", "early-warning-signals", "read", "Early Warning Signals Read", null),
+
+            new("tep", "restricted-integrity-registry", "audit.read", "Restricted Integrity Registry Audit Read", null),
+            new("tep", "restricted-integrity-registry", "evaluate", "Restricted Integrity Registry Evaluate", null),
+            new("tep", "restricted-integrity-registry", "manage", "Restricted Integrity Registry Manage", null),
+            new("tep", "restricted-integrity-registry", "read", "Restricted Integrity Registry Read", null)
         };
 
         foreach (var p in permissions)

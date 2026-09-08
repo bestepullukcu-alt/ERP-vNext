@@ -71,6 +71,7 @@
     var canReadTalentDataFoundation = Perms.Has("tep.talent-data-foundation.read");
     var canReadHiringRiskIndicators = Perms.Has("tep.hiring-risk-indicators.read");
     var canReadEarlyWarningSignals = Perms.Has("tep.early-warning-signals.read");
+    var canReadRestrictedIntegrityRegistry = Perms.Has("tep.restricted-integrity-registry.read");
 }
 <!DOCTYPE html>
 
@@ -494,7 +495,7 @@
                             </li>
                         }
                     }
-                    @if (canReadTepShell || canReadConsentVisibilityPolicies || canReadAssociationMemberships || canReadVerifiedParticipants || canReadReviewBoard || canReadTrustLevels || canReadCandidateProfiles || canReadExitReferenceRecords || canReadReferenceExchange || canReadRehireRecommendations || canReadCandidateDisputes || canReadTalentDataFoundation || canReadHiringRiskIndicators || canReadEarlyWarningSignals)
+                    @if (canReadTepShell || canReadConsentVisibilityPolicies || canReadAssociationMemberships || canReadVerifiedParticipants || canReadReviewBoard || canReadTrustLevels || canReadCandidateProfiles || canReadExitReferenceRecords || canReadReferenceExchange || canReadRehireRecommendations || canReadCandidateDisputes || canReadTalentDataFoundation || canReadHiringRiskIndicators || canReadEarlyWarningSignals || canReadRestrictedIntegrityRegistry)
                     {
                         <li class="menu-header small text-uppercase">
                             <span class="menu-header-text">@SharedLocalizer["TalentEcosystem"]</span>
@@ -622,6 +623,15 @@
                                 <a href="/TalentEcosystem/EarlyWarningSignals" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-bell-ring"></i>
                                     <div>@SharedLocalizer["EarlyWarningSignalsMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadRestrictedIntegrityRegistry)
+                        {
+                            <li class="menu-item @(activeController == "RestrictedIntegrityRegistry" ? "active" : "")">
+                                <a href="/TalentEcosystem/RestrictedIntegrityRegistry" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-lock-alt"></i>
+                                    <div>@SharedLocalizer["RestrictedIntegrityRegistryMenu"]</div>
                                 </a>
                             </li>
                         }
