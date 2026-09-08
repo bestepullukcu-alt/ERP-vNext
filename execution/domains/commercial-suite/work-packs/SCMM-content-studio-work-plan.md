@@ -82,7 +82,7 @@
 |---|---|---|---|---|
 | SCMM-09 | Concept catalog+relationships extend (①②) | CRM/domain | MOD-0162 | 03,04,05 ✅ | ✅ **ACCEPTED E2 (2026-09-07)** — c25a641e+0bcbcd5a+6a600830; color/isGroup/isList/parent+cycle-guard, combined-write atomic, audit MOD-0162; full suite 1619/0. UI=SCMM-09-UI ✅ ACCEPTED E1/E2 (51181f60, 7-dil L10n, verifier sıfır-yeni-fail), E4=fleet |
 | SCMM-10 | Versioned composition templates (③) | Domain+frontend | MOD-0162 | 09 ✅ | ✅ **ACCEPTED E2 (2308982f+900c12da)** — branched hat + cardinality + moderator + for-whom; spine korundu + read-time migration (geri-uyum); full suite 1625/0. UI=SCMM-10-UI ✅ ACCEPTED E1/E2 (23034ac0; branched builder, 7-dil L10n, backward-compat), E4=fleet |
-| SCMM-11 | Context & eligibility evaluation | Domain | Marketing owner + MOD-0025 | 03,08,10 · **AudienceProfile çok-eksen önkoşul** |
+| SCMM-11 | Context & eligibility evaluation | Domain | Marketing owner + MOD-0025 | 03,08,10 · **AUD önkoşul ✅ (WP-SCMM-11-AUD, 82676119+7b2c1a30, ACCEPTED E2)** → eligibility motoru artık AÇIK. ⚠️ pre-existing PII test flake (SCMM-dışı) kaydedildi. UI=SCMM-11-AUD-UI, E4=authenticated |
 
 ### R1 — Content & authoring (Gate G2)
 | WP | İş | Owner | Modül | Dep |
