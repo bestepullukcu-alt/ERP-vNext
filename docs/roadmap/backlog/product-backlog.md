@@ -4078,10 +4078,28 @@ DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-08
       7 Layout = null
     ~97 hiç Layout satırı taşımıyor → Views/_ViewStart.cshtml varsayılanı: "_Layout"
 
-Bunlar ölü sayfalar değil: `DemandIdeas/*`, `EnterpriseStrategyBusinessPerformance/*`
-ve diğerleri. Ve `AGENTS.md` `_Layout.cshtml`'i **FROZEN** ilan ediyor — yani
-doksan yedi sayfa, dokunulmaması gereken bir kabuğu, öyle olduğunu bilmeden
-kullanıyor.
+⚠ 97'nin hepsi bu maddenin kapsamında DEĞİL. Dağılım ölçüldü ve ikisi ayrılıyor:
+
+    52  EnterpriseStrategyBusinessPerformance  → yenisi Codex'te yazılıyor; bu madde beklemez
+    18  WorkCenter                             → eski mock yüzey, AYRI mesele (aşağıya bak)
+    ─────────────────────────────────────────────────────────────────────────
+    12  ManagementGovernance
+     7  DeliveryExecutionManagement
+     4  DemandIdeas
+     3  Shared
+     1  InventoryGovernance
+     1  DecompositionTreeBuilder
+    ─────────────────────────────────────────────────────────────────────────
+    28  BU MADDENİN GERÇEK KAPSAMI
+
+`AGENTS.md` `_Layout.cshtml`'i **FROZEN** ilan ediyor — yani bu yirmi sekiz sayfa,
+dokunulmaması gereken bir kabuğu, öyle olduğunu bilmeden kullanıyor.
+
+⚠ **WorkCenter'ın 18 sayfası bir kabuk sorunu değil.** `Views/WorkCenter/` 24 dosya
+taşıyor ve controller'ı hâlâ canlı; `Views/WorkCenterNext/` ise 3 dosya ve gerçek
+MOD-0024 yüzeyi orada. Yani iki Görev Merkezi yan yana duruyor. Bu sayfalara kabuk
+seçtirmek, ölü bir yüzeyi düzeltmek olur — önce hangisinin kalacağı kararı verilmeli.
+Ayrı madde olarak izlenmeli.
 
 Asıl mesele dosyanın kendisi değil, **kararın hiç verilmemiş olması**: bu sayfalar
 kiracı tarafına mı platform tarafına mı ait? Varsayılana düşmek bu soruyu
