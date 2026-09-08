@@ -316,6 +316,11 @@ public static class DataSeeder
             new("tep", "workforce-analytics", "manage", "Workforce Analytics Manage", null),
             new("tep", "workforce-analytics", "read", "Workforce Analytics Read", null),
 
+            new("tep", "sector-talent-trends", "audit.read", "Sector Talent Trends Audit Read", null),
+            new("tep", "sector-talent-trends", "evaluate", "Sector Talent Trends Evaluate", null),
+            new("tep", "sector-talent-trends", "manage", "Sector Talent Trends Manage", null),
+            new("tep", "sector-talent-trends", "read", "Sector Talent Trends Read", null),
+
             new("dki", "metric-semantic-registry", "audit.read", "Metric Semantic Registry Audit Read", null),
             new("dki", "metric-semantic-registry", "evaluate", "Metric Semantic Registry Evaluate", null),
             new("dki", "metric-semantic-registry", "manage", "Metric Semantic Registry Manage", null),

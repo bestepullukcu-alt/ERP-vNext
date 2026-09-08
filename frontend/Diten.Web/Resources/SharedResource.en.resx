@@ -552,6 +552,7 @@
   <data name="MentorshipRecommendationNetworkMenu" xml:space="preserve"><value>Mentorship &amp; Recommendation Network</value></data>
   <data name="PayBenchmarkingMenu" xml:space="preserve"><value>Shared Salary Benchmarking</value></data>
   <data name="WorkforceAnalyticsMenu" xml:space="preserve"><value>Workforce Analytics</value></data>
+  <data name="SectorTalentTrendsMenu" xml:space="preserve"><value>Sector Talent Trends</value></data>
   <data name="ExitReferenceRecordsMenu" xml:space="preserve"><value>Exit Reference Records</value></data>
   <data name="ReferenceExchangeMenu" xml:space="preserve"><value>Reference Exchange</value></data>
   <data name="RehireRecommendationsMenu" xml:space="preserve"><value>Rehire Recommendations</value></data>
