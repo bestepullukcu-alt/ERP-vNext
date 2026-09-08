@@ -49,7 +49,7 @@ public sealed class KnowledgeAudienceProfilesController : CustomBaseController
             new CreateAudienceProfileCommand(
                 request.ProfileCode, request.ProfileName, request.EffectiveFrom, request.Description,
                 request.ProfileType, request.Status, request.SortOrder, request.EffectiveTo, request.Alias,
-                request.ExternalReferences),
+                request.ExternalReferences, request.SubjectId, ToDimensionInputs(request.Dimensions)),
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/audience-profiles/{audienceProfileId:guid}")]
@@ -62,7 +62,7 @@ public sealed class KnowledgeAudienceProfilesController : CustomBaseController
             new UpdateAudienceProfileCommand(
                 audienceProfileId, request.ProfileName, request.EffectiveFrom, request.Description,
                 request.ProfileType, request.Status, request.SortOrder, request.EffectiveTo, request.Alias,
-                request.ExternalReferences),
+                request.ExternalReferences, request.SubjectId, ToDimensionInputs(request.Dimensions)),
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/audience-profiles/{audienceProfileId:guid}/archive")]
@@ -76,4 +76,10 @@ public sealed class KnowledgeAudienceProfilesController : CustomBaseController
     public async Task<IActionResult> Unarchive(Guid audienceProfileId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new UnarchiveAudienceProfileCommand(audienceProfileId), cancellationToken));
+
+    // SCMM-11 (AUD) — maps the API multi-axis request shape onto the application command input. Null stays null.
+    private static IReadOnlyList<AudienceDimensionAssignmentInput>? ToDimensionInputs(
+        IReadOnlyList<AudienceDimensionAssignmentRequest>? dimensions)
+        => dimensions?.Select(d => new AudienceDimensionAssignmentInput(
+            d.AxisCode, d.Values ?? Array.Empty<string>())).ToList();
 }

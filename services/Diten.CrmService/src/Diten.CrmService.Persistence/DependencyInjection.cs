@@ -531,7 +531,15 @@ public static class DependencyInjection
             map.GetMemberMap(t => t.SubjectId).SetSerializer(stringGuid);
             map.GetMemberMap(t => t.ParentTopicId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
         });
-        Map<AudienceProfile>(_ => { });
+        // SCMM-11 (AUD) — the new SubjectId FK takes the string-Guid convention (else it stores binary and every
+        // subject filter silently returns nothing). The embedded AudienceDimensionAssignment carries no Guid, but is
+        // registered so the driver maps it explicitly rather than treating it as an anonymous document.
+        Map<AudienceProfile>(map =>
+            map.GetMemberMap(p => p.SubjectId).SetSerializer(new NullableSerializer<Guid>(stringGuid)));
+        if (!BsonClassMap.IsClassMapRegistered(typeof(AudienceDimensionAssignment)))
+        {
+            BsonClassMap.RegisterClassMap<AudienceDimensionAssignment>(map => map.AutoMap());
+        }
         Map<KnowledgeExternalReference>(_ => { });
 
         // MOD-0162 FU03 — Concept graph. Every Guid FK takes the string-Guid convention like every other CRM aggregate:
