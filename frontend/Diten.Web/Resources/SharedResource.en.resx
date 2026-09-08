@@ -536,6 +536,7 @@
   <data name="RestrictedIntegrityRegistryMenu" xml:space="preserve"><value>Restricted Integrity Registry</value></data>
   <data name="ProfessionalReputationLedgerMenu" xml:space="preserve"><value>Professional Reputation Ledger</value></data>
   <data name="IndustryTalentPoolMenu" xml:space="preserve"><value>Industry Talent Pool</value></data>
+  <data name="IndustrySkillPassportMenu" xml:space="preserve"><value>Industry Skill Passport</value></data>
   <data name="ExitReferenceRecordsMenu" xml:space="preserve"><value>Exit Reference Records</value></data>
   <data name="ReferenceExchangeMenu" xml:space="preserve"><value>Reference Exchange</value></data>
   <data name="RehireRecommendationsMenu" xml:space="preserve"><value>Rehire Recommendations</value></data>

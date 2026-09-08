@@ -217,7 +217,12 @@ public static class DataSeeder
             new("tep", "industry-talent-pool", "audit.read", "Industry Talent Pool Audit Read", null),
             new("tep", "industry-talent-pool", "evaluate", "Industry Talent Pool Evaluate", null),
             new("tep", "industry-talent-pool", "manage", "Industry Talent Pool Manage", null),
-            new("tep", "industry-talent-pool", "read", "Industry Talent Pool Read", null)
+            new("tep", "industry-talent-pool", "read", "Industry Talent Pool Read", null),
+
+            new("tep", "industry-skill-passport", "audit.read", "Industry Skill Passport Audit Read", null),
+            new("tep", "industry-skill-passport", "evaluate", "Industry Skill Passport Evaluate", null),
+            new("tep", "industry-skill-passport", "manage", "Industry Skill Passport Manage", null),
+            new("tep", "industry-skill-passport", "read", "Industry Skill Passport Read", null)
         };
 
         foreach (var p in permissions)
