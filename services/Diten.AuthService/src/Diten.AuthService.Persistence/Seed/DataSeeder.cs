@@ -242,7 +242,12 @@ public static class DataSeeder
             new("dki", "etl-elt-pipelines", "audit.read", "ETL ELT Pipelines Audit Read", null),
             new("dki", "etl-elt-pipelines", "evaluate", "ETL ELT Pipelines Evaluate", null),
             new("dki", "etl-elt-pipelines", "manage", "ETL ELT Pipelines Manage", null),
-            new("dki", "etl-elt-pipelines", "read", "ETL ELT Pipelines Read", null)
+            new("dki", "etl-elt-pipelines", "read", "ETL ELT Pipelines Read", null),
+
+            new("dki", "kpi-catalog", "audit.read", "KPI Catalog Audit Read", null),
+            new("dki", "kpi-catalog", "evaluate", "KPI Catalog Evaluate", null),
+            new("dki", "kpi-catalog", "manage", "KPI Catalog Manage", null),
+            new("dki", "kpi-catalog", "read", "KPI Catalog Read", null)
         };
 
         foreach (var p in permissions)

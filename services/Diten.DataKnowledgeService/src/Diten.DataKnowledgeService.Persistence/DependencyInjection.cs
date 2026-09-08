@@ -36,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<IMetricSemanticRegistryReadinessMetadataRepository, MongoMetricSemanticRegistryReadinessMetadataRepository>();
         services.AddScoped<IDataWarehouseLakehouseReadinessMetadataRepository, MongoDataWarehouseLakehouseReadinessMetadataRepository>();
         services.AddScoped<IEtlEltPipelinesReadinessMetadataRepository, MongoEtlEltPipelinesReadinessMetadataRepository>();
+        services.AddScoped<IKpiCatalogReadinessMetadataRepository, MongoKpiCatalogReadinessMetadataRepository>();
 
         return services;
     }

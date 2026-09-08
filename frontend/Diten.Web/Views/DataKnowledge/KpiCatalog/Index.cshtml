@@ -1,0 +1,28 @@
+@using Diten.Web.Views.DataKnowledge.KpiCatalog
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KpiCatalogIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["KpiCatalogTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = Perms.Has("dki.kpi-catalog.manage");
+    var canEvaluate = Perms.Has("dki.kpi-catalog.evaluate");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["KpiCatalogTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="kpi-catalog-shell"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()">
+    @* Contract markers rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-kpi-catalog" data-dt-standard="v2"> *@
+    <partial name="~/Views/DataKnowledge/KpiCatalog/_DataTable.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/DataKnowledge/KpiCatalog/_IndexL10n.cshtml" />
+    <script src="~/assets/js/DataKnowledge/KpiCatalog/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DataKnowledge/KpiCatalog/index.js" asp-append-version="true"></script>
+}

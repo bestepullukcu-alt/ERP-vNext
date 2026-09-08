@@ -79,6 +79,7 @@
     var canReadMetricSemanticRegistry = Perms.Has("dki.metric-semantic-registry.read");
     var canReadDataWarehouseLakehouse = Perms.Has("dki.data-warehouse-lakehouse.read");
     var canReadEtlEltPipelines = Perms.Has("dki.etl-elt-pipelines.read");
+    var canReadKpiCatalog = Perms.Has("dki.kpi-catalog.read");
 }
 <!DOCTYPE html>
 
@@ -680,7 +681,7 @@
                         }
                     }
 
-                    @if (canReadMetricSemanticRegistry || canReadDataWarehouseLakehouse || canReadEtlEltPipelines)
+                    @if (canReadMetricSemanticRegistry || canReadDataWarehouseLakehouse || canReadEtlEltPipelines || canReadKpiCatalog)
                     {
                         <li class="menu-header small text-uppercase">
                             <span class="menu-header-text">@SharedLocalizer["DataKnowledge"]</span>
@@ -709,6 +710,15 @@
                                 <a href="/DataKnowledge/EtlEltPipelines" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-transfer"></i>
                                     <div>@SharedLocalizer["EtlEltPipelinesMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadKpiCatalog)
+                        {
+                            <li class="menu-item @(activeController == "KpiCatalog" ? "active" : "")">
+                                <a href="/DataKnowledge/KpiCatalog" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-target-lock"></i>
+                                    <div>@SharedLocalizer["KpiCatalogMenu"]</div>
                                 </a>
                             </li>
                         }
