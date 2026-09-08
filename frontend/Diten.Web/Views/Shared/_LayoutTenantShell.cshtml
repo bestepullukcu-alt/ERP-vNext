@@ -70,6 +70,7 @@
     var canReadCandidateDisputes = Perms.Has("tep.candidate-disputes.read");
     var canReadTalentDataFoundation = Perms.Has("tep.talent-data-foundation.read");
     var canReadHiringRiskIndicators = Perms.Has("tep.hiring-risk-indicators.read");
+    var canReadEarlyWarningSignals = Perms.Has("tep.early-warning-signals.read");
 }
 <!DOCTYPE html>
 
@@ -493,7 +494,7 @@
                             </li>
                         }
                     }
-                    @if (canReadTepShell || canReadConsentVisibilityPolicies || canReadAssociationMemberships || canReadVerifiedParticipants || canReadReviewBoard || canReadTrustLevels || canReadCandidateProfiles || canReadExitReferenceRecords || canReadReferenceExchange || canReadRehireRecommendations || canReadCandidateDisputes || canReadTalentDataFoundation || canReadHiringRiskIndicators)
+                    @if (canReadTepShell || canReadConsentVisibilityPolicies || canReadAssociationMemberships || canReadVerifiedParticipants || canReadReviewBoard || canReadTrustLevels || canReadCandidateProfiles || canReadExitReferenceRecords || canReadReferenceExchange || canReadRehireRecommendations || canReadCandidateDisputes || canReadTalentDataFoundation || canReadHiringRiskIndicators || canReadEarlyWarningSignals)
                     {
                         <li class="menu-header small text-uppercase">
                             <span class="menu-header-text">@SharedLocalizer["TalentEcosystem"]</span>
@@ -612,6 +613,15 @@
                                 <a href="/TalentEcosystem/HiringRiskIndicators" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-shield-quarter"></i>
                                     <div>@SharedLocalizer["HiringRiskIndicatorsMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadEarlyWarningSignals)
+                        {
+                            <li class="menu-item @(activeController == "EarlyWarningSignals" ? "active" : "")">
+                                <a href="/TalentEcosystem/EarlyWarningSignals" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-bell-ring"></i>
+                                    <div>@SharedLocalizer["EarlyWarningSignalsMenu"]</div>
                                 </a>
                             </li>
                         }

@@ -197,7 +197,12 @@ public static class DataSeeder
             new("tep", "hiring-risk-indicators", "audit.read", "Hiring Risk Indicators Audit Read", null),
             new("tep", "hiring-risk-indicators", "evaluate", "Hiring Risk Indicators Evaluate", null),
             new("tep", "hiring-risk-indicators", "manage", "Hiring Risk Indicators Manage", null),
-            new("tep", "hiring-risk-indicators", "read", "Hiring Risk Indicators Read", null)
+            new("tep", "hiring-risk-indicators", "read", "Hiring Risk Indicators Read", null),
+
+            new("tep", "early-warning-signals", "audit.read", "Early Warning Signals Audit Read", null),
+            new("tep", "early-warning-signals", "evaluate", "Early Warning Signals Evaluate", null),
+            new("tep", "early-warning-signals", "manage", "Early Warning Signals Manage", null),
+            new("tep", "early-warning-signals", "read", "Early Warning Signals Read", null)
         };
 
         foreach (var p in permissions)
