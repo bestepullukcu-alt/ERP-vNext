@@ -212,7 +212,12 @@ public static class DataSeeder
             new("tep", "professional-reputation-ledger", "audit.read", "Professional Reputation Ledger Audit Read", null),
             new("tep", "professional-reputation-ledger", "evaluate", "Professional Reputation Ledger Evaluate", null),
             new("tep", "professional-reputation-ledger", "manage", "Professional Reputation Ledger Manage", null),
-            new("tep", "professional-reputation-ledger", "read", "Professional Reputation Ledger Read", null)
+            new("tep", "professional-reputation-ledger", "read", "Professional Reputation Ledger Read", null),
+
+            new("tep", "industry-talent-pool", "audit.read", "Industry Talent Pool Audit Read", null),
+            new("tep", "industry-talent-pool", "evaluate", "Industry Talent Pool Evaluate", null),
+            new("tep", "industry-talent-pool", "manage", "Industry Talent Pool Manage", null),
+            new("tep", "industry-talent-pool", "read", "Industry Talent Pool Read", null)
         };
 
         foreach (var p in permissions)

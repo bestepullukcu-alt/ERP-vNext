@@ -73,6 +73,7 @@
     var canReadEarlyWarningSignals = Perms.Has("tep.early-warning-signals.read");
     var canReadRestrictedIntegrityRegistry = Perms.Has("tep.restricted-integrity-registry.read");
     var canReadProfessionalReputationLedger = Perms.Has("tep.professional-reputation-ledger.read");
+    var canReadIndustryTalentPool = Perms.Has("tep.industry-talent-pool.read");
 }
 <!DOCTYPE html>
 
@@ -496,7 +497,7 @@
                             </li>
                         }
                     }
-                    @if (canReadTepShell || canReadConsentVisibilityPolicies || canReadAssociationMemberships || canReadVerifiedParticipants || canReadReviewBoard || canReadTrustLevels || canReadCandidateProfiles || canReadExitReferenceRecords || canReadReferenceExchange || canReadRehireRecommendations || canReadCandidateDisputes || canReadTalentDataFoundation || canReadHiringRiskIndicators || canReadEarlyWarningSignals || canReadRestrictedIntegrityRegistry || canReadProfessionalReputationLedger)
+                    @if (canReadTepShell || canReadConsentVisibilityPolicies || canReadAssociationMemberships || canReadVerifiedParticipants || canReadReviewBoard || canReadTrustLevels || canReadCandidateProfiles || canReadExitReferenceRecords || canReadReferenceExchange || canReadRehireRecommendations || canReadCandidateDisputes || canReadTalentDataFoundation || canReadHiringRiskIndicators || canReadEarlyWarningSignals || canReadRestrictedIntegrityRegistry || canReadProfessionalReputationLedger || canReadIndustryTalentPool)
                     {
                         <li class="menu-header small text-uppercase">
                             <span class="menu-header-text">@SharedLocalizer["TalentEcosystem"]</span>
@@ -642,6 +643,15 @@
                                 <a href="/TalentEcosystem/ProfessionalReputationLedger" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-medal"></i>
                                     <div>@SharedLocalizer["ProfessionalReputationLedgerMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadIndustryTalentPool)
+                        {
+                            <li class="menu-item @(activeController == "IndustryTalentPool" ? "active" : "")">
+                                <a href="/TalentEcosystem/IndustryTalentPool" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-group"></i>
+                                    <div>@SharedLocalizer["IndustryTalentPoolMenu"]</div>
                                 </a>
                             </li>
                         }
