@@ -713,4 +713,8 @@
   </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>Запланированные визиты</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>Запланированные визиты</value></data>
+  <!-- UAS-001 — the in-shell 403 surface (Views/Shared/_AccessDenied.cshtml). {0} is the screen's own name,
+       so the user learns WHICH door is closed; the message says what to do, never "403"/"Forbidden". -->
+  <data name="AccessDeniedTitle" xml:space="preserve"><value>У вас нет доступа к разделу «{0}»</value></data>
+  <data name="AccessDeniedMessage" xml:space="preserve"><value>Попросите администратора предоставить вам доступ к этой странице.</value></data>
 </root>

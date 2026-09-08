@@ -5180,6 +5180,19 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
     position: relative;
 }
 
+/* THE WRAPPER BREAKS THE THEME'S VALIDATION SELECTOR, and this puts it back.
+   core.css shows a message with `.was-validated :invalid ~ .invalid-feedback` / `.is-invalid ~ .invalid-feedback`
+   — SIBLING combinators. Wrapping the control in .diten-field makes the message a sibling of the WRAPPER, not of
+   the control, so every field that adopted the icon pattern silently stopped showing its error. The theme hit the
+   same wall with .input-group and solved it with `:has()`; this is that rule, for this wrapper.
+   Shared, not per-screen: the reference forms and Tasks' quick-create carry the same wrapper and the same hole. */
+form.was-validated .diten-field:has(:invalid) ~ .invalid-feedback,
+form.was-validated .diten-field:has(:invalid) ~ .invalid-tooltip,
+form .diten-field:has(.is-invalid) ~ .invalid-feedback,
+form .diten-field:has(.is-invalid) ~ .invalid-tooltip {
+    display: block;
+}
+
 /* Quiet by design: the icon is a hint, and it must not compete with the value
    the user typed. Placed on the INLINE start so Arabic moves it to the right
    with no second rule. */
@@ -5268,6 +5281,22 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 .diten-field tags.diten-tags:focus-within,
 .diten-field tags.diten-tags.tagify--focus {
     padding-inline-start: calc(0.9375rem + 1rem + 0.5rem);
+}
+
+/* …AND THE VALIDATED STATE, which the rule above loses outright.
+   MEASURED LIVE on /Roles: submit the create form empty and the text jumps from 39px to 13px — it runs UNDER the
+   glyph, because core.css carries
+     `.was-validated .form-control:invalid, .form-control.is-invalid { padding-inline: calc(-2px + 0.9375rem) }`
+   at (0,3,0) against this file's (0,2,0). Focus was already safe (`.form-control:focus` ties and this file loads
+   later); validation was not, and no test saw it because the icon and the error state were never on screen at
+   the same moment.
+   The `-2px` is the theme's own border compensation, kept: the border thickens to 2px in this state, and dropping
+   the subtraction would step the text 2px sideways the instant the user pressed Save. */
+.was-validated .diten-field .form-control:invalid,
+.was-validated .diten-field .form-control:valid,
+.diten-field .form-control.is-invalid,
+.diten-field .form-control.is-valid {
+    padding-inline-start: calc(-2px + 0.9375rem + 1rem + 0.5rem);
 }
 
 /* Nothing here on purpose: the icon pushes the TEXT inward, not the chips. See .diten-tags-strip — the chips
@@ -7683,11 +7712,18 @@ tags.diten-tags .tagify__input {
 .wcn-empty .btn { margin-block-start: .75rem; }
 
 /* Loading/error boundary --------------------------------------------------- */
-.wcn-system-page { display: flex; min-block-size: 20rem; flex-direction: column; align-items: center; justify-content: center;
+/* UAS-001 — `.diten-access-denied` is the SAME surface, shared out of the Task Center (Views/Shared/_AccessDenied.cshtml).
+   It joins the selector rather than copying the declarations: the Task Center invented this shape, and a second
+   copy would be two surfaces that drift. It wears `.card` in the markup for the same reason .wcn-empty does —
+   --bs-card-bg is card-scoped and a non-card resolves nothing. */
+.wcn-system-page, .diten-access-denied { display: flex; min-block-size: 20rem; flex-direction: column; align-items: center; justify-content: center;
     gap: .5rem; padding: 2rem; text-align: center; color: var(--bs-secondary-color); }
-.wcn-system-page h5, .wcn-system-page p { margin: 0; }
-.wcn-system-page h5 { color: var(--bs-heading-color); }
+.wcn-system-page h5, .wcn-system-page p, .diten-access-denied h5, .diten-access-denied p { margin: 0; }
+.wcn-system-page h5, .diten-access-denied h5 { color: var(--bs-heading-color); }
 .wcn-system-error > i { color: var(--bs-danger); font-size: 2.5rem; }
+/* Deliberately NOT --bs-danger: a missing permission is not a fault. UAS-001 §6 forbids telling the user
+   "you have no access" in the visual language of a breakage. */
+.diten-access-denied > i { color: var(--bs-secondary-color); font-size: 2.5rem; }
 .wcn-skeleton { display: flex; flex-direction: column; gap: .5rem; inline-size: min(30rem, 100%); margin-block-start: 1rem; }
 .wcn-skeleton span { display: block; block-size: 2.75rem; border-radius: .375rem;
     background: linear-gradient(90deg, var(--bs-body-bg), var(--bs-border-color), var(--bs-body-bg)); background-size: 200% 100%; animation: wcn-shimmer 1.2s linear infinite; }

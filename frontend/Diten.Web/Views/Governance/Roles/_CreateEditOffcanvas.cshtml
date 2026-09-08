@@ -22,7 +22,14 @@
                     <label for="roleName" class="form-label fw-medium">
                         @Localizer["Name"] <span class="text-danger">*</span>
                     </label>
-                    <input type="text" id="roleName" name="Name" class="form-control" maxlength="64" placeholder="@Localizer["NamePlaceholder"]" required />
+                    @* bx-hash — an IDENTIFIER, not prose. Same glyph the golden reference gives Code, and the
+                       reason is the same one the hint below states: this string is the key, and it does not change. *@
+                    <div class="diten-field">
+                        <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="roleName" name="Name" class="form-control" maxlength="64" placeholder="@Localizer["NamePlaceholder"]" required />
+                    </div>
+                    @* KEPT. The golden reference has no counterpart for this hint, which is not a reason to drop it:
+                       it is the only place the user is told the name cannot be changed later. *@
                     <div class="form-text" id="roleNameHelp">@Localizer["NameImmutableHint"]</div>
                     <div class="invalid-feedback"></div>
                 </div>
@@ -31,13 +38,22 @@
                     <label for="roleDisplayName" class="form-label fw-medium">
                         @Localizer["DisplayName"] <span class="text-danger">*</span>
                     </label>
-                    <input type="text" id="roleDisplayName" name="DisplayName" class="form-control" maxlength="128" placeholder="@Localizer["DisplayNamePlaceholder"]" required />
+                    @* bx-text — prose the reader sees, against the key above it. The pair of glyphs is what makes
+                       two adjacent "name" fields legible as two different things. *@
+                    <div class="diten-field">
+                        <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="roleDisplayName" name="DisplayName" class="form-control" maxlength="128" placeholder="@Localizer["DisplayNamePlaceholder"]" required />
+                    </div>
                     <div class="invalid-feedback"></div>
                 </div>
 
                 <div class="col-12">
                     <label for="roleDescription" class="form-label fw-medium">@SharedLocalizer["Description"]</label>
-                    <textarea id="roleDescription" name="Description" class="form-control" rows="4" placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
+                    @* --top: a four-row textarea would otherwise wear its glyph beside line three, pointing at nothing. *@
+                    <div class="diten-field">
+                        <i class="bx bx-align-left diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                        <textarea id="roleDescription" name="Description" class="form-control" rows="4" placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
+                    </div>
                 </div>
             </div>
         </form>

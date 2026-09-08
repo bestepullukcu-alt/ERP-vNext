@@ -1,0 +1,38 @@
+@model string
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    UAS-001 — the 403 surface, drawn INSIDE the shell.
+
+    WHY THIS FILE EXISTS. `NotAuthorized.cshtml` runs with `Layout = null`; it is the 401 page and it is right
+    to be shell-less, because at 401 there is no user and therefore no menu to draw. At 403 the opposite is
+    true: the user is signed in, the shell is theirs, and taking it away leaves them with a dead end instead of
+    a way out. So this is a PARTIAL, rendered in the page body, with the shell around it.
+
+    WHAT IT REPLACES. The page it stands in must draw NOTHING else — no heading, no KPI cards, no empty table,
+    no "+ New" button. A half-drawn screen reads as "no data" or "broken", which is the defect this exists to
+    end (UAS-001 §1, §6).
+
+    HOW TO USE IT, from a view whose data needs a permission:
+
+        @@inject Diten.Web.Services.IPermissionSnapshot Perms
+        @@if (!Perms.Has("auth.roles.read"))
+        {
+            <partial name="_AccessDenied" model="@Localizer["RolesTitle"].Value" />
+            return;
+        }
+
+    ⚠ This is a DISPLAY decision, not an authorization one. The single source of truth stays the backend's
+    `[HasPermission]`; removing this check breaks the screen, not the boundary (UAS-001 §4).
+
+    MODEL: the screen's own name, already localized by the caller — it is the caller's resource, not this
+    partial's. It is interpolated into the title so the user knows WHICH door is closed.
+
+    NO TECHNICAL TEXT. "403", "Forbidden", "Permission denied" are never shown here (UAS-001 §5), and the
+    message says what to DO, not only what failed.
+*@
+<div class="card diten-access-denied" role="note">
+    <i class="bx bx-lock-alt" aria-hidden="true"></i>
+    <h5>@SharedLocalizer["AccessDeniedTitle", Model]</h5>
+    <p>@SharedLocalizer["AccessDeniedMessage"]</p>
+</div>

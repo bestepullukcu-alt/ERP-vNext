@@ -3927,3 +3927,113 @@ fiilden anahtara çeviri yapmak zorunda ve o çeviri hiçbir yerde yazılı değ
 
 **İlişkili:** [[BL-333]] (aynı izin sisteminin token'ı 21,5 KB'a şişirmesi) —
 ikisi de "407 izin tek düzlemde duruyor" kökünden geliyor.
+
+---
+
+### BL-335 — 29 offcanvas hâlâ Golden Slim'in ESKİ desende; ikon sözleşmesi yayılmadı (2026-09-08, ölçüldü)
+
+> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+
+Sahip Roller offcanvas'ını açtı ve "Golden Slim'i güncelledik ama burası eski"
+dedi. Doğru. Bu turda Roller ve Kullanıcılar taşındı; geri kalanı burada.
+
+**Ölçüm (2026-09-08, Roller/Kullanıcılar taşındıktan SONRA):**
+
+    Views altında düzenlenebilir alan taşıyan offcanvas : 33
+      desene uygun (.diten-field + ikon)                :  4
+        DevEnablement/GoldenReferenceSlim  (referansın kendisi)
+        Tasks/_QuickCreateOffcanvas
+        Governance/Roles                   (bu tur)
+        Governance/Users                   (bu tur)
+      eski desende                                      : 29
+        CRM 10 · Platform 6 · MasterDataManagement 4 · Organization 3
+        EnterpriseStrategy 2 · PPM 2 · MDM 1 · ManagementGovernance 1
+
+⚠ Sahibin kendi sayımı "24 offcanvas · 23 eski"ydi. Aradaki fark sayım
+sınırında: yukarıdaki 33, `Views/**/*Offcanvas*.cshtml` dosyalarından
+`form-control`/`form-select` taşıyanların tamamı — yalnız `_CreateEditOffcanvas`
+adını taşıyanlar değil. Beş PPM offcanvas'ı hiç alan içermediği için sayının
+dışında: işaretlenecek alanı yok.
+
+**Neden sessizce geride kaldılar.** İki muhafız var ve ikisi de dört dosya
+okuyor: `diten-field-icons.test.js` → `Views/Tasks/_Form.cshtml` +
+`_QuickCreateOffcanvas`; `golden-reference-form-icons.test.js` → iki referans
+form. Diğer 29 hiçbir muhafızın kapsamında değildi, yani "referans güncellendi,
+ürün güncellenmedi" **yapısal olarak görünmezdi** — kırmızıya dönmeyen bir test
+değil, hiç sorulmamış bir soru.
+
+**Bu turda kapatılan boşluk:** `diten-field-icons.test.js`'e ürün geneli sayım
+eklendi, `KNOWN_NO_ICONS` bilinen-ihlal listesiyle (`mongo-indexing.md` deseni).
+Liste yalnız **küçülebilir**: listede olmayan yeni bir offcanvas desensiz gelirse
+kırmızı, listedeki bir dosya düzelip listede kalırsa yine kırmızı. Yani bu kaydın
+kapanması, listenin boşalmasıyla **otomatik olarak ölçülür**.
+
+**Tetikleyici:** her modül kendi turuna geldiğinde o modülün offcanvas'ı taşınır
+ve `KNOWN_NO_ICONS`'tan satırı silinir. Toplu bir "29'unu birden" turu ÖNERİLMEZ:
+ikon seçimi alanın ne olduğuna dair bir karardır, otuz ekranı tanımadan verilemez.
+
+⚠ **Taşırken taklit edilir, kopyalanmaz.** Referansta karşılığı olmayan yardım
+metinleri (`NameImmutableHint` gibi) korunur.
+
+⚠ **Sarmalayıcı doğrulama mesajını yutuyordu.** Ölçüldü: core.css hatayı
+`.was-validated :invalid ~ .invalid-feedback` ile — KARDEŞ birleştiricisiyle —
+gösteriyor; kontrolü `.diten-field` içine almak mesajı sarmalayıcının kardeşi
+yapıyor ve satır içi hata sessizce görünmez oluyor. Bu turda `backbone-custom.css`'e
+`:has()` tabanlı karşılığı eklendi (temanın `.input-group` için yaptığının aynısı),
+yani sonraki taşımalar bu tuzağı miras almaz.
+
+**İlişkili:** [[BL-336]] (aynı turda ölçülen UAS-001 borcu)
+
+---
+
+### BL-336 — 35 ekran yetkisiz kullanıcıya yarım çiziliyor (UAS-001) (2026-09-08, ölçüldü)
+
+> **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
+
+Sahip `/Roles`'u yetkisiz bir kullanıcıyla açtı: başlık, dört KPI kartı (hepsi 0),
+**"+ Rol Ekle" butonu**, sonsuz dönen "Loading…", *"0 kayıttan 0-0 arasındaki
+kayıtlar"* ve üstünde İngilizce bir `Permission denied` bildirimi. Kullanıcının
+çıkardığı sonuç "yetkim yok" değil, "veri yok" veya "sistem bozuk".
+
+**Ölçüm (2026-09-07 tabanı, `unauthorized-surface-standard.md` §7):**
+
+    58 controller
+      37  yalnız [Authorize]   → Roller gibi davranır
+      18  izin kontrolü yapar
+
+Bu turda Roller ve Kullanıcılar UAS-001'e uyarlandı → **kalan 35**.
+
+**Bu turda hazırlanan altyapı — sonraki ekranlar sıfırdan başlamaz:**
+
+- `Views/Shared/_AccessDenied.cshtml` — 403 için **kabuk içinde** çalışan
+  paylaşılan partial. Görev Merkezi'nin kendi içinde çözdüğü yüzey paylaşıma
+  çıkarıldı; CSS kuralı kopyalanmadı, `.wcn-system-page` seçicisine katıldı.
+- `AccessDeniedTitle` / `AccessDeniedMessage` — yedi dilde, `SharedResource`.
+- `tests/unauthorized-surface.test.js` — kapı VAR mı, sayfadan ÖNCE mi,
+  yönlendirme yok mu, teknik metin sızıyor mu, yedi dil tam mı.
+
+**Bir ekranı uyarlamak (üç satır):**
+
+    @inject Diten.Web.Services.IPermissionSnapshot Perms
+    @if (!Perms.Has("<kanonik.izin.anahtarı>"))
+    {
+        <partial name="_AccessDenied" model="@Localizer["<Ekran>Title"].Value" />
+        return;
+    }
+
+⚠ `return;` yalnız gövdeyi durdurmaz, `@section Scripts`'in kaydolmasını da
+engeller — ve bu bir yan etki değil, amacın kendisi: geçidi çağıran, 403'ü alan
+ve İngilizce toast'ı basan şey o bölümdeki `index.js`'ti.
+
+⚠ **Bu bir görüntüleme kararıdır, yetki kararı değil.** Backend `[HasPermission]`
+tek doğruluk kaynağı olarak kalır.
+
+**Tetikleyici:** her ekran kendi turuna geldiğinde. `unauthorized-surface.test.js`
+içindeki `GATED` haritasına satır eklenerek kapatılır; kapanma ölçütü 35 → 0.
+
+⚠ **Toplu tur önerilmez, ama sebebi BL-335'inkinden farklı:** her ekranın hangi
+kanonik izin anahtarına bakacağı, o ekranın verisini gerçekten koruyan anahtardır
+ve backend'den okunmalıdır — tahmin edilen bir anahtar, yetkisi OLAN kullanıcıyı
+dışarıda bırakır. Yanlış yönde bir hata, kusurun kendisinden pahalıdır.
+
+**İlişkili:** [[BL-335]] · `.antigravity/rules/unauthorized-surface-standard.md`
