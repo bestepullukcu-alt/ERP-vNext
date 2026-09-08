@@ -189,6 +189,63 @@ public static class DataSeeder
             new("hcm", "hr-compliance", "manage", "HR Compliance Manage", null),
             new("hcm", "hr-compliance", "read", "HR Compliance Read", null),
 
+            // R2 TEP MVP modules (MOD-0321..0331) — permission seed gap fixed per WP-TEP-REWORK-0001.
+            // Keys read verbatim from each Features/<Module>/<Module>Permissions.cs (RuntimeOwnerKey constants excluded).
+            new("tep", "shell", "read", "TEP Shell Read", null),
+            new("tep", "shell", "manage", "TEP Shell Manage", null),
+
+            new("tep", "association-memberships", "read", "Association Memberships Read", null),
+            new("tep", "association-memberships", "manage", "Association Memberships Manage", null),
+            new("tep", "association-memberships", "archive", "Association Memberships Archive", null),
+            new("tep", "association-memberships", "evaluate", "Association Memberships Evaluate", null),
+            new("tep", "association-memberships", "member-company.manage", "Association Memberships Member Company Manage", null),
+
+            new("tep", "consent-visibility-policies", "read", "Consent Visibility Policies Read", null),
+            new("tep", "consent-visibility-policies", "manage", "Consent Visibility Policies Manage", null),
+            new("tep", "consent-visibility-policies", "evaluate", "Consent Visibility Policies Evaluate", null),
+            new("tep", "consent-visibility-policies", "audit.read", "Consent Visibility Policies Audit Read", null),
+
+            new("tep", "verified-participants", "read", "Verified Participants Read", null),
+            new("tep", "verified-participants", "manage", "Verified Participants Manage", null),
+            new("tep", "verified-participants", "verify", "Verified Participants Verify", null),
+            new("tep", "verified-participants", "evaluate", "Verified Participants Evaluate", null),
+            new("tep", "verified-participants", "audit.read", "Verified Participants Audit Read", null),
+
+            new("tep", "review-board", "read", "Review Board Read", null),
+            new("tep", "review-board", "manage", "Review Board Manage", null),
+            new("tep", "review-board", "review", "Review Board Review", null),
+            new("tep", "review-board", "audit.read", "Review Board Audit Read", null),
+
+            new("tep", "trust-levels", "read", "Trust Levels Read", null),
+            new("tep", "trust-levels", "manage", "Trust Levels Manage", null),
+            new("tep", "trust-levels", "evaluate", "Trust Levels Evaluate", null),
+            new("tep", "trust-levels", "audit.read", "Trust Levels Audit Read", null),
+
+            new("tep", "candidate-profiles", "read", "Candidate Profiles Read", null),
+            new("tep", "candidate-profiles", "manage", "Candidate Profiles Manage", null),
+            new("tep", "candidate-profiles", "evaluate", "Candidate Profiles Evaluate", null),
+            new("tep", "candidate-profiles", "audit.read", "Candidate Profiles Audit Read", null),
+
+            new("tep", "exit-reference-records", "read", "Exit Reference Records Read", null),
+            new("tep", "exit-reference-records", "manage", "Exit Reference Records Manage", null),
+            new("tep", "exit-reference-records", "evaluate", "Exit Reference Records Evaluate", null),
+            new("tep", "exit-reference-records", "audit.read", "Exit Reference Records Audit Read", null),
+
+            new("tep", "reference-exchange", "read", "Reference Exchange Read", null),
+            new("tep", "reference-exchange", "manage", "Reference Exchange Manage", null),
+            new("tep", "reference-exchange", "evaluate", "Reference Exchange Evaluate", null),
+            new("tep", "reference-exchange", "audit.read", "Reference Exchange Audit Read", null),
+
+            new("tep", "rehire-recommendations", "read", "Rehire Recommendations Read", null),
+            new("tep", "rehire-recommendations", "manage", "Rehire Recommendations Manage", null),
+            new("tep", "rehire-recommendations", "evaluate", "Rehire Recommendations Evaluate", null),
+            new("tep", "rehire-recommendations", "audit.read", "Rehire Recommendations Audit Read", null),
+
+            new("tep", "candidate-disputes", "read", "Candidate Disputes Read", null),
+            new("tep", "candidate-disputes", "manage", "Candidate Disputes Manage", null),
+            new("tep", "candidate-disputes", "evaluate", "Candidate Disputes Evaluate", null),
+            new("tep", "candidate-disputes", "audit.read", "Candidate Disputes Audit Read", null),
+
             new("tep", "talent-data-foundation", "audit.read", "Talent Data Foundation Audit Read", null),
             new("tep", "talent-data-foundation", "evaluate", "Talent Data Foundation Evaluate", null),
             new("tep", "talent-data-foundation", "manage", "Talent Data Foundation Manage", null),
