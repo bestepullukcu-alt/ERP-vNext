@@ -291,6 +291,11 @@ public static class DataSeeder
             new("tep", "talent-development-network", "manage", "Talent Development Network Manage", null),
             new("tep", "talent-development-network", "read", "Talent Development Network Read", null),
 
+            new("tep", "industry-succession-pool", "audit.read", "Industry Succession Pool Audit Read", null),
+            new("tep", "industry-succession-pool", "evaluate", "Industry Succession Pool Evaluate", null),
+            new("tep", "industry-succession-pool", "manage", "Industry Succession Pool Manage", null),
+            new("tep", "industry-succession-pool", "read", "Industry Succession Pool Read", null),
+
             new("dki", "metric-semantic-registry", "audit.read", "Metric Semantic Registry Audit Read", null),
             new("dki", "metric-semantic-registry", "evaluate", "Metric Semantic Registry Evaluate", null),
             new("dki", "metric-semantic-registry", "manage", "Metric Semantic Registry Manage", null),
