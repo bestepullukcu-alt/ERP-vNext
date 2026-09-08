@@ -525,6 +525,7 @@
   <data name="TalentEcosystem" xml:space="preserve"><value>Talent Ekosistemi</value></data>
   <data name="DataKnowledge" xml:space="preserve"><value>Veri ve Bilgi</value></data>
   <data name="MetricSemanticRegistryMenu" xml:space="preserve"><value>Metrik ve Anlamsal Kayıt Defteri</value></data>
+  <data name="DataWarehouseLakehouseMenu" xml:space="preserve"><value>Veri Ambarı / Göl Evi</value></data>
   <data name="TepShellMetadataMenu" xml:space="preserve"><value>TEP Shell Metadata</value></data>
   <data name="ConsentVisibilityPoliciesMenu" xml:space="preserve"><value>Onay ve Görünürlük Politikaları</value></data>
   <data name="AssociationMembershipsMenu" xml:space="preserve"><value>Association Memberships</value></data>

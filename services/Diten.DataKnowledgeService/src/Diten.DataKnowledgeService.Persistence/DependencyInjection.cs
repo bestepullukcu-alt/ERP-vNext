@@ -34,6 +34,7 @@ public static class DependencyInjection
         services.AddSingleton<IMongoClient>(client);
         services.AddScoped<IMongoDatabase>(_ => database);
         services.AddScoped<IMetricSemanticRegistryReadinessMetadataRepository, MongoMetricSemanticRegistryReadinessMetadataRepository>();
+        services.AddScoped<IDataWarehouseLakehouseReadinessMetadataRepository, MongoDataWarehouseLakehouseReadinessMetadataRepository>();
 
         return services;
     }

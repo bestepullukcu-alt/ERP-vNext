@@ -77,6 +77,7 @@
     var canReadIndustrySkillPassport = Perms.Has("tep.industry-skill-passport.read");
     var canReadCandidateCareerPassport = Perms.Has("tep.candidate-career-passport.read");
     var canReadMetricSemanticRegistry = Perms.Has("dki.metric-semantic-registry.read");
+    var canReadDataWarehouseLakehouse = Perms.Has("dki.data-warehouse-lakehouse.read");
 }
 <!DOCTYPE html>
 
@@ -678,17 +679,29 @@
                         }
                     }
 
-                    @if (canReadMetricSemanticRegistry)
+                    @if (canReadMetricSemanticRegistry || canReadDataWarehouseLakehouse)
                     {
                         <li class="menu-header small text-uppercase">
                             <span class="menu-header-text">@SharedLocalizer["DataKnowledge"]</span>
                         </li>
-                        <li class="menu-item @(activeController == "MetricSemanticRegistry" ? "active" : "")">
-                            <a href="/DataKnowledge/MetricSemanticRegistry" class="menu-link">
-                                <i class="menu-icon tf-icons bx bx-shape-square"></i>
-                                <div>@SharedLocalizer["MetricSemanticRegistryMenu"]</div>
-                            </a>
-                        </li>
+                        @if (canReadMetricSemanticRegistry)
+                        {
+                            <li class="menu-item @(activeController == "MetricSemanticRegistry" ? "active" : "")">
+                                <a href="/DataKnowledge/MetricSemanticRegistry" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-shape-square"></i>
+                                    <div>@SharedLocalizer["MetricSemanticRegistryMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadDataWarehouseLakehouse)
+                        {
+                            <li class="menu-item @(activeController == "DataWarehouseLakehouse" ? "active" : "")">
+                                <a href="/DataKnowledge/DataWarehouseLakehouse" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-data"></i>
+                                    <div>@SharedLocalizer["DataWarehouseLakehouseMenu"]</div>
+                                </a>
+                            </li>
+                        }
                     }
 
                     <!-- Developer Sandbox -->

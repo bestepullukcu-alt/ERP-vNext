@@ -232,7 +232,12 @@ public static class DataSeeder
             new("dki", "metric-semantic-registry", "audit.read", "Metric Semantic Registry Audit Read", null),
             new("dki", "metric-semantic-registry", "evaluate", "Metric Semantic Registry Evaluate", null),
             new("dki", "metric-semantic-registry", "manage", "Metric Semantic Registry Manage", null),
-            new("dki", "metric-semantic-registry", "read", "Metric Semantic Registry Read", null)
+            new("dki", "metric-semantic-registry", "read", "Metric Semantic Registry Read", null),
+
+            new("dki", "data-warehouse-lakehouse", "audit.read", "Data Warehouse Lakehouse Audit Read", null),
+            new("dki", "data-warehouse-lakehouse", "evaluate", "Data Warehouse Lakehouse Evaluate", null),
+            new("dki", "data-warehouse-lakehouse", "manage", "Data Warehouse Lakehouse Manage", null),
+            new("dki", "data-warehouse-lakehouse", "read", "Data Warehouse Lakehouse Read", null)
         };
 
         foreach (var p in permissions)
