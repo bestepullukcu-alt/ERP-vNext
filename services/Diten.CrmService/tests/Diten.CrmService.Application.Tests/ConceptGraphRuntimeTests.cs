@@ -984,6 +984,31 @@ public sealed class ConceptGraphRuntimeTests
         Assert.Equal(400, r.StatusCode);
     }
 
+    [Fact] // 56  chain create/publish emit MOD-0162 audit events with object type + id
+    public async Task Chain_template_audit_events()
+    {
+        var fx = new Fixture(TenantA);
+        var s = fx.SeedSubject();
+        var t1 = await fx.SeedType(s, "T1");
+        var t2 = await fx.SeedType(s, "T2");
+        var audit = new CapturingConceptAudit();
+        var handler = new CreateConceptChainTemplateHandler(
+            Tenant(TenantA), new NullActorContext(), fx.Templates, fx.Types, audit);
+
+        var draft = await handler.Handle(new CreateConceptChainTemplateCommand(
+            s, "CHN-A", "A", new[] { t1, t2 }, Jan1), default);
+        Assert.Equal(201, draft.StatusCode);
+        var e1 = Assert.Single(audit.Events);
+        Assert.Equal(ConceptGraphReasonCodes.ChainTemplateCreated, e1.Event);
+        Assert.Equal(KnowledgeConceptAuditEntities.ConceptChainTemplate, e1.EntityType);
+        Assert.Equal(draft.Data, e1.EntityId);
+
+        var published = await handler.Handle(new CreateConceptChainTemplateCommand(
+            s, "CHN-B", "B", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published), default);
+        Assert.Equal(201, published.StatusCode);
+        Assert.Equal(ConceptGraphReasonCodes.ChainTemplatePublished, audit.Events[^1].Event);
+    }
+
     // ============================================================ in-memory fakes
 
     private sealed class CapturingConceptAudit : IKnowledgeConceptAuditPublisher

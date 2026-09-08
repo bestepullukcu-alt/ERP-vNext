@@ -26,6 +26,7 @@ public static class KnowledgeConceptAuditEntities
     public const string ConceptType = "ConceptType";
     public const string ConceptNode = "ConceptNode";
     public const string ConceptRelationship = "ConceptRelationship";
+    public const string ConceptChainTemplate = "ConceptChainTemplate";
 }
 
 /// <summary>Event names for concept-graph audit. The per-aggregate lifecycle events reuse the canonical FU03

@@ -172,17 +172,20 @@ public sealed class CreateConceptChainTemplateHandler
     private readonly IActorContext _actor;
     private readonly IConceptChainTemplateRepository _templates;
     private readonly IConceptTypeRepository _types;
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
 
     public CreateConceptChainTemplateHandler(
         ITenantContext tenant,
         IActorContext actor,
         IConceptChainTemplateRepository templates,
-        IConceptTypeRepository types)
+        IConceptTypeRepository types,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _templates = templates;
         _types = types;
+        _audit = audit;
     }
 
     public async Task<Response<Guid>> Handle(
@@ -265,6 +268,15 @@ public sealed class CreateConceptChainTemplateHandler
         };
 
         await _templates.InsertAsync(entity, cancellationToken);
+        if (_audit is not null)
+        {
+            var evt = entity.IsPublished()
+                ? ConceptGraphReasonCodes.ChainTemplatePublished
+                : ConceptGraphReasonCodes.ChainTemplateCreated;
+            await _audit.PublishAsync(evt, tenantId, KnowledgeConceptAuditEntities.ConceptChainTemplate,
+                entity.Id, entity.Version, entity.ChainCode, cancellationToken);
+        }
+
         return Response<Guid>.Success(entity.Id, 201);
     }
 }
@@ -277,16 +289,20 @@ public sealed class UpdateConceptChainTemplateHandler
     private readonly IConceptChainTemplateRepository _templates;
     private readonly IConceptTypeRepository _types;
 
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
+
     public UpdateConceptChainTemplateHandler(
         ITenantContext tenant,
         IActorContext actor,
         IConceptChainTemplateRepository templates,
-        IConceptTypeRepository types)
+        IConceptTypeRepository types,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _templates = templates;
         _types = types;
+        _audit = audit;
     }
 
     public async Task<Response<bool>> Handle(
@@ -378,6 +394,7 @@ public sealed class UpdateConceptChainTemplateHandler
             }
         }
 
+        var wasPublished = entity.IsPublished();
         var now = DateTimeOffset.UtcNow;
         entity.ChainName = request.ChainName.Trim();
         entity.Description = KnowledgeValidation.Trim(request.Description);
@@ -395,6 +412,16 @@ public sealed class UpdateConceptChainTemplateHandler
         entity.UpdatedBy = _actor.ActorName;
 
         await _templates.UpdateAsync(entity, cancellationToken);
+        if (_audit is not null)
+        {
+            // A draft→published transition is its own audit event; anything else is a plain update.
+            var evt = entity.IsPublished() && !wasPublished
+                ? ConceptGraphReasonCodes.ChainTemplatePublished
+                : ConceptGraphReasonCodes.ChainTemplateUpdated;
+            await _audit.PublishAsync(evt, tenantId, KnowledgeConceptAuditEntities.ConceptChainTemplate,
+                entity.Id, entity.Version, entity.ChainCode, cancellationToken);
+        }
+
         return Response<bool>.Success(true);
     }
 }
@@ -405,13 +432,16 @@ public sealed class ArchiveConceptChainTemplateHandler
     private readonly ITenantContext _tenant;
     private readonly IActorContext _actor;
     private readonly IConceptChainTemplateRepository _templates;
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
 
     public ArchiveConceptChainTemplateHandler(
-        ITenantContext tenant, IActorContext actor, IConceptChainTemplateRepository templates)
+        ITenantContext tenant, IActorContext actor, IConceptChainTemplateRepository templates,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _templates = templates;
+        _audit = audit;
     }
 
     public async Task<Response<bool>> Handle(
@@ -441,6 +471,12 @@ public sealed class ArchiveConceptChainTemplateHandler
         entity.UpdatedBy = _actor.ActorName;
 
         await _templates.UpdateAsync(entity, cancellationToken);
+        if (_audit is not null)
+        {
+            await _audit.PublishAsync(ConceptGraphReasonCodes.ChainTemplateArchived, tenantId,
+                KnowledgeConceptAuditEntities.ConceptChainTemplate, entity.Id, entity.Version, entity.ChainCode, cancellationToken);
+        }
+
         return Response<bool>.Success(true);
     }
 }
