@@ -130,12 +130,15 @@ describe("PermLabel.split (Role Permissions row labels)", () => {
         });
 
         it("gives an unfamiliar verb a neutral tone AND the cog — never a missing icon", () => {
-            const out = load().split({ module: "m", resource: "r", action: "temporary-issue" }, L10N);
+            // Deliberately a verb NO module has minted. This test used to use a real one (temporary-issue) and went
+            // red the day it earned a family — which is the wrong kind of red: the fallback had not changed, only
+            // the example had. The guarantee is about the verb nobody has invented yet, so the fixture is too.
+            const out = load().split({ module: "m", resource: "r", action: "flurb-widget" }, L10N);
 
             expect(out.action.tone).toBe("secondary");
             expect(out.action.icon).toBe("bx-cog");
             // Neutral is acceptable; unreadable is not — the label still comes out as words.
-            expect(out.action.label).toBe("Temporary Issue");
+            expect(out.action.label).toBe("Flurb Widget");
         });
 
         it("keeps the glyphs export/import already had — a refactor may not take something away", () => {
