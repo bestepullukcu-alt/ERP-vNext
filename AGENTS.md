@@ -80,6 +80,7 @@ ilgili domain module pack `ready-for-dev` durumu ve açık kullanıcı onayı so
 | DevEnablement Service | 5058 | `services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api` |
 | Human Capital Service | 5059 | `services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api` |
 | Talent Ecosystem Service | 5060 | `services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api` |
+| Data Knowledge Service | 5062 | `services/Diten.DataKnowledgeService/src/Diten.DataKnowledgeService.Api` |
 | MongoDB | 27017 | yerel çalışmalı |
 
 **Kural:** Frontend (5001) asla doğrudan servis portlarına (5056/5057/5058/5059/5060) istek atmaz. Her istek Gateway (5000) üzerinden geçer.

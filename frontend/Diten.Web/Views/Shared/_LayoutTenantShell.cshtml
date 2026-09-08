@@ -75,6 +75,8 @@
     var canReadProfessionalReputationLedger = Perms.Has("tep.professional-reputation-ledger.read");
     var canReadIndustryTalentPool = Perms.Has("tep.industry-talent-pool.read");
     var canReadIndustrySkillPassport = Perms.Has("tep.industry-skill-passport.read");
+    var canReadCandidateCareerPassport = Perms.Has("tep.candidate-career-passport.read");
+    var canReadMetricSemanticRegistry = Perms.Has("dki.metric-semantic-registry.read");
 }
 <!DOCTYPE html>
 
@@ -498,7 +500,7 @@
                             </li>
                         }
                     }
-                    @if (canReadTepShell || canReadConsentVisibilityPolicies || canReadAssociationMemberships || canReadVerifiedParticipants || canReadReviewBoard || canReadTrustLevels || canReadCandidateProfiles || canReadExitReferenceRecords || canReadReferenceExchange || canReadRehireRecommendations || canReadCandidateDisputes || canReadTalentDataFoundation || canReadHiringRiskIndicators || canReadEarlyWarningSignals || canReadRestrictedIntegrityRegistry || canReadProfessionalReputationLedger || canReadIndustryTalentPool || canReadIndustrySkillPassport)
+                    @if (canReadTepShell || canReadConsentVisibilityPolicies || canReadAssociationMemberships || canReadVerifiedParticipants || canReadReviewBoard || canReadTrustLevels || canReadCandidateProfiles || canReadExitReferenceRecords || canReadReferenceExchange || canReadRehireRecommendations || canReadCandidateDisputes || canReadTalentDataFoundation || canReadHiringRiskIndicators || canReadEarlyWarningSignals || canReadRestrictedIntegrityRegistry || canReadProfessionalReputationLedger || canReadIndustryTalentPool || canReadIndustrySkillPassport || canReadCandidateCareerPassport)
                     {
                         <li class="menu-header small text-uppercase">
                             <span class="menu-header-text">@SharedLocalizer["TalentEcosystem"]</span>
@@ -665,6 +667,28 @@
                                 </a>
                             </li>
                         }
+                        @if (canReadCandidateCareerPassport)
+                        {
+                            <li class="menu-item @(activeController == "CandidateCareerPassport" ? "active" : "")">
+                                <a href="/TalentEcosystem/CandidateCareerPassport" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-been-here"></i>
+                                    <div>@SharedLocalizer["CandidateCareerPassportMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                    }
+
+                    @if (canReadMetricSemanticRegistry)
+                    {
+                        <li class="menu-header small text-uppercase">
+                            <span class="menu-header-text">@SharedLocalizer["DataKnowledge"]</span>
+                        </li>
+                        <li class="menu-item @(activeController == "MetricSemanticRegistry" ? "active" : "")">
+                            <a href="/DataKnowledge/MetricSemanticRegistry" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-shape-square"></i>
+                                <div>@SharedLocalizer["MetricSemanticRegistryMenu"]</div>
+                            </a>
+                        </li>
                     }
 
                     <!-- Developer Sandbox -->

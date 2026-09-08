@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Diten.DataKnowledgeService.Api</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="12.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Diten.DataKnowledgeService.Application\Diten.DataKnowledgeService.Application.csproj" />
+    <ProjectReference Include="..\Diten.DataKnowledgeService.Infrastructure\Diten.DataKnowledgeService.Infrastructure.csproj" />
+    <ProjectReference Include="..\Diten.DataKnowledgeService.Persistence\Diten.DataKnowledgeService.Persistence.csproj" />
+  </ItemGroup>
+</Project>

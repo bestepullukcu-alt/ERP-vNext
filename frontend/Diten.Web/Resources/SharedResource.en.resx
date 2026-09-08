@@ -523,6 +523,8 @@
   <data name="HrComplianceMenu" xml:space="preserve"><value>HR Compliance &amp; Reporting</value></data>
   <data name="DevelopmentPlansMenu" xml:space="preserve"><value>Development Plans</value></data>
   <data name="TalentEcosystem" xml:space="preserve"><value>Talent Ecosystem</value></data>
+  <data name="DataKnowledge" xml:space="preserve"><value>Data &amp; Knowledge</value></data>
+  <data name="MetricSemanticRegistryMenu" xml:space="preserve"><value>Metric &amp; Semantic Registry</value></data>
   <data name="TepShellMetadataMenu" xml:space="preserve"><value>TEP Shell Metadata</value></data>
   <data name="ConsentVisibilityPoliciesMenu" xml:space="preserve"><value>Consent &amp; Visibility Policies</value></data>
   <data name="AssociationMembershipsMenu" xml:space="preserve"><value>Association Memberships</value></data>
@@ -537,6 +539,7 @@
   <data name="ProfessionalReputationLedgerMenu" xml:space="preserve"><value>Professional Reputation Ledger</value></data>
   <data name="IndustryTalentPoolMenu" xml:space="preserve"><value>Industry Talent Pool</value></data>
   <data name="IndustrySkillPassportMenu" xml:space="preserve"><value>Industry Skill Passport</value></data>
+  <data name="CandidateCareerPassportMenu" xml:space="preserve"><value>Candidate Career Passport</value></data>
   <data name="ExitReferenceRecordsMenu" xml:space="preserve"><value>Exit Reference Records</value></data>
   <data name="ReferenceExchangeMenu" xml:space="preserve"><value>Reference Exchange</value></data>
   <data name="RehireRecommendationsMenu" xml:space="preserve"><value>Rehire Recommendations</value></data>

@@ -222,7 +222,17 @@ public static class DataSeeder
             new("tep", "industry-skill-passport", "audit.read", "Industry Skill Passport Audit Read", null),
             new("tep", "industry-skill-passport", "evaluate", "Industry Skill Passport Evaluate", null),
             new("tep", "industry-skill-passport", "manage", "Industry Skill Passport Manage", null),
-            new("tep", "industry-skill-passport", "read", "Industry Skill Passport Read", null)
+            new("tep", "industry-skill-passport", "read", "Industry Skill Passport Read", null),
+
+            new("tep", "candidate-career-passport", "audit.read", "Candidate Career Passport Audit Read", null),
+            new("tep", "candidate-career-passport", "evaluate", "Candidate Career Passport Evaluate", null),
+            new("tep", "candidate-career-passport", "manage", "Candidate Career Passport Manage", null),
+            new("tep", "candidate-career-passport", "read", "Candidate Career Passport Read", null),
+
+            new("dki", "metric-semantic-registry", "audit.read", "Metric Semantic Registry Audit Read", null),
+            new("dki", "metric-semantic-registry", "evaluate", "Metric Semantic Registry Evaluate", null),
+            new("dki", "metric-semantic-registry", "manage", "Metric Semantic Registry Manage", null),
+            new("dki", "metric-semantic-registry", "read", "Metric Semantic Registry Read", null)
         };
 
         foreach (var p in permissions)

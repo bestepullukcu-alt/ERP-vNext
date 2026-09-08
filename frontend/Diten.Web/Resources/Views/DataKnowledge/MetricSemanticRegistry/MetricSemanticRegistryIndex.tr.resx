@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="MetricSemanticRegistryTitle" xml:space="preserve"><value>Metrik ve Anlamsal Kayıt Defteri</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>İş akışı veya entegrasyon yüzeyi açmadan hazırlık metadatasını inceleyin.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Metrik ve Anlamsal Kayıt Defteri Detayı</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Görünen Ad</value></data>
+  <data name="MetricSemanticRegistryReadinessState" xml:space="preserve"><value>Hazırlık Durumu</value></data>
+  <data name="MetricIdentityCatalogBoundaryState" xml:space="preserve"><value>Metrik Kimliği Kataloğu Sınır Durumu</value></data>
+  <data name="SemanticEntityIntakeBoundaryState" xml:space="preserve"><value>Anlamsal Varlık Alımı Sınır Durumu</value></data>
+  <data name="DimensionMeasureScopeBoundaryState" xml:space="preserve"><value>Boyut ve Ölçüt Kapsamı Sınır Durumu</value></data>
+  <data name="SemanticBindingControlBoundaryState" xml:space="preserve"><value>Anlamsal Bağlama Kontrolü Sınır Durumu</value></data>
+  <data name="RegistryReviewBoundaryState" xml:space="preserve"><value>Kayıt Defteri İncelemesi Sınır Durumu</value></data>
+  <data name="AutomatedDecisionBoundaryState" xml:space="preserve"><value>Otomatik Karar Sınır Durumu</value></data>
+  <data name="DataSourceRegistryDependencyState" xml:space="preserve"><value>Veri Kaynağı Sicili Bağımlılık Durumu</value></data>
+  <data name="DataGovernancePolicyDependencyState" xml:space="preserve"><value>Veri Yönetişim Politikası Bağımlılık Durumu</value></data>
+  <data name="SemanticContractSourceDependencyState" xml:space="preserve"><value>Anlamsal Kontrat Kaynağı Bağımlılık Durumu</value></data>
+  <data name="NotificationDependencyState" xml:space="preserve"><value>Bildirim Bağımlılık Durumu</value></data>
+  <data name="StewardshipPreconditionState" xml:space="preserve"><value>Veri Sorumluluğu Ön Koşul Durumu</value></data>
+  <data name="DataMinimizationState" xml:space="preserve"><value>Veri Minimizasyon Durumu</value></data>
+  <data name="RetentionPolicyState" xml:space="preserve"><value>Saklama Politikası Durumu</value></data>
+  <data name="VersioningPolicyState" xml:space="preserve"><value>Sürümleme Politikası Durumu</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Kaynak Kontrat Versiyonu</value></data>
+  <data name="MetricSemanticRegistryReadinessVersion" xml:space="preserve"><value>Hazırlık Versiyonu</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Son Değerlendirme Zamanı</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Erteleme Nedeni</value></data>
+  <data name="Actions" xml:space="preserve"><value>Aksiyonlar</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Yeni Ekle</value></data>
+  <data name="Back" xml:space="preserve"><value>Geri</value></data>
+  <data name="Unauthorized" xml:space="preserve"><value>Bu işlemi yapmaya yetkiniz yok.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni Metrik ve Anlamsal Kayıt Defteri Hazırlığı</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik ve Kontrat</value></data>
+  <data name="WorkflowSection" xml:space="preserve"><value>Hazırlık ve Kayıt Defteri Sınırı</value></data>
+  <data name="DependencySection" xml:space="preserve"><value>Bağımlılıklar</value></data>
+  <data name="GovernanceSection" xml:space="preserve"><value>Yönetişim ve Politika</value></data>
+  <data name="DeferralSection" xml:space="preserve"><value>Erteleme</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>orn. MSR-CORE-001</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>Hazırlık kaydı görünen adı</value></data>
+  <data name="Evaluate" xml:space="preserve"><value>Değerlendir</value></data>
+  <data name="EvaluateConfirm" xml:space="preserve"><value>Bu hazırlık kaydı yeniden değerlendirilsin mi?</value></data>
+  <data name="RecordEvaluated" xml:space="preserve"><value>Hazırlık yeniden değerlendirildi.</value></data>
+  <data name="StateDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StateReady" xml:space="preserve"><value>Hazır</value></data>
+  <data name="StateDeferred" xml:space="preserve"><value>Ertelendi</value></data>
+  <data name="StateBlocked" xml:space="preserve"><value>Bloklu</value></data>
+  <data name="StateNotRequired" xml:space="preserve"><value>Gerekli Değil</value></data>
+  <data name="StateArchived" xml:space="preserve"><value>Arşivlendi</value></data>
+</root>

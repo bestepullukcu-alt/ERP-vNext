@@ -523,6 +523,8 @@
   <data name="HrComplianceMenu" xml:space="preserve"><value>İK Uyum ve Raporlama</value></data>
   <data name="DevelopmentPlansMenu" xml:space="preserve"><value>Gelisime Hazirlik Planlari</value></data>
   <data name="TalentEcosystem" xml:space="preserve"><value>Talent Ekosistemi</value></data>
+  <data name="DataKnowledge" xml:space="preserve"><value>Veri ve Bilgi</value></data>
+  <data name="MetricSemanticRegistryMenu" xml:space="preserve"><value>Metrik ve Anlamsal Kayıt Defteri</value></data>
   <data name="TepShellMetadataMenu" xml:space="preserve"><value>TEP Shell Metadata</value></data>
   <data name="ConsentVisibilityPoliciesMenu" xml:space="preserve"><value>Onay ve Görünürlük Politikaları</value></data>
   <data name="AssociationMembershipsMenu" xml:space="preserve"><value>Association Memberships</value></data>
@@ -537,6 +539,7 @@
   <data name="ProfessionalReputationLedgerMenu" xml:space="preserve"><value>Profesyonel İtibar Defteri</value></data>
   <data name="IndustryTalentPoolMenu" xml:space="preserve"><value>Sektörel Yetenek Havuzu</value></data>
   <data name="IndustrySkillPassportMenu" xml:space="preserve"><value>Sektörel Beceri Pasaportu</value></data>
+  <data name="CandidateCareerPassportMenu" xml:space="preserve"><value>Aday Kariyer Pasaportu</value></data>
   <data name="ExitReferenceRecordsMenu" xml:space="preserve"><value>Exit Reference Records</value></data>
   <data name="ReferenceExchangeMenu" xml:space="preserve"><value>Reference Exchange</value></data>
   <data name="RehireRecommendationsMenu" xml:space="preserve"><value>Rehire Recommendations</value></data>
