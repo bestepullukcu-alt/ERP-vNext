@@ -336,6 +336,11 @@ public static class DataSeeder
             new("tep", "sector-mobility-intelligence", "manage", "Sector Mobility Intelligence Manage", null),
             new("tep", "sector-mobility-intelligence", "read", "Sector Mobility Intelligence Read", null),
 
+            new("tep", "association-operations", "audit.read", "Association Operations Audit Read", null),
+            new("tep", "association-operations", "evaluate", "Association Operations Evaluate", null),
+            new("tep", "association-operations", "manage", "Association Operations Manage", null),
+            new("tep", "association-operations", "read", "Association Operations Read", null),
+
             new("dki", "metric-semantic-registry", "audit.read", "Metric Semantic Registry Audit Read", null),
             new("dki", "metric-semantic-registry", "evaluate", "Metric Semantic Registry Evaluate", null),
             new("dki", "metric-semantic-registry", "manage", "Metric Semantic Registry Manage", null),

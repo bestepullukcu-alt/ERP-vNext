@@ -86,6 +86,7 @@
     var canReadTalentSupplyDemandForecasting = Perms.Has("tep.talent-supply-demand-forecasting.read");
     var canReadSkillsGapHeatmap = Perms.Has("tep.skills-gap-heatmap.read");
     var canReadSectorMobilityIntelligence = Perms.Has("tep.sector-mobility-intelligence.read");
+    var canReadAssociationOperations = Perms.Has("tep.association-operations.read");
     var canReadMetricSemanticRegistry = Perms.Has("dki.metric-semantic-registry.read");
     var canReadDataWarehouseLakehouse = Perms.Has("dki.data-warehouse-lakehouse.read");
     var canReadEtlEltPipelines = Perms.Has("dki.etl-elt-pipelines.read");
@@ -516,7 +517,7 @@
                             </li>
                         }
                     }
-                    @if (canReadTepShell || canReadConsentVisibilityPolicies || canReadAssociationMemberships || canReadVerifiedParticipants || canReadReviewBoard || canReadTrustLevels || canReadCandidateProfiles || canReadExitReferenceRecords || canReadReferenceExchange || canReadRehireRecommendations || canReadCandidateDisputes || canReadTalentDataFoundation || canReadHiringRiskIndicators || canReadEarlyWarningSignals || canReadRestrictedIntegrityRegistry || canReadProfessionalReputationLedger || canReadIndustryTalentPool || canReadIndustrySkillPassport || canReadCandidateCareerPassport || canReadTalentDevelopmentNetwork || canReadIndustrySuccessionPool || canReadVerifiedCertificationRegistry || canReadMentorshipRecommendationNetwork || canReadPayBenchmarking || canReadWorkforceAnalytics || canReadSectorTalentTrends || canReadTalentSupplyDemandForecasting || canReadSkillsGapHeatmap || canReadSectorMobilityIntelligence)
+                    @if (canReadTepShell || canReadConsentVisibilityPolicies || canReadAssociationMemberships || canReadVerifiedParticipants || canReadReviewBoard || canReadTrustLevels || canReadCandidateProfiles || canReadExitReferenceRecords || canReadReferenceExchange || canReadRehireRecommendations || canReadCandidateDisputes || canReadTalentDataFoundation || canReadHiringRiskIndicators || canReadEarlyWarningSignals || canReadRestrictedIntegrityRegistry || canReadProfessionalReputationLedger || canReadIndustryTalentPool || canReadIndustrySkillPassport || canReadCandidateCareerPassport || canReadTalentDevelopmentNetwork || canReadIndustrySuccessionPool || canReadVerifiedCertificationRegistry || canReadMentorshipRecommendationNetwork || canReadPayBenchmarking || canReadWorkforceAnalytics || canReadSectorTalentTrends || canReadTalentSupplyDemandForecasting || canReadSkillsGapHeatmap || canReadSectorMobilityIntelligence || canReadAssociationOperations)
                     {
                         <li class="menu-header small text-uppercase">
                             <span class="menu-header-text">@SharedLocalizer["TalentEcosystem"]</span>
@@ -779,6 +780,15 @@
                                 <a href="/TalentEcosystem/SectorMobilityIntelligence" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-shuffle"></i>
                                     <div>@SharedLocalizer["SectorMobilityIntelligenceMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadAssociationOperations)
+                        {
+                            <li class="menu-item @(activeController == "AssociationOperations" ? "active" : "")">
+                                <a href="/TalentEcosystem/AssociationOperations" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-buildings"></i>
+                                    <div>@SharedLocalizer["AssociationOperationsMenu"]</div>
                                 </a>
                             </li>
                         }

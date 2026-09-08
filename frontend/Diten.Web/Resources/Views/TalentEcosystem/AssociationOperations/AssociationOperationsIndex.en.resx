@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="AssociationOperationsTitle" xml:space="preserve"><value>Association Operations</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Inspect readiness metadata without opening workflow or integration surfaces.</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Association Operations Details</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Display Name</value></data>
+  <data name="AssociationOperationsReadinessState" xml:space="preserve"><value>Readiness State</value></data>
+  <data name="MembershipCatalogBoundaryState" xml:space="preserve"><value>Membership Catalog Boundary State</value></data>
+  <data name="ServiceBindingIntakeBoundaryState" xml:space="preserve"><value>Service Binding Intake Boundary State</value></data>
+  <data name="ProgramScopeBoundaryState" xml:space="preserve"><value>Program Scope Boundary State</value></data>
+  <data name="VisibilityControlBoundaryState" xml:space="preserve"><value>Visibility Control Boundary State</value></data>
+  <data name="OperationsReviewBoundaryState" xml:space="preserve"><value>Operations Review Boundary State</value></data>
+  <data name="AutomatedDecisionBoundaryState" xml:space="preserve"><value>Automated Decision Boundary State</value></data>
+  <data name="MemberRegistrySourceDependencyState" xml:space="preserve"><value>Member Registry Source Dependency State</value></data>
+  <data name="SectorTrendSourceDependencyState" xml:space="preserve"><value>Sector Trend Source Dependency State</value></data>
+  <data name="DataGovernancePolicyDependencyState" xml:space="preserve"><value>Data Governance Policy Dependency State</value></data>
+  <data name="NotificationDependencyState" xml:space="preserve"><value>Notification Dependency State</value></data>
+  <data name="ConsentPreconditionState" xml:space="preserve"><value>Consent Precondition State</value></data>
+  <data name="DataMinimizationState" xml:space="preserve"><value>Data Minimization State</value></data>
+  <data name="RetentionPolicyState" xml:space="preserve"><value>Retention Policy State</value></data>
+  <data name="PublicationPolicyState" xml:space="preserve"><value>Publication Policy State</value></data>
+  <data name="SourceContractVersion" xml:space="preserve"><value>Source Contract Version</value></data>
+  <data name="AssociationOperationsReadinessVersion" xml:space="preserve"><value>Readiness Version</value></data>
+  <data name="LastEvaluatedAt" xml:space="preserve"><value>Last Evaluated At</value></data>
+  <data name="DeferredReason" xml:space="preserve"><value>Deferred Reason</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Add New</value></data>
+  <data name="Back" xml:space="preserve"><value>Back</value></data>
+  <data name="Unauthorized" xml:space="preserve"><value>You are not authorized to perform this action.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>New Association Operations Readiness</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identity &amp; Contract</value></data>
+  <data name="WorkflowSection" xml:space="preserve"><value>Readiness &amp; Operations Boundary</value></data>
+  <data name="DependencySection" xml:space="preserve"><value>Dependencies</value></data>
+  <data name="GovernanceSection" xml:space="preserve"><value>Governance &amp; Policy</value></data>
+  <data name="DeferralSection" xml:space="preserve"><value>Deferral</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>e.g. AO-CORE-001</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>Readiness record display name</value></data>
+  <data name="Evaluate" xml:space="preserve"><value>Evaluate</value></data>
+  <data name="EvaluateConfirm" xml:space="preserve"><value>Re-evaluate this readiness record?</value></data>
+  <data name="RecordEvaluated" xml:space="preserve"><value>Readiness re-evaluated.</value></data>
+  <data name="StateDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="StateReady" xml:space="preserve"><value>Ready</value></data>
+  <data name="StateDeferred" xml:space="preserve"><value>Deferred</value></data>
+  <data name="StateBlocked" xml:space="preserve"><value>Blocked</value></data>
+  <data name="StateNotRequired" xml:space="preserve"><value>Not Required</value></data>
+  <data name="StateArchived" xml:space="preserve"><value>Archived</value></data>
+</root>
