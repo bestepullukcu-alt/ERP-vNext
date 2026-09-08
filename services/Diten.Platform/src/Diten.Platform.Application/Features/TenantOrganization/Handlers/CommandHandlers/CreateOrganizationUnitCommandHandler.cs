@@ -12,15 +12,18 @@ namespace Diten.Platform.Application.Features.TenantOrganization.Handlers.Comman
 public sealed class CreateOrganizationUnitCommandHandler : IRequestHandler<CreateOrganizationUnitCommand, Response<Guid>>
 {
     private readonly IOrganizationUnitRepository _repository;
+    private readonly IOrganizationReportingGraphRepository _graph;
     private readonly ILegalEntityReferenceValidator _legalEntityValidator;
     private readonly ITenantContext _tenantContext;
 
     public CreateOrganizationUnitCommandHandler(
         IOrganizationUnitRepository repository,
+        IOrganizationReportingGraphRepository graph,
         ILegalEntityReferenceValidator legalEntityValidator,
         ITenantContext tenantContext)
     {
         _repository = repository;
+        _graph = graph;
         _legalEntityValidator = legalEntityValidator;
         _tenantContext = tenantContext;
     }
@@ -54,13 +57,30 @@ public sealed class CreateOrganizationUnitCommandHandler : IRequestHandler<Creat
             }
         }
 
+        /*
+         * MOD-0288-FU02 — the ADMINISTRATIVE line, validated by the same rules as the functional one and
+         * carrying no extra ones. In particular it may point at the SAME unit as the functional parent: one
+         * unit genuinely holding both responsibilities for another is a real structure, and only the SYSTEM
+         * is forbidden from producing that pair. Nothing below copies one line into the other.
+         */
+        if (request.Request.AdministrativeParentOrganizationUnitId.HasValue)
+        {
+            var administrativeCheck = await ValidateParentAsync(
+                null, request.Request.AdministrativeParentOrganizationUnitId.Value, request.Request.LegalEntityId, ct);
+            if (!administrativeCheck.IsSuccessful)
+            {
+                return Response<Guid>.Fail(administrativeCheck.Errors, administrativeCheck.StatusCode);
+            }
+        }
+
         var entity = new OrganizationUnit
         {
             TenantId = tenantId,
             Code = canonicalCode,
             Name = request.Request.Name.Trim(),
             LegalEntityId = request.Request.LegalEntityId,
-            ParentOrganizationUnitId = request.Request.ParentOrganizationUnitId
+            ParentOrganizationUnitId = request.Request.ParentOrganizationUnitId,
+            AdministrativeParentOrganizationUnitId = request.Request.AdministrativeParentOrganizationUnitId
         };
         TenantOrganizationMapper.ApplyEnterpriseFields(entity, request.Request);
 
@@ -86,6 +106,12 @@ public sealed class CreateOrganizationUnitCommandHandler : IRequestHandler<Creat
             return Response<NoContent>.Fail("Parent Organization Unit must belong to the same Legal Entity.", 409);
         }
 
-        return await OrganizationUnitCycleGuard.EnsureNoCycleAsync(_repository, currentId, parentId, ct);
+        /*
+         * ⚠ A CREATE CANNOT CLOSE A CYCLE, and the guard says so itself by short-circuiting on a null
+         * currentId. A brand-new unit's id is unknown to every other writer, so nothing points at it and no
+         * path returns to it. That is also why creates skip the structure-token guard: they would pay for a
+         * race they cannot lose.
+         */
+        return await OrganizationUnitCycleGuard.EnsureNoCycleAsync(_graph, currentId, parentId, ct);
     }
 }

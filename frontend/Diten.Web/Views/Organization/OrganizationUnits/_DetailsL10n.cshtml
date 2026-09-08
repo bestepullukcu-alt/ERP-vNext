@@ -14,6 +14,7 @@
         TypeBranch = Localizer["OrgUnitTypeBranch"].Value,
         TypeTeam = Localizer["OrgUnitTypeTeam"].Value,
         TypeHQ = Localizer["OrgUnitTypeHQ"].Value,
+        TypeGroupFunction = Localizer["OrgUnitTypeGroupFunction"].Value,
         StatusActive = Localizer["StatusActive"].Value,
         StatusInactive = Localizer["StatusInactive"].Value,
         Yes = Localizer["Yes"].Value,
@@ -28,7 +29,12 @@
         RecordArchived = Localizer["RecordArchived"].Value,
         RecordDeleted = Localizer["RecordDeleted"].Value,
         LoadFailed = Localizer["LoadFailed"].Value,
-        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        // MOD-0288-FU03 — ⚠ there is deliberately NO "same as functional" / placeholder string for an empty
+        // administrative line. An empty line renders as the ordinary empty marker, never as the other line.
+        FunctionalParentLabel = Localizer["FunctionalParentLabel"].Value,
+        AdministrativeParentLabel = Localizer["AdministrativeParentLabel"].Value,
+        CustomFieldsSectionTitle = Localizer["CustomFieldsSectionTitle"].Value
     };
 }
 <script id="org-unit-details-l10n" type="application/json">

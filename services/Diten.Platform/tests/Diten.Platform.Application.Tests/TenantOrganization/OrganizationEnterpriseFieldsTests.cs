@@ -25,7 +25,7 @@ public sealed class OrganizationEnterpriseFieldsTests
     {
         var orgUnits = new InMemoryOrganizationUnitRepository(TenantId);
         var managerPositionId = Guid.NewGuid();
-        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, new FakeLegalEntityValidator(true), TenantContext());
+        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true), TenantContext());
 
         var effectiveFrom = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero);
         var response = await handler.Handle(new CreateOrganizationUnitCommand(new OrganizationUnitRequest(

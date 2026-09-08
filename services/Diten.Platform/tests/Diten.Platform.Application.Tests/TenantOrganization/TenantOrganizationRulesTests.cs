@@ -22,7 +22,7 @@ public sealed class TenantOrganizationRulesTests
     public async Task Organization_unit_create_rejects_missing_legal_entity()
     {
         var orgUnits = new InMemoryOrganizationUnitRepository(TenantId);
-        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, new FakeLegalEntityValidator(false), TenantContext());
+        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(false), TenantContext());
 
         var response = await handler.Handle(new CreateOrganizationUnitCommand(new OrganizationUnitRequest("ROOT", "Root", LegalEntityId, null)), CancellationToken.None);
 
@@ -35,7 +35,7 @@ public sealed class TenantOrganizationRulesTests
     {
         var orgUnits = new InMemoryOrganizationUnitRepository(TenantId);
         orgUnits.Add(OrgUnit("ROOT"));
-        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, new FakeLegalEntityValidator(true), TenantContext());
+        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true), TenantContext());
 
         var response = await handler.Handle(new CreateOrganizationUnitCommand(new OrganizationUnitRequest(" root ", "Root 2", LegalEntityId, null)), CancellationToken.None);
 
@@ -47,7 +47,7 @@ public sealed class TenantOrganizationRulesTests
     public async Task Organization_unit_create_rejects_normalized_empty_code()
     {
         var orgUnits = new InMemoryOrganizationUnitRepository(TenantId);
-        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, new FakeLegalEntityValidator(true), TenantContext());
+        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true), TenantContext());
 
         var response = await handler.Handle(new CreateOrganizationUnitCommand(new OrganizationUnitRequest("!!!", "Root", LegalEntityId, null)), CancellationToken.None);
 
@@ -61,7 +61,7 @@ public sealed class TenantOrganizationRulesTests
         var orgUnits = new InMemoryOrganizationUnitRepository(TenantId);
         var org = OrgUnit("ROOT");
         orgUnits.Add(org);
-        var handler = new UpdateOrganizationUnitCommandHandler(orgUnits, new FakeLegalEntityValidator(true));
+        var handler = new UpdateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true));
 
         var response = await handler.Handle(new UpdateOrganizationUnitCommand(org.Id, new OrganizationUnitRequest("---", "Root", LegalEntityId, null)), CancellationToken.None);
 
@@ -75,7 +75,7 @@ public sealed class TenantOrganizationRulesTests
         var parent = new OrganizationUnit { TenantId = OtherTenantId, Code = "PARENT", Name = "Parent", LegalEntityId = LegalEntityId };
         var orgUnits = new InMemoryOrganizationUnitRepository(TenantId);
         orgUnits.Add(parent);
-        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, new FakeLegalEntityValidator(true), TenantContext());
+        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true), TenantContext());
 
         var response = await handler.Handle(new CreateOrganizationUnitCommand(new OrganizationUnitRequest("CHILD", "Child", LegalEntityId, parent.Id)), CancellationToken.None);
 
@@ -87,7 +87,7 @@ public sealed class TenantOrganizationRulesTests
     public async Task Organization_unit_create_rejects_orphan_parent()
     {
         var orgUnits = new InMemoryOrganizationUnitRepository(TenantId);
-        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, new FakeLegalEntityValidator(true), TenantContext());
+        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true), TenantContext());
 
         var response = await handler.Handle(new CreateOrganizationUnitCommand(new OrganizationUnitRequest("CHILD", "Child", LegalEntityId, Guid.NewGuid())), CancellationToken.None);
 
@@ -103,7 +103,7 @@ public sealed class TenantOrganizationRulesTests
         var parent = OrgUnit("PARENT", legalEntityId: Guid.NewGuid());
         orgUnits.Add(child);
         orgUnits.Add(parent);
-        var handler = new UpdateOrganizationUnitCommandHandler(orgUnits, new FakeLegalEntityValidator(true));
+        var handler = new UpdateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true));
 
         var response = await handler.Handle(new UpdateOrganizationUnitCommand(child.Id, new OrganizationUnitRequest("CHILD", "Child", LegalEntityId, parent.Id)), CancellationToken.None);
 
@@ -119,7 +119,7 @@ public sealed class TenantOrganizationRulesTests
         var child = OrgUnit("CHILD", parentId: parent.Id);
         orgUnits.Add(parent);
         orgUnits.Add(child);
-        var handler = new UpdateOrganizationUnitCommandHandler(orgUnits, new FakeLegalEntityValidator(true));
+        var handler = new UpdateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true));
 
         var response = await handler.Handle(new UpdateOrganizationUnitCommand(parent.Id, new OrganizationUnitRequest("PARENT", "Parent", LegalEntityId, child.Id)), CancellationToken.None);
 
@@ -395,7 +395,7 @@ public sealed class TenantOrganizationRulesTests
         var org = OrgUnit("ROOT");
         org.IsArchived = true;
         orgUnits.Add(org);
-        var handler = new UpdateOrganizationUnitCommandHandler(orgUnits, new FakeLegalEntityValidator(true));
+        var handler = new UpdateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true));
 
         var response = await handler.Handle(new UpdateOrganizationUnitCommand(org.Id, new OrganizationUnitRequest("ROOT", "Root", LegalEntityId, null)), CancellationToken.None);
 
@@ -410,7 +410,7 @@ public sealed class TenantOrganizationRulesTests
         var org = OrgUnit("ROOT");
         org.IsDeleted = true;
         orgUnits.Add(org);
-        var handler = new UpdateOrganizationUnitCommandHandler(orgUnits, new FakeLegalEntityValidator(true));
+        var handler = new UpdateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true));
 
         var response = await handler.Handle(new UpdateOrganizationUnitCommand(org.Id, new OrganizationUnitRequest("ROOT", "Root", LegalEntityId, null)), CancellationToken.None);
 
@@ -422,7 +422,7 @@ public sealed class TenantOrganizationRulesTests
     public async Task Tenant_id_is_server_side_only_for_create()
     {
         var orgUnits = new InMemoryOrganizationUnitRepository(TenantId);
-        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, new FakeLegalEntityValidator(true), TenantContext());
+        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true), TenantContext());
 
         var response = await handler.Handle(new CreateOrganizationUnitCommand(new OrganizationUnitRequest("ROOT", "Root", LegalEntityId, null)), CancellationToken.None);
         var created = await orgUnits.GetByIdAsync(response.Data);
