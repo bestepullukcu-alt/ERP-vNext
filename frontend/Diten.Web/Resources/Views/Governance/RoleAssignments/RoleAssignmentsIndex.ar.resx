@@ -44,6 +44,7 @@
   <data name="ShowingCount" xml:space="preserve"><value>عرض {0} إذن</value></data>
   <data name="CountBadge" xml:space="preserve"><value>{0}/{1}</value></data>
   <!-- FEAT-ROLEPERMS-LABEL-DERIVE — action verbs (imperative) used to derive Role Permissions row labels from the permission KEY (verb · entity). Bridged to JS as window.L10n.ActionVerbs. -->
+  <data name="ScopeLabel_TenantWide" xml:space="preserve"><value>على مستوى المستأجر</value></data>
   <data name="ActionVerb_Read" xml:space="preserve"><value>عرض</value></data>
   <data name="ActionVerb_View" xml:space="preserve"><value>عرض</value></data>
   <data name="ActionVerb_Create" xml:space="preserve"><value>إنشاء</value></data>

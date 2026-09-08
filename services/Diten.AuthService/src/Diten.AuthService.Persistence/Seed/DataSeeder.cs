@@ -169,7 +169,76 @@ public static class DataSeeder
     private static async Task SeedPermissionsAsync(IMongoDatabase database)
     {
         var col = database.GetCollection<Permission>("permissions");
-        var permissions = new List<Permission>
+        var permissions = BuildCanonicalPermissions();
+
+        foreach (var p in permissions)
+        {
+            var filter = Builders<Permission>.Filter.Eq(x => x.Key, p.Key);
+            var exists = await col.Find(filter).AnyAsync();
+            if (!exists) await col.InsertOneAsync(p);
+        }
+
+        await ReconcilePermissionModulesAsync(col, permissions);
+        await ReconcilePermissionScopesAsync(col, permissions);
+        await ReconcilePermissionModuleCasingAsync(col);
+        await ReconcileServiceNamespaceModuleAttributionAsync(col);
+    }
+
+    /// <summary>
+    /// FIX-RBAC-PERM-MODULE-ATTRIBUTION — the one-time (idempotent) migration for rows already in the database.
+    ///
+    /// <para>
+    /// The seed-list reconcile above only reaches keys the seed declares; the catalog sync and the A1 auto-registration
+    /// worker create keys it has never heard of. Those rows kept <c>Module = "platform"</c> forever — 168 of them at
+    /// the time of writing, 40% of the catalog in one box. This scans the WHOLE collection and re-attributes any row
+    /// whose Module is a SERVICE namespace to the module in its Key, via the same
+    /// <see cref="PermissionModuleAttribution"/> rule the constructor uses. Rows with a real module attribution
+    /// (including deliberate overrides like <c>tenant-settings</c>) are not candidates and are never touched.
+    /// </para>
+    ///
+    /// <para>
+    /// ⚠ MODULE-ONLY. <c>Scope</c> is deliberately absent from the update — the tenant/platform escalation boundary
+    /// must survive this migration bit-for-bit, so a re-attributed permission keeps exactly the Scope it already had.
+    /// Adding Scope to this update is the single most dangerous edit in this file; PermissionScopePreservationTests
+    /// exists to catch it.
+    /// </para>
+    /// </summary>
+    private static async Task ReconcileServiceNamespaceModuleAttributionAsync(IMongoCollection<Permission> col)
+    {
+        var all = await col.Find(_ => true).ToListAsync();
+
+        var writes = new List<WriteModel<Permission>>();
+        foreach (var p in all)
+        {
+            if (!PermissionModuleAttribution.IsServiceNamespace(p.Module))
+            {
+                continue; // already attributed to a real module (derived, seeded override, or manifest ModuleCode)
+            }
+
+            var derived = PermissionModuleAttribution.DeriveFromKey(p.Key);
+            if (derived.Length == 0 || string.Equals(derived, p.Module, StringComparison.Ordinal))
+            {
+                continue; // nothing safe to derive, or already correct
+            }
+
+            writes.Add(new UpdateOneModel<Permission>(
+                Builders<Permission>.Filter.Eq(x => x.Id, p.Id),
+                Builders<Permission>.Update.Set(x => x.Module, derived)));
+        }
+
+        if (writes.Count == 0) return;
+
+        var result = await col.BulkWriteAsync(writes, new BulkWriteOptions { IsOrdered = false });
+        if (result.ModifiedCount > 0)
+        {
+            Console.WriteLine($"Re-attributed Module (service namespace -> owning module) for {result.ModifiedCount} existing permission(s).");
+        }
+    }
+
+    // FIX-RBAC-PERM-MODULE-ATTRIBUTION — the canonical seed catalog, lifted out of SeedPermissionsAsync so a
+    // guard test can read the REAL list (PermissionModuleAttributionGuardTests) instead of re-deriving the rule
+    // against a copy. Pure: it constructs Permission objects and touches no database.
+    public static List<Permission> BuildCanonicalPermissions() => new List<Permission>
         {
             new("auth", "users", "create", "Create User", "Permission to create a new user", moduleOverride: "access-governance"),
             new("auth", "users", "read", "Read User", "Permission to view user lists and details", moduleOverride: "access-governance"),
@@ -288,6 +357,12 @@ public static class DataSeeder
             new("platform", "BusinessReferenceData.Import", "Commit", "Commit Business Reference Data Import", "Permission to commit BusinessReferenceData imports", moduleOverride: "reference-data"),
             new("platform", "BusinessReferenceData.Usage", "Register", "Register Business Reference Data Usage", "Permission to register BusinessReferenceData usage", moduleOverride: "reference-data"),
             new("platform", "BusinessReferenceData.Consumer", "Read", "Read Published Business Reference Data", "Permission to consume published BusinessReferenceData values", moduleOverride: "reference-data"),
+            // FIX-RBAC-PERM-MODULE-ATTRIBUTION — the one BRD key the seed never declared (it reached the catalog via
+            // the A1 controller-reflection worker), so it stayed on Module="platform" while its 14 siblings were
+            // corrected. Left to the generic derivation it would land in its own "businessreferencedata" group,
+            // one row away from the reference-data module that actually owns it. Declared here so the key-exact
+            // seed reconcile puts it with its siblings.
+            new("platform", "BusinessReferenceData.Fixture", "Manage", "Manage Business Reference Data Fixtures", "Permission to manage BusinessReferenceData fixtures", moduleOverride: "reference-data"),
 
             // MOD-0288 — Organization, Person & Position Directory (platform-admin screens).
             // FIX-PERM-MODULE-ATTRIBUTION — organization-units.* is owned by the organization module
@@ -542,17 +617,6 @@ public static class DataSeeder
             new("platform", "workflow.escalations", "run", "Run Workflow Escalations", "Permission to run the workflow escalation/timeout processor")
         };
 
-        foreach (var p in permissions)
-        {
-            var filter = Builders<Permission>.Filter.Eq(x => x.Key, p.Key);
-            var exists = await col.Find(filter).AnyAsync();
-            if (!exists) await col.InsertOneAsync(p);
-        }
-
-        await ReconcilePermissionModulesAsync(col, permissions);
-        await ReconcilePermissionScopesAsync(col, permissions);
-        await ReconcilePermissionModuleCasingAsync(col);
-    }
 
     // FIX-PERM-MODULE-CASE-CONSISTENCY — the seed writes Module lowercase, but the catalog sync historically stored
     // the Platform-uppercased ModuleCode (ACCESS-GOVERNANCE, GOLDENCOMPACT, WORKFLOW...), so the same module appeared

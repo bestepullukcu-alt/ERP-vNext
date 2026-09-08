@@ -127,29 +127,28 @@ public sealed class InternalPermissionsController : ControllerBase
         existing.Update(newDisplayName, newDescription);
 
         // İŞ3-FAZ1b — refresh Module (= manifest ModuleCode) and Scope (= route-derived) on the existing row so the
-        // catalog migration lands without a DB wipe (Key stays immutable). GUARD: a seeded SYSTEM permission still on
-        // Module=="platform" is a platform-admin key NOT migrated in this phase (e.g. document-management, which has
-        // platform.* keys but tenant routes, or the seeded-only tenants/administrators/audit keys). The sync must NOT
-        // move it off platform/PlatformAdmin — that would flip the escalation boundary. Migrated seed modules
-        // (auth→access-governance, mdm→legal-entity, workflow→workflow) already carry a non-"platform" Module, so they
-        // are refreshed normally. An old sender that sends neither field leaves both untouched.
-        var moduleLocked = existing.IsSystem
-            && string.Equals(existing.Module, DefaultRolePermissionTemplate.PlatformModule, StringComparison.OrdinalIgnoreCase);
-        if (!moduleLocked)
+        // catalog migration lands without a DB wipe (Key stays immutable). An old sender that sends neither field
+        // leaves both untouched.
+        //
+        // FIX-RBAC-PERM-MODULE-ATTRIBUTION — the seeded-system-on-Module=="platform" lock that used to sit here is
+        // gone. It existed because Module WAS the escalation boundary, so moving a seeded platform key to its owning
+        // module would have flipped that key to tenant scope. Module and Scope are now separate signals: Scope is
+        // carried explicitly and the tie-break below never downgrades it, so re-attributing the Module is exactly the
+        // migration this fix wants and no longer touches the boundary. The lock had also become unreachable — after
+        // the derivation no seeded permission carries "platform" as its Module at all.
+        if (moduleOverride is not null)
         {
-            if (moduleOverride is not null)
-            {
-                existing.SetModule(moduleOverride);
-            }
-            if (incomingScope.HasValue)
-            {
-                // Tie-break (most restrictive wins): the same key can be synced from several pages with different
-                // routes. If ANY of them is platform-scoped the key stays PlatformAdmin — never downgrade to Tenant.
-                var effectiveScope = existing.Scope == PermissionScope.PlatformAdmin || incomingScope.Value == PermissionScope.PlatformAdmin
-                    ? PermissionScope.PlatformAdmin
-                    : PermissionScope.Tenant;
-                existing.SetScope(effectiveScope);
-            }
+            existing.SetModule(moduleOverride);
+        }
+        if (incomingScope.HasValue)
+        {
+            // Tie-break (most restrictive wins): the same key can be synced from several pages with different
+            // routes. If ANY of them is platform-scoped the key stays PlatformAdmin — never downgrade to Tenant.
+            // This is now the ONLY thing standing between a manifest and the escalation boundary — do not relax it.
+            var effectiveScope = existing.Scope == PermissionScope.PlatformAdmin || incomingScope.Value == PermissionScope.PlatformAdmin
+                ? PermissionScope.PlatformAdmin
+                : PermissionScope.Tenant;
+            existing.SetScope(effectiveScope);
         }
 
         await _permissionRepository.UpdateAsync(existing, ct);

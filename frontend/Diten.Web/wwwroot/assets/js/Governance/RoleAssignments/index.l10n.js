@@ -15,7 +15,10 @@
         // FIX-ROLEPERMS-ROLENAME-L10N-STICKY — nested { roleCode: localizedName } map for system roles.
         'RoleNames',
         // FIX-ROLEPERMS-MODULE-LABEL — nested { NORMALIZEDMODULECODE: localizedName } map for module headers/filter.
-        'ModuleNames'
+        'ModuleNames',
+        // FIX-RBAC-PERM-MODULE-ATTRIBUTION — nested { NORMALIZEDPAGECODE: localizedName } for the row SOURCE name,
+        // and { actionSuffix: localizedReach } for the scope pill on a chip.
+        'EntityNames', 'ScopeLabels'
     ];
 
     const logMissingKeys = (dictionary) => {

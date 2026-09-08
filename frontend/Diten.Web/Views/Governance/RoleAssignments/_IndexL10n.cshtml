@@ -11,16 +11,29 @@
     // Keys are already in canonical form (uppercase, alphanumerics only) — the same form ModuleLabel.normalize
     // produces from a permission's raw module slug, which is what makes "work-aggregation" meet WORKAGGREGATION.
     const string NavModulePrefix = "Nav.Module.";
+    // FIX-RBAC-PERM-MODULE-ATTRIBUTION — the same prefix bridge, for the SOURCE names now shown on each row
+    // ("field-definitions" → "Alan Tanımları"). Nav.Page.* already localizes exactly these nouns for the sidebar,
+    // so the row, the menu and Ctrl+K say the same word without a second dictionary.
+    const string NavPagePrefix = "Nav.Page.";
     var moduleNames = new Dictionary<string, string>(StringComparer.Ordinal);
+    var entityNames = new Dictionary<string, string>(StringComparer.Ordinal);
     try
     {
         foreach (var entry in SharedLocalizer.GetAllStrings(includeParentCultures: true))
         {
-            if (entry.ResourceNotFound || !entry.Name.StartsWith(NavModulePrefix, StringComparison.Ordinal)) continue;
-            var code = entry.Name.Substring(NavModulePrefix.Length);
-            if (code.Length == 0 || string.IsNullOrWhiteSpace(entry.Value)) continue;
-            // First win: GetAllStrings walks the culture hierarchy most-specific first.
-            if (!moduleNames.ContainsKey(code)) moduleNames[code] = entry.Value;
+            if (entry.ResourceNotFound || string.IsNullOrWhiteSpace(entry.Value)) continue;
+
+            // First win in both maps: GetAllStrings walks the culture hierarchy most-specific first.
+            if (entry.Name.StartsWith(NavModulePrefix, StringComparison.Ordinal))
+            {
+                var code = entry.Name.Substring(NavModulePrefix.Length);
+                if (code.Length > 0 && !moduleNames.ContainsKey(code)) moduleNames[code] = entry.Value;
+            }
+            else if (entry.Name.StartsWith(NavPagePrefix, StringComparison.Ordinal))
+            {
+                var code = entry.Name.Substring(NavPagePrefix.Length);
+                if (code.Length > 0 && !entityNames.ContainsKey(code)) entityNames[code] = entry.Value;
+            }
         }
     }
     catch (Exception)
@@ -28,6 +41,7 @@
         // A missing or unreadable resource set must not take the whole L10n bridge down: an empty map degrades to
         // the nav names and then to the humanized code — never to a raw slug.
         moduleNames.Clear();
+        entityNames.Clear();
     }
 }
 
@@ -46,6 +60,17 @@
         // FIX-ROLEPERMS-MODULE-LABEL — { NORMALIZEDMODULECODE: localized name } for the group headers + module
         // filter. → window.L10n.ModuleNames, consumed by ModuleLabel.buildMap. See the @{ } block above.
         ModuleNames = moduleNames,
+        // FIX-RBAC-PERM-MODULE-ATTRIBUTION — { NORMALIZEDPAGECODE: localized name } for the SOURCE name on each
+        // permission row. → window.L10n.EntityNames, consumed by PermLabel.split. Discovered by prefix like
+        // ModuleNames, so a source this screen has never seen still reads as words (humanized) and never as a slug.
+        EntityNames = entityNames,
+        // FIX-RBAC-PERM-MODULE-ATTRIBUTION — { actionSuffix: localized reach } for the second pill on a chip.
+        // "read-tenant-wide" is the read action at a wider REACH, not a 98th verb, and the reach is the half that
+        // decides whether the grant is dangerous — so it is shown as its own token, in the user's language.
+        ScopeLabels = new Dictionary<string, string>
+        {
+            ["tenant-wide"] = Localizer["ScopeLabel_TenantWide"].Value
+        },
         PermissionSummary = Localizer["PermissionSummary"].Value,
         SelectedRoleTitle = Localizer["SelectedRoleTitle"].Value,
         CoverageLabel = Localizer["CoverageLabel"].Value,

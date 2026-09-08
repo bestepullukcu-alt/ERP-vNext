@@ -526,8 +526,68 @@
   <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>法律实体</value></data>
   <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>参考数据</value></data>
   <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>组织</value></data>
+  <data name="Nav.Module.TENANTS" xml:space="preserve"><value>租户</value></data>
+  <data name="Nav.Module.NOTIFICATIONS" xml:space="preserve"><value>通知</value></data>
+  <data name="Nav.Module.ADMINISTRATORS" xml:space="preserve"><value>管理员</value></data>
+  <data name="Nav.Module.AUDIT" xml:space="preserve"><value>审计</value></data>
+  <data name="Nav.Module.MODULECATALOG" xml:space="preserve"><value>模块目录</value></data>
+  <data name="Nav.Module.MODULEDOMAINS" xml:space="preserve"><value>模块域</value></data>
+  <data name="Nav.Module.MODULESERVICES" xml:space="preserve"><value>模块服务</value></data>
+  <data name="Nav.Module.INTERFACEREGISTRY" xml:space="preserve"><value>接口注册表</value></data>
+  <data name="Nav.Module.SUBSCRIPTIONPLANS" xml:space="preserve"><value>订阅方案</value></data>
+  <data name="Nav.Module.SUBSCRIPTIONFEATURES" xml:space="preserve"><value>订阅功能</value></data>
+  <data name="Nav.Module.PERSON" xml:space="preserve"><value>人员目录</value></data>
+  <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>参照列表</value></data>
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>任务设置</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>工作流</value></data>
+  <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>产品</value></data>
+  <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>客户</value></data>
+  <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>营销活动</value></data>
+  <data name="Nav.Page.CAMPAIGNSNAPSHOT" xml:space="preserve"><value>活动快照</value></data>
+  <data name="Nav.Page.CAMPAIGNTARGET" xml:space="preserve"><value>活动目标</value></data>
+  <data name="Nav.Page.CONSENT" xml:space="preserve"><value>同意</value></data>
+  <data name="Nav.Page.CONTACT" xml:space="preserve"><value>联系人</value></data>
+  <data name="Nav.Page.CYCLECAPACITY" xml:space="preserve"><value>周期容量</value></data>
+  <data name="Nav.Page.CYCLEPERIOD" xml:space="preserve"><value>周期期间</value></data>
+  <data name="Nav.Page.KNOWLEDGECONCEPT" xml:space="preserve"><value>知识概念</value></data>
+  <data name="Nav.Page.KNOWLEDGECONTENTENGAGEMENTJOURNEY" xml:space="preserve"><value>内容互动旅程</value></data>
+  <data name="Nav.Page.KNOWLEDGEPATH" xml:space="preserve"><value>知识路径</value></data>
+  <data name="Nav.Page.KNOWLEDGESUBJECT" xml:space="preserve"><value>知识主题</value></data>
+  <data name="Nav.Page.PLANNEDVISIT" xml:space="preserve"><value>计划访问</value></data>
+  <data name="Nav.Page.PREFERENCE" xml:space="preserve"><value>偏好</value></data>
+  <data name="Nav.Page.SEGMENT" xml:space="preserve"><value>细分</value></data>
+  <data name="Nav.Page.STRATEGYTEMPLATE" xml:space="preserve"><value>策略模板</value></data>
+  <data name="Nav.Page.TERRITORY" xml:space="preserve"><value>区域</value></data>
+  <data name="Nav.Page.TERRITORYMODEL" xml:space="preserve"><value>区域模型</value></data>
+  <data name="Nav.Page.TERRITORYNODE" xml:space="preserve"><value>区域节点</value></data>
+  <data name="Nav.Page.ATTRIBUTE" xml:space="preserve"><value>属性</value></data>
+  <data name="Nav.Page.HIERARCHY" xml:space="preserve"><value>层级</value></data>
+  <data name="Nav.Page.OVERVIEW" xml:space="preserve"><value>概览</value></data>
+  <data name="Nav.Page.ACCOUNTCONTACT" xml:space="preserve"><value>客户联系人</value></data>
+  <data name="Nav.Page.ACCOUNTRELATIONSHIP" xml:space="preserve"><value>客户关系</value></data>
+  <data name="Nav.Page.MODEL" xml:space="preserve"><value>模型</value></data>
+  <data name="Nav.Page.NODE" xml:space="preserve"><value>节点</value></data>
+  <data name="Nav.Page.REPORTS" xml:space="preserve"><value>报表</value></data>
+  <data name="Nav.Page.DATAQUALITY" xml:space="preserve"><value>数据质量</value></data>
+  <data name="Nav.Page.EMPLOYEE" xml:space="preserve"><value>员工</value></data>
+  <data name="Nav.Page.CUSTOMFIELDS" xml:space="preserve"><value>自定义字段</value></data>
+  <data name="Nav.Page.REPORTINGLINE" xml:space="preserve"><value>汇报线</value></data>
+  <data name="Nav.Page.BENEFITCOMMITMENTS" xml:space="preserve"><value>收益承诺</value></data>
+  <data name="Nav.Page.INITIATIVES" xml:space="preserve"><value>举措</value></data>
+  <data name="Nav.Page.INVESTMENTCASES" xml:space="preserve"><value>投资论证</value></data>
+  <data name="Nav.Page.PORTFOLIOS" xml:space="preserve"><value>投资组合</value></data>
+  <data name="Nav.Page.PROGRAMS" xml:space="preserve"><value>项目群</value></data>
+  <data name="Nav.Page.PROJECTS" xml:space="preserve"><value>项目</value></data>
+  <data name="Nav.Page.FINISHEDGOODS" xml:space="preserve"><value>成品</value></data>
+  <data name="Nav.Page.LSKUS" xml:space="preserve"><value>本地 SKU</value></data>
+  <data name="Nav.Page.PRODUCTABBREVIATIONS" xml:space="preserve"><value>产品缩写</value></data>
+  <data name="Nav.Page.DOCUMENTLIST" xml:space="preserve"><value>文档清单</value></data>
+  <data name="Nav.Page.FIELDDEFINITIONS" xml:space="preserve"><value>字段定义</value></data>
+  <data name="Nav.Page.RECURRENCERULES" xml:space="preserve"><value>重复规则</value></data>
+  <data name="Nav.Page.TENANTNAVIGATION" xml:space="preserve"><value>菜单设置</value></data>
+  <data name="Nav.Page.TENANTSECURITY" xml:space="preserve"><value>安全设置</value></data>
+  <data name="Nav.Page.INBOX" xml:space="preserve"><value>收件箱</value></data>
+  <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>例外</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>用户</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>角色</value></data>
   <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>角色权限</value></data>

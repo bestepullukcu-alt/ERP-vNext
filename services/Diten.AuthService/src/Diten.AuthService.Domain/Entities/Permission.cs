@@ -28,14 +28,29 @@ public sealed class Permission : GlobalEntityBase
     // tenant/platform classification it had under the old Module-name logic. moduleOverride is unchanged (Faz 2 removes it).
     public Permission(string module, string resource, string action, string displayName, string? description, string? moduleOverride = null, PermissionScope? scope = null)
     {
-        Module = moduleOverride ?? module;
+        // FIX-RBAC-PERM-MODULE-ATTRIBUTION — the Module attribution and the Scope basis are now two DIFFERENT
+        // values, and keeping them apart is the whole point of this change:
+        //
+        //   Module      = the module that owns the feature (grouping / filtering on Role Permissions). When no
+        //                 explicit attribution is given it is DERIVED, so a key minted under a SERVICE namespace
+        //                 ("platform") is attributed to the module in its second segment instead of the service.
+        //   Scope       = the tenant/platform-admin escalation boundary. It is classified from the attribution
+        //                 this permission had BEFORE the derivation (`moduleOverride ?? module`), so wiring the
+        //                 derivation in changes ZERO permissions' Scope — a derived Module can never widen who
+        //                 may hold the permission.
+        //
+        // Deleting the legacyAttribution line and classifying from the derived Module would silently downgrade
+        // every platform.* key to Tenant scope. PermissionScopePreservationTests fails if that happens.
+        var legacyAttribution = moduleOverride ?? module;
+
+        Module = moduleOverride ?? PermissionModuleAttribution.Derive(module, resource);
         Resource = resource;
         Action = action;
         Key = $"{module}.{resource}.{action}".ToLowerInvariant();
         DisplayName = displayName;
         Description = description;
         IsSystem = true;
-        Scope = scope ?? DefaultRolePermissionTemplate.ClassifyScope(Module);
+        Scope = scope ?? DefaultRolePermissionTemplate.ClassifyScope(legacyAttribution);
         CreatedAt = DateTimeOffset.UtcNow;
     }
 

@@ -4639,9 +4639,79 @@ div.dt-container div.dt-search input {
 }
 /* Hover mirrors the Golden Compact DataTable row hover tint. */
 .entity-row-card:hover { background-color: rgba(var(--bs-primary-rgb), .035); }
-/* Baseline / locked permissions read as muted, non-actionable rows (light tint, matches menu settings). */
-.ra-row[data-locked="1"] { background-color: rgba(0, 0, 0, .025); }
-[data-bs-theme="dark"] .ra-row[data-locked="1"] { background-color: rgba(255, 255, 255, .04); }
+/* FIX-RBAC-PERM-MODULE-ATTRIBUTION — a permission row is now a SOURCE plus its action chips. The source column
+   holds a fixed share of the row so the chips of neighbouring rows line up into readable columns; below the
+   layout's comfortable width the row stacks and the chips wrap under the source name. */
+.ra-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+.ra-row-source {
+    flex: 0 0 14rem;
+    max-inline-size: 14rem;
+}
+.ra-row .ra-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .375rem;
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    padding-block-start: .0625rem;
+}
+@media (max-width: 991.98px) {
+    .ra-row { flex-direction: column; gap: .5rem; }
+    .ra-row-source { flex: 1 1 auto; max-inline-size: 100%; }
+}
+
+/* The chip is the affordance, so it has to read as pressable and as ON/OFF at a glance: an outline chip is a
+   permission the role does NOT have, a filled one is a permission it does. */
+.ra-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 50rem;
+    background-color: transparent;
+    color: var(--bs-body-color);
+    padding: .1875rem .5rem;
+    font-size: .8125rem;
+    line-height: 1.4;
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+.ra-chip .ra-chip-icon { font-size: .9375rem; }
+.ra-chip:not(:disabled):hover { border-color: currentColor; }
+.ra-chip:disabled { opacity: .75; cursor: default; }
+.ra-chip:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+
+/* Tone follows the action (read/create/update/delete/...), the same mapping the role panel's bars use. */
+.ra-chip--info { color: var(--bs-info); }
+.ra-chip--primary { color: var(--bs-primary); }
+.ra-chip--warning { color: var(--bs-warning); }
+.ra-chip--danger { color: var(--bs-danger); }
+.ra-chip--secondary { color: var(--bs-secondary); }
+
+.ra-chip--on { border-color: transparent; }
+.ra-chip--on.ra-chip--info { background-color: rgba(var(--bs-info-rgb), .16); }
+.ra-chip--on.ra-chip--primary { background-color: rgba(var(--bs-primary-rgb), .16); }
+.ra-chip--on.ra-chip--warning { background-color: rgba(var(--bs-warning-rgb), .16); }
+.ra-chip--on.ra-chip--danger { background-color: rgba(var(--bs-danger-rgb), .16); }
+.ra-chip--on.ra-chip--secondary { background-color: rgba(var(--bs-secondary-rgb), .16); }
+
+/* The reach pill sits INSIDE the chip but reads as its own token — "read" and "read across the whole tenant"
+   must never look like the same grant with a longer word. */
+.ra-chip-scope {
+    border-radius: 50rem;
+    background-color: rgba(var(--bs-secondary-rgb), .18);
+    color: var(--bs-secondary-color);
+    padding: 0 .375rem;
+    font-size: .6875rem;
+    white-space: nowrap;
+}
+.ra-chip-lock { font-size: .875rem; opacity: .7; }
 
 /* Prevent the native <select> from flashing as a raw multi-row listbox before select2 upgrades it. */
 select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
@@ -4691,6 +4761,39 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
   color: var(--bs-secondary-color);
 }
 .select2-selection--multiple.ra-filter-multi.dt-inline-filter-multi--has-value .dt-inline-filter-multi__summary { color: var(--bs-body-color); }
+
+/* FIX-RBAC-PERM-MODULE-ATTRIBUTION — the module filter can be TYPED IN while it is open.
+   The compact style above hides select2's inline search field so the closed control can show
+   "Tüm modüller + N" instead of a row of chips. That was fine at 8 modules and useless at 30+: the only way to
+   find one was to scroll and already know its localized name. While the dropdown is OPEN the summary steps aside
+   and the search field takes its place, so the closed control looks exactly as it did and the open one can be
+   searched by name, by module code, or by a permission key (see moduleFilterMatcher). */
+.select2-container--open .select2-selection--multiple.ra-filter-multi .select2-selection__rendered {
+  position: absolute;
+  inset: 0;
+  opacity: 1;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  padding-inline: .85rem 3.85rem;
+}
+.select2-container--open .select2-selection--multiple.ra-filter-multi .select2-search--inline {
+  display: block !important;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+.select2-container--open .select2-selection--multiple.ra-filter-multi .select2-search__field {
+  display: block !important;
+  inline-size: 100% !important;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  color: var(--bs-body-color);
+  font-size: .9375rem;
+  line-height: calc(2.2505001rem);
+  outline: none;
+}
+.select2-container--open .select2-selection--multiple.ra-filter-multi .dt-inline-filter-multi__summary { display: none; }
 .select2-selection--multiple.ra-filter-multi .dt-inline-filter-multi__actions {
   position: absolute;
   inset-inline-end: 1.95rem;

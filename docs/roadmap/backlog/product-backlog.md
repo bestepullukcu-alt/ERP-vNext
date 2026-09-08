@@ -4108,3 +4108,42 @@ sayfa view" sayısını ölçer ve sayı yalnız küçülür.
 yana duruyor ve **giriş akışı eskisine yönlendiriyor**. Bu, ölü kod değil, canlı
 bir yanlış yönlendirme.
 
+
+---
+
+### BL-339
+
+**Katalogdan modül silmek Auth izinlerini silmiyor — `test-beta-mod` bunun kanıtı**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-08
+
+`ICatalogPermissionSyncService` iki yönlü tasarlandı: `SyncPermissionAsync` bir
+izin anahtarını AuthService kataloğuna iter (Faz 1), `RemovePermissionAsync` ise
+son katalog tanımı silindiğinde onu geri alır (Faz 1.5). **İkincisi bağlı değil.**
+Bir modül katalogdan düştüğünde izinleri `diten_auth_v3.permissions` içinde
+kalıyor ve her rolün izin listesinde görünmeye devam ediyor.
+
+Bugünün kanıtı ölçüldü:
+
+    test-beta-mod.test.view      IsSystem=true  Scope=Tenant
+    test-beta-mod.test.create    IsSystem=true  Scope=Tenant
+
+Bu iki anahtar **hiçbir yerde tanımlı değil** — ne `DataSeeder`'da, ne bir
+manifest sağlayıcıda, ne katalog veritabanında (`DitenERP_Dev`,
+`DitenEnterpriseDb`: 0 eşleşme). Yalnız iki test fixture'ında adı geçiyor, o da
+humanize davranışını ölçmek için. Yani modül gitmiş, izinleri kalmış; her kiracının
+Rol İzinleri ekranında "Test Beta Mod" diye bir grup olarak duruyorlardı.
+
+Kayıtlar 2026-09-08'de sahip talimatıyla elle silindi (2 izin + SuperAdmin'e
+bakan 2 `rolePermissions` satırı, birlikte — yalnız izinler silinseydi grant
+satırları sarkan referansa dönerdi). **Silme mekanizmayı düzeltmez.**
+
+⚠ Ölçek uyarısı: bugün 2 satır. Gerçek bir modül emekliye ayrıldığında aynı
+sızıntı o modülün tüm anahtarlarıyla olur (Doküman Yönetimi tek başına 123 izin
+taşıyor) ve hiçbiri elle fark edilmez — kimse silinmiş bir modülün izinlerini
+aramaz. Ayrıca `IsSystem=true` olan bir kaydı DELETE-sync zaten reddediyor (409),
+bu iki satırın hâlâ `IsSystem=true` olması da ayrıca açıklanmayı bekliyor.
+
+**Ne zaman yapılır:** Faz 1.5 DELETE-sync bağlanırken. O turda ayrıca "hiçbir
+tanıma bakmayan izin" için bir reconcile/rapor gerekir — çünkü mekanizma
+bağlandıktan sonra bile **geçmişte** sızmış anahtarlar kendiliğinden gitmez.
