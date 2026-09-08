@@ -85,6 +85,7 @@
     var canReadSectorTalentTrends = Perms.Has("tep.sector-talent-trends.read");
     var canReadTalentSupplyDemandForecasting = Perms.Has("tep.talent-supply-demand-forecasting.read");
     var canReadSkillsGapHeatmap = Perms.Has("tep.skills-gap-heatmap.read");
+    var canReadSectorMobilityIntelligence = Perms.Has("tep.sector-mobility-intelligence.read");
     var canReadMetricSemanticRegistry = Perms.Has("dki.metric-semantic-registry.read");
     var canReadDataWarehouseLakehouse = Perms.Has("dki.data-warehouse-lakehouse.read");
     var canReadEtlEltPipelines = Perms.Has("dki.etl-elt-pipelines.read");
@@ -515,7 +516,7 @@
                             </li>
                         }
                     }
-                    @if (canReadTepShell || canReadConsentVisibilityPolicies || canReadAssociationMemberships || canReadVerifiedParticipants || canReadReviewBoard || canReadTrustLevels || canReadCandidateProfiles || canReadExitReferenceRecords || canReadReferenceExchange || canReadRehireRecommendations || canReadCandidateDisputes || canReadTalentDataFoundation || canReadHiringRiskIndicators || canReadEarlyWarningSignals || canReadRestrictedIntegrityRegistry || canReadProfessionalReputationLedger || canReadIndustryTalentPool || canReadIndustrySkillPassport || canReadCandidateCareerPassport || canReadTalentDevelopmentNetwork || canReadIndustrySuccessionPool || canReadVerifiedCertificationRegistry || canReadMentorshipRecommendationNetwork || canReadPayBenchmarking || canReadWorkforceAnalytics || canReadSectorTalentTrends || canReadTalentSupplyDemandForecasting || canReadSkillsGapHeatmap)
+                    @if (canReadTepShell || canReadConsentVisibilityPolicies || canReadAssociationMemberships || canReadVerifiedParticipants || canReadReviewBoard || canReadTrustLevels || canReadCandidateProfiles || canReadExitReferenceRecords || canReadReferenceExchange || canReadRehireRecommendations || canReadCandidateDisputes || canReadTalentDataFoundation || canReadHiringRiskIndicators || canReadEarlyWarningSignals || canReadRestrictedIntegrityRegistry || canReadProfessionalReputationLedger || canReadIndustryTalentPool || canReadIndustrySkillPassport || canReadCandidateCareerPassport || canReadTalentDevelopmentNetwork || canReadIndustrySuccessionPool || canReadVerifiedCertificationRegistry || canReadMentorshipRecommendationNetwork || canReadPayBenchmarking || canReadWorkforceAnalytics || canReadSectorTalentTrends || canReadTalentSupplyDemandForecasting || canReadSkillsGapHeatmap || canReadSectorMobilityIntelligence)
                     {
                         <li class="menu-header small text-uppercase">
                             <span class="menu-header-text">@SharedLocalizer["TalentEcosystem"]</span>
@@ -769,6 +770,15 @@
                                 <a href="/TalentEcosystem/SkillsGapHeatmap" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-grid-alt"></i>
                                     <div>@SharedLocalizer["SkillsGapHeatmapMenu"]</div>
+                                </a>
+                            </li>
+                        }
+                        @if (canReadSectorMobilityIntelligence)
+                        {
+                            <li class="menu-item @(activeController == "SectorMobilityIntelligence" ? "active" : "")">
+                                <a href="/TalentEcosystem/SectorMobilityIntelligence" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-shuffle"></i>
+                                    <div>@SharedLocalizer["SectorMobilityIntelligenceMenu"]</div>
                                 </a>
                             </li>
                         }
