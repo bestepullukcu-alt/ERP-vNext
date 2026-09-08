@@ -194,7 +194,7 @@ public sealed class OfferManagementTests
         var handler = CreateHandler(new InMemoryOfferReadinessMetadataRepository(), tenantId);
 
         var response = await handler.Handle(
-            new CreateOfferReadinessCommand(ValidRequest(sourceContractVersion: $"v1_{marker}")),
+            new CreateOfferReadinessCommand(ValidRequest(sourceContractVersion: $"v1 {marker}")),
             CancellationToken.None);
 
         Assert.False(response.IsSuccessful);

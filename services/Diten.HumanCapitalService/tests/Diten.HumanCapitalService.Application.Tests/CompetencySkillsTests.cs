@@ -227,11 +227,33 @@ public sealed class CompetencySkillsTests
         var handler = CreateHandler(new InMemoryCompetencySkillsReadinessMetadataRepository(), tenantId);
 
         var response = await handler.Handle(
-            new CreateCompetencySkillsReadinessCommand(ValidRequest(sourceContractVersion: $"v1_{marker}")),
+            new CreateCompetencySkillsReadinessCommand(ValidRequest(sourceContractVersion: $"v1 {marker}")),
             CancellationToken.None);
 
         Assert.False(response.IsSuccessful);
         Assert.Equal(400, response.StatusCode);
+    }
+
+    // WP-HCM-REWORK-0002 regression guard: legitimate values that merely CONTAIN a forbidden
+    // marker as a substring (not a standalone \b-delimited token) must NOT be rejected. Under the
+    // pre-fix substring matcher these returned 400 (false positive); word-boundary matching lets
+    // them through with 201. RED before the guard fix, GREEN after.
+    [Theory]
+    [InlineData("taxonomy")]        // contains "tax" but not as a standalone token
+    [InlineData("scorecard")]       // contains "score"
+    [InlineData("skill taxonomy")]  // contains "tax"
+    [InlineData("ratings")]         // contains "rating"
+    public async Task Legitimate_values_that_merely_contain_marker_substrings_are_accepted(string legitimate)
+    {
+        var tenantId = Guid.NewGuid();
+        var handler = CreateHandler(new InMemoryCompetencySkillsReadinessMetadataRepository(), tenantId);
+
+        var response = await handler.Handle(
+            new CreateCompetencySkillsReadinessCommand(ValidRequest(sourceContractVersion: $"v1 {legitimate}")),
+            CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(201, response.StatusCode);
     }
 
     [Fact]

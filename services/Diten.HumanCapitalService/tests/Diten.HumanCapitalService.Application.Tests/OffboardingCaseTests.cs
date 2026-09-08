@@ -349,7 +349,7 @@ public sealed class OffboardingCaseTests
             tenantId);
 
         var response = await handler.Handle(
-            new CreateOffboardingCaseCommand(ValidRequest(employee.Id, sourceContractVersion: "v1_access_token")),
+            new CreateOffboardingCaseCommand(ValidRequest(employee.Id, sourceContractVersion: "v1 access_token")),
             CancellationToken.None);
 
         Assert.False(response.IsSuccessful);

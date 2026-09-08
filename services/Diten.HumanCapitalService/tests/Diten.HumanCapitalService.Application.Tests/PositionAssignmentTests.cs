@@ -245,7 +245,7 @@ public sealed class PositionAssignmentTests
             tenantId);
 
         var response = await handler.Handle(
-            new CreatePositionAssignmentCommand(ValidRequest(employee.Id, sourceContractVersion: "v1_access_token")),
+            new CreatePositionAssignmentCommand(ValidRequest(employee.Id, sourceContractVersion: "v1 access_token")),
             CancellationToken.None);
 
         Assert.False(response.IsSuccessful);

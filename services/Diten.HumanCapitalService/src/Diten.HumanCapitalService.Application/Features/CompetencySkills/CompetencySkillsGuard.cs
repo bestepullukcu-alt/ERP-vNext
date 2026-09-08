@@ -2,6 +2,7 @@ using Diten.HumanCapitalService.Application.Common;
 using Diten.HumanCapitalService.Application.Contracts;
 using Diten.HumanCapitalService.Domain.Entities;
 using Diten.HumanCapitalService.Domain.Enums;
+using System.Text.RegularExpressions;
 
 namespace Diten.HumanCapitalService.Application.Features.CompetencySkills;
 
@@ -89,6 +90,14 @@ public static class CompetencySkillsGuard
         "biometric",
         "geolocation"
     ];
+
+    // Word/token-boundary matcher: markers only match as standalone tokens, so legitimate
+    // words such as "taxonomy" (contains "tax") or "scorecard" (contains "score") are NOT
+    // falsely rejected, while real markers ("tax", "ssn", "salary", ...) still match. Tested
+    // against the RAW value. Underscore is a regex word character, so snake_case markers match.
+    private static readonly Regex ForbiddenMarkerRegex = new(
+        @"\b(" + string.Join("|", ForbiddenMarkers.Select(Regex.Escape)) + @")\b",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     public static Response<Guid> RequireTenant(ITenantContext tenantContext) =>
         tenantContext.TenantId is { } tenantId && tenantId != Guid.Empty
@@ -333,8 +342,7 @@ public static class CompetencySkillsGuard
 
     private static bool ContainsForbiddenMarker(string value)
     {
-        var normalized = Normalize(value);
-        return ForbiddenMarkers.Any(marker => normalized.Contains(marker, StringComparison.Ordinal));
+        return !string.IsNullOrEmpty(value) && ForbiddenMarkerRegex.IsMatch(value);
     }
 
     private static string Normalize(string value)

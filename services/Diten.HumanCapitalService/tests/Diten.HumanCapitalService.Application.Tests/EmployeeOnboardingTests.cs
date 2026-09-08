@@ -199,7 +199,7 @@ public sealed class EmployeeOnboardingTests
         var handler = CreateHandler(new InMemoryEmployeeOnboardingReadinessMetadataRepository(), tenantId);
 
         var response = await handler.Handle(
-            new CreateEmployeeOnboardingReadinessCommand(ValidRequest(sourceContractVersion: $"v1_{marker}")),
+            new CreateEmployeeOnboardingReadinessCommand(ValidRequest(sourceContractVersion: $"v1 {marker}")),
             CancellationToken.None);
 
         Assert.False(response.IsSuccessful);

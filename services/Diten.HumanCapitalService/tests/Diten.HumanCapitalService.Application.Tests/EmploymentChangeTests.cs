@@ -239,7 +239,7 @@ public sealed class EmploymentChangeTests
         var handler = CreateHandler(new InMemoryEmploymentChangeReadinessMetadataRepository(), tenantId);
 
         var response = await handler.Handle(
-            new CreateEmploymentChangeReadinessCommand(ValidRequest(sourceContractVersion: $"v1_{marker}")),
+            new CreateEmploymentChangeReadinessCommand(ValidRequest(sourceContractVersion: $"v1 {marker}")),
             CancellationToken.None);
 
         Assert.False(response.IsSuccessful);

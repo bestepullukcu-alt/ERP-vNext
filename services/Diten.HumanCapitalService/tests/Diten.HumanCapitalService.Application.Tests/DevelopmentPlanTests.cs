@@ -235,7 +235,7 @@ public sealed class DevelopmentPlanTests
         var handler = CreateHandler(new InMemoryDevelopmentPlanReadinessMetadataRepository(), tenantId);
 
         var response = await handler.Handle(
-            new CreateDevelopmentPlanReadinessCommand(ValidRequest(sourceContractVersion: $"v1_{marker}")),
+            new CreateDevelopmentPlanReadinessCommand(ValidRequest(sourceContractVersion: $"v1 {marker}")),
             CancellationToken.None);
 
         Assert.False(response.IsSuccessful);

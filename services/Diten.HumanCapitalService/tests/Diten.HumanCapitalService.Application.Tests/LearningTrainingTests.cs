@@ -225,7 +225,7 @@ public sealed class LearningTrainingTests
         var handler = CreateHandler(new InMemoryLearningTrainingReadinessMetadataRepository(), tenantId);
 
         var response = await handler.Handle(
-            new CreateLearningTrainingReadinessCommand(ValidRequest(sourceContractVersion: $"v1_{marker}")),
+            new CreateLearningTrainingReadinessCommand(ValidRequest(sourceContractVersion: $"v1 {marker}")),
             CancellationToken.None);
 
         Assert.False(response.IsSuccessful);

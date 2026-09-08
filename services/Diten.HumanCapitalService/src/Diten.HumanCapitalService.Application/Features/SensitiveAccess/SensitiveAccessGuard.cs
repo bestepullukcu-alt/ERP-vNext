@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace Diten.HumanCapitalService.Application.Features.SensitiveAccess;
 
 public static class SensitiveAccessGuard
@@ -34,6 +36,14 @@ public static class SensitiveAccessGuard
         "home_address"
     ];
 
+    // Word/token-boundary matcher: markers only match as standalone tokens, so legitimate
+    // words such as "taxonomy" (contains "tax") or "scorecard" (contains "score") are NOT
+    // falsely rejected, while real markers ("tax", "ssn", "salary", ...) still match. Tested
+    // against the RAW value. Underscore is a regex word character, so snake_case markers match.
+    private static readonly Regex ForbiddenMarkerRegex = new(
+        @"\b(" + string.Join("|", ForbiddenMarkers.Select(Regex.Escape)) + @")\b",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     public static bool HasPermission(IReadOnlyCollection<string> permissions, string permission) =>
         permissions.Any(value => string.Equals(value, permission, StringComparison.OrdinalIgnoreCase));
 
@@ -44,8 +54,7 @@ public static class SensitiveAccessGuard
             return ["SourcePolicyVersion is required."];
         }
 
-        var normalized = Normalize(sourcePolicyVersion);
-        return ForbiddenMarkers.Any(marker => normalized.Contains(marker, StringComparison.Ordinal))
+        return ForbiddenMarkerRegex.IsMatch(sourcePolicyVersion)
             ? ["Sensitive access policy metadata cannot contain raw payload, credential, payroll, bank, tax, payslip, biometric, geolocation, national ID, DOB, home address, or PII-heavy markers."]
             : [];
     }

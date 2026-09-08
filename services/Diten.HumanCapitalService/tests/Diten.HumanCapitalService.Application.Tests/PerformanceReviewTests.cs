@@ -248,7 +248,7 @@ public sealed class PerformanceReviewTests
         var handler = CreateHandler(new InMemoryPerformanceReviewReadinessMetadataRepository(), tenantId);
 
         var response = await handler.Handle(
-            new CreatePerformanceReviewReadinessCommand(ValidRequest(sourceContractVersion: $"v1_{marker}")),
+            new CreatePerformanceReviewReadinessCommand(ValidRequest(sourceContractVersion: $"v1 {marker}")),
             CancellationToken.None);
 
         Assert.False(response.IsSuccessful);

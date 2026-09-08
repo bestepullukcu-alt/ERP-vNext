@@ -175,7 +175,7 @@ public sealed class ApplicantIntakeTests
         var handler = CreateHandler(new InMemoryApplicantIntakeReadinessMetadataRepository(), tenantId);
 
         var response = await handler.Handle(
-            new CreateApplicantIntakeReadinessCommand(ValidRequest(sourceContractVersion: $"v1_{marker}")),
+            new CreateApplicantIntakeReadinessCommand(ValidRequest(sourceContractVersion: $"v1 {marker}")),
             CancellationToken.None);
 
         Assert.False(response.IsSuccessful);

@@ -190,7 +190,7 @@ public sealed class CandidatePipelineTests
         var handler = CreateHandler(new InMemoryCandidatePipelineReadinessMetadataRepository(), tenantId);
 
         var response = await handler.Handle(
-            new CreateCandidatePipelineReadinessCommand(ValidRequest(sourceContractVersion: $"v1_{marker}")),
+            new CreateCandidatePipelineReadinessCommand(ValidRequest(sourceContractVersion: $"v1 {marker}")),
             CancellationToken.None);
 
         Assert.False(response.IsSuccessful);
