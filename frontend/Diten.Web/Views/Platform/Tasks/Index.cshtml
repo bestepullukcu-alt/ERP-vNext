@@ -1,0 +1,275 @@
+@{
+    ViewData["Title"] = "Tasks";
+    Layout = "_LayoutPlatformAdmin";
+}
+
+@* FE (MOD-0024) — Task & Checklist Engine: platform-admin tasks page.
+   Vanilla JS, no external build. Proxies to /Platform/Tasks/api. *@
+
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center mb-3 row-gap-3">
+    <div>
+        <h5 class="mb-0">Tasks</h5>
+        <p class="mb-0 text-muted">Create, assign and complete platform tasks.</p>
+    </div>
+</div>
+
+<div id="task-error" class="alert alert-danger d-none" role="alert"></div>
+<div id="task-success" class="alert alert-success d-none" role="status"></div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header"><h6 class="mb-0">Create task</h6></div>
+            <div class="card-body">
+                <form id="task-create-form">
+                    <div class="mb-3">
+                        <label class="form-label" for="task-title">Title</label>
+                        <input type="text" class="form-control" id="task-title" required maxlength="200" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="task-description">Description</label>
+                        <textarea class="form-control" id="task-description" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="task-assignee">Assignee id <span class="text-muted">(optional)</span></label>
+                        <input type="text" class="form-control" id="task-assignee" placeholder="GUID" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="task-due">Due date <span class="text-muted">(optional)</span></label>
+                        <input type="date" class="form-control" id="task-due" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="task-escalation">Escalation policy</label>
+                        <select class="form-select" id="task-escalation">
+                            <option value="None" selected>None</option>
+                            <option value="Notify">Notify</option>
+                            <option value="Reassign">Reassign</option>
+                        </select>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="task-requires-evidence" />
+                        <label class="form-check-label" for="task-requires-evidence">Requires evidence</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bx bx-plus me-1"></i>Create task
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Task list</h6>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="task-refresh">
+                    <i class="bx bx-refresh me-1"></i>Refresh
+                </button>
+            </div>
+            <div class="card-datatable table-responsive">
+                <table class="table border-top align-middle">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Assignee</th>
+                            <th>Due date</th>
+                            <th class="text-end pe-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="task-tbody">
+                        <tr><td colspan="5" class="text-center text-muted py-4">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    "use strict";
+
+    var errorBox = document.getElementById("task-error");
+    var successBox = document.getElementById("task-success");
+    var tbody = document.getElementById("task-tbody");
+
+    function showError(msg) {
+        errorBox.textContent = msg;
+        errorBox.classList.remove("d-none");
+        successBox.classList.add("d-none");
+    }
+    function clearError() { errorBox.classList.add("d-none"); errorBox.textContent = ""; }
+    function showSuccess(msg) {
+        successBox.textContent = msg;
+        successBox.classList.remove("d-none");
+        setTimeout(function () { successBox.classList.add("d-none"); }, 4000);
+    }
+
+    function errorsFrom(payload, fallback) {
+        if (payload && Array.isArray(payload.errors) && payload.errors.length) {
+            return payload.errors.join(", ");
+        }
+        return fallback || "Request failed.";
+    }
+
+    function esc(v) {
+        if (v === null || v === undefined) return "";
+        return String(v).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+    }
+
+    function fmtDate(v) {
+        if (!v) return "";
+        var d = new Date(v);
+        return isNaN(d.getTime()) ? esc(v) : d.toLocaleDateString();
+    }
+
+    async function apiFetch(url, options) {
+        var res = await fetch(url, options || {});
+        var payload = null;
+        try { payload = await res.json(); } catch (e) { payload = null; }
+        return { res: res, payload: payload };
+    }
+
+    async function loadTasks() {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Loading…</td></tr>';
+        try {
+            var r = await apiFetch("/Platform/Tasks/api");
+            if (!r.res.ok) { showError(errorsFrom(r.payload, "Failed to load tasks.")); tbody.innerHTML = ""; return; }
+            var items = (r.payload && r.payload.data && r.payload.data.items) || [];
+            renderTasks(items);
+        } catch (e) {
+            showError("Failed to load tasks.");
+            tbody.innerHTML = "";
+        }
+    }
+
+    function renderTasks(items) {
+        if (!items.length) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No tasks yet.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = "";
+        items.forEach(function (t) {
+            var tr = document.createElement("tr");
+            var completed = String(t.status || "").toLowerCase() === "completed";
+            tr.innerHTML =
+                '<td>' + esc(t.title) + (t.requiresEvidence ? ' <span class="badge bg-label-warning ms-1">evidence</span>' : '') + '</td>' +
+                '<td><span class="badge bg-label-primary">' + esc(t.status) + '</span></td>' +
+                '<td>' + (t.assigneeId ? esc(t.assigneeId) : '<span class="text-muted">unassigned</span>') + '</td>' +
+                '<td>' + fmtDate(t.dueDate) + '</td>';
+            var actions = document.createElement("td");
+            actions.className = "text-end pe-3";
+
+            var assignBtn = document.createElement("button");
+            assignBtn.type = "button";
+            assignBtn.className = "btn btn-sm btn-outline-secondary me-1";
+            assignBtn.innerHTML = '<i class="bx bx-user-plus"></i>';
+            assignBtn.title = "Assign";
+            assignBtn.disabled = completed;
+            assignBtn.addEventListener("click", function () { assignTask(t); });
+
+            var completeBtn = document.createElement("button");
+            completeBtn.type = "button";
+            completeBtn.className = "btn btn-sm btn-outline-success";
+            completeBtn.innerHTML = '<i class="bx bx-check"></i>';
+            completeBtn.title = "Complete";
+            completeBtn.disabled = completed;
+            completeBtn.addEventListener("click", function () { completeTask(t, tr); });
+
+            actions.appendChild(assignBtn);
+            actions.appendChild(completeBtn);
+            tr.appendChild(actions);
+            tbody.appendChild(tr);
+        });
+    }
+
+    function rowError(tr, msg) {
+        var existing = tr.nextElementSibling;
+        if (existing && existing.classList.contains("row-inline-error")) existing.remove();
+        var er = document.createElement("tr");
+        er.className = "row-inline-error";
+        er.innerHTML = '<td colspan="5" class="text-danger small py-1 px-3">' + esc(msg) + '</td>';
+        tr.parentNode.insertBefore(er, tr.nextElementSibling);
+    }
+
+    async function assignTask(t) {
+        clearError();
+        var assignee = window.prompt("Assignee id (GUID) for \"" + t.title + "\":", t.assigneeId || "");
+        if (assignee === null) return;
+        assignee = assignee.trim();
+        if (!assignee) { showError("Assignee id is required."); return; }
+        var r = await apiFetch("/Platform/Tasks/api/" + encodeURIComponent(t.id) + "/assign", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ assignee_id: assignee })
+        });
+        if (!r.res.ok) { showError(errorsFrom(r.payload, "Failed to assign task.")); return; }
+        showSuccess("Task assigned.");
+        loadTasks();
+    }
+
+    async function completeTask(t, tr) {
+        clearError();
+        var body = {};
+        if (t.requiresEvidence) {
+            var evidence = window.prompt("Evidence reference for \"" + t.title + "\":", "");
+            if (evidence === null) return;
+            evidence = evidence.trim();
+            if (evidence) body.evidence_reference = evidence;
+        }
+        var r = await apiFetch("/Platform/Tasks/api/" + encodeURIComponent(t.id) + "/complete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+        if (!r.res.ok) {
+            var msg = errorsFrom(r.payload, "Failed to complete task.");
+            if (r.payload && Array.isArray(r.payload.errors) && r.payload.errors.indexOf("evidence_required") !== -1) {
+                msg = "Evidence is required to complete this task.";
+            }
+            rowError(tr, msg);
+            return;
+        }
+        showSuccess("Task completed.");
+        loadTasks();
+    }
+
+    document.getElementById("task-create-form").addEventListener("submit", async function (ev) {
+        ev.preventDefault();
+        clearError();
+        var title = document.getElementById("task-title").value.trim();
+        if (!title) { showError("Title is required."); return; }
+        var body = {
+            title: title,
+            requires_evidence: document.getElementById("task-requires-evidence").checked
+        };
+        var description = document.getElementById("task-description").value.trim();
+        if (description) body.description = description;
+        var assignee = document.getElementById("task-assignee").value.trim();
+        if (assignee) body.assignee_id = assignee;
+        var due = document.getElementById("task-due").value;
+        if (due) body.due_date = due;
+        var escalation = document.getElementById("task-escalation").value;
+        if (escalation) body.escalation_policy = escalation;
+
+        var r = await apiFetch("/Platform/Tasks/api", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+        if (!r.res.ok) { showError(errorsFrom(r.payload, "Failed to create task.")); return; }
+        showSuccess("Task created.");
+        ev.target.reset();
+        loadTasks();
+    });
+
+    document.getElementById("task-refresh").addEventListener("click", loadTasks);
+
+    loadTasks();
+})();
+</script>
+}

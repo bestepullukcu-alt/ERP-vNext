@@ -19,6 +19,7 @@ using Diten.Platform.Infrastructure.Persistence.Repositories;
 using Diten.Platform.Infrastructure.Persistence.Repositories.Billing;
 using Diten.Platform.Infrastructure.Persistence.Repositories.BusinessReferenceData;
 using Diten.Platform.Infrastructure.Persistence.Repositories.ESignature;
+using Diten.Platform.Infrastructure.Persistence.Repositories.TaskChecklistEngine;
 using Diten.Platform.Infrastructure.Persistence.Settings;
 using Diten.Platform.Infrastructure.Services;
 using Diten.Platform.Infrastructure.Services.Audit;
@@ -193,6 +194,8 @@ public static class DependencyInjection
         services.AddScoped<IFeatureCategoryRepository, FeatureCategoryRepository>();
         services.AddScoped<IPlanFeatureMappingRepository, PlanFeatureMappingRepository>();
         services.AddScoped<IBusinessReferenceDataStewardshipRepository, BusinessReferenceDataStewardshipRepository>();
+        services.AddScoped<IWorkTaskRepository, WorkTaskRepository>();
+        services.AddScoped<IChecklistRepository, ChecklistRepository>();
         services.AddScoped<IBillingRepository, BillingRepository>();
         services.AddScoped<IESignatureRepository, ESignatureRepository>();
         services.AddScoped<IAuditEventRepository, AuditEventRepository>();
@@ -225,6 +228,7 @@ public static class DependencyInjection
 
         LegacySavedViewMigration.MigrateAsync(database).GetAwaiter().GetResult();
         MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
+        TaskChecklistIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
         var auditRetentionSeedOptions = configuration
             .GetSection(AuditRetentionSeedOptions.SectionName)
             .Get<AuditRetentionSeedOptions>()

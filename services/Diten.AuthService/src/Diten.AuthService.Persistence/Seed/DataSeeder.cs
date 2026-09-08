@@ -71,6 +71,13 @@ public static class DataSeeder
             new("Platform", "BusinessReferenceData.Usage", "Register", "Register Business Reference Data Usage", "Permission to register BusinessReferenceData usage"),
             new("Platform", "BusinessReferenceData.Consumer", "Read", "Read Published Business Reference Data", "Permission to consume published BusinessReferenceData values"),
 
+            new("platform", "tasks", "read", "Read Platform Tasks", "Permission to view MOD-0024 tasks"),
+            new("platform", "tasks", "create", "Create Platform Tasks", "Permission to create MOD-0024 tasks"),
+            new("platform", "tasks", "update", "Update Platform Tasks", "Permission to assign/complete MOD-0024 tasks"),
+            new("platform", "checklists", "read", "Read Platform Checklists", "Permission to view MOD-0024 checklist templates and runs"),
+            new("platform", "checklists", "create", "Create Platform Checklists", "Permission to create MOD-0024 checklist templates and start runs"),
+            new("platform", "checklists", "update", "Update Platform Checklists", "Permission to update MOD-0024 checklist templates and complete run items"),
+
             // HCM module permissions — registered so SuperAdmin (full catalog) and tenant Admin roles
             // can see/use the HR modules. Keys mirror the *Guard permission constants used by the HCM API.
             new("hcm", "applicant-intake", "audit.read", "Applicant Intake Audit Read", null),

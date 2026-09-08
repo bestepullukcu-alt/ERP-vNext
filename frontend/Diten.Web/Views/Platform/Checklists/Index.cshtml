@@ -1,0 +1,422 @@
+@{
+    ViewData["Title"] = "Checklists";
+    Layout = "_LayoutPlatformAdmin";
+}
+
+@* FE (MOD-0024) — Task & Checklist Engine: platform-admin checklists page.
+   Vanilla JS, no external build. Proxies to /Platform/Checklists/api. *@
+
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center mb-3 row-gap-3">
+    <div>
+        <h5 class="mb-0">Checklists</h5>
+        <p class="mb-0 text-muted">Author templates, start runs and complete run items.</p>
+    </div>
+</div>
+
+<div id="cl-error" class="alert alert-danger d-none" role="alert"></div>
+<div id="cl-success" class="alert alert-success d-none" role="status"></div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card mb-4">
+            <div class="card-header"><h6 class="mb-0">Create template</h6></div>
+            <div class="card-body">
+                <form id="cl-template-form">
+                    <div class="mb-3">
+                        <label class="form-label" for="cl-code">Code</label>
+                        <input type="text" class="form-control" id="cl-code" required maxlength="100" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="cl-name">Name</label>
+                        <input type="text" class="form-control" id="cl-name" required maxlength="200" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="cl-description">Description</label>
+                        <textarea class="form-control" id="cl-description" rows="2"></textarea>
+                    </div>
+                    <label class="form-label">Items</label>
+                    <div id="cl-items"></div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary mb-3" id="cl-add-item">
+                        <i class="bx bx-plus me-1"></i>Add item
+                    </button>
+                    <div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bx bx-save me-1"></i>Create template
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Templates</h6>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="cl-templates-refresh">
+                    <i class="bx bx-refresh me-1"></i>Refresh
+                </button>
+            </div>
+            <div class="card-datatable table-responsive">
+                <table class="table border-top align-middle">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Items</th>
+                            <th class="text-end pe-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cl-templates-tbody">
+                        <tr><td colspan="5" class="text-center text-muted py-4">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Runs</h6>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="cl-runs-refresh">
+                    <i class="bx bx-refresh me-1"></i>Refresh
+                </button>
+            </div>
+            <div class="card-datatable table-responsive">
+                <table class="table border-top align-middle">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Template</th>
+                            <th>Status</th>
+                            <th>Progress</th>
+                            <th class="text-end pe-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cl-runs-tbody">
+                        <tr><td colspan="5" class="text-center text-muted py-4">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card d-none" id="cl-workspace">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <h6 class="mb-0" id="cl-workspace-title">Run workspace</h6>
+            <small class="text-muted" id="cl-workspace-status"></small>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="cl-workspace-close">
+            <i class="bx bx-x"></i>
+        </button>
+    </div>
+    <div class="card-body">
+        <div id="cl-workspace-error" class="alert alert-danger d-none" role="alert"></div>
+        <div id="cl-workspace-items"></div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    "use strict";
+
+    var errorBox = document.getElementById("cl-error");
+    var successBox = document.getElementById("cl-success");
+    var currentRunId = null;
+
+    function showError(msg) {
+        errorBox.textContent = msg;
+        errorBox.classList.remove("d-none");
+        successBox.classList.add("d-none");
+    }
+    function clearError() { errorBox.classList.add("d-none"); errorBox.textContent = ""; }
+    function showSuccess(msg) {
+        successBox.textContent = msg;
+        successBox.classList.remove("d-none");
+        setTimeout(function () { successBox.classList.add("d-none"); }, 4000);
+    }
+
+    function errorsFrom(payload, fallback) {
+        if (payload && Array.isArray(payload.errors) && payload.errors.length) {
+            return payload.errors.join(", ");
+        }
+        return fallback || "Request failed.";
+    }
+
+    function esc(v) {
+        if (v === null || v === undefined) return "";
+        return String(v).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+    }
+
+    async function apiFetch(url, options) {
+        var res = await fetch(url, options || {});
+        var payload = null;
+        try { payload = await res.json(); } catch (e) { payload = null; }
+        return { res: res, payload: payload };
+    }
+
+    // ---- Template item editor ----
+    var itemsContainer = document.getElementById("cl-items");
+
+    function addItemRow(title, requiresEvidence) {
+        var row = document.createElement("div");
+        row.className = "d-flex align-items-center gap-2 mb-2 cl-item-row";
+        row.innerHTML =
+            '<input type="text" class="form-control cl-item-title" placeholder="Item title" value="' + esc(title || "") + '" />' +
+            '<div class="form-check mb-0 flex-shrink-0">' +
+              '<input type="checkbox" class="form-check-input cl-item-evidence"' + (requiresEvidence ? ' checked' : '') + ' />' +
+              '<label class="form-check-label small">evidence</label>' +
+            '</div>' +
+            '<button type="button" class="btn btn-sm btn-outline-danger flex-shrink-0 cl-item-remove"><i class="bx bx-trash"></i></button>';
+        row.querySelector(".cl-item-remove").addEventListener("click", function () { row.remove(); });
+        itemsContainer.appendChild(row);
+    }
+
+    document.getElementById("cl-add-item").addEventListener("click", function () { addItemRow("", false); });
+
+    function collectItems() {
+        var items = [];
+        itemsContainer.querySelectorAll(".cl-item-row").forEach(function (row) {
+            var title = row.querySelector(".cl-item-title").value.trim();
+            if (title) {
+                items.push({ title: title, requires_evidence: row.querySelector(".cl-item-evidence").checked });
+            }
+        });
+        return items;
+    }
+
+    // ---- Templates ----
+    var templatesTbody = document.getElementById("cl-templates-tbody");
+
+    async function loadTemplates() {
+        templatesTbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Loading…</td></tr>';
+        var r = await apiFetch("/Platform/Checklists/api/templates");
+        if (!r.res.ok) { showError(errorsFrom(r.payload, "Failed to load templates.")); templatesTbody.innerHTML = ""; return; }
+        var items = (r.payload && r.payload.data && r.payload.data.items) || [];
+        if (!items.length) {
+            templatesTbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No templates yet.</td></tr>';
+            return;
+        }
+        templatesTbody.innerHTML = "";
+        items.forEach(function (t) {
+            var count = (t.items && t.items.length) || t.itemCount || 0;
+            var tr = document.createElement("tr");
+            tr.innerHTML =
+                '<td>' + esc(t.code) + '</td>' +
+                '<td>' + esc(t.name) + '</td>' +
+                '<td><span class="badge bg-label-primary">' + esc(t.status) + '</span></td>' +
+                '<td>' + esc(count) + '</td>';
+            var actions = document.createElement("td");
+            actions.className = "text-end pe-3";
+            var startBtn = document.createElement("button");
+            startBtn.type = "button";
+            startBtn.className = "btn btn-sm btn-outline-primary";
+            startBtn.innerHTML = '<i class="bx bx-play me-1"></i>Start run';
+            startBtn.addEventListener("click", function () { startRun(t); });
+            actions.appendChild(startBtn);
+            tr.appendChild(actions);
+            templatesTbody.appendChild(tr);
+        });
+    }
+
+    document.getElementById("cl-template-form").addEventListener("submit", async function (ev) {
+        ev.preventDefault();
+        clearError();
+        var code = document.getElementById("cl-code").value.trim();
+        var name = document.getElementById("cl-name").value.trim();
+        if (!code || !name) { showError("Code and name are required."); return; }
+        var items = collectItems();
+        if (!items.length) { showError("At least one item is required."); return; }
+        var body = { code: code, name: name, items: items };
+        var description = document.getElementById("cl-description").value.trim();
+        if (description) body.description = description;
+
+        var r = await apiFetch("/Platform/Checklists/api/templates", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+        if (!r.res.ok) { showError(errorsFrom(r.payload, "Failed to create template.")); return; }
+        showSuccess("Template created.");
+        ev.target.reset();
+        itemsContainer.innerHTML = "";
+        addItemRow("", false);
+        loadTemplates();
+    });
+
+    // ---- Runs ----
+    var runsTbody = document.getElementById("cl-runs-tbody");
+
+    async function loadRuns() {
+        runsTbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Loading…</td></tr>';
+        var r = await apiFetch("/Platform/Checklists/api/runs");
+        if (!r.res.ok) { showError(errorsFrom(r.payload, "Failed to load runs.")); runsTbody.innerHTML = ""; return; }
+        var items = (r.payload && r.payload.data && r.payload.data.items) || [];
+        if (!items.length) {
+            runsTbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No runs yet.</td></tr>';
+            return;
+        }
+        runsTbody.innerHTML = "";
+        items.forEach(function (run) {
+            var total = (run.items && run.items.length) || run.totalItems || 0;
+            var done = (run.items ? run.items.filter(function (i) { return i.isCompleted; }).length : run.completedItems) || 0;
+            var tr = document.createElement("tr");
+            tr.innerHTML =
+                '<td>' + esc(run.name || run.templateCode) + '</td>' +
+                '<td>' + esc(run.templateCode) + '</td>' +
+                '<td><span class="badge bg-label-primary">' + esc(run.status) + '</span></td>' +
+                '<td>' + esc(done) + ' / ' + esc(total) + '</td>';
+            var actions = document.createElement("td");
+            actions.className = "text-end pe-3";
+            var openBtn = document.createElement("button");
+            openBtn.type = "button";
+            openBtn.className = "btn btn-sm btn-outline-primary";
+            openBtn.innerHTML = '<i class="bx bx-folder-open me-1"></i>Open';
+            openBtn.addEventListener("click", function () { openRun(run.id); });
+            actions.appendChild(openBtn);
+            tr.appendChild(actions);
+            runsTbody.appendChild(tr);
+        });
+    }
+
+    async function startRun(template) {
+        clearError();
+        var r = await apiFetch("/Platform/Checklists/api/runs", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ template_id: template.id, name: template.name })
+        });
+        if (!r.res.ok) { showError(errorsFrom(r.payload, "Failed to start run.")); return; }
+        showSuccess("Run started.");
+        var runId = r.payload && r.payload.data && r.payload.data.id;
+        loadRuns();
+        if (runId) openRun(runId);
+    }
+
+    // ---- Run workspace ----
+    var workspace = document.getElementById("cl-workspace");
+    var wsTitle = document.getElementById("cl-workspace-title");
+    var wsStatus = document.getElementById("cl-workspace-status");
+    var wsItems = document.getElementById("cl-workspace-items");
+    var wsError = document.getElementById("cl-workspace-error");
+
+    function wsShowError(msg) { wsError.textContent = msg; wsError.classList.remove("d-none"); }
+    function wsClearError() { wsError.classList.add("d-none"); wsError.textContent = ""; }
+
+    document.getElementById("cl-workspace-close").addEventListener("click", function () {
+        workspace.classList.add("d-none");
+        currentRunId = null;
+    });
+
+    async function openRun(runId) {
+        currentRunId = runId;
+        wsClearError();
+        workspace.classList.remove("d-none");
+        wsItems.innerHTML = '<div class="text-muted py-2">Loading…</div>';
+        workspace.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        var r = await apiFetch("/Platform/Checklists/api/runs/" + encodeURIComponent(runId));
+        if (!r.res.ok) { wsShowError(errorsFrom(r.payload, "Failed to load run.")); wsItems.innerHTML = ""; return; }
+        renderRun(r.payload && r.payload.data);
+    }
+
+    function renderRun(run) {
+        if (!run) { wsShowError("Run not found."); wsItems.innerHTML = ""; return; }
+        var completed = String(run.status || "").toLowerCase() === "completed";
+        wsTitle.textContent = (run.name || run.templateCode || "Run") + " — " + (run.templateCode || "");
+        wsStatus.innerHTML = 'Status: <span class="badge bg-label-' + (completed ? "success" : "primary") + '">' + esc(run.status) + '</span>';
+
+        var items = (run.items || []).slice().sort(function (a, b) { return (a.sequence || 0) - (b.sequence || 0); });
+        wsItems.innerHTML = "";
+        if (!items.length) { wsItems.innerHTML = '<div class="text-muted py-2">No items.</div>'; return; }
+
+        items.forEach(function (item) {
+            var wrap = document.createElement("div");
+            wrap.className = "d-flex align-items-start gap-2 py-2 border-bottom cl-run-item";
+
+            var left = document.createElement("div");
+            left.className = "flex-grow-1";
+            left.innerHTML =
+                '<div>' +
+                    (item.isCompleted ? '<i class="bx bx-check-circle text-success me-1"></i>' : '<i class="bx bx-circle text-muted me-1"></i>') +
+                    esc(item.title) +
+                    (item.requiresEvidence ? ' <span class="badge bg-label-warning ms-1">evidence</span>' : '') +
+                '</div>' +
+                (item.isCompleted && item.evidenceReference ? '<div class="small text-muted ms-3">Evidence: ' + esc(item.evidenceReference) + '</div>' : '');
+            wrap.appendChild(left);
+
+            var right = document.createElement("div");
+            right.className = "flex-shrink-0 d-flex flex-column align-items-end gap-1";
+
+            if (!item.isCompleted && !completed) {
+                var evidenceInput = null;
+                if (item.requiresEvidence) {
+                    evidenceInput = document.createElement("input");
+                    evidenceInput.type = "text";
+                    evidenceInput.className = "form-control form-control-sm mb-1";
+                    evidenceInput.placeholder = "Evidence reference";
+                    evidenceInput.style.minWidth = "180px";
+                    right.appendChild(evidenceInput);
+                }
+                var btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "btn btn-sm btn-outline-success";
+                btn.innerHTML = '<i class="bx bx-check me-1"></i>Complete';
+                btn.addEventListener("click", function () {
+                    completeItem(run.id, item, evidenceInput, wrap);
+                });
+                right.appendChild(btn);
+            } else if (item.isCompleted) {
+                right.innerHTML = '<span class="badge bg-label-success">Done</span>';
+            }
+            wrap.appendChild(right);
+            wsItems.appendChild(wrap);
+        });
+    }
+
+    function itemInlineError(wrap, msg) {
+        var existing = wrap.querySelector(".cl-item-inline-error");
+        if (existing) existing.remove();
+        var er = document.createElement("div");
+        er.className = "small text-danger mt-1 cl-item-inline-error";
+        er.textContent = msg;
+        wrap.appendChild(er);
+    }
+
+    async function completeItem(runId, item, evidenceInput, wrap) {
+        wsClearError();
+        var body = {};
+        if (evidenceInput) {
+            var ev = evidenceInput.value.trim();
+            if (ev) body.evidence_reference = ev;
+        }
+        var r = await apiFetch(
+            "/Platform/Checklists/api/runs/" + encodeURIComponent(runId) + "/items/" + encodeURIComponent(item.itemId) + "/complete",
+            { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+        if (!r.res.ok) {
+            var msg = errorsFrom(r.payload, "Failed to complete item.");
+            if (r.payload && Array.isArray(r.payload.errors) && r.payload.errors.indexOf("evidence_required") !== -1) {
+                msg = "Evidence is required to complete this item.";
+            }
+            itemInlineError(wrap, msg);
+            return;
+        }
+        // Refresh the run to reflect completion / overall status.
+        openRun(runId);
+        loadRuns();
+    }
+
+    document.getElementById("cl-templates-refresh").addEventListener("click", loadTemplates);
+    document.getElementById("cl-runs-refresh").addEventListener("click", loadRuns);
+
+    addItemRow("", false);
+    loadTemplates();
+    loadRuns();
+})();
+</script>
+}
