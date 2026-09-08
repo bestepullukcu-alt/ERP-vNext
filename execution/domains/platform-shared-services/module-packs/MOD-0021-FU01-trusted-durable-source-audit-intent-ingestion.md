@@ -492,6 +492,38 @@ activation.
 
 ## 20. Follow-up Items
 
+### LSKU lifecycle strict mapping integration — approved 2026-09-09
+
+MOD-0290 section 19.18.4 and the current user approval authorize only these paths and this pack:
+
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/Audit/TrustedSourceAuditIntentOperationMap.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/TrustedSourceAuditIntentContractTests.cs`
+
+Protected source `ffdd280a` was checked against `ProductAuditOperation` and
+`LskuIdentityLifecycleAuditIntentFactory`, the draft producer and retirement processor.
+Every row has aggregate `AuditAggregateType.Lsku`, transported as exact `Lsku`.
+The original ordinal identities are preserved, not accepted as numeric wire aliases:
+
+| MDM operation | Ordinal | Central action |
+|---|---|---|
+| LskuDraftCreated | 10 | Create |
+| LskuIdentitySubmitted | 28 | LifecycleTransition |
+| LskuIdentityApproved | 29 | LifecycleTransition |
+| LskuIdentityRejected | 30 | LifecycleTransition |
+| LskuIdentityRetired | 31 | Deactivate |
+| LskuIdentityApprovalWithdrawn | 66 | LifecycleTransition |
+| LskuRetirementRequested | 67 | LifecycleTransition |
+| LskuRetirementRejected | 68 | LifecycleTransition |
+
+Draft creation already existed. Seven lifecycle rows are added. The protected final map omitted
+submitted/approved/rejected despite their explicit approved contract and intent producers; those omissions
+are reconciled against the contract, not reproduced. No other aggregate, operation, alias or wildcard is added.
+This does not claim source worker delivery, lifecycle integration or live acceptance.
+
+Verification: exact mapping/strict parser contract tests 67 passed / 0 failed / 0 skipped.
+The overlapping FU01 trusted-source regression run passed 116 / 0 / 0. Platform Release build passed
+with 0 warnings and 0 errors. No runtime intake, config, credential or operational data was changed.
+
 - MOD-0290 Class C client/worker/operational activation remains in the approved DCP-004 sequence and its owning pack, not here.
 - End-to-end FU03 H1b activation/suspension acceptance can close only after this provider pack and the MDM client step both pass.
 - FU02 operational migration execution and Production/Staging temporal cutover remain separately authorized work;

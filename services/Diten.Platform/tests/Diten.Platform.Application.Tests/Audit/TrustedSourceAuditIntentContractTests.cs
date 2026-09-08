@@ -39,6 +39,13 @@ public sealed class TrustedSourceAuditIntentContractTests
         yield return ["Gsku", "GskuIdentityRetired", "Gsku", AuditOperation.Deactivate];
         yield return ["FinishedGood", "FinishedGoodDraftCreated", "FinishedGood", AuditOperation.Create];
         yield return ["Lsku", "LskuDraftCreated", "Lsku", AuditOperation.Create];
+        yield return ["Lsku", "LskuIdentitySubmitted", "Lsku", AuditOperation.LifecycleTransition];
+        yield return ["Lsku", "LskuIdentityApproved", "Lsku", AuditOperation.LifecycleTransition];
+        yield return ["Lsku", "LskuIdentityRejected", "Lsku", AuditOperation.LifecycleTransition];
+        yield return ["Lsku", "LskuIdentityRetired", "Lsku", AuditOperation.Deactivate];
+        yield return ["Lsku", "LskuIdentityApprovalWithdrawn", "Lsku", AuditOperation.LifecycleTransition];
+        yield return ["Lsku", "LskuRetirementRequested", "Lsku", AuditOperation.LifecycleTransition];
+        yield return ["Lsku", "LskuRetirementRejected", "Lsku", AuditOperation.LifecycleTransition];
         yield return ["ProductLegalEntityScopePolicy", "ProductLegalEntityScopePolicyCreated", "ProductLegalEntityScopePolicy", AuditOperation.Create];
         yield return ["ProductLegalEntityScopePolicy", "ProductLegalEntityScopePolicyReplaced", "ProductLegalEntityScopePolicy", AuditOperation.Update];
         yield return ["ProductLegalEntityScopePolicy", "ProductLegalEntityScopePolicyEnded", "ProductLegalEntityScopePolicy", AuditOperation.Deactivate];
@@ -75,6 +82,23 @@ public sealed class TrustedSourceAuditIntentContractTests
     public void OperationMap_RejectsAliasCaseNumericAndInvalidPairs(string aggregateType, string operation)
     {
         Assert.False(TrustedSourceAuditIntentOperationMap.TryMap(aggregateType, operation, out _, out _));
+    }
+
+    [Theory]
+    [InlineData("LskuDraftCreated", "10")]
+    [InlineData("LskuIdentitySubmitted", "28")]
+    [InlineData("LskuIdentityApproved", "29")]
+    [InlineData("LskuIdentityRejected", "30")]
+    [InlineData("LskuIdentityRetired", "31")]
+    [InlineData("LskuIdentityApprovalWithdrawn", "66")]
+    [InlineData("LskuRetirementRequested", "67")]
+    [InlineData("LskuRetirementRejected", "68")]
+    public void Lsku_mapping_rejects_wrong_aggregate_case_and_numeric_aliases(string operation, string ordinal)
+    {
+        foreach (var aggregate in new[] { "Gsku", "ProductDefinitionRevision", "GlobalProduct", "FinishedGood", "lsku", "LSKU", "Lsku " })
+            Assert.False(TrustedSourceAuditIntentOperationMap.TryMap(aggregate, operation, out _, out _));
+        foreach (var invalid in new[] { operation.ToLowerInvariant(), operation + ".extra", ordinal, "9999", "LskuUnknown", "*" })
+            Assert.False(TrustedSourceAuditIntentOperationMap.TryMap("Lsku", invalid, out _, out _));
     }
 
     [Fact]
