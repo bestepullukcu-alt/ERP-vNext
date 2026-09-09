@@ -22,7 +22,12 @@ public static class DependencyInjection
         var databaseName = configuration["Mongo:DatabaseName"]
             ?? throw new InvalidOperationException("Configuration error: 'Mongo:DatabaseName' is missing.");
 
-        var client = new MongoClient(MongoClientSettings.FromConnectionString(connectionString));
+        var mongoClientSettings = MongoClientSettings.FromConnectionString(connectionString);
+        // Align the client-level GUID representation with the registered Standard serializer so that
+        // tenant-scoped query filters serialize GUIDs identically to stored documents (subtype 4).
+        // Without this, read filters can serialize GUIDs with a different subtype and match zero rows.
+        mongoClientSettings.GuidRepresentation = GuidRepresentation.Standard;
+        var client = new MongoClient(mongoClientSettings);
 
         services.AddSingleton<IMongoClient>(client);
         services.AddScoped<IMongoDatabase>(_ => client.GetDatabase(databaseName));
