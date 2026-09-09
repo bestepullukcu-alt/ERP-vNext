@@ -1,0 +1,183 @@
+@model Diten.Web.Models.OrganizationFieldDefinitions.OrganizationFieldDefinitionEditViewModel
+@using Diten.Web.Views.Organization.FieldDefinitions
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OrganizationFieldDefinitionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["DetailsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = ViewData["CanManage"] as bool? ?? false;
+
+    // The stored type/classification are rendered through the SAME option list the form offers, matched
+    // case-insensitively. Reconstructing a label from the raw string is how `GroupFunction` became
+    // "Groupfunction" on the unit screen in FU03; two of the eight types here are two words.
+    var typeLabels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Text"] = Localizer["FieldTypeText"].Value,
+        ["MultilineText"] = Localizer["FieldTypeMultilineText"].Value,
+        ["Integer"] = Localizer["FieldTypeInteger"].Value,
+        ["Decimal"] = Localizer["FieldTypeDecimal"].Value,
+        ["Boolean"] = Localizer["FieldTypeBoolean"].Value,
+        ["Date"] = Localizer["FieldTypeDate"].Value,
+        ["SingleSelect"] = Localizer["FieldTypeSingleSelect"].Value,
+        ["Reference"] = Localizer["FieldTypeReference"].Value
+    };
+    var classificationLabels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Normal"] = Localizer["ClassificationNormal"].Value,
+        ["Internal"] = Localizer["ClassificationInternal"].Value,
+        ["Confidential"] = Localizer["ClassificationConfidential"].Value,
+        ["Restricted"] = Localizer["ClassificationRestricted"].Value
+    };
+    var referenceTargetLabels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["OrganizationUnit"] = Localizer["ReferenceTargetOrganizationUnit"].Value,
+        ["Position"] = Localizer["ReferenceTargetPosition"].Value
+    };
+
+    string Label(IDictionary<string, string> map, string? raw) =>
+        !string.IsNullOrWhiteSpace(raw) && map.TryGetValue(raw, out var value) ? value : (raw ?? "-");
+
+    string YesNo(bool value) => value ? SharedLocalizer["Yes"].Value : SharedLocalizer["No"].Value;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <div>
+        <h5 class="mb-0">@Localizer["DetailsTitle"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a asp-controller="OrganizationFieldDefinitions" asp-action="Index">@Localizer["FieldDefinitionsTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@Model.Name</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        <a asp-controller="OrganizationFieldDefinitions" asp-action="Index" class="btn btn-label-secondary">@SharedLocalizer["Back"]</a>
+        @* ⚠ EVERY WRITE CONTROL IS BEHIND `manage` (§5). A reader sees which fields exist and what they are;
+           they get no Edit button, no Deactivate button, and no editable input anywhere on this surface. *@
+        @if (canManage)
+        {
+            @if (Model.IsActive)
+            {
+                <button type="button" class="btn btn-label-warning" data-deactivate-definition
+                        data-definition-id="@Model.Id" data-definition-version="@Model.ExpectedVersion">
+                    @Localizer["Deactivate"]
+                </button>
+            }
+            <a asp-controller="OrganizationFieldDefinitions" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                @SharedLocalizer["Edit"]
+            </a>
+        }
+    </div>
+</div>
+
+@if (!canManage)
+{
+    <div class="alert alert-info" role="note">@Localizer["ReadOnlyNotice"]</div>
+}
+
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                <div class="row g-4">
+                    <div class="col-md-6"><div class="backbone-preview-label">@Localizer["Code"]</div><div class="backbone-preview-value mt-1 font-monospace">@Model.Code</div></div>
+                    <div class="col-md-6"><div class="backbone-preview-label">@Localizer["Name"]</div><div class="backbone-preview-value mt-1">@Model.Name</div></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["TypeSection"]</h6>
+                <div class="row g-4">
+                    <div class="col-md-6"><div class="backbone-preview-label">@Localizer["DataType"]</div><div class="backbone-preview-value mt-1">@Label(typeLabels, Model.DataType)</div></div>
+                    @if (string.Equals(Model.DataType, "Reference", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <div class="col-md-6"><div class="backbone-preview-label">@Localizer["ReferenceTarget"]</div><div class="backbone-preview-value mt-1">@Label(referenceTargetLabels, Model.ReferenceTarget)</div></div>
+                    }
+                </div>
+            </div>
+        </section>
+
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ConstraintsSection"]</h6>
+                <div class="row g-4">
+                    <div class="col-md-6"><div class="backbone-preview-label">@Localizer["MinLength"]</div><div class="backbone-preview-value mt-1">@(Model.MinLength?.ToString() ?? "-")</div></div>
+                    <div class="col-md-6"><div class="backbone-preview-label">@Localizer["MaxLength"]</div><div class="backbone-preview-value mt-1">@(Model.MaxLength?.ToString() ?? "-")</div></div>
+                    <div class="col-md-6"><div class="backbone-preview-label">@Localizer["MinValue"]</div><div class="backbone-preview-value mt-1">@(Model.MinValue?.ToString() ?? "-")</div></div>
+                    <div class="col-md-6"><div class="backbone-preview-label">@Localizer["MaxValue"]</div><div class="backbone-preview-value mt-1">@(Model.MaxValue?.ToString() ?? "-")</div></div>
+                    <div class="col-12">
+                        <div class="backbone-preview-label">@Localizer["OptionsLabel"]</div>
+                        <div class="backbone-preview-value mt-1">
+                            @if (Model.Options.Count == 0)
+                            {
+                                <span>-</span>
+                            }
+                            else
+                            {
+                                @foreach (var option in Model.Options)
+                                {
+                                    <span class="badge bg-label-secondary me-1">@option</span>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["PresentationSection"]</h6>
+                <div class="row g-4">
+                    <div class="col-12"><div class="backbone-preview-label">@Localizer["DisplayOrder"]</div><div class="backbone-preview-value mt-1">@(Model.DisplayOrder?.ToString() ?? "0")</div></div>
+                    <div class="col-12"><div class="backbone-preview-label">@Localizer["Required"]</div><div class="backbone-preview-value mt-1">@YesNo(Model.IsRequired)</div></div>
+                    <div class="col-12">
+                        <div class="backbone-preview-label">@Localizer["Queryable"]</div>
+                        <div class="backbone-preview-value mt-1">@YesNo(Model.IsQueryable)</div>
+                        <div class="form-text">@Localizer["QueryableHelp"]</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["GovernanceSection"]</h6>
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="backbone-preview-label">@Localizer["Classification"]</div>
+                        <div class="backbone-preview-value mt-1">@Label(classificationLabels, Model.Classification)</div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-label">@SharedLocalizer["Status"]</div>
+                        <div class="backbone-preview-value mt-1">
+                            <span class="badge @(Model.IsActive ? "bg-label-success" : "bg-label-secondary")">
+                                @(Model.IsActive ? SharedLocalizer["Active"] : SharedLocalizer["Passive"])
+                            </span>
+                        </div>
+                        @if (!Model.IsActive)
+                        {
+                            @* Says plainly what deactivation did, on the surface where somebody meets it. *@
+                            <div class="form-text">@Localizer["InactiveDefinitionHelp"]</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Organization/FieldDefinitions/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Organization/FieldDefinitions/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Organization/FieldDefinitions/form.js" asp-append-version="true"></script>
+}

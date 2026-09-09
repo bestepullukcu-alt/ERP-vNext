@@ -608,6 +608,7 @@
   <data name="Nav.Page.LEGALENTITIES" xml:space="preserve"><value>Юридические лица</value></data>
   <data name="Nav.Page.RDSETS" xml:space="preserve"><value>Наборы справочных данных</value></data>
   <data name="Nav.Page.ORGANIZATIONUNITS" xml:space="preserve"><value>Организационные единицы</value></data>
+  <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Определения полей</value></data>
   <data name="Nav.Page.POSITIONS" xml:space="preserve"><value>Должности</value></data>
   <data name="Nav.Page.POSITIONASSIGNMENTS" xml:space="preserve"><value>Назначения на должности</value></data>
   <data name="Nav.Page.DEFINITIONS" xml:space="preserve"><value>Определения рабочих процессов</value></data>

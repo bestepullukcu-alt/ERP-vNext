@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="FieldDefinitionsTitle" xml:space="preserve"><value>Organizasyon Alan Tanımları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Organizasyon birimlerinizin taşıdığı alanları kod değişikliği olmadan tanımlayın.</value></data>
+  <data name="AddNewFieldDefinition" xml:space="preserve"><value>Alan Tanımı Ekle</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı bakış</value></data>
+  <data name="Showing" xml:space="preserve"><value>Gösterilen</value></data>
+  <data name="Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>örn. REG_ROLE</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>örn. Düzenleyici rol</value></data>
+  <data name="DataType" xml:space="preserve"><value>Alan tipi</value></data>
+  <data name="Required" xml:space="preserve"><value>Zorunlu</value></data>
+  <data name="Queryable" xml:space="preserve"><value>Filtre olarak kullanılabilir</value></data>
+  <data name="Classification" xml:space="preserve"><value>Sınıflandırma</value></data>
+  <data name="DisplayOrder" xml:space="preserve"><value>Görüntülenme sırası</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Alan Tanımı Oluştur</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Alan Tanımını Düzenle</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Alan Tanımı Ayrıntıları</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="TypeSection" xml:space="preserve"><value>Tip ve kısıtlar</value></data>
+  <data name="PresentationSection" xml:space="preserve"><value>Sunum</value></data>
+  <data name="GovernanceSection" xml:space="preserve"><value>Yönetişim</value></data>
+  <data name="ConstraintsSection" xml:space="preserve"><value>Değer kısıtları</value></data>
+  <data name="CodeImmutableHelp" xml:space="preserve"><value>Kod, alan oluşturulduktan sonra değiştirilemez</value></data>
+  <data name="InactiveDefinitionHelp" xml:space="preserve"><value>Kayıtlı değerler okunabilir kalır; yeni değer kabul edilmez</value></data>
+  <data name="DefinitionLimitReached" xml:space="preserve"><value>50 tanım sınırına ulaşıldı</value></data>
+  <data name="RemainingCapacity" xml:space="preserve"><value>50 tanımdan {0} tanesi kaldı</value></data>
+  <data name="QueryableHelp" xml:space="preserve"><value>Bunu sunucu uygular: burada işaretlenmeyen bir alan filtre olarak reddedilir, yalnızca gizlenmiş olmaz.</value></data>
+  <data name="ClassificationHelp" xml:space="preserve"><value>Normal'in üzerindeki bir değer yalnızca karşılık gelen yetkiyle okunur; yetki yoksa alan gizlenir, boş gösterilmez.</value></data>
+  <data name="TypeChangeHelp" xml:space="preserve"><value>Bu alana bir değer kaydedildikten sonra tip artık değiştirilemez.</value></data>
+  <data name="FieldTypeText" xml:space="preserve"><value>Metin</value></data>
+  <data name="FieldTypeMultilineText" xml:space="preserve"><value>Çok satırlı metin</value></data>
+  <data name="FieldTypeInteger" xml:space="preserve"><value>Tam sayı</value></data>
+  <data name="FieldTypeDecimal" xml:space="preserve"><value>Ondalık sayı</value></data>
+  <data name="FieldTypeBoolean" xml:space="preserve"><value>Evet / Hayır</value></data>
+  <data name="FieldTypeDate" xml:space="preserve"><value>Tarih</value></data>
+  <data name="FieldTypeSingleSelect" xml:space="preserve"><value>Tek seçim</value></data>
+  <data name="FieldTypeReference" xml:space="preserve"><value>Referans</value></data>
+  <data name="ClassificationNormal" xml:space="preserve"><value>Normal</value></data>
+  <data name="ClassificationInternal" xml:space="preserve"><value>Şirket içi</value></data>
+  <data name="ClassificationConfidential" xml:space="preserve"><value>Gizli</value></data>
+  <data name="ClassificationRestricted" xml:space="preserve"><value>Kısıtlı</value></data>
+  <data name="OptionsLabel" xml:space="preserve"><value>Seçenekler</value></data>
+  <data name="OptionsHelp" xml:space="preserve"><value>Tek seçimli bir alan en az bir seçenek ister; sunucu seçeneksiz olanı reddeder.</value></data>
+  <data name="OptionAdd" xml:space="preserve"><value>Seçenek ekle</value></data>
+  <data name="OptionRemove" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="OptionPlaceholder" xml:space="preserve"><value>Seçenek</value></data>
+  <data name="MinLength" xml:space="preserve"><value>En az uzunluk</value></data>
+  <data name="MaxLength" xml:space="preserve"><value>En çok uzunluk</value></data>
+  <data name="MinValue" xml:space="preserve"><value>En küçük değer</value></data>
+  <data name="MaxValue" xml:space="preserve"><value>En büyük değer</value></data>
+  <data name="ReferenceTarget" xml:space="preserve"><value>Neyi gösterir</value></data>
+  <data name="ReferenceTargetOrganizationUnit" xml:space="preserve"><value>Organizasyon birimi</value></data>
+  <data name="ReferenceTargetPosition" xml:space="preserve"><value>Pozisyon</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Pasifleştir</value></data>
+  <data name="DeactivateConfirm" xml:space="preserve"><value>Bu alan yeni değer kabul etmeyecek. Kayıtlı değerler okunabilir kalır. Devam edilsin mi?</value></data>
+  <data name="RecordDeactivated" xml:space="preserve"><value>Alan tanımı pasifleştirildi.</value></data>
+  <data name="BulkDeactivate" xml:space="preserve"><value>Seçilenleri pasifleştir</value></data>
+  <data name="BulkDeactivateConfirm" xml:space="preserve"><value>Seçilen alanlar yeni değer kabul etmeyecek. Kayıtlı değerler okunabilir kalır. Devam edilsin mi?</value></data>
+  <data name="BulkDeactivateSuccess" xml:space="preserve"><value>Seçilen alan tanımları pasifleştirildi.</value></data>
+  <data name="NoReactivateHelp" xml:space="preserve"><value>Pasifleştirme bu ekrandan geri alınamaz; bunun yerine yeni bir alan oluşturun.</value></data>
+  <data name="ReadOnlyNotice" xml:space="preserve"><value>Hangi alanların var olduğunu görebilirsiniz, ancak değiştiremezsiniz.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Alan tanımları yüklenemedi.</value></data>
+</root>

@@ -608,6 +608,7 @@
   <data name="Nav.Page.LEGALENTITIES" xml:space="preserve"><value>Entidades jurídicas</value></data>
   <data name="Nav.Page.RDSETS" xml:space="preserve"><value>Conjuntos de datos de referencia</value></data>
   <data name="Nav.Page.ORGANIZATIONUNITS" xml:space="preserve"><value>Unidades organizativas</value></data>
+  <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Definiciones de campos</value></data>
   <data name="Nav.Page.POSITIONS" xml:space="preserve"><value>Puestos</value></data>
   <data name="Nav.Page.POSITIONASSIGNMENTS" xml:space="preserve"><value>Asignaciones de puesto</value></data>
   <data name="Nav.Page.DEFINITIONS" xml:space="preserve"><value>Definiciones de flujo de trabajo</value></data>
