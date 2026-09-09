@@ -66,6 +66,14 @@ public static class MongoDbIndexConfigurations
             new CreateIndexModel<RolePermission>(Builders<RolePermission>.IndexKeys.Ascending("RoleId").Ascending("TenantId"))
         });
 
+        // UserLegalEntityAssignments (F2 legal-entity scoping)
+        var userLegalEntityAssignmentsCol = database.GetCollection<UserLegalEntityAssignment>("user_legal_entity_assignments");
+        await userLegalEntityAssignmentsCol.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<UserLegalEntityAssignment>(Builders<UserLegalEntityAssignment>.IndexKeys.Ascending("UserId").Ascending("LegalEntityId").Ascending("TenantId"), new CreateIndexOptions { Unique = true }),
+            new CreateIndexModel<UserLegalEntityAssignment>(Builders<UserLegalEntityAssignment>.IndexKeys.Ascending("UserId").Ascending("TenantId"))
+        });
+
         // RefreshTokens
         var refreshTokensCol = database.GetCollection<RefreshToken>("refreshTokens");
         await refreshTokensCol.Indexes.CreateManyAsync(new[]

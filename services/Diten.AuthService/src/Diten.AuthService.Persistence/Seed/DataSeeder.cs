@@ -21,13 +21,37 @@ public static class DataSeeder
             
             Console.WriteLine("Seeding users...");
             await SeedUsersAsync(database);
-            
+
+            Console.WriteLine("Seeding legal-entity assignments...");
+            await SeedLegalEntityAssignmentsAsync(database);
+
             Console.WriteLine("Seeding completed successfully.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Critical Seeding Error: {ex.Message}");
             if (ex.InnerException != null) Console.WriteLine($"Inner: {ex.InnerException.Message}");
+        }
+    }
+
+    private static async Task SeedLegalEntityAssignmentsAsync(IMongoDatabase database)
+    {
+        // F2: assign admin@diten.com to the GRAND-HOLDING root legal entity (deterministic MDM seed id).
+        // Admin is on the parent, so F4 roll-up will resolve all subsidiaries. Idempotent.
+        var col = database.GetCollection<UserLegalEntityAssignment>("user_legal_entity_assignments");
+        var adminUserId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var grandHoldingId = Guid.Parse("1e9a1000-0000-0000-0000-000000000001");
+
+        var filter = Builders<UserLegalEntityAssignment>.Filter.And(
+            Builders<UserLegalEntityAssignment>.Filter.Eq(x => x.IsDeleted, false),
+            Builders<UserLegalEntityAssignment>.Filter.Eq(x => x.UserId, adminUserId),
+            Builders<UserLegalEntityAssignment>.Filter.Eq(x => x.LegalEntityId, grandHoldingId),
+            Builders<UserLegalEntityAssignment>.Filter.Eq(x => x.TenantId, DefaultTenantId));
+
+        if (!await col.Find(filter).AnyAsync())
+        {
+            await col.InsertOneAsync(new UserLegalEntityAssignment(adminUserId, DefaultTenantId, grandHoldingId));
+            Console.WriteLine("Assigned admin user to GRAND-HOLDING legal entity.");
         }
     }
 

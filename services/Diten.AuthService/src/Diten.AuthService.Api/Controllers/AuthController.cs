@@ -89,6 +89,20 @@ public sealed class AuthController : CustomBaseController
         return CreateActionResultInstance(result);
     }
 
+    [HttpGet("me/legal-entities")]
+    [Authorize]
+    public async Task<IActionResult> MyLegalEntities(CancellationToken ct)
+    {
+        var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                           ?? User.FindFirst("sub")?.Value;
+
+        if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
+            return CreateActionResultInstance(Response<object>.Fail("Unauthorized.", 401));
+
+        var result = await _mediator.Send(new GetUserLegalEntitiesQuery(userId), ct);
+        return CreateActionResultInstance(result);
+    }
+
     private static string ResolveRequestIp(HttpContext context)
     {
         var forwardedFor = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();

@@ -16,6 +16,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IRoleRepository _roleRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
+    private readonly IUserLegalEntityAssignmentRepository _legalEntityAssignmentRepository;
     private readonly ITokenService _tokenService;
     private readonly IRefreshTokenHasher _refreshTokenHasher;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
@@ -31,6 +32,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         IUserRoleRepository userRoleRepository,
         IRoleRepository roleRepository,
         IRolePermissionRepository rolePermissionRepository,
+        IUserLegalEntityAssignmentRepository legalEntityAssignmentRepository,
         ITokenService tokenService,
         IRefreshTokenHasher refreshTokenHasher,
         IRefreshTokenRepository refreshTokenRepository,
@@ -45,6 +47,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         _userRoleRepository = userRoleRepository;
         _roleRepository = roleRepository;
         _rolePermissionRepository = rolePermissionRepository;
+        _legalEntityAssignmentRepository = legalEntityAssignmentRepository;
         _tokenService = tokenService;
         _refreshTokenHasher = refreshTokenHasher;
         _refreshTokenRepository = refreshTokenRepository;
@@ -162,7 +165,14 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
             .ToArray()
             ?? [];
 
-        var accessToken = _tokenService.GenerateAccessToken(user, roles, permissions, settings.SessionTimeoutMinutes);
+        // F2: gather the user's legal-entity assignments so the JWT carries a legal_entities claim.
+        var legalEntities = (await _legalEntityAssignmentRepository.GetByUserIdAsync(user.Id, ct))
+            .Where(a => a.TenantId == user.TenantId)
+            .Select(a => a.LegalEntityId.ToString())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var accessToken = _tokenService.GenerateAccessToken(user, roles, permissions, legalEntities, settings.SessionTimeoutMinutes);
         var refreshTokenStr = _tokenService.GenerateRefreshToken();
         var refreshTokenHash = _refreshTokenHasher.Hash(refreshTokenStr);
         var refreshExpiresAt = DateTime.UtcNow.AddDays(request.RememberMe ? 30 : settings.RefreshTokenLifetimeDays);

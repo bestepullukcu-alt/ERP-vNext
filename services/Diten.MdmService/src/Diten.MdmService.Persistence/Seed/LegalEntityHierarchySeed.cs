@@ -13,29 +13,39 @@ public static class LegalEntityHierarchySeed
     private static readonly Guid DefaultTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
     private const string CollectionName = "mdm_legal_entities";
 
-    private const string RootCode = "GRAND-HOLDING";
+    // Deterministic demo ids so auth (F2) and all services can reference the hierarchy by fixed GUID.
+    private static readonly Guid HoldingId = Guid.Parse("1e9a1000-0000-0000-0000-000000000001");
+    private static readonly Guid MedikalId = Guid.Parse("1e9a1000-0000-0000-0000-000000000002");
+    private static readonly Guid TeknolojiId = Guid.Parse("1e9a1000-0000-0000-0000-000000000003");
 
     public static async Task EnsureSeededAsync(IMongoDatabase database, CancellationToken cancellationToken = default)
     {
         var collection = database.GetCollection<LegalEntity>(CollectionName);
 
-        var existsFilter = Builders<LegalEntity>.Filter.And(
+        // Idempotent + self-healing: once the fixed-id root exists we are done. Otherwise, remove any
+        // pre-existing GRAND-* rows (e.g. earlier random-id seed) for the default tenant and insert the
+        // deterministic set. Hierarchy/guard code is untouched — only the seed ids are pinned.
+        var fixedRootExists = await collection.Find(Builders<LegalEntity>.Filter.And(
             Builders<LegalEntity>.Filter.Eq(x => x.TenantId, DefaultTenantId),
-            Builders<LegalEntity>.Filter.Eq(x => x.Code, RootCode),
-            Builders<LegalEntity>.Filter.Eq(x => x.IsDeleted, false));
+            Builders<LegalEntity>.Filter.Eq(x => x.Id, HoldingId))).AnyAsync(cancellationToken);
 
-        if (await collection.Find(existsFilter).AnyAsync(cancellationToken))
+        if (fixedRootExists)
         {
-            return; // already seeded — idempotent no-op
+            return; // already seeded with deterministic ids — no-op
         }
+
+        var demoCodes = new[] { "GRAND-HOLDING", "GRAND-MEDIKAL", "GRAND-TEKNOLOJI" };
+        await collection.DeleteManyAsync(Builders<LegalEntity>.Filter.And(
+            Builders<LegalEntity>.Filter.Eq(x => x.TenantId, DefaultTenantId),
+            Builders<LegalEntity>.Filter.In(x => x.Code, demoCodes)), cancellationToken);
 
         var now = DateTimeOffset.UtcNow;
 
         var holding = new LegalEntity
         {
-            Id = Guid.NewGuid(),
+            Id = HoldingId,
             TenantId = DefaultTenantId,
-            Code = RootCode,
+            Code = "GRAND-HOLDING",
             LegalName = "GRAND HOLDING",
             DisplayName = "GRAND HOLDING",
             ParentId = null,
@@ -47,12 +57,12 @@ public static class LegalEntityHierarchySeed
 
         var medikal = new LegalEntity
         {
-            Id = Guid.NewGuid(),
+            Id = MedikalId,
             TenantId = DefaultTenantId,
             Code = "GRAND-MEDIKAL",
             LegalName = "GRAND MEDIKAL",
             DisplayName = "GRAND MEDIKAL",
-            ParentId = holding.Id,
+            ParentId = HoldingId,
             LifecycleStatus = LegalEntityLifecycleStatus.Active,
             CreatedAt = now,
             UpdatedAt = now,
@@ -61,12 +71,12 @@ public static class LegalEntityHierarchySeed
 
         var teknoloji = new LegalEntity
         {
-            Id = Guid.NewGuid(),
+            Id = TeknolojiId,
             TenantId = DefaultTenantId,
             Code = "GRAND-TEKNOLOJI",
             LegalName = "GRAND TEKNOLOJİ",
             DisplayName = "GRAND TEKNOLOJİ",
-            ParentId = holding.Id,
+            ParentId = HoldingId,
             LifecycleStatus = LegalEntityLifecycleStatus.Active,
             CreatedAt = now,
             UpdatedAt = now,

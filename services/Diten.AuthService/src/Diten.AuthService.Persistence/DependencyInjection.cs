@@ -67,6 +67,7 @@ public static class DependencyInjection
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IPlatformUserRepository, PlatformUserRepository>();
         services.AddScoped<ITenantUserMembershipRepository, TenantUserMembershipRepository>();
+        services.AddScoped<IUserLegalEntityAssignmentRepository, UserLegalEntityAssignmentRepository>();
         services.AddScoped<IIntegrationEventInboxRepository, IntegrationEventInboxRepository>();
         services.AddScoped<IAuthAuditService, AuthAuditService>();
         services.AddScoped<IMfaChallengeRepository, MfaChallengeRepository>();

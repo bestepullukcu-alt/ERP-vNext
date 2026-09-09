@@ -26,6 +26,11 @@ public sealed class TokenService : ITokenService
 
     public string GenerateAccessToken(User user, IEnumerable<string> roles, IEnumerable<string> permissions, int expiresInMinutes)
     {
+        return GenerateAccessToken(user, roles, permissions, Array.Empty<string>(), expiresInMinutes);
+    }
+
+    public string GenerateAccessToken(User user, IEnumerable<string> roles, IEnumerable<string> permissions, IEnumerable<string> legalEntities, int expiresInMinutes)
+    {
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
@@ -44,6 +49,14 @@ public sealed class TokenService : ITokenService
         foreach (var permission in permissions)
         {
             claims.Add(new Claim("permission", permission));
+        }
+
+        // F2: comma-separated list of legal-entity ids the user is assigned to. Skip when empty
+        // so the existing login/claim behavior is unchanged for users without assignments.
+        var legalEntityCsv = string.Join(",", legalEntities.Where(x => !string.IsNullOrWhiteSpace(x)));
+        if (!string.IsNullOrEmpty(legalEntityCsv))
+        {
+            claims.Add(new Claim("legal_entities", legalEntityCsv));
         }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret));
