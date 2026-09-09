@@ -128,7 +128,7 @@ public sealed class TrustedLegalEntityScopeCredentialAuthenticatorTests
                      "mdm.gskus.request-correction", "mdm.gskus.request-retirement", "mdm.gskus.retire" })
             options.Mdm.AllowedPairs.Add(new() { ModuleCode = "product-item-sku-master", PermissionKey = permission });
         Assert.Equal(28, options.Mdm.AllowedPairs.Select(p => (p.ModuleCode, p.PermissionKey)).Distinct().Count());
-        Assert.Equal(30, TrustedLegalEntityScopeCredentialAuthenticator.MaxAllowedPairs);
+        Assert.Equal(32, TrustedLegalEntityScopeCredentialAuthenticator.MaxAllowedPairs);
         var authenticator = Create(options);
         Assert.All(options.Mdm.AllowedPairs, p => Assert.True(authenticator.AllowsPair(p.ModuleCode, p.PermissionKey)));
         foreach (var permission in new[] { "mdm.global-products.submit", "mdm.lskus.retire", "mdm.finished-goods.submit" })
@@ -139,6 +139,8 @@ public sealed class TrustedLegalEntityScopeCredentialAuthenticatorTests
     [Theory]
     [InlineData("mdm.lskus.withdraw")]
     [InlineData("mdm.lskus.request-retirement")]
+    [InlineData("mdm.lskus.submit")]
+    [InlineData("mdm.lskus.retire")]
     public void Lsku_action_pair_requires_exact_module_permission_and_configured_subset(string permission)
     {
         var options = Options();
@@ -176,6 +178,22 @@ public sealed class TrustedLegalEntityScopeCredentialAuthenticatorTests
         Assert.All(options.Mdm.AllowedPairs, p => Assert.True(authenticator.AllowsPair(p.ModuleCode, p.PermissionKey)));
         foreach (var permission in new[] { "mdm.lskus.update", "mdm.lskus.request-correction", "mdm.lskus.submit", "mdm.lskus.retire" })
             Assert.False(authenticator.AllowsPair("product-item-sku-master", permission));
+    }
+
+    [Fact]
+    public void Exact_32_pair_union_adds_only_approved_lsku_submit_and_retire_to_prior_30()
+    {
+        var options = Options();
+        foreach (var permission in new[] { "mdm.gskus.update", "mdm.gskus.submit", "mdm.gskus.withdraw",
+                     "mdm.gskus.request-correction", "mdm.gskus.request-retirement", "mdm.gskus.retire",
+                     "mdm.lskus.withdraw", "mdm.lskus.request-retirement", "mdm.lskus.submit", "mdm.lskus.retire" })
+            options.Mdm.AllowedPairs.Add(new() { ModuleCode = "product-item-sku-master", PermissionKey = permission });
+        Assert.Equal(32, options.Mdm.AllowedPairs.Select(p => (p.ModuleCode, p.PermissionKey)).Distinct().Count());
+        var authenticator = Create(options);
+        Assert.All(options.Mdm.AllowedPairs, p => Assert.True(authenticator.AllowsPair(p.ModuleCode, p.PermissionKey)));
+        Assert.False(authenticator.AllowsPair("product-item-sku-master", "mdm.finished-goods.submit"));
+        options.Mdm.AllowedPairs.Add(new() { ModuleCode = "product-item-sku-master", PermissionKey = "mdm.lskus.update" });
+        Assert.True(Create(options).Authenticate("mdm", "active-secret", TrustedLegalEntityScopeCredentialAuthenticator.Audience).Forbidden);
     }
 
     private static TrustedLegalEntityScopeCredentialAuthenticator Create(TrustedLegalEntityScopeCredentialOptions? options = null) =>

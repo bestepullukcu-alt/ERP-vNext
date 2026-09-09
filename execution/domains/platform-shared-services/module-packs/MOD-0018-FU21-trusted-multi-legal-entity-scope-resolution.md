@@ -579,3 +579,22 @@ New exact-pair/subset/invalid-case tests are included. This is source verificati
 - Service-account/background-job scope semantics; this foundation accepts only direct `tenant_user` actors.
 - Optional bulk decision/projection only after measured performance evidence; no cross-request scope cache by default.
 - Production credential provisioning, rotation/revocation drill, observability, retention and operational runbook.
+
+### LSKU E2A historical lifecycle pair extraction — 2026-09-09
+
+The existing approved 2026-08-30 lifecycle-scope amendment in protected source `ffdd280a` includes
+`product-item-sku-master / mdm.lskus.submit` and `product-item-sku-master / mdm.lskus.retire`.
+Extract only these two for the approved LSKU E2A consumer; do not copy that historical cross-product
+30-pair set. Current union is exactly 32: original 22 + six GSKU + four LSKU lifecycle pairs.
+The preceding withdrawal/request-retirement checkpoint remains a historical 30-pair subset.
+
+Exact runtime/test paths remain:
+- `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeCredentialAuthenticator.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Authorization/TrustedLegalEntityScopeCredentialAuthenticatorTests.cs`
+
+Authenticator focused tests: 23 passed / 0 failed / 0 skipped. The overlapping trusted-scope/OrgDataScope
+regression run passed 80 / failed 0 / skipped 0. Platform Release build passed with zero errors.
+Tests retain original 22/28/30 configured
+subsets and verify the 32-pair union, exact new pairs, case/module/unknown rejection and client binding.
+No credential, pair configuration or tenant grant is provisioned. MDM consumer integration and its
+real client-provider scope tests are not implied by this Platform prerequisite.
