@@ -794,3 +794,22 @@ Protected/out-of-scope even after named-step code-start:
 Material, FPF, FPP and artwork controlled-code namespace scopes remain governed outside this follow-up. No follow-up may
 use this approved design/scope pack to authorize their issuance or to place those codes in `CanonicalCode` or
 `RevisionIdentifier`.
+
+### 2026-09-09 integration: ABB embedded audit delivery prerequisite
+
+Owner-approved Phase 1.5 audit storage is reconciled from protected source `ffdd280a`.
+Exact runtime/test paths for this bounded prerequisite:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/AuditAggregateType.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductAuditOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/ProductAbbreviationRegisterEntry.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/AuditIntentDeliveryRepository.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/AuditIntentDeliveryMongoTests.cs`
+
+Only aggregate ordinal 9 and ABB operation ordinals 51-61 are appended; unrelated final-branch enums are not imported.
+The existing register collection is reused. Claim/retry/dead-letter/atomic acknowledgement and receipt replay use
+the current generic delivery implementation; business version and soft-delete state remain unchanged.
+Test-owned Mongo replica-set verification: `ProductAbbreviationAuditDeliveryFoundationMongoTests` 2 passed,
+0 failed, 0 skipped, covering tenant denial, competing claim, immutable receipt replay/drift and soft-deleted entries.
+This is storage groundwork, not producer/worker or live acceptance. Tenant-discovery, producer and WorkCenter/UI
+integration require their separately verified slices; no worker, configuration or operational cutover was activated.

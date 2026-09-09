@@ -9,6 +9,76 @@ using Xunit;
 
 namespace Diten.MdmService.Application.Tests;
 
+public sealed class ProductAbbreviationAuditDeliveryFoundationMongoTests(
+    Diten.MdmService.Application.Tests.Audit.AuditIntentTemporalMongoFixture mongo)
+    : IClassFixture<Diten.MdmService.Application.Tests.Audit.AuditIntentTemporalMongoFixture>
+{
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Abb_delivery_preserves_tenant_claim_receipt_replay_and_business_version(bool softDeleted)
+    {
+        var settings = MongoClientSettings.FromConnectionString(mongo.ReplicaConnectionString);
+#pragma warning disable CS0618
+        settings.GuidRepresentation = GuidRepresentation.Standard;
+#pragma warning restore CS0618
+        var database = new MongoClient(settings).GetDatabase("diten_mdm_abb_delivery_itest");
+        var tenantId = Guid.NewGuid();
+        var tenant = new TenantContext();
+        tenant.SetTenant(tenantId);
+        var foreign = new TenantContext();
+        foreign.SetTenant(Guid.NewGuid());
+        var collection = database.GetCollection<ProductAbbreviationRegisterEntry>("mdm_product_abbreviation_register");
+        var entry = new ProductAbbreviationRegisterEntry
+        {
+            TenantId = tenantId, Version = 7, IsDeleted = softDeleted, NormalizedAbbreviation = "TST",
+            GlobalProductId = Guid.NewGuid()
+        };
+        var intent = new LocalAuditIntent
+        {
+            TenantId = tenantId, AggregateId = entry.Id, AggregateType = AuditAggregateType.ProductAbbreviation,
+            IntentId = Guid.NewGuid(), Operation = ProductAuditOperation.ProductAbbreviationAllocationRequested,
+            TimestampUtc = DateTimeOffset.UtcNow.AddMinutes(-1), ActorId = Guid.NewGuid().ToString("D"),
+            CorrelationId = Guid.NewGuid().ToString("D"), CommandId = Guid.NewGuid().ToString("D"),
+            CausationId = Guid.NewGuid().ToString("D"), IdempotencyKey = Guid.NewGuid().ToString("D"),
+            EvidenceHash = new string('A', 64), PreVersion = 6, PostVersion = 7, Sequence = 7
+        };
+        AuditIntentTemporalStorage.ApplyCurrentVersion(intent);
+        entry.AuditIntents.Add(intent);
+        try
+        {
+            await collection.InsertOneAsync(entry);
+            var repository = new AuditIntentDeliveryRepository(database, tenant, TimeProvider.System);
+            var foreignRepository = new AuditIntentDeliveryRepository(database, foreign, TimeProvider.System);
+            var work = Assert.Single(await repository.DiscoverEligibleAsync(10));
+            Assert.Equal(AuditAggregateType.ProductAbbreviation, work.Locator.AggregateType);
+            Assert.Empty(await foreignRepository.DiscoverEligibleAsync(10));
+            Assert.Null(await foreignRepository.TryClaimAsync(work.Locator, 0, "test-owner", TimeSpan.FromMinutes(1)));
+            var claim = Assert.IsType<AuditIntentClaim>(
+                await repository.TryClaimAsync(work.Locator, 0, "test-owner", TimeSpan.FromMinutes(1)));
+            Assert.Null(await repository.TryClaimAsync(work.Locator, 0, "other-owner", TimeSpan.FromMinutes(1)));
+            const string version = "mod-0290.audit-intent.v1";
+            var receipt = new AuditIntentAcknowledgement("test-durable-acceptance",
+                AuditIntentContract.BuildCentralIdempotencyKey(tenantId, intent.IntentId, version),
+                version, DateTimeOffset.UtcNow);
+            Assert.False(await foreignRepository.AcknowledgeAndCompactAsync(claim, receipt, "test-receipt"));
+            Assert.True(await repository.AcknowledgeAndCompactAsync(claim, receipt, "test-receipt"));
+            Assert.True(await repository.AcknowledgeAndCompactAsync(claim, receipt, "test-receipt"));
+            Assert.False(await repository.AcknowledgeAndCompactAsync(claim, receipt, "drifted-receipt"));
+            var stored = await collection.Find(x => x.TenantId == tenantId && x.Id == entry.Id).SingleAsync();
+            Assert.Equal(7, stored.Version);
+            Assert.Equal(softDeleted, stored.IsDeleted);
+            Assert.Empty(stored.AuditIntents);
+            Assert.Single(stored.AuditIntentReceipts);
+        }
+        finally
+        {
+            await collection.DeleteManyAsync(x => x.TenantId == tenantId);
+        }
+    }
+}
+
+
 [Collection(ProductLegalEntityScopeMongoCollection.Name)]
 public sealed class AuditIntentDeliveryMongoTests
 {
