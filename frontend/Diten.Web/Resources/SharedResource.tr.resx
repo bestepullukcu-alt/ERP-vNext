@@ -587,72 +587,8 @@
   <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>Tüzel Kişilik</value></data>
   <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>Referans Verileri</value></data>
   <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>Organizasyon</value></data>
-  <data name="Nav.Module.TENANTS" xml:space="preserve"><value>Kiracılar</value></data>
-  <data name="Nav.Module.NOTIFICATIONS" xml:space="preserve"><value>Bildirimler</value></data>
-  <data name="Nav.Module.ADMINISTRATORS" xml:space="preserve"><value>Yöneticiler</value></data>
-  <data name="Nav.Module.AUDIT" xml:space="preserve"><value>Denetim</value></data>
-  <data name="Nav.Module.MODULECATALOG" xml:space="preserve"><value>Modül Kataloğu</value></data>
-  <data name="Nav.Module.MODULEDOMAINS" xml:space="preserve"><value>Modül Alanları</value></data>
-  <data name="Nav.Module.MODULESERVICES" xml:space="preserve"><value>Modül Servisleri</value></data>
-  <data name="Nav.Module.INTERFACEREGISTRY" xml:space="preserve"><value>Arayüz Kaydı</value></data>
-  <data name="Nav.Module.SUBSCRIPTIONPLANS" xml:space="preserve"><value>Abonelik Planları</value></data>
-  <data name="Nav.Module.SUBSCRIPTIONFEATURES" xml:space="preserve"><value>Abonelik Özellikleri</value></data>
-  <data name="Nav.Module.PERSON" xml:space="preserve"><value>Kişi Rehberi</value></data>
-  <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>Referans Listeleri</value></data>
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>Görev Tanımları</value></data>
-  <!-- ADR-001 §2 — the permission-screen name for the tasks module. The sidebar keeps
-       Nav.Module.TASKS ("Görev Tanımları"): everything the menu shows from this module really is a
-       settings screen. The permission group holds all sixteen keys, create/update/delete included. -->
-  <data name="Perm.Module.TASKS" xml:space="preserve"><value>Görevler</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>İş Akışı</value></data>
-  <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Ürünler</value></data>
-  <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Müşteri Hesabı</value></data>
-  <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Kampanya</value></data>
-  <data name="Nav.Page.CAMPAIGNSNAPSHOT" xml:space="preserve"><value>Kampanya Anlık Görüntüsü</value></data>
-  <data name="Nav.Page.CAMPAIGNTARGET" xml:space="preserve"><value>Kampanya Hedefi</value></data>
-  <data name="Nav.Page.CONSENT" xml:space="preserve"><value>Rıza</value></data>
-  <data name="Nav.Page.CONTACT" xml:space="preserve"><value>Kişi</value></data>
-  <data name="Nav.Page.CYCLECAPACITY" xml:space="preserve"><value>Döngü Kapasitesi</value></data>
-  <data name="Nav.Page.CYCLEPERIOD" xml:space="preserve"><value>Döngü Dönemi</value></data>
-  <data name="Nav.Page.KNOWLEDGECONCEPT" xml:space="preserve"><value>Bilgi Kavramı</value></data>
-  <data name="Nav.Page.KNOWLEDGECONTENTENGAGEMENTJOURNEY" xml:space="preserve"><value>İçerik Etkileşim Yolculuğu</value></data>
-  <data name="Nav.Page.KNOWLEDGEPATH" xml:space="preserve"><value>Bilgi Yolu</value></data>
-  <data name="Nav.Page.KNOWLEDGESUBJECT" xml:space="preserve"><value>Bilgi Konusu</value></data>
-  <data name="Nav.Page.PLANNEDVISIT" xml:space="preserve"><value>Planlı Ziyaret</value></data>
-  <data name="Nav.Page.PREFERENCE" xml:space="preserve"><value>Tercih</value></data>
-  <data name="Nav.Page.SEGMENT" xml:space="preserve"><value>Segment</value></data>
-  <data name="Nav.Page.STRATEGYTEMPLATE" xml:space="preserve"><value>Strateji Şablonu</value></data>
-  <data name="Nav.Page.TERRITORY" xml:space="preserve"><value>Bölge</value></data>
-  <data name="Nav.Page.TERRITORYMODEL" xml:space="preserve"><value>Bölge Modeli</value></data>
-  <data name="Nav.Page.TERRITORYNODE" xml:space="preserve"><value>Bölge Düğümü</value></data>
-  <data name="Nav.Page.ATTRIBUTE" xml:space="preserve"><value>Öznitelik</value></data>
-  <data name="Nav.Page.HIERARCHY" xml:space="preserve"><value>Hiyerarşi</value></data>
-  <data name="Nav.Page.OVERVIEW" xml:space="preserve"><value>Genel Bakış</value></data>
-  <data name="Nav.Page.ACCOUNTCONTACT" xml:space="preserve"><value>Hesap Kişisi</value></data>
-  <data name="Nav.Page.ACCOUNTRELATIONSHIP" xml:space="preserve"><value>Hesap İlişkisi</value></data>
-  <data name="Nav.Page.MODEL" xml:space="preserve"><value>Model</value></data>
-  <data name="Nav.Page.NODE" xml:space="preserve"><value>Düğüm</value></data>
-  <data name="Nav.Page.REPORTS" xml:space="preserve"><value>Raporlar</value></data>
-  <data name="Nav.Page.DATAQUALITY" xml:space="preserve"><value>Veri Kalitesi</value></data>
-  <data name="Nav.Page.EMPLOYEE" xml:space="preserve"><value>Çalışan</value></data>
-  <data name="Nav.Page.CUSTOMFIELDS" xml:space="preserve"><value>Özel Alanlar</value></data>
-  <data name="Nav.Page.REPORTINGLINE" xml:space="preserve"><value>Raporlama Hattı</value></data>
-  <data name="Nav.Page.BENEFITCOMMITMENTS" xml:space="preserve"><value>Fayda Taahhütleri</value></data>
-  <data name="Nav.Page.INITIATIVES" xml:space="preserve"><value>Girişimler</value></data>
-  <data name="Nav.Page.INVESTMENTCASES" xml:space="preserve"><value>Yatırım Gerekçeleri</value></data>
-  <data name="Nav.Page.PORTFOLIOS" xml:space="preserve"><value>Portföyler</value></data>
-  <data name="Nav.Page.PROGRAMS" xml:space="preserve"><value>Programlar</value></data>
-  <data name="Nav.Page.PROJECTS" xml:space="preserve"><value>Projeler</value></data>
-  <data name="Nav.Page.FINISHEDGOODS" xml:space="preserve"><value>Bitmiş Ürünler</value></data>
-  <data name="Nav.Page.LSKUS" xml:space="preserve"><value>Yerel SKU'lar</value></data>
-  <data name="Nav.Page.PRODUCTABBREVIATIONS" xml:space="preserve"><value>Ürün Kısaltmaları</value></data>
-  <data name="Nav.Page.DOCUMENTLIST" xml:space="preserve"><value>Doküman Listesi</value></data>
-  <data name="Nav.Page.FIELDDEFINITIONS" xml:space="preserve"><value>Alan Tanımları</value></data>
-  <data name="Nav.Page.RECURRENCERULES" xml:space="preserve"><value>Yineleme Kuralları</value></data>
-  <data name="Nav.Page.TENANTNAVIGATION" xml:space="preserve"><value>Menü Ayarları</value></data>
-  <data name="Nav.Page.TENANTSECURITY" xml:space="preserve"><value>Güvenlik Ayarları</value></data>
-  <data name="Nav.Page.INBOX" xml:space="preserve"><value>Gelen Kutusu</value></data>
-  <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>İstisna</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Kullanıcılar</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Roller</value></data>
   <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>Rol İzinleri</value></data>
@@ -669,7 +605,6 @@
   <data name="Nav.Page.LEGALENTITIES" xml:space="preserve"><value>Tüzel Kişilikler</value></data>
   <data name="Nav.Page.RDSETS" xml:space="preserve"><value>Referans Veri Kümeleri</value></data>
   <data name="Nav.Page.ORGANIZATIONUNITS" xml:space="preserve"><value>Organizasyon Birimleri</value></data>
-  <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Alan Tanımları</value></data>
   <data name="Nav.Page.POSITIONS" xml:space="preserve"><value>Pozisyonlar</value></data>
   <data name="Nav.Page.POSITIONASSIGNMENTS" xml:space="preserve"><value>Pozisyon Atamaları</value></data>
   <data name="Nav.Page.DEFINITIONS" xml:space="preserve"><value>İş Akışı Tanımları</value></data>
@@ -839,8 +774,86 @@
   </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>Planlanan Ziyaretler</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>Planlanan Ziyaretler</value></data>
-  <!-- UAS-001 — the in-shell 403 surface (Views/Shared/_AccessDenied.cshtml). {0} is the screen's own name,
-       so the user learns WHICH door is closed; the message says what to do, never "403"/"Forbidden". -->
+  <data name="Nav.Domain.PORTFOLIODELIVERY" xml:space="preserve">
+    <value>Portföy Teslimatı</value>
+  </data>
+  <data name="Nav.Module.PPM" xml:space="preserve">
+    <value>Proje ve Portföy Yönetimi</value>
+  </data>
+  <data name="Nav.Page.PORTFOLIOS" xml:space="preserve">
+    <value>Portföyler</value>
+  </data>
+  <data name="Nav.Page.INITIATIVES" xml:space="preserve">
+    <value>Girişimler</value>
+  </data>
+  <data name="Nav.Page.PROGRAMS" xml:space="preserve">
+    <value>Programlar</value>
+  </data>
+  <data name="Nav.Page.PROJECTS" xml:space="preserve">
+    <value>Projeler</value>
+  </data>
+  <data name="Nav.Page.INVESTMENTCASES" xml:space="preserve">
+    <value>Yatırım Vakaları</value>
+  </data>
+  <data name="Nav.Page.BENEFITCOMMITMENTS" xml:space="preserve">
+    <value>Fayda Taahhütleri</value>
+  </data>
+  <data name="Nav.Module.TENANTS" xml:space="preserve"><value>Kiracılar</value></data>
+  <data name="Nav.Module.NOTIFICATIONS" xml:space="preserve"><value>Bildirimler</value></data>
+  <data name="Nav.Module.ADMINISTRATORS" xml:space="preserve"><value>Yöneticiler</value></data>
+  <data name="Nav.Module.AUDIT" xml:space="preserve"><value>Denetim</value></data>
+  <data name="Nav.Module.MODULECATALOG" xml:space="preserve"><value>Modül Kataloğu</value></data>
+  <data name="Nav.Module.MODULEDOMAINS" xml:space="preserve"><value>Modül Alanları</value></data>
+  <data name="Nav.Module.MODULESERVICES" xml:space="preserve"><value>Modül Servisleri</value></data>
+  <data name="Nav.Module.INTERFACEREGISTRY" xml:space="preserve"><value>Arayüz Kaydı</value></data>
+  <data name="Nav.Module.SUBSCRIPTIONPLANS" xml:space="preserve"><value>Abonelik Planları</value></data>
+  <data name="Nav.Module.SUBSCRIPTIONFEATURES" xml:space="preserve"><value>Abonelik Özellikleri</value></data>
+  <data name="Nav.Module.PERSON" xml:space="preserve"><value>Kişi Rehberi</value></data>
+  <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>Referans Listeleri</value></data>
+  <data name="Perm.Module.TASKS" xml:space="preserve"><value>Görevler</value></data>
+  <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Ürünler</value></data>
+  <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Müşteri Hesabı</value></data>
+  <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Kampanya</value></data>
+  <data name="Nav.Page.CAMPAIGNSNAPSHOT" xml:space="preserve"><value>Kampanya Anlık Görüntüsü</value></data>
+  <data name="Nav.Page.CAMPAIGNTARGET" xml:space="preserve"><value>Kampanya Hedefi</value></data>
+  <data name="Nav.Page.CONSENT" xml:space="preserve"><value>Rıza</value></data>
+  <data name="Nav.Page.CONTACT" xml:space="preserve"><value>Kişi</value></data>
+  <data name="Nav.Page.CYCLECAPACITY" xml:space="preserve"><value>Döngü Kapasitesi</value></data>
+  <data name="Nav.Page.CYCLEPERIOD" xml:space="preserve"><value>Döngü Dönemi</value></data>
+  <data name="Nav.Page.KNOWLEDGECONCEPT" xml:space="preserve"><value>Bilgi Kavramı</value></data>
+  <data name="Nav.Page.KNOWLEDGECONTENTENGAGEMENTJOURNEY" xml:space="preserve"><value>İçerik Etkileşim Yolculuğu</value></data>
+  <data name="Nav.Page.KNOWLEDGEPATH" xml:space="preserve"><value>Bilgi Yolu</value></data>
+  <data name="Nav.Page.KNOWLEDGESUBJECT" xml:space="preserve"><value>Bilgi Konusu</value></data>
+  <data name="Nav.Page.PLANNEDVISIT" xml:space="preserve"><value>Planlı Ziyaret</value></data>
+  <data name="Nav.Page.PREFERENCE" xml:space="preserve"><value>Tercih</value></data>
+  <data name="Nav.Page.SEGMENT" xml:space="preserve"><value>Segment</value></data>
+  <data name="Nav.Page.STRATEGYTEMPLATE" xml:space="preserve"><value>Strateji Şablonu</value></data>
+  <data name="Nav.Page.TERRITORY" xml:space="preserve"><value>Bölge</value></data>
+  <data name="Nav.Page.TERRITORYMODEL" xml:space="preserve"><value>Bölge Modeli</value></data>
+  <data name="Nav.Page.TERRITORYNODE" xml:space="preserve"><value>Bölge Düğümü</value></data>
+  <data name="Nav.Page.ATTRIBUTE" xml:space="preserve"><value>Öznitelik</value></data>
+  <data name="Nav.Page.HIERARCHY" xml:space="preserve"><value>Hiyerarşi</value></data>
+  <data name="Nav.Page.OVERVIEW" xml:space="preserve"><value>Genel Bakış</value></data>
+  <data name="Nav.Page.ACCOUNTCONTACT" xml:space="preserve"><value>Hesap Kişisi</value></data>
+  <data name="Nav.Page.ACCOUNTRELATIONSHIP" xml:space="preserve"><value>Hesap İlişkisi</value></data>
+  <data name="Nav.Page.MODEL" xml:space="preserve"><value>Model</value></data>
+  <data name="Nav.Page.NODE" xml:space="preserve"><value>Düğüm</value></data>
+  <data name="Nav.Page.REPORTS" xml:space="preserve"><value>Raporlar</value></data>
+  <data name="Nav.Page.DATAQUALITY" xml:space="preserve"><value>Veri Kalitesi</value></data>
+  <data name="Nav.Page.EMPLOYEE" xml:space="preserve"><value>Çalışan</value></data>
+  <data name="Nav.Page.CUSTOMFIELDS" xml:space="preserve"><value>Özel Alanlar</value></data>
+  <data name="Nav.Page.REPORTINGLINE" xml:space="preserve"><value>Raporlama Hattı</value></data>
+  <data name="Nav.Page.FINISHEDGOODS" xml:space="preserve"><value>Bitmiş Ürünler</value></data>
+  <data name="Nav.Page.LSKUS" xml:space="preserve"><value>Yerel SKU'lar</value></data>
+  <data name="Nav.Page.PRODUCTABBREVIATIONS" xml:space="preserve"><value>Ürün Kısaltmaları</value></data>
+  <data name="Nav.Page.DOCUMENTLIST" xml:space="preserve"><value>Doküman Listesi</value></data>
+  <data name="Nav.Page.FIELDDEFINITIONS" xml:space="preserve"><value>Alan Tanımları</value></data>
+  <data name="Nav.Page.RECURRENCERULES" xml:space="preserve"><value>Yineleme Kuralları</value></data>
+  <data name="Nav.Page.TENANTNAVIGATION" xml:space="preserve"><value>Menü Ayarları</value></data>
+  <data name="Nav.Page.TENANTSECURITY" xml:space="preserve"><value>Güvenlik Ayarları</value></data>
+  <data name="Nav.Page.INBOX" xml:space="preserve"><value>Gelen Kutusu</value></data>
+  <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>İstisna</value></data>
+  <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Alan Tanımları</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>{0} için erişim yetkiniz yok</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>Bu sayfaya erişim için yöneticinizden yetki isteyin.</value></data>
 </root>

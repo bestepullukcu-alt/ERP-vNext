@@ -587,72 +587,8 @@
   <data name="Nav.Module.LEGALENTITY" xml:space="preserve"><value>Legal Entity</value></data>
   <data name="Nav.Module.REFERENCEDATA" xml:space="preserve"><value>Reference Data</value></data>
   <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>Organization</value></data>
-  <data name="Nav.Module.TENANTS" xml:space="preserve"><value>Tenants</value></data>
-  <data name="Nav.Module.NOTIFICATIONS" xml:space="preserve"><value>Notifications</value></data>
-  <data name="Nav.Module.ADMINISTRATORS" xml:space="preserve"><value>Administrators</value></data>
-  <data name="Nav.Module.AUDIT" xml:space="preserve"><value>Audit</value></data>
-  <data name="Nav.Module.MODULECATALOG" xml:space="preserve"><value>Module Catalog</value></data>
-  <data name="Nav.Module.MODULEDOMAINS" xml:space="preserve"><value>Module Domains</value></data>
-  <data name="Nav.Module.MODULESERVICES" xml:space="preserve"><value>Module Services</value></data>
-  <data name="Nav.Module.INTERFACEREGISTRY" xml:space="preserve"><value>Interface Registry</value></data>
-  <data name="Nav.Module.SUBSCRIPTIONPLANS" xml:space="preserve"><value>Subscription Plans</value></data>
-  <data name="Nav.Module.SUBSCRIPTIONFEATURES" xml:space="preserve"><value>Subscription Features</value></data>
-  <data name="Nav.Module.PERSON" xml:space="preserve"><value>Person Directory</value></data>
-  <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>Lookups</value></data>
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>Task Settings</value></data>
-  <!-- ADR-001 §2 — the permission-screen name for the tasks module. The sidebar keeps
-       Nav.Module.TASKS ("Görev Tanımları"): everything the menu shows from this module really is a
-       settings screen. The permission group holds all sixteen keys, create/update/delete included. -->
-  <data name="Perm.Module.TASKS" xml:space="preserve"><value>Tasks</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>Workflow</value></data>
-  <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Products</value></data>
-  <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Account</value></data>
-  <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Campaign</value></data>
-  <data name="Nav.Page.CAMPAIGNSNAPSHOT" xml:space="preserve"><value>Campaign Snapshot</value></data>
-  <data name="Nav.Page.CAMPAIGNTARGET" xml:space="preserve"><value>Campaign Target</value></data>
-  <data name="Nav.Page.CONSENT" xml:space="preserve"><value>Consent</value></data>
-  <data name="Nav.Page.CONTACT" xml:space="preserve"><value>Contact</value></data>
-  <data name="Nav.Page.CYCLECAPACITY" xml:space="preserve"><value>Cycle Capacity</value></data>
-  <data name="Nav.Page.CYCLEPERIOD" xml:space="preserve"><value>Cycle Period</value></data>
-  <data name="Nav.Page.KNOWLEDGECONCEPT" xml:space="preserve"><value>Knowledge Concept</value></data>
-  <data name="Nav.Page.KNOWLEDGECONTENTENGAGEMENTJOURNEY" xml:space="preserve"><value>Content Engagement Journey</value></data>
-  <data name="Nav.Page.KNOWLEDGEPATH" xml:space="preserve"><value>Knowledge Path</value></data>
-  <data name="Nav.Page.KNOWLEDGESUBJECT" xml:space="preserve"><value>Knowledge Subject</value></data>
-  <data name="Nav.Page.PLANNEDVISIT" xml:space="preserve"><value>Planned Visit</value></data>
-  <data name="Nav.Page.PREFERENCE" xml:space="preserve"><value>Preference</value></data>
-  <data name="Nav.Page.SEGMENT" xml:space="preserve"><value>Segment</value></data>
-  <data name="Nav.Page.STRATEGYTEMPLATE" xml:space="preserve"><value>Strategy Template</value></data>
-  <data name="Nav.Page.TERRITORY" xml:space="preserve"><value>Territory</value></data>
-  <data name="Nav.Page.TERRITORYMODEL" xml:space="preserve"><value>Territory Model</value></data>
-  <data name="Nav.Page.TERRITORYNODE" xml:space="preserve"><value>Territory Node</value></data>
-  <data name="Nav.Page.ATTRIBUTE" xml:space="preserve"><value>Attribute</value></data>
-  <data name="Nav.Page.HIERARCHY" xml:space="preserve"><value>Hierarchy</value></data>
-  <data name="Nav.Page.OVERVIEW" xml:space="preserve"><value>Overview</value></data>
-  <data name="Nav.Page.ACCOUNTCONTACT" xml:space="preserve"><value>Account Contact</value></data>
-  <data name="Nav.Page.ACCOUNTRELATIONSHIP" xml:space="preserve"><value>Account Relationship</value></data>
-  <data name="Nav.Page.MODEL" xml:space="preserve"><value>Model</value></data>
-  <data name="Nav.Page.NODE" xml:space="preserve"><value>Node</value></data>
-  <data name="Nav.Page.REPORTS" xml:space="preserve"><value>Reports</value></data>
-  <data name="Nav.Page.DATAQUALITY" xml:space="preserve"><value>Data Quality</value></data>
-  <data name="Nav.Page.EMPLOYEE" xml:space="preserve"><value>Employee</value></data>
-  <data name="Nav.Page.CUSTOMFIELDS" xml:space="preserve"><value>Custom Fields</value></data>
-  <data name="Nav.Page.REPORTINGLINE" xml:space="preserve"><value>Reporting Line</value></data>
-  <data name="Nav.Page.BENEFITCOMMITMENTS" xml:space="preserve"><value>Benefit Commitments</value></data>
-  <data name="Nav.Page.INITIATIVES" xml:space="preserve"><value>Initiatives</value></data>
-  <data name="Nav.Page.INVESTMENTCASES" xml:space="preserve"><value>Investment Cases</value></data>
-  <data name="Nav.Page.PORTFOLIOS" xml:space="preserve"><value>Portfolios</value></data>
-  <data name="Nav.Page.PROGRAMS" xml:space="preserve"><value>Programs</value></data>
-  <data name="Nav.Page.PROJECTS" xml:space="preserve"><value>Projects</value></data>
-  <data name="Nav.Page.FINISHEDGOODS" xml:space="preserve"><value>Finished Goods</value></data>
-  <data name="Nav.Page.LSKUS" xml:space="preserve"><value>Local SKUs</value></data>
-  <data name="Nav.Page.PRODUCTABBREVIATIONS" xml:space="preserve"><value>Product Abbreviations</value></data>
-  <data name="Nav.Page.DOCUMENTLIST" xml:space="preserve"><value>Document List</value></data>
-  <data name="Nav.Page.FIELDDEFINITIONS" xml:space="preserve"><value>Field Definitions</value></data>
-  <data name="Nav.Page.RECURRENCERULES" xml:space="preserve"><value>Recurrence Rules</value></data>
-  <data name="Nav.Page.TENANTNAVIGATION" xml:space="preserve"><value>Menu Settings</value></data>
-  <data name="Nav.Page.TENANTSECURITY" xml:space="preserve"><value>Security Settings</value></data>
-  <data name="Nav.Page.INBOX" xml:space="preserve"><value>Inbox</value></data>
-  <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>Override</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Users</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Roles</value></data>
   <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>Role Permissions</value></data>
@@ -669,7 +605,6 @@
   <data name="Nav.Page.LEGALENTITIES" xml:space="preserve"><value>Legal Entities</value></data>
   <data name="Nav.Page.RDSETS" xml:space="preserve"><value>Reference Data Sets</value></data>
   <data name="Nav.Page.ORGANIZATIONUNITS" xml:space="preserve"><value>Organization Units</value></data>
-  <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Field Definitions</value></data>
   <data name="Nav.Page.POSITIONS" xml:space="preserve"><value>Positions</value></data>
   <data name="Nav.Page.POSITIONASSIGNMENTS" xml:space="preserve"><value>Position Assignments</value></data>
   <data name="Nav.Page.DEFINITIONS" xml:space="preserve"><value>Workflow Definitions</value></data>
@@ -839,8 +774,86 @@
   </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>Planned Visits</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>Planned Visits</value></data>
-  <!-- UAS-001 — the in-shell 403 surface (Views/Shared/_AccessDenied.cshtml). {0} is the screen's own name,
-       so the user learns WHICH door is closed; the message says what to do, never "403"/"Forbidden". -->
+  <data name="Nav.Domain.PORTFOLIODELIVERY" xml:space="preserve">
+    <value>Portfolio Delivery</value>
+  </data>
+  <data name="Nav.Module.PPM" xml:space="preserve">
+    <value>Project &amp; Portfolio Management</value>
+  </data>
+  <data name="Nav.Page.PORTFOLIOS" xml:space="preserve">
+    <value>Portfolios</value>
+  </data>
+  <data name="Nav.Page.INITIATIVES" xml:space="preserve">
+    <value>Initiatives</value>
+  </data>
+  <data name="Nav.Page.PROGRAMS" xml:space="preserve">
+    <value>Programs</value>
+  </data>
+  <data name="Nav.Page.PROJECTS" xml:space="preserve">
+    <value>Projects</value>
+  </data>
+  <data name="Nav.Page.INVESTMENTCASES" xml:space="preserve">
+    <value>Investment Cases</value>
+  </data>
+  <data name="Nav.Page.BENEFITCOMMITMENTS" xml:space="preserve">
+    <value>Benefit Commitments</value>
+  </data>
+  <data name="Nav.Module.TENANTS" xml:space="preserve"><value>Tenants</value></data>
+  <data name="Nav.Module.NOTIFICATIONS" xml:space="preserve"><value>Notifications</value></data>
+  <data name="Nav.Module.ADMINISTRATORS" xml:space="preserve"><value>Administrators</value></data>
+  <data name="Nav.Module.AUDIT" xml:space="preserve"><value>Audit</value></data>
+  <data name="Nav.Module.MODULECATALOG" xml:space="preserve"><value>Module Catalog</value></data>
+  <data name="Nav.Module.MODULEDOMAINS" xml:space="preserve"><value>Module Domains</value></data>
+  <data name="Nav.Module.MODULESERVICES" xml:space="preserve"><value>Module Services</value></data>
+  <data name="Nav.Module.INTERFACEREGISTRY" xml:space="preserve"><value>Interface Registry</value></data>
+  <data name="Nav.Module.SUBSCRIPTIONPLANS" xml:space="preserve"><value>Subscription Plans</value></data>
+  <data name="Nav.Module.SUBSCRIPTIONFEATURES" xml:space="preserve"><value>Subscription Features</value></data>
+  <data name="Nav.Module.PERSON" xml:space="preserve"><value>Person Directory</value></data>
+  <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>Lookups</value></data>
+  <data name="Perm.Module.TASKS" xml:space="preserve"><value>Tasks</value></data>
+  <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Products</value></data>
+  <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Account</value></data>
+  <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Campaign</value></data>
+  <data name="Nav.Page.CAMPAIGNSNAPSHOT" xml:space="preserve"><value>Campaign Snapshot</value></data>
+  <data name="Nav.Page.CAMPAIGNTARGET" xml:space="preserve"><value>Campaign Target</value></data>
+  <data name="Nav.Page.CONSENT" xml:space="preserve"><value>Consent</value></data>
+  <data name="Nav.Page.CONTACT" xml:space="preserve"><value>Contact</value></data>
+  <data name="Nav.Page.CYCLECAPACITY" xml:space="preserve"><value>Cycle Capacity</value></data>
+  <data name="Nav.Page.CYCLEPERIOD" xml:space="preserve"><value>Cycle Period</value></data>
+  <data name="Nav.Page.KNOWLEDGECONCEPT" xml:space="preserve"><value>Knowledge Concept</value></data>
+  <data name="Nav.Page.KNOWLEDGECONTENTENGAGEMENTJOURNEY" xml:space="preserve"><value>Content Engagement Journey</value></data>
+  <data name="Nav.Page.KNOWLEDGEPATH" xml:space="preserve"><value>Knowledge Path</value></data>
+  <data name="Nav.Page.KNOWLEDGESUBJECT" xml:space="preserve"><value>Knowledge Subject</value></data>
+  <data name="Nav.Page.PLANNEDVISIT" xml:space="preserve"><value>Planned Visit</value></data>
+  <data name="Nav.Page.PREFERENCE" xml:space="preserve"><value>Preference</value></data>
+  <data name="Nav.Page.SEGMENT" xml:space="preserve"><value>Segment</value></data>
+  <data name="Nav.Page.STRATEGYTEMPLATE" xml:space="preserve"><value>Strategy Template</value></data>
+  <data name="Nav.Page.TERRITORY" xml:space="preserve"><value>Territory</value></data>
+  <data name="Nav.Page.TERRITORYMODEL" xml:space="preserve"><value>Territory Model</value></data>
+  <data name="Nav.Page.TERRITORYNODE" xml:space="preserve"><value>Territory Node</value></data>
+  <data name="Nav.Page.ATTRIBUTE" xml:space="preserve"><value>Attribute</value></data>
+  <data name="Nav.Page.HIERARCHY" xml:space="preserve"><value>Hierarchy</value></data>
+  <data name="Nav.Page.OVERVIEW" xml:space="preserve"><value>Overview</value></data>
+  <data name="Nav.Page.ACCOUNTCONTACT" xml:space="preserve"><value>Account Contact</value></data>
+  <data name="Nav.Page.ACCOUNTRELATIONSHIP" xml:space="preserve"><value>Account Relationship</value></data>
+  <data name="Nav.Page.MODEL" xml:space="preserve"><value>Model</value></data>
+  <data name="Nav.Page.NODE" xml:space="preserve"><value>Node</value></data>
+  <data name="Nav.Page.REPORTS" xml:space="preserve"><value>Reports</value></data>
+  <data name="Nav.Page.DATAQUALITY" xml:space="preserve"><value>Data Quality</value></data>
+  <data name="Nav.Page.EMPLOYEE" xml:space="preserve"><value>Employee</value></data>
+  <data name="Nav.Page.CUSTOMFIELDS" xml:space="preserve"><value>Custom Fields</value></data>
+  <data name="Nav.Page.REPORTINGLINE" xml:space="preserve"><value>Reporting Line</value></data>
+  <data name="Nav.Page.FINISHEDGOODS" xml:space="preserve"><value>Finished Goods</value></data>
+  <data name="Nav.Page.LSKUS" xml:space="preserve"><value>Local SKUs</value></data>
+  <data name="Nav.Page.PRODUCTABBREVIATIONS" xml:space="preserve"><value>Product Abbreviations</value></data>
+  <data name="Nav.Page.DOCUMENTLIST" xml:space="preserve"><value>Document List</value></data>
+  <data name="Nav.Page.FIELDDEFINITIONS" xml:space="preserve"><value>Field Definitions</value></data>
+  <data name="Nav.Page.RECURRENCERULES" xml:space="preserve"><value>Recurrence Rules</value></data>
+  <data name="Nav.Page.TENANTNAVIGATION" xml:space="preserve"><value>Menu Settings</value></data>
+  <data name="Nav.Page.TENANTSECURITY" xml:space="preserve"><value>Security Settings</value></data>
+  <data name="Nav.Page.INBOX" xml:space="preserve"><value>Inbox</value></data>
+  <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>Override</value></data>
+  <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Field Definitions</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>You don't have access to {0}</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>Ask your administrator to grant you permission for this page.</value></data>
 </root>

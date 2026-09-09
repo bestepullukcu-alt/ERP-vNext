@@ -1,5 +1,11 @@
 # DCP-006 PPM Governance Reconciliation Control Plan
 
+> 2026-09-08 teslimat notu: Bu belge PPM Control Tower koordinasyon planıdır; bulunduğu çalışma
+> klasörü belge sahipliğini belirlemez. Mevcut plan bu feature teslimatına alınmıştır; henüz main'e
+> merge edildiği iddia edilmez. Tarihsel ölçümler ve yerel kanıt yolları kendi tarihlerine aittir;
+> yerel ekler diğer makinelerde mevcut varsayılmaz. Güncel karar durumu §10'da tutulur.
+> Bu kayıt bütçe entegrasyonu veya yeni governance özellikleri için uygulama yetkisi vermez.
+
 ## 1. Amaç
 
 Bu plan, PPM Governance Pack v1.5.7 içindeki iş kararlarının güncel `main` üzerindeki gerçek kodla
@@ -379,6 +385,8 @@ seçimlerinin gerçek provider/kimlik/erişim sözleşmeleri ayrıca teknik kap�
   yetkisi olmadan kod başlamaz. Her küçük correction için ayrı PR hedeflenmez.
 - Teslim: teknik kabul → kullanıcı ekran kontrolü → Claude uygunluk incelemesi → aynı feature teslimatında
   correction → yönetici merge'i. Yalnız plan değişikliği için şimdi push/PR açılmaz.
+
+<a id="portfolio-budget-integration"></a>
 
 ### 10.5 Bağlantı backlog'u — Portfolio ↔ MOD-0136 Bütçe
 
