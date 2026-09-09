@@ -10,6 +10,23 @@ namespace Diten.ApiGateway.Tests;
 // integrity — no service is started, no HTTP call is made.
 public sealed class OcelotConfigurationTests
 {
+    [Theory]
+    [InlineData("/api/product-abbreviations")]
+    [InlineData("/api/product-abbreviations/{everything}")]
+    public void Abb_routes_preserve_exact_methods_destination_and_transparent_headers(string template)
+    {
+        var route = Assert.Single(LoadConfiguration().Routes, r => r.UpstreamPathTemplate == template);
+        Assert.Equal(template, route.DownstreamPathTemplate);
+        Assert.Equal(new[] { "GET", "OPTIONS", "PATCH", "POST" }, route.UpstreamHttpMethod.Order().ToArray());
+        var destination = Assert.Single(route.DownstreamHostAndPorts);
+        Assert.Equal("localhost", destination.Host);
+        Assert.Equal(5059, destination.Port);
+        Assert.DoesNotContain("PUT", route.UpstreamHttpMethod);
+        Assert.DoesNotContain("DELETE", route.UpstreamHttpMethod);
+        foreach (var header in new[] { "Authorization", "X-Tenant-Id", "X-Correlation-Id", "Idempotency-Key" })
+            Assert.False(route.AddHeadersToRequest?.ContainsKey(header) ?? false);
+    }
+
     // Known downstream services as of this test's authoring: auth(5056), platform(5057), dev-enablement(5058),
     // mdm(5059), hcm(5060), pvg(5011), crm(5061), ppm(5062), esbp/delivery-execution/uploads(5004). Adding a new backend is a deliberate, reviewed change to
     // this set — an unrecognized port is far more likely a typo than a new service.

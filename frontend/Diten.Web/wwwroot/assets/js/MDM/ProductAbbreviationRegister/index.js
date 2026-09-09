@@ -23,6 +23,7 @@ const ProductAbbreviationRegisterList = (function () {
     };
     const L = window.L10n || {};
     const permissions = {
+        selectProduct: root?.dataset.canSelectProduct === 'true',
         request: root?.dataset.canRequest === 'true',
         correct: root?.dataset.canCorrect === 'true',
         retire: root?.dataset.canRetire === 'true',
@@ -37,7 +38,17 @@ const ProductAbbreviationRegisterList = (function () {
     const defaultColVis = () => dataColumnIndexes.map(() => true);
     const unwrapData = (payload) => payload?.data ?? payload?.Data ?? null;
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
-    const antiForgeryToken = () => document.querySelector('#formProductAbbreviationRequest input[name="__RequestVerificationToken"]')?.value || '';
+    const antiForgeryToken = () => root?.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+    const canRequest = () => permissions.request && permissions.selectProduct;
+    const canActOnActive = (row, permission) => permission && (row.lifecycleStatus === 'ACTIVE' || row.lifecycleStatus === 1) && !row.retirementPending;
+    const requireSuccess = async (response) => {
+        if (response.status === 401) handleUnauthorized();
+        if (!response.ok) throw new Error(await getErrorMessage(response));
+        const payload = await response.json();
+        if (response.status === 202 || (payload?.isSuccessful ?? payload?.IsSuccessful) !== true)
+            throw new Error(response.status === 202 ? L.ErrorReconciliation : L.ErrorGateway);
+        return payload;
+    };
 
     const normalizeView = (view) => ({
         filters: {
@@ -176,6 +187,7 @@ const ProductAbbreviationRegisterList = (function () {
 
     const initSelector = (selector, dropdownParent) => {
         const $selector = $(selector);
+        if (!permissions.selectProduct) { $selector.prop('disabled', true); return; }
         if (!$selector.length || $selector.hasClass('select2-hidden-accessible')) return;
         $selector.select2({
             dropdownParent: $(dropdownParent || document.body),
@@ -284,27 +296,61 @@ const ProductAbbreviationRegisterList = (function () {
     };
 
     const requestRetirement = (row) => {
+        if (!canActOnActive(row, permissions.retire)) return;
         window.showConfirm?.(L.AreYouSure, async (reason) => {
+          try {
             const response = await fetch(`${endpoint}/${encodeURIComponent(row.id)}/retirement-requests`, {
                 method: 'POST', credentials: 'same-origin',
                 headers: { ...getAuthHeaders(), 'Content-Type': 'application/json', RequestVerificationToken: antiForgeryToken() },
                 body: JSON.stringify({ expectedVersion: row.version, reason })
             });
-            if (!response.ok) throw new Error(await getErrorMessage(response));
-            dt.ajax.reload(null, false);
-        }, { type: 'warning', showInput: true, inputRequired: true, inputLabel: L.AreYouSure, confirmButtonText: L.Apply });
+            await requireSuccess(response);
+            window.DitenDataTable.reloadWithToast(dt, tableEl, 'RequestSuccess', null, bulkOptions);
+          } catch (error) { if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error'); }
+        }, { type: 'warning', showInput: true, inputRequired: true, inputLabel: L.Reason, inputValidationMessage: L.ErrorValidation,
+            inputValidator: (value) => !normalizeString(value) || value.length > 512 ? L.ErrorValidation : null,
+            confirmButtonText: L.Apply });
+    };
+
+    const requestCorrection = (row) => {
+        if (!canActOnActive(row, permissions.correct)) return;
+        window.showConfirm?.(L.RequestCorrection, (replacement) => {
+            const replacementAbbreviation = normalizeString(replacement);
+            window.showConfirm?.(L.RequestCorrection, async (reason) => {
+                try {
+                    const response = await fetch(`${endpoint}/${encodeURIComponent(row.id)}/corrections`, {
+                        method: 'POST', credentials: 'same-origin',
+                        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json', RequestVerificationToken: antiForgeryToken() },
+                        body: JSON.stringify({ expectedVersion: row.version, replacementAbbreviation, reason })
+                    });
+                    await requireSuccess(response);
+                    window.DitenDataTable.reloadWithToast(dt, tableEl, 'RequestSuccess', null, bulkOptions);
+                } catch (error) { if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error'); }
+            }, { type: 'warning', entityName: replacementAbbreviation, showInput: true, inputRequired: true,
+                inputLabel: L.Reason, inputValidationMessage: L.ErrorValidation,
+                inputValidator: (value) => !normalizeString(value) || value.length > 512 ? L.ErrorValidation : null,
+                confirmButtonText: L.Apply });
+        }, { type: 'primary', showInput: true, inputType: 'text', inputLabel: L.ReplacementAbbreviation,
+            inputAttributes: { maxlength: 3 }, inputRequired: true, inputValidationMessage: L.ErrorValidation,
+            inputValidator: (value) => /^[A-Za-z]{3}$/.test(normalizeString(value)) ? null : L.ErrorValidation,
+            confirmButtonText: L.Apply });
     };
 
     const renderActions = (row) => {
         const actions = [{ key: 'details', className: 'js-quick-view', text: L.ViewDetails, icon: 'bx bx-show', attrs: { 'data-id': row.id } }];
-        if (permissions.retire && (row.lifecycleStatus === 'ACTIVE' || row.lifecycleStatus === 1) && !row.retirementPending)
+        if (canActOnActive(row, permissions.correct))
+            actions.push({ key: 'correct', className: 'js-request-correction', text: L.RequestCorrection, icon: 'bx bx-revision', attrs: { 'data-id': row.id } });
+        if (canActOnActive(row, permissions.retire))
             actions.push({ key: 'retire', className: 'js-request-retirement', text: L.RequestRetirement, icon: 'bx bx-archive', attrs: { 'data-id': row.id } });
         return window.DitenDataTable.renderActions(actions);
     };
 
     const initDataTable = async () => {
         if (!tableEl || !window.DtDefaults) return;
-        const saved = await loadDefaultView();
+        let saved = await loadDefaultView();
+        const linkedProduct = new URLSearchParams(window.location.search).get('globalProductId');
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(linkedProduct || ''))
+            saved = normalizeView({ ...(saved || {}), filters: { globalProductId: linkedProduct, globalProductText: linkedProduct } });
         if (saved) {
             selectedProductId = saved.filters.globalProductId;
             selectedProductText = saved.filters.globalProductText;
@@ -377,7 +423,7 @@ const ProductAbbreviationRegisterList = (function () {
                 { targets: 6, render: (value) => value ? L.Yes : L.No },
                 { targets: -1, searchable: false, orderable: false, className: 'cell-fit all text-end pe-3', render: (data, type, row) => renderActions(row) }
             ],
-            buttons: window.DtDefaults.exportButtons(permissions.request ? L.AddNew : null, {}, { filterBtn, saveFilterBtn }, { exportColumns: dataColumnIndexes, colvisColumns: dataColumnIndexes }),
+            buttons: window.DtDefaults.exportButtons(canRequest() ? L.AddNew : null, {}, { filterBtn, saveFilterBtn }, { exportColumns: dataColumnIndexes, colvisColumns: dataColumnIndexes }),
             initComplete: function () {
                 const toolbar = document.querySelector('.dt-filter-btn')?.closest('.dt-layout-row') || document.querySelector('.dt-filter-btn')?.closest('.row');
                 const host = document.getElementById('inlineFilterHost');
@@ -387,6 +433,7 @@ const ProductAbbreviationRegisterList = (function () {
                 redrawAppliedTableState(this.api(), saved || getResetBaselineState());
                 document.querySelector('.add-new')?.addEventListener('click', (event) => {
                     event.preventDefault();
+                    if (!canRequest()) return;
                     document.getElementById('formProductAbbreviationRequest')?.reset();
                     bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasCreateEdit')).show();
                 });
@@ -401,6 +448,7 @@ const ProductAbbreviationRegisterList = (function () {
             dt,
             onRowAction: {
                 details: ({ row }) => showDetails(row),
+                correct: ({ row }) => requestCorrection(row),
                 retire: ({ row }) => requestRetirement(row)
             }
         });
@@ -425,12 +473,14 @@ const ProductAbbreviationRegisterList = (function () {
             if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
         });
         document.getElementById('btnRequestAbbreviation')?.addEventListener('click', () => {
+            if (!canRequest()) return;
             const form = document.getElementById('formProductAbbreviationRequest');
             if (!form?.checkValidity()) { form?.classList.add('was-validated'); return; }
             const productId = normalizeString($('#requestGlobalProduct').val());
             const productText = normalizeString($('#requestGlobalProduct option:selected').text());
             const abbreviation = normalizeString(document.getElementById('requestAbbreviation')?.value);
             window.showConfirm?.(L.RequestConfirmation, async () => {
+              try {
                 const body = new FormData(form);
                 body.set('GlobalProductId', productId);
                 body.set('Abbreviation', abbreviation);
@@ -438,14 +488,13 @@ const ProductAbbreviationRegisterList = (function () {
                     method: 'POST', credentials: 'same-origin',
                     headers: { ...getAuthHeaders(), RequestVerificationToken: antiForgeryToken() }, body
                 });
-                if (response.status === 401) handleUnauthorized();
-                if (!response.ok) throw new Error(await getErrorMessage(response));
+                await requireSuccess(response);
                 selectedProductId = productId;
                 selectedProductText = productText;
                 syncProductSelect('#filterGlobalProduct', productId, productText);
                 bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasCreateEdit')).hide();
-                dt?.ajax.reload(null, false);
-                window.showToast?.(L.RequestSuccess, 'success');
+                window.DitenDataTable.reloadWithToast(dt, tableEl, 'RequestSuccess', null, bulkOptions);
+              } catch (error) { if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error'); }
             }, { entityName: abbreviation, type: 'primary', confirmButtonText: L.Apply });
         });
     };

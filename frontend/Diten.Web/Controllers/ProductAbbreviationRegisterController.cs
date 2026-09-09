@@ -1,5 +1,8 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using Diten.Web.Models.ProductAbbreviationRegister;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -31,34 +34,35 @@ public sealed class ProductAbbreviationRegisterController : Controller
     }
 
     [HttpGet("")]
-    public IActionResult Index() => View("~/Views/MDM/ProductAbbreviationRegister/Index.cshtml");
+    public IActionResult Index() => Has("mdm.product-abbreviations.read")
+        ? View("~/Views/MDM/ProductAbbreviationRegister/Index.cshtml") : Forbid();
 
     [HttpGet("api/global-products/selector")]
     public Task<IActionResult> GlobalProductSelector(CancellationToken cancellationToken)
-        => ProxyAsync(
+        => Has("mdm.global-products.read") ? ProxyAsync(
             HttpMethod.Get,
             $"{_gatewayUrl}/api/global-products/selector{Request.QueryString}",
             content: null,
             mutation: false,
-            cancellationToken);
+            cancellationToken) : Task.FromResult<IActionResult>(Forbid());
 
     [HttpGet("api/by-global-product/{globalProductId:guid}")]
     public Task<IActionResult> GetByGlobalProduct(Guid globalProductId, CancellationToken cancellationToken)
-        => ProxyAsync(
+        => Has("mdm.product-abbreviations.read") ? ProxyAsync(
             HttpMethod.Get,
             $"{_gatewayUrl}{ServicePath}/by-global-product/{globalProductId:D}",
             content: null,
             mutation: false,
-            cancellationToken);
+            cancellationToken) : Task.FromResult<IActionResult>(Forbid());
 
     [HttpGet("api/{registerEntryId:guid}/evidence")]
     public Task<IActionResult> GetEvidence(Guid registerEntryId, CancellationToken cancellationToken)
-        => ProxyAsync(
+        => Has("mdm.product-abbreviations.audit") ? ProxyAsync(
             HttpMethod.Get,
             $"{_gatewayUrl}{ServicePath}/{registerEntryId:D}/evidence",
             content: null,
             mutation: false,
-            cancellationToken);
+            cancellationToken) : Task.FromResult<IActionResult>(Forbid());
 
     [HttpPost("api/requests")]
     [ValidateAntiForgeryToken]
@@ -66,6 +70,8 @@ public sealed class ProductAbbreviationRegisterController : Controller
         [FromForm] RequestProductAbbreviationViewModel model,
         CancellationToken cancellationToken)
     {
+        if (!Has("mdm.product-abbreviations.request") || !Has("mdm.global-products.read"))
+            return Task.FromResult<IActionResult>(Forbid());
         model.Abbreviation = model.Abbreviation?.Trim() ?? string.Empty;
         if (!ModelState.IsValid)
         {
@@ -90,7 +96,7 @@ public sealed class ProductAbbreviationRegisterController : Controller
         Guid registerEntryId,
         [FromBody] ProductAbbreviationDecisionViewModel model,
         CancellationToken cancellationToken)
-        => ProxyMutationAsync(HttpMethod.Patch, $"{ServicePath}/{registerEntryId:D}/cancel", model, cancellationToken);
+        => Has("mdm.product-abbreviations.cancel") ? ProxyMutationAsync(HttpMethod.Patch, $"{ServicePath}/{registerEntryId:D}/cancel", model, cancellationToken) : Task.FromResult<IActionResult>(Forbid());
 
     [HttpPatch("api/{registerEntryId:guid}/approve")]
     [ValidateAntiForgeryToken]
@@ -98,7 +104,7 @@ public sealed class ProductAbbreviationRegisterController : Controller
         Guid registerEntryId,
         [FromBody] ProductAbbreviationDecisionViewModel model,
         CancellationToken cancellationToken)
-        => ProxyMutationAsync(HttpMethod.Patch, $"{ServicePath}/{registerEntryId:D}/approve", model, cancellationToken);
+        => Has("mdm.product-abbreviations.approve") ? ProxyMutationAsync(HttpMethod.Patch, $"{ServicePath}/{registerEntryId:D}/approve", model, cancellationToken) : Task.FromResult<IActionResult>(Forbid());
 
     [HttpPatch("api/{registerEntryId:guid}/reject")]
     [ValidateAntiForgeryToken]
@@ -106,7 +112,7 @@ public sealed class ProductAbbreviationRegisterController : Controller
         Guid registerEntryId,
         [FromBody] ProductAbbreviationDecisionViewModel model,
         CancellationToken cancellationToken)
-        => ProxyMutationAsync(HttpMethod.Patch, $"{ServicePath}/{registerEntryId:D}/reject", model, cancellationToken);
+        => Has("mdm.product-abbreviations.reject") ? ProxyMutationAsync(HttpMethod.Patch, $"{ServicePath}/{registerEntryId:D}/reject", model, cancellationToken) : Task.FromResult<IActionResult>(Forbid());
 
     [HttpPost("api/{registerEntryId:guid}/corrections")]
     [ValidateAntiForgeryToken]
@@ -114,7 +120,7 @@ public sealed class ProductAbbreviationRegisterController : Controller
         Guid registerEntryId,
         [FromBody] ProductAbbreviationCorrectionViewModel model,
         CancellationToken cancellationToken)
-        => ProxyMutationAsync(HttpMethod.Post, $"{ServicePath}/{registerEntryId:D}/corrections", model, cancellationToken);
+        => Has("mdm.product-abbreviations.correct") ? ProxyMutationAsync(HttpMethod.Post, $"{ServicePath}/{registerEntryId:D}/corrections", model, cancellationToken) : Task.FromResult<IActionResult>(Forbid());
 
     [HttpPost("api/{registerEntryId:guid}/retirement-requests")]
     [ValidateAntiForgeryToken]
@@ -122,7 +128,7 @@ public sealed class ProductAbbreviationRegisterController : Controller
         Guid registerEntryId,
         [FromBody] ProductAbbreviationRetirementViewModel model,
         CancellationToken cancellationToken)
-        => ProxyMutationAsync(HttpMethod.Post, $"{ServicePath}/{registerEntryId:D}/retirement-requests", model, cancellationToken);
+        => Has("mdm.product-abbreviations.retire") ? ProxyMutationAsync(HttpMethod.Post, $"{ServicePath}/{registerEntryId:D}/retirement-requests", model, cancellationToken) : Task.FromResult<IActionResult>(Forbid());
 
     private Task<IActionResult> ProxyMutationAsync<T>(
         HttpMethod method,
@@ -148,6 +154,22 @@ public sealed class ProductAbbreviationRegisterController : Controller
 
         try
         {
+            if (mutation)
+            {
+                var subjects = User.Claims.Where(c => c.Type is "sub" or ClaimTypes.NameIdentifier)
+                    .Select(c => c.Value).Distinct(StringComparer.Ordinal).ToArray();
+                if (subjects.Length != 1 || !Guid.TryParseExact(subjects[0], "D", out var subject) || subject == Guid.Empty)
+                {
+                    request.Dispose();
+                    return Unauthorized();
+                }
+                var payload = content is null ? string.Empty : await content.ReadAsStringAsync(cancellationToken);
+                // Server-owned, exact-payload replay identity. No browser identity or credential is hashed.
+                var facts = System.Text.Json.JsonSerializer.Serialize(new[] {
+                    request.Headers.GetValues("X-Tenant-Id").Single(), subject.ToString("D"), method.Method,
+                    new Uri(targetUrl).AbsolutePath, payload });
+                request.Headers.Add("Idempotency-Key", Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(facts))));
+            }
             using (request)
             using (var response = await _httpClient.SendAsync(request, cancellationToken))
             {
@@ -182,11 +204,11 @@ public sealed class ProductAbbreviationRegisterController : Controller
         if (!string.IsNullOrWhiteSpace(token))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        var tenantValue = User.Claims.FirstOrDefault(claim =>
-            claim.Type == "tenantId" ||
-            claim.Type == "tenant_id" ||
-            claim.Type.EndsWith("/tenantId", StringComparison.OrdinalIgnoreCase))?.Value;
-        if (!Guid.TryParse(tenantValue, out var tenantId))
+        var tenants = User.Claims.Where(claim => claim.Type == "tenant_id").Select(claim => claim.Value).ToArray();
+        var aliases = User.Claims.Where(claim => claim.Type == "tenantId" || claim.Type.EndsWith("/tenantId", StringComparison.OrdinalIgnoreCase));
+        if (string.IsNullOrWhiteSpace(token) || tenants.Length != 1
+            || !Guid.TryParseExact(tenants[0], "D", out var tenantId) || tenantId == Guid.Empty
+            || aliases.Any(claim => claim.Value != tenants[0]))
         {
             request.Dispose();
             request = null!;
@@ -195,8 +217,11 @@ public sealed class ProductAbbreviationRegisterController : Controller
 
         request.Headers.Add("X-Tenant-Id", tenantId.ToString("D"));
         request.Headers.Add("X-Correlation-Id", HttpContext.TraceIdentifier);
-        if (mutation)
-            request.Headers.Add("Idempotency-Key", Guid.NewGuid().ToString("N"));
         return true;
     }
+
+    private bool Has(string permission) => User.Identity?.IsAuthenticated == true && User.Claims
+        .Where(claim => claim.Type is "permission" or "permissions")
+        .SelectMany(claim => claim.Value.Split(new[] { ',', ' ', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        .Contains(permission, StringComparer.Ordinal);
 }
