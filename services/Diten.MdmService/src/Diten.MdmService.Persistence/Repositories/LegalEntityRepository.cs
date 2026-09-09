@@ -27,6 +27,21 @@ public sealed class LegalEntityRepository : RepositoryBase<LegalEntity>, ILegalE
         return await Collection.Find(filter).AnyAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<LegalEntity>> ListAsync(CancellationToken cancellationToken = default)
+    {
+        return await Collection.Find(TenantFilter)
+            .SortBy(x => x.Code)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<LegalEntity?> GetByCodeAsync(string code, CancellationToken cancellationToken = default)
+    {
+        var filter = Builders<LegalEntity>.Filter.And(
+            TenantFilter,
+            Builders<LegalEntity>.Filter.Eq(x => x.Code, code));
+        return await Collection.Find(filter).FirstOrDefaultAsync(cancellationToken);
+    }
+
     private void EnsureIndexes()
     {
         var keys = Builders<LegalEntity>.IndexKeys
@@ -40,5 +55,10 @@ public sealed class LegalEntityRepository : RepositoryBase<LegalEntity>, ILegalE
         };
 
         Collection.Indexes.CreateOne(new CreateIndexModel<LegalEntity>(keys, options));
+
+        // Non-unique index supporting parent/children hierarchy lookups (additive).
+        Collection.Indexes.CreateOne(new CreateIndexModel<LegalEntity>(
+            Builders<LegalEntity>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.ParentId),
+            new CreateIndexOptions { Name = "ix_mdm_legal_entities_tenant_parent" }));
     }
 }

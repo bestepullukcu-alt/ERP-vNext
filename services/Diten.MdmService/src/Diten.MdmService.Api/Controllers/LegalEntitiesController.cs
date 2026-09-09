@@ -19,11 +19,27 @@ public sealed class LegalEntitiesController : CustomBaseController
         _mediator = mediator;
     }
 
+    [HttpGet]
+    [HasPermission("mdm.legal-entities.read")]
+    public async Task<IActionResult> List(CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetLegalEntitiesQuery(), cancellationToken);
+        return CreateActionResultInstance(response);
+    }
+
     [HttpGet("{legalEntityId:guid}")]
     [HasPermission("mdm.legal-entities.read")]
     public async Task<IActionResult> GetById(Guid legalEntityId, CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new GetLegalEntityByIdQuery(legalEntityId), cancellationToken);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("{legalEntityId:guid}/descendants")]
+    [HasPermission("mdm.legal-entities.read")]
+    public async Task<IActionResult> GetDescendants(Guid legalEntityId, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetLegalEntityDescendantsQuery(legalEntityId), cancellationToken);
         return CreateActionResultInstance(response);
     }
 
@@ -59,6 +75,14 @@ public sealed class LegalEntitiesController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    [HttpPatch("{legalEntityId:guid}/parent")]
+    [HasPermission("mdm.legal-entities.update")]
+    public async Task<IActionResult> SetParent(Guid legalEntityId, [FromBody] SetLegalEntityParentRequest request, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new SetLegalEntityParentCommand(legalEntityId, request?.ParentId), cancellationToken);
+        return CreateActionResultInstance(response);
+    }
+
     [HttpDelete("{legalEntityId:guid}")]
     [HasPermission("mdm.legal-entities.delete")]
     public async Task<IActionResult> Delete(Guid legalEntityId, CancellationToken cancellationToken)
@@ -67,3 +91,6 @@ public sealed class LegalEntitiesController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 }
+
+/// <summary>Body for PATCH api/legal-entities/{id}/parent. Null ParentId makes the entity a root.</summary>
+public sealed record SetLegalEntityParentRequest(Guid? ParentId);

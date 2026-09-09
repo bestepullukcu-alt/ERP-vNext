@@ -17,6 +17,8 @@ public static class DependencyInjection
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.PerformanceBehavior<,>));
         services.AddValidatorsFromAssembly(assembly);
 
+        services.AddScoped<Domain.Services.ILegalEntityHierarchyResolver, Features.LegalEntity.Services.LegalEntityHierarchyResolver>();
+
         return services;
     }
 }

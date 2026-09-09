@@ -7,6 +7,7 @@ public sealed record LegalEntityDetailDto(
     string Code,
     string LegalName,
     string? DisplayName,
+    Guid? ParentId,
     string LifecycleState,
     bool Referenceable);
 
@@ -17,6 +18,19 @@ public sealed record LegalEntityLookupDto(
     string LifecycleState,
     bool Referenceable);
 
+public sealed record LegalEntityListItemDto(
+    Guid LegalEntityId,
+    string Code,
+    string LegalName,
+    string? DisplayName,
+    Guid? ParentId,
+    string LifecycleState,
+    bool Referenceable);
+
+public sealed record LegalEntityDescendantsDto(
+    Guid LegalEntityId,
+    IReadOnlyList<Guid> LegalEntityIds);
+
 public static class LegalEntityMappings
 {
     public static LegalEntityDetailDto ToDetailDto(Domain.Entities.LegalEntity entity)
@@ -25,6 +39,7 @@ public static class LegalEntityMappings
             entity.Code,
             entity.LegalName,
             entity.DisplayName,
+            entity.ParentId,
             entity.LifecycleStatus.ToString().ToUpperInvariant(),
             entity.IsReferenceable);
 
@@ -33,6 +48,16 @@ public static class LegalEntityMappings
             entity.Id,
             entity.LegalName,
             entity.DisplayName,
+            entity.LifecycleStatus.ToString().ToUpperInvariant(),
+            entity.IsReferenceable);
+
+    public static LegalEntityListItemDto ToListItemDto(Domain.Entities.LegalEntity entity)
+        => new(
+            entity.Id,
+            entity.Code,
+            entity.LegalName,
+            entity.DisplayName,
+            entity.ParentId,
             entity.LifecycleStatus.ToString().ToUpperInvariant(),
             entity.IsReferenceable);
 }

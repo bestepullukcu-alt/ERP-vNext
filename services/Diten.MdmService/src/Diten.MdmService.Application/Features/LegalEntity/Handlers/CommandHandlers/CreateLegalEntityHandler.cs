@@ -21,11 +21,23 @@ public sealed class CreateLegalEntityHandler : IRequestHandler<Commands.CreateLe
             return Response<Guid>.Fail("A Legal Entity with this code already exists.", 409);
         }
 
+        // Parent validation: must exist within the same tenant. GetByIdAsync is tenant-scoped, so a
+        // parent from another tenant simply resolves to null here and is rejected (no cross-tenant parenting).
+        if (request.ParentId.HasValue)
+        {
+            var parent = await _repository.GetByIdAsync(request.ParentId.Value, cancellationToken);
+            if (parent is null)
+            {
+                return Response<Guid>.Fail("Parent Legal Entity was not found in this tenant.", 400);
+            }
+        }
+
         var entity = new Domain.Entities.LegalEntity
         {
             Code = normalizedCode,
             LegalName = request.LegalName.Trim(),
-            DisplayName = string.IsNullOrWhiteSpace(request.DisplayName) ? null : request.DisplayName.Trim()
+            DisplayName = string.IsNullOrWhiteSpace(request.DisplayName) ? null : request.DisplayName.Trim(),
+            ParentId = request.ParentId
         };
 
         var created = await _repository.CreateAsync(entity, cancellationToken);

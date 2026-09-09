@@ -2,9 +2,11 @@ using System.Text;
 using Diten.MdmService.Application;
 using Diten.MdmService.Infrastructure;
 using Diten.MdmService.Persistence;
+using Diten.MdmService.Persistence.Seed;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,6 +71,13 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+// Additive foundation: ensure the demo legal-entity hierarchy exists for the default tenant (idempotent).
+using (var seedScope = app.Services.CreateScope())
+{
+    var seedDatabase = seedScope.ServiceProvider.GetRequiredService<IMongoDatabase>();
+    await LegalEntityHierarchySeed.EnsureSeededAsync(seedDatabase);
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();

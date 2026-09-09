@@ -43,10 +43,27 @@ internal sealed class InMemoryLegalEntityRepository : ILegalEntityRepository
         current.Code = entity.Code;
         current.LegalName = entity.LegalName;
         current.DisplayName = entity.DisplayName;
+        current.ParentId = entity.ParentId;
         current.LifecycleStatus = entity.LifecycleStatus;
         current.UpdatedAt = DateTimeOffset.UtcNow;
         current.Version++;
         return Task.FromResult(true);
+    }
+
+    public Task<IReadOnlyList<LegalEntity>> ListAsync(CancellationToken cancellationToken = default)
+    {
+        IReadOnlyList<LegalEntity> items = _entities
+            .Where(x => x.TenantId == _tenantId && !x.IsDeleted)
+            .OrderBy(x => x.Code)
+            .ToList();
+        return Task.FromResult(items);
+    }
+
+    public Task<LegalEntity?> GetByCodeAsync(string code, CancellationToken cancellationToken = default)
+    {
+        var entity = _entities.FirstOrDefault(x =>
+            x.TenantId == _tenantId && !x.IsDeleted && string.Equals(x.Code, code, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(entity);
     }
 
     public Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
