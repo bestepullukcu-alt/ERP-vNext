@@ -14,6 +14,14 @@ using Serilog.Formatting.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// F3.5: large tenant JWTs (full permission catalog) are carried as auth cookies; raise the Kestrel
+// request-header size limit so cookie-authenticated browser→gateway calls don't hit HTTP 431.
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestHeadersTotalSize = 65536; // 64 KB (default 32 KB)
+    options.Limits.MaxRequestHeaderCount = 200;
+});
+
 builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
 var observabilityOptions = builder.Configuration

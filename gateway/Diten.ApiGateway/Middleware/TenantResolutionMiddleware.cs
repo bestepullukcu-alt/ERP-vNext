@@ -181,6 +181,7 @@ public sealed class TenantResolutionMiddleware
 
         context.Request.Headers[TenantHeader] = resolvedTenant.Value.ToString();
         context.Items[TenantHeader] = resolvedTenant.Value;
+        PromoteAccessTokenCookieToBearer(context.Request);
 
         await _next(context);
     }
@@ -372,16 +373,20 @@ public sealed class TenantResolutionMiddleware
 
     private static void PromoteAccessTokenCookieToBearer(HttpRequest request)
     {
-        if (request.Headers.ContainsKey("Authorization"))
+        if (!request.Headers.ContainsKey("Authorization"))
         {
-            return;
+            var accessToken = AuthTokenCookies.GetAccessToken(request);
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                request.Headers.Authorization = $"Bearer {accessToken}";
+            }
         }
 
-        var accessToken = AuthTokenCookies.GetAccessToken(request);
-        if (!string.IsNullOrWhiteSpace(accessToken))
-        {
-            request.Headers.Authorization = $"Bearer {accessToken}";
-        }
+        // F3.5: downstream services authenticate via the promoted Bearer, not the auth cookie. Large tenant
+        // JWTs are chunked into big auth cookies; forwarding both the Bearer AND the cookie pushed the request
+        // over the downstream Kestrel header limit (HTTP 431). Drop the (now-redundant) cookie so the forwarded
+        // request carries only the Bearer. JSON APIs downstream do not read request cookies.
+        request.Headers.Remove("Cookie");
     }
 
     private static bool IsAdminHostAllowedPath(PathString path)

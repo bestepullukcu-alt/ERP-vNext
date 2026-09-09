@@ -42,10 +42,23 @@ window.DitenDataTable = (function () {
         return (window.CurrentUser || {}).tenantId || null;
     }
 
+    function getSelectedLegalEntityId() {
+        try {
+            var v = window.localStorage ? window.localStorage.getItem('diten.legalEntityId') : null;
+            return v && v.trim() ? v.trim() : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
     function getAuthHeaders(includeJson) {
         var headers = {};
         var tenantId = getTenantId();
         if (tenantId) headers['X-Tenant-Id'] = tenantId;
+        // F3 legal-entity scoping: forward the selected legal entity so F4 can roll-up/scope.
+        // Additive — omitted when no selection; backend ignores it until F4.
+        var legalEntityId = getSelectedLegalEntityId();
+        if (legalEntityId) headers['X-Legal-Entity-Id'] = legalEntityId;
         if (includeJson) headers['Content-Type'] = 'application/json';
         return headers;
     }

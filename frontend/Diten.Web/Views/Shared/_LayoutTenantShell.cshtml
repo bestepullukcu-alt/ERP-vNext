@@ -970,6 +970,15 @@
                         <!-- /Search -->
 
                         <ul class="navbar-nav flex-row align-items-center ms-md-auto">
+                            <!-- Legal Entity Selector (F3) -->
+                            <li class="nav-item me-3 d-none" id="legal-entity-selector-item">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="icon-base bx bx-buildings icon-md text-muted"></i>
+                                    <select id="legal-entity-selector" class="form-select form-select-sm"
+                                            style="min-width: 190px;" aria-label="Legal entity">
+                                    </select>
+                                </div>
+                            </li>
                             <!-- Language -->
                             <li class="nav-item dropdown-language dropdown me-2 me-xl-0">
                                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);"
@@ -1280,6 +1289,105 @@
     <script src="~/assets/vendor/libs/datatables-colreorder-bs5/dataTables.colReorder.min.js"></script>
     <script src="~/assets/js/dt-defaults.js" asp-append-version="true"></script>
     <script src="~/assets/js/diten-datatable.js" asp-append-version="true"></script>
+    <script>
+        // F3 legal-entity selector: populates the shell dropdown from the user's assignments (F2) and the
+        // tenant's legal entities (F1), persists the choice, and lets getAuthHeaders() forward
+        // X-Legal-Entity-Id on all gateway calls. Additive; scoping is enforced later (F4).
+        (function () {
+            'use strict';
+            var API = window.ApiBaseUrl;
+            var LS_KEY = 'diten.legalEntityId';
+            var ROLLUP_SUFFIX = ' · tümü';
+
+            function authHeaders() {
+                try {
+                    return (window.DitenDataTable && window.DitenDataTable.getAuthHeaders)
+                        ? window.DitenDataTable.getAuthHeaders() : {};
+                } catch (e) { return {}; }
+            }
+
+            function getJson(url) {
+                return fetch(url, { method: 'GET', credentials: 'include', headers: authHeaders() })
+                    .then(function (r) { return r.ok ? r.json() : null; })
+                    .then(function (j) { return j && (j.data !== undefined) ? j.data : (j || null); })
+                    .catch(function () { return null; });
+            }
+
+            function selfAndDescendants(rootId, childrenByParent) {
+                var out = [], seen = {}, stack = [rootId];
+                while (stack.length) {
+                    var id = stack.pop();
+                    if (seen[id]) { continue; }
+                    seen[id] = true;
+                    out.push(id);
+                    (childrenByParent[id] || []).forEach(function (c) { if (!seen[c]) { stack.push(c); } });
+                }
+                return out;
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                var sel = document.getElementById('legal-entity-selector');
+                var item = document.getElementById('legal-entity-selector-item');
+                if (!sel || !item) { return; }
+
+                Promise.all([
+                    getJson(API + '/api/auth/me/legal-entities'),
+                    getJson(API + '/api/legal-entities')
+                ]).then(function (res) {
+                    var assigned = Array.isArray(res[0]) ? res[0].map(String) : [];
+                    var all = Array.isArray(res[1]) ? res[1] : [];
+                    if (!assigned.length || !all.length) { return; }
+
+                    var byId = {}, childrenByParent = {};
+                    all.forEach(function (e) {
+                        var id = String(e.legalEntityId || e.LegalEntityId);
+                        byId[id] = e;
+                        var pid = e.parentId || e.ParentId;
+                        if (pid) { pid = String(pid); (childrenByParent[pid] = childrenByParent[pid] || []).push(id); }
+                    });
+
+                    var selectable = {}, assignedSet = {};
+                    assigned.forEach(function (a) {
+                        assignedSet[a] = true;
+                        selfAndDescendants(a, childrenByParent).forEach(function (x) { selectable[x] = true; });
+                    });
+
+                    var ids = Object.keys(selectable).filter(function (id) { return byId[id]; });
+                    if (!ids.length) { return; }
+                    ids.sort(function (a, b) {
+                        var na = byId[a].displayName || byId[a].legalName || byId[a].code || '';
+                        var nb = byId[b].displayName || byId[b].legalName || byId[b].code || '';
+                        return String(na).localeCompare(String(nb));
+                    });
+
+                    sel.innerHTML = '';
+                    ids.forEach(function (id) {
+                        var e = byId[id];
+                        var name = e.displayName || e.legalName || e.code || id;
+                        var isRollup = assignedSet[id] && (childrenByParent[id] || []).length > 0;
+                        var opt = document.createElement('option');
+                        opt.value = id;
+                        opt.textContent = isRollup ? (name + ROLLUP_SUFFIX) : name;
+                        sel.appendChild(opt);
+                    });
+
+                    var saved = null;
+                    try { saved = window.localStorage.getItem(LS_KEY); } catch (e) { saved = null; }
+                    var firstAssigned = assigned.filter(function (a) { return byId[a]; })[0] || ids[0];
+                    var initial = (saved && selectable[saved]) ? saved : firstAssigned;
+
+                    sel.value = initial;
+                    try { window.localStorage.setItem(LS_KEY, initial); } catch (e) { /* ignore */ }
+                    item.classList.remove('d-none');
+
+                    sel.addEventListener('change', function () {
+                        try { window.localStorage.setItem(LS_KEY, sel.value); } catch (e) { /* ignore */ }
+                        window.location.reload();
+                    });
+                });
+            });
+        })();
+    </script>
     <script src="~/assets/js/personalization-client.js" asp-append-version="true"></script>
 
     <!-- Main JS -->

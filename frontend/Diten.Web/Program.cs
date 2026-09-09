@@ -18,6 +18,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// F3.5: large tenant JWT auth cookies — raise Kestrel request-header size limit to match the gateway.
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestHeadersTotalSize = 65536; // 64 KB (default 32 KB)
+    options.Limits.MaxRequestHeaderCount = 200;
+});
+
 // Add services to the container.
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
