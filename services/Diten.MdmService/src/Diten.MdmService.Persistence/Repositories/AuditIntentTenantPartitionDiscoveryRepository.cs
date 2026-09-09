@@ -17,7 +17,8 @@ public sealed class AuditIntentTenantPartitionDiscoveryRepository : IAuditIntent
         new("mdm_finished_goods", AuditAggregateType.FinishedGood),
         new("mdm_lskus", AuditAggregateType.Lsku),
         new("mdm_product_legal_entity_scope_policies", AuditAggregateType.ProductLegalEntityScopePolicy),
-        new("mdm_product_legal_entity_scope_rollout_states", AuditAggregateType.ProductLegalEntityScopeRolloutState)
+        new("mdm_product_legal_entity_scope_rollout_states", AuditAggregateType.ProductLegalEntityScopeRolloutState),
+        new("mdm_product_abbreviation_register", AuditAggregateType.ProductAbbreviation)
     ];
 
     private readonly IMongoDatabase _database;

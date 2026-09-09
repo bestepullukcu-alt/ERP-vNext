@@ -813,3 +813,20 @@ Test-owned Mongo replica-set verification: `ProductAbbreviationAuditDeliveryFoun
 0 failed, 0 skipped, covering tenant denial, competing claim, immutable receipt replay/drift and soft-deleted entries.
 This is storage groundwork, not producer/worker or live acceptance. Tenant-discovery, producer and WorkCenter/UI
 integration require their separately verified slices; no worker, configuration or operational cutover was activated.
+
+### 2026-09-09 approved ABB tenant-discovery amendment
+
+The owner explicitly adds only `mdm_product_abbreviation_register`, verified against
+`ProductAbbreviationRegisterRepository`, to the existing eight-collection bounded tenant-discovery set.
+Exact implementation/test paths:
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/AuditIntentTenantPartitionDiscoveryRepository.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/AuditIntentDeliveryWorkerMongoTests.cs`
+
+No wildcard discovery, grant/configuration change, worker activation, schema migration or operational cutover.
+Existing temporal-state validation, exact intent tenant/source/type checks and paging limits are unchanged.
+Test-owned replica-set run `AuditIntentDeliveryWorkerMongoTests`: 11 passed, 0 failed, 0 skipped.
+Evidence covers ABB-only tenant discovery followed by real delivery discovery/claim/payload read, cross-tenant denial,
+duplicate/cursor paging across ABB plus all original eight collections, and rejection of foreign intent tenant,
+wrong aggregate/source, legacy temporal storage, future retry, active lease, delivered and dead-letter records.
+The independent audit storage prerequisite run has 2 passed tests; these are distinct from the 11 discovery tests.
+Producer, WorkCenter and UI integration are separate gates; neither run proves live worker acceptance.
