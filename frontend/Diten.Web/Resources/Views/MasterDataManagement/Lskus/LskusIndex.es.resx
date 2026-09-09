@@ -35,4 +35,26 @@
   <data name="ErrorProviderTimeout"><value>El proveedor de referencia agotó el tiempo de espera.</value></data>
   <data name="ErrorForbidden"><value>No tiene permiso.</value></data>
   <data name="ErrorGateway"><value>No se pudo completar la solicitud.</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="LifecycleIdentityApproved" xml:space="preserve"><value>Identidad aprobada</value></data>
+  <data name="LifecyclePendingIdentityApproval" xml:space="preserve"><value>Aprobación de identidad pendiente</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>Retirado</value></data>
+  <data name="SubmitIdentity" xml:space="preserve"><value>Enviar para aprobación</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>¿Enviar esta identidad LSKU para aprobación?</value></data>
+  <data name="RetirementReasonLabel" xml:space="preserve"><value>Motivo del retiro</value></data>
+  <data name="RetirementReasonRequired" xml:space="preserve"><value>El motivo del retiro es obligatorio.</value></data>
+  <data name="RetirementReasonTooLong" xml:space="preserve"><value>El motivo del retiro no puede superar los 128 caracteres.</value></data>
+  <data name="SubmitPendingSuccess" xml:space="preserve"><value>La identidad LSKU se envió y está pendiente de aprobación.</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>El estado del ciclo de vida cambió. Se cargó el registro más reciente.</value></data>
+  <data name="ErrorUnauthorized" xml:space="preserve"><value>Su sesión ha caducado. Inicie sesión de nuevo.</value></data>
+  <data name="ErrorServiceUnavailable" xml:space="preserve"><value>El servicio de ciclo de vida no está disponible. Inténtelo más tarde.</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>La solicitud de ciclo de vida agotó el tiempo de espera. Inténtelo de nuevo.</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>Retirar aprobación</value></data>
+  <data name="WithdrawConfirmation" xml:space="preserve"><value>¿Retirar la solicitud de aprobación?</value></data>
+  <data name="WithdrawPending" xml:space="preserve"><value>La retirada sigue en proceso.</value></data>
+  <data name="WithdrawSuccess" xml:space="preserve"><value>Solicitud de aprobación retirada.</value></data>
+  <data name="RequestRetirement" xml:space="preserve"><value>Solicitar retirada</value></data>
+  <data name="RetirementRequestConfirmation" xml:space="preserve"><value>¿Enviar una solicitud de retirada?</value></data>
+  <data name="RetirementRequestPending" xml:space="preserve"><value>La solicitud de retirada espera una decisión.</value></data>
+  <data name="RetirementRequestSuccess" xml:space="preserve"><value>Solicitud de retirada enviada.</value></data>
 </root>

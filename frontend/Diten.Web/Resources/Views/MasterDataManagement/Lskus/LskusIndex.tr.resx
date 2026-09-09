@@ -35,4 +35,26 @@
   <data name="ErrorProviderTimeout"><value>Referans sağlayıcısı zaman aşımına uğradı.</value></data>
   <data name="ErrorForbidden"><value>Yetkiniz yok.</value></data>
   <data name="ErrorGateway"><value>İstek tamamlanamadı.</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="LifecycleIdentityApproved" xml:space="preserve"><value>Kimlik Onaylandı</value></data>
+  <data name="LifecyclePendingIdentityApproval" xml:space="preserve"><value>Kimlik Onayı Bekliyor</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>Kullanımdan Kaldırıldı</value></data>
+  <data name="SubmitIdentity" xml:space="preserve"><value>Onaya Gönder</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>Bu LSKU kimliği onaya gönderilsin mi?</value></data>
+  <data name="RetirementReasonLabel" xml:space="preserve"><value>Kullanımdan kaldırma nedeni</value></data>
+  <data name="RetirementReasonRequired" xml:space="preserve"><value>Kullanımdan kaldırma nedeni zorunludur.</value></data>
+  <data name="RetirementReasonTooLong" xml:space="preserve"><value>Kullanımdan kaldırma nedeni 128 karakteri aşamaz.</value></data>
+  <data name="SubmitPendingSuccess" xml:space="preserve"><value>LSKU kimliği gönderildi ve onay bekliyor.</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>Yaşam döngüsü durumu değişti. En güncel kayıt yüklendi.</value></data>
+  <data name="ErrorUnauthorized" xml:space="preserve"><value>Oturumunuzun süresi doldu. Lütfen yeniden giriş yapın.</value></data>
+  <data name="ErrorServiceUnavailable" xml:space="preserve"><value>Yaşam döngüsü hizmeti kullanılamıyor. Daha sonra yeniden deneyin.</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>Yaşam döngüsü isteği zaman aşımına uğradı. Yeniden deneyin.</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>Onayı Geri Çek</value></data>
+  <data name="WithdrawConfirmation" xml:space="preserve"><value>Onay talebi geri çekilsin mi?</value></data>
+  <data name="WithdrawPending" xml:space="preserve"><value>Geri çekme işlemi devam ediyor.</value></data>
+  <data name="WithdrawSuccess" xml:space="preserve"><value>Onay talebi geri çekildi.</value></data>
+  <data name="RequestRetirement" xml:space="preserve"><value>Emeklilik Talep Et</value></data>
+  <data name="RetirementRequestConfirmation" xml:space="preserve"><value>Emeklilik talebi gönderilsin mi?</value></data>
+  <data name="RetirementRequestPending" xml:space="preserve"><value>Emeklilik talebi karar bekliyor.</value></data>
+  <data name="RetirementRequestSuccess" xml:space="preserve"><value>Emeklilik talebi gönderildi.</value></data>
 </root>

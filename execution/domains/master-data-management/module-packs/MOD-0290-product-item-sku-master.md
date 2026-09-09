@@ -3194,6 +3194,79 @@ the complete backend retirement slice can be integrated. No backend/UI completio
 The user explicitly authorizes the missing operation binding below and continuation of approved E2A/19.18
 backend integration. This supersedes the preceding scope gate only; no live acceptance is implied.
 Source reference is protected `ffdd280a`, reconciled with the current target. No edit/correction or new selector.
+### LSKU frontend integration exact paths — approved 2026-09-09
+
+This extracts protected `ffdd280a` section 19.18.6 under the renewed user approval, without
+navigation, edit/correction, direct-retire UI, bulk/delete/import or new selector endpoints.
+Gateway routing is already sufficient; only its existing configuration test is extended.
+Exact touched runtime/test files:
+
+- `frontend/Diten.Web/Controllers/LskusController.cs`
+- `frontend/Diten.Web/Models/Lskus/LskuViewModels.cs`
+- `frontend/Diten.Web/Views/MasterDataManagement/Lskus/Index.cshtml`
+- `frontend/Diten.Web/Views/MasterDataManagement/Lskus/_Filter.cshtml`
+- `frontend/Diten.Web/Views/MasterDataManagement/Lskus/_IndexL10n.cshtml`
+- `frontend/Diten.Web/wwwroot/assets/js/MasterDataManagement/Lskus/index.js`
+- `frontend/Diten.Web/tests/lsku-register.test.js`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/Lskus/LskusIndex.ar.resx`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/Lskus/LskusIndex.en.resx`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/Lskus/LskusIndex.es.resx`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/Lskus/LskusIndex.fr.resx`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/Lskus/LskusIndex.ru.resx`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/Lskus/LskusIndex.tr.resx`
+- `frontend/Diten.Web/Resources/Views/MasterDataManagement/Lskus/LskusIndex.zh.resx`
+- `gateway/Diten.ApiGateway.Tests/OcelotConfigurationTests.cs`
+
+### LSKU frontend verification evidence — 2026-09-09
+
+- Reconciled the approved 19.18.6 source, preserving immutable create/read and same-origin MVC.
+  Submit, withdrawal and retirement request retain exact permissions, antiforgery, server-owned
+  idempotency and fresh state/version read-back. Direct-retire MVC exposure and its three unused
+  localization entries were not imported. No navigation or Gateway runtime change was needed.
+- Corrected the source retirement-click dispatch, post-action detail/version refresh and non-advancing
+  version detection. AvailableActions is matched case-exactly and intersected with lifecycle state.
+  Save View fails instead of claiming success when its client/receipt/name is absent.
+- Frontend Release build: 0 errors / 14 existing warnings. Gateway Release build: 0 errors / 0 warnings.
+  OcelotConfigurationTests: 37 passed / 0 failed / 0 skipped, including seven new LSKU route cases;
+  these are shipped-config assertions, not live Gateway forwarding.
+- Final frontend run: 102 passed / 0 failed / 0 skipped across LSKU (27), Global Product (20),
+  GSKU (49) and shared personalization (6). The 27 LSKU checks comprise executable DOM/fetch-double
+  contracts and source-contract checks; they are not live MVC/browser acceptance. Earlier 23/25-case
+  runs overlap and are not added. Both LSKU JavaScript syntax checks passed.
+- Seven RESX documents parsed with 57 unique, nonempty, identical keys each. Used page/controller
+  localization literals are present. Shared ShowAll is rendered server-side by the filter.
+- Bundled Python, unchanged verifier, default profile: initial 72 pass / 19 fail; after fixing the
+  actual missing px-3 filter alignment: **73 pass / 18 fail (exit 1)**. The following classification
+  records each failure, not a blanket verifier waiver. Authority is the separately approved protected
+  19.18.6 contract extracted above; historical first-slice variances alone do not authorize this slice.
+
+| # | Remaining verifier failure | Exact contract / inspection result |
+|---|---|---|
+| 1 | Nonempty default Save View name | 19.18.6 forbids hardcoded English Default; localized name is validated nonempty or fails. Executable save/reload and missing-response tests pass. |
+| 2 | Browser personalization tenant header | 19.18.6 forbids browser tenant authority. Unchanged personalization-client calls same-origin /api/personalization/views; PersonalizationProxyController applies the cookie bearer and X-Tenant-Id only for tenant_user. This is an outdated browser-profile expectation, not missing server forwarding. Shared client tests: 6/0/0. |
+| 3 | Active L10n | 19.18.6 forbids Active/Passive; the real lifecycle enum is used. |
+| 4 | Passive L10n | Same explicit Active/Passive prohibition. |
+| 5 | Edit L10n | 19.18.6 and current approval forbid LSKU edit/correction. |
+| 6 | BulkDelete L10n | 19.18.6 forbids bulk/delete; no inert label is added. |
+| 7 | BulkDeleteConfirm L10n | Same explicit bulk/delete prohibition. |
+| 8 | AreYouSure L10n | Generic delete dialog is absent; real lifecycle actions use their localized confirmations under 19.18.6. |
+| 9 | Import L10n | 19.18.6 forbids Import. |
+| 10 | ShowAll JavaScript bridge key | The actual lifecycle selector renders SharedLocalizer ShowAll in Razor; JavaScript never consumes it. Adding an unused bridge entry would not test that contract. |
+| 11 | Direct-Gateway window.API base | 19.18.6 mandates same-origin MVC; Gateway authority stays server-side. |
+| 12 | Select-all checkbox | 19.18.6 forbids select-all/bulk. |
+| 13 | Bulk action config | Same explicit bulk prohibition. |
+| 14 | Bulk selection wiring | Same explicit bulk/select-all prohibition. |
+| 15 | Bulk endpoint call | Same prohibition; no such backend endpoint is invented. |
+| 16 | Bulk-delete trigger | Same explicit bulk/delete prohibition. |
+| 17 | Shared delete reloadWithToast helper | No delete path exists. 19.18.6 lifecycle success follows real response and detail state/version read-back, then table reload; executable tests cover this ordering and failure cases. |
+| 18 | Bulk clear-selection | No row selection exists. The separate lifecycle filter supports Select2 clear, Apply and factory Reset; executable filter/reset tests pass. |
+
+No runtime configuration, user grant, workflow template, real business record, live WorkCenter action or
+browser acceptance was performed. Navigation remains hidden. Existing GSKU flakiness remains open:
+`ProductItemSkuMasterMongoTests.Concurrent_first_gsku_commands_allocate_unique_parent_ordinals_and_soft_delete_never_reuses`;
+later green runs do not establish its cause. The common Windows DisposableMongoReplicaSet helper debt is
+also unchanged; backend evidence used the separately owned replica-set fixture, not application Mongo.
+
 ### LSKU backend reconciliation evidence — 2026-09-09
 
 - FU21 `f29f845ec48f27d3f67c6928263b04fcd4c4eaf4` preserves 30 pairs and adds only submit/retire (32 exact pairs). It grants no user permission.

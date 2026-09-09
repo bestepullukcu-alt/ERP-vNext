@@ -35,4 +35,26 @@
   <data name="ErrorProviderTimeout"><value>Le fournisseur de référence a expiré.</value></data>
   <data name="ErrorForbidden"><value>Vous n'avez pas l'autorisation.</value></data>
   <data name="ErrorGateway"><value>La demande n'a pas pu être traitée.</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="LifecycleIdentityApproved" xml:space="preserve"><value>Identité approuvée</value></data>
+  <data name="LifecyclePendingIdentityApproval" xml:space="preserve"><value>Approbation d’identité en attente</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>Retiré</value></data>
+  <data name="SubmitIdentity" xml:space="preserve"><value>Soumettre pour approbation</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>Soumettre cette identité LSKU pour approbation ?</value></data>
+  <data name="RetirementReasonLabel" xml:space="preserve"><value>Motif du retrait</value></data>
+  <data name="RetirementReasonRequired" xml:space="preserve"><value>Le motif du retrait est obligatoire.</value></data>
+  <data name="RetirementReasonTooLong" xml:space="preserve"><value>Le motif du retrait ne peut pas dépasser 128 caractères.</value></data>
+  <data name="SubmitPendingSuccess" xml:space="preserve"><value>L’identité LSKU a été soumise et attend son approbation.</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>L’état du cycle de vie a changé. Le dernier enregistrement a été chargé.</value></data>
+  <data name="ErrorUnauthorized" xml:space="preserve"><value>Votre session a expiré. Veuillez vous reconnecter.</value></data>
+  <data name="ErrorServiceUnavailable" xml:space="preserve"><value>Le service de cycle de vie est indisponible. Réessayez plus tard.</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>La demande de cycle de vie a expiré. Réessayez.</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>Retirer l’approbation</value></data>
+  <data name="WithdrawConfirmation" xml:space="preserve"><value>Retirer la demande d’approbation ?</value></data>
+  <data name="WithdrawPending" xml:space="preserve"><value>Le retrait est encore en cours.</value></data>
+  <data name="WithdrawSuccess" xml:space="preserve"><value>Demande d’approbation retirée.</value></data>
+  <data name="RequestRetirement" xml:space="preserve"><value>Demander le retrait</value></data>
+  <data name="RetirementRequestConfirmation" xml:space="preserve"><value>Soumettre une demande de retrait ?</value></data>
+  <data name="RetirementRequestPending" xml:space="preserve"><value>La demande de retrait attend une décision.</value></data>
+  <data name="RetirementRequestSuccess" xml:space="preserve"><value>Demande de retrait soumise.</value></data>
 </root>

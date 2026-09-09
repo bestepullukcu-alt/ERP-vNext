@@ -225,6 +225,34 @@ public sealed class OcelotConfigurationTests
         Assert.Equal("http", nested.DownstreamScheme);
     }
 
+    [Theory]
+    [InlineData("GET", "")]
+    [InlineData("GET", "create-options")]
+    [InlineData("GET", "00000000-0000-0000-0000-000000000001")]
+    [InlineData("POST", "drafts")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/submit")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/identity-approval/withdraw")]
+    [InlineData("POST", "00000000-0000-0000-0000-000000000001/retirement-requests")]
+    public void Lsku_existing_routes_cover_lifecycle_without_broadening_methods(string method, string suffix)
+    {
+        var config = LoadConfiguration();
+        var root = Assert.Single(config.Routes, r => r.UpstreamPathTemplate == "/api/lskus");
+        var nested = Assert.Single(config.Routes, r => r.UpstreamPathTemplate == "/api/lskus/{everything}");
+        foreach (var route in new[] { root, nested })
+        {
+            Assert.True(new HashSet<string>(["GET", "POST", "OPTIONS"], StringComparer.Ordinal)
+                .SetEquals(route.UpstreamHttpMethod));
+            var host = Assert.Single(route.DownstreamHostAndPorts);
+            Assert.Equal("localhost", host.Host);
+            Assert.Equal(5059, host.Port);
+            Assert.Equal("http", route.DownstreamScheme);
+        }
+        var selected = suffix.Length == 0 ? root : nested;
+        Assert.Contains(method, selected.UpstreamHttpMethod);
+        Assert.Equal("/api/lskus" + (suffix.Length == 0 ? "" : "/" + suffix),
+            selected.DownstreamPathTemplate.Replace("{everything}", suffix));
+    }
+
     private static void AssertPpmRoute(IReadOnlyCollection<FileRoute> ppmRoutes, string template)
     {
         var route = Assert.Single(ppmRoutes, candidate =>

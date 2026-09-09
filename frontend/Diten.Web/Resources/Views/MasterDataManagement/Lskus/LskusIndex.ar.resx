@@ -35,4 +35,26 @@
   <data name="ErrorProviderTimeout"><value>انتهت مهلة موفر المرجع.</value></data>
   <data name="ErrorForbidden"><value>ليس لديك إذن.</value></data>
   <data name="ErrorGateway"><value>تعذر إكمال الطلب.</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="LifecycleIdentityApproved" xml:space="preserve"><value>تم اعتماد الهوية</value></data>
+  <data name="LifecyclePendingIdentityApproval" xml:space="preserve"><value>بانتظار اعتماد الهوية</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>متوقف</value></data>
+  <data name="SubmitIdentity" xml:space="preserve"><value>إرسال للاعتماد</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>هل تريد إرسال هوية LSKU للاعتماد؟</value></data>
+  <data name="RetirementReasonLabel" xml:space="preserve"><value>سبب الإيقاف</value></data>
+  <data name="RetirementReasonRequired" xml:space="preserve"><value>سبب الإيقاف مطلوب.</value></data>
+  <data name="RetirementReasonTooLong" xml:space="preserve"><value>يجب ألا يتجاوز سبب الإيقاف 128 حرفاً.</value></data>
+  <data name="SubmitPendingSuccess" xml:space="preserve"><value>تم إرسال هوية LSKU وهي بانتظار الاعتماد.</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>تغيرت حالة دورة الحياة وتم تحميل أحدث سجل.</value></data>
+  <data name="ErrorUnauthorized" xml:space="preserve"><value>انتهت جلستك. يرجى تسجيل الدخول مجدداً.</value></data>
+  <data name="ErrorServiceUnavailable" xml:space="preserve"><value>خدمة دورة الحياة غير متاحة. حاول لاحقاً.</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>انتهت مهلة طلب دورة الحياة. حاول مرة أخرى.</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>سحب الموافقة</value></data>
+  <data name="WithdrawConfirmation" xml:space="preserve"><value>هل تريد سحب طلب الموافقة؟</value></data>
+  <data name="WithdrawPending" xml:space="preserve"><value>لا تزال عملية السحب قيد المعالجة.</value></data>
+  <data name="WithdrawSuccess" xml:space="preserve"><value>تم سحب طلب الموافقة.</value></data>
+  <data name="RequestRetirement" xml:space="preserve"><value>طلب الإحالة للتقاعد</value></data>
+  <data name="RetirementRequestConfirmation" xml:space="preserve"><value>هل تريد إرسال طلب الإحالة للتقاعد؟</value></data>
+  <data name="RetirementRequestPending" xml:space="preserve"><value>طلب الإحالة للتقاعد بانتظار القرار.</value></data>
+  <data name="RetirementRequestSuccess" xml:space="preserve"><value>تم إرسال طلب الإحالة للتقاعد.</value></data>
 </root>
