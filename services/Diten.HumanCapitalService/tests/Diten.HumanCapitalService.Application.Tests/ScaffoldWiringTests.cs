@@ -17,12 +17,13 @@ public sealed class ScaffoldWiringTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Mongo:ConnectionString"] = "mongodb://localhost:27017",
-                ["Mongo:DatabaseName"] = "diten_hcm_test"
+                ["Mongo:DatabaseName"] = "diten_hcm_test",
+                ["MdmService:BaseUrl"] = "http://localhost:5061"
             })
             .Build();
 
         services.AddApplication();
-        services.AddInfrastructure();
+        services.AddInfrastructure(configuration);
         services.AddPersistence(configuration);
 
         using var provider = services.BuildServiceProvider();

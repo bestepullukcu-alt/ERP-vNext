@@ -11,13 +11,16 @@ public sealed class EvaluateApplicantIntakeReadinessHandler
 {
     private readonly IApplicantIntakeReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public EvaluateApplicantIntakeReadinessHandler(
         IApplicantIntakeReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<ApplicantIntakeReadinessDto>> Handle(EvaluateApplicantIntakeReadinessCommand request, CancellationToken ct)
@@ -28,7 +31,8 @@ public sealed class EvaluateApplicantIntakeReadinessHandler
             return Response<ApplicantIntakeReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<ApplicantIntakeReadinessDto>.Fail("Applicant intake readiness record was not found.", 404);

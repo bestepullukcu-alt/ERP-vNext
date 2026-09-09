@@ -1,4 +1,5 @@
 using Diten.HumanCapitalService.Domain.Repositories;
+using Diten.HumanCapitalService.Persistence.Migrations;
 using Diten.HumanCapitalService.Persistence.Repositories;
 using Diten.HumanCapitalService.Persistence.Settings;
 using Microsoft.Extensions.Configuration;
@@ -60,6 +61,9 @@ public static class DependencyInjection
         services.AddScoped<ISelfServiceReadinessMetadataRepository, MongoSelfServiceReadinessMetadataRepository>();
         services.AddScoped<IHrCaseManagementReadinessMetadataRepository, MongoHrCaseManagementReadinessMetadataRepository>();
         services.AddScoped<IHrComplianceReadinessMetadataRepository, MongoHrComplianceReadinessMetadataRepository>();
+
+        // Legal-entity scoping pilot: one-shot startup backfill + unique-index reconciliation.
+        services.AddHostedService<ApplicantIntakeLegalEntityBackfillService>();
 
         return services;
     }

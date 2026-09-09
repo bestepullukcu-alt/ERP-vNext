@@ -11,13 +11,16 @@ public sealed class GetApplicantIntakeReadinessListHandler
 {
     private readonly IApplicantIntakeReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetApplicantIntakeReadinessListHandler(
         IApplicantIntakeReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<ApplicantIntakeReadinessListItemDto>>> Handle(
@@ -30,7 +33,8 @@ public sealed class GetApplicantIntakeReadinessListHandler
             return Response<IReadOnlyList<ApplicantIntakeReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<ApplicantIntakeReadinessListItemDto>>.Success(rows.Select(ApplicantIntakeMapper.ToListItem).ToList());
     }
 }
@@ -40,13 +44,16 @@ public sealed class GetApplicantIntakeReadinessByIdHandler
 {
     private readonly IApplicantIntakeReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetApplicantIntakeReadinessByIdHandler(
         IApplicantIntakeReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<ApplicantIntakeReadinessDto>> Handle(GetApplicantIntakeReadinessByIdQuery request, CancellationToken ct)
@@ -57,7 +64,8 @@ public sealed class GetApplicantIntakeReadinessByIdHandler
             return Response<ApplicantIntakeReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<ApplicantIntakeReadinessDto>.Fail("Applicant intake readiness record was not found.", 404)
             : Response<ApplicantIntakeReadinessDto>.Success(ApplicantIntakeMapper.ToDto(entity));
@@ -69,13 +77,16 @@ public sealed class GetApplicantIntakeAuditMetadataHandler
 {
     private readonly IApplicantIntakeReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetApplicantIntakeAuditMetadataHandler(
         IApplicantIntakeReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<ApplicantIntakeAuditMetadataDto>> Handle(GetApplicantIntakeAuditMetadataQuery request, CancellationToken ct)
@@ -86,7 +97,8 @@ public sealed class GetApplicantIntakeAuditMetadataHandler
             return Response<ApplicantIntakeAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<ApplicantIntakeAuditMetadataDto>.Fail("Applicant intake readiness record was not found.", 404)
             : Response<ApplicantIntakeAuditMetadataDto>.Success(ApplicantIntakeMapper.ToAuditMetadata(entity));

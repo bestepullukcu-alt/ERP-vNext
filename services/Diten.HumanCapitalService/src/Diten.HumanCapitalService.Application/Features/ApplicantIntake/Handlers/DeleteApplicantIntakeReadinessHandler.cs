@@ -12,13 +12,16 @@ public sealed class DeleteApplicantIntakeReadinessHandler
 {
     private readonly IApplicantIntakeReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public DeleteApplicantIntakeReadinessHandler(
         IApplicantIntakeReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<bool>> Handle(DeleteApplicantIntakeReadinessCommand request, CancellationToken ct)
@@ -29,7 +32,8 @@ public sealed class DeleteApplicantIntakeReadinessHandler
             return Response<bool>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<bool>.Fail("Applicant intake readiness record was not found.", 404);

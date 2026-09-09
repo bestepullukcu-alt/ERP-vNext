@@ -18,29 +18,37 @@ public sealed class MongoApplicantIntakeReadinessMetadataRepository : IApplicant
         _collection = database.GetCollection<ApplicantIntakeReadinessMetadata>(CollectionName);
     }
 
-    public async Task<IReadOnlyList<ApplicantIntakeReadinessMetadata>> ListAsync(Guid tenantId, CancellationToken ct)
+    public async Task<IReadOnlyList<ApplicantIntakeReadinessMetadata>> ListAsync(
+        Guid tenantId,
+        IReadOnlyCollection<Guid> legalEntityIds,
+        CancellationToken ct)
     {
         await EnsureIndexesAsync(ct);
         return await _collection
-            .Find(ActiveTenantFilter(tenantId))
+            .Find(ActiveScopeFilter(tenantId, legalEntityIds))
             .SortBy(x => x.Code)
             .ToListAsync(ct);
     }
 
-    public async Task<ApplicantIntakeReadinessMetadata?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct)
+    public async Task<ApplicantIntakeReadinessMetadata?> GetByIdAsync(
+        Guid tenantId,
+        IReadOnlyCollection<Guid> legalEntityIds,
+        Guid id,
+        CancellationToken ct)
     {
         await EnsureIndexesAsync(ct);
         var filter = Builders<ApplicantIntakeReadinessMetadata>.Filter.And(
-            ActiveTenantFilter(tenantId),
+            ActiveScopeFilter(tenantId, legalEntityIds),
             Builders<ApplicantIntakeReadinessMetadata>.Filter.Eq(x => x.Id, id));
         return await _collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
-    public async Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct)
+    public async Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct)
     {
         await EnsureIndexesAsync(ct);
         var filter = Builders<ApplicantIntakeReadinessMetadata>.Filter.And(
             ActiveTenantFilter(tenantId),
+            Builders<ApplicantIntakeReadinessMetadata>.Filter.Eq(x => x.LegalEntityId, legalEntityId),
             Builders<ApplicantIntakeReadinessMetadata>.Filter.Eq(x => x.Code, code));
 
         if (excludingId is { } id)
@@ -78,6 +86,7 @@ public sealed class MongoApplicantIntakeReadinessMetadataRepository : IApplicant
             new CreateIndexModel<ApplicantIntakeReadinessMetadata>(
                 Builders<ApplicantIntakeReadinessMetadata>.IndexKeys
                     .Ascending(x => x.TenantId)
+                    .Ascending(x => x.LegalEntityId)
                     .Ascending(x => x.Code),
                 new CreateIndexOptions<ApplicantIntakeReadinessMetadata>
                 {
@@ -101,4 +110,14 @@ public sealed class MongoApplicantIntakeReadinessMetadataRepository : IApplicant
         Builders<ApplicantIntakeReadinessMetadata>.Filter.And(
             Builders<ApplicantIntakeReadinessMetadata>.Filter.Eq(x => x.TenantId, tenantId),
             Builders<ApplicantIntakeReadinessMetadata>.Filter.Eq(x => x.IsDeleted, false));
+
+    // Tenant scoping remains authoritative; legal-entity scoping narrows within the tenant to the
+    // effective roll-up set. An empty set matches nothing (In [] is always false) — a caller with no
+    // legal-entity scope sees no records rather than the whole tenant.
+    private static FilterDefinition<ApplicantIntakeReadinessMetadata> ActiveScopeFilter(
+        Guid tenantId,
+        IReadOnlyCollection<Guid> legalEntityIds) =>
+        Builders<ApplicantIntakeReadinessMetadata>.Filter.And(
+            ActiveTenantFilter(tenantId),
+            Builders<ApplicantIntakeReadinessMetadata>.Filter.In(x => x.LegalEntityId, legalEntityIds));
 }
