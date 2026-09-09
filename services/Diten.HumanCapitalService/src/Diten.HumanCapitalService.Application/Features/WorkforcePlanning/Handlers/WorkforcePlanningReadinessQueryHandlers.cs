@@ -11,11 +11,13 @@ public sealed class GetWorkforcePlanningReadinessListHandler
 {
     private readonly IWorkforcePlanningReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetWorkforcePlanningReadinessListHandler(IWorkforcePlanningReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetWorkforcePlanningReadinessListHandler(IWorkforcePlanningReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<WorkforcePlanningReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetWorkforcePlanningReadinessListHandler
             return Response<IReadOnlyList<WorkforcePlanningReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<WorkforcePlanningReadinessListItemDto>>.Success(rows.Select(WorkforcePlanningMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetWorkforcePlanningReadinessByIdHandler
 {
     private readonly IWorkforcePlanningReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetWorkforcePlanningReadinessByIdHandler(IWorkforcePlanningReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetWorkforcePlanningReadinessByIdHandler(IWorkforcePlanningReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<WorkforcePlanningReadinessDto>> Handle(GetWorkforcePlanningReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetWorkforcePlanningReadinessByIdHandler
             return Response<WorkforcePlanningReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<WorkforcePlanningReadinessDto>.Fail("WorkforcePlanning readiness record was not found.", 404)
             : Response<WorkforcePlanningReadinessDto>.Success(WorkforcePlanningMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetWorkforcePlanningAuditMetadataHandler
 {
     private readonly IWorkforcePlanningReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetWorkforcePlanningAuditMetadataHandler(IWorkforcePlanningReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetWorkforcePlanningAuditMetadataHandler(IWorkforcePlanningReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<WorkforcePlanningAuditMetadataDto>> Handle(GetWorkforcePlanningAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetWorkforcePlanningAuditMetadataHandler
             return Response<WorkforcePlanningAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<WorkforcePlanningAuditMetadataDto>.Fail("WorkforcePlanning readiness record was not found.", 404)
             : Response<WorkforcePlanningAuditMetadataDto>.Success(WorkforcePlanningMapper.ToAuditMetadata(entity));

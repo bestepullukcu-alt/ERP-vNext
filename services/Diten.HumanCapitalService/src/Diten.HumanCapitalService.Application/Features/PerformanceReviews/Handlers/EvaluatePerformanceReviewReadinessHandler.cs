@@ -10,11 +10,13 @@ public sealed class EvaluatePerformanceReviewReadinessHandler : IRequestHandler<
 {
     private readonly IPerformanceReviewReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public EvaluatePerformanceReviewReadinessHandler(IPerformanceReviewReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public EvaluatePerformanceReviewReadinessHandler(IPerformanceReviewReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<PerformanceReviewReadinessDto>> Handle(EvaluatePerformanceReviewReadinessCommand request, CancellationToken ct)
@@ -25,7 +27,8 @@ public sealed class EvaluatePerformanceReviewReadinessHandler : IRequestHandler<
             return Response<PerformanceReviewReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<PerformanceReviewReadinessDto>.Fail("PerformanceReview readiness record was not found.", 404);

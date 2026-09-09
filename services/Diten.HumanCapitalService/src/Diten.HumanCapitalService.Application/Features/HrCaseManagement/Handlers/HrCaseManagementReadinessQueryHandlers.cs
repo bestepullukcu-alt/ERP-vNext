@@ -11,11 +11,13 @@ public sealed class GetHrCaseManagementReadinessListHandler
 {
     private readonly IHrCaseManagementReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetHrCaseManagementReadinessListHandler(IHrCaseManagementReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetHrCaseManagementReadinessListHandler(IHrCaseManagementReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<HrCaseManagementReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetHrCaseManagementReadinessListHandler
             return Response<IReadOnlyList<HrCaseManagementReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<HrCaseManagementReadinessListItemDto>>.Success(rows.Select(HrCaseManagementMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetHrCaseManagementReadinessByIdHandler
 {
     private readonly IHrCaseManagementReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetHrCaseManagementReadinessByIdHandler(IHrCaseManagementReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetHrCaseManagementReadinessByIdHandler(IHrCaseManagementReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<HrCaseManagementReadinessDto>> Handle(GetHrCaseManagementReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetHrCaseManagementReadinessByIdHandler
             return Response<HrCaseManagementReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<HrCaseManagementReadinessDto>.Fail("HrCaseManagement readiness record was not found.", 404)
             : Response<HrCaseManagementReadinessDto>.Success(HrCaseManagementMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetHrCaseManagementAuditMetadataHandler
 {
     private readonly IHrCaseManagementReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetHrCaseManagementAuditMetadataHandler(IHrCaseManagementReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetHrCaseManagementAuditMetadataHandler(IHrCaseManagementReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<HrCaseManagementAuditMetadataDto>> Handle(GetHrCaseManagementAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetHrCaseManagementAuditMetadataHandler
             return Response<HrCaseManagementAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<HrCaseManagementAuditMetadataDto>.Fail("HrCaseManagement readiness record was not found.", 404)
             : Response<HrCaseManagementAuditMetadataDto>.Success(HrCaseManagementMapper.ToAuditMetadata(entity));

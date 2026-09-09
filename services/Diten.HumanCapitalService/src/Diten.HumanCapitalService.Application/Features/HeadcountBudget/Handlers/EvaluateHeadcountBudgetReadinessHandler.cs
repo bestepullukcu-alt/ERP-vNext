@@ -10,11 +10,13 @@ public sealed class EvaluateHeadcountBudgetReadinessHandler : IRequestHandler<Ev
 {
     private readonly IHeadcountBudgetReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public EvaluateHeadcountBudgetReadinessHandler(IHeadcountBudgetReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public EvaluateHeadcountBudgetReadinessHandler(IHeadcountBudgetReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<HeadcountBudgetReadinessDto>> Handle(EvaluateHeadcountBudgetReadinessCommand request, CancellationToken ct)
@@ -25,7 +27,8 @@ public sealed class EvaluateHeadcountBudgetReadinessHandler : IRequestHandler<Ev
             return Response<HeadcountBudgetReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<HeadcountBudgetReadinessDto>.Fail("HeadcountBudget readiness record was not found.", 404);

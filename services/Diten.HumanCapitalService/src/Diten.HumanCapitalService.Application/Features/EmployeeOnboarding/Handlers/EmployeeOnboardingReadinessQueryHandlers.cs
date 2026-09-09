@@ -11,11 +11,13 @@ public sealed class GetEmployeeOnboardingReadinessListHandler
 {
     private readonly IEmployeeOnboardingReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetEmployeeOnboardingReadinessListHandler(IEmployeeOnboardingReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetEmployeeOnboardingReadinessListHandler(IEmployeeOnboardingReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<EmployeeOnboardingReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetEmployeeOnboardingReadinessListHandler
             return Response<IReadOnlyList<EmployeeOnboardingReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<EmployeeOnboardingReadinessListItemDto>>.Success(rows.Select(EmployeeOnboardingMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetEmployeeOnboardingReadinessByIdHandler
 {
     private readonly IEmployeeOnboardingReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetEmployeeOnboardingReadinessByIdHandler(IEmployeeOnboardingReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetEmployeeOnboardingReadinessByIdHandler(IEmployeeOnboardingReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<EmployeeOnboardingReadinessDto>> Handle(GetEmployeeOnboardingReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetEmployeeOnboardingReadinessByIdHandler
             return Response<EmployeeOnboardingReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<EmployeeOnboardingReadinessDto>.Fail("EmployeeOnboarding readiness record was not found.", 404)
             : Response<EmployeeOnboardingReadinessDto>.Success(EmployeeOnboardingMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetEmployeeOnboardingAuditMetadataHandler
 {
     private readonly IEmployeeOnboardingReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetEmployeeOnboardingAuditMetadataHandler(IEmployeeOnboardingReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetEmployeeOnboardingAuditMetadataHandler(IEmployeeOnboardingReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<EmployeeOnboardingAuditMetadataDto>> Handle(GetEmployeeOnboardingAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetEmployeeOnboardingAuditMetadataHandler
             return Response<EmployeeOnboardingAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<EmployeeOnboardingAuditMetadataDto>.Fail("EmployeeOnboarding readiness record was not found.", 404)
             : Response<EmployeeOnboardingAuditMetadataDto>.Success(EmployeeOnboardingMapper.ToAuditMetadata(entity));

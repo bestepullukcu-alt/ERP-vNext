@@ -11,11 +11,13 @@ public sealed class DeleteHrComplianceReadinessHandler : IRequestHandler<DeleteH
 {
     private readonly IHrComplianceReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public DeleteHrComplianceReadinessHandler(IHrComplianceReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public DeleteHrComplianceReadinessHandler(IHrComplianceReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<bool>> Handle(DeleteHrComplianceReadinessCommand request, CancellationToken ct)
@@ -26,7 +28,8 @@ public sealed class DeleteHrComplianceReadinessHandler : IRequestHandler<DeleteH
             return Response<bool>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<bool>.Fail("HrCompliance readiness record was not found.", 404);

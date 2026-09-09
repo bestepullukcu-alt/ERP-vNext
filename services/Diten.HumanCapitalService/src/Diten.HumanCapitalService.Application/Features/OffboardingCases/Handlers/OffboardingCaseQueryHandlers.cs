@@ -13,17 +13,20 @@ public sealed class GetOffboardingCaseListHandler
     private readonly IEmployeeProjectionRepository _employeeRepository;
     private readonly ISensitiveAccessDataScopeEvaluator _dataScopeEvaluator;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetOffboardingCaseListHandler(
         IOffboardingCaseRepository repository,
         IEmployeeProjectionRepository employeeRepository,
         ISensitiveAccessDataScopeEvaluator dataScopeEvaluator,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _employeeRepository = employeeRepository;
         _dataScopeEvaluator = dataScopeEvaluator;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<OffboardingCaseListItemDto>>> Handle(
@@ -36,11 +39,12 @@ public sealed class GetOffboardingCaseListHandler
             return Response<IReadOnlyList<OffboardingCaseListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         var visibleRows = new List<OffboardingCaseListItemDto>();
         foreach (var row in rows)
         {
-            var employee = await _employeeRepository.GetByIdAsync(tenant.Data, row.EmployeeProjectionId, ct);
+            var employee = await _employeeRepository.GetByIdAsync(tenant.Data, scope, row.EmployeeProjectionId, ct);
             if (employee is null)
             {
                 continue;
@@ -64,17 +68,20 @@ public sealed class GetOffboardingCaseByIdHandler
     private readonly IEmployeeProjectionRepository _employeeRepository;
     private readonly ISensitiveAccessDataScopeEvaluator _dataScopeEvaluator;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetOffboardingCaseByIdHandler(
         IOffboardingCaseRepository repository,
         IEmployeeProjectionRepository employeeRepository,
         ISensitiveAccessDataScopeEvaluator dataScopeEvaluator,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _employeeRepository = employeeRepository;
         _dataScopeEvaluator = dataScopeEvaluator;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<OffboardingCaseDto>> Handle(GetOffboardingCaseByIdQuery request, CancellationToken ct)
@@ -85,13 +92,14 @@ public sealed class GetOffboardingCaseByIdHandler
             return Response<OffboardingCaseDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var offboardingCase = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var offboardingCase = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (offboardingCase is null)
         {
             return Response<OffboardingCaseDto>.Fail("Offboarding case was not found.", 404);
         }
 
-        var employee = await _employeeRepository.GetByIdAsync(tenant.Data, offboardingCase.EmployeeProjectionId, ct);
+        var employee = await _employeeRepository.GetByIdAsync(tenant.Data, scope, offboardingCase.EmployeeProjectionId, ct);
         if (employee is null)
         {
             return Response<OffboardingCaseDto>.Fail("Employee projection anchor was not found.", 404);

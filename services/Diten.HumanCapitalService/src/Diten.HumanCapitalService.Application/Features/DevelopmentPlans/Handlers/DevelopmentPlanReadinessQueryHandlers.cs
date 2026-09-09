@@ -11,11 +11,13 @@ public sealed class GetDevelopmentPlanReadinessListHandler
 {
     private readonly IDevelopmentPlanReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetDevelopmentPlanReadinessListHandler(IDevelopmentPlanReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetDevelopmentPlanReadinessListHandler(IDevelopmentPlanReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<DevelopmentPlanReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetDevelopmentPlanReadinessListHandler
             return Response<IReadOnlyList<DevelopmentPlanReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<DevelopmentPlanReadinessListItemDto>>.Success(rows.Select(DevelopmentPlanMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetDevelopmentPlanReadinessByIdHandler
 {
     private readonly IDevelopmentPlanReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetDevelopmentPlanReadinessByIdHandler(IDevelopmentPlanReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetDevelopmentPlanReadinessByIdHandler(IDevelopmentPlanReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<DevelopmentPlanReadinessDto>> Handle(GetDevelopmentPlanReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetDevelopmentPlanReadinessByIdHandler
             return Response<DevelopmentPlanReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<DevelopmentPlanReadinessDto>.Fail("DevelopmentPlan readiness record was not found.", 404)
             : Response<DevelopmentPlanReadinessDto>.Success(DevelopmentPlanMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetDevelopmentPlanAuditMetadataHandler
 {
     private readonly IDevelopmentPlanReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetDevelopmentPlanAuditMetadataHandler(IDevelopmentPlanReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetDevelopmentPlanAuditMetadataHandler(IDevelopmentPlanReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<DevelopmentPlanAuditMetadataDto>> Handle(GetDevelopmentPlanAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetDevelopmentPlanAuditMetadataHandler
             return Response<DevelopmentPlanAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<DevelopmentPlanAuditMetadataDto>.Fail("DevelopmentPlan readiness record was not found.", 404)
             : Response<DevelopmentPlanAuditMetadataDto>.Success(DevelopmentPlanMapper.ToAuditMetadata(entity));

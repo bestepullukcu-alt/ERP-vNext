@@ -18,29 +18,30 @@ public sealed class MongoEmploymentChangeReadinessMetadataRepository : IEmployme
         _collection = database.GetCollection<EmploymentChangeReadinessMetadata>(CollectionName);
     }
 
-    public async Task<IReadOnlyList<EmploymentChangeReadinessMetadata>> ListAsync(Guid tenantId, CancellationToken ct)
+    public async Task<IReadOnlyList<EmploymentChangeReadinessMetadata>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct)
     {
         await EnsureIndexesAsync(ct);
         return await _collection
-            .Find(ActiveTenantFilter(tenantId))
+            .Find(ActiveScopeFilter(tenantId, legalEntityIds))
             .SortBy(x => x.Code)
             .ToListAsync(ct);
     }
 
-    public async Task<EmploymentChangeReadinessMetadata?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct)
+    public async Task<EmploymentChangeReadinessMetadata?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct)
     {
         await EnsureIndexesAsync(ct);
         var filter = Builders<EmploymentChangeReadinessMetadata>.Filter.And(
-            ActiveTenantFilter(tenantId),
+            ActiveScopeFilter(tenantId, legalEntityIds),
             Builders<EmploymentChangeReadinessMetadata>.Filter.Eq(x => x.Id, id));
         return await _collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
-    public async Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct)
+    public async Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct)
     {
         await EnsureIndexesAsync(ct);
         var filter = Builders<EmploymentChangeReadinessMetadata>.Filter.And(
             ActiveTenantFilter(tenantId),
+            Builders<EmploymentChangeReadinessMetadata>.Filter.Eq(x => x.LegalEntityId, legalEntityId),
             Builders<EmploymentChangeReadinessMetadata>.Filter.Eq(x => x.Code, code));
 
         if (excludingId is { } id)
@@ -78,6 +79,7 @@ public sealed class MongoEmploymentChangeReadinessMetadataRepository : IEmployme
             new CreateIndexModel<EmploymentChangeReadinessMetadata>(
                 Builders<EmploymentChangeReadinessMetadata>.IndexKeys
                     .Ascending(x => x.TenantId)
+                    .Ascending(x => x.LegalEntityId)
                     .Ascending(x => x.Code),
                 new CreateIndexOptions<EmploymentChangeReadinessMetadata>
                 {
@@ -96,6 +98,15 @@ public sealed class MongoEmploymentChangeReadinessMetadataRepository : IEmployme
 
         _indexesEnsured = true;
     }
+
+    // Tenant scoping stays authoritative; legal-entity scoping narrows to the effective
+    // roll-up set. An empty set matches nothing (In []), so a caller with no scope sees none.
+    private static FilterDefinition<EmploymentChangeReadinessMetadata> ActiveScopeFilter(
+        Guid tenantId,
+        IReadOnlyCollection<Guid> legalEntityIds) =>
+        Builders<EmploymentChangeReadinessMetadata>.Filter.And(
+            ActiveTenantFilter(tenantId),
+            Builders<EmploymentChangeReadinessMetadata>.Filter.In(x => x.LegalEntityId, legalEntityIds));
 
     private static FilterDefinition<EmploymentChangeReadinessMetadata> ActiveTenantFilter(Guid tenantId) =>
         Builders<EmploymentChangeReadinessMetadata>.Filter.And(

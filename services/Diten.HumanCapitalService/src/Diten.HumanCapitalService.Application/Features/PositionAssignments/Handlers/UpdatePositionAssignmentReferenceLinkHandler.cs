@@ -15,19 +15,22 @@ public sealed class UpdatePositionAssignmentReferenceLinkHandler
     private readonly IPositionAssignmentReferenceValidator _referenceValidator;
     private readonly ISensitiveAccessDataScopeEvaluator _dataScopeEvaluator;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public UpdatePositionAssignmentReferenceLinkHandler(
         IPositionAssignmentOverlayRepository repository,
         IEmployeeProjectionRepository employeeRepository,
         IPositionAssignmentReferenceValidator referenceValidator,
         ISensitiveAccessDataScopeEvaluator dataScopeEvaluator,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _employeeRepository = employeeRepository;
         _referenceValidator = referenceValidator;
         _dataScopeEvaluator = dataScopeEvaluator;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<PositionAssignmentDto>> Handle(UpdatePositionAssignmentReferenceLinkCommand request, CancellationToken ct)
@@ -39,13 +42,14 @@ public sealed class UpdatePositionAssignmentReferenceLinkHandler
         }
 
         var tenantId = tenant.Data;
-        var entity = await _repository.GetByIdAsync(tenantId, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenantId, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<PositionAssignmentDto>.Fail("Position assignment overlay was not found.", 404);
         }
 
-        var employee = await _employeeRepository.GetByIdAsync(tenantId, entity.EmployeeProjectionId, ct);
+        var employee = await _employeeRepository.GetByIdAsync(tenantId, scope, entity.EmployeeProjectionId, ct);
         if (employee is null)
         {
             return Response<PositionAssignmentDto>.Fail("Employee projection anchor was not found.", 404);
@@ -83,6 +87,7 @@ public sealed class UpdatePositionAssignmentReferenceLinkHandler
             validationRequest,
             _employeeRepository,
             _referenceValidator,
+            scope,
             ct);
         if (!reference.IsSuccessful)
         {

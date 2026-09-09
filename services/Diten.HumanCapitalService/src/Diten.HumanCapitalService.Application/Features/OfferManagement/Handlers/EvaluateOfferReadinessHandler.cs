@@ -10,11 +10,13 @@ public sealed class EvaluateOfferReadinessHandler : IRequestHandler<EvaluateOffe
 {
     private readonly IOfferReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public EvaluateOfferReadinessHandler(IOfferReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public EvaluateOfferReadinessHandler(IOfferReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<OfferReadinessDto>> Handle(EvaluateOfferReadinessCommand request, CancellationToken ct)
@@ -25,7 +27,8 @@ public sealed class EvaluateOfferReadinessHandler : IRequestHandler<EvaluateOffe
             return Response<OfferReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<OfferReadinessDto>.Fail("Offer readiness record was not found.", 404);

@@ -11,11 +11,13 @@ public sealed class GetEmploymentChangeReadinessListHandler
 {
     private readonly IEmploymentChangeReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetEmploymentChangeReadinessListHandler(IEmploymentChangeReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetEmploymentChangeReadinessListHandler(IEmploymentChangeReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<EmploymentChangeReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetEmploymentChangeReadinessListHandler
             return Response<IReadOnlyList<EmploymentChangeReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<EmploymentChangeReadinessListItemDto>>.Success(rows.Select(EmploymentChangeMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetEmploymentChangeReadinessByIdHandler
 {
     private readonly IEmploymentChangeReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetEmploymentChangeReadinessByIdHandler(IEmploymentChangeReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetEmploymentChangeReadinessByIdHandler(IEmploymentChangeReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<EmploymentChangeReadinessDto>> Handle(GetEmploymentChangeReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetEmploymentChangeReadinessByIdHandler
             return Response<EmploymentChangeReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<EmploymentChangeReadinessDto>.Fail("EmploymentChange readiness record was not found.", 404)
             : Response<EmploymentChangeReadinessDto>.Success(EmploymentChangeMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetEmploymentChangeAuditMetadataHandler
 {
     private readonly IEmploymentChangeReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetEmploymentChangeAuditMetadataHandler(IEmploymentChangeReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetEmploymentChangeAuditMetadataHandler(IEmploymentChangeReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<EmploymentChangeAuditMetadataDto>> Handle(GetEmploymentChangeAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetEmploymentChangeAuditMetadataHandler
             return Response<EmploymentChangeAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<EmploymentChangeAuditMetadataDto>.Fail("EmploymentChange readiness record was not found.", 404)
             : Response<EmploymentChangeAuditMetadataDto>.Success(EmploymentChangeMapper.ToAuditMetadata(entity));

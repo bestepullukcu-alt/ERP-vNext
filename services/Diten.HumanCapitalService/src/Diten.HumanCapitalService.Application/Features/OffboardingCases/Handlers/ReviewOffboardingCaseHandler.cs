@@ -13,17 +13,20 @@ public sealed class ReviewOffboardingCaseHandler
     private readonly IEmployeeProjectionRepository _employeeRepository;
     private readonly ISensitiveAccessDataScopeEvaluator _dataScopeEvaluator;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public ReviewOffboardingCaseHandler(
         IOffboardingCaseRepository repository,
         IEmployeeProjectionRepository employeeRepository,
         ISensitiveAccessDataScopeEvaluator dataScopeEvaluator,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _employeeRepository = employeeRepository;
         _dataScopeEvaluator = dataScopeEvaluator;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<OffboardingCaseDto>> Handle(ReviewOffboardingCaseCommand request, CancellationToken ct)
@@ -40,7 +43,8 @@ public sealed class ReviewOffboardingCaseHandler
             return Response<OffboardingCaseDto>.Fail(errors, 400);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<OffboardingCaseDto>.Fail("Offboarding case was not found.", 404);
@@ -52,7 +56,7 @@ public sealed class ReviewOffboardingCaseHandler
             return Response<OffboardingCaseDto>.Fail(transitionErrors, 400);
         }
 
-        var employee = await _employeeRepository.GetByIdAsync(tenant.Data, entity.EmployeeProjectionId, ct);
+        var employee = await _employeeRepository.GetByIdAsync(tenant.Data, scope, entity.EmployeeProjectionId, ct);
         if (employee is null)
         {
             return Response<OffboardingCaseDto>.Fail("Employee projection anchor was not found.", 404);

@@ -11,11 +11,13 @@ public sealed class GetOfferReadinessListHandler
 {
     private readonly IOfferReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetOfferReadinessListHandler(IOfferReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetOfferReadinessListHandler(IOfferReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<OfferReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetOfferReadinessListHandler
             return Response<IReadOnlyList<OfferReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<OfferReadinessListItemDto>>.Success(rows.Select(OfferManagementMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetOfferReadinessByIdHandler
 {
     private readonly IOfferReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetOfferReadinessByIdHandler(IOfferReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetOfferReadinessByIdHandler(IOfferReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<OfferReadinessDto>> Handle(GetOfferReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetOfferReadinessByIdHandler
             return Response<OfferReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<OfferReadinessDto>.Fail("Offer readiness record was not found.", 404)
             : Response<OfferReadinessDto>.Success(OfferManagementMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetOfferAuditMetadataHandler
 {
     private readonly IOfferReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetOfferAuditMetadataHandler(IOfferReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetOfferAuditMetadataHandler(IOfferReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<OfferAuditMetadataDto>> Handle(GetOfferAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetOfferAuditMetadataHandler
             return Response<OfferAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<OfferAuditMetadataDto>.Fail("Offer readiness record was not found.", 404)
             : Response<OfferAuditMetadataDto>.Success(OfferManagementMapper.ToAuditMetadata(entity));

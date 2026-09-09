@@ -10,11 +10,13 @@ public sealed class EvaluateCompensationBenefitsReadinessHandler : IRequestHandl
 {
     private readonly ICompensationBenefitsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public EvaluateCompensationBenefitsReadinessHandler(ICompensationBenefitsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public EvaluateCompensationBenefitsReadinessHandler(ICompensationBenefitsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<CompensationBenefitsReadinessDto>> Handle(EvaluateCompensationBenefitsReadinessCommand request, CancellationToken ct)
@@ -25,7 +27,8 @@ public sealed class EvaluateCompensationBenefitsReadinessHandler : IRequestHandl
             return Response<CompensationBenefitsReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<CompensationBenefitsReadinessDto>.Fail("CompensationBenefits readiness record was not found.", 404);

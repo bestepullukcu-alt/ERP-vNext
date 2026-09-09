@@ -12,20 +12,32 @@ public sealed class CreateEmployeeProjectionHandler : IRequestHandler<CreateEmpl
     private readonly IEmployeeProjectionRepository _repository;
     private readonly IEmployeeProjectionReferenceValidator _referenceValidator;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public CreateEmployeeProjectionHandler(
         IEmployeeProjectionRepository repository,
         IEmployeeProjectionReferenceValidator referenceValidator,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _referenceValidator = referenceValidator;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<Guid>> Handle(CreateEmployeeProjectionCommand request, CancellationToken ct)
     {
         var tenantId = EmployeeProjectionGuards.RequireTenant(_tenantContext);
+
+        if (!await _legalEntityContext.IsSelectionAllowedAsync(ct))
+        {
+            return Response<Guid>.Fail(
+                "A permitted legal entity must be selected (X-Legal-Entity-Id) to create this record.",
+                403);
+        }
+
+        var legalEntityId = _legalEntityContext.SelectedLegalEntityId!.Value;
         var validationErrors = EmployeeProjectionGuards.ValidateRequest(request.Request);
         if (validationErrors.Count > 0)
         {
@@ -33,9 +45,9 @@ public sealed class CreateEmployeeProjectionHandler : IRequestHandler<CreateEmpl
         }
 
         var code = EmployeeProjectionGuards.NormalizeCode(request.Request.Code);
-        if (await _repository.ExistsActiveCodeAsync(tenantId, code, null, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, legalEntityId, code, null, ct))
         {
-            return Response<Guid>.Fail("Employee projection code already exists for this tenant.", 409);
+            return Response<Guid>.Fail("Employee projection code already exists for this legal entity.", 409);
         }
 
         var state = await EmployeeProjectionGuards.ResolveReferenceStateAsync(tenantId, request.Request, _referenceValidator, ct);
@@ -47,6 +59,7 @@ public sealed class CreateEmployeeProjectionHandler : IRequestHandler<CreateEmpl
         var entity = new EmployeeProfileProjection
         {
             TenantId = tenantId,
+            LegalEntityId = legalEntityId,
             Code = code,
             DisplayName = request.Request.DisplayName.Trim(),
             HrisSourceProfileId = request.Request.HrisSourceProfileId,

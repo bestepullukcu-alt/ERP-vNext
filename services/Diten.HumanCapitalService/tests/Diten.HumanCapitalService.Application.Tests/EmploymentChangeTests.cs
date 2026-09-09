@@ -24,9 +24,9 @@ public sealed class EmploymentChangeTests
         var create = CreateHandler(repository, tenantId);
 
         var created = await create.Handle(new CreateEmploymentChangeReadinessCommand(ValidRequest()), CancellationToken.None);
-        var list = await new GetEmploymentChangeReadinessListHandler(repository, new FixedTenantContext(tenantId))
+        var list = await new GetEmploymentChangeReadinessListHandler(repository, new FixedTenantContext(tenantId), PilotLegalEntityContext())
             .Handle(new GetEmploymentChangeReadinessListQuery(), CancellationToken.None);
-        var get = await new GetEmploymentChangeReadinessByIdHandler(repository, new FixedTenantContext(tenantId))
+        var get = await new GetEmploymentChangeReadinessByIdHandler(repository, new FixedTenantContext(tenantId), PilotLegalEntityContext())
             .Handle(new GetEmploymentChangeReadinessByIdQuery(created.Data), CancellationToken.None);
 
         Assert.True(created.IsSuccessful);
@@ -51,7 +51,7 @@ public sealed class EmploymentChangeTests
         var metadata = Metadata(tenantA);
         var handler = new GetEmploymentChangeReadinessByIdHandler(
             new InMemoryEmploymentChangeReadinessMetadataRepository(metadata),
-            new FixedTenantContext(tenantB));
+            new FixedTenantContext(tenantB), PilotLegalEntityContext());
 
         var response = await handler.Handle(new GetEmploymentChangeReadinessByIdQuery(metadata.Id), CancellationToken.None);
 
@@ -91,10 +91,10 @@ public sealed class EmploymentChangeTests
         var tenantId = Guid.NewGuid();
         var metadata = Metadata(tenantId);
         var repository = new InMemoryEmploymentChangeReadinessMetadataRepository(metadata);
-        var handler = new DeleteEmploymentChangeReadinessHandler(repository, new FixedTenantContext(tenantId));
+        var handler = new DeleteEmploymentChangeReadinessHandler(repository, new FixedTenantContext(tenantId), PilotLegalEntityContext());
 
         var response = await handler.Handle(new DeleteEmploymentChangeReadinessCommand(metadata.Id), CancellationToken.None);
-        var hidden = await repository.GetByIdAsync(tenantId, metadata.Id, CancellationToken.None);
+        var hidden = await repository.GetByIdAsync(tenantId, new[] { Holding }, metadata.Id, CancellationToken.None);
         var stored = RepositoryItems(repository)[metadata.Id];
 
         Assert.True(response.IsSuccessful);
@@ -133,7 +133,7 @@ public sealed class EmploymentChangeTests
             retentionPolicyState: EmploymentChangeReadinessState.Ready,
             evidencePolicyState: EmploymentChangeReadinessState.Ready);
         var repository = new InMemoryEmploymentChangeReadinessMetadataRepository(metadata);
-        var handler = new EvaluateEmploymentChangeReadinessHandler(repository, new FixedTenantContext(tenantId));
+        var handler = new EvaluateEmploymentChangeReadinessHandler(repository, new FixedTenantContext(tenantId), PilotLegalEntityContext());
 
         var response = await handler.Handle(new EvaluateEmploymentChangeReadinessCommand(metadata.Id), CancellationToken.None);
 
@@ -148,7 +148,7 @@ public sealed class EmploymentChangeTests
         var tenantId = Guid.NewGuid();
         var metadata = Metadata(tenantId, consentPreconditionState: EmploymentChangeReadinessState.Deferred);
         var repository = new InMemoryEmploymentChangeReadinessMetadataRepository(metadata);
-        var handler = new EvaluateEmploymentChangeReadinessHandler(repository, new FixedTenantContext(tenantId));
+        var handler = new EvaluateEmploymentChangeReadinessHandler(repository, new FixedTenantContext(tenantId), PilotLegalEntityContext());
 
         var response = await handler.Handle(new EvaluateEmploymentChangeReadinessCommand(metadata.Id), CancellationToken.None);
 
@@ -211,7 +211,7 @@ public sealed class EmploymentChangeTests
         var tenantId = Guid.NewGuid();
         var metadata = Metadata(tenantId);
         var repository = new InMemoryEmploymentChangeReadinessMetadataRepository(metadata);
-        var response = await new GetEmploymentChangeAuditMetadataHandler(repository, new FixedTenantContext(tenantId))
+        var response = await new GetEmploymentChangeAuditMetadataHandler(repository, new FixedTenantContext(tenantId), PilotLegalEntityContext())
             .Handle(new GetEmploymentChangeAuditMetadataQuery(metadata.Id), CancellationToken.None);
 
         Assert.True(response.IsSuccessful);
@@ -341,7 +341,13 @@ public sealed class EmploymentChangeTests
     private static CreateEmploymentChangeReadinessHandler CreateHandler(
         IEmploymentChangeReadinessMetadataRepository repository,
         Guid tenantId) =>
-        new(repository, new FixedTenantContext(tenantId == Guid.Empty ? null : tenantId));
+        new(repository, new FixedTenantContext(tenantId == Guid.Empty ? null : tenantId), PilotLegalEntityContext());
+
+    private static CreateEmploymentChangeReadinessHandler CreateHandler(
+        IEmploymentChangeReadinessMetadataRepository repository,
+        Guid tenantId,
+        ILegalEntityContext legalEntityContext) =>
+        new(repository, new FixedTenantContext(tenantId), legalEntityContext);
 
     private static EmploymentChangeReadinessCreateRequest ValidRequest(
         string code = "EMPCHANGE-001",
@@ -398,6 +404,7 @@ public sealed class EmploymentChangeTests
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = Holding,
             Code = code,
             DisplayName = "Employment change readiness",
             EmploymentChangeReadinessState = EmploymentChangeReadinessState.Draft,
@@ -441,6 +448,49 @@ public sealed class EmploymentChangeTests
         return (string)field.GetValue(attribute)!;
     }
 
+    private static readonly Guid Holding = Guid.Parse("1e9a1000-0000-0000-0000-000000000001");
+    private static readonly Guid Medikal = Guid.Parse("1e9a1000-0000-0000-0000-000000000002");
+    private static readonly Guid Teknoloji = Guid.Parse("1e9a1000-0000-0000-0000-000000000003");
+
+    private static FixedLegalEntityContext PilotLegalEntityContext() =>
+        new(Holding, new[] { Holding, Medikal, Teknoloji });
+
+    private static async Task<IReadOnlyList<EmploymentChangeReadinessListItemDto>> ListWith(
+        IEmploymentChangeReadinessMetadataRepository repository,
+        Guid tenantId,
+        IReadOnlyCollection<Guid> effective)
+    {
+        var handler = new GetEmploymentChangeReadinessListHandler(
+            repository,
+            new FixedTenantContext(tenantId),
+            new FixedLegalEntityContext(effective.First(), effective));
+        var response = await handler.Handle(new GetEmploymentChangeReadinessListQuery(), CancellationToken.None);
+        return response.Data!;
+    }
+
+    private sealed class FixedLegalEntityContext : ILegalEntityContext
+    {
+        private readonly IReadOnlyCollection<Guid> _effective;
+        private readonly bool _selectionAllowed;
+
+        public FixedLegalEntityContext(
+            Guid? selected,
+            IReadOnlyCollection<Guid>? effective = null,
+            bool? selectionAllowed = null)
+        {
+            SelectedLegalEntityId = selected;
+            _effective = effective ?? (selected is { } s ? new[] { s } : Array.Empty<Guid>());
+            _selectionAllowed = selectionAllowed ?? selected.HasValue;
+        }
+
+        public Guid? SelectedLegalEntityId { get; }
+
+        public Task<bool> IsSelectionAllowedAsync(CancellationToken ct) => Task.FromResult(_selectionAllowed);
+
+        public Task<IReadOnlyCollection<Guid>> GetEffectiveLegalEntityIdsAsync(CancellationToken ct) =>
+            Task.FromResult(_effective);
+    }
+
     private sealed class FixedTenantContext : ITenantContext
     {
         public FixedTenantContext(Guid? tenantId) => TenantId = tenantId;
@@ -455,15 +505,15 @@ public sealed class EmploymentChangeTests
         public InMemoryEmploymentChangeReadinessMetadataRepository(params EmploymentChangeReadinessMetadata[] items) =>
             _items = items.ToDictionary(x => x.Id);
 
-        public Task<IReadOnlyList<EmploymentChangeReadinessMetadata>> ListAsync(Guid tenantId, CancellationToken ct) =>
+        public Task<IReadOnlyList<EmploymentChangeReadinessMetadata>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) =>
             Task.FromResult<IReadOnlyList<EmploymentChangeReadinessMetadata>>(
-                _items.Values.Where(x => x.TenantId == tenantId && !x.IsDeleted).OrderBy(x => x.Code).ToList());
+                _items.Values.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).OrderBy(x => x.Code).ToList());
 
-        public Task<EmploymentChangeReadinessMetadata?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) =>
-            Task.FromResult(_items.Values.FirstOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted));
+        public Task<EmploymentChangeReadinessMetadata?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) =>
+            Task.FromResult(_items.Values.FirstOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)));
 
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) =>
-            Task.FromResult(_items.Values.Any(x => x.TenantId == tenantId && x.Code == code && !x.IsDeleted && x.Id != excludingId));
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) =>
+            Task.FromResult(_items.Values.Any(x => x.TenantId == tenantId && x.LegalEntityId == legalEntityId && x.Code == code && !x.IsDeleted && x.Id != excludingId));
 
         public Task CreateAsync(EmploymentChangeReadinessMetadata metadata, CancellationToken ct)
         {
@@ -476,5 +526,73 @@ public sealed class EmploymentChangeTests
             _items[metadata.Id] = metadata;
             return Task.CompletedTask;
         }
+    }
+
+    [Fact]
+    public async Task LegalEntity_create_stamps_the_selected_legal_entity()
+    {
+        var tenantId = Guid.NewGuid();
+        var repository = new InMemoryEmploymentChangeReadinessMetadataRepository();
+        var handler = CreateHandler(repository, tenantId, new FixedLegalEntityContext(Medikal, new[] { Medikal }));
+
+        var created = await handler.Handle(new CreateEmploymentChangeReadinessCommand(ValidRequest()), CancellationToken.None);
+        var stored = RepositoryItems(repository)[created.Data];
+
+        Assert.True(created.IsSuccessful);
+        Assert.Equal(Medikal, stored.LegalEntityId);
+    }
+
+    [Fact]
+    public async Task LegalEntity_create_without_a_permitted_selection_is_forbidden()
+    {
+        var tenantId = Guid.NewGuid();
+        var repository = new InMemoryEmploymentChangeReadinessMetadataRepository();
+        var handler = CreateHandler(repository, tenantId, new FixedLegalEntityContext(Teknoloji, selectionAllowed: false));
+
+        var response = await handler.Handle(new CreateEmploymentChangeReadinessCommand(ValidRequest()), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(403, response.StatusCode);
+        Assert.Empty(RepositoryItems(repository));
+    }
+
+    [Fact]
+    public async Task LegalEntity_list_rolls_up_holding_and_isolates_siblings()
+    {
+        var tenantId = Guid.NewGuid();
+        var repository = new InMemoryEmploymentChangeReadinessMetadataRepository();
+
+        await CreateHandler(repository, tenantId, new FixedLegalEntityContext(Medikal, new[] { Medikal }))
+            .Handle(new CreateEmploymentChangeReadinessCommand(ValidRequest(code: "MED-01")), CancellationToken.None);
+        await CreateHandler(repository, tenantId, new FixedLegalEntityContext(Teknoloji, new[] { Teknoloji }))
+            .Handle(new CreateEmploymentChangeReadinessCommand(ValidRequest(code: "TEK-01")), CancellationToken.None);
+
+        var medikalOnly = await ListWith(repository, tenantId, new[] { Medikal });
+        var teknolojiOnly = await ListWith(repository, tenantId, new[] { Teknoloji });
+        var holdingRollup = await ListWith(repository, tenantId, new[] { Holding, Medikal, Teknoloji });
+
+        Assert.Equal(new[] { "MED-01" }, medikalOnly.Select(x => x.Code).ToArray());
+        Assert.Equal(new[] { "TEK-01" }, teknolojiOnly.Select(x => x.Code).ToArray());
+        Assert.Equal(new[] { "MED-01", "TEK-01" }, holdingRollup.Select(x => x.Code).OrderBy(x => x).ToArray());
+    }
+
+    [Fact]
+    public async Task LegalEntity_same_code_is_unique_per_legal_entity_not_per_tenant()
+    {
+        var tenantId = Guid.NewGuid();
+        var repository = new InMemoryEmploymentChangeReadinessMetadataRepository();
+        var medikal = new FixedLegalEntityContext(Medikal, new[] { Medikal });
+        var teknoloji = new FixedLegalEntityContext(Teknoloji, new[] { Teknoloji });
+
+        var first = await CreateHandler(repository, tenantId, medikal)
+            .Handle(new CreateEmploymentChangeReadinessCommand(ValidRequest(code: "SHARED-01")), CancellationToken.None);
+        var duplicateSameEntity = await CreateHandler(repository, tenantId, medikal)
+            .Handle(new CreateEmploymentChangeReadinessCommand(ValidRequest(code: "SHARED-01")), CancellationToken.None);
+        var sameCodeOtherEntity = await CreateHandler(repository, tenantId, teknoloji)
+            .Handle(new CreateEmploymentChangeReadinessCommand(ValidRequest(code: "SHARED-01")), CancellationToken.None);
+
+        Assert.True(first.IsSuccessful);
+        Assert.Equal(409, duplicateSameEntity.StatusCode);
+        Assert.True(sameCodeOtherEntity.IsSuccessful);
     }
 }

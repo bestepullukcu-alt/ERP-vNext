@@ -10,11 +10,13 @@ public sealed class EvaluateEmploymentChangeReadinessHandler : IRequestHandler<E
 {
     private readonly IEmploymentChangeReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public EvaluateEmploymentChangeReadinessHandler(IEmploymentChangeReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public EvaluateEmploymentChangeReadinessHandler(IEmploymentChangeReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<EmploymentChangeReadinessDto>> Handle(EvaluateEmploymentChangeReadinessCommand request, CancellationToken ct)
@@ -25,7 +27,8 @@ public sealed class EvaluateEmploymentChangeReadinessHandler : IRequestHandler<E
             return Response<EmploymentChangeReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<EmploymentChangeReadinessDto>.Fail("EmploymentChange readiness record was not found.", 404);

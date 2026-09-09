@@ -11,11 +11,13 @@ public sealed class GetHrComplianceReadinessListHandler
 {
     private readonly IHrComplianceReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetHrComplianceReadinessListHandler(IHrComplianceReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetHrComplianceReadinessListHandler(IHrComplianceReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<HrComplianceReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetHrComplianceReadinessListHandler
             return Response<IReadOnlyList<HrComplianceReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<HrComplianceReadinessListItemDto>>.Success(rows.Select(HrComplianceMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetHrComplianceReadinessByIdHandler
 {
     private readonly IHrComplianceReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetHrComplianceReadinessByIdHandler(IHrComplianceReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetHrComplianceReadinessByIdHandler(IHrComplianceReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<HrComplianceReadinessDto>> Handle(GetHrComplianceReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetHrComplianceReadinessByIdHandler
             return Response<HrComplianceReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<HrComplianceReadinessDto>.Fail("HrCompliance readiness record was not found.", 404)
             : Response<HrComplianceReadinessDto>.Success(HrComplianceMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetHrComplianceAuditMetadataHandler
 {
     private readonly IHrComplianceReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetHrComplianceAuditMetadataHandler(IHrComplianceReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetHrComplianceAuditMetadataHandler(IHrComplianceReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<HrComplianceAuditMetadataDto>> Handle(GetHrComplianceAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetHrComplianceAuditMetadataHandler
             return Response<HrComplianceAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<HrComplianceAuditMetadataDto>.Fail("HrCompliance readiness record was not found.", 404)
             : Response<HrComplianceAuditMetadataDto>.Success(HrComplianceMapper.ToAuditMetadata(entity));

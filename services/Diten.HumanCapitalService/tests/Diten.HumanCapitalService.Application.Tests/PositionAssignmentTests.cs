@@ -44,7 +44,8 @@ public sealed class PositionAssignmentTests
             new InMemoryPositionAssignmentRepository(assignment),
             new InMemoryEmployeeProjectionRepository(employee),
             DataScopeEvaluator.Allowed(),
-            new FixedTenantContext(tenantB));
+            new FixedTenantContext(tenantB),
+            PilotLegalEntityContext());
 
         var response = await get.Handle(new GetPositionAssignmentByIdQuery(assignment.Id), CancellationToken.None);
 
@@ -66,7 +67,8 @@ public sealed class PositionAssignmentTests
             new InMemoryPositionAssignmentRepository(standardAssignment, sensitiveAssignment, restrictedAssignment),
             new InMemoryEmployeeProjectionRepository(standardEmployee, sensitiveEmployee, restrictedEmployee),
             DataScopeEvaluator.Allowed(),
-            new FixedTenantContext(tenantId));
+            new FixedTenantContext(tenantId),
+            PilotLegalEntityContext());
 
         var response = await handler.Handle(new GetPositionAssignmentListQuery(), CancellationToken.None);
 
@@ -86,7 +88,8 @@ public sealed class PositionAssignmentTests
             new InMemoryPositionAssignmentRepository(assignment),
             new InMemoryEmployeeProjectionRepository(sensitiveEmployee),
             DataScopeEvaluator.Allowed(),
-            new FixedTenantContext(tenantId));
+            new FixedTenantContext(tenantId),
+            PilotLegalEntityContext());
 
         var response = await handler.Handle(new GetPositionAssignmentByIdQuery(assignment.Id), CancellationToken.None);
 
@@ -100,10 +103,10 @@ public sealed class PositionAssignmentTests
         var tenantId = Guid.NewGuid();
         var assignment = Assignment(tenantId, Guid.NewGuid());
         var repository = new InMemoryPositionAssignmentRepository(assignment);
-        var archive = new ArchivePositionAssignmentHandler(repository, new FixedTenantContext(tenantId));
+        var archive = new ArchivePositionAssignmentHandler(repository, new FixedTenantContext(tenantId), PilotLegalEntityContext());
 
         var response = await archive.Handle(new ArchivePositionAssignmentCommand(assignment.Id), CancellationToken.None);
-        var hidden = await repository.GetByIdAsync(tenantId, assignment.Id, CancellationToken.None);
+        var hidden = await repository.GetByIdAsync(tenantId, new[] { Holding }, assignment.Id, CancellationToken.None);
         var stored = RepositoryItems(repository)[assignment.Id];
 
         Assert.True(response.IsSuccessful);
@@ -273,7 +276,8 @@ public sealed class PositionAssignmentTests
             new InMemoryEmployeeProjectionRepository(employee, manager),
             ValidReferences(),
             DataScopeEvaluator.Allowed(),
-            new FixedTenantContext(tenantId));
+            new FixedTenantContext(tenantId),
+            PilotLegalEntityContext());
 
         var newPerson = Guid.NewGuid();
         var newOrg = Guid.NewGuid();
@@ -348,13 +352,57 @@ public sealed class PositionAssignmentTests
         Assert.Equal("ux_hcm_position_assignments_tenant_code_active", MongoPositionAssignmentOverlayRepository.ActiveCodeUniqueIndexName);
     }
 
+    [Fact]
+    public async Task Create_stamps_the_selected_legal_entity()
+    {
+        var tenantId = Guid.NewGuid();
+        var employee = EmployeeProjection(tenantId, legalEntityId: Medikal);
+        var repository = new InMemoryPositionAssignmentRepository();
+        var handler = CreateHandler(
+            repository,
+            new InMemoryEmployeeProjectionRepository(employee),
+            ValidReferences(),
+            DataScopeEvaluator.Allowed(),
+            tenantId,
+            new FixedLegalEntityContext(Medikal, new[] { Medikal }));
+
+        var created = await handler.Handle(new CreatePositionAssignmentCommand(ValidRequest(employee.Id)), CancellationToken.None);
+        var stored = RepositoryItems(repository)[created.Data];
+
+        Assert.True(created.IsSuccessful);
+        Assert.Equal(Medikal, stored.LegalEntityId);
+    }
+
+    [Fact]
+    public async Task Create_without_a_permitted_legal_entity_is_forbidden()
+    {
+        var tenantId = Guid.NewGuid();
+        var employee = EmployeeProjection(tenantId, legalEntityId: Medikal);
+        var repository = new InMemoryPositionAssignmentRepository();
+        // Selection is present but not within the caller's actable set → fail closed, nothing written.
+        var handler = CreateHandler(
+            repository,
+            new InMemoryEmployeeProjectionRepository(employee),
+            ValidReferences(),
+            DataScopeEvaluator.Allowed(),
+            tenantId,
+            new FixedLegalEntityContext(Teknoloji, selectionAllowed: false));
+
+        var response = await handler.Handle(new CreatePositionAssignmentCommand(ValidRequest(employee.Id)), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(403, response.StatusCode);
+        Assert.Empty(RepositoryItems(repository));
+    }
+
     private static CreatePositionAssignmentHandler CreateHandler(
         IPositionAssignmentOverlayRepository repository,
         IEmployeeProjectionRepository employeeRepository,
         IPositionAssignmentReferenceValidator referenceValidator,
         ISensitiveAccessDataScopeEvaluator dataScopeEvaluator,
-        Guid tenantId) =>
-        new(repository, employeeRepository, referenceValidator, dataScopeEvaluator, new FixedTenantContext(tenantId));
+        Guid tenantId,
+        ILegalEntityContext? legalEntityContext = null) =>
+        new(repository, employeeRepository, referenceValidator, dataScopeEvaluator, new FixedTenantContext(tenantId), legalEntityContext ?? PilotLegalEntityContext());
 
     private static PositionAssignmentCreateRequest ValidRequest(
         Guid employeeProjectionId,
@@ -377,11 +425,13 @@ public sealed class PositionAssignmentTests
     private static EmployeeProfileProjection EmployeeProjection(
         Guid tenantId,
         EmployeeVisibilityClassification visibility = EmployeeVisibilityClassification.StandardHr,
-        string code = "EMP-001") =>
+        string code = "EMP-001",
+        Guid? legalEntityId = null) =>
         new()
         {
             Id = Guid.NewGuid(),
             TenantId = tenantId,
+            LegalEntityId = legalEntityId ?? Holding,
             Code = code,
             DisplayName = "Employee Routing Label",
             HrisSourceProfileId = Guid.NewGuid(),
@@ -399,11 +449,13 @@ public sealed class PositionAssignmentTests
     private static EmployeePositionAssignmentOverlay Assignment(
         Guid tenantId,
         Guid employeeProjectionId,
-        string code = "ASSIGN-001") =>
+        string code = "ASSIGN-001",
+        Guid? legalEntityId = null) =>
         new()
         {
             Id = Guid.NewGuid(),
             TenantId = tenantId,
+            LegalEntityId = legalEntityId ?? Holding,
             Code = code,
             EmployeeProjectionId = employeeProjectionId,
             PersonReferenceId = Guid.NewGuid(),
@@ -440,10 +492,42 @@ public sealed class PositionAssignmentTests
         return (IReadOnlyDictionary<Guid, EmployeePositionAssignmentOverlay>)field.GetValue(repository)!;
     }
 
+    // Fixed legal-entity ids mirroring the MDM demo hierarchy: HOLDING(root) → { MEDIKAL, TEKNOLOJI }.
+    private static readonly Guid Holding = Guid.Parse("1e9a1000-0000-0000-0000-000000000001");
+    private static readonly Guid Medikal = Guid.Parse("1e9a1000-0000-0000-0000-000000000002");
+    private static readonly Guid Teknoloji = Guid.Parse("1e9a1000-0000-0000-0000-000000000003");
+
+    // Default pilot context: HOLDING selected, rolls up over the whole demo hierarchy.
+    private static FixedLegalEntityContext PilotLegalEntityContext() =>
+        new(Holding, new[] { Holding, Medikal, Teknoloji });
+
     private sealed class FixedTenantContext : ITenantContext
     {
         public FixedTenantContext(Guid tenantId) => TenantId = tenantId;
         public Guid? TenantId { get; }
+    }
+
+    private sealed class FixedLegalEntityContext : ILegalEntityContext
+    {
+        private readonly IReadOnlyCollection<Guid> _effective;
+        private readonly bool _selectionAllowed;
+
+        public FixedLegalEntityContext(
+            Guid? selected,
+            IReadOnlyCollection<Guid>? effective = null,
+            bool? selectionAllowed = null)
+        {
+            SelectedLegalEntityId = selected;
+            _effective = effective ?? (selected is { } s ? new[] { s } : Array.Empty<Guid>());
+            _selectionAllowed = selectionAllowed ?? selected.HasValue;
+        }
+
+        public Guid? SelectedLegalEntityId { get; }
+
+        public Task<bool> IsSelectionAllowedAsync(CancellationToken ct) => Task.FromResult(_selectionAllowed);
+
+        public Task<IReadOnlyCollection<Guid>> GetEffectiveLegalEntityIdsAsync(CancellationToken ct) =>
+            Task.FromResult(_effective);
     }
 
     private sealed class ReferenceValidator : IPositionAssignmentReferenceValidator
@@ -505,25 +589,26 @@ public sealed class PositionAssignmentTests
         public InMemoryEmployeeProjectionRepository(params EmployeeProfileProjection[] items) =>
             _items = items.ToDictionary(item => item.Id);
 
-        public Task<IReadOnlyList<EmployeeProfileProjection>> ListAsync(Guid tenantId, CancellationToken ct)
+        public Task<IReadOnlyList<EmployeeProfileProjection>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct)
         {
             _ = ct;
             return Task.FromResult<IReadOnlyList<EmployeeProfileProjection>>(
-                _items.Values.Where(x => x.TenantId == tenantId && !x.IsDeleted).ToList());
+                _items.Values.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).ToList());
         }
 
-        public Task<EmployeeProfileProjection?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct)
+        public Task<EmployeeProfileProjection?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct)
         {
             _ = ct;
             return Task.FromResult(
-                _items.TryGetValue(id, out var item) && item.TenantId == tenantId && !item.IsDeleted
+                _items.TryGetValue(id, out var item) && item.TenantId == tenantId && !item.IsDeleted && legalEntityIds.Contains(item.LegalEntityId)
                     ? item
                     : null);
         }
 
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct)
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct)
         {
             _ = tenantId;
+            _ = legalEntityId;
             _ = code;
             _ = excludingId;
             _ = ct;
@@ -552,27 +637,28 @@ public sealed class PositionAssignmentTests
         public InMemoryPositionAssignmentRepository(params EmployeePositionAssignmentOverlay[] items) =>
             _items = items.ToDictionary(item => item.Id);
 
-        public Task<IReadOnlyList<EmployeePositionAssignmentOverlay>> ListAsync(Guid tenantId, CancellationToken ct)
+        public Task<IReadOnlyList<EmployeePositionAssignmentOverlay>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct)
         {
             _ = ct;
             return Task.FromResult<IReadOnlyList<EmployeePositionAssignmentOverlay>>(
-                _items.Values.Where(x => x.TenantId == tenantId && !x.IsDeleted).OrderBy(x => x.Code).ToList());
+                _items.Values.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).OrderBy(x => x.Code).ToList());
         }
 
-        public Task<EmployeePositionAssignmentOverlay?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct)
+        public Task<EmployeePositionAssignmentOverlay?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct)
         {
             _ = ct;
             return Task.FromResult(
-                _items.TryGetValue(id, out var item) && item.TenantId == tenantId && !item.IsDeleted
+                _items.TryGetValue(id, out var item) && item.TenantId == tenantId && !item.IsDeleted && legalEntityIds.Contains(item.LegalEntityId)
                     ? item
                     : null);
         }
 
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct)
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct)
         {
             _ = ct;
             return Task.FromResult(_items.Values.Any(item =>
                 item.TenantId == tenantId
+                && item.LegalEntityId == legalEntityId
                 && !item.IsDeleted
                 && string.Equals(item.Code, code, StringComparison.OrdinalIgnoreCase)
                 && item.Id != excludingId));

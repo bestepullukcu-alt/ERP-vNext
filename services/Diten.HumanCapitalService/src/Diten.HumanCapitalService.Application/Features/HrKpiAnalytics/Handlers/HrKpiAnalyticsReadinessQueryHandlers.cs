@@ -11,11 +11,13 @@ public sealed class GetHrKpiAnalyticsReadinessListHandler
 {
     private readonly IHrKpiAnalyticsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetHrKpiAnalyticsReadinessListHandler(IHrKpiAnalyticsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetHrKpiAnalyticsReadinessListHandler(IHrKpiAnalyticsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<HrKpiAnalyticsReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetHrKpiAnalyticsReadinessListHandler
             return Response<IReadOnlyList<HrKpiAnalyticsReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<HrKpiAnalyticsReadinessListItemDto>>.Success(rows.Select(HrKpiAnalyticsMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetHrKpiAnalyticsReadinessByIdHandler
 {
     private readonly IHrKpiAnalyticsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetHrKpiAnalyticsReadinessByIdHandler(IHrKpiAnalyticsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetHrKpiAnalyticsReadinessByIdHandler(IHrKpiAnalyticsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<HrKpiAnalyticsReadinessDto>> Handle(GetHrKpiAnalyticsReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetHrKpiAnalyticsReadinessByIdHandler
             return Response<HrKpiAnalyticsReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<HrKpiAnalyticsReadinessDto>.Fail("HrKpiAnalytics readiness record was not found.", 404)
             : Response<HrKpiAnalyticsReadinessDto>.Success(HrKpiAnalyticsMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetHrKpiAnalyticsAuditMetadataHandler
 {
     private readonly IHrKpiAnalyticsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetHrKpiAnalyticsAuditMetadataHandler(IHrKpiAnalyticsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetHrKpiAnalyticsAuditMetadataHandler(IHrKpiAnalyticsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<HrKpiAnalyticsAuditMetadataDto>> Handle(GetHrKpiAnalyticsAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetHrKpiAnalyticsAuditMetadataHandler
             return Response<HrKpiAnalyticsAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<HrKpiAnalyticsAuditMetadataDto>.Fail("HrKpiAnalytics readiness record was not found.", 404)
             : Response<HrKpiAnalyticsAuditMetadataDto>.Success(HrKpiAnalyticsMapper.ToAuditMetadata(entity));

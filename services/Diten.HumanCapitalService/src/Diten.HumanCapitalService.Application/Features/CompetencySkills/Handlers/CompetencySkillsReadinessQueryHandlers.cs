@@ -11,11 +11,13 @@ public sealed class GetCompetencySkillsReadinessListHandler
 {
     private readonly ICompetencySkillsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetCompetencySkillsReadinessListHandler(ICompetencySkillsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetCompetencySkillsReadinessListHandler(ICompetencySkillsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<CompetencySkillsReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetCompetencySkillsReadinessListHandler
             return Response<IReadOnlyList<CompetencySkillsReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<CompetencySkillsReadinessListItemDto>>.Success(rows.Select(CompetencySkillsMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetCompetencySkillsReadinessByIdHandler
 {
     private readonly ICompetencySkillsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetCompetencySkillsReadinessByIdHandler(ICompetencySkillsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetCompetencySkillsReadinessByIdHandler(ICompetencySkillsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<CompetencySkillsReadinessDto>> Handle(GetCompetencySkillsReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetCompetencySkillsReadinessByIdHandler
             return Response<CompetencySkillsReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<CompetencySkillsReadinessDto>.Fail("CompetencySkills readiness record was not found.", 404)
             : Response<CompetencySkillsReadinessDto>.Success(CompetencySkillsMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetCompetencySkillsAuditMetadataHandler
 {
     private readonly ICompetencySkillsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetCompetencySkillsAuditMetadataHandler(ICompetencySkillsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetCompetencySkillsAuditMetadataHandler(ICompetencySkillsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<CompetencySkillsAuditMetadataDto>> Handle(GetCompetencySkillsAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetCompetencySkillsAuditMetadataHandler
             return Response<CompetencySkillsAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<CompetencySkillsAuditMetadataDto>.Fail("CompetencySkills readiness record was not found.", 404)
             : Response<CompetencySkillsAuditMetadataDto>.Success(CompetencySkillsMapper.ToAuditMetadata(entity));

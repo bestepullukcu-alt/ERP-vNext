@@ -110,9 +110,10 @@ public static class PositionAssignmentGuard
         PositionAssignmentCreateRequest request,
         IEmployeeProjectionRepository employeeRepository,
         IPositionAssignmentReferenceValidator referenceValidator,
+        IReadOnlyCollection<Guid> legalEntityIds,
         CancellationToken ct)
     {
-        var employee = await employeeRepository.GetByIdAsync(tenantId, request.EmployeeProjectionId, ct);
+        var employee = await employeeRepository.GetByIdAsync(tenantId, legalEntityIds, request.EmployeeProjectionId, ct);
         if (employee is null)
         {
             return Response<AssignmentValidationDecision>.Fail("Employee projection anchor was not found.", 404);
@@ -120,7 +121,7 @@ public static class PositionAssignmentGuard
 
         if (request.ManagerEmployeeProjectionId is { } managerId)
         {
-            var manager = await employeeRepository.GetByIdAsync(tenantId, managerId, ct);
+            var manager = await employeeRepository.GetByIdAsync(tenantId, legalEntityIds, managerId, ct);
             if (manager is null)
             {
                 return Response<AssignmentValidationDecision>.Fail("Manager employee projection anchor was not found.", 404);

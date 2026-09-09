@@ -43,7 +43,8 @@ public sealed class OffboardingCaseTests
             new InMemoryOffboardingCaseRepository(offboardingCase),
             new InMemoryEmployeeProjectionRepository(employee),
             DataScopeEvaluator.Allowed(),
-            new FixedTenantContext(tenantB));
+            new FixedTenantContext(tenantB),
+            PilotLegalEntityContext());
 
         var response = await handler.Handle(new GetOffboardingCaseByIdQuery(offboardingCase.Id), CancellationToken.None);
 
@@ -65,7 +66,8 @@ public sealed class OffboardingCaseTests
             new InMemoryOffboardingCaseRepository(standardCase, sensitiveCase, restrictedCase),
             new InMemoryEmployeeProjectionRepository(standardEmployee, sensitiveEmployee, restrictedEmployee),
             DataScopeEvaluator.Allowed(),
-            new FixedTenantContext(tenantId));
+            new FixedTenantContext(tenantId),
+            PilotLegalEntityContext());
 
         var response = await handler.Handle(new GetOffboardingCaseListQuery(), CancellationToken.None);
 
@@ -84,7 +86,8 @@ public sealed class OffboardingCaseTests
             new InMemoryOffboardingCaseRepository(offboardingCase),
             new InMemoryEmployeeProjectionRepository(employee),
             DataScopeEvaluator.Allowed(),
-            new FixedTenantContext(tenantId));
+            new FixedTenantContext(tenantId),
+            PilotLegalEntityContext());
 
         var response = await handler.Handle(new GetOffboardingCaseByIdQuery(offboardingCase.Id), CancellationToken.None);
 
@@ -98,10 +101,10 @@ public sealed class OffboardingCaseTests
         var tenantId = Guid.NewGuid();
         var offboardingCase = Case(tenantId, Guid.NewGuid());
         var repository = new InMemoryOffboardingCaseRepository(offboardingCase);
-        var handler = new ArchiveOffboardingCaseHandler(repository, new FixedTenantContext(tenantId));
+        var handler = new ArchiveOffboardingCaseHandler(repository, new FixedTenantContext(tenantId), PilotLegalEntityContext());
 
         var response = await handler.Handle(new ArchiveOffboardingCaseCommand(offboardingCase.Id), CancellationToken.None);
-        var hidden = await repository.GetByIdAsync(tenantId, offboardingCase.Id, CancellationToken.None);
+        var hidden = await repository.GetByIdAsync(tenantId, new[] { Holding }, offboardingCase.Id, CancellationToken.None);
         var stored = RepositoryItems(repository)[offboardingCase.Id];
 
         Assert.True(response.IsSuccessful);
@@ -240,7 +243,8 @@ public sealed class OffboardingCaseTests
             repository,
             new InMemoryEmployeeProjectionRepository(employee),
             DataScopeEvaluator.Allowed(),
-            new FixedTenantContext(tenantId));
+            new FixedTenantContext(tenantId),
+            PilotLegalEntityContext());
 
         var planned = await handler.Handle(
             new PlanOffboardingHandoffCommand(
@@ -283,7 +287,8 @@ public sealed class OffboardingCaseTests
             new InMemoryOffboardingCaseRepository(offboardingCase),
             new InMemoryEmployeeProjectionRepository(employee),
             DataScopeEvaluator.Allowed(),
-            new FixedTenantContext(tenantId));
+            new FixedTenantContext(tenantId),
+            PilotLegalEntityContext());
 
         var response = await handler.Handle(
             new ReviewOffboardingCaseCommand(
@@ -317,7 +322,8 @@ public sealed class OffboardingCaseTests
             repository,
             new InMemoryEmployeeProjectionRepository(employee),
             DataScopeEvaluator.Allowed(),
-            new FixedTenantContext(tenantId));
+            new FixedTenantContext(tenantId),
+            PilotLegalEntityContext());
 
         var response = await handler.Handle(
             new ReviewOffboardingCaseCommand(
@@ -396,13 +402,57 @@ public sealed class OffboardingCaseTests
         Assert.Equal("ux_hcm_offboarding_cases_tenant_code_active", MongoOffboardingCaseRepository.ActiveCodeUniqueIndexName);
     }
 
+    [Fact]
+    public async Task Create_stamps_the_selected_legal_entity()
+    {
+        var tenantId = Guid.NewGuid();
+        var employee = EmployeeProjection(tenantId, legalEntityId: Medikal);
+        var repository = new InMemoryOffboardingCaseRepository();
+        var handler = CreateHandler(
+            repository,
+            new InMemoryEmployeeProjectionRepository(employee),
+            new InMemoryPositionAssignmentRepository(),
+            DataScopeEvaluator.Allowed(),
+            tenantId,
+            new FixedLegalEntityContext(Medikal, new[] { Medikal }));
+
+        var created = await handler.Handle(new CreateOffboardingCaseCommand(ValidRequest(employee.Id)), CancellationToken.None);
+        var stored = RepositoryItems(repository)[created.Data];
+
+        Assert.True(created.IsSuccessful);
+        Assert.Equal(Medikal, stored.LegalEntityId);
+    }
+
+    [Fact]
+    public async Task Create_without_a_permitted_legal_entity_is_forbidden()
+    {
+        var tenantId = Guid.NewGuid();
+        var employee = EmployeeProjection(tenantId, legalEntityId: Medikal);
+        var repository = new InMemoryOffboardingCaseRepository();
+        // Selection is present but not within the caller's actable set → fail closed, nothing written.
+        var handler = CreateHandler(
+            repository,
+            new InMemoryEmployeeProjectionRepository(employee),
+            new InMemoryPositionAssignmentRepository(),
+            DataScopeEvaluator.Allowed(),
+            tenantId,
+            new FixedLegalEntityContext(Teknoloji, selectionAllowed: false));
+
+        var response = await handler.Handle(new CreateOffboardingCaseCommand(ValidRequest(employee.Id)), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(403, response.StatusCode);
+        Assert.Empty(RepositoryItems(repository));
+    }
+
     private static CreateOffboardingCaseHandler CreateHandler(
         IOffboardingCaseRepository repository,
         IEmployeeProjectionRepository employeeRepository,
         IPositionAssignmentOverlayRepository assignmentRepository,
         ISensitiveAccessDataScopeEvaluator dataScopeEvaluator,
-        Guid tenantId) =>
-        new(repository, employeeRepository, assignmentRepository, dataScopeEvaluator, new FixedTenantContext(tenantId));
+        Guid tenantId,
+        ILegalEntityContext? legalEntityContext = null) =>
+        new(repository, employeeRepository, assignmentRepository, dataScopeEvaluator, new FixedTenantContext(tenantId), legalEntityContext ?? PilotLegalEntityContext());
 
     private static OffboardingCaseCreateRequest ValidRequest(
         Guid employeeProjectionId,
@@ -431,10 +481,12 @@ public sealed class OffboardingCaseTests
     private static EmployeeProfileProjection EmployeeProjection(
         Guid tenantId,
         EmployeeVisibilityClassification visibility = EmployeeVisibilityClassification.StandardHr,
-        string code = "EMP-001") =>
+        string code = "EMP-001",
+        Guid? legalEntityId = null) =>
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = legalEntityId ?? Holding,
             Code = code,
             DisplayName = code,
             HrisSourceProfileId = Guid.NewGuid(),
@@ -449,10 +501,11 @@ public sealed class OffboardingCaseTests
             ProjectionVersion = 1
         };
 
-    private static OffboardingCase Case(Guid tenantId, Guid employeeProjectionId, string code = "EXIT-001") =>
+    private static OffboardingCase Case(Guid tenantId, Guid employeeProjectionId, string code = "EXIT-001", Guid? legalEntityId = null) =>
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = legalEntityId ?? Holding,
             Code = code,
             EmployeeProjectionId = employeeProjectionId,
             ExitReasonCode = "VOLUNTARY",
@@ -482,11 +535,43 @@ public sealed class OffboardingCaseTests
         return (string)field.GetValue(attribute)!;
     }
 
+    // Fixed legal-entity ids mirroring the MDM demo hierarchy: HOLDING(root) → { MEDIKAL, TEKNOLOJI }.
+    private static readonly Guid Holding = Guid.Parse("1e9a1000-0000-0000-0000-000000000001");
+    private static readonly Guid Medikal = Guid.Parse("1e9a1000-0000-0000-0000-000000000002");
+    private static readonly Guid Teknoloji = Guid.Parse("1e9a1000-0000-0000-0000-000000000003");
+
+    // Default pilot context: HOLDING selected, rolls up over the whole demo hierarchy.
+    private static FixedLegalEntityContext PilotLegalEntityContext() =>
+        new(Holding, new[] { Holding, Medikal, Teknoloji });
+
     private sealed class FixedTenantContext : ITenantContext
     {
         public FixedTenantContext(Guid? tenantId) => TenantId = tenantId;
 
         public Guid? TenantId { get; }
+    }
+
+    private sealed class FixedLegalEntityContext : ILegalEntityContext
+    {
+        private readonly IReadOnlyCollection<Guid> _effective;
+        private readonly bool _selectionAllowed;
+
+        public FixedLegalEntityContext(
+            Guid? selected,
+            IReadOnlyCollection<Guid>? effective = null,
+            bool? selectionAllowed = null)
+        {
+            SelectedLegalEntityId = selected;
+            _effective = effective ?? (selected is { } s ? new[] { s } : Array.Empty<Guid>());
+            _selectionAllowed = selectionAllowed ?? selected.HasValue;
+        }
+
+        public Guid? SelectedLegalEntityId { get; }
+
+        public Task<bool> IsSelectionAllowedAsync(CancellationToken ct) => Task.FromResult(_selectionAllowed);
+
+        public Task<IReadOnlyCollection<Guid>> GetEffectiveLegalEntityIdsAsync(CancellationToken ct) =>
+            Task.FromResult(_effective);
     }
 
     private sealed class DataScopeEvaluator : ISensitiveAccessDataScopeEvaluator
@@ -515,14 +600,14 @@ public sealed class OffboardingCaseTests
         public InMemoryEmployeeProjectionRepository(params EmployeeProfileProjection[] items) =>
             _items = items.ToDictionary(x => x.Id);
 
-        public Task<IReadOnlyList<EmployeeProfileProjection>> ListAsync(Guid tenantId, CancellationToken ct) =>
-            Task.FromResult<IReadOnlyList<EmployeeProfileProjection>>(_items.Values.Where(x => x.TenantId == tenantId && !x.IsDeleted).ToList());
+        public Task<IReadOnlyList<EmployeeProfileProjection>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) =>
+            Task.FromResult<IReadOnlyList<EmployeeProfileProjection>>(_items.Values.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).ToList());
 
-        public Task<EmployeeProfileProjection?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) =>
-            Task.FromResult(_items.Values.FirstOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted));
+        public Task<EmployeeProfileProjection?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) =>
+            Task.FromResult(_items.Values.FirstOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)));
 
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) =>
-            Task.FromResult(_items.Values.Any(x => x.TenantId == tenantId && x.Code == code && !x.IsDeleted && x.Id != excludingId));
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) =>
+            Task.FromResult(_items.Values.Any(x => x.TenantId == tenantId && x.LegalEntityId == legalEntityId && x.Code == code && !x.IsDeleted && x.Id != excludingId));
 
         public Task CreateAsync(EmployeeProfileProjection projection, CancellationToken ct)
         {
@@ -544,14 +629,14 @@ public sealed class OffboardingCaseTests
         public InMemoryPositionAssignmentRepository(params EmployeePositionAssignmentOverlay[] items) =>
             _items = items.ToDictionary(x => x.Id);
 
-        public Task<IReadOnlyList<EmployeePositionAssignmentOverlay>> ListAsync(Guid tenantId, CancellationToken ct) =>
-            Task.FromResult<IReadOnlyList<EmployeePositionAssignmentOverlay>>(_items.Values.Where(x => x.TenantId == tenantId && !x.IsDeleted).ToList());
+        public Task<IReadOnlyList<EmployeePositionAssignmentOverlay>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) =>
+            Task.FromResult<IReadOnlyList<EmployeePositionAssignmentOverlay>>(_items.Values.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).ToList());
 
-        public Task<EmployeePositionAssignmentOverlay?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) =>
-            Task.FromResult(_items.Values.FirstOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted));
+        public Task<EmployeePositionAssignmentOverlay?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) =>
+            Task.FromResult(_items.Values.FirstOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)));
 
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) =>
-            Task.FromResult(_items.Values.Any(x => x.TenantId == tenantId && x.Code == code && !x.IsDeleted && x.Id != excludingId));
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) =>
+            Task.FromResult(_items.Values.Any(x => x.TenantId == tenantId && x.LegalEntityId == legalEntityId && x.Code == code && !x.IsDeleted && x.Id != excludingId));
 
         public Task CreateAsync(EmployeePositionAssignmentOverlay assignment, CancellationToken ct)
         {
@@ -573,14 +658,14 @@ public sealed class OffboardingCaseTests
         public InMemoryOffboardingCaseRepository(params OffboardingCase[] items) =>
             _items = items.ToDictionary(x => x.Id);
 
-        public Task<IReadOnlyList<OffboardingCase>> ListAsync(Guid tenantId, CancellationToken ct) =>
-            Task.FromResult<IReadOnlyList<OffboardingCase>>(_items.Values.Where(x => x.TenantId == tenantId && !x.IsDeleted).ToList());
+        public Task<IReadOnlyList<OffboardingCase>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) =>
+            Task.FromResult<IReadOnlyList<OffboardingCase>>(_items.Values.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).ToList());
 
-        public Task<OffboardingCase?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) =>
-            Task.FromResult(_items.Values.FirstOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted));
+        public Task<OffboardingCase?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) =>
+            Task.FromResult(_items.Values.FirstOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)));
 
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) =>
-            Task.FromResult(_items.Values.Any(x => x.TenantId == tenantId && x.Code == code && !x.IsDeleted && x.Id != excludingId));
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) =>
+            Task.FromResult(_items.Values.Any(x => x.TenantId == tenantId && x.LegalEntityId == legalEntityId && x.Code == code && !x.IsDeleted && x.Id != excludingId));
 
         public Task CreateAsync(OffboardingCase offboardingCase, CancellationToken ct)
         {

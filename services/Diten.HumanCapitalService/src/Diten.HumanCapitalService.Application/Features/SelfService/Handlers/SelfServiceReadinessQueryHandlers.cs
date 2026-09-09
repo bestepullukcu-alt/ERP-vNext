@@ -11,11 +11,13 @@ public sealed class GetSelfServiceReadinessListHandler
 {
     private readonly ISelfServiceReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetSelfServiceReadinessListHandler(ISelfServiceReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetSelfServiceReadinessListHandler(ISelfServiceReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<SelfServiceReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetSelfServiceReadinessListHandler
             return Response<IReadOnlyList<SelfServiceReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<SelfServiceReadinessListItemDto>>.Success(rows.Select(SelfServiceMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetSelfServiceReadinessByIdHandler
 {
     private readonly ISelfServiceReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetSelfServiceReadinessByIdHandler(ISelfServiceReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetSelfServiceReadinessByIdHandler(ISelfServiceReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<SelfServiceReadinessDto>> Handle(GetSelfServiceReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetSelfServiceReadinessByIdHandler
             return Response<SelfServiceReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<SelfServiceReadinessDto>.Fail("SelfService readiness record was not found.", 404)
             : Response<SelfServiceReadinessDto>.Success(SelfServiceMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetSelfServiceAuditMetadataHandler
 {
     private readonly ISelfServiceReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetSelfServiceAuditMetadataHandler(ISelfServiceReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetSelfServiceAuditMetadataHandler(ISelfServiceReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<SelfServiceAuditMetadataDto>> Handle(GetSelfServiceAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetSelfServiceAuditMetadataHandler
             return Response<SelfServiceAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<SelfServiceAuditMetadataDto>.Fail("SelfService readiness record was not found.", 404)
             : Response<SelfServiceAuditMetadataDto>.Success(SelfServiceMapper.ToAuditMetadata(entity));

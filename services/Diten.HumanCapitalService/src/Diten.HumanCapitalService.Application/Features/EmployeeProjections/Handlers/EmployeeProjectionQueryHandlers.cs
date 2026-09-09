@@ -10,17 +10,20 @@ public sealed class GetEmployeeProjectionListHandler : IRequestHandler<GetEmploy
 {
     private readonly IEmployeeProjectionRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetEmployeeProjectionListHandler(IEmployeeProjectionRepository repository, ITenantContext tenantContext)
+    public GetEmployeeProjectionListHandler(IEmployeeProjectionRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<EmployeeProjectionListItemDto>>> Handle(GetEmployeeProjectionListQuery request, CancellationToken ct)
     {
         var tenantId = EmployeeProjectionGuards.RequireTenant(_tenantContext);
-        var items = await _repository.ListAsync(tenantId, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var items = await _repository.ListAsync(tenantId, scope, ct);
         return Response<IReadOnlyList<EmployeeProjectionListItemDto>>.Success(items.Select(EmployeeProjectionMapper.ToListItemDto).ToList());
     }
 }
@@ -29,17 +32,20 @@ public sealed class GetEmployeeProjectionByIdHandler : IRequestHandler<GetEmploy
 {
     private readonly IEmployeeProjectionRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetEmployeeProjectionByIdHandler(IEmployeeProjectionRepository repository, ITenantContext tenantContext)
+    public GetEmployeeProjectionByIdHandler(IEmployeeProjectionRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<EmployeeProjectionDto>> Handle(GetEmployeeProjectionByIdQuery request, CancellationToken ct)
     {
         var tenantId = EmployeeProjectionGuards.RequireTenant(_tenantContext);
-        var item = await _repository.GetByIdAsync(tenantId, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var item = await _repository.GetByIdAsync(tenantId, scope, request.Id, ct);
         return item is null
             ? Response<EmployeeProjectionDto>.Fail("Employee projection was not found.", 404)
             : Response<EmployeeProjectionDto>.Success(EmployeeProjectionMapper.ToDto(item));

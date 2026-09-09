@@ -217,7 +217,7 @@ public sealed class SensitiveAccessTests
         IEmployeeProjectionRepository repository,
         ISensitiveAccessDataScopeEvaluator dataScopeEvaluator,
         Guid tenantId) =>
-        new(repository, dataScopeEvaluator, new FixedTenantContext(tenantId));
+        new(repository, dataScopeEvaluator, new FixedTenantContext(tenantId), PilotLegalEntityContext());
 
     private static EvaluateEmployeeProjectionSensitiveAccessQuery Query(Guid id, params string[] permissions) =>
         new(id, new SensitiveAccessDecisionRequest { SourcePolicyVersion = "v1" }, permissions);
@@ -227,6 +227,7 @@ public sealed class SensitiveAccessTests
         {
             Id = Guid.NewGuid(),
             TenantId = Guid.NewGuid(),
+            LegalEntityId = Holding,
             Code = "EMP-001",
             DisplayName = "Employee Routing Label",
             HrisSourceProfileId = Guid.NewGuid(),
@@ -241,10 +242,42 @@ public sealed class SensitiveAccessTests
             ProjectionVersion = 1
         };
 
+    // Fixed legal-entity ids mirroring the MDM demo hierarchy: HOLDING(root) → { MEDIKAL, TEKNOLOJI }.
+    private static readonly Guid Holding = Guid.Parse("1e9a1000-0000-0000-0000-000000000001");
+    private static readonly Guid Medikal = Guid.Parse("1e9a1000-0000-0000-0000-000000000002");
+    private static readonly Guid Teknoloji = Guid.Parse("1e9a1000-0000-0000-0000-000000000003");
+
+    // Default pilot context: HOLDING selected, rolls up over the whole demo hierarchy.
+    private static FixedLegalEntityContext PilotLegalEntityContext() =>
+        new(Holding, new[] { Holding, Medikal, Teknoloji });
+
     private sealed class FixedTenantContext : ITenantContext
     {
         public FixedTenantContext(Guid tenantId) => TenantId = tenantId;
         public Guid? TenantId { get; }
+    }
+
+    private sealed class FixedLegalEntityContext : ILegalEntityContext
+    {
+        private readonly IReadOnlyCollection<Guid> _effective;
+        private readonly bool _selectionAllowed;
+
+        public FixedLegalEntityContext(
+            Guid? selected,
+            IReadOnlyCollection<Guid>? effective = null,
+            bool? selectionAllowed = null)
+        {
+            SelectedLegalEntityId = selected;
+            _effective = effective ?? (selected is { } s ? new[] { s } : Array.Empty<Guid>());
+            _selectionAllowed = selectionAllowed ?? selected.HasValue;
+        }
+
+        public Guid? SelectedLegalEntityId { get; }
+
+        public Task<bool> IsSelectionAllowedAsync(CancellationToken ct) => Task.FromResult(_selectionAllowed);
+
+        public Task<IReadOnlyCollection<Guid>> GetEffectiveLegalEntityIdsAsync(CancellationToken ct) =>
+            Task.FromResult(_effective);
     }
 
     private sealed class DataScopeEvaluator : ISensitiveAccessDataScopeEvaluator
@@ -276,25 +309,26 @@ public sealed class SensitiveAccessTests
         public InMemoryEmployeeProjectionRepository(params EmployeeProfileProjection[] items) =>
             _items = items.ToDictionary(item => item.Id);
 
-        public Task<IReadOnlyList<EmployeeProfileProjection>> ListAsync(Guid tenantId, CancellationToken ct)
+        public Task<IReadOnlyList<EmployeeProfileProjection>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct)
         {
             _ = ct;
             return Task.FromResult<IReadOnlyList<EmployeeProfileProjection>>(
-                _items.Values.Where(x => x.TenantId == tenantId && !x.IsDeleted).ToList());
+                _items.Values.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).ToList());
         }
 
-        public Task<EmployeeProfileProjection?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct)
+        public Task<EmployeeProfileProjection?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct)
         {
             _ = ct;
             return Task.FromResult(
-                _items.TryGetValue(id, out var item) && item.TenantId == tenantId && !item.IsDeleted
+                _items.TryGetValue(id, out var item) && item.TenantId == tenantId && !item.IsDeleted && legalEntityIds.Contains(item.LegalEntityId)
                     ? item
                     : null);
         }
 
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct)
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct)
         {
             _ = tenantId;
+            _ = legalEntityId;
             _ = code;
             _ = excludingId;
             _ = ct;

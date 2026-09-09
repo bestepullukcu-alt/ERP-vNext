@@ -12,11 +12,13 @@ public sealed class CreatePerformanceReviewReadinessHandler : IRequestHandler<Cr
 {
     private readonly IPerformanceReviewReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public CreatePerformanceReviewReadinessHandler(IPerformanceReviewReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public CreatePerformanceReviewReadinessHandler(IPerformanceReviewReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<Guid>> Handle(CreatePerformanceReviewReadinessCommand request, CancellationToken ct)
@@ -27,6 +29,13 @@ public sealed class CreatePerformanceReviewReadinessHandler : IRequestHandler<Cr
             return Response<Guid>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
+        if (!await _legalEntityContext.IsSelectionAllowedAsync(ct))
+        {
+            return Response<Guid>.Fail(
+                "A permitted legal entity must be selected (X-Legal-Entity-Id) to create this record.",
+                403);
+        }
+
         var errors = PerformanceReviewGuard.Validate(request.Request);
         if (errors.Count > 0)
         {
@@ -34,8 +43,9 @@ public sealed class CreatePerformanceReviewReadinessHandler : IRequestHandler<Cr
         }
 
         var tenantId = tenant.Data;
+        var legalEntityId = _legalEntityContext.SelectedLegalEntityId!.Value;
         var code = PerformanceReviewGuard.NormalizeCode(request.Request.Code);
-        if (await _repository.ExistsActiveCodeAsync(tenantId, code, null, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, legalEntityId, code, null, ct))
         {
             return Response<Guid>.Fail("An active performance review readiness record with the same Code already exists for this tenant.", 409);
         }
@@ -45,6 +55,7 @@ public sealed class CreatePerformanceReviewReadinessHandler : IRequestHandler<Cr
         var entity = new PerformanceReviewReadinessMetadata
         {
             TenantId = tenantId,
+            LegalEntityId = legalEntityId,
             Code = code,
             DisplayName = request.Request.DisplayName.Trim(),
             PerformanceReviewReadinessState = readinessState,

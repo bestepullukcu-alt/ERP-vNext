@@ -11,13 +11,16 @@ public sealed class GetCandidatePipelineReadinessListHandler
 {
     private readonly ICandidatePipelineReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetCandidatePipelineReadinessListHandler(
         ICandidatePipelineReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<CandidatePipelineReadinessListItemDto>>> Handle(
@@ -30,7 +33,8 @@ public sealed class GetCandidatePipelineReadinessListHandler
             return Response<IReadOnlyList<CandidatePipelineReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<CandidatePipelineReadinessListItemDto>>.Success(rows.Select(CandidatePipelineMapper.ToListItem).ToList());
     }
 }
@@ -40,13 +44,16 @@ public sealed class GetCandidatePipelineReadinessByIdHandler
 {
     private readonly ICandidatePipelineReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetCandidatePipelineReadinessByIdHandler(
         ICandidatePipelineReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<CandidatePipelineReadinessDto>> Handle(GetCandidatePipelineReadinessByIdQuery request, CancellationToken ct)
@@ -57,7 +64,8 @@ public sealed class GetCandidatePipelineReadinessByIdHandler
             return Response<CandidatePipelineReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<CandidatePipelineReadinessDto>.Fail("Candidate pipeline readiness record was not found.", 404)
             : Response<CandidatePipelineReadinessDto>.Success(CandidatePipelineMapper.ToDto(entity));
@@ -69,13 +77,16 @@ public sealed class GetCandidatePipelineAuditMetadataHandler
 {
     private readonly ICandidatePipelineReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetCandidatePipelineAuditMetadataHandler(
         ICandidatePipelineReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<CandidatePipelineAuditMetadataDto>> Handle(GetCandidatePipelineAuditMetadataQuery request, CancellationToken ct)
@@ -86,7 +97,8 @@ public sealed class GetCandidatePipelineAuditMetadataHandler
             return Response<CandidatePipelineAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<CandidatePipelineAuditMetadataDto>.Fail("Candidate pipeline readiness record was not found.", 404)
             : Response<CandidatePipelineAuditMetadataDto>.Success(CandidatePipelineMapper.ToAuditMetadata(entity));

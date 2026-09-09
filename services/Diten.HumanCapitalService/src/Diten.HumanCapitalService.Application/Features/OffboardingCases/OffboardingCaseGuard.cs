@@ -235,9 +235,10 @@ public static class OffboardingCaseGuard
         Guid tenantId,
         Guid employeeProjectionId,
         IEmployeeProjectionRepository employeeRepository,
+        IReadOnlyCollection<Guid> legalEntityIds,
         CancellationToken ct)
     {
-        var employee = await employeeRepository.GetByIdAsync(tenantId, employeeProjectionId, ct);
+        var employee = await employeeRepository.GetByIdAsync(tenantId, legalEntityIds, employeeProjectionId, ct);
         return employee is null
             ? Response<EmployeeProfileProjection>.Fail("Employee projection anchor was not found.", 404)
             : Response<EmployeeProfileProjection>.Success(employee);
@@ -247,6 +248,7 @@ public static class OffboardingCaseGuard
         Guid tenantId,
         Guid? assignmentOverlayId,
         IPositionAssignmentOverlayRepository assignmentRepository,
+        IReadOnlyCollection<Guid> legalEntityIds,
         CancellationToken ct)
     {
         if (assignmentOverlayId is null)
@@ -254,7 +256,7 @@ public static class OffboardingCaseGuard
             return Response<AssignmentContextDecision>.Success(AssignmentContextDecision.Deferred("Assignment overlay context was not supplied."));
         }
 
-        var assignment = await assignmentRepository.GetByIdAsync(tenantId, assignmentOverlayId.Value, ct);
+        var assignment = await assignmentRepository.GetByIdAsync(tenantId, legalEntityIds, assignmentOverlayId.Value, ct);
         return assignment is null
             ? Response<AssignmentContextDecision>.Fail("Assignment overlay context was not found.", 404)
             : Response<AssignmentContextDecision>.Success(AssignmentContextDecision.Validated());

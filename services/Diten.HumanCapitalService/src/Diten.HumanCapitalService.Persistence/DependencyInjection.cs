@@ -62,8 +62,9 @@ public static class DependencyInjection
         services.AddScoped<IHrCaseManagementReadinessMetadataRepository, MongoHrCaseManagementReadinessMetadataRepository>();
         services.AddScoped<IHrComplianceReadinessMetadataRepository, MongoHrComplianceReadinessMetadataRepository>();
 
-        // Legal-entity scoping pilot: one-shot startup backfill + unique-index reconciliation.
-        services.AddHostedService<ApplicantIntakeLegalEntityBackfillService>();
+        // Legal-entity scoping rollout: one-shot startup backfill + unique-index reconciliation across
+        // every scoped HCM collection.
+        services.AddHostedService<HcmLegalEntityBackfillService>();
 
         return services;
     }

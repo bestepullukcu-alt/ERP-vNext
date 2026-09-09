@@ -15,19 +15,22 @@ public sealed class UpdatePositionAssignmentHandler
     private readonly IPositionAssignmentReferenceValidator _referenceValidator;
     private readonly ISensitiveAccessDataScopeEvaluator _dataScopeEvaluator;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public UpdatePositionAssignmentHandler(
         IPositionAssignmentOverlayRepository repository,
         IEmployeeProjectionRepository employeeRepository,
         IPositionAssignmentReferenceValidator referenceValidator,
         ISensitiveAccessDataScopeEvaluator dataScopeEvaluator,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _employeeRepository = employeeRepository;
         _referenceValidator = referenceValidator;
         _dataScopeEvaluator = dataScopeEvaluator;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<PositionAssignmentDto>> Handle(UpdatePositionAssignmentCommand request, CancellationToken ct)
@@ -45,19 +48,20 @@ public sealed class UpdatePositionAssignmentHandler
         }
 
         var tenantId = tenant.Data;
-        var entity = await _repository.GetByIdAsync(tenantId, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenantId, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<PositionAssignmentDto>.Fail("Position assignment overlay was not found.", 404);
         }
 
         var code = PositionAssignmentGuard.NormalizeCode(request.Request.Code);
-        if (await _repository.ExistsActiveCodeAsync(tenantId, code, request.Id, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, entity.LegalEntityId, code, request.Id, ct))
         {
-            return Response<PositionAssignmentDto>.Fail("An active position assignment with the same Code already exists for this tenant.", 409);
+            return Response<PositionAssignmentDto>.Fail("An active position assignment with the same Code already exists for this legal entity.", 409);
         }
 
-        var employee = await _employeeRepository.GetByIdAsync(tenantId, request.Request.EmployeeProjectionId, ct);
+        var employee = await _employeeRepository.GetByIdAsync(tenantId, scope, request.Request.EmployeeProjectionId, ct);
         if (employee is null)
         {
             return Response<PositionAssignmentDto>.Fail("Employee projection anchor was not found.", 404);
@@ -74,6 +78,7 @@ public sealed class UpdatePositionAssignmentHandler
             request.Request,
             _employeeRepository,
             _referenceValidator,
+            scope,
             ct);
         if (!reference.IsSuccessful)
         {

@@ -10,11 +10,13 @@ public sealed class EvaluateHrKpiAnalyticsReadinessHandler : IRequestHandler<Eva
 {
     private readonly IHrKpiAnalyticsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public EvaluateHrKpiAnalyticsReadinessHandler(IHrKpiAnalyticsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public EvaluateHrKpiAnalyticsReadinessHandler(IHrKpiAnalyticsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<HrKpiAnalyticsReadinessDto>> Handle(EvaluateHrKpiAnalyticsReadinessCommand request, CancellationToken ct)
@@ -25,7 +27,8 @@ public sealed class EvaluateHrKpiAnalyticsReadinessHandler : IRequestHandler<Eva
             return Response<HrKpiAnalyticsReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<HrKpiAnalyticsReadinessDto>.Fail("HrKpiAnalytics readiness record was not found.", 404);

@@ -11,21 +11,25 @@ public sealed class UpdateEmployeeProjectionHandler : IRequestHandler<UpdateEmpl
     private readonly IEmployeeProjectionRepository _repository;
     private readonly IEmployeeProjectionReferenceValidator _referenceValidator;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public UpdateEmployeeProjectionHandler(
         IEmployeeProjectionRepository repository,
         IEmployeeProjectionReferenceValidator referenceValidator,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _referenceValidator = referenceValidator;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<EmployeeProjectionDto>> Handle(UpdateEmployeeProjectionCommand request, CancellationToken ct)
     {
         var tenantId = EmployeeProjectionGuards.RequireTenant(_tenantContext);
-        var entity = await _repository.GetByIdAsync(tenantId, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenantId, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<EmployeeProjectionDto>.Fail("Employee projection was not found.", 404);
@@ -38,9 +42,9 @@ public sealed class UpdateEmployeeProjectionHandler : IRequestHandler<UpdateEmpl
         }
 
         var code = EmployeeProjectionGuards.NormalizeCode(request.Request.Code);
-        if (await _repository.ExistsActiveCodeAsync(tenantId, code, request.Id, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, entity.LegalEntityId, code, request.Id, ct))
         {
-            return Response<EmployeeProjectionDto>.Fail("Employee projection code already exists for this tenant.", 409);
+            return Response<EmployeeProjectionDto>.Fail("Employee projection code already exists for this legal entity.", 409);
         }
 
         var state = await EmployeeProjectionGuards.ResolveReferenceStateAsync(tenantId, request.Request, _referenceValidator, ct);

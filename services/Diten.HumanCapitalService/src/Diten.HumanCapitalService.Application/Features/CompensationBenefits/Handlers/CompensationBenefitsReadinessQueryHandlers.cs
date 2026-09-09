@@ -11,11 +11,13 @@ public sealed class GetCompensationBenefitsReadinessListHandler
 {
     private readonly ICompensationBenefitsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetCompensationBenefitsReadinessListHandler(ICompensationBenefitsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetCompensationBenefitsReadinessListHandler(ICompensationBenefitsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<CompensationBenefitsReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetCompensationBenefitsReadinessListHandler
             return Response<IReadOnlyList<CompensationBenefitsReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<CompensationBenefitsReadinessListItemDto>>.Success(rows.Select(CompensationBenefitsMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetCompensationBenefitsReadinessByIdHandler
 {
     private readonly ICompensationBenefitsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetCompensationBenefitsReadinessByIdHandler(ICompensationBenefitsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetCompensationBenefitsReadinessByIdHandler(ICompensationBenefitsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<CompensationBenefitsReadinessDto>> Handle(GetCompensationBenefitsReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetCompensationBenefitsReadinessByIdHandler
             return Response<CompensationBenefitsReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<CompensationBenefitsReadinessDto>.Fail("CompensationBenefits readiness record was not found.", 404)
             : Response<CompensationBenefitsReadinessDto>.Success(CompensationBenefitsMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetCompensationBenefitsAuditMetadataHandler
 {
     private readonly ICompensationBenefitsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetCompensationBenefitsAuditMetadataHandler(ICompensationBenefitsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetCompensationBenefitsAuditMetadataHandler(ICompensationBenefitsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<CompensationBenefitsAuditMetadataDto>> Handle(GetCompensationBenefitsAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetCompensationBenefitsAuditMetadataHandler
             return Response<CompensationBenefitsAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<CompensationBenefitsAuditMetadataDto>.Fail("CompensationBenefits readiness record was not found.", 404)
             : Response<CompensationBenefitsAuditMetadataDto>.Success(CompensationBenefitsMapper.ToAuditMetadata(entity));

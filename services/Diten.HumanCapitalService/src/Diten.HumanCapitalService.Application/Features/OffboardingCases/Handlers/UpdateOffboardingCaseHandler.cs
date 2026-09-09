@@ -15,19 +15,22 @@ public sealed class UpdateOffboardingCaseHandler
     private readonly IPositionAssignmentOverlayRepository _assignmentRepository;
     private readonly ISensitiveAccessDataScopeEvaluator _dataScopeEvaluator;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public UpdateOffboardingCaseHandler(
         IOffboardingCaseRepository repository,
         IEmployeeProjectionRepository employeeRepository,
         IPositionAssignmentOverlayRepository assignmentRepository,
         ISensitiveAccessDataScopeEvaluator dataScopeEvaluator,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _employeeRepository = employeeRepository;
         _assignmentRepository = assignmentRepository;
         _dataScopeEvaluator = dataScopeEvaluator;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<OffboardingCaseDto>> Handle(UpdateOffboardingCaseCommand request, CancellationToken ct)
@@ -45,22 +48,24 @@ public sealed class UpdateOffboardingCaseHandler
         }
 
         var tenantId = tenant.Data;
-        var entity = await _repository.GetByIdAsync(tenantId, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenantId, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<OffboardingCaseDto>.Fail("Offboarding case was not found.", 404);
         }
 
         var code = OffboardingCaseGuard.NormalizeCode(request.Request.Code);
-        if (await _repository.ExistsActiveCodeAsync(tenantId, code, request.Id, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, entity.LegalEntityId, code, request.Id, ct))
         {
-            return Response<OffboardingCaseDto>.Fail("An active offboarding case with the same Code already exists for this tenant.", 409);
+            return Response<OffboardingCaseDto>.Fail("An active offboarding case with the same Code already exists for this legal entity.", 409);
         }
 
         var employee = await OffboardingCaseGuard.ValidateEmployeeAnchorAsync(
             tenantId,
             request.Request.EmployeeProjectionId,
             _employeeRepository,
+            scope,
             ct);
         if (!employee.IsSuccessful)
         {
@@ -77,6 +82,7 @@ public sealed class UpdateOffboardingCaseHandler
             tenantId,
             request.Request.AssignmentOverlayId,
             _assignmentRepository,
+            scope,
             ct);
         if (!assignment.IsSuccessful)
         {

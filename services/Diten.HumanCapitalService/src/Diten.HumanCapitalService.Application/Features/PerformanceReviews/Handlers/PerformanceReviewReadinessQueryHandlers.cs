@@ -11,11 +11,13 @@ public sealed class GetPerformanceReviewReadinessListHandler
 {
     private readonly IPerformanceReviewReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetPerformanceReviewReadinessListHandler(IPerformanceReviewReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetPerformanceReviewReadinessListHandler(IPerformanceReviewReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<PerformanceReviewReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetPerformanceReviewReadinessListHandler
             return Response<IReadOnlyList<PerformanceReviewReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<PerformanceReviewReadinessListItemDto>>.Success(rows.Select(PerformanceReviewMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetPerformanceReviewReadinessByIdHandler
 {
     private readonly IPerformanceReviewReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetPerformanceReviewReadinessByIdHandler(IPerformanceReviewReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetPerformanceReviewReadinessByIdHandler(IPerformanceReviewReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<PerformanceReviewReadinessDto>> Handle(GetPerformanceReviewReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetPerformanceReviewReadinessByIdHandler
             return Response<PerformanceReviewReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<PerformanceReviewReadinessDto>.Fail("PerformanceReview readiness record was not found.", 404)
             : Response<PerformanceReviewReadinessDto>.Success(PerformanceReviewMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetPerformanceReviewAuditMetadataHandler
 {
     private readonly IPerformanceReviewReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetPerformanceReviewAuditMetadataHandler(IPerformanceReviewReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetPerformanceReviewAuditMetadataHandler(IPerformanceReviewReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<PerformanceReviewAuditMetadataDto>> Handle(GetPerformanceReviewAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetPerformanceReviewAuditMetadataHandler
             return Response<PerformanceReviewAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<PerformanceReviewAuditMetadataDto>.Fail("PerformanceReview readiness record was not found.", 404)
             : Response<PerformanceReviewAuditMetadataDto>.Success(PerformanceReviewMapper.ToAuditMetadata(entity));

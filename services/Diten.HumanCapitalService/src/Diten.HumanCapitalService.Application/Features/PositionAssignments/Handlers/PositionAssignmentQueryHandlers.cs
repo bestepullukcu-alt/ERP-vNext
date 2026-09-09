@@ -14,17 +14,20 @@ public sealed class GetPositionAssignmentListHandler
     private readonly IEmployeeProjectionRepository _employeeRepository;
     private readonly ISensitiveAccessDataScopeEvaluator _dataScopeEvaluator;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetPositionAssignmentListHandler(
         IPositionAssignmentOverlayRepository repository,
         IEmployeeProjectionRepository employeeRepository,
         ISensitiveAccessDataScopeEvaluator dataScopeEvaluator,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _employeeRepository = employeeRepository;
         _dataScopeEvaluator = dataScopeEvaluator;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<PositionAssignmentListItemDto>>> Handle(
@@ -37,11 +40,12 @@ public sealed class GetPositionAssignmentListHandler
             return Response<IReadOnlyList<PositionAssignmentListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         var visibleRows = new List<PositionAssignmentListItemDto>();
         foreach (var row in rows)
         {
-            var employee = await _employeeRepository.GetByIdAsync(tenant.Data, row.EmployeeProjectionId, ct);
+            var employee = await _employeeRepository.GetByIdAsync(tenant.Data, scope, row.EmployeeProjectionId, ct);
             if (employee is null)
             {
                 continue;
@@ -66,17 +70,20 @@ public sealed class GetPositionAssignmentByIdHandler
     private readonly IEmployeeProjectionRepository _employeeRepository;
     private readonly ISensitiveAccessDataScopeEvaluator _dataScopeEvaluator;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetPositionAssignmentByIdHandler(
         IPositionAssignmentOverlayRepository repository,
         IEmployeeProjectionRepository employeeRepository,
         ISensitiveAccessDataScopeEvaluator dataScopeEvaluator,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _employeeRepository = employeeRepository;
         _dataScopeEvaluator = dataScopeEvaluator;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<PositionAssignmentDto>> Handle(GetPositionAssignmentByIdQuery request, CancellationToken ct)
@@ -87,13 +94,14 @@ public sealed class GetPositionAssignmentByIdHandler
             return Response<PositionAssignmentDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var assignment = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var assignment = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (assignment is null)
         {
             return Response<PositionAssignmentDto>.Fail("Position assignment overlay was not found.", 404);
         }
 
-        var employee = await _employeeRepository.GetByIdAsync(tenant.Data, assignment.EmployeeProjectionId, ct);
+        var employee = await _employeeRepository.GetByIdAsync(tenant.Data, scope, assignment.EmployeeProjectionId, ct);
         if (employee is null)
         {
             return Response<PositionAssignmentDto>.Fail("Employee projection anchor was not found.", 404);

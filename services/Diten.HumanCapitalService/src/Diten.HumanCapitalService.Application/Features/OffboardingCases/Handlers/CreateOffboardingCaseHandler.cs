@@ -16,19 +16,22 @@ public sealed class CreateOffboardingCaseHandler
     private readonly IPositionAssignmentOverlayRepository _assignmentRepository;
     private readonly ISensitiveAccessDataScopeEvaluator _dataScopeEvaluator;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public CreateOffboardingCaseHandler(
         IOffboardingCaseRepository repository,
         IEmployeeProjectionRepository employeeRepository,
         IPositionAssignmentOverlayRepository assignmentRepository,
         ISensitiveAccessDataScopeEvaluator dataScopeEvaluator,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _employeeRepository = employeeRepository;
         _assignmentRepository = assignmentRepository;
         _dataScopeEvaluator = dataScopeEvaluator;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<Guid>> Handle(CreateOffboardingCaseCommand request, CancellationToken ct)
@@ -39,6 +42,13 @@ public sealed class CreateOffboardingCaseHandler
             return Response<Guid>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
+        if (!await _legalEntityContext.IsSelectionAllowedAsync(ct))
+        {
+            return Response<Guid>.Fail(
+                "A permitted legal entity must be selected (X-Legal-Entity-Id) to create this record.",
+                403);
+        }
+
         var errors = OffboardingCaseGuard.Validate(request.Request);
         if (errors.Count > 0)
         {
@@ -46,16 +56,19 @@ public sealed class CreateOffboardingCaseHandler
         }
 
         var tenantId = tenant.Data;
+        var legalEntityId = _legalEntityContext.SelectedLegalEntityId!.Value;
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
         var code = OffboardingCaseGuard.NormalizeCode(request.Request.Code);
-        if (await _repository.ExistsActiveCodeAsync(tenantId, code, null, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, legalEntityId, code, null, ct))
         {
-            return Response<Guid>.Fail("An active offboarding case with the same Code already exists for this tenant.", 409);
+            return Response<Guid>.Fail("An active offboarding case with the same Code already exists for this legal entity.", 409);
         }
 
         var employee = await OffboardingCaseGuard.ValidateEmployeeAnchorAsync(
             tenantId,
             request.Request.EmployeeProjectionId,
             _employeeRepository,
+            scope,
             ct);
         if (!employee.IsSuccessful)
         {
@@ -72,6 +85,7 @@ public sealed class CreateOffboardingCaseHandler
             tenantId,
             request.Request.AssignmentOverlayId,
             _assignmentRepository,
+            scope,
             ct);
         if (!assignment.IsSuccessful)
         {
@@ -83,6 +97,7 @@ public sealed class CreateOffboardingCaseHandler
         var entity = new OffboardingCase
         {
             TenantId = tenantId,
+            LegalEntityId = legalEntityId,
             Code = code,
             EmployeeProjectionId = request.Request.EmployeeProjectionId,
             AssignmentOverlayId = request.Request.AssignmentOverlayId,

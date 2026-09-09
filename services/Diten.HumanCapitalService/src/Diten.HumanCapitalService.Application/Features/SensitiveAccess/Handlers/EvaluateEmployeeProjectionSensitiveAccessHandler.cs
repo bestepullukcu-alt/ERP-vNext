@@ -15,15 +15,18 @@ public sealed class EvaluateEmployeeProjectionSensitiveAccessHandler
     private readonly IEmployeeProjectionRepository _repository;
     private readonly ISensitiveAccessDataScopeEvaluator _dataScopeEvaluator;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public EvaluateEmployeeProjectionSensitiveAccessHandler(
         IEmployeeProjectionRepository repository,
         ISensitiveAccessDataScopeEvaluator dataScopeEvaluator,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _dataScopeEvaluator = dataScopeEvaluator;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<SensitiveAccessDecisionDto>> Handle(
@@ -41,7 +44,8 @@ public sealed class EvaluateEmployeeProjectionSensitiveAccessHandler
             return Response<SensitiveAccessDecisionDto>.Fail("Tenant context is required.", 401);
         }
 
-        var projection = await _repository.GetByIdAsync(tenantId, request.EmployeeProjectionId, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var projection = await _repository.GetByIdAsync(tenantId, scope, request.EmployeeProjectionId, ct);
         if (projection is null)
         {
             return Response<SensitiveAccessDecisionDto>.Fail("Employee projection was not found.", 404);

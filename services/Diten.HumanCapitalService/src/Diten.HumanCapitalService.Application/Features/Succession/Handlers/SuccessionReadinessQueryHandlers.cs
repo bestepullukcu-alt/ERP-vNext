@@ -11,11 +11,13 @@ public sealed class GetSuccessionReadinessListHandler
 {
     private readonly ISuccessionReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetSuccessionReadinessListHandler(ISuccessionReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetSuccessionReadinessListHandler(ISuccessionReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<SuccessionReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetSuccessionReadinessListHandler
             return Response<IReadOnlyList<SuccessionReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<SuccessionReadinessListItemDto>>.Success(rows.Select(SuccessionMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetSuccessionReadinessByIdHandler
 {
     private readonly ISuccessionReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetSuccessionReadinessByIdHandler(ISuccessionReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetSuccessionReadinessByIdHandler(ISuccessionReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<SuccessionReadinessDto>> Handle(GetSuccessionReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetSuccessionReadinessByIdHandler
             return Response<SuccessionReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<SuccessionReadinessDto>.Fail("Succession readiness record was not found.", 404)
             : Response<SuccessionReadinessDto>.Success(SuccessionMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetSuccessionAuditMetadataHandler
 {
     private readonly ISuccessionReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetSuccessionAuditMetadataHandler(ISuccessionReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetSuccessionAuditMetadataHandler(ISuccessionReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<SuccessionAuditMetadataDto>> Handle(GetSuccessionAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetSuccessionAuditMetadataHandler
             return Response<SuccessionAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<SuccessionAuditMetadataDto>.Fail("Succession readiness record was not found.", 404)
             : Response<SuccessionAuditMetadataDto>.Success(SuccessionMapper.ToAuditMetadata(entity));
