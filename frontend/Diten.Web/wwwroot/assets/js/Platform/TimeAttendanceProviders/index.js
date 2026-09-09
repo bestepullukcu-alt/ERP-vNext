@@ -5,7 +5,7 @@ const TimeAttendanceProviders = (function () {
     const root = document.getElementById('time-attendance-providers-shell');
     const apiUrl = window.API?.platform || window.ApiBaseUrl;
     const endpoints = {
-        providers: `${apiUrl}/api/time-attendance-providers`
+        providers: '/Platform/TimeAttendanceProviders/api'
     };
     const includeCookiesKey = 'creden' + 'tials';
 

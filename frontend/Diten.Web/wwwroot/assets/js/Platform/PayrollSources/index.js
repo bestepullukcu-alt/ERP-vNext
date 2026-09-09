@@ -5,7 +5,7 @@ const PayrollSources = (function () {
     const root = document.getElementById('payroll-sources-shell');
     const apiUrl = window.API?.platform || window.ApiBaseUrl;
     const endpoints = {
-        sources: `${apiUrl}/api/payroll-sources`
+        sources: '/Platform/PayrollSources/api'
     };
     const includeCookiesKey = 'creden' + 'tials';
 

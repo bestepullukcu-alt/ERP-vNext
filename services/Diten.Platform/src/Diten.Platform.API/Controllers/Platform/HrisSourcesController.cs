@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Diten.Platform.API.Controllers.Platform;
 
-[Route("api/hris-sources")]
+[Route("api/platform/hris-sources")]
 [Authorize(Policy = "PlatformActor")]
 public sealed class HrisSourcesController : CustomBaseController
 {

@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Diten.Platform.API.Controllers.Platform;
 
-[Route("api/time-attendance-providers")]
+[Route("api/platform/time-attendance-providers")]
 [Authorize(Policy = "PlatformActor")]
 public sealed class TimeAttendanceProvidersController : CustomBaseController
 {

@@ -5,7 +5,7 @@ const HrisSources = (function () {
     const root = document.getElementById('hris-sources-shell');
     const apiUrl = window.API?.platform || window.ApiBaseUrl;
     const endpoints = {
-        sources: `${apiUrl}/api/hris-sources`
+        sources: '/Platform/HrisSources/api'
     };
     const includeCookiesKey = 'creden' + 'tials';
 

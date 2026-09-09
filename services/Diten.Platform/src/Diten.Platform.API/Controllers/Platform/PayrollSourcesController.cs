@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Diten.Platform.API.Controllers.Platform;
 
-[Route("api/payroll-sources")]
+[Route("api/platform/payroll-sources")]
 [Authorize(Policy = "PlatformActor")]
 public sealed class PayrollSourcesController : CustomBaseController
 {

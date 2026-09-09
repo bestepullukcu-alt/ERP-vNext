@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Diten.Platform.API.Controllers.Platform;
 
-[Route("api/person-reference-directory")]
+[Route("api/platform/person-reference-directory")]
 [Authorize(Policy = "PlatformActor")]
 public sealed class PersonReferenceDirectoryController : CustomBaseController
 {

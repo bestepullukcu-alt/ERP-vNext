@@ -5,7 +5,7 @@ const PayrollIntegrationGovernance = (function () {
     const root = document.getElementById('payroll-integration-governance-shell');
     const apiUrl = window.API?.platform || window.ApiBaseUrl;
     const endpoints = {
-        runs: `${apiUrl}/api/payroll-integration-governance/runs`
+        runs: '/Platform/PayrollIntegrationGovernance/api/runs'
     };
     const includeCookiesKey = 'creden' + 'tials';
 

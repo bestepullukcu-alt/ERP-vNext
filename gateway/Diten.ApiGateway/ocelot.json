@@ -281,7 +281,7 @@
       "UpstreamScheme": "http"
     },
     {
-      "DownstreamPathTemplate": "/api/hris-sources",
+      "DownstreamPathTemplate": "/api/platform/hris-sources",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -289,7 +289,7 @@
           "Port": 5057
         }
       ],
-      "UpstreamPathTemplate": "/api/hris-sources",
+      "UpstreamPathTemplate": "/api/platform/hris-sources",
       "UpstreamHttpMethod": [
         "GET",
         "POST",
@@ -301,7 +301,7 @@
       "UpstreamScheme": "http"
     },
     {
-      "DownstreamPathTemplate": "/api/hris-sources/{everything}",
+      "DownstreamPathTemplate": "/api/platform/hris-sources/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -309,7 +309,7 @@
           "Port": 5057
         }
       ],
-      "UpstreamPathTemplate": "/api/hris-sources/{everything}",
+      "UpstreamPathTemplate": "/api/platform/hris-sources/{everything}",
       "UpstreamHttpMethod": [
         "GET",
         "POST",
@@ -321,7 +321,7 @@
       "UpstreamScheme": "http"
     },
     {
-      "DownstreamPathTemplate": "/api/time-attendance-providers",
+      "DownstreamPathTemplate": "/api/platform/time-attendance-providers",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -329,7 +329,7 @@
           "Port": 5057
         }
       ],
-      "UpstreamPathTemplate": "/api/time-attendance-providers",
+      "UpstreamPathTemplate": "/api/platform/time-attendance-providers",
       "UpstreamHttpMethod": [
         "GET",
         "POST",
@@ -341,7 +341,7 @@
       "UpstreamScheme": "http"
     },
     {
-      "DownstreamPathTemplate": "/api/time-attendance-providers/{everything}",
+      "DownstreamPathTemplate": "/api/platform/time-attendance-providers/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -349,7 +349,7 @@
           "Port": 5057
         }
       ],
-      "UpstreamPathTemplate": "/api/time-attendance-providers/{everything}",
+      "UpstreamPathTemplate": "/api/platform/time-attendance-providers/{everything}",
       "UpstreamHttpMethod": [
         "GET",
         "POST",
@@ -361,7 +361,7 @@
       "UpstreamScheme": "http"
     },
     {
-      "DownstreamPathTemplate": "/api/payroll-integration-governance",
+      "DownstreamPathTemplate": "/api/platform/payroll-integration-governance",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -369,7 +369,7 @@
           "Port": 5057
         }
       ],
-      "UpstreamPathTemplate": "/api/payroll-integration-governance",
+      "UpstreamPathTemplate": "/api/platform/payroll-integration-governance",
       "UpstreamHttpMethod": [
         "GET",
         "POST",
@@ -381,7 +381,7 @@
       "UpstreamScheme": "http"
     },
     {
-      "DownstreamPathTemplate": "/api/payroll-integration-governance/{everything}",
+      "DownstreamPathTemplate": "/api/platform/payroll-integration-governance/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -389,7 +389,7 @@
           "Port": 5057
         }
       ],
-      "UpstreamPathTemplate": "/api/payroll-integration-governance/{everything}",
+      "UpstreamPathTemplate": "/api/platform/payroll-integration-governance/{everything}",
       "UpstreamHttpMethod": [
         "GET",
         "POST",
@@ -401,7 +401,7 @@
       "UpstreamScheme": "http"
     },
     {
-      "DownstreamPathTemplate": "/api/payroll-sources",
+      "DownstreamPathTemplate": "/api/platform/payroll-sources",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -409,7 +409,7 @@
           "Port": 5057
         }
       ],
-      "UpstreamPathTemplate": "/api/payroll-sources",
+      "UpstreamPathTemplate": "/api/platform/payroll-sources",
       "UpstreamHttpMethod": [
         "GET",
         "POST",
@@ -421,7 +421,7 @@
       "UpstreamScheme": "http"
     },
     {
-      "DownstreamPathTemplate": "/api/payroll-sources/{everything}",
+      "DownstreamPathTemplate": "/api/platform/payroll-sources/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -429,7 +429,47 @@
           "Port": 5057
         }
       ],
-      "UpstreamPathTemplate": "/api/payroll-sources/{everything}",
+      "UpstreamPathTemplate": "/api/platform/payroll-sources/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/platform/person-reference-directory",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5057
+        }
+      ],
+      "UpstreamPathTemplate": "/api/platform/person-reference-directory",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/platform/person-reference-directory/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5057
+        }
+      ],
+      "UpstreamPathTemplate": "/api/platform/person-reference-directory/{everything}",
       "UpstreamHttpMethod": [
         "GET",
         "POST",
