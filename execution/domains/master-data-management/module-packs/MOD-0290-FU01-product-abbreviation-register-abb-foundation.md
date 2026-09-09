@@ -830,3 +830,58 @@ duplicate/cursor paging across ABB plus all original eight collections, and reje
 wrong aggregate/source, legacy temporal storage, future retry, active lease, delivered and dead-letter records.
 The independent audit storage prerequisite run has 2 passed tests; these are distinct from the 11 discovery tests.
 Producer, WorkCenter and UI integration are separate gates; neither run proves live worker acceptance.
+
+### 2026-09-09 ABB WorkCenter and audit producer integration
+
+This bounded extraction reconciles the approved Phase 1.5 implementation from `ffdd280a` with current main.
+Exact runtime/test allow-list for this extraction:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Contracts/ProductAbbreviationWorkItems/ProductAbbreviationWorkItemRequests.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/ProductAbbreviationWorkItemsController.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/Services/ProductAbbreviationAuditIntentFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/Services/ProductAbbreviationWorkflow.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Commands/DispatchProductAbbreviationWorkItemActionCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Handlers/DispatchProductAbbreviationWorkItemActionHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Handlers/GetProductAbbreviationWorkItemsHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/ProductAbbreviationWorkItemModels.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Queries/GetProductAbbreviationWorkItemsQuery.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Validators/DispatchProductAbbreviationWorkItemActionValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductAbbreviationRegister/WorkItems/Validators/GetProductAbbreviationWorkItemsValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IProductAbbreviationRegisterRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductAbbreviationRegisterRepository.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationWorkItemActionTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationWorkItemContractTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationWorkItemMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationWorkItemProjectionTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationWorkItemScopeIntegrationTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationRegisterUnitTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationRegisterMongoTests.cs`
+
+The existing generic Platform remote bridge remains the only bridge; no native Workflow template/service-token
+profile, new responsibility grant, FU21 permission pair, navigation or runtime configuration is introduced.
+All eight ABB permission pairs and FU20's Admin/Viewer/Requester/Steward/Approver/Auditor matrix remain unchanged.
+
+Semantic reconciliation:
+- Projection covers initial, correction and retirement requests, uses bounded 100+1 discovery and scalar-ID order.
+  Actions are filtered by exact permission as well as maker/state; corrected active entries may request retirement.
+- Terminal replay now demands current actor permission and scope before considering success. It verifies canonical
+  decision actor, full operation hash, immutable history and persisted audit intent/receipt; correction additionally
+  reads back the retired predecessor and its evidence. Prefix/length alone is no longer accepted.
+- Audit generation reads the persisted immutable history after append, so a retry does not invent another timestamp.
+  The exact v1 transport version is supplied. Non-GUID diagnostic correlation strings are deterministically mapped
+  to GUID transport correlation identifiers, not used as tenant/actor authority.
+- Append replay compares immutable intent facts; compact-receipt replay cannot reinsert an intent or accept evidence
+  drift. Existing business versions and the generic transaction/temporal delivery implementation are preserved.
+- ABB Mongo tests use the existing disposable fixture, fixed database suffixes and tenant-owned cleanup, not a new
+  database for each test. Application MongoDB and its configuration are not modified.
+
+Verification:
+- Final combined MDM focused/regression run: 288 passed / 0 failed / 0 skipped, including 36 real-Mongo cases.
+  This overlaps earlier 95-case runs, the 11-case terminal run and the 11-case discovery run; counts are not additive.
+- Four serialized MDM projection cases run through the actual built Platform remote HTTP bridge/provider using
+  an intercepted HttpMessageHandler, including foreign-provider rejection. Platform Release build is a prerequisite.
+  This proves serialization/transport/parser compatibility, not live JWT authentication or network acceptance.
+  First cross-service test attempt failed four times due to test NullLogger reflection setup; the corrected run passed.
+- Platform mapping contract run: 89/0/0. Auth ABB grant-profile focused run: 5/0/0. MDM Release build passed.
+- Initial/correction approve/reject/cancel and retirement approve/reject terminal state/history replay are covered.
+  Missing permission and cross-tenant replay are denied. Live WorkCenter, grants and provider provisioning remain open.
