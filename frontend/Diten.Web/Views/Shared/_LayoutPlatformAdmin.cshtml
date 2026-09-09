@@ -258,6 +258,25 @@
                             <div>Checklists</div>
                         </a>
                     </li>
+                    @* S-NAV (MOD-0023) — Workflow Designer *@
+                    <li class="menu-item @(currentPath.StartsWith("/Platform/WorkflowDesigner", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                        <a href="/Platform/WorkflowDesigner" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-git-branch"></i>
+                            <div>Workflow Designer</div>
+                        </a>
+                    </li>
+                    <li class="menu-item @(currentPath.StartsWith("/Platform/Approvals", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                        <a href="/Platform/Approvals" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-check-double"></i>
+                            <div>Approvals</div>
+                        </a>
+                    </li>
+                    <li class="menu-item @(currentPath.StartsWith("/Platform/WorkflowRuns", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
+                        <a href="/Platform/WorkflowRuns" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-history"></i>
+                            <div>Run History</div>
+                        </a>
+                    </li>
                     @* S-NAV (MOD-0018-FU9) — FE-E self effective access *@
                     <li class="menu-item @(currentPath.StartsWith("/Platform/SelfAccess", StringComparison.OrdinalIgnoreCase) ? "active" : "")">
                         <a href="/Platform/SelfAccess" class="menu-link">

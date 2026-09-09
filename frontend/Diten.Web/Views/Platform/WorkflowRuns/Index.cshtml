@@ -1,0 +1,196 @@
+@{
+    ViewData["Title"] = "Run History";
+    Layout = "_LayoutPlatformAdmin";
+}
+
+@* FE (MOD-0023) — Workflow Designer: platform-admin run history.
+   Vanilla JS, no external build. Proxies to /Platform/Workflow/api/instances. *@
+
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center mb-3 row-gap-3">
+    <div>
+        <h5 class="mb-0">Run History</h5>
+        <p class="mb-0 text-muted">Browse workflow instances and inspect their timeline.</p>
+    </div>
+    <button type="button" class="btn btn-sm btn-outline-secondary" id="wr-refresh">
+        <i class="bx bx-refresh me-1"></i>Refresh
+    </button>
+</div>
+
+<div id="wr-error" class="alert alert-danger d-none" role="alert"></div>
+
+<div class="card mb-4">
+    <div class="card-datatable table-responsive">
+        <table class="table border-top align-middle">
+            <thead>
+                <tr>
+                    <th>Definition</th>
+                    <th>Version</th>
+                    <th>Subject</th>
+                    <th>Status</th>
+                    <th>Current step</th>
+                    <th>Started</th>
+                </tr>
+            </thead>
+            <tbody id="wr-tbody">
+                <tr><td colspan="6" class="text-center text-muted py-4">Loading…</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card d-none" id="wr-workspace">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <h6 class="mb-0" id="wr-workspace-title">Instance timeline</h6>
+            <small class="text-muted" id="wr-workspace-status"></small>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="wr-workspace-close">
+            <i class="bx bx-x"></i>
+        </button>
+    </div>
+    <div class="card-body">
+        <div id="wr-workspace-error" class="alert alert-danger d-none" role="alert"></div>
+        <ul class="timeline mb-0" id="wr-timeline"></ul>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    "use strict";
+
+    var errorBox = document.getElementById("wr-error");
+    var tbody = document.getElementById("wr-tbody");
+
+    function showError(msg) { errorBox.textContent = msg; errorBox.classList.remove("d-none"); }
+    function clearError() { errorBox.classList.add("d-none"); errorBox.textContent = ""; }
+
+    function errorsFrom(payload, fallback) {
+        if (payload && Array.isArray(payload.errors) && payload.errors.length) {
+            return payload.errors.join(", ");
+        }
+        return fallback || "Request failed.";
+    }
+
+    function esc(v) {
+        if (v === null || v === undefined) return "";
+        return String(v).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+    }
+
+    function fmtDate(v) {
+        if (!v) return "—";
+        var d = new Date(v);
+        if (isNaN(d.getTime())) return esc(v);
+        return d.toLocaleString();
+    }
+
+    async function apiFetch(url, options) {
+        var res = await fetch(url, options || {});
+        var payload = null;
+        try { payload = await res.json(); } catch (e) { payload = null; }
+        return { res: res, payload: payload };
+    }
+
+    function statusBadge(status) {
+        var s = String(status || "").toLowerCase();
+        var cls = "primary";
+        if (s === "completed") cls = "success";
+        else if (s === "rejected" || s === "cancelled" || s === "canceled") cls = "danger";
+        else if (s === "running" || s === "active" || s === "pending") cls = "warning";
+        return '<span class="badge bg-label-' + cls + '">' + esc(status) + '</span>';
+    }
+
+    async function loadInstances() {
+        clearError();
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Loading…</td></tr>';
+        var r = await apiFetch("/Platform/Workflow/api/instances");
+        if (!r.res.ok) { showError(errorsFrom(r.payload, "Failed to load instances.")); tbody.innerHTML = ""; return; }
+        var items = (r.payload && r.payload.data && r.payload.data.items) || [];
+        if (!items.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No runs yet.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = "";
+        items.forEach(function (inst) {
+            var tr = document.createElement("tr");
+            tr.style.cursor = "pointer";
+            tr.innerHTML =
+                '<td>' + esc(inst.definitionCode) + '</td>' +
+                '<td>v' + esc(inst.definitionVersion) + '</td>' +
+                '<td>' + esc(inst.subjectReference) + '</td>' +
+                '<td>' + statusBadge(inst.status) + '</td>' +
+                '<td>' + esc(inst.currentStepSequence !== null && inst.currentStepSequence !== undefined ? "#" + inst.currentStepSequence : "—") + '</td>' +
+                '<td>' + fmtDate(inst.startedAt) + '</td>';
+            tr.addEventListener("click", function () { openInstance(inst.id); });
+            tbody.appendChild(tr);
+        });
+    }
+
+    // ---- Timeline workspace ----
+    var workspace = document.getElementById("wr-workspace");
+    var wsTitle = document.getElementById("wr-workspace-title");
+    var wsStatus = document.getElementById("wr-workspace-status");
+    var wsError = document.getElementById("wr-workspace-error");
+    var timeline = document.getElementById("wr-timeline");
+
+    function wsShowError(msg) { wsError.textContent = msg; wsError.classList.remove("d-none"); }
+    function wsClearError() { wsError.classList.add("d-none"); wsError.textContent = ""; }
+
+    document.getElementById("wr-workspace-close").addEventListener("click", function () {
+        workspace.classList.add("d-none");
+    });
+
+    async function openInstance(id) {
+        wsClearError();
+        workspace.classList.remove("d-none");
+        timeline.innerHTML = '<li class="text-muted py-2">Loading…</li>';
+        workspace.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        var r = await apiFetch("/Platform/Workflow/api/instances/" + encodeURIComponent(id));
+        if (!r.res.ok) { wsShowError(errorsFrom(r.payload, "Failed to load instance.")); timeline.innerHTML = ""; return; }
+        renderInstance(r.payload && r.payload.data);
+    }
+
+    function renderInstance(inst) {
+        if (!inst) { wsShowError("Instance not found."); timeline.innerHTML = ""; return; }
+        wsTitle.textContent = (inst.definitionCode || "Instance") + " v" + (inst.definitionVersion || "") + " — " + (inst.subjectReference || "");
+        wsStatus.innerHTML = "Status: " + statusBadge(inst.status) +
+            (inst.completedAt ? ' · completed ' + esc(fmtDate(inst.completedAt)) : "");
+
+        var entries = (inst.timeline || []).slice().sort(function (a, b) { return (a.sequence || 0) - (b.sequence || 0); });
+        timeline.innerHTML = "";
+        if (!entries.length) { timeline.innerHTML = '<li class="text-muted py-2">No timeline entries.</li>'; return; }
+
+        entries.forEach(function (e) {
+            var li = document.createElement("li");
+            li.className = "timeline-item timeline-item-transparent border-left-dashed ps-4 pb-3 position-relative";
+            li.style.borderLeft = "1px dashed var(--bs-border-color, #d9dee3)";
+            li.style.marginLeft = "8px";
+
+            var dot = '<span class="position-absolute" style="left:-6px;top:2px;width:11px;height:11px;border-radius:50%;background:var(--bs-primary,#696cff);"></span>';
+            var head =
+                '<div class="d-flex justify-content-between flex-wrap gap-2">' +
+                    '<h6 class="mb-0">' + esc(e.kind) +
+                        (e.stepSequence !== null && e.stepSequence !== undefined ? ' <span class="text-muted small">step #' + esc(e.stepSequence) + '</span>' : '') +
+                    '</h6>' +
+                    '<small class="text-muted">' + fmtDate(e.at) + '</small>' +
+                '</div>';
+            var meta =
+                '<div class="small text-muted">' +
+                    (e.actor ? 'by ' + esc(e.actor) : '') +
+                '</div>' +
+                (e.note ? '<div class="mt-1">' + esc(e.note) + '</div>' : '');
+
+            li.innerHTML = dot + head + meta;
+            timeline.appendChild(li);
+        });
+    }
+
+    document.getElementById("wr-refresh").addEventListener("click", loadInstances);
+
+    loadInstances();
+})();
+</script>
+}

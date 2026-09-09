@@ -1,0 +1,249 @@
+@{
+    ViewData["Title"] = "Approvals";
+    Layout = "_LayoutPlatformAdmin";
+}
+
+@* FE (MOD-0023) — Workflow Designer: platform-admin approvals inbox.
+   Vanilla JS, no external build. Proxies to /Platform/Workflow/api/tasks. *@
+
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center mb-3 row-gap-3">
+    <div>
+        <h5 class="mb-0">Approvals Inbox</h5>
+        <p class="mb-0 text-muted">Approve, reject or delegate the approval tasks assigned by running workflows.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <label class="form-label mb-0 text-muted small" for="ap-status">Status</label>
+        <select class="form-select form-select-sm" id="ap-status" style="max-width:160px">
+            <option value="Pending" selected>Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+            <option value="all">All</option>
+        </select>
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="ap-refresh">
+            <i class="bx bx-refresh me-1"></i>Refresh
+        </button>
+    </div>
+</div>
+
+<div id="ap-error" class="alert alert-danger d-none" role="alert"></div>
+<div id="ap-success" class="alert alert-success d-none" role="status"></div>
+
+<div class="card mb-4">
+    <div class="card-datatable table-responsive">
+        <table class="table border-top align-middle">
+            <thead>
+                <tr>
+                    <th>Definition</th>
+                    <th>Step</th>
+                    <th>Assignee</th>
+                    <th>Due</th>
+                    <th>Status</th>
+                    <th class="text-end pe-3">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="ap-tbody">
+                <tr><td colspan="6" class="text-center text-muted py-4">Loading…</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    "use strict";
+
+    var errorBox = document.getElementById("ap-error");
+    var successBox = document.getElementById("ap-success");
+    var statusSelect = document.getElementById("ap-status");
+    var tbody = document.getElementById("ap-tbody");
+
+    function showError(msg) {
+        errorBox.textContent = msg;
+        errorBox.classList.remove("d-none");
+        successBox.classList.add("d-none");
+    }
+    function clearError() { errorBox.classList.add("d-none"); errorBox.textContent = ""; }
+    function showSuccess(msg) {
+        successBox.textContent = msg;
+        successBox.classList.remove("d-none");
+        setTimeout(function () { successBox.classList.add("d-none"); }, 4000);
+    }
+
+    function errorsFrom(payload, fallback) {
+        if (payload && Array.isArray(payload.errors) && payload.errors.length) {
+            return payload.errors.join(", ");
+        }
+        return fallback || "Request failed.";
+    }
+
+    function esc(v) {
+        if (v === null || v === undefined) return "";
+        return String(v).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+    }
+
+    function fmtDate(v) {
+        if (!v) return "—";
+        var d = new Date(v);
+        if (isNaN(d.getTime())) return esc(v);
+        return d.toLocaleString();
+    }
+
+    async function apiFetch(url, options) {
+        var res = await fetch(url, options || {});
+        var payload = null;
+        try { payload = await res.json(); } catch (e) { payload = null; }
+        return { res: res, payload: payload };
+    }
+
+    function statusBadge(status) {
+        var s = String(status || "").toLowerCase();
+        var cls = "primary";
+        if (s === "approved") cls = "success";
+        else if (s === "rejected") cls = "danger";
+        else if (s === "pending") cls = "warning";
+        return '<span class="badge bg-label-' + cls + '">' + esc(status) + '</span>';
+    }
+
+    async function loadTasks() {
+        clearError();
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Loading…</td></tr>';
+        var status = statusSelect.value;
+        var url = "/Platform/Workflow/api/tasks";
+        if (status && status !== "all") url += "?status=" + encodeURIComponent(status);
+
+        var r = await apiFetch(url);
+        if (!r.res.ok) { showError(errorsFrom(r.payload, "Failed to load tasks.")); tbody.innerHTML = ""; return; }
+        var items = (r.payload && r.payload.data && r.payload.data.items) || [];
+        if (!items.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No tasks.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = "";
+        items.forEach(function (t) {
+            var isPending = String(t.status || "").toLowerCase() === "pending";
+            var assignee = t.assigneeRole || "";
+            if (t.assigneeId) assignee += (assignee ? " / " : "") + t.assigneeId;
+
+            var tr = document.createElement("tr");
+            tr.innerHTML =
+                '<td>' + esc(t.definitionCode) + '</td>' +
+                '<td>' + esc(t.stepName) + ' <span class="text-muted">(#' + esc(t.stepSequence) + ')</span>' +
+                    (t.requiresEvidence ? ' <span class="badge bg-label-warning ms-1">evidence</span>' : '') + '</td>' +
+                '<td>' + esc(assignee || "—") + '</td>' +
+                '<td>' + fmtDate(t.dueAt) + '</td>' +
+                '<td>' + statusBadge(t.status) + '</td>';
+
+            var actionsCell = document.createElement("td");
+            actionsCell.className = "text-end pe-3";
+
+            if (isPending) {
+                var approveBtn = document.createElement("button");
+                approveBtn.type = "button";
+                approveBtn.className = "btn btn-sm btn-outline-success me-1";
+                approveBtn.innerHTML = '<i class="bx bx-check me-1"></i>Approve';
+                approveBtn.addEventListener("click", function () { approveTask(t, tr); });
+                actionsCell.appendChild(approveBtn);
+
+                var rejectBtn = document.createElement("button");
+                rejectBtn.type = "button";
+                rejectBtn.className = "btn btn-sm btn-outline-danger me-1";
+                rejectBtn.innerHTML = '<i class="bx bx-x me-1"></i>Reject';
+                rejectBtn.addEventListener("click", function () { rejectTask(t); });
+                actionsCell.appendChild(rejectBtn);
+
+                var delegateBtn = document.createElement("button");
+                delegateBtn.type = "button";
+                delegateBtn.className = "btn btn-sm btn-outline-secondary";
+                delegateBtn.innerHTML = '<i class="bx bx-share me-1"></i>Delegate';
+                delegateBtn.addEventListener("click", function () { delegateTask(t); });
+                actionsCell.appendChild(delegateBtn);
+            }
+            tr.appendChild(actionsCell);
+            tbody.appendChild(tr);
+        });
+    }
+
+    function rowInlineError(tr, msg) {
+        var existing = tr.querySelector(".ap-inline-error");
+        if (existing) existing.remove();
+        var cell = tr.querySelector("td.text-end");
+        var er = document.createElement("div");
+        er.className = "small text-danger mt-1 ap-inline-error";
+        er.textContent = msg;
+        if (cell) cell.appendChild(er);
+    }
+
+    async function approveTask(t, tr) {
+        clearError();
+        var body = {};
+        if (t.requiresEvidence) {
+            var ev = window.prompt("Evidence reference (required for this step):", "");
+            if (ev === null) return;
+            ev = ev.trim();
+            if (ev) body.evidence_reference = ev;
+        }
+        var r = await apiFetch("/Platform/Workflow/api/tasks/" + encodeURIComponent(t.id) + "/approve", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+        if (!r.res.ok) {
+            if (r.payload && Array.isArray(r.payload.errors) && r.payload.errors.indexOf("evidence_required") !== -1) {
+                rowInlineError(tr, "Evidence is required to approve this step.");
+                return;
+            }
+            showError(errorsFrom(r.payload, "Failed to approve task."));
+            return;
+        }
+        showSuccess("Task approved.");
+        loadTasks();
+    }
+
+    async function rejectTask(t) {
+        clearError();
+        var note = window.prompt("Rejection note (optional):", "");
+        if (note === null) return;
+        var body = {};
+        note = note.trim();
+        if (note) body.note = note;
+        var r = await apiFetch("/Platform/Workflow/api/tasks/" + encodeURIComponent(t.id) + "/reject", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+        if (!r.res.ok) { showError(errorsFrom(r.payload, "Failed to reject task.")); return; }
+        showSuccess("Task rejected.");
+        loadTasks();
+    }
+
+    async function delegateTask(t) {
+        clearError();
+        var to = window.prompt("Delegate to assignee id:", "");
+        if (to === null) return;
+        to = to.trim();
+        if (!to) { showError("An assignee id is required to delegate."); return; }
+        var note = window.prompt("Delegation note (optional):", "");
+        if (note === null) return;
+        var body = { to_assignee_id: to };
+        note = note.trim();
+        if (note) body.note = note;
+        var r = await apiFetch("/Platform/Workflow/api/tasks/" + encodeURIComponent(t.id) + "/delegate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+        if (!r.res.ok) { showError(errorsFrom(r.payload, "Failed to delegate task.")); return; }
+        showSuccess("Task delegated.");
+        loadTasks();
+    }
+
+    document.getElementById("ap-refresh").addEventListener("click", loadTasks);
+    statusSelect.addEventListener("change", loadTasks);
+
+    loadTasks();
+})();
+</script>
+}

@@ -78,6 +78,13 @@ public static class DataSeeder
             new("platform", "checklists", "create", "Create Platform Checklists", "Permission to create MOD-0024 checklist templates and start runs"),
             new("platform", "checklists", "update", "Update Platform Checklists", "Permission to update MOD-0024 checklist templates and complete run items"),
 
+            new("platform", "workflow", "read", "Read Platform Workflows", "Permission to view MOD-0023 workflow definitions, instances and approval tasks"),
+            new("platform", "workflow", "create", "Create Platform Workflows", "Permission to create MOD-0023 workflow definitions and versions"),
+            new("platform", "workflow", "update", "Update Platform Workflows", "Permission to update MOD-0023 draft workflow definitions"),
+            new("platform", "workflow", "publish", "Publish Platform Workflows", "Permission to publish MOD-0023 workflow definition versions"),
+            new("platform", "workflow", "start", "Start Platform Workflows", "Permission to start MOD-0023 workflow instances"),
+            new("platform", "workflow", "approve", "Approve Platform Workflows", "Permission to approve/reject/delegate MOD-0023 approval tasks"),
+
             // HCM module permissions — registered so SuperAdmin (full catalog) and tenant Admin roles
             // can see/use the HR modules. Keys mirror the *Guard permission constants used by the HCM API.
             new("hcm", "applicant-intake", "audit.read", "Applicant Intake Audit Read", null),

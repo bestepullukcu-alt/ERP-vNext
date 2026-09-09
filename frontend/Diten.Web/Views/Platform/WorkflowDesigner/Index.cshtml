@@ -1,0 +1,335 @@
+@{
+    ViewData["Title"] = "Workflow Designer";
+    Layout = "_LayoutPlatformAdmin";
+}
+
+@* FE (MOD-0023) — Workflow Designer: platform-admin authoring page.
+   Vanilla JS, no external build. Proxies to /Platform/Workflow/api. *@
+
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center mb-3 row-gap-3">
+    <div>
+        <h5 class="mb-0">Workflow Designer</h5>
+        <p class="mb-0 text-muted">Author approval workflows, publish versions and start instances.</p>
+    </div>
+</div>
+
+<div id="wf-error" class="alert alert-danger d-none" role="alert"></div>
+<div id="wf-success" class="alert alert-success d-none" role="status"></div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card mb-4">
+            <div class="card-header"><h6 class="mb-0">Create definition</h6></div>
+            <div class="card-body">
+                <form id="wf-def-form">
+                    <div class="mb-3">
+                        <label class="form-label" for="wf-code">Code</label>
+                        <input type="text" class="form-control" id="wf-code" required maxlength="100" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="wf-name">Name</label>
+                        <input type="text" class="form-control" id="wf-name" required maxlength="200" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="wf-description">Description</label>
+                        <textarea class="form-control" id="wf-description" rows="2"></textarea>
+                    </div>
+
+                    <label class="form-label">Steps</label>
+                    <div id="wf-steps"></div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary mb-3" id="wf-add-step">
+                        <i class="bx bx-plus me-1"></i>Add step
+                    </button>
+
+                    <label class="form-label">SLA rules</label>
+                    <div id="wf-slas"></div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary mb-3" id="wf-add-sla">
+                        <i class="bx bx-plus me-1"></i>Add SLA rule
+                    </button>
+
+                    <div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bx bx-save me-1"></i>Create definition
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Definitions</h6>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="wf-defs-refresh">
+                    <i class="bx bx-refresh me-1"></i>Refresh
+                </button>
+            </div>
+            <div class="card-datatable table-responsive">
+                <table class="table border-top align-middle">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Version</th>
+                            <th>Status</th>
+                            <th>Steps</th>
+                            <th class="text-end pe-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="wf-defs-tbody">
+                        <tr><td colspan="6" class="text-center text-muted py-4">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    "use strict";
+
+    var errorBox = document.getElementById("wf-error");
+    var successBox = document.getElementById("wf-success");
+
+    function showError(msg) {
+        errorBox.textContent = msg;
+        errorBox.classList.remove("d-none");
+        successBox.classList.add("d-none");
+    }
+    function clearError() { errorBox.classList.add("d-none"); errorBox.textContent = ""; }
+    function showSuccess(msg) {
+        successBox.textContent = msg;
+        successBox.classList.remove("d-none");
+        setTimeout(function () { successBox.classList.add("d-none"); }, 4000);
+    }
+
+    function errorsFrom(payload, fallback) {
+        if (payload && Array.isArray(payload.errors) && payload.errors.length) {
+            return payload.errors.join(", ");
+        }
+        return fallback || "Request failed.";
+    }
+
+    function esc(v) {
+        if (v === null || v === undefined) return "";
+        return String(v).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+    }
+
+    async function apiFetch(url, options) {
+        var res = await fetch(url, options || {});
+        var payload = null;
+        try { payload = await res.json(); } catch (e) { payload = null; }
+        return { res: res, payload: payload };
+    }
+
+    // ---- Step editor ----
+    var stepsContainer = document.getElementById("wf-steps");
+
+    function addStepRow(name, approverRole, requiresEvidence) {
+        var row = document.createElement("div");
+        row.className = "d-flex align-items-center gap-2 mb-2 wf-step-row";
+        row.innerHTML =
+            '<input type="text" class="form-control wf-step-name" placeholder="Step name" value="' + esc(name || "") + '" />' +
+            '<input type="text" class="form-control wf-step-role" placeholder="Approver role" value="' + esc(approverRole || "") + '" />' +
+            '<div class="form-check mb-0 flex-shrink-0">' +
+              '<input type="checkbox" class="form-check-input wf-step-evidence"' + (requiresEvidence ? ' checked' : '') + ' />' +
+              '<label class="form-check-label small">evidence</label>' +
+            '</div>' +
+            '<button type="button" class="btn btn-sm btn-outline-danger flex-shrink-0 wf-step-remove"><i class="bx bx-trash"></i></button>';
+        row.querySelector(".wf-step-remove").addEventListener("click", function () { row.remove(); });
+        stepsContainer.appendChild(row);
+    }
+
+    document.getElementById("wf-add-step").addEventListener("click", function () { addStepRow("", "", false); });
+
+    function collectSteps() {
+        var steps = [];
+        stepsContainer.querySelectorAll(".wf-step-row").forEach(function (row) {
+            var name = row.querySelector(".wf-step-name").value.trim();
+            if (name) {
+                var step = { name: name, requires_evidence: row.querySelector(".wf-step-evidence").checked };
+                var role = row.querySelector(".wf-step-role").value.trim();
+                if (role) step.approver_role = role;
+                steps.push(step);
+            }
+        });
+        return steps;
+    }
+
+    // ---- SLA rule editor ----
+    var slasContainer = document.getElementById("wf-slas");
+
+    function addSlaRow(stepSequence, slaHours, escalationAction, escalateToRole) {
+        var row = document.createElement("div");
+        row.className = "d-flex align-items-center gap-2 mb-2 wf-sla-row";
+        var actions = ["None", "Notify", "Reassign", "Escalate"];
+        var opts = actions.map(function (a) {
+            return '<option value="' + a + '"' + (a === escalationAction ? ' selected' : '') + '>' + a + '</option>';
+        }).join("");
+        row.innerHTML =
+            '<input type="number" min="1" class="form-control wf-sla-seq" placeholder="Step #" value="' + esc(stepSequence || "") + '" style="max-width:90px" />' +
+            '<input type="number" min="0" class="form-control wf-sla-hours" placeholder="SLA hours" value="' + esc(slaHours || "") + '" style="max-width:110px" />' +
+            '<select class="form-select wf-sla-action">' + opts + '</select>' +
+            '<input type="text" class="form-control wf-sla-role" placeholder="Escalate to role" value="' + esc(escalateToRole || "") + '" />' +
+            '<button type="button" class="btn btn-sm btn-outline-danger flex-shrink-0 wf-sla-remove"><i class="bx bx-trash"></i></button>';
+        row.querySelector(".wf-sla-remove").addEventListener("click", function () { row.remove(); });
+        slasContainer.appendChild(row);
+    }
+
+    document.getElementById("wf-add-sla").addEventListener("click", function () { addSlaRow("", "", "None", ""); });
+
+    function collectSlaRules() {
+        var rules = [];
+        slasContainer.querySelectorAll(".wf-sla-row").forEach(function (row) {
+            var seq = row.querySelector(".wf-sla-seq").value.trim();
+            var hours = row.querySelector(".wf-sla-hours").value.trim();
+            if (seq === "" || hours === "") return;
+            var rule = { step_sequence: parseInt(seq, 10), sla_hours: parseInt(hours, 10) };
+            var action = row.querySelector(".wf-sla-action").value;
+            if (action) rule.escalation_action = action;
+            var role = row.querySelector(".wf-sla-role").value.trim();
+            if (role) rule.escalate_to_role = role;
+            rules.push(rule);
+        });
+        return rules;
+    }
+
+    document.getElementById("wf-def-form").addEventListener("submit", async function (ev) {
+        ev.preventDefault();
+        clearError();
+        var code = document.getElementById("wf-code").value.trim();
+        var name = document.getElementById("wf-name").value.trim();
+        if (!code || !name) { showError("Code and name are required."); return; }
+        var steps = collectSteps();
+        if (!steps.length) { showError("At least one step is required."); return; }
+        var body = { code: code, name: name, steps: steps, sla_rules: collectSlaRules() };
+        var description = document.getElementById("wf-description").value.trim();
+        if (description) body.description = description;
+
+        var r = await apiFetch("/Platform/Workflow/api/definitions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+        if (!r.res.ok) { showError(errorsFrom(r.payload, "Failed to create definition.")); return; }
+        showSuccess("Definition created.");
+        ev.target.reset();
+        stepsContainer.innerHTML = "";
+        slasContainer.innerHTML = "";
+        addStepRow("", "", false);
+        loadDefinitions();
+    });
+
+    // ---- Definitions table ----
+    var defsTbody = document.getElementById("wf-defs-tbody");
+
+    async function loadDefinitions() {
+        defsTbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Loading…</td></tr>';
+        var r = await apiFetch("/Platform/Workflow/api/definitions");
+        if (!r.res.ok) { showError(errorsFrom(r.payload, "Failed to load definitions.")); defsTbody.innerHTML = ""; return; }
+        var items = (r.payload && r.payload.data && r.payload.data.items) || [];
+        if (!items.length) {
+            defsTbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No definitions yet.</td></tr>';
+            return;
+        }
+        defsTbody.innerHTML = "";
+        items.forEach(function (d) {
+            var tr = document.createElement("tr");
+            tr.innerHTML =
+                '<td>' + esc(d.code) + '</td>' +
+                '<td>' + esc(d.name) + '</td>' +
+                '<td>v' + esc(d.versionNumber) + '</td>' +
+                '<td><span class="badge bg-label-primary">' + esc(d.status) + '</span></td>' +
+                '<td>' + esc(d.stepCount) + '</td>';
+            var actions = document.createElement("td");
+            actions.className = "text-end pe-3";
+
+            var isDraft = String(d.status || "").toLowerCase() === "draft";
+
+            if (isDraft) {
+                var pubBtn = document.createElement("button");
+                pubBtn.type = "button";
+                pubBtn.className = "btn btn-sm btn-outline-success me-1";
+                pubBtn.innerHTML = '<i class="bx bx-cloud-upload me-1"></i>Publish';
+                pubBtn.addEventListener("click", function () { publishDefinition(d); });
+                actions.appendChild(pubBtn);
+            }
+
+            var verBtn = document.createElement("button");
+            verBtn.type = "button";
+            verBtn.className = "btn btn-sm btn-outline-secondary me-1";
+            verBtn.innerHTML = '<i class="bx bx-git-commit me-1"></i>New version';
+            verBtn.addEventListener("click", function () { newVersion(d); });
+            actions.appendChild(verBtn);
+
+            var startBtn = document.createElement("button");
+            startBtn.type = "button";
+            startBtn.className = "btn btn-sm btn-outline-primary";
+            startBtn.innerHTML = '<i class="bx bx-play me-1"></i>Start instance';
+            startBtn.addEventListener("click", function () { startInstance(d); });
+            actions.appendChild(startBtn);
+
+            tr.appendChild(actions);
+            defsTbody.appendChild(tr);
+        });
+    }
+
+    async function publishDefinition(def) {
+        clearError();
+        // Fetch the detail to get the current rowVersion.
+        var detail = await apiFetch("/Platform/Workflow/api/definitions/" + encodeURIComponent(def.id));
+        if (!detail.res.ok) { showError(errorsFrom(detail.payload, "Failed to load definition detail.")); return; }
+        var data = detail.payload && detail.payload.data;
+        var rowVersion = data && data.rowVersion;
+        if (!window.confirm("Publish " + def.code + " v" + def.versionNumber + "?")) return;
+
+        var r = await apiFetch("/Platform/Workflow/api/definitions/" + encodeURIComponent(def.id) + "/publish", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ expected_row_version: rowVersion })
+        });
+        if (!r.res.ok) { showError(errorsFrom(r.payload, "Failed to publish definition.")); return; }
+        showSuccess("Definition published.");
+        loadDefinitions();
+    }
+
+    async function newVersion(def) {
+        clearError();
+        if (!window.confirm("Create a new draft version cloned from " + def.code + "?")) return;
+        var r = await apiFetch("/Platform/Workflow/api/definitions/" + encodeURIComponent(def.code) + "/versions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({})
+        });
+        if (!r.res.ok) { showError(errorsFrom(r.payload, "Failed to create new version.")); return; }
+        showSuccess("New draft version created.");
+        loadDefinitions();
+    }
+
+    async function startInstance(def) {
+        clearError();
+        var subject = window.prompt("Subject reference for the new instance of " + def.code + ":", "");
+        if (subject === null) return;
+        subject = subject.trim();
+        if (!subject) { showError("Subject reference is required."); return; }
+        var r = await apiFetch("/Platform/Workflow/api/instances/start", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ definition_code: def.code, subject_reference: subject })
+        });
+        if (!r.res.ok) { showError(errorsFrom(r.payload, "Failed to start instance.")); return; }
+        showSuccess("Instance started for " + def.code + ".");
+    }
+
+    document.getElementById("wf-defs-refresh").addEventListener("click", loadDefinitions);
+
+    addStepRow("", "", false);
+    loadDefinitions();
+})();
+</script>
+}
