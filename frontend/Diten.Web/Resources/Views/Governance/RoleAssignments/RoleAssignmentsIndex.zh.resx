@@ -19,6 +19,7 @@
   <data name="LockedHintModule" xml:space="preserve"><value>此权限由 {0} 模块自动授予，无法在此处更改。</value></data>
   <data name="FilterModuleLabel" xml:space="preserve"><value>模块</value></data>
   <data name="AllModulesOption" xml:space="preserve"><value>所有模块</value></data>
+  <data name="ModuleFilterSearchPlaceholder" xml:space="preserve"><value>搜索模块…</value></data>
   <data name="ModuleUngrouped" xml:space="preserve"><value>其他</value></data>
   <data name="FilterStateGroupLabel" xml:space="preserve"><value>按分配状态筛选</value></data>
   <data name="FilterAll" xml:space="preserve"><value>全部</value></data>

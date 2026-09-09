@@ -19,6 +19,7 @@
   <data name="LockedHintModule" xml:space="preserve"><value>Bu izin {0} modülü tarafından otomatik olarak verilmiştir ve buradan değiştirilemez.</value></data>
   <data name="FilterModuleLabel" xml:space="preserve"><value>Modül</value></data>
   <data name="AllModulesOption" xml:space="preserve"><value>Tüm modüller</value></data>
+  <data name="ModuleFilterSearchPlaceholder" xml:space="preserve"><value>Modül ara…</value></data>
   <data name="ModuleUngrouped" xml:space="preserve"><value>Diğer</value></data>
   <data name="FilterStateGroupLabel" xml:space="preserve"><value>Atama durumuna göre filtrele</value></data>
   <data name="FilterAll" xml:space="preserve"><value>Tümü</value></data>

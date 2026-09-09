@@ -69,6 +69,11 @@
         LockedHintSystem = Localizer["LockedHintSystem"].Value,
         LockedHintModule = Localizer["LockedHintModule"].Value,
         ModuleUngrouped = Localizer["ModuleUngrouped"].Value,
+        // The module filter's search is INSIDE the closed control (select2 renders a multi-select's search inline),
+        // so while the dropdown is open the box shows this instead of "Tüm modüller". Without it the open state is
+        // pixel-identical to the closed one and nobody discovers they can type — measured on the real DOM: the field
+        // is there, focusable and 128px wide, wearing the placeholder of the summary it replaced.
+        ModuleFilterSearchPlaceholder = Localizer["ModuleFilterSearchPlaceholder"].Value,
         // FIX-ROLEPERMS-MODULE-LABEL — { NORMALIZEDMODULECODE: localized name } for the group headers + module
         // filter. → window.L10n.ModuleNames, consumed by ModuleLabel.buildMap. See the @{ } block above.
         ModuleNames = moduleNames,

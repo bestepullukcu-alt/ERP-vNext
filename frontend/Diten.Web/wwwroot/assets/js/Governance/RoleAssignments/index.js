@@ -711,6 +711,29 @@ const RoleAssignments = (function () {
         }
     };
 
+    /*
+     * select2 4.0.13 ships the pieces but wires DropdownSearch only for single selects. Composing it here gives a
+     * MULTI select the dropdown search box. Built once and cached: Decorate() creates a class, and a fresh one per
+     * init would discard select2's own event wiring on re-init.
+     */
+    let searchableDropdownAdapter = null;
+    const buildSearchableDropdownAdapter = () => {
+        if (searchableDropdownAdapter) return searchableDropdownAdapter;
+        const amd = window.jQuery?.fn?.select2?.amd;
+        if (!amd?.require) return undefined;   // no adapter -> select2 falls back to its default, never throws
+        try {
+            const Dropdown = amd.require('select2/dropdown');
+            const DropdownSearch = amd.require('select2/dropdown/search');
+            const AttachBody = amd.require('select2/dropdown/attachBody');
+            const Utils = amd.require('select2/utils');
+            searchableDropdownAdapter = Utils.Decorate(Utils.Decorate(Dropdown, DropdownSearch), AttachBody);
+            return searchableDropdownAdapter;
+        } catch (e) {
+            console.warn('[RoleAssignments] dropdown search adapter unavailable; falling back to the default.', e);
+            return undefined;
+        }
+    };
+
     const initModuleSelect2 = (selector) => {
         if (!window.jQuery || !window.jQuery.fn?.select2) return;
         const $select = window.jQuery(selector);
@@ -721,6 +744,20 @@ const RoleAssignments = (function () {
             dropdownCssClass: 'dt-inline-filter-dropdown',
             containerCssClass: 'ra-filter-multi',
             placeholder: $select.data('placeholder') || '',
+            /*
+             * The search goes in the DROPDOWN, not in the box — the same place the Role select beside it puts one.
+             *
+             * select2 does that for free on a SINGLE select and never on a multi: a multi's search is an inline
+             * field inside the closed control, exactly where this control's summary ("Tüm modüller + N") has to
+             * sit. Two things, one line. Revealing the inline field on open was tried and measured on the real
+             * DOM: it works, it is focusable, it is 128px wide — and it wears the summary's own placeholder, so
+             * the open state is pixel-identical to the closed one and nobody can tell there is a search. The
+             * owner's question settled it: make it behave like the control next to it.
+             *
+             * dropdownAdapter is select2's own composition point for this; DropdownSearch is the same class that
+             * gives the Role select its box.
+             */
+            dropdownAdapter: buildSearchableDropdownAdapter(),
             // FIX-RBAC-PERM-MODULE-ATTRIBUTION — the search box used to be suppressed (Infinity) on a list of 30+
             // modules, so finding one meant scrolling and knowing its localized name. It is on now, with a matcher
             // that also reads the module code and the permission keys.
@@ -728,6 +765,15 @@ const RoleAssignments = (function () {
             matcher: moduleFilterMatcher,
             closeOnSelect: false,
             width: '100%'
+        });
+        /*
+         * Name the box. DropdownSearch renders a bare input; with 34 modules behind it, an unlabelled field is only
+         * marginally better than the invisible one it replaced. The string is the same key in seven languages.
+         */
+        $select.on('select2:open.ra-search', () => {
+            const field = document.querySelector('.select2-container--open .select2-search--dropdown .select2-search__field')
+                || document.querySelector('.select2-dropdown .select2-search__field');
+            if (field && L.ModuleFilterSearchPlaceholder) field.placeholder = L.ModuleFilterSearchPlaceholder;
         });
         $select.on('change.ra-summary', () => syncModuleSummary($select));
         // Build the summary synchronously (select2 has rendered the selection by now); a rAF pass is a backstop

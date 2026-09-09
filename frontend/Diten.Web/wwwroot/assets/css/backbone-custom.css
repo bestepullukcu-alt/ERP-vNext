@@ -4761,71 +4761,12 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 .select2-selection--multiple.ra-filter-multi .select2-search--inline,
 .select2-selection--multiple.ra-filter-multi .select2-search__field { display: none !important; }
 
-/* ...but only while the dropdown is CLOSED.
-   The summary pattern above is borrowed from the DataTable inline filters, where a status list has three options
-   and typing is pointless. This control has 34 modules, and index.js turns select2's search on with a matcher that
-   also reads the module code and every permission key in it — a matcher with nowhere to type, because the rule
-   above hid the field unconditionally. So: closed shows the summary, open shows the field. */
-.select2-container--open .select2-selection--multiple.ra-filter-multi .select2-search--inline,
-.select2-container--open .select2-selection--multiple.ra-filter-multi .select2-search__field {
-    display: block !important;
-}
-.select2-container--open .select2-selection--multiple.ra-filter-multi .select2-search__field {
-    min-inline-size: 8rem;
-    inline-size: 100%;
-    border: 0;
-    outline: 0;
-    background: transparent;
-    color: inherit;
-}
-.select2-container--open .select2-selection--multiple.ra-filter-multi .dt-inline-filter-multi__summary {
-    display: none !important;
-}
-.select2-selection--multiple.ra-filter-multi .dt-inline-filter-multi__summary {
-  display: block;
-  position: absolute;
-  inset-inline: .85rem 3.85rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: calc(2.2505001rem);
-  font-size: .9375rem;
-  color: var(--bs-secondary-color);
-}
-.select2-selection--multiple.ra-filter-multi.dt-inline-filter-multi--has-value .dt-inline-filter-multi__summary { color: var(--bs-body-color); }
+/* The search does NOT live in this control. select2 renders a MULTI select's search field inline, inside the
+   closed box, where the summary above must cover it — two things cannot occupy one line. The Role select beside it
+   is a plain SINGLE select2 and gets its search inside the DROPDOWN, which is what a person expects and what this
+   control now does too via a dropdownAdapter (see initModuleSelect2). So the inline field stays hidden in both
+   states and the rules that used to reveal it on open are gone. */
 
-/* FIX-RBAC-PERM-MODULE-ATTRIBUTION — the module filter can be TYPED IN while it is open.
-   The compact style above hides select2's inline search field so the closed control can show
-   "Tüm modüller + N" instead of a row of chips. That was fine at 8 modules and useless at 30+: the only way to
-   find one was to scroll and already know its localized name. While the dropdown is OPEN the summary steps aside
-   and the search field takes its place, so the closed control looks exactly as it did and the open one can be
-   searched by name, by module code, or by a permission key (see moduleFilterMatcher). */
-.select2-container--open .select2-selection--multiple.ra-filter-multi .select2-selection__rendered {
-  position: absolute;
-  inset: 0;
-  opacity: 1;
-  pointer-events: auto;
-  display: flex;
-  align-items: center;
-  padding-inline: .85rem 3.85rem;
-}
-.select2-container--open .select2-selection--multiple.ra-filter-multi .select2-search--inline {
-  display: block !important;
-  flex: 1 1 auto;
-  min-inline-size: 0;
-}
-.select2-container--open .select2-selection--multiple.ra-filter-multi .select2-search__field {
-  display: block !important;
-  inline-size: 100% !important;
-  margin: 0;
-  border: 0;
-  background: transparent;
-  color: var(--bs-body-color);
-  font-size: .9375rem;
-  line-height: calc(2.2505001rem);
-  outline: none;
-}
-.select2-container--open .select2-selection--multiple.ra-filter-multi .dt-inline-filter-multi__summary { display: none; }
 .select2-selection--multiple.ra-filter-multi .dt-inline-filter-multi__actions {
   position: absolute;
   inset-inline-end: 1.95rem;
