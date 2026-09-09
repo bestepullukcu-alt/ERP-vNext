@@ -104,8 +104,14 @@ public sealed class LskuDraftFoundationUnitTests
         Assert.Equal(10, (int)ProductAuditOperation.LskuDraftCreated);
         Assert.DoesNotContain(typeof(ILskuRepository).GetMethods(), method =>
             method.Name.Contains("Update", StringComparison.OrdinalIgnoreCase)
-            || method.Name.Contains("Delete", StringComparison.OrdinalIgnoreCase)
-            || method.Name.Contains("Retire", StringComparison.OrdinalIgnoreCase));
+            || method.Name.Contains("Delete", StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(28, (int)ProductAuditOperation.LskuIdentitySubmitted);
+        Assert.Equal(29, (int)ProductAuditOperation.LskuIdentityApproved);
+        Assert.Equal(30, (int)ProductAuditOperation.LskuIdentityRejected);
+        Assert.Equal(31, (int)ProductAuditOperation.LskuIdentityRetired);
+        Assert.Equal(66, (int)ProductAuditOperation.LskuIdentityApprovalWithdrawn);
+        Assert.Equal(67, (int)ProductAuditOperation.LskuRetirementRequested);
+        Assert.Equal(68, (int)ProductAuditOperation.LskuRetirementRejected);
     }
 
     [Fact]

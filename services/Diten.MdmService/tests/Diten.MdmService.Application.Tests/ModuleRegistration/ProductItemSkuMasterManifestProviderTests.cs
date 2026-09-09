@@ -92,6 +92,10 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.gskus.withdraw",
                 "mdm.lskus.create",
                 "mdm.lskus.read",
+                "mdm.lskus.request-retirement",
+                "mdm.lskus.retire",
+                "mdm.lskus.submit",
+                "mdm.lskus.withdraw",
                 "mdm.product-abbreviations.approve",
                 "mdm.product-abbreviations.audit",
                 "mdm.product-abbreviations.cancel",
@@ -108,7 +112,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.product-legal-entity-scopes.replace"
             },
             declared.OrderBy(value => value, StringComparer.Ordinal));
-        Assert.Equal(35, declared.Count);
+        Assert.Equal(39, declared.Count);
         var nonControllerPermissions = new HashSet<string>(StringComparer.Ordinal)
         {
             "mdm.brands.read",
@@ -169,8 +173,8 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     [Fact]
     public void Other_product_pages_keep_exact_create_and_quick_view_actions()
     {
-        var productPages = Manifest.Pages.Where(page => page.PageCode is "FINISHED_GOODS" or "LSKUS").ToList();
-        Assert.Equal(2, productPages.Count);
+        var productPages = Manifest.Pages.Where(page => page.PageCode is "FINISHED_GOODS").ToList();
+        Assert.Single(productPages);
         foreach (var page in productPages)
         {
             Assert.Equal(2, page.Actions.Count);

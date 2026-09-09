@@ -12,6 +12,8 @@ public sealed class Lsku : EntityBase, IAuditIntentAggregate
     public string MarketCode { get; set; } = string.Empty;
     public ReferenceCatalogSelection MarketSelection { get; set; } = new();
     public ProductIdentityLifecycleStatus LifecycleStatus { get; set; } = ProductIdentityLifecycleStatus.Draft;
+    public ProductIdentityWorkflowBinding? IdentityWorkflowBinding { get; set; }
+    public LskuActiveLifecycleOperationBinding? ActiveLifecycleOperation { get; set; }
     public List<LocalAuditIntent> AuditIntents { get; set; } = [];
     public List<LocalAuditIntentReceipt> AuditIntentReceipts { get; set; } = [];
 }

@@ -3188,3 +3188,96 @@ The new value-object path is absent from the approved E2A / 19.18 exact new-file
 `ApplyRetirementDecisionAsync`, the persistence CAS and retirement processor. No substitute, inlining
 workaround or bypass is introduced. This exact path needs explicit allow-list authorization before
 the complete backend retirement slice can be integrated. No backend/UI completion is claimed.
+
+### LSKU backend integration exact paths — renewed user approval 2026-09-09
+
+The user explicitly authorizes the missing operation binding below and continuation of approved E2A/19.18
+backend integration. This supersedes the preceding scope gate only; no live acceptance is implied.
+Source reference is protected `ffdd280a`, reconciled with the current target. No edit/correction or new selector.
+### LSKU backend reconciliation evidence — 2026-09-09
+
+- FU21 `f29f845ec48f27d3f67c6928263b04fcd4c4eaf4` preserves 30 pairs and adds only submit/retire (32 exact pairs). It grants no user permission.
+- The explicitly approved retirement binding fences admission and terminal decisions by operation ID, base version and kind. Repository tests reject stale/conflicting bindings, expired leases, stale generations, wrong tenants and fingerprint drift.
+- Withdraw and retirement-request use their exact permission in Enforced scope through the real MDM client and Platform credential/JWT/parser/executor. Out-of-scope and cross-tenant targets stop before workflow, operation or audit mutation.
+- Source reconciliation repairs withdrawal observation validation (object reference is evidence, not a rewritten preflight); retirement claim tenant/fingerprint/expiry fences; stable admission audit timestamp; fail-closed terminal source read-back and crash replay. Pending submit read-back accepts the existing exact compacted G4 receipt contract. No global serializer, audience or human-JWT change.
+- MDM Release build: 0 errors (5 existing nullable/obsolete API warnings in the final build).
+- `lsku-backend-final-20260909.trx`: 168 passed, 0 failed, 0 skipped; 38 of these are real-Mongo tests, not an additional total.
+- `lsku-backend-regressions-20260909.trx`: 615 passed, 0 failed, 0 skipped (Global Product/GSKU/scope/audit); separate overlapping regression run, not added to focused counts.
+- Initial focused run: 117 passed / 1 failed, obsolete create-only repository assertion reconciled with approved append-only lifecycle contract. Initial real-Mongo run: 32 passed / 2 failed, retirement failure classification repaired; these were code/assertion mismatches, not transaction topology failures.
+- Real Mongo: isolated test-owned single-node `lsku_itest`, loopback port 27129, primary; fixed test database and per-test tenant cleanup. Application port 27017/config/data unchanged. No operational workflow, migration, provisioning, navigation activation or live acceptance.
+- Known GSKU concurrency flakiness remains open: `ProductItemSkuMasterMongoTests.Concurrent_first_gsku_commands_allocate_unique_parent_ordinals_and_soft_delete_never_reuses`. A subsequent green regression does not establish its cause or close it.
+- Frontend follows in a separate slice; no LSKU edit/correction/new selector or direct-retire UI is authorized.
+
+Exact new and existing LSKU-specific backend/test paths for this extraction:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductAuditOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/ProductItemSkuMasterModels.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/DependencyInjection.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Program.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuDraftFoundationUnitTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ModuleRegistration/ProductItemSkuMasterManifestProviderTests.cs`
+
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/LskuIdentityWorkflowOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/LskuIdentityWorkflowWorkerOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/LskuRetirementRequestWorkflowOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/LskuRetirementRequestWorkflowWorkerOptions.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/LskuIdentityWorkflowRecoveryCommandLine.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/LskuIdentityWorkflowRecoveryRunner.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/LskuIdentityWorkflowRecoveryWorker.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/LskuRetirementRequestRecoveryCommandLine.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/LskuRetirementRequestRecoveryRunner.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/LskuRetirementRequestRecoveryWorker.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Commands/RetireLskuIdentityCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/RetireLskuIdentityHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/LskuIdentityLifecycleAuditIntentFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/LskuIdentityLifecycleModels.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/LskuRetirementRequestModels.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Validators/RetireLskuIdentityValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Commands/StartLskuIdentityWorkflowCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Commands/StartLskuRetirementRequestWorkflowCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Commands/WithdrawLskuIdentityApprovalCommand.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/StartLskuIdentityWorkflowHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/StartLskuRetirementRequestWorkflowHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/WithdrawLskuIdentityApprovalHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/LskuIdentityWorkflowProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/LskuIdentityWorkflowStartRequestFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/LskuRetirementRequestWorkflowProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/LskuRetirementRequestWorkflowStartRequestFactory.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Validators/StartLskuIdentityWorkflowValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Validators/StartLskuRetirementRequestWorkflowValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Validators/WithdrawLskuIdentityApprovalValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/LskuIdentityWorkflowOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/LskuRetirementRequestOperation.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/LskuIdentityWorkflowCheckpoint.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/LskuRetirementRequestCheckpoint.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/ILskuIdentityWorkflowOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/ILskuIdentityWorkflowTenantPartitionDiscovery.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/ILskuRetirementRequestOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/LskuIdentityWorkflowOperationResults.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/LskuRetirementRequestOperationResults.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/LskuActiveLifecycleOperationBinding.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/LskuIdentityWorkflowOperationRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/LskuIdentityWorkflowTenantPartitionDiscoveryRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/LskuRetirementRequestOperationRepository.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuIdentityApprovalWithdrawalUnitTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuIdentityLifecycleContractTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuIdentityLifecycleMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuIdentityWorkflowOperationMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuIdentityWorkflowProcessorTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuIdentityWorkflowRecoveryRunnerTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuRetirementRequestOperationMongoTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuRetirementRequestRecoveryContractTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuRetirementRequestWorkflowProcessorTests.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/Lsku.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/ILskuRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/LskuRepository.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/QueryHandlers/GetLskuByIdHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/QueryHandlers/GetLskusHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Queries/GetLskusQuery.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Validators/GetLskusValidator.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/LskusController.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuApiContractTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuAuthorizationTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuRegisterQueryTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuRegisterMongoTests.cs`

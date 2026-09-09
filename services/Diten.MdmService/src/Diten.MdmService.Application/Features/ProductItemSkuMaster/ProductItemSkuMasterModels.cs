@@ -290,7 +290,8 @@ public static class ProductItemSkuMasterModels
         ProductIdentityLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt,
+        IReadOnlyList<string>? AvailableActions = null);
 
     public sealed record LskuDetailDto(
         Guid Id,
@@ -301,7 +302,8 @@ public static class ProductItemSkuMasterModels
         ProductIdentityLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt);
+        DateTimeOffset? UpdatedAt,
+        IReadOnlyList<string>? AvailableActions = null);
 
     public sealed record LskuCreateGskuOptionDto(
         Guid Id,

@@ -29,7 +29,11 @@ var runGskuCorrectionRecovery = GskuCorrectionRecoveryCommandLine.IsRequested(ar
 var runGskuRetirementRequestRecovery = GskuRetirementRequestRecoveryCommandLine.IsRequested(args);
 var runGlobalProductRetirementRecovery =
     GlobalProductRetirementRequestRecoveryCommandLine.IsRequested(args);
+var runLskuIdentityWorkflowRecovery = LskuIdentityWorkflowRecoveryCommandLine.IsRequested(args);
+var runLskuRetirementRequestRecovery = LskuRetirementRequestRecoveryCommandLine.IsRequested(args);
 if ((runProductLegalEntityScopeOperational ? 1 : 0)
+    + (runLskuIdentityWorkflowRecovery ? 1 : 0)
+    + (runLskuRetirementRequestRecovery ? 1 : 0)
     + (runAuditIntentTemporalMigration ? 1 : 0)
     + (runProductIdentityWorkflowRecovery ? 1 : 0)
     + (runGlobalProductCorrectionRecovery ? 1 : 0)
@@ -221,7 +225,66 @@ builder.Services.AddScoped<GskuRetirementRequestWorkflowProcessor>();
 builder.Services.AddSingleton<GskuRetirementRequestRecoveryRunner>();
 builder.Services.AddHostedService<GskuRetirementRequestRecoveryWorker>();
 
+builder.Services.AddOptions<LskuIdentityWorkflowOptions>()
+    .Bind(builder.Configuration.GetSection(LskuIdentityWorkflowOptions.SectionName))
+    .Validate(options => options.IsValid(), "LSKU_IDENTITY_WORKFLOW_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddOptions<LskuIdentityWorkflowWorkerOptions>()
+    .Bind(builder.Configuration.GetSection(LskuIdentityWorkflowWorkerOptions.SectionName))
+    .Validate(IsValidLskuIdentityWorkflowWorkerOptions,
+        "LSKU_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<LskuIdentityWorkflowOptions>>().Value;
+    var configuration = options.Enabled ? options.ToStartConfiguration()
+        : new LskuIdentityWorkflowStartConfiguration(null, null, [], string.Empty, false, false, null);
+    return new LskuIdentityWorkflowStartRequestFactory(configuration,
+        sp.GetRequiredService<TimeProvider>());
+});
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<LskuIdentityWorkflowWorkerOptions>>().Value;
+    return new LskuIdentityWorkflowExecutionConfiguration(
+        TimeSpan.FromSeconds(options.LeaseSeconds), TimeSpan.FromSeconds(options.RetryDelaySeconds));
+});
+builder.Services.AddScoped<LskuIdentityWorkflowProcessor>();
+builder.Services.AddSingleton<LskuIdentityWorkflowRecoveryRunner>();
+builder.Services.AddHostedService<LskuIdentityWorkflowRecoveryWorker>();
+builder.Services.AddOptions<LskuRetirementRequestWorkflowOptions>()
+    .Bind(builder.Configuration.GetSection(LskuRetirementRequestWorkflowOptions.SectionName))
+    .Validate(options => !options.Enabled || IsValidLskuRetirementRequestOptions(options,
+        builder.Configuration.GetSection(LskuIdentityWorkflowOptions.SectionName)
+            .Get<LskuIdentityWorkflowOptions>() ?? new()),
+        "LSKU_RETIREMENT_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddOptions<LskuRetirementRequestWorkflowWorkerOptions>()
+    .Bind(builder.Configuration.GetSection(LskuRetirementRequestWorkflowWorkerOptions.SectionName))
+    .Validate(options => options.IsValid(), "LSKU_RETIREMENT_WORKER_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<LskuRetirementRequestWorkflowOptions>>().Value;
+    var identity = sp.GetRequiredService<IOptions<LskuIdentityWorkflowOptions>>().Value;
+    var configuration = options.Enabled
+        ? options.ToConfiguration(identity.TemplateId, identity.TemplateCode)
+        : new LskuRetirementRequestStartConfiguration(null, null, [], string.Empty, false, false, null);
+    return new LskuRetirementRequestWorkflowStartRequestFactory(configuration,
+        sp.GetRequiredService<TimeProvider>());
+});
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<LskuRetirementRequestWorkflowWorkerOptions>>().Value;
+    return new LskuRetirementRequestExecutionConfiguration(TimeSpan.FromSeconds(options.LeaseSeconds),
+        TimeSpan.FromSeconds(options.RetryDelaySeconds));
+});
+builder.Services.AddScoped<LskuRetirementRequestWorkflowProcessor>();
+builder.Services.AddSingleton<LskuRetirementRequestRecoveryRunner>();
+builder.Services.AddHostedService<LskuRetirementRequestRecoveryWorker>();
+
 if (!runProductLegalEntityScopeOperational
+    && !runLskuIdentityWorkflowRecovery
+    && !runLskuRetirementRequestRecovery
     && !runAuditIntentTemporalMigration
     && !runProductIdentityWorkflowRecovery
     && !runGlobalProductCorrectionRecovery
@@ -390,6 +453,20 @@ if (runGlobalProductRetirementRecovery)
     return;
 }
 
+if (runLskuIdentityWorkflowRecovery)
+{
+    await LskuIdentityWorkflowRecoveryCommandLine.RunAsync(
+        app.Services.GetRequiredService<LskuIdentityWorkflowRecoveryRunner>(), app.Lifetime.ApplicationStopping);
+    return;
+}
+if (runLskuRetirementRequestRecovery)
+{
+    var result = await LskuRetirementRequestRecoveryCommandLine.RunAsync(
+        app.Services.GetRequiredService<LskuRetirementRequestRecoveryRunner>(), app.Lifetime.ApplicationStopping);
+    if (result.FailedCount > 0) throw new InvalidOperationException("LSKU_RETIREMENT_REQUEST_RECOVERY_FAILED");
+    return;
+}
+
 if (runFirstGskuIdentityWorkflowRecovery)
 {
     var runner = app.Services.GetRequiredService<FirstGskuIdentityWorkflowRecoveryRunner>();
@@ -454,6 +531,19 @@ app.MapGet("/health", () => Results.Ok(new { status = "Healthy" })).AllowAnonymo
 app.MapControllers();
 
 app.Run();
+
+static bool IsValidLskuIdentityWorkflowWorkerOptions(LskuIdentityWorkflowWorkerOptions options)
+{
+    try { options.EnsureValidWhenEnabled(); return true; }
+    catch (InvalidOperationException) { return false; }
+}
+
+static bool IsValidLskuRetirementRequestOptions(LskuRetirementRequestWorkflowOptions options,
+    LskuIdentityWorkflowOptions identity)
+{
+    try { options.ToConfiguration(identity.TemplateId, identity.TemplateCode); return true; }
+    catch (InvalidOperationException) { return false; }
+}
 
 static bool IsValidGskuCorrectionOptions(GskuCorrectionWorkflowOptions options,
     FirstGskuIdentityWorkflowOptions identity)

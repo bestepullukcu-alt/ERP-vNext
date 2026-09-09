@@ -5,8 +5,8 @@ using Diten.MdmService.Application.Features.ProductItemSkuMaster.Queries;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Persistence.Repositories;
-using MongoDB.Driver;
 using MongoDB.Bson;
+using MongoDB.Driver;
 using Xunit;
 
 namespace Diten.MdmService.Application.Tests;
@@ -70,7 +70,7 @@ public sealed class LskuRegisterMongoTests
         var product = await scope.InsertProductAsync(scope.TenantA, "GP-A", "Product A");
         var revision = await scope.InsertRevisionAsync(scope.TenantA, product.Id, "REV-A");
         var gsku = await scope.InsertGskuAsync(scope.TenantA, "GS-A", revision.Id);
-        await scope.InsertLskuAsync(scope.TenantA, gsku.Id, "LS-003", "US");
+        await scope.InsertLskuAsync(scope.TenantA, gsku.Id, "LS-003", "US", lifecycleStatus: ProductIdentityLifecycleStatus.IdentityApproved);
         await scope.InsertLskuAsync(scope.TenantA, gsku.Id, "LS-001", "TR");
         await scope.InsertLskuAsync(scope.TenantA, gsku.Id, "LS-002", "DE");
         var tenantContext = new TenantContext(scope.TenantA);
@@ -96,6 +96,14 @@ public sealed class LskuRegisterMongoTests
         var marketSearch = await handler.Handle(
             new GetLskusQuery { PageNumber = 1, PageSize = 20, Search = "tr" },
             CancellationToken.None);
+        var approved = await handler.Handle(
+            new GetLskusQuery
+            {
+                PageNumber = 1,
+                PageSize = 20,
+                LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved
+            },
+            CancellationToken.None);
 
         Assert.Equal(["LS-001", "LS-002"], first.Data!.Items.Select(x => x.CanonicalCode));
         Assert.Equal(["LS-003"], second.Data!.Items.Select(x => x.CanonicalCode));
@@ -103,6 +111,8 @@ public sealed class LskuRegisterMongoTests
         Assert.Equal(3, second.Data.TotalCount);
         Assert.Equal("TR", Assert.Single(marketSearch.Data!.Items).MarketCode);
         Assert.Equal(1, marketSearch.Data.TotalCount);
+        Assert.Equal("LS-003", Assert.Single(approved.Data!.Items).CanonicalCode);
+        Assert.Equal(1, approved.Data.TotalCount);
     }
 
     [Fact]
@@ -287,7 +297,8 @@ public sealed class LskuRegisterMongoTests
             Guid gskuId,
             string canonicalCode,
             string marketCode,
-            bool isDeleted = false)
+            bool isDeleted = false,
+            ProductIdentityLifecycleStatus lifecycleStatus = ProductIdentityLifecycleStatus.Draft)
         {
             var lsku = new Lsku
             {
@@ -298,7 +309,7 @@ public sealed class LskuRegisterMongoTests
                 CodeReservationId = Guid.NewGuid(),
                 CreationCommandId = "LSKU:" + Guid.NewGuid().ToString("N"),
                 MarketCode = marketCode,
-                LifecycleStatus = ProductIdentityLifecycleStatus.Draft,
+                LifecycleStatus = lifecycleStatus,
                 IsDeleted = isDeleted,
                 DeletedAt = isDeleted ? DateTimeOffset.UtcNow : null,
                 CreatedAt = DateTimeOffset.UtcNow

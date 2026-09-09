@@ -1,6 +1,10 @@
 using Diten.MdmService.Application.Common;
+using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Queries;
+using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.Shared.Core;
 using MediatR;
@@ -15,6 +19,7 @@ public sealed class GetLskuByIdHandler
     private readonly IProductDefinitionRevisionRepository _revisions;
     private readonly IGlobalProductRepository _globalProducts;
     private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
+    private readonly IProductIdentityLifecycleActorContext _actorContext;
 
     public GetLskuByIdHandler(
         ILskuRepository lskus,
@@ -24,13 +29,15 @@ public sealed class GetLskuByIdHandler
         IProductLegalEntityScopeRolloutStateRepository rolloutStates,
         IProductLegalEntityScopePolicyRepository policies,
         ProductLegalEntityScopeCandidateFacade candidates,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        IProductIdentityLifecycleActorContext? actorContext = null)
     {
         _lskus = lskus;
         _gskus = gskus;
         _revisions = revisions;
         _globalProducts = globalProducts;
         _scopeGuard = new(rolloutStates, policies, candidates, tenantContext);
+        _actorContext = actorContext ?? NoActorContext.Instance;
     }
 
     public async Task<Response<ProductItemSkuMasterModels.LskuDetailDto>> Handle(
@@ -83,6 +90,50 @@ public sealed class GetLskuByIdHandler
             lsku.LifecycleStatus,
             lsku.Version,
             lsku.CreatedAt,
-            lsku.UpdatedAt));
+            lsku.UpdatedAt,
+            BuildAvailableActions(lsku, _actorContext)));
+    }
+
+    internal static IReadOnlyList<string> BuildAvailableActions(
+        Lsku lsku,
+        IProductIdentityLifecycleActorContext actorContext)
+    {
+        var actions = new List<string> { "DETAILS" };
+        if (lsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft
+            && actorContext.HasPermission(LskuIdentityLifecyclePermissions.Submit))
+        {
+            actions.Add("SUBMIT");
+        }
+
+        if (lsku.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval
+            && lsku.IdentityWorkflowBinding is { } binding
+            && actorContext.TryResolveCanonicalHumanSubject(out var subjectId)
+            && subjectId == binding.SubmitterSubjectId
+            && actorContext.HasPermission(LskuIdentityLifecyclePermissions.Withdraw))
+        {
+            actions.Add("WITHDRAW_APPROVAL");
+        }
+
+        if (lsku.LifecycleStatus == ProductIdentityLifecycleStatus.IdentityApproved
+            && lsku.ActiveLifecycleOperation is null
+            && actorContext.TryResolveCanonicalHumanSubject(out _)
+            && actorContext.HasPermission(LskuRetirementRequestPermissions.Request))
+        {
+            actions.Add("REQUEST_RETIREMENT");
+        }
+
+        return actions;
+    }
+
+    private sealed class NoActorContext : IProductIdentityLifecycleActorContext
+    {
+        public static readonly NoActorContext Instance = new();
+        public bool TryResolveCanonicalHumanSubject(out Guid subjectId)
+        {
+            subjectId = Guid.Empty;
+            return false;
+        }
+
+        public bool HasPermission(string permission) => false;
     }
 }

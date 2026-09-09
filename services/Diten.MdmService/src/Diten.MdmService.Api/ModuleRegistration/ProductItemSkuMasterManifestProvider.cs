@@ -22,6 +22,10 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
     private const string GskusCreate = "mdm.gskus.create";
     private const string LskusRead = "mdm.lskus.read";
     private const string LskusCreate = "mdm.lskus.create";
+    private const string LskusSubmit = "mdm.lskus.submit";
+    private const string LskusWithdraw = "mdm.lskus.withdraw";
+    private const string LskusRequestRetirement = "mdm.lskus.request-retirement";
+    private const string LskusRetire = "mdm.lskus.retire";
     private const string ProductAbbreviationsRead = "mdm.product-abbreviations.read";
     private const string ProductAbbreviationsRequest = "mdm.product-abbreviations.request";
     private const string ProductAbbreviationsCancel = "mdm.product-abbreviations.cancel";
@@ -115,7 +119,11 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                     Actions:
                     [
                         new ModuleManifestAction("ADD_NEW", "Add New", LskusCreate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
-                        new ModuleManifestAction("VIEW_DETAILS", "View Details", LskusRead, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
+                        new ModuleManifestAction("VIEW_DETAILS", "View Details", LskusRead, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("SUBMIT", "Submit", LskusSubmit, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("WITHDRAW_APPROVAL", "Withdraw Approval", LskusWithdraw, "RowAction", 35, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("REQUEST_RETIREMENT", "Request Retirement", LskusRequestRetirement, "RowAction", 37, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("RETIRE", "Retire", LskusRetire, "System", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: false)
                     ]),
                 new ModuleManifestPage(
                     PageCode: "PRODUCT_ABBREVIATIONS",
