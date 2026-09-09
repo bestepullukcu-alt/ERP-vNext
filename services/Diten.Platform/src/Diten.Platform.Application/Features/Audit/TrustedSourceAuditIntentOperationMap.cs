@@ -7,6 +7,17 @@ public static class TrustedSourceAuditIntentOperationMap
     private static readonly IReadOnlyDictionary<(string AggregateType, string Operation), (string EntityType, AuditOperation Operation)> Mappings =
         new Dictionary<(string, string), (string, AuditOperation)>
         {
+            [("ProductAbbreviation", "ProductAbbreviationAllocationRequested")] = ("ProductAbbreviation", AuditOperation.Create),
+            [("ProductAbbreviation", "ProductAbbreviationAllocationApproved")] = ("ProductAbbreviation", AuditOperation.LifecycleTransition),
+            [("ProductAbbreviation", "ProductAbbreviationAllocationRejected")] = ("ProductAbbreviation", AuditOperation.LifecycleTransition),
+            [("ProductAbbreviation", "ProductAbbreviationAllocationCancelled")] = ("ProductAbbreviation", AuditOperation.LifecycleTransition),
+            [("ProductAbbreviation", "ProductAbbreviationCorrectionRequested")] = ("ProductAbbreviation", AuditOperation.Create),
+            [("ProductAbbreviation", "ProductAbbreviationCorrectionApproved")] = ("ProductAbbreviation", AuditOperation.LifecycleTransition),
+            [("ProductAbbreviation", "ProductAbbreviationCorrectionRejected")] = ("ProductAbbreviation", AuditOperation.LifecycleTransition),
+            [("ProductAbbreviation", "ProductAbbreviationCorrectionCancelled")] = ("ProductAbbreviation", AuditOperation.LifecycleTransition),
+            [("ProductAbbreviation", "ProductAbbreviationRetirementRequested")] = ("ProductAbbreviation", AuditOperation.LifecycleTransition),
+            [("ProductAbbreviation", "ProductAbbreviationRetirementApproved")] = ("ProductAbbreviation", AuditOperation.Deactivate),
+            [("ProductAbbreviation", "ProductAbbreviationRetirementRejected")] = ("ProductAbbreviation", AuditOperation.LifecycleTransition),
             [("CodeReservation", "CodeReserved")] = ("CodeReservation", AuditOperation.Create),
             [("CodeReservation", "CodeConsumed")] = ("CodeReservation", AuditOperation.Update),
             [("CodeReservation", "CodeBindingConfirmed")] = ("CodeReservation", AuditOperation.Update),

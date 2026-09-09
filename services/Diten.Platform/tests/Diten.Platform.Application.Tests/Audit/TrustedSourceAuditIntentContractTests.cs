@@ -12,6 +12,17 @@ public sealed class TrustedSourceAuditIntentContractTests
 {
     public static IEnumerable<object[]> ExactMappings()
     {
+        yield return ["ProductAbbreviation", "ProductAbbreviationAllocationRequested", "ProductAbbreviation", AuditOperation.Create];
+        yield return ["ProductAbbreviation", "ProductAbbreviationAllocationApproved", "ProductAbbreviation", AuditOperation.LifecycleTransition];
+        yield return ["ProductAbbreviation", "ProductAbbreviationAllocationRejected", "ProductAbbreviation", AuditOperation.LifecycleTransition];
+        yield return ["ProductAbbreviation", "ProductAbbreviationAllocationCancelled", "ProductAbbreviation", AuditOperation.LifecycleTransition];
+        yield return ["ProductAbbreviation", "ProductAbbreviationCorrectionRequested", "ProductAbbreviation", AuditOperation.Create];
+        yield return ["ProductAbbreviation", "ProductAbbreviationCorrectionApproved", "ProductAbbreviation", AuditOperation.LifecycleTransition];
+        yield return ["ProductAbbreviation", "ProductAbbreviationCorrectionRejected", "ProductAbbreviation", AuditOperation.LifecycleTransition];
+        yield return ["ProductAbbreviation", "ProductAbbreviationCorrectionCancelled", "ProductAbbreviation", AuditOperation.LifecycleTransition];
+        yield return ["ProductAbbreviation", "ProductAbbreviationRetirementRequested", "ProductAbbreviation", AuditOperation.LifecycleTransition];
+        yield return ["ProductAbbreviation", "ProductAbbreviationRetirementApproved", "ProductAbbreviation", AuditOperation.Deactivate];
+        yield return ["ProductAbbreviation", "ProductAbbreviationRetirementRejected", "ProductAbbreviation", AuditOperation.LifecycleTransition];
         yield return ["CodeReservation", "CodeReserved", "CodeReservation", AuditOperation.Create];
         yield return ["CodeReservation", "CodeConsumed", "CodeReservation", AuditOperation.Update];
         yield return ["CodeReservation", "CodeBindingConfirmed", "CodeReservation", AuditOperation.Update];
@@ -99,6 +110,26 @@ public sealed class TrustedSourceAuditIntentContractTests
             Assert.False(TrustedSourceAuditIntentOperationMap.TryMap(aggregate, operation, out _, out _));
         foreach (var invalid in new[] { operation.ToLowerInvariant(), operation + ".extra", ordinal, "9999", "LskuUnknown", "*" })
             Assert.False(TrustedSourceAuditIntentOperationMap.TryMap("Lsku", invalid, out _, out _));
+    }
+
+    [Theory]
+    [InlineData("ProductAbbreviationAllocationRequested", "51")]
+    [InlineData("ProductAbbreviationAllocationApproved", "52")]
+    [InlineData("ProductAbbreviationAllocationRejected", "53")]
+    [InlineData("ProductAbbreviationAllocationCancelled", "54")]
+    [InlineData("ProductAbbreviationCorrectionRequested", "55")]
+    [InlineData("ProductAbbreviationCorrectionApproved", "56")]
+    [InlineData("ProductAbbreviationCorrectionRejected", "57")]
+    [InlineData("ProductAbbreviationCorrectionCancelled", "58")]
+    [InlineData("ProductAbbreviationRetirementRequested", "59")]
+    [InlineData("ProductAbbreviationRetirementApproved", "60")]
+    [InlineData("ProductAbbreviationRetirementRejected", "61")]
+    public void Abb_mapping_rejects_wrong_aggregate_case_numeric_and_unknown_combinations(string operation, string ordinal)
+    {
+        foreach (var aggregate in new[] { "GlobalProduct", "Gsku", "Lsku", "ProductDefinitionRevision", "productabbreviation", "ProductAbbreviation " })
+            Assert.False(TrustedSourceAuditIntentOperationMap.TryMap(aggregate, operation, out _, out _));
+        foreach (var invalid in new[] { operation.ToLowerInvariant(), operation + ".extra", ordinal, "9999", "*", "CodeReserved" })
+            Assert.False(TrustedSourceAuditIntentOperationMap.TryMap("ProductAbbreviation", invalid, out _, out _));
     }
 
     [Fact]

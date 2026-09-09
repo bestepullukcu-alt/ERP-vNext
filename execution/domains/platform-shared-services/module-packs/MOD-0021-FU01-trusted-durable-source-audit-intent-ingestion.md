@@ -537,3 +537,18 @@ with 0 warnings and 0 errors. No runtime intake, config, credential or operation
 > reconciliation tamamlandı ve doğrulandı. Configuration, credential, tenant-grant, MDM source client, FU02 operational migration/cutover,
 > operational-run ve Production/Staging enablement hâlâ ayrı onay kapılarıdır.
 > Backend-only olduğu için Golden Reference `none`; UI/DataTable sapması yoktur.
+
+### 2026-09-09 ABB Phase 1.5 strict mapping integration
+
+Owner-approved MOD-0290-FU01 amendment: only the exact ProductAbbreviation aggregate and its eleven named
+allocation/correction/retirement operations (MDM ordinals 51-61) are appended to the existing operation map.
+Requested allocation/correction map to Create; approved retirement maps to Deactivate; the other eight map to
+LifecycleTransition. The protected factory's eleven history event cases were compared individually with the enum.
+Exact paths:
+
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/Audit/TrustedSourceAuditIntentOperationMap.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/TrustedSourceAuditIntentContractTests.cs`
+
+Focused contract tests: 89 passed, 0 failed, 0 skipped, including eleven positive ABB pairs and eleven parameterized
+negative cases (wrong aggregate, case drift, numeric aliases, suffixes and unknown operations). Existing mappings
+remain intact. Platform API Release build passed. These are contract tests, not real-Mongo or live intake acceptance.
