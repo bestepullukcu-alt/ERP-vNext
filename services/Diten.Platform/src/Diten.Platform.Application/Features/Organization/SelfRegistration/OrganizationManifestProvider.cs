@@ -22,6 +22,10 @@ public sealed class OrganizationManifestProvider : IModuleManifestProvider
     private const string OrgUnitsArchive = "platform.organization-units.archive";
     private const string OrgUnitsDelete = "platform.organization-units.delete";
 
+    // MOD-0288-FU04 — the field-definition authoring surface. FU02 §14 keys, not re-invented.
+    private const string FieldDefinitionsRead = "platform.organization-units.custom-fields.read";
+    private const string FieldDefinitionsManage = "platform.organization-units.custom-fields.manage";
+
     private const string PositionsRead = "platform.positions.read";
     private const string PositionsCreate = "platform.positions.create";
     private const string PositionsUpdate = "platform.positions.update";
@@ -108,6 +112,73 @@ public sealed class OrganizationManifestProvider : IModuleManifestProvider
                     [
                         new ModuleManifestAction("ARCHIVE", "Archive", OrgUnitsArchive, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
                         new ModuleManifestAction("DELETE", "Delete", OrgUnitsDelete, "Toolbar", 20, IsDangerous: true, IsToolbarAction: true, IsRowAction: false)
+                    ]),
+
+                /*
+                 * MOD-0288-FU04 — Organization field definitions.
+                 *
+                 * ⚠ NAV PLACEMENT IS A DECISION, NOT A DEFAULT (pack §10). SortOrder 15 puts it directly after
+                 * "Organization Units" and before "Positions": these definitions govern that screen's fields,
+                 * so a settings area would file them where nobody looking at a unit would think to look.
+                 */
+                new ModuleManifestPage(
+                    PageCode: "ORGANIZATION_FIELD_DEFINITIONS",
+                    DisplayName: "Organization Field Definitions",
+                    RoutePath: "/Organization/FieldDefinitions",
+                    RequiredPermission: FieldDefinitionsRead,
+                    ParentPageCode: null,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 15,
+                    Actions:
+                    [
+                        // ⚠ DEACTIVATE, NOT DELETE. FU02 offers no delete for a definition; a DELETE action
+                        // here would name a capability the backend does not have.
+                        new ModuleManifestAction("DEACTIVATE", "Deactivate", FieldDefinitionsManage, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
+                    ]),
+
+                new ModuleManifestPage(
+                    PageCode: "ORG_FIELD_DEFINITION_CREATE",
+                    DisplayName: "Create Field Definition",
+                    RoutePath: "/Organization/FieldDefinitions/Create",
+                    RequiredPermission: FieldDefinitionsManage,
+                    ParentPageCode: "ORGANIZATION_FIELD_DEFINITIONS",
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 16,
+                    Actions:
+                    [
+                        new ModuleManifestAction("SAVE", "Save Field Definition", FieldDefinitionsManage, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
+                    ]),
+
+                new ModuleManifestPage(
+                    PageCode: "ORG_FIELD_DEFINITION_EDIT",
+                    DisplayName: "Edit Field Definition",
+                    RoutePath: "/Organization/FieldDefinitions/Edit/{id}",
+                    RequiredPermission: FieldDefinitionsManage,
+                    ParentPageCode: "ORGANIZATION_FIELD_DEFINITIONS",
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 17,
+                    Actions:
+                    [
+                        new ModuleManifestAction("SAVE", "Save Field Definition", FieldDefinitionsManage, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
+                    ]),
+
+                // ⚠ Details is gated by READ, not manage: seeing which fields exist is not permission to
+                // change the tenant's data model (§5). The page itself renders no write control without it.
+                new ModuleManifestPage(
+                    PageCode: "ORG_FIELD_DEFINITION_DETAILS",
+                    DisplayName: "Field Definition Details",
+                    RoutePath: "/Organization/FieldDefinitions/Details/{id}",
+                    RequiredPermission: FieldDefinitionsRead,
+                    ParentPageCode: "ORGANIZATION_FIELD_DEFINITIONS",
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 18,
+                    Actions:
+                    [
+                        new ModuleManifestAction("DEACTIVATE", "Deactivate", FieldDefinitionsManage, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
                     ]),
 
                 // MOD-0288 Phase 3 — Positions reshaped to full-page Create/Edit/Details (§2a). Add/Edit navigate to

@@ -18,7 +18,7 @@ Bu akış, o yansıtmanın nasıl kurulacağını değil, **kurmadan önce neyin
 > Bu yüzden aşağıdaki her madde **bir ölçüm talimatıdır**, bir bilgi değil. Cevabı sen
 > koddan alacaksın. Böylece bu dosya yanılamaz.
 >
-> Günün durumu (bugün neyin eksik olduğu) `docs/product-backlog.md` içindedir — orada
+> Günün durumu (bugün neyin eksik olduğu) `docs/roadmap/backlog/product-backlog.md` içindedir — orada
 > tarihi vardır ve kapandığında kapandığı yazılır.
 
 ---
@@ -149,5 +149,5 @@ gördüğü şeyi doğrula, okuması kolay olanı değil.
 ## 🔗 İlgili
 
 - `execution/portfolio/delivery-capability-packs/DCP-004-provider-onboarding-note.md` — sözleşme
-- `docs/product-backlog.md` — **günün** açık maddeleri (tarihli; bu dosya tarihsizdir)
+- `docs/roadmap/backlog/product-backlog.md` — **günün** açık maddeleri (tarihli; bu dosya tarihsizdir)
 - `.antigravity/rules/module-self-registration-standard.md` — manifest tarafı

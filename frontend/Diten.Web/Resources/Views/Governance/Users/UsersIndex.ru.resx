@@ -34,6 +34,8 @@
   <data name="FormTitleEdit" xml:space="preserve"><value>Изменить пользователя</value></data>
   <data name="GeneralInformation" xml:space="preserve"><value>Общая информация</value></data>
   <data name="EmailPlaceholder" xml:space="preserve"><value>напр. user@example.com</value></data>
+  <data name="FirstNamePlaceholder" xml:space="preserve"><value>напр. Иван</value></data>
+  <data name="LastNamePlaceholder" xml:space="preserve"><value>напр. Иванов</value></data>
   <data name="EmailImmutableHint" xml:space="preserve"><value>Эл. почту нельзя изменить после создания.</value></data>
   <data name="KpiTotalUsers" xml:space="preserve"><value>Всего пользователей</value></data>
   <data name="KpiActiveUsers" xml:space="preserve"><value>Активные</value></data>

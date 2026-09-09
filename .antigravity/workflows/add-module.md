@@ -160,10 +160,14 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
    - `code-quality-agent` → İsimlendirme, dosya yapısı ve standart denetimi yap.
 
 6. **Phase 6: Dokümantasyon ve Denetim (documentation-writer & user-manual-generator)**
-   - `documentation-writer` → Yeni modülün API dokümanlarını (Swagger/README) güncelle.
+   - `documentation-writer` → Yeni modülün API dokümanlarını güncelle. **Yol zorunlu:**
+     servis README → `services/<servis>/README.md` · API anlatısı → `docs/reference/architecture/api/` ·
+     karar alındıysa ADR → `docs/records/decisions/{yyyy-mm}/` (bkz. `rules/docs-organization.md` §3.1).
    - `user-manual-generator` → Son kullanıcı kılavuzunu hazırla (modülün ekranları, alanları, adım adım rehber).
-   - **Mimari Denetim (Audit Report):** Geliştirilen modülün standartlara uygunluğunu belgeleyen bir denetim raporu oluştur ve `/docs/audits/{module-name}-audit.md` adresine kaydet.
-   - ⛔ **BLOCKER:** Bu faz atlanamaz. Orchestration Report'ta "Dokümantasyon ve Denetim tamamlandı" işaretlenmeden modül **kapanmaz**. `documentation-writer`, `user-manual-generator` ve Audit Report tamamlanmadan "teslim edildi" denilmez.
+     **Yol zorunlu:** `docs/guides/<modül>/index.html` — resimli tek dosya HTML; markdown kılavuz kabul edilmez.
+   - **Mimari Denetim (Audit Report):** Geliştirilen modülün standartlara uygunluğunu belgeleyen bir denetim raporu oluştur ve `docs/records/audits/{yyyy-mm}/{module-name}-audit-{yyyy-mm-dd}.md` adresine kaydet (ay klasoru; bkz. `.antigravity/rules/docs-organization.md` K4).
+   - ⛔ **BLOCKER:** Bu faz atlanamaz. Belge üretildi sayılması için **dosya yolunun raporda yazılı olması** gerekir;
+     "hazırlandı" ifadesi tek başına kabul edilmez — yolu olmayan belge bulunamaz, bulunamayan belge yoktur. Orchestration Report'ta "Dokümantasyon ve Denetim tamamlandı" işaretlenmeden modül **kapanmaz**. `documentation-writer`, `user-manual-generator` ve Audit Report tamamlanmadan "teslim edildi" denilmez.
 
 ## ⚖️ Altın Kurallar
 - **Sıfır İnisiyatif Kuralı:** Ajan, standart Liste/CRUD (DataTable) sayfaları için arayüz uyduramaz, kesinlikle Master Template'i kullanmak zorundadır.
@@ -177,7 +181,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
 
 ## Module ID Canonicalization Gate (DCP-002)
 
-The Blueprint (`docs/System Capability & Implementation Blueprint - master 8.1.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Master 7 is historical predecessor evidence only. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
+The Blueprint (`docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Master 7 is historical predecessor evidence only. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
 
 1. **Blueprint lookup** — the ID + canonical name must exist in `Blueprint_Data`, or the ID must be an FU/child of an existing Blueprint MOD parent.
 2. **Registry collision** — it must not already map to a different capability in `execution/registries/module-id-registry.md`.

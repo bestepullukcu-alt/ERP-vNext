@@ -34,6 +34,8 @@
   <data name="FormTitleEdit" xml:space="preserve"><value>Edit User</value></data>
   <data name="GeneralInformation" xml:space="preserve"><value>General Information</value></data>
   <data name="EmailPlaceholder" xml:space="preserve"><value>e.g. user@example.com</value></data>
+  <data name="FirstNamePlaceholder" xml:space="preserve"><value>e.g. Jane</value></data>
+  <data name="LastNamePlaceholder" xml:space="preserve"><value>e.g. Smith</value></data>
   <data name="EmailImmutableHint" xml:space="preserve"><value>The email cannot be changed after creation.</value></data>
   <data name="KpiTotalUsers" xml:space="preserve"><value>Total Users</value></data>
   <data name="KpiActiveUsers" xml:space="preserve"><value>Active</value></data>

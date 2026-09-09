@@ -452,7 +452,7 @@ frontend/Diten.Web/Views/Shared/_LayoutTenantShell.cshtml                       
 
 # --- doğrulama ---
 scripts/smoke-mod0167-fu04-strategy-template-authenticated.ps1                                                      (yeni; FU02 script'i şablon)
-docs/audits/mod-0167-fu04-strategy-template-*.md                                                                    (evidence)
+docs/records/audits/mod-0167-fu04-strategy-template-*.md                                                                    (evidence)
 ```
 
 > **Repo scope'a HİÇ girmeyenler:** `SubjectList*` / `Ucln*` / `MicroTarget*` / `CyclePeriod*` dosyaları ·

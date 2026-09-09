@@ -85,4 +85,16 @@
   <data name="MoveCycleBlocked" xml:space="preserve">
     <value>Une unité ne peut pas être déplacée sous sa propre sous-unité.</value>
   </data>
+  <data name="FunctionalParentLabel" xml:space="preserve"><value>Unité parente fonctionnelle</value></data>
+  <data name="AdministrativeParentLabel" xml:space="preserve"><value>Unité parente administrative</value></data>
+  <data name="AdministrativeParentNone" xml:space="preserve"><value>(Aucune ligne administrative)</value></data>
+  <data name="AdministrativeParentHelp" xml:space="preserve"><value>Si laissé vide, il n'y a pas de ligne administrative. Elle ne se rabat pas sur l'unité parente fonctionnelle.</value></data>
+  <data name="OrgUnitTypeGroupFunction" xml:space="preserve"><value>Fonction de groupe</value></data>
+  <data name="CustomFieldsSectionTitle" xml:space="preserve"><value>Champs personnalisés</value></data>
+  <data name="CustomFieldRequiredError" xml:space="preserve"><value>Ce champ est obligatoire</value></data>
+  <data name="CustomFieldTypeError" xml:space="preserve"><value>La valeur ne correspond pas au type du champ</value></data>
+  <data name="CustomFieldSelectPlaceholder" xml:space="preserve"><value>Sélectionner…</value></data>
+  <data name="CustomFieldTextPlaceholder" xml:space="preserve"><value>Saisissez une valeur</value></data>
+  <data name="CustomFieldNumberPlaceholder" xml:space="preserve"><value>Saisissez un nombre</value></data>
+  <data name="CustomFieldDatePlaceholder" xml:space="preserve"><value>Sélectionnez une date</value></data>
 </root>

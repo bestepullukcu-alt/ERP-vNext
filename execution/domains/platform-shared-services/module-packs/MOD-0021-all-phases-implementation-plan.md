@@ -76,7 +76,7 @@ Confirm repo boundaries, existing audit code, tenant context, MediatR behavior o
 - `execution/domains/platform-shared-services/domain-config.md`
 - `execution/domains/platform-shared-services/module-packs/MOD-0021-general-audit-trail.md`
 - `.antigravity/workflows/add-module.md`
-- `docs/platform/master-plan.md`
+- `docs/reference/modules/platform/master-plan.md`
 - `services/Diten.Platform/src/**`
 - `gateway/Diten.ApiGateway/**/ocelot.json` inspection only
 
@@ -460,7 +460,7 @@ Zorunlu okuma sirasi:
 4) execution/domains/platform-shared-services/module-packs/MOD-0021-all-phases-implementation-plan.md
 5) execution/domains/platform-shared-services/module-packs/MOD-0021-phase-2-handoff-plan.md
 6) .antigravity/workflows/add-module.md
-7) docs/platform/master-plan.md
+7) docs/reference/modules/platform/master-plan.md
 
 Scope:
 - Sadece Phase 2 Application Core.

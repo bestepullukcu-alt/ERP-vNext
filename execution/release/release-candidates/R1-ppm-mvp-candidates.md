@@ -8,7 +8,7 @@ Includes release candidate versions, build tags, and verified module versions.
 
 ## Not the source for
 - Active development status (use Platform Delivery Board).
-- Release notes (use docs/releases/release-notes/).
+- Release notes (use docs/records/releases/).
 
 ## Current status
 Placeholder. Actual candidate lists will be added upon build creation.

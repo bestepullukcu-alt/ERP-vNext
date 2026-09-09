@@ -260,7 +260,7 @@ Implementation may touch only:
 - corresponding 7-language MasterRegister/ControlledDocuments RESX resources
 - a new targeted verifier under `scripts/verify-mod0029-fu36-*.ps1`
 - `execution/registries/module-implementation-status.md` during implementation lifecycle updates
-- `docs/audits/mod-0029-fu36-*.md`
+- `docs/records/audits/mod-0029-fu36-*.md`
 
 ## 6. Protected Paths
 

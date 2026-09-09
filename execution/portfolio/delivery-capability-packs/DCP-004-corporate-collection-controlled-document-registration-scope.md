@@ -236,7 +236,7 @@ scope-aware downstream lifecycle/training/signature behavior, and reporting. The
 ## 20. Audit and reconciliation notes / Ready-for-dev Checklist
 
 Initial blocker evidence is recorded in
-`docs/audits/mod-0029-fu36-corporate-scope-governance-blocker-2026-07-25.md`.
+`docs/records/audits/2026-07/mod-0029-fu36-corporate-scope-governance-blocker-2026-07-25.md`.
 
 - [x] DCP-004 approved.
 - [x] MOD-0028-FU06 decisions approved and pack promoted to `ready-for-dev`.
@@ -249,19 +249,19 @@ Initial blocker evidence is recorded in
 - [x] Nullable-only and dummy CompanyId semantics prohibited.
 
 Approval evidence:
-`docs/audits/dcp-004-mod-0028-fu06-approval-ready-for-dev-2026-07-25.md`.
+`docs/records/audits/2026-07/dcp-004-mod-0028-fu06-approval-ready-for-dev-2026-07-25.md`.
 
 Historical post-implementation reconciliation (2026-07-25): DCP-004 remained `approved`, but Phase 2 was runtime-blocked.
 Real Mongo rejected the FU06 Corporate partial unique index (`InstanceStatus != Archived` is unsupported in a
 partial filter), preventing Platform startup and authenticated smoke. Phase 3/FU37 remains blocked until a
 separately authorized runtime fix and successful smoke close this gap. Evidence:
-`docs/audits/mod-0028-fu06-runtime-smoke-reconciliation-2026-07-25.md`.
+`docs/records/audits/2026-07/mod-0028-fu06-runtime-smoke-reconciliation-2026-07-25.md`.
 
 Mongo compatibility reconciliation (2026-07-25): Phase 2 startup/index blocker is resolved. The positive Active
 partial filter was created successfully after development-only exact-index reconciliation, and Platform health
 returned 200 with Mongo healthy. Authenticated provisioning/access/cross-tenant cases remain non-blocking smoke
 gaps. Phase 3 is eligible for FU37 approval review; FU37 remains `draft`, and FU36C/FU36D remain paused. Evidence:
-`docs/audits/mod-0028-fu06-mongo-index-compatibility-fix-2026-07-25.md`.
+`docs/records/audits/2026-07/mod-0028-fu06-mongo-index-compatibility-fix-2026-07-25.md`.
 
 Phase 3 approval reconciliation (2026-07-25): MOD-0029-FU37 is `ready-for-dev` with runtime implementation
 `not-started`; implementation may begin under its approved pack. FU36C/FU36D remain paused until FU37

@@ -386,7 +386,7 @@ frontend/Diten.Web/Views/Shared/_LayoutTenantShell.cshtml                       
 
 # --- doğrulama ---
 scripts/smoke-mod0162-fu05-content-engagement-journey-authenticated.ps1                                           (yeni; FU04 script'i şablon)
-docs/audits/mod-0162-fu05-content-engagement-journey-runtime-ui-*.md                                              (evidence)
+docs/records/audits/mod-0162-fu05-content-engagement-journey-runtime-ui-*.md                                              (evidence)
 ```
 
 > **S2 ile repo scope'a HİÇ girmeyenler:** `IContentEngagementJourneyStageRepository` ·

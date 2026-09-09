@@ -129,7 +129,7 @@ Bu pack persisted entity eklemez. Asagidaki tablo **contract sema**'sini belgele
 
 **Step 0 (doc-only PR, prerequisite — yapilacak):**
 - `execution/domains/platform-shared-services/module-packs/MOD-0018-FU12-tenant-authorization-context-foundation.md` (bu pack)
-- `docs/platform/master-plan.md` (§12 Track G-prime altina FU12 madde guncellemesi — FU10b done, FU12a in-progress)
+- `docs/reference/modules/platform/master-plan.md` (§12 Track G-prime altina FU12 madde guncellemesi — FU10b done, FU12a in-progress)
 
 **FU12a — Context Contract + Default Implementation PR:**
 - `services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/ITenantAuthorizationContext.cs` (yeni)
@@ -451,7 +451,7 @@ if (_context.IsPlatformAdmin)
 Audit allow sink (`IEntitlementAuditSink.LogAllowedAsync`) FU14'te eklendiginde, FU12b'nin bu noktada hazirladigi emit cagrisi aktif olur. FU14 olmadan no-op.
 
 **Master-plan baglantisi:**
-- Bu pack `docs/platform/master-plan.md` §12 Track G-prime alt bolumundeki **11d. MOD-0018-FU12** maddesinin uygulamasidir.
+- Bu pack `docs/reference/modules/platform/master-plan.md` §12 Track G-prime alt bolumundeki **11d. MOD-0018-FU12** maddesinin uygulamasidir.
 - MVF eshigi FU12a + MOD-0040 minimal'in tamamlanmasini gerektirir. Tenant Users/Roles development bu eshik gelmeden baslatilmamali.
 
 **Risk notlari:**

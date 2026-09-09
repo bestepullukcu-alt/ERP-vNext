@@ -1,13 +1,13 @@
 # Platform & Shared Services — Domain Config
 
-> Bu dosya domain'in **sınırlarını ve kararlarını** tanımlar. Engineering NASIL kuralları [.antigravity/rules/](../../../.antigravity/rules/)'da; modül envanteri ve MVP scope [docs/platform/master-plan.md](../../../docs/platform/master-plan.md)'dedir.
+> Bu dosya domain'in **sınırlarını ve kararlarını** tanımlar. Engineering NASIL kuralları [.antigravity/rules/](../../../.antigravity/rules/)'da; modül envanteri ve MVP scope [docs/reference/modules/platform/master-plan.md](../../../docs/reference/modules/platform/master-plan.md)'dedir.
 
 ## Purpose
 Platform & Shared Services (PSS) domain'i, Diten ERP vNext ekosistemi için tenant, subscription, kimlik/yetki, audit, document, evidence, secrets ve internal eventing gibi yatay yetenekleri sahiplenir.
 
 ## In-Scope Modules
 
-> Wave/öncelik/durum bilgisi için [docs/platform/master-plan.md](../../../docs/platform/master-plan.md) §2. Burada sadece sahiplik listesi.
+> Wave/öncelik/durum bilgisi için [docs/reference/modules/platform/master-plan.md](../../../docs/reference/modules/platform/master-plan.md) §2. Burada sadece sahiplik listesi.
 
 **Mevcut (yapılmış / kısmi):** MOD-0009-FU01/FU02/FU03 (Tenant Management; canonicalized from MOD-0043/44/46 per DCP-002), CAND-CAP-0002-FU01 (Module Catalog), CAND-CAP-0002-FU02 (Subscription Plan), CAND-CAP-0002-FU03 (Feature Mgmt), CAND-CAP-0002 (Subscription Lifecycle), CAND-CAP-0002-FU05 (Tenant Module Entitlement), MOD-0017-FU01 (Tenant Login & Security), CAND-CAP-0003 (Platform Administrators)
 
@@ -54,7 +54,7 @@ Platform & Shared Services (PSS) domain'i, Diten ERP vNext ekosistemi için tena
 - **Vault:** appsettings + environment variables (thin abstraction). External vault (NEW-001) ertelenmiştir.
 - **Workflow (MOD-0023):** Approvals-focused MVP; BPMN motoru ertelenmiştir.
 - **Observability:** `ILogger` + correlation ID middleware. External SIEM/APM ertelenmiştir.
-- **Lokalizasyon:** Platform tarafı için yalnızca `en` + `tr` (cross-cutting kural; bkz [master-plan §7.15](../../../docs/platform/master-plan.md)).
+- **Lokalizasyon:** Platform tarafı için yalnızca `en` + `tr` (cross-cutting kural; bkz [master-plan §7.15](../../../docs/reference/modules/platform/master-plan.md)).
 - **Layout:** Platform admin modülleri `_LayoutPlatformAdmin.cshtml`, tenant modülleri `_LayoutTenantShell.cshtml`. `_Layout.cshtml` FROZEN.
 
 ## Domain Bootstrap Notes

@@ -8,6 +8,22 @@
     Layout = "_LayoutTenantShell";
 }
 
+@*
+    UAS-001 — nothing below this block is drawn for a user who cannot read roles: not the heading, not the four
+    KPI cards, not "+ Add Role", not the table that would spin and then say "0 of 0 records".
+
+    Returning here also stops @@section Scripts from registering, which is the point rather than a side effect:
+    index.js is what called the gateway, took the 403 and raised the English "Permission denied" toast over a
+    half-drawn page. The layout renders the section with required:false, so its absence is a no-op.
+
+    ⚠ Display only. AuthService's [HasPermission] on /api/roles remains the authority (UAS-001 §4).
+*@
+@if (!Perms.Has("auth.roles.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["RolesTitle"].Value" />
+    return;
+}
+
 <div class="mb-3">
     <h5 class="mb-0">@Localizer["RolesTitle"]</h5>
     <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>

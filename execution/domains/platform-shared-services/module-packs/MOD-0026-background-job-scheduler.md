@@ -26,7 +26,7 @@ form_field_count: 0
 - **UI:** No custom MVC UI in MVP. Hangfire Dashboard is allowed only when protected by PlatformActor authorization.
 - **Golden Reference decision:** `golden_reference: none` because this is an infrastructure module, not a CRUD/DataTable module.
 - **Completion status:** PASS / 90% as scheduler foundation. Remaining work belongs to the owning business modules that implement the real job logic behind the registered descriptors.
-- **Master-plan reconciliation:** `docs/platform/master-plan.md` should show MOD-0026 as PASS / 90%. Earlier master-plan values of missing/0% or partial/70% are superseded by the runtime smoke evidence below.
+- **Master-plan reconciliation:** `docs/reference/modules/platform/master-plan.md` should show MOD-0026 as PASS / 90%. Earlier master-plan values of missing/0% or partial/70% are superseded by the runtime smoke evidence below.
 
 ## Completion Evidence
 - **Completion date:** 2026-05-15.
@@ -512,7 +512,7 @@ Implementation must not create two execution models. `IBackgroundJobHandler<TArg
 - This pack uses `shell: none` and `golden_reference: none` because it is infrastructure, not a DataTable module.
 - `entity_base: BaseEntity` is used for Platform service persistence records. `TenantId` is nullable in `JobExecutionLog` because background work can be platform-wide or tenant-scoped.
 - MOD-0035 currently has event bus foundation in the repo, including in-memory transport, MassTransit/RabbitMQ publisher, outbox/inbox records, and worker foundation. MOD-0026 must integrate with that public abstraction rather than duplicating it.
-- `docs/platform/master-plan.md` detail section still mentions "Hangfire or Quartz"; this pack makes Hangfire the module-level decision.
+- `docs/reference/modules/platform/master-plan.md` detail section still mentions "Hangfire or Quartz"; this pack makes Hangfire the module-level decision.
 - Existing master-plan status mismatch must be checked before development. Do not assume 70% implementation exists without repo inspection.
 - Pre-audit found no scheduler/Hangfire runtime code, so implementation planning treats MOD-0026 as 0%.
 - BuildingBlocks is suitable for the shared abstraction package unless target project package compatibility blocks it.
@@ -545,7 +545,7 @@ Implementation final report must use this format:
 
 ## 20. Follow-up Items
 - [x] Verify current repo for any existing Hangfire/scheduler implementation and reconcile with this pack.
-- [x] Update `docs/platform/master-plan.md` MOD-0026 status after implementation starts or actual repo state is confirmed.
+- [x] Update `docs/reference/modules/platform/master-plan.md` MOD-0026 status after implementation starts or actual repo state is confirmed.
 - [ ] Decide whether job failure emits a `background_job.failed.v1` event through MOD-0035 or waits for MOD-0021/MOD-0042.
 - [ ] Prepare module-specific packs/updates for real execution logic of the 8 standard jobs as their owning modules mature.
 - [ ] Consider a later Platform Admin job log viewer pack if Hangfire Dashboard is insufficient for service-level operational reporting.

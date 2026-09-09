@@ -15,14 +15,25 @@ const OrganizationUnitsList = (function () {
     const createUrl = '/OrganizationUnits/Create';
     const editUrl = '/OrganizationUnits/Edit';
     const detailsUrl = '/OrganizationUnits/Details';
-    const saveViewColumnIndexes = [1, 2, 3, 4, 5];
+    /*
+     * MOD-0288-FU03 — the administrative reporting line is an OPTIONAL column at index 6.
+     *
+     * ⚠ APPENDED AFTER `isArchived`, NOT PLACED BESIDE THE FUNCTIONAL PARENT, and that is deliberate. A saved
+     * view stores column visibility and order BY INDEX; inserting a column at position 5 would re-point every
+     * saved view's flags onto the wrong columns for every user who has one. Same rule as the enum in §4:
+     * append, never insert.
+     *
+     * It is NOT in `defaultVisibleColumnIndexes`, so the list opens exactly as it does today and the column is
+     * there to be switched on.
+     */
+    const saveViewColumnIndexes = [1, 2, 3, 4, 5, 6];
     const defaultVisibleColumnIndexes = [1, 2, 3, 4, 5];
-    const totalColumnCount = 7; // control(0) + code/name/legalEntity/parent/isArchived(1-5) + action(6)
+    const totalColumnCount = 8; // control(0) + code/name/legalEntity/functionalParent/isArchived(1-5) + administrativeParent(6) + action(7)
     const baseOrder = [[1, 'asc']];
     const filterCollapseId = 'inlineFilterCollapse';
     const personalizationClient = window.personalizationClient;
     const personalizationContext = { moduleKey: 'Organization', pageKey: 'OrganizationUnits' };
-    let appliedFilters = { archived: '' };
+    let appliedFilters = { archived: '', functionalParent: '', administrativeParent: '' };
     let defaultViewRecord = null;
     let defaultViewState = null;
     let saveFilterArmed = false;
@@ -128,16 +139,34 @@ const OrganizationUnitsList = (function () {
         legalEntitiesData.forEach((e) => { const { id, text } = legalEntityLabel(e); if (id) legalEntityMap[id] = text; });
     };
 
+    /*
+     * ⚠ THE TWO LINES FILTER INDEPENDENTLY. Selecting a functional parent says nothing about the administrative
+     * one, and neither filter falls back to the other's value — a row with no administrative parent simply does
+     * not match an administrative-parent filter (FU02 §8 decision 2).
+     */
     const applyClientFilter = (rows) => {
-        if (appliedFilters.archived === '') return rows;
-        const wantArchived = appliedFilters.archived === 'true';
-        return rows.filter((r) => Boolean(r.isArchived ?? r.IsArchived) === wantArchived);
+        let result = rows;
+        if (appliedFilters.archived !== '') {
+            const wantArchived = appliedFilters.archived === 'true';
+            result = result.filter((r) => Boolean(r.isArchived ?? r.IsArchived) === wantArchived);
+        }
+        if (appliedFilters.functionalParent) {
+            result = result.filter((r) => String(r.parentOrganizationUnitId ?? r.ParentOrganizationUnitId ?? '') === appliedFilters.functionalParent);
+        }
+        if (appliedFilters.administrativeParent) {
+            result = result.filter((r) => String(r.administrativeParentOrganizationUnitId ?? r.AdministrativeParentOrganizationUnitId ?? '') === appliedFilters.administrativeParent);
+        }
+        return result;
     };
 
     // ─── Save View: normalization + state capture / (de)serialization ────────
     const normalizeString = (v) => (typeof v === 'string' ? v.trim() : (v == null ? '' : String(v).trim()));
-    const emptyFilters = () => ({ archived: '' });
-    const normalizeFilters = (f) => ({ archived: normalizeString((f || {}).archived) });
+    const emptyFilters = () => ({ archived: '', functionalParent: '', administrativeParent: '' });
+    const normalizeFilters = (f) => ({
+        archived: normalizeString((f || {}).archived),
+        functionalParent: normalizeString((f || {}).functionalParent),
+        administrativeParent: normalizeString((f || {}).administrativeParent)
+    });
     const hasFilterValue = (v) => normalizeString(v).length > 0;
 
     const normalizeColVis = (colVis) => {
@@ -250,9 +279,38 @@ const OrganizationUnitsList = (function () {
         defaultViewState = normalizedView;
         return defaultViewState;
     };
+    const setFilterValue = (id, value) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.value = value || '';
+        if (window.jQuery?.fn?.select2) $(el).val(value || '').trigger('change');
+    };
+
     const syncFilterControls = (values) => {
-        const el = document.getElementById('filterArchived');
-        if (el) { el.value = values.archived || ''; if (window.jQuery?.fn?.select2) $(el).val(values.archived || '').trigger('change'); }
+        setFilterValue('filterArchived', values.archived);
+        setFilterValue('filterFunctionalParent', values.functionalParent);
+        setFilterValue('filterAdministrativeParent', values.administrativeParent);
+    };
+
+    // Both parent filters are fed from the same loaded list, and each keeps its own selection across reloads.
+    const fillParentFilterOptions = () => {
+        ['filterFunctionalParent', 'filterAdministrativeParent'].forEach((id) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const current = el.value;
+            const placeholder = el.querySelector('option[value=""]');
+            el.innerHTML = '';
+            if (placeholder) el.appendChild(placeholder);
+            orgUnitsData.forEach((u) => {
+                const value = u.id || u.Id;
+                if (!value) return;
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = orgUnitMap[value] || value;
+                el.appendChild(option);
+            });
+            setFilterValue(id, current);
+        });
     };
     const applySavedTableState = (api, view) => {
         if (!api || !view) return;
@@ -270,7 +328,11 @@ const OrganizationUnitsList = (function () {
         initSelect2Filters();
         applySavedTableState(api, defaultViewState || { filters: appliedFilters });
         document.getElementById('btnFilterApply')?.addEventListener('click', () => {
-            appliedFilters = { archived: document.getElementById('filterArchived')?.value || '' };
+            appliedFilters = {
+                archived: document.getElementById('filterArchived')?.value || '',
+                functionalParent: document.getElementById('filterFunctionalParent')?.value || '',
+                administrativeParent: document.getElementById('filterAdministrativeParent')?.value || ''
+            };
             dt?.ajax.reload();
             window.DtDefaults.updateVisualState(dt, getAppliedFilterCount());
             if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(api));
@@ -327,6 +389,7 @@ const OrganizationUnitsList = (function () {
                         orgUnitsData = units || [];
                         legalEntitiesData = legalEntities || [];
                         rebuildMaps();
+                        fillParentFilterOptions();
                         renderTree();
                         callback({ data: applyClientFilter(orgUnitsData) });
                     })
@@ -344,10 +407,17 @@ const OrganizationUnitsList = (function () {
                     render: (value) => escapeHtml(legalEntityMap[value] || value || '-')
                 },
                 {
-                    data: 'parentOrganizationUnitId', name: 'parent',
+                    data: 'parentOrganizationUnitId', name: 'functionalParent',
                     render: (value) => escapeHtml(value ? (orgUnitMap[value] || value) : '-')
                 },
                 { data: 'isArchived', name: 'isArchived', render: (value) => archivedBadge(value) },
+                {
+                    // ⚠ Empty renders as '-', exactly like any other unset value, and NEVER as the functional
+                    // parent's name. A list that quietly repeats one line under the other's heading is how two
+                    // reporting lines stop being two.
+                    data: 'administrativeParentOrganizationUnitId', name: 'administrativeParent',
+                    render: (value) => escapeHtml(value ? (orgUnitMap[value] || value) : '-')
+                },
                 {
                     data: null,
                     name: 'action',
@@ -375,6 +445,7 @@ const OrganizationUnitsList = (function () {
             columnDefs: [
                 { targets: 0, className: 'control', searchable: false, orderable: false, responsivePriority: 2, render: () => '' },
                 { targets: 2, responsivePriority: 1 },
+                { targets: 6, visible: false },
                 { targets: -1, title: L.Actions, searchable: false, orderable: false, className: 'cell-fit all text-end pe-3' }
             ],
             buttons: window.DtDefaults.exportButtons(L.AddNew || '', {}, { filterBtn, saveFilterBtn }, {

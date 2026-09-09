@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<RoleAssignmentsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
 @{
     ViewData["Title"] = Localizer["Title"].Value;
     Layout = "_LayoutTenantShell";
@@ -14,6 +15,25 @@
     var statAssigned = new StatCardModel("bx-check-circle", Localizer["StatAssigned"].Value, "success", "0", "raStatAssigned");
     var statLocked = new StatCardModel("bx-lock-alt", Localizer["StatBaselineLocked"].Value, "secondary", "0", "raStatLocked");
     var statUnassigned = new StatCardModel("bx-minus-circle", Localizer["StatUnassigned"].Value, "warning", "0", "raStatUnassigned");
+}
+
+@*
+    UAS-001 — nothing below this block is drawn for a user who may not assign permissions: not the heading, not the
+    four stat cards, not the coverage bar, not the role picker, and not the permission grid that would otherwise
+    load, take a 403 from the gateway and leave a half-drawn page behind an English toast.
+
+    This screen is the one where that mattered most: it is where an administrator hands out authority, so a user who
+    lands here without the right must be told so plainly rather than shown the machinery and denied at the last step.
+
+    Returning here also stops @@section Scripts from registering, which is the point rather than a side effect —
+    index.js is the caller. The layout renders the section with required:false, so its absence is a no-op.
+
+    ⚠ Display only. AuthService's [HasPermission("auth.roles.assign-permission")] remains the authority (UAS-001 §4).
+*@
+@if (!Perms.Has("auth.roles.assign-permission"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Title"].Value" />
+    return;
 }
 
 <div class="mb-3">
@@ -186,28 +206,27 @@
     </div>
 </template>
 
+@* FIX-RBAC-PERM-MODULE-ATTRIBUTION — one row per SOURCE, its actions as chips beside it. Previously one row
+   per permission: 415 rows, each repeating the verb and the module its own group header already named. *@
 <template id="raRowCardTemplate">
-    <div class="d-flex align-items-center gap-3 entity-row-card ra-row">
-        <span class="avatar avatar-sm flex-shrink-0">
-            <span class="avatar-initial rounded ra-row-icon-wrap"><i class="bx ra-row-icon"></i></span>
-        </span>
-        <div class="min-w-0 flex-grow-1">
-            <div class="d-flex align-items-center gap-2 flex-wrap">
-                <span class="ra-display fw-medium text-truncate"></span>
-                <span class="badge ra-badge d-none"></span>
-            </div>
+    <div class="entity-row-card ra-row">
+        <div class="ra-row-source min-w-0">
+            <span class="ra-entity fw-semibold d-block text-truncate"></span>
             <code class="ra-key text-muted small d-block text-truncate"></code>
         </div>
-        <div class="flex-shrink-0 d-flex align-items-center gap-2">
-            <i class="bx bx-lock-alt text-muted ra-lock d-none"></i>
-            <button type="button" class="btn btn-sm btn-label-primary ra-assign d-none">
-                <i class="bx bx-plus me-1"></i><span class="ra-assign-text"></span>
-            </button>
-            <button type="button" class="btn btn-sm btn-label-danger ra-remove d-none">
-                <i class="bx bx-x me-1"></i><span class="ra-remove-text"></span>
-            </button>
-        </div>
+        <div class="ra-chips"></div>
     </div>
+</template>
+
+@* One permission = one chip. The chip IS the affordance: it toggles the grant, carries the scope as a second
+   pill when the action reaches beyond the row's own records, and locks when the grant is not the user's to move. *@
+<template id="raChipTemplate">
+    <button type="button" class="ra-chip">
+        <i class="bx ra-chip-icon"></i>
+        <span class="ra-chip-label"></span>
+        <span class="ra-chip-scope d-none"></span>
+        <i class="bx bx-lock-alt ra-chip-lock d-none"></i>
+    </button>
 </template>
 
 <template id="raActionDistTemplate">
@@ -232,6 +251,7 @@
     <partial name="~/Views/Governance/RoleAssignments/_IndexL10n.cshtml" />
     <script src="~/assets/js/Governance/RoleAssignments/grant-state.js" asp-append-version="true"></script>
     <script src="~/assets/js/Governance/RoleAssignments/module-label.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Governance/RoleAssignments/perm-label.js" asp-append-version="true"></script>
     <script src="~/assets/js/Governance/RoleAssignments/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/Governance/RoleAssignments/index.js" asp-append-version="true"></script>
 }

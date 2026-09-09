@@ -1,9 +1,22 @@
 @using Diten.Web.Views.Governance.Users
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<UsersIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
 @{
     ViewData["Title"] = Localizer["UsersTitle"].Value;
     Layout = "_LayoutTenantShell";
+}
+
+@*
+    UAS-001 — see Governance/Roles/Index.cshtml for the reasoning. Nothing below is drawn without
+    auth.users.read: no heading, no KPI cards, no "+ Add User", no empty table.
+
+    ⚠ Display only. AuthService's [HasPermission] on /api/users remains the authority (UAS-001 §4).
+*@
+@if (!Perms.Has("auth.users.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["UsersTitle"].Value" />
+    return;
 }
 
 <div class="mb-3">

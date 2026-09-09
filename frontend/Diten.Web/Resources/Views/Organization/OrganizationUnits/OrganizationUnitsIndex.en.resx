@@ -85,4 +85,16 @@
   <data name="MoveCycleBlocked" xml:space="preserve">
     <value>A unit cannot be moved under its own sub-unit.</value>
   </data>
+  <data name="FunctionalParentLabel" xml:space="preserve"><value>Functional parent unit</value></data>
+  <data name="AdministrativeParentLabel" xml:space="preserve"><value>Administrative parent unit</value></data>
+  <data name="AdministrativeParentNone" xml:space="preserve"><value>(No administrative line)</value></data>
+  <data name="AdministrativeParentHelp" xml:space="preserve"><value>If left empty, there is no administrative line. It does not fall back to the functional parent.</value></data>
+  <data name="OrgUnitTypeGroupFunction" xml:space="preserve"><value>Group function</value></data>
+  <data name="CustomFieldsSectionTitle" xml:space="preserve"><value>Custom fields</value></data>
+  <data name="CustomFieldRequiredError" xml:space="preserve"><value>This field is required</value></data>
+  <data name="CustomFieldTypeError" xml:space="preserve"><value>The value does not match the field type</value></data>
+  <data name="CustomFieldSelectPlaceholder" xml:space="preserve"><value>Select…</value></data>
+  <data name="CustomFieldTextPlaceholder" xml:space="preserve"><value>Enter a value</value></data>
+  <data name="CustomFieldNumberPlaceholder" xml:space="preserve"><value>Enter a number</value></data>
+  <data name="CustomFieldDatePlaceholder" xml:space="preserve"><value>Select a date</value></data>
 </root>

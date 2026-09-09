@@ -96,10 +96,28 @@ public sealed class PlatformPermissionAutoRegistrationWorker : BackgroundService
             failed);
     }
 
-    // "platform.workflow.definitions.view" → "Platform Workflow Definitions View".
+    // FIX-RBAC-PERM-MODULE-ATTRIBUTION — "platform.workflow.definitions.view" → "Definitions View", not
+    // "Platform Workflow Definitions View". The old form spelled the whole key out word by word, so every row on the
+    // Role Permissions screen repeated its own group header ("Platform Tasks Read" inside the Tasks group). The
+    // module now travels in Permission.Module and is shown once, on the group header, so the DisplayName carries
+    // only what is left: the resource and the action.
+    //
+    // The dropped segment is THIS SERVICE'S OWN namespace, which is a fact about Diten.Platform and is stated once
+    // below — not a second copy of AuthService's "which namespaces are services" registry
+    // (PermissionModuleAttribution.ServiceNamespaces), which answers a different question and stays the single
+    // source of the attribution rule. Every key this worker sees comes from a [HasPermission] attribute in this
+    // assembly, so its first segment is always this constant; a key that somehow is not is left whole.
+    private const string OwnPermissionNamespace = "platform";
+
     private static string DeriveDisplayName(string key)
     {
-        var words = key.Replace('.', ' ').Replace('-', ' ')
+        var segments = key.Split('.', StringSplitOptions.RemoveEmptyEntries);
+        if (segments.Length > 2 && string.Equals(segments[0], OwnPermissionNamespace, StringComparison.OrdinalIgnoreCase))
+        {
+            segments = segments[1..];
+        }
+
+        var words = string.Join(' ', segments).Replace('-', ' ')
             .Split(' ', StringSplitOptions.RemoveEmptyEntries)
             .Select(w => char.ToUpper(w[0], CultureInfo.InvariantCulture) + w[1..]);
         return string.Join(' ', words);

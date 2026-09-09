@@ -4,7 +4,7 @@
 **Service:** `Diten.PvgService` (port 5011)
 **Gate:** build / test only. Operational runtime remains **closed**.
 **Authority:** [MOD-0230 pack](../module-packs/MOD-0230-case-intake-triage.md) > [domain-config](../domain-config.md) > `AGENTS.md` > `.antigravity/rules/`
-**Plan:** [`docs/plans/pvg-fast-track-execution-plan-2026-08-09.md`](../../../../docs/plans/pvg-fast-track-execution-plan-2026-08-09.md)
+**Plan:** [`docs/roadmap/plans/pvg-fast-track-execution-plan-2026-08-09.md`](../../../../docs/roadmap/plans/pvg-fast-track-execution-plan-2026-08-09.md)
 
 ---
 

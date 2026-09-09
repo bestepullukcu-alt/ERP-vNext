@@ -118,6 +118,16 @@ public static class PlatformCollections
     public const string NotificationDispatches = "notification_dispatches";
     public const string NotificationEventDefinitions = "notification_event_definitions";
     public const string NotificationTemplates = "notification_templates";
+    public const string OrganizationFieldDefinitions = "organization_field_definitions";
+    public const string OrganizationFieldValues = "organization_field_values";
+
+    /*
+     * MOD-0288-FU02 — ONE DOCUMENT PER TENANT, and its whole job is to be contended for. Every reporting-line
+     * mutation must win a compare-and-set on it before it writes, which is what makes two concurrent
+     * re-parentings serialize across PROCESSES rather than merely within one. Keyed by `_id` = TenantId, so
+     * Mongo's implicit index is the only one it needs and the manifest declares none for it.
+     */
+    public const string OrganizationStructureTokens = "organization_structure_tokens";
     public const string OrganizationUnits = "organization_units";
     public const string OutboxEvents = "outbox_events";
     public const string PlanFeatureMappings = "platform_plan_feature_mappings";

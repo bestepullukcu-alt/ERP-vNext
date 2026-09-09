@@ -90,16 +90,49 @@ public sealed class ModulePermissionForwardCompatTests
     }
 
     [Fact]
-    public void Workflow_no_longer_resolves_the_old_platform_hosted_form()
+    public void The_old_platform_hosted_form_can_no_longer_be_constructed()
     {
-        // Old shape (Module=="platform" with a workflow.* resource) is gone after the Faz-1b flip → does not resolve.
-        var oldCatalog = new List<Permission>
+        // FIX-RBAC-PERM-MODULE-ATTRIBUTION — this used to assert that the old shape (Module=="platform" with a
+        // workflow.* resource) resolves nothing. That shape is now UNCONSTRUCTIBLE: a key minted under the service
+        // namespace is attributed to the module in its second segment, so an un-overridden platform.workflow.* row
+        // comes out Module=="workflow" — the new form — and resolves like its siblings.
+        //
+        // That is a deliberate, measured widening and the ONLY one this change produces: "workflow" is the single
+        // entry in PlatformHostedTenantModules, the one allow-listed branch that bypasses the platform exclusion.
+        // In the live catalog it reaches exactly one previously-orphaned row, platform.workflow.escalations.run,
+        // which joins the 12 workflow-operator keys an entitled tenant role already receives. Every other
+        // re-attributed permission derives into a module that is NOT in that allow-list and stays excluded by Scope.
+        var catalog = new List<Permission>
         {
             new("platform", "workflow.definitions", "view", "View", null),
-            new("platform", "workflow.tasks", "approve", "Approve", null)
+            new("platform", "workflow.escalations", "run", "Run", null)
         };
 
-        Assert.Empty(ModulePermissionResolver.ResolvePermissions("workflow", oldCatalog));
+        Assert.All(catalog, p => Assert.Equal("workflow", p.Module));
+        Assert.Equal(
+            new[] { "platform.workflow.definitions.view", "platform.workflow.escalations.run" },
+            Keys(ModulePermissionResolver.ResolvePermissions("workflow", catalog)).OrderBy(k => k, StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void Re_attribution_widens_entitlement_reach_only_through_the_workflow_allow_list()
+    {
+        // The guard on the widening above: a platform.* key re-attributed to any module that is NOT on the
+        // platform-hosted allow-list must stay unreachable through the entitlement bridge, because its Scope is
+        // still PlatformAdmin. Adding a module to PlatformHostedTenantModules makes this test speak up.
+        var catalog = new List<Permission>
+        {
+            new("platform", "tenants", "read", "Read Tenant", null),
+            new("platform", "document-management.contract", "view", "View Contract", null),
+            new("platform", "notifications", "read", "Read Notifications", null)
+        };
+
+        foreach (var permission in catalog)
+        {
+            Assert.NotEqual("platform", permission.Module);                     // grouping moved
+            Assert.Equal(PermissionScope.PlatformAdmin, permission.Scope);      // boundary did not
+            Assert.Empty(ModulePermissionResolver.ResolvePermissions(permission.Module, catalog));
+        }
     }
 
     // ---- AdminModules is the new codes only ----

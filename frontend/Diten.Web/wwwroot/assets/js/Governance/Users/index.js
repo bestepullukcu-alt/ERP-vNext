@@ -502,7 +502,16 @@ const UsersList = (function () {
         document.getElementById('userActiveRow')?.classList.toggle('d-none', isCreate);
         const emailEl = document.getElementById('userEmail');
         const emailHelp = document.getElementById('userEmailHelp');
-        if (emailEl) emailEl.readOnly = !isCreate; // email immutable on edit
+        /*
+         * Immutable on edit, and it must LOOK immutable. readOnly alone stops the typing but Bootstrap 5
+         * dropped the [readonly] background rule that Bootstrap 4 had, so the box still reads as editable —
+         * the owner clicked into it and found nothing happened. Roles/index.js already solved this the same
+         * way for its own immutable Name; this is that pattern, not a second one.
+         */
+        if (emailEl) {
+            emailEl.readOnly = !isCreate;
+            emailEl.classList.toggle('bg-label-secondary', !isCreate);
+        }
         if (emailHelp) emailHelp.classList.toggle('d-none', isCreate);
     };
     const resetCreateEditForm = () => {

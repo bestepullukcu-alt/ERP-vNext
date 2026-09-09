@@ -737,4 +737,62 @@
   <data name="Nav.Page.BENEFITCOMMITMENTS" xml:space="preserve">
     <value>Обязательства по выгодам</value>
   </data>
+  <data name="Nav.Module.TENANTS" xml:space="preserve"><value>Арендаторы</value></data>
+  <data name="Nav.Module.NOTIFICATIONS" xml:space="preserve"><value>Уведомления</value></data>
+  <data name="Nav.Module.ADMINISTRATORS" xml:space="preserve"><value>Администраторы</value></data>
+  <data name="Nav.Module.AUDIT" xml:space="preserve"><value>Аудит</value></data>
+  <data name="Nav.Module.MODULECATALOG" xml:space="preserve"><value>Каталог модулей</value></data>
+  <data name="Nav.Module.MODULEDOMAINS" xml:space="preserve"><value>Домены модулей</value></data>
+  <data name="Nav.Module.MODULESERVICES" xml:space="preserve"><value>Службы модулей</value></data>
+  <data name="Nav.Module.INTERFACEREGISTRY" xml:space="preserve"><value>Реестр интерфейсов</value></data>
+  <data name="Nav.Module.SUBSCRIPTIONPLANS" xml:space="preserve"><value>Тарифные планы</value></data>
+  <data name="Nav.Module.SUBSCRIPTIONFEATURES" xml:space="preserve"><value>Возможности подписки</value></data>
+  <data name="Nav.Module.PERSON" xml:space="preserve"><value>Справочник персон</value></data>
+  <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>Справочники</value></data>
+  <data name="Perm.Module.TASKS" xml:space="preserve"><value>Задачи</value></data>
+  <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Продукты</value></data>
+  <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Клиент</value></data>
+  <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Кампания</value></data>
+  <data name="Nav.Page.CAMPAIGNSNAPSHOT" xml:space="preserve"><value>Снимок кампании</value></data>
+  <data name="Nav.Page.CAMPAIGNTARGET" xml:space="preserve"><value>Цель кампании</value></data>
+  <data name="Nav.Page.CONSENT" xml:space="preserve"><value>Согласие</value></data>
+  <data name="Nav.Page.CONTACT" xml:space="preserve"><value>Контакт</value></data>
+  <data name="Nav.Page.CYCLECAPACITY" xml:space="preserve"><value>Ёмкость цикла</value></data>
+  <data name="Nav.Page.CYCLEPERIOD" xml:space="preserve"><value>Период цикла</value></data>
+  <data name="Nav.Page.KNOWLEDGECONCEPT" xml:space="preserve"><value>Понятие знаний</value></data>
+  <data name="Nav.Page.KNOWLEDGECONTENTENGAGEMENTJOURNEY" xml:space="preserve"><value>Путь взаимодействия с контентом</value></data>
+  <data name="Nav.Page.KNOWLEDGEPATH" xml:space="preserve"><value>Путь знаний</value></data>
+  <data name="Nav.Page.KNOWLEDGESUBJECT" xml:space="preserve"><value>Предмет знаний</value></data>
+  <data name="Nav.Page.PLANNEDVISIT" xml:space="preserve"><value>Плановый визит</value></data>
+  <data name="Nav.Page.PREFERENCE" xml:space="preserve"><value>Предпочтение</value></data>
+  <data name="Nav.Page.SEGMENT" xml:space="preserve"><value>Сегмент</value></data>
+  <data name="Nav.Page.STRATEGYTEMPLATE" xml:space="preserve"><value>Шаблон стратегии</value></data>
+  <data name="Nav.Page.TERRITORY" xml:space="preserve"><value>Территория</value></data>
+  <data name="Nav.Page.TERRITORYMODEL" xml:space="preserve"><value>Модель территории</value></data>
+  <data name="Nav.Page.TERRITORYNODE" xml:space="preserve"><value>Узел территории</value></data>
+  <data name="Nav.Page.ATTRIBUTE" xml:space="preserve"><value>Атрибут</value></data>
+  <data name="Nav.Page.HIERARCHY" xml:space="preserve"><value>Иерархия</value></data>
+  <data name="Nav.Page.OVERVIEW" xml:space="preserve"><value>Обзор</value></data>
+  <data name="Nav.Page.ACCOUNTCONTACT" xml:space="preserve"><value>Контакт клиента</value></data>
+  <data name="Nav.Page.ACCOUNTRELATIONSHIP" xml:space="preserve"><value>Связь клиента</value></data>
+  <data name="Nav.Page.MODEL" xml:space="preserve"><value>Модель</value></data>
+  <data name="Nav.Page.NODE" xml:space="preserve"><value>Узел</value></data>
+  <data name="Nav.Page.REPORTS" xml:space="preserve"><value>Отчёты</value></data>
+  <data name="Nav.Page.DATAQUALITY" xml:space="preserve"><value>Качество данных</value></data>
+  <data name="Nav.Page.EMPLOYEE" xml:space="preserve"><value>Сотрудник</value></data>
+  <data name="Nav.Page.CUSTOMFIELDS" xml:space="preserve"><value>Настраиваемые поля</value></data>
+  <data name="Nav.Page.REPORTINGLINE" xml:space="preserve"><value>Линия подчинения</value></data>
+  <data name="Nav.Page.FINISHEDGOODS" xml:space="preserve"><value>Готовая продукция</value></data>
+  <data name="Nav.Page.LSKUS" xml:space="preserve"><value>Локальные SKU</value></data>
+  <data name="Nav.Page.PRODUCTABBREVIATIONS" xml:space="preserve"><value>Сокращения продуктов</value></data>
+  <data name="Nav.Page.DOCUMENTLIST" xml:space="preserve"><value>Список документов</value></data>
+  <data name="Nav.Page.FIELDDEFINITIONS" xml:space="preserve"><value>Определения полей</value></data>
+  <data name="Nav.Page.RECURRENCERULES" xml:space="preserve"><value>Правила повторения</value></data>
+  <data name="Nav.Page.TENANTNAVIGATION" xml:space="preserve"><value>Настройки меню</value></data>
+  <data name="Nav.Page.TENANTSECURITY" xml:space="preserve"><value>Настройки безопасности</value></data>
+  <data name="Nav.Page.INBOX" xml:space="preserve"><value>Входящие</value></data>
+  <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>Исключение</value></data>
+  <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Определения полей</value></data>
+  <data name="AccessDeniedTitle" xml:space="preserve"><value>У вас нет доступа к разделу «{0}»</value></data>
+  <data name="AccessDeniedMessage" xml:space="preserve"><value>Попросите администратора предоставить вам доступ к этой странице.</value></data>
 </root>

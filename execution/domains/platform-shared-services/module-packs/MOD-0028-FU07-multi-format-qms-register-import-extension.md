@@ -17,9 +17,9 @@ runtime_code_allowed: false
 business_dependency: MOD-0028-FU02
 delivery_capability_pack: DCP-007
 identity_type: retrospective-governance-recovery
-source_workbook: docs/GMG-QMS-LOG-0007_v0.36_PROVISIONING_REGISTER_2026-08-12.xlsx
+source_workbook: docs/vendor/gmg-dms-handover-2026-08/GMG-QMS-LOG-0007_v0.36_PROVISIONING_REGISTER_2026-08-12.xlsx
 source_workbook_sha256: b7fb649c82f06020dbcec6e187f36f236dda9954c1d73550a25a32a12569564c
-source_urs: docs/GMG-CSV-URS-0001_v0.3_DRAFT_2026-08-12.docx
+source_urs: docs/vendor/gmg-dms-handover-2026-08/GMG-CSV-URS-0001_v0.3_DRAFT_2026-08-12.docx
 source_urs_sha256: 4e903ae00dedb3138258cb482f0067bc8b8e7df6666866eecb9e1a2d90c0346c
 ---
 
@@ -511,11 +511,11 @@ indexes.
 
 | Property | Required value/rule |
 |---|---|
-| Workbook | `docs/GMG-QMS-LOG-0007_v0.36_PROVISIONING_REGISTER_2026-08-12.xlsx` |
+| Workbook | `docs/vendor/gmg-dms-handover-2026-08/GMG-QMS-LOG-0007_v0.36_PROVISIONING_REGISTER_2026-08-12.xlsx` |
 | Raw-file SHA-256 | `b7fb649c82f06020dbcec6e187f36f236dda9954c1d73550a25a32a12569564c` |
 | Business version/status | Cover metadata: `0.36`, `DRAFT — NOT APPROVED — NOT LIVE`; Office core revision is not a substitute. |
 | Canonical worksheet | Exact name `19_Candidate_Provisioning`; no sheet-index fallback. |
-| URS | `docs/GMG-CSV-URS-0001_v0.3_DRAFT_2026-08-12.docx`; SHA-256 `4e903ae00dedb3138258cb482f0067bc8b8e7df6666866eecb9e1a2d90c0346c` |
+| URS | `docs/vendor/gmg-dms-handover-2026-08/GMG-CSV-URS-0001_v0.3_DRAFT_2026-08-12.docx`; SHA-256 `4e903ae00dedb3138258cb482f0067bc8b8e7df6666866eecb9e1a2d90c0346c` |
 
 The canonical worksheet has exactly these 15 named columns: `Candidate Folder ID`, `Parent Candidate ID`, `Level`,
 `Explicit Path`, `Entity`, `Node Type`, `Permission Profile`, `Owner Role`, `Release Status`, `Blocking Gate`,
