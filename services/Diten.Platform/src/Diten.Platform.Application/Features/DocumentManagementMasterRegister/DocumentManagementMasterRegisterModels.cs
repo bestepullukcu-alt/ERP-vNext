@@ -23,6 +23,11 @@ public static class DocumentMasterRegisterPermissions
     // DCP-005 — gates the effectiveness:batch read endpoint (the screen side of the effectiveness resolver). Declared
     // with the endpoint (P-EFF-P2 Faz 3) so the controller compiles; catalogued + role-granted in the seed (Faz 4).
     public const string EffectivenessRead = "platform.document-management.master-register.effectiveness.read";
+
+    // DCP-005 (WP-DM-2b) — gates the citation read endpoints (citations:resolve + citations/search) the Task Center
+    // consumes for governing-docs resolution, the citation freezer and the document picker. Mirrors EffectivenessRead;
+    // catalogued + role-granted in the seed (RBAC grant is a separate seed change, not hardcoded here).
+    public const string CitationRead = "platform.document-management.master-register.citation.read";
 }
 
 public static class MasterRegisterReasonCodes
