@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Contracts.DocumentRepository;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Common.Tenancy;
@@ -52,8 +53,13 @@ public sealed class DocumentVersioningService
                 "Uploaded content is not valid base64.", 400, ControlledDocumentReasonCodes.ValidationFailed, correlationId);
         }
 
+        // MOD-0262-FU01 / AD-4: the repository seam takes a forward-only stream, never a byte[]. MOD-0029's own
+        // API contract still accepts base64 (that is this consumer's surface, unchanged per AD-2), so the decoded
+        // payload is handed over as a stream here rather than being pushed through the seam as an array.
+        await using var content = new MemoryStream(bytes, writable: false);
+
         var request = new ContentStoreRequest(
-            tenantId, companyId, scope, itemId, versionId, file.FileName, file.MediaType, bytes, createdBy,
+            tenantId, companyId, scope, itemId, versionId, file.FileName, file.MediaType, content, createdBy,
             storagePartition);
 
         var stored = await _storage.StoreAsync(request, ct);

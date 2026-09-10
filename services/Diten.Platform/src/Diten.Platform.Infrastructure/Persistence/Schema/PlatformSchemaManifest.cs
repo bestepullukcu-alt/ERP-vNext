@@ -43,6 +43,7 @@ public static partial class PlatformSchemaManifest
             // Calendar rows carry the new SchemaProfile.WorkingCalendar. Both MUST be in the union — see the
             // "PRODUCTION READS THE UNION" note above.
             .Concat(DocumentManagementFollowUpCollections)
+            .Concat(DocumentRepositoryCollections)
             .Concat(WorkingCalendarCollections)
             .ToArray());
 

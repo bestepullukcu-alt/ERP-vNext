@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Contracts.DocumentRepository;
 using System.Text.Json;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;

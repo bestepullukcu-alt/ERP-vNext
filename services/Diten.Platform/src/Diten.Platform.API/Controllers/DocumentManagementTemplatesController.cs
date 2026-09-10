@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Contracts.DocumentRepository;
 using Diten.Platform.API.Controllers.Common;
 using Diten.Platform.API.Models.DocumentManagement;
 using Diten.Platform.API.Observability;

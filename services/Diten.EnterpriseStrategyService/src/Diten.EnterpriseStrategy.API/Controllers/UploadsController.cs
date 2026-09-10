@@ -1,13 +1,36 @@
 using Asp.Versioning;
 using Diten.Domain.Aggregates.DemandIdea;
 using Diten.Application.Common.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Diten.WebAPI.Controllers;
 
+/// <summary>
+/// Demand-idea attachment upload/download.
+/// <para>
+/// ⚠️ <b>D-5 security fix.</b> Both actions were reachable <b>anonymously</b>: this controller carried no
+/// authorisation filter, the service registered no authentication scheme and never called
+/// <c>UseAuthentication()</c>, and neither gateway route declared <c>AuthenticationOptions</c>. That exposed
+/// unauthenticated file READ (<c>GET {demandId}/{attachmentId}</c>) and unauthenticated WRITE
+/// (<c>POST {demandId}</c> — a 50 MB disk write plus an aggregate mutation for anyone holding a draft
+/// demand id). Authentication is now required at the gateway edge and again here, so a caller reaching
+/// port 5004 directly is refused too.
+/// </para>
+/// <para>
+/// ⚠️ <b>Known remaining gap — tenant isolation.</b> This service has <b>no tenant dimension at all</b>:
+/// neither <c>DemandIdeaAggregate</c> nor its <c>BaseEntity</c> carries a <c>TenantId</c>, and the string
+/// does not appear anywhere under <c>src</c>. One is deliberately NOT invented here. Any authenticated user
+/// can therefore still read any attachment whose demand id they know. Closing that requires a tenant
+/// dimension on the aggregate and is tracked with the MOD-0262 hand-over, where
+/// <c>DemandIdeaAttachment</c> also has to gain <c>Checksum</c>, <c>TenantId</c>, <c>VersionId</c> and
+/// <c>StorageProvider</c>.
+/// </para>
+/// </summary>
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/uploads")]
+[Authorize]
 public sealed class UploadsController : ControllerBase
 {
     private readonly IWebHostEnvironment _env;
