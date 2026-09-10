@@ -64,6 +64,15 @@ Ayrı commit. §22 raporu TÜRKÇE. Senin PASS'in kapanış değildir (K13) — 
 Durma koşulları: CSV kopyalama BRD deseniyle çakışırsa · Path.GetFullPath mevcut absolute-path testlerini kırıyorsa (raporla) · committed config KARAR-2 ile çelişir görünüyorsa (BRD precedent'i not et, DUR) · kapsam asset+config+path dışına taşarsa. DUR + raporla.
 ```
 
+## §37 CT bağımsız doğrulama (2026-09-10) → **ACCEPTED (E2 + E4)**
+```text
+Commit: dbb0b810 · Agent: PASS (Content→None Update sapmasını şeffaf raporladı) · CT: ACCEPTED · Evidence: E2+E4
+```
+- ✅ **Scope:** 5 dosya (csproj None Update, CSV asset, appsettings committed config, DocumentRegisterSeed +Path.GetFullPath, gate testleri). Yasak/mantık dokunuşu YOK — seed'de yalnız path çözümü (mapping/DM-0 değişmedi); prod appsettings/şema/MOD-0262 dokunulmadı.
+- ✅ **Agent sapması doğru:** `.csv` Web SDK'de `None` item (Content değil) → `Content Update` no-op olurdu; agent ölçtü, **`None Update`**'e geçti → asset **bin/Debug/net8.0/Seed/document-management/GMG…csv (63615 bytes) kopyalanıyor** (CT doğruladı).
+- ✅ **CT kendi koşumu (izole worktree):** 20/20 (17 + 3 yeni relative-path); baseline-diff 159a490c(169) vs dbb0b810(171) → 2 "yeni" = `TaskReviewInstanceSeparationMongoTests` + `OrganizationFieldValueTests` env/Mongo flake (**izole 27/27**), DocumentRegister **0 fail** → 0 gerçek regresyon.
+- ✅ **E4 (deliverable proof, gerçek Mongo):** worktree bin'inden Platform.API + **committed config** (Enabled+relative CsvPath) + TenantId env-override=taze boş tenant (97c5'e dokunmadan) → **358 otomatik seed** (elle appsettings YOK); citable **0** (effectiveness:batch tümü Blocked/Unresolved), blocked **36**; relative CsvPath `Path.GetFullPath` ile bin/Seed'e çözüldü. Doğrulama temizlendi. **= arkadaş pull→fresh 97c5→auto-seed senaryosu kanıtlı.**
+
 ## Kalan (bu WP dışı)
 - CT E4 (fleet, temiz 97c5): committed config ile otomatik 358 seed doğrulama.
 - DM branch push + PR (arkadaşa ulaşsın).
