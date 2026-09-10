@@ -3868,68 +3868,6 @@ Ayrı madde açılmalı.
 
 ---
 
-### BL-334 — Rol İzinleri ekranında doğru izni bulmak pratikte imkânsız (2026-09-04, CANLI, sahip gördü)
-
-**Durum:** AÇIK · **Boyut:** M · **Sahip:** erişim yönetimi / platform UI
-
-Ekran 236 izni listeliyor ve kullanıcıya "hangisini seçmeliyim" sorusunda
-hiçbir yardım vermiyor. Sahip bugün canlıda bir role görev izinleri eklemeye
-çalıştı; beş izin ekledi ve **en kritik olanı atladı**.
-
-**Ölçülmüş vaka (2026-09-04, canlı).** Görev atanan kullanıcı görevi kabul
-edemiyordu. Ekranda dört buton kilitliydi: Kabul et · Planla · Bilgi bekle ·
-İade et. Sahip role şunları ekledi:
-
-    ✅ tasks.claim · tasks.complete · tasks.create · tasks.delete · tasks.read
-    ❌ tasks.update        ← dördünün DE bağlı olduğu izin
-
-`update` eksik olduğu için hiçbiri açılmadı. Ekranda o dört butonun tek bir
-izne bağlı olduğunu söyleyen hiçbir şey yok.
-
-Sayıyı üreten komut (kayıt bayatlamasın diye):
-
-    mongosh --quiet diten_auth_v3 --eval \
-      'db.permissions.aggregate([{$group:{_id:"$Module",n:{$sum:1}}},{$sort:{n:-1}}])'
-
-**Dört ayrı kusur, hepsi ölçüldü:**
-
-1. **Gruplar işe yaramıyor.** `Module` alanına göre 23 grup var ama dağılım
-   bozuk: `platform` tek başına **167 izin** taşıyor — bu bir grup değil, çöp
-   kutusu. Yanında `crm` 41, `crm-contact` 8 (neden ayrı belli değil),
-   `mod0251` 14 — bu sonuncusu bir MODÜL KODU, kullanıcıya böyle görünüyor.
-
-   ⚠ `platform` 167'nin yeniden gruplanması manifest işi DEĞİL: 87'si
-   `IsSystem: true` ve `InternalPermissionsController.cs:130` `moduleLocked`
-   kuralı bunları kasten kilitliyor (yetki yükselme sınırı). Bu bir izin göçü.
-
-2. **İzin ↔ ekran bağı görünmüyor.** `platform.tasks.update`'in "Kabul et /
-   Planla / Bilgi bekle / İade et / Başlat" butonlarını açtığı hiçbir yerde
-   yazmıyor. Kullanıcı anahtarın adından tahmin etmek zorunda — ve `update`
-   adı bu dört fiilin hiçbirini çağrıştırmıyor.
-
-3. **Eksik izni ekran söylemiyor.** Kullanıcı tarafında mesaj yalnız "Bu işlem
-   için yetkiniz yok" diyor. HANGİ izin eksik olduğunu söylemiyor; yönetici
-   tarafında da "bu butonu açan izin şudur" bilgisi yok. İki uç da sebebi
-   biliyor, ikisi de sessiz.
-
-4. **Tehlikeli izin uyarısız.** `tasks.delete` "General User" adlı bir role
-   tek tıkla eklenebiliyor; ekran bunun silme yetkisi olduğunu ve denetim izini
-   etkilediğini söylemiyor.
-
-**Kapanış ölçütü:** bir yönetici, "kullanıcı görevi kabul edemiyor" cümlesinden
-yola çıkıp doğru izni **arama yapmadan, tahmin etmeden** bulabilmeli. Ölçümü:
-aynı senaryoyu bilmeyen birine verip kaç denemede doğru izni eklediğine bakmak.
-
-**Yön önerisi (tasarım kararı sahipte):** izinleri anahtar adına göre değil
-**ekrandaki eyleme göre** gruplamak — "Görev üzerinde çalışma" başlığı altında
-accept/plan/inquire/return/start'ı tek satırda toplamak gibi. Bugün kullanıcı
-fiilden anahtara çeviri yapmak zorunda ve o çeviri hiçbir yerde yazılı değil.
-
-**İlişkili:** [[BL-333]] (aynı izin sisteminin token'ı 21,5 KB'a şişirmesi) —
-ikisi de "407 izin tek düzlemde duruyor" kökünden geliyor.
-
----
-
 ### BL-335 — 29 offcanvas hâlâ Golden Slim'in ESKİ desende; ikon sözleşmesi yayılmadı (2026-09-08, ölçüldü)
 
 > **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
@@ -4354,54 +4292,40 @@ sanar. Bu maddenin asıl maliyeti budur.
 
 ---
 
-### BL-344
 
-**İzin aksiyonları tek yazımda değil — dört farklı yazım, dokuz çakışma**
+### BL-345
 
-DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-08
+**Kontrol listesinde "kanıt zorunlu" işaretlenemiyor — form sabit `false` gönderiyor**
 
-Aynı fiil kataloğa dört ayrı yazımla giriyor: kebab (`bulk-delete`), PascalCase
-(`Read`, `PublishOverride` — BRD tohumu kurucuya böyle geçiyor; `Key` küçülüyor
-ama `Action` alanı büyük harfli kalıyor), snake (`view_sensitive`,
-`change_status` — MOD-0251), ve düz küçük harf.
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-09
 
-Sonucu: aynı fiil iki ayrı kod gibi davranıyor. Çeviri köprüsünü ıskalıyor
-(bir satırda "Görüntüle", yanındakinde "Read"), aile eşlemesini ıskalıyor
-(renksiz kalıyor), ve aksiyon dağılımı panelinde iki ayrı çubuk üretiyor.
+Kontrol listesi maddesinde `EvidenceRequired` alanı var, saklanıyor, izdüşüme taşınıyor
+ve **motor gerçekten uyguluyor** — kanıt yoksa eylem kapatılıyor:
 
-Ölçüm komutu (sayı yazmıyorum — kayar):
+    WorkItemProjectionService.cs:186
+      Disabled("approve", ActionApproveKey, WorkAggregationReasonCodes.EvidenceRequired, …)
 
-    mongosh "mongodb://localhost:27017/diten_auth_v3" --quiet --eval '
-      const a={}; db.permissions.find({},{Action:1,_id:0}).toArray()
-        .forEach(x=>a[x.Action]=(a[x.Action]||0)+1);
-      const n=s=>s.toLowerCase().replace(/_/g,"-"); const m={};
-      Object.keys(a).forEach(k=>{(m[n(k)]=m[n(k)]||[]).push(k+"("+a[k]+")")});
-      print(JSON.stringify(Object.entries(m).filter(([,v])=>v.length>1)));'
+Ama görev formundan madde eklerken değer **sabit yazılıyor**:
 
-2026-09-08 ölçümünde dokuz çakışma vardı: sekizi büyük/küçük harf
-(`read/Read`, `create/Create`, `update/Update`, `approve/Approve`,
-`publish/Publish`, `submit/Submit`, `preview/Preview`, `validate/Validate`),
-biri kebab/snake (`lookup-validation` **ve** `lookup_validation` — bunlar iki
-ayrı izin, iki ayrı modülde).
+    form-page.js:226
+      { text, requirement: checklistDraftLevel, evidenceRequired: false }
 
-⚠ **Bugün yapılan yalnız görüntü yamasıdır.** `PermLabel.normalizeAction`
-ekrana basmadan önce küçültüp `_` → `-` çeviriyor, böylece kullanıcı tek bir
-fiil görüyor. `Permission.Key`, `Action` alanı, filtre ve atama çağrısı
-**dokunulmadan** duruyor — ADR-001 §1 anahtarı dondurdu. Kusur yerinde duruyor,
-yalnız görünmüyor.
+Yani alan var, motor sayıyor, **hiç kimse işaretleyemiyor**. Kutu ekranda yok, dolayısıyla
+`EvidenceRequired = true` olan bir madde yalnız şablondan gelebilir.
 
-⚠ Şu an bir birleşme sorunu YOK: aynı satırda aynı normalize-aksiyondan iki izin
-taşıyan hiçbir kaynak yok (ölçüldü: sıfır). Ama bu bir garanti değil, bir
-rastlantı — iki modül aynı kaynak altında `Read` ve `read` tanımlarsa kullanıcı
-aynı yetkiyi iki kez görür ve hangisini verdiğini bilemez.
+⚠ Bu, MOD-0024 paketinin anlattığı `reasonCode: null` hatasının **birebir kardeşi**:
+istemci bir alanı sabit gönderir, motor sadakatle onu yazar, ve sütun aylarca boş kalır
+— kimse fark etmez çünkü hata bir istisna değil, bir varsayılan.
 
-**Ne yapılır:** tohum/manifest düzeyinde aksiyonu tek yazıma (küçük harf kebab)
-normalize et, ve `Permission` kurucusunda `Action`'ı `Key` ile aynı kurala sokan
-bir guard test yaz — bugün `Key` küçülüyor, `Action` küçülmüyor; ayrışmanın
-kaynağı tam olarak bu.
+**Ne zaman yapılır:** ⚠ Tek başına DEĞİL. Kanıtın kendisi **MOD-0031 (Evidence Linking
+Service)**'in işi ve o modül **kayıtta var, kodda yok** (`services/` altında karşılığı
+bulunmuyor, 2026-09-09 ölçümü). Bugün kutuyu açmak, işaretlenebilir ama sağlanamaz bir
+zorunluluk üretir: madde işaretlenemez, ekleyecek kanıt da yoktur.
 
-**Ne zaman yapılır:** `Action` alanını değiştirmek veri migration'ı gerektirir.
-`ModulePermissionResolver` / `SelectFor` bu alanı okumaz, ama `SelectFor`'un
-Viewer dalı `p.Action == "read"` karşılaştırması yapar (`StringComparison.
-OrdinalIgnoreCase`) ve `GetPermissionsByModule` gibi yollar ayrıca sınanmalıdır.
-Ayrı bir turda, kendi Scope-korunumu ölçümüyle.
+Doğru turu **MOD-0024 Faz 2 (görev kapanış zarfı)** — aynı dosyalara dokunuyor ve aynı
+soruyu cevaplıyor: bir görev kapanırken neyi kanıtlamış olması gerekir.
+
+**Ölçüm komutu:**
+
+    grep -n "evidenceRequired: false" frontend/Diten.Web/wwwroot/assets/js/Tasks/form-page.js
+    grep -rn "EvidenceRequired" services/Diten.Platform/src/Diten.Platform.Application/Features/WorkAggregation/
