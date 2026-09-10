@@ -4389,6 +4389,12 @@ zamanlanmış rapor · **dışa aktarma denetim kaydı** (→ BL-347).
     (cd frontend/Diten.Web && npx vitest run tests/work-report-export.test.js)
     grep -n "await ReadAsync(criteria, ct" services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/WorkReportRepository.cs
 
+**Kalan ölçümün yeri:** `docs/guides/operations/organization-chain-walkthrough.md` §8 —
+sahibin walkthrough'unda gerçek görevlerle, filtresiz ve tüzel kişilik filtreli iki
+indirmeyle kapanır. Ajanın test görevi yazması reddedildi: dev veritabanında tüzel kişilik 0,
+atama 0 (2026-09-10 ölçümü) — "iki filtreli" kontrol için gereken veri, sahibin elle girmek
+üzere sıfırladığı walkthrough verisinin ta kendisi.
+
 ### BL-347
 
 **İş Raporu dışa aktarması denetim kaydı bırakmıyor — kiracı tarafında uygun yazıcı yok**

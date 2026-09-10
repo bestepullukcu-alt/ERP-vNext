@@ -183,6 +183,26 @@ Bir görev oluştur ve `QC-ANALYST-MYG` pozisyonundaki kişiye ata.
 
 ---
 
+## 8 · İş Raporu → `/Tasks/WorkReport` — indirilen dosya ekranla aynı mı
+
+Bu adım, İş Raporu dışa aktarmasının (BL-346) canlıda **ölçülememiş tek kriterini**
+kapatır: dosyadaki sayı ekrandaki sayıyla aynı mı. Kodda iki taraftan sabotajla
+korunuyor, ama gerçek veriyle hiç ölçülmedi — çünkü o gün veritabanında tek görev yoktu.
+
+Önce **en az üç görev** olsun, en az biri **farklı bir tüzel kişilikte** (yoksa filtre
+hiçbir şeyi daraltmaz ve 4. adım bir şey kanıtlamaz).
+
+1. Filtresiz raporu aç, **Açılan** kartındaki sayıyı not et.
+2. **İndir → CSV.** Dosyayı aç, `Opened` sütununu topla. **Kartla aynı olmalı.**
+3. Tüzel kişilik filtresi uygula (ör. `LE-003`). Kart değişir — yeni sayıyı not et.
+4. Tekrar indir, `Opened`'ı topla. **Yeni kartla aynı olmalı** ve 2. adımdakinden küçük.
+
+⚠ 4. adımda dosyadaki sayı karttan **büyükse**, dışa aktarma kapsamı genişletiyor
+demektir — ekranda 12 görüp 13 indirmek. Yanlış bir sayıdan daha kötüdür, çünkü
+fark edilmez. Hemen bildir.
+
+---
+
 ## Turun sonunda
 
 Bu zincir baştan sona yürüdüyse **canlıda yeni bir kiracı açıldığında da
