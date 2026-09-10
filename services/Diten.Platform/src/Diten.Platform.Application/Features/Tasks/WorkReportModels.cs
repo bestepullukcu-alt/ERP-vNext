@@ -533,6 +533,118 @@ public sealed record WorkReportItemsDto(
 }
 
 /// <summary>
+/// ONE TASK IN THE DOWNLOADED REPORT — Dilim 1e — and every cell of the report it counts toward.
+///
+/// <para><b>⚠ THE FLAGS ARE THE POINT.</b> A reader exports a report to pivot it their own way, so each row says
+/// which of the screen's numbers it belongs to — <see cref="Opened"/>, <see cref="Late"/>,
+/// <see cref="AgingOlderThan30Days"/> and the rest. Summing a flag column gives exactly the number on screen,
+/// because each flag is filled from <c>WorkReportTally.Select</c> — the method the numbers are counted with.
+/// Nothing here works out membership on its own terms.</para>
+///
+/// <para><b>Property names ARE the bucket kinds</b>, one for one, so a test can walk every
+/// <see cref="WorkReportBucketKind"/> and find its column. A kind added later without a column fails that walk
+/// instead of shipping a file that silently cannot reproduce one of the numbers.</para>
+///
+/// <para><see cref="InPeriod"/> is the row set the period's flow, timeliness and outcomes are measured over — an
+/// outcome's number is the count of rows with <c>InPeriod</c> and that <see cref="ClosureReasonCode"/>. Rows
+/// with <c>InPeriod = false</c> are in the file only because ageing or the unattended backlog counts them.</para>
+///
+/// <para><see cref="AssigneeUserId"/> is an ID, never a name, for the reason <see cref="WorkReportItem"/> gives:
+/// Platform has no user entity to ask.</para>
+/// </summary>
+public sealed record WorkReportExportRow(
+    Guid Id,
+    string Title,
+    string Lifecycle,
+    string Priority,
+    string? TaskTypeCode,
+    string? TaskTypeName,
+    Guid OrganizationUnitId,
+    string? OrganizationUnitName,
+    Guid? LegalEntityId,
+    Guid? AssigneeUserId,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? DueAt,
+    DateTimeOffset? ClosedAt,
+    string? ClosureReasonCode,
+    decimal? EstimateHours,
+    decimal SpentHours,
+    int ReturnCount,
+    bool InPeriod,
+    bool Opened,
+    bool Closed,
+    bool Completed,
+    bool Cancelled,
+    bool Unattended,
+    bool OnTime,
+    bool Late,
+    bool WithoutDueDate,
+    bool AgingUpTo7Days,
+    bool AgingFrom8To30Days,
+    bool AgingOlderThan30Days,
+    bool Returned);
+
+/// <summary>
+/// What the export read produced: how many rows the report covers, and the rows themselves.
+///
+/// <para><b>⚠ <see cref="Total"/> IS COUNTED BEFORE ANY LIMIT</b>, and when it is over the limit
+/// <see cref="Rows"/> is EMPTY — never the first N. A cut file looks exactly like a complete one, and a reader
+/// who pivots it gets numbers that disagree with the screen with nothing to say why. Over the limit the handler
+/// refuses outright, and the reader narrows the filter.</para>
+/// </summary>
+public sealed record WorkReportExportSet(int Total, IReadOnlyList<WorkReportExportRow> Rows)
+{
+    public static WorkReportExportSet Empty { get; } = new(0, []);
+}
+
+/// <summary>The formats the export writes — the audit export's two, and no spreadsheet library.</summary>
+public static class WorkReportExportFormats
+{
+    public const string Csv = "csv";
+    public const string Json = "json";
+
+    /// <summary>
+    /// The stable part of the file name. The SCREEN swaps it for the reader's own words: Platform has no
+    /// localizer, and a name the server translated would be a second vocabulary nobody else can correct.
+    /// </summary>
+    public const string FilePrefix = "work-report";
+
+    /// <summary>Absent means CSV — the one format a person opens without thinking about it.</summary>
+    public static bool TryParse(string? value, out string format)
+    {
+        format = string.IsNullOrWhiteSpace(value) ? Csv : value.Trim().ToLowerInvariant();
+        return format is Csv or Json;
+    }
+
+    /// <summary>
+    /// <c>work-report_2026-08-11_2026-09-10.csv</c> — the period as a reader would say it.
+    ///
+    /// <para>⚠ The second date is the LAST DAY COUNTED, not <c>To</c>. <c>To</c> is exclusive, so a file named
+    /// after it would claim a day the report never read.</para>
+    /// </summary>
+    public static string FileName(DateTimeOffset from, DateTimeOffset to, string format) =>
+        string.Create(
+            System.Globalization.CultureInfo.InvariantCulture,
+            $"{FilePrefix}_{from.ToUniversalTime():yyyy-MM-dd}_{to.ToUniversalTime().AddTicks(-1):yyyy-MM-dd}.{format}");
+}
+
+/// <summary>
+/// The audit export's limit, copied rather than invented (<c>AuditExportLimits.MaxRows</c>). Past it the
+/// request is REFUSED — see <see cref="WorkReportExportSet"/> for why it is never trimmed to fit.
+/// </summary>
+public static class WorkReportExportLimits
+{
+    public const int MaxRows = 50_000;
+}
+
+/// <summary>The file, as the controller hands it to <c>File(...)</c> — the audit export's own shape.</summary>
+public sealed record WorkReportExportResultDto(
+    byte[] Content,
+    string ContentType,
+    string FileName,
+    int RowCount);
+
+/// <summary>
 /// The report's ONE read — declared here beside its criteria rather than in Domain, following the same
 /// Application-port shape <c>IOutboxEventRepository</c> and <c>IRepositoryReadinessPort</c> use: the criteria
 /// carry a <see cref="WorkReportScope"/>, which is an authorization concept, and Domain has no business knowing
@@ -574,4 +686,17 @@ public interface IWorkReportRepository
     /// <para>An out-of-scope criteria set returns an EMPTY page, never an unfiltered one.</para>
     /// </summary>
     Task<WorkReportItemsDto> ItemsAsync(WorkReportItemsCriteria criteria, CancellationToken ct = default);
+
+    /// <summary>
+    /// EVERY ROW BEHIND THE REPORT, as a file — Dilim 1e.
+    ///
+    /// <para><b>⚠ THE SAME READ AGAIN, NOT A NEW QUERY.</b> The implementation calls the read the numbers and the
+    /// lists use, then <c>WorkReportTally.Export</c>. So the scope, the period and the five filters reach the file
+    /// the way they reach the screen: someone who sees 12 on screen downloads 12. A query written for the export
+    /// alone would match the report on the day it was written and drift later without anyone noticing.</para>
+    ///
+    /// <para>Past <paramref name="maxRows"/> it returns the TOTAL and no rows. See
+    /// <see cref="WorkReportExportSet"/>.</para>
+    /// </summary>
+    Task<WorkReportExportSet> ExportAsync(WorkReportCriteria criteria, int maxRows, CancellationToken ct = default);
 }

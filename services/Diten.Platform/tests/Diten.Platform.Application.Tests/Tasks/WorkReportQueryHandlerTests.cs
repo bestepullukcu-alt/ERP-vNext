@@ -80,6 +80,15 @@ public sealed class WorkReportQueryHandlerTests
         }
 
         public WorkReportItemsCriteria? LastItemsCriteria { get; private set; }
+
+        /// <summary>The export's read (Dilim 1e) — recorded the same way, for the same reason.</summary>
+        public System.Threading.Tasks.Task<WorkReportExportSet> ExportAsync(
+            WorkReportCriteria criteria, int maxRows, CancellationToken ct = default)
+        {
+            Calls++;
+            LastCriteria = criteria;
+            return System.Threading.Tasks.Task.FromResult(WorkReportExportSet.Empty);
+        }
     }
 
     private static IWorkReportScopeSource Scope(

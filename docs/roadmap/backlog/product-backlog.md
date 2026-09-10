@@ -4329,3 +4329,89 @@ soruyu cevaplıyor: bir görev kapanırken neyi kanıtlamış olması gerekir.
 
     grep -n "evidenceRequired: false" frontend/Diten.Web/wwwroot/assets/js/Tasks/form-page.js
     grep -rn "EvidenceRequired" services/Diten.Platform/src/Diten.Platform.Application/Features/WorkAggregation/
+
+### BL-346
+
+**MOD-0024 Dilim 1e — İş Raporu dışa aktarma: düğme ve davranış birlikte**
+
+DURUM: ⚠️ KAPANIŞ (KISMİ) · SAHİP: ali.tufanoglu · KOD: 2026-09-10 (commit: CONTROL TOWER alacak)
+
+**Ne yapıldı.** `GET /api/v1/tasks/work-report/export?format=csv|json` + web proxy
+`/Tasks/api/work-report/export` + araç çubuğunda, filtre rozetinin yanında indirme menüsü
+(CSV · JSON). Dosya, raporun **arkasındaki satırlar**: her görev bir kez, ve her satırda
+ekrandaki hangi hücreye girdiğini söyleyen `1/0` sütunları (`Opened`, `Late`,
+`AgingOlderThan30Days`, …). Bir sütunu toplamak, ekrandaki o sayıyı verir.
+
+**Kararlar ve neden.**
+- **Aynı sorgu, ayrı sorgu değil.** `WorkReportRepository.ExportAsync`, sayıların kullandığı
+  `ReadAsync`'i çağırır; üyelik `WorkReportTally.Select`'ten gelir. Kapsam
+  (`IWorkReportScopeSource` → MOD-0018-FU15 `IDataScopeResolver`), dönem, beş filtre ve
+  kapsam tercihi ekranınkiyle aynıdır. Reddedilen: `work-report/items`'ı sayfa sayfa
+  çağırmak — o uç **tek hücre** döndürür, "raporun satırları" diye bir hücre yok.
+- **İzin aynı:** `WorkReportRead`. Ayrı `work-report.export` açılmadı.
+- **Sınır aşılırsa ret, kesme yok:** 50 000 (audit'in `MaxRows`'u).
+  `WORK_REPORT_EXPORT_TOO_LARGE` → ekran "filtreyi daraltın" der, "başarısız" demez.
+- **Sütun başlıkları çevrilmez** — ölçüldü: audit CSV'si sabit İngilizce tanımlayıcı yazıyor.
+- **Audit'ten iki bilinçli fark:** UTF-8 BOM (Excel'de Türkçe/Arapça başlık bozulmasın) ve
+  sayılar invariant kültürde (`1,5` virgüllü dosyada hücre böler).
+- **Dosya adı öneki yerelleşir:** sunucu `work-report_{ilk gün}_{son sayılan gün}` yazar,
+  ekran yalnız öneki okuyucunun diline çevirir (`is-raporu_…`).
+- **Object URL `finally` içinde bırakılır** — audit'te `click()`'ten sonraki satırdaydı.
+
+**Kasten yapılmayanlar.** XLSX (audit deseninde yok, kütüphane getirir) · grafik/PNG ·
+zamanlanmış rapor · **dışa aktarma denetim kaydı** (→ BL-347).
+
+**Canlı doğrulama — 2026-09-10, `admin@diten.com`, `/Tasks/WorkReport`:**
+
+Ölçüldü ✅
+- Rota üç katmanda var: web proxy 302 (oturumsuz → giriş), gateway 401, Platform 401;
+  karşılaştırma için var olmayan yol 404.
+- Düğme menüsü açılıyor, iki giriş (CSV · JSON) çalışıyor; rapor yüklenince etkin.
+- CSV: 200, `text/csv; charset=utf-8`, ilk üç bayt `EF BB BF` (BOM), başlık satırı doğru.
+  `Content-Disposition` ve `X-Work-Report-Export-Row-Count` gateway + web proxy'den sağ geçiyor.
+- JSON: 200, `application/json`, dizi. `format=xlsx` → 400 `VALIDATION_FAILED`.
+- Dosya adı yerel önekle ve dönemle iniyor: `is-raporu_2026-08-12_2026-09-10.csv`,
+  `تقرير-العمل_2026-08-12_2026-09-10.csv`.
+- Her indirmede 1 `createObjectURL`, aynı URL için 1 `revokeObjectURL`; sayfada `<a download>` kalmıyor.
+- Işık ve koyu tema; tr ve ar (`dir="rtl"`, menü sola açılıyor, bildirim Arapça).
+- Konsol: tek hata, bilerek gönderilen `format=xlsx` isteğinin 400'ü.
+
+Ölçülemedi ⚠️ — **kapanışı bekleten madde bu**
+- **Sütun toplamı = kart, filtresiz ve iki filtreli.** Geliştirme veritabanında
+  (`diten_personalization_dev`) görev yok: `scripts/seed-closure-outcomes-dev.sh --status` →
+  `tasks: 0`. Rapor boş, dosya yalnız başlık; 0 = 0 kanıt değildir. Kimlik bugün
+  `WorkReportExportTests.Summing_a_column_…` ve S1/S2 sabotajlarıyla korunuyor, canlıda değil.
+- **403 → yetki cümlesi.** İzinsiz bir kullanıcıyla oturum açılmadı; yalnız vitest'te ölçüldü.
+
+**Ölçüm komutları:**
+
+    dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~WorkReportExport"
+    (cd frontend/Diten.Web && npx vitest run tests/work-report-export.test.js)
+    grep -n "await ReadAsync(criteria, ct" services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/WorkReportRepository.cs
+
+### BL-347
+
+**İş Raporu dışa aktarması denetim kaydı bırakmıyor — kiracı tarafında uygun yazıcı yok**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-10
+
+Dilim 1e (BL-346) audit export'unu taklit etti, bir yer hariç: audit handler'ı indirmeden
+sonra `AuditMetaAuditWriter.WriteAsync(... AuditCategory.DataExport ...)` çağırıyor. Aynı
+çağrı İş Raporu için **yazılmadı**, çünkü o yazıcı her olayı şöyle damgalıyor:
+
+    AuditMetaAuditWriter.cs  ActorType = PlatformAdministrator · IsPlatformGlobal = true · SourceModule = "Audit"
+
+Bir kiracı kullanıcısının indirmesi bununla kaydedilseydi, kayıt "bir platform yöneticisi
+yaptı" diyecekti — yanlış kayıt, kayıtsızlıktan kötüdür.
+
+**Risk:** GxP bağlamında "kim, hangi veriyi, ne zaman sistemden çıkardı" sorusunun bugün
+cevabı yok. Veri kapsamla sınırlı (kişi zaten görebildiğini indiriyor), ama iz yok.
+
+**Ne zaman yapılır:** kiracı tarafı denetim yazıcısı (`IAuditableCommand` hattının sorgu
+eşdeğeri veya `AuditMetaAuditWriter`'a aktör tipi parametresi) karara bağlandığında. Tek
+satırlık ekleme olarak değil — önce aktör tipini doğru yazan bir yazıcı gerekir.
+
+**Ölçüm komutu:**
+
+    grep -n "ActorType\|IsPlatformGlobal\|SourceModule" services/Diten.Platform/src/Diten.Platform.Application/Features/Audit/Services/AuditMetaAuditWriter.cs
+    grep -n "AuditMetaAuditWriter\|DataExport" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/QueryHandlers/WorkReportExportQueryHandler.cs

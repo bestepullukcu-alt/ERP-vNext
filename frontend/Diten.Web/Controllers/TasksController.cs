@@ -183,6 +183,21 @@ public sealed class TasksController : Controller
             $"{_gatewayUrl}/api/v1/tasks/work-report/items" + Request.QueryString.Value,
             readBody: false);
 
+    /// <summary>
+    /// The report's rows as a FILE (Dilim 1e) — the third of the screen's three calls, beside the other two.
+    ///
+    /// <para>The query string is forwarded WHOLE, for the reason the two above give: the period, the format,
+    /// the five filters and the scope preference are Platform's contract. A parameter this tier re-listed and
+    /// dropped would make the file answer about a wider set than the screen it was downloaded from.</para>
+    ///
+    /// <para>⚠ NOT <see cref="ProxyAsync"/>: that reads the body as a STRING and forwards no headers, so the file
+    /// name (<c>Content-Disposition</c>) and the row count would be lost on the way through. See
+    /// <see cref="ProxyFileAsync"/>.</para>
+    /// </summary>
+    [HttpGet("api/work-report/export")]
+    public Task<IActionResult> ApiWorkReportExport()
+        => ProxyFileAsync($"{_gatewayUrl}/api/v1/tasks/work-report/export" + Request.QueryString.Value);
+
     // ── Configurable field definitions (Phase 5) ─────────────────────────────
     //
     // Their own resource, so NOT transition codes and not in TaskTransitionRoutes — each one has to be listed
@@ -684,6 +699,73 @@ public sealed class TasksController : Controller
                 new { message = "Task engine dependency unavailable." });
         }
     }
+
+    /// <summary>
+    /// Forward a DOWNLOAD — the audit screen's file proxy (<c>PlatformAuditController.ProxyFileGatewayAsync</c>),
+    /// with the tenant request this controller already builds.
+    ///
+    /// <para><b>A success is relayed as bytes</b>, with the upstream file name and the row count header, so the
+    /// browser gets the name Platform chose and the screen can say how many rows arrived.</para>
+    ///
+    /// <para><b>⚠ A FAILURE IS RELAYED VERBATIM — 403 included.</b> The audit proxy clears the auth cookies on a
+    /// 403; this one does not, for the reason <see cref="ProxyAsync"/> passes statuses through: on this
+    /// controller a 403 means "not granted", not "not signed in", and the screen answers it with a sentence. The
+    /// envelope's <c>reason_code</c> (a refused, too-large export) has to reach the screen intact too.</para>
+    /// </summary>
+    private async Task<IActionResult> ProxyFileAsync(string targetUrl)
+    {
+        if (!TryCreateTenantRequest(HttpMethod.Get, targetUrl, out var request))
+        {
+            return Unauthorized(new { message = "Unauthorized" });
+        }
+
+        try
+        {
+            using (request)
+            {
+                var client = _httpClientFactory.CreateClient();
+                using var response = await client.SendAsync(
+                    request, HttpCompletionOption.ResponseHeadersRead, HttpContext.RequestAborted);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new ContentResult
+                    {
+                        Content = await response.Content.ReadAsStringAsync(HttpContext.RequestAborted),
+                        ContentType = response.Content.Headers.ContentType?.ToString() ?? "application/json",
+                        StatusCode = (int)response.StatusCode
+                    };
+                }
+
+                var content = await response.Content.ReadAsByteArrayAsync(HttpContext.RequestAborted);
+                var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
+                var fileName = response.Content.Headers.ContentDisposition?.FileNameStar
+                    ?? response.Content.Headers.ContentDisposition?.FileName?.Trim('"')
+                    ?? "export";
+
+                if (response.Headers.TryGetValues(WorkReportExportRowCountHeader, out var rowCount))
+                {
+                    Response.Headers[WorkReportExportRowCountHeader] = rowCount.FirstOrDefault();
+                }
+
+                return File(content, contentType, fileName);
+            }
+        }
+        catch (OperationCanceledException) when (HttpContext.RequestAborted.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Task engine file proxy failed for {TargetUrl}.", targetUrl);
+            return StatusCode(
+                StatusCodes.Status503ServiceUnavailable,
+                new { message = "Task engine dependency unavailable." });
+        }
+    }
+
+    /// <summary>Platform's row-count header on the work report export — relayed so the screen can state it.</summary>
+    private const string WorkReportExportRowCountHeader = "X-Work-Report-Export-Row-Count";
 
     private bool TryCreateTenantRequest(HttpMethod method, string targetUrl, out HttpRequestMessage request)
     {

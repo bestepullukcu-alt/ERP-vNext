@@ -104,4 +104,12 @@
   <data name="OutcomesOther" xml:space="preserve"><value>Other outcomes</value></data>
   <data name="ItemsColClosed" xml:space="preserve"><value>closed {0}</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>Low</value></data>
+  <data name="ExportButton" xml:space="preserve"><value>Export</value></data>
+  <data name="ExportCsv" xml:space="preserve"><value>Download as CSV</value></data>
+  <data name="ExportJson" xml:space="preserve"><value>Download as JSON</value></data>
+  <data name="ExportFilePrefix" xml:space="preserve"><value>work-report</value></data>
+  <data name="ExportDownloaded" xml:space="preserve"><value>{0} rows downloaded.</value></data>
+  <data name="ExportTooManyRows" xml:space="preserve"><value>This report covers more tasks than one export can carry. Narrow the period or the filters and try again.</value></data>
+  <data name="ExportForbidden" xml:space="preserve"><value>You are not permitted to export this report.</value></data>
+  <data name="ExportFailed" xml:space="preserve"><value>The export could not be prepared.</value></data>
 </root>

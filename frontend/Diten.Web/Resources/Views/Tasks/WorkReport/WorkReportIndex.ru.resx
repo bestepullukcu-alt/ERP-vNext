@@ -104,4 +104,12 @@
   <data name="OutcomesOther" xml:space="preserve"><value>Другие результаты</value></data>
   <data name="ItemsColClosed" xml:space="preserve"><value>закрыто {0}</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>Низкий</value></data>
+  <data name="ExportButton" xml:space="preserve"><value>Экспорт</value></data>
+  <data name="ExportCsv" xml:space="preserve"><value>Скачать в CSV</value></data>
+  <data name="ExportJson" xml:space="preserve"><value>Скачать в JSON</value></data>
+  <data name="ExportFilePrefix" xml:space="preserve"><value>отчет-о-работе</value></data>
+  <data name="ExportDownloaded" xml:space="preserve"><value>Скачано строк: {0}.</value></data>
+  <data name="ExportTooManyRows" xml:space="preserve"><value>В отчёт входит больше задач, чем помещается в одну выгрузку. Сузьте период или фильтры и повторите попытку.</value></data>
+  <data name="ExportForbidden" xml:space="preserve"><value>У вас нет прав на выгрузку этого отчёта.</value></data>
+  <data name="ExportFailed" xml:space="preserve"><value>Не удалось подготовить выгрузку.</value></data>
 </root>
