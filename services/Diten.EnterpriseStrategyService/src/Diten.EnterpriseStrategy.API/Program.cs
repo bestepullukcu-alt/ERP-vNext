@@ -1,11 +1,55 @@
+using System.Text;
 using Asp.Versioning;
 using Diten.Application;
+using Diten.BuildingBlocks.Security.Secrets;
 using Diten.Persistence;
 using Diten.Infrastructure;
 using Diten.WebAPI.Health;
 using Diten.WebAPI.Middleware;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ── Authentication (D-5 security fix) ────────────────────────────────────────
+// This service previously called UseAuthorization() with NO authentication scheme registered and no
+// UseAuthentication() in the pipeline, so every endpoint without an explicit filter — including
+// UploadsController — was reachable anonymously through the gateway. Settings, validation parameters and
+// clock skew are copied verbatim from the sibling Diten.CrmService so a token minted by the AuthService
+// validates identically here; nothing about the JWT contract is invented locally.
+var jwtSecret = builder.Configuration["JwtSettings:Secret"];
+var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
+var jwtAudience = builder.Configuration["JwtSettings:Audience"];
+var jwtPreviousSecrets = builder.Configuration
+    .GetSection("JwtSettings:PreviousSecrets")
+    .GetChildren()
+    .Select(section => section.Value)
+    .Where(value => !string.IsNullOrWhiteSpace(value))
+    .ToArray();
+
+ValidateRequiredJwtSetting(jwtSecret, "JwtSettings:Secret");
+ValidateRequiredJwtSetting(jwtIssuer, "JwtSettings:Issuer");
+ValidateRequiredJwtSetting(jwtAudience, "JwtSettings:Audience");
+var jwtSigningKeys = BuildJwtSigningKeys(jwtSecret, jwtPreviousSecrets);
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKeys = jwtSigningKeys,
+            ClockSkew = JwtValidationDefaults.ClockSkew
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -79,6 +123,9 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseCors("FrontendPolicy");
 app.UseMiddleware<CorrelationIdMiddleware>();
+// D-5: UseAuthentication MUST run before UseAuthorization. Without it the pipeline never populates
+// HttpContext.User, so [Authorize] could not be satisfied and every unfiltered endpoint stayed anonymous.
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/healthz");
@@ -102,3 +149,31 @@ else
 }
 
 app.Run();
+
+// D-5: copied verbatim from Diten.CrmService/Program.cs so the two services fail the same way on a
+// misconfigured secret — fail-closed at startup rather than silently accepting unsigned traffic.
+static void ValidateRequiredJwtSetting(string? value, string key)
+{
+    if (string.IsNullOrWhiteSpace(value))
+    {
+        throw new InvalidOperationException($"Configuration error: '{key}' is missing or empty.");
+    }
+}
+
+static IReadOnlyList<SecurityKey> BuildJwtSigningKeys(string? currentSecret, IEnumerable<string?> previousSecrets)
+{
+    var secrets = new[] { currentSecret }
+        .Concat(previousSecrets)
+        .Where(secret => !string.IsNullOrWhiteSpace(secret))
+        .Distinct(StringComparer.Ordinal)
+        .Select(secret => new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret!)))
+        .Cast<SecurityKey>()
+        .ToArray();
+
+    if (secrets.Length == 0)
+    {
+        throw new InvalidOperationException("Configuration error: 'JwtSettings:Secret' is missing or empty.");
+    }
+
+    return secrets;
+}

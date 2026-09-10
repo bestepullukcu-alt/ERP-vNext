@@ -170,8 +170,9 @@ public static class DependencyInjection
         // MOD-0029-FU01 — controlled-document feature flags + Phase 1 content-storage options.
         services.Configure<Diten.Platform.Application.Features.DocumentManagementControlledDocuments.ControlledDocumentsFeatureFlagOptions>(
             configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementControlledDocuments.ControlledDocumentsFeatureFlagOptions.SectionName));
-        services.Configure<Diten.Platform.Application.Features.DocumentManagementControlledDocuments.ContentStorageOptions>(
-            configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementControlledDocuments.ContentStorageOptions.SectionName));
+        // MOD-0262-FU01 — content storage options relocated to the DocumentRepository contract namespace (AD-8 / OD-A).
+        services.Configure<Diten.Platform.Application.Contracts.DocumentRepository.ContentStorageOptions>(
+            configuration.GetSection(Diten.Platform.Application.Contracts.DocumentRepository.ContentStorageOptions.SectionName));
         // MOD-0029-FU04 — access matrix rollout/enforcement mode (defaults to Compatibility when unset).
         services.Configure<Diten.Platform.Application.Features.DocumentManagementAccessMatrix.Services.AccessMatrixOptions>(
             configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementAccessMatrix.Services.AccessMatrixOptions.SectionName));
@@ -489,8 +490,12 @@ public static class DependencyInjection
             Diten.Platform.Infrastructure.Services.DocumentManagement.CollectionInstanceReferenceReader>();
         services.AddScoped<Diten.Platform.Application.Features.DocumentManagementControlledDocuments.Services.IDocumentAccessPrincipalAccessor,
             Diten.Platform.Infrastructure.Services.DocumentManagement.DocumentAccessPrincipalAccessor>();
-        services.AddScoped<Diten.Platform.Application.Features.DocumentManagementControlledDocuments.Services.IContentStorageGateway,
+        // MOD-0262-FU01 — the binary store seam is now owned by MOD-0262 (Internal Document Repository Service).
+        services.AddScoped<Diten.Platform.Application.Contracts.DocumentRepository.IContentStorageGateway,
             Diten.Platform.Infrastructure.Services.DocumentManagement.LocalFileSystemContentStorageGateway>();
+        services.AddScoped<Diten.Platform.Domain.Repositories.IRepositoryObjectRepository,
+            Diten.Platform.Infrastructure.Persistence.Repositories.RepositoryObjectRepository>();
+        services.AddScoped<Diten.Platform.Application.Features.DocumentRepository.Services.DocumentRepositoryService>();
 
         services.AddScoped<IMessagingProvider, FakeMessagingProvider>();
         services.AddScoped<IMessagingProvider, SmtpMessagingProvider>();

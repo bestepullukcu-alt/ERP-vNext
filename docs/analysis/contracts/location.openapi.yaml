@@ -1,0 +1,86 @@
+openapi: 3.1.0
+info:
+  title: LOCATION
+  description: >
+    Shared Location/Storage Master (DEC-INV-03 Option B) — Wave-0 frozen (v1).
+    Fiziksel yer hiyerarşisi Site→Warehouse→StorageLocation→Zone→Bin. READ-ONLY consumers.
+    NOT OrganizationUnit (K6). Tenant+LegalEntity scoped.
+  version: 1.0.0
+  x-status: FROZEN
+  x-owner: Location Master (MOD-? candidate)
+  x-decisions: [DEC-INV-03, 18]
+servers: [{ url: /api/locations }]
+security: [{ bearerAuth: [] }]
+paths:
+  /{id}:
+    get:
+      operationId: getLocation
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200':
+          description: Lokasyon
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LocationRef' }
+              example: { locationId: loc-A-12-3, code: A-12-3, name: "Raf A-12-3", type: Bin, parentId: zone-A, legalEntityId: le-tr, status: Active, isStockable: true, operatingMode: internal, contractVersion: v1 }
+        '404': { $ref: '#/components/responses/UnknownLocation' }
+  /:
+    get:
+      operationId: listLocations
+      parameters:
+        - { name: type, in: query, schema: { $ref: '#/components/schemas/LocationType' } }
+        - { name: parentId, in: query, schema: { type: string } }
+        - { name: legalEntityId, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Liste
+          content:
+            application/json:
+              schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/LocationRef' } }, total: { type: integer }, contractVersion: { type: string } } }
+  /{id}/path:
+    get:
+      operationId: getLocationPath
+      summary: Site→…→Bin tam yol
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200':
+          description: Hiyerarşi yolu
+          content:
+            application/json:
+              example: { locationId: loc-A-12-3, path: [ { type: Site, id: site-tr, code: TR }, { type: Warehouse, id: wh-01, code: WH-01 }, { type: StorageLocation, id: sl-cold, code: COLD }, { type: Zone, id: zone-A, code: A }, { type: Bin, id: loc-A-12-3, code: A-12-3 } ], contractVersion: v1 }
+  /validate:
+    post:
+      operationId: validateLocations
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, properties: { locationIds: { type: array, items: { type: string } } } }, example: { locationIds: [loc-A-12-3, loc-x] } } }
+      responses:
+        '200':
+          description: Sonuçlar
+          content:
+            application/json:
+              example: { results: [ { locationId: loc-A-12-3, exists: true, isStockable: true }, { locationId: loc-x, exists: false } ], contractVersion: v1 }
+components:
+  securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
+  schemas:
+    LocationType: { type: string, enum: [Site, Warehouse, StorageLocation, Zone, Bin] }
+    LocationRef:
+      type: object
+      properties:
+        locationId: { type: string }
+        code: { type: string }
+        name: { type: string }
+        type: { $ref: '#/components/schemas/LocationType' }
+        parentId: { type: string, nullable: true }
+        legalEntityId: { type: string }
+        status: { type: string, enum: [Active, Inactive, Archived] }
+        isStockable: { type: boolean, description: "Stok tutulabilir mi (Bin=true, Zone genelde false)" }
+        operatingMode: { type: string, enum: [internal, external-integrated], nullable: true, description: "DEC-INV-19 (Site/Warehouse)" }
+        orgUnitRef: { type: string, nullable: true, description: "SOFT link (kimlik değil)" }
+        costCenterCode: { type: string, nullable: true }
+        contractVersion: { type: string }
+    Error: { type: object, properties: { error: { type: object, properties: { code: { type: string }, message: { type: string }, correlationId: { type: string } } }, contractVersion: { type: string } } }
+  responses:
+    UnknownLocation:
+      description: Lokasyon bulunamadı
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_LOCATION, message: "location bulunamadı", correlationId: req-1 }, contractVersion: v1 } } }

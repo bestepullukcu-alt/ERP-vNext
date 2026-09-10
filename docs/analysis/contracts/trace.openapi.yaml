@@ -1,0 +1,125 @@
+openapi: 3.1.0
+info:
+  title: TRACE-BUNDLE
+  description: >
+    MOD-0174 Lot/Batch/Serial Tracking — Wave-0 frozen (v1).
+    Lot uniqueness = surrogate LotId + business key Tenant+Item+LotNumber (DEC-INV-14).
+    INVENTORY movement lotId/serialIds ile buna bağlanır. Tenant+LegalEntity scoped.
+  version: 1.0.0
+  x-status: FROZEN
+  x-owner: MOD-0174
+  x-decisions: [DEC-INV-14, 18]
+servers: [{ url: /api/trace }]
+security: [{ bearerAuth: [] }]
+paths:
+  /lots/{lotId}:
+    get:
+      operationId: getLot
+      parameters: [{ name: lotId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200':
+          description: Lot
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LotRef' }
+              example: { lotId: lot-777, lotNumber: "L2026-0455", itemId: b1f2c3d4-0000-0000-0000-000000000001, manufacturerLot: "M-99", supplierLot: "S-12", manufacturingDate: "2026-01-10T00:00:00Z", expiryDate: "2028-01-10T00:00:00Z", retestDate: "2027-01-10T00:00:00Z", countryOfOrigin: TR, status: Released, coaReference: "COA-777", contractVersion: v1 }
+        '404': { $ref: '#/components/responses/UnknownLot' }
+  /lots:
+    get:
+      operationId: listLots
+      parameters:
+        - { name: itemId, in: query, schema: { type: string, format: uuid } }
+        - { name: status, in: query, schema: { type: string } }
+        - { name: expiryBefore, in: query, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: Lot listesi (FEFO/expiry consumer)
+          content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/LotRef' } }, total: { type: integer }, contractVersion: { type: string } } } } }
+    post:
+      operationId: createLot
+      summary: Lot oluştur (GR sırasında 0142 çağırır)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateLotRequest' }
+            example: { idempotencyKey: lot-abc, itemId: b1f2c3d4-0000-0000-0000-000000000001, lotNumber: "L2026-0455", supplierLot: "S-12", manufacturingDate: "2026-01-10T00:00:00Z", expiryDate: "2028-01-10T00:00:00Z" }
+      responses:
+        '201':
+          description: Lot oluşturuldu
+          content: { application/json: { schema: { $ref: '#/components/schemas/LotRef' }, example: { lotId: lot-777, lotNumber: "L2026-0455", itemId: b1f2c3d4-0000-0000-0000-000000000001, status: Draft, contractVersion: v1 } } }
+        '409': { $ref: '#/components/responses/LotConflict' }
+  /serials/{serialId}:
+    get:
+      operationId: getSerial
+      parameters: [{ name: serialId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200':
+          description: Serial
+          content: { application/json: { schema: { $ref: '#/components/schemas/SerialRef' }, example: { serialId: sn-1, serialNumber: "SN-000001", itemId: b1f2c3d4-0000-0000-0000-000000000001, lotId: lot-777, status: Active, contractVersion: v1 } } }
+  /lots/{lotId}/genealogy:
+    get:
+      operationId: getGenealogy
+      summary: İleri/geri iz (recall)
+      parameters: [{ name: lotId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200':
+          description: Genealogy
+          content: { application/json: { example: { lotId: lot-777, parents: [ { parentLotId: lot-100, transformationReference: "MO-55" } ], children: [ { childLotId: lot-900, transformationReference: "MO-77" } ], contractVersion: v1 } } }
+  /validate:
+    post:
+      operationId: validateTrace
+      requestBody: { required: true, content: { application/json: { schema: { type: object, properties: { lotIds: { type: array, items: { type: string } }, serialIds: { type: array, items: { type: string } } } } } } }
+      responses:
+        '200': { description: Sonuçlar, content: { application/json: { example: { results: [ { lotId: lot-777, exists: true } ], contractVersion: v1 } } } }
+components:
+  securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
+  parameters:
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string } }
+  schemas:
+    LotRef:
+      type: object
+      properties:
+        lotId: { type: string, description: "surrogate canonical id" }
+        lotNumber: { type: string, description: "business key: Tenant+Item+LotNumber" }
+        itemId: { type: string, format: uuid }
+        manufacturerLot: { type: string, nullable: true }
+        supplierLot: { type: string, nullable: true }
+        manufacturingDate: { type: string, format: date-time, nullable: true }
+        expiryDate: { type: string, format: date-time, nullable: true }
+        retestDate: { type: string, format: date-time, nullable: true }
+        countryOfOrigin: { type: string, nullable: true }
+        status: { type: string, enum: [Draft, Released, Blocked, Expired] }
+        coaReference: { type: string, nullable: true }
+        contractVersion: { type: string }
+    SerialRef:
+      type: object
+      properties:
+        serialId: { type: string }
+        serialNumber: { type: string }
+        itemId: { type: string, format: uuid }
+        lotId: { type: string, nullable: true }
+        status: { type: string, enum: [Active, Consumed, Blocked] }
+        contractVersion: { type: string }
+    CreateLotRequest:
+      type: object
+      required: [idempotencyKey, itemId, lotNumber]
+      properties:
+        idempotencyKey: { type: string }
+        itemId: { type: string, format: uuid }
+        lotNumber: { type: string }
+        manufacturerLot: { type: string, nullable: true }
+        supplierLot: { type: string, nullable: true }
+        manufacturingDate: { type: string, format: date-time, nullable: true }
+        expiryDate: { type: string, format: date-time, nullable: true }
+        retestDate: { type: string, format: date-time, nullable: true }
+        countryOfOrigin: { type: string, nullable: true }
+    Error: { type: object, properties: { error: { type: object, properties: { code: { type: string }, message: { type: string }, correlationId: { type: string } } }, contractVersion: { type: string } } }
+  responses:
+    UnknownLot:
+      description: Lot bulunamadı
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_LOT, message: "lot bulunamadı", correlationId: req-1 }, contractVersion: v1 } } }
+    LotConflict:
+      description: Aynı Tenant+Item+LotNumber zaten var (DEC-INV-14)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: LOT_ALREADY_EXISTS, message: "bu item+lotNumber zaten var", correlationId: req-2 }, contractVersion: v1 } } }

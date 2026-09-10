@@ -80,8 +80,8 @@ Below is the macro status catalog.
 | **MOD-0027** | Central Tenant Email / Notification Service | W1-D | Blocker | in-progress | 82% | Notification sender. |
 | **MOD-0263** | External Messaging Provider | W1-D | Blocker | partial | 55% | Provider adapter. |
 | **MOD-0028** | Document / Evidence Metadata | W2-A | High | planned | 0% | Document model storage. |
-| **MOD-0266** | Blob / File Storage Provider | W2-A | High | planned | 0% | S3 storage backend. |
-| **MOD-0262** | External Document Provider | W2-A | High | planned | 0% | Integrations metadata. |
+| **MOD-0266** | Cloud Infrastructure (AWS/Azure/GCP) [External Provider] | W2-A | High | planned | 0% | External infra provider (Blueprint MOD-0266). Not the blob-storage module — internal binary storage is MOD-0262. |
+| **MOD-0262** | Internal Document Repository Service | W-1 | High | planned | 0% | Internal binary/evidence repository (Build, R1-PPM MVP, RC=Y). MOD-0028 + MOD-0313 HARD depend on it. |
 | **MOD-0021** | General Audit Trail | W2-B | High | in-progress | 98% | System logger mapping. |
 | **MOD-0287** | User Notification Preferences | W2-C | High | planned | 0% | Settings CRUD. |
 | **MOD-0034** | Webhook Delivery | W2-C | High | planned | 0% | Outbound HTTP triggers. |

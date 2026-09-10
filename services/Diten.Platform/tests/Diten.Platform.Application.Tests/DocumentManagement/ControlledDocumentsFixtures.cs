@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Contracts.DocumentRepository;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.DocumentManagementControlledDocuments.Services;
@@ -24,14 +25,21 @@ internal sealed class FakeContentStorageGateway : IContentStorageGateway
             return Task.FromResult(Response<ContentStoreResult>.Fail("Content storage is unavailable.", 503, "STORAGE_UNAVAILABLE"));
         }
 
+        // MOD-0262-FU01 / AD-4: the seam now takes a forward-only stream instead of a byte[]. The fake drains
+        // it and hashes the drained bytes, so it still reports the real size and checksum for the payload the
+        // caller actually handed over.
+        using var drained = new MemoryStream();
+        request.Content.CopyTo(drained);
+        var bytes = drained.ToArray();
+
         var result = new ContentStoreResult(
             Guid.NewGuid(),
             "fake",
             $"tenant/{request.ItemId:N}/{request.VersionId:N}/{request.FileName}",
             request.FileName,
             request.DeclaredMediaType ?? "application/octet-stream",
-            request.Content.LongLength,
-            Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(request.Content)).ToLowerInvariant());
+            bytes.LongLength,
+            Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes)).ToLowerInvariant());
         Stored.Add(result);
         return Task.FromResult(Response<ContentStoreResult>.Success(result));
     }

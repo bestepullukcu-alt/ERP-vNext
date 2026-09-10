@@ -1,4 +1,4 @@
-﻿namespace Diten.Platform.Infrastructure.Persistence.Schema;
+namespace Diten.Platform.Infrastructure.Persistence.Schema;
 
 /// <summary>
 /// Every platform collection name, declared ONCE.
@@ -81,6 +81,9 @@ public static class PlatformCollections
     public const string DocumentManagementReleaseGateResults = "document_management_release_gate_results";
     public const string DocumentManagementRepositoryAssessmentFindings = "document_management_repository_assessment_findings";
     public const string DocumentManagementRepositoryAssessments = "document_management_repository_assessments";
+
+    // MOD-0262-FU01 — Internal Document Repository Service system-of-record objects.
+    public const string DocumentRepositoryObjects = "document_repository_objects";
     public const string DocumentManagementRepositoryDowntimeEvents = "document_management_repository_downtime_events";
     public const string DocumentManagementRetentionPolicies = "document_management_retention_policies";
     public const string DocumentManagementRetentionSubjects = "document_management_retention_subjects";
