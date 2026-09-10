@@ -27,44 +27,7 @@ public static class MongoDbIndexConfigurations
             new CreateIndexModel<User>(Builders<User>.IndexKeys.Ascending(u => u.IsActive).Ascending(u => u.TenantId))
         });
 
-        // Roles
-        var rolesCol = database.GetCollection<Role>("roles");
-        await rolesCol.Indexes.CreateManyAsync(new[]
-        {
-            new CreateIndexModel<Role>(
-                Builders<Role>.IndexKeys.Ascending(r => r.TenantId).Ascending(r => r.Name),
-                new CreateIndexOptions<Role>
-                {
-                    Unique = true,
-                    Name = "uq_roles_tenant_name_active",
-                    PartialFilterExpression = Builders<Role>.Filter.Eq(r => r.IsDeleted, false)
-                }),
-            new CreateIndexModel<Role>(Builders<Role>.IndexKeys.Ascending(r => r.TenantId))
-        });
-
-        // Permissions
-        var permissionsCol = database.GetCollection<Permission>("permissions");
-        await permissionsCol.Indexes.CreateManyAsync(new[]
-        {
-            new CreateIndexModel<Permission>(Builders<Permission>.IndexKeys.Ascending(p => p.Key), new CreateIndexOptions { Unique = true }),
-            new CreateIndexModel<Permission>(Builders<Permission>.IndexKeys.Ascending("Module").Ascending("Resource").Ascending("Action"), new CreateIndexOptions { Unique = true })
-        });
-
-        // UserRoles
-        var userRolesCol = database.GetCollection<UserRole>("userRoles");
-        await userRolesCol.Indexes.CreateManyAsync(new[]
-        {
-            new CreateIndexModel<UserRole>(Builders<UserRole>.IndexKeys.Ascending("UserId").Ascending("RoleId").Ascending("TenantId"), new CreateIndexOptions { Unique = true }),
-            new CreateIndexModel<UserRole>(Builders<UserRole>.IndexKeys.Ascending("UserId").Ascending("TenantId"))
-        });
-
-        // RolePermissions
-        var rolePermissionsCol = database.GetCollection<RolePermission>("rolePermissions");
-        await rolePermissionsCol.Indexes.CreateManyAsync(new[]
-        {
-            new CreateIndexModel<RolePermission>(Builders<RolePermission>.IndexKeys.Ascending("RoleId").Ascending("PermissionId").Ascending("TenantId"), new CreateIndexOptions { Unique = true }),
-            new CreateIndexModel<RolePermission>(Builders<RolePermission>.IndexKeys.Ascending("RoleId").Ascending("TenantId"))
-        });
+        await EnsurePermissionOnboardingIndexesAsync(database);
 
         // RefreshTokens
         var refreshTokensCol = database.GetCollection<RefreshToken>("refreshTokens");
@@ -108,6 +71,48 @@ public static class MongoDbIndexConfigurations
         });
 
         await EnsureServiceIdentityIndexesAsync(database);
+    }
+
+    public static async Task EnsurePermissionOnboardingIndexesAsync(IMongoDatabase database)
+    {
+        // Roles
+        var rolesCol = database.GetCollection<Role>("roles");
+        await rolesCol.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<Role>(
+                Builders<Role>.IndexKeys.Ascending(r => r.TenantId).Ascending(r => r.Name),
+                new CreateIndexOptions<Role>
+                {
+                    Unique = true,
+                    Name = "uq_roles_tenant_name_active",
+                    PartialFilterExpression = Builders<Role>.Filter.Eq(r => r.IsDeleted, false)
+                }),
+            new CreateIndexModel<Role>(Builders<Role>.IndexKeys.Ascending(r => r.TenantId))
+        });
+
+        // Permissions
+        var permissionsCol = database.GetCollection<Permission>("permissions");
+        await permissionsCol.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<Permission>(Builders<Permission>.IndexKeys.Ascending(p => p.Key), new CreateIndexOptions { Unique = true }),
+            new CreateIndexModel<Permission>(Builders<Permission>.IndexKeys.Ascending("Module").Ascending("Resource").Ascending("Action"), new CreateIndexOptions { Unique = true })
+        });
+
+        // UserRoles
+        var userRolesCol = database.GetCollection<UserRole>("userRoles");
+        await userRolesCol.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<UserRole>(Builders<UserRole>.IndexKeys.Ascending("UserId").Ascending("RoleId").Ascending("TenantId"), new CreateIndexOptions { Unique = true }),
+            new CreateIndexModel<UserRole>(Builders<UserRole>.IndexKeys.Ascending("UserId").Ascending("TenantId"))
+        });
+
+        // RolePermissions
+        var rolePermissionsCol = database.GetCollection<RolePermission>("rolePermissions");
+        await rolePermissionsCol.Indexes.CreateManyAsync(new[]
+        {
+            new CreateIndexModel<RolePermission>(Builders<RolePermission>.IndexKeys.Ascending("RoleId").Ascending("PermissionId").Ascending("TenantId"), new CreateIndexOptions { Unique = true }),
+            new CreateIndexModel<RolePermission>(Builders<RolePermission>.IndexKeys.Ascending("RoleId").Ascending("TenantId"))
+        });
     }
 
     public static async Task EnsureServiceIdentityIndexesAsync(IMongoDatabase database)
