@@ -562,7 +562,17 @@ public static class DependencyInjection
         // mailbox to the CEO position of one hardcoded tenant. PositionAssignmentSeed already
         // declared itself "DEV-ONLY" in its header, but nothing enforced it: both ran in EVERY
         // environment, production included. The gate below is what makes the header true.
-        if (environment.IsDevelopment())
+        //
+        // ...and the environment alone is no longer enough. Development is also where the owner walks the
+        // organisation chain by hand on an emptied tenant, and where the dev server is restarted without asking,
+        // by standing instruction. Both seeds fill only an EMPTY tenant, so every restart after a reset put a
+        // phantom "HEADQUARTERS" and five mock positions (CEO, CTO, HR_MGR, DEV_LEAD, DEV_ENG) back into the
+        // tenant being walked — measured 2026-09-10: all CreatedBy="system", one set per seeded tenant. "Restart
+        // freely" and "restarting pollutes" cannot both be rules, so the seeds are OPT-IN now and default OFF.
+        // Nothing in the test suites reads this data; the two tests that name these seeds do so in comments.
+        var seedDevOrganizationPositions =
+            environment.IsDevelopment() && configuration.GetValue<bool>(PositionSeed.OptInConfigurationKey);
+        if (seedDevOrganizationPositions)
         {
             PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
@@ -625,7 +635,8 @@ public static class DependencyInjection
             database,
             mongoSettings,
             configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions(),
-            environment.IsDevelopment());
+            environment.IsDevelopment(),
+            seedDevOrganizationPositions);
 
         return services;
     }
@@ -661,7 +672,8 @@ public static class DependencyInjection
         IMongoDatabase database,
         MongoDbSettings mongoSettings,
         SmtpOptions smtpOptions,
-        bool isDevelopment)
+        bool isDevelopment,
+        bool seedDevOrganizationPositions)
     {
         try
         {
@@ -701,8 +713,8 @@ public static class DependencyInjection
             // DisplayName is SOFT (operator-owned) so a manifest re-push would NOT carry it. Rewrites only a
             // row still holding the exact old seed, so it is idempotent and never clobbers an operator rename.
             TaskModuleDisplayNameRenameMigration.MigrateAsync(database).GetAwaiter().GetResult();
-            // DEV-ONLY SEEDS — see the gate in AddInfrastructure; same reason, same rule.
-            if (isDevelopment)
+            // DEV-ONLY, OPT-IN SEEDS — see the gate in AddInfrastructure; same reason, same rule, same flag.
+            if (seedDevOrganizationPositions)
             {
                 PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
                 PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();

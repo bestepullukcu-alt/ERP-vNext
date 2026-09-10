@@ -19,10 +19,12 @@ mongodump --db diten_personalization_dev --out ~/Desktop/diten-yedek-$(date +%Y%
 mongodump --db DitenERP_Dev --out ~/Desktop/diten-yedek-$(date +%Y%m%d-%H%M)
 ```
 
-⚠ **Servisleri yeniden başlatma.** `PositionSeed` ve `PositionAssignmentSeed`
-geliştirme ortamında hâlâ çalışıyor ve **yalnız açılışta** koşuyor. Silip
-yeniden başlatırsan `HEADQUARTERS` birimi ve beş sahte pozisyon (CEO, CTO,
-HR_MGR, DEV_LEAD, DEV_ENG) geri gelir, temiz başlangıç bozulur.
+✅ **Servisleri yeniden başlatmak artık güvenli.** `PositionSeed` ve
+`PositionAssignmentSeed` eskiden boş kiracıya her açılışta sahte `HEADQUARTERS`
+birimi ve beş pozisyon (CEO, CTO, HR_MGR, DEV_LEAD, DEV_ENG) yazıyordu — silip
+yeniden başlatınca temiz başlangıç bozuluyordu. 2026-09-10'dan beri **varsayılan
+kapalı**; yalnız yerel `appsettings.Development.json`'da
+`DevSeeds:OrganizationPositions=true` ise çalışırlar.
 
 **Görev ve organizasyon zinciri:**
 
