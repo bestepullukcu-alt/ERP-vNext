@@ -52,6 +52,13 @@ public static class DependencyInjection
                 LoggingKnowledgeConceptAuditPublisher>();
         }
 
+        // SCMM-11 (CAND-CAP-0011) — eligibility gate: the in-process port (thin over the resolver query) and the RM4
+        // evaluation-log writer (structured-logging default; a durable/audit sink is a follow).
+        services.AddScoped<Application.Features.ContentComposition.Eligibility.IEligibilityEvaluationPort,
+            Application.Features.ContentComposition.Eligibility.EligibilityEvaluationPort>();
+        services.AddScoped<Application.Features.ContentComposition.Eligibility.IEligibilityEvaluationLogWriter,
+            ContentComposition.LoggingEligibilityEvaluationLogWriter>();
+
         // MOD-0150 FU05 — read-only consent/preference seam. Default is the no-op reader (MOD-0164 not built yet);
         // it fabricates no consent state and makes no network call. A config-gated HTTP reader replaces it when MOD-0164 ships.
         services.AddScoped<Application.Features.ConsentPreference.IContactConsentPreferenceReader,
