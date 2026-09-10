@@ -562,6 +562,15 @@ public static class DependencyInjection
         // DisplayName is SOFT (operator-owned) so a manifest re-push would NOT carry it. Rewrites only a
         // row still holding the exact old seed, so it is idempotent and never clobbers an operator rename.
         TaskModuleDisplayNameRenameMigration.MigrateAsync(database).GetAwaiter().GetResult();
+        // WP-DM-1b — tenant-AGNOSTIC Document Master Register auto-seed. Config-driven (DocumentRegisterSeed:*):
+        // EnsureSeededAsync self-gates on Development + Enabled + a configured target tenant + a real CSV path +
+        // a one-time marker; absent/blank/prod ⇒ skip (no hardcoded tenant). Reuses the DM-1a mapping + parser.
+        services.Configure<DocumentRegisterSeedOptions>(
+            configuration.GetSection(DocumentRegisterSeedOptions.SectionName));
+        var documentRegisterSeedOptions = configuration
+            .GetSection(DocumentRegisterSeedOptions.SectionName)
+            .Get<DocumentRegisterSeedOptions>() ?? new DocumentRegisterSeedOptions();
+        DocumentRegisterSeed.EnsureSeededAsync(database, documentRegisterSeedOptions, environment).GetAwaiter().GetResult();
         // DEV-ONLY SEEDS — these two write MOCK organization data: five invented positions
         // (CEO/CTO/HR_MGR/DEV_LEAD/DEV_ENG) and an assignment binding a named developer's personal
         // mailbox to the CEO position of one hardcoded tenant. PositionAssignmentSeed already
