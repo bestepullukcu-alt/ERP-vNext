@@ -342,6 +342,79 @@ public sealed class TaskAssignmentWriteGuardTests
         Assert.Equal(201, response.StatusCode);
     }
 
+    // ── recurrence rule updates that do not CHOOSE an assignment (BL-352) ──────
+
+    [Fact]
+    public async Task Recurrence_rule_update_switches_an_unchanged_ineligible_target_OFF_without_asking_the_guard()
+    {
+        // ForeignPeer is out of scope — if the guard were asked, it would refuse. The rule only turns itself off;
+        // nobody is choosing (or re-choosing) who the work goes to, so the guard must not even be called.
+        var run = new RuleRun(seeded: true, seededAssignee: ForeignPeer);
+
+        var response = await run.UpdateAsync(TaskAssignmentTarget.Person, person: ForeignPeer, isActive: false);
+
+        Assert.Equal(204, response.StatusCode);
+        var stored = Assert.Single(run.Rules.All);
+        Assert.False(stored.IsActive);
+        Assert.Equal(ForeignPeer, stored.AssigneeUserId);
+        Assert.False(run.AssignmentGuardConsulted);
+    }
+
+    [Fact]
+    public async Task Recurrence_rule_update_edits_ANOTHER_field_with_an_unchanged_ineligible_target_without_asking_the_guard()
+    {
+        // Same out-of-scope holder, still active — only the name changes. Still not a choice of assignee.
+        var run = new RuleRun(seeded: true, seededAssignee: ForeignPeer);
+
+        var response = await run.UpdateAsync(
+            TaskAssignmentTarget.Person, person: ForeignPeer, isActive: true, name: "Aylık kontrol");
+
+        Assert.Equal(204, response.StatusCode);
+        var stored = Assert.Single(run.Rules.All);
+        Assert.Equal("Aylık kontrol", stored.Name);
+        Assert.Equal(ForeignPeer, stored.AssigneeUserId);
+        Assert.False(run.AssignmentGuardConsulted);
+    }
+
+    [Fact]
+    public async Task Recurrence_rule_update_that_REACTIVATES_an_unchanged_ineligible_target_is_refused()
+    {
+        // Re-activating re-issues the assignment, so — unlike the two cases above — this DOES ask the guard, and
+        // ForeignPeer is out of scope: refused, and nothing is persisted.
+        var run = new RuleRun(seeded: true, seededAssignee: ForeignPeer, seededIsActive: false);
+
+        var response = await run.UpdateAsync(TaskAssignmentTarget.Person, person: ForeignPeer, isActive: true);
+
+        AssertRefused(response, 400, TaskReasonCodes.AssigneeNotAssignable);
+        var stored = Assert.Single(run.Rules.All);
+        Assert.False(stored.IsActive);
+        Assert.True(run.AssignmentGuardConsulted);
+    }
+
+    [Fact]
+    public async Task Recurrence_rule_update_that_CHANGES_the_target_to_an_out_of_scope_person_still_asks_the_guard()
+    {
+        var run = new RuleRun(seeded: true); // seeded assignee defaults to Colleague, in scope
+
+        var response = await run.UpdateAsync(TaskAssignmentTarget.Person, person: ForeignBoss);
+
+        AssertRefused(response, 400, TaskReasonCodes.AssigneeNotAssignable);
+        Assert.Equal(Colleague, Assert.Single(run.Rules.All).AssigneeUserId);
+        Assert.True(run.AssignmentGuardConsulted);
+    }
+
+    [Fact]
+    public async Task Recurrence_rule_update_that_CHANGES_the_target_to_an_in_scope_person_asks_the_guard_and_succeeds()
+    {
+        var run = new RuleRun(seeded: true); // seeded assignee defaults to Colleague, in scope
+
+        var response = await run.UpdateAsync(TaskAssignmentTarget.Person, person: HomeBoss);
+
+        Assert.Equal(204, response.StatusCode);
+        Assert.Equal(HomeBoss, Assert.Single(run.Rules.All).AssigneeUserId);
+        Assert.True(run.AssignmentGuardConsulted);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────
 
     private static TheoryData<Guid, bool> Matrix(IEnumerable<Guid> candidates, IReadOnlySet<Guid> accepted)
@@ -489,8 +562,16 @@ public sealed class TaskAssignmentWriteGuardTests
         private readonly CreateTaskRecurrenceRuleHandler _create;
         private readonly UpdateTaskRecurrenceRuleHandler _update;
         private readonly TaskRecurrenceRule? _seeded;
+        private readonly TaskAssignmentGuards.RecordingGuard _guard;
 
-        public RuleRun(IActorPermissionContext? permissions = null, bool seeded = false)
+        /// <param name="seededAssignee">The stored rule's assignee when <paramref name="seeded"/> — Colleague
+        /// (in scope) unless a test needs the CURRENT holder to already be out of scope (BL-352).</param>
+        /// <param name="seededIsActive">The stored rule's IsActive when <paramref name="seeded"/>.</param>
+        public RuleRun(
+            IActorPermissionContext? permissions = null,
+            bool seeded = false,
+            Guid? seededAssignee = null,
+            bool seededIsActive = true)
         {
             var tenant = new FakeTenantContext(TaskTestData.Tenant);
             _seeded = seeded
@@ -501,8 +582,8 @@ public sealed class TaskAssignmentWriteGuardTests
                     Frequency = TaskRecurrenceFrequency.Weekly,
                     Interval = 1,
                     AssignmentTarget = TaskAssignmentTarget.Person,
-                    AssigneeUserId = Colleague,
-                    IsActive = true
+                    AssigneeUserId = seededAssignee ?? Colleague,
+                    IsActive = seededIsActive
                 }
                 : null;
             Rules = _seeded is null
@@ -512,15 +593,19 @@ public sealed class TaskAssignmentWriteGuardTests
             var seats = SeatRepository();
             var positions = PositionRepository();
             var units = UnitRepository();
-            var guard = GuardFor(seats, positions, units, ScopeResolver(positions, units, Me),
-                permissions ?? TaskActors.Holding(TaskPermissions.RecurrenceManage, TaskPermissions.Assign), Me);
+            _guard = TaskAssignmentGuards.Recording(GuardFor(seats, positions, units, ScopeResolver(positions, units, Me),
+                permissions ?? TaskActors.Holding(TaskPermissions.RecurrenceManage, TaskPermissions.Assign), Me));
             var user = new FakeCurrentUserContext(Me);
 
-            _create = new CreateTaskRecurrenceRuleHandler(Rules, tenant, user, guard);
-            _update = new UpdateTaskRecurrenceRuleHandler(Rules, user, guard);
+            _create = new CreateTaskRecurrenceRuleHandler(Rules, tenant, user, _guard);
+            _update = new UpdateTaskRecurrenceRuleHandler(Rules, user, _guard);
         }
 
         public FakeTaskRecurrenceRuleRepository Rules { get; }
+
+        /// <summary>Whether the (possibly shared) guard instance was asked anything at all, across every
+        /// Create/Update call made through this run — BL-352's proof that an unchanged target skips the call.</summary>
+        public bool AssignmentGuardConsulted => _guard.WasConsulted;
 
         public Task<Response<Guid>> CreateAsync(TaskAssignmentTarget target, Guid? person = null, Guid? pool = null)
             => _create.Handle(
@@ -541,12 +626,16 @@ public sealed class TaskAssignmentWriteGuardTests
                 CancellationToken.None);
 
         public Task<Response<NoContent>> UpdateAsync(
-            TaskAssignmentTarget target, Guid? person = null, Guid? pool = null)
+            TaskAssignmentTarget target,
+            Guid? person = null,
+            Guid? pool = null,
+            bool isActive = true,
+            string? name = null)
             => _update.Handle(
                 new UpdateTaskRecurrenceRuleCommand(
                     _seeded!.Id,
                     new UpdateTaskRecurrenceRuleRequest(
-                        Name: "Haftalık kontrol",
+                        Name: name ?? "Haftalık kontrol",
                         Frequency: TaskRecurrenceFrequency.Weekly,
                         Interval: 1,
                         StartsAt: null,
@@ -556,7 +645,7 @@ public sealed class TaskAssignmentWriteGuardTests
                         PoolPositionId: pool,
                         OrganizationUnitId: null,
                         TaskTemplateId: null,
-                        IsActive: true,
+                        IsActive: isActive,
                         ExpectedVersion: _seeded.Version),
                     "corr"),
                 CancellationToken.None);

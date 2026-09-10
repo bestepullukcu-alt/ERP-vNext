@@ -157,9 +157,22 @@ public sealed class UpdateTaskRecurrenceRuleHandler
             return Response<NoContent>.Fail(invalid.Message, 400, invalid.ReasonCode, command.CorrelationId);
         }
 
-        // BL-057 — asked on EVERY save, not only when the assignee changes: the form re-offers the pickers, and
-        // a saved rule must not keep an assignee the person saving it could no longer choose.
-        if (await _assignmentGuard.CheckTargetAsync(
+        /*
+         * BL-352 — the guard is asked only when THIS save CHOOSES an assignment: the target itself changes
+         * (compared to what is stored, below), or the rule goes from inactive to active (re-activating re-issues
+         * the assignment, so it counts as choosing it again). An unchanged target — including switching the rule
+         * off — is not a choice the person saving it made and is not answerable for it; that is the same principle
+         * that already exempts reassign from checking the CURRENT holder. Before this, a rule whose assignee had
+         * since left the company or lost the seat could not be saved at all, not even to turn it off.
+         */
+        var targetChanged =
+            rule.AssignmentTarget != request.AssignmentTarget
+            || rule.AssigneeUserId != request.AssigneeUserId
+            || rule.PoolPositionId != request.PoolPositionId;
+        var reactivated = !rule.IsActive && request.IsActive;
+
+        if ((targetChanged || reactivated)
+            && await _assignmentGuard.CheckTargetAsync(
                 request.AssignmentTarget, request.AssigneeUserId, request.PoolPositionId, ct) is { } refused)
         {
             return Response<NoContent>.Fail(

@@ -23,6 +23,13 @@ internal static class TaskAssignmentGuards
     internal static ITaskAssignmentGuard NeverAsked() => new Refusing();
 
     /// <summary>
+    /// Wraps another guard and remembers whether ANY Check…Async call reached it. BL-352 needs this: proving the
+    /// recurrence UPDATE handler skips an unchanged target means proving the guard was never called, not merely
+    /// that its answer was ignored — a double that only ever admits or only ever refuses cannot tell those apart.
+    /// </summary>
+    internal static RecordingGuard Recording(ITaskAssignmentGuard inner) => new(inner);
+
+    /// <summary>
     /// The REAL guard over a small org, with the listed units granted to the actor and every permission held.
     /// For suites that already test eligibility (reassign) and must keep testing it against production code.
     /// </summary>
@@ -72,6 +79,33 @@ internal static class TaskAssignmentGuards
         public Task<TaskAssignmentRefusal?> CheckTargetAsync(
             TaskAssignmentTarget target, Guid? assigneeUserId, Guid? poolPositionId, CancellationToken ct)
             => Task.FromResult<TaskAssignmentRefusal?>(null);
+    }
+
+    /// <summary>Delegates to <paramref name="inner"/>'s real answer, but latches <see cref="WasConsulted"/> the
+    /// moment any method is entered — so a test can assert non-consultation directly instead of inferring it from
+    /// a status code.</summary>
+    internal sealed class RecordingGuard(ITaskAssignmentGuard inner) : ITaskAssignmentGuard
+    {
+        internal bool WasConsulted { get; private set; }
+
+        public Task<TaskAssignmentRefusal?> CheckPersonAsync(Guid userId, CancellationToken ct)
+        {
+            WasConsulted = true;
+            return inner.CheckPersonAsync(userId, ct);
+        }
+
+        public Task<TaskAssignmentRefusal?> CheckPoolAsync(Guid positionId, CancellationToken ct)
+        {
+            WasConsulted = true;
+            return inner.CheckPoolAsync(positionId, ct);
+        }
+
+        public Task<TaskAssignmentRefusal?> CheckTargetAsync(
+            TaskAssignmentTarget target, Guid? assigneeUserId, Guid? poolPositionId, CancellationToken ct)
+        {
+            WasConsulted = true;
+            return inner.CheckTargetAsync(target, assigneeUserId, poolPositionId, ct);
+        }
     }
 }
 
