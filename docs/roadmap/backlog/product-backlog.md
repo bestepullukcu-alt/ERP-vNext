@@ -4594,7 +4594,14 @@ hiç gösterilmiyor (ölü anahtar).
 
 **Atananı uygunluğunu kaybetmiş tekrarlayan kural kapatılamıyor — koruma her kayıtta soruyor**
 
-DURUM: AÇIK · SAHİP: CT (alt ajan) · KARAR: sahip, 2026-09-10
+DURUM: ⚠️ KAPANDI (KISMİ) · SAHİP: CT · KOD: 2026-09-11 · COMMIT: `2eb678e6` · ✅ için: sahibin kontrol turu (canlı oturumla doğrulanmadı)
+
+**Ne yapıldı.** Güncellemede koruma yalnız bu kayıt bir atama SEÇİYORSA sorulur: hedef (tür/kişi/havuz) kayıtlıdan farklıysa
+VEYA kural pasiften aktife dönüyorsa (CT eki: yeniden etkinleştirme = yeniden atama). Değişmeyen hedef — kapatmak dahil —
+sorgusuz kaydedilir. Oluşturma ve zamanlanmış üretim değişmedi; koruma çağrısı yazmadan önce ve zorunlu bağımlılık olarak
+duruyor (kaynak tarayan muhafız yeşil). 5 test kayıt eden koruma ikizi üzerinde: kapatma / başka alan düzenleme sormaz,
+yeniden etkinleştirme reddedilir, hedef değişince sorar. Sabotaj: alt ajan (a,b kırmızı) + CT iki ayrı (1 + 2 kırmızı).
+Tasks+WorkAggregation 1355/1355. Açık kalan BL-354: aktif kalan kuralın uygunsuz atananına üretim devam eder.
 
 `01bc0915` ile `UpdateTaskRecurrenceRuleHandler` (`TaskRecurrenceRuleHandlers.cs:162`) her kayıtta
 atama korumasını çağırıyor. Kuralın kişisi pozisyonunu kaybettiyse kural **pasife almak için bile**
